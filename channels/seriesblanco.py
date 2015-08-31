@@ -103,7 +103,7 @@ def episodios(item):
     data = unicode( data, "iso-8859-1" , errors="replace" ).encode("utf-8")
 
     data = re.sub(r"a></td><td> <img src=/banderas/","a><idioma/",data)
-    data = re.sub(r" <img src=/banderas/","|",data)
+    data = re.sub(r"<img src=/banderas/","|",data)
     data = re.sub(r"\.png border='\d+' height='\d+' width='\d+'[^>]+><","/idioma><",data)
     data = re.sub(r"\.png border='\d+' height='\d+' width='\d+'[^>]+>","",data)
 
