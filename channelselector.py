@@ -249,7 +249,7 @@ def channels_list():
     itemlist.append( Item( title="Newpct"                  , channel="newpct"             , language="ES" , category="F,S,D,A"       , type="generic"  )) # jesus 08/03/2013
     itemlist.append( Item( title="Newpct1"                 , channel="newpct1"            , language="ES" , category="F,S,A"       , type="generic"  )) # jesus 08/03/2013
     itemlist.append( Item( title="Oranline"                , channel="oranline"           , language="ES" , category="L,F,D"        , type="generic" ))# jesus 16/7/2012
-    itemlist.append( Item( tiele="Peelink"                 , channel="peelink"            , language="ES" , category="F"         , type="generic", thumbnail="http://www.peelink2.org/wp-content/uploads/2015/01/banner-peelink2.jpg" )) #kampanita 07/09/2015
+    itemlist.append( Item( title="Peelink"                 , channel="peelink"            , language="ES" , category="F"         , type="generic", thumbnail="http://www.peelink2.org/wp-content/uploads/2015/01/banner-peelink2.jpg" )) #kampanita 07/09/2015
     itemlist.append( Item( title="Peliculasaudiolatino"    , channel="peliculasaudiolatino",language="ES" , category="L,F"       , type="generic"  ))
     if config.get_setting("enableadultmode") == "true": itemlist.append( Item( title="PeliculasEroticas" , channel="peliculaseroticas"    , language="ES" , category="X,F" , type="xbmc"  ))
     itemlist.append( Item( title="PeliculasDK"             , channel="peliculasdk"        , language="ES" , category="F" , type="generic" , thumbnail="http://s29.postimg.org/wzw749oon/pldklog.jpg"  )) 
