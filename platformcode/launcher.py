@@ -22,6 +22,7 @@ def run():
     params, fanart, channel_name, title, fulltitle, url, thumbnail, plot, action, server, extra, subtitle, viewmode, category, show, password = extract_parameters()
     logger.info("pelisalacarta.platformcode.launcher fanart=%s, channel_name=%s, title=%s, fulltitle=%s, url=%s, thumbnail=%s, plot=%s, action=%s, server=%s, extra=%s, subtitle=%s, category=%s, show=%s, password=%s" % (fanart, channel_name, title, fulltitle, url, thumbnail, plot, action, server, extra, subtitle, category, show, password))
 
+    server_white_list, server_black_list = set_server_list()
     try:
         # Accion por defecto - elegir canal
         if ( action=="selectchannel" ):
@@ -165,9 +166,11 @@ def run():
                     # Ejecuta find_videos, del canal o común
                     try:
                         itemlist = channel.findvideos(item)
+                        itemlist = filtered_servers(itemlist, server_white_list, server_black_list)
                     except:
                         from servers import servertools
                         itemlist = servertools.find_video_items(item)
+                        itemlist = filtered_servers(itemlist, server_white_list, server_black_list)
 
                     if len(itemlist)>0:
                         #for item2 in itemlist:
@@ -310,11 +313,13 @@ def run():
                         # Intenta ejecutar una posible funcion "findvideos" del canal
                         if hasattr(channel, 'findvideos'):
                             exec "itemlist = channel."+action+"(item)"
+                            itemlist = filtered_servers(itemlist, server_white_list, server_black_list)
                         # Si no funciona, lanza el método genérico para detectar vídeos
                         else:
                             logger.info("pelisalacarta.platformcode.launcher no channel 'findvideos' method, executing core method")
                             from servers import servertools
                             itemlist = servertools.find_video_items(item)
+                            itemlist = filtered_servers(itemlist, server_white_list, server_black_list)
 
                         from platformcode import subtitletools
                         subtitletools.saveSubtitleName(item)
@@ -497,6 +502,77 @@ def episodio_ya_descargado(show_title,episode_title):
             return True
 
     return False
+
+
+def set_server_list():
+    logger.info("pelisalacarta.platformcode.launcher.set_server_list start")
+    server_white_list = []
+    server_black_list = []
+
+    # server_name = ['streamcloud','powvideo']
+
+    server1 = config.get_setting('server1')  # streamcloud
+    server2 = config.get_setting('server2')  # powvideo
+
+    # allowed servers
+
+    # TODO change to loop? and use server_name[index] to append text
+    if server1 == 'Accept File':
+        server_white_list.append('streamcloud')
+    if server2 == 'Accept File':
+        server_white_list.append('powvideo')
+
+    logger.info("set_server_list list %s" % server_white_list)
+
+    # denied servers
+    if server1 == 'Block File':
+        server_black_list.append('streamcloud')
+    if server2 == 'Block File':
+        server_black_list.append('powvideo')
+
+    logger.info("set_server_list list %s" % server_black_list)
+    logger.info("pelisalacarta.platformcode.launcher.set_server_list end")
+    return server_white_list, server_black_list
+
+
+def filtered_servers(itemlist, server_white_list, server_black_list):
+    logger.info("pelisalacarta.platformcode.launcher.filtered_servers start")
+    new_list = []
+    white_counter = 0
+    black_counter = 0
+
+    logger.info("filtered_servers list %s" % server_white_list)
+
+    if len(server_white_list) > 0:
+        logger.info("filtered_servers whiteList")
+        for item in itemlist:
+            logger.info("item.title " + item.title)
+            if any(server in item.title for server in server_white_list):
+                # if item.title in server_white_list:
+                logger.info("found")
+                new_list.append(item)
+                white_counter += 1
+            else:
+                logger.info("not found")
+
+    if len(server_black_list) > 0:
+        logger.info("filtered_servers blackList")
+        for item in itemlist:
+            logger.info("item.title " + item.title)
+            if any(server in item.title for server in server_black_list):
+                # if item.title in server_white_list:
+                logger.info("found")
+                black_counter += 1
+            else:
+                new_list.append(item)
+                logger.info("not found")
+
+    logger.info("whiteList server %s has #%d rows" % (server_white_list, white_counter))
+    logger.info("blackList server %s has #%d rows" % (server_white_list, white_counter))
+    logger.info("pelisalacarta.platformcode.launcher.filtered_servers end")
+
+    return new_list
+
 
 def download_all_episodes(item,channel,first_episode="",preferred_server="vidspot",filter_language=""):
     logger.info("pelisalacarta.platformcode.launcher download_all_episodes, show="+item.show)
