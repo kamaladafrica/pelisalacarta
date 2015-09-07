@@ -7,7 +7,7 @@
     <active>true</active>
     <include_in_global_search>false</include_in_global_search>
     <version>1</version>
-    <adult>false</version>
+    <adult>false</adult>
     <date>28/08/2015</date>
     <changes>First pelisalacarta 4 release</changes>
 </channel>
