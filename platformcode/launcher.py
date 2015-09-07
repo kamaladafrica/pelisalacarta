@@ -522,7 +522,7 @@ def set_server_list():
     if server2 == 'Accept File':
         server_white_list.append('powvideo')
 
-    logger.info("set_server_list list %s" % server_white_list)
+    logger.info("set_server_list whiteList %s" % server_white_list)
 
     # denied servers
     if server1 == 'Block File':
@@ -530,7 +530,7 @@ def set_server_list():
     if server2 == 'Block File':
         server_black_list.append('powvideo')
 
-    logger.info("set_server_list list %s" % server_black_list)
+    logger.info("set_server_list blackList %s" % server_black_list)
     logger.info("pelisalacarta.platformcode.launcher.set_server_list end")
     return server_white_list, server_black_list
 
