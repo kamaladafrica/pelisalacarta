@@ -5,6 +5,7 @@
 # ( con ayuda de neno1978, DrZ3r0, y robalo )
 # 7/9/2015
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
+# De momento solo listo por categorías
 #-----------------------------------------------------------------
 import urlparse,urllib2,urllib,re
 import os, sys
@@ -31,7 +32,6 @@ def isGeneric():
 def mainlist(item):
     logger.info("[peelink] mainlist")
     itemlist = []
-    itemlist.append( Item(channel=__channel__, action="menupelis", title="Peliculas",  url="http://www.peelink2.org" , thumbnail="http://primerasnoticias.com/wp-content/uploads/2012/07/game1.jpg", fanart="http://primerasnoticias.com/wp-content/uploads/2012/07/game1.jpg") )
     itemlist.append( Item(channel=__channel__, action="porcat", title="Por Categoria",  url="http://www.peelink2.org/p/indice-de-pelis.html" , thumbnail="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDsZyDowjAAE23njJbp9hYZRe9viAuq-f1niz2nRC4jNwXkD6W", fanart="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDsZyDowjAAE23njJbp9hYZRe9viAuq-f1niz2nRC4jNwXkD6W") )
     itemlist.append( Item(channel=__channel__, action="search", title="Buscar...", url="http://www.peelink2.org/search/?s=", thumbnail="http://thumbs.dreamstime.com/x/buscar-pistas-13159747.jpg", fanart="http://thumbs.dreamstime.com/x/buscar-pistas-13159747.jpg"))
     return itemlist
@@ -53,43 +53,6 @@ def porcat(item):
 
     return itemlist
 
-def menupelis(item):
-    logger.info("[peelink] menupelis")
-    itemlist = []
-   
-    item.url = "http://www.peelink2.org"
-
-    data = scrapertools.cache_page(item.url).decode('iso-8859-1').encode('utf-8')          
-
-    patronbloque='<p><a href=.*?>(.*?)</p>'
-    matchesbloque = re.compile(patronbloque,re.DOTALL).findall(data)    
-    scrapertools.printMatches(matchesbloque)
-    
-    for datos in matchesbloque:
-        patron= '<a href="([^"]+)">.*?<img.*?src="([^"]+)".*?alt="([^"]+)".*?</a>'
-        matches = re.compile(patron,re.DOTALL).findall(datos)    
-        scrapertools.printMatches(matches)
-    
-        for scrapedurl,scrapedthumbnail,scrapedtitle in matches:
-            title = scrapedtitle.replace("Ver","")              
-            title = title.replace("ver","")              
-            url = urlparse.urljoin(item.url,scrapedurl)   
-            thumbnail=urlparse.urljoin(item.thumbnail,scrapedthumbnail)   
-            logger.info("[peelink]  title: " + title + " url: " + url )         
-            itemlist.append( Item(channel=__channel__, action="verpeli", title=title, fulltitle=title , url=url, thumbnail=thumbnail) )
-        
-        
-    try:
-        next_page = scrapertools.get_match(data,'<span style="font-size: small;">\d+ DE \d+</span>.*?<a href="[^"]+".*?<a href="([^"]+)"')            
-        title= "[COLOR red][B]Pagina siguiente »[/B][/COLOR]"
-        itemlist.append( Item(channel=__channel__, title=title, url=next_page, action="menupelis",  folder=True) )
-    except: pass
-    
-    
-    logger.info("######################### "+next_page)        
-    return itemlist 		
-    
-    
 def menucat(item):
    
     logger.info("[peelink] menupecat")
