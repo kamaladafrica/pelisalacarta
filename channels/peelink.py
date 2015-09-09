@@ -69,7 +69,7 @@ def menupelis(item):
     #logger.info("end primer bloqe")
     
     for datos in matchesbloque:
-        patron= 'href="([^"]+.html)"><img.*?src="([^"]+)"'
+        patron= 'href="([^"]+)"><img.*?src="([^"]+)"'
         matches = re.compile(patron,re.DOTALL).findall(datos)    
         #logger.info("begin segundo bloqe")
         #scrapertools.printMatches(matches)
@@ -82,52 +82,75 @@ def menupelis(item):
             #logger.info("begin tercer bloqe")
             #scrapertools.printMatches(matches)
             #logger.info("end tercer bloqe")
-            for dato in matches:
-                    title=dato.replace("-"," ")
+            
+            if len(matches)!=0:
+               for dato in matches:                    
+                    title=dato.lower()+"||;" 
+                    title=title.replace("-n||;"," ")
+                    title=title.replace("+n||;"," ")
+                    title=title.replace("||;","")
+                    title=title.replace("-"," ")
+                    title=title.replace("+"," ")
                     itemlist.append( Item(channel=__channel__, action="verpeli", title=title.capitalize(), fulltitle=title , url=url, thumbnail=thumbnail) )
-                 
-    
+                    
+            else:
+               patron='(.*?).jpg' 
+               matches = re.compile(patron,re.DOTALL).findall(thumbnail)        
+               #logger.info("begin tercer bloqe")
+               #scrapertools.printMatches(matches)
+               #logger.info("end tercer bloqe")
+               for dato in matches:
+                    dato=dato.lower()
+                    thumbnail=dato
+                    title=dato.split("/")[-1]
+                    title=title+"||;"
+                    title=title.replace("-n||;"," ")
+                    title=title.replace("+n||;"," ")
+                    title=title.replace("||;","")
+                    title=title.replace("+"," ")
+                    title=title.replace("-"," ")
+                    itemlist.append( Item(channel=__channel__, action="verpeli", title=title.capitalize(), fulltitle=title , url=url, thumbnail=thumbnail) )
+  
   ##########################
   # puta_paginacion
     
     patron = '<link rel="canonical" href="([^"]+)"'
-    matches = re.compile(patron,re.DOTALL).findall(data)    
-
-    for scrapedurl in matches:
-        url = urlparse.urljoin(item.url,scrapedurl)                                   
-        pagina_actual = url
-
     try:
-        patron='<a href="([^"]+-estreno.*?.html)">'
-        bloquematches = re.compile(patron,re.DOTALL).findall(data)    
-        #logger.info("DATOS PARA LA PAGINACION")
-        #scrapertools.printMatches(bloquematches)
-        for scrapedurl in bloquematches:
-            url = urlparse.urljoin(item.url,scrapedurl)             
-            url = url.replace("www.","")
-            pagina_actual = pagina_actual.replace("www.","")             
+       pagina_actual = scrapertools.get_match(data,patron)    
+       pagina_actual = urlparse.urljoin(item.url,pagina_actual)                                   
+        
+
+       try:
+          patron='<a href="([^"]+-estreno.*?.html)">'
+          bloquematches = re.compile(patron,re.DOTALL).findall(data)    
+          #logger.info("DATOS PARA LA PAGINACION")
+          #scrapertools.printMatches(bloquematches)
+          for scrapedurl in bloquematches:
+              url = urlparse.urljoin(item.url,scrapedurl)             
+              url = url.replace("www.","")
+              pagina_actual = pagina_actual.replace("www.","")             
             
             #logger.info("-------------------------------")
             #logger.info("| URL ACTUAL  : "+pagina_actual)
             #logger.info("| URL BUSCADA : "+url)
             #logger.info("-------------------------------")
             
-            if url == pagina_actual:
-               try:
-                  #logger.info("iguales: "+pagina_actual)
-                  dato = scrapertools.get_match(pagina_actual,'pagina-(\d+)-estreno')               
-                  break
-               except:        
-                  #logger.info("diferente: "+pagina_actual+" "+url)
-                  dato = "1"                                                  
-            else:        
-               dato = "1"
-               #logger.info("no encuentro: "+pagina_actual)
+              if url == pagina_actual:
+                 try:
+                    #logger.info("iguales: "+pagina_actual)
+                    dato = scrapertools.get_match(pagina_actual,'pagina-(\d+)-estreno')               
+                    break
+                 except:        
+                    #logger.info("diferente: "+pagina_actual+" "+url)
+                    dato = "1"                                                  
+              else:        
+                 dato = "1"
+                 #logger.info("no encuentro: "+pagina_actual)
                
-        dato_busq = str (int(dato) + 1 )                               
+          dato_busq = str (int(dato) + 1 )                               
         
-        #logger.info("dato_busq: "+dato_busq)
-        for scrapedurl in bloquematches:                        
+          #logger.info("dato_busq: "+dato_busq)
+          for scrapedurl in bloquematches:                        
                url = urlparse.urljoin(item.url,scrapedurl)               
                dato2 = scrapertools.get_match(url,'pagina-(\d+)-estreno')                              
                
@@ -135,6 +158,8 @@ def menupelis(item):
                   itemlist.append( Item(channel=__channel__, title="Pagina [COLOR red][ "+dato2+" ][/COLOR]", url=url, action="menupelis",  folder=True) )                 
                   break               
         
+       except: pass
+      
     except: pass
     
     return itemlist 		
