@@ -132,7 +132,7 @@ def menupelis(item):
                dato2 = scrapertools.get_match(url,'pagina-(\d+)-estreno')                              
                
                if dato_busq == dato2:                 
-                  itemlist.append( Item(channel=__channel__, title="Pagina [COLOR red]"+dato2+"[/COLOR]", url=url, action="menupelis",  folder=True) )                 
+                  itemlist.append( Item(channel=__channel__, title="Pagina [COLOR red][ "+dato2+" ][/COLOR]", url=url, action="menupelis",  folder=True) )                 
                   break               
         
     except: pass
@@ -162,8 +162,8 @@ def ultimas(item):
         #scrapertools.printMatches(matches)
     
         for scrapedurl,scrapedthumbnail,scrapedtitle in matches:        
-            title = arregla(scrapedtitle.replace("Ver",""))              
-            title = title.replace("ver","")                          
+            title = arregla(scrapedtitle.replace("Ver ",""))              
+            title = title.replace("ver ","")                          
             url = urlparse.urljoin(item.url,scrapedurl)               
             thumbnail=urlparse.urljoin(item.thumbnail,scrapedthumbnail)   
             #logger.info("THUMBNAIL : -------------------- "+thumbnail)
