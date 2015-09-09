@@ -201,7 +201,7 @@ def ultimas(item):
 #  Accedemos a un indice  
 #    
 def menucat(item):
-    item.tile=item.title.decode('iso-8859-1').encode('utf-8')
+    item.title=item.title.decode('iso-8859-1').encode('utf-8')
     
     logger.info("[peelink] menucat")
     logger.info("[peelink] "+item.url)
