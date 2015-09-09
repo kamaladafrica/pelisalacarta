@@ -201,7 +201,8 @@ def ultimas(item):
 #  Accedemos a un indice  
 #    
 def menucat(item):
-   
+    item.tile=item.title.decode('iso-8859-1').encode('utf-8')
+    
     logger.info("[peelink] menucat")
     logger.info("[peelink] "+item.url)
     logger.info("[peelink] item.title "+item.title)
@@ -210,16 +211,17 @@ def menucat(item):
        
     data = scrapertools.cache_page(item.url).decode('iso-8859-1').encode('utf-8')          
     
-    patronenlaces= '<p><a href="http://www.peelink2.org/genero/.*?>'+item.title+'</a></p>(.*?)</ol>'
+    patronenlaces= '<p><a href="http://www.peelink2.org/genero/.*?>'+item.title.split(' ')[0]+'.*?</a></p>(.*?)</ol>'
     matchesenlaces = re.compile(patronenlaces,re.DOTALL).findall(data)
-    #logger.info("[peelink] Busco con patron: "+patronenlaces)
-    #scrapertools.printMatches(matchesenlaces)   
-    #logger.info("[peelink] _________________________________________")
+    logger.info("[peelink] Busco con patron: "+patronenlaces)
+    logger.info(item.title.split(' ')[0])
+    scrapertools.printMatches(matchesenlaces)   
+    logger.info("[peelink] _________________________________________")
     
     for bloque_enlaces in matchesenlaces:
         patron = '<a href="([^"]+)">(.*?)</a>'
         matches = re.compile(patron,re.DOTALL).findall(bloque_enlaces)
-        #scrapertools.printMatches(matches)
+        scrapertools.printMatches(matches)
         for scrapedurl,scrapedtitle in matches:
             title = scrapedtitle.replace("Ver","")              
             title = title.replace("ver","")              
@@ -239,11 +241,14 @@ def verpeli(item):
    itemlist = []
             
    data = scrapertools.cache_page(item.url).decode('iso-8859-1').encode('utf-8')
-    
    patronenlaces='<img class="alignnone.*?src="([^"]+)".*?</a>(.*?)</iframe>.*?</span></div>'
+   
    matches = re.compile(patronenlaces,re.DOTALL).findall(data)    
    #scrapertools.printMatches(matches)
-   itemlist = []      
+   
+   thumbnail=item.thumbnail
+   plot=item.plot
+   
    for scrapedthumbnail,scrapedplot in matches:
        thumbnail=urlparse.urljoin(item.url,scrapedthumbnail)   
        plot=scrapertools.htmlclean(scrapedplot).decode('iso-8859-1').encode('utf-8')          
@@ -251,12 +256,18 @@ def verpeli(item):
    
    patron='<img class="alignnone.*?>(.*?)</span></div>'
    matches = re.compile(patron,re.DOTALL).findall(data)            
+   if len(matches) == 0:
+      patron='<div style="clear.*?>(.*?)</span></div>'
+      matches = re.compile(patron,re.DOTALL).findall(data)            
+      
+   
    #scrapertools.printMatches(matches)
    
    for datos in matches:
-       patron='<iframe src="([^"]+)".*?'
+       #logger.info("Busco la url")
+       patron='<iframe.*?src="([^"]+)".*?'
        match = re.compile(patron,re.DOTALL).findall(datos)            
-       #scrapertools.printMatches(match)
+       scrapertools.printMatches(match)
        for scrapedurl in match:
            url = urlparse.urljoin(item.url,scrapedurl.decode('iso-8859-1').encode('utf-8'))            
            surl = "[ [COLOR red]"+scrapertools.get_match(url,'.*?://(.*?)/')+"[/COLOR] ]" 
