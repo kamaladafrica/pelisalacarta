@@ -64,24 +64,24 @@ def menupelis(item):
     patronbloque = '<div.*?<p><a(.*?)</a></p>'         #patron para principal_con_todo--> se salta el primer enlace    
     matchesbloque = re.compile(patronbloque,re.DOTALL).findall(data)    
     
-    logger.info("begin primer bloqe")
-    scrapertools.printMatches(matchesbloque)
-    logger.info("end primer bloqe")
+    #logger.info("begin primer bloqe")
+    #scrapertools.printMatches(matchesbloque)
+    #logger.info("end primer bloqe")
+    
     for datos in matchesbloque:
-
         patron= 'href="([^"]+.html)"><img.*?src="([^"]+)"'
         matches = re.compile(patron,re.DOTALL).findall(datos)    
-        logger.info("begin segundo bloqe")
-        scrapertools.printMatches(matches)
-        logger.info("end segundo bloqe")
+        #logger.info("begin segundo bloqe")
+        #scrapertools.printMatches(matches)
+        #logger.info("end segundo bloqe")
         for scrapedurl,scrapedthumbnail in matches:
             url = urlparse.urljoin(item.url,scrapedurl)               
             thumbnail=urlparse.urljoin(item.thumbnail,scrapedthumbnail)   
             patron='ver-(.*?).html' 
             matches = re.compile(patron,re.DOTALL).findall(url)    
-            logger.info("begin tercer bloqe")
-            scrapertools.printMatches(matches)
-            logger.info("end tercer bloqe")
+            #logger.info("begin tercer bloqe")
+            #scrapertools.printMatches(matches)
+            #logger.info("end tercer bloqe")
             for dato in matches:
                     title=dato.replace("-"," ")
                     itemlist.append( Item(channel=__channel__, action="verpeli", title=title.capitalize(), fulltitle=title , url=url, thumbnail=thumbnail) )
@@ -90,19 +90,18 @@ def menupelis(item):
   ##########################
   # puta_paginacion
     
-        patron = '<link rel="canonical" href="([^"]+)"'
-        matches = re.compile(patron,re.DOTALL).findall(data)    
+    patron = '<link rel="canonical" href="([^"]+)"'
+    matches = re.compile(patron,re.DOTALL).findall(data)    
 
-        for scrapedurl in matches:
-            url = urlparse.urljoin(item.url,scrapedurl)                                   
-            pagina_actual = url
+    for scrapedurl in matches:
+        url = urlparse.urljoin(item.url,scrapedurl)                                   
+        pagina_actual = url
 
     try:
-                
         patron='<a href="([^"]+-estreno.*?.html)">'
         bloquematches = re.compile(patron,re.DOTALL).findall(data)    
-        logger.info("DATOS PARA LA PAGINACION")
-        s#crapertools.printMatches(bloquematches)
+        #logger.info("DATOS PARA LA PAGINACION")
+        #scrapertools.printMatches(bloquematches)
         for scrapedurl in bloquematches:
             url = urlparse.urljoin(item.url,scrapedurl)             
             url = url.replace("www.","")
@@ -140,7 +139,6 @@ def menupelis(item):
     
     return itemlist 		
 
-
   
 ##############################################    
 # Saca solo las de carrusel que se repiten
@@ -155,23 +153,20 @@ def ultimas(item):
     data = scrapertools.cache_page(item.url).decode('iso-8859-1').encode('utf-8')          
     
     patronbloque = '<div class=.*?<p>(.*?)</a></p>'         #patron para principal_con_todo
-
     matchesbloque = re.compile(patronbloque,re.DOTALL).findall(data)    
-    
-    scrapertools.printMatches(matchesbloque)
+    #scrapertools.printMatches(matchesbloque)
     
     for datos in matchesbloque:
         patron= 'href="([^"]+)"><img.*?src="([^"]+)".*?alt="([^"]+)".*?</a>'        
         matches = re.compile(patron,re.DOTALL).findall(datos)    
-        
-        scrapertools.printMatches(matches)
+        #scrapertools.printMatches(matches)
     
         for scrapedurl,scrapedthumbnail,scrapedtitle in matches:        
             title = arregla(scrapedtitle.replace("Ver",""))              
             title = title.replace("ver","")                          
             url = urlparse.urljoin(item.url,scrapedurl)               
             thumbnail=urlparse.urljoin(item.thumbnail,scrapedthumbnail)   
-            logger.info("THUMBNAIL : -------------------- "+thumbnail)
+            #logger.info("THUMBNAIL : -------------------- "+thumbnail)
             
             itemlist.append( Item(channel=__channel__, action="verpeli", title=title, fulltitle=title , url=url, thumbnail=thumbnail) )
     
@@ -184,22 +179,19 @@ def menucat(item):
    
     logger.info("[peelink] menucat")
     logger.info("[peelink] "+item.url)
+    logger.info("[peelink] item.title "+item.title)
     
     itemlist = []
        
     data = scrapertools.cache_page(item.url).decode('iso-8859-1').encode('utf-8')          
     
-    logger.info("[peelink] item.title "+item.title)
-    
     patronenlaces= '<p><a href="http://www.peelink2.org/genero/.*?>'+item.title+'</a></p>(.*?)</ol>'
-
     matchesenlaces = re.compile(patronenlaces,re.DOTALL).findall(data)
     #logger.info("[peelink] Busco con patron: "+patronenlaces)
     #scrapertools.printMatches(matchesenlaces)   
     #logger.info("[peelink] _________________________________________")
     
     for bloque_enlaces in matchesenlaces:
-    
         patron = '<a href="([^"]+)">(.*?)</a>'
         matches = re.compile(patron,re.DOTALL).findall(bloque_enlaces)
         #scrapertools.printMatches(matches)
@@ -210,7 +202,6 @@ def menucat(item):
             #logger.info("[peelink]  title: " + title + " url: " + url )         
             itemlist.append( Item(channel=__channel__, action="verpeli", title=title, fulltitle=title , url=url) )
                
-   
     #aqui no hay paginación
     return itemlist 		
     
