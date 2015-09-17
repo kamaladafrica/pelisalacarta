@@ -32,25 +32,27 @@ def isGeneric():
 # Main list manual
 
 def mainlist(item):
+    mifan="http://2.bp.blogspot.com/-Jvx5PrP4VrU/T3X1NgjWMbI/AAAAAAAABQ8/Y3HwryjatNw/s1600/Besar+en+Cine.jpg"
     logger.info("[peelink] mainlist")
     itemlist = []
-    itemlist.append( Item(channel=__channel__, action="menupelis", title="Peliculas",  url="http://www.peelink2.org" , thumbnail="http://primerasnoticias.com/wp-content/uploads/2012/07/game1.jpg", fanart="http://primerasnoticias.com/wp-content/uploads/2012/07/game1.jpg") )    
-    itemlist.append( Item(channel=__channel__, action="ultimas", title="Ultimas",  url="http://www.peelink2.org" , thumbnail="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDsZyDowjAAE23njJbp9hYZRe9viAuq-f1niz2nRC4jNwXkD6W", fanart="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDsZyDowjAAE23njJbp9hYZRe9viAuq-f1niz2nRC4jNwXkD6W") )
-    itemlist.append( Item(channel=__channel__, action="porcat", title="Por Categoria",  url="http://www.peelink2.org/p/indice-de-pelis.html" , thumbnail="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDsZyDowjAAE23njJbp9hYZRe9viAuq-f1niz2nRC4jNwXkD6W", fanart="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDsZyDowjAAE23njJbp9hYZRe9viAuq-f1niz2nRC4jNwXkD6W") )
-    itemlist.append( Item(channel=__channel__, action="search", title="Buscar...", url="http://www.peelink2.org/search/?s=", thumbnail="http://thumbs.dreamstime.com/x/buscar-pistas-13159747.jpg", fanart="http://thumbs.dreamstime.com/x/buscar-pistas-13159747.jpg"))
+    itemlist.append( Item(channel=__channel__, action="menupelis", title="Peliculas",  url="http://www.peelink2.org" , thumbnail="https://s-media-cache-ak0.pinimg.com/736x/cc/a9/d8/cca9d8bf49dbdd247ef4ac6a17d9e3a3.jpg", fanart=mifan) )    
+    itemlist.append( Item(channel=__channel__, action="ultimas", title="Ultimas",  url="http://www.peelink2.org" , thumbnail="https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTqpmjmYdxRh7X8WooXDf3UAjFfVYsGmx3XhoByPgWsUE7xmrpvpg", fanart=mifan) )
+    itemlist.append( Item(channel=__channel__, action="porcat", title="Por Categoria",  url="http://www.peelink2.org/p/indice-de-pelis.html" , thumbnail="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTn0G61W4sW3eIHHnJp5oA18Fv1BF8lDydMVoezRMnu74b0ccsJ", fanart=mifan) )
+    itemlist.append( Item(channel=__channel__, action="search", title="Buscar...", url="http://www.peelink2.org/search/?s=", thumbnail="http://farm1.staticflickr.com/99/285835148_dfe47e1a43.jpg", fanart=mifan))
     return itemlist
     
 def porcat(item):
+    mifan="http://2.bp.blogspot.com/-Jvx5PrP4VrU/T3X1NgjWMbI/AAAAAAAABQ8/Y3HwryjatNw/s1600/Besar+en+Cine.jpg"
     logger.info("[peelink] porcat")
     itemlist = []   
-    itemlist.append( Item(channel=__channel__, action="menucat", title="Accion",  url="http://www.peelink2.org/p/indice-de-pelis.html" , thumbnail="http://primerasnoticias.com/wp-content/uploads/2012/07/game1.jpg", fanart="http://primerasnoticias.com/wp-content/uploads/2012/07/game1.jpg") )
-    itemlist.append( Item(channel=__channel__, action="menucat", title="Anime",  url="http://www.peelink2.org/p/indice-de-pelis.html" , thumbnail="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDsZyDowjAAE23njJbp9hYZRe9viAuq-f1niz2nRC4jNwXkD6W", fanart="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDsZyDowjAAE23njJbp9hYZRe9viAuq-f1niz2nRC4jNwXkD6W") )
-    itemlist.append( Item(channel=__channel__, action="menucat", title="Ciencia Ficción",  url="http://www.peelink2.org/p/indice-de-pelis.html" , thumbnail="http://st-listas.20minutos.es/images/2014-11/389838/list_640px.jpg?1416583998", fanart="http://st-listas.20minutos.es/images/2014-11/389838/list_640px.jpg?1416583998") )
-    itemlist.append( Item(channel=__channel__, action="menucat", title="Comedia",  url="http://www.peelink2.org/p/indice-de-pelis.html" , thumbnail="https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcQlWwCJco1oc0Jlc5Jr6i1CcKoLWtZsEkFabDuuv4bFANk90LiE", fanart="https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcQlWwCJco1oc0Jlc5Jr6i1CcKoLWtZsEkFabDuuv4bFANk90LiE") )
-    itemlist.append( Item(channel=__channel__, action="menucat", title="Drama",  url="http://www.peelink2.org/p/indice-de-pelis.html" , thumbnail="http://upload.wikimedia.org/wikipedia/en/e/e2/Yes_stars_drama_logo.png", fanart="http://upload.wikimedia.org/wikipedia/en/e/e2/Yes_stars_drama_logo.png") )
-    itemlist.append( Item(channel=__channel__, action="menucat", title="Infantil",  url="http://www.peelink2.org/p/indice-de-pelis.html" , thumbnail="http://bebefeliz.com/files/2013/05/pocoyo.jpg", fanart="http://bebefeliz.com/files/2013/05/pocoyo.jpg") )
+    itemlist.append( Item(channel=__channel__, action="menucat", title="Accion",  url="http://www.peelink2.org/p/indice-de-pelis.html", thumbnail="http://www.gifmania.com/Gif-Animados-Peliculas-Cine/Imagenes-Cine-De-Accion/Lara-Croft-Tomb-Raider/Pistolas-Lara-Croft-68963.gif" , fanart=mifan) )
+    itemlist.append( Item(channel=__channel__, action="menucat", title="Anime",  url="http://www.peelink2.org/p/indice-de-pelis.html" , thumbnail="http://t0.gstatic.com/images?q=tbn:ANd9GcTxNX6STUTzixU50ccq-gumK_zpP9j6W0zcr-h_o-PNI43_Qdh7", fanart=mifan) )
+    itemlist.append( Item(channel=__channel__, action="menucat", title="Ciencia Ficción",  url="http://www.peelink2.org/p/indice-de-pelis.html" , thumbnail="http://i0.wp.com/alt1040.hipertextual.com/files/2013/11/La-Jete%C3%A9-cl%C3%A1sicos-de-la-ciencia-ficci%C3%B3n-800x449.jpg?resize=800%2C449", fanart=mifan) )
+    itemlist.append( Item(channel=__channel__, action="menucat", title="Comedia",  url="http://www.peelink2.org/p/indice-de-pelis.html" , thumbnail="https://platomundo.files.wordpress.com/2015/03/comedia1.jpg", fanart=mifan) )
+    itemlist.append( Item(channel=__channel__, action="menucat", title="Drama",  url="http://www.peelink2.org/p/indice-de-pelis.html" , thumbnail="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3QvHGkIo7LIMmJV4gK04-G5Yi6aQZIBpuT2p17PY5O---WkKw", fanart=mifan) )
+    itemlist.append( Item(channel=__channel__, action="menucat", title="Infantil",  url="http://www.peelink2.org/p/indice-de-pelis.html" , thumbnail="https://elblogdefedericobuyolo.files.wordpress.com/2015/01/pobreza-infantil.jpg", fanart=mifan) )
     itemlist.append( Item(channel=__channel__, action="menucat", title="Terror",  url="http://www.peelink2.org/p/indice-de-pelis.html" , thumbnail="http://st-listas.20minutos.es/images/2013-05/362124/4039926_640px.jpg?1374169785", fanart="http://st-listas.20minutos.es/images/2013-05/362124/4039926_640px.jpg?1374169785") )            
-    itemlist.append( Item(channel=__channel__, action="menupelis", title="Anime-100x100",  url="http://www.peelink2.org/p/anime-100x100.html", thumbnail="http://b.vimeocdn.com/ts/389/464/389464338_640.jpg", fanart="http://b.vimeocdn.com/ts/389/464/389464338_640.jpg") )            
+    itemlist.append( Item(channel=__channel__, action="menupelis", title="Anime-100x100",  url="http://www.peelink2.org/p/anime-100x100.html", thumbnail="https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRUPEJkgoAA32xbvLIhlo7jA-HX84tIjx_8BpXybpcBJKKJPNptlQ", fanart=mifan) )            
 
     return itemlist
 
@@ -58,6 +60,7 @@ def menupelis(item):
     logger.info("[peelink] menupelis")
     logger.info("[peelink] :"+item.url)
     
+    mifan="https://s-media-cache-ak0.pinimg.com/736x/cc/a9/d8/cca9d8bf49dbdd247ef4ac6a17d9e3a3.jpg"
     itemlist = []
          
     data = scrapertools.cache_page(item.url).decode('iso-8859-1').encode('utf-8')              
@@ -91,7 +94,7 @@ def menupelis(item):
                     title=title.replace("||;","")
                     title=title.replace("-"," ")
                     title=title.replace("+"," ")
-                    itemlist.append( Item(channel=__channel__, action="verpeli", title=title.capitalize(), fulltitle=title , url=url, thumbnail=thumbnail) )
+                    itemlist.append( Item(channel=__channel__, action="verpeli", fanart=mifan, title=title, fulltitle=title , url=url, thumbnail=thumbnail) )
                     
             else:
                patron='(.*?).jpg' 
@@ -109,7 +112,7 @@ def menupelis(item):
                     title=title.replace("||;","")
                     title=title.replace("+"," ")
                     title=title.replace("-"," ")
-                    itemlist.append( Item(channel=__channel__, action="verpeli", title=title.capitalize(), fulltitle=title , url=url, thumbnail=thumbnail) )
+                    itemlist.append( Item(channel=__channel__, action="verpeli", fanart=mifan, title=title, fulltitle=title , url=url, thumbnail=thumbnail) )
   
   ##########################
   # puta_paginacion
@@ -155,7 +158,7 @@ def menupelis(item):
                dato2 = scrapertools.get_match(url,'pagina-(\d+)-estreno')                              
                
                if dato_busq == dato2:                 
-                  itemlist.append( Item(channel=__channel__, title="Pagina [COLOR red][ "+dato2+" ][/COLOR]", url=url, action="menupelis",  folder=True) )                 
+                  itemlist.append( Item(channel=__channel__, title="Pagina [COLOR red][ "+dato2+" ]  [B]»[/COLOR][/B]", url=url, action="menupelis",  folder=True, thumbnail=item.thumbnail, fanart=item.fanart) )                 
                   break               
         
        except: pass
@@ -177,6 +180,7 @@ def ultimas(item):
         
     data = scrapertools.cache_page(item.url).decode('iso-8859-1').encode('utf-8')          
     
+    mifan="http://www.fondos7.net/thumbs/3615_2.jpg"
     patronbloque = '<div class=.*?<p>(.*?)</a></p>'         #patron para principal_con_todo
     matchesbloque = re.compile(patronbloque,re.DOTALL).findall(data)    
     #scrapertools.printMatches(matchesbloque)
@@ -193,7 +197,7 @@ def ultimas(item):
             thumbnail=urlparse.urljoin(item.thumbnail,scrapedthumbnail)   
             #logger.info("THUMBNAIL : -------------------- "+thumbnail)
             
-            itemlist.append( Item(channel=__channel__, action="verpeli", title=title, fulltitle=title , url=url, thumbnail=thumbnail) )
+            itemlist.append( Item(channel=__channel__, action="verpeli", title=title, fulltitle=title , url=url, thumbnail=thumbnail, fanart=mifan) )
     
     return itemlist 		
 
@@ -213,21 +217,21 @@ def menucat(item):
     
     patronenlaces= '<p><a href="http://www.peelink2.org/genero/.*?>'+item.title.split(' ')[0]+'.*?</a></p>(.*?)</ol>'
     matchesenlaces = re.compile(patronenlaces,re.DOTALL).findall(data)
-    logger.info("[peelink] Busco con patron: "+patronenlaces)
-    logger.info(item.title.split(' ')[0])
+    #logger.info("[peelink] Busco con patron: "+patronenlaces)
+    #logger.info(item.title.split(' ')[0])
     scrapertools.printMatches(matchesenlaces)   
-    logger.info("[peelink] _________________________________________")
+    #logger.info("[peelink] _________________________________________")
     
     for bloque_enlaces in matchesenlaces:
         patron = '<a href="([^"]+)">(.*?)</a>'
         matches = re.compile(patron,re.DOTALL).findall(bloque_enlaces)
-        scrapertools.printMatches(matches)
+        #scrapertools.printMatches(matches)
         for scrapedurl,scrapedtitle in matches:
             title = scrapedtitle.replace("Ver","")              
             title = title.replace("ver","")              
             url = urlparse.urljoin(item.url,scrapedurl)   
             #logger.info("[peelink]  title: " + title + " url: " + url )         
-            itemlist.append( Item(channel=__channel__, action="verpeli", title=title, fulltitle=title , url=url) )
+            itemlist.append( Item(channel=__channel__, action="verpeli", title=title, fulltitle=title , url=url, fanart=item.fanart) )
                
     #aqui no hay paginación
     return itemlist 		
@@ -304,7 +308,7 @@ def search(item, texto):
       title=title.replace("-"," ")
       url = urlparse.urljoin(item.url,scrapedurl)      
       #logger.info("[peelink] "+url)
-      itemlist.append( Item(channel=__channel__, action="verpeli", title=title, fulltitle=title , url=url ) )
+      itemlist.append( Item(channel=__channel__, action="verpeli", title=title, fulltitle=title , url=url, fanart=item.fanart, thumbnail=item.thumbnail ) )
     
    return itemlist  
    
