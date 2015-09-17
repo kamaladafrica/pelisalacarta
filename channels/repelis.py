@@ -32,19 +32,21 @@ def mainlist(item):
     logger.info("[repelis] mainlist")
     itemlist = []
    
-    item.url = "http://www.repelis.org/page/1"
+    item.url = "http://www.repelis.tv/page/1"
     
-    itemlist.append( Item(channel=__channel__, action="menupelis", title="Peliculas",  url="http://www.repelis.org/page/1" , thumbnail="http://t0.gstatic.com/images?q=tbn:ANd9GcSJ4ByP8F0kxW4rjaP14k0E1BXNdUOvRDf-Rc-qNGwJ2-qMO7a0", fanart="http://t0.gstatic.com/images?q=tbn:ANd9GcSJ4ByP8F0kxW4rjaP14k0E1BXNdUOvRDf-Rc-qNGwJ2-qMO7a0") )
-    itemlist.append( Item(channel=__channel__, action="menuestre", title="Estrenos",  url="http://www.repelis.org/archivos/estrenos/page/1" , thumbnail="http://t0.gstatic.com/images?q=tbn:ANd9GcSEPlR5CWoa6nSwOvCrnTGbLJSMXmpcF1EzeQaHeFN5D83CrJWmhg", fanart="http://t0.gstatic.com/images?q=tbn:ANd9GcSEPlR5CWoa6nSwOvCrnTGbLJSMXmpcF1EzeQaHeFN5D83CrJWmhg") )  
-    itemlist.append( Item(channel=__channel__, action="menudesta", title="Destacadas",  url="http://www.repelis.org/page/1" , thumbnail="https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTXL1q8_tKHnM36lA8VgsqoJ5Wy_D4DC0IdhR2Pwk0OtBVlEXkr", fanart="https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTXL1q8_tKHnM36lA8VgsqoJ5Wy_D4DC0IdhR2Pwk0OtBVlEXkr") )  
-    itemlist.append( Item(channel=__channel__, action="todaspelis", title="Proximos estrenos", url="http://www.repelis.org/archivos/proximos-estrenos/page/1", thumbnail="http://www.multicinesplazajesusmaria.com/images/backs/titulo-proximos-estrenos.jpg", fanart="http://www.multicinesplazajesusmaria.com/images/backs/titulo-proximos-estrenos.jpg"))
-    itemlist.append( Item(channel=__channel__, action="todaspelis", title="Todas las Peliculas",  url="http://www.repelis.org/page/1" , thumbnail="http://images.akamai.steamusercontent.com/ugc/713033622832846513/B34FDD11E93838A3BE172858A56758E23AA43A34/", fanart="http://images.akamai.steamusercontent.com/ugc/713033622832846513/B34FDD11E93838A3BE172858A56758E23AA43A34/") )
-    if config.get_setting("enableadultmode") == "true": itemlist.append( Item(channel=__channel__, action="todaspelis", title="Eroticas +18",  url="http://www.repelis.org/genero/eroticas/page/1" , thumbnail="http://www.topkamisetas.com/catalogo/images/TB0005.gif", fanart="http://www.topkamisetas.com/catalogo/images/TB0005.gif") )
+    mifan="http://www.psicocine.com/wp-content/uploads/2013/08/Bad_Robot_Logo.jpg"    
+    
+    itemlist.append( Item(channel=__channel__, action="menupelis", title="Peliculas",  url="http://www.repelis.tv/page/1" , thumbnail="http://www.gaceta.es/sites/default/files/styles/668x300/public/metro_goldwyn_mayer_1926-web.png?itok=-lRSR9ZC", fanart=mifan) )
+    itemlist.append( Item(channel=__channel__, action="menuestre", title="Estrenos",  url="http://www.repelis.tv/archivos/estrenos/page/1" , thumbnail="http://t0.gstatic.com/images?q=tbn:ANd9GcS4g68rmeLQFuX7iCrPwd00FI_OlINZXCYXEFrJHTZ0VSHefIIbaw", fanart=mifan) )  
+    itemlist.append( Item(channel=__channel__, action="menudesta", title="Destacadas",  url="http://www.repelis.tv/page/1" , thumbnail="http://img.irtve.es/v/1074982/", fanart=mifan) )  
+    itemlist.append( Item(channel=__channel__, action="todaspelis", title="Proximos estrenos", url="http://www.repelis.tv/archivos/proximos-estrenos/page/1", thumbnail="https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTpsRC-GTYzCqhor2gIDfAB61XeymwgXWSVBHoRAKs2c5HAn29f&reload=on", fanart=mifan))
+    itemlist.append( Item(channel=__channel__, action="todaspelis", title="Todas las Peliculas",  url="http://www.repelis.tv/page/1" , thumbnail="https://freaksociety.files.wordpress.com/2012/02/logos-cine.jpg", fanart=mifan) )
+    if config.get_setting("enableadultmode") == "true": itemlist.append( Item(channel=__channel__, action="todaspelis", title="Eroticas +18",  url="http://www.repelis.tv/genero/eroticas/page/1" , thumbnail="http://www.topkamisetas.com/catalogo/images/TB0005.gif", fanart="http://www.topkamisetas.com/catalogo/images/TB0005.gif") )
     #Quito la busqueda por año si no esta enabled el adultmode, porque no hay manera de filtrar los enlaces eroticos
-    if config.get_setting("enableadultmode") == "true": itemlist.append( Item(channel=__channel__, action="poranyo", title="Por Año", url="http://www.repelis.org/fecha/2015/page/1", thumbnail="https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRBLbjjOzoOrPLvEl-0ryt0BD_Hb4zKNunwS-dG1HBZc-_GWp2M3w", fanart="https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRBLbjjOzoOrPLvEl-0ryt0BD_Hb4zKNunwS-dG1HBZc-_GWp2M3w"))
+    if config.get_setting("enableadultmode") == "true": itemlist.append( Item(channel=__channel__, action="poranyo", title="Por Año", url="http://www.repelis.tv/fecha/2015/page/1", thumbnail="http://t3.gstatic.com/images?q=tbn:ANd9GcSkxiYXdBcI0cvBLsb_nNlz_dWXHRl2Q-ER9dPnP1gNUudhrqlR", fanart=mifan))
     #Por categoria si que filtra la categoria de eroticos
-    itemlist.append( Item(channel=__channel__, action="porcateg", title="Por Categoria", url="http://www.repelis.org/genero/accion/page/1", thumbnail="http://www.logopro.it/blog/wp-content/uploads/2013/07/categoria-sigaretta-elettronica.png", fanart="http://www.logopro.it/blog/wp-content/uploads/2013/07/categoria-sigaretta-elettronica.png"))
-    itemlist.append( Item(channel=__channel__, action="search", title="Buscar...", url="http://www.repelis.org/search/?s=", thumbnail="http://thumbs.dreamstime.com/x/buscar-pistas-13159747.jpg", fanart="http://thumbs.dreamstime.com/x/buscar-pistas-13159747.jpg"))
+    itemlist.append( Item(channel=__channel__, action="porcateg", title="Por Categoria", url="http://www.repelis.tv/genero/accion/page/1", thumbnail="http://www.logopro.it/blog/wp-content/uploads/2013/07/categoria-sigaretta-elettronica.png", fanart=mifan))
+    itemlist.append( Item(channel=__channel__, action="search", title="Buscar...", url="http://www.repelis.tv/search/?s=", thumbnail="http://thumbs.dreamstime.com/x/buscar-pistas-13159747.jpg", fanart=mifan))
 
     return itemlist
  		
@@ -62,9 +64,9 @@ def menupelis(item):
     patronenlaces= '<h3>Películas Recién Agregadas</h3>.*?>(.*?)</section>'
     matchesenlaces = re.compile(patronenlaces,re.DOTALL).findall(data)
     
-    #logger.info("begin ----------")
-    #scrapertools.printMatches(matchesenlaces)     
-    #logger.info("end ----------")
+    logger.info("begin ----------")
+    scrapertools.printMatches(matchesenlaces)     
+    logger.info("end ----------")
     
     for bloque_enlaces in matchesenlaces:
         
@@ -72,10 +74,10 @@ def menupelis(item):
         patron += '<a href="(.*?)".*?title="(.*?)".*?'
         patron +='<img src="(.*?)"' 
         matches = re.compile(patron,re.DOTALL).findall(bloque_enlaces)
-        #scrapertools.printMatches(matches)
+        scrapertools.printMatches(matches)
         
         for scrapedurl,scrapedtitle,scrapedthumbnail in matches:
-            #logger.info("He encontrado el segundo bloque")
+            logger.info("He encontrado el segundo bloque")
             title = scrapertools.remove_show_from_title(scrapedtitle,"Ver Película")  
             title = title.replace("Online","");
             url = urlparse.urljoin(item.url,scrapedurl)
@@ -83,7 +85,7 @@ def menupelis(item):
             itemlist.append( Item(channel=__channel__, action="verpeli", title=title, fulltitle=title , url=url , thumbnail=thumbnail, fanart=thumbnail) )
     
     ## Paginación
-    #<span class="current">2</span><a href="http://www.repelis.org/page/3"
+    #<span class="current">2</span><a href="http://www.repelis.tv/page/3"
     
     # Si falla no muestra ">> Página siguiente"
     try:
@@ -116,7 +118,7 @@ def todaspelis(item):
         patron +='<img src="(.*?)"' 
         
         matches = re.compile(patron,re.DOTALL).findall(bloque_enlaces)
-        #scrapertools.printMatches(matches)
+        scrapertools.printMatches(matches)
         for scrapedurl,scrapedtitle,scrapedthumbnail in matches:
             title = scrapertools.remove_show_from_title(scrapedtitle,"Ver Película")  
             title = title.replace("Online","");
@@ -125,7 +127,7 @@ def todaspelis(item):
             itemlist.append( Item(channel=__channel__, action="verpeli", title=title, fulltitle=title , url=url , thumbnail=thumbnail, fanart=thumbnail) )
     
     ## Paginación
-    #<span class="current">2</span><a href="http://www.repelis.org/page/3"
+    #<span class="current">2</span><a href="http://www.repelis.tv/page/3"
     
     # Si falla no muestra ">> Página siguiente"
     try:
@@ -157,7 +159,7 @@ def menudesta(item):
         patron +='<img src="(.*?)"' 
         
         matches = re.compile(patron,re.DOTALL).findall(bloque_enlaces)
-        #scrapertools.printMatches(matches)
+        scrapertools.printMatches(matches)
         for scrapedurl,scrapedtitle,scrapedthumbnail in matches:
             title = scrapertools.remove_show_from_title(scrapedtitle,"Ver Película")  
             title = title.replace("Online","");
@@ -188,7 +190,7 @@ def menuestre(item):
         patron +='<img src="(.*?)"' 
         
         matches = re.compile(patron,re.DOTALL).findall(bloque_enlaces)
-        #scrapertools.printMatches(matches)
+        scrapertools.printMatches(matches)
         for scrapedurl,scrapedtitle,scrapedthumbnail in matches:
             title = scrapertools.remove_show_from_title(scrapedtitle,"Ver Película")  
             title = title.replace("Online","");
@@ -197,7 +199,7 @@ def menuestre(item):
             itemlist.append( Item(channel=__channel__, action="verpeli", title=title, fulltitle=title , url=url , thumbnail=thumbnail, fanart=thumbnail) )
     
     ## Paginación
-    #<span class="current">2</span><a href="http://www.repelis.org/page/3"
+    #<span class="current">2</span><a href="http://www.repelis.tv/page/3"
     
     # Si falla no muestra ">> Página siguiente"
     try:
@@ -257,7 +259,7 @@ def verpeli(item):
    #datos de los enlaces
    patron = '<a rel="nofollow".*?</a>.*?</td>.*?<td>(.*?)</td>.*?<td>(.*?)</td>.*?src="http://www.google.com/s2/favicons\?domain=(.*?)"'
    matches = re.compile(patron,re.DOTALL).findall(data)    
-   #scrapertools.printMatches(matches)
+   scrapertools.printMatches(matches)
          
    for scrapedlang, scrapedquality, scrapedurl in matches:
       url = urlparse.urljoin(item.url,scrapedurl)
@@ -284,15 +286,17 @@ def play(item):
 def search(item, texto):
 
    logger.info("[repelis] "+item.url)
-   item.url = 'http://www.repelis.org/search/?s=%s' % (texto)
+   item.url = 'http://www.repelis.tv/search/?s=%s' % (texto)
    logger.info("[repelis] "+item.url)
    
    data = scrapertools.cache_page(item.url).decode('iso-8859-1').encode('utf-8')
    
+   logger.info("repelis data: "+data)   
+   
    '''
    <div class="col-xs-2">
    <div class="row">
-   <a href="http://www.repelis.org/8973/pelicula/contracted-phase-ii.html"  title="Ver PelÃ­cula Contracted: Phase II Online">
+   <a href="http://www.repelis.tv/8973/pelicula/contracted-phase-ii.html"  title="Ver PelÃ­cula Contracted: Phase II Online">
    <img src="http://1.bp.blogspot.com/-YWmw6voBipE/VcB91p-EcnI/AAAAAAAAQZs/EhUzWlInmA8/s175/contracted-phase-2.jpg" border="0">
    '''
    
@@ -301,8 +305,12 @@ def search(item, texto):
    patron+= '<a href="(.*?)"  title="(.*?)">.*?'
    patron+= '<img src="(.*?)"'
    
+   logger.info("repelis:"+ patron )
+   
    matches = re.compile(patron,re.DOTALL).findall(data)    
-   #scrapertools.printMatches(matches)
+   
+   scrapertools.printMatches(matches)
+   print "repelis ..................................."
    itemlist = []
    
    for scrapedurl,scrapedtitle,scrapedthumbnail in matches:      
@@ -310,7 +318,7 @@ def search(item, texto):
       title = title.replace("Online","")
       url = urlparse.urljoin(item.url,scrapedurl)
       thumbnail = urlparse.urljoin(item.url,scrapedthumbnail)
-      #logger.info("[repelis] "+url)
+      logger.info("[repelis] "+url)
       itemlist.append( Item(channel=__channel__, action="verpeli", title=title, fulltitle=title , url=url , thumbnail=thumbnail, fanart=thumbnail) )
     
    return itemlist  
@@ -328,12 +336,12 @@ def poranyo(item):
        
     patron = '<option value="([^"]+)">(.*?)</option>'    
     matches = re.compile(patron,re.DOTALL).findall(data)    
-    #scrapertools.printMatches(matches)
+    scrapertools.printMatches(matches)
     for scrapedurl,scrapedtitle in matches:
        title = scrapertools.remove_show_from_title(scrapedtitle,"Ver Película")  
        title = title.replace("Online","")
        url = urlparse.urljoin(item.url,scrapedurl)       
-       itemlist.append( Item(channel=__channel__, action="todaspelis", title=title, fulltitle=title , url=url ) )
+       itemlist.append( Item(channel=__channel__, action="todaspelis", title=title, fulltitle=title , url=url, fanart=item.fanart ) )
             
     return itemlist
    
@@ -348,14 +356,14 @@ def porcateg(item):
     data = scrapertools.cache_page(item.url).decode('iso-8859-1').encode('utf-8')   
     patron = '<li class="cat-item cat-item-3">.*?<a href="([^"]+)" title="([^"]+)">'
     matches = re.compile(patron,re.DOTALL).findall(data)    
-    #scrapertools.printMatches(matches)
+    scrapertools.printMatches(matches)
     itemlist = []
    
     for scrapedurl,scrapedtitle in matches:      
         title = scrapertools.remove_show_from_title(scrapedtitle,"Ver Película")  
         title = title.replace("Online","")
         url = urlparse.urljoin(item.url,scrapedurl)        
-        #logger.info("[repelis] "+url)
+        logger.info("[repelis] "+url)
         #si no esta permitidas categoria adultos, la filtramos
         erotica = ""
         if config.get_setting("enableadultmode") == "false":
@@ -363,8 +371,8 @@ def porcateg(item):
             try:
                 erotica = scrapertools.get_match(scrapedurl,patron)
             except:            
-               itemlist.append( Item(channel=__channel__, action="todaspelis", title=title, fulltitle=title , url=url ) )
+               itemlist.append( Item(channel=__channel__, action="todaspelis", fanart=item.fanart,title=title, fulltitle=title , url=url ) )
         else: 
-            itemlist.append( Item(channel=__channel__, action="todaspelis", title=title, fulltitle=title , url=url ) )
+            itemlist.append( Item(channel=__channel__, action="todaspelis", title=title, fulltitle=title , url=url, fanart=item.fanart ) )
     
     return itemlist  
