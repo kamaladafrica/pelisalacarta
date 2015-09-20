@@ -75,7 +75,7 @@ try:
                 try:
                     itemlist = []
 
-                    pathchannels = os.path.join(config.get_runtime_path() ,'pelisalacarta', 'channels' ,serie[2].strip() + '.py')
+                    pathchannels = os.path.join(config.get_runtime_path() , 'channels', serie[2].strip() + '.py')
                     logger.info("pelisalacarta.library_service Cargando canal  " + pathchannels + " " + serie[2].strip())
                     obj = imp.load_source(serie[2].strip(), pathchannels )
                     itemlist = obj.episodios(item)
