@@ -175,13 +175,12 @@
     <setting id="saved_searches_limit" type="enum" values="10|20|30|40" label="30024" default="0"/>
   </category>
   
-  <category label="Server Filters">
-    <!--<setting label="Advance Setup (for 'AND' use space, for 'OR' use comma)" type="lsep"/>
-    <setting label="Accept File with:" type="text" id="movie_key_allowed" default=""/>
-    <setting label="Block File with:" type="text" id="movie_key_denied" default=""/>
-    <setting label="Easy Setup Keywords after the query" type="lsep"/>-->
-    <setting label="streamcloud" type="labelenum" id="server1" values="Accept File|Block File|Filter Off" default="Filter Off"/>
-    <setting label="powvideo" type="labelenum" id="server2" values="Accept File|Block File|Filter Off" default="Filter Off"/>
+  <category label="Filters">
+    <setting type="sep" />
+    <setting label="Separate server names by comma" type="lsep"/>
+    <setting id="filter_servers" type="bool" label="Filter by Servers?" default="false"/>
+    <setting id="whitelist" type="text" label="White List:" enable="eq(-1,true)" default=""/>
+    <setting id="blacklist" type="text" label="Black List:" enable="eq(-2,true)" default=""/>
   </category>
 
 </settings>
