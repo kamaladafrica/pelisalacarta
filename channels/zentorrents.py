@@ -437,7 +437,7 @@ def fanart(item):
                         patron = '<Banners><Banner>.*?<VignettePath>(.*?)</VignettePath>'
                         matches = re.compile(patron,re.DOTALL).findall(data)
                         if len(matches)==0:
-                            iextra=item.thumbnail
+                            extra=item.thumbnail
                             show= item.thumbnail
                             itemlist.append( Item(channel=__channel__, title=item.title, url=item.url, action="findvideos", thumbnail=item.thumbnail, fanart=item.thumbnail ,category = category, extra=extra, show=show, folder=True) )
                     for fan in matches:
@@ -696,11 +696,11 @@ def findvideos(item):
     
     # Descarga la página
     data = scrapertools.cache_page(item.url)
-    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|</p>|<p>|&amp;|amp;","",data)
+    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|&amp;|amp;","",data)
     
     patron = '<h1>(.*?)</h1>.*?'
     patron += 'src="([^"]+)".*?'
-    patron += '<a href.*?<a href="([^"]+)"'
+    patron += '</a></p><p><a href="([^"]+)"'
     
     
     matches = re.compile(patron,re.DOTALL).findall(data)
@@ -815,41 +815,40 @@ def info(item):
     
     url=item.url
     data = scrapertools.cachePage(url)
-    data = re.sub(r"\n|\r|\t|\s{2}|\d+x\d+|&nbsp;","",data)
-    if  "web" in item.title or "1080" in item.title or "bluray" in item.title or  "HDRip" in item.title:
-    
-        title= scrapertools.get_match(data,'<title>([^"]+) \[')
-    else:
-        title= scrapertools.get_match(data,'<title>([^"]+) -')
-        title = title.replace(title,bbcode_kodi2html("[COLOR aqua][B]"+title+"[/B][/COLOR]"))
-        plot = scrapertools.get_match(data,'onload="imgLoaded.*?</div><p>(.*?)<p class="descauto">')
-        plot = plot.replace(plot,bbcode_kodi2html("[COLOR orange]"+plot+"[/COLOR]"))
-        plot = plot.replace("&aacute;","á")
-        plot = plot.replace("&iacute;","í")
-        plot = plot.replace("&eacute;","é")
-        plot = plot.replace("&oacute;","ó")
-        plot = plot.replace("&uacute;","ú")
-        plot = plot.replace("&ntilde;","ñ")
-        plot = plot.replace("&Aacute;","Á")
-        plot = plot.replace("&Iacute;","Í")
-        plot = plot.replace("&Eacute;","É")
-        plot = plot.replace("&Oacute;","Ó")
-        plot = plot.replace("&Uacute;","Ú")
-        plot = plot.replace("&Ntilde;","Ñ")
-        plot = plot.replace("<p>","")
-        plot = plot.replace("</p>","")
-        plot = plot.replace("&amp;quot;","")
-        plot = plot.replace("</strong>","")
-        plot = plot.replace("<strong>","")
-        if "series" in item.url:
-            foto= item.category
-            photo= item.extra
-        else:
+    data = re.sub(r"\n|\r|\t|\s{2}|\d+x\d+|&nbsp;|<a title.*?</a>","",data)
+    title= scrapertools.get_match(data,'<title>([^"]+) -')
+    title = title.replace(title,bbcode_kodi2html("[COLOR aqua][B]"+title+"[/B][/COLOR]"))
+    plot = scrapertools.get_match(data,'onload="imgLoaded.*?</div><p>(.*?)<p class="descauto">')
+    plot = plot.replace(plot,bbcode_kodi2html("[COLOR orange]"+plot+"[/COLOR]"))
+    plot = plot.replace("&aacute;","á")
+    plot = plot.replace("&iacute;","í")
+    plot = plot.replace("&eacute;","é")
+    plot = plot.replace("&oacute;","ó")
+    plot = plot.replace("&uacute;","ú")
+    plot = plot.replace("&ntilde;","ñ")
+    plot = plot.replace("&Aacute;","Á")
+    plot = plot.replace("&Iacute;","Í")
+    plot = plot.replace("&Eacute;","É")
+    plot = plot.replace("&Oacute;","Ó")
+    plot = plot.replace("&Uacute;","Ú")
+    plot = plot.replace("&Ntilde;","Ñ")
+    plot = plot.replace("<p>","")
+    plot = plot.replace("</p>","")
+    plot = plot.replace("&amp;quot;","")
+    plot = plot.replace("</strong>","")
+    plot = plot.replace("<strong>","")
+    plot = plot.replace("<p class=\"ver_online\">","")
         
-             foto = item.show
-             photo= item.extra
-        ventana2 = TextBox1(title=title, plot=plot, thumbnail=photo, fanart=foto)
-        ventana2.doModal()
+    
+    if "series" in item.url:
+        foto= item.category
+        photo= item.extra
+    else:
+        
+        foto = item.show
+        photo= item.extra
+    ventana2 = TextBox1(title=title, plot=plot, thumbnail=photo, fanart=foto)
+    ventana2.doModal()
 
 class TextBox1( xbmcgui.WindowDialog ):
         """ Create a skinned textbox window """
