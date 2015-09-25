@@ -24,6 +24,13 @@
 # Service for updating new episodes on library series
 #------------------------------------------------------------
 
+# -- Update servertools and servers from repository pelisalacarta ------
+try:
+    from core import update_servers
+except:
+    logger.info("pelisalacarta.library_service Error en update_servers")
+# ----------------------------------------------------------------------
+
 import urlparse,urllib2,urllib,re
 import os
 import sys
@@ -68,7 +75,7 @@ try:
                 try:
                     itemlist = []
 
-                    pathchannels = os.path.join(config.get_runtime_path() ,'pelisalacarta', 'channels' ,serie[2].strip() + '.py')
+                    pathchannels = os.path.join(config.get_runtime_path() , 'channels', serie[2].strip() + '.py')
                     logger.info("pelisalacarta.library_service Cargando canal  " + pathchannels + " " + serie[2].strip())
                     obj = imp.load_source(serie[2].strip(), pathchannels )
                     itemlist = obj.episodios(item)

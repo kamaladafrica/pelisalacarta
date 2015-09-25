@@ -174,5 +174,13 @@
     <setting id="librarypath" type="text" label="30067" default=""/>
     <setting id="saved_searches_limit" type="enum" values="10|20|30|40" label="30024" default="0"/>
   </category>
+  
+  <category label="Filters">
+    <setting type="sep" />
+    <setting label="Separate server names by comma" type="lsep"/>
+    <setting id="filter_servers" type="bool" label="Filter by Servers?" default="false"/>
+    <setting id="whitelist" type="text" label="White List:" enable="eq(-1,true)" default=""/>
+    <setting id="blacklist" type="text" label="Black List:" enable="eq(-2,true)" default=""/>
+  </category>
 
 </settings>
