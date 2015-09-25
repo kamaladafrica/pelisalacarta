@@ -218,6 +218,7 @@ def channels_list():
     itemlist.append( Item( title="Bajui"                   , channel="bajui"              , language="ES" , category="F,S,D,VOS" , type="generic"    ))
     if config.get_setting("enableadultmode") == "true": itemlist.append( Item( title="Beeg"               , channel="beeg"            , language="ES" , category="X,F" , type="generic"  ))
     itemlist.append( Item( title="Bricocine"               , channel="bricocine"          , language=""   , category="T,F,S" , type="generic" , thumbnail="http://s6.postimg.org/9u8m1ep8x/bricocine.jpg"    ))
+    itemlist.append( Item( title="Bityouth"       , channel="bityouth"             , language="ES"      , category="F,S" , type="generic" , thumbnail="http://s6.postimg.org/6ash180up/bityoulogo.png"    ))
     itemlist.append( Item( title="Cineblog01 (IT)"         , channel="cineblog01"         , language="IT" , category="F,S,A,VOS"   , type="generic"  ))
     itemlist.append( Item( title="Cinehanwer"              , channel="cinehanwer"         , language="ES" , category="F"   , type="generic"  ))
     itemlist.append( Item( title="Cinemaxx (RO)"           , channel="cinemax_rs"         , language="RU" , category="F"   , type="generic"  ))
