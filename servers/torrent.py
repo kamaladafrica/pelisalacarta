@@ -13,10 +13,7 @@ def get_video_url( page_url , premium = False , user="" , password="" , video_pa
 
     name = page_url[page_url.rfind("/") + 1:page_url.rfind(".")]
 
-    if page_url.startswith('magnet:'):
-        link = page_url
-    else:
-        link = from_torrent_url(page_url)
+    link = page_url
 
     media_url_xbmctorrent = "plugin://plugin.video.xbmctorrent/play/%s" % urllib.quote_plus(link)
     media_url_pulsar = "plugin://plugin.video.pulsar/play?uri=%s" % urllib.quote_plus(link)

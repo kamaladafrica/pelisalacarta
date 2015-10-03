@@ -7,7 +7,7 @@
     <active>true</active>
     <include_in_global_search>false</include_in_global_search>
     <version>1</version>
-    <adult>false</adult>
+    <adult>false</version>
     <date>28/08/2015</date>
     <changes>Arregla el fallo por canales inválidos. Muestra progreso e incluye el nombre del canal en el resultado (gracias a Raúl)</changes>
 </channel>
