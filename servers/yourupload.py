@@ -26,7 +26,10 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
     headers.append([ "X-Requested-With" , "ShockwaveFlash/19.0.0.185"])
 
     media_url = scrapertools.get_header_from_response(url,headers=headers,header_to_get="location")
-    media_url = media_url + "|" + urllib.urlencode({'User-Agent' : USER_AGENT})
+    logger.info("pelisalacarta.servers.mp4upload media_url="+media_url)
+    media_url = media_url.replace("?null&start=0","")
+    logger.info("pelisalacarta.servers.mp4upload media_url="+media_url)
+    #media_url = media_url + "|" + urllib.urlencode({'User-Agent' : USER_AGENT})
 
     video_urls = []
     video_urls.append([scrapertools.get_filename_from_url(url)[-4:]+" [yourupload]",media_url])
