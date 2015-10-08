@@ -6,10 +6,10 @@
     <update_url></update_url>
     <active>true</active>
     <include_in_global_search>true</include_in_global_search>
-    <version>1</version>
-    <adult>false</adult>
-    <date>28/08/2015</date>
-    <changes>First pelisalacarta 4 release</changes>
+    <version>2</version>
+    <adult>false</version>
+    <date>07/10/2015</date>
+    <changes>Mùltiples cambios</changes>
     <categories>
         <category>torrent</category>
         <category>movie</category>

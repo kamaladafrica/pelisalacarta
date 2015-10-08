@@ -21,6 +21,12 @@ __title__ = "bricocine"
 __language__ = "ES"
 
 DEBUG = config.get_setting("debug")
+## Cargar los datos con la librería 'requests'
+def get_page( url ):
+    
+    from lib import requests
+    response = requests.get( url )
+    return response.content
 
 def isGeneric():
     return True
@@ -58,7 +64,7 @@ def peliculas(item):
     itemlist = []
 
     # Descarga la página
-    data = scrapertools.cache_page(item.url)
+    data = get_page( item.url )
     '''
    <div class="post-10888 post type-post status-publish format-standard hentry category-the-leftovers tag-ciencia-ficcion tag-drama tag-fantasia tag-misterio"><div class="entry"> <a href="http://www.bricocine.com/10888/leftovers-temporada-1/"> <img src="http://www.bricocine.com/wp-content/plugins/wp_movies/files/thumb_185_the_leftovers_.jpg" alt="The Leftovers " /> </a></div><div class="entry-meta"><div class="clearfix"><div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating" class="rating"  title="Puntos IMDB: 7.4"><div class="rating-stars imdb-rating"><div class="stars" style="width:74%"></div></div><div itemprop="ratingValue" class="rating-number"> 7.4</div></div><div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating" class="rating"  title="Puntos Bricocine: 6.2"><div class="rating-stars brico-rating"><div class="stars" style="width:62%"></div></div><div itemprop="ratingValue" class="rating-number"> 6.2</div></div> <span class="vcard author none"> Publicado por <a class="fn" href="" rel="author" target="_blank"></a> </span> <span class="date updated none">2014-10-07T23:36:17+00:00</span></div></div><h2 class="title2 entry-title"> <a href="http://www.bricocine.com/10888/leftovers-temporada-1/"> The Leftovers  &#8211; Temporada 1 </a></h2></div> </article> <article class="hentry item-entry"><div class="post-10088 post type-post status-publish format-standard hentry category-the-last-ship tag-accion tag-ciencia-ficcion tag-drama tag-the tag-thriller"><div class="entry"> <a href="http://www.bricocine.com/10088/last-ship-temporada-1/"> <img src="http://www.bricocine.com/wp-content/plugins/wp_movies/files/thumb_185_the_last_ship_.jpg" alt="The Last Ship " /> </a></div><div class="entry-meta"><div class="clearfix"><div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating" class="rating"  title="Puntos IMDB: 7.4"><div class="rating-stars imdb-rating"><div class="stars" style="width:74%"></div></div><div itemprop="ratingValue" class="rating-number"> 7.4</div></div><div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating" class="rating"  title="Puntos Bricocine: 7.0"><div class="rating-stars brico-rating"><div class="stars" style="width:70%"></div></div><div itemprop="ratingValue" class="rating-number"> 7.0</div></div> <span class="vcard author none"> Publicado por <a class="fn" href="" rel="author" target="_blank"></a> </span> <span class="date updated none">2014-10-07T23:32:25+00:00</span></div></div><h2 class="title2 entry-title"> <a href="http://www.bricocine.com/10088/last-ship-temporada-1/"> The Last Ship &#8211; Temporada 1 </a></h2></div> </article> <article class="hentry item-entry">
 
@@ -109,7 +115,7 @@ def fanart(item):
     logger.info("pelisalacarta.bricocine fanart")
     itemlist = []
     url = item.url
-    data = scrapertools.cachePage(url)
+    data = get_page( item.url )
     data = re.sub(r"\n|\r|\t|\s{2}|\(.*?\)|\[.*?\]|&nbsp;","",data)
     
     
@@ -166,9 +172,9 @@ def fanart(item):
                 item.extra= fanart
             #clearart, fanart_2 y logo
             for id in matches:
-                url ="http://assets.fanart.tv/v3/tv/"+id_serie+"?api_key=6fa42b0ef3b5f3aab6a7edaa78675ac2"
+                url ="http://assets.fanart.tv/v3/tv/"+id_serie+"?api_key=dffe90fba4d02c199ae7a9e71330c987"
                 if "Castle" in title:
-                    url ="http://assets.fanart.tv/v3/tv/83462?api_key=6fa42b0ef3b5f3aab6a7edaa78675ac2"
+                    url ="http://assets.fanart.tv/v3/tv/83462?api_key=dffe90fba4d02c199ae7a9e71330c987"
                 data = scrapertools.cachePage(url)
                 data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
                 patron = '"clearlogo":.*?"url": "([^"]+)"'
@@ -265,7 +271,7 @@ def fanart(item):
             title= title.replace('Torrent','')
             title= title.replace(' ','%20')
             url="http://api.themoviedb.org/3/search/movie?api_key=57983e31fb435df4df77afb854740ea9&query=" + title + "&language=es&include_adult=false"
-            data = scrapertools.cachePage(url)
+            data = get_page( url )
             data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
             patron = '"page":1.*?"backdrop_path":"(.*?)".*?,"id":(.*?),'
             matches = re.compile(patron,re.DOTALL).findall(data)
@@ -281,7 +287,7 @@ def fanart(item):
                     item.extra= fanart
             #fanart_2 y arts
             
-                    url ="http://assets.fanart.tv/v3/movies/"+id+"?api_key=6fa42b0ef3b5f3aab6a7edaa78675ac2"
+                    url ="http://assets.fanart.tv/v3/movies/"+id+"?api_key=dffe90fba4d02c199ae7a9e71330c987"
                     data = scrapertools.cachePage(url)
                     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
                     patron = '"hdmovielogo":.*?"url": "([^"]+)"'
@@ -400,7 +406,7 @@ def findvideos(item):
     logger.info("pelisalacarta.bricocine findvideos")
     
     itemlist = []
-    data = scrapertools.cache_page(item.url)
+    data = get_page( item.url )
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
     
     
@@ -531,7 +537,7 @@ def findvideos_peli(item):
     logger.info("pelisalacarta.bricocine findvideos_peli")
     
     itemlist = []
-    data = scrapertools.cache_page(item.url)
+    data = get_page( item.url )
    
     
     #id_torrent = scrapertools.get_match(item.url,"(\d+)-")
@@ -561,7 +567,7 @@ def trailer(item):
     logger.info("pelisalacarta.bricocine trailer")
     
     itemlist = []
-    data = scrapertools.cache_page(item.url)
+    data = get_page( item.url )
     
     
     #trailer
@@ -585,7 +591,7 @@ def trailer(item):
 def info(item):
     logger.info("pelisalacarta.bricocine info")
     url=item.url
-    data = scrapertools.cachePage(url)
+    data = get_page( url )
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
     if "temporada" in item.url:
       patron ='<title>([^<]+).*?Temporada.*?'
@@ -597,7 +603,7 @@ def info(item):
           plot = plot.replace(plot,"[COLOR yellow][B]"+plot+"[/B][/COLOR]")
           photo="http://s6.postimg.org/nm3gk1xox/noinfosup2.png"
           foto ="http://s6.postimg.org/ub7pb76c1/noinfo.png"
-      
+          info =""
       for title, plot in matches:
           plot_title = "Sinopsis" + "[CR]"
           plot_title = plot_title.replace(plot_title,"[COLOR red]"+plot_title+"[/COLOR]")
@@ -613,11 +619,25 @@ def info(item):
           title = title.replace("Torrent","")
           title = title.replace("amp;","")
           title = title.replace("Descargar en Bricocine.com","")
+          scrapedinfo = scrapertools.get_match(data,'Ficha técnica</h2><dl class="list"><dt>(.*?)hellip')
+          scrpaedinfo = re.sub(r'<a href=".*?"|title=".*?"|item.*?=".*?"','',scrapedinfo)
+          infoformat = re.compile('(.*?</dt><dd.*?>).*?</dd><dt>',re.DOTALL).findall(scrapedinfo)
+          for info in infoformat:
+              scrapedinfo= scrapedinfo.replace(scrapedinfo,"[COLOR white][B]"+scrapedinfo+"[/COLOR]")
+              scrapedinfo= scrapedinfo.replace(info,"[COLOR red][B]"+info+"[/B][/COLOR]")
+          info = scrapedinfo
+          info = re.sub(r'<a href=".*?">|title=".*?">|<span itemprop=.*?>|</span></span>|<span>|</a>|itemprop=".*?"|y otros.*?&','',info)
+          info = info.replace("</dt><dd>",":")
+          info = info.replace("</dt><dd >",":")
+          info = info.replace("</dt><dd > ",":")
+          info = info.replace("</dd><dt>"," ")
+          info = info.replace("</span>"," ")
+          info = info.replace("Actores:","[COLOR red][B]Actores:[/B][/COLOR] ")
           photo= item.extra
           foto = item.category
 
     else:
-        data = scrapertools.cachePage(url)
+        data = get_page( item.url )
         data = re.sub(r"\n|\r|\t|\(.*?\)|\s{2}|&nbsp;","",data)
         patron = '<div class="description" itemprop="text.*?">.*?([^<]+).*?</div></div></div>.*?'
         patron += '<span class="title">([^"]+)</span>'
@@ -629,7 +649,7 @@ def info(item):
             plot = plot.replace(plot,"[COLOR yellow][B]"+plot+"[/B][/COLOR]")
             foto= "http://s6.postimg.org/ub7pb76c1/noinfo.png"
             photo="http://s6.postimg.org/nm3gk1xox/noinfosup2.png"
-    
+            info =""
 
         for plot, title in matches:
             title = title.upper()
@@ -641,9 +661,23 @@ def info(item):
             plot = plot.replace(plot,"[COLOR white][B]"+plot+"[/B][/COLOR]")
             plot = plot.replace('div class="margin_20b">','')
             plot = plot.replace('div class="post-entry">','')
+            scrapedinfo = scrapertools.get_match(data,'Ficha técnica</h2><dl class="list"><dt>(.*?)hellip')
+            scrpaedinfo = re.sub(r'<a href=".*?"|title=".*?"|item.*?=".*?"','',scrapedinfo)
+            infoformat = re.compile('(.*?</dt><dd.*?>).*?</dd><dt>',re.DOTALL).findall(scrapedinfo)
+            for info in infoformat:
+                scrapedinfo= scrapedinfo.replace(scrapedinfo,"[COLOR white][B]"+scrapedinfo+"[/COLOR]")
+                scrapedinfo= scrapedinfo.replace(info,"[COLOR red][B]"+info+"[/B][/COLOR]")
+            info = scrapedinfo
+            info = re.sub(r'<a href=".*?">|title=".*?">|<span itemprop=.*?>|</span></span>|<span>|</a>|itemprop=".*?"|y otros.*?&','',info)
+            info = info.replace("</dt><dd>",":")
+            info = info.replace("</dt><dd >",":")
+            info = info.replace("</dt><dd > ",":")
+            info = info.replace("</dd><dt>"," ")
+            info = info.replace("</span>"," ")
+            info = info.replace("Actores:","[COLOR red][B]Actores:[/B][/COLOR] ")
             foto = item.category
             photo= item.extra
-    ventana2 = TextBox1(title=title, plot=plot, thumbnail=photo, fanart=foto)
+    ventana2 = TextBox1(title=title, plot=plot, info= info, thumbnail=photo, fanart=foto)
     ventana2.doModal()
    
 class TextBox1( xbmcgui.WindowDialog ):
@@ -652,23 +686,28 @@ class TextBox1( xbmcgui.WindowDialog ):
             
             self.getTitle = kwargs.get('title')
             self.getPlot = kwargs.get('plot')
+            self.getInfo = kwargs.get('info')
             self.getThumbnail = kwargs.get('thumbnail')
             self.getFanart = kwargs.get('fanart')
         
             self.background = xbmcgui.ControlImage( 70, 20, 1150, 630, 'http://s6.postimg.org/58jknrvtd/backgroundventana5.png')
             self.title = xbmcgui.ControlTextBox(140, 60, 1130, 50)
-            self.plot = xbmcgui.ControlTextBox( 140, 140, 1035, 600 )
+            self.plot = xbmcgui.ControlTextBox( 120, 150, 1056, 140 )
+            self.info = xbmcgui.ControlFadeLabel(120, 310, 1056, 100)
             self.thumbnail = xbmcgui.ControlImage( 813, 43, 390, 100, self.getThumbnail )
-            self.fanart = xbmcgui.ControlImage( 140, 471, 1035, 150, self.getFanart )
+            self.fanart = xbmcgui.ControlImage( 120, 365, 1060, 250, self.getFanart )
         
             self.addControl(self.background)
             self.addControl(self.title)
             self.addControl(self.plot)
             self.addControl(self.thumbnail)
             self.addControl(self.fanart)
+            self.addControl(self.info)
             
             self.title.setText( self.getTitle )
+            self.plot.autoScroll(7000,6000,30000)
             self.plot.setText(  self.getPlot )
+            self.info.addLabel(self.getInfo)
             
         def get(self):
             self.show()
@@ -684,7 +723,7 @@ def test():
 def info_capitulos(item):
     logger.info("pelisalacarta.bricocine trailer")
     url= item.url
-    data = scrapertools.cachePage(url)
+    data = get_page(url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
     item.category = item.show.split("|")[0]
     item.thumbnail = item.show.split("|")[1]
