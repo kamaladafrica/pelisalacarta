@@ -221,7 +221,7 @@ def fanart(item):
                     fanart="https://image.tmdb.org/t/p/original" + fan
                     item.extra= fanart
             #clearart, fanart_2 y logo
-                    url ="http://assets.fanart.tv/v3/movies/"+id+"?api_key=6fa42b0ef3b5f3aab6a7edaa78675ac2"
+                    url ="http://assets.fanart.tv/v3/movies/"+id+"?api_key=dffe90fba4d02c199ae7a9e71330c987"
                     data = scrapertools.cachePage(url)
                     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
                     patron = '"hdmovielogo":.*?"url": "([^"]+)"'
@@ -321,7 +321,7 @@ def fanart(item):
                         item.extra= fanart
                         
                 #clearart, fanart_2 y logo
-                        url ="http://assets.fanart.tv/v3/movies/"+id+"?api_key=6fa42b0ef3b5f3aab6a7edaa78675ac2"
+                        url ="http://assets.fanart.tv/v3/movies/"+id+"?api_key=dffe90fba4d02c199ae7a9e71330c987"
                         data = scrapertools.cachePage(url)
                         data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
                         patron = '"hdmovielogo":.*?"url": "([^"]+)"'
@@ -445,9 +445,9 @@ def fanart(item):
                         item.extra= fanart
                     #clearart, fanart_2 y logo
                     for id in matches:
-                        url ="http://assets.fanart.tv/v3/tv/"+id_serie+"?api_key=6fa42b0ef3b5f3aab6a7edaa78675ac2"
+                        url ="http://assets.fanart.tv/v3/tv/"+id_serie+"?api_key=dffe90fba4d02c199ae7a9e71330c987"
                         if "Castle" in title:
-                            url ="http://assets.fanart.tv/v3/tv/83462?api_key=6fa42b0ef3b5f3aab6a7edaa78675ac2"
+                            url ="http://assets.fanart.tv/v3/tv/83462?api_key=dffe90fba4d02c199ae7a9e71330c987"
                         data = scrapertools.cachePage(url)
                         data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
                         patron = '"clearlogo":.*?"url": "([^"]+)"'
@@ -578,9 +578,9 @@ def fanart(item):
                         item.extra= fanart
                     #clearart, fanart_2 y logo
                     for id in matches:
-                        url ="http://assets.fanart.tv/v3/tv/"+id_serie+"?api_key=6fa42b0ef3b5f3aab6a7edaa78675ac2"
+                        url ="http://assets.fanart.tv/v3/tv/"+id_serie+"?api_key=dffe90fba4d02c199ae7a9e71330c987"
                         if "Castle" in title:
-                            url ="http://assets.fanart.tv/v3/tv/83462?api_key=6fa42b0ef3b5f3aab6a7edaa78675ac2"
+                            url ="http://assets.fanart.tv/v3/tv/83462?api_key=dffe90fba4d02c199ae7a9e71330c987"
                         data = scrapertools.cachePage(url)
                         data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
                         patron = '"clearlogo":.*?"url": "([^"]+)"'
@@ -817,7 +817,7 @@ def info(item):
     data = scrapertools.cachePage(url)
     data = re.sub(r"\n|\r|\t|\s{2}|\d+x\d+|&nbsp;|<a title.*?</a>","",data)
     title= scrapertools.get_match(data,'<title>([^"]+) -')
-    title = title.replace(title,bbcode_kodi2html("[COLOR aqua][B]"+title+"[/B][/COLOR]"))
+    title = title.replace(title,bbcode_kodi2html("[COLOR pink][B]"+title+"[/B][/COLOR]"))
     plot = scrapertools.get_match(data,'onload="imgLoaded.*?</div><p>(.*?)<p class="descauto">')
     plot = plot.replace(plot,bbcode_kodi2html("[COLOR orange]"+plot+"[/COLOR]"))
     plot = plot.replace("&aacute;","á")
@@ -861,9 +861,9 @@ class TextBox1( xbmcgui.WindowDialog ):
             
             self.background = xbmcgui.ControlImage( 70, 20, 1150, 630, 'http://s6.postimg.org/58jknrvtd/backgroundventana5.png')
             self.title = xbmcgui.ControlTextBox(140, 60, 1130, 50)
-            self.plot = xbmcgui.ControlTextBox( 140, 180, 1035, 600 )
+            self.plot = xbmcgui.ControlTextBox( 120, 150, 1056, 140 )
             self.thumbnail = xbmcgui.ControlImage( 813, 43, 390, 100, self.getThumbnail )
-            self.fanart = xbmcgui.ControlImage( 140, 351, 1035, 250, self.getFanart )
+            self.fanart = xbmcgui.ControlImage( 120, 365, 1060, 250, self.getFanart )
             
             self.addControl(self.background)
             self.addControl(self.title)
@@ -872,6 +872,7 @@ class TextBox1( xbmcgui.WindowDialog ):
             self.addControl(self.fanart)
             
             self.title.setText( self.getTitle )
+            self.plot.autoScroll(7000,6000,30000)
             self.plot.setText(  self.getPlot )
         
         def get(self):
@@ -934,9 +935,9 @@ def info_capitulos(item):
                 else:
                     fanart=item.extra.split("|")[1]
                 plot = info
-                plot = plot.replace(plot,bbcode_kodi2html("[COLOR yellow][B]"+plot+"[/B][/COLOR]"))
+                plot = plot.replace(plot,bbcode_kodi2html("[COLOR pink][B]"+plot+"[/B][/COLOR]"))
                 title = name_epi.upper()
-                title = title.replace(title,bbcode_kodi2html("[COLOR sandybrown][B]"+title+"[/B][/COLOR]"))
+                title = title.replace(title,bbcode_kodi2html("[COLOR bisque][B]"+title+"[/B][/COLOR]"))
                 image=fanart
                 foto= item.extra.split("|")[1]
     ventana = TextBox2(title=title, plot=plot, thumbnail=image, fanart=foto)

@@ -78,12 +78,12 @@ def buscador(item):
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
 
 
-    patron = 'style="width:100;height:140px; ">'
+    patron = '<div class="resultados".*?'
     patron += '<a href="([^"]+)".*?'
-    patron += 'title="([^<]+)">.*?'
-    patron += 'src="([^"]+)".*?'
-    patron += '<span class="clms2">Audio.*?rel="tag">([^"]+)</a>.*?'
-    patron += '<span class="clms2">Calidad.*?rel="tag">([^"]+)</a>'
+    patron += 'title="([^<]+)".*?'
+    patron += 'src="([^<]+.jpg)".*?'
+    patron += 'rel="tag">([^<]+)</a>.*?'
+    patron += 'Calidad.*?rel="tag">([^<]+)</a>'
     
 
     matches = re.compile(patron,re.DOTALL).findall(data)
@@ -150,7 +150,7 @@ def fanart(item):
     url = item.url
     data = scrapertools.cachePage(url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-    title= scrapertools.get_match(data,'<div id="titleopcions">Ver película(.*?)\(')
+    title= scrapertools.get_match(data,'<title>Ver Película(.*?) \(')
     title= re.sub(r"3D|SBS|-|","",title)
     title= title.replace('á','a')
     title= title.replace('Á','A')
@@ -177,7 +177,7 @@ def fanart(item):
             item.extra= fanart
     #fanart_2 y arts
                 
-            url ="http://assets.fanart.tv/v3/movies/"+id+"?api_key=6fa42b0ef3b5f3aab6a7edaa78675ac2"
+            url ="http://assets.fanart.tv/v3/movies/"+id+"?api_key=dffe90fba4d02c199ae7a9e71330c987"
             data = scrapertools.cachePage(url)
             data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
             patron = '"hdmovielogo":.*?"url": "([^"]+)"'
@@ -342,19 +342,31 @@ def info(item):
     url=item.url
     data = scrapertools.cachePage(url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-    title= scrapertools.get_match(data,'<div id="titleopcions">Ver película(.*?)\(')
-    title = title.replace(title,"[COLOR aqua][B]"+title+"[/B][/COLOR]")
-    plot = scrapertools.get_match(data,'<span class="clms">(.*?)</div></div>')
-    plotformat = re.compile('(.*?:) </span>',re.DOTALL).findall(plot)
-    plot = plot.replace(plot,"[COLOR white]"+plot+"[/COLOR]")
-    for info in plotformat:
-        plot = plot.replace(info,"[COLOR red][B]"+info+"[/B][/COLOR]")
-    plot = plot.replace("</span>","[CR]")
-    plot = plot.replace(":","")
+    title= scrapertools.get_match(data,'<title>Ver Película(.*?) \(')
+    title = title.replace(title,"[COLOR orange][B]"+title+"[/B][/COLOR]")
+    plot = scrapertools.get_match(data,'<span class="clms">Sinopsis: </span>(.*?)</div></div></td>')
+    plot = plot.replace(plot,"[COLOR white][B]"+plot+"[/B][/COLOR]")
+    scrapedinfo= scrapertools.get_match(data,'<div class="infopeli">(.*?)<table class="ventana2" border="0">')
+    
+    infoformat = re.compile('(.*?:) .*?<br/>',re.DOTALL).findall(scrapedinfo)
+    for info in infoformat:
+        scrapedinfo= scrapedinfo.replace(info,"[COLOR orange][B]"+info+"[/B][/COLOR]")
+        info= scrapedinfo.replace(info,"[COLOR white][B]"+info+"[/B][/COLOR]")
+    info = scrapedinfo
+    info = re.sub(r'<a href=".*?">|<span>|</a>|</div></td></tr></table>|<span class=".*?".*?>','',scrapedinfo)
+    info = info.replace("</span><br/>"," ")
+    info = info.replace("</span>"," ")
+    info = info.replace("<br/>","  ")
+    info = info.replace("</B>","")
+    info = info.replace("Calificación IMDb:","[COLOR orange][B]Calificación IMDb:[/B][/COLOR]")
+    info = info.replace("Calificación IMDb:[/B]","Calificación IMDb:")
+    info = info.replace("Premios:","[COLOR orange][B]Premios:[/B][/COLOR]")
+    
     foto = item.show
     photo= item.extra
 
-    ventana2 = TextBox1(title=title, plot=plot, thumbnail=photo, fanart=foto)
+
+    ventana2 = TextBox1(title=title, plot=plot, info=info, thumbnail=photo, fanart=foto)
     ventana2.doModal()
 
 class TextBox1( xbmcgui.WindowDialog ):
@@ -363,23 +375,28 @@ class TextBox1( xbmcgui.WindowDialog ):
             
             self.getTitle = kwargs.get('title')
             self.getPlot = kwargs.get('plot')
+            self.getInfo = kwargs.get('info')
             self.getThumbnail = kwargs.get('thumbnail')
             self.getFanart = kwargs.get('fanart')
             
             self.background = xbmcgui.ControlImage( 70, 20, 1150, 630, 'http://s6.postimg.org/58jknrvtd/backgroundventana5.png')
             self.title = xbmcgui.ControlTextBox(140, 60, 1130, 50)
-            self.plot = xbmcgui.ControlTextBox( 140, 140, 1035, 600 )
+            self.plot = xbmcgui.ControlTextBox( 120, 150, 1056, 140 )
+            self.info = xbmcgui.ControlFadeLabel(120, 310, 1056, 100)
             self.thumbnail = xbmcgui.ControlImage( 813, 43, 390, 100, self.getThumbnail )
-            self.fanart = xbmcgui.ControlImage( 140, 351, 1035, 250, self.getFanart )
+            self.fanart = xbmcgui.ControlImage( 120, 365, 1060, 250, self.getFanart )
             
             self.addControl(self.background)
             self.addControl(self.title)
             self.addControl(self.plot)
             self.addControl(self.thumbnail)
             self.addControl(self.fanart)
+            self.addControl(self.info)
             
             self.title.setText( self.getTitle )
+            self.plot.autoScroll(7000,6000,30000)
             self.plot.setText(  self.getPlot )
+            self.info.addLabel(self.getInfo)
         
         def get(self):
             self.show()
