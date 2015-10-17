@@ -39,7 +39,7 @@ def mainlist(item):
     itemlist.append( Item(channel=__channel__, action="submenu", title="Filtrar series por género y década", url=__url_base__+'/series', extra="series") )
     itemlist.append( Item(channel=__channel__, action="search", title="Buscar") )
     
-    itemlist.append( Item(channel=__channel__, action="tmdb", title="Test TMDB") )
+    #itemlist.append( Item(channel=__channel__, action="tmdb", title="Test TMDB") )
     #logger.info("[peliserie.py] login: "+ str(login()))
     
     return itemlist
@@ -355,7 +355,7 @@ def test():
 
     return False
       
-      
+'''       
 def tmdb(item):
     from core.tmdb import Tmdb
     #oTmdb= Tmdb(id_Tmdb='1399',tipo='tv')
@@ -376,7 +376,7 @@ def tmdb(item):
     #print oTmdb.get_fanart(tipo="banner")
     #print oTmdb.get_fanart(tipo="poster")
     
-'''    
+   
 def login2():# no funciona
     url= 'http://www.peliserie.com/query/login.php'
     post = "username="+config.get_setting("peliserieuser")+"&password="+config.get_setting("peliseriepassword")
