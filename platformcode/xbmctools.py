@@ -169,7 +169,12 @@ def addnewvideo( canal , accion , category , server , title , url , thumbnail, p
     except:
         pass
     
-    itemurl = '%s?fanart=%s&channel=%s&action=%s&category=%s&title=%s&fulltitle=%s&url=%s&thumbnail=%s&plot=%s&server=%s&Serie=%s&subtitle=%s&viewmode=%s&show=%s&extradata=%s' % ( sys.argv[ 0 ] , fanart, canal , accion , urllib.quote_plus( category ) , urllib.quote_plus( title ) , urllib.quote_plus( fulltitle ) , urllib.quote_plus( url ) , urllib.quote_plus( thumbnail ) , urllib.quote_plus( plot ) , server , Serie , urllib.quote_plus(subtitle), urllib.quote_plus(viewmode), urllib.quote_plus( show ) , urllib.quote_plus(extra) )
+    itemurl = '{}?fantart={}&channel={}&action={}&category={}&title={}&fulltitle={}&url={}&thumbnail={}&plot={}&' \
+              'server={}&Serie={}&subtitle={}&viewmode={}&show={}&extradata={}'\
+        .format(sys.argv[0], fanart, canal, accion, urllib.quote_plus(category), urllib.quote_plus(title),
+                urllib.quote_plus(fulltitle), urllib.quote_plus(url), urllib.quote_plus(thumbnail),
+                urllib.quote_plus(plot), server, serie, urllib.quote_plus(subtitle), urllib.quote_plus(viewmode),
+                urllib.quote_plus(show), urllib.quote_plus(extra))
     #logger.info("[xbmctools.py] itemurl=%s" % itemurl)
     if totalItems == 0:
         ok = xbmcplugin.addDirectoryItem( handle = pluginhandle, url=itemurl, listitem=listitem, isFolder=False)
