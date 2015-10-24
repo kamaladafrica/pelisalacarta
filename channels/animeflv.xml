@@ -6,10 +6,10 @@
     <update_url></update_url>
     <active>true</active>
     <include_in_global_search>true</include_in_global_search>
-    <version>2</version>
+    <version>3</version>
     <adult>false</adult>
-    <date>06/09/2015</date>
-    <changes>Fix PEP 8 convention</changes> 
+    <date>24/10/2015</date>
+    <changes>resueltos problemas utf, libreria requests, pep8 conventions, etc</changes>
     <categories>
         <category>anime</category>
     </categories>
