@@ -2,6 +2,6 @@
 <version>
 	<name>newpct1</name>
 	<tag>12</tag>
-	<date>18/10/15</date>
-	<changes>Corregir bug en Series</changes>
+	<date>30/10/15</date>
+	<changes>Incluida llamada a server.find_videos(server) en findvideos.</changes>
 </version>
