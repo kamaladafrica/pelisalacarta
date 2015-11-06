@@ -258,6 +258,7 @@ def channels_list():
     itemlist.append( Item( title="Pelisadicto"             , channel="pelisadicto"        , language="ES" , category="F,L"        , type="generic"  ))
     itemlist.append( Item( title="Peliserie"               , channel="peliserie"          , language="ES" , category="F,S", type="generic"))
     itemlist.append( Item( title="PelisPekes"              , channel="pelispekes"         , language="ES" , category="F"        , type="generic"  ))
+    itemlist.append( Item( title="Pepecine"                , channel="pepecine"           , language="ES" , category="F,S", type="generic", thumbnail="https://d12.usercdn.com/i/02278/nwm6todp6yyk.png"))
     itemlist.append( Item( title="Pirate Streaming (IT)"   , channel="piratestreaming"    , language="IT" , category="F" , type="generic"    )) # jesus 16/7/2012
     itemlist.append( Item( title="Pordede"                 , channel="pordede"            , language="ES" , category="F,S" , type="generic"    )) # jesus 16/6/2014
     if config.get_setting("enableadultmode") == "true": itemlist.append( Item( title="PornoActricesX"            , channel="pornoactricesx"          , language="ES" , category="X,F" , type="generic"    ))
