@@ -237,7 +237,17 @@ def play(item):
     
     itemlist=[]
 
-    data = item.url
+    # http%3A%2F%2Folo.gg%2Fs%2FcJinsNv1%3Fs%3Dhttp%253A%252F%252Fwww.nowvideo.to%252Fvideo%252F9c8bf2ed9d4fd
+    data = urllib.unquote(item.url)
+
+    logger.info("pelisalacarta.yaske play item.url="+data)
+
+    # http://olo.gg/s/cJinsNv1?s=http%3A%2F%2Fwww.nowvideo.to%2Fvideo%2F9c8bf2ed9d4fd
+    data = scrapertools.find_single_match(data,'olo.gg/s/[a-zA-Z0-9]+.s.(.*?)$')    
+    logger.info("pelisalacarta.yaske play item.url="+data)
+
+    data = urllib.unquote(data)
+    logger.info("pelisalacarta.yaske play item.url="+data)
 
     itemlist = servertools.find_video_items(data=data)
     for newitem in itemlist:
