@@ -8,6 +8,7 @@
 # 9/9/2915 - arreglos varios ( paginacion, enlaces ) 
 #          - se añade 100x100 anime
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
+#
 #-----------------------------------------------------------------
 import urlparse,urllib2,urllib,re
 import os, sys
