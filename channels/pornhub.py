@@ -48,9 +48,10 @@ def mainlist(item):
     '''
     
     # Extrae las categorias
-    patron  = '<li class="cat_pic" data-category="\d+">.*?'
-    patron += '<a href="([^"]+)">'
-    patron += '<img src="([^"]+)" '
+    patron  = '<li class="cat_pic" data-category=".*?'
+    #patron  = '<li class="cat_pic" data-category="\d+">.*?'
+    patron += '<a href="([^"]+)".*?'
+    patron += '<img src="([^"]+)".*?'
     patron += 'alt="([^"]+)"'
         
     matches = re.compile(patron,re.DOTALL).findall(data)
