@@ -178,7 +178,7 @@ def addnewvideo( canal , accion , category , server , title , url , thumbnail, p
                '&plot={10}&server={11}&Serie={12}&subtitle={13}&viewmode={14}&show={15}&extradata={16}'\
         .format(sys.argv[0], fanart, canal, accion, urllib.quote_plus(category), urllib.quote_plus(title),
                 urllib.quote_plus(fulltitle), urllib.quote_plus(url), urllib.quote_plus(thumbnail),
-                urllib.quote_plus(plot), server, serie, urllib.quote_plus(subtitle), urllib.quote_plus(viewmode),
+                urllib.quote_plus(plot), server, Serie, urllib.quote_plus(subtitle), urllib.quote_plus(viewmode),
                 urllib.quote_plus(show), urllib.quote_plus(extra))
     #logger.info("[xbmctools.py] itemurl=%s" % itemurl)
     if totalItems == 0:
