@@ -174,8 +174,8 @@ def addnewvideo( canal , accion , category , server , title , url , thumbnail, p
     except:
         pass
     
-    itemurl = '{1}?fantart={2}&channel={3}&action={4}&category={5}&title={6}&fulltitle={7}&url={8}&thumbnail={9}'\
-               '&plot={10}&server={11}&Serie={12}&subtitle={13}&viewmode={14}&show={15}&extradata={16}'\
+    itemurl = '{0}?fantart={1}&channel={2}&action={3}&category={4}&title={5}&fulltitle={6}&url={7}&thumbnail={8}'\
+               '&plot={9}&server={10}&Serie={11}&subtitle={12}&viewmode={13}&show={14}&extradata={15}'\
         .format(sys.argv[0], fanart, canal, accion, urllib.quote_plus(category), urllib.quote_plus(title),
                 urllib.quote_plus(fulltitle), urllib.quote_plus(url), urllib.quote_plus(thumbnail),
                 urllib.quote_plus(plot), server, Serie, urllib.quote_plus(subtitle), urllib.quote_plus(viewmode),
