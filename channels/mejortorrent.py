@@ -42,6 +42,7 @@ def mainlist(item):
     thumb_series = get_thumbnail("thumb_canales_series.png")
     thumb_series_hd = get_thumbnail("thumb_canales_series_hd.png")
     thumb_series_az = get_thumbnail("thumb_canales_series_az.png")
+    thumb_docus = get_thumbnail("thumb_canales_documentales.png")
     thumb_buscar = get_thumbnail("thumb_buscar.png")
 
     itemlist.append( Item(channel=__channel__, title="Peliculas" , action="getlist", url="http://www.mejortorrent.com/torrents-de-peliculas.html", thumbnail=thumb_pelis ))
@@ -49,6 +50,7 @@ def mainlist(item):
     itemlist.append( Item(channel=__channel__, title="Series" , action="getlist", url="http://www.mejortorrent.com/torrents-de-series.html", thumbnail=thumb_series ))
     itemlist.append( Item(channel=__channel__, title="Series HD" , action="getlist"           , url="http://www.mejortorrent.com/torrents-de-series-hd-alta-definicion.html", thumbnail=thumb_series_hd ))
     itemlist.append( Item(channel=__channel__, title="Series Listado Alfabetico" , action="listalfabetico"           , url="http://www.mejortorrent.com/torrents-de-series.html", thumbnail=thumb_series_az ))
+    itemlist.append( Item(channel=__channel__, title="Documentales" , action="getlist"           , url="http://www.mejortorrent.com/torrents-de-documentales.html", thumbnail=thumb_docus ))
     itemlist.append( Item(channel=__channel__, title="Buscar..." , action="search", thumbnail=thumb_buscar ))
 
     return itemlist
@@ -107,34 +109,30 @@ def buscador(item):
     #<img border="1" src="/uploads/imagenes/documentales/El sueno de todos.jpg"></a>
 
     #busca series
-    patron  = "<a href='(/serie-descargar-torrent[^']+)'.*? "
-    patron += "<span style='color:gray;'>([^']+)</span>"
+    patron  = "<a href='(/serie-descargar-torrent[^']+)'[^>]+>(.*?)</a>"
+    patron += ".*?<span style='color:gray;'>([^']+)</span>"
     patron_enlace = "/serie-descargar-torrents-\d+-\d+-(.*?)\.html"
 
 
-    matches = re.compile(patron,re.DOTALL).findall(data)
+    matches = scrapertools.find_multiple_matches(data, patron)
     scrapertools.printMatches(matches)
 
-    for scrapedurl, scrapedinfo in matches:
-        title = scrapertools.get_match(scrapedurl, patron_enlace) + scrapedinfo
-        title = title.replace("-"," ")
+    for scrapedurl, scrapedtitle, scrapedinfo in matches:
+        title = scrapertools.remove_htmltags(scrapedtitle).decode('iso-8859-1').encode('utf8') + ' ' + scrapedinfo.decode('iso-8859-1').encode('utf8')
         url = urlparse.urljoin(item.url,scrapedurl)
         logger.debug("title=["+title+"], url=["+url+"]")
 
         itemlist.append( Item(channel=__channel__, action="episodios", title=title , url=url , folder=True, extra="series") )
 
     #busca pelis
-    patron  = "<a href='(/peli-descargar-torrent-[^']+).*? "
-    patron += "<span style='color:gray;'>([^']+)</a>"
+    patron  = "<a href='(/peli-descargar-torrent-[^']+)'[^>]+>(.*?)</a>"
     patron_enlace = "/peli-descargar-torrent-\d+(.*?)\.html"
-
 
     matches = re.compile(patron,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
 
-    for scrapedurl, scrapedinfo in matches:
-        title = scrapertools.get_match(scrapedurl, patron_enlace) + scrapedinfo
-        title = title.replace("-"," ")
+    for scrapedurl, scrapedtitle in matches:
+        title = scrapertools.remove_htmltags(scrapedtitle).decode('iso-8859-1').encode('utf-8')
         url = urlparse.urljoin(item.url,scrapedurl)
         logger.debug("title=["+title+"], url=["+url+"]")
 
@@ -143,15 +141,15 @@ def buscador(item):
 
     #busca docu
     patron  = "<a href='(/doc-descargar-torrent[^']+)' .*?"
+    patron += "<font Color='darkblue'>(.*?)</font>.*?"
     patron += "<td align='right' width='20%'>(.*?)</td>"
     patron_enlace = "/doc-descargar-torrent-\d+-\d+-(.*?)\.html"
 
     matches = re.compile(patron,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
 
-    for scrapedurl, scrapedinfo in matches:
-        title = scrapertools.get_match(scrapedurl, patron_enlace) + scrapedinfo
-        title = title.replace("-"," ")
+    for scrapedurl, scrapedtitle, scrapedinfo in matches:
+        title = scrapedtitle.decode('iso-8859-1').encode('utf8') + " " + scrapedinfo.decode('iso-8859-1').encode('utf8')
         url = urlparse.urljoin(item.url,scrapedurl)
         logger.debug("title=["+title+"], url=["+url+"]")
 
@@ -272,7 +270,10 @@ def episodios(item):
 
     tmdb_title = re.sub('\d+ Temporada', '', item.title)
 
-    oTmdb= Tmdb(texto_buscado=tmdb_title.strip(), tipo='tv', idioma_busqueda="es")
+    if item.extra == "series":
+        oTmdb= Tmdb(texto_buscado=tmdb_title.strip(), tipo='tv', idioma_busqueda="es")
+    else:
+        oTmdb= Tmdb(texto_buscado=tmdb_title.strip(), idioma_busqueda="es")
 
     for scrapedtitle,fecha,name,value in matches:
         scrapedtitle = scrapedtitle.strip()
@@ -283,21 +284,26 @@ def episodios(item):
         post = urllib.urlencode( { name:value , "total_capis":total_capis , "tabla":tabla , "titulo":titulo } )
         logger.debug("post="+post)
 
-        epi = scrapedtitle.split("x")
+        if item.extra == "series":
 
-        temporada = re.sub("\D", "", epi[0])
-        capitulo  = re.sub("\D", "", epi[1])
+            epi = scrapedtitle.split("x")
 
-        epi_data = oTmdb.get_episodio(temporada, capitulo)
-        logger.debug("epi_data=" + str(epi_data))
+            temporada = re.sub("\D", "", epi[0])
+            capitulo  = re.sub("\D", "", epi[1])
 
-        if epi_data:
-            item.thumbnail = epi_data["temporada_poster"]
-            item.fanart = epi_data["episodio_imagen"]
-            item.plot = epi_data["episodio_sinopsis"]
-            epi_title = epi_data["episodio_titulo"]
-            if epi_title != "":
-                title = scrapedtitle + " " + epi_title + " (" + fecha + ")"
+            epi_data = oTmdb.get_episodio(temporada, capitulo)
+            logger.debug("epi_data=" + str(epi_data))
+
+            if epi_data:
+                item.thumbnail = epi_data["temporada_poster"]
+                item.fanart = epi_data["episodio_imagen"]
+                item.plot = epi_data["episodio_sinopsis"]
+                epi_title = epi_data["episodio_titulo"]
+                if epi_title != "":
+                    title = scrapedtitle + " " + epi_title + " (" + fecha + ")"
+        else:
+            item.fanart=oTmdb.get_backdrop()
+            item.plot=oTmdb.get_sinopsis()
 
         logger.debug("title=["+title+"], url=["+url+"], item=["+str(item)+"]")
 
@@ -311,7 +317,6 @@ def show_movie_info(item):
     itemlist = []
 
     try:
-        from core.tmdb import Tmdb
         oTmdb= Tmdb(texto_buscado=item.title,idioma_busqueda="es")
         item.fanart=oTmdb.get_backdrop()
         item.plot=oTmdb.get_sinopsis()
