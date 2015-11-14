@@ -1,7 +1,16 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<version>
-	<name>seriespepito</name>
-	<tag>12</tag>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<channel>
+	<id>seriespepito</id>
+	<name>Seriespepito</name>
+	<language>es</language>
+	<update_url></update_url>
+	<active>false</active>
+	<include_in_global_search>false</include_in_global_search>
+	<version>12</version>
+	<adult>false</adult>
 	<date>30/05/2014</date>
 	<changes>Arreglado el problema al elegir el vídeo (gracias a chopchop de nuevo)</changes>
-</version>
+	<categories>
+		<category>serie</category>
+	</categories>
+</channel>

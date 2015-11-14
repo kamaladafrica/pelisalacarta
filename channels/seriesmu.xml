@@ -1,7 +1,19 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<version>
-	<name>seriesmu</name>
-	<tag>3</tag>
+<channel>
+	<id>seriesmu</id>
+	<name>SeriesMu</name>
+	<language>es</language>
+	<update_url></update_url>
+	<active>true</active>
+	<include_in_global_search>false</include_in_global_search>
+	<version>3</version>
+	<adult>false</adult>
 	<date>16/06/2015</date>
-    <changes>Seriesmu: Modificacion web. Corrección enlaces video </changes>
-</version>
+	<changes>Seriesmu: Modificacion web. Corrección enlaces video </changes>
+	<categories>
+		<category>movie</category>
+		<category>serie</category>
+		<category>anime</category>
+		<category>vos</category>
+	</categories>
+</channel>

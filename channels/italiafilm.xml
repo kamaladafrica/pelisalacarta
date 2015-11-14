@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<version>
-	<name>italiafilm</name>
-	<tag>4</tag>
+<channel>
+	<id>italiafilm</id>
+	<name>ItaliaFilms.tv (IT)</name>
+	<language>it</language>
+	<update_url></update_url>
+	<active>true</active>
+	<include_in_global_search>false</include_in_global_search>
+	<version>4</version>
+	<adult>false</adult>
 	<date>17/03/2015</date>
 	<changes>Actualizado</changes>
-</version>
+	<categories>
+		<category>anime</category>
+	</categories>
+</channel>

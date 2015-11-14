@@ -1,7 +1,18 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<version>
-	<name>filmpertutti</name>
-	<tag>3</tag>
+<channel>
+	<id>filmpertutti</id>
+	<name>Film per tutti (IT)</name>
+	<language>it</language>
+	<update_url></update_url>
+	<active>true</active>
+	<include_in_global_search>false</include_in_global_search>
+	<version>3</version>
+	<adult>false</adult>
 	<date>17/03/2015</date>
 	<changes>Actualizado</changes>
-</version>
+	<categories>
+		<category>movie</category>
+		<category>serie</category>
+		<category>anime</category>
+	</categories>
+</channel>

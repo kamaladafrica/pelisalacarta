@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<version>
-	<name>malvin</name>
-	<tag>3</tag>
+<channel>
+	<id>malvin</id>
+	<name>Malvin.tv</name>
+	<language>es</language>
+	<update_url></update_url>
+	<active>false</active>
+	<include_in_global_search>false</include_in_global_search>
+	<version>3</version>
+	<adult>false</adult>
 	<date>09/08/2014</date>
 	<changes>Cambiado de malvin.biz a malvin.tv</changes>
-</version>
+	<categories>
+		<category>movie</category>
+	</categories>
+</channel>

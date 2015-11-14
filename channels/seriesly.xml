@@ -1,7 +1,19 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<version>
-	<name>seriesly</name>
-	<tag>31</tag>
+<channel>
+	<id>seriesly</id>
+	<name>Series.ly</name>
+	<language>es</language>
+	<update_url></update_url>
+	<active>true</active>
+	<include_in_global_search>false</include_in_global_search>
+	<version>31</version>
+	<adult>false</adult>
 	<date>12/10/2014</date>
 	<changes>Corrige el que no se pueda acceder a algunas webs (gracias a prunk)</changes>
-</version>
+	<categories>
+		<category>movie</category>
+		<category>serie</category>
+		<category>anime</category>
+		<category>vos</category>
+	</categories>
+</channel>

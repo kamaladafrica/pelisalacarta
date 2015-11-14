@@ -1,7 +1,17 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<version>
-	<name>seriesdanko</name>
-	<tag>3</tag>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<channel>
+	<id>seriesdanko</id>
+	<name>Seriesdanko</name>
+	<language>es</language>
+	<update_url></update_url>
+	<active>true</active>
+	<include_in_global_search>false</include_in_global_search>
+	<version>3</version>
+	<adult>false</adult>
 	<date>24/07/2012</date>
 	<changes>Actualizado por cambios en la web</changes>
-</version>
+	<categories>
+		<category>serie</category>
+		<category>vos</category>
+	</categories>
+</channel>

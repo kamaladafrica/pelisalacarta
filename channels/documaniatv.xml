@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<version>
-    <name>documaniatv</name>
-    <tag>6</tag>
-    <date>11/10/2014</date>
-    <changes>Actualizado por cambios en la web (Gracias a prunk)</changes>
-</version>
+<channel>
+	<id>documaniatv</id>
+	<name>DocumaniaTV</name>
+	<language>es</language>
+	<update_url></update_url>
+	<active>true</active>
+	<include_in_global_search>false</include_in_global_search>
+	<version>6</version>
+	<adult>false</adult>
+	<date>11/10/2014</date>
+	<changes>Actualizado por cambios en la web (Gracias a prunk)</changes>
+	<categories>
+		<category>documentary</category>
+	</categories>
+</channel>

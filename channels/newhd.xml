@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<version>
-	<name>newhd</name>
-	<tag>3</tag>
+<channel>
+	<id>newhd</id>
+	<name>NewHD</name>
+	<language>es</language>
+	<update_url></update_url>
+	<active>false</active>
+	<include_in_global_search>false</include_in_global_search>
+	<version>3</version>
+	<adult>false</adult>
 	<date>02/02/2012</date>
 	<changes>Añadidos el resto de idiomas por bandavi</changes>
-</version>
+	<categories>
+		<category>movie</category>
+	</categories>
+</channel>

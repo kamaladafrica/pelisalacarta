@@ -1,7 +1,19 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<version>
-	<name>shurweb</name>
-	<tag>6</tag>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<channel>
+	<id>shurweb</id>
+	<name>Shurweb</name>
+	<language>es</language>
+	<update_url></update_url>
+	<active>true</active>
+	<include_in_global_search>false</include_in_global_search>
+	<version>6</version>
+	<adult>false</adult>
 	<date>16/02/2014</date>
 	<changes>Corregido para funcionar con el nuevo dominio</changes>
-</version>
+	<categories>
+		<category>movie</category>
+		<category>serie</category>
+		<category>documentary</category>
+		<category>anime</category>
+	</categories>
+</channel>
