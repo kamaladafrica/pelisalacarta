@@ -51,7 +51,7 @@ def series_listado_alfabetico(item):
 
     itemlist = []
 
-    for letra in ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']:
+    for letra in ['0','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']:
         itemlist.append( Item(channel=__channel__, action="series_por_letra" , title=letra, url=urlparse.urljoin(host_tv, "series/" + letra.upper() + "/buscar_letra.html"), extra="letra") )
 
     return itemlist
