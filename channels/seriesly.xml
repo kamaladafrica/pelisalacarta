@@ -10,6 +10,8 @@
 	<adult>false</adult>
 	<date>12/10/2014</date>
 	<changes>Corrige el que no se pueda acceder a algunas webs (gracias a prunk)</changes>
+	<fanart></fanart>
+	<thumbnail></thumbnail>
 	<categories>
 		<category>movie</category>
 		<category>serie</category>

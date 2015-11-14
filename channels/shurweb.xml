@@ -10,6 +10,8 @@
 	<adult>false</adult>
 	<date>16/02/2014</date>
 	<changes>Corregido para funcionar con el nuevo dominio</changes>
+	<fanart></fanart>
+	<thumbnail></thumbnail>
 	<categories>
 		<category>movie</category>
 		<category>serie</category>

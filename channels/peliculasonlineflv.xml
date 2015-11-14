@@ -10,6 +10,8 @@
 	<adult>false</adult>
 	<date>27/06/2011</date>
 	<changes>Test</changes>
+	<fanart></fanart>
+	<thumbnail></thumbnail>
 	<categories>
 		<category>movie</category>
 		<category>documentary</category>

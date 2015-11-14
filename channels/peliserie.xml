@@ -10,6 +10,8 @@
 	<adult>false</adult>
 	<date>18/03/2015</date>
 	<changes>Corregido bug syntax error en TMDB</changes>
+	<fanart></fanart>
+	<thumbnail></thumbnail>
 	<categories>
 		<category>movie</category>
 		<category>serie</category>
