@@ -46,6 +46,10 @@ def run():
                 except:
                     pass
 
+            # Control parental: Desactivar Modo Adulto
+            config.set_setting("enableadultmode","false")
+            config.set_setting("adultpassword_introducida","")
+                
             import channelselector as plugin
             plugin.mainlist(params, url, category)
 
@@ -63,7 +67,7 @@ def run():
                 import xbmc
                 xbmc.executebuiltin( "Container.Refresh" )
 
-        elif (action=="channeltypes"):
+        elif (action=="channeltypes"):      
             import channelselector as plugin
             plugin.channeltypes(params,url,category)
 
