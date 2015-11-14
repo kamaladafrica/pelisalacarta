@@ -11,6 +11,7 @@ from core import config
 from core import scrapertools
 from core.item import Item
 from servers import servertools
+from channelselector import get_thumbnail_path
 
 
 __channel__ = "seriesblanco"
@@ -26,6 +27,9 @@ __language__ = "ES"
 
 host = "http://seriesblanco.com/"
 
+# En el listado alfabético de series usan este dominio en vez del .com
+host_tv = "http://seriesblanco.tv/"
+
 idiomas = {'es':'Español','la':'Latino','vos':'VOS','vo':'VO', 'japovose':'VOSE'}
 
 
@@ -36,18 +40,40 @@ def isGeneric():
 def mainlist(item):
     logger.info("pelisalacarta.seriesblanco mainlist")
 
+    thumb_series    = get_thumbnail("thumb_canales_series.png")
+    thumb_series_az = get_thumbnail("thumb_canales_series_az.png")
+    thumb_buscar    = get_thumbnail("thumb_buscar.png")
+
     itemlist = []
-    itemlist.append( Item( channel=__channel__, title="Series", action="series", url=urlparse.urljoin(host,"lista_series/") ) )
-    itemlist.append( Item( channel=__channel__, title="Buscar...", action="search", url=host) )
+    itemlist.append( Item( channel=__channel__, title="Series Listado Alfabetico" , action="series_listado_alfabetico", thumbnail=thumb_series_az ) )
+    itemlist.append( Item( channel=__channel__, title="Todas las Series", action="series", url=urlparse.urljoin(host,"lista_series/"), thumbnail=thumb_series ) )
+    itemlist.append( Item( channel=__channel__, title="Buscar...", action="search", url=host, thumbnail=thumb_buscar, extra='buscar') )
 
     return itemlist
 
-def search(item,texto):
+def series_listado_alfabetico(item):
+    logger.info("pelisalacarta.seriesblanco series_listado_alfabetico")
+
+    itemlist = []
+
+    for letra in ['0','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']:
+        itemlist.append( Item(channel=__channel__, action="series_por_letra" , title=letra, url=urlparse.urljoin(host_tv, "series/" + letra.upper() + "/buscar_letra.html"), extra="letra") )
+
+    return itemlist
+
+# La página de series por letra es igual que la de buscar
+# así que abuso un poco de esa función con el parámetro extra
+def series_por_letra(item):
+    return search(item, '')
+
+def search(item, texto):
     logger.info("[pelisalacarta.seriesblanco search texto="+texto)
 
     itemlist = []
 
-    item.url = urlparse.urljoin(host,"/search.php?q1=%s" % (texto))
+    if item.extra == 'buscar':
+        item.url = urlparse.urljoin(host,"/search.php?q1=%s" % (texto))
+
     data = scrapertools.cache_page(item.url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s","",data)
     data = re.sub(r"<!--.*?-->","",data)
@@ -136,52 +162,55 @@ def findvideos(item):
 
     # Descarga la página
     data = scrapertools.cache_page(item.url)
+
+    # Hacer la petición ajax con los enlaces
+    params = scrapertools.get_match(data, 'data : "(action=load[^\"]+)"')
+    data = scrapertools.cachePagePost(host + 'ajax.php', params)
+
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s","",data)
     data = re.sub(r"<!--.*?-->","",data)
     data = unicode( data, "iso-8859-1" , errors="replace" ).encode("utf-8")
 
-    data = re.sub(r"<center>|</center>|</a>","",data)
-    data = re.sub(r"<td class='tam(\d+)'></td></tr>",r"<td class='tam\1'>SD</td></tr>",data)
+    data = re.sub(r"<center>|</center>|</a>", "", data)
+    data = re.sub(r'<div class="grid_content([^>]+)><span></span>',r'<div class="grid_content\1><span>SD</span>', data)
 
     '''
-    <tr>
-    <td class='tam*N*'><a href='(*URL*)'*ATTR*>
-    <img src='*PATH*(*IDIOMA*).*EXT*'*ATTR*></td>
-    <td class='tam*N*'>(*FECHA*)</td>
-    <td class='tam*N*'><a href='*URL*'*ATTR*>
-    <img src='*PATH*(*SERVIDOR*).*EXT*'*ATTR*></td>
-    <td class='tam*N*'><a href='*URL*'*ATTR*>(*UPLOADER*)</td>
-    <td class='tam*N*'>(*SUB|CALIDAD*)</td>
-    </tr>
+    <td><div class="grid_content*ATTR*><span>(*FECHA*)</span></div></td>
+    <td>
+    <div class="grid_content2*ATTR*><span><img src="*PATH*/(*IDIOMA*)\.*ATTR*></span></td>
+    <td><div class="grid_content*ATTR*><span><a href="(*ENLACE*)"*ATTR*><img src='/servidores/(*SERVIDOR*).*ATTR*></span></div></td>"
+    <td>
+    <div class="grid_content*ATTR*><span>(*UPLOADER*)</span></td>
+    <td>
+    <div class="grid_content*ATTR*><span>(*SUB|CALIDAD*)</span></td>
     '''
 
-    online = scrapertools.get_match(data,"<thead><tbody>(.*?)<table class='zebra'>")
-    download = scrapertools.get_match(data,"<caption class='tam16'>Descarga.*?<thead><tbody>(.*?)</tbody></table>")
+    online = scrapertools.get_match(data, '<table class="as_gridder_table">(.+?)</table>')
+    download = scrapertools.get_match(data, '<div class="grid_heading"><h2>Descarga</h2></div>(.*)')
 
     online = re.sub(
-        r"<tr>" + \
-         "<td class='tam12'><a href='([^']+)'[^>]+>" + \
-         "<img src='/banderas/([^\.]+)\.[^>]+></td>" + \
-         "<td class='tam12'>([^<]+)</td>" + \
-         "<td class='tam12'><[^>]+>" + \
-         "<img src='/servidores/([^\.]+)\.[^>]+></td>" + \
-         "<td class='tam12'><[^>]+>([^<]+)</td>" + \
-         "<td class='tam12'>([^<]+)</td>" + \
-         "</tr>",
-        r"<patron>\1;\2;\3;\4;\5;\6;Ver</patron>",
+        r"<td><div class=\"grid_content[^>]+><span>([^>]+)</span></div></td>" + \
+         "<td>" + \
+         "<div class=\"grid_content2[^>]+><span><img src=\".+?banderas/([^\.]+)\.[^>]+></span></td>" + \
+         "<td><div class=\"grid_content[^>]+><span><a href=\"([^\"]+)\"[^>]+><img src='/servidores/([^\.]+)\.[^>]+></span></div></td>" + \
+         "<td>" + \
+         "<div class=\"grid_content[^>]+><span>([^>]+)</span></td>" + \
+         "<td>" + \
+         "<div class=\"grid_content[^>]+><span>([^>]+)</span></td>",
+        r"<patron>\3;\2;\1;\4;\5;\6;Ver</patron>",
         online
     )
+
     download = re.sub(
-        r"<tr>" + \
-         "<td class='tam12'><a href='([^']+)'[^>]+>" + \
-         "<img src='/banderas/([^\.]+)\.[^>]+></td>" + \
-         "<td class='tam12'>([^<]+)</td>" + \
-         "<td class='tam12'><[^>]+>" + \
-         "<img src='/servidores/([^\.]+)\.[^>]+></td>" + \
-         "<td class='tam12'><[^>]+>([^<]+)</td>" + \
-         "<td class='tam12'>([^<]+)</td>" + \
-         "</tr>",
-        r"<patron>\1;\2;\3;\4;\5;\6;Descargar</patron>",
+        r"<td><div class=\"grid_content[^>]+><span>([^>]+)</span></div></td>" + \
+         "<td>" + \
+         "<div class=\"grid_content2[^>]+><span><img src=\".+?banderas/([^\.]+)\.[^>]+></span></td>" + \
+         "<td><div class=\"grid_content[^>]+><span><a href=\"([^\"]+)\"[^>]+><img src='/servidores/([^\.]+)\.[^>]+></span></div></td>" + \
+         "<td>" + \
+         "<div class=\"grid_content[^>]+><span>([^>]+)</span></td>" + \
+         "<td>" + \
+         "<div class=\"grid_content[^>]+><span>([^>]+)</span></td>",
+        r"<patron>\3;\2;\1;\4;\5;\6;Descargar</patron>",
         download
     )
 
@@ -215,4 +244,18 @@ def play(item):
         videoitem.title = item.title
         videoitem.channel = __channel__
 
-    return itemlist    
+    return itemlist
+
+def get_thumbnail( thumb_name = None ):
+    img_path = config.get_runtime_path() + '/resources/images/squares'
+    if thumb_name:
+        file_path = os.path.join(img_path, thumb_name)
+        if os.path.isfile(file_path):
+            thumb_path = file_path
+        else:
+            thumb_path = urlparse.urljoin(get_thumbnail_path(), thumb_name)
+    else:
+        thumb_path = urlparse.urljoin(get_thumbnail_path(), thumb_name)
+
+    return thumb_path
+

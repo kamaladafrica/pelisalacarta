@@ -223,12 +223,14 @@ def update(params):
     logger.info("pelisalacarta.core.updater ...fichero borrado")
 
 def get_channel_remote_url(channel_name):
-    if channel_name<>"channelselector":
-        remote_channel_url = "http://xbmc-tvalacarta.googlecode.com/svn/trunk/"+config.PLUGIN_NAME+"/"+config.PLUGIN_NAME+"/channels/"+channel_name+".py"
-        remote_version_url = "http://xbmc-tvalacarta.googlecode.com/svn/trunk/"+config.PLUGIN_NAME+"/"+config.PLUGIN_NAME+"/channels/"+channel_name+".xml"
-    else:
-        remote_channel_url = "http://xbmc-tvalacarta.googlecode.com/svn/trunk/"+config.PLUGIN_NAME+"/"+channel_name+".py"
-        remote_version_url = "http://xbmc-tvalacarta.googlecode.com/svn/trunk/"+config.PLUGIN_NAME+"/"+channel_name+".xml"
+
+    _remote_channel_url_ = "https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/"
+
+    if channel_name <> "channelselector":
+        _remote_channel_url_+= "channels/"
+
+    remote_channel_url = _remote_channel_url_+channel_name+".py"
+    remote_version_url = _remote_channel_url_+channel_name+".xml" 
 
     logger.info("pelisalacarta.core.updater remote_channel_url="+remote_channel_url)
     logger.info("pelisalacarta.core.updater remote_version_url="+remote_version_url)
@@ -268,7 +270,12 @@ def updatechannel(channel_name):
     try:
         data = scrapertools.cachePage( remote_version_url )
         logger.info("pelisalacarta.core.updater remote_data="+data)
-        patronvideos  = '<tag>([^<]+)</tag>'
+        
+        if "<tag>" in data: 
+            patronvideos  = '<tag>([^<]+)</tag>'
+        elif "<version>" in data: 
+            patronvideos  = '<version>([^<]+)</version>'
+
         matches = re.compile(patronvideos,re.DOTALL).findall(data)
         remote_version = int(matches[0])
     except:
@@ -282,7 +289,12 @@ def updatechannel(channel_name):
         data = infile.read()
         infile.close();
         logger.info("pelisalacarta.core.updater local_data="+data)
-        patronvideos  = '<tag>([^<]+)</tag>'
+
+        if "<tag>" in data:
+            patronvideos  = '<tag>([^<]+)</tag>'
+        elif "<version>" in data:
+            patronvideos  = '<version>([^<]+)</version>' 
+
         matches = re.compile(patronvideos,re.DOTALL).findall(data)
         local_version = int(matches[0])
     else:

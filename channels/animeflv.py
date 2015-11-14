@@ -12,6 +12,7 @@ from core import logger
 from core import config
 from core import scrapertools
 from core.item import Item
+from lib import requests
 
 DEBUG = config.get_setting("debug")
 
@@ -28,7 +29,7 @@ host = "http://animeflv.net/"
 # Cargar los datos con la librería 'requests'
 def get_page(url):
 
-    from lib import requests
+
     response = requests.get(url)
     return response.status_code, response.content
 
@@ -102,9 +103,9 @@ def letras(item):
     itemlist = []
 
     status_code, data = get_page(item.url)
-    logger.info("pelisalacarta.channels.animeflv **** {}".format(status_code))
+    logger.info("pelisalacarta.channels.animeflv **** {0}".format(status_code))
 
-    if status_code == 200:
+    if status_code == requests.codes.ok:
 
         data = scrapertools.get_match(data, '<div class="alfabeto_box"(.*?)</div>')
         patron = '<a href="([^"]+)[^>]+>([^<]+)</a>'
@@ -116,14 +117,14 @@ def letras(item):
             thumbnail = ""
             plot = ""
             if DEBUG:
-                logger.info("title=[{}], url=[{}], thumbnail=[{}]".format(title, url, thumbnail))
+                logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
 
             itemlist.append(Item(channel=__channel__, action="series", title=title, url=url, thumbnail=thumbnail,
                                  plot=plot))
 
     else:
-        itemlist.append(Item(channel=__channel__, action="series",
-                             title="No se ha podido cargar la pagina ERROR:{}".format(status_code), url="",
+        itemlist.append(Item(channel=__channel__, action="mainlist",
+                             title="No se ha podido cargar la pagina ERROR:{0}".format(status_code), url="",
                              thumbnail="", plot=""))
 
     return itemlist
@@ -135,10 +136,10 @@ def generos(item):
     itemlist = []
 
     status_code, data = get_page(item.url)
-    logger.info("pelisalacarta.channels.animeflv **** {}".format(item.url))
-    logger.info("pelisalacarta.channels.animeflv **** {}".format(status_code))
+    logger.info("pelisalacarta.channels.animeflv **** {0}".format(item.url))
+    logger.info("pelisalacarta.channels.animeflv **** {0}".format(status_code))
 
-    if status_code == 200:
+    if status_code == requests.codes.ok:
 
         data = scrapertools.get_match(data, '<div class="generos_box"(.*?)</div>')
         patron = '<a href="([^"]+)[^>]+>([^<]+)</a>'
@@ -150,14 +151,14 @@ def generos(item):
             thumbnail = ""
             plot = ""
             if DEBUG:
-                logger.info("title=[{}], url=[{}], thumbnail=[{}]".format(title, url, thumbnail))
+                logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
 
             itemlist.append(Item(channel=__channel__, action="series", title=title, url=url, thumbnail=thumbnail,
                                  plot=plot))
 
     else:
-        itemlist.append(Item(channel=__channel__, action="series",
-                             title="No se ha podido cargar la pagina ERROR:{}".format(status_code), url="",
+        itemlist.append(Item(channel=__channel__, action="mainlist",
+                             title="No se ha podido cargar la pagina ERROR:{0}".format(status_code), url="",
                              thumbnail="", plot=""))
 
     return itemlist
@@ -168,14 +169,14 @@ def search(item, texto):
     if item.url == "":
         item.url = urlparse.urljoin(host, "animes/?buscar=")
     texto = texto.replace(" ", "+")
-    item.url = item.url+texto
+    item.url = "{0}{1}".format(item.url, texto)
     try:
         return series(item)
     # Se captura la excepción, para no interrumpir al buscador global si un canal falla
     except:
         import sys
         for line in sys.exc_info():
-            logger.error("{}".format(line))
+            logger.error("{0}".format(line))
         return []
 
 
@@ -185,10 +186,10 @@ def novedades(item):
     itemlist = []
 
     status_code, data = get_page(item.url)
-    logger.info("pelisalacarta.channels.animeflv **** {}".format(item.url))
-    logger.info("pelisalacarta.channels.animeflv **** {}".format(status_code))
+    logger.info("pelisalacarta.channels.animeflv **** {0}".format(item.url))
+    logger.info("pelisalacarta.channels.animeflv **** {0}".format(status_code))
 
-    if status_code == 200:
+    if status_code == requests.codes.ok:
 
         '''
         <div class="not">
@@ -212,14 +213,15 @@ def novedades(item):
             scrapedthumbnail = urlparse.urljoin(item.url, match[2].replace("mini", "portada"))
             scrapedplot = ""
             if DEBUG:
-                logger.info("title=[{}], url=[{}], thumbnail=[{}]".format(scrapedtitle, scrapedurl, scrapedthumbnail))
+                logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(scrapedtitle, scrapedurl,
+                                                                             scrapedthumbnail))
 
             itemlist.append(Item(channel=__channel__, action="findvideos", title=scrapedtitle, url=scrapedurl,
                                  thumbnail=scrapedthumbnail, plot=scrapedplot, fulltitle=fulltitle, viewmode="movie"))
 
     else:
-        itemlist.append(Item(channel=__channel__, action="series",
-                             title="No se ha podido cargar la pagina ERROR:{}".format(status_code), url="",
+        itemlist.append(Item(channel=__channel__, action="mainlist",
+                             title="No se ha podido cargar la pagina ERROR:{0}".format(status_code), url="",
                              thumbnail="", plot=""))
 
     return itemlist
@@ -231,10 +233,10 @@ def series(item):
     itemlist = []
 
     status_code, data = get_page(item.url)
-    logger.info("pelisalacarta.channels.animeflv **** {}".format(item.url))
-    logger.info("pelisalacarta.channels.animeflv **** {}".format(status_code))
+    logger.info("pelisalacarta.channels.animeflv **** {0}".format(item.url))
+    logger.info("pelisalacarta.channels.animeflv **** {0}".format(status_code))
 
-    if status_code == 200:
+    if status_code == requests.codes.ok:
 
         '''
         <div class="aboxy_lista">
@@ -279,7 +281,7 @@ def series(item):
             plot = scrapertools.htmlclean(scrapedplot)
             show = title
             if DEBUG:
-                logger.info("title=[{}], url=[{}], thumbnail=[{}]".format(title, url, thumbnail))
+                logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
             itemlist.append(Item(channel=__channel__, action="episodios", title=title, url=url, thumbnail=thumbnail,
                                  plot=plot, show=show, fulltitle=fulltitle, fanart=thumbnail,
                                  viewmode="movies_with_plot", folder=True))
@@ -297,8 +299,8 @@ def series(item):
                                      thumbnail=scrapedthumbnail, plot=scrapedplot, folder=True))
 
     else:
-        itemlist.append(Item(channel=__channel__, action="series",
-                             title="No se ha podido cargar la pagina ERROR:{}".format(status_code), url="",
+        itemlist.append(Item(channel=__channel__, action="mainlist",
+                             title="No se ha podido cargar la pagina ERROR:{0}".format(status_code), url="",
                              thumbnail="", plot=""))
 
     return itemlist
@@ -309,10 +311,10 @@ def episodios(item):
     itemlist = []
 
     status_code, data = get_page(item.url)
-    logger.info("pelisalacarta.channels.animeflv **** {}".format(item.url))
-    logger.info("pelisalacarta.channels.animeflv **** {}".format(status_code))
+    logger.info("pelisalacarta.channels.animeflv **** {0}".format(item.url))
+    logger.info("pelisalacarta.channels.animeflv **** {0}".format(status_code))
 
-    if status_code == 200:
+    if status_code == requests.codes.ok:
 
         '''
         <div class="tit">Listado de episodios <span class="fecha_pr">Fecha Pr&oacute;ximo: 2013-06-11</span></div>
@@ -344,33 +346,36 @@ def episodios(item):
 
             season = 1
             episode = 1
-            patron = re.escape(item.show) + "\s+(\d+)"
-            # logger.info("title {}".format(title))
-            # logger.info("patron {}".format(patron))
+            patron = "{0}{1}".format(re.escape(item.show), "\s+(\d+)")
+            # logger.info("title {0}".format(title))
+            # logger.info("patron {0}".format(patron))
 
             try:
                 episode = scrapertools.get_match(title, patron)
-                # logger.info("episode {}".format(episode))
+                episode = int(episode)
+                # logger.info("episode {0}".format(episode))
             except IndexError:
+                pass
+            except ValueError:
                 pass
 
             if len(str(episode)) == 1:
-                title = "{}x0{}".format(season, episode)
+                title = "{0}x0{1}".format(season, episode)
             else:
-                title = "{}x{}".format(season, episode)
+                title = "{0}x{1}".format(season, episode)
 
-            title = "{} {}".format(item.show, title)
+            title = "{0} {1}".format(item.show, title)
 
             if DEBUG:
-                logger.info("title=[{}], url=[{}], thumbnail=[{}]".format(title, url, thumbnail))
+                logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
 
             itemlist.append(Item(channel=__channel__, action="findvideos", title=title, url=url,
-                                 thumbnail=thumbnail, plot=plot, show=item.show, fulltitle=item.show+" "+title,
-                                 fanart=thumbnail, viewmode="movies_with_plot", folder=True))
+                                 thumbnail=thumbnail, plot=plot, show=item.show, fulltitle="{0} {1}"
+                                 .format(item.show, title), fanart=thumbnail, viewmode="movies_with_plot", folder=True))
 
     else:
-        itemlist.append(Item(channel=__channel__, action="series",
-                             title="No se ha podido cargar la pagina ERROR:{}".format(status_code), url="",
+        itemlist.append(Item(channel=__channel__, action="mainlist",
+                             title="No se ha podido cargar la pagina ERROR:{0}".format(status_code), url="",
                              thumbnail="", plot=""))
 
     if config.get_library_support() and len(itemlist) > 0:
@@ -388,19 +393,19 @@ def findvideos(item):
     itemlist = []
 
     status_code, data = get_page(item.url)
-    logger.info("pelisalacarta.channels.animeflv **** {}".format(item.url))
-    logger.info("pelisalacarta.channels.animeflv **** {}".format(status_code))
+    logger.info("pelisalacarta.channels.animeflv **** {0}".format(item.url))
+    logger.info("pelisalacarta.channels.animeflv **** {0}".format(status_code))
 
-    if status_code == 200:
+    if status_code == requests.codes.ok:
 
         data = scrapertools.get_match(data, "var videos \= (.*?)$")
-        # logger.info("data={}".format(data))
+        # logger.info("data={0}".format(data))
 
         itemlist = []
 
         data = data.replace("\\\\", "")
         data = data.replace("\\/", "/")
-        logger.info("data={}".format(data))
+        logger.info("data={0}".format(data))
 
         from servers import servertools
         itemlist.extend(servertools.find_video_items(data=data))
@@ -409,8 +414,8 @@ def findvideos(item):
             videoitem.folder = False
 
     else:
-        itemlist.append(Item(channel=__channel__, action="series",
-                             title="No se ha podido cargar la pagina ERROR:{}".format(status_code), url="",
+        itemlist.append(Item(channel=__channel__, action="mainlist",
+                             title="No se ha podido cargar la pagina ERROR:{0}".format(status_code), url="",
                              thumbnail="", plot=""))
 
     return itemlist
