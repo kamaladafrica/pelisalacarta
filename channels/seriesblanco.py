@@ -136,52 +136,55 @@ def findvideos(item):
 
     # Descarga la página
     data = scrapertools.cache_page(item.url)
+
+    # Hacer la petición ajax con los enlaces
+    params = scrapertools.get_match(data, 'data : "(action=load[^\"]+)"')
+    data = scrapertools.cachePagePost(host + 'ajax.php', params)
+
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s","",data)
     data = re.sub(r"<!--.*?-->","",data)
     data = unicode( data, "iso-8859-1" , errors="replace" ).encode("utf-8")
 
-    data = re.sub(r"<center>|</center>|</a>","",data)
-    data = re.sub(r"<td class='tam(\d+)'></td></tr>",r"<td class='tam\1'>SD</td></tr>",data)
+    data = re.sub(r"<center>|</center>|</a>", "", data)
+    data = re.sub(r'<div class="grid_content([^>]+)><span></span>',r'<div class="grid_content\1><span>SD</span>', data)
 
     '''
-    <tr>
-    <td class='tam*N*'><a href='(*URL*)'*ATTR*>
-    <img src='*PATH*(*IDIOMA*).*EXT*'*ATTR*></td>
-    <td class='tam*N*'>(*FECHA*)</td>
-    <td class='tam*N*'><a href='*URL*'*ATTR*>
-    <img src='*PATH*(*SERVIDOR*).*EXT*'*ATTR*></td>
-    <td class='tam*N*'><a href='*URL*'*ATTR*>(*UPLOADER*)</td>
-    <td class='tam*N*'>(*SUB|CALIDAD*)</td>
-    </tr>
+    <td><div class="grid_content*ATTR*><span>(*FECHA*)</span></div></td>
+    <td>
+    <div class="grid_content2*ATTR*><span><img src="*PATH*/(*IDIOMA*)\.*ATTR*></span></td>
+    <td><div class="grid_content*ATTR*><span><a href="(*ENLACE*)"*ATTR*><img src='/servidores/(*SERVIDOR*).*ATTR*></span></div></td>"
+    <td>
+    <div class="grid_content*ATTR*><span>(*UPLOADER*)</span></td>
+    <td>
+    <div class="grid_content*ATTR*><span>(*SUB|CALIDAD*)</span></td>
     '''
 
-    online = scrapertools.get_match(data,"<thead><tbody>(.*?)<table class='zebra'>")
-    download = scrapertools.get_match(data,"<caption class='tam16'>Descarga.*?<thead><tbody>(.*?)</tbody></table>")
+    online = scrapertools.get_match(data, '<table class="as_gridder_table">(.+?)</table>')
+    download = scrapertools.get_match(data, '<div class="grid_heading"><h2>Descarga</h2></div>(.*)')
 
     online = re.sub(
-        r"<tr>" + \
-         "<td class='tam12'><a href='([^']+)'[^>]+>" + \
-         "<img src='/banderas/([^\.]+)\.[^>]+></td>" + \
-         "<td class='tam12'>([^<]+)</td>" + \
-         "<td class='tam12'><[^>]+>" + \
-         "<img src='/servidores/([^\.]+)\.[^>]+></td>" + \
-         "<td class='tam12'><[^>]+>([^<]+)</td>" + \
-         "<td class='tam12'>([^<]+)</td>" + \
-         "</tr>",
-        r"<patron>\1;\2;\3;\4;\5;\6;Ver</patron>",
+        r"<td><div class=\"grid_content[^>]+><span>([^>]+)</span></div></td>" + \
+         "<td>" + \
+         "<div class=\"grid_content2[^>]+><span><img src=\".+?banderas/([^\.]+)\.[^>]+></span></td>" + \
+         "<td><div class=\"grid_content[^>]+><span><a href=\"([^\"]+)\"[^>]+><img src='/servidores/([^\.]+)\.[^>]+></span></div></td>" + \
+         "<td>" + \
+         "<div class=\"grid_content[^>]+><span>([^>]+)</span></td>" + \
+         "<td>" + \
+         "<div class=\"grid_content[^>]+><span>([^>]+)</span></td>",
+        r"<patron>\3;\2;\1;\4;\5;\6;Ver</patron>",
         online
     )
+
     download = re.sub(
-        r"<tr>" + \
-         "<td class='tam12'><a href='([^']+)'[^>]+>" + \
-         "<img src='/banderas/([^\.]+)\.[^>]+></td>" + \
-         "<td class='tam12'>([^<]+)</td>" + \
-         "<td class='tam12'><[^>]+>" + \
-         "<img src='/servidores/([^\.]+)\.[^>]+></td>" + \
-         "<td class='tam12'><[^>]+>([^<]+)</td>" + \
-         "<td class='tam12'>([^<]+)</td>" + \
-         "</tr>",
-        r"<patron>\1;\2;\3;\4;\5;\6;Descargar</patron>",
+        r"<td><div class=\"grid_content[^>]+><span>([^>]+)</span></div></td>" + \
+         "<td>" + \
+         "<div class=\"grid_content2[^>]+><span><img src=\".+?banderas/([^\.]+)\.[^>]+></span></td>" + \
+         "<td><div class=\"grid_content[^>]+><span><a href=\"([^\"]+)\"[^>]+><img src='/servidores/([^\.]+)\.[^>]+></span></div></td>" + \
+         "<td>" + \
+         "<div class=\"grid_content[^>]+><span>([^>]+)</span></td>" + \
+         "<td>" + \
+         "<div class=\"grid_content[^>]+><span>([^>]+)</span></td>",
+        r"<patron>\3;\2;\1;\4;\5;\6;Descargar</patron>",
         download
     )
 
