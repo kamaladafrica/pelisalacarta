@@ -11,6 +11,7 @@ from core import config
 from core import scrapertools
 from core.item import Item
 from servers import servertools
+from channelselector import get_thumbnail_path
 
 
 __channel__ = "seriesblanco"
@@ -39,10 +40,14 @@ def isGeneric():
 def mainlist(item):
     logger.info("pelisalacarta.seriesblanco mainlist")
 
+    thumb_series    = get_thumbnail("thumb_canales_series.png")
+    thumb_series_az = get_thumbnail("thumb_canales_series_az.png")
+    thumb_buscar    = get_thumbnail("thumb_buscar.png")
+
     itemlist = []
-    itemlist.append( Item( channel=__channel__, title="Series Listado Alfabetico" , action="series_listado_alfabetico") )
-    itemlist.append( Item( channel=__channel__, title="Todas las Series", action="series", url=urlparse.urljoin(host,"lista_series/") ) )
-    itemlist.append( Item( channel=__channel__, title="Buscar...", action="search", url=host, extra='buscar') )
+    itemlist.append( Item( channel=__channel__, title="Series Listado Alfabetico" , action="series_listado_alfabetico", thumbnail=thumb_series_az ) )
+    itemlist.append( Item( channel=__channel__, title="Todas las Series", action="series", url=urlparse.urljoin(host,"lista_series/"), thumbnail=thumb_series ) )
+    itemlist.append( Item( channel=__channel__, title="Buscar...", action="search", url=host, thumbnail=thumb_buscar, extra='buscar') )
 
     return itemlist
 
@@ -239,4 +244,18 @@ def play(item):
         videoitem.title = item.title
         videoitem.channel = __channel__
 
-    return itemlist    
+    return itemlist
+
+def get_thumbnail( thumb_name = None ):
+    img_path = config.get_runtime_path() + '/resources/images/squares'
+    if thumb_name:
+        file_path = os.path.join(img_path, thumb_name)
+        if os.path.isfile(file_path):
+            thumb_path = file_path
+        else:
+            thumb_path = urlparse.urljoin(get_thumbnail_path(), thumb_name)
+    else:
+        thumb_path = urlparse.urljoin(get_thumbnail_path(), thumb_name)
+
+    return thumb_path
+
