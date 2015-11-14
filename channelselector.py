@@ -9,6 +9,7 @@ import sys
 from core import config
 from core import logger
 from core.item import Item
+from core import channeltools
 
 DEBUG = True
 CHANNELNAME = "channelselector"
@@ -100,11 +101,11 @@ def getchanneltypes(preferred_thumb=""):
     #itemlist.append( Item( title=config.get_localized_string(30126) , channel="channelselector" , action="listchannels" , category="M"   , thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),"thumb_canales_musica")))
     itemlist.append( Item( title="Bittorrent" , channel="channelselector" , action="listchannels" , category="T"   , thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),"thumb_canales_torrent")))
     itemlist.append( Item( title=config.get_localized_string(30127) , channel="channelselector" , action="listchannels" , category="L"   , thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),"thumb_canales_latino")))
-    if config.get_setting("enableadultmode") == "true": itemlist.append( Item( title=config.get_localized_string(30126) , channel="channelselector" , action="listchannels" , category="X"   , thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),"thumb_canales_adultos")))
+    if config.get_setting("adult_mode") == "true": itemlist.append( Item( title=config.get_localized_string(30126) , channel="channelselector" , action="listchannels" , category="X"   , thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),"thumb_canales_adultos")))
     #itemlist.append( Item( title=config.get_localized_string(30127) , channel="channelselector" , action="listchannels" , category="G"   , thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),"thumb_canales_servidores")))
     #itemlist.append( Item( title=config.get_localized_string(30134) , channel="channelselector" , action="listchannels" , category="NEW" , thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),"novedades")))
     return itemlist
-    
+
 def channeltypes(params,url,category):
     logger.info("channelselector.mainlist channeltypes")
 
@@ -173,22 +174,12 @@ def filterchannels(category,preferred_thumb=""):
     for channel in os.listdir(os.path.join(config.get_runtime_path(),"channels")):
       if channel.endswith(".xml"):
           try:
-            #Leemos los datos
-            XMLData= open(os.path.join(config.get_runtime_path(),"channels",channel), "rb").read()
-            ChannelData = {}
-            ChannelData["category"] = re.compile("<category>([^<]*)</category>",re.DOTALL).findall(XMLData)
-            ChannelData["title"] = re.compile("<name>([^<]*)</name>",re.DOTALL).findall(XMLData)[0]
-            ChannelData["channel"] = re.compile("<id>([^<]*)</id>",re.DOTALL).findall(XMLData)[0]
-            ChannelData["active"] = re.compile("<active>([^<]*)</active>",re.DOTALL).findall(XMLData)[0]
-            ChannelData["adult"] = re.compile("<adult>([^<]*)</adult>",re.DOTALL).findall(XMLData)[0]
-            ChannelData["language"] = re.compile("<language>([^<]*)</language>",re.DOTALL).findall(XMLData)[0]
-            ChannelData["thumbnail"] = re.compile("<thumbnail>([^<]*)</thumbnail>",re.DOTALL).findall(XMLData)[0]
-            if not ChannelData["thumbnail"]: ChannelData["thumbnail"] =get_thumbnail_path(preferred_thumb)+ChannelData["channel"]+".png"
-            ChannelData["fanart"] = re.compile("<fanart>([^<]*)</fanart>",re.DOTALL).findall(XMLData)[0]
-            ChannelData["type"] = "generic"
-   
+            ChannelData = channeltools.get_channel_parameters(channel[:-4])
+            if not ChannelData["thumbnail"]: 
+                ChannelData["thumbnail"] = get_thumbnail_path(preferred_thumb)+ChannelData["channel"]+".png"
+        
             if not ChannelData["active"] == "true":  continue #Si no esta activo lo saltamos
-            if ChannelData["adult"] == "true" and not config.get_setting("enableadultmode") == "true": continue # Si es adulto y no estan activados lo saltamos
+            if ChannelData["adult"] == "true" and not config.get_setting("adult_mode") == "true": continue # Si es adulto y no estan activados lo saltamos
             if not category=="all" and not category in ChannelData["category"] and not "all" in ChannelData["category"]: continue #Si no corresponde la categoria lo saltamos
             if not ChannelData["language"]=="" and not idiomav=="" and not idiomav.lower() in ChannelData["language"]: continue #Si no corresponde el idioma lo saltamos
             

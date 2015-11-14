@@ -169,7 +169,7 @@ def generos(item):
         logger.info(scrapedtitle)
 				
         if scrapedtitle=="Eroticas +18":		
-            if config.get_setting("enableadultmode") == "true":
+            if config.get_setting("adult_mode") == "true":
                 itemlist.append( Item(channel=__channel__, action="listado2", title="Eroticas +18" , url="http://www.myhotamateurvideos.com" , thumbnail=scrapedthumbnail , plot=scrapedplot , extra="" , folder=True) )
         else:
             if scrapedtitle <> "" and len(scrapedtitle) < 20 and scrapedtitle <> "Iniciar Sesion":

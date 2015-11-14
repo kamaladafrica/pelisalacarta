@@ -9,9 +9,9 @@
     <setting id="forceview" type="bool" label ="30043" default="false"/>
     <setting id="debug" type="bool" label="30003" default="false"/>
 	<setting type="sep" />
-	<setting label="Modo Adulto" type="lsep" />
-	<setting id="adultpassword_introducida" type="text" label="Introduzca la contraseña" default=""/>
-	<setting id="enableadultmode" type="bool" label="30002" default="true" enable="eq(-1,1234)" subsetting="true"/>
+	<setting label="Canales para adultos" type="lsep" />
+    <setting id="adult_mode" type="bool" label="30002" default="false"/>
+    <setting id="adult_pin" type="text" label="PIN para abrir canal de adultos" option="hidden" default=""/>
 	<setting type="sep" />
 	<setting label="Actualizaciones" type="lsep" />
 	<setting id="updatecheck2" type="bool" label="30001" default="true"/>
