@@ -1,7 +1,17 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<version>
-	<name>filmsenzalimiti</name>
-	<tag>2</tag>
+<channel>
+	<id>filmsenzalimiti</id>
+	<name>Film Senza Limiti (IT)</name>
+	<language>it</language>
+	<update_url></update_url>
+	<active>true</active>
+	<include_in_global_search>false</include_in_global_search>
+	<version>2</version>
+	<adult>false</adult>
 	<date>23/08/2013</date>
 	<changes>Actualizado</changes>
-</version>
+	<categories>
+		<category>movie</category>
+		<category>serie</category>
+	</categories>
+</channel>

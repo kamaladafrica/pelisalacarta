@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<channel>
+	<id>tubehentai</id>
+	<name>tubehentai</name>
+	<language>es</language>
+	<update_url></update_url>
+	<active>true</active>
+	<include_in_global_search>false</include_in_global_search>
+	<version>0</version>
+	<adult>true</adult>
+	<date></date>
+	<changes></changes>
+	<categories>
+		<category>adult</category>
+		<category>movie</category>
+	</categories>
+</channel>

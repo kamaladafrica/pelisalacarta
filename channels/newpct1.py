@@ -97,7 +97,7 @@ def listado(item):
     data = unicode( data, "iso-8859-1" , errors="replace" ).encode("utf-8")    
         
     patron = '<ul class="'+item.extra+'">(.*?)</ul>'
-    #logger.info("[newpct1.py] patron="+patron)
+    logger.info("[newpct1.py] patron="+patron)
     fichas = scrapertools.get_match(data,patron)
 
     #<li><a href="http://www.newpct1.com/pelicula/x-men-dias-del-futuro-pasado/ts-screener/" title="Descargar XMen Dias Del Futuro gratis"><img src="http://www.newpct1.com/pictures/f/58066_x-men-dias-del-futuro--blurayrip-ac3-5.1.jpg" width="130" height="180" alt="Descargar XMen Dias Del Futuro gratis"><h2>XMen Dias Del Futuro </h2><span>BluRayRip AC3 5.1</span></a></li>
@@ -143,13 +143,12 @@ def listado(item):
         else:    
             title= title.replace("Descargar","",1).strip()
             if title.endswith("gratis"): title= title[:-7]
-            
-            
-        show = title    
+        
+        show = title
         if item.extra!="buscar-list":
             title = title + ' ' + calidad
             
-        itemlist.append( Item(channel=__channel__, action=action, title=title, url=url, thumbnail=thumbnail, extra=extra, show=show, fanart=item.fanart) )
+        itemlist.append( Item(channel=__channel__, action=action, title=title, url=url, thumbnail=thumbnail, extra=extra, show=show ) )
 
     if "pagination" in data:
         patron = '<ul class="pagination">(.*?)</ul>'
@@ -187,16 +186,14 @@ def completo(item):
                 item.url=item.url.replace("categoryID=","categoryID="+categoryID)
                 
             #Fanart
-            try:
-                from core.tmdb import Tmdb
-                oTmdb= Tmdb(texto_buscado=item.show,tipo="tv",idioma_busqueda="es")
-                item.fanart=oTmdb.get_backdrop()
-                item.plot=oTmdb.get_sinopsis()
-                print item.plot
-            except:
-                pass
+            oTvdb= TvDb()
+            serieID=oTvdb.get_serieId_by_title(item.show)
+            fanart = oTvdb.get_graphics_by_serieId(serieID)
+            if len(fanart)>0:
+                item.fanart = fanart[0]
         else:
             item_title= item.show
+            item.title= item.show
         
         items_programas = get_episodios(item)        
     else:
@@ -235,22 +232,7 @@ def completo(item):
             # Añade a la lista completa y sale
             itemlist.extend( items_programas )
             salir = True          
-    
-    # Añadimos sinopsis e imagenes para cada capitulo
-    try:
-        if oTmdb.get_id !="":
-            for i in itemlist:
-                num_episodio=i.title.rsplit('(')[1].split(')')[0]
-                try:
-                    episodio=oTmdb.get_episodio(temporada=num_episodio.split('x')[0],capitulo=num_episodio.split('x')[1])
-                    if episodio["episodio_sinopsis"] !="": i.plot= episodio["episodio_sinopsis"]
-                    if episodio["episodio_imagen"] !="": i.thumbnail= episodio["episodio_imagen"]
-                    if episodio["episodio_titulo"] !="": i.title = i.title + ": " + episodio["episodio_titulo"]
-                except: pass
-    except:
-        pass
-
-    
+      
     if (config.get_library_support() and len(itemlist)>0 and item.extra.startswith("serie")) :
         itemlist.append( Item(channel=item.channel, title="Añadir esta serie a la biblioteca", url=item.url, action="add_serie_to_library", extra="completo###serie_add" , show= item.show))
     logger.info("[newpct1.py] completo items="+ str(len(itemlist)))
@@ -263,7 +245,7 @@ def get_episodios(item):
     data = re.sub(r'\n|\r|\t|\s{2}|<!--.*?-->|<i class="icon[^>]+"></i>',"",scrapertools.cache_page(item.url))
     data = unicode( data, "iso-8859-1" , errors="replace" ).encode("utf-8")
     
-    #logger.info("[newpct1.py] data=" +data)
+    logger.info("[newpct1.py] data=" +data)
       
     patron = '<ul class="buscar-list">(.*?)</ul>'
     #logger.info("[newpct1.py] patron=" + patron)
@@ -325,7 +307,7 @@ def get_episodios(item):
                 title = item.title + " ("+ temp + 'x' + cap + ")"
             
             #logger.info("[newpct1.py] get_episodios: fanart= " +item.fanart)
-            itemlist.append( Item(channel=__channel__, action="findvideos", title=title, url=url, thumbnail=item.thumbnail, show=item.show, fanart=item.fanart, plot= item.plot) )
+            itemlist.append( Item(channel=__channel__, action="findvideos", title=title, url=url, thumbnail=item.thumbnail, show=item.show, fanart=item.fanart) )
         except:
             logger.info("[newpct1.py] ERROR al añadir un episodio")
     if "pagination" in data:
@@ -355,21 +337,7 @@ def buscar_en_subcategoria(titulo, categoria):
 def findvideos(item):
     logger.info("[newpct1.py] findvideos")
     itemlist=[]   
-    
-
-    if "1.com/pelicula" in item.url:
-        # Buscamos el fanart en TMDB
-        try:
-            year=scrapertools.find_single_match(item.show,'(\d{4}$)')
-            show = item.show.replace(year,"")
-            from core.tmdb import Tmdb
-            oTmdb= Tmdb(texto_buscado=show,year=year,tipo="movie")
-            item.fanart=oTmdb.get_backdrop()
-            item.plot=oTmdb.get_sinopsis()
-        except:
-            pass
-            
-    
+          
     ## Cualquiera de las tres opciones son válidas
     #item.url = item.url.replace("1.com/","1.com/ver-online/")
     #item.url = item.url.replace("1.com/","1.com/descarga-directa/")
@@ -390,7 +358,7 @@ def findvideos(item):
     # escraped torrent
     url = scrapertools.find_single_match(data,patron)
     if url!="":
-        itemlist.append( Item(fanart=item.fanart, channel=__channel__, action="play", server="torrent", title=title+" [torrent]", fulltitle=title, url=url , thumbnail=caratula, plot=item.plot, folder=False) )
+        itemlist.append( Item(channel=__channel__, action="play", server="torrent", title=title+" [torrent]", fulltitle=title, url=url , thumbnail=caratula, plot=item.plot, folder=False) )
 
     # escraped ver vídeos, descargar vídeos un link, múltiples liks
     data = data.replace("'",'"')
@@ -431,27 +399,9 @@ def findvideos(item):
                 #itemlist.append( Item(fanart=item.fanart, channel=__channel__, action="extract_url", server=servidor, title=titulo , fulltitle = item.title, url=enlace , thumbnail=logo , plot=item.plot) )
             except:
                 pass
-    
-    for logo, servidor, idioma, calidad, enlace, titulo in enlaces_descargar:
-        servidor = servidor.replace("uploaded","uploadedto")
-        partes = enlace.split(" ")
-        p = 1
-        for enlace in partes:
-            parte_titulo = titulo+" (%s/%s)" % (p,len(partes)) + " ["+servidor+"]"
-            p+= 1
-            mostrar_server= True
-            if config.get_setting("hidepremium")=="true":
-                mostrar_server= servertools.is_server_enabled (servidor)
-            if mostrar_server:
-                try:
-                    servers_module = __import__("servers."+servidor)
-                    server_module = getattr(servers_module,servidor)
-                    devuelve= server_module.find_videos(enlace)
-                    if devuelve:
-                        enlace=devuelve[0][1]
-                    itemlist.append( Item(fanart=item.fanart, channel=__channel__, action="play", server=servidor, title=titulo , fulltitle = item.title, url=enlace , thumbnail=logo , plot=item.plot, folder=False) )
-                except:
-                    pass
+
+            itemlist.append( Item(channel=__channel__, action="play", server=servidor, title=titulo , fulltitle = item.title, url=enlace , thumbnail=logo , plot=item.plot , folder=False) )
+
     return itemlist
     
     
@@ -476,5 +426,275 @@ def test():
 
     return False
       
-
- 
+'''    
+   Clase TvDb
+   Esta clase podria ir en un fichero externo para ser utilizado por otros canales
+''' 
+class TvDb():
+    
+    def __init__(self,idiomaDef="es"):
+        self.__idiomaDef = idiomaDef #fija el idioma por defecto para el resto de metodos
+               
+    def get_series_by_title(self, title, idioma=""):
+        '''
+        Busqueda de series por titulo
+        @return:
+            Devuelve un documento que representa el xml con todas las series encontradas por orden de mayor similitud
+        @params:
+            title: Titulo de la serie.
+            idioma: Argumento opcional que especifica el idioma de la serie a buscar. Por defecto: idioma seleccionado por defecto al iniciar el objeto
+        '''
+        from xml.dom import minidom
+        if idioma=="": idioma= self.__idiomaDef
+        __getSeriesByTitleUrl ='http://thetvdb.com/api/GetSeries.php?seriesname=%s&language=%s' %(title.replace(' ','%20'), idioma)
+        __data = scrapertools.cache_page(__getSeriesByTitleUrl)
+        xmldoc= None
+        if len(__data)>0:
+            xmldoc = minidom.parseString(__data)
+            logger.info("[TvDb.get_series_by_title] Titulo= " +title+ "; Series encontradas: " + str(len(xmldoc.getElementsByTagName('Series'))))  
+        else:
+            logger.info("[TvDb.get_series_by_title] Error de lectura")
+        return xmldoc          
+    
+    def get_series_by_remoteId(self, imdbid="", zap2it="", idioma=""):
+        '''
+        Busqueda de series por el identificador de Imdb o Zap2it
+        @return:
+            Devuelve un documento que representa el xml con las series encontradas
+        @params:
+            imdbid: The imdb id you're trying to find. Do not use with zap2itid
+            zap2it: The Zap2it / SchedulesDirect ID you're trying to find. Do not use with imdbid
+            language: The language abbreviation, if not provided default is used.
+        '''
+        from xml.dom import minidom
+        if idioma=="": idioma= self.__idiomaDef
+        __getSeriesByRemoteIdUrl="http://thetvdb.com/api/GetSeriesByRemoteID.php?language=%s" %idioma 
+        xmldoc= None
+        
+        if imdbid!='':
+            codigo="imdbid=" + imdbid
+        elif zap2it !='':
+            codigo="zap2it=" + zap2it
+        else:
+            logger.info("[TvDb.get_series_by_remoteId] Error de parametros")
+        
+        __data = scrapertools.cache_page(__getSeriesByRemoteIdUrl +"&" + codigo)
+        if len(__data)>0:
+            xmldoc = minidom.parseString(__data)
+            logger.info("[TvDb.get_series_by_remoteId] Codigo " + codigo + "; Series encontradas: " + str(len(xmldoc.getElementsByTagName('Series'))))  
+        else:
+            logger.info("[TvDb.get_series_by_remoteId] Error de lectura")
+        return xmldoc        
+    
+    def get_serieId_by_remoteId(self, imdbid="", zap2it="", idioma=""):
+        '''
+        Convierte un identificador Imdb o Zap2it en un identificador TvDb
+        @return:
+            Devuelve una cadena con el identificador TvDb de la serie
+        @params:
+            imdbid: The imdb id you're trying to find. Do not use with zap2itid
+            zap2it: The Zap2it / SchedulesDirect ID you're trying to find. Do not use with imdbid
+            language: The language abbreviation, if not provided default is used.
+        '''
+        from xml.dom import minidom
+        xmldoc = self.get_series_by_remoteId(imdbid, zap2it, idioma)
+        itemlist = xmldoc.getElementsByTagName('seriesid') 
+        
+        if imdbid!='':
+            codigo="imdbid=" + imdbid
+        elif zap2it !='':
+            codigo="zap2it=" + zap2it
+        
+        if len(itemlist)>0:    
+            serieId = itemlist[0].childNodes[0].nodeValue
+            logger.info("[TvDb.get_serieId_by_remoteId] Codigo " + codigo + "; serieId= " +serieId)
+            return serieId
+        else:
+            logger.info("[TvDb.get_serieId_by_remoteId] Codigo " + codigo + " no encontrado")
+            return '0'
+    
+    def get_serieId_by_title(self,title, idioma=""):
+        '''
+        Lleva a cabo una busqueda por titulo de series y devuelve el identificador de la serie con mayor similitud
+        @return:
+            Devuelve una cadena con el identificador de la serie cuyo titulo mas se asemeje al buscado
+        @params:
+            title: Titulo de la serie.
+            idioma: Argumento opcional que especifica el idioma de la serie a buscar. Por defecto: idioma seleccionado por defecto al iniciar el objeto
+        '''
+        from xml.dom import minidom
+        xmldoc = self.get_series_by_title(title, idioma)
+        itemlist = xmldoc.getElementsByTagName('seriesid') 
+        if len(itemlist)>0:
+            serieId = itemlist[0].childNodes[0].nodeValue
+            logger.info("[TvDb.get_serieId_by_title] Titulo= " +title+ "; serieId= " +serieId)
+            return serieId
+        else:
+            logger.info("[TvDb.get_serieId_by_title] Titulo= " +title+ "No encontrada")
+            return '0'
+                 
+    def get_banners_by_serieId (self, serieId):
+        '''
+        @return:
+            Devuelve un documento que representa el xml con todos los graficos de la serie
+        @params:
+            serieId: Identificador de la serie.
+        '''
+        from xml.dom import minidom
+        __getBannersBySeriesIdUrl = 'http://thetvdb.com/api/1D62F2F90030C444/series/%s/banners.xml' %serieId
+        __data = scrapertools.cache_page(__getBannersBySeriesIdUrl)
+        xmldoc= None
+        
+        if len(__data)>0:
+            xmldoc = minidom.parseString(__data)
+            logger.info("[TvDb.get_banners_by_serieId] serieId= " +str(serieId) + "; Banners encontrados: " + str(len(xmldoc.getElementsByTagName('Banner'))))  
+        else:
+            logger.info("[TvDb.get_banners_by_serieId] Error de lectura")
+        #return str(len(xmldoc.getElementsByTagName('Banner')))
+        return xmldoc 
+    
+    def get_banners_by_title(self,title, idioma=""):
+        '''
+        @return:
+            Devuelve un documento que representa el xml con todos los graficos de la serie
+        @params:
+            title: Titulo de la serie.
+            idioma: Argumento opcional que especifica el idioma de la serie a buscar. Por defecto: idioma seleccionado por defecto al iniciar el objeto
+        '''
+        from xml.dom import minidom
+        xmldoc= None
+        id= self.get_serieId_by_title(title,idioma)
+        if id>0:
+            xmldoc = self.get_banners_by_serieId(id)
+        #return str(len(xmldoc.getElementsByTagName('Banner')))
+        return xmldoc
+            
+    def get_graphics_by_serieId (self, serieId, bannerType='fanart_vignette', bannerType2='', season=0, *languages  ):
+        '''
+        Busqueda por identificador de los graficos de una serie.
+        @return: 
+            Devuelve una lista de urls de banners de que coinciden con los criterios solicitado.
+        @params:
+            serieId: Identificador de la serie.
+            bannerType: This can be poster, fanart, fanart_vignette, series or season.
+            bannerType2: For series banners it can be text, graphical, or blank. For season banners it can be season or seasonwide. For fanart it can be 1280x720 or 1920x1080. For poster it will always be 680x1000.
+            season: Opcionalmente se puede especificar una temporada en concreto (Por defecto 0, todas las temporadas)
+            languages: Es posible añadir varios separados por comas. (Por defecto se incluyen en ingles y el idioma seleccionado por defecto al iniciar el objeto)
+        '''   
+        from xml.dom import minidom
+        ret= []
+        vignette=False
+        
+        # Comprobamos los parametros pasados
+        if bannerType in ('poster', 'fanart', 'fanart_vignette', 'series', 'season'):
+            if not str(serieId).isdigit() or not str(season).isdigit():
+                logger.info("[TvDb.get_graphics_by_serieId] Error lo argumentos 'serieId' y 'season' deben ser numericos")
+                return []
+            else:
+                if bannerType== 'fanart_vignette':
+                    bannerType= 'fanart'
+                    vignette= True
+                
+                if bannerType== 'poster': bannerType2='680x1000'
+                elif bannerType== 'fanart' and bannerType2 in ('1280x720', '1920x1080',''): pass
+                elif bannerType== 'series ' and bannerType2 in ('text', 'graphical', 'blank'): pass
+                elif bannerType== 'season' and bannerType2 in ('season', 'seasonwide'): pass
+                else:
+                    logger.info("[TvDb.get_graphics_by_serieId] Error argumento 'bannerType2' no valido")
+                    return []
+        else:
+            logger.info("[TvDb.get_graphics_by_serieId] Error argumento 'bannerType' no valido")
+            return []
+        if len(languages)==0:
+            languages= ['en']
+            if self.__idiomaDef not in languages: languages.insert(0,self.__idiomaDef)
+        else:
+            if type(languages[0]) is tuple:  languages= list(languages[0])
+            
+            for lenguage in languages:
+                if len(lenguage) != 2:
+                    logger.info("[TvDb.get_graphics_by_serieId] Error argumento 'languages' no valido")
+                    return []
+        
+        # Obtener coleccion de elementos banner de banners.xml
+        banners = self.get_banners_by_serieId(serieId).getElementsByTagName('Banner')
+        
+        for banner in banners:
+            # Comprobar si es del mismo tipo
+            if banner.getElementsByTagName('BannerType')[0].firstChild.data == bannerType:
+                if bannerType2=="" or banner.getElementsByTagName('BannerType2')[0].firstChild.data == bannerType2:
+                    idiomas= banner.getElementsByTagName('Language')
+                    # Comprobar idioma
+                    if len(idiomas)!=0:
+                        fi=False
+                        for lenguage in languages:
+                            if lenguage== idiomas[0].firstChild.data:
+                                fi=True
+                    else: #no expecifica idioma
+                        fi=True
+                    # Comprobar temporada
+                    if season==0 or banner.getElementsByTagName('Season')[0].firstChild.data== season:
+                        ft=True  
+                    else:
+                        ft=False
+                    if fi and ft:
+                        if vignette and banner.getElementsByTagName('VignettePath')[0].firstChild.data!="":
+                            ret.append('http://thetvdb.com/banners/' + banner.getElementsByTagName('VignettePath')[0].firstChild.data)
+                        else:
+                            ret.append('http://thetvdb.com/banners/' + banner.getElementsByTagName('BannerPath')[0].firstChild.data)
+                        logger.info("[TvDb.get_graphics_by_serieId] bannerType2=" +banner.getElementsByTagName('BannerType2')[0].firstChild.data)
+        logger.info("[TvDb.get_graphics_by_serieId] serieId=" +str(serieId)+", bannerType="+  bannerType +", bannerType2="+ bannerType2  +", season="+ str(season) +", languages="+ str(languages))
+        logger.info("[TvDb.get_graphics_by_serieId] Banners encontrados: "+ str(len(ret)))
+        return ret        
+                
+    def get_graphics_by_title (self, title, bannerType='fanart_vignette', bannerType2='', season=0, *languages  ):
+        '''
+        Busqueda por titulo de los graficos de una serie.
+        @return: 
+            Devuelve una lista de urls de banners de que coinciden con los criterios solicitado.
+        @params:
+            serieId: Identificador de la serie.
+            bannerType: This can be poster, fanart, fanart_vignette, series or season.
+            bannerType2: For series banners it can be text, graphical, or blank. For season banners it can be season or seasonwide. For fanart it can be 1280x720 or 1920x1080. For poster it will always be 680x1000.
+            season: Opcionalmente se puede especificar una temporada en concreto (Por defecto 0, todas las temporadas)
+            languages: Es posible añadir varios separados por comas. (Por defecto se incluyen en ingles y el idioma seleccionado por defecto al iniciar el objeto)
+        '''  
+        from xml.dom import minidom
+        ret= []
+        if len(languages)==0:
+           idioma= self.__idiomaDef
+           languages= None
+        else:
+            idioma= languages[0]
+        id= self.get_serieId_by_title(title,idioma)
+        if id>0:
+            if languages is None:
+                ret= self.get_graphics_by_serieId (id, bannerType, bannerType2, season)
+            else:
+                ret= self.get_graphics_by_serieId (id, bannerType, bannerType2, season, languages)
+        return ret
+   
+    def get_episode_by_seasonEpisode (self, serieId, season, episode, idioma=""):
+        '''
+        Busca datos de un capitulo en concreto
+        @return:
+            Devuelve un documento que representa el xml con los datos del capitulo buscado
+        @params:
+            serieId: Identificador de la serie.
+            season: Numero de temporada buscada.
+            episode: Numero del episodio dentro de la temporada buscado.
+            idioma: Argumento opcional que especifica el idioma de la serie a buscar. Por defecto: idioma seleccionado por defecto al iniciar el objeto 
+        '''
+        from xml.dom import minidom
+        if idioma=="": idioma= self.__idiomaDef
+        __getEpisodeBySeasonEpisodeUrl= 'http://thetvdb.com/api/1D62F2F90030C444/series/%s/default/%s/%s/%s.xml' %(serieId, season, episode, idioma)
+        __data = scrapertools.cache_page(__getEpisodeBySeasonEpisodeUrl)
+        xmldoc= None
+        
+        if len(__data)>0:
+            xmldoc = minidom.parseString(__data)
+            logger.info("[TvDb.get_episode_by_seasonEpisode] serieId= " +str(serieId) + ", season="+  str(season) +", episode="+ str(episode) +", idioma="+ idioma)
+        else:
+            logger.info("[TvDb.get_episode_by_seasonEpisode] Error de lectura")
+        #return xmldoc 
+        return str(len(xmldoc.getElementsByTagName('Episode')))

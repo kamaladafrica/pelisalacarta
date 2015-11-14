@@ -1,7 +1,17 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<version>
-	<name>discoverymx</name>
-	<tag>2</tag>
+<channel>
+	<id>discoverymx</id>
+	<name>Discoverymx</name>
+	<language>es</language>
+	<update_url></update_url>
+	<active>true</active>
+	<include_in_global_search>false</include_in_global_search>
+	<version>2</version>
+	<adult>false</adult>
 	<date>11/06/2012</date>
 	<changes>Mejorada extracción de patrones</changes>
-</version>
+	<categories>
+		<category>latino</category>
+		<category>documentary</category>
+	</categories>
+</channel>

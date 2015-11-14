@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<version>
-	<name>robinfilm</name>
-	<tag>3</tag>
+<channel>
+	<id>robinfilm</id>
+	<name>Robinfilm (IT)</name>
+	<language>it</language>
+	<update_url></update_url>
+	<active>true</active>
+	<include_in_global_search>false</include_in_global_search>
+	<version>3</version>
+	<adult>false</adult>
 	<date>17/05/2012</date>
 	<changes>fixed</changes>
-</version>
+	<categories>
+		<category>movie</category>
+	</categories>
+</channel>

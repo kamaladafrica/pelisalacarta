@@ -1,7 +1,18 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<version>
-	<name>newpct1</name>
-	<tag>12</tag>
+<channel>
+	<id>newpct1</id>
+	<name>Newpct1</name>
+	<language>es</language>
+	<update_url></update_url>
+	<active>true</active>
+	<include_in_global_search>false</include_in_global_search>
+	<version>12</version>
+	<adult>false</adult>
 	<date>30/10/15</date>
 	<changes>Incluida llamada a server.find_videos(server) en findvideos.</changes>
-</version>
+	<categories>
+		<category>movie</category>
+		<category>serie</category>
+		<category>anime</category>
+	</categories>
+</channel>

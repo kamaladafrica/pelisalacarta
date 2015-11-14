@@ -5,15 +5,30 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 # Por aampudia
 #------------------------------------------------------------
+
+#Propiedades del Canal:
+__active__ = True
+__adult__ = True
+__category__ = "X,F"
+__changes__ = "Canal Corregido: Utilizando API"
+__channel__ = "beeg"
+__creationdate__ = ""
+__date__ = "06/10/2015"
+__language__ = "ES"
+__thumbnail__ = ""
+__title__ = "Beeg"
+__type__ = "generic"
+__version__ = 3
+
 import urlparse,urllib2,urllib,re
 import os
 import sys
+
 from core import logger
 from core import config
 from core import scrapertools
 from core.item import Item
 
-__channel__ = "beeg"
 DEBUG = config.get_setting("debug")
 
 def isGeneric():
@@ -91,11 +106,13 @@ def play(item):
       videourl = re.compile("([0-9]+p)",re.DOTALL).findall(key)
       if videourl: 
         videourl= videourl[0]
-        url = JSONData[videourl].encode("utf8")
-        url = url.replace("{DATA_MARKERS}","data=pc.ES")
-        title = videourl.encode("utf8")
-        itemlist.append( Item(channel=__channel__, action="play" , fulltitle=title, title=item.title , url=url, thumbnail=item.thumbnail, server="directo", folder=False))
-    
+        if not JSONData[videourl] == None:
+          url = JSONData[videourl].encode("utf8")
+          url = url.replace("{DATA_MARKERS}","data=pc.ES")
+          if not url.startswith("http:"): url = "http:" + url
+          title = videourl.encode("utf8")
+          itemlist.append( Item(channel=__channel__, action="play" , fulltitle=title, title=item.title , url=url, thumbnail=item.thumbnail, server="directo", folder=False))
+      
     itemlist.sort(key=lambda item: item.fulltitle.lower(), reverse=True)
     return itemlist
 

@@ -1,18 +1,18 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <channel>
-    <id>bricocine</id>
-    <name>Bricocine</name>
-    <language>es</language>
-    <update_url></update_url>
-    <active>true</active>
-    <include_in_global_search>true</include_in_global_search>
-    <version>2</version>
-    <adult>false</version>
-    <date>07/10/2015</date>
-    <changes>Mùltiples cambios</changes>
-    <categories>
-        <category>torrent</category>
-        <category>movie</category>
-        <category>serie</category>
-    </categories>
+	<id>bricocine</id>
+	<name>Bricocine</name>
+	<language></language>
+	<update_url></update_url>
+	<active>true</active>
+	<include_in_global_search>true</include_in_global_search>
+	<version>2</version>
+	<adult>false</adult>
+	<date>07/10/2015</date>
+	<changes>Mùltiples cambios</changes>
+	<categories>
+		<category>torrent</category>
+		<category>movie</category>
+		<category>serie</category>
+	</categories>
 </channel>

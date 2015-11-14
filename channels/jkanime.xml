@@ -1,7 +1,16 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<version>
-	<name>jkanime</name>
-	<tag>2</tag>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<channel>
+	<id>jkanime</id>
+	<name>JKanime</name>
+	<language>es</language>
+	<update_url></update_url>
+	<active>true</active>
+	<include_in_global_search>false</include_in_global_search>
+	<version>2</version>
+	<adult>false</adult>
 	<date>16/10/2011</date>
 	<changes>Arreglado fallo al buscar los episodios</changes>
-</version>
+	<categories>
+		<category>anime</category>
+	</categories>
+</channel>

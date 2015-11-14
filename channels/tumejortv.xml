@@ -1,7 +1,17 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<version>
-	<name>tumejortv</name>
-	<tag>8</tag>
+<channel>
+	<id>tumejortv</id>
+	<name>tumejortv.com</name>
+	<language>es</language>
+	<update_url></update_url>
+	<active>false</active>
+	<include_in_global_search>false</include_in_global_search>
+	<version>8</version>
+	<adult>false</adult>
 	<date>05/06/2013</date>
 	<changes>Mejorado proceso de obtención de enlaces</changes>
-</version>
+	<categories>
+		<category>movie</category>
+		<category>serie</category>
+	</categories>
+</channel>
