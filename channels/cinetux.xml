@@ -10,6 +10,8 @@
 	<adult>false</adult>
 	<date>16/02/2015</date>
 	<changes>Añadida la funcion Buscar</changes>
+	<fanart></fanart>
+	<thumbnail></thumbnail>
 	<categories>
 		<category>latino</category>
 		<category>movie</category>

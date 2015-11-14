@@ -58,7 +58,7 @@ def videos(item):
       
     #Paginador
     Actual = int(scrapertools.get_match(item.url,'http://beeg.com/api/v1/index/[^/]+/([0-9]+)/pc'))
-    if JSONData["pages"] > Actual:
+    if JSONData["pages"]-1 > Actual:
       scrapedurl = item.url.replace("/"+str(Actual)+"/", "/"+str(Actual+1)+"/")
       itemlist.append( Item(channel=__channel__, action="videos", title="Página Siguiente" , url=scrapedurl , thumbnail="" , folder=True) )
 

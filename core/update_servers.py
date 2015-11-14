@@ -174,3 +174,5 @@ def md5_remote( data_server ):
 
 ### Run
 update_servers()
+#from threading import Thread
+#Thread( target=update_servers ).start()

@@ -10,6 +10,8 @@
 	<adult>true</adult>
 	<date>07/10/2015</date>
 	<changes>Corregido para usar la nueva API</changes>
+	<fanart></fanart>
+	<thumbnail></thumbnail>
 	<categories>
 		<category>adult</category>
 		<category>movie</category>

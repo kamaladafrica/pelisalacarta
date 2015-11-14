@@ -1,16 +1,18 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <channel>
-    <id>animeflv</id>
-    <name>AnimeFLV</name>
-    <language>es</language>
-    <update_url></update_url>
-    <active>true</active>
-    <include_in_global_search>true</include_in_global_search>
-    <version>3</version>
-    <adult>false</adult>
-    <date>24/10/2015</date>
+	<id>animeflv</id>
+	<name>AnimeFLV</name>
+	<language>es</language>
+	<update_url></update_url>
+	<active>true</active>
+	<include_in_global_search>true</include_in_global_search>
+	<version>3</version>
+	<adult>false</adult>
+	<date>24/10/2015</date>
     <changes>resueltos problemas utf, libreria requests, pep8 conventions, etc</changes>
-    <categories>
-        <category>anime</category>
-    </categories>
+	<fanart></fanart>
+	<thumbnail></thumbnail>
+	<categories>
+		<category>anime</category>
+	</categories>
 </channel>
