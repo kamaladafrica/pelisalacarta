@@ -12,9 +12,7 @@ from channelselector import get_thumbnail_path
 from core import logger
 from core import config
 from core import scrapertools
-from core import jsontools
 from core.item import Item
-from servers import servertools
 from core.tmdb import Tmdb
 
 __category__ = "A"
@@ -78,14 +76,11 @@ def search(item,texto):
 
     # Se captura la excepción, para no interrumpir al buscador global si un canal falla
     except:
-        import sys
         for line in sys.exc_info():
             logger.error( "%s" % line )
         return []
 
     return itemlist
-
-
 
 
 def buscador(item):
@@ -155,6 +150,9 @@ def buscador(item):
 
         itemlist.append( Item(channel=__channel__, action="episodios", title=title , url=url , folder=True, extra="docu") )
 
+    if len(itemlist) == 0:
+        itemlist.append( Item(channel=__channel__, action="mainlist", title="No se han encontrado nada con ese término" ) )
+
 
     return itemlist
 
@@ -183,12 +181,14 @@ def getlist(item):
         patron  = '<a href="(/peli-descargar-torrent[^"]+)">[^<]+'
         patron += '<img src="([^"]+)"[^<]+</a>'
         patron_enlace = "/peli-descargar-torrent-\d+(.*?)\.html"
+        patron_title  = '<a href="/peli-descargar-torrent[^"]+">([^<]+)</a>\s*<b>([^>]+)</b>'
         action = "show_movie_info"
         folder = True
         extra = ""
     elif item.url.find("series-letra") > -1:
         patron  = "<a href='(/serie-descargar-torrent[^']+)'>()"
         patron_enlace = "/serie-descargar-torrents-\d+-\d+-(.*?)\.html"
+        patron_title  = '<a href="/serie-descargar-torrent[^"]+">([^<]+)</a>\s*<b>([^>]+)</b>'
         action = "episodios"
         folder = True
         extra = "series"
@@ -196,6 +196,7 @@ def getlist(item):
         patron  = '<a href="(/serie-descargar-torrent[^"]+)">[^<]+'
         patron += '<img src="([^"]+)"[^<]+</a>'
         patron_enlace = "/serie-descargar-torrents-\d+-\d+-(.*?)\.html"
+        patron_title  = '<a href="/serie-descargar-torrent[^"]+">([^<]+)</a>\s*<b>([^>]+)</b>'
         action = "episodios"
         folder = True
         extra = "series"
@@ -203,6 +204,7 @@ def getlist(item):
         patron  = '<a href="(/doc-descargar-torrent[^"]+)">[^<]+'
         patron += '<img src="([^"]+)"[^<]+</a>'
         patron_enlace = "/doc-descargar-torrent-\d+-\d+-(.*?)\.html"
+        patron_title  = '<a href="/doc-descargar-torrent[^"]+">([^\.]+)\.</a>\s*<b>([^>]+)</b>'
         action = "episodios"
         folder = True
         extra = "docus"
@@ -219,15 +221,37 @@ def getlist(item):
         logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
         itemlist.append( Item(channel=__channel__, action=action, title=title , url=url , thumbnail=thumbnail , plot=plot , folder=folder, extra=extra) )
 
-
-    # Extrae el paginador
-    patronvideos  = "<a href='([^']+)' class='paginar'> Siguiente >>"
-    matches = re.compile(patronvideos,re.DOTALL).findall(data)
+    matches = re.compile(patron_title,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
 
-    if len(matches)>0:
-        scrapedurl = urlparse.urljoin(item.url,matches[0])
-        itemlist.append( Item(channel=__channel__, action="getlist", title="Pagina siguiente >>" , url=scrapedurl , folder=True) )
+    # Cambia el título sacado de la URL por un título con más información.
+    # esta implementación asume que va a encontrar las mismas coincidencias
+    # que en el bucle anterior, lo cual técnicamente es erróneo, pero que
+    # funciona mientras no cambien el formato de la página
+    cnt = 0
+    for scrapedtitle, scrapedinfo in matches:
+        title = re.sub('\r\n', '', scrapedtitle).decode('iso-8859-1').encode('utf8')
+        if title.endswith('.'):
+            title = title[:-1]
+
+        info = scrapedinfo.decode('iso-8859-1').encode('utf8')
+        if info != "":
+            title = '{0} {1}'.format(title, info)
+
+        itemlist[cnt].title = title
+        cnt += 1
+
+    if len(itemlist) == 0:
+        itemlist.append( Item(channel=__channel__, action="mainlist", title="No se ha podido cargar el listado" ) )
+    else:
+        # Extrae el paginador
+        patronvideos  = "<a href='([^']+)' class='paginar'> Siguiente >>"
+        matches = re.compile(patronvideos,re.DOTALL).findall(data)
+        scrapertools.printMatches(matches)
+
+        if len(matches)>0:
+            scrapedurl = urlparse.urljoin(item.url,matches[0])
+            itemlist.append( Item(channel=__channel__, action="getlist", title="Pagina siguiente >>" , url=scrapedurl , folder=True) )
 
     return itemlist
 
@@ -268,7 +292,8 @@ def episodios(item):
     matches = re.compile(patron,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
 
-    tmdb_title = re.sub('\d+ Temporada', '', item.title)
+    tmdb_title = re.sub(r'(\s*-\s*)?\d+.*?\s*Temporada|(\s*-\s*)?\s*Miniserie\.?|\(.*\)|\[.*\]', '', item.title).strip()
+    logger.debug('pelisalacarta.mejortorrent episodios tmdb_title=' + tmdb_title)
 
     if item.extra == "series":
         oTmdb= Tmdb(texto_buscado=tmdb_title.strip(), tipo='tv', idioma_busqueda="es")
@@ -316,8 +341,11 @@ def show_movie_info(item):
 
     itemlist = []
 
+    tmdb_title = re.sub(r'\(.*\)|\[.*\]', '', item.title).strip()
+    logger.debug('pelisalacarta.mejortorrent show_movie_info tmdb_title=' + tmdb_title)
+
     try:
-        oTmdb= Tmdb(texto_buscado=item.title,idioma_busqueda="es")
+        oTmdb= Tmdb(texto_buscado=tmdb_title, idioma_busqueda="es")
         item.fanart=oTmdb.get_backdrop()
         item.plot=oTmdb.get_sinopsis()
     except:
