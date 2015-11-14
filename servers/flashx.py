@@ -66,7 +66,7 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
     # Extrae la URL
     #{file:"http://f11-play.flashx.tv/luq4gfc7gxixexzw6v4lhz4xqslgqmqku7gxjf4bk43u4qvwzsadrjsozxoa/video1.mp4"}
     video_urls = []
-    media_urls = scrapertools.find_multiple_matches(data,'\{file\:"([^"]+)"\}')
+    media_urls = scrapertools.find_multiple_matches(data,'\{file\:"([^"]+)"')
     video_urls = []
     for media_url in media_urls:
         video_urls.append( [ scrapertools.get_filename_from_url(media_url)[-4:]+" [flashx]",media_url])
