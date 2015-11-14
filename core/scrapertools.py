@@ -1038,6 +1038,8 @@ def slugify(title):
 
     return title
 
+def remove_htmltags(string):
+    return re.sub('<[^<]+?>', '', string)
 
 def remove_show_from_title(title,show):
     #print slugify(title)+" == "+slugify(show)
