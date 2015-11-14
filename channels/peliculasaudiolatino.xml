@@ -10,6 +10,8 @@
 	<adult>false</adult>
 	<date>10/11/2014</date>
 	<changes>Añadido patrón para netu, powvideo y streaminto</changes>
+	<fanart></fanart>
+	<thumbnail></thumbnail>
 	<categories>
 		<category>latino</category>
 		<category>movie</category>

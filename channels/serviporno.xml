@@ -10,6 +10,8 @@
 	<adult>true</adult>
 	<date>16/02/2015</date>
 	<changes>Version inicial</changes>
+	<fanart></fanart>
+	<thumbnail></thumbnail>
 	<categories>
 		<category>adult</category>
 		<category>movie</category>

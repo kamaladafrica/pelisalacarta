@@ -10,7 +10,9 @@
 	<adult>false</adult>
 	<date>22/02/2012</date>
 	<changes>Ya puedes poner una url cualquiera!</changes>
+	<fanart></fanart>
+	<thumbnail></thumbnail>
 	<categories>
-		<category></category>
+		<category>all</category>
 	</categories>
 </channel>

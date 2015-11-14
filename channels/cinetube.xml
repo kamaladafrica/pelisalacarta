@@ -10,6 +10,8 @@
 	<adult>false</adult>
 	<date>19/05/2013</date>
 	<changes>Añadidas series, documentales y anime a cinetube (Gracias a prunk)</changes>
+	<fanart></fanart>
+	<thumbnail></thumbnail>
 	<categories>
 		<category>movie</category>
 		<category>serie</category>
