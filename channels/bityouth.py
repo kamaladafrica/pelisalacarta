@@ -249,7 +249,7 @@ def fanart(item):
 
         #fanart_2 y arts
 
-                 url ="http://assets.fanart.tv/v3/movies/"+id+"?api_key=6fa42b0ef3b5f3aab6a7edaa78675ac2"
+                 url ="http://assets.fanart.tv/v3/movies/"+id+"?api_key=dffe90fba4d02c199ae7a9e71330c987"
                  data = scrapertools.cachePage(url)
                  data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
                  patron = '"hdmovielogo":.*?"url": "([^"]+)"'
@@ -362,9 +362,9 @@ def fanart(item):
                 item.extra= fanart
             #clearart, fanart_2 y logo
             for id in matches:
-                url ="http://assets.fanart.tv/v3/tv/"+id_serie+"?api_key=6fa42b0ef3b5f3aab6a7edaa78675ac2"
+                url ="http://assets.fanart.tv/v3/tv/"+id_serie+"?api_key=dffe90fba4d02c199ae7a9e71330c987"
                 if "Castle" in title:
-                    url ="http://assets.fanart.tv/v3/tv/83462?api_key=6fa42b0ef3b5f3aab6a7edaa78675ac2"
+                    url ="http://assets.fanart.tv/v3/tv/83462?api_key=dffe90fba4d02c199ae7a9e71330c987"
                 data = scrapertools.cachePage(url)
                 data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
                 patron = '"clearlogo":.*?"url": "([^"]+)"'
@@ -463,12 +463,12 @@ def fanart(item):
     
     else:
          thumbnail = item.thumbnail
-    title = title.replace(title,"[COLOR skyblue]"+title+"[/COLOR]")
+    title = title.replace(title,"[COLOR cyan]"+title+"[/COLOR]")
     itemlist.append( Item(channel=__channel__, action="info" , title=title , url=item.url, thumbnail=thumbnail, fanart=fanart, extra = extra, show = show,folder=False ))
     ###trailer
    
    
-    title= "[COLOR crimson]Trailer[/COLOR]"
+    title= "[COLOR gold]Trailer[/COLOR]"
     if len(item.extra)==0:
         fanart=item.thumbnail
     else:
@@ -654,8 +654,8 @@ def trailer(item):
     
     for scrapedtitle, scrapedthumbnail, scrapedurl in matches:
         scrapedtitle=re.sub(r"\n|\r|\t|\s{2}|&.*?;","",scrapedtitle)
-        scrapedtitle=scrapedtitle.replace(scrapedtitle,"[COLOR sandybrown][B]"+scrapedtitle+"[/B][/COLOR]")
-        itemlist.append( Item(channel=__channel__, title=scrapedtitle, url=scrapedurl, server="youtube", fanart="http://s23.postimg.org/84vkeq863/movietrailers.jpg", thumbnail=item.extra, action="play", folder=False) )
+        scrapedtitle=scrapedtitle.replace(scrapedtitle,"[COLOR khaki][B]"+scrapedtitle+"[/B][/COLOR]")
+        itemlist.append( Item(channel=__channel__, title=scrapedtitle, url=scrapedurl, server="youtube", fanart="http://s6.postimg.org/g4gxuw91r/bityoutrailerfn.jpg", thumbnail=item.extra, action="play", folder=False) )
 
     return itemlist
 
@@ -678,7 +678,7 @@ def play(item):
     for scrapedurl in matches:
         
        
-        itemlist.append( Item(channel=__channel__, title=item.title, server="torrent", url=scrapedurl, fanart="http://s9.postimg.org/lmwhrdl7z/aquitfanart.jpg", thumbnail="http://s6.postimg.org/4hpbrb13l/texflecha2.png", action="play", folder=True) )
+        itemlist.append( Item(channel=__channel__, title=item.title, server="torrent", url=scrapedurl, fanart="http://s9.postimg.org/lmwhrdl7z/aquitfanart.jpg", thumbnail=item.thumbnail, action="play", folder=True) )
     
     
     
@@ -688,12 +688,13 @@ def info(item):
     logger.info("pelisalacarta.sinluces trailer")
     url=item.url
     data = scrapertools.cachePage(url)
-    data = re.sub(r"\n|\r|\t|\s{2}|&.*?;","",data)
+    data = re.sub(r"\n|\r|\t|\s{2}|Descarga el torrent.*?en Bityouth.","",data)
     title= scrapertools.get_match(data,'<meta name="title" content="(.*?) -')
-    title = title.replace(title,"[COLOR aqua][B]"+title+"[/B][/COLOR]")
-    title = title.replace("torrent","")
+    title = title.upper()
+    title = title.replace(title,"[COLOR gold][B]"+title+"[/B][/COLOR]")
+    title = title.replace("TORRENT","")
     plot = scrapertools.get_match(data,'<div itemprop="description">(.*?)</div>')
-    plot = plot.replace(plot,"[COLOR white][B]"+plot+"[/B][/COLOR]")
+    plot = plot.replace(plot,"[COLOR bisque][B]"+plot+"[/B][/COLOR]")
     plot = plot.replace("</i>","")
     plot = plot.replace("</br>","")
     plot = plot.replace("<br/>","")
@@ -701,13 +702,21 @@ def info(item):
     plot = plot.replace("<b>","")
     plot = plot.replace("</b>","")
     plot = plot.replace(" &#8203;&#8203;","")
-    plot = plot.replace("&#8230","")
-    
-    
+    plot= scrapertools.decodeHtmlentities( plot )
+    scrapedinfo = scrapertools.get_match(data,'<div class="col-sm-5 col-md-5 col-lg-4">(.*?)Título Original:')
+    infoformat = re.compile('(.*?:).*?</strong>(.*?)<strong>',re.DOTALL).findall(scrapedinfo)
+    for info ,info2 in infoformat:
+        scrapedinfo= scrapedinfo.replace(info2,"[COLOR bisque]"+info2+"[/COLOR]")
+        scrapedinfo= scrapedinfo.replace(info,"[COLOR aqua][B]"+info+"[/B][/COLOR]")
+    info = scrapedinfo
+    info = re.sub(r'<p class=".*?">|<strong>|</strong>|<a href="/year/.*?">| title=".*?"|alt=".*?"|>#2015|</a>|<span itemprop=".*?".*?>|<a itemprop=".*?".*?">|</span>|<a href="/genero/.*?"|<a href=".*?"|itemprop="url">|"|</div><div class="col-sm-7 col-md-7 col-lg-8">|>,','',info)
+    info = info.replace("</p>"," ")
+    info = info.replace("#",",")
+    info = info.replace(">","")
     foto = item.show
     photo= item.extra
     
-    ventana2 = TextBox1(title=title, plot=plot, thumbnail=photo, fanart=foto)
+    ventana2 = TextBox1(title=title, plot=plot, info=info, thumbnail=photo, fanart=foto)
     ventana2.doModal()
 
 class TextBox1( xbmcgui.WindowDialog ):
@@ -716,23 +725,28 @@ class TextBox1( xbmcgui.WindowDialog ):
             
             self.getTitle = kwargs.get('title')
             self.getPlot = kwargs.get('plot')
+            self.getInfo = kwargs.get('info')
             self.getThumbnail = kwargs.get('thumbnail')
             self.getFanart = kwargs.get('fanart')
                             
             self.background = xbmcgui.ControlImage( 70, 20, 1150, 630, 'http://s6.postimg.org/58jknrvtd/backgroundventana5.png')
             self.title = xbmcgui.ControlTextBox(140, 60, 1130, 50)
-            self.plot = xbmcgui.ControlTextBox( 140, 140, 1035, 600 )
+            self.plot = xbmcgui.ControlTextBox( 120, 150, 1056, 140 )
+            self.info = xbmcgui.ControlFadeLabel(120, 310, 1056, 100)
             self.thumbnail = xbmcgui.ControlImage( 813, 43, 390, 100, self.getThumbnail )
-            self.fanart = xbmcgui.ControlImage( 140, 351, 1035, 250, self.getFanart )
+            self.fanart = xbmcgui.ControlImage( 120, 365, 1060, 250, self.getFanart )
                                                 
             self.addControl(self.background)
             self.addControl(self.title)
             self.addControl(self.plot)
             self.addControl(self.thumbnail)
             self.addControl(self.fanart)
+            self.addControl(self.info)
                 
             self.title.setText( self.getTitle )
+            self.plot.autoScroll(7000,6000,30000)
             self.plot.setText(  self.getPlot )
+            self.info.addLabel(self.getInfo)
                 
          def get(self):
              self.show()
@@ -789,7 +803,7 @@ def info_capitulos(item):
                      fanart=item.show.split("|")[1]
                                     
                 plot = info
-                plot = plot.replace(plot,"[COLOR yellow][B]"+plot+"[/B][/COLOR]")
+                plot = plot.replace(plot,"[COLOR burlywood][B]"+plot+"[/B][/COLOR]")
                 title = name_epi.upper()
                 title = title.replace(title,"[COLOR skyblue][B]"+title+"[/B][/COLOR]")
                 image=fanart
