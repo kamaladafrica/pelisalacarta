@@ -11,6 +11,7 @@ from core import config
 from core import scrapertools
 from core.item import Item
 from servers import servertools
+from channelselector import get_thumbnail_path
 
 
 __channel__ = "seriesblanco"
@@ -26,6 +27,9 @@ __language__ = "ES"
 
 host = "http://seriesblanco.com/"
 
+# En el listado alfabético de series usan este dominio en vez del .com
+host_tv = "http://seriesblanco.tv/"
+
 idiomas = {'es':'Español','la':'Latino','vos':'VOS','vo':'VO', 'japovose':'VOSE'}
 
 
@@ -36,18 +40,40 @@ def isGeneric():
 def mainlist(item):
     logger.info("pelisalacarta.seriesblanco mainlist")
 
+    thumb_series    = get_thumbnail("thumb_canales_series.png")
+    thumb_series_az = get_thumbnail("thumb_canales_series_az.png")
+    thumb_buscar    = get_thumbnail("thumb_buscar.png")
+
     itemlist = []
-    itemlist.append( Item( channel=__channel__, title="Series", action="series", url=urlparse.urljoin(host,"lista_series/") ) )
-    itemlist.append( Item( channel=__channel__, title="Buscar...", action="search", url=host) )
+    itemlist.append( Item( channel=__channel__, title="Series Listado Alfabetico" , action="series_listado_alfabetico", thumbnail=thumb_series_az ) )
+    itemlist.append( Item( channel=__channel__, title="Todas las Series", action="series", url=urlparse.urljoin(host,"lista_series/"), thumbnail=thumb_series ) )
+    itemlist.append( Item( channel=__channel__, title="Buscar...", action="search", url=host, thumbnail=thumb_buscar, extra='buscar') )
 
     return itemlist
 
-def search(item,texto):
+def series_listado_alfabetico(item):
+    logger.info("pelisalacarta.seriesblanco series_listado_alfabetico")
+
+    itemlist = []
+
+    for letra in ['0','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']:
+        itemlist.append( Item(channel=__channel__, action="series_por_letra" , title=letra, url=urlparse.urljoin(host_tv, "series/" + letra.upper() + "/buscar_letra.html"), extra="letra") )
+
+    return itemlist
+
+# La página de series por letra es igual que la de buscar
+# así que abuso un poco de esa función con el parámetro extra
+def series_por_letra(item):
+    return search(item, '')
+
+def search(item, texto):
     logger.info("[pelisalacarta.seriesblanco search texto="+texto)
 
     itemlist = []
 
-    item.url = urlparse.urljoin(host,"/search.php?q1=%s" % (texto))
+    if item.extra == 'buscar':
+        item.url = urlparse.urljoin(host,"/search.php?q1=%s" % (texto))
+
     data = scrapertools.cache_page(item.url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s","",data)
     data = re.sub(r"<!--.*?-->","",data)
@@ -218,4 +244,18 @@ def play(item):
         videoitem.title = item.title
         videoitem.channel = __channel__
 
-    return itemlist    
+    return itemlist
+
+def get_thumbnail( thumb_name = None ):
+    img_path = config.get_runtime_path() + '/resources/images/squares'
+    if thumb_name:
+        file_path = os.path.join(img_path, thumb_name)
+        if os.path.isfile(file_path):
+            thumb_path = file_path
+        else:
+            thumb_path = urlparse.urljoin(get_thumbnail_path(), thumb_name)
+    else:
+        thumb_path = urlparse.urljoin(get_thumbnail_path(), thumb_name)
+
+    return thumb_path
+
