@@ -314,7 +314,9 @@ def episodios(item):
 
         if item.extra == "series":
             epi = scrapedtitle.split("x")
-            if len(epi) > 0:
+
+            # Sólo comprobar Tmdb si el formato es temporadaXcapitulo
+            if len(epi) > 1:
                 temporada = re.sub("\D", "", epi[0])
                 capitulo  = re.sub("\D", "", epi[1])
 
