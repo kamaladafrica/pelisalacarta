@@ -181,14 +181,14 @@ def getlist(item):
         patron  = '<a href="(/peli-descargar-torrent[^"]+)">[^<]+'
         patron += '<img src="([^"]+)"[^<]+</a>'
         patron_enlace = "/peli-descargar-torrent-\d+(.*?)\.html"
-        patron_title  = '<a href="/peli-descargar-torrent[^"]+">([^<]+)</a>\s*<b>([^>]+)</b>'
+        patron_title  = '<a href="/peli-descargar-torrent[^"]+">([^<]+)</a>(\s*<b>([^>]+)</b>)?'
         action = "show_movie_info"
         folder = True
         extra = ""
     elif item.url.find("series-letra") > -1:
         patron  = "<a href='(/serie-descargar-torrent[^']+)'>()"
         patron_enlace = "/serie-descargar-torrents-\d+-\d+-(.*?)\.html"
-        patron_title  = '<a href="/serie-descargar-torrent[^"]+">([^<]+)</a>\s*<b>([^>]+)</b>'
+        patron_title  = '<a href="/serie-descargar-torrent[^"]+">([^<]+)</a>(\s*<b>([^>]+)</b>)?'
         action = "episodios"
         folder = True
         extra = "series"
@@ -196,7 +196,7 @@ def getlist(item):
         patron  = '<a href="(/serie-descargar-torrent[^"]+)">[^<]+'
         patron += '<img src="([^"]+)"[^<]+</a>'
         patron_enlace = "/serie-descargar-torrents-\d+-\d+-(.*?)\.html"
-        patron_title  = '<a href="/serie-descargar-torrent[^"]+">([^<]+)</a>\s*<b>([^>]+)</b>'
+        patron_title  = '<a href="/serie-descargar-torrent[^"]+">([^<]+)</a>(\s*<b>([^>]+)</b>)?'
         action = "episodios"
         folder = True
         extra = "series"
@@ -204,7 +204,7 @@ def getlist(item):
         patron  = '<a href="(/doc-descargar-torrent[^"]+)">[^<]+'
         patron += '<img src="([^"]+)"[^<]+</a>'
         patron_enlace = "/doc-descargar-torrent-\d+-\d+-(.*?)\.html"
-        patron_title  = '<a href="/doc-descargar-torrent[^"]+">([^\.]+)\.</a>\s*<b>([^>]+)</b>'
+        patron_title  = '<a href="/doc-descargar-torrent[^"]+">([^<]+)</a>(\s*<b>([^>]+)</b>)?'
         action = "episodios"
         folder = True
         extra = "docus"
@@ -212,7 +212,7 @@ def getlist(item):
     matches = re.compile(patron,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
 
-    for scrapedurl,scrapedthumbnail in matches:
+    for scrapedurl, scrapedthumbnail in matches:
         title = scrapertools.get_match(scrapedurl, patron_enlace)
         title = title.replace("-"," ")
         url = urlparse.urljoin(item.url,scrapedurl)
@@ -229,8 +229,8 @@ def getlist(item):
     # que en el bucle anterior, lo cual técnicamente es erróneo, pero que
     # funciona mientras no cambien el formato de la página
     cnt = 0
-    for scrapedtitle, scrapedinfo in matches:
-        title = re.sub('\r\n', '', scrapedtitle).decode('iso-8859-1').encode('utf8')
+    for scrapedtitle, notused, scrapedinfo in matches:
+        title = re.sub('\r\n', '', scrapedtitle).decode('iso-8859-1').encode('utf8').strip()
         if title.endswith('.'):
             title = title[:-1]
 
@@ -302,6 +302,9 @@ def episodios(item):
 
     for scrapedtitle,fecha,name,value in matches:
         scrapedtitle = scrapedtitle.strip()
+        if scrapedtitle.endswith('.'):
+            scrapedtitle = scrapedtitle[:-1]
+
         title = scrapedtitle + " (" + fecha + ")"
 
         url = "http://www.mejortorrent.com/secciones.php?sec=descargas&ap=contar_varios"
@@ -310,24 +313,27 @@ def episodios(item):
         logger.debug("post="+post)
 
         if item.extra == "series":
-
             epi = scrapedtitle.split("x")
+            if len(epi) > 0:
+                temporada = re.sub("\D", "", epi[0])
+                capitulo  = re.sub("\D", "", epi[1])
 
-            temporada = re.sub("\D", "", epi[0])
-            capitulo  = re.sub("\D", "", epi[1])
+                epi_data = oTmdb.get_episodio(temporada, capitulo)
+                logger.debug("epi_data=" + str(epi_data))
 
-            epi_data = oTmdb.get_episodio(temporada, capitulo)
-            logger.debug("epi_data=" + str(epi_data))
-
-            if epi_data:
-                item.thumbnail = epi_data["temporada_poster"]
-                item.fanart = epi_data["episodio_imagen"]
-                item.plot = epi_data["episodio_sinopsis"]
-                epi_title = epi_data["episodio_titulo"]
-                if epi_title != "":
-                    title = scrapedtitle + " " + epi_title + " (" + fecha + ")"
+                if epi_data:
+                    item.thumbnail = epi_data["temporada_poster"]
+                    item.fanart = epi_data["episodio_imagen"]
+                    item.plot = epi_data["episodio_sinopsis"]
+                    epi_title = epi_data["episodio_titulo"]
+                    if epi_title != "":
+                        title = scrapedtitle + " " + epi_title + " (" + fecha + ")"
         else:
-            item.fanart=oTmdb.get_backdrop()
+            try:
+                item.fanart=oTmdb.get_backdrop()
+            except:
+                pass
+
             item.plot=oTmdb.get_sinopsis()
 
         logger.debug("title=["+title+"], url=["+url+"], item=["+str(item)+"]")
