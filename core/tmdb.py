@@ -1,7 +1,13 @@
 # -*- coding: utf-8 -*-
 #--------------------------------------------------------------------------------------------------------------------------------------------
 # Scraper para pelisalacarta, palco y otros plugin de XBMC/Kodi basado en el Api de https://www.themoviedb.org/
-#   version: 1.2
+#   version 1.3:
+#       - Corregido error al devolver None el path_poster y el backdrop_path
+#       - Corregido error que hacia que en el listado de generos se fueran acumulando de una llamada a otra
+#       - Añadido metodo get_generos()
+#       - Añadido parametros opcional idioma_alternativo al metodo get_sinopsis()
+#
+#
 #   Uso:
 #   Metodos constructores:
 #    Tmdb(texto_buscado, tipo)
@@ -37,7 +43,7 @@
 #
 #   Metodos principales:
 #    get_id(): Retorna un str con el identificador Tmdb de la pelicula o serie cargada o una cadena vacia si no hubiese nada cargado.
-#    get_sinopsis(): Retorna un str con la sinopsis de la serie o pelicula cargada.
+#    get_sinopsis(idioma_alternativo): Retorna un str con la sinopsis de la serie o pelicula cargada.
 #    get_poster (tipo_respuesta,size): Obtiene el poster o un listado de posters.
 #    get_backdrop (tipo_respuesta,size): Obtiene una imagen de fondo o un listado de imagenes de fondo.
 #    get_fanart (tipo,idioma,temporada): Obtiene un listado de imagenes del tipo especificado de la web Fanart.tv
@@ -57,8 +63,19 @@ from core import logger
 
 class Tmdb(object):
     # Atributo de clase
-    dic_generos={}
-  
+    dic_generos={} 
+    '''
+    dic_generos={"id_idioma1": {"tv": {"id1": "name1",
+                                       "id2": "name2"
+                                      },
+                                "movie": {"id1": "name1",
+                                          "id2": "name2"
+                                          }
+                                }
+                }
+    '''
+    
+    
     
     def __search(self, index_resultado=0, page=1):
         # http://api.themoviedb.org/3/search/movie?api_key=57983e31fb435df4df77afb854740ea9&query=superman&language=es&include_adult=false&page=1
@@ -198,14 +215,22 @@ class Tmdb(object):
                     'videos':[] 
                     }
         
-        
+        def rellenar_dic_generos():
+            # Rellenar diccionario de generos del tipo e idioma seleccionados
+            if not Tmdb.dic_generos.has_key(self.busqueda["idioma"]):
+                Tmdb.dic_generos [self.busqueda["idioma"]] = {}
+            if not Tmdb.dic_generos[self.busqueda["idioma"]].has_key(self.busqueda["tipo"]):
+                Tmdb.dic_generos[self.busqueda["idioma"]][self.busqueda["tipo"]] = {}
+            url='http://api.themoviedb.org/3/genre/%s/list?api_key=57983e31fb435df4df77afb854740ea9&language=%s' %(self.busqueda["tipo"], self.busqueda["idioma"])
+            lista_generos=self.__get_json(url)["genres"]
+            for i in lista_generos:
+                Tmdb.dic_generos[self.busqueda["idioma"]][self.busqueda["tipo"]][str(i["id"])] = i ["name"]
+            
         if self.busqueda["tipo"] =='movie' or self.busqueda["tipo"] =="tv":
-            if not Tmdb.dic_generos:
-                # Rellenar diccionario de generos en el idioma seleccionado
-                url='http://api.themoviedb.org/3/genre/%s/list?api_key=57983e31fb435df4df77afb854740ea9&language=%s' %(self.busqueda["tipo"], self.busqueda["idioma"])
-                lista_generos=self.__get_json(url)["genres"]
-                for i in lista_generos:
-                    Tmdb.dic_generos[str(i["id"])]=i ["name"]
+            if not Tmdb.dic_generos.has_key(self.busqueda["idioma"]):
+                rellenar_dic_generos()
+            elif not Tmdb.dic_generos[self.busqueda["idioma"]].has_key(self.busqueda["tipo"]):
+                rellenar_dic_generos()         
         else:
             # La busqueda de personas no esta soportada en esta version.
             raise Exception ("Parametros no validos al crear el objeto Tmdb.\nConsulte los modos de uso.")
@@ -229,8 +254,10 @@ class Tmdb(object):
         for k,v in data.items():
             if k=="genre_ids": # Lista de generos (lista con los id de los generos)
                 for i in v:
-                    if self.dic_generos.has_key(str(i)): 
-                        self.result["genres"].append(self.dic_generos[str(i)])
+                    try:
+                        self.result["genres"].append(self.dic_generos[self.busqueda["idioma"]][self.busqueda["tipo"]][str(i)])
+                    except:
+                        pass
             elif k=="genre": # Lista  de generos (lista de objetos {id,nombre})
                 for i in v:
                     self.result["genres"].append(i['name'])
@@ -240,7 +267,6 @@ class Tmdb(object):
                     self.result["known_for"][i['id']]=i['title']
             
             elif k=="images": #Se incluyen los datos de las imagenes
-                
                 if v.has_key("backdrops"): self.result["images_backdrops"]=v["backdrops"]
                 if v.has_key("posters"): self.result["images_posters"]=v["posters"]
                 if v.has_key("profiles"): self.result["images_profiles"]=v["profiles"]
@@ -249,7 +275,6 @@ class Tmdb(object):
                 self.result["videos"]=v["results"]
   
             elif k=="external_ids": # Listado de IDs externos
-                
                 for kj, id in v.items():
                     #print kj + ":" + str(id)
                     if self.result.has_key(kj): self.result[kj]=str(id)
@@ -257,9 +282,10 @@ class Tmdb(object):
             elif self.result.has_key(k): # el resto
                 if type(v)==list or type(v)==dict :
                     self.result[k]=v
+                elif v is None:
+                    self.result[k] = ""
                 else:
                     self.result[k]=str(v)
-    
 
     def load_resultado(self,index_resultado=0,page=1):
         if self.total_results <= 1: # Si no hay mas un resultado no podemos cambiar
@@ -292,14 +318,31 @@ class Tmdb(object):
         #--------------------------------------------------------------------------------------------------------------------------------------------
         return str(self.result['id'])
         
-    def get_sinopsis(self):
+    def get_sinopsis(self, idioma_alternativo=""):
         #--------------------------------------------------------------------------------------------------------------------------------------------
         #   Parametros:
-        #       none
+        #       idioma_alternativo: (str) codigo del idioma, segun ISO 639-1, en el caso de que en el idioma fijado para la busqueda no exista sinopsis.
+        #                Por defecto, se utiliza el idioma original. Si se utiliza None como idioma_alternativo, solo se buscara en el idioma fijado.
         #   Return: (str)
         #       Devuelve la sinopsis de una pelicula o serie
         #--------------------------------------------------------------------------------------------------------------------------------------------
-        return self.result['overview']
+        ret = ""
+        if self.result['id']:
+            ret = self.result['overview']
+            if self.result['overview'] == "" and str(idioma_alternativo).lower() != 'none': 
+                # Vamos a lanzar una busqueda por id y releer de nuevo la sinopsis
+                self.busqueda["id"] = str(self.result["id"])
+                if idioma_alternativo:
+                    self.busqueda["idioma"] = idioma_alternativo
+                else:
+                    self.busqueda["idioma"] = self.result['original_language']
+                url='http://api.themoviedb.org/3/%s/%s?api_key=57983e31fb435df4df77afb854740ea9&language=%s' %(self.busqueda["tipo"], self.busqueda["id"], self.busqueda["idioma"])
+                resultado=self.__get_json(url)
+                if resultado:
+                    if resultado.has_key('overview'):
+                        self.result['overview'] = resultado['overview']
+                        ret = self.result['overview']
+        return ret
                     
     def get_poster(self, tipo_respuesta="str", size="original"):
         #--------------------------------------------------------------------------------------------------------------------------------------------
