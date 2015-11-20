@@ -23,7 +23,6 @@ __type__ = "generic"
 __title__ = "Animeflv"
 __channel__ = "animeflv"
 __language__ = "ES"
-__creationdate__ = "20151024"
 
 host = "http://animeflv.net/"
 
@@ -72,9 +71,7 @@ animeflv.data.json
 '''
 
 
-# Cargar los datos con la librería 'requests'
 def get_page(url):
-
 
     response = requests.get(url)
     return response.status_code, response.content
@@ -510,42 +507,44 @@ def numbered_for_tratk(show, season, episode):
     :rtype: int, int
     """
     logger.info("pelisalacarta.channels.animeflv numbered_for_tratk")
+    show = show.lower()
 
     new_season = season
     new_episode = episode
     SERIES = {}
 
-    fname = os.path.join(config.get_runtime_path(), "channels", "animeflv.data.json")
+    name_file = os.path.splitext(os.path.basename(__file__))[0]
+    fname = os.path.join(config.get_data_path(), "channels", name_file + ".data.json")
+
     if os.path.isfile(fname):
         infile = open(fname, "rb")
         data = infile.read()
         infile.close()
-        # json_data = jsontools.loads(data)
         json_data = jsontools.load_json(data)
 
         if 'SERIES' in json_data:
             SERIES = json_data['SERIES']
 
-        # escapamos los caracteres raros si los hubiera en el key, ya que usamos el nombre de la serie como key
+        # ponemos en minusculas el key, ya que previamente hemos hecho lo mismo con show.
         for key in SERIES.keys():
-            new_key = re.escape(key)
+            new_key = key.lower()
             if new_key != key:
                 SERIES[new_key] = SERIES[key]
                 del SERIES[key]
 
-    if re.escape(show) in SERIES:
-        logger.info("ha encontrado algo: {0}".format(SERIES[re.escape(show)]))
+    if show in SERIES:
+        logger.info("ha encontrado algo: {0}".format(SERIES[show]))
 
-        if SERIES[re.escape(show)]['total_episode']:
-            for idx, valor in enumerate(SERIES[re.escape(show)]['total_episode']):
+        if SERIES[show]['total_episode']:
+            for idx, valor in enumerate(SERIES[show]['total_episode']):
 
                 if new_episode > valor:
                     new_episode -= valor
-                    new_season = SERIES[re.escape(show)]['season'][idx]
+                    new_season = SERIES[show]['season'][idx]
                     break
 
         else:
-            new_season = SERIES[re.escape(show)]['season']
+            new_season = SERIES[show]['season']
 
     logger.info("pelisalacarta.channels.animeflv numbered_for_tratk: {0}:{1}".format(new_season, new_episode))
     return new_season, new_episode
