@@ -1,0 +1,21 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": true, 
+        "category": [
+            "adult", 
+            "movie"
+        ], 
+        "changes": "", 
+        "date": "", 
+        "fanart": "", 
+        "id": "submityouflicks", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "Submit your flicks", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "0.0"
+    }, 
+    "settings": {}
+}

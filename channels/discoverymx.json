@@ -1,0 +1,21 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": false, 
+        "category": [
+            "latino", 
+            "documentary"
+        ], 
+        "changes": "Mejorada extracción de patrones", 
+        "date": "11/06/2012", 
+        "fanart": "", 
+        "id": "discoverymx", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "Discoverymx", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "2.0"
+    }, 
+    "settings": {}
+}

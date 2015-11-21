@@ -1,0 +1,22 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": false, 
+        "category": [
+            "movie", 
+            "serie", 
+            "anime"
+        ], 
+        "changes": "Incluida llamada a server.find_videos(server) en findvideos.", 
+        "date": "30/10/15", 
+        "fanart": "", 
+        "id": "newpct1", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "Newpct1", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "12.0"
+    }, 
+    "settings": {}
+}

@@ -1,0 +1,22 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": false, 
+        "category": [
+            "serie", 
+            "anime", 
+            "vos"
+        ], 
+        "changes": "Uso del dominio sx", 
+        "date": "20/04/2014", 
+        "fanart": "", 
+        "id": "seriesyonkis", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "Seriesyonkis", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "26.0"
+    }, 
+    "settings": {}
+}

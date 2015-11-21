@@ -1,0 +1,20 @@
+{
+    "channel": {
+        "active": false, 
+        "adult": false, 
+        "category": [
+            "anime"
+        ], 
+        "changes": "", 
+        "date": "", 
+        "fanart": "", 
+        "id": "personal", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "Personal", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "0.0"
+    }, 
+    "settings": {}
+}

@@ -1,0 +1,20 @@
+{
+    "channel": {
+        "active": false, 
+        "adult": false, 
+        "category": [
+            "G"
+        ], 
+        "changes": "", 
+        "date": "", 
+        "fanart": "", 
+        "id": "stagevusite", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "Stagevu", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "0.0"
+    }, 
+    "settings": {}
+}

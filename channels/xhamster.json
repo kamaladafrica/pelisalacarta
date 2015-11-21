@@ -1,0 +1,21 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": true, 
+        "category": [
+            "adult", 
+            "movie"
+        ], 
+        "changes": "Corregido", 
+        "date": "26/04/2015", 
+        "fanart": "", 
+        "id": "xhamster", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "Xhamster", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "5.0"
+    }, 
+    "settings": {}
+}

@@ -1,0 +1,22 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": false, 
+        "category": [
+            "torrent", 
+            "movie", 
+            "serie"
+        ], 
+        "changes": "Actualizado por cambios en la web", 
+        "date": "11/10/2014", 
+        "fanart": "", 
+        "id": "divxatope", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "Divxatope", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "4.0"
+    }, 
+    "settings": {}
+}

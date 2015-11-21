@@ -1,0 +1,20 @@
+{
+    "channel": {
+        "active": false, 
+        "adult": false, 
+        "category": [
+            "G"
+        ], 
+        "changes": "Actualizado por cambios en la web", 
+        "date": "17/10/2011", 
+        "fanart": "", 
+        "id": "tutvsite", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "Tu.tv", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "3.0"
+    }, 
+    "settings": {}
+}

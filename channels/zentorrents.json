@@ -1,0 +1,22 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": false, 
+        "category": [
+            "torrent", 
+            "movie", 
+            "serie"
+        ], 
+        "changes": "Añadida api arts,Info scroll mas infolabel, corrección modificaciones web", 
+        "date": "13/10/2015", 
+        "fanart": "", 
+        "id": "zentorrents", 
+        "include_in_global_search": true, 
+        "language": "es", 
+        "name": "Zentorrent", 
+        "thumbnail": "http://s6.postimg.org/9zv90yjip/zentorrentlogo.jpg", 
+        "update_url": "", 
+        "version": "10.0"
+    }, 
+    "settings": {}
+}

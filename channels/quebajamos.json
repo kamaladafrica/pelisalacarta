@@ -1,0 +1,22 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": false, 
+        "category": [
+            "movie", 
+            "serie", 
+            "documentary"
+        ], 
+        "changes": "", 
+        "date": "", 
+        "fanart": "", 
+        "id": "quebajamos", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "Quebajamos", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "0.0"
+    }, 
+    "settings": {}
+}
