@@ -183,7 +183,7 @@ class Tmdb(object):
                       }
 
         self.result={'adult':"",
-                    'backdrop_path':"", # ruta imagene de fondo mas valorada
+                    'backdrop_path':"", # ruta imagen de fondo mas valorada
                     #belongs_to_collection
                     'budget':"", # Presupuesto
                     'genres':[], # lista de generos 
@@ -536,7 +536,7 @@ class Tmdb(object):
             buscando= "id_Tmdb: " + str(self.result["id"]) + " temporada: " + str(temporada) + " capitulo: " + str(capitulo)
             logger.info("[Tmdb.py] Buscando " + buscando)
             
-            print url
+            #print url
             self.temporada= self.__get_json(url)
             if self.temporada.has_key("status_code") or len(self.temporada["episodes"]) < capitulo: 
                 # Se ha producido un error
@@ -547,12 +547,13 @@ class Tmdb(object):
         ret_dic={}
         ret_dic["temporada_nombre"]=self.temporada["name"]
         ret_dic["temporada_sinopsis"]=self.temporada["overview"]
-        ret_dic["temporada_poster"]='http://image.tmdb.org/t/p/original'+ self.temporada["poster_path"]
+        ret_dic["temporada_poster"]=('http://image.tmdb.org/t/p/original'+ self.temporada["poster_path"])  if self.temporada["poster_path"] else ""
+        
         
         episodio=self.temporada["episodes"][capitulo -1]
         ret_dic["episodio_titulo"]=episodio["name"]
         ret_dic["episodio_sinopsis"]=episodio["overview"]
-        ret_dic["episodio_imagen"]='http://image.tmdb.org/t/p/original'+ episodio["still_path"]
+        ret_dic["episodio_imagen"]=('http://image.tmdb.org/t/p/original'+ episodio["still_path"])  if episodio["still_path"] else ""
         
         return ret_dic
         
