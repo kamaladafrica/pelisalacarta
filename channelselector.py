@@ -53,26 +53,6 @@ def getmainlist(preferred_thumb=""):
 def mainlist(params,url,category):
     logger.info("channelselector.mainlist")
 
-    # Verifica actualizaciones solo en el primer nivel
-    if config.get_platform()!="boxee":
-        try:
-            from core import updater
-        except ImportError:
-            logger.info("channelselector.mainlist No disponible modulo actualizaciones")
-        else:
-            if config.get_setting("updatecheck2") == "true":
-                logger.info("channelselector.mainlist Verificar actualizaciones activado")
-                try:
-                    updater.checkforupdates()
-                except:
-                    import xbmcgui
-                    dialog = xbmcgui.Dialog()
-                    dialog.ok("No se puede conectar","No ha sido posible comprobar","si hay actualizaciones")
-                    logger.info("channelselector.mainlist Fallo al verificar la actualización")
-                    pass
-            else:
-                logger.info("channelselector.mainlist Verificar actualizaciones desactivado")
-
     itemlist = getmainlist()
     for elemento in itemlist:
         logger.info("channelselector.mainlist item="+elemento.title)
@@ -129,23 +109,8 @@ def listchannels(params,url,category):
 
     lista = filterchannels(category)
     for channel in lista:
-        if channel.type=="xbmc" or channel.type=="generic":
-            if channel.channel=="personal":
-                thumbnail=config.get_setting("personalchannellogo")
-            elif channel.channel=="personal2":
-                thumbnail=config.get_setting("personalchannellogo2")
-            elif channel.channel=="personal3":
-                thumbnail=config.get_setting("personalchannellogo3")
-            elif channel.channel=="personal4":
-                thumbnail=config.get_setting("personalchannellogo4")
-            elif channel.channel=="personal5":
-                thumbnail=config.get_setting("personalchannellogo5")
-            else:
-                thumbnail=channel.thumbnail
-                if thumbnail == "":
-                    thumbnail=urlparse.urljoin(get_thumbnail_path(),channel.channel+".png")
-            addfolder(channel.title , channel.channel , "mainlist" , channel.channel, thumbnail = thumbnail)
-
+        addfolder(channel.title , channel.channel , channel.action , channel.channel, thumbnail=channel.thumbnail)
+        
     # Label (top-right)...
     import xbmcplugin
     xbmcplugin.setPluginCategory( handle=int( sys.argv[ 1 ] ), category=category )
@@ -171,40 +136,42 @@ def filterchannels(category,preferred_thumb=""):
     channelslist =[]
     category=category.replace("L","latino").replace("M","music").replace("X","adult").replace("T","torrent").replace("VOS","vos").replace("F","movie").replace("S","serie").replace("D","documentary").replace("A","anime").replace("*","all")
 
-    for channel in os.listdir(os.path.join(config.get_runtime_path(),"channels")):
-      if channel.endswith(".xml"):
-          try:
-            ChannelData = channeltools.get_channel_parameters(channel[:-4])
-            if not ChannelData["thumbnail"]: 
-                ChannelData["thumbnail"] = get_thumbnail_path(preferred_thumb)+ChannelData["channel"]+".png"
-        
-            if not ChannelData["active"] == "true":  continue #Si no esta activo lo saltamos
-            if ChannelData["adult"] == "true" and not config.get_setting("adult_mode") == "true": continue # Si es adulto y no estan activados lo saltamos
-            if not category=="all" and not category in ChannelData["category"] and not "all" in ChannelData["category"]: continue #Si no corresponde la categoria lo saltamos
-            if not ChannelData["language"]=="" and not idiomav=="" and not idiomav.lower() in ChannelData["language"]: continue #Si no corresponde el idioma lo saltamos
-            
-            if ChannelData["channel"]=="tengourl":
-              channelslist.append(Item(title=ChannelData["title"], channel=ChannelData["channel"], action="mainlist", thumbnail=ChannelData["thumbnail"] , fanart=ChannelData["fanart"], category=", ".join(ChannelData["category"])[:-2], language=ChannelData["language"], type=ChannelData["type"] ))
+    list_chanelsJSON_locales = channeltools.get_list_channels_json()
+    for ChannelId, ChannelData in list_chanelsJSON_locales.items():
+        action = "mainlist"
+        if ChannelData["status"] != "activado":  
+            continue #Si no esta activo lo saltamos
+        if ChannelData["adult"] == True:
+            if config.get_setting("adult_mode") != "true": 
+                continue # Si es adulto y no estan activados lo saltamos
             else:
-              activechannels.append(Item(title=ChannelData["title"], channel=ChannelData["channel"], action="mainlist", thumbnail=ChannelData["thumbnail"] , fanart=ChannelData["fanart"] , category=", ".join(ChannelData["category"])[:-2], language=ChannelData["language"], type=ChannelData["type"] ))
-          except:
-            logger.info("Se ha producido un error al leer los datos del canal " + channel)
-            import traceback
-            logger.info(traceback.format_exc())
-            
+                action = "mainlist_adult"
+        if not ChannelData["language"]=="" and not idiomav=="" and not idiomav.lower() in ChannelData["language"]: 
+            continue #Si no corresponde el idioma lo saltamos
+        if not category=="all" and not category in ChannelData["category"] and not "all" in ChannelData["category"]: 
+            continue #Si no corresponde la categoria lo saltamos
+        if not ChannelData["thumbnail"]: 
+            ChannelData["thumbnail"] = get_thumbnail_path(preferred_thumb) + ChannelId + ".png"
+    
+        if ChannelId=="tengourl":
+          channelslist.append(Item(title=ChannelData["name"], channel=ChannelId, action=action, thumbnail=ChannelData["thumbnail"] , fanart=ChannelData["fanart"], category=", ".join(ChannelData["category"])[:-2], language=ChannelData["language"]))
+        else:
+          activechannels.append(Item(title=ChannelData["name"], channel=ChannelId, action=action, thumbnail=ChannelData["thumbnail"] , fanart=ChannelData["fanart"] , category=", ".join(ChannelData["category"])[:-2], language=ChannelData["language"]))
+        
     if config.get_setting("personalchannel")=="true":
-        channelslist.append( Item( title=config.get_setting("personalchannelname") ,action="mainlist", channel="personal" ,thumbnail=config.get_setting("personalchannellogo"), language="" , category="F,S,D,A" , type="generic"  ))
+        channelslist.append( Item( title=config.get_setting("personalchannelname") ,action="mainlist", channel="personal" ,thumbnail=config.get_setting("personalchannellogo"), language="" , category="F,S,D,A"))
     if config.get_setting("personalchannel2")=="true":
-        channelslist.append( Item( title=config.get_setting("personalchannelname2") ,action="mainlist", channel="personal2" ,thumbnail=config.get_setting("personalchannellogo2"), language="" , category="F,S,D,A" , type="generic"  ))
+        channelslist.append( Item( title=config.get_setting("personalchannelname2") ,action="mainlist", channel="personal2" ,thumbnail=config.get_setting("personalchannellogo2"), language="" , category="F,S,D,A"))
     if config.get_setting("personalchannel3")=="true":
-        channelslist.append( Item( title=config.get_setting("personalchannelname3") ,action="mainlist", channel="personal3" ,thumbnail=config.get_setting("personalchannellogo3"), language="" , category="F,S,D,A" , type="generic"  ))
+        channelslist.append( Item( title=config.get_setting("personalchannelname3") ,action="mainlist", channel="personal3" ,thumbnail=config.get_setting("personalchannellogo3"), language="" , category="F,S,D,A"))
     if config.get_setting("personalchannel4")=="true":
-        channelslist.append( Item( title=config.get_setting("personalchannelname4") ,action="mainlist", channel="personal4" ,thumbnail=config.get_setting("personalchannellogo4"), language="" , category="F,S,D,A" , type="generic"  ))
+        channelslist.append( Item( title=config.get_setting("personalchannelname4") ,action="mainlist", channel="personal4" ,thumbnail=config.get_setting("personalchannellogo4"), language="" , category="F,S,D,A"))
     if config.get_setting("personalchannel5")=="true":
-        channelslist.append( Item( title=config.get_setting("personalchannelname5") ,action="mainlist", channel="personal5" ,thumbnail=config.get_setting("personalchannellogo5"), language="" , category="F,S,D,A" , type="generic"  ))
+        channelslist.append( Item( title=config.get_setting("personalchannelname5") ,action="mainlist", channel="personal5" ,thumbnail=config.get_setting("personalchannellogo5"), language="" , category="F,S,D,A"))
            
     activechannels.sort(key=lambda item: item.title.lower().strip())
     channelslist.extend(activechannels)
+    
     return channelslist
 
 
