@@ -1,0 +1,20 @@
+{
+    "channel": {
+        "active": false, 
+        "adult": false, 
+        "category": [
+            "anime"
+        ], 
+        "changes": "Canal veranime actualizado por cambios en la web", 
+        "date": "10/07/2012", 
+        "fanart": "", 
+        "id": "veranime", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "Ver-anime", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "3.0"
+    }, 
+    "settings": {}
+}

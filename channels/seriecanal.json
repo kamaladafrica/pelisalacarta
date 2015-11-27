@@ -1,0 +1,21 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": false, 
+        "category": [
+            "serie", 
+            "vos"
+        ], 
+        "changes": "Primera version", 
+        "date": "14/11/2015", 
+        "fanart": "", 
+        "id": "seriecanal", 
+        "include_in_global_search": true, 
+        "language": "es", 
+        "name": "Seriecanal", 
+        "thumbnail": "http://i.imgur.com/EwMK8Yd.png", 
+        "update_url": "", 
+        "version": "1.0"
+    }, 
+    "settings": {}
+}

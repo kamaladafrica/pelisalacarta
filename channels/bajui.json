@@ -1,0 +1,23 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": false, 
+        "category": [
+            "movie", 
+            "serie", 
+            "documentary", 
+            "vos"
+        ], 
+        "changes": "First pelisalacarta 4 release", 
+        "date": "28/08/2015", 
+        "fanart": "", 
+        "id": "bajui", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "Bajui", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "1.0"
+    }, 
+    "settings": {}
+}

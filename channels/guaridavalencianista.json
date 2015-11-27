@@ -1,0 +1,20 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": false, 
+        "category": [
+            "documentary"
+        ], 
+        "changes": "", 
+        "date": "", 
+        "fanart": "", 
+        "id": "guaridavalencianista", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "La guarida valencianista", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "0.0"
+    }, 
+    "settings": {}
+}

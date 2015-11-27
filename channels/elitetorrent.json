@@ -1,0 +1,23 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": false, 
+        "category": [
+            "torrent", 
+            "movie", 
+            "serie", 
+            "documentary"
+        ], 
+        "changes": "", 
+        "date": "", 
+        "fanart": "", 
+        "id": "elitetorrent", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "Elite torrent", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "0.0"
+    }, 
+    "settings": {}
+}

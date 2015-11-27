@@ -1,0 +1,23 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": false, 
+        "category": [
+            "movie", 
+            "serie", 
+            "documentary", 
+            "anime"
+        ], 
+        "changes": "Corregido para funcionar con el nuevo dominio", 
+        "date": "16/02/2014", 
+        "fanart": "", 
+        "id": "shurweb", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "Shurweb", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "6.0"
+    }, 
+    "settings": {}
+}
