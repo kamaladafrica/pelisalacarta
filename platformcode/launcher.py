@@ -100,10 +100,10 @@ def run():
                 # It is an adult channel, if user has configured pin, asks for it
                 if config.get_setting("adult_pin")!="":
                     keyboard = guitools.keyboard("","PIN para canales de adultos",True)
-                    keyboard.doModal()
+                    #keyboard.doModal()
 
-                    if (keyboard.isConfirmed()):
-                        tecleado = keyboard.getText()
+                    if (keyboard):
+                        tecleado = keyboard
                         if tecleado == config.get_setting("adult_pin"):
                             # pin ok
                             action = "mainlist"
@@ -313,10 +313,10 @@ def run():
 
                 elif action=="search":
                     logger.info("pelisalacarta.platformcode.launcher search")
-                    keyboard = guitools.Keyboard("")
-                    keyboard.doModal()
-                    if (keyboard.isConfirmed()):
-                        tecleado = keyboard.getText()
+                    keyboard = guitools.keyboard("")
+                    #keyboard.doModal()
+                    if (keyboard):
+                        tecleado = keyboard
                         tecleado = tecleado.replace(" ", "+")
                         itemlist = channel.search(item,tecleado)
                     else:
