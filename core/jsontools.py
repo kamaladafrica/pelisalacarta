@@ -16,7 +16,7 @@ def load_json(data):
     # callback to transform json string values to utf8
     def to_utf8(dct):
         if isinstance(dct, dict):
-            return {to_utf8(key): to_utf8(value) for key, value in dct.iteritems()}
+            return dict((to_utf8(key), to_utf8(value)) for key, value in dct.iteritems())
         elif isinstance(dct, list):
             return [to_utf8(element) for element in dct]
         elif isinstance(dct, unicode):
