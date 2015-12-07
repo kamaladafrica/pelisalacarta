@@ -7,10 +7,12 @@
 import urlparse
 import re
 import sys
+import os
 
 from core import logger
 from core import config
 from core import scrapertools
+from core import jsontools
 from core.item import Item
 from lib import requests
 
@@ -21,14 +23,55 @@ __type__ = "generic"
 __title__ = "Animeflv"
 __channel__ = "animeflv"
 __language__ = "ES"
-__creationdate__ = "20151024"
 
 host = "http://animeflv.net/"
 
+'''
+### PARA USAR CON TRATK.TV ###
 
-# Cargar los datos con la librería 'requests'
+season: debe ir en orden descendente
+episode: la "temporada 1" siempre son "0 capitulos", la "temporada 2" es el "numero de capitulos de la temporada 1"
+
+FAIRY TAIL:
+    - SEASON 1: EPISODE 48 --> season 1: total_episode: 0
+    - SEASON 2: EPISODE 48 --> season 2: total_episode: 48
+    - SEASON 3: EPISODE 54 --> season 3: total_episode: 96 ( [48=season2] +[ 48=season1] )
+    - SEASON 4: EPISODE 175 --> season 4: total_episode: 150 ( [54=season3] + [48=season2] + [48=season3] )
+
+animeflv.data.json
+{
+   "SERIES":{
+      "Fairy Tail":{
+         "season":[
+            4,
+            3,
+            2,
+            1
+         ],
+         "total_episode":[
+            150,
+            96,
+            48,
+            0
+         ]
+      },
+      "Fairy Tail (2014)":{
+         "season":[
+            6,
+            5
+         ],
+         "total_episode":[
+            51,
+            0
+         ]
+      }
+   }
+}
+
+'''
+
+
 def get_page(url):
-
 
     response = requests.get(url)
     return response.status_code, response.content
@@ -359,6 +402,8 @@ def episodios(item):
             except ValueError:
                 pass
 
+            season, episode = numbered_for_tratk(item.show, season, episode)
+
             if len(str(episode)) == 1:
                 title = "{0}x0{1}".format(season, episode)
             else:
@@ -446,3 +491,60 @@ def test():
             break
 
     return bien
+
+
+def numbered_for_tratk(show, season, episode):
+    """
+    Devuelve la temporada y episodio convertido para que se marque correctamente en tratk.tv
+
+    :param show: Nombre de la serie a comprobar
+    :type show: str
+    :param season: Temporada que devuelve el scrapper
+    :type season: int
+    :param episode: Episodio que devuelve el scrapper
+    :type episode: int
+    :return: season, episode
+    :rtype: int, int
+    """
+    logger.info("pelisalacarta.channels.animeflv numbered_for_tratk")
+    show = show.lower()
+
+    new_season = season
+    new_episode = episode
+    SERIES = {}
+
+    name_file = os.path.splitext(os.path.basename(__file__))[0]
+    fname = os.path.join(config.get_data_path(), "channels", name_file + ".data.json")
+
+    if os.path.isfile(fname):
+        infile = open(fname, "rb")
+        data = infile.read()
+        infile.close()
+        json_data = jsontools.load_json(data)
+
+        if 'SERIES' in json_data:
+            SERIES = json_data['SERIES']
+
+        # ponemos en minusculas el key, ya que previamente hemos hecho lo mismo con show.
+        for key in SERIES.keys():
+            new_key = key.lower()
+            if new_key != key:
+                SERIES[new_key] = SERIES[key]
+                del SERIES[key]
+
+    if show in SERIES:
+        logger.info("ha encontrado algo: {0}".format(SERIES[show]))
+
+        if SERIES[show]['total_episode']:
+            for idx, valor in enumerate(SERIES[show]['total_episode']):
+
+                if new_episode > valor:
+                    new_episode -= valor
+                    new_season = SERIES[show]['season'][idx]
+                    break
+
+        else:
+            new_season = SERIES[show]['season']
+
+    logger.info("pelisalacarta.channels.animeflv numbered_for_tratk: {0}:{1}".format(new_season, new_episode))
+    return new_season, new_episode

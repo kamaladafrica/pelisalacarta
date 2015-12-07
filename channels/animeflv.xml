@@ -6,10 +6,10 @@
 	<update_url></update_url>
 	<active>true</active>
 	<include_in_global_search>true</include_in_global_search>
-	<version>3</version>
+	<version>4</version>
 	<adult>false</adult>
-	<date>24/10/2015</date>
-    <changes>resueltos problemas utf, libreria requests, pep8 conventions, etc</changes>
+	<date>14/11/2015</date>
+    <changes>añadido mejoras para tratk.tv, si da error al mostrar los resultados, etc</changes>
 	<fanart></fanart>
 	<thumbnail></thumbnail>
 	<categories>
