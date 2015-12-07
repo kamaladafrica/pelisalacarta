@@ -6,10 +6,10 @@
 	<update_url></update_url>
 	<active>true</active>
 	<include_in_global_search>true</include_in_global_search>
-	<version>2</version>
+	<version>3</version>
 	<adult>false</adult>
-	<date>13/10/2015</date>
-	<changes>Info scroll mas infolabel</changes>
+	<date>05/12/2015</date>
+	<changes>Añadido multi-fanart, force-refresh y televisiontunes</changes>
 	<fanart></fanart>
 	<thumbnail>http://s6.postimg.org/6ash180up/bityoulogo.png</thumbnail>
 	<categories>
