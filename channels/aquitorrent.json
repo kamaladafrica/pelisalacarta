@@ -1,0 +1,25 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": false, 
+        "category": [
+            "torrent", 
+            "movie", 
+            "serie", 
+            "documentary", 
+            "anime", 
+            "vos"
+        ], 
+        "changes": "First pelisalacarta 4 release", 
+        "date": "28/08/2015", 
+        "fanart": "", 
+        "id": "aquitorrent", 
+        "include_in_global_search": true, 
+        "language": "es", 
+        "name": "Aquitorrent", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "1.0"
+    }, 
+    "settings": {}
+}

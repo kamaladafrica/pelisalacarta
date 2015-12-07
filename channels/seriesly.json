@@ -1,0 +1,23 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": false, 
+        "category": [
+            "movie", 
+            "serie", 
+            "anime", 
+            "vos"
+        ], 
+        "changes": "Corrige el que no se pueda acceder a algunas webs (gracias a prunk)", 
+        "date": "12/10/2014", 
+        "fanart": "", 
+        "id": "seriesly", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "Series.ly", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "31.0"
+    }, 
+    "settings": {}
+}

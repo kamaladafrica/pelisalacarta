@@ -1,0 +1,23 @@
+{
+    "channel": {
+        "active": false, 
+        "adult": false, 
+        "category": [
+            "movie", 
+            "serie", 
+            "anime", 
+            "documentary"
+        ], 
+        "changes": "Añadidas series, documentales y anime a cinetube (Gracias a prunk)", 
+        "date": "19/05/2013", 
+        "fanart": "", 
+        "id": "cinetube", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "Cinetube", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "16.0"
+    }, 
+    "settings": {}
+}

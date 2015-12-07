@@ -1,0 +1,21 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": false, 
+        "category": [
+            "movie", 
+            "serie"
+        ], 
+        "changes": "Arreglo de siguientes capítulos", 
+        "date": "22/04/2015", 
+        "fanart": "", 
+        "id": "pordede", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "Pordede", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "6.0"
+    }, 
+    "settings": {}
+}

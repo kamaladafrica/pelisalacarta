@@ -1,0 +1,22 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": false, 
+        "category": [
+            "latino", 
+            "movie", 
+            "vos"
+        ], 
+        "changes": "Arreglado pelis24", 
+        "date": "26/04/2015", 
+        "fanart": "", 
+        "id": "pelis24", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "Pelis24", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "6.0"
+    }, 
+    "settings": {}
+}

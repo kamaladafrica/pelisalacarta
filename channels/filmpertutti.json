@@ -1,0 +1,22 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": false, 
+        "category": [
+            "movie", 
+            "serie", 
+            "anime"
+        ], 
+        "changes": "Actualizado", 
+        "date": "17/03/2015", 
+        "fanart": "", 
+        "id": "filmpertutti", 
+        "include_in_global_search": false, 
+        "language": "it", 
+        "name": "Film per tutti (it)", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "3.0"
+    }, 
+    "settings": {}
+}

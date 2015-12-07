@@ -1,0 +1,20 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": false, 
+        "category": [
+            "anime"
+        ], 
+        "changes": "Actualizado", 
+        "date": "17/03/2015", 
+        "fanart": "", 
+        "id": "italiafilm", 
+        "include_in_global_search": false, 
+        "language": "it", 
+        "name": "Italiafilms.tv (it)", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "4.0"
+    }, 
+    "settings": {}
+}

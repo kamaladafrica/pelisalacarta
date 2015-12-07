@@ -1,0 +1,23 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": false, 
+        "category": [
+            "movie", 
+            "serie", 
+            "documentary", 
+            "anime"
+        ], 
+        "changes": "Cambio de URL a newpct.com de nuevo", 
+        "date": "07/09/2014", 
+        "fanart": "", 
+        "id": "newpct", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "Newpct", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "5.0"
+    }, 
+    "settings": {}
+}

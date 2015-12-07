@@ -1,0 +1,20 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": false, 
+        "category": [
+            "anime"
+        ], 
+        "changes": "", 
+        "date": "", 
+        "fanart": "", 
+        "id": "reyanime", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "Reyanime", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "0.0"
+    }, 
+    "settings": {}
+}

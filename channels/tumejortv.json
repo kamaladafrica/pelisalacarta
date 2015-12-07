@@ -1,0 +1,21 @@
+{
+    "channel": {
+        "active": false, 
+        "adult": false, 
+        "category": [
+            "movie", 
+            "serie"
+        ], 
+        "changes": "Mejorado proceso de obtención de enlaces", 
+        "date": "05/06/2013", 
+        "fanart": "", 
+        "id": "tumejortv", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "Tumejortv.com", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "8.0"
+    }, 
+    "settings": {}
+}

@@ -1,0 +1,22 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": false, 
+        "category": [
+            "torrent", 
+            "movie", 
+            "serie"
+        ], 
+        "changes": "Añadida api arts,cambios  web,Info scroll mas infolabel", 
+        "date": "13/10/2015", 
+        "fanart": "", 
+        "id": "peliculasdk", 
+        "include_in_global_search": true, 
+        "language": "es", 
+        "name": "Peliculasdk", 
+        "thumbnail": "http://s29.postimg.org/wzw749oon/pldklog.jpg", 
+        "update_url": "", 
+        "version": "2.0"
+    }, 
+    "settings": {}
+}
