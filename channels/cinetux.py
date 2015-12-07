@@ -102,7 +102,7 @@ def peliculas(item):
     '''
 
     # Extrae las entradas (carpetas)
-    patron  = '<!--PELICULA--><div class="movielist textcenter[^<]+'
+    patron  = '<div class="movielist textcenter[^<]+'
     patron += '<div id="titlecat[^<]+<a href="([^"]+)" rel="bookmark" title="([^"]+)"><img style="[^"]+" width="[^"]+" height="[^"]+" src=(.*?) /[^<]+'
     matches = re.compile(patron,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
@@ -161,6 +161,38 @@ def peliculas(item):
     for scrapedurl,title,thumbnail in matches:
         scrapedplot = ""
         scrapedthumbnail = thumbnail[:-2]
+        scrapedtitle = title[14:]
+        if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
+        itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , fulltitle=scrapedtitle, url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , viewmode="movie", fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg", folder=True) )
+
+    '''
+    <td class="contenido">
+    <a href="http://www.cinetux.org/2015/08/ver-pelicula-upsss-donde-esta-noe-ooops-noah-is-gone-online-gratis-2015.html">
+    <img 
+        src="http://2.bp.blogspot.com/-Mj60_QHkIcw/VWEhjbHY91I/AAAAAAAAFb8/oMx22CB2ML8/s350/ups-1.jpg" 
+        style="border: 1px solid #000;margin: 5px; margin-bottom:10px;" 
+        alt="Ver Película ¡Upsss! ¿Dónde está Noé&#8230;? (Ooops! Noah is Gone&#8230;) Online Gratis (2015)" title="Ver Película ¡Upsss! ¿Dónde está Noé&#8230;? (Ooops! Noah is Gone&#8230;) Online Gratis (2015)" height="200" align="left" width="140"></a>
+    <div id="puntoscinetux"><div style="margin-top:12px; margin-left:95px;"><span class="rating"><img src="http://www.cinetux.org/wp-content/plugins/wp-postratings/images/stars_crystal/rating_on.png" alt="4 votes, average: 5,00 out of 5" title="4 votes, average: 5,00 out of 5" class="post-ratings-image"/><img src="http://www.cinetux.org/wp-content/plugins/wp-postratings/images/stars_crystal/rating_on.png" alt="4 votes, average: 5,00 out of 5" title="4 votes, average: 5,00 out of 5" class="post-ratings-image"/><img src="http://www.cinetux.org/wp-content/plugins/wp-postratings/images/stars_crystal/rating_on.png" alt="4 votes, average: 5,00 out of 5" title="4 votes, average: 5,00 out of 5" class="post-ratings-image"/><img src="http://www.cinetux.org/wp-content/plugins/wp-postratings/images/stars_crystal/rating_on.png" alt="4 votes, average: 5,00 out of 5" title="4 votes, average: 5,00 out of 5" class="post-ratings-image"/><img src="http://www.cinetux.org/wp-content/plugins/wp-postratings/images/stars_crystal/rating_on.png" alt="4 votes, average: 5,00 out of 5" title="4 votes, average: 5,00 out of 5" class="post-ratings-image"/></span></div></div>
+    <br></br>
+    <b>Año de estreno:</b><font color="#0066FF"> <a href="http://www.cinetux.org/ano/2015" rel="tag">2015</a></font><br>
+    <b>Actor (es):</b> <font color="#0066FF"><a href="http://www.cinetux.org/actor/animacion-2" rel="tag">Animación</a></font><br>
+    <font color="#000000"><b>Género:</b></font> <font color="#0066FF"><a href="http://www.cinetux.org/genero/animacion" rel="category tag">Animacion</a>, <a href="http://www.cinetux.org/genero/aventura" rel="category tag">Aventura</a>, <a href="http://www.cinetux.org/genero/familiar" rel="category tag">Familiar</a>, <a href="http://www.cinetux.org/genero/infantil" rel="category tag">Infantil</a></font><br>
+    Sinopsis: Se acerca el Diluvio Universal y Noé ha construido un gran Arca para salvar a una pareja de cada especie animal pero dos Nestrians, padre e hijo, no son admitidos a entrar. La ayuda involuntaria de dos Grymps, madre e hija, les permite colarse en el Arca. Sin embargo, los niños Finny y Leah [&hellip;]...
+    <a href="http://www.cinetux.org/2015/08/ver-pelicula-upsss-donde-esta-noe-ooops-noah-is-gone-online-gratis-2015.html" style="font-weight: bold; font-size: 11pt; float:right;"><img src="http://1.bp.blogspot.com/-KEUuDAGf8ag/Uky6siiAdYI/AAAAAAAAn38/t-J3yxgEwvY/s30/WMP_Play_button-740053.png" border="0"> <font color="#0066FF" size="3">VER PELÍCULA</font></a></td>
+    <td></td>
+    </tr>
+    </tbody></table>
+    </div>
+    '''
+    patron  = '<td class="contenido"[^<]+'
+    patron += '<a href="([^"]+)"[^<]+'
+    patron += '<img src="([^"]+)" style="[^"]+" alt="([^"]+)"'
+    matches = re.compile(patron,re.DOTALL).findall(data)
+    scrapertools.printMatches(matches)
+
+    for scrapedurl,thumbnail,title in matches:
+        scrapedplot = ""
+        scrapedthumbnail = thumbnail
         scrapedtitle = title[14:]
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
         itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , fulltitle=scrapedtitle, url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , viewmode="movie", fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg", folder=True) )
