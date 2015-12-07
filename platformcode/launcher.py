@@ -12,52 +12,12 @@ from core import logger
 from core import config
 from core import scrapertools
 from core import channeltools
-from core import updater
-from platformcode import guitools
-from platformcode import xbmctools
 
-def start():
-    ''' Primera funcion que se ejecuta al entrar en el plugin.
-
-    Dentro de esta funcion deberian ir todas las llamadas a las
-    funciones que deseamos que se ejecuten nada mas abrir el plugin.
-    
-    '''
-    logger.info("pelisalacarta.platformcode.launcher start")
+def run():
+    logger.info("pelisalacarta.platformcode.launcher run")
     
     # Test if all the required directories are created
     config.verify_directories_created()
-	
-	# Leer List_channels.json, si no existe crearlo
-    list_channels_json = channeltools.get_list_channels_json()
-    if not list_channels_json:
-        channeltools.set_list_channels_json()
-    else:
-        # Si la configuracion de "Canales eliminados del repositorio oficial" es 'Eliminar'
-        # y el canal esta marcado como 'borrable' eliminarlo y actualizar list_channels_json
-        if config.get_setting("del_oficial_updatechannels") == '2': 
-            new_list_channels_json = {}
-            for k,v in list_channels_json.items():
-                if v['status'] == 'borrable':
-                    for ext in ['.py', '.pyo', '.json']:
-                        try:
-                            os.remove(os.path.join(config.get_runtime_path(), 'channels',k + ext))
-                        except:
-                            pass
-                    if os.path.exists (os.path.join(config.get_data_path(),k + '_custom.json')):
-                        os.remove(os.path.join(config.get_data_path(),k + '_custom.json'))
-                else:
-                    new_list_channels_json [k] = v
-            if new_list_channels_json:
-                channeltools.set_list_channels_json(new_list_channels_json)
-            
-	# Comprobar si hay que actualizar algo en otro hilo
-    from threading import Thread
-    Thread(target=updater.Threaded_checkforupdates).start()
-      
-    
-def run():
-    logger.info("pelisalacarta.platformcode.launcher run")
     
     # Extract parameters from sys.argv
     params, fanart, channel_name, title, fulltitle, url, thumbnail, plot, action, server, extra, subtitle, viewmode, category, show, password = extract_parameters()
@@ -70,16 +30,35 @@ def run():
         # Default action: open channel and launch mainlist function
         if ( action=="selectchannel" ):
 
-            if config.get_setting("when_oficial_updatechannels") != "0":
+            if config.get_setting("updatechannels")=="true":
                 try:
-                    if channeltools.updatechannel("channelselector"):
-                        guitools.dialog_ok("tvalacarta",config.get_localized_string(30064))
+                    from core import updater
+                    actualizado = updater.updatechannel("channelselector")
+
+                    if actualizado:
+                        import xbmcgui
+                        advertencia = xbmcgui.Dialog()
+                        advertencia.ok("tvalacarta",config.get_localized_string(30064))
                 except:
                     pass
 
             import channelselector as plugin
             plugin.mainlist(params, url, category)
-           
+
+        # Actualizar version
+        elif ( action=="update" ):
+            try:
+                from core import updater
+                updater.update(params)
+            except ImportError:
+                logger.info("pelisalacarta.platformcode.launcher Actualizacion automática desactivada")
+
+            #import channelselector as plugin
+            #plugin.listchannels(params, url, category)
+            if config.get_system_platform()!="xbox":
+                import xbmc
+                xbmc.executebuiltin( "Container.Refresh" )
+
         elif (action=="channeltypes"):      
             import channelselector as plugin
             plugin.channeltypes(params,url,category)
@@ -95,33 +74,38 @@ def run():
         # El resto de acciones vienen en el parámetro "action", y el canal en el parámetro "channel"
         else:
 
-            if action=="mainlist_adult":
+            if action=="mainlist":
                 # Parental control
-                # It is an adult channel, if user has configured pin, asks for it
-                if config.get_setting("adult_pin")!="":
-                    keyboard = guitools.keyboard("","PIN para canales de adultos",True)
-                    #keyboard.doModal()
+                can_open_channel = False
 
-                    if (keyboard):
-                        tecleado = keyboard
-                        if tecleado == config.get_setting("adult_pin"):
-                            # pin ok
-                            action = "mainlist"
-                        else: 
-                            # pin no ok
-                            return
-                    else:
-                        # keyboard cancel
-                        return
-                        
+                # If it is an adult channel, and user has configured pin, asks for it
+                if channeltools.is_adult(channel_name) and config.get_setting("adult_pin")!="":
+                    
+                    import xbmc
+                    keyboard = xbmc.Keyboard("","PIN para canales de adultos",True)
+                    keyboard.doModal()
+
+                    if (keyboard.isConfirmed()):
+                        tecleado = keyboard.getText()
+                        if tecleado==config.get_setting("adult_pin"):
+                            can_open_channel = True
+
                 # All the other cases can open the channel
                 else:
-                    action = "mainlist"
+                    can_open_channel = True
 
-            if action=="mainlist" and config.get_setting("when_oficial_updatechannels") == "2":
+                if not can_open_channel:
+                    return
+
+            if action=="mainlist" and config.get_setting("updatechannels")=="true":
                 try:
-                    if channeltools.updatechannel(channel_name):
-                        guitools.dialog_ok("plugin",channel_name,config.get_localized_string(30063))
+                    from core import updater
+                    actualizado = updater.updatechannel(channel_name)
+
+                    if actualizado:
+                        import xbmcgui
+                        advertencia = xbmcgui.Dialog()
+                        advertencia.ok("plugin",channel_name,config.get_localized_string(30063))
                 except:
                     pass
 
@@ -153,6 +137,7 @@ def run():
             if not generico:
                 logger.info("pelisalacarta.platformcode.launcher xbmc native channel")
                 if (action=="strm"):
+                    from platformcode import xbmctools
                     xbmctools.playstrm(params, url, category)
                 else:
                     exec "channel."+action+"(params, url, category)"
@@ -161,8 +146,21 @@ def run():
                 from core.item import Item
                 item = Item(channel=channel_name, title=title , fulltitle=fulltitle, url=url, thumbnail=thumbnail , plot=plot , server=server, category=category, extra=extra, subtitle=subtitle, viewmode=viewmode, show=show, password=password, fanart=fanart)
                 
-                
-                
+                '''
+                if item.subtitle!="":
+                    logger.info("pelisalacarta.platformcode.launcher Downloading subtitle file "+item.subtitle)
+                    from core import downloadtools
+                    
+                    ficherosubtitulo = os.path.join( config.get_data_path() , "subtitulo.srt" )
+                    if os.path.exists(ficherosubtitulo):
+                        os.remove(ficherosubtitulo)
+
+                    downloadtools.downloadfile(item.subtitle, ficherosubtitulo )
+                    config.set_setting("subtitulo","true")
+                else:
+                    logger.info("pelisalacarta.platformcode.launcher No subtitle")
+                '''
+                from platformcode import xbmctools
 
                 if action=="play":
                     logger.info("pelisalacarta.platformcode.launcher play")
@@ -174,7 +172,9 @@ def run():
                             item = itemlist[0]
                             xbmctools.play_video(channel=channel_name, server=item.server, url=item.url, category=item.category, title=item.title, thumbnail=item.thumbnail, plot=item.plot, extra=item.extra, subtitle=item.subtitle, video_password = item.password, fulltitle=item.fulltitle, Serie=item.show)
                         else:
-                            ok = guitools.dialog_ok ("plugin", "No hay nada para reproducir")
+                            import xbmcgui
+                            ventana_error = xbmcgui.Dialog()
+                            ok = ventana_error.ok ("plugin", "No hay nada para reproducir")
                     else:
                         logger.info("pelisalacarta.platformcode.launcher no channel 'play' method, executing core method")
                         xbmctools.play_video(channel=channel_name, server=item.server, url=item.url, category=item.category, title=item.title, thumbnail=item.thumbnail, plot=item.plot, extra=item.extra, subtitle=item.subtitle, video_password = item.password, fulltitle=item.fulltitle, Serie=item.show)
@@ -203,15 +203,17 @@ def run():
                     if len(itemlist)>0:
                         #for item2 in itemlist:
                         #    logger.info(item2.title+" "+item2.subtitle)
-
+    
                         # El usuario elige el mirror
                         opciones = []
                         for item in itemlist:
                             opciones.append(item.title)
                     
-                        seleccion = guitools.dialog_select(config.get_localized_string(30163), opciones)
+                        import xbmcgui
+                        dia = xbmcgui.Dialog()
+                        seleccion = dia.select(config.get_localized_string(30163), opciones)
                         elegido = itemlist[seleccion]
-
+    
                         if seleccion==-1:
                             return
                     else:
@@ -224,7 +226,8 @@ def run():
                     except:
                         item = elegido
                     logger.info("Elegido %s (sub %s)" % (item.title,item.subtitle))
-
+                    
+                    from platformcode import xbmctools
                     logger.info("subtitle="+item.subtitle)
                     xbmctools.play_video(strmfile=True, channel=item.channel, server=item.server, url=item.url, category=item.category, title=item.title, thumbnail=item.thumbnail, plot=item.plot, extra=item.extra, subtitle=item.subtitle, video_password = item.password, fulltitle=fulltitle)
 
@@ -237,6 +240,7 @@ def run():
                 elif action=="add_serie_to_library":
                     logger.info("pelisalacarta.platformcode.launcher add_serie_to_library, show=#"+item.show+"#")
                     from platformcode import library
+                    import xbmcgui
                 
                     # Obtiene el listado desde el que se llamó
                     action = item.extra
@@ -249,7 +253,8 @@ def run():
                     exec "itemlist = channel."+action+"(item)"
 
                     # Progreso
-                    pDialog = guitools.dialog_progress('pelisalacarta', 'Añadiendo episodios...')
+                    pDialog = xbmcgui.DialogProgress()
+                    ret = pDialog.create('pelisalacarta', 'Añadiendo episodios...')
                     pDialog.update(0, 'Añadiendo episodio...')
                     totalepisodes = len(itemlist)
                     logger.info ("[launcher.py] Total Episodios:"+str(totalepisodes))
@@ -313,10 +318,11 @@ def run():
 
                 elif action=="search":
                     logger.info("pelisalacarta.platformcode.launcher search")
-                    keyboard = guitools.keyboard("")
-                    #keyboard.doModal()
-                    if (keyboard):
-                        tecleado = keyboard
+                    import xbmc
+                    keyboard = xbmc.Keyboard("")
+                    keyboard.doModal()
+                    if (keyboard.isConfirmed()):
+                        tecleado = keyboard.getText()
                         tecleado = tecleado.replace(" ", "+")
                         itemlist = channel.search(item,tecleado)
                     else:
@@ -358,7 +364,7 @@ def run():
                     
                     # Añade los items a la lista de XBMC
                     xbmctools.renderItems(itemlist, params, url, category)
-    
+
     except urllib2.URLError,e:
         import traceback,sys
         from pprint import pprint
@@ -369,19 +375,19 @@ def run():
             for line_split in line_splits:
                 logger.error(line_split)
 
-
+        import xbmcgui
+        ventana_error = xbmcgui.Dialog()
         # Agarra los errores surgidos localmente enviados por las librerias internas
         if hasattr(e, 'reason'):
             logger.info("Razon del error, codigo: %d , Razon: %s" %(e.reason[0],e.reason[1]))
             texto = config.get_localized_string(30050) # "No se puede conectar con el sitio web"
-            ok = guitools.dialog_ok("plugin", texto)
+            ok = ventana_error.ok ("plugin", texto)
         # Agarra los errores con codigo de respuesta del servidor externo solicitado     
         elif hasattr(e,'code'):
             logger.info("codigo de error HTTP : %d" %e.code)
             texto = (config.get_localized_string(30051) % e.code) # "El sitio web no funciona correctamente (error http %d)"
-            ok = guitools.dialog_ok("plugin", texto)    
- 
- 
+            ok = ventana_error.ok ("plugin", texto)    
+
 # Parse XBMC params - based on script.module.parsedom addon    
 def get_params():
     logger.info("get_params")
@@ -731,7 +737,9 @@ def download_all_episodes(item,channel,first_episode="",preferred_server="vidspo
                         break
                     elif devuelve==-1:
                         try:
-                            resultado = guitools.dialog_ok("plugin" , "Descarga abortada")
+                            import xbmcgui
+                            advertencia = xbmcgui.Dialog()
+                            resultado = advertencia.ok("plugin" , "Descarga abortada")
                         except:
                             pass
                         return
