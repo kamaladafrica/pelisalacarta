@@ -121,8 +121,14 @@ def findvideos(item):
     infoLabels['season'] = item.extra
     infoLabels['plot'] = item.plot
     infoLabels['tvshowtitle']= item.fulltitle
-    tmdbthumbnail = item.thumbnail
-	
+    seriethumbnail = item.thumbnail
+
+    try:
+        from core.tmdb import Tmdb
+        oTmdb= Tmdb(texto_buscado=item.fulltitle, tipo= "tv")
+    except:
+        pass
+
     #Busca en la seccion descarga/torrent
     data_download = scrapertools.get_match(data, '<th>Enlaces de Descarga mediante P2P o DD</th>(.*?)</table>')
     patron  = '<p class="item_name">.*?<a href="([^"]+)".*?">([^"]+)</a>'
@@ -136,22 +142,24 @@ def findvideos(item):
 		#Info episodio
         infoLabels['episode']= scrapedepi
         try:
-            from core.tmdb import Tmdb
-            oTmdb= Tmdb(texto_buscado=item.fulltitle, tipo= "tv")
+            thumbnail_epi = ""
             episodio = oTmdb.get_episodio(infoLabels['season'], infoLabels['episode'])
             if episodio["episodio_sinopsis"] !="":
                 infoLabels['plot'] = episodio["episodio_sinopsis"]
+            else:
+                if oTmdb.get_sinopsis() !="":
+                    infoLabels['plot'] = oTmdb.get_sinopsis()
             infoLabels['genre'] = ", ".join(oTmdb.result["genres"])
             item.fanart=oTmdb.get_backdrop()
-            tmdbthumbnail = episodio["episodio_imagen"]
-
+            if episodio["episodio_imagen"]!= "": thumbnail_epi = episodio["episodio_imagen"]
         except:
             pass	
 
         plot['infoLabels']=infoLabels 
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"]")
         if scrapedurl.find("magnet") != -1:
-            itemlist.append( Item(channel=__channel__, action="play" , title="[Torrent]" + scrapedtitle, url=scrapedurl, thumbnail=tmdbthumbnail  , plot = str(plot), fanart= item.fanart, extra="torrent"))
+            if thumbnail_epi == "": thumbnail_epi = seriethumbnail
+            itemlist.append( Item(channel=__channel__, action="play" , title="[Torrent]" + scrapedtitle, url=scrapedurl, thumbnail=thumbnail_epi  , plot = str(plot), fanart= item.fanart, extra="torrent"))
 
     #Busca en la seccion online
     data_online = scrapertools.get_match(data, '<th>Enlaces de Visionado Online</th>(.*?)</table>')
@@ -170,19 +178,22 @@ def findvideos(item):
 			#Info episodio
             infoLabels['episode']= scrapedepi
             try:
-                from core.tmdb import Tmdb
-                oTmdb= Tmdb(texto_buscado=item.fulltitle, tipo= "tv")
+                thumbnail_epi = ""
                 episodio = oTmdb.get_episodio(infoLabels['season'], infoLabels['episode'])
                 if episodio["episodio_sinopsis"] !="":
                     infoLabels['plot'] = episodio["episodio_sinopsis"]
+                else:
+                    if oTmdb.get_sinopsis() !="":
+                       infoLabels['plot'] = oTmdb.get_sinopsis()
                 infoLabels['genre'] = ", ".join(oTmdb.result["genres"])
                 item.fanart=oTmdb.get_backdrop()
-                tmdbthumbnail = episodio["episodio_imagen"]
+                if episodio["episodio_imagen"]!= "": thumbnail_epi = episodio["episodio_imagen"]
             except:
                 pass	
 
-            plot['infoLabels']=infoLabels 
-            itemlist.append( Item(channel=__channel__, action="play" , extra=server, title=title, url=scrapedurl, thumbnail=tmdbthumbnail , fanart=item.fanart, plot = str(plot)))				
+            plot['infoLabels']=infoLabels
+            if thumbnail_epi == "": thumbnail_epi = seriethumbnail
+            itemlist.append( Item(channel=__channel__, action="play" , extra=server, title=title, url=scrapedurl, thumbnail=thumbnail_epi , fanart=item.fanart, plot = str(plot)))				
 
     data_temp = scrapertools.get_match(data, '<div class="panel panel-success">(.*?)</table>')
     data_temp = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data_temp)
@@ -196,7 +207,7 @@ def findvideos(item):
         for scrapedurl, scrapedtitle in matches:
             url = urlparse.urljoin(URL_BASE, scrapedurl)
             scrapedtitle = scrapedtitle.capitalize()
-            itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , fulltitle=item.fulltitle, url=url , thumbnail=item.thumbnail, extra=scrapedtitle.strip("Temporada "), fanart=item.fanart, plot=item.plot, folder=True))
+            itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , fulltitle=item.fulltitle, url=url , thumbnail=seriethumbnail, extra=scrapedtitle.strip("Temporada "), fanart=item.fanart, plot=item.plot, folder=True))
 
     return itemlist
 
