@@ -762,10 +762,11 @@ def findvideos(item):
 
     data = scrapertools.cache_page(item.url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-    
-    patron='<td><div style="width:125px.*?<td><small>([^<]+)</small>.*?'
+
+    patron='<a class="btn btn-success" href="([^"]+)" role="button".*?'
+    patron+='<td><div style="width:125px.*?<td><small>([^<]+)</small>.*?'
     patron+='<td><small>([^<]+)</small>.*?'
-    patron+='href="([^"]+)"'
+
     
     matches = re.compile(patron,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
@@ -773,7 +774,7 @@ def findvideos(item):
     if len(matches)==0 :
         itemlist.append( Item(channel=__channel__, title="[COLOR gold][B]Lo sentimos el torrent aún no está disponible...[/B][/COLOR]", thumbnail ="http://s6.postimg.org/f4es4kyfl/bityou_Sorry.png", fanart ="http://s6.postimg.org/guxt62fyp/bityounovideo.jpg",folder=False) )
 
-    for scrapedcalidad, scrapedsize, scrapedurl in matches:
+    for scrapedurl, scrapedcalidad, scrapedsize in matches:
         
         scrapedurl = urlparse.urljoin(host,scrapedurl)
         season = scrapedcalidad
@@ -841,7 +842,7 @@ def episodios(item):
         url="http://api.themoviedb.org/3/search/tv?api_key=57983e31fb435df4df77afb854740ea9&query=how%20to%20get%20away%20with%20murder&language=es&include_adult=false"
     data = scrapertools.cachePage(url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-    patron = '{"page".*?"backdrop_path":.*?,"id":(.*?),"'
+    patron = 'page":1.*?,"id":(.*?),"'
     matches = re.compile(patron,re.DOTALL).findall(data)
     if len(matches)==0:
         thumbnail= item.thumbnail
@@ -849,8 +850,8 @@ def episodios(item):
         id = ""
         itemlist.append( Item(channel=__channel__, title = title , action="play", url=item.url, server="torrent", thumbnail=thumbnail, fanart=fanart,  folder=False) )
     for id in matches:
-        if not '{"page":1,"results":[{"backdrop_path":null' in data:
-                backdrop=scrapertools.get_match(data,'{"page".*?"backdrop_path":"(.*?)",.*?"id"')
+        if not 'page":1.*?,"id".*?"backdrop_path":null' in data:
+                backdrop=scrapertools.get_match(data,'page":1.*?,"id".*?"backdrop_path":"\\\(.*?)"')
                 fanart_3 = "https://image.tmdb.org/t/p/original" + backdrop
                 fanart = fanart_3
         else:
@@ -868,7 +869,7 @@ def episodios(item):
             
             
             itemlist.append( Item(channel=__channel__, title = title , action="play", url=item.url, server="torrent", thumbnail=thumbnail, fanart=fanart,  category = item.category, folder=False) )
-    ###thumb temporada###
+        ###thumb temporada###
     url= "http://api.themoviedb.org/3/tv/"+id+"/season/"+season+"/images?api_key=57983e31fb435df4df77afb854740ea9"
     data = scrapertools.cachePage( url )
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
@@ -890,22 +891,12 @@ def episodios(item):
         fanart = "https://image.tmdb.org/t/p/original" + fanart_4
 
     show = item.category+"|"+item.thumbnail
-    print "@@@@"+show
     title ="Info"
     title = title.replace(title,"[COLOR skyblue]"+title+"[/COLOR]")
     itemlist.append( Item(channel=__channel__, action="info_capitulos" , title=title , url=item.url, thumbnail=thumbnail, fanart=fanart, extra = item.extra, show = show, folder=False ))
 
     return itemlist
-def play(item):
-    logger.info("pelisalacarta.bityouth play")
-    itemlist = []
-    if "youtube" in item.url:
-        itemlist.append( Item(channel=__channel__, action="play", server="youtube",  url=item.url ,  fulltitle = item.title , fanart="http://s23.postimg.org/84vkeq863/movietrailers.jpg", folder=False) )
-    
-    
-    itemlist.append( Item(channel=__channel__, title = item.title , action="play", url=item.url, server="torrent", thumbnail=item.thumbnail, fanart=item.fanart,  category = item.category, folder=False) )
 
-    return itemlist
 
 def findvideos_pelis(item):
     logger.info("pelisalacarta.bityouth findvideos_pelis")
@@ -914,9 +905,10 @@ def findvideos_pelis(item):
     data = scrapertools.cache_page(item.url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
     
-    patron='<td><div style="width:125px.*?<td><small>([^<]+)</small>.*?'
+    patron='<td><a class="btn btn-success" href="([^"]+)" role="button".*?'
+    patron+='<td><div style="width:125px.*?<td><small>([^<]+)</small>.*?'
     patron+='<td><small>([^<]+)</small>.*?'
-    patron+='href="([^"]+)"'
+    
     
     matches = re.compile(patron,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
@@ -924,7 +916,7 @@ def findvideos_pelis(item):
     if len(matches)==0 :
         itemlist.append( Item(channel=__channel__, title="[COLOR gold][B]Lo sentimos el torrent aún no está disponible...[/B][/COLOR]", thumbnail ="http://s6.postimg.org/f4es4kyfl/bityou_Sorry.png", fanart ="http://s6.postimg.org/guxt62fyp/bityounovideo.jpg",folder=False) )
 
-    for scrapedcalidad, scrapedsize, scrapedurl in matches:
+    for scrapedurl, scrapedcalidad, scrapedsize in matches:
         
         scrapedurl = urlparse.urljoin(host,scrapedurl)
         
