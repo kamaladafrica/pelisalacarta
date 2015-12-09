@@ -785,7 +785,7 @@ def episodios(item):
        url="http://api.themoviedb.org/3/search/tv?api_key=57983e31fb435df4df77afb854740ea9&query=how%20to%20get%20away%20with%20murder&language=es&include_adult=false"
     data = scrapertools.cachePage(url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-    patron = '{"page".*?"backdrop_path":.*?,"id":(.*?),"'
+    patron = 'page":1.*?,"id":(.*?),"'
     matches = re.compile(patron,re.DOTALL).findall(data)
     if len(matches)==0:
         thumbnail= item.thumbnail
@@ -794,8 +794,8 @@ def episodios(item):
         itemlist.append( Item(channel=__channel__, title = title , action="play", url=item.url, thumbnail=thumbnail, fanart=fanart,  folder=False) )
 
     for id in matches:
-        if not '{"page":1,"results":[{"backdrop_path":null' in data:
-                backdrop=scrapertools.get_match(data,'{"page".*?"backdrop_path":"(.*?)",.*?"id"')
+        if not 'page":1.*?,"id".*?"backdrop_path":null' in data:
+                backdrop=scrapertools.get_match(data,'page":1.*?,"id".*?"backdrop_path":"\\\(.*?)"')
                 fanart_3 = "https://image.tmdb.org/t/p/original" + backdrop
                 fanart = fanart_3
         else:
@@ -889,8 +889,10 @@ def trailer(item):
     
     logger.info("pelisalacarta.bricocine trailer")
     import xbmc
-    if  xbmc.Player().isPlaying():
+    TESTPYDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "test.py")
+    if os.path.exists ( TESTPYDESTFILE ):
         TRAILERDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "trailer.txt")
+        
         urllib.urlretrieve ("https://raw.githubusercontent.com/neno1978/script.palc.forcerefresh/master/trailer.txt", TRAILERDESTFILE )
     
     itemlist = []
