@@ -158,6 +158,8 @@ def listchannels(params,url,category):
         xbmc.executebuiltin("Container.SetViewMode(500)")
 
 def filterchannels(category,preferred_thumb=""):
+    logger.info("channelselector.filterchannels")
+
     try:
         idioma = config.get_setting("languagefilter")
         logger.info("channelselector.filterchannels idioma=%s" % idioma)
@@ -171,27 +173,31 @@ def filterchannels(category,preferred_thumb=""):
     channelslist =[]
     category=category.replace("L","latino").replace("M","music").replace("X","adult").replace("T","torrent").replace("VOS","vos").replace("F","movie").replace("S","serie").replace("D","documentary").replace("A","anime").replace("*","all")
 
-    for channel in os.listdir(os.path.join(config.get_runtime_path(),"channels")):
-      if channel.endswith(".xml"):
-          try:
-            ChannelData = channeltools.get_channel_parameters(channel[:-4])
-            if not ChannelData["thumbnail"]: 
-                ChannelData["thumbnail"] = get_thumbnail_path(preferred_thumb)+ChannelData["channel"]+".png"
+    channel_path = os.path.join(config.get_runtime_path(),"channels")
+    logger.info("channelselector.filterchannels channel_path="+channel_path)
+
+    for channel in os.listdir(channel_path):
+        logger.info("channelselector.filterchannels channel="+channel)
+        if channel.endswith(".xml"):
+            try:
+                ChannelData = channeltools.get_channel_parameters(channel[:-4])
+                if not ChannelData["thumbnail"]: 
+                    ChannelData["thumbnail"] = get_thumbnail_path(preferred_thumb)+ChannelData["channel"]+".png"
         
-            if not ChannelData["active"] == "true":  continue #Si no esta activo lo saltamos
-            if ChannelData["adult"] == "true" and not config.get_setting("adult_mode") == "true": continue # Si es adulto y no estan activados lo saltamos
-            if not category=="all" and not category in ChannelData["category"] and not "all" in ChannelData["category"]: continue #Si no corresponde la categoria lo saltamos
-            if not ChannelData["language"]=="" and not idiomav=="" and not idiomav.lower() in ChannelData["language"]: continue #Si no corresponde el idioma lo saltamos
+                if not ChannelData["active"] == "true":  continue #Si no esta activo lo saltamos
+                if ChannelData["adult"] == "true" and not config.get_setting("adult_mode") == "true": continue # Si es adulto y no estan activados lo saltamos
+                if not category=="all" and not category in ChannelData["category"] and not "all" in ChannelData["category"]: continue #Si no corresponde la categoria lo saltamos
+                if not ChannelData["language"]=="" and not idiomav=="" and not idiomav.lower() in ChannelData["language"]: continue #Si no corresponde el idioma lo saltamos
             
-            if ChannelData["channel"]=="tengourl":
-              channelslist.append(Item(title=ChannelData["title"], channel=ChannelData["channel"], action="mainlist", thumbnail=ChannelData["thumbnail"] , fanart=ChannelData["fanart"], category=", ".join(ChannelData["category"])[:-2], language=ChannelData["language"], type=ChannelData["type"] ))
-            else:
-              activechannels.append(Item(title=ChannelData["title"], channel=ChannelData["channel"], action="mainlist", thumbnail=ChannelData["thumbnail"] , fanart=ChannelData["fanart"] , category=", ".join(ChannelData["category"])[:-2], language=ChannelData["language"], type=ChannelData["type"] ))
-          except:
-            logger.info("Se ha producido un error al leer los datos del canal " + channel)
-            import traceback
-            logger.info(traceback.format_exc())
-            
+                if ChannelData["channel"]=="tengourl":
+                    channelslist.append(Item(title=ChannelData["title"], channel=ChannelData["channel"], action="mainlist", thumbnail=ChannelData["thumbnail"] , fanart=ChannelData["fanart"], category=", ".join(ChannelData["category"])[:-2], language=ChannelData["language"], type=ChannelData["type"] ))
+                else:
+                    activechannels.append(Item(title=ChannelData["title"], channel=ChannelData["channel"], action="mainlist", thumbnail=ChannelData["thumbnail"] , fanart=ChannelData["fanart"] , category=", ".join(ChannelData["category"])[:-2], language=ChannelData["language"], type=ChannelData["type"] ))
+            except:
+                logger.info("Se ha producido un error al leer los datos del canal " + channel)
+                import traceback
+                logger.info(traceback.format_exc())
+
     if config.get_setting("personalchannel")=="true":
         channelslist.append( Item( title=config.get_setting("personalchannelname") ,action="mainlist", channel="personal" ,thumbnail=config.get_setting("personalchannellogo"), language="" , category="F,S,D,A" , type="generic"  ))
     if config.get_setting("personalchannel2")=="true":
