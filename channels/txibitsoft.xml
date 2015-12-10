@@ -6,10 +6,10 @@
 	<update_url></update_url>
 	<active>true</active>
 	<include_in_global_search>true</include_in_global_search>
-	<version>10</version>
+	<version>11</version>
 	<adult>false</adult>
-	<date>13/10/2015</date>
-	<changes>Info scroll mas infolabel</changes>
+	<date>10/12/2015</date>
+	<changes>cambio acceso trairles,cambios web, correcion en acceso a series</changes>
 	<fanart></fanart>
 	<thumbnail>http://s27.postimg.org/hx5ohryxf/tblogo.jpg</thumbnail>
 	<categories>
