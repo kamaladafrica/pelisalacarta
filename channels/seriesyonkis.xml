@@ -6,10 +6,10 @@
 	<update_url></update_url>
 	<active>true</active>
 	<include_in_global_search>false</include_in_global_search>
-	<version>26</version>
+	<version>27</version>
 	<adult>false</adult>
-	<date>20/04/2014</date>
-	<changes>Uso del dominio sx</changes>
+	<date>11/12/2015</date>
+	<changes>Corregido errores en funcion addChaperts y findvideos</changes>
 	<fanart></fanart>
 	<thumbnail></thumbnail>
 	<categories>

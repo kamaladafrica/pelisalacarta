@@ -6,8 +6,8 @@
             "adult", 
             "movie"
         ], 
-        "changes": "Corregido", 
-        "date": "26/04/2015", 
+        "changes": "Corregido y añadidos nuevos menus", 
+        "date": "11/12/2015", 
         "fanart": "", 
         "id": "xhamster", 
         "include_in_global_search": false, 
@@ -15,7 +15,7 @@
         "name": "Xhamster", 
         "thumbnail": "", 
         "update_url": "", 
-        "version": "5.0"
+        "version": "6.0"
     }, 
     "settings": {}
 }

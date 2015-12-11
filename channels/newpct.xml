@@ -6,10 +6,10 @@
 	<update_url></update_url>
 	<active>true</active>
 	<include_in_global_search>false</include_in_global_search>
-	<version>5</version>
+	<version>6</version>
 	<adult>false</adult>
-	<date>07/09/2014</date>
-	<changes>Cambio de URL a newpct.com de nuevo</changes>
+	<date>11/12/2015</date>
+	<changes>Cambios en la paginacion, reestructuracion de los menus y en series ahora muestra capitulos de todas las temporadas</changes>
 	<fanart></fanart>
 	<thumbnail></thumbnail>
 	<categories>
