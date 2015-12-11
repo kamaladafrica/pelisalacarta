@@ -1,0 +1,22 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": false, 
+        "category": [
+            "movie", 
+            "vos",
+            "latino",
+        ], 
+        "changes": "Primera version", 
+        "date": "11/12/2015", 
+        "fanart": "", 
+        "id": "inkapelis", 
+        "include_in_global_search": true, 
+        "language": "es", 
+        "name": "Inkapelis", 
+        "thumbnail": "http://i.imgur.com/I7MxHZI.png", 
+        "update_url": "", 
+        "version": "1.0"
+    }, 
+    "settings": {}
+}
