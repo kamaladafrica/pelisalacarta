@@ -30,10 +30,10 @@ def mainlist(item):
     logger.info("[newpct.py] mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, action="submenu" , title="Películas", url="http://www.newpct.com/include.inc/load.ajax/load.topbar.php?userName=", extra="Peliculas" ))
-    itemlist.append( Item(channel=__channel__, action="submenu" , title="Series"   , url="http://www.newpct.com/include.inc/load.ajax/load.topbar.php?userName=", extra="Series" ))
-    itemlist.append( Item(channel=__channel__, action="listado" , title="Anime"   , url="http://www.newpct.com/anime/", extra="" ))
-    itemlist.append( Item(channel=__channel__, action="listado" , title="Documentales"   , url="http://www.newpct.com/documentales/", extra="" ))
+    itemlist.append( Item(channel=__channel__, action="submenu" , title="Películas"))
+    itemlist.append( Item(channel=__channel__, action="submenu" , title="Series"))
+    itemlist.append( Item(channel=__channel__, action="listado" , title="Anime"   , url="http://www.newpct.com/anime/" ))
+    itemlist.append( Item(channel=__channel__, action="listado" , title="Documentales"   , url="http://www.newpct.com/documentales/"))
     itemlist.append( Item(channel=__channel__, action="search"    , title="Buscar" ))
   
     return itemlist
@@ -74,9 +74,6 @@ def buscador(item):
     
     for scrapedcreatedate, scrapedinfo, scrapedurl, scrapedtitle, scrapedthumbnail in matches:
         scrapedtitle = scrapedtitle + "(Tamaño:" + scrapedinfo + "--" + scrapedcreatedate+")"
-        
-        
-        
         itemlist.append( Item(channel=__channel__, title=scrapedtitle, url=scrapedurl, action="play", server="torrent", thumbnail=scrapedthumbnail, fulltitle=scrapedtitle, folder=True) )
     
     from servers import servertools
@@ -89,14 +86,11 @@ def buscador(item):
     
     return itemlist
 
-#def play(item):
-
-
 def submenu(item):
-    logger.info("[newpct.py] peliculas")
+    logger.info("[newpct.py] submenu")
     itemlist=[]
     
-    if item.extra == "Peliculas":
+    if item.title == "Películas":
 		itemlist.append( Item(channel=__channel__, action="listado" , title="Peliculas DVDRIP-BRRIP Castellano" , url="http://www.newpct.com/peliculas-castellano/peliculas-rip/"))
 		itemlist.append( Item(channel=__channel__, action="listado" , title="Peliculas Latino" , url="http://www.newpct.com/peliculas-latino/"))
 		itemlist.append( Item(channel=__channel__, action="listado" , title="Estrenos de Cine Castellano" , url="http://www.newpct.com/peliculas-castellano/estrenos-de-cine/"))
@@ -114,8 +108,7 @@ def submenu(item):
 
 def listado(item):
     logger.info("[newpct.py] listado")
-    itemlist = []
-    
+    itemlist = []   
     data = scrapertools.cache_page(item.url)
     
     '''
@@ -292,7 +285,6 @@ def listaseries(item):
     itemlist=[]
 
     data = scrapertools.downloadpageGzip(item.url)
-    logger.info(data)
     patron = "<li[^<]+<a href='([^']+)'>.*?<img src='([^']+)'.*?<h3>([^']+)<\/h3>"
     matches = re.compile(patron,re.DOTALL|re.M).findall(data)
     for scrapedurl, scrapedthumbnail, scrapedtitle in matches:
