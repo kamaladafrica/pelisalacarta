@@ -40,6 +40,7 @@ def get_channel_parameters(channel_name):
         channel_parameters["adult"] = scrapertools.find_single_match(data,"<adult>([^<]*)</adult>")
         channel_parameters["language"] = scrapertools.find_single_match(data,"<language>([^<]*)</language>")
         channel_parameters["thumbnail"] = scrapertools.find_single_match(data,"<thumbnail>([^<]*)</thumbnail>")
+        channel_parameters["bannermenu"] = scrapertools.find_single_match(data,"<bannermenu>([^<]*)</bannermenu>")
         channel_parameters["fanart"] = scrapertools.find_single_match(data,"<fanart>([^<]*)</fanart>")
         channel_parameters["type"] = "generic"
 

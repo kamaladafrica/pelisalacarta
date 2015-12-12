@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <channel>
 	<id>vseries</id>
-	<name>V Series</name>
+	<name>V Serie</name>
 	<language>es</language>
 	<update_url></update_url>
 	<active>true</active>

@@ -14,6 +14,7 @@
         "language": "es", 
         "name": "Seriecanal", 
         "thumbnail": "http://i.imgur.com/EwMK8Yd.png", 
+        "bannermenu": "http://media.tvalacarta.info/pelisalacarta/bannermenu/seriecanal.png", 
         "update_url": "", 
         "version": "1.0"
     }, 

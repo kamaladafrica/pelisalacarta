@@ -58,6 +58,7 @@ def do_search(item):
     import glob
     import imp
 
+    # FIXME: Sacar esto de los json de canal, y comprobar si el canal está activo
     master_exclude_data_file = os.path.join( config.get_runtime_path() , "resources", "global_search_exclusion.txt")
     logger.info("pelisalacarta.channels.buscador master_exclude_data_file="+master_exclude_data_file)
 

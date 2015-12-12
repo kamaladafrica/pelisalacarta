@@ -12,6 +12,7 @@
 	<changes>Añadida api arts,Info scroll mas infolabel, corrección modificaciones web</changes>
 	<fanart></fanart>
 	<thumbnail>http://s6.postimg.org/9zv90yjip/zentorrentlogo.jpg</thumbnail>
+	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/zentorrents.png</bannermenu>
 	<categories>
 		<category>torrent</category>
 		<category>movie</category>

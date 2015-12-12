@@ -183,6 +183,10 @@ def filterchannels(category,preferred_thumb=""):
                 ChannelData = channeltools.get_channel_parameters(channel[:-4])
                 if not ChannelData["thumbnail"]: 
                     ChannelData["thumbnail"] = get_thumbnail_path(preferred_thumb)+ChannelData["channel"]+".png"
+                else:
+                    # Si prefiere el bannermenu y el canal lo tiene, cambia ahora de idea
+                    if preferred_thumb=="bannermenu" and "bannermenu" in ChannelData:
+                        ChannelData["thumbnail"]=ChannelData["bannermenu"]
         
                 if not ChannelData["active"] == "true":  continue #Si no esta activo lo saltamos
                 if ChannelData["adult"] == "true" and not config.get_setting("adult_mode") == "true": continue # Si es adulto y no estan activados lo saltamos
