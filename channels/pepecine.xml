@@ -1,9 +1,22 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<version>
-	<name>pepecine</name>
-	<tag>1</tag>
+<channel>
+	<id>pepecine</id>
+	<name>Pepecine</name>
+	<language>es</language>
+	<update_url></update_url>
+	<active>true</active>
+	<include_in_global_search>false</include_in_global_search>
+	<version>1</version>
+	<adult>false</adult>
 	<date>4/11/2015</date>
 	<changes>Version inicial. 
 			En Kodi: Necesario tener actualizado xbmctools.py para disfrutar de los infoLabels.
 			En todos los sistemas: Necesario tener core/tmdb.py para tener fanart, sinopsis, etc..</changes>
-</version>
+	</changes>
+	<fanart></fanart>
+	<thumbnail>https://d12.usercdn.com/i/02278/nwm6todp6yyk.png</thumbnail>
+	<categories>
+		<category>movie</category>
+		<category>serie</category>
+	</categories>
+</channel>
