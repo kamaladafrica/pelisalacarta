@@ -148,6 +148,7 @@ def find_videos(data):
                 logger.info("  url="+url)
                 devuelve.append( [ titulo , url , 'netutv' ] )
                 encontrados.add(url)
+                break
             else:
                 logger.info("  url duplicada="+url)
 

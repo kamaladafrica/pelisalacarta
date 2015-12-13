@@ -703,12 +703,18 @@ def get_status(status,type,id):
 
     str = ""; str1 = ""; str2 = ""
 
-    if id in status['favorites'][type]:
-        str1 = bbcode_kodi2html( " [COLOR orange][B]Favorito[/B][/COLOR]" )
+    try:
+        if id in status['favorites'][type]:
+            str1 = bbcode_kodi2html( " [COLOR orange][B]Favorito[/B][/COLOR]" )
+    except:
+        str1 = ""
 
-    if id in status['status'][type]:
-        str2 = state[ status['status'][type][id] ]
-        if str2 != "": str2 = bbcode_kodi2html( " [COLOR green][B]" + state[ status['status'][type][id] ] + "[/B][/COLOR]" )
+    try:
+        if id in status['status'][type]:
+            str2 = state[ status['status'][type][id] ]
+            if str2 != "": str2 = bbcode_kodi2html( " [COLOR green][B]" + state[ status['status'][type][id] ] + "[/B][/COLOR]" )
+    except:
+        str2 = ""
 
     if str1 != "" or str2 != "":
         str = " (" + str1 + str2 + " )"

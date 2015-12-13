@@ -15,6 +15,7 @@
         "language": "es", 
         "name": "Zentorrent", 
         "thumbnail": "http://s6.postimg.org/9zv90yjip/zentorrentlogo.jpg", 
+        "bannermenu": "http://media.tvalacarta.info/pelisalacarta/bannermenu/zentorrents.png", 
         "update_url": "", 
         "version": "10.0"
     }, 

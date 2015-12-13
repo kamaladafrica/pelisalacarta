@@ -27,7 +27,7 @@ FREE_SERVERS.extend(['fileflyer','tunepk','powvideo','videomega','mega','vidspot
 FREE_SERVERS.extend(['videozed','documentary', 'firedrive','videott','gamovideo'])
 FREE_SERVERS.extend(['torrent','video4you','mailru','streaminto','backin','akstream', 'speedvideo', 'junkyvideo', 'rapidvideo', 'realvid', 'cloudzilla', 'fakingstv'])
 FREE_SERVERS.extend(['cumlouder','v4y','streamable','videostoring','youwatch'])
-FREE_SERVERS.extend(['vodlocker','thevideome','rocvideo','vidxtreme','vidtome','vidzi','letwatch','sendvid','vkpass','okru','cnubis','yourupload','mp4upload']) #,'vimpleru'])
+FREE_SERVERS.extend(['vodlocker','thevideome','rocvideo','vidxtreme','vidtome','vidzi','letwatch','sendvid','vkpass','okru','cnubis','yourupload','mp4upload','turbovideos','vimpleru','spruto','openload'])
 
 # Lista de TODOS los servidores que funcionan con cuenta premium individual
 PREMIUM_SERVERS = ['uploadedto','nowvideo','onefichier']

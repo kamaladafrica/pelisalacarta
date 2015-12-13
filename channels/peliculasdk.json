@@ -15,6 +15,7 @@
         "language": "es", 
         "name": "Peliculasdk", 
         "thumbnail": "http://s29.postimg.org/wzw749oon/pldklog.jpg", 
+        "bannermenu": "http://media.tvalacarta.info/pelisalacarta/bannermenu/peliculasdk.png", 
         "update_url": "", 
         "version": "2.0"
     }, 

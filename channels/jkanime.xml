@@ -6,10 +6,10 @@
 	<update_url></update_url>
 	<active>true</active>
 	<include_in_global_search>false</include_in_global_search>
-	<version>2</version>
+	<version>3</version>
 	<adult>false</adult>
-	<date>16/10/2011</date>
-	<changes>Arreglado fallo al buscar los episodios</changes>
+	<date>22/11/2015</date>
+	<changes>Reparado error que impedia listar episodios, arreglados thumbnails y el patron para videos alojados en jkanime.</changes>
 	<fanart></fanart>
 	<thumbnail></thumbnail>
 	<categories>

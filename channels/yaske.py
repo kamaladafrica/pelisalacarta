@@ -243,7 +243,9 @@ def play(item):
     logger.info("pelisalacarta.yaske play item.url="+data)
 
     # http://olo.gg/s/cJinsNv1?s=http%3A%2F%2Fwww.nowvideo.to%2Fvideo%2F9c8bf2ed9d4fd
-    data = scrapertools.find_single_match(data,'olo.gg/s/[a-zA-Z0-9]+.s.(.*?)$')    
+    newdata = scrapertools.find_single_match(data,'olo.gg/s/[a-zA-Z0-9]+.s.(.*?)$')
+    if newdata!="":
+        data = newdata
     logger.info("pelisalacarta.yaske play item.url="+data)
 
     data = urllib.unquote(data)

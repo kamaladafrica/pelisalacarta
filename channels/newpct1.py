@@ -384,7 +384,10 @@ def findvideos(item):
 
     for logo, servidor, idioma, calidad, enlace, titulo in enlaces_ver:
         servidor = servidor.replace("played","playedto")
+        servidor = servidor.replace("streamin","streaminto")
+
         titulo = titulo+" ["+servidor+"]"
+
         mostrar_server= True
         if config.get_setting("hidepremium")=="true":
             mostrar_server= servertools.is_server_enabled (servidor)
