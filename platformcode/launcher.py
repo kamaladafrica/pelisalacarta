@@ -7,6 +7,7 @@
 
 import urllib, urllib2
 import os,sys
+import re
 
 from core import logger
 from core import config
