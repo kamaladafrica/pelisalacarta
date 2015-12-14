@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <strings>
     <!-- Available id from 30000 to 30999 -->
 
@@ -74,6 +74,13 @@
     <string id="30049">Channel logo</string>
     <string id="30045">Video list URL / file</string>
     <string id="30047">Elements per page</string>
+
+    <!-- Filtros -->
+    <string id="30068">Filter by servers:</string>
+    <string id="30069">White List:</string>
+    <string id="30070">Black List:</string>
+    <string id="30071">To use several servers, use "," as separator</string>
+
 
     <!-- =============================================================== -->
     <!-- 30050 to 30099: Info / error messages                           -->
@@ -214,6 +221,7 @@
     <string id="30500">Login</string>
     <string id="30501">Path</string>
     <string id="30502">Other</string>
+    <string id="30503">Filters</string>
     
     <!-- LetMeWatchThis -->
     <string id="40001">Movies - Just added</string>
