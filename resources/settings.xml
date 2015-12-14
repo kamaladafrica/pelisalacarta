@@ -180,12 +180,15 @@
     <setting id="saved_searches_limit" type="enum" values="10|20|30|40" label="30024" default="0"/>
   </category>
 
-  <category label="Filters">
+  <category label="30503">
     <setting type="sep" />
-    <setting label="Separate server names by comma" type="lsep"/>
-    <setting id="filter_servers" type="bool" label="Filter by Servers?" default="false"/>
-    <setting id="whitelist" type="text" label="White List:" enable="eq(-1,true)" default=""/>
-    <setting id="blacklist" type="text" label="Black List:" enable="eq(-2,true)" default=""/>
+    <setting id="filter_servers" type="bool" label="30068" default="false"/>
+    <!--<setting type="sep" />-->
+    <setting label="30071" type="lsep"/>
+    <!--<setting label="La 'lista blanca' sólo muestra los enlaces con los servidores que se indiquen, por ejemplo: 'streamcloud, streaminto'" type="lsep"/>-->
+    <setting id="whitelist" type="text" label="30069" enable="eq(-2,true)" default=""/>
+    <!--<setting label="La 'lista blanca' sólo muestra los enlaces con los servidores que se indiquen, por ejemplo: 'streamcloud, streaminto'" type="lsep"/>-->
+    <setting id="blacklist" type="text" label="30070" enable="eq(-3,true)" default=""/>
   </category> 
 
 </settings>
