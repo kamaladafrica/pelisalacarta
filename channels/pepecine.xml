@@ -6,14 +6,12 @@
 	<update_url></update_url>
 	<active>true</active>
 	<include_in_global_search>false</include_in_global_search>
-	<version>1</version>
+	<version>1.2</version>
 	<adult>false</adult>
-	<date>4/11/2015</date>
-	<changes>Version inicial. 
-			En Kodi: Necesario tener actualizado xbmctools.py para disfrutar de los infoLabels.
-			En todos los sistemas: Necesario tener core/tmdb.py para tener fanart, sinopsis, etc..</changes>
+	<date>19/12/2015</date>
+	<changes>Adaptacion por cambios en la web</changes>
 	</changes>
-	<fanart></fanart>
+	<fanart>https://d12.usercdn.com/i/02278/u875vjx9c0xs.png</fanart>
 	<thumbnail>https://d12.usercdn.com/i/02278/nwm6todp6yyk.png</thumbnail>
 	<categories>
 		<category>movie</category>

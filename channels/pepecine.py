@@ -412,7 +412,8 @@ def findvideos(item):
     
     for link in ast.literal_eval(item.url):
         url= link["url"]
-        idioma=link["label"]
+        flag= scrapertools.find_single_match(link["label"],'(\s*\<img src=.*\>)')
+        idioma=link["label"].replace(flag,"")
         calidad=(' [COLOR 0xFFFFCE9C][' +link["quality"]+ '][/COLOR]') if link["quality"] !="?" else ""
         video= find_videos(link["url"])
     
