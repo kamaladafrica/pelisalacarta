@@ -6,8 +6,8 @@
             "movie", 
             "serie"
         ], 
-        "changes": "Arreglo de siguientes capítulos", 
-        "date": "22/04/2015", 
+        "changes": "Arreglada paginacion", 
+        "date": "11/12/2015", 
         "fanart": "", 
         "id": "pordede", 
         "include_in_global_search": false, 
@@ -15,7 +15,7 @@
         "name": "Pordede", 
         "thumbnail": "", 
         "update_url": "", 
-        "version": "6.0"
+        "version": "7.0"
     }, 
     "settings": {}
 }

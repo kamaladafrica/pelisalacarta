@@ -7,8 +7,8 @@
             "anime", 
             "vos"
         ], 
-        "changes": "Uso del dominio sx", 
-        "date": "20/04/2014", 
+        "changes": "Corregido errores en funcion addChaperts y findvideos", 
+        "date": "11/12/2015", 
         "fanart": "", 
         "id": "seriesyonkis", 
         "include_in_global_search": false, 
@@ -16,7 +16,7 @@
         "name": "Seriesyonkis", 
         "thumbnail": "", 
         "update_url": "", 
-        "version": "26.0"
+        "version": "27.0"
     }, 
     "settings": {}
 }

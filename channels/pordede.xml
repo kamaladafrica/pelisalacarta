@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <channel>
 	<id>pordede</id>
 	<name>Pordede</name>
@@ -6,10 +6,10 @@
 	<update_url></update_url>
 	<active>true</active>
 	<include_in_global_search>false</include_in_global_search>
-	<version>6</version>
+	<version>7</version>
 	<adult>false</adult>
-	<date>22/04/2015</date>
-	<changes>Arreglo de siguientes capítulos</changes>
+	<date>11/12/2015</date>
+	<changes>Arreglada paginacion</changes>
 	<fanart></fanart>
 	<thumbnail></thumbnail>
 	<categories>
