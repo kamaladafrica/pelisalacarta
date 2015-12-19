@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<!-- TODO: añadir a strings.xml las etiquetas que no lo esten  -->
 <settings>
   <category label="General">
     <setting id="player_type" type="enum" values="Auto|MPlayer|DVDPlayer" label="30000" default="2"/>
@@ -14,21 +13,10 @@
     <setting id="adult_mode" type="bool" label="30002" default="false"/>
     <setting id="adult_pin" type="text" label="PIN para abrir canal de adultos" option="hidden" default=""/>
     <setting type="sep" />
-    
-  </category>
-  
-  <category label="Actualizaciones">
-    <setting type="sep" />
-    <!-- TODO: eliminar referencia a xbmc/kodi en  label="30201" -->
+    <setting label="Actualizaciones" type="lsep" />
+    <setting id="updatecheck2" type="bool" label="30001" default="true"/>
+    <setting id="updatechannels" type="bool" label="30004" default="true"/>
     <setting id="updatelibrary" type="bool" label="30201" default="true"/>
-    
-    <!-- TODO: cambiar label[30001] por: Actualizar Pelisalacarta automaticamente -->
-    <setting id="updatecheck2" type="bool" label="Actualizar Pelisalacarta automaticamente" default="true"/>
-    <setting id="when_oficial_updatechannels" type="enum" values="Nunca|Al inicio|Al entrar en el canal" label="30004" default="1"/>
-    <setting id="add_oficial_updatechannels" type="bool" label="Añadir nuevos canales automaticamente:" default="true" enable="gt(-1,0)"/>
-    <setting id="del_oficial_updatechannels" type="enum" values="Mostrar|Ocultar|Eliminar" label="Canales eliminados del repositorio oficial:" default="1" enable="gt(-2,0)"/>
-    <setting id="when_unoficial_updatechannels" type="enum" values="Nunca|Como los oficiales" label="Buscar actualizaciones de canales no oficiales:" default="0" enable="gt(-3,0)"/>
-    
   </category>
   
   <!-- Login -->
@@ -192,12 +180,15 @@
     <setting id="saved_searches_limit" type="enum" values="10|20|30|40" label="30024" default="0"/>
   </category>
 
-  <category label="Filters">
+  <category label="30503">
     <setting type="sep" />
-    <setting label="Separate server names by comma" type="lsep"/>
-    <setting id="filter_servers" type="bool" label="Filter by Servers?" default="false"/>
-    <setting id="whitelist" type="text" label="White List:" enable="eq(-1,true)" default=""/>
-    <setting id="blacklist" type="text" label="Black List:" enable="eq(-2,true)" default=""/>
+    <setting id="filter_servers" type="bool" label="30068" default="false"/>
+    <!--<setting type="sep" />-->
+    <setting label="30071" type="lsep"/>
+    <!--<setting label="La 'lista blanca' sólo muestra los enlaces con los servidores que se indiquen, por ejemplo: 'streamcloud, streaminto'" type="lsep"/>-->
+    <setting id="whitelist" type="text" label="30069" enable="eq(-2,true)" default=""/>
+    <!--<setting label="La 'lista blanca' sólo muestra los enlaces con los servidores que se indiquen, por ejemplo: 'streamcloud, streaminto'" type="lsep"/>-->
+    <setting id="blacklist" type="text" label="30070" enable="eq(-3,true)" default=""/>
   </category> 
 
 </settings>
