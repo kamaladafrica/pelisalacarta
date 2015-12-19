@@ -44,15 +44,15 @@ try:
         import xbmc
         REMOTE_FILE = "http://descargas.tvalacarta.info/"+config.PLUGIN_NAME+"-kodi-helix-"
         DESTINATION_FOLDER = xbmc.translatePath( "special://home/addons")
-    elif config.get_platform()=="xbmceden":
+    elif config.get_platform()=="xbmc-eden":
         import xbmc
         REMOTE_FILE = "http://descargas.tvalacarta.info/"+config.PLUGIN_NAME+"-xbmc-eden-"
         DESTINATION_FOLDER = xbmc.translatePath( "special://home/addons")
-    elif config.get_platform()=="xbmcfrodo":
+    elif config.get_platform()=="xbmc-frodo":
         import xbmc
         REMOTE_FILE = "http://descargas.tvalacarta.info/"+config.PLUGIN_NAME+"-xbmc-frodo-"
         DESTINATION_FOLDER = xbmc.translatePath( "special://home/addons")
-    elif config.get_platform()=="xbmcgotham":
+    elif config.get_platform()=="xbmc-gotham":
         import xbmc
         REMOTE_FILE = "http://descargas.tvalacarta.info/"+config.PLUGIN_NAME+"-xbmc-gotham-"
         DESTINATION_FOLDER = xbmc.translatePath( "special://home/addons")
