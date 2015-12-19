@@ -6,10 +6,10 @@
 	<update_url></update_url>
 	<active>true</active>
 	<include_in_global_search>false</include_in_global_search>
-	<version>12</version>
+	<version>13.2</version>
 	<adult>false</adult>
-	<date>30/10/15</date>
-	<changes>Incluida llamada a server.find_videos(server) en findvideos.</changes>
+	<date>19/12/15</date>
+	<changes>Añadidos enlaces para descargas</changes>
 	<fanart></fanart>
 	<thumbnail></thumbnail>
 	<categories>
