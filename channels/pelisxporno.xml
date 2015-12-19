@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<channel>
+	<id>pelisxporno</id>
+	<name>Pelisxporno</name>
+	<language>es</language>
+	<update_url></update_url>
+	<active>true</active>
+	<include_in_global_search>false</include_in_global_search>
+	<version>1</version>
+	<adult>true</adult>
+	<date>11/12/2015</date>
+	<changes>Primera versión</changes>
+	<fanart></fanart>
+	<thumbnail>http://i.imgur.com/ywMHwat.png</thumbnail>
+	<categories>
+		<category>adult</category>
+	</categories>
+</channel>

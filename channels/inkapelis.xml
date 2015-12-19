@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<channel>
+	<id>inkapelis</id>
+	<name>Inkapelis</name>
+	<language>es</language>
+	<update_url></update_url>
+	<active>true</active>
+	<include_in_global_search>true</include_in_global_search>
+	<version>1</version>
+	<adult>false</adult>
+	<date>11/12/2015</date>
+	<changes>Primera version</changes>
+	<fanart></fanart>
+	<thumbnail>http://i.imgur.com/I7MxHZI.png</thumbnail>
+	<categories>
+		<category>movie</category>
+		<category>vos</category>
+		<category>latino</category>
+	</categories>
+</channel>
