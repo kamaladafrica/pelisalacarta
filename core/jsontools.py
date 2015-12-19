@@ -1,19 +1,18 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # tvalacarta - XBMC Plugin
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # json_tools
 # Parsea un string en JSON probando varios módulos
-#------------------------------------------------------------
+# ------------------------------------------------------------
 
 import traceback
-import config
 import logger
+
 
 def load_json(data):
     logger.info("core.jsontools.load_json Probando simplejson en directorio lib")
 
-    # callback to transform json string values to utf8
     def to_utf8(dct):
         if isinstance(dct, dict):
             return dict((to_utf8(key), to_utf8(value)) for key, value in dct.iteritems())
@@ -62,6 +61,7 @@ def load_json(data):
     logger.info("core.jsontools.load_json No se ha encontrado un parser de JSON valido")
     logger.info("core.jsontools.load_json -> (nada)")
     return ""
+
 
 def dump_json(data):
     logger.info("core.jsontools.dump_json Probando simplejson en directorio lib")
