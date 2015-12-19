@@ -1,12 +1,15 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # tvalacarta
 # XBMC Launcher (xbmc / xbmc-dharma / boxee)
 # http://blog.tvalacarta.info/plugin-xbmc/
 #------------------------------------------------------------
 
-import urllib, urllib2
-import os,sys
+import urllib
+import urllib2
+import os
+import re
+import sys
 
 from core import logger
 from core import config
@@ -51,9 +54,9 @@ def start():
             if new_list_channels_json:
                 channeltools.set_list_channels_json(new_list_channels_json)
             
-    # Comprobar si hay que actualizar algo en otro hilo
-    from threading import Thread
-    Thread(target=updater.Threaded_checkforupdates).start()
+    # # Comprobar si hay que actualizar algo en otro hilo
+    # from threading import Thread
+    # Thread(target=updater.Threaded_checkforupdates).start()
       
     
 def run():
