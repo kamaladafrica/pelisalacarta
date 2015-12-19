@@ -7,8 +7,8 @@
             "serie", 
             "anime"
         ], 
-        "changes": "Incluida llamada a server.find_videos(server) en findvideos.", 
-        "date": "30/10/15", 
+        "changes": "Añadidos enlaces para descargas", 
+        "date": "19/12/15", 
         "fanart": "", 
         "id": "newpct1", 
         "include_in_global_search": false, 
@@ -16,7 +16,7 @@
         "name": "Newpct1", 
         "thumbnail": "", 
         "update_url": "", 
-        "version": "12.0"
+        "version": "13.2"
     }, 
     "settings": {}
 }

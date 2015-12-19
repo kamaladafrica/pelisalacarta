@@ -6,16 +6,16 @@
 			"movie", 
             "serie"
 			], 
-        "changes": "Version inicial. \n\t\t\tEn Kodi: Necesario tener actualizado xbmctools.py para disfrutar de los infoLabels.\n\t\t\tEn todos los sistemas: Necesario tener core/tmdb.py para tener fanart, sinopsis, etc..", 
-        "date": "4/11/2015", 
-        "fanart": "", 
+        "changes": "Adaptacion por cambios en la web", 
+        "date": "19/12/2015", 
+        "fanart": "https://d12.usercdn.com/i/02278/u875vjx9c0xs.png", 
         "id": "pepecine", 
         "include_in_global_search": false, 
         "language": "es", 
         "name": "Pepecine", 
-        "thumbnail": "", 
+        "thumbnail": "https://d12.usercdn.com/i/02278/nwm6todp6yyk.png", 
         "update_url": "", 
-        "version": "1"
+        "version": "1.2"
     }, 
     "settings": {}
 }
