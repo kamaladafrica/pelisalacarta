@@ -15,13 +15,14 @@ def load_json(data):
 
     # callback to transform json string values to utf8
     def to_utf8(dct):
-        rdct = {}
-        for k, v in dct.items() :
-            if isinstance(v, (str, unicode)) :
-                rdct[k] = v.encode('utf8', 'ignore')
-            else :
-                rdct[k] = v
-        return rdct
+        if isinstance(dct, dict):
+            return dict((to_utf8(key), to_utf8(value)) for key, value in dct.iteritems())
+        elif isinstance(dct, list):
+            return [to_utf8(element) for element in dct]
+        elif isinstance(dct, unicode):
+            return dct.encode('utf-8')
+        else:
+            return dct
 
     try:
         logger.info("core.jsontools.load_json Probando simplejson en directorio lib")
