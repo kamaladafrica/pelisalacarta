@@ -2,20 +2,28 @@
 <channel>
 	<id>newpct</id>
 	<name>Newpct</name>
-	<language>es</language>
-	<update_url></update_url>
+
 	<active>true</active>
-	<include_in_global_search>false</include_in_global_search>
-	<version>6</version>
 	<adult>false</adult>
+	<language>es</language>
+
+	<fanart></fanart>
+	<thumbnail>http://media.tvalacarta.info/pelisalacarta/squares/newpct.png</thumbnail>
+	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/newpct.png</bannermenu>
+
+	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
+	<version>6</version>
 	<date>11/12/2015</date>
 	<changes>Cambios en la paginacion, reestructuracion de los menus y en series ahora muestra capitulos de todas las temporadas</changes>
-	<fanart></fanart>
-	<thumbnail></thumbnail>
+
 	<categories>
 		<category>movie</category>
 		<category>serie</category>
 		<category>documentary</category>
 		<category>anime</category>
 	</categories>
+
+	<settings>
+		<include_in_global_search>false</include_in_global_search>
+	</settings>
 </channel>

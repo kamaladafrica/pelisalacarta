@@ -2,17 +2,25 @@
 <channel>
 	<id>jkanime</id>
 	<name>JKanime</name>
-	<language>es</language>
-	<update_url></update_url>
+
 	<active>true</active>
-	<include_in_global_search>false</include_in_global_search>
-	<version>3</version>
 	<adult>false</adult>
+	<language>es</language>
+
+	<fanart></fanart>
+	<thumbnail>http://media.tvalacarta.info/pelisalacarta/squares/jkanime.png</thumbnail>
+	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/jkanime.png</bannermenu>
+
+	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
+	<version>3</version>
 	<date>22/11/2015</date>
 	<changes>Reparado error que impedia listar episodios, arreglados thumbnails y el patron para videos alojados en jkanime.</changes>
-	<fanart></fanart>
-	<thumbnail></thumbnail>
+
 	<categories>
 		<category>anime</category>
 	</categories>
+
+	<settings>
+		<include_in_global_search>false</include_in_global_search>
+	</settings>
 </channel>

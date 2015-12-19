@@ -2,19 +2,27 @@
 <channel>
 	<id>pelis24</id>
 	<name>Pelis24</name>
-	<language>es</language>
-	<update_url></update_url>
+
 	<active>true</active>
-	<include_in_global_search>false</include_in_global_search>
-	<version>6</version>
 	<adult>false</adult>
+	<language>es</language>
+
+	<fanart></fanart>
+	<thumbnail>http://media.tvalacarta.info/pelisalacarta/squares/pelis24.png</thumbnail>
+	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/pelis24.png</bannermenu>
+
+	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
+	<version>6</version>
 	<date>26/04/2015</date>
 	<changes>Arreglado pelis24</changes>
-	<fanart></fanart>
-	<thumbnail></thumbnail>
+
 	<categories>
 		<category>latino</category>
 		<category>movie</category>
 		<category>vos</category>
 	</categories>
+
+	<settings>
+		<include_in_global_search>false</include_in_global_search>
+	</settings>
 </channel>

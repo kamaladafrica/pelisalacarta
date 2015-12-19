@@ -2,20 +2,27 @@
 <channel>
 	<id>bityouth</id>
 	<name>Bityouth</name>
-	<language>es</language>
-	<update_url></update_url>
+
 	<active>true</active>
-	<include_in_global_search>true</include_in_global_search>
-	<version>4</version>
 	<adult>false</adult>
-	<date>09/12/2015</date>
-	<changes>resolucion de error y cambios web</changes>
+	<language>es</language>
+
 	<fanart></fanart>
 	<thumbnail>http://s6.postimg.org/6ash180up/bityoulogo.png</thumbnail>
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/bityouth.png</bannermenu>
+	
+	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
+	<version>4</version>
+	<date>09/12/2015</date>
+	<changes>resolucion de error y cambios web</changes>
+	
 	<categories>
 		<category>torrent</category>
         <category>movie</category>
         <category>serie</category>
 	</categories>
+
+	<settings>
+		<include_in_global_search>true</include_in_global_search>
+	</settings>
 </channel>

@@ -9,6 +9,7 @@ from core import config
 from core import logger
 from core.item import Item
 from core import scrapertools
+from core import channeltools
 
 __channel__ = "buscador"
 
@@ -58,39 +59,8 @@ def do_search(item):
     import glob
     import imp
 
-    # FIXME: Sacar esto de los json de canal, y comprobar si el canal está activo
-    master_exclude_data_file = os.path.join( config.get_runtime_path() , "resources", "global_search_exclusion.txt")
-    logger.info("pelisalacarta.channels.buscador master_exclude_data_file="+master_exclude_data_file)
-
-    exclude_data_file = os.path.join( config.get_data_path() , "global_search_exclusion.txt")
-    logger.info("pelisalacarta.channels.buscador exclude_data_file="+exclude_data_file)
-
-    channels_path = os.path.join( config.get_runtime_path() , "channels" , '*.py' )
+    channels_path = os.path.join( config.get_runtime_path() , "channels" , '*.xml' )
     logger.info("pelisalacarta.channels.buscador channels_path="+channels_path)
-
-    excluir=""
-
-    # El fichero que se distribuyó en la 4.0.2 no era completo
-    '''
-    if os.path.exists(exclude_data_file):
-        fileexclude = open(exclude_data_file,"r")
-        excluir= fileexclude.read()
-        fileexclude.close()
-    else:
-        excluir = "seriesly\n"
-        fileexclude = open(exclude_data_file,"w")
-        fileexclude.write(excluir)
-        fileexclude.close()
-    '''
-    if os.path.exists(master_exclude_data_file):
-        logger.info("pelisalacarta.channels.buscador Encontrado fichero exclusiones")
-
-        fileexclude = open(master_exclude_data_file,"r")
-        excluir= fileexclude.read()
-        fileexclude.close()
-    else:
-        logger.info("pelisalacarta.channels.buscador No encontrado fichero exclusiones")
-        excluir = "seriesly\nbuscador\ntengourl\n__init__"
 
     if config.is_xbmc():
         show_dialog = True
@@ -109,31 +79,44 @@ def do_search(item):
         percentage = index*100/number_of_channels
 
         basename = os.path.basename(infile)
-        basename_without_extension = basename[:-3]
-        
-        if basename_without_extension not in excluir:
+        basename_without_extension = basename[:-4]
 
-            if show_dialog:
-                progreso.update(percentage, ' Buscando "' + tecleado+ '"', basename_without_extension)
+        channel_parameters = channeltools.get_channel_parameters(basename_without_extension)
 
-            logger.info("pelisalacarta.channels.buscador Intentado busqueda en " + basename_without_extension + " de "+ tecleado)
-            try:
+        # No busca si es un canal inactivo
+        if channel_parameters["active"]!="true":
+            continue
 
-                # http://docs.python.org/library/imp.html?highlight=imp#module-imp
-                obj = imp.load_source(basename_without_extension, infile)
-                logger.info("pelisalacarta.channels.buscador cargado " + basename_without_extension + " de "+ infile)
-                channel_result_itemlist = obj.search( Item() , tecleado)
-                for item in channel_result_itemlist:
-                    item.title = item.title + "[" + basename_without_extension + "]"
-                    item.viewmode = "list"
+        # No busca si es un canal excluido de la busqueda global
+        if channel_parameters["include_in_global_search"]!="true":
+            continue
 
-                itemlist.extend( channel_result_itemlist )
-            except:
-                import traceback
-                logger.error( traceback.format_exc() )
+        # No busca si es un canal para adultos, y el modo adulto está desactivado
+        if channel_parameters["adult"]=="true" and config.get_setting("adult_mode")=="false":
+            continue
 
-        else:
-            logger.info("pelisalacarta.channels.buscador do_search_results, Excluido server " + basename_without_extension)
+        # No busca si el canal es en un idioma filtrado
+        if config.get_setting("channel_language")!="all" and channel_parameters["language"]!=config.get_setting("channel_language"):
+            continue
+
+        if show_dialog:
+            progreso.update(percentage, ' Buscando "' + tecleado+ '"', basename_without_extension)
+
+        logger.info("pelisalacarta.channels.buscador Intentado busqueda en " + basename_without_extension + " de "+ tecleado)
+        try:
+
+            # http://docs.python.org/library/imp.html?highlight=imp#module-imp
+            obj = imp.load_source(basename_without_extension, infile[:-4]+".py")
+            logger.info("pelisalacarta.channels.buscador cargado " + basename_without_extension + " de "+ infile)
+            channel_result_itemlist = obj.search( Item() , tecleado)
+            for item in channel_result_itemlist:
+                item.title = item.title + "[" + basename_without_extension + "]"
+                item.viewmode = "list"
+
+            itemlist.extend( channel_result_itemlist )
+        except:
+            import traceback
+            logger.error( traceback.format_exc() )
 
     itemlist = sorted(itemlist, key=lambda Item: Item.title) 
 

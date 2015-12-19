@@ -2,20 +2,27 @@
 <channel>
 	<id>peliculasdk</id>
 	<name>PeliculasDK</name>
-	<language>es</language>
-	<update_url></update_url>
+
 	<active>true</active>
-	<include_in_global_search>true</include_in_global_search>
-	<version>3</version>
 	<adult>false</adult>
-	<date>10/12/2015</date>
-	<changes>A–adido multi-fanarty trailer. Mejoras codigo</changes>
+	<language>es</language>
+
 	<fanart></fanart>
 	<thumbnail>http://s29.postimg.org/wzw749oon/pldklog.jpg</thumbnail>
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/peliculasdk.png</bannermenu>
+
+	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
+	<version>3</version>
+	<date>10/12/2015</date>
+	<changes>A–adido multi-fanarty trailer. Mejoras codigo</changes>
+
 	<categories>
 		<category>torrent</category>
         <category>movie</category>
         <category>serie</category>
 	</categories>
+
+	<settings>
+		<include_in_global_search>true</include_in_global_search>
+	</settings>
 </channel>

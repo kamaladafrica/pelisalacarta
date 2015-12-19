@@ -5,7 +5,6 @@
     <language>ro</language>
     <update_url></update_url>
     <active>false</active>
-    <include_in_global_search>false</include_in_global_search>
     <version>1</version>
     <adult>false</version>
     <date>28/08/2015</date>
@@ -13,4 +12,7 @@
     <categories>
         <category>movie</category>
     </categories>
+    <settings>
+        <include_in_global_search>false</include_in_global_search>
+    </settings>
 </channel>

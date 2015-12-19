@@ -33,7 +33,6 @@ def get_channel_parameters(channel_name):
 
         # TODO: Pendiente del json :)
         channel_parameters = {}
-        channel_parameters["category"] = re.compile("<category>([^<]*)</category>",re.DOTALL).findall(data)
         channel_parameters["title"] = scrapertools.find_single_match(data,"<name>([^<]*)</name>")
         channel_parameters["channel"] = scrapertools.find_single_match(data,"<id>([^<]*)</id>")
         channel_parameters["active"] = scrapertools.find_single_match(data,"<active>([^<]*)</active>")
@@ -42,7 +41,15 @@ def get_channel_parameters(channel_name):
         channel_parameters["thumbnail"] = scrapertools.find_single_match(data,"<thumbnail>([^<]*)</thumbnail>")
         channel_parameters["bannermenu"] = scrapertools.find_single_match(data,"<bannermenu>([^<]*)</bannermenu>")
         channel_parameters["fanart"] = scrapertools.find_single_match(data,"<fanart>([^<]*)</fanart>")
+        channel_parameters["include_in_global_search"] = scrapertools.find_single_match(data,"<include_in_global_search>([^<]*)</include_in_global_search>")
         channel_parameters["type"] = "generic"
+
+        category_list = []
+        matches = scrapertools.find_multiple_matches(data, "<category>([^<]*)</category>")
+        for match in matches:
+            category_list.append(match)
+
+        channel_parameters["categories"] = category_list
 
         logger.info("pelisalacarta.core.channeltools get_channel_parameters channel_parameters="+repr(channel_parameters) )
 

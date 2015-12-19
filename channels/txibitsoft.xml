@@ -2,20 +2,27 @@
 <channel>
 	<id>txibitsoft</id>
 	<name>Txibitsoft</name>
-	<language>es</language>
-	<update_url></update_url>
+
 	<active>true</active>
-	<include_in_global_search>true</include_in_global_search>
-	<version>11</version>
 	<adult>false</adult>
-	<date>10/12/2015</date>
-	<changes>cambio acceso trairles,cambios web, correcion en acceso a series</changes>
+	<language>es</language>
+
 	<fanart></fanart>
 	<thumbnail>http://s27.postimg.org/hx5ohryxf/tblogo.jpg</thumbnail>
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/txibitsoft.png</bannermenu>
+
+	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
+	<version>11</version>
+	<date>10/12/2015</date>
+	<changes>cambio acceso trairles,cambios web, correcion en acceso a series</changes>
+	
 	<categories>
 		<category>torrent</category>
 		<category>serie</category>
 		<category>movie</category>
 	</categories>
+
+	<settings>
+		<include_in_global_search>true</include_in_global_search>
+	</settings>
 </channel>

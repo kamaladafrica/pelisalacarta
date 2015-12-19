@@ -2,16 +2,20 @@
 <channel>
 	<id>cuelgame</id>
 	<name>Cuelgame</name>
-	<language>es</language>
-	<update_url></update_url>
+
 	<active>true</active>
-	<include_in_global_search>false</include_in_global_search>
-	<version>0</version>
 	<adult>false</adult>
+	<language>es</language>
+
+	<fanart></fanart>
+	<thumbnail>http://media.tvalacarta.info/pelisalacarta/squares/cuelgame.png</thumbnail>
+	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/cuelgame.png</bannermenu>
+
+	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
+	<version>0</version>
 	<date></date>
 	<changes></changes>
-	<fanart></fanart>
-	<thumbnail></thumbnail>
+
 	<categories>
 		<category>torrent</category>
 		<category>movie</category>
@@ -19,4 +23,8 @@
 		<category>documentary</category>
 		<category>vos</category>
 	</categories>
+
+	<settings>
+		<include_in_global_search>false</include_in_global_search>
+	</settings>
 </channel>

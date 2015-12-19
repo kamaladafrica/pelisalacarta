@@ -162,7 +162,7 @@ def peliculas(item):
     patron += 'class="rating-number">([^<]+)</div></div>'
 
     matches = re.compile(patron,re.DOTALL).findall(data)
-    scrapertools.printMatches(matches)
+    if DEBUG: scrapertools.printMatches(matches)
     if len(matches)==0 :
         itemlist.append( Item(channel=__channel__, title="[COLOR gold][B]No hay resultados...[/B][/COLOR]", thumbnail ="http://s6.postimg.org/fay99h9ox/briconoisethumb.png", fanart ="http://s6.postimg.org/uie8tu1jl/briconoisefan.jpg",folder=False) )
 

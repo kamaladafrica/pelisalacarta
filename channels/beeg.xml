@@ -2,18 +2,25 @@
 <channel>
 	<id>beeg</id>
 	<name>Beeg</name>
-	<language>es</language>
-	<update_url></update_url>
+
 	<active>true</active>
-	<include_in_global_search>false</include_in_global_search>
-	<version>3</version>
 	<adult>true</adult>
+	<language>en</language>
+
+	<fanart></fanart>
+	<thumbnail>http://media.tvalacarta.info/pelisalacarta/squares/beeg.png</thumbnail>
+	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/beeg.png</bannermenu>
+	
+	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
+	<version>3</version>
 	<date>07/10/2015</date>
 	<changes>Corregido para usar la nueva API</changes>
-	<fanart></fanart>
-	<thumbnail></thumbnail>
+
 	<categories>
 		<category>adult</category>
-		<category>movie</category>
 	</categories>
+
+	<settings>
+		<include_in_global_search>false</include_in_global_search>
+	</settings>
 </channel>
