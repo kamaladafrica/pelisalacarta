@@ -1,0 +1,22 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": false, 
+        "category": [
+            "movie", 
+            "serie"
+        ], 
+        "changes": "Nueva versión (gracias a Hanwer)", 
+        "date": "19/12/2015", 
+        "fanart": "", 
+        "id": "cinehanwer", 
+        "include_in_global_search": true, 
+        "language": "es", 
+        "name": "Cinehanwer", 
+        "thumbnail": "http://media.tvalacarta.info/pelisalacarta/squares/cinehanwer.png", 
+        "bannermenu": "http://media.tvalacarta.info/pelisalacarta/bannermenu/cinehanwer.png", 
+        "update_url": "", 
+        "version": "2"
+    }, 
+    "settings": {}
+}
