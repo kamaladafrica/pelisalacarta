@@ -6,10 +6,10 @@
 	<update_url></update_url>
 	<active>true</active>
 	<include_in_global_search>true</include_in_global_search>
-	<version>10</version>
+	<version>11</version>
 	<adult>false</adult>
-	<date>13/10/2015</date>
-	<changes>Añadida api arts,Info scroll mas infolabel, corrección modificaciones web</changes>
+	<date>11/12/2015</date>
+	<changes>Correción código fanart</changes>
 	<fanart></fanart>
 	<thumbnail>http://s6.postimg.org/9zv90yjip/zentorrentlogo.jpg</thumbnail>
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/zentorrents.png</bannermenu>
