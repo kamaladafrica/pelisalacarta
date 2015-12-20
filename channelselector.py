@@ -254,6 +254,10 @@ def filterchannels(category,preferred_thumb=""):
             channelslist.insert( 0 , Item( title=config.get_setting("personalchannelname")  ,action="mainlist", channel="personal"  ,thumbnail=config.get_setting("personalchannellogo") , type="generic"  ))
 
         channel_parameters = channeltools.get_channel_parameters("tengourl")
+        # Si prefiere el bannermenu y el canal lo tiene, cambia ahora de idea
+        if preferred_thumb=="bannermenu" and "bannermenu" in channel_parameters:
+            channel_parameters["thumbnail"] = channel_parameters["bannermenu"]
+
         channelslist.insert( 0 , Item( title="Tengo una URL"  ,action="mainlist", channel="tengourl" , thumbnail=channel_parameters["thumbnail"], type="generic"  ))
 
     return channelslist
