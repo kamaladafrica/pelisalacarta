@@ -195,9 +195,13 @@ def filterchannels(category,preferred_thumb=""):
     logger.info("channelselector.filterchannels channel_path="+channel_path)
 
     channel_files = glob.glob(channel_path)
+    logger.info("channelselector.filterchannels channel_files encontrados "+str(len(channel_files)))
 
     channel_language = config.get_setting("channel_language")
     logger.info("channelselector.filterchannels channel_language="+channel_language)
+    if channel_language=="":
+        channel_language = "all"
+        logger.info("channelselector.filterchannels channel_language="+channel_language)
 
     for index, channel in enumerate(channel_files):
         logger.info("channelselector.filterchannels channel="+channel)

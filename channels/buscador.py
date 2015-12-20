@@ -62,6 +62,12 @@ def do_search(item):
     channels_path = os.path.join( config.get_runtime_path() , "channels" , '*.xml' )
     logger.info("pelisalacarta.channels.buscador channels_path="+channels_path)
 
+    channel_language = config.get_setting("channel_language")
+    logger.info("pelisalacarta.channels.buscador channel_language="+channel_language)
+    if channel_language=="":
+        channel_language = "all"
+        logger.info("pelisalacarta.channels.buscador channel_language="+channel_language)
+
     if config.is_xbmc():
         show_dialog = True
 
@@ -96,7 +102,7 @@ def do_search(item):
             continue
 
         # No busca si el canal es en un idioma filtrado
-        if config.get_setting("channel_language")!="all" and channel_parameters["language"]!=config.get_setting("channel_language"):
+        if channel_language!="all" and channel_parameters["language"]!=channel_language:
             continue
 
         if show_dialog:
