@@ -55,7 +55,7 @@ def calidades(item):
 
     # Descarga la pagina
     data = scrapertools.cache_page(item.url)
-    data = scrapertools.find_single_match(data,'<div class="titc[^>]+>Buscar por C(.*?)</ul>')
+    data = scrapertools.find_single_match(data,'<div class="txc[^>]+>Buscar por C(.*?)</ul>')
     logger.info("data="+data)
 
     # Extrae las entradas (carpetas)
@@ -78,7 +78,7 @@ def generos(item):
 
     # Descarga la pagina
     data = scrapertools.cache_page(item.url)
-    data = scrapertools.find_single_match(data,'<div class="titc[^>]+>Buscar por G(.*?)</ul>')
+    data = scrapertools.find_single_match(data,'<div class="txc[^>]+>Buscar por G(.*?)</ul>')
     logger.info("data="+data)
 
     # Extrae las entradas (carpetas)
@@ -250,8 +250,7 @@ def peliculas(item):
     itemlist = []
     
     for scrapedurl,scrapedtitle,scrapedthumbnail,scrapedplot in matches:
-        title = scrapedtitle.strip()
-        title = scrapertools.htmlclean(title)
+        title = scrapedtitle.decode('iso-8859-1').encode('utf8')
         thumbnail = urlparse.urljoin(item.url,scrapedthumbnail)
         plot = scrapertools.htmlclean(scrapedplot)
         url = urlparse.urljoin(item.url,scrapedurl)
@@ -398,7 +397,7 @@ def findvideos(item):
     for scrapedurl,serverthumb,idioma,calidad in matches:
         idioma = idioma.strip()
         calidad = calidad.strip()
-        nombre_servidor = serverthumb.split("/")[-1]
+        nombre_servidor = serverthumb.split("/")[-1].split(".")[0]
 
         title = "Ver en "+nombre_servidor+" ("+idioma+") (Calidad "+calidad+")"
         url = scrapedurl
