@@ -1,0 +1,21 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": false, 
+        "category": [
+			"movie", 
+            "serie"
+			], 
+        "changes": "Adaptacion por cambios en la web", 
+        "date": "19/12/2015", 
+        "fanart": "https://d12.usercdn.com/i/02278/u875vjx9c0xs.png", 
+        "id": "pepecine", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "Pepecine", 
+        "thumbnail": "https://d12.usercdn.com/i/02278/nwm6todp6yyk.png", 
+        "update_url": "", 
+        "version": "1.2"
+    }, 
+    "settings": {}
+}

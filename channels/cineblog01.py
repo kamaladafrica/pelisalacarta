@@ -121,7 +121,7 @@ def peliculas(item):
 
     # Descarga la página
     data = scrapertools.cache_page(item.url)
-    logger.info(data)
+    if DEBUG: logger.info(data)
 
     # Extrae las entradas (carpetas)
     '''
@@ -191,7 +191,7 @@ def listserie(item):
 
     # Descarga la página
     data = scrapertools.cache_page(item.url)
-    logger.info(data)
+    if DEBUG: logger.info(data)
 
     # Extrae las entradas (carpetas)
     patronvideos  = '<div id="covershot"><a[^<]+<p[^<]+<img.*?src="([^"]+)".*?'

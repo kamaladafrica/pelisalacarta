@@ -4,8 +4,7 @@
 	<name>Megaspain</name>
 	<language>es</language>
 	<update_url></update_url>
-	<active>true</active>
-	<include_in_global_search>false</include_in_global_search>
+	<active>false</active>
 	<version>5</version>
 	<adult>false</adult>
 	<date>30/07/2013</date>
@@ -17,4 +16,7 @@
 		<category>serie</category>
 		<category>documentary</category>
 	</categories>
+	<settings>
+		<include_in_global_search>false</include_in_global_search>
+	</settings>
 </channel>

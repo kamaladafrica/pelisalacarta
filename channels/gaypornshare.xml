@@ -5,7 +5,6 @@
 	<language>es</language>
 	<update_url></update_url>
 	<active>false</active>
-	<include_in_global_search>false</include_in_global_search>
 	<version>3</version>
 	<adult>false</adult>
 	<date>23/08/2013</date>
@@ -15,4 +14,7 @@
 	<categories>
 		<category>documentary</category>
 	</categories>
+	<settings>
+		<include_in_global_search>false</include_in_global_search>
+	</settings>
 </channel>

@@ -2,18 +2,26 @@
 <channel>
 	<id>xhamster</id>
 	<name>xhamster</name>
-	<language>es</language>
-	<update_url></update_url>
+
 	<active>true</active>
-	<include_in_global_search>false</include_in_global_search>
-	<version>5</version>
 	<adult>true</adult>
-	<date>26/04/2015</date>
-	<changes>Corregido</changes>
+	<language>es</language>
+
 	<fanart></fanart>
-	<thumbnail></thumbnail>
+	<thumbnail>http://media.tvalacarta.info/pelisalacarta/squares/xhamster.png</thumbnail>
+	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/xhamster.png</bannermenu>
+
+	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
+	<version>6</version>
+	<date>11/12/2015</date>
+	<changes>Corregido y añadidos nuevos menus</changes>
+
 	<categories>
 		<category>adult</category>
 		<category>movie</category>
 	</categories>
+
+	<settings>
+		<include_in_global_search>true</include_in_global_search>
+	</settings>
 </channel>

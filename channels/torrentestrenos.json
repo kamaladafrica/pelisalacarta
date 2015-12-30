@@ -1,0 +1,23 @@
+{
+    "channel": {
+        "active": false, 
+        "adult": false, 
+        "category": [
+            "torrent", 
+            "movie", 
+            "serie", 
+            "documentary"
+        ], 
+        "changes": "", 
+        "date": "", 
+        "fanart": "", 
+        "id": "torrentestrenos", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "Torrentestrenos", 
+        "thumbnail": "http://s6.postimg.org/lq96iccb5/torrentestrenos.jpg", 
+        "update_url": "", 
+        "version": "0.0"
+    }, 
+    "settings": {}
+}

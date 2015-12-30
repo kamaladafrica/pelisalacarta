@@ -1,0 +1,22 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": true, 
+        "category": [
+            "adult", 
+            "movie"
+        ], 
+        "changes": "Update por cambios en la web", 
+        "date": "09/11/15", 
+        "fanart": "", 
+        "id": "pornhub", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "Pornhub", 
+        "thumbnail": "http://s22.postimg.org/5lzcocfqp/pornhub_logo.jpg", 
+        "bannermenu": "http://media.tvalacarta.info/pelisalacarta/bannermenu/pornhub.png", 
+        "update_url": "", 
+        "version": "2.0"
+    }, 
+    "settings": {}
+}

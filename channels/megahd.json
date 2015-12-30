@@ -1,0 +1,23 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": false, 
+        "category": [
+            "movie", 
+            "serie", 
+            "documentary", 
+            "anime"
+        ], 
+        "changes": "Implementado mega-streamer.net como servidor de video", 
+        "date": "30/07/2013", 
+        "fanart": "", 
+        "id": "megahd", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "Mega hd", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "2.0"
+    }, 
+    "settings": {}
+}

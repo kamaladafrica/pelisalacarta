@@ -1,0 +1,22 @@
+{
+    "channel": {
+        "active": false, 
+        "adult": false, 
+        "category": [
+            "movie", 
+            "serie", 
+            "documentary"
+        ], 
+        "changes": "Arreglado por cambios en la web", 
+        "date": "05/06/2012", 
+        "fanart": "", 
+        "id": "serieonline", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "Serieonline", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "2.0"
+    }, 
+    "settings": {}
+}

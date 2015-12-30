@@ -1,0 +1,21 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": true, 
+        "category": [
+            "adult", 
+            "anime"
+        ], 
+        "changes": "", 
+        "date": "", 
+        "fanart": "", 
+        "id": "hentaiflv", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "Hentai flv", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "0.0"
+    }, 
+    "settings": {}
+}

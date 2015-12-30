@@ -1,0 +1,21 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": false, 
+        "category": [
+            "serie", 
+            "vos"
+        ], 
+        "changes": "Arregalda la duplicidad online en download", 
+        "date": "13/05/2015", 
+        "fanart": "", 
+        "id": "seriesblanco", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "Seriesblanco", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "6.0"
+    }, 
+    "settings": {}
+}

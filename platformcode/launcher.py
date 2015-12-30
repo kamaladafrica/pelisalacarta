@@ -1,39 +1,49 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # tvalacarta
 # XBMC Launcher (xbmc / xbmc-dharma / boxee)
 # http://blog.tvalacarta.info/plugin-xbmc/
 #------------------------------------------------------------
 
-import urllib, urllib2
-import os,sys
+import urllib
+import urllib2
+import os
+import re
+import sys
 
 from core import logger
 from core import config
 from core import scrapertools
+from core import channeltools
+from core import updater
+from platformcode import guitools
+from platformcode import xbmctools
 
-def run():
-    logger.info("pelisalacarta.platformcode.launcher run")
+def start():
+    ''' Primera funcion que se ejecuta al entrar en el plugin.
+    Dentro de esta funcion deberian ir todas las llamadas a las
+    funciones que deseamos que se ejecuten nada mas abrir el plugin.
+    
+    '''
+    logger.info("pelisalacarta.platformcode.launcher start")
     
     # Test if all the required directories are created
     config.verify_directories_created()
-    
+      
+def run():
+    logger.info("pelisalacarta.platformcode.launcher run")
+
     # Extract parameters from sys.argv
     params, fanart, channel_name, title, fulltitle, url, thumbnail, plot, action, server, extra, subtitle, viewmode, category, show, password = extract_parameters()
     logger.info("pelisalacarta.platformcode.launcher fanart=%s, channel_name=%s, title=%s, fulltitle=%s, url=%s, thumbnail=%s, plot=%s, action=%s, server=%s, extra=%s, subtitle=%s, category=%s, show=%s, password=%s" % (fanart, channel_name, title, fulltitle, url, thumbnail, plot, action, server, extra, subtitle, category, show, password))
-
 
     if config.get_setting('filter_servers') == 'true':
         server_white_list, server_black_list = set_server_list() 
 
     try:
-        # Accion por defecto - elegir canal
+        # Default action: open channel and launch mainlist function
         if ( action=="selectchannel" ):
-            # Borra el fichero de las cookies para evitar problemas con MV
-            #ficherocookies = os.path.join( config.get_data_path(), 'cookies.lwp' )
-            #if os.path.exists(ficherocookies):
-            #    os.remove(ficherocookies)
-            
+
             if config.get_setting("updatechannels")=="true":
                 try:
                     from core import updater
@@ -46,10 +56,6 @@ def run():
                 except:
                     pass
 
-            # Control parental: Desactivar Modo Adulto
-            config.set_setting("enableadultmode","false")
-            config.set_setting("adultpassword_introducida","")
-                
             import channelselector as plugin
             plugin.mainlist(params, url, category)
 
@@ -81,6 +87,29 @@ def run():
 
         # El resto de acciones vienen en el parámetro "action", y el canal en el parámetro "channel"
         else:
+
+            if action=="mainlist":
+                # Parental control
+                can_open_channel = False
+
+                # If it is an adult channel, and user has configured pin, asks for it
+                if channeltools.is_adult(channel_name) and config.get_setting("adult_pin")!="":
+                    
+                    import xbmc
+                    keyboard = xbmc.Keyboard("","PIN para canales de adultos",True)
+                    keyboard.doModal()
+
+                    if (keyboard.isConfirmed()):
+                        tecleado = keyboard.getText()
+                        if tecleado==config.get_setting("adult_pin"):
+                            can_open_channel = True
+
+                # All the other cases can open the channel
+                else:
+                    can_open_channel = True
+
+                if not can_open_channel:
+                    return
 
             if action=="mainlist" and config.get_setting("updatechannels")=="true":
                 try:

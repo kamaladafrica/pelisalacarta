@@ -28,7 +28,7 @@ def isGeneric():
     return True
 
 def mainlist(item):
-    logger.info("[youanimehd.py] mainlist")
+    logger.info("pelisalacarta.channels.youanimehd mainlist")
 
     itemlist = []
     itemlist.append( Item(channel=__channel__, action="completo"  , title="Portada"                        , url="http://youanimehd.com/" ))
@@ -42,7 +42,7 @@ def mainlist(item):
     return itemlist
 
 def completo(item):
-    logger.info("[youanimehd.py] completo")
+    logger.info("pelisalacarta.channels.youanimehd completo")
     itemlist = []
     
     # Descarga la pagina
@@ -106,7 +106,7 @@ def completo(item):
     return itemlist
 
 def letras(item):
-    logger.info("[youanimehd.py] letras")
+    logger.info("pelisalacarta.channels.youanimehd letras")
     itemlist = []
     itemlist.append( Item(channel=__channel__, action="completo" , title="0-9", url="http://youanimehd.com/tags/0-9"))
     itemlist.append( Item(channel=__channel__, action="completo" , title="A"  , url="http://youanimehd.com/tags/a"))
@@ -140,7 +140,7 @@ def letras(item):
 
 
 def serie(item):
-    logger.info("[youanimehd.py] serie")
+    logger.info("pelisalacarta.channels.youanimehd serie")
     # Descarga la pagina
     data = scrapertools.cache_page(item.url)
     data = data.replace('\n',"")
@@ -192,23 +192,10 @@ def serie(item):
     return itemlist
 
 def play(item):
-    logger.info("[youanimehd.py] play")
+    logger.info("pelisalacarta.channels.youanimehd play url="+item.url)
 
     itemlist=[]
-    logger.info("url="+item.url)
-    # Descarga la pagina
-    headers = []
-    headers.append(["User-Agent",USER_AGENT])
-    headers.append(["Referer",item.url])
     data = scrapertools.cache_page(item.url)
-    #http://youanimehd.com/videoss/video.php?id=161661193_161903494
-    url = scrapertools.get_match(data,'src="(http\://youanimehd.com/videoss/video.php[^"]+)"')
-    logger.info("url="+url)
-
-    headers = []
-    headers.append(["User-Agent",USER_AGENT])
-    headers.append(["Referer",item.url])
-    data = scrapertools.cache_page(url)
     logger.info("data="+data)
 
     from servers import servertools

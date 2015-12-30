@@ -105,7 +105,11 @@ def lista(item):
         thumbnail = urlparse.urljoin(item.url,scrapedthumbnail)
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="findvideos", title=title , fulltitle = title, url=url , thumbnail=thumbnail , plot=plot , folder=True) )
+
+        if "divxatope.com/serie/" in url:
+            itemlist.append( Item(channel=__channel__, action="episodios", title=title , fulltitle = title, url=url , thumbnail=thumbnail , plot=plot , folder=True) )
+        else:
+            itemlist.append( Item(channel=__channel__, action="findvideos", title=title , fulltitle = title, url=url , thumbnail=thumbnail , plot=plot , folder=True) )
 
     next_page_url = scrapertools.find_single_match(data,'<li><a href="([^"]+)">Next</a></li>')
     if next_page_url!="":
@@ -114,6 +118,48 @@ def lista(item):
         next_page_url = scrapertools.find_single_match(data,'<li><input type="button" class="btn-submit" value="Siguiente" onClick="paginar..(\d+)')
         if next_page_url!="":
             itemlist.append( Item(channel=__channel__, action="lista", title=">> Página siguiente" , url=item.url, extra=item.extra+"&pg="+next_page_url, folder=True) )
+
+    return itemlist
+
+def episodios(item):
+    logger.info("pelisalacarta.channels.divxatope episodios")
+    itemlist = []
+
+    '''
+    <div class="chap-desc">
+    <a class="chap-title" href="http://www.divxatope.com/descargar/scorpion---temporada-2--en-hdtv-temp-2-cap-5" title="Scorpion - Temporada 2 [HDTV][Cap.205][Español Castellano]">
+    <h3>Scorpion - Temporada 2 [HDTV][Cap.205][Español Castellano]</h3>
+    </a>
+    <span>Visitas : 5700</span>
+    <span>Descargas : 2432</span>
+    <span>Tamaño: 450 MB</span>
+    <a class="btn-down" href="http://www.divxatope.com/descargar/scorpion---temporada-2--en-hdtv-temp-2-cap-5" title="Scorpion - Temporada 2 [HDTV][Cap.205][Español Castellano]">Descargar</a>
+    </div>
+    '''
+
+    # Descarga la pagina
+    if item.extra=="":
+        data = scrapertools.cachePage(item.url)
+    else:
+        data = scrapertools.cachePage(item.url , post=item.extra)
+    #logger.info("data="+data)
+
+    patron  = '<div class="chap-desc"[^<]+'
+    patron += '<a class="chap-title" href="([^"]+)" title="([^"]+)"[^<]+'
+    matches = re.compile(patron,re.DOTALL).findall(data)
+    scrapertools.printMatches(matches)
+
+    for scrapedurl,scrapedtitle in matches:
+        title = scrapedtitle.strip()
+        url = urlparse.urljoin(item.url,scrapedurl)
+        thumbnail = ""
+        plot = ""
+        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+        itemlist.append( Item(channel=__channel__, action="findvideos", title=title , fulltitle = title, url=url , thumbnail=thumbnail , plot=plot , folder=True) )
+
+    next_page_url = scrapertools.find_single_match(data,"<a class='active' href=[^<]+</a><a\s*href='([^']+)'")
+    if next_page_url!="":
+        itemlist.append( Item(channel=__channel__, action="episodios", title=">> Página siguiente" , url=urlparse.urljoin(item.url,next_page_url) , folder=True) )
 
     return itemlist
 

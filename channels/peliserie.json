@@ -1,0 +1,21 @@
+{
+    "channel": {
+        "active": false, 
+        "adult": false, 
+        "category": [
+            "movie", 
+            "serie"
+        ], 
+        "changes": "Corregido bug syntax error en TMDB", 
+        "date": "18/03/2015", 
+        "fanart": "", 
+        "id": "peliserie", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "Peliserie", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "3.0"
+    }, 
+    "settings": {}
+}

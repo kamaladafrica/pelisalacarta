@@ -1,0 +1,22 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": false, 
+        "category": [
+            "serie", 
+            "anime", 
+            "vos"
+        ], 
+        "changes": "Corregido errores en funcion addChaperts y findvideos", 
+        "date": "11/12/2015", 
+        "fanart": "", 
+        "id": "seriesyonkis", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "Seriesyonkis", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "27.0"
+    }, 
+    "settings": {}
+}

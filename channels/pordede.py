@@ -188,7 +188,7 @@ def parse_mixed_results(item,data):
 
     if "offset/" in item.url:
         old_offset = scrapertools.find_single_match(item.url,"offset/(\d+)/")
-        new_offset = int(old_offset)+30
+        new_offset = int(old_offset)+60
         url = item.url.replace("offset/"+old_offset,"offset/"+str(new_offset))
         itemlist.append( Item(channel=__channel__, action="lista" , title=">> Página siguiente" , extra=item.extra, url=url))
 

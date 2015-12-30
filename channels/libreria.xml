@@ -1,18 +1,20 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <channel>
 	<id>libreria</id>
-	<name></name>
-	<language>es</language>
-	<update_url></update_url>
+	<name>Canal para la librería</name>
+
 	<active>false</active>
-	<include_in_global_search>false</include_in_global_search>
-	<version>0</version>
 	<adult>false</adult>
-	<date></date>
-	<changes></changes>
+	<language>es</language>
+
 	<fanart></fanart>
 	<thumbnail></thumbnail>
-	<categories>
-		<category>movie</category>
-	</categories>
+	<bannermenu></bannermenu>
+
+	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
+	<version>0</version>
+	<date></date>
+	<changes></changes>
+
+	<include_in_global_search>false</include_in_global_search>
 </channel>

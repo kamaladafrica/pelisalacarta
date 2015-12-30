@@ -1,0 +1,20 @@
+{
+    "channel": {
+        "active": false, 
+        "adult": false, 
+        "category": [
+            "movie"
+        ], 
+        "changes": "", 
+        "date": "", 
+        "fanart": "", 
+        "id": "playmax", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "Playmax", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "0.0"
+    }, 
+    "settings": {}
+}

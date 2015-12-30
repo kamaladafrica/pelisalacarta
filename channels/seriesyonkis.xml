@@ -2,19 +2,27 @@
 <channel>
 	<id>seriesyonkis</id>
 	<name>Seriesyonkis</name>
-	<language>es</language>
-	<update_url></update_url>
+
 	<active>true</active>
-	<include_in_global_search>false</include_in_global_search>
-	<version>26</version>
 	<adult>false</adult>
-	<date>20/04/2014</date>
-	<changes>Uso del dominio sx</changes>
+	<language>es</language>
+
 	<fanart></fanart>
-	<thumbnail></thumbnail>
+	<thumbnail>http://media.tvalacarta.info/pelisalacarta/squares/seriesyonkis.png</thumbnail>
+	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/seriesyonkis.png</bannermenu>
+
+	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
+	<version>27</version>
+	<date>11/12/2015</date>
+	<changes>Corregido errores en funcion addChaperts y findvideos</changes>
+
 	<categories>
 		<category>serie</category>
 		<category>anime</category>
 		<category>vos</category>
 	</categories>
+
+	<settings>
+		<include_in_global_search>true</include_in_global_search>
+	</settings>
 </channel>

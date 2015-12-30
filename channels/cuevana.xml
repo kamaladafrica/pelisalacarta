@@ -4,15 +4,16 @@
 	<name>Cuevana</name>
 	<language>es</language>
 	<update_url></update_url>
-	<active>true</active>
-	<include_in_global_search>false</include_in_global_search>
-	<version>26</version>
+	<active>false</active>
+	<version>0</version>
 	<adult>false</adult>
-	<date>05/05/2012</date>
-	<changes>Actualizado por cambios en el canal</changes>
+	<date></date>
+	<changes></changes>
 	<fanart></fanart>
 	<thumbnail></thumbnail>
 	<categories>
-		<category>movie</category>
 	</categories>
+	<settings>
+		<include_in_global_search>false</include_in_global_search>
+	</settings>
 </channel>

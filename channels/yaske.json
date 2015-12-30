@@ -1,0 +1,21 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": false, 
+        "category": [
+            "latino", 
+            "movie"
+        ], 
+        "changes": "Actualizado por cambios en la web", 
+        "date": "31/10/2014", 
+        "fanart": "", 
+        "id": "yaske", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "Yaske.net", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "9.0"
+    }, 
+    "settings": {}
+}

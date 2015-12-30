@@ -2,17 +2,24 @@
 <channel>
 	<id>tengourl</id>
 	<name>Tengo una URL</name>
-	<language></language>
-	<update_url></update_url>
-	<active>true</active>
-	<include_in_global_search>false</include_in_global_search>
-	<version>1</version>
+
+	<active>false</active>
 	<adult>false</adult>
+	<language></language>
+
+	<fanart></fanart>
+	<thumbnail>http://media.tvalacarta.info/pelisalacarta/squares/tengourl.png</thumbnail>
+	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/tengourl.png</bannermenu>
+
+	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
+	<version>1</version>
 	<date>22/02/2012</date>
 	<changes>Ya puedes poner una url cualquiera!</changes>
-	<fanart></fanart>
-	<thumbnail></thumbnail>
+
 	<categories>
-		<category>all</category>
 	</categories>
+
+	<settings>
+		<include_in_global_search>true</include_in_global_search>
+	</settings>
 </channel>

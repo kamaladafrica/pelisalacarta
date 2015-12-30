@@ -4,7 +4,7 @@
 	<name>Mirapeli</name>
 	<language>es</language>
 	<update_url></update_url>
-	<active>true</active>
+	<active>false</active>
 	<include_in_global_search>false</include_in_global_search>
 	<version>0</version>
 	<adult>false</adult>
@@ -13,6 +13,5 @@
 	<fanart></fanart>
 	<thumbnail></thumbnail>
 	<categories>
-		<category>movie</category>
 	</categories>
 </channel>
