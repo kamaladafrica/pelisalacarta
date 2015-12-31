@@ -73,7 +73,7 @@ def decodeOpenLoad(html):
     decodestring = decode(decodestring)
     decodestring = decodestring.replace("\\/","/")
     
-    videourl = re.search(r'vr="([^"]+)', decodestring, re.DOTALL | re.IGNORECASE).group(1)
+    videourl = re.search(r'vr ="([^"]+)"', decodestring, re.DOTALL | re.IGNORECASE).group(1)
     return videourl
 
 def decode(encoded):

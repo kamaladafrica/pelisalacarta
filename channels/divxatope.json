@@ -7,8 +7,8 @@
             "movie", 
             "serie"
         ], 
-        "changes": "Actualizado por cambios en la web", 
-        "date": "11/10/2014", 
+        "changes": "Corregida expresion regular para los torrents", 
+        "date": "31/12/2015", 
         "fanart": "", 
         "id": "divxatope", 
         "include_in_global_search": false, 
@@ -16,7 +16,7 @@
         "name": "Divxatope", 
         "thumbnail": "", 
         "update_url": "", 
-        "version": "4.0"
+        "version": "5.0"
     }, 
     "settings": {}
 }
