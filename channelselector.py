@@ -1,9 +1,9 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
+import urlparse
 import os
 import sys
 import traceback
@@ -126,12 +126,26 @@ def getchanneltypes(preferred_thumb=""):
 
     # Ahora construye el itemlist ordenadamente
     itemlist = []
-    itemlist.append( Item( title=config.get_localized_string(30121) , channel="channelselector" , action="listchannels" , category="all"         , thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),"thumb_canales_todos.png")))
+
+    dict_cat_lang = {'movie': config.get_localized_string(30122), 'serie': config.get_localized_string(30123),
+                     'anime': config.get_localized_string(30124), 'documentary': config.get_localized_string(30125),
+                     'vos': config.get_localized_string(30136), 'adult': config.get_localized_string(30126),
+                     'latino': config.get_localized_string(30127)}
+
+    itemlist.append(Item(title=config.get_localized_string(30121), channel="channelselector", action="listchannels",
+                         category="all", thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),
+                                                                    "thumb_canales_todos.png")))
     logger.info("channelselector.getchanneltypes Ordenados:")
     for channel_type in valid_types:
         logger.info("channelselector.getchanneltypes channel_type="+channel_type)
         if channel_type in channel_types:
-            itemlist.append( Item( title=channel_type , channel="channelselector" , action="listchannels" , category=channel_type , thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),"thumb_canales_"+channel_type+".png")))
+            title = channel_type
+            if channel_type in dict_cat_lang:
+                title = dict_cat_lang[channel_type]
+
+            itemlist.append(Item(title=title, channel="channelselector", action="listchannels", category=channel_type,
+                                 thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),
+                                                            "thumb_canales_"+channel_type+".png")))
 
     return itemlist
 
