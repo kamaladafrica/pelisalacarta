@@ -7,6 +7,8 @@
 import urlparse,urllib2,urllib,re
 import os,sys
 
+
+
 from core import logger
 from core import config
 from core import scrapertools
@@ -442,6 +444,7 @@ def detail_1(item):
 
 
 def detail(item):
+
     logger.info("[filesmonster_catalogue.py] detail")
     itemlist = []
 
@@ -449,13 +452,25 @@ def detail(item):
     data=scrapertools.downloadpageGzip(item.url)
     # descubre la url
     
-    
+    titulo=item.title.replace(" [abrir carpeta en filesmonster ]","")
+    contador=0
     patronvideos2  = 'http://filesmonster.com/download.php(.*?)".(.*?)'
     matches2 = re.compile(patronvideos2,re.DOTALL).findall(data)
     for match2 in matches2:
         scrapedurl2 ="http://filesmonster.com/download.php"+match2[0] 
+        contador=contador+1
+        contador_t=str(contador)
+       
+        itemlist.append( Item(channel=__channel__ , action="play" ,  plot=data ,  server="filesmonster", title="CONTENIDO "+contador_t+": "+titulo+" [ver en filesmonster]" ,url=scrapedurl2, thumbnail=item.thumbnail, folder=False))
+
+
+
+    patronvideos2  = 'http://filesmonster.com/folders.php(.*?)".(.*?)'
+    matches2 = re.compile(patronvideos2,re.DOTALL).findall(data)
+    for match2 in matches2:
+        scrapedurl2 ="http://filesmonster.com/folders.php"+match2[0] 
         
-        itemlist.append( Item(channel=__channel__ , action="play" ,  plot=data ,  server="filesmonster", title=item.title+" [ver en filesmonster]" ,url=scrapedurl2, thumbnail=item.thumbnail, folder=False))
+        itemlist.append( Item(channel=__channel__ , action="detail" ,  plot=data ,  title=item.title+" [abrir carpeta en filesmonster ]" ,url=scrapedurl2, thumbnail=item.thumbnail, folder=True))
 
 
     return itemlist
@@ -687,6 +702,15 @@ def detail_2(item):
 		
 
         itemlist.append( Item(channel=__channel__ , action="play" ,  plot=scrapedplot ,  server="filesmonster", title=item.title+" [ver en filesmonster]" ,url=scrapedurl2, thumbnail=scrapedthumbnail,  folder=False))
+
+
+
+    patronvideos2  = 'http://filesmonster.com/folders.php(.*?)".(.*?)'
+    matches2 = re.compile(patronvideos2,re.DOTALL).findall(data)
+    for match2 in matches2:
+        scrapedurl2 ="http://filesmonster.com/folders.php"+match2[0] 
+        
+        itemlist.append( Item(channel=__channel__ , action="detail" ,  plot=data ,  title=item.title+" [abrir carpeta en filesmonster ]" ,url=scrapedurl2, thumbnail=item.thumbnail, folder=True))
 
 
     return itemlist
