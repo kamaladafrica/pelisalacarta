@@ -14,7 +14,7 @@ from core import config
 
 
 def get_video_url( page_url , premium = False , user="" , password="", video_password="" ):
-    logger.info("[filesmonster.py] get_video_url( page_url='%s' , user='%s' , password='%s', video_password=%s)" )
+    logger.info("[filesmonster.py] get_video_url( page_url='%s')" )
     video_urls = []
     itemlist=[]
     data1=''
