@@ -37,7 +37,7 @@ def mainlist(item):
     itemlist = []     
     itemlist.append( Item(channel=__channel__, action="lista"  , title="Cine gay latinoamericano" , url="http://cinegaylatinoamericano.blogspot.com.es/feeds/posts/default/?max-results=100&start-index=1",thumbnail="http://www.americaeconomia.com/sites/default/files/imagecache/foto_nota/homosexual1.jpg"))       
     itemlist.append( Item(channel=__channel__, action="lista"  , title="Cine y cortos gay" , url="http://cineycortosgay.blogspot.com.es/feeds/posts/default/?max-results=100&start-index=1",thumbnail="http://www.elmolar.org/wp-content/uploads/2015/05/cortometraje.jpg"))    
-    itemlist.append( Item(channel=__channel__, action="lista"  , title="Cine gay online (MÃ©xico)" , url="http://cinegayonlinemexico.blogspot.com.es/feeds/posts/default/?max-results=100&start-index=1",thumbnail="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTmmqL6tS2Ced1VoxlGQT0q-ibPEz1DCV3E1waHFDI5KT0pg1lJ"))                           
+    itemlist.append( Item(channel=__channel__, action="lista"  , title="Cine gay online (México)" , url="http://cinegayonlinemexico.blogspot.com.es/feeds/posts/default/?max-results=100&start-index=1",thumbnail="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTmmqL6tS2Ced1VoxlGQT0q-ibPEz1DCV3E1waHFDI5KT0pg1lJ"))                           
     itemlist.append( Item(channel=__channel__, action="lista"  , title="Sentido gay" , url="http://www.sentidogay.blogspot.com.es//feeds/posts/default/?max-results=100&start-index=1",thumbnail="http://1.bp.blogspot.com/-epOPgDD_MQw/VPGZGQOou1I/AAAAAAAAAkI/lC25GrukDuo/s1048/SentidoGay.jpg"))               
     itemlist.append( Item(channel=__channel__, action="lista"  , title="PGPA" , url="http://pgpa.blogspot.com.es/feeds/posts/default/?max-results=100&start-index=1",thumbnail="http://themes.googleusercontent.com/image?id=0BwVBOzw_-hbMNTRlZjk2YWMtYTVlMC00ZjZjLWI3OWEtMWEzZDEzYWVjZmQ4"))               
          
@@ -103,7 +103,7 @@ def lista(item):
     variable=str(variable)
     variable_url = item.url.split("index=")[0]
     url_nueva=variable_url+"index="+variable
-    itemlist.append( Item(channel=__channel__, action="lista", title="Ir a la pÃ¡gina siguiente (desde "+variable+")" , url=url_nueva , thumbnail="" , plot="Pasar a la pÃ¡gina siguiente (en grupos de 100)\n\n"+url_nueva) )
+    itemlist.append( Item(channel=__channel__, action="lista", title="Ir a la página siguiente (desde "+variable+")" , url=url_nueva , thumbnail="" , plot="Pasar a la pÃ¡gina siguiente (en grupos de 100)\n\n"+url_nueva) )
    
     return itemlist
 
