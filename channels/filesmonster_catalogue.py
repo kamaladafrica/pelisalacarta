@@ -53,9 +53,9 @@ def menu_1(item):
 
     itemlist = []
     itemlist.append( Item(channel=__channel__, action="hetero"  ,  title="Categorías porno hetero" , thumbnail="http://photosex.biz/imager/w_400/h_500/e48337cd95bbb6c2c372ffa6e71441ac.jpg"))    
-    itemlist.append( Item(channel=__channel__, action="gay"  ,  title="Categorí­as porno gay y lesbian" , thumbnail="http://photosex.biz/imager/w_400/h_500/93df13c85224d428c195ea6581e7cdb3.jpg"))   
+    itemlist.append( Item(channel=__channel__, action="gay"  ,  title="Categorías porno gay y lesbian" , thumbnail="http://photosex.biz/imager/w_400/h_500/93df13c85224d428c195ea6581e7cdb3.jpg"))   
     itemlist.append( Item(channel=__channel__, action="bisex"  , title="Categorías porno bisex, trans y otras" , thumbnail="http://photosex.biz/imager/w_400/9dbaf07ad77788fd3d1f2f533bb25544.jpg"))     
-    itemlist.append( Item(channel=__channel__, action="lista_categoria"  ,  title="Listado global (todas las categorí­as)" ,  url="http://filesmonster.filesdl.net/posts/index/",  thumbnail="http://photosex.biz/imager/w_400/h_400/9f869c6cb63e12f61b58ffac2da822c9.jpg"))         
+    itemlist.append( Item(channel=__channel__, action="lista_categoria"  ,  title="Listado global (todas las categorías)" ,  url="http://filesmonster.filesdl.net/posts/index/",  thumbnail="http://photosex.biz/imager/w_400/h_400/9f869c6cb63e12f61b58ffac2da822c9.jpg"))         
     itemlist.append( Item(channel=__channel__, title="Búsqueda global"     , action="search") )
     return itemlist
 
@@ -216,7 +216,7 @@ def lista_categoria(item):
     pagina_despues=str(pagina+4)
     pagina=str(pagina)
     videos=str(cuantos_videos)
-    if (cuantos_videos==25): itemlist.append( Item(channel=__channel__, action="lista_categoria", title=">> siguientes (pÃ¡ginas "+pagina +" a "+pagina_despues+")", url=item.url , thumbnail="", plot=pagina , folder=True) )
+    if (cuantos_videos==25): itemlist.append( Item(channel=__channel__, action="lista_categoria", title=">> siguientes (páginas "+pagina +" a "+pagina_despues+")", url=item.url , thumbnail="", plot=pagina , folder=True) )
     itemlist.append( Item(channel=__channel__, action="mainlist", title="<< volver al inicio",  folder=True) )
   
 
@@ -306,7 +306,7 @@ def lista_buscar(item):
     pagina=plot+5
     pagina_despues=str(pagina+4)
     pagina=str(pagina)
-    if (cuantos_videos==25 ) : itemlist.append( Item(channel=__channel__, action="lista_buscar", title=">> siguientes resultados (pÃ¡ginas "+pagina +" a "+pagina_despues+")", url=texto , thumbnail="", plot=pagina , folder=True) )
+    if (cuantos_videos==25 ) : itemlist.append( Item(channel=__channel__, action="lista_buscar", title=">> siguientes resultados (páginas "+pagina +" a "+pagina_despues+")", url=texto , thumbnail="", plot=pagina , folder=True) )
     itemlist.append( Item(channel=__channel__, action="mainlist", title="<< volver al inicio",  folder=True) )
   
   
@@ -393,7 +393,7 @@ def search(item,texto):
     pagina=plot+5
     pagina_despues=str(pagina+4)
     pagina=str(pagina)
-    if (cuantos_videos==25 ) : itemlist.append( Item(channel=__channel__, action="lista_buscar", title=">> siguientes resultados (pÃ¡ginas "+pagina +" a "+pagina_despues+")", url=texto , thumbnail="", plot=pagina , folder=True) )
+    if (cuantos_videos==25 ) : itemlist.append( Item(channel=__channel__, action="lista_buscar", title=">> siguientes resultados (páginas "+pagina +" a "+pagina_despues+")", url=texto , thumbnail="", plot=pagina , folder=True) )
     itemlist.append( Item(channel=__channel__, action="mainlist", title="<< volver al inicio",  folder=True) )
   
   
@@ -487,7 +487,7 @@ def menu_2(item):
     itemlist = []
     itemlist.append( Item(channel=__channel__, action="categorias_2"  ,  url="hetero",  title="Categorías porno hetero" , thumbnail="http://photosex.biz/imager/w_400/h_500/e48337cd95bbb6c2c372ffa6e71441ac.jpg"))    
     itemlist.append( Item(channel=__channel__, action="categorias_2"  ,  url="gay",  title="Categorías porno gay, lesbian, bisexual" , thumbnail="http://photosex.biz/imager/w_400/h_500/93df13c85224d428c195ea6581e7cdb3.jpg"))        
-    itemlist.append( Item(channel=__channel__, action="categorias_2"  ,  url="", title="Todas las categorias" , thumbnail="http://photosex.biz/imager/w_400/9dbaf07ad77788fd3d1f2f533bb25544.jpg"))     
+    itemlist.append( Item(channel=__channel__, action="categorias_2"  ,  url="", title="Todas las categorÍas" , thumbnail="http://photosex.biz/imager/w_400/9dbaf07ad77788fd3d1f2f533bb25544.jpg"))     
     itemlist.append( Item(channel=__channel__, action="lista_categoria_2"  ,  title="Listado global (vídeos de todas las categorías)" ,  url="http://filesmonster.biz/index.php?page=1",  thumbnail="http://photosex.biz/imager/w_400/h_400/9f869c6cb63e12f61b58ffac2da822c9.jpg"))         
 
     return itemlist
@@ -663,7 +663,7 @@ def search_2(item,texto):
     pagina=str(pagina)
     pagina_inicial=str(pagina_inicial)
     url_siguiente=re.sub(pagina_inicial, pagina, url)
-    itemlist.append( Item(channel=__channel__, action="lista_categoria_2", title=">> siguientes [pagina "+pagina+"]",   url=url_siguiente, folder=True) )
+    itemlist.append( Item(channel=__channel__, action="lista_categoria_2", title=">> siguientes [página "+pagina+"]",   url=url_siguiente, folder=True) )
     itemlist.append( Item(channel=__channel__, action="mainlist_2", title="<< volver al inicio",  folder=True) )
     return itemlist
 
