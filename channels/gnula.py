@@ -81,12 +81,31 @@ def peliculas(item):
         plot = scrapertools.htmlclean(resto).strip()
         title = scrapedtitle+" "+plot
         fulltitle = title
+        contentTitle = title
         url = urlparse.urljoin(item.url,scrapedurl)
         thumbnail = urlparse.urljoin(item.url,scrapedthumbnail)
         if DEBUG: logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action='findvideos', title=title , fulltitle=fulltitle , url=url , thumbnail=thumbnail , plot=plot , viewmode="movie", extra=title) )
+        itemlist.append( Item(channel=__channel__, action='findvideos', title=title , fulltitle=fulltitle , url=url , thumbnail=thumbnail , plot=plot , viewmode="movie", extra=title, hasContentDetails="true", contentTitle=contentTitle, contentThumbnail=thumbnail) )
 
     return itemlist
+
+def findvideos(item):
+    logger.info("pelisalacarta.channels.zpeliculas gnula item="+item.tostring())
+
+    # Descarga la página para obtener el argumento
+    data = scrapertools.cachePage(item.url)
+    item.plot = scrapertools.find_single_match(data,'<div class="entry">(.*?)<div class="iframes">')
+    item.plot = scrapertools.htmlclean(item.plot).strip()
+    item.contentPlot = item.plot
+
+    newthumbnail = scrapertools.find_single_match(data,'<div class="entry"[^<]+<p align="center"><img alt="[^"]+" src="([^"]+)"')
+    if newthumbnail!="":
+        item.thumbnail = newthumbnail
+        item.contentThumbnail = newthumbnail
+
+    logger.info("[pelisalacarta.channels.zpeliculas findvideos plot="+item.plot)
+
+    return servertools.find_video_items(item=item,data=data)
 
 # Verificación automática de canales: Esta función debe devolver "True" si está ok el canal.
 def test():

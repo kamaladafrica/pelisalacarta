@@ -34,8 +34,8 @@ def run():
     logger.info("pelisalacarta.platformcode.launcher run")
 
     # Extract parameters from sys.argv
-    params, fanart, channel_name, title, fulltitle, url, thumbnail, plot, action, server, extra, subtitle, viewmode, category, show, password = extract_parameters()
-    logger.info("pelisalacarta.platformcode.launcher fanart=%s, channel_name=%s, title=%s, fulltitle=%s, url=%s, thumbnail=%s, plot=%s, action=%s, server=%s, extra=%s, subtitle=%s, category=%s, show=%s, password=%s" % (fanart, channel_name, title, fulltitle, url, thumbnail, plot, action, server, extra, subtitle, category, show, password))
+    params, fanart, channel_name, title, fulltitle, url, thumbnail, plot, action, server, extra, subtitle, viewmode, category, show, password, hasContentDetails, contentTitle, contentThumbnail, contentPlot = extract_parameters()
+    logger.info("pelisalacarta.platformcode.launcher fanart=%s, channel_name=%s, title=%s, fulltitle=%s, url=%s, thumbnail=%s, plot=%s, action=%s, server=%s, extra=%s, subtitle=%s, category=%s, show=%s, password=%s, hasContentDetails=%s contentTitle=%s contentThumbnail=%s contentPlot=%s" % (fanart, channel_name, title, fulltitle, url, thumbnail, plot, action, server, extra, subtitle, category, show, password,hasContentDetails, contentTitle, contentThumbnail, contentPlot))
 
     if config.get_setting('filter_servers') == 'true':
         server_white_list, server_black_list = set_server_list() 
@@ -158,7 +158,7 @@ def run():
             else:            
                 logger.info("pelisalacarta.platformcode.launcher multiplatform channel")
                 from core.item import Item
-                item = Item(channel=channel_name, title=title , fulltitle=fulltitle, url=url, thumbnail=thumbnail , plot=plot , server=server, category=category, extra=extra, subtitle=subtitle, viewmode=viewmode, show=show, password=password, fanart=fanart)
+                item = Item(channel=channel_name, title=title , fulltitle=fulltitle, url=url, thumbnail=thumbnail , plot=plot , server=server, category=category, extra=extra, subtitle=subtitle, viewmode=viewmode, show=show, password=password, fanart=fanart, hasContentDetails=hasContentDetails, contentTitle=contentTitle, contentThumbnail=contentThumbnail, contentPlot=contentPlot)
                 
                 '''
                 if item.subtitle!="":
@@ -184,14 +184,14 @@ def run():
                         itemlist = channel.play(item)
                         if len(itemlist)>0:
                             item = itemlist[0]
-                            xbmctools.play_video(channel=channel_name, server=item.server, url=item.url, category=item.category, title=item.title, thumbnail=item.thumbnail, plot=item.plot, extra=item.extra, subtitle=item.subtitle, video_password = item.password, fulltitle=item.fulltitle, Serie=item.show)
+                            xbmctools.play_video(channel=channel_name, server=item.server, url=item.url, category=item.category, title=item.title, thumbnail=item.thumbnail, plot=item.plot, extra=item.extra, subtitle=item.subtitle, video_password = item.password, fulltitle=item.fulltitle, Serie=item.show, hasContentDetails=item.hasContentDetails, contentTitle=item.contentTitle, contentThumbnail=item.contentThumbnail, contentPlot=item.contentPlot)
                         else:
                             import xbmcgui
                             ventana_error = xbmcgui.Dialog()
                             ok = ventana_error.ok ("plugin", "No hay nada para reproducir")
                     else:
                         logger.info("pelisalacarta.platformcode.launcher no channel 'play' method, executing core method")
-                        xbmctools.play_video(channel=channel_name, server=item.server, url=item.url, category=item.category, title=item.title, thumbnail=item.thumbnail, plot=item.plot, extra=item.extra, subtitle=item.subtitle, video_password = item.password, fulltitle=item.fulltitle, Serie=item.show)
+                        xbmctools.play_video(channel=channel_name, server=item.server, url=item.url, category=item.category, title=item.title, thumbnail=item.thumbnail, plot=item.plot, extra=item.extra, subtitle=item.subtitle, video_password = item.password, fulltitle=item.fulltitle, Serie=item.show, hasContentDetails=item.hasContentDetails, contentTitle=item.contentTitle, contentThumbnail=item.contentThumbnail, contentPlot=item.contentPlot)
 
                 elif action=="strm_detail" or action=="play_from_library":
                     logger.info("pelisalacarta.platformcode.launcher play_from_library")
@@ -527,6 +527,26 @@ def extract_parameters():
     else:
         password = ""
 
+    if params.has_key("hasContentDetails"):
+        hasContentDetails = urllib.unquote_plus( params.get("hasContentDetails") )
+    else:
+        hasContentDetails = ""
+
+    if params.has_key("contentTitle"):
+        contentTitle = urllib.unquote_plus( params.get("contentTitle") )
+    else:
+        contentTitle = ""
+
+    if params.has_key("contentThumbnail"):
+        contentThumbnail = urllib.unquote_plus( params.get("contentThumbnail") )
+    else:
+        contentThumbnail = ""
+
+    if params.has_key("contentPlot"):
+        contentPlot = urllib.unquote_plus( params.get("contentPlot") )
+    else:
+        contentPlot = ""
+
     if params.has_key("show"):
         show = urllib.unquote_plus( params.get("show") )
     else:
@@ -535,7 +555,7 @@ def extract_parameters():
         else:
             show = ""
 
-    return params, fanart, channel, title, fulltitle, url, thumbnail, plot, action, server, extra, subtitle, viewmode, category, show, password
+    return params, fanart, channel, title, fulltitle, url, thumbnail, plot, action, server, extra, subtitle, viewmode, category, show, password, hasContentDetails, contentTitle, contentThumbnail, contentPlot
 
 def episodio_ya_descargado(show_title,episode_title):
 

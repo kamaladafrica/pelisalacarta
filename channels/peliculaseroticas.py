@@ -79,7 +79,6 @@ def novedades(item):
             logger.info("scrapedthumbnail="+thumbnail)
                 
         #print etitletext, '(', elinktext, thumbnail,plot, ')'
-        #xbmctools.addnewfolder( __channel__ , "detail" , category ,  etitletext,  elinktext, thumbnail, plot )
         itemlist.append( Item(channel=__channel__, action="detail" , title=etitletext , url=elinktext, thumbnail=thumbnail, plot=plot))
         c +=1
     
@@ -92,7 +91,6 @@ def novedades(item):
         scrapedurl =  "http://www.blogger.com/feeds/6886871729120330561/posts/default?start-index="+str(start_index)+"&max-results=25"
         scrapedthumbnail = ""
         scrapedplot = ""
-        #xbmctools.addnewfolder( __channel__ , "novedades" , category , scrapedtitle , scrapedurl , scrapedthumbnail, scrapedplot )
         itemlist.append( Item(channel=__channel__, action="novedades", title=scrapedtitle , url=scrapedurl , folder=True) )
     
     return itemlist
@@ -134,8 +132,8 @@ def detail(item):
         scrapedtitle = titulo.strip().replace("(Megavideo)","").replace("+"," ") +" - "+video[0]
         server = video[2]
         scrapedurl = video[1]
-        #	xbmctools.addvideo( __channel__ , video[0], video[1] , category ,         #plot )
-        #xbmctools.addnewvideo( __channel__ , "play" , category , server , titulo.strip().replace("(Megavideo)","").replace("+"," ") +" - "+video[0]  , video[1] ,thumbnail, plot )
+        
+        
         itemlist.append( Item(channel=__channel__, action="play" , title=scrapedtitle , url=scrapedurl, thumbnail=item.thumbnail, plot=item.plot, server=server, folder=False))
         # ------------------------------------------------------------------------------------
 
@@ -155,7 +153,7 @@ def detail(item):
         if len(videosdirecto)>0:
             scrapedtitle = item.title +" - Directo con mystream.to"
             scrapedurl = videosdirecto[0]
-            #xbmctools.addnewvideo( __channel__ , "play" , category , "Directo" , title+" - Directo con mystream.to"  , videosdirecto[0] ,thumbnail, plot )
+            
             itemlist.append( Item(channel=__channel__, action="play" , title=scrapedtitle , url=scrapedurl, thumbnail=item.thumbnail, plot=item.plot, server="Directo", folder=False))
 
     patronvideos = "<div class='post-body entry-content'>.*?</span><a href=\"(.*?)\" target="
@@ -172,13 +170,13 @@ def detail(item):
             logger.info("[peliculaseroticas.py] mediaurl = "+ mediaurl)
             
             scrapedtitle = item.title +" - Video en movshare" 
-            # xbmctools.addnewvideo( __channel__ , "play" , category , "Directo" , title+" - Video en movshare"  , mediaurl ,thumbnail, plot )
+            
             itemlist.append( Item(channel=__channel__, action="play" , title=scrapedtitle , url=mediurl, thumbnail=item.thumbnail, plot=item.plot, server="Movshare", folder=False))
 
     patronvideos = 'file=(http://www.wildscreen.tv.*?)\?'
     matches = re.compile(patronvideos,re.DOTALL).findall(data)
     if len(matches)>0:
-        #xbmctools.addnewvideo( __channel__ , "play" , category , "Directo" , title+" - Video en wildscreen.tv"  , matches[0] ,thumbnail, plot )
+        
         scrapedtitle = item.title +" - Video en wildscreen.tv"
         itemlist.append( Item(channel=__channel__, action="play" , title=scrapedtitle , url=matches[0], thumbnail=item.thumbnail, plot=item.plot, server="Directo", folder=False))
 
@@ -190,7 +188,7 @@ def detail(item):
     videosdirecto = re.compile(patronvideos,re.DOTALL).findall(data)
     #logger.info("[peliculaseroticas.py] videosdirecto="+videosdirecto[0])
     if len(videosdirecto)>0:
-        #xbmctools.addnewvideo( __channel__ , "play" , category , "Directo" , title+" - Video en myspacecdn"  , videosdirecto[0] ,thumbnail, plot )
+        
         itemlist.append( Item(channel=__channel__, action="play" , title=scrapedtitle , url=scrapedurl, thumbnail=item.thumbnail, plot=item.plot, server=server, folder=False))
     # --------------------------------------------------------------------------------
 
@@ -203,7 +201,7 @@ def detail(item):
 
         logger.info("[peliculaseroticas.py] videocode = "+ matches[0])
         crapedtitle = item.title +" - Video en adnstream.tv"
-        #xbmctools.addnewvideo( __channel__ , "play" , category , "Directo" , title+" - Video en adnstream.tv"  , matchvideo[0] ,thumbnail, plot )
+        
         itemlist.append( Item(channel=__channel__, action="play" , title=scrapedtitle , url=matches[0], thumbnail=item.thumbnail, plot=item.plot, server="adnstream", folder=False))
 
     patronvideos = 'src="(http://vk[^\/]+\/video_ext.php[^"]+)"'

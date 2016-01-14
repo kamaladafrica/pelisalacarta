@@ -4,7 +4,7 @@
 # Utilidades para detectar vídeos de los diferentes conectores
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-#LvX Edited Patched
+
 import re,sys
 import urllib2
 
@@ -27,7 +27,10 @@ FREE_SERVERS.extend(['fileflyer','tunepk','powvideo','videomega','mega','vidspot
 FREE_SERVERS.extend(['videozed','documentary', 'firedrive','videott','gamovideo'])
 FREE_SERVERS.extend(['torrent','video4you','mailru','streaminto','backin','akstream', 'speedvideo', 'junkyvideo', 'rapidvideo', 'realvid', 'cloudzilla', 'fakingstv'])
 FREE_SERVERS.extend(['cumlouder','v4y','streamable','videostoring','youwatch'])
-FREE_SERVERS.extend(['vodlocker','thevideome','rocvideo','vidxtreme','vidtome','vidzi','letwatch','sendvid','vkpass','okru','cnubis','yourupload','mp4upload','turbovideos','vimpleru','spruto','openload'])
+FREE_SERVERS.extend(['vodlocker','thevideome','rocvideo','vidxtreme','vidtome','vidzi','letwatch','sendvid','vkpass','okru','cnubis','yourupload','mp4upload','turbovideos','vimpleru','spruto','openload','idowatch'])
+
+# Servidores no soportados, pero se ponen como free porque necesitas tener el patrón para poder informar
+FREE_SERVERS.extend(['cloudsix'])
 
 # Lista de TODOS los servidores que funcionan con cuenta premium individual
 PREMIUM_SERVERS = ['uploadedto','nowvideo','onefichier']
@@ -35,7 +38,7 @@ PREMIUM_SERVERS = ['uploadedto','nowvideo','onefichier']
 # Lista de TODOS los servidores soportados por Filenium
 #FILENIUM_SERVERS = jsontools.load_json(urllib2.urlopen('http://filenium.com/domainsxbmc'))
 FILENIUM_SERVERS = []
-FILENIUM_SERVERS.extend(["nitroflare","lolabits","1fichier","dl","dl","mega","allmyvideos","allmyvideos","cliphunter","dailymotion","divxstage","facebook","filefactory","filepost","filesmonster","firedrive","gigasize","justin","k2s","keep2share","keep2share","letitbit","mediafire","metacafe","mitele","moevideos","netload","nowvideo","nowvideo","nowvideo","oboom","played","pornhub","rapidgator","rg","shareflare","streamcloud","turbobit","uploadable","uploaded","uploaded","ul","userporn","videoweed","vidspot","vimeo","vk","xenubox","youngpornvideos","youtube","zippyshare","lix","safelinking","linkto","2shared","4shared","hugefiles","nowdownload","nowdownload","tusfiles","uploading","uptobox"]);
+FILENIUM_SERVERS.extend(["nitroflare","lolabits","1fichier","mega","allmyvideos","cliphunter","dailymotion","divxstage","facebook","filefactory","filepost","filesmonster","firedrive","gigasize","keep2share","keep2share","letitbit","mediafire","metacafe","mitele","moevideos","netload","nowvideo","oboom","played","pornhub","rapidgator","shareflare","streamcloud","turbobit","uploadable","uploaded","uploaded","userporn","videoweed","vidspot","vimeo","vk","xenubox","youngpornvideos","youtube","zippyshare","lix","safelinking","linkto","2shared","4shared","hugefiles","nowdownload","tusfiles","uploading","uptobox"]);
 
 # Lista de TODOS los servidores soportados por Real-Debrid
 REALDEBRID_SERVERS = ['one80upload','tenupload','onefichier','onehostclick','twoshared','fourfastfile','fourshared','abc','asfile','badongo','bitshare','cbscom','crocko','cwtv','dailymotion','dateito',
@@ -81,14 +84,14 @@ ENABLED_SERVERS.sort()
 
 # Función genérica para encontrar vídeos en una página
 def find_video_items(item=None, data=None, channel=""):
-    logger.info("[launcher.py] findvideos")
+    logger.info("[servertools.py] find_video_items")
 
     # Descarga la página
     if data is None:
         from core import scrapertools
         data = scrapertools.cache_page(item.url)
         #logger.info(data)
-    
+
     # Busca los enlaces a los videos
     from core.item import Item
     from servers import servertools
@@ -104,9 +107,37 @@ def find_video_items(item=None, data=None, channel=""):
         server = video[2]
         thumbnail = "http://media.tvalacarta.info/servers/server_"+server+".png"
         
-        itemlist.append( Item(channel=item.channel, title=scrapedtitle , action="play" , server=server, page=item.page, url=scrapedurl, thumbnail=thumbnail, show=item.show , plot=item.plot , folder=False) )
+        itemlist.append( Item(channel=item.channel, title=scrapedtitle , action="play" , server=server, url=scrapedurl, thumbnail=thumbnail, show=item.show , plot=item.plot , parentContent=item, folder=False) )
 
     return itemlist
+
+def guess_server_thumbnail(title):
+    logger.info("[servertools.py] guess_server_thumbnail title="+title)
+
+    lowcase_title = title.lower()
+
+    if "netu" in lowcase_title:
+        logger.info("[servertools.py] guess_server_thumbnail caso especial netutv")
+        return "http://media.tvalacarta.info/servers/server_netutv.png"
+
+    if "ul.to" in lowcase_title:
+        logger.info("[servertools.py] guess_server_thumbnail caso especial ul.to")
+        return "http://media.tvalacarta.info/servers/server_uploadedto.png"
+
+    if "waaw" in lowcase_title:
+        logger.info("[servertools.py] guess_server_thumbnail caso especial waaw")
+        return "http://media.tvalacarta.info/servers/server_waaw.png"
+
+    if "streamin" in lowcase_title:
+        logger.info("[servertools.py] guess_server_thumbnail caso especial streamin")
+        return "http://media.tvalacarta.info/servers/server_streaminto.png"
+
+    for serverid in ENABLED_SERVERS:
+        if serverid in lowcase_title:
+            logger.info("[servertools.py] guess_server_thumbnail encontrado "+serverid)
+            return "http://media.tvalacarta.info/servers/server_"+serverid+".png"
+
+    return ""
 
 def findvideosbyserver(data, serverid):
     logger.info("[servertools.py] findvideos")

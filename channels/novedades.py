@@ -52,9 +52,9 @@ def peliculas(item):
     item.url = "http://www.divxatope.com/categoria/peliculas-castellano"
     itemlist.extend( divxatope.lista(item) )
 
-    import gnula
-    item.url = "http://gnula.nu/peliculas-online/lista-de-peliculas-online-parte-1/"
-    itemlist.extend( gnula.peliculas(item)[:20] )
+    import yaske
+    item.url = "http://www.yaske.cc/"
+    itemlist.extend( yaske.peliculas(item) )
 
     sorted_itemlist = []
 

@@ -25,14 +25,7 @@ except:
 
 DEBUG = True
 
-# TODO: (3.2) Esto es un lío, hay que unificar
-def addnewfolder( canal , accion , category , title , url , thumbnail , plot , Serie="",totalItems=0,fanart="",context="", show="",fulltitle=""):
-    if fulltitle=="":
-        fulltitle=title
-    ok = addnewfolderextra( canal , accion , category , title , url , thumbnail , plot , "" ,Serie,totalItems,fanart,context,show, fulltitle)
-    return ok
-
-def addnewfolderextra( canal , accion , category , title , url , thumbnail , plot , extradata ,Serie="",totalItems=0,fanart="",context="",show="",fulltitle=""):
+def addnewfolderextra( canal , accion , category , title , url , thumbnail , plot , extradata ,Serie="",totalItems=0,fanart="",context="",show="",fulltitle="",hasContentDetails="false",contentTitle="",contentThumbnail="",contentPlot=""):
     if fulltitle=="":
         fulltitle=title
     
@@ -51,13 +44,16 @@ def addnewfolderextra( canal , accion , category , title , url , thumbnail , plo
         try:
             logger.info('[xbmctools.py] addnewfolderextra( "'+extradata+'","'+canal+'" , "'+accion+'" , "'+category+'" , "'+title+'" , "' + url + '" , "'+thumbnail+'" , "'+plot+'")" , "'+Serie+'")"')
         except:
-            logger.info('[xbmctools.py] addnewfolder(<unicode>)')
+            logger.info('[xbmctools.py] addnewfolderextra(<unicode>)')
+
+    logger.info("[xbmctools.py] addnewfolderextra hasContentDetails="+hasContentDetails+" contentTitle="+contentTitle+", contentThumbnail="+contentThumbnail+", contentPlot="+contentPlot)
+
     listitem = xbmcgui.ListItem( title, iconImage="DefaultFolder.png", thumbnailImage=thumbnail )
 
     listitem.setInfo( "video", { "Title" : title, "Plot" : plot, "Studio" : canal.capitalize() } )
-    
+
     set_infoLabels(listitem,plot) # Modificacion introducida por super_berny para añadir infoLabels al ListItem
-        
+
     if fanart!="":
         listitem.setProperty('fanart_image',fanart) 
         xbmcplugin.setPluginFanart(pluginhandle, fanart)
@@ -67,7 +63,8 @@ def addnewfolderextra( canal , accion , category , title , url , thumbnail , plo
         title = title.encode ("utf-8") #This only aplies to unicode strings. The rest stay as they are.
     except:
         pass
-    itemurl = '%s?fanart=%s&channel=%s&action=%s&category=%s&title=%s&fulltitle=%s&url=%s&thumbnail=%s&plot=%s&extradata=%s&Serie=%s&show=%s' % ( sys.argv[ 0 ] , fanart, canal , accion , urllib.quote_plus( category ) , urllib.quote_plus(title) , urllib.quote_plus(fulltitle) , urllib.quote_plus( url ) , urllib.quote_plus( thumbnail ) , urllib.quote_plus( plot ) , urllib.quote_plus( extradata ) , Serie, urllib.quote_plus( show ))
+
+    itemurl = '%s?fanart=%s&channel=%s&action=%s&category=%s&title=%s&fulltitle=%s&url=%s&thumbnail=%s&plot=%s&extradata=%s&Serie=%s&show=%s&hasContentDetails=%s&contentTitle=%s&contentThumbnail=%s&contentPlot=%s' % ( sys.argv[ 0 ] , fanart, canal , accion , urllib.quote_plus( category ) , urllib.quote_plus(title) , urllib.quote_plus(fulltitle) , urllib.quote_plus( url ) , urllib.quote_plus( thumbnail ) , urllib.quote_plus( plot ) , urllib.quote_plus( extradata ) , Serie, urllib.quote_plus( show ), urllib.quote_plus( hasContentDetails ), urllib.quote_plus( contentTitle ), urllib.quote_plus( contentThumbnail ), urllib.quote_plus( contentPlot ))
 
     if Serie != "": #Añadimos opción contextual para Añadir la serie completa a la biblioteca
         addSerieCommand = "XBMC.RunPlugin(%s?channel=%s&action=addlist2Library&category=%s&title=%s&fulltitle=%s&url=%s&extradata=%s&Serie=%s&show=%s)" % ( sys.argv[ 0 ] , canal , urllib.quote_plus( category ) , urllib.quote_plus( title ) , urllib.quote_plus(fulltitle) , urllib.quote_plus( url ) , urllib.quote_plus( extradata ) , Serie, urllib.quote_plus( show ) )
@@ -94,6 +91,8 @@ def addnewfolderextra( canal , accion , category , title , url , thumbnail , plo
         justinCommand = "XBMC.Container.Update(%s?channel=%s&action=%s&category=%s&title=%s&url=%s&thumbnail=%s&plot=%s)" % ( sys.argv[ 0 ] , "justintv" , "removeFromFavorites" , urllib.quote_plus( category ) , urllib.quote_plus( title ) , urllib.quote_plus( url ) , urllib.quote_plus( thumbnail ) , urllib.quote_plus( "" )  )
         contextCommands.append((config.get_localized_string(30407),justinCommand))
 
+    logger.info("[xbmctools.py] addnewfolderextra itemurl="+itemurl)
+
     if config.get_platform()=="boxee":
         #logger.info("Modo boxee")
         ok = xbmcplugin.addDirectoryItem( handle = pluginhandle, url = itemurl , listitem=listitem, isFolder=True)
@@ -108,7 +107,7 @@ def addnewfolderextra( canal , accion , category , title , url , thumbnail , plo
             ok = xbmcplugin.addDirectoryItem( handle = pluginhandle, url = itemurl , listitem=listitem, isFolder=True, totalItems=totalItems)
     return ok
 
-def addnewvideo( canal , accion , category , server , title , url , thumbnail, plot ,Serie="",duration="",fanart="",IsPlayable='false',context = "", subtitle="", viewmode="", totalItems = 0, show="", password="", extra="",fulltitle=""):
+def addnewvideo( canal , accion , category , server , title , url , thumbnail, plot ,Serie="",duration="",fanart="",IsPlayable='false',context = "", subtitle="", viewmode="", totalItems = 0, show="", password="", extra="",fulltitle="",hasContentDetails="false",contentTitle="",contentThumbnail="",contentPlot=""):
     contextCommands = []
     ok = False
     try:
@@ -122,11 +121,13 @@ def addnewvideo( canal , accion , category , server , title , url , thumbnail, p
             logger.info('[xbmctools.py] addnewvideo( "'+canal+'" , "'+accion+'" , "'+category+'" , "'+server+'" , "'+title+'" ("'+fulltitle+'") , "' + url + '" , "'+thumbnail+'" , "'+plot+'")" , "'+Serie+'")"')
         except:
             logger.info('[xbmctools.py] addnewvideo(<unicode>)')
-            
+
+    logger.info("[xbmctools.py] addnewvideo hasContentDetails="+hasContentDetails+" contentTitle="+contentTitle+", contentThumbnail="+contentThumbnail+", contentPlot="+contentPlot)
+
     icon_image = os.path.join( config.get_runtime_path() , "resources" , "images" , "servers" , server+".png" )
     if not os.path.exists(icon_image):
         icon_image = "DefaultVideo.png"
-     
+
     listitem = xbmcgui.ListItem( title, iconImage="DefaultVideo.png", thumbnailImage=thumbnail )
     listitem.setInfo( "video", { "Title" : title, "FileName" : title, "Plot" : plot, "Duration" : duration, "Studio" : canal.capitalize(), "Genre" : category } )
 
@@ -175,7 +176,7 @@ def addnewvideo( canal , accion , category , server , title , url , thumbnail, p
         pass
 
     # Lo restauro como estaba antes, la nueva formula no es compatible con Boxee    
-    itemurl = '%s?fanart=%s&channel=%s&action=%s&category=%s&title=%s&fulltitle=%s&url=%s&thumbnail=%s&plot=%s&server=%s&Serie=%s&subtitle=%s&viewmode=%s&show=%s&extradata=%s' % ( sys.argv[ 0 ] , fanart, canal , accion , urllib.quote_plus( category ) , urllib.quote_plus( title ) , urllib.quote_plus( fulltitle ) , urllib.quote_plus( url ) , urllib.quote_plus( thumbnail ) , urllib.quote_plus( plot ) , server , Serie , urllib.quote_plus(subtitle), urllib.quote_plus(viewmode), urllib.quote_plus( show ) , urllib.quote_plus(extra) )
+    itemurl = '%s?fanart=%s&channel=%s&action=%s&category=%s&title=%s&fulltitle=%s&url=%s&thumbnail=%s&plot=%s&server=%s&Serie=%s&subtitle=%s&viewmode=%s&show=%s&extradata=%s&hasContentDetails=%s&contentTitle=%s&contentThumbnail=%s&contentPlot=%s' % ( sys.argv[ 0 ] , fanart, canal , accion , urllib.quote_plus( category ) , urllib.quote_plus( title ) , urllib.quote_plus( fulltitle ) , urllib.quote_plus( url ) , urllib.quote_plus( thumbnail ) , urllib.quote_plus( plot ) , server , Serie , urllib.quote_plus(subtitle), urllib.quote_plus(viewmode), urllib.quote_plus( show ) , urllib.quote_plus(extra) , urllib.quote_plus( hasContentDetails ), urllib.quote_plus( contentTitle ), urllib.quote_plus( contentThumbnail ), urllib.quote_plus( contentPlot ))
 
     #logger.info("[xbmctools.py] itemurl=%s" % itemurl)
     if totalItems == 0:
@@ -184,27 +185,8 @@ def addnewvideo( canal , accion , category , server , title , url , thumbnail, p
         ok = xbmcplugin.addDirectoryItem( handle = pluginhandle, url=itemurl, listitem=listitem, isFolder=False, totalItems=totalItems)
     return ok
 
-def addthumbnailfolder( canal , scrapedtitle , scrapedurl , scrapedthumbnail , accion ):
-    logger.info('[xbmctools.py] addthumbnailfolder( "'+scrapedtitle+'" , "' + scrapedurl + '" , "'+scrapedthumbnail+'" , "'+accion+'")"')
-    listitem = xbmcgui.ListItem( scrapedtitle, iconImage="DefaultFolder.png", thumbnailImage=scrapedthumbnail )
-    itemurl = '%s?channel=%s&action=%s&category=%s&url=%s&title=%s&thumbnail=%s' % ( sys.argv[ 0 ] , canal , accion , urllib.quote_plus( scrapedtitle ) , urllib.quote_plus( scrapedurl ) , urllib.quote_plus( scrapedtitle ) , urllib.quote_plus( scrapedthumbnail ) )
-    xbmcplugin.addDirectoryItem( handle = pluginhandle, url = itemurl , listitem=listitem, isFolder=True)
-
-def addfolder( canal , nombre , url , accion ):
-    logger.info('[xbmctools.py] addfolder( "'+nombre+'" , "' + url + '" , "'+accion+'")"')
-    listitem = xbmcgui.ListItem( nombre , iconImage="DefaultFolder.png")
-    itemurl = '%s?channel=%s&action=%s&category=%s&url=%s' % ( sys.argv[ 0 ] , canal , accion , urllib.quote_plus(nombre) , urllib.quote_plus(url) )
-    xbmcplugin.addDirectoryItem( handle = pluginhandle, url = itemurl , listitem=listitem, isFolder=True)
-
-def addvideo( canal , nombre , url , category , server , Serie=""):
-    logger.info('[xbmctools.py] addvideo( "'+nombre+'" , "' + url + '" , "'+server+ '" , "'+Serie+'")"')
-    listitem = xbmcgui.ListItem( nombre, iconImage="DefaultVideo.png" )
-    listitem.setInfo( "video", { "Title" : nombre, "Plot" : nombre } )
-    itemurl = '%s?channel=%s&action=play&category=%s&url=%s&server=%s&title=%s&Serie=%s' % ( sys.argv[ 0 ] , canal , category , urllib.quote_plus(url) , server , urllib.quote_plus( nombre ) , Serie)
-    xbmcplugin.addDirectoryItem( handle=pluginhandle, url=itemurl, listitem=listitem, isFolder=False)
-
 # FIXME: ¿Por qué no pasar el item en lugar de todos los parámetros?
-def play_video(channel="",server="",url="",category="",title="", thumbnail="",plot="",extra="",desdefavoritos=False,desdedescargados=False,desderrordescargas=False,strmfile=False,Serie="",subtitle="", video_password="",fulltitle=""):
+def play_video(channel="",server="",url="",category="",title="", thumbnail="",plot="",extra="",desdefavoritos=False,desdedescargados=False,desderrordescargas=False,strmfile=False,Serie="",subtitle="", video_password="",fulltitle="", hasContentDetails="", contentTitle="", contentThumbnail="", contentPlot=""):
     from servers import servertools
     import sys
     import xbmcgui,xbmc
@@ -212,6 +194,8 @@ def play_video(channel="",server="",url="",category="",title="", thumbnail="",pl
         logger.info("[xbmctools.py] play_video(channel=%s, server=%s, url=%s, category=%s, title=%s, thumbnail=%s, plot=%s, desdefavoritos=%s, desdedescargados=%s, desderrordescargas=%s, strmfile=%s, Serie=%s, subtitle=%s" % (channel,server,url,category,title,thumbnail,plot,desdefavoritos,desdedescargados,desderrordescargas,strmfile,Serie,subtitle))
     except:
         pass
+
+    logger.info("[xbmctools.py] play_video hasContentDetails="+hasContentDetails+" contentTitle="+contentTitle+", contentThumbnail="+contentThumbnail+", contentPlot="+contentPlot)
 
     try:
         server = server.lower()
@@ -386,16 +370,21 @@ def play_video(channel="",server="",url="",category="",title="", thumbnail="",pl
 
     # Descargar
     elif opciones[seleccion]==config.get_localized_string(30153): # "Descargar"
+
+        download_title = fulltitle
+        if hasContentDetails=="true":
+            download_title = contentTitle
+
         import xbmc
         # El vídeo de más calidad es el último
         mediaurl = video_urls[len(video_urls)-1][1]
 
         from core import downloadtools
-        keyboard = xbmc.Keyboard(fulltitle)
+        keyboard = xbmc.Keyboard(download_title)
         keyboard.doModal()
         if (keyboard.isConfirmed()):
-            title = keyboard.getText()
-            devuelve = downloadtools.downloadbest(video_urls,title)
+            download_title = keyboard.getText()
+            devuelve = downloadtools.downloadbest(video_urls,download_title)
             
             if devuelve==0:
                 advertencia = xbmcgui.Dialog()
@@ -440,11 +429,20 @@ def play_video(channel="",server="",url="",category="",title="", thumbnail="",pl
         from core import favoritos
         from core import downloadtools
 
-        keyboard = xbmc.Keyboard(downloadtools.limpia_nombre_excepto_1(fulltitle)+" ["+channel+"]")
+        download_title = fulltitle
+        download_thumbnail = thumbnail
+        download_plot = plot
+
+        if hasContentDetails=="true":
+            download_title = contentTitle
+            download_thumbnail = contentThumbnail
+            download_plot = contentPlot
+
+        keyboard = xbmc.Keyboard(downloadtools.limpia_nombre_excepto_1(download_title)+" ["+channel+"]")
         keyboard.doModal()
         if keyboard.isConfirmed():
             title = keyboard.getText()
-            favoritos.savebookmark(titulo=title,url=url,thumbnail=thumbnail,server=server,plot=plot,fulltitle=title)
+            favoritos.savebookmark(titulo=download_title,url=url,thumbnail=download_thumbnail,server=server,plot=download_plot,fulltitle=title)
             advertencia = xbmcgui.Dialog()
             resultado = advertencia.ok(config.get_localized_string(30102) , title , config.get_localized_string(30108)) # 'se ha añadido a favoritos'
         return
@@ -464,14 +462,24 @@ def play_video(channel="",server="",url="",category="",title="", thumbnail="",pl
         from core import descargas
         from core import downloadtools
 
-        keyboard = xbmc.Keyboard(downloadtools.limpia_nombre_excepto_1(fulltitle))
+        download_title = fulltitle
+        download_thumbnail = thumbnail
+        download_plot = plot
+
+        if hasContentDetails=="true":
+            download_title = contentTitle
+            download_thumbnail = contentThumbnail
+            download_plot = contentPlot
+
+        keyboard = xbmc.Keyboard(downloadtools.limpia_nombre_excepto_1(download_title))
         keyboard.doModal()
         if keyboard.isConfirmed():
-            title = keyboard.getText()
-            descargas.savebookmark(titulo=title,url=url,thumbnail=thumbnail,server=server,plot=plot,fulltitle=title)
-            
+            download_title = keyboard.getText()
+
+            descargas.savebookmark(titulo=download_title,url=url,thumbnail=download_thumbnail,server=server,plot=download_plot,fulltitle=download_title)
+
             advertencia = xbmcgui.Dialog()
-            resultado = advertencia.ok(config.get_localized_string(30101) , title , config.get_localized_string(30109)) # 'se ha añadido a la lista de descargas'
+            resultado = advertencia.ok(config.get_localized_string(30101) , download_title , config.get_localized_string(30109)) # 'se ha añadido a la lista de descargas'
         return
 
     elif opciones[seleccion]==config.get_localized_string(30161): #"Añadir a Biblioteca":  # Library
@@ -514,11 +522,22 @@ def play_video(channel="",server="",url="",category="",title="", thumbnail="",pl
         xlistitem = getLibraryInfo(mediaurl)
     else:
         logger.info("b4")
+
+        play_title = fulltitle
+        play_thumbnail = thumbnail
+        play_plot = plot
+
+        if hasContentDetails=="true":
+            play_title = contentTitle
+            play_thumbnail = contentThumbnail
+            play_plot = contentPlot
+
         try:
-            xlistitem = xbmcgui.ListItem( title, iconImage="DefaultVideo.png", thumbnailImage=thumbnail, path=mediaurl)
+            xlistitem = xbmcgui.ListItem( play_title, iconImage="DefaultVideo.png", thumbnailImage=play_thumbnail, path=mediaurl)
         except:
-            xlistitem = xbmcgui.ListItem( title, iconImage="DefaultVideo.png", thumbnailImage=thumbnail)
-        xlistitem.setInfo( "video", { "Title": title, "Plot" : plot , "Studio" : channel , "Genre" : category } )
+            xlistitem = xbmcgui.ListItem( play_title, iconImage="DefaultVideo.png", thumbnailImage=play_thumbnail)
+        
+        xlistitem.setInfo( "video", { "Title": play_title, "Plot" : play_plot , "Studio" : channel , "Genre" : category } )
         
         #set_infoLabels(listitem,plot) # Modificacion introducida por super_berny para añadir infoLabels al ListItem
     
@@ -537,7 +556,6 @@ def play_video(channel="",server="",url="",category="",title="", thumbnail="",pl
         
             from core import scrapertools
             data = scrapertools.cache_page(subtitle)
-            #print data
             fichero = open(ficherosubtitulo,"w")
             fichero.write(data)
             fichero.close()
@@ -835,7 +853,8 @@ def renderItems(itemlist, params, url, category, isPlayable='false'):
     
     if itemlist <> None:
         for item in itemlist:
-            #logger.info("viewmode="+item.viewmode)
+            logger.info("item="+item.tostring())
+            
             if item.category == "":
                 item.category = category
                 
@@ -851,20 +870,16 @@ def renderItems(itemlist, params, url, category, isPlayable='false'):
                 else:
                     item.fanart = os.path.join(config.get_runtime_path(),"fanart.jpg")
 
-            if item.folder :
-                if len(item.extra)>0:
-                    addnewfolderextra( item.channel , item.action , item.category , item.title , item.url , item.thumbnail , item.plot , extradata = item.extra , totalItems = len(itemlist), fanart=item.fanart , context=item.context, show=item.show, fulltitle=item.fulltitle )
-                else:
-                    addnewfolder( item.channel , item.action , item.category , item.title , item.url , item.thumbnail , item.plot , totalItems = len(itemlist) , fanart = item.fanart, context = item.context, show=item.show, fulltitle=item.fulltitle )
+            if item.folder:
+                addnewfolderextra( item.channel , item.action , item.category , item.title , item.url , item.thumbnail , item.plot , extradata = item.extra , totalItems = len(itemlist), fanart=item.fanart , context=item.context, show=item.show, fulltitle=item.fulltitle, hasContentDetails=item.hasContentDetails, contentTitle=item.contentTitle, contentThumbnail=item.contentThumbnail, contentPlot=item.contentPlot )
             else:
                 if config.get_setting("player_mode")=="1": # SetResolvedUrl debe ser siempre "isPlayable = true"
                     isPlayable = "true"
-                
 
                 if item.duration:
-                    addnewvideo( item.channel , item.action , item.category , item.server, item.title , item.url , item.thumbnail , item.plot , "" ,  duration = item.duration , fanart = item.fanart, IsPlayable=isPlayable,context = item.context , subtitle=item.subtitle, totalItems = len(itemlist), show=item.show, password = item.password, extra = item.extra, fulltitle=item.fulltitle )
-                else:    
-                    addnewvideo( item.channel , item.action , item.category , item.server, item.title , item.url , item.thumbnail , item.plot, fanart = item.fanart, IsPlayable=isPlayable , context = item.context , subtitle = item.subtitle , totalItems = len(itemlist), show=item.show , password = item.password , extra=item.extra, fulltitle=item.fulltitle )
+                    addnewvideo( item.channel , item.action , item.category , item.server, item.title , item.url , item.thumbnail , item.plot , "" ,  duration = item.duration , fanart = item.fanart, IsPlayable=isPlayable,context = item.context , subtitle=item.subtitle, totalItems = len(itemlist), show=item.show, password = item.password, extra = item.extra, fulltitle=item.fulltitle, hasContentDetails=item.hasContentDetails, contentTitle=item.contentTitle, contentThumbnail=item.contentThumbnail, contentPlot=item.contentPlot )
+                else:
+                    addnewvideo( item.channel , item.action , item.category , item.server, item.title , item.url , item.thumbnail , item.plot, fanart = item.fanart, IsPlayable=isPlayable , context = item.context , subtitle = item.subtitle , totalItems = len(itemlist), show=item.show , password = item.password , extra=item.extra, fulltitle=item.fulltitle, hasContentDetails=item.hasContentDetails, contentTitle=item.contentTitle, contentThumbnail=item.contentThumbnail, contentPlot=item.contentPlot )
             
             if item.viewmode!="list":
                 viewmode = item.viewmode
