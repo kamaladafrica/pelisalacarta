@@ -12,9 +12,9 @@
         "fanart": "", 
         "bannermenu": "http://media.tvalacarta.info/pelisalacarta/bannermenu/animeflv.png", 
         "update_url": "https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/animeflv.xml",
-        "version": "4",
-        "changes": "añadido mejoras para tratk.tv, si da error al mostrar los resultados, etc", 
-        "date": "14/11/2015"
+        "version": "5",
+        "changes": "se elimina referencia a requests por problemas con otras plataformas, anticloudflare", 
+        "date": "10/01/2016"
    },
    "settings": {
         "include_in_global_search": true
