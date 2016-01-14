@@ -5,7 +5,7 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 # ------------------------------------------------------------
 
-import re, urllib2, cookielib, xbmc, os
+import re, urllib2, cookielib, os
 from core import scrapertools
 from core import logger
 from core import config
@@ -25,8 +25,8 @@ Request = urllib2.Request
 
 
 if cj != None:
-    if os.path.isfile(xbmc.translatePath(ficherocookies)):
-        cj.load(xbmc.translatePath(ficherocookies))
+    if os.path.isfile(ficherocookies):
+        cj.load(ficherocookies)
     opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
 else:
     opener = urllib2.build_opener()
