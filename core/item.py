@@ -51,13 +51,20 @@ class Item(object):
         kwargs.setdefault("contentEpisodeNumber","")
         kwargs.setdefault("contentEpisodeTitle","")
 
-        self.__dict__.update(kwargs)
-        self.__dict__ = self.toutf8(self.__dict__)
-
         if kwargs.has_key("parentContent") and kwargs["parentContent"] is not None:
 
             print "Tiene parentContent: "+repr(kwargs["parentContent"])
             parentContent = kwargs["parentContent"]
+            # Removed from dictionary, should not be included
+            kwargs.pop("parentContent",None)
+
+        else:
+            parentContent = None
+
+        self.__dict__.update(kwargs)
+        self.__dict__ = self.toutf8(self.__dict__)
+
+        if parentContent is not None:
             self.contentChannel = parentContent.contentChannel;
             self.contentTitle = parentContent.contentTitle;
             self.contentThumbnail = parentContent.contentThumbnail;
