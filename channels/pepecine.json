@@ -5,9 +5,9 @@
         "category": [
 			"movie", 
             "serie"
-			], 
-        "changes": "Adaptacion por cambios en la web", 
-        "date": "19/12/2015", 
+		], 
+        "changes": "Corregido el idioma en la seccion Ultimos capitulos", 
+        "date": "14/01/16", 
         "fanart": "https://d12.usercdn.com/i/02278/u875vjx9c0xs.png", 
         "id": "pepecine", 
         "include_in_global_search": false, 
@@ -15,7 +15,7 @@
         "name": "Pepecine", 
         "thumbnail": "https://d12.usercdn.com/i/02278/nwm6todp6yyk.png", 
         "update_url": "", 
-        "version": "1.2"
+        "version": "1.3"
     }, 
     "settings": {}
 }
