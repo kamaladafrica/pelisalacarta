@@ -131,7 +131,9 @@ def listado(item):
             infoLabels['episode']=i['episode'].zfill(2)
             item.extra=infoLabels["season"] + "x" + infoLabels["episode"]
             infoLabels['tvshowtitle']= i["title"]
-            title='[COLOR 0xFF994D00]'  + i["title"] + '[/COLOR] [COLOR 0xFFFFCE9C]'  + item.extra + '[/COLOR] [COLOR 0xFFFFE6CC](' + i['label'] + ')[/COLOR]'
+            flag= scrapertools.find_single_match(i["label"],'(\s*\<img src=.*\>)')
+            idioma=i["label"].replace(flag,"")
+            title='[COLOR 0xFF994D00]'  + i["title"] + '[/COLOR] [COLOR 0xFFFFCE9C]'  + item.extra + '[/COLOR] [COLOR 0xFFFFE6CC](' + idioma + ')[/COLOR]'
             url= urlparse.urljoin(__url_base__,"series-online/" + str(i["id"])) #+"-"+i["title"]).lower().replace(" ","-"))) 
         
         if i.has_key("poster") and i["poster"]: 

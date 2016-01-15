@@ -424,7 +424,7 @@ def findvideos(item):
                     devuelve= server_module.find_videos(enlace)
                     if devuelve:
                         enlace=devuelve[0][1]
-                        itemlist.append( Item(fanart=item.fanart, channel=__channel__, action="play", server=servidor, title=titulo , fulltitle = item.title, url=enlace , thumbnail=logo , plot=item.plot, folder=False) )
+                        itemlist.append( Item(fanart=item.fanart, channel=__channel__, action="play", server=servidor, title=parte_titulo , fulltitle = item.title, url=enlace , thumbnail=logo , plot=item.plot, folder=False) )
                 except:
                     pass
     return itemlist
