@@ -28,11 +28,9 @@ def isGeneric():
     return True
 
 def mainlist(item):
-    logger.info("[submityourflicks.py] mainlist")
+    logger.info("pelisalacarta.channels.submityourflicks mainlist")
     itemlist = []
     itemlist.append( Item(channel=__channel__, action="videos"    , title="Útimos videos" , url="http://www.submityourflicks.com/"))
-    itemlist.append( Item(channel=__channel__, action="videos"    , title="Más vistos" , url="http://www.submityourflicks.com/most-viewed/1.html"))
-    itemlist.append( Item(channel=__channel__, action="videos"    , title="Más votados" , url="http://www.submityourflicks.com/top-rated/1.html"))
     itemlist.append( Item(channel=__channel__, action="search"    , title="Buscar", url="http://www.submityourflicks.com/index.php?mode=search&q=%s&submit=Search"))
     
     return itemlist
@@ -40,7 +38,7 @@ def mainlist(item):
 # REALMENTE PASA LA DIRECCION DE BUSQUEDA
 
 def search(item,texto):
-    logger.info("[submityourflicks.py] search")
+    logger.info("pelisalacarta.channels.submityourflicks search")
     tecleado = texto.replace( " ", "+" )
     item.url = item.url % tecleado
     return videos(item)
@@ -48,80 +46,51 @@ def search(item,texto):
 # SECCION ENCARGADA DE BUSCAR
 
 def videos(item):
-    logger.info("[submityourflicks.py] videos")
-    # <div id="movies" style="width: 100%; ">
-    data = scrapertools.downloadpageGzip(item.url)
+    logger.info("pelisalacarta.channels.submityourflicks videos")
     itemlist = [] 
-    matches = re.compile(r"""<div class='content_item'>.*?</span>.*?<br style='clear: both;' />.*?</div>""",re.DOTALL).findall(data)
-    for match in matches:
-        datos = re.compile(r"""<div class='content_item'>.*?</div>""", re.S).findall(match)
-        for vid in datos:
-            aRef = re.compile(r"""<a href="([^"]+)"><img src="([^"]+)" alt="([^"]+)" title="([^"]+)" name="([^"]+)" border="1" id='([^"]+)' width="170" height="130" onmouseover="([^"]+)" onmouseout="([^"]+)" /></a>""", re.S).findall(vid)
-            aTime= re.compile(r"""<span class='l5'>([^"]+)Min<br />.*?</span>""", re.S).findall(vid)
-            if len(aTime) > 0:
-                cTime= aTime[0].replace("\r\n","")
-                cTime= cTime.replace(" ","")
-            else:
-                cTime=""
-                
-            aPosted = re.compile(r"""<span class='l5'>.*?Posted: ([^"]+)<br /></span>""", re.S).findall(vid)
-            if len(aPosted) > 0:
-                cPosted = aPosted[0].replace("\r\n","")
-                cPosted = cPosted.replace(" ","")
-            else:
-                cPosted = ""
-                
-            video = aRef[0]
-            try:
-                scrapedtitle = unicode( video[2], "utf-8" ).encode("iso-8859-1")
-                scrapedtitle = scrapedtitle+"("+cTime+")["+cPosted+"]"
-            except:
-                scrapedtitle = video[2]
-            scrapedurl =  urlparse.urljoin( "http://www.submityourflicks.com/", video[0] )
-            scrapedthumbnail = urlparse.urljoin( "http://www.submityourflicks.com/", video[1] )
-            scrapedplot = ""
-            # Depuracion
-            if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")            
-            itemlist.append( Item(channel=__channel__, action="play" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot, show=scrapedtitle, folder=False))
 
-    #Paginador
-    print "paginador"
-    matches = re.compile('<a href="([^"]+)">Next</a>', re.DOTALL).findall(data)
-    if len(matches)>0:
-        scrapedurl =  urlparse.urljoin( "http://www.submityourflicks.com/", matches[0] )
-        print scrapedurl
-        paginador = Item(channel=__channel__, action="videos" , title="!Página siguiente" , url=scrapedurl, thumbnail="", plot="", extra = "" , show=item.show)
-    else:
-        paginador = None
-    
-    if paginador is not None:
-        itemlist.append( paginador )
+    '''
+    <div class="item-block item-normal col" >
+    <div class="inner-block">
+    <a href="http://www.submityourflicks.com/1846642-my-hot-wife-bending-over-and-getting-her-cunt-reamed.html" title="My hot wife bending over and getting her cunt reamed..">
+    <span class="image">
+    <script type='text/javascript'>stat['56982c566d05c'] = 0;
+    pic['56982c566d05c'] = new Array();
+    pics['56982c566d05c'] = new Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1);</script>
+    <img src="
+    '''
+
+    data = scrapertools.downloadpageGzip(item.url)
+    patron  = '<div class="item-block[^<]+'
+    patron += '<div class="inner-block[^<]+'
+    patron += '<a href="([^"]+)" title="([^"]+)"[^<]+'
+    patron += '<span class="image".*?'
+    patron += '<img src="([^"]+)"'
+    matches = re.compile(patron,re.DOTALL).findall(data)
+
+    for scrapedurl,scrapedtitle,scrapedthumbnail in matches:
+
+        title = scrapedtitle
+        url = scrapedurl
+        thumbnail = scrapedthumbnail.replace(" ","%20")
+        plot = ""
+
+        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")            
+        itemlist.append( Item(channel=__channel__, action="play" , title=title , url=url, thumbnail=thumbnail, plot=plot, folder=False, viewmode="movie"))
+
+    next_page_url = scrapertools.find_single_match(data,"<a href='([^']+)' class=\"next\">NEXT</a>")
+    if next_page_url!="":
+        itemlist.append( Item(channel=__channel__, action="videos", title=">> Página siguiente" , url=next_page_url, folder=True) )
 
     return itemlist
 
-# SECCION ENCARGADA DE VOLCAR EL LISTADO DE CATEGORIAS CON EL LINK CORRESPONDIENTE A CADA PAGINA
-    
-def listcategorias(item):
-    logger.info("[xhamster.py] listcategorias")
-    itemlist = []
-    return itemlist
-    
-
-# OBTIENE LOS ENLACES SEGUN LOS PATRONES DEL VIDEO Y LOS UNE CON EL SERVIDOR
 def play(item):
-    logger.info("[xhamster.py] play")
-    data = scrapertools.downloadpage(item.url)
+    logger.info("pelisalacarta.channels.submityourflicks play")
+
+    data = scrapertools.cache_page(item.url)
+    media_url = scrapertools.find_single_match(data,"url\:\s*'([^']+)'")
     itemlist = []
-    matches = re.compile('so.addVariable\("file", "([^"]+)"\);', re.DOTALL).findall(data)
-    if len(matches)>0:
-        parsed_url = urllib.unquote_plus(matches[0])
-        print parsed_url
-        paginador = Item(channel=__channel__, action="play" , title=item.title, fulltitle=item.fulltitle , url=parsed_url, thumbnail=item.thumbnail, plot=item.plot, show=item.title, server="directo", folder=False)
-    else:
-        paginador = None
-    
-    if paginador is not None:
-        itemlist.append( paginador )
+    itemlist.append(Item(channel=__channel__, action="play" , title=item.title, fulltitle=item.fulltitle , url=media_url, thumbnail=item.thumbnail, plot=item.plot, show=item.title, server="directo", folder=False))
 
     return itemlist
 

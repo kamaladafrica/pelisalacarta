@@ -68,7 +68,7 @@ def search(item,texto):
         return []
 
 def peliculas(item):
-    logger.info("pelisalacarta.yaske listado")
+    logger.info("pelisalacarta.yaske peliculas")
 
     data = scrapertools.cache_page(item.url,headers=HEADER)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)

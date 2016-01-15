@@ -175,7 +175,7 @@ def findvideos(item):
         scrapedurl = video[1]
         server = video[2]
         
-        itemlist.append( Item(channel=item.channel, title=scrapedtitle , action="play" , server=server, page=item.page, url=scrapedurl, thumbnail=item.thumbnail, show=item.show , plot=item.plot , folder=False) )
+        itemlist.append( Item(channel=item.channel, title=scrapedtitle , action="play" , server=server, url=scrapedurl, thumbnail=item.thumbnail, show=item.show , plot=item.plot , folder=False) )
 
     return itemlist
 

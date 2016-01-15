@@ -106,10 +106,11 @@ def lista(item):
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
-        if "divxatope.com/serie/" in url:
+        if "divxatope.com/serie" in url:
             itemlist.append( Item(channel=__channel__, action="episodios", title=title , fulltitle = title, url=url , thumbnail=thumbnail , plot=plot , folder=True) )
         else:
-            itemlist.append( Item(channel=__channel__, action="findvideos", title=title , fulltitle = title, url=url , thumbnail=thumbnail , plot=plot , folder=True) )
+            contentTitle = scrapertools.htmlclean(title.strip())
+            itemlist.append( Item(channel=__channel__, action="findvideos", title=title , fulltitle = title, url=url , thumbnail=thumbnail , plot=plot , folder=True, hasContentDetails="true", contentTitle=contentTitle, contentThumbnail=thumbnail) )
 
     next_page_url = scrapertools.find_single_match(data,'<li><a href="([^"]+)">Next</a></li>')
     if next_page_url!="":
@@ -180,11 +181,15 @@ def findvideos(item):
     # Descarga la pagina
     data = scrapertools.cachePage(item.url)
 
+    item.plot = scrapertools.find_single_match(data,'<div class="post-entry" style="height:300px;">(.*?)</div>')
+    item.plot = scrapertools.htmlclean(item.plot).strip()
+    item.contentPlot = item.plot
+
     link = scrapertools.find_single_match(data,'href="http://tumejorserie.*?link=([^"]+)"')
     if link!="":
         link = "http://www.divxatope.com/"+link
         logger.info("pelisalacarta.channels.divxatope torrent="+link)
-        itemlist.append( Item(channel=__channel__, action="play", server="torrent", title="Vídeo en torrent" , fulltitle = item.title, url=link , thumbnail=item.thumbnail , plot=item.plot , folder=False) )
+        itemlist.append( Item(channel=__channel__, action="play", server="torrent", title="Vídeo en torrent" , fulltitle = item.title, url=link , thumbnail=servertools.guess_server_thumbnail("torrent") , plot=item.plot , folder=False, parentContent=item) )
 
     patron  = "<div class=\"box1\"[^<]+<img[^<]+</div[^<]+"
     patron += '<div class="box2">([^<]+)</div[^<]+'
@@ -203,10 +208,10 @@ def findvideos(item):
         if comentarios.strip()!="":
             title = title + " ("+comentarios.strip()+")"
         url = urlparse.urljoin(item.url,scrapedurl)
-        thumbnail = ""
+        thumbnail = servertools.guess_server_thumbnail(title)
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        new_item = Item(channel=__channel__, action="extract_url", title=title , fulltitle = title, url=url , thumbnail=thumbnail , plot=plot , folder=True)
+        new_item = Item(channel=__channel__, action="extract_url", title=title , fulltitle = title, url=url , thumbnail=thumbnail , plot=plot , folder=True, parentContent=item)
         if comentarios.startswith("Ver en"):
             itemlist_ver.append( new_item)
         else:
@@ -219,7 +224,7 @@ def findvideos(item):
         itemlist.append(new_item)
 
     if len(itemlist)==0:
-        itemlist = servertools.find_video_items(data=data)
+        itemlist = servertools.find_video_items(item=item,data=data)
         for videoitem in itemlist:
             videoitem.title = "Enlace encontrado en "+videoitem.server+" ("+scrapertools.get_filename_from_url(videoitem.url)+")"
             videoitem.fulltitle = item.fulltitle

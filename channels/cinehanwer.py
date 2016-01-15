@@ -253,6 +253,7 @@ def peliculas(item):
         title = scrapedtitle.decode('iso-8859-1').encode('utf8')
         thumbnail = urlparse.urljoin(item.url,scrapedthumbnail)
         plot = scrapertools.htmlclean(scrapedplot)
+        plot = re.compile("\s+",re.DOTALL).sub(" ",plot)
         url = urlparse.urljoin(item.url,scrapedurl)
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
         itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))

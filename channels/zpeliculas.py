@@ -265,6 +265,6 @@ def findvideos(item):
     data = scrapertools.cachePage(item.url)
     item.plot = scrapertools.find_single_match(data,'<div class="contenttext">([^<]+)<').strip()
     item.contentPlot = item.plot
-    logger.info("[pelisalacarta.channels.zpeliculas findvideos plot="+item.plot)
+    logger.info("pelisalacarta.channels.zpeliculas findvideos plot="+item.plot)
 
     return servertools.find_video_items(item=item,data=data)

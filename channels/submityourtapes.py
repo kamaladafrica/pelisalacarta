@@ -28,7 +28,7 @@ def isGeneric():
     return True
 
 def mainlist(item):
-    logger.info("[submityourtapes.py] mainlist")
+    logger.info("pelisalacarta.channels.submityourtapes mainlist")
     itemlist = []
     itemlist.append( Item(channel=__channel__, action="videos"    , title="Útimos videos" , url="http://www.submityourtapes.com/"))
     itemlist.append( Item(channel=__channel__, action="videos"    , title="Más vistos" , url="http://www.submityourtapes.com/most-viewed/1.html"))
@@ -40,7 +40,7 @@ def mainlist(item):
 # REALMENTE PASA LA DIRECCION DE BUSQUEDA
 
 def search(item,texto):
-    logger.info("[submityourtapes.py] search")
+    logger.info("pelisalacarta.channels.submityourtapes search")
     tecleado = texto.replace( " ", "+" )
     item.url = item.url % tecleado
     return videos(item)
@@ -48,7 +48,7 @@ def search(item,texto):
 # SECCION ENCARGADA DE BUSCAR
 
 def videos(item):
-    logger.info("[submityourtapes.py] videos")
+    logger.info("pelisalacarta.channels.submityourtapes videos")
 
     itemlist = [] 
     '''
@@ -67,7 +67,7 @@ def videos(item):
         plot = ""
         # Depuracion
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")            
-        itemlist.append( Item(channel=__channel__, action="play" , title=title , url=url, thumbnail=thumbnail, plot=plot, folder=False))
+        itemlist.append( Item(channel=__channel__, action="play" , title=title , url=url, thumbnail=thumbnail, plot=plot, folder=False, viewmode="movie"))
 
     # Paginador
     try:
@@ -82,28 +82,18 @@ def videos(item):
 # SECCION ENCARGADA DE VOLCAR EL LISTADO DE CATEGORIAS CON EL LINK CORRESPONDIENTE A CADA PAGINA
     
 def listcategorias(item):
-    logger.info("[submityourtapes.py] listcategorias")
+    logger.info("pelisalacarta.channels.submityourtapes listcategorias")
     itemlist = []
     return itemlist
     
 
-# OBTIENE LOS ENLACES SEGUN LOS PATRONES DEL VIDEO Y LOS UNE CON EL SERVIDOR
 def play(item):
-    logger.info("[submityourtapes.py] play")
-    # <div id="movies" style="width: 100%; ">
-    data = scrapertools.downloadpage(item.url)
-    
+    logger.info("pelisalacarta.channels.submityourtapes play")
+
+    data = scrapertools.cache_page(item.url)
+    media_url = scrapertools.find_single_match(data,'<source src="([^"]+)"')
     itemlist = []
-    matches = re.compile('so.addVariable\("file", "([^"]+)"\);', re.DOTALL).findall(data)
-    if len(matches)>0:
-        parsed_url = urllib.unquote_plus(matches[0])
-        print parsed_url
-        paginador = Item(channel=__channel__, action="play" , title=item.title, fulltitle=item.fulltitle , url=parsed_url, thumbnail=item.thumbnail, plot=item.plot, show=item.title, server="directo", folder=False)
-    else:
-        paginador = None
-    
-    if paginador is not None:
-        itemlist.append( paginador )
+    itemlist.append(Item(channel=__channel__, action="play" , title=item.title, fulltitle=item.fulltitle , url=media_url, thumbnail=item.thumbnail, plot=item.plot, show=item.title, server="directo", folder=False))
 
     return itemlist
 

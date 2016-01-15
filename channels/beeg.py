@@ -37,9 +37,9 @@ def isGeneric():
 def mainlist(item):
     logger.info("[beeg.py] mainlist")
     itemlist = []
-    itemlist.append( Item(channel=__channel__, action="videos"            , title="Útimos videos"       , url="http://beeg.com/api/v1/index/main/0/pc"))
-    itemlist.append( Item(channel=__channel__, action="listcategorias"    , title="Listado categorias"  , url="http://beeg.com/api/v1/index/main/0/pc"))
-    itemlist.append( Item(channel=__channel__, action="search"            , title="Buscar"              , url="http://beeg.com/api/v1/index/search/0/pc?query=%s" ))
+    itemlist.append( Item(channel=__channel__, action="videos"            , title="Útimos videos"       , url="http://beeg.com/api/v5/index/main/0/pc"))
+    itemlist.append( Item(channel=__channel__, action="listcategorias"    , title="Listado categorias"  , url="http://beeg.com/api/v5/index/main/0/pc"))
+    itemlist.append( Item(channel=__channel__, action="search"            , title="Buscar"              , url="http://beeg.com/api/v5/index/search/0/pc?query=%s" ))
     return itemlist
 
 def videos(item):
@@ -52,12 +52,12 @@ def videos(item):
     
     for Video in JSONData["videos"]:
       thumbnail = "http://img.beeg.com/236x177/" + Video["id"].encode("utf8") +  ".jpg"
-      url = "http://beeg.com/api/v1/video/" + Video["id"].encode("utf8")
+      url = "https://api.beeg.com/api/v5/video/" + Video["id"].encode("utf8")
       title = Video["title"].encode("utf8")
       itemlist.append( Item(channel=__channel__, action="play" , title=title , url=url, thumbnail=thumbnail, plot="", show="", viewmode="movie", folder=True))
       
     #Paginador
-    Actual = int(scrapertools.get_match(item.url,'http://beeg.com/api/v1/index/[^/]+/([0-9]+)/pc'))
+    Actual = int(scrapertools.get_match(item.url,'http://beeg.com/api/v5/index/[^/]+/([0-9]+)/pc'))
     if JSONData["pages"]-1 > Actual:
       scrapedurl = item.url.replace("/"+str(Actual)+"/", "/"+str(Actual+1)+"/")
       itemlist.append( Item(channel=__channel__, action="videos", title="Página Siguiente" , url=scrapedurl , thumbnail="" , folder=True) )
@@ -75,7 +75,7 @@ def listcategorias(item):
     
     
     for Tag in JSONData["tags"]["popular"]:
-      url = "http://beeg.com/api/v1/index/tag/0/pc?tag=" + Tag.encode("utf8")
+      url = "http://beeg.com/api/v5/index/tag/0/pc?tag=" + Tag.encode("utf8")
       title = Tag.encode("utf8")
       title = title[:1].upper() + title[1:]
       itemlist.append( Item(channel=__channel__, action="videos" , title=title , url=url, folder=True))

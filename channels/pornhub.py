@@ -64,7 +64,7 @@ def mainlist(item):
         #thumbnail =""
        
         #try:
-        itemlist.append( Item(channel=__channel__, action="peliculas", title=title, url=url , fanart=__fanart__ , thumbnail=thumbnail, folder=True) )
+        itemlist.append( Item(channel=__channel__, action="peliculas", title=title, url=url , fanart=__fanart__ , thumbnail=thumbnail, folder=True, viewmode="movie") )
         #except:
             #logger.info("pelisalacarta.channels.pornhub except")
             
@@ -77,7 +77,7 @@ def peliculas(item):
        
     # Descarga la página
     data = get_main_page(item.url)
-    data = scrapertools.find_single_match(data,'<ul class="nf-videos videos row-4-thumbs">(.*?)<div class="pre-footer">')
+    data = scrapertools.find_single_match(data,'<ul class="nf-videos videos(.*?)<div class="reset"></div>')
     
     '''
     <li class="videoblock" id="37717631" _vkey="2064578485" >
@@ -125,7 +125,7 @@ def peliculas(item):
         url= 'http://es.pornhub.com/embed/' + viewkey
                 
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="play", title=title , url=url ,fanart=__fanart__, thumbnail=thumbnail) )
+        itemlist.append( Item(channel=__channel__, action="play", title=title , url=url ,fanart=__fanart__, thumbnail=thumbnail, viewmode="movie") )
         
     # Paginador
     patron = '<li class="page_next"><a href="([^"]+)"'
