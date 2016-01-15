@@ -33,7 +33,7 @@ FREE_SERVERS.extend(['vodlocker','thevideome','rocvideo','vidxtreme','vidtome','
 FREE_SERVERS.extend(['cloudsix'])
 
 # Lista de TODOS los servidores que funcionan con cuenta premium individual
-PREMIUM_SERVERS = ['uploadedto','nowvideo','onefichier']
+PREMIUM_SERVERS = ['uploadedto','nowvideo','onefichier', 'filesmonster']
 
 # Lista de TODOS los servidores soportados por Filenium
 #FILENIUM_SERVERS = jsontools.load_json(urllib2.urlopen('http://filenium.com/domainsxbmc'))
