@@ -235,7 +235,7 @@ def findvideos(item):
     patronembed = 'id="(embed[0-9])".*?<div class="calishow">(.*?)<(.*?)<div class="clear">'
     matches = re.compile(patronembed,re.DOTALL).findall(data)
     for title, calidad, url in matches:
-        title = scrapertools.find_single_match(url,"(?:http|https)://(?:embed.|)(.*?)/")
+        title = scrapertools.find_single_match(url,"(?:http://|https://|//)(.*?)(?:embed.|videoembed|)/")
         title = title.capitalize() + " - "+calidad
         itemlist.append( Item(channel=__channel__, action="play", title= title  , url=url , thumbnail=item.thumbnail, fanart=item.fanart, plot= item.plot, folder=True) )
 
@@ -260,7 +260,7 @@ def findvideos_ero(item):
     patronembed = 'id="(embed[0-9])".*?<div class="calishow">(.*?)<(.*?)<div class="clear">'
     matches = re.compile(patronembed,re.DOTALL).findall(data)
     for title, calidad, url in matches:
-        title = scrapertools.find_single_match(url,"(?:http|https)://(?:embed.|)(.*?)/")
+        title = scrapertools.find_single_match(url,"(?:http://|https://|//)(.*?)(?:embed.|videoembed|)/")
         title = title.capitalize() + " - "+calidad
         itemlist.append( Item(channel=__channel__, action="play", title= title  , url=url , thumbnail=item.thumbnail, fanart=item.fanart, plot= item.plot, folder=True) )
 
@@ -268,14 +268,7 @@ def findvideos_ero(item):
 	
 def play(item):
     logger.info("pelisalacarta.inkapelis play")
-    if "/div>" not in item.url:
-        media_url = scrapertools.get_header_from_response(item.url,header_to_get="Location")
-        itemlist = servertools.find_video_items(data=media_url)
-        if len(itemlist) == 0:
-            itemlist = servertools.find_video_items(data=item.url)
-    else:
-        itemlist = servertools.find_video_items(data=item.url)
-        
+    itemlist = servertools.find_video_items(data=item.url)
     return itemlist
 
 def info(title, thumbnail):
