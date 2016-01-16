@@ -30,14 +30,15 @@ def mainlist(item):
     itemlist.append( Item(channel=__channel__, title="Novedades"      , action="lista"    , url="http://www.inkapelis.com/", extra = "Novedades"))
     itemlist.append( Item(channel=__channel__, title="Estrenos"       , action="lista"   , url="http://www.inkapelis.com/genero/estrenos/"))
     itemlist.append( Item(channel=__channel__, title="Géneros"  , action="generos"   , url="http://www.inkapelis.com/"))
-    itemlist.append( Item(channel=__channel__, title="Buscar..."  , action="search"   , url="http://www.inkapelis.com/?s=", extra= "Buscar"))
-    itemlist.append( Item(channel=__channel__, title="Búsqueda por actor"  , action="search"   , url="http://www.inkapelis.com/actor/", extra= "Buscar"))
+    itemlist.append( Item(channel=__channel__, title="Buscar..."  , action="search"   , url="http://www.inkapelis.com/?s="))
+    itemlist.append( Item(channel=__channel__, title="Búsqueda por actor"  , action="search"   , url="http://www.inkapelis.com/actor/"))
     return itemlist
 
 
 def search(item,texto):
     logger.info("pelisalacarta.inkapelis search")
     itemlist = []
+    item.extra = "Buscar"
     if item.title == "Búsqueda por actor": texto = texto.replace("+","-")
     item.url = item.url + texto
     try:
