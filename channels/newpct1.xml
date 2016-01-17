@@ -2,19 +2,28 @@
 <channel>
 	<id>newpct1</id>
 	<name>Newpct1</name>
-	<language>es</language>
-	<update_url></update_url>
+
 	<active>true</active>
-	<include_in_global_search>false</include_in_global_search>
-	<version>13.3</version>
 	<adult>false</adult>
-	<date>14/01/16</date>
-	<changes>Corregido titulo en enlaces para descargas</changes>
+	<language>es</language>
+
 	<fanart></fanart>
-	<thumbnail></thumbnail>
+	<thumbnail>http://media.tvalacarta.info/pelisalacarta/squares/newpct1.png</thumbnail>
+	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/newpct1.png</bannermenu>
+
+	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
+	<version>13.4</version>
+	<date>17/01/2016</date>
+	<changes>Actualizado formato xml</changes>
+
 	<categories>
 		<category>movie</category>
 		<category>serie</category>
 		<category>anime</category>
+		<category>torrent</category>
 	</categories>
+
+	<settings>
+		<include_in_global_search>false</include_in_global_search>
+	</settings>
 </channel>
