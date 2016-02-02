@@ -217,7 +217,7 @@ def siguientes(item):
     if (DEBUG): logger.info("html2="+json_object["html"])
     data = json_object["html"]
     patron = ''
-    patron += '<div class="coverMini shadow tiptip" title="([^"]+)">[^<]+'
+    patron += '<div class="coverMini     shadow tiptip" title="([^"]+)">[^<]+'
     patron += '<img class="centeredPic centeredPicFalse"  onerror="[^"]+"  src="([^"]+)"[^<]+'
     patron += '<img src="/images/loading-mini.gif" class="loader"/>[^<]+'
     patron += '<div class="extra-info"><span class="year">[^<]+'
