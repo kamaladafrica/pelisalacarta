@@ -13,8 +13,8 @@
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
 	<version>8</version>
-	<date>02/02/2016</date>
-	<changes>Correccion por pequeños cambios en la web al listar contenido y extraer la url de los videos</changes>
+	<date>03/02/2016</date>
+	<changes>Correccion por cambios menores en la web y añadidos fanart e info/sinopsis por super_berny</changes>
 
 	<categories>
 		<category>movie</category>

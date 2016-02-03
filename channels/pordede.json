@@ -6,8 +6,8 @@
             "movie", 
             "serie"
         ], 
-        "changes": "Correccion por pequeños cambios en la web al listar contenido y extraer la url de los videos", 
-        "date": "02/02/2016", 
+        "changes": "Correccion por cambios menores en la web y añadidos fanart e info/sinopsis por super_berny", 
+        "date": "03/02/2016", 
         "fanart": "", 
         "id": "pordede", 
         "include_in_global_search": false, 
