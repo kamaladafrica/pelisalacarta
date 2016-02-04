@@ -23,6 +23,9 @@ def get_video_url( page_url , premium = False , user="" , password="" , video_pa
         'pulsar' : {
             'url' : "plugin://plugin.video.pulsar/play?uri=%s" % link
         },
+        'quasar' : {
+            'url' : "plugin://plugin.video.quasar/play?uri=%s" % link
+        },
         'stream' : {
             'url' : "plugin://plugin.video.stream/play/%s" % link
         },
