@@ -6,8 +6,8 @@
             "movie", 
             "serie"
         ], 
-        "changes": "Arreglada paginacion", 
-        "date": "11/12/2015", 
+        "changes": "Correccion por cambios menores en la web y añadidos fanart e info/sinopsis por super_berny", 
+        "date": "03/02/2016", 
         "fanart": "", 
         "id": "pordede", 
         "include_in_global_search": false, 
@@ -15,7 +15,7 @@
         "name": "Pordede", 
         "thumbnail": "", 
         "update_url": "", 
-        "version": "7.0"
+        "version": "8.0"
     }, 
     "settings": {}
 }

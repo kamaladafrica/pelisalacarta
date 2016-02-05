@@ -18,11 +18,11 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
     video_urls = []
  
     data = scrapertools.cache_page(page_url)
-    media_url = scrapertools.find_single_match(data,'file: "([^"]+)"')
-    logger.info("media_url="+media_url)
+    media_url = scrapertools.find_single_match(data,'file: "([^"]+)",.*?type: "([^"]+)"')
+    logger.info("media_url="+media_url[0])
 
     # URL del vídeo
-    video_urls.append( [ ".mp4" + " [cnubis]",media_url ] )
+    video_urls.append( [ "."+ media_url[1] + " [cnubis]",media_url[0] ] )
 
     for video_url in video_urls:
        logger.info("pelisalacarta.servers.cnubis %s - %s" % (video_url[0],video_url[1]))
@@ -41,7 +41,7 @@ def find_videos(text):
 
     for match in matches:
         titulo = "[cnubis]"
-        url = "https://cnubis.com/plugins/mediaplayer/site/_embed.php?u="+match+"&w=640&h=320"
+        url = "http://cnubis.com/plugins/mediaplayer/site/_embed.php?u="+match
         if url not in encontrados and id != "":
             logger.info("  url="+url)
             devuelve.append( [ titulo , url , 'cnubis' ] )
@@ -53,5 +53,5 @@ def find_videos(text):
 
 def test():
 
-    video_urls = get_video_url("https://cnubis.com/plugins/mediaplayer/site/_embed.php?u=9mk&w=640&h=320")
+    video_urls = get_video_url("http://cnubis.com/plugins/mediaplayer/site/_embed.php?u=9mk&w=640&h=320")
     return len(video_urls)>0
