@@ -31,6 +31,9 @@ def get_video_url( page_url , premium = False , user="" , password="" , video_pa
         },
         'torrenter' : {
             'url' : "plugin://plugin.video.torrenter/?action=playSTRM&url=%s" % link
+        },
+        'torrentin' : {
+            'url' : "plugin://plugin.video.torrentin/?uri=%s&image=" % link
         }
     }
 

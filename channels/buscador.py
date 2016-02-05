@@ -22,7 +22,7 @@ def isGeneric():
     return True
 
 
-def mainlist(item):
+def mainlist(item,preferred_thumbnail="squares"):
     logger.info("pelisalacarta.channels.buscador mainlist")
 
     itemlist = list()
