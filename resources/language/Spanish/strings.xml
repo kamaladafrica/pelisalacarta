@@ -7,7 +7,7 @@
     <!-- ======================================= -->
     
     <!-- Comunes -->
-    <string id="30000">Reproductor:</string>
+    <string id="30000">Reproductor (solo XBOX):</string>
     <string id="30001">Comprobar actualizaciones:</string>
     <string id="30004">Actualizar automáticamente canales:</string>
     <string id="30201">Actualizar la biblioteca al abrir XBMC</string>
