@@ -30,14 +30,15 @@ def mainlist(item):
     itemlist.append( Item(channel=__channel__, title="Novedades"      , action="lista"    , url="http://www.inkapelis.com/", extra = "Novedades"))
     itemlist.append( Item(channel=__channel__, title="Estrenos"       , action="lista"   , url="http://www.inkapelis.com/genero/estrenos/"))
     itemlist.append( Item(channel=__channel__, title="Géneros"  , action="generos"   , url="http://www.inkapelis.com/"))
-    itemlist.append( Item(channel=__channel__, title="Buscar..."  , action="search"   , url="http://www.inkapelis.com/?s=", extra= "Buscar"))
-    itemlist.append( Item(channel=__channel__, title="Búsqueda por actor"  , action="search"   , url="http://www.inkapelis.com/actor/", extra= "Buscar"))
+    itemlist.append( Item(channel=__channel__, title="Buscar..."  , action="search"   , url="http://www.inkapelis.com/?s="))
+    itemlist.append( Item(channel=__channel__, title="Búsqueda por actor"  , action="search"   , url="http://www.inkapelis.com/actor/"))
     return itemlist
 
 
 def search(item,texto):
     logger.info("pelisalacarta.inkapelis search")
     itemlist = []
+    item.extra = "Buscar"
     if item.title == "Búsqueda por actor": texto = texto.replace("+","-")
     item.url = item.url + texto
     try:
@@ -235,7 +236,7 @@ def findvideos(item):
     patronembed = 'id="(embed[0-9])".*?<div class="calishow">(.*?)<(.*?)<div class="clear">'
     matches = re.compile(patronembed,re.DOTALL).findall(data)
     for title, calidad, url in matches:
-        title = scrapertools.find_single_match(url,"(?:http|https)://(?:embed.|)(.*?)/")
+        title = scrapertools.find_single_match(url,"(?:http://|https://|//)(.*?)(?:embed.|videoembed|)/")
         title = title.capitalize() + " - "+calidad
         itemlist.append( Item(channel=__channel__, action="play", title= title  , url=url , thumbnail=item.thumbnail, fanart=item.fanart, plot= item.plot, folder=True) )
 
@@ -260,7 +261,7 @@ def findvideos_ero(item):
     patronembed = 'id="(embed[0-9])".*?<div class="calishow">(.*?)<(.*?)<div class="clear">'
     matches = re.compile(patronembed,re.DOTALL).findall(data)
     for title, calidad, url in matches:
-        title = scrapertools.find_single_match(url,"(?:http|https)://(?:embed.|)(.*?)/")
+        title = scrapertools.find_single_match(url,"(?:http://|https://|//)(.*?)(?:embed.|videoembed|)/")
         title = title.capitalize() + " - "+calidad
         itemlist.append( Item(channel=__channel__, action="play", title= title  , url=url , thumbnail=item.thumbnail, fanart=item.fanart, plot= item.plot, folder=True) )
 
@@ -268,14 +269,7 @@ def findvideos_ero(item):
 	
 def play(item):
     logger.info("pelisalacarta.inkapelis play")
-    if "/div>" not in item.url:
-        media_url = scrapertools.get_header_from_response(item.url,header_to_get="Location")
-        itemlist = servertools.find_video_items(data=media_url)
-        if len(itemlist) == 0:
-            itemlist = servertools.find_video_items(data=item.url)
-    else:
-        itemlist = servertools.find_video_items(data=item.url)
-        
+    itemlist = servertools.find_video_items(data=item.url)
     return itemlist
 
 def info(title, thumbnail):
