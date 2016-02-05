@@ -1,0 +1,23 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": false, 
+        "category": [
+            "movie", 
+            "vos",
+		    "latino",
+		    "serie"
+        ], 
+        "changes": "Primera version", 
+        "date": "02/02/2016", 
+        "fanart": "", 
+        "id": "allpeliculas", 
+        "include_in_global_search": true, 
+        "language": "es", 
+        "name": "Allpeliculas", 
+        "thumbnail": "http://i.imgur.com/aWCDWtn.png", 
+        "update_url": "", 
+        "version": "1.0"
+    }, 
+    "settings": {}
+}
