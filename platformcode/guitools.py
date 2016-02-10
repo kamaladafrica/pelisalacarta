@@ -7,13 +7,15 @@
 # Herramientas responsables de adaptar los diferentes 
 # cuadros de dialogo a una plataforma en concreto,
 # en este caso Kodi.
-# version 1.3
+# version 1.6
 # ------------------------------------------------------------
 import xbmcgui
 import xbmc
-import os
+import os, io
+from core import jsontools
 from math import ceil
 from core import config
+from core.item import Item
 
 
 def dialog_ok(heading, line1, line2="", line3=""):
@@ -79,7 +81,65 @@ class DialogoProgreso(object):
     self.Progreso.close()
     self.Closed = True    
     
+
     
+def show_settings(channel_action, list_controls=[], dict_values={}, caption="", File_settings=""):
+    '''
+    TODO: documentar
+    '''
+    # Obtener argumentos
+    if "|" in channel_action:
+        channel = channel_action.split("|")[0]
+        action = channel_action.split("|")[1]
+    else:
+        channel = channel_action
+        action = "mainlist"
+    if File_settings == "":
+        File_settings= os.path.join(config.get_data_path(),"settings_channels" ,channel +"_data.json")
+    if caption =="":
+        caption = "Configuración -- " + channel.capitalize()
+    if len(list_controls) < 1:
+        # Obtenemos controles del archivo ../channels/channel.json
+        fname =os.path.join( config.get_runtime_path() , 'channels' , channel + ".json")
+        data = ""
+        try:
+            with open(fname, "r") as f:
+                data= f.read()
+        except EnvironmentError:
+            logger("ERROR al leer el archivo: {0}".format(fname))
+        dict_data = jsontools.load_json(data)
+        list_controls= dict_data['settings'] 
+    
+    # Obtenemos valores actuales si existen
+    dict_file= {}
+    if os.path.exists(File_settings):
+        data = ""
+        try:
+            with open(File_settings, "r") as f:
+                data= f.read()
+        except EnvironmentError:
+            logger("ERROR al leer el archivo: {0}".format(File_settings))
+        dict_file= jsontools.load_json(data)
+        if dict_file.has_key('settings'):
+            dict_values= dict_file['settings']
+
+            
+    # Mostramos la ventana
+    ventana = SettingWindow(list_controls, dict_values, caption)
+    ventana.doModal()
+    if ventana.isConfirmed():
+        dict_values= ventana.get_values()
+        dict_file['settings']= dict_values
+        json_data = jsontools.dump_json(dict_file)
+        try:
+            with open(File_settings, "w") as f:
+                f.write(json_data)
+        except EnvironmentError:
+            logger("ERROR al salvar el archivo: {0}".format(File_settings))
+
+    return None
+    
+
     
 #---------------------------------------------------------------------------
 #  Clases para la pantalla de configuracion
@@ -122,7 +182,7 @@ ACTION_MOUSE_MOVE = 107
 
 
 class SettingWindow( xbmcgui.WindowDialog ):
-    ''' Clase derivada que permite utilizar cuadors de configuracion personalizados.
+    ''' Clase derivada que permite utilizar cuadros de configuracion personalizados.
     
     Esta clase deriva de xbmcgui.WindowDialog y permite crear un cuadro de dialogo con controles del tipo:
     Radio Button (bool), Cuadro de texto (text), Lista (list) y Etiquetas informativas (label).
@@ -173,11 +233,12 @@ class SettingWindow( xbmcgui.WindowDialog ):
     Metodos principales:
         get_values(): Retorna un diccionario con los pares (id: valor) obteniendo los datos de los controles de la ventana.
         isConfirmed(): Retorna True si se han confirmado los cambios en la ventana, False en caso contrario.
+    
     '''
     window_next_page = None
     window_prev_page = None
     
-    def __init__( self, list_controls , dict_values, caption=""):
+    def __init__( self, list_controls , dict_values={}, caption=""):
         self.dict_values= dict_values
         self.modificado = False
         self.confirmado = False
@@ -187,7 +248,7 @@ class SettingWindow( xbmcgui.WindowDialog ):
         self.screen_x = 40
         self.screen_y = 30
         self.screen_w = 1080 - self.screen_x
-        self.screen_h = 720 - int(self.screen_y * 1.5)
+        self.screen_h = (720 - int(self.screen_y * 1.5)) if len(list_controls) >9 else 455            
         self.num_controles_x_page = 15.0
         pos_y= self.screen_y + 10
         
@@ -348,7 +409,7 @@ class SettingWindow( xbmcgui.WindowDialog ):
         self.confirmado = True
         for v in self.controles.values():
             if v['type'] == 'bool':
-                self.dict_values[v['id']] = v['control'].isSelected()
+                self.dict_values[v['id']] = True if v['control'].isSelected()== 1 else False
             elif v['type'] == 'text':
                 self.dict_values[v['id']] = v['control'].getText()
             elif v['type'] == 'list':
@@ -459,7 +520,9 @@ class ListControl(xbmcgui.ControlLabel):
     
            
     def __new__(cls, *args, **kwargs):
-        return super(ListControl, cls).__new__ (cls, args[1], args[2], args[3] -10 - (2*args[4]), args[4], "", alignment = ALIGN_RIGHT)
+        selectedIndex = args[6].index(args[7])
+        label_ini = args[6][selectedIndex]
+        return super(ListControl, cls).__new__ (cls, args[1], args[2], args[3] -10 - (2*args[4]), args[4], label_ini, alignment = ALIGN_RIGHT)
         
     def __init__(self, window, x, y, width, height, label, lvalues, value):
         self.options = lvalues
@@ -477,7 +540,6 @@ class ListControl(xbmcgui.ControlLabel):
                         noFocusTexture=os.path.join(_path_imagen,'Controls', 'spinUp-noFocus.png'))
         window.addControl(self.upBtn)
         self.selectedIndex = lvalues.index(value)
-        self.__setSelected();
         
     def __setSelected(self):
         length = self.options.__len__()
@@ -489,7 +551,6 @@ class ListControl(xbmcgui.ControlLabel):
         self.downBtn.setEnabled(self.selectedIndex != 0)
         self.upBtn.setEnabled(self.selectedIndex != length - 1)
         self.setLabel(self.options[self.selectedIndex])
-        
     
     def forwardInput(self):
         focusedItem = self.window.getFocus()

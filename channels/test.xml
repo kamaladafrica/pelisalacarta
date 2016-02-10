@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<channel>
+	<id>test</id>
+	<name>Test</name>
+	<language>es</language>
+	<update_url></update_url>
+	<active>true</active>
+	<include_in_global_search>false</include_in_global_search>
+	<version>1.4</version>
+	<adult>false</adult>
+	<date>11/02/2016</date>
+    <changes></changes>
+	<fanart></fanart>
+	<thumbnail></thumbnail>
+	<categories>
+		<category>movie</category>
+	</categories>
+</channel>
