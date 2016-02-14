@@ -37,7 +37,9 @@ urllib2.install_opener(opener)
 def test_video_exists(page_url):
     logger.info("[openload.py] test_video_exists(page_url='%s')" % page_url)
 
-    data = scrapertools.cache_page(page_url, headers=headers)
+    req = Request(page_url, '', headers)
+    response = urlopen(req, timeout=60)
+    data = response.read()
 
     if 'We are sorry!' in data:
         return False, 'File Not Found or Removed.'
@@ -64,8 +66,11 @@ def decodeOpenLoad(html, video=True):
     aastring = aastring.replace("(ﾟДﾟ)[ﾟεﾟ]","\\")
     aastring = aastring.replace("(3 +3 +0)","6")
     aastring = aastring.replace("(3 - 1 +0)","2")
-    aastring = aastring.replace("(1 -0)","1")
-    aastring = aastring.replace("(4 -0)","4")
+    aastring = aastring.replace("(!+[]+!+[])","2")
+    aastring = aastring.replace("(-~-~2)","4")
+    aastring = aastring.replace("(-~-~1)","3")
+    aastring = aastring.replace("(+!+[])","1")
+    aastring = aastring.replace("(0+0)","0")
 
     decodestring = re.search(r"\\\+([^(]+)", aastring, re.DOTALL | re.IGNORECASE).group(1)
     decodestring = "\\+"+ decodestring
@@ -76,14 +81,16 @@ def decodeOpenLoad(html, video=True):
     decodestring = decodestring.replace("\\/","/")
 
     #Header para la descarga
-    header_down = "|User-Agent=Mozilla/5.0 (Windows NT 10.0; WOW64; rv:43.0) Gecko/20100101 Firefox/43.0|"
+    header_down = "|User-Agent="+headers['User-Agent']+"|"
     if video == True:
-        videourl = re.search(r'vr ="([^"]+)"', decodestring, re.DOTALL | re.IGNORECASE).group(1)
-        extension = re.search(r'vt ="([^"]+)"', decodestring, re.DOTALL | re.IGNORECASE).group(1)
+        videourl = re.search(r"vr='([^']+)'", decodestring, re.DOTALL | re.IGNORECASE).group(1)
         videourl = scrapertools.get_header_from_response(videourl,header_to_get="location")
+        videourl = videourl.replace("https://","http://").replace("?mime=true","")
+        extension = videourl[-4:]
         return videourl+header_down+extension, extension
     else:
-        videourl = re.search(r'\'href\',"([^"]+)"', decodestring, re.DOTALL | re.IGNORECASE).group(1)
+        videourl = re.search(r'"href", \'([^\']+)\'', decodestring, re.DOTALL | re.IGNORECASE).group(1)
+        videourl = videourl.replace("https://","http://")
         extension = videourl[-4:]
         return videourl+header_down+extension, extension
 
