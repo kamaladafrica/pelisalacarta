@@ -58,10 +58,24 @@ def mainlist(item):
     itemlist.append( Item(channel=__channel__, action="dialogBox", title="[COLOR 0xFFEB7600][B]Cuadro de dialogo[/B][/COLOR]"))
     itemlist.append( Item(channel=__channel__, action="get_setting", title="[COLOR 0xFFEB7600][B]Ejemplo de get_setting[/B][/COLOR]"))
     itemlist.append( Item(channel=__channel__, action="set_setting", title="[COLOR 0xFFEB7600][B]Ejemplo de set_setting[/B][/COLOR]"))
-
+    itemlist.append( Item(channel=__channel__, action="test_xml_to_json", title="[COLOR 0xFFEB7600][B]Leer 'settigs' de test.xml[/B][/COLOR]"))
+    
     return itemlist
 
+def test_xml_to_json(item):
+    from core import jsontools
+    channel_xml = os.path.join( config.get_runtime_path() , 'channels' , "test.xml" )
+    channel_json = jsontools.xmlTojson(channel_xml)
 
+    print "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    print type(channel_json), repr(channel_json)
+    print "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    guitools.dialog_ok("Settings de test.xml", repr(channel_json))
+    parametros = channel_json['channel']
+    guitools.dialog_ok("Ejemplo acceso a parametros del canal como json", "Novedades de esta versión:", parametros['changes'])
+    print parametros['changes']
+    
+    
 def settingCanal(item):           
     ventana = guitools.show_settings(item.channel)
     return ventana
@@ -70,8 +84,7 @@ def settingCanal(item):
 def dialogBox(item):      
     file_path= os.path.join(config.get_data_path(),__channel__+"_otros_datos.json")
     ventana = guitools.show_settings("test|mainlist",list_controls,  caption= "Titulo de la ventana", File_settings= file_path)
-    
-    return ventana
+
     
 def get_setting(item):
     #name= 'fanart'

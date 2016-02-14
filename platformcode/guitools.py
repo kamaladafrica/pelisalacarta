@@ -13,6 +13,7 @@ import xbmcgui
 import xbmc
 import os, io
 from core import jsontools
+from core import logger
 from math import ceil
 from core import config
 from core.item import Item
@@ -83,32 +84,156 @@ class DialogoProgreso(object):
     
 
     
-def show_settings(channel_action, list_controls=[], dict_values={}, caption="", File_settings=""):
-    '''
-    TODO: documentar
+def show_settings(channel_action, list_controls=None, dict_values=None, caption="", File_settings=""):
+    '''Muestra un cuadro de dialogo personalizado y guarda los datos al cerrarlo.
+    
+    Abre un cuadro de dialogo adaptado a la plataforma que estemos utilizando y guarda los datos en un fichero.
+    
+    Parametros:
+    channel_action (str) -- Puede estar compuesto por el nombre del canal y el nombre de una funcion de dicho canal 
+        unidos por el caracter '|' o bien exclusivamente por el nombre del canal. En el primer caso este valor sera 
+        devuelto si la funcion termino correctamente, en el segundo caso la funcion devuelve None. 
+        Es utilizado por algunas plataformas como indicador de que se ha ejecutar cuando se cierra el cuadro.
+    
+    (opcional) list_controls (list) -- Lista de controles a incluir en el cuadro de dialogo. 
+        La list de controles puede incluir cuatro tipos basicos de controles y ha de seguir el siguiente esquema:
+            list_controls= [{'id': "nameControl1",
+                          'type': "bool",                       # bool, text, list, label 
+                          'label': "Control 1: tipo RadioButton",
+                          'default': false,
+                          'enabled': true,
+                          'visible': true,
+                          'lvalues':""                         # only for type = list
+                        },
+                        {'id': "nameControl2",
+                          'type': "text",                       # bool, text, list, label 
+                          'label': "Control 2: tipo Cuadro de texto",
+                          'default': "Valor por defecto",
+                          'enabled': true,
+                          'visible': true,
+                          'lvalues':""                         # only for type = list
+                        },
+                        {'id': "nameControl3",
+                          'type': "list",                       # bool, text, list, label 
+                          'label': "Control 3: tipo Lista",
+                          'default': "item1",
+                          'enabled': true,
+                          'visible': true,
+                          'lvalues':["item1", "item2", "item3", "item4"]  # only for type = list
+                        },
+                        {'id': "nameControl4",
+                          'type': "label",                       # bool, text, list, label 
+                          'label': "Control 4: tipo Etiqueta",
+                          'default': '0xFFee66CC',               # En este caso: valor opcional que representa el color del texto
+                          'enabled': true,
+                          'visible': true,
+                          'lvalues':""                         # only for type = list
+                        }]
+        En caso de no incluirse este argumento se leera la lista del archivo ../channels/channel.xml que ha de tener el siguiente esquema:
+            <?xml version="1.0" encoding="UTF-8" ?>
+            <channel>
+                ...
+                ...
+                <settings>
+                    <id>nameControl1</id>
+                    <type>bool</type>
+                    <label>Control 1: tipo RadioButton</label>
+                    <default>false</default>
+                    <enabled>true</enabled>
+                    <visible>true</visible>
+                    <lvalues></lvalues>
+                </settings>
+                <settings>
+                    <id>nameControl2</id>
+                    <type>text</type>
+                    <label>Control 2: tipo Cuadro de texto</label>
+                    <default>Valor por defecto</default>
+                    <enabled>true</enabled>
+                    <visible>true</visible>
+                    <lvalues></lvalues>
+                </settings>
+                <settings>
+                    <id>nameControl3</id>
+                    <type>list</type>
+                    <label>Control 3: tipo Lista</label>
+                    <default>item1</default>
+                    <enabled>true</enabled>
+                    <visible>true</visible>
+                    <lvalues>item1</lvalues>
+                    <lvalues>item2</lvalues>
+                    <lvalues>item3</lvalues>
+                    <lvalues>item4</lvalues>
+                </settings>
+                <settings>
+                    <id>nameControl4</id>
+                    <type>label</type>
+                    <label>Control 4: tipo Etiqueta</label>
+                    <default>0xFFee66CC</default>
+                    <enabled>true</enabled>
+                    <visible>true</visible>
+                    <lvalues></lvalues>
+                </settings>
+                ...
+            </channel>  
+        
+    (opcional) dict_values: (dict) Diccionario que representa el par (id: valor) de los controles de la lista.
+        Si algun control de la lista no esta incluido en este diccionario se le asignara el valor por defecto.
+            dict_values={"nameControl1": False, "nameControl2": "Esto es un ejemplo"}
+    
+    (opcional) caption: (str) Titulo de la ventana de configuracion. Si se omite el titulo sera: "Configuracion -- channel"
+    
+    (opcional) File_settings: (str) Ruta al fichero json donde se guardan los datos tras cerrar el cuadro de dialogo.
+        Si no se especifica ninguno tomara por defecto: 
+            "..\userdata\addon_data\plugin.video.pelisalacarta\settings_channels\channel_data.json"
+        Si el fichero no existe o no tiene un elemento 'settings', el cuadro de dialogo mostrara los valores por defecto 
+        tomados del list_controls.
+        Si el fichero existe y tiene un elemento 'settings', el cuadro de dialogo mostrara los valores leidos del fichero 
+        obviando los valores por defecto y los incluidos en su caso en dict_values.
+        Al cerrar el cuadro de dialogo se añadira o actualizara el elemento 'settings' con los datos actualizados en este fichero.
+    
+    Retorna:
+    Si el argumento channel_action incluye la accion, la funcion retornara el argumento channel_action. 
+    Por contra, si solo se incluye en nombre del canal, la funcion retornara None.
+    
     '''
     # Obtener argumentos
+    if dict_values is None:
+        dict_values = dict()
     if "|" in channel_action:
         channel = channel_action.split("|")[0]
         action = channel_action.split("|")[1]
+        ret =  channel_action
     else:
         channel = channel_action
-        action = "mainlist"
+        action = ""
+        ret = None
     if File_settings == "":
         File_settings= os.path.join(config.get_data_path(),"settings_channels" ,channel +"_data.json")
     if caption =="":
         caption = "Configuración -- " + channel.capitalize()
-    if len(list_controls) < 1:
-        # Obtenemos controles del archivo ../channels/channel.json
-        fname =os.path.join( config.get_runtime_path() , 'channels' , channel + ".json")
-        data = ""
+    if list_controls is None:
+        list_controls =[]
+        # Obtenemos controles del archivo ../channels/channel.xml
+        channel_xml =os.path.join( config.get_runtime_path() , 'channels' , channel + ".xml")
+        channel_json = jsontools.xmlTojson(channel_xml)
         try:
-            with open(fname, "r") as f:
-                data= f.read()
-        except EnvironmentError:
-            logger("ERROR al leer el archivo: {0}".format(fname))
-        dict_data = jsontools.load_json(data)
-        list_controls= dict_data['settings'] 
+            list_controls= channel_json['channel']['settings']
+            # Convertir los campos boleanos de str a bool
+            for c in list_controls:
+                if not c.has_key('enabled') or c['enabled'] is None: 
+                    c['enabled']= True
+                else:
+                    c['enabled'] = True if c['enabled'].lower() == "true" else False
+                if not c.has_key('visible') or c['visible'] is None: 
+                    c['visible']= True
+                else:
+                    c['visible'] = True if c['visible'].lower() == "true" else False
+                if c['type'] == 'bool':
+                    c['default'] = True if c['default'].lower() == "true" else False
+                  
+        except:
+            logger.info("ERROR al leer el archivo: {0}".format(channel_xml))
+            return ret
     
     # Obtenemos valores actuales si existen
     dict_file= {}
@@ -118,7 +243,7 @@ def show_settings(channel_action, list_controls=[], dict_values={}, caption="", 
             with open(File_settings, "r") as f:
                 data= f.read()
         except EnvironmentError:
-            logger("ERROR al leer el archivo: {0}".format(File_settings))
+            logger.info("ERROR al leer el archivo: {0}".format(File_settings))
         dict_file= jsontools.load_json(data)
         if dict_file.has_key('settings'):
             dict_values= dict_file['settings']
@@ -135,9 +260,9 @@ def show_settings(channel_action, list_controls=[], dict_values={}, caption="", 
             with open(File_settings, "w") as f:
                 f.write(json_data)
         except EnvironmentError:
-            logger("ERROR al salvar el archivo: {0}".format(File_settings))
-
-    return None
+            logger.info("ERROR al salvar el archivo: {0}".format(File_settings))
+    
+    return ret
     
 
     
@@ -225,7 +350,7 @@ class SettingWindow( xbmcgui.WindowDialog ):
                                   'visible': True,
                                   'lvalues':"",                         # only for type = list
                                 }]
-                dict_values: (dict) Diccionario que representa el par (id: valor) de cada control de la lista.
+                (opcional)dict_values: (dict) Diccionario que representa el par (id: valor) de los controles de la lista.
                     Si algun control de la lista no esta incluido en este diccionario se le asignara el valor por defecto.
                         dict_values={"nameControl1": False,
                                      "nameControl2": "Esto es un ejemplo"}
@@ -238,7 +363,9 @@ class SettingWindow( xbmcgui.WindowDialog ):
     window_next_page = None
     window_prev_page = None
     
-    def __init__( self, list_controls , dict_values={}, caption=""):
+    def __init__( self, list_controls , dict_values=None, caption=""):
+        if dict_values is None:
+              dict_values = dict()
         self.dict_values= dict_values
         self.modificado = False
         self.confirmado = False
@@ -369,31 +496,7 @@ class SettingWindow( xbmcgui.WindowDialog ):
                 v['control'].setVisible(False)
             else:
                 v['control'].setVisible(v['visible'])
-                '''
-                # navegacion entre controles. Lo comento por q no parece funcionar bien
-                if num_control == 0: 
-                    # Primer control
-                    if self.window_prev_page:
-                        self.window_prev_page.controlDown(v['control'])
-                        self.window_next_page.controlDown(v['control'])
-                        v['control'].controlUp(self.window_next_page)
-                    else:
-                        self.window_ok_button.controlUp(v['control'])
-                        self.window_cancel_button.controlup(v['control'])
-                        v['control'].controlUp(self.window_ok_button)
-                else:
-                    # Controles intermedios
-                    v['control'].controlUp(control_anterior)
-                    control_anterior.controlDown(v['control'])
                 
-                num_control += 1
-                if num_control == 16:
-                    # Ultimo control
-                    v['control'].controlDown(self.window_ok_button)
-                    num_control = 0
-                
-                control_anterior = v['control']
-                '''
                 
     def __do_you_want_to_save(self):
         if not self.modificado:

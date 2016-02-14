@@ -6,13 +6,88 @@
 	<update_url></update_url>
 	<active>true</active>
 	<include_in_global_search>false</include_in_global_search>
-	<version>1.4</version>
+	<version>1.5</version>
 	<adult>false</adult>
 	<date>11/02/2016</date>
-    <changes></changes>
+    <changes>Añadido soporte para settings desde xml</changes>
 	<fanart></fanart>
 	<thumbnail></thumbnail>
 	<categories>
 		<category>movie</category>
 	</categories>
+	
+	<settings>
+		<id>pordedeuser</id>
+		<type>text</type>
+		<label>Usuario:</label>
+		<default></default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<id>pordedepassword</id>
+		<type>text</type>
+		<label>Password:</label>
+		<default></default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<id>fanart</id>
+		<type>bool</type>
+		<label>Mostrar Fanart</label>
+		<default>true</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<id>infoExtra</id>
+		<type>bool</type>
+		<label>Buscar información extra en Tmdb.org</label>
+		<default>true</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<id>pordedesortlinks</id>
+		<type>list</type>
+		<label>Ordenar enlaces</label>
+		<default>No</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+		<lvalues>No</lvalues>
+		<lvalues>Por Valoración</lvalues>
+		<lvalues>Por Idioma</lvalues>
+		<lvalues>Por Calidad</lvalues>
+		<lvalues>Por Idioma y Calidad</lvalues>
+		<lvalues>Por Idioma y Valoración</lvalues>
+		<lvalues>Por Idioma, Calidad y Valoración</lvalues>
+	</settings>
+	<settings>
+		<id>pordedeshowlinks</id>
+		<type>list</type>
+		<label>Mostrar enlaces</label>
+		<default>Todos</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+		<lvalues>Todos</lvalues>
+		<lvalues>Ver online</lvalues>
+		<lvalues>Descargar</lvalues>
+	</settings>
+	<settings>
+		<id>pordedenumberlinks</id>
+		<type>list</type>
+		<label>Limitar número de enlaces</label>
+		<default>No</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+		<lvalues>No</lvalues>
+		<lvalues>5</lvalues>
+		<lvalues>10</lvalues>
+		<lvalues>15</lvalues>
+		<lvalues>20</lvalues>
+		<lvalues>25</lvalues>
+		<lvalues>30</lvalues>
+	</settings>
+	
 </channel>
