@@ -23,11 +23,17 @@ def get_video_url( page_url , premium = False , user="" , password="" , video_pa
         'pulsar' : {
             'url' : "plugin://plugin.video.pulsar/play?uri=%s" % link
         },
+        'quasar' : {
+            'url' : "plugin://plugin.video.quasar/play?uri=%s" % link
+        },
         'stream' : {
             'url' : "plugin://plugin.video.stream/play/%s" % link
         },
         'torrenter' : {
             'url' : "plugin://plugin.video.torrenter/?action=playSTRM&url=%s" % link
+        },
+        'torrentin' : {
+            'url' : "plugin://plugin.video.torrentin/?uri=%s&image=" % link
         }
     }
 

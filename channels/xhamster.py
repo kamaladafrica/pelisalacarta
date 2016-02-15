@@ -29,7 +29,7 @@ def isGeneric():
     return True
 
 def mainlist(item):
-    logger.info("[xhamster.py] mainlist")
+    logger.info("pelisalacarta.channels.xhamster mainlist")
     itemlist = []
     itemlist.append( Item(channel=__channel__, action="videos"      , title="Útimos vídeos" , url="http://es.xhamster.com/"))
     itemlist.append( Item(channel=__channel__, action="categorias"    , title="Categorías"))
@@ -40,7 +40,7 @@ def mainlist(item):
 # REALMENTE PASA LA DIRECCION DE BUSQUEDA
 
 def search(item,texto):
-    logger.info("[xhamster.py] search")
+    logger.info("pelisalacarta.channels.xhamster search")
     tecleado = texto.replace( " ", "+" )
     item.url = item.url % tecleado
     item.extra = "buscar"
@@ -49,50 +49,23 @@ def search(item,texto):
 # SECCION ENCARGADA DE BUSCAR
 
 def videos(item):
-    logger.info("[xhamster.py] videos")
-    data = scrapertools.downloadpageGzip(item.url)
+    logger.info("pelisalacarta.channels.xhamster videos")
+    data = scrapertools.cache_page(item.url)
     itemlist = []
 
-    if item.extra != "buscar":
-        data = scrapertools.get_match(data,'<div class="boxC videoList clearfix">(.*?)<div id="footer">')
-        patron = "<div class='vDate'>.*?<\/div><a href='([^']+)'.*?><img src='([^']+)'.*?><img.*?><b>([^']+)</b><u>([^']+)</u>"
-        matches = re.compile(patron,re.DOTALL).findall(data)
-        for scrapedurl,scrapedthumbnail,time,title in matches:
-            scrapedtitle = "" + time + " - " + title
-            # Depuracion
-            if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")            
-            itemlist.append( Item(channel=__channel__, action="detail" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, folder=True))
-		
-    patron = "<div class='video'><a href='([^']+)'.*?><img src='([^']+)'.*?><img.*?><b>([^']+)</b><u>([^']+)</u>"
+    data = scrapertools.get_match(data,'<div class="boxC videoList clearfix">(.*?)<div id="footer">')
+    patron = '<div class="video"><a href="([^"]+)" class="hRotator">'+"<img src='([^']+)' class='thumb'"+' alt="([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
-    for scrapedurl,scrapedthumbnail,time,title in matches:
-        scrapedtitle = "" + time + " - " + title
-        # Depuracion
+    for scrapedurl,scrapedthumbnail,scrapedtitle in matches:
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")            
-        itemlist.append( Item(channel=__channel__, action="detail" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, folder=True))
-        
-    # # EXTRAE EL PAGINADOR
-    if item.extra == "buscar":
-        patron  = "<a href='([^']+)' class='last'"
-    else:
-        patron  = "<div class='pager'>.*?<span>.*?<a href='([^']+)'>([^']+)<\/a>"
-    matches = re.compile(patron,re.DOTALL).findall(data)
-    for match in matches:
-        if item.extra == "buscar":
-            page = scrapertools.find_single_match(match, "page=(\d+)")
-            scrapedurl = match.replace("amp;","&")
-            itemlist.append( Item(channel=__channel__, action="videos", title= ">> Página " + page , url=scrapedurl , extra="buscar", folder=True) )
-        else:
-            page = match[1]
-            scrapedurl = match[0]
-            itemlist.append( Item(channel=__channel__, action="videos", title= ">> Página " + page , url=scrapedurl , folder=True) )
-
+        itemlist.append( Item(channel=__channel__, action="detail" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, folder=True, viewmode="movie"))
+		
     return itemlist
 
 # SECCION ENCARGADA DE VOLCAR EL LISTADO DE CATEGORIAS CON EL LINK CORRESPONDIENTE A CADA PAGINA
     
 def categorias(item):
-    logger.info("[xhamster.py] categorias")
+    logger.info("pelisalacarta.channels.xhamster categorias")
     itemlist = []
 
     itemlist.append( Item(channel=__channel__, action="lista" , title="Heterosexual", url="http://es.xhamster.com/channels.php"))
@@ -101,7 +74,7 @@ def categorias(item):
     return itemlist
 
 def votados(item):
-    logger.info("[xhamster.py] categorias")
+    logger.info("pelisalacarta.channels.xhamster categorias")
     itemlist = []
 
     itemlist.append( Item(channel=__channel__, action="videos" , title="Día", url="http://es.xhamster.com/rankings/daily-top-videos.html"))
@@ -111,7 +84,7 @@ def votados(item):
     return itemlist
 
 def lista(item):
-    logger.info("[xhamster.py] lista")
+    logger.info("pelisalacarta.channels.xhamster lista")
     itemlist = []
     data = scrapertools.downloadpageGzip(item.url)
     #data = data.replace("\n","")
@@ -137,7 +110,7 @@ def lista(item):
 
 # OBTIENE LOS ENLACES SEGUN LOS PATRONES DEL VIDEO Y LOS UNE CON EL SERVIDOR
 def detail(item):
-    logger.info("[xhamster.py] play")
+    logger.info("pelisalacarta.channels.xhamster play")
     itemlist = []
 
     data = scrapertools.cachePage(item.url)

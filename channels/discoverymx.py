@@ -37,79 +37,6 @@ def mainlist(item):
 
     return itemlist
 
-def search(item):
-    logger.info("[discoverymx.py] search")
-
-    keyboard = xbmc.Keyboard('')
-    keyboard.doModal()
-    if (keyboard.isConfirmed()):
-        tecleado = keyboard.getText()
-        if len(tecleado)>0:
-            #convert to HTML
-            tecleado = tecleado.replace(" ", "+")
-            searchUrl = "http://discoverymx.blogspot.com/index.php?s="+tecleado
-            SearchResult(params,searchUrl,category)
-            
-def SearchResult(item):
-    logger.info("[discoverymx.py] SearchResult")
-    
-    # Descarga la página
-    data = scrapertools.cachePage(url)
-
-    # Extrae las entradas (carpetas)
-    patronvideos  = '<p class="entry-title"><[^>]+>[^<]+</span><a href="([^"]+)"[^>]+>([^<]+)</a></p>'
-    matches = re.compile(patronvideos,re.DOTALL).findall(data)
-    scrapertools.printMatches(matches)
-
-    for match in matches:
-        # Atributos
-        scrapedurl = match[0]
-        
-        scrapedtitle =match[1]
-        scrapedtitle = scrapedtitle.replace("&#8211;","-")
-        scrapedtitle = scrapedtitle.replace("&nbsp;"," ")
-        scrapedthumbnail = ""
-        scrapedplot = ""
-        if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-
-        # Añade al listado de XBMC
-        xbmctools.addnewfolder( __channel__ , "detail" , category , scrapedtitle , scrapedurl , scrapedthumbnail, scrapedplot )
-
-    # Propiedades
-    xbmcplugin.setPluginCategory( handle=int( sys.argv[ 1 ] ), category=category )
-    xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_NONE )
-    xbmcplugin.endOfDirectory( handle=int( sys.argv[ 1 ] ), succeeded=True )
-        
-
-def performsearch(texto):
-    logger.info("[discoverymx.py] performsearch")
-    url = "http://discoverymx.blogspot.com/index.php?s="+texto
-
-    # Descarga la página
-    data = scrapertools.cachePage(url)
-
-    # Extrae las entradas (carpetas)
-    patronvideos  = '<p class="entry-title"><[^>]+>[^<]+</span><a href="([^"]+)"[^>]+>([^<]+)</a></p>'
-    matches = re.compile(patronvideos,re.DOTALL).findall(data)
-    scrapertools.printMatches(matches)
-
-    resultados = []
-
-    for match in matches:
-        scrapedtitle = match[1]
-        scrapedtitle = scrapedtitle.replace("&#8211;","-")
-        scrapedtitle = scrapedtitle.replace("&nbsp;"," ")
-        scrapedurl = match[0]
-        scrapedthumbnail = ""
-        scrapedplot = ""
-
-        if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-
-        # Añade al listado de XBMC
-        resultados.append( [__channel__ , "detail" , "buscador" , scrapedtitle , scrapedurl , scrapedthumbnail, scrapedplot ] )
-        
-    return resultados
-
 def DocuSeries(item):
     logger.info("[discoverymx.py] DocuSeries")
     itemlist=[]
@@ -173,34 +100,6 @@ def DocuARCHIVO(item):
 
     return itemlist
     
-def DocuCat(item):
-    logger.info("[discoverymx.py] peliscat")
-    itemlist=[]
-
-    # Descarga la página
-    data = scrapertools.cache_page(item.url)
-
-    # Extrae las entradas (carpetas)
-    patronvideos  = '<li class="cat-item cat-item[^"]+"><a href="([^"]+)" title="[^"]+">([^<]+)</a>'
-    matches = re.compile(patronvideos,re.DOTALL).findall(data)
-    scrapertools.printMatches(matches)
-
-    for match in matches:
-        # Atributos
-        scrapedtitle = match[1]
-        scrapedurl = match[0]
-        scrapedthumbnail = ""
-        scrapedplot = ""
-        if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-
-        # Añade al listado de XBMC
-        xbmctools.addnewfolder( __channel__ , "listvideos" , category , scrapedtitle , scrapedurl , scrapedthumbnail, scrapedplot )
-
-    # Propiedades
-    xbmcplugin.setPluginCategory( handle=int( sys.argv[ 1 ] ), category=category )
-    xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_NONE )
-    xbmcplugin.endOfDirectory( handle=int( sys.argv[ 1 ] ), succeeded=True )
-
 def listvideos(item):
     logger.info("[discoverymx.py] listvideos")
     itemlist=[]
@@ -239,7 +138,6 @@ def listvideos(item):
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
 
         # Añade al listado de XBMC
-        #xbmctools.addnewfolder( __channel__ , "findevi" , category , scrapedtitle , scrapedurl , scrapedthumbnail, scrapedplot )
         itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
 
     # Extrae la marca de siguiente página

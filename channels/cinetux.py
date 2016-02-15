@@ -105,14 +105,17 @@ def peliculas(item):
     patron  = '<div class="movielist textcenter[^<]+'
     patron += '<div id="titlecat[^<]+<a href="([^"]+)" rel="bookmark" title="([^"]+)"><img style="[^"]+" width="[^"]+" height="[^"]+" src=(.*?) /[^<]+'
     matches = re.compile(patron,re.DOTALL).findall(data)
+    logger.info("[cinetux.py] peliculas [patron 1]")
     scrapertools.printMatches(matches)
 
     for scrapedurl,title,thumbnail in matches:
         scrapedplot = ""
         scrapedthumbnail = thumbnail[:-2]
         scrapedtitle = title[14:]
+        scrapedtitle = scrapedtitle.replace("Online Gratis","")
+        scrapedtitle = scrapedtitle.replace("Online 2015 Gratis","")
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , fulltitle=scrapedtitle, url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , viewmode="movie", fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg", folder=True) )
+        itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , fulltitle=scrapedtitle, url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , viewmode="movie", fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg", folder=True, hasContentDetails="true", contentTitle=scrapedtitle, contentThumbnail=scrapedthumbnail) )
 
 
     '''
@@ -130,6 +133,7 @@ def peliculas(item):
     patron += '<a href="([^"]+)[^<]+<img alt="" src="([^"]+)".*?'
     patron += '<span class="rosa">(.*?)</span>'
     matches = re.compile(patron,re.DOTALL).findall(data)
+    logger.info("[cinetux.py] peliculas [patron 2]")
     scrapertools.printMatches(matches)
 
     for scrapedurl,scrapedthumbnail,calidad in matches:
@@ -144,7 +148,7 @@ def peliculas(item):
         scrapedplot = ""
         scrapedtitle = titulo + " ["+calidad+"]"
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , fulltitle=scrapedtitle, url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , viewmode="movie", fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg",  folder=True) )
+        itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , fulltitle=scrapedtitle, url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , viewmode="movie", fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg",  folder=True, hasContentDetails="true", contentTitle=scrapedtitle, contentThumbnail=scrapedthumbnail) )
 
     '''
     <div id="post-57573">
@@ -156,14 +160,17 @@ def peliculas(item):
     patron += '<a href="([^"]+)" rel="[^"]+" title="([^"]+)"[^<]+'
     patron += '<img style="[^"]+" width="\d+" height="\d+" src=([^>]+)>'
     matches = re.compile(patron,re.DOTALL).findall(data)
+    logger.info("[cinetux.py] peliculas [patron 3]")
     scrapertools.printMatches(matches)
 
     for scrapedurl,title,thumbnail in matches:
         scrapedplot = ""
         scrapedthumbnail = thumbnail[:-2]
         scrapedtitle = title[14:]
+        scrapedtitle = scrapedtitle.replace("Online Gratis","")
+        scrapedtitle = scrapedtitle.replace("Online 2015 Gratis","")
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , fulltitle=scrapedtitle, url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , viewmode="movie", fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg", folder=True) )
+        itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , fulltitle=scrapedtitle, url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , viewmode="movie", fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg", folder=True, hasContentDetails="true", contentTitle=scrapedtitle, contentThumbnail=scrapedthumbnail) )
 
     '''
     <td class="contenido">
@@ -188,14 +195,17 @@ def peliculas(item):
     patron += '<a href="([^"]+)"[^<]+'
     patron += '<img src="([^"]+)" style="[^"]+" alt="([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
+    logger.info("[cinetux.py] peliculas [patron 4]")
     scrapertools.printMatches(matches)
 
     for scrapedurl,thumbnail,title in matches:
         scrapedplot = ""
         scrapedthumbnail = thumbnail
         scrapedtitle = title[14:]
+        scrapedtitle = scrapedtitle.replace("Online Gratis","")
+        scrapedtitle = scrapedtitle.replace("Online 2015 Gratis","")
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , fulltitle=scrapedtitle, url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , viewmode="movie", fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg", folder=True) )
+        itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , fulltitle=scrapedtitle, url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , viewmode="movie", fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg", folder=True, hasContentDetails="true", contentTitle=scrapedtitle, contentThumbnail=scrapedthumbnail) )
 
     # Extrae el paginador
     next_page_link = scrapertools.find_single_match(data,'<a href="([^"]+)"[^<]+<strong>Siguiente</strong>')
@@ -231,7 +241,7 @@ def bloque(item):
         scrapedtitle = scrapedtitle.capitalize()
 
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , fulltitle=scrapedtitle, url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , viewmode="movie", fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg" , folder=True) )
+        itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , fulltitle=scrapedtitle, url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , viewmode="movie", fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg" , folder=True, hasContentDetails="true", contentTitle=scrapedtitle, contentThumbnail=scrapedthumbnail) )
 
     return itemlist
 
@@ -281,6 +291,11 @@ def findvideos(item):
     # Busca el argumento
     data = scrapertools.cache_page(item.url)
     logger.info("data="+data)
+
+    item.plot = scrapertools.find_single_match(data,'<td><span class="info">Sinops[^<]+</span>([^<]+)</td>')
+    item.plot = scrapertools.htmlclean(item.plot)
+    item.contentPlot = item.plot
+
     '''
     <tr class="tabletr">
     <td class="episode-server" align="left"><img src="http://www.cinetux.org/imagenes/veronline.png" alt="" width="22" height="22" />Opción 01</td>
@@ -303,9 +318,9 @@ def findvideos(item):
     for scrapedtitle,scrapedserver,scrapedlanguage,scrapedquality,scrapedlink in matches:
         title = "Ver "+scrapedtitle+" en "+scrapedserver+" ("+scrapedlanguage+") ("+scrapedquality+")"
         url = scrapedlink
-        thumbnail = item.thumbnail
+        thumbnail = servertools.guess_server_thumbnail(scrapedserver)
         plot = ""
-        itemlist.append( Item(channel=__channel__, action="play", title=title , fulltitle=item.fulltitle+" ["+scrapedlanguage+"]["+scrapedquality+"]", url=url , thumbnail=thumbnail , plot=plot , fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg" , folder=False) )
+        itemlist.append( Item(channel=__channel__, action="play", title=title , fulltitle=item.fulltitle+" ["+scrapedlanguage+"]["+scrapedquality+"]", url=url , thumbnail=thumbnail , plot=plot , fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg" , parentContent=item, folder=False) )
 
     patron  = '<tr class="tabletr">[^<]+'
     patron += '<td class="opcion-td"><img[^>]+>([^>]+)</td>[^<]+'
@@ -318,9 +333,9 @@ def findvideos(item):
     for scrapedtitle,scrapedserver,scrapedlanguage,scrapedquality,scrapedlink in matches:
         title = "Ver "+scrapedtitle+" en "+scrapedserver+" ("+scrapedlanguage+") ("+scrapedquality+")"
         url = scrapedlink
-        thumbnail = item.thumbnail
+        thumbnail = servertools.guess_server_thumbnail(scrapedserver)
         plot = ""
-        itemlist.append( Item(channel=__channel__, action="play", title=title , fulltitle=item.fulltitle, url=url , thumbnail=thumbnail , plot=plot , fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg" , folder=False) )
+        itemlist.append( Item(channel=__channel__, action="play", title=title , fulltitle=item.fulltitle, url=url , thumbnail=thumbnail , plot=plot , fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg" , parentContent=item , folder=False) )
 
     patron  = '<tr class="tabletr">[^<]+'
     patron += '<td class="episode-server[^>]+><img[^>]+>([^>]+)</td>[^<]+'
@@ -333,12 +348,12 @@ def findvideos(item):
     for scrapedtitle,scrapedserver,scrapedlanguage,scrapedquality,scrapedlink in matches:
         title = "Ver "+scrapedtitle+" en "+scrapedserver+" ("+scrapedlanguage+") ("+scrapedquality+")"
         url = scrapedlink
-        thumbnail = item.thumbnail
+        thumbnail = servertools.guess_server_thumbnail(scrapedserver)
         plot = ""
-        itemlist.append( Item(channel=__channel__, action="play", title=title , fulltitle=item.fulltitle+" ["+scrapedlanguage+"]["+scrapedquality+"]", url=url , thumbnail=thumbnail , plot=plot , folder=False) )
+        itemlist.append( Item(channel=__channel__, action="play", title=title , fulltitle=item.fulltitle+" ["+scrapedlanguage+"]["+scrapedquality+"]", url=url , thumbnail=thumbnail , plot=plot , parentContent=item , folder=False) )
 
     if len(itemlist)==0:
-        itemlist = servertools.find_video_items(data=data)
+        itemlist = servertools.find_video_items(item=item,data=data)
         i=1
         for videoitem in itemlist:
             videoitem.title = "Ver Opción %d en %s" % (i,videoitem.server)
@@ -350,7 +365,7 @@ def findvideos(item):
 def play(item):
     logger.info("[cinetux.py] play item.url="+item.url)
     itemlist=[]
-    itemlist = servertools.find_video_items(data=item.url)
+    itemlist = servertools.find_video_items(item=item,data=item.url)
     i=1
     for videoitem in itemlist:
         videoitem.title = "Mirror %d%s" % (i,videoitem.title)

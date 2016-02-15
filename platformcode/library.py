@@ -34,7 +34,7 @@ DEBUG = True
 LIBRARY_PATH = config.get_library_path()
 if not os.path.exists(LIBRARY_PATH):
     logger.info("[library.py] Library path doesn't exist:"+LIBRARY_PATH)
-    os.mkdir(LIBRARY_PATH)
+    config.verify_directories_created()
 
 #MOVIES_PATH
 MOVIES_PATH = xbmc.translatePath( os.path.join( LIBRARY_PATH, 'CINE' ) )

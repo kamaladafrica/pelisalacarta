@@ -5,7 +5,7 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 # ------------------------------------------------------------
 
-import re, urllib2, cookielib, xbmc, os
+import re, urllib2, cookielib, os
 from core import scrapertools
 from core import logger
 from core import config
@@ -25,8 +25,8 @@ Request = urllib2.Request
 
 
 if cj != None:
-    if os.path.isfile(xbmc.translatePath(ficherocookies)):
-        cj.load(xbmc.translatePath(ficherocookies))
+    if os.path.isfile(ficherocookies):
+        cj.load(ficherocookies)
     opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
 else:
     opener = urllib2.build_opener()
@@ -45,9 +45,11 @@ def test_video_exists(page_url):
     return True, ""
 
 
-def decodeOpenLoad(html):
-
-    aastring = re.search(r"<video(?:.|\s)*?<script\s[^>]*?>((?:.|\s)*?)</script", html, re.DOTALL | re.IGNORECASE).group(1)
+def decodeOpenLoad(html, video=True):
+    if video == True:
+        aastring = re.search(r"<video(?:.|\s)*?<script\s[^>]*?>((?:.|\s)*?)</script", html, re.DOTALL | re.IGNORECASE).group(1)
+    else:
+        aastring = re.search(r"Click to start Download(?:.|\s).*?<script\s[^>]*?>((?:.|\s)*?)</script", html, re.DOTALL | re.IGNORECASE).group(1)
     
     aastring = aastring.replace("((ﾟｰﾟ) + (ﾟｰﾟ) + (ﾟΘﾟ))", "9")
     aastring = aastring.replace("((ﾟｰﾟ) + (ﾟｰﾟ))","8")
@@ -72,9 +74,18 @@ def decodeOpenLoad(html):
     
     decodestring = decode(decodestring)
     decodestring = decodestring.replace("\\/","/")
-    
-    videourl = re.search(r'vr="([^"]+)', decodestring, re.DOTALL | re.IGNORECASE).group(1)
-    return videourl
+
+    #Header para la descarga
+    header_down = "|User-Agent=Mozilla/5.0 (Windows NT 10.0; WOW64; rv:43.0) Gecko/20100101 Firefox/43.0|"
+    if video == True:
+        videourl = re.search(r'vr ="([^"]+)"', decodestring, re.DOTALL | re.IGNORECASE).group(1)
+        extension = re.search(r'vt ="([^"]+)"', decodestring, re.DOTALL | re.IGNORECASE).group(1)
+        videourl = scrapertools.get_header_from_response(videourl,header_to_get="location")
+        return videourl+header_down+extension, extension
+    else:
+        videourl = re.search(r'\'href\',"([^"]+)"', decodestring, re.DOTALL | re.IGNORECASE).group(1)
+        extension = videourl[-4:]
+        return videourl+header_down+extension, extension
 
 def decode(encoded):
     for octc in (c for c in re.findall(r'\\(\d{2,3})', encoded)):
@@ -85,14 +96,24 @@ def decode(encoded):
 def get_video_url(page_url, premium=False, user="", password="", video_password=""):
     logger.info("[openload.py] url=" + page_url)
     video_urls = []
-	
     req = Request(page_url, '', headers)
     response = urlopen(req, timeout=60)
     data = response.read()
-    cj.save(ficherocookies)
-    response.close()
-    url = decodeOpenLoad(data)
-    video_urls.append([".mp4" + " [Openload]", url])
+    if "videocontainer" not in data:
+        url = page_url.replace("/embed/","/f/")
+        req = Request(url, '', headers)
+        response = urlopen(req, timeout=60)
+        data = response.read()
+        cj.save(ficherocookies)
+        response.close()
+        url, extension = decodeOpenLoad(data, video=False)
+        video_urls.append([str(extension) + " [Openload]", url])          
+    else:
+        cj.save(ficherocookies)
+        response.close()
+        url, extension = decodeOpenLoad(data)
+        video_urls.append([str(extension) + " [Openload]", url])
+
     return video_urls
 
 

@@ -69,7 +69,6 @@ def categorias(item):
     scrapertools.printMatches(matches)
 
     for match in matches:
-        #xbmctools.addnewfolder( __channel__ , "novedades" , category , match[1] , match[0] + "feed?paged=1" , "" , "")
         itemlist.append( Item(channel=__channel__, action="novedades", title=match[1] , url=match[0] , folder=True) )
 
     return itemlist

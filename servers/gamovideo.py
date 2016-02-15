@@ -20,12 +20,19 @@ def test_video_exists( page_url ):
 def get_video_url( page_url , premium = False , user="" , password="", video_password="" ):
     logger.info("pelisalacarta.gamovideo get_video_url(page_url='%s')" % page_url)
     if not "embed" in page_url:
-      page_url = page_url.replace("http://gamovideo.com/","http://gamovideo.com/embed-") + "-640x360.html"
+        page_url = page_url.replace("http://gamovideo.com/","http://gamovideo.com/embed-") + "-640x360.html"
 
-    data = scrapertools.cache_page(page_url)
-    data = scrapertools.find_single_match(data,"<script type='text/javascript'>(.*?)</script>")
+    HEADERS = []
+    HEADERS.append(["User-Agent","Firefox"])
+
+    data = scrapertools.cache_page(page_url,headers=HEADERS)
+    logger.info("pelisalacarta.gamovideo data=="+data)
+
+    data = scrapertools.find_single_match(data,"<script type='text/javascript'>(eval.function.p,a,c,k,e,d..*?)</script>")
+    logger.info("pelisalacarta.gamovideo data=="+data)
+
     data = jsunpack.unpack(data)
-    
+
     host = scrapertools.get_match(data, 'image:"(http://[^/]+/)')
     flv_url = scrapertools.get_match(data, ',\{file:"([^"]+)"')
     rtmp_url = scrapertools.get_match(data, '\[\{file:"([^"]+)"')

@@ -15,7 +15,7 @@ import os
 import xbmcaddon
 import xbmc
 
-PLATFORM_NAME = "kodi-isengard"
+PLATFORM_NAME = "kodi-jarvis"
 
 PLUGIN_NAME = "pelisalacarta"
 __settings__ = xbmcaddon.Addon(id="plugin.video."+PLUGIN_NAME)

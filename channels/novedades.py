@@ -52,9 +52,9 @@ def peliculas(item):
     item.url = "http://www.divxatope.com/categoria/peliculas-castellano"
     itemlist.extend( divxatope.lista(item) )
 
-    import gnula
-    item.url = "http://gnula.nu/peliculas-online/lista-de-peliculas-online-parte-1/"
-    itemlist.extend( gnula.peliculas(item)[:20] )
+    import yaske
+    item.url = "http://www.yaske.cc/"
+    itemlist.extend( yaske.peliculas(item) )
 
     sorted_itemlist = []
 
@@ -81,9 +81,9 @@ def peliculas_infantiles(item):
     item.url = "http://www.cinetux.org/genero/infantil"
     itemlist.extend( cinetux.peliculas(item) )
 
-    import gnula
-    item.url = "http://gnula.nu/generos/lista-de-peliculas-del-genero-infantil/"
-    itemlist.extend( gnula.peliculas(item)[:20] )
+    import yaske
+    item.url = "http://www.yaske.cc/es/peliculas/custom/?gender=animation"
+    itemlist.extend( yaske.peliculas(item) )
 
     import oranline
     item.url = "http://www.oranline.com/Películas/infantil/"

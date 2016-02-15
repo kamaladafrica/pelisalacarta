@@ -6,8 +6,8 @@
             "serie", 
             "vos"
         ], 
-        "changes": "Arregalda la duplicidad online en download", 
-        "date": "13/05/2015", 
+        "changes": "añadido thumbnail, añadido plot, eliminadas variables que no se usaban, PEP8", 
+        "date": "06/01/2016", 
         "fanart": "", 
         "id": "seriesblanco", 
         "include_in_global_search": false, 
@@ -15,7 +15,7 @@
         "name": "Seriesblanco", 
         "thumbnail": "", 
         "update_url": "", 
-        "version": "6.0"
+        "version": "7.0"
     }, 
     "settings": {}
 }
