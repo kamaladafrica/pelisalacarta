@@ -12,9 +12,9 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/animeflv.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>5</version>
-	<date>10/01/2016</date>
-    <changes>se elimina referencia a requests por problemas con otras plataformas, anticloudflare</changes>
+	<version>6</version>
+	<date>18/02/2016</date>
+    <changes>actualizado metodo de renumeracion</changes>
 
 	<categories>
 		<category>anime</category>
