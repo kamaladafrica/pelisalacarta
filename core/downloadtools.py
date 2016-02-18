@@ -463,7 +463,7 @@ def downloadbest(video_urls,title,continuar=False):
     for elemento in invertida:
         videotitle = elemento[0]
         url = elemento[1]
-        logger.info("pelisalacarta.core.downloadtools Descargando opción "+title+" "+url)
+        logger.info("pelisalacarta.core.downloadtools Descargando opción "+title+" "+url.encode('ascii','ignore'))
         
         # Calcula el fichero donde debe grabar
         try:
@@ -558,7 +558,7 @@ def downloadfile(url,nombrefichero,headers=[],silent=False,continuar=False):
         # Crea el diálogo de progreso
         if not silent:
             progreso = xbmcgui.DialogProgress()
-            progreso.create( "plugin" , "Descargando..." , url , nombrefichero )
+            progreso.create( "plugin" , "Descargando..." , url.split("|")[0] , nombrefichero )
             #progreso.create( "plugin" , "Descargando..." , os.path.basename(nombrefichero)+" desde "+urlparse.urlparse(url).hostname )
         else:
             progreso = ""
