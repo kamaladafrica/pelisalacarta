@@ -78,8 +78,8 @@ class Tmdb(object):
     
     
     def __search(self, index_resultado=0, page=1):
-        # http://api.themoviedb.org/3/search/movie?api_key=57983e31fb435df4df77afb854740ea9&query=superman&language=es&include_adult=false&page=1
-        url='http://api.themoviedb.org/3/search/%s?api_key=57983e31fb435df4df77afb854740ea9&query=%s&language=%s&include_adult=%s&page=%s' %(self.busqueda["tipo"], self.busqueda["texto"].replace(' ','%20') , self.busqueda["idioma"], self.busqueda["include_adult"], str(page))
+        # http://api.themoviedb.org/3/search/movie?api_key=f7f51775877e0bb6703520952b3c7840&query=superman&language=es&include_adult=false&page=1
+        url='http://api.themoviedb.org/3/search/%s?api_key=f7f51775877e0bb6703520952b3c7840&query=%s&language=%s&include_adult=%s&page=%s' %(self.busqueda["tipo"], self.busqueda["texto"].replace(' ','%20') , self.busqueda["idioma"], self.busqueda["include_adult"], str(page))
         if self.busqueda["year"] !='': url+= '&year=' + self.busqueda["year"] 
         buscando= self.busqueda["texto"].capitalize()
         
@@ -102,13 +102,13 @@ class Tmdb(object):
     def __by_id(self,source="tmdb"):
         
         if source=="tmdb":
-            # http://api.themoviedb.org/3/movie/1924?api_key=57983e31fb435df4df77afb854740ea9&language=es&append_to_response=images,videos,external_ids&include_image_language=es,null
-            url='http://api.themoviedb.org/3/%s/%s?api_key=57983e31fb435df4df77afb854740ea9&language=%s&append_to_response=images,videos,external_ids&include_image_language=%s,null' %(self.busqueda["tipo"], self.busqueda["id"], self.busqueda["idioma"], self.busqueda["idioma"])
+            # http://api.themoviedb.org/3/movie/1924?api_key=f7f51775877e0bb6703520952b3c7840&language=es&append_to_response=images,videos,external_ids&include_image_language=es,null
+            url='http://api.themoviedb.org/3/%s/%s?api_key=f7f51775877e0bb6703520952b3c7840&language=%s&append_to_response=images,videos,external_ids&include_image_language=%s,null' %(self.busqueda["tipo"], self.busqueda["id"], self.busqueda["idioma"], self.busqueda["idioma"])
             buscando= "id_Tmdb: " + self.busqueda["id"]
             
         else:
-            # http://api.themoviedb.org/3/find/%s?external_source=imdb_id&api_key=57983e31fb435df4df77afb854740ea9  
-            url='http://api.themoviedb.org/3/find/%s?external_source=%s&api_key=57983e31fb435df4df77afb854740ea9&language=%s' %(self.busqueda["id"], source, self.busqueda["idioma"])
+            # http://api.themoviedb.org/3/find/%s?external_source=imdb_id&api_key=f7f51775877e0bb6703520952b3c7840  
+            url='http://api.themoviedb.org/3/find/%s?external_source=%s&api_key=f7f51775877e0bb6703520952b3c7840&language=%s' %(self.busqueda["id"], source, self.busqueda["idioma"])
             buscando= source.capitalize() + ": " + self.busqueda["id"]
              
         logger.info("[Tmdb.py] Buscando " + buscando)    
@@ -221,7 +221,7 @@ class Tmdb(object):
                 Tmdb.dic_generos [self.busqueda["idioma"]] = {}
             if not Tmdb.dic_generos[self.busqueda["idioma"]].has_key(self.busqueda["tipo"]):
                 Tmdb.dic_generos[self.busqueda["idioma"]][self.busqueda["tipo"]] = {}
-            url='http://api.themoviedb.org/3/genre/%s/list?api_key=57983e31fb435df4df77afb854740ea9&language=%s' %(self.busqueda["tipo"], self.busqueda["idioma"])
+            url='http://api.themoviedb.org/3/genre/%s/list?api_key=f7f51775877e0bb6703520952b3c7840&language=%s' %(self.busqueda["tipo"], self.busqueda["idioma"])
             lista_generos=self.__get_json(url)["genres"]
             for i in lista_generos:
                 Tmdb.dic_generos[self.busqueda["idioma"]][self.busqueda["tipo"]][str(i["id"])] = i ["name"]
@@ -336,7 +336,7 @@ class Tmdb(object):
                     self.busqueda["idioma"] = idioma_alternativo
                 else:
                     self.busqueda["idioma"] = self.result['original_language']
-                url='http://api.themoviedb.org/3/%s/%s?api_key=57983e31fb435df4df77afb854740ea9&language=%s' %(self.busqueda["tipo"], self.busqueda["id"], self.busqueda["idioma"])
+                url='http://api.themoviedb.org/3/%s/%s?api_key=f7f51775877e0bb6703520952b3c7840&language=%s' %(self.busqueda["tipo"], self.busqueda["id"], self.busqueda["idioma"])
                 resultado=self.__get_json(url)
                 if resultado:
                     if resultado.has_key('overview'):
@@ -530,8 +530,8 @@ class Tmdb(object):
         if not self.temporada.has_key("season_number") or self.temporada["season_number"] != temporada:
             # Si no hay datos sobre la temporada solicitada, consultar en la web
             
-            # http://api.themoviedb.org/3/tv/1402/season/4?api_key=57983e31fb435df4df77afb854740ea9&language=es
-            url= "http://api.themoviedb.org/3/tv/%s/season/%s?api_key=57983e31fb435df4df77afb854740ea9&language=%s" %( self.result["id"], temporada, self.busqueda["idioma"])
+            # http://api.themoviedb.org/3/tv/1402/season/4?api_key=f7f51775877e0bb6703520952b3c7840&language=es
+            url= "http://api.themoviedb.org/3/tv/%s/season/%s?api_key=f7f51775877e0bb6703520952b3c7840&language=%s" %( self.result["id"], temporada, self.busqueda["idioma"])
             
             buscando= "id_Tmdb: " + str(self.result["id"]) + " temporada: " + str(temporada) + " capitulo: " + str(capitulo)
             logger.info("[Tmdb.py] Buscando " + buscando)
