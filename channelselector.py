@@ -54,9 +54,8 @@ def mainlist(params,url,category):
                 try:
                     updater.checkforupdates()
                 except:
-                    import xbmcgui
-                    dialog = xbmcgui.Dialog()
-                    dialog.ok("No se puede conectar","No ha sido posible comprobar","si hay actualizaciones")
+                    from platformcode import platformtools
+                    platformtools.dialog_ok("No se puede conectar","No ha sido posible comprobar","si hay actualizaciones")
                     logger.info("channelselector.mainlist Fallo al verificar la actualización")
                     pass
             else:

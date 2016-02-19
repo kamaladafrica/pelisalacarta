@@ -1,7 +1,7 @@
 ﻿# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
-# Lista de vídeos descargados
+# platformtools
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 # Herramientas responsables de adaptar los diferentes 
@@ -15,7 +15,6 @@ import os
 from math import ceil
 from core import config
 
-
 def dialog_ok(heading, line1, line2="", line3=""):
     dialog = xbmcgui.Dialog()
     return dialog.ok(heading, line1, line2, line3)
@@ -24,7 +23,7 @@ def dialog_notification(heading, message, icon=0, time=5000, sound=True):
     dialog = xbmcgui.Dialog()
     l_icono=(xbmcgui.NOTIFICATION_INFO , xbmcgui.NOTIFICATION_WARNING, xbmcgui.NOTIFICATION_ERROR)
     dialog.notification (heading, message, l_icono[icon], time, sound)
-    
+
 def dialog_yesno(heading, line1, line2="", line3="", nolabel="No", yeslabel="Si", autoclose=""):
     dialog = xbmcgui.Dialog()
     if autoclose:
@@ -32,54 +31,48 @@ def dialog_yesno(heading, line1, line2="", line3="", nolabel="No", yeslabel="Si"
     else:
         return dialog.yesno(heading, line1, line2, line3, nolabel, yeslabel)
   
-def dialog_select(title, opciones): 
-    resultado = xbmcgui.Dialog().select(title, opciones)
-    if resultado ==-1: resultado = None
-    return resultado
- 
-def dialog_progress(title, Texto):
-  progreso = xbmcgui.DialogProgress()
-  progreso.create(title , Texto)
-  Progreso = DialogoProgreso(progreso,title)
-  return Progreso   
+def dialog_select(heading, list): 
+    return xbmcgui.Dialog().select(heading, list)
     
-def keyboard(Texto, Title="", Password=False):
-    keyboard = xbmc.Keyboard(Texto, Title, Password)
+def dialog_progress(heading, line1, line2="", line3=""):
+    dialog = xbmcgui.DialogProgress()
+    dialog.create(heading, line1, line2, line3)
+    return dialog
+
+def dialog_progress_bg(heading, message=""):
+    dialog = xbmcgui.DialogProgressBG()
+    dialog.create(heading, message)
+    return dialog
+
+def dialog_input(default="", heading="", hidden=False):
+    keyboard = xbmc.Keyboard(default, heading, hidden)
     keyboard.doModal()
     if (keyboard.isConfirmed()):
         return keyboard.getText()
     else:
         return None
-    
-class DialogoProgreso(object):
-  Progreso=""
-  Titulo=""
-  Closed=False
-  def __init__(self, Progreso, Titulo):
-    self.Progreso = Progreso
-    self.Titulo = Titulo
-    self.Closed = False
-  
-  def iscanceled(self):
-    return (self.Progreso.iscanceled() or self.Closed)
 
-  def update(self,Porcentaje, Texto):
-    Linea1=" "
-    Linea2=" "
-    Linea3=" "
-    if len(Texto.split("\n"))>0:
-      Linea1= Texto.split("\n")[0]
-    if len(Texto.split("\n"))>1:
-      Linea2= Texto.split("\n")[1]
-    if len(Texto.split("\n"))>2:
-      Linea3= Texto.split("\n")[2]
-    self.Progreso.update(Porcentaje,Linea1,Linea2,Linea3)
+def dialog_numeric(type, heading, default=""):
+    dialog = xbmcgui.Dialog()
+    dialog.numeric(type, heading, default)
+    return dialog
+        
+def itemlist_refresh():
+    xbmc.executebuiltin("Container.Refresh")
 
-  def close(self):
-    self.Progreso.close()
-    self.Closed = True    
+def itemlist_update(item):
+    xbmc.executebuiltin("Container.Update(" + sys.argv[0] + "?" + item.tourl() + ")")
+
+def render_items(itemlist, parentitem):
+    #Por implementar (traer de xbmctools)
+    pass
     
-    
+def is_playing():
+    return xbmc.Player().isPlaying()
+
+def play_video(item):
+    #Por implementar (traer de xbmctools)
+    pass
     
 #---------------------------------------------------------------------------
 #  Clases para la pantalla de configuracion

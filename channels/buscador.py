@@ -73,19 +73,8 @@ def do_search(item):
         channel_language = "all"
         logger.info("pelisalacarta.channels.buscador channel_language="+channel_language)
 
-    show_dialog = False
-    progreso = None
-    if config.is_xbmc():
-        show_dialog = True
-
-    try:
-        import xbmcgui
-        progreso = xbmcgui.DialogProgressBG()
-        progreso.create("Buscando " + tecleado.title())
-    except ImportError:
-        xbmcgui = None
-        show_dialog = False
-
+    from platformcode import platformtools
+    progreso = platformtools.dialog_progress_bg("Buscando " + tecleado.title())
     channel_files = glob.glob(channels_path)
     number_of_channels = len(channel_files)
 
@@ -113,8 +102,7 @@ def do_search(item):
         if channel_language != "all" and channel_parameters["language"] != channel_language:
             continue
 
-        if show_dialog:
-            progreso.update(percentage, ' Buscando "' + tecleado + '"', basename_without_extension)
+        progreso.update(percentage, ' Buscando "' + tecleado + '"', basename_without_extension)
 
         logger.info("pelisalacarta.channels.buscador Intentado busqueda en " + basename_without_extension + " de " +
                     tecleado)
@@ -135,8 +123,7 @@ def do_search(item):
 
     itemlist = sorted(itemlist, key=lambda Item: Item.title) 
 
-    if show_dialog:
-        progreso.close()
+    progreso.close()
 
     return itemlist
 

@@ -510,10 +510,7 @@ def downloadfile(url,nombrefichero,headers=[],silent=False,continuar=False):
 
     try:
         # Si no es XBMC, siempre a "Silent"
-        try:
-            import xbmcgui
-        except:
-            silent=True
+        from platformcode import platformtools
         
         # antes
         #f=open(nombrefichero,"wb")
@@ -557,9 +554,7 @@ def downloadfile(url,nombrefichero,headers=[],silent=False,continuar=False):
     
         # Crea el diálogo de progreso
         if not silent:
-            progreso = xbmcgui.DialogProgress()
-            progreso.create( "plugin" , "Descargando..." , url.split("|")[0] , nombrefichero )
-            #progreso.create( "plugin" , "Descargando..." , os.path.basename(nombrefichero)+" desde "+urlparse.urlparse(url).hostname )
+            progreso = platformtools.dialog_progress( "plugin" , "Descargando..." , url , nombrefichero )
         else:
             progreso = ""
     
@@ -699,16 +694,14 @@ def downloadfile(url,nombrefichero,headers=[],silent=False,continuar=False):
                 if not silent:
                     progreso.close()
                 
-                #advertencia = xbmcgui.Dialog()
-                #resultado = advertencia.ok('Error al descargar' , 'Se ha producido un error' , 'al descargar el archivo')
+                #platformtools.dialog_ok('Error al descargar' , 'Se ha producido un error' , 'al descargar el archivo')
                 
                 return -2
 
     except:
         if url.startswith("rtmp") and not silent:
-            import xbmcgui
-            advertencia = xbmcgui.Dialog()
-            resultado = advertencia.ok( "No puedes descargar ese vídeo","Las descargas en RTMP aún no","están soportadas")
+            from platformcode import platformtools
+            advertencia = platformtools.dialog_ok( "No puedes descargar ese vídeo","Las descargas en RTMP aún no","están soportadas")
         else:
             import traceback,sys
             from pprint import pprint
@@ -762,9 +755,8 @@ def downloadfileGzipped(url,pathfichero):
     txdata = ""
 
     # Crea el diálogo de progreso
-    import xbmcgui
-    progreso = xbmcgui.DialogProgress()
-    progreso.create( "addon" , "Descargando..." , url , nombrefichero )
+    from platformcode import platformtools
+    progreso = platformtools.dialog_progress( "addon" , "Descargando..." , url.split("|")[0] , nombrefichero )
 
     # Timeout del socket a 60 segundos
     socket.setdefaulttimeout(10)
