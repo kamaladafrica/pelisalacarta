@@ -22,7 +22,7 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
     logger.info("media_url="+media_url[0])
 
     # URL del vídeo
-    video_urls.append( [ "."+ media_url[1] + " [cnubis]",media_url[0] ] )
+    video_urls.append( [ "."+ media_url[1] + " [cnubis]", media_url[0].replace("https","http") ] )
 
     for video_url in video_urls:
        logger.info("pelisalacarta.servers.cnubis %s - %s" % (video_url[0],video_url[1]))

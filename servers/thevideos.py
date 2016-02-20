@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
-# Conector para flashx
+# Conector para thevideos
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
@@ -12,27 +12,24 @@ from core import logger
 from core import jsunpack
 
 def get_video_url( page_url , premium = False , user="" , password="", video_password="" ):
-    logger.info("pelisalacarta.servers.flashx url="+page_url)
+    logger.info("pelisalacarta.servers.thevideos url="+page_url)
 
-    # Lo pide una vez
     headers = [['User-Agent','Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.14) Gecko/20080404 Firefox/2.0.0.14']]
     data = scrapertools.cache_page( page_url , headers=headers )
 
     match = scrapertools.find_single_match(data,"<script type='text/javascript'>(.*?)</script>")
-
-    if match.startswith("eval"):	
+    if match.startswith("eval"):
         match = jsunpack.unpack(match)
 
     # Extrae la URL
-    #{file:"http://f11-play.flashx.tv/luq4gfc7gxixexzw6v4lhz4xqslgqmqku7gxjf4bk43u4qvwzsadrjsozxoa/video1.mp4"}
+    #{file:"http://95.211.81.229/kj2vy4rle46vtaw52bsj4ooof6meikcbmwimkrthrahbmy4re3eqg3buhoza/v.mp4",label:"240p"
     video_urls = []
-    media_urls = scrapertools.find_multiple_matches(match,'\{file\:"([^"]+)"')
-    for media_url in media_urls:
-        if not media_url.endswith("png"):
-            video_urls.append( [ media_url[-4:]+" [flashx]",media_url])
+    media_urls = scrapertools.find_multiple_matches(match,'\{file\:"([^"]+)",label:"([^"]+)"')
+    for media_url, quality in media_urls:
+        video_urls.append( [ media_url[-4:]+" [thevideos] "+quality, media_url])
 
     for video_url in video_urls:
-        logger.info("pelisalacarta.servers.flashx %s - %s" % (video_url[0],video_url[1]))
+        logger.info("pelisalacarta.servers.thevideos %s - %s" % (video_url[0],video_url[1]))
 
     return video_urls
 
@@ -43,18 +40,18 @@ def find_videos(data):
     encontrados = set()
     devuelve = []
 
-    #http://flashx.tv/z3nnqbspjyne
-    #http://www.flashx.tv/embed-li5ydvxhg514.html
-    patronvideos  = 'flashx.(?:tv|pw)/(?:embed-|)([a-z0-9A-Z]+)'
-    logger.info("pelisalacarta.servers.flashx find_videos #"+patronvideos+"#")
+    #http://thevideos.tv/fxp1ffutzw2y.html
+    #http://thevideos.tv/embed-fxp1ffutzw2y.html
+    patronvideos  = 'thevideos.tv/(?:embed-|)([a-z0-9A-Z]+)'
+    logger.info("pelisalacarta.servers.thevideos find_videos #"+patronvideos+"#")
     matches = re.compile(patronvideos,re.DOTALL).findall(data)
 
     for match in matches:
-        titulo = "[flashx]"
-        url = "http://www.flashx.pw/fxplay-%s.html" % match
+        titulo = "[thevideos]"
+        url = "http://thevideos.tv/embed-%s.html" % match
         if url not in encontrados:
             logger.info("  url="+url)
-            devuelve.append( [ titulo , url , 'flashx' ] )
+            devuelve.append( [ titulo , url , 'thevideos' ] )
             encontrados.add(url)
         else:
             logger.info("  url duplicada="+url)
@@ -63,6 +60,6 @@ def find_videos(data):
 
 def test():
 
-    video_urls = get_video_url("http://www.flashx.tv/vpkvjdpkh972.html")
+    video_urls = get_video_url("http://thevideos.tv/embed-fxp1ffutzw2y.html")
 
     return len(video_urls)>0
