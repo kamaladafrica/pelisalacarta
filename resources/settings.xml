@@ -66,16 +66,6 @@
     <setting id="mocosoftxpassword" type="text" option="hidden" label="Password" enable="!eq(-1,)+eq(-2,true)" default=""/>
 
     <setting type="sep" />
-    <setting id="serieslyaccount" type="bool" label="Series.ly" default="false"/>
-    <setting id="serieslyuser" type="text" label="User"  enable="eq(-1,true)" default=""/>
-    <setting id="serieslypassword" type="text" option="hidden" label="Password" enable="!eq(-1,)+eq(-2,true)" default=""/>
-
-    <setting type="sep" />
-    <setting id="megaspainaccount" type="bool" label="megaspain" default="false"/>
-    <setting id="megaspainuser" type="text" label="User"  enable="eq(-1,true)" default=""/>
-    <setting id="megaspainpassword" type="text" option="hidden" label="Password" enable="!eq(-1,)+eq(-2,true)" default=""/>
-
-    <setting type="sep" />
     <setting id="megahdaccount" type="bool" label="megaHD" default="false"/>
     <setting id="megahduser" type="text" label="User"  enable="eq(-1,true)" default=""/>
     <setting id="megahdpassword" type="text" option="hidden" label="Password" enable="!eq(-1,)+eq(-2,true)" default=""/>
@@ -97,11 +87,6 @@
     <setting id="seriesmuaccount" type="bool" label="seriesmu" default="false"/>
     <setting id="seriesmuuser" type="text" label="User"  enable="eq(-1,true)" default=""/>
     <setting id="seriesmupassword" type="text" option="hidden" label="Password" enable="!eq(-1,)+eq(-2,true)" default=""/>
-
-    <setting type="sep" />
-    <setting id="torrentestrenosaccount" type="bool" label="torrentestrenos" default="false"/>
-    <setting id="torrentestrenosuser" type="text" label="User"  enable="eq(-1,true)" default=""/>
-    <setting id="torrentestrenospassword" type="text" option="hidden" label="Password" enable="!eq(-1,)+eq(-2,true)" default=""/>
 
     <setting type="sep" />
     <setting id="hdfullaccount" type="bool" label="hdfull" default="false"/>
