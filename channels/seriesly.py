@@ -14,6 +14,7 @@ from core import config
 from core import scrapertools
 from core.item import Item
 from servers import servertools
+from platformcode import platformtools
 
 try:
 	import json
@@ -765,27 +766,27 @@ def change_filter(item):
 	
 
 	filters=get_default_filters()
-	dialog=xbmcgui.Dialog()
+
 
 	if item.extra=="order":
 		orden=["Mas nuevo", "Mas viejo", "Puntuacion", "Mas visto", "Trending"]
 		order=[ 'newest', 'oldest', 'rating', 'most_viewed', 'trending']
-		filters["order"]=order[dialog.select("Selecciona el orden",orden)]
+		filters["order"]=order[platformtools.dialog_select("Selecciona el orden",orden)]
 
 	if item.extra == "min_year":
-		filters["min_year"]=dialog.numeric(0, "Selecciona el año de partida", str(filters["min_year"]))
+		filters["min_year"]=platformtools.dialog_numeric(0, "Selecciona el año de partida", str(filters["min_year"]))
 
 	if item.extra == "max_year":
-		filters["max_year"]=dialog.numeric(0, "Selecciona el año Final",str(filters["max_year"]))
+		filters["max_year"]=platformtools.dialog_numeric(0, "Selecciona el año Final",str(filters["max_year"]))
 
 	if item.extra== "limits":
 		limites=["10", "24", "48"]
 		limits=[10,24,48]
-		filters["limit"]=limits[dialog.select("Resultados por Pagina",limites)]
+		filters["limit"]=limits[platformtools.dialog_select("Resultados por Pagina",limites)]
 
 	if item.extra=="tipo":
 		tipo=["Todos","Series","Peliculas",  "Documentales", "Tvshows" ]
-		filters["mediaType"]=dialog.select("Selecciona el Tipo",tipo)
+		filters["mediaType"]=platformtools.dialog_select("Selecciona el Tipo",tipo)
 
 	if item.extra=="genre":
 		cat=[]
@@ -796,7 +797,7 @@ def change_filter(item):
 			cat.append(categorias[c])
 			genre.append(c)
 	
-		filters["genre"]=genre[dialog.select("Selecciona el Genero",cat)]
+		filters["genre"]=genre[platformtools.dialog_select("Selecciona el Genero",cat)]
 
 
 	path=config.get_data_path()
@@ -1127,12 +1128,10 @@ def get_constant(texto):
 def error_message(error):
 	
 	try:
-		import xbmcgui
-		dialog=xbmcgui.Dialog()
 	
 		text=get_constant("error")[str(error)]
 
-		dialog.ok("SERIES.LY", text)
+		platformtools.dialog_ok("SERIES.LY", text)
 	except:
 		logger.info("se ha producido en un error "+str(error))
 

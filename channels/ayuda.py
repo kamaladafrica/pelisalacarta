@@ -52,7 +52,8 @@ def tutoriales(item):
 def force_creation_advancedsettings(item):
 
     # Ruta del advancedsettings
-    import xbmc,xbmcgui,os
+    import xbmc,os
+    from platformcode import platformtools
     advancedsettings = xbmc.translatePath("special://userdata/advancedsettings.xml")
 
     # Copia el advancedsettings.xml desde el directorio resources al userdata
@@ -64,8 +65,7 @@ def force_creation_advancedsettings(item):
     fichero.write(texto)
     fichero.close()
                 
-    dialog2 = xbmcgui.Dialog()
-    dialog2.ok("plugin", "Se ha creado un fichero advancedsettings.xml","con la configuración óptima para el streaming.")
+    platformtools.dialog_ok("plugin", "Se ha creado un fichero advancedsettings.xml","con la configuración óptima para el streaming.")
 
     return []
 

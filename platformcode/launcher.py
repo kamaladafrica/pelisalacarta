@@ -16,7 +16,7 @@ from core import config
 from core import scrapertools
 from core import channeltools
 from core import updater
-from platformcode import guitools
+from platformcode import platformtools
 from platformcode import xbmctools
 
 def start():
