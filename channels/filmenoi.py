@@ -17,7 +17,7 @@ __channel__ = "filmenoi"
 __category__ = "F,S"
 __type__ = "generic"
 __title__ = "Filme-noi.com"
-__language__ = "ES"
+__language__ = "it"
 __creationdate__ = "20131223"
 
 DEBUG = config.get_setting("debug")
