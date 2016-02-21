@@ -27,7 +27,7 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
     logger.info("[uptobox.py] get_video_url(page_url='%s')" % page_url)
     #Si el enlace es directo de upstream
     if "uptobox" not in page_url:
-        data = scrapertools.cache_page(url)
+        data = scrapertools.cache_page(page_url)
         patron = "<source src='//([^']+)' type='([^']+)'"
         media = scrapertools.find_single_match(data, patron)
         media_url = "http://"+media[0]
