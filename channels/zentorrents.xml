@@ -12,9 +12,9 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/zentorrents.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>11</version>
-	<date>11/12/2015</date>
-	<changes>Correción código fanart</changes>
+	<version>12</version>
+	<date>19/02/2016</date>
+	<changes>Cambio id Tmdb</changes>
 	
 	<categories>
 		<category>torrent</category>
