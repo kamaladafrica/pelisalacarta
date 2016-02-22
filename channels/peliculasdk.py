@@ -27,7 +27,7 @@ __language__ = "ES"
 DEBUG = config.get_setting("debug")
 
 host = "http://www.peliculasdk.com/"
-fanart = ""
+Tmdb_key ="2e2160006592024ba87ccdf78c28f49f"
 
 def isGeneric():
     return True
@@ -197,7 +197,7 @@ def fanart(item):
     title= title.replace('ñ','n')
     title= title.replace('Crepusculo','Twilight')
     title= title.replace(' ','%20')
-    url="http://api.themoviedb.org/3/search/movie?api_key=57983e31fb435df4df77afb854740ea9&query=" + title + "&language=es&include_adult=false"
+    url="http://api.themoviedb.org/3/search/movie?api_key="+Tmdb_key+"&query=" + title + "&language=es&include_adult=false"
     data = scrapertools.cachePage(url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
     patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":"\\\(.*?)"'
@@ -219,7 +219,7 @@ def fanart(item):
                 posterdb = item.thumbnail
             fanart="https://image.tmdb.org/t/p/original" + fan
             item.extra= fanart
-            url ="http://api.themoviedb.org/3/movie/"+id+"/images?api_key=57983e31fb435df4df77afb854740ea9"
+            url ="http://api.themoviedb.org/3/movie/"+id+"/images?api_key="+Tmdb_key
             data = scrapertools.cachePage( url )
             data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
             
