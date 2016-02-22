@@ -12,9 +12,9 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/peliculasdk.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>3</version>
-	<date>10/12/2015</date>
-	<changes>A–adido multi-fanarty trailer. Mejoras codigo</changes>
+	<version>4</version>
+	<date>19/02/2016</date>
+	<changes>cambios web al obtener enlaces</changes>
 
 	<categories>
 		<category>torrent</category>

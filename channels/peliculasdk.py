@@ -360,8 +360,10 @@ def findvideos(item):
     logger.info("pelisalacarta.peliculasdk findvideos")
     
     itemlist = []
-    data = re.sub(r"<!--.*?-->","",scrapertools.cache_page(item.url))
+    data = scrapertools.cache_page(item.url)
+    data = re.sub(r"<!--.*?-->","",data)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
+   
     
     
     servers_data_list = {}
@@ -369,6 +371,8 @@ def findvideos(item):
     matches = re.compile(patron,re.DOTALL).findall(data)
     
     for server, id in matches:
+        
+        
         scrapedplot = scrapertools.get_match(data,'<span class="clms">(.*?)</div></div>')
         plotformat = re.compile('(.*?:) </span>',re.DOTALL).findall(scrapedplot)
         scrapedplot = scrapedplot.replace(scrapedplot,bbcode_kodi2html("[COLOR white]"+scrapedplot+"[/COLOR]"))
@@ -378,13 +382,15 @@ def findvideos(item):
         scrapedplot = scrapedplot.replace("</span>","[CR]")
         scrapedplot = scrapedplot.replace(":","")
         servers_data_list.update({server:id})
+
     
     url = "http://www.peliculasdk.com/Js/videos.js"
     data = scrapertools.cachePage(url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
+    data = data.replace ('<iframe width="100%" height="400" scrolling="no" frameborder="0"','')
 
     patron = 'function (\w+)\(id\).*?'
-    patron+= 'data-src="([^"]+)"'
+    patron+= '"([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
 
     for server, url in matches:
