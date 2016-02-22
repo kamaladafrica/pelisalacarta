@@ -21,13 +21,21 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
     logger.info("pelisalacarta.idowatch get_video_url(page_url='%s')" % page_url)
 
     data = scrapertools.cache_page(page_url)
-
-    #file:"http://163.172.7.14/ejvzymzne2gn6devhtlycoglaont3md4cn45tfo7tmyvcrobpf5r66t7sckq/v.mp4",label:"SD"
-    patron = 'file:"([^"]+)",label:"([^"]+)"'
+    
+    patron = r"(eval.function.p,a,c,k,e,.*?)\s*</script>"
+    data = scrapertools.find_single_match(data, patron)
+    print "matches"
+    print data
+    if data != '':
+        data = jsunpack.unpack(data)
+    #file:"http://163.172.7.14/ejvzymzne2gn6devhtlycoglaont3md4cn45tfo7tmyvcrobpf5r66t7sckq/v.mp4"
+    patron = 'file:.*?,.*?:"([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
     video_urls = []
-    for mediaurl,label in matches:
-        video_urls.append( [ scrapertools.get_filename_from_url(mediaurl)[-4:]+" "+label+" [idowatch]",mediaurl])
+    
+    for mediaurl in matches:
+        
+        video_urls.append( [ scrapertools.get_filename_from_url(mediaurl)[-4:]+" [idowatch]",mediaurl])
 
     for video_url in video_urls:
         logger.info("[idowatch.py] %s - %s" % (video_url[0],video_url[1]))
