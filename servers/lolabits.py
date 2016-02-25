@@ -11,7 +11,7 @@ from core import scrapertools
 from core import logger
 
 def test_video_exists( page_url ):
-    logger.info("[lolabits.py] test_video_exists(page_url='%s')" % page_url)
+    logger.info("pelisalacarta.servers.lolabits test_video_exists(page_url='%s')" % page_url)
 
     data = scrapertools.cache_page(page_url)
 
@@ -22,7 +22,7 @@ def test_video_exists( page_url ):
     return True,""
 
 def get_video_url( page_url , premium = False , user="" , password="", video_password="" ):
-    logger.info("[lolabits.py] get_video_url(page_url='%s')" % page_url)
+    logger.info("pelisalacarta.servers.lolabits get_video_url(page_url='%s')" % page_url)
 
     data = scrapertools.cache_page(page_url)
     #Parámetros post: token y fileId
@@ -46,7 +46,7 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
     video_urls.append( [ extension+" [lolabits]", media_url])
 
     for video_url in video_urls:
-        logger.info("[lolabits.py] %s - %s" % (video_url[0],video_url[1]))
+        logger.info("pelisalacarta.servers.lolabits %s - %s" % (video_url[0],video_url[1]))
     return video_urls
 
 # Encuentra vídeos del servidor en el texto pasado
@@ -57,7 +57,7 @@ def find_videos(data):
     # http://lolabits.es/example/example.mp4(video)
     # http://abelhas.pt/example/example.mp4(video)
     patronvideos  = '(lolabits.es.*|abelhas.pt.*)'
-    logger.info("[lolabits.py] find_videos #"+patronvideos+"#")
+    logger.info("pelisalacarta.servers.lolabits find_videos #"+patronvideos+"#")
     matches = re.compile(patronvideos,re.DOTALL).findall(data)
 
     for match in matches:

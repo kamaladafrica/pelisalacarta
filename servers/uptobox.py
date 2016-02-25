@@ -11,7 +11,7 @@ from core import scrapertools
 from core import logger
 
 def test_video_exists( page_url ):
-    logger.info("[uptobox.py] test_video_exists(page_url='%s')" % page_url)
+    logger.info("pelisalacarta.servers.uptobox test_video_exists(page_url='%s')" % page_url)
 
     data = scrapertools.cache_page(page_url)
 
@@ -25,7 +25,7 @@ def test_video_exists( page_url ):
     return True,""
 
 def get_video_url( page_url , premium = False , user="" , password="", video_password="" ):
-    logger.info("[uptobox.py] get_video_url(page_url='%s')" % page_url)
+    logger.info("pelisalacarta.servers.uptobox get_video_url(page_url='%s')" % page_url)
     #Si el enlace es directo de upstream
     if "uptobox" not in page_url:
         data = scrapertools.cache_page(page_url)
@@ -35,6 +35,7 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
         extension = media[1]
     else:
         data = scrapertools.cache_page(page_url)
+        logger.info(data)
         #Si el archivo tiene enlace de streaming se redirige a upstream
         if "Streaming link:" in data:
             url = "http://uptostream.com/iframe/"+scrapertools.find_single_match(page_url,'uptobox.com/([a-z0-9]+)')
@@ -61,7 +62,7 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
     video_urls.append( [ extension+" [uptobox]", media_url])
 
     for video_url in video_urls:
-        logger.info("[uptobox.py] %s - %s" % (video_url[0],video_url[1]))
+        logger.info("pelisalacarta.servers.uptobox %s - %s" % (video_url[0],video_url[1]))
     return video_urls
 
 # Encuentra vídeos del servidor en el texto pasado
@@ -73,7 +74,7 @@ def find_videos(data):
 	# http://uptostream.com/q7asuktfr84x
 	# http://uptostream.com/iframe/q7asuktfr84x
     patronvideos  = '(?:uptobox|uptostream).com(?:/iframe/|/)([a-z0-9]+)'
-    logger.info("[uptobox.py] find_videos #"+patronvideos+"#")
+    logger.info("pelisalacarta.servers.uptobox find_videos #"+patronvideos+"#")
     matches = re.compile(patronvideos,re.DOTALL).findall(data)
 
     for match in matches:
