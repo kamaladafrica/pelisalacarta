@@ -56,7 +56,7 @@ def get_setting(name, channel=""):
     
     Si se especifica el nombre del canal busca en la ruta \addon_data\plugin.video.pelisalacarta\settings_channels el archivo channel_data.json
     y lee el valor del parametro 'name'. Si el archivo channel_data.json no existe busca en la carpeta channels el archivo 
-    channel.json y crea un archivo channel_data.json antes de retornar el valor solicitado.
+    channel.xml y crea un archivo channel_data.json antes de retornar el valor solicitado.
     Si el parametro 'name' no existe en channel_data.json lo busca en la configuracion global y si ahi tampoco existe devuelve un str vacio.
     
     Parametros:
@@ -87,17 +87,11 @@ def get_setting(name, channel=""):
                     logger.info("ERROR al leer el archivo: {0}".format(File_settings))
             
             if len(dict_settings) == 0:
-                # Obtenemos controles del archivo ../channels/channel.json
-                fname =os.path.join(get_runtime_path() , 'channels' , channel + ".json")
-                data = ""
-                try:
-                    with open(fname, "r") as f:
-                        data= f.read()
-                except EnvironmentError:
-                    logger.info("[config.py] ERROR al leer el archivo: {0}".format(fname))
-                dict_data = jsontools.load_json(data)
-                list_controls= dict_data['settings'] 
-
+                # Obtenemos controles del archivo ../channels/channel.xml
+                channel_xml =os.path.join(get_runtime_path() , 'channels' , channel + ".xml")
+                channel_json = jsontools.xmlTojson(channel_xml)
+                list_controls= channel_json['channel']['settings']
+        
                 # Le asignamos los valores por defecto
                 for ds in list_controls:
                     if ds['type'] != "label":
@@ -127,7 +121,7 @@ def set_setting(name,value, channel=""):
     
     Si se especifica el nombre del canal busca en la ruta \addon_data\plugin.video.pelisalacarta\settings_channels el archivo channel_data.json
     y establece el parametro 'name' al valor indicado por 'value'. Si el archivo channel_data.json no existe busca en la carpeta channels el archivo 
-    channel.json y crea un archivo channel_data.json antes de modificar el parametro 'name'.
+    channel.xml y crea un archivo channel_data.json antes de modificar el parametro 'name'.
     Si el parametro 'name' no existe lo añade, con su valor, al archivo correspondiente.
     
     
@@ -160,18 +154,11 @@ def set_setting(name,value, channel=""):
                 if dict_data.has_key('settings'):
                     dict_settings = dict_data['settings']
             else:            
-                # Obtenemos controles del archivo ../channels/channel.json
-                fname =os.path.join(get_runtime_path() , 'channels' , channel + ".json")
-                data = ""
-                try:
-                    with open(fname, "r") as f:
-                        data= f.read()
-                except EnvironmentError:
-                    logger.info("[config.py] ERROR al leer el archivo: {0}".format(fname))
+                # Obtenemos controles del archivo ../channels/channel.xml
+                channel_xml =os.path.join(get_runtime_path() , 'channels' , channel + ".xml")
+                channel_json = jsontools.xmlTojson(channel_xml)
+                list_controls= channel_json['channel']['settings']
                 
-                dict_data = jsontools.load_json(data)
-                list_controls= dict_data['settings'] 
-
                 # Le asignamos los valores por defecto
                 for ds in list_controls:
                     if ds['type'] != "label":
