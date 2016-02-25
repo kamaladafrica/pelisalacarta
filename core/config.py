@@ -95,7 +95,10 @@ def get_setting(name, channel=""):
                 # Le asignamos los valores por defecto
                 for ds in list_controls:
                     if ds['type'] != "label":
-                        dict_settings[ds['id']] = ds['default']
+                        if ds['type'] == 'bool':
+                            dict_settings[ds['id']] = True if ds['default'].lower() == "true" else False
+                        else:
+                            dict_settings[ds['id']] = ds['default']
                 
                 dict_file['settings']= dict_settings
                 # Creamos el archivo ../settings/channel_data.json
@@ -162,7 +165,10 @@ def set_setting(name,value, channel=""):
                 # Le asignamos los valores por defecto
                 for ds in list_controls:
                     if ds['type'] != "label":
-                        dict_settings[ds['id']] = ds['default']
+                        if ds['type'] == 'bool':
+                            dict_settings[ds['id']] = True if ds['default'].lower() == "true" else False
+                        else:
+                            dict_settings[ds['id']] = ds['default']
             
             dict_settings[name] = value
             dict_data['settings']= dict_settings
