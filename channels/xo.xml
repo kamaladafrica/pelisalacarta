@@ -2,7 +2,7 @@
 <channel>
 	<id>xo</id>
 	<name>XO</name>
-	<language>es</language>
+	<language>ro</language>
 	<update_url></update_url>
 	<active>false</active>
 	<include_in_global_search>false</include_in_global_search>
