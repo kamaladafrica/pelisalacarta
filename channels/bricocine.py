@@ -28,6 +28,35 @@ def get_page( url ):
     from lib import requests
     response = requests.get( url )
     return response.content
+def browser(url):
+    import mechanize
+    
+    # Utilizamos Browser mechanize para saltar problemas con la busqueda en bing
+    br = mechanize.Browser()
+    # Browser options
+    br.set_handle_equiv(False)
+    br.set_handle_gzip(True)
+    br.set_handle_redirect(True)
+    br.set_handle_referer(False)
+    br.set_handle_robots(False)
+    # Follows refresh 0 but not hangs on refresh > 0
+    br.set_handle_refresh(mechanize._http.HTTPRefreshProcessor(), max_time=1)
+        
+    # Want debugging messages?
+    #br.set_debug_http(True)
+    #br.set_debug_redirects(True)
+    #br.set_debug_responses(True)
+    
+    # User-Agent (this is cheating, ok?)
+    br.addheaders = [('User-agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5) AppleWebKit/600.7.12 (KHTML, like Gecko) Version/7.1.7 Safari/537.85.16')]
+    br.addheaders =[('Cookie','SRCHD=D=210979&AF=NOFORM; domain=.bing.com; expires=2 de enero de 2018 07:59:05 GMT+1; MUIDB=36F71C46589F6EAD0BE714175C9F68FC; domain=www.bing.com;	expires=15 de enero de 2018 08:43:26 GMT+1')]
+    # Open some site, let's pick a random one, the first that pops in mind
+    r = br.open(url)
+    response = r.read()
+    return response
+
+
+
 
 def isGeneric():
     return True
@@ -159,10 +188,10 @@ def peliculas(item):
    <div class="post-10888 post type-post status-publish format-standard hentry category-the-leftovers tag-ciencia-ficcion tag-drama tag-fantasia tag-misterio"><div class="entry"> <a href="http://www.bricocine.com/10888/leftovers-temporada-1/"> <img src="http://www.bricocine.com/wp-content/plugins/wp_movies/files/thumb_185_the_leftovers_.jpg" alt="The Leftovers " /> </a></div><div class="entry-meta"><div class="clearfix"><div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating" class="rating"  title="Puntos IMDB: 7.4"><div class="rating-stars imdb-rating"><div class="stars" style="width:74%"></div></div><div itemprop="ratingValue" class="rating-number"> 7.4</div></div><div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating" class="rating"  title="Puntos Bricocine: 6.2"><div class="rating-stars brico-rating"><div class="stars" style="width:62%"></div></div><div itemprop="ratingValue" class="rating-number"> 6.2</div></div> <span class="vcard author none"> Publicado por <a class="fn" href="" rel="author" target="_blank"></a> </span> <span class="date updated none">2014-10-07T23:36:17+00:00</span></div></div><h2 class="title2 entry-title"> <a href="http://www.bricocine.com/10888/leftovers-temporada-1/"> The Leftovers  &#8211; Temporada 1 </a></h2></div> </article> <article class="hentry item-entry"><div class="post-10088 post type-post status-publish format-standard hentry category-the-last-ship tag-accion tag-ciencia-ficcion tag-drama tag-the tag-thriller"><div class="entry"> <a href="http://www.bricocine.com/10088/last-ship-temporada-1/"> <img src="http://www.bricocine.com/wp-content/plugins/wp_movies/files/thumb_185_the_last_ship_.jpg" alt="The Last Ship " /> </a></div><div class="entry-meta"><div class="clearfix"><div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating" class="rating"  title="Puntos IMDB: 7.4"><div class="rating-stars imdb-rating"><div class="stars" style="width:74%"></div></div><div itemprop="ratingValue" class="rating-number"> 7.4</div></div><div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating" class="rating"  title="Puntos Bricocine: 7.0"><div class="rating-stars brico-rating"><div class="stars" style="width:70%"></div></div><div itemprop="ratingValue" class="rating-number"> 7.0</div></div> <span class="vcard author none"> Publicado por <a class="fn" href="" rel="author" target="_blank"></a> </span> <span class="date updated none">2014-10-07T23:32:25+00:00</span></div></div><h2 class="title2 entry-title"> <a href="http://www.bricocine.com/10088/last-ship-temporada-1/"> The Last Ship &#8211; Temporada 1 </a></h2></div> </article> <article class="hentry item-entry">
 
     '''
-    patron = '<div class="post.*?format-standard hentry category-(.*?) tag.*?'
+    patron = 'format-standard hentry category(.*?)">.*?'
     patron += '<div class="entry"> '
-    patron += '<a href="([^"]+)"> '
-    patron += '<img src="([^"]+)".*?'
+    patron += '<a href="(.*?)"> '
+    patron += '<img src="(.*?)".*?'
     patron += 'class="rating-number">([^<]+)</div></div>.*?'
     patron += '<h2 class="title2 entry-title">.*?"> ([^<]+).*?</a>'
     
@@ -172,7 +201,11 @@ def peliculas(item):
         itemlist.append( Item(channel=__channel__, title="[COLOR gold][B]No hay resultados...[/B][/COLOR]", thumbnail ="http://s6.postimg.org/fay99h9ox/briconoisethumb.png", fanart ="http://s6.postimg.org/uie8tu1jl/briconoisefan.jpg",folder=False) )
 
     for tag, scrapedurl, scrapedthumbnail, scrapedcreatedate, scrapedtitle in matches:
+        if scrapedthumbnail == "":
+            scrapedthumbnail ="http://s6.postimg.org/aseij0y4x/briconoimage.png"
         title= scrapedtitle
+        print "tus huevos"
+        print tag
         #Separa entre series y peliculas
         if not item.extra== "Series" and not "index" in item.url:
            title= re.sub(r"\(.*?\) |\[.*?\] |&#.*?;","",title)
@@ -188,7 +221,7 @@ def peliculas(item):
         #Diferencia si viene de la búsqueda
         if "index" in item.url:
              #Se usa tag en busqueda para diferenciar series no bien tipificadas
-             if not "3d" in tag and not "dvdrip" in tag and not "bluray-rip" in tag and not "hd-microhd" in tag and not "bdrip" in tag and not "estrenos" in tag and not "latino" in tag:
+             if not "3d" in tag and not "dvdrip" in tag and not "bluray-rip" in tag and not "hd-microhd" in tag and not "bdrip" in tag and not "estrenos" in tag and not "latino" in tag and not "hannibal" in tag:
                 title= re.sub(r"\n|\r|\t|\s{2}|&nbsp;|&#.*?;|\(.*?\)|\d\d\d\d","",title)
                 title_fan =re.sub(r"\n|\r|\t|\s{2}|&nbsp;|&#.*?;|Temporada.*?\d+| Todas Las Temp.*?das","",title)
                 title= title.replace("Temporada","[COLOR green]Temporada[/COLOR]")
@@ -253,11 +286,13 @@ def fanart(item):
     data = get_page( item.url )
     data = re.sub(r"\n|\r|\t|\s{2}|\(.*?\)|\[.*?\]|&nbsp;","",data)
     title= item.show.split("|")[0].strip()
-    
+    import xbmc
+    xbmc.executebuiltin('Action(reloadkeymaps)')
    
-    print title
+   
     print "ya esta bien"
     print item.extra
+    title = title.replace('[BDRIP]','')
     title= title.replace('á','a')
     title= title.replace('Á','A')
     title= title.replace('é','e')
@@ -270,6 +305,10 @@ def fanart(item):
     title= title.replace('Ú','U')
     title= title.replace('ñ','n')
     title= title.replace('Ñ','N')
+    
+    
+    
+    print title
     if "temporada" in item.url or "Temporada" in item.show.split("|")[0] or item.extra=="Series":
         import xbmc
         #Establece destino customkey
@@ -296,9 +335,11 @@ def fanart(item):
            title ="the dovekeepers"
         if title == "90210 Sensacion de vivir":
            title ="90210"
+    
+        
         plot = title
-        title_tunes= (translate(title,"en"))
-        title_tunes = title_tunes.replace("&#39;","")
+        title_tunes= re.sub(r"\(.*?\)","",title)
+        title_tunes= (translate(title_tunes,"en"))
         ###Prepara customkeys y borra cuando vuelve
         import xbmc,time
         if not xbmc.Player().isPlaying() and not os.path.exists ( TRAILERDESTFILE ):
@@ -323,10 +364,10 @@ def fanart(item):
 
                try:
                    ###Busca música serie y caraga customkey. En la vuelta evita busqueda si ya suena música
-                   import  xbmc, time
                    url_bing ="http://www.bing.com/search?q=%s+theme+song+site:televisiontunes.com" % title_tunes.replace(' ', '+')
+                   #Llamamos al browser de mechanize. Se reitera en todas las busquedas bing
+                   data = browser (url_bing)
                    
-                   data = scrapertools.cachePage( url_bing)
                    try:
                        subdata_tvt = scrapertools.get_match(data,'<li class="b_algo">(.*?)h="ID')
                    except:
@@ -385,7 +426,7 @@ def fanart(item):
                 print "No hay customs"
         ###Busqueda en bing el id de imdb de la serie
         urlbing_imdb = "http://www.bing.com/search?q=%s+tv+serie+site:imdb.com" % title.replace(' ', '+')
-        data = scrapertools.cachePage(urlbing_imdb)
+        data = browser (urlbing_imdb)
         data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
         try:
            subdata_imdb = scrapertools.get_match(data,'<li class="b_algo">(.*?)h="ID')
@@ -416,8 +457,7 @@ def fanart(item):
                 data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
                 patron = '<Data><Series><seriesid>([^<]+)</seriesid>'
                 matches = re.compile(patron,re.DOTALL).findall(data)
-                print "perro"
-                print matches
+            
                 if len(matches)== 0:
                    title= re.sub(r"(:.*)|\(.*?\)","",title)
                    title= title.replace(" ","%20")
@@ -456,11 +496,8 @@ def fanart(item):
         #1ºfanart mediante id tvdb
         
         for id in matches:
-            print id
             category = id
             id_serie = id
-            print "@@@@"
-            print id
             urltvdb_banners ="http://thetvdb.com/api/1D62F2F90030C444/series/"+id_serie+"/banners.xml"
             
             data = scrapertools.cachePage(urltvdb_banners)
@@ -473,8 +510,7 @@ def fanart(item):
                 postertvdb =  "http://thetvdb.com/banners/_cache/posters/" + postertvdb
             except:
                 postertvdb = item.thumbnail
-            print "FOTOOOO"
-            print postertvdb
+        
             if len(matches)==0:
                 extra="http://s6.postimg.org/6flcihb69/brico1sinopsis.png"
                 show= "http://s6.postimg.org/4asrg755b/bricotvshows2.png"
@@ -596,234 +632,307 @@ def fanart(item):
                title ="Justi&cia"
             if title == "El milagro":
                title ="Miracle"
+            if "La Saga Crepusculo" in title:
+                title = re.sub(r"La Saga","",title)
+        
             year = item.show.split("|")[1]
-            print "Mongolo"
-            print item.show.split("|")[1]
-            try:
+            if "Saga" in title:
+                title= title.replace('Saga completa','')
+                title= title.replace('Saga','')
+                title_collection = title.replace(" ","+")
+                url_collection="http://api.themoviedb.org/3/search/collection?api_key=2e2160006592024ba87ccdf78c28f49f&query="+title_collection+"+&language=es"
+                data = scrapertools.cachePage(url_collection)
+                data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
                 try:
-                    ###Busqueda en Tmdb la peli por titulo y año
-                    title_tmdb = title.replace(" ","%20")
-                    url_tmdb="http://api.themoviedb.org/3/search/movie?api_key=57983e31fb435df4df77afb854740ea9&query=" + title_tmdb +"&year="+year+"&language=es&include_adult=false"
-                    data = scrapertools.cachePage(url_tmdb)
-                    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-                    id = scrapertools.get_match(data,'"page":1.*?,"id":(.*?),')
+                   id = scrapertools.get_match(data,'"page":1.*?"id":(.*?),')
                 except:
-                    if ":" in title or "(" in title:
-                        title_tmdb = title.replace(" ","%20")
-                        url_tmdb="http://api.themoviedb.org/3/search/movie?api_key=57983e31fb435df4df77afb854740ea9&query=" + title_tmdb +"&year="+year+"&language=es&include_adult=false"
-                        data = scrapertools.cachePage(url_tmdb)
-                        data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-                        id = scrapertools.get_match(data,'"page":1.*?,"id":(.*?),')
-                    else:
-                       title_tmdb = title.replace(" ","%20")
-                       title_tmdb= re.sub(r"(:.*)|\(.*?\)","",title_tmdb)
-                       url_tmdb="http://api.themoviedb.org/3/search/movie?api_key=57983e31fb435df4df77afb854740ea9&query=" + title_tmdb +"&year="+year+"&language=es&include_adult=false"
-                       data = scrapertools.cachePage(url_tmdb)
-                       data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-                       id = scrapertools.get_match(data,'"page":1.*?,"id":(.*?),')
-    
-                    
-            except:
-                ###Si no hay coincidencia realiza busqueda por bing del id Imdb
-                urlbing_imdb="http://www.bing.com/search?q=%s+%s+site:imdb.com" % (title.replace(' ', '+'),  year)
-                print "#####"
-                data = scrapertools.cachePage( urlbing_imdb )
-                try:
-                    subdata_imdb = scrapertools.get_match(data,'<li class="b_algo">(.*?)h="ID')
-                except:
-                    pass
-
-                try:
-                    url_imdb = scrapertools.get_match(subdata_imdb,'<a href="([^"]+)"')
-                
-                except:
-                   pass
-                try:
-                   id_imdb = scrapertools.get_match(url_imdb,'.*?www.imdb.com/.*?/(.*?)/')
-                except:
-                   pass
-                try:
-                    ###Busca id Tmdb mediante el id de Imdb
-                    urltmdb_remote ="https://api.themoviedb.org/3/find/"+id_imdb+"?external_source=imdb_id&api_key=57983e31fb435df4df77afb854740ea9"
-                    data = scrapertools.cachePage(urltmdb_remote)
-                    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-                    id = scrapertools.get_match(data,'"movie_results".*?,"id":(\d+)')
-                except:
-                    id = ""
-            ###Llegados aqui ya tenemos(o no) el id(Tmdb);Busca fanart_1
-            urltmdb_fan1 ="http://api.themoviedb.org/3/movie/"+id+"?api_key=57983e31fb435df4df77afb854740ea9"
-            data = scrapertools.cachePage( urltmdb_fan1 )
-            data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-            patron = '"adult".*?"backdrop_path":"(.*?)"'
-            matches = re.compile(patron,re.DOTALL).findall(data)
-            try:
-                ###Prueba poster de Tmdb
-                posterdb = scrapertools.get_match(data,'"adult".*?"poster_path":"(.*?)"')
-                posterdb =  "https://image.tmdb.org/t/p/original" + posterdb
-            except:
-                posterdb = item.thumbnail
-
-
-            if len(matches)==0:
-                ###Si no encuentra fanart_1 en Tmdb realiza busqueda directamente en Imdb
-                try:
-                    urlbing_imdb="http://www.bing.com/search?q=imdb+movie+%s+%s" % (title.replace(' ', '+'),  year)
-                    print "#####"
-                    data = scrapertools.cachePage( urlbing_imdb )
-                    try:
-                        subdata_imdb = scrapertools.get_match(data,'<li class="b_algo">(.*?)h="ID')
-                    except:
-                        pass
-                    try:
-                       url_imdb = scrapertools.get_match(subdata_imdb,'<a href="([^"]+)"')
-                    except:
-                       url_imdb = data
-                    data = scrapertools.cachePage( url_imdb )
-
-                    try:
-                       poster_imdb = scrapertools.get_match(data,'<td rowspan="2" id="img_primary">.*?src="([^"]+)"')
-                       poster_imdb = poster_imdb.replace("._.*?jpg","._V1_SX640_SY720_.jpg")
-                        
-                    except:
-                       poster_imdb = item.thumbnail
-                                
-                                
-                    try:
-                       url_photo=scrapertools.get_match(data,'<div class="combined-see-more see-more">.*?<a href="([^"]+)"')
-                       url_photos = "http://www.imdb.com"+url_photo
-                       data = scrapertools.cachePage( url_photos )
-                       try:
-                          photo_imdb= scrapertools.get_match(data,'<div class="media_index_thumb_list".*?src="([^"]+)"')
-                          photo_imdb = re.sub(r"._.*?jpg","._V1_SX1280_SY720_.jpg",photo_imdb)
-                    
-                       except:
-                         photo_imdb= item.thumbnail
-                            
-                       try:
-                          photo_imdb2= scrapertools.get_match(data,'<div class="media_index_thumb_list".*?src=.*?src="([^"]+)"')
-                          photo_imdb2 = re.sub(r"._.*?jpg","._V1_SX1280_SY720_.jpg",photo_imdb2)
-                       except:
-                          photo_imdb2= item.thumbnail
-                       try:
-                          photo_imdb3= scrapertools.get_match(data,'<div class="media_index_thumb_list".*?src=.*?src=.*?src="([^"]+)"')
-                          photo_imdb3 = re.sub(r"._.*?jpg","._V1_SX1280_SY720_.jpg",photo_imdb3)
-                       except:
-                          photo_imdb3= item.thumbnail
-                       try:
-                          photo_imdb4= scrapertools.get_match(data,'<div class="media_index_thumb_list".*?src=.*?src=.*?src=.*?src="([^"]+)"')
-                          photo_imdb4 = re.sub(r"._.*?jpg","._V1_SX1280_SY720_.jpg",photo_imdb4)
-                       except:
-                          photo_imdb4= item.thumbnail
-
-                    except:
-                        pass
-                except:
-                      pass
-                
-                extra="http://s6.postimg.org/6flcihb69/brico1sinopsis.png"#http://4.bp.blogspot.com/-0rYZjLStWrM/TcIqkbq-MaI/AAAAAAAACiM/7_qFGM4WvnA/s1600/BarraSeparadora-Sinopsis.png
-
-                try:
-                   try:
-                      fanart_info = photo_imdb2
-                   except:
-                      try:
-                         fanart_info = photo_imdb
-                      except:
-                        fanart_info = photo_imdb3
-                   try:
-                      fanart_trailer = photo_imdb3
-                   except:
-                         try:
-                            fanart_trailer = photo_imdb
-                         except:
-                            fanart_trailer = photo_imdb2
-
-                   try:
-                      category= photo_imdb3
-                   except:
-                         try:
-                            category = photo_imdb
-                         except:
-                               category = photo_imdb3
-                   try:
-                       fanart = photo_imdb
-                   except:
-                       try:
-                          fanart = photo_imdb2
-                       except:
-                          category = photo_imdb3
-                   try:
-                      show = photo_imdb4
-                   except:
-                          try:
-                             show = photo_imdb2
-                          except:
-                             show= photo_imdb1
-                except:
-                    
+                   id=""
+                urlc_images="http://api.themoviedb.org/3/collection/"+id+"?api_key=2e2160006592024ba87ccdf78c28f49f"
+                data = scrapertools.cachePage(urlc_images)
+                data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
+                patron ='"poster_path":"(.*?)","backdrop_path":"(.*?)".*?"backdrop_path":"(.*?)".*?"backdrop_path":"(.*?)".*?"backdrop_path":"(.*?)"'
+                matches = re.compile(patron,re.DOTALL).findall(data)
+                scrapertools.printMatches(matches)
+                if len(matches) == 0:
+                    posterdb= item.thumbnail
+                    extra="http://s6.postimg.org/6flcihb69/brico1sinopsis.png"
+                    fanart_1 = "http://img1.gtsstatic.com/wallpapers/55cb135265088aeee5147c2db20515d8_large.jpeg"
                     fanart = "http://img1.gtsstatic.com/wallpapers/55cb135265088aeee5147c2db20515d8_large.jpeg"
                     fanart_info = "http://img1.gtsstatic.com/wallpapers/55cb135265088aeee5147c2db20515d8_large.jpeg"
                     fanart_trailer ="http://img1.gtsstatic.com/wallpapers/55cb135265088aeee5147c2db20515d8_large.jpeg"
-                    category="http://s6.postimg.org/yefi9ccsx/briconofotoventanuco.png" #"http://img1.gtsstatic.com/wallpapers/55cb135265088aeee5147c2db20515d8_large.jpeg"
-                    show= "http://img1.gtsstatic.com/wallpapers/55cb135265088aeee5147c2db20515d8_large.jpeg"
-                itemlist.append( Item(channel=__channel__, title=item.title, url=item.url, action="findvideos_peli", thumbnail=posterdb, fanart=fanart ,extra=extra, show=show, category= category, folder=True) )
-            ###Encontrado fanart_1 en Tmdb
-            for fan in matches:
-
-                fanart="https://image.tmdb.org/t/p/original" + fan
-                fanart_1= fanart
-                ###Busca fanart para info, fanart para trailer y fanart_2(finvideos) en Tmdb
-                urltmdb_images ="http://api.themoviedb.org/3/movie/"+id+"/images?api_key=57983e31fb435df4df77afb854740ea9"
-                data = scrapertools.cachePage(urltmdb_images)
-                data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-            
-                patron = '"backdrops".*?"file_path":".*?",.*?"file_path":"(.*?)",.*?"file_path":"(.*?)",.*?"file_path":"(.*?)"'
-                matches = re.compile(patron,re.DOTALL).findall(data)
-                    
-                if len(matches) == 0:
-                    patron = '"backdrops".*?"file_path":"(.*?)",.*?"file_path":"(.*?)",.*?"file_path":"(.*?)"'
-                    matches = re.compile(patron,re.DOTALL).findall(data)
-                    if len(matches) == 0:
-                        fanart_info = fanart_1
-                        fanart_trailer = fanart_1
-                        fanart_2 = fanart_1
-                for fanart_info, fanart_trailer, fanart_2 in matches:
+                    fanart_2 = "http://img1.gtsstatic.com/wallpapers/55cb135265088aeee5147c2db20515d8_large.jpeg"
+                for posterdb, fanart_1,fanart_info, fanart_trailer, fanart_2 in matches:
+                    posterdb =  "https://image.tmdb.org/t/p/original" + posterdb
+                    fanart_1 = "https://image.tmdb.org/t/p/original" + fanart_1
                     fanart_info = "https://image.tmdb.org/t/p/original" + fanart_info
                     fanart_trailer = "https://image.tmdb.org/t/p/original" + fanart_trailer
                     fanart_2 = "https://image.tmdb.org/t/p/original" + fanart_2
-                    if fanart_info == fanart:
-                       ###Busca fanart_info en Imdb si coincide con fanart
-                       try:
-                          url_imdbphoto = "http://www.imdb.com/title/"+id_imdb+"/mediaindex"
-                          photo_imdb= scrapertools.get_match(url_imdbphoto,'<div class="media_index_thumb_list".*?src="([^"]+)"')
-                          photo_imdb = photo_imdb.replace("@._V1_UY100_CR25,0,100,100_AL_.jpg","@._V1_SX1280_SY720_.jpg")
-                          fanart_info = photo_imdb
-                       except:
-                          fanart_info = fanart_2
-                    
+                
+            else:
 
+
+           
+
+
+                try:
+                    try:
+                        ###Busqueda en Tmdb la peli por titulo y año
+                        title_tmdb = title.replace(" ","%20")
+                        url_tmdb="http://api.themoviedb.org/3/search/movie?api_key=2e2160006592024ba87ccdf78c28f49f&query=" + title_tmdb +"&year="+year+"&language=es&include_adult=false"
+                        data = scrapertools.cachePage(url_tmdb)
+                        data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
+                        id = scrapertools.get_match(data,'"page":1.*?,"id":(.*?),')
+                    except:
+                        if ":" in title or "(" in title:
+                           title_tmdb = title.replace(" ","%20")
+                           url_tmdb="http://api.themoviedb.org/3/search/movie?api_key=2e2160006592024ba87ccdf78c28f49f&query=" + title_tmdb +"&year="+year+"&language=es&include_adult=false"
+                           data = scrapertools.cachePage(url_tmdb)
+                           data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
+                           id = scrapertools.get_match(data,'"page":1.*?,"id":(.*?),')
+                        else:
+                           title_tmdb = title.replace(" ","%20")
+                           title_tmdb= re.sub(r"(:.*)|\(.*?\)","",title_tmdb)
+                           url_tmdb="http://api.themoviedb.org/3/search/movie?api_key=2e2160006592024ba87ccdf78c28f49f&query=" + title_tmdb +"&year="+year+"&language=es&include_adult=false"
+                           data = scrapertools.cachePage(url_tmdb)
+                           data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
+                           id = scrapertools.get_match(data,'"page":1.*?,"id":(.*?),')
+    
                     
-                #Busqueda de todos los arts posibles
-            
-                url_fanartv ="http://webservice.fanart.tv/v3/movies/"+id+"?api_key=dffe90fba4d02c199ae7a9e71330c987"
-                data = scrapertools.cachePage(url_fanartv)
+                except:
+                     ###Si no hay coincidencia realiza busqueda por bing del id Imdb
+                     urlbing_imdb = "http://www.bing.com/search?q=%s+%s+site:imdb.com" % (title.replace(' ', '+'),  year)
+                     data = browser (urlbing_imdb)
+                     
+                     try:
+                        subdata_imdb = scrapertools.get_match(data,'<li class="b_algo">(.*?)h="ID')
+                     except:
+                        pass
+
+                     try:
+                        url_imdb = scrapertools.get_match(subdata_imdb,'<a href="([^"]+)"')
+                
+                     except:
+                        pass
+                     try:
+                        id_imdb = scrapertools.get_match(url_imdb,'.*?www.imdb.com/.*?/(.*?)/')
+                     except:
+                        pass
+                     try:
+                        ###Busca id Tmdb mediante el id de Imdb
+                        urltmdb_remote ="https://api.themoviedb.org/3/find/"+id_imdb+"?external_source=imdb_id&api_key=2e2160006592024ba87ccdf78c28f49f"
+                        
+                        data = scrapertools.cachePage(urltmdb_remote)
+                        data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
+                        id = scrapertools.get_match(data,'"movie_results".*?,"id":(\d+)')
+                     except:
+                        id = ""
+                     
+                ###Llegados aqui ya tenemos(o no) el id(Tmdb);Busca fanart_1
+                urltmdb_fan1 ="http://api.themoviedb.org/3/movie/"+id+"?api_key=2e2160006592024ba87ccdf78c28f49f"
+                data = scrapertools.cachePage( urltmdb_fan1 )
                 data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-                patron = '"hdmovielogo":.*?"url": "([^"]+)"'
+                patron = '"adult".*?"backdrop_path":"(.*?)"'
                 matches = re.compile(patron,re.DOTALL).findall(data)
-                if '"moviedisc"' in data:
-                    disc = scrapertools.get_match(data,'"moviedisc":.*?"url": "([^"]+)"')
-                if '"movieposter"' in data:
-                    poster = scrapertools.get_match(data,'"movieposter":.*?"url": "([^"]+)"')
-                if '"moviethumb"' in data:
-                    thumb = scrapertools.get_match(data,'"moviethumb":.*?"url": "([^"]+)"')
-                if '"moviebanner"' in data:
-                    banner= scrapertools.get_match(data,'"moviebanner":.*?"url": "([^"]+)"')
+                try:
+                    ###Prueba poster de Tmdb
+                    posterdb = scrapertools.get_match(data,'"adult".*?"poster_path":"(.*?)"')
+                    posterdb =  "https://image.tmdb.org/t/p/original" + posterdb
+                except:
+                    posterdb = item.thumbnail
+
 
                 if len(matches)==0:
-                    extra= "http://s6.postimg.org/6flcihb69/brico1sinopsis.png"
-                    show = fanart_2
-                    category = fanart_1
-                    itemlist.append( Item(channel=__channel__, title = item.title , action="findvideos_peli", url=item.url, server="torrent", thumbnail=posterdb, fanart=fanart,  extra=extra, show=show, category= category, folder=True) )
+                   
+                   ###Si no encuentra fanart_1 en Tmdb realiza busqueda directamente en Imdb
+                   try:
+                       
+                      urlbing_imdb="http://www.bing.com/search?q=imdb+movie+%s+%s" % (title.replace(' ', '+'),  year)
+                      
+                      data = browser (urlbing_imdb)
+                      
+                      try:
+                          subdata_imdb = scrapertools.get_match(data,'<li class="b_algo">(.*?)h="ID')
+                      except:
+                          pass
+                      try:
+                         url_imdb = scrapertools.get_match(subdata_imdb,'<a href="([^"]+)"')
+                      except:
+                         url_imdb = data
+                      data = scrapertools.cachePage( url_imdb )
+
+                      try:
+                         poster_imdb = scrapertools.get_match(data,'<td rowspan="2" id="img_primary">.*?src="([^"]+)"')
+                         poster_imdb = poster_imdb.replace("._.*?jpg","._V1_SX640_SY720_.jpg")
+                        
+                      except:
+                         poster_imdb = posterdb
+                                
+                                
+                      try:
+                         url_photo=scrapertools.get_match(data,'<div class="combined-see-more see-more">.*?<a href="([^"]+)"')
+                         url_photos = "http://www.imdb.com"+url_photo
+                         data = scrapertools.cachePage( url_photos )
+                         try:
+                            photo_imdb= scrapertools.get_match(data,'<div class="media_index_thumb_list".*?src="([^"]+)"')
+                            photo_imdb = re.sub(r"._.*?jpg","._V1_SX1280_SY720_.jpg",photo_imdb)
+                    
+                         except:
+                           pass
+                            
+                         try:
+                            photo_imdb2= scrapertools.get_match(data,'<div class="media_index_thumb_list".*?src=.*?src="([^"]+)"')
+                            photo_imdb2 = re.sub(r"._.*?jpg","._V1_SX1280_SY720_.jpg",photo_imdb2)
+                         except:
+                            pass
+                         try:
+                            photo_imdb3= scrapertools.get_match(data,'<div class="media_index_thumb_list".*?src=.*?src=.*?src="([^"]+)"')
+                            photo_imdb3 = re.sub(r"._.*?jpg","._V1_SX1280_SY720_.jpg",photo_imdb3)
+                         except:
+                            pass
+                         try:
+                            photo_imdb4= scrapertools.get_match(data,'<div class="media_index_thumb_list".*?src=.*?src=.*?src=.*?src="([^"]+)"')
+                            photo_imdb4 = re.sub(r"._.*?jpg","._V1_SX1280_SY720_.jpg",photo_imdb4)
+                         except:
+                            pass
+
+                      except:
+                          pass
+                   except:
+                         pass
+                
+                   extra="http://s6.postimg.org/6flcihb69/brico1sinopsis.png"#http://4.bp.blogspot.com/-0rYZjLStWrM/TcIqkbq-MaI/AAAAAAAACiM/7_qFGM4WvnA/s1600/BarraSeparadora-Sinopsis.png
+
+                   try:
+                        fanart_1 = photo_imdb3
+                   except:
+                        try:
+                            fanart_1 = photo_imdb2
+                        except:
+                            try:
+                                fanart_1 = photo_imdb1
+                            except:
+                                fanart_1 = "http://img1.gtsstatic.com/wallpapers/55cb135265088aeee5147c2db20515d8_large.jpeg"
+                                
+                   try:
+                       fanart_2 = photo_imdb4
+                   except:
+                        try:
+                            fanart_2 = photo_imdb2
+                        except:
+                              try:
+                                  fanart_2 = photo_imdb
+                              except:
+                                  fanart_2 = "http://img1.gtsstatic.com/wallpapers/55cb135265088aeee5147c2db20515d8_large.jpeg"
+                   try:
+                        fanart_info = photo_imdb2
+                   except:
+                        try:
+                            fanart_info = photo_imdb
+                        except:
+                            fanart_info = "http://img1.gtsstatic.com/wallpapers/55cb135265088aeee5147c2db20515d8_large.jpeg"
+
+                   try:
+                        fanart_trailer = photo_imdb3
+                   except:
+                        try:
+                            fanart_trailer = photo_imdb2
+                        except:
+                            try:
+                               fanart_trailer = photo_imdb
+                            except:
+                               fanart_trailer = "http://img1.gtsstatic.com/wallpapers/55cb135265088aeee5147c2db20515d8_large.jpeg"
+
+                   try:
+                        category= photo_imdb3
+                   except:
+                        try:
+                            category = photo_imdb
+                        except:
+                            try:
+                                category = photo_imdb3
+                            except:
+                                category = "http://s6.postimg.org/yefi9ccsx/briconofotoventanuco.png"
+                   try:
+                        fanart = photo_imdb
+                   except:
+                        try:
+                            fanart = photo_imdb2
+                        except:
+                            try:
+                                fanart= photo_imdb3
+                            except:
+                                fanart = "http://img1.gtsstatic.com/wallpapers/55cb135265088aeee5147c2db20515d8_large.jpeg"
+                   try:
+                        show = photo_imdb4
+                   except:
+                        try:
+                            show = photo_imdb2
+                        except:
+                            try:
+                                show= photo_imdb
+                            except:
+                                show= "http://img1.gtsstatic.com/wallpapers/55cb135265088aeee5147c2db20515d8_large.jpeg"
+    
+    
+
+
+                 ###Encontrado fanart_1 en Tmdb
+                for fan in matches:
+                    fanart="https://image.tmdb.org/t/p/original" + fan
+                    fanart_1= fanart
+                    ###Busca fanart para info, fanart para trailer y fanart_2(finvideos) en Tmdb
+                    urltmdb_images ="http://api.themoviedb.org/3/movie/"+id+"/images?api_key=2e2160006592024ba87ccdf78c28f49f"
+                    data = scrapertools.cachePage(urltmdb_images)
+                    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
+            
+                    patron = '"backdrops".*?"file_path":".*?",.*?"file_path":"(.*?)",.*?"file_path":"(.*?)",.*?"file_path":"(.*?)"'
+                    matches = re.compile(patron,re.DOTALL).findall(data)
+                    
+                    if len(matches) == 0:
+                       patron = '"backdrops".*?"file_path":"(.*?)",.*?"file_path":"(.*?)",.*?"file_path":"(.*?)"'
+                       matches = re.compile(patron,re.DOTALL).findall(data)
+                       if len(matches) == 0:
+                          fanart_info = fanart_1
+                          fanart_trailer = fanart_1
+                          fanart_2 = fanart_1
+                    for fanart_info, fanart_trailer, fanart_2 in matches:
+                        fanart_info = "https://image.tmdb.org/t/p/original" + fanart_info
+                        fanart_trailer = "https://image.tmdb.org/t/p/original" + fanart_trailer
+                        fanart_2 = "https://image.tmdb.org/t/p/original" + fanart_2
+                    
+                        if fanart_info == fanart:
+                            ###Busca fanart_info en Imdb si coincide con fanart
+                            try:
+                               url_imdbphoto = "http://www.imdb.com/title/"+id_imdb+"/mediaindex"
+                               photo_imdb= scrapertools.get_match(url_imdbphoto,'<div class="media_index_thumb_list".*?src="([^"]+)"')
+                               photo_imdb = photo_imdb.replace("@._V1_UY100_CR25,0,100,100_AL_.jpg","@._V1_SX1280_SY720_.jpg")
+                               fanart_info = photo_imdb
+                            except:
+                               fanart_info = fanart_2
+                    
+
+
+            #Busqueda de todos los arts posibles
+            
+            url_fanartv ="http://webservice.fanart.tv/v3/movies/"+id+"?api_key=dffe90fba4d02c199ae7a9e71330c987"
+            data = scrapertools.cachePage(url_fanartv)
+            data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
+            patron = '"hdmovielogo":.*?"url": "([^"]+)"'
+            matches = re.compile(patron,re.DOTALL).findall(data)
+            if '"moviedisc"' in data:
+                disc = scrapertools.get_match(data,'"moviedisc":.*?"url": "([^"]+)"')
+            if '"movieposter"' in data:
+                poster = scrapertools.get_match(data,'"movieposter":.*?"url": "([^"]+)"')
+            if '"moviethumb"' in data:
+                thumb = scrapertools.get_match(data,'"moviethumb":.*?"url": "([^"]+)"')
+            if '"moviebanner"' in data:
+                banner= scrapertools.get_match(data,'"moviebanner":.*?"url": "([^"]+)"')
+
+            if len(matches)==0:
+                extra= "http://s6.postimg.org/6flcihb69/brico1sinopsis.png"
+                show = fanart_2
+                category = fanart_1
+                itemlist.append( Item(channel=__channel__, title = item.title , action="findvideos_peli", url=item.url, server="torrent", thumbnail=posterdb, fanart=fanart,  extra=extra, show=show, category= category, folder=True) )
             for logo in matches:
                 if '"hdmovieclearart"' in data:
                     clear=scrapertools.get_match(data,'"hdmovieclearart":.*?"url": "([^"]+)"')
@@ -922,7 +1031,8 @@ def fanart(item):
 
 
     itemlist.append( Item(channel=__channel__, action="trailer", title=title , url=item.url , thumbnail=thumbnail , fulltitle = item.title , fanart=fanart_trailer, extra=extra, folder=True) )
-
+    import xbmc
+    xbmc.executebuiltin('Action(reloadkeymaps)')
     return itemlist
 def findvideos(item):
     logger.info("pelisalacarta.bricocine findvideos")
@@ -978,18 +1088,26 @@ def findvideos(item):
             patron += 'id="([^"]+)".*?href="([^"]+)".*?id="([^"]+)" href="([^"]+)"'
             matches = re.compile(patron,re.DOTALL).findall(bloque_capitulos)
             if len(matches)==0:
-               show = item.show
-               extra = item.thumbnail
-               ###Se identifica como serie respetando en anterior item.category
-               category = item.category+"|"+"series"
-               itemlist.append( Item(channel=__channel__, title="[COLOR gold][B]Ooops!! Algo no va bien,pulsa para ser dirigido a otra busqueda, ...[/B][/COLOR]",action="findvideos_peli", url=item.url, thumbnail ="http://s6.postimg.org/fay99h9ox/briconoisethumb.png", fanart ="http://s6.postimg.org/uie8tu1jl/briconoisefan.jpg", extra=extra, show=show, category=category,plot = item.plot, folder=True) )
+                patron = '<span class="title">(.*?)(\d)(\d+)([^<]+)</span></td>.*?'
+                patron += 'id="([^"]+)".*?href="([^"]+)".*?id="([^"]+)".*?href="([^"]+)"'
+                matches = re.compile(patron,re.DOTALL).findall(bloque_capitulos)
+                if len(matches)== 0:
+                    show = item.show
+                    extra = item.thumbnail
+                    ###Se identifica como serie respetando en anterior item.category
+                    category = item.category+"|"+"series"
+                    itemlist.append( Item(channel=__channel__, title="[COLOR gold][B]Ooops!! Algo no va bien,pulsa para ser dirigido a otra busqueda, ...[/B][/COLOR]",action="findvideos_peli", url=item.url, thumbnail ="http://s6.postimg.org/fay99h9ox/briconoisethumb.png", fanart ="http://s6.postimg.org/uie8tu1jl/briconoisefan.jpg", extra=extra, show=show, category=category,plot = item.plot, folder=True) )
+               
             import base64
             for title_links, seasson, epi, calidad, title_torrent, url_torrent,title_magnet, url_magnet in matches:
                 try:
                    season=scrapertools.get_match(data,'<title>.*?Temporada.*?(\d+).*?Torrent')
                 except:
-                   ###Busqueda de season el las series que no vienen bien tipificadas como tal
-                   season=scrapertools.get_match(data,'<span class="title">.*?-.*?(\d+)x')
+                    try:
+                        ###Busqueda de season el las series que no vienen bien tipificadas como tal
+                        season=scrapertools.get_match(data,'<span class="title">.*?-.*?(\d+)x')
+                    except:
+                        season = "0"
                 epi=re.sub(r"101|201|301|401|501|601|701|801|901","01",epi)
                 epi=re.sub(r"102|202|302|402|502|602|702|802|902","02",epi)
                 epi=re.sub(r"103|203|303|403|503|603|703|803|903","03",epi)
@@ -1069,12 +1187,15 @@ def findvideos(item):
                patron += 'id="file".*?href="([^"]+)"'
                matches = re.compile(patron,re.DOTALL).findall(torrent_bloque)
                if len(matches)==0:
-                  show = item.show
-                  extra = item.thumbnail
-                  category = item.category+"|"+"series"
-                  print "extraaaa"
-                  print item.thumbnail
-                  itemlist.append( Item(channel=__channel__, title="[COLOR gold][B]Ooops!! Algo no va bien,pulsa para ser dirigido a otra busqueda, ...[/B][/COLOR]",action="findvideos_peli", url=item.url, thumbnail ="http://s6.postimg.org/fay99h9ox/briconoisethumb.png", fanart ="http://s6.postimg.org/uie8tu1jl/briconoisefan.jpg", extra=extra, show=show, category=category,plot = item.plot, folder=True) )
+                   patron = '<span class="title">(.*?)(\d)(\d+)([^<]+)</span></td>.*?'
+                   patron += 'id="([^"]+)".*?href="([^"]+)"'
+                   matches = re.compile(patron,re.DOTALL).findall(bloque_capitulos)
+                   if len(matches)==0:
+                      show = item.show
+                      extra = item.thumbnail
+                      category = item.category+"|"+"series"
+                      
+                      itemlist.append( Item(channel=__channel__, title="[COLOR gold][B]Ooops!! Algo no va bien,pulsa para ser dirigido a otra busqueda, ...[/B][/COLOR]",action="findvideos_peli", url=item.url, thumbnail ="http://s6.postimg.org/fay99h9ox/briconoisethumb.png", fanart ="http://s6.postimg.org/uie8tu1jl/briconoisefan.jpg", extra=extra, show=show, category=category,plot = item.plot, folder=True) )
                                                 
                import base64
                 
@@ -1139,17 +1260,19 @@ def findvideos(item):
     else:
         ###Busqueda cuando hay Torrent pero no magnet en la serie
         if 'id="file"' in data and  not 'id="magnet"'in data :
-           print "OPCION T"
+           
            patron = '<span class="title">([^<]+)- (\d)(\d+)([^<]+).*?'
            patron += 'id="([^"]+)".*?href="([^"]+)"'
            matches = re.compile(patron,re.DOTALL).findall(data)
            if len(matches)==0:
-               show = item.show
-               extra = item.thumbnail
-               category = item.category+"|"+"series"
-               print "extraaaa"
-               print item.thumbnail
-               itemlist.append( Item(channel=__channel__, title="[COLOR gold][B]Ooops!! Algo no va bien,pulsa para ser dirigido a otra busqueda, ...[/B][/COLOR]",action="findvideos_peli", url=item.url, thumbnail ="http://s6.postimg.org/fay99h9ox/briconoisethumb.png", fanart ="http://s6.postimg.org/uie8tu1jl/briconoisefan.jpg", extra=extra, show=show, category=category,plot = item.plot, folder=True) )
+               patron = '<span class="title">(.*?)(\d)(\d+)([^<]+)</span></td>.*?'
+               patron += 'id="([^"]+)".*?href="([^"]+)"'
+               matches = re.compile(patron,re.DOTALL).findall(bloque_capitulos)
+               if len(matches)==0:
+                  show = item.show
+                  extra = item.thumbnail
+                  category = item.category+"|"+"series"
+                  itemlist.append( Item(channel=__channel__, title="[COLOR gold][B]Ooops!! Algo no va bien,pulsa para ser dirigido a otra busqueda, ...[/B][/COLOR]",action="findvideos_peli", url=item.url, thumbnail ="http://s6.postimg.org/fay99h9ox/briconoisethumb.png", fanart ="http://s6.postimg.org/uie8tu1jl/briconoisefan.jpg", extra=extra, show=show, category=category,plot = item.plot, folder=True) )
            import base64
            for title_links, seasson, epi, calidad, title_torrent, url_torrent in matches:
                try:
@@ -1215,9 +1338,13 @@ def findvideos(item):
         patron += 'id="([^"]+)" href="([^"]+)"'
         matches = re.compile(patron,re.DOTALL).findall(data)
         if len(matches)==0:
-            show = item.show
-            extra = item.extra
-            itemlist.append( Item(channel=__channel__, title="[COLOR gold][B]Ooops!! Algo no va bien,pulsa para ser dirigido a otra busqueda, ...[/B][/COLOR]",action="findvideos_peli", url=item.url, thumbnail ="http://s6.postimg.org/fay99h9ox/briconoisethumb.png", fanart ="http://s6.postimg.org/uie8tu1jl/briconoisefan.jpg", extra=extra, show=show, folder=True) )
+            patron = '<span class="title">(.*?)(\d)(\d+)([^<]+)</span></td>.*?'
+            patron += 'id="([^"]+)".*?href="([^"]+)"'
+            matches = re.compile(patron,re.DOTALL).findall(bloque_capitulos)
+            if len(matches)==0:
+               show = item.show
+               extra = item.extra
+               itemlist.append( Item(channel=__channel__, title="[COLOR gold][B]Ooops!! Algo no va bien,pulsa para ser dirigido a otra busqueda, ...[/B][/COLOR]",action="findvideos_peli", url=item.url, thumbnail ="http://s6.postimg.org/fay99h9ox/briconoisethumb.png", fanart ="http://s6.postimg.org/uie8tu1jl/briconoisefan.jpg", extra=extra, show=show, folder=True) )
         import base64
         for title_links, seasson, epi, calidad, title_magnet, url_magnet in matches:
             try:
@@ -1332,7 +1459,8 @@ def episodios(item):
     try:
        #Nueva busqueda bing de Imdb serie id
        url_imdb = "http://www.bing.com/search?q=%s+tv+series+site:imdb.com" % item.plot.replace(' ', '+')
-       data = scrapertools.cachePage(url_imdb)
+       data = browser (url_imdb)
+       
        data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
        try:
            subdata_imdb = scrapertools.get_match(data,'<li class="b_algo">(.*?)h="ID')
@@ -1343,7 +1471,7 @@ def episodios(item):
        except:
           imdb_id = ""
        ### Busca en Tmdb quinta imagen para episodios mediate Imdb id
-       urltmdb_imdb="https://api.themoviedb.org/3/find/"+imdb_id+"?api_key=57983e31fb435df4df77afb854740ea9&external_source=imdb_id"
+       urltmdb_imdb="https://api.themoviedb.org/3/find/"+imdb_id+"?api_key=2e2160006592024ba87ccdf78c28f49f&external_source=imdb_id"
        data = scrapertools.cachePage(urltmdb_imdb)
        data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
        id = scrapertools.get_match(data,'"tv_results":.*?,"id":(.*?),"')
@@ -1353,7 +1481,7 @@ def episodios(item):
          if ":" in item.plot:
             try:
                item.plot = item.plot.replace(" ","%20")
-               url_tmdb="http://api.themoviedb.org/3/search/tv?api_key=57983e31fb435df4df77afb854740ea9&query="+ item.plot +"&language=es&include_adult=false"
+               url_tmdb="http://api.themoviedb.org/3/search/tv?api_key=2e2160006592024ba87ccdf78c28f49f&query="+ item.plot +"&language=es&include_adult=false"
                data = scrapertools.cachePage(url_tmdb)
                data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
                id = scrapertools.get_match(data,'page":1.*?,"id":(.*?),"')
@@ -1361,7 +1489,7 @@ def episodios(item):
                    try:
                        item.plot= re.sub(r"(:.*)","",item.plot)
                        item.plot = item.plot.replace(" ","%20")
-                       url_tmdb="http://api.themoviedb.org/3/search/tv?api_key=57983e31fb435df4df77afb854740ea9&query="+ item.plot +"&language=es&include_adult=false"
+                       url_tmdb="http://api.themoviedb.org/3/search/tv?api_key=2e2160006592024ba87ccdf78c28f49f&query="+ item.plot +"&language=es&include_adult=false"
                        data = scrapertools.cachePage(url_tmdb)
                        data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
                        id = scrapertools.get_match(data,'page":1.*?,"id":(.*?),"')
@@ -1374,7 +1502,7 @@ def episodios(item):
                  if "De la A a la Z" in item.plot:
                      item.plot = "A to Z"
                  item.plot = item.plot.replace(" ","%20")
-                 url_tmdb="http://api.themoviedb.org/3/search/tv?api_key=57983e31fb435df4df77afb854740ea9&query="+ item.plot +"&language=es&include_adult=false"
+                 url_tmdb="http://api.themoviedb.org/3/search/tv?api_key=2e2160006592024ba87ccdf78c28f49f&query="+ item.plot +"&language=es&include_adult=false"
                  data = scrapertools.cachePage(url_tmdb)
                  data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
                  id = scrapertools.get_match(data,'page":1.*?,"id":(.*?),"')
@@ -1384,7 +1512,7 @@ def episodios(item):
                  id =""
 
     ###Teniendo (o no) el id Tmdb busca imagen
-    urltmdb_images = "https://api.themoviedb.org/3/tv/"+id+"?api_key=57983e31fb435df4df77afb854740ea9"
+    urltmdb_images = "https://api.themoviedb.org/3/tv/"+id+"?api_key=2e2160006592024ba87ccdf78c28f49f"
     data = scrapertools.cachePage(urltmdb_images)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
     try:
@@ -1395,7 +1523,7 @@ def episodios(item):
         fanart_3= item.fanart
         fanart= fanart_3
     ###Se hace también la busqueda de el thumb del episodio en Tmdb
-    urltmdb_epi ="https://api.themoviedb.org/3/tv/"+id+"/season/"+item.extra.split("|")[0]+"/episode/"+item.extra.split("|")[2]+"/images?api_key=57983e31fb435df4df77afb854740ea9"
+    urltmdb_epi ="https://api.themoviedb.org/3/tv/"+id+"/season/"+item.extra.split("|")[0]+"/episode/"+item.extra.split("|")[2]+"/images?api_key=2e2160006592024ba87ccdf78c28f49f"
     data = scrapertools.cachePage(urltmdb_epi)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
     patron = '{"id".*?"file_path":"(.*?)","height"'
@@ -1411,7 +1539,7 @@ def episodios(item):
         extra = id+"|"+season
         itemlist.append( Item(channel=__channel__, title = title , action="play", url=item.url, thumbnail=thumbnail, fanart=fanart,  category = item.category, folder=False) )
     ###Busca poster de temporada Tmdb
-    urltmdb_temp= "http://api.themoviedb.org/3/tv/"+id+"/season/"+season+"/images?api_key=57983e31fb435df4df77afb854740ea9"
+    urltmdb_temp= "http://api.themoviedb.org/3/tv/"+id+"/season/"+season+"/images?api_key=2e2160006592024ba87ccdf78c28f49f"
     data = get_page( urltmdb_temp )
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
     patron = '{"id".*?"file_path":"(.*?)","height"'
@@ -1421,7 +1549,7 @@ def episodios(item):
     for temp in matches:
         thumbnail= "https://image.tmdb.org/t/p/original"+ temp
     ####Busca el fanart para el item info####
-    urltmdb_faninfo ="http://api.themoviedb.org/3/tv/"+id+"/images?api_key=57983e31fb435df4df77afb854740ea9"
+    urltmdb_faninfo ="http://api.themoviedb.org/3/tv/"+id+"/images?api_key=2e2160006592024ba87ccdf78c28f49f"
     data = get_page( urltmdb_faninfo )
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
     patron = '{"backdrops".*?"file_path":".*?","height".*?"file_path":"(.*?)",'
@@ -1499,7 +1627,6 @@ def findvideos_peli(item):
                  if "x0" in epi:
                     epi = epi.replace( "x0","")
                  title_links = title_link
-                 print title_links
                  action ="episodios"
                  extra = season+"|"+title_links+"|"+epi
                  itemlist.append( Item(channel=__channel__, title = title_torrent , action=action, url=url_torrent, server="torrent", thumbnail=item.extra, fanart=item.show,extra=extra,category=item.category,plot = item.plot,  folder=True) )
@@ -1540,7 +1667,6 @@ def findvideos_peli(item):
                     if "x0" in epi:
                        epi = epi.replace( "x0","")
                     title_links = title_link
-                    print title_links
                     action ="episodios"
                     extra = season+"|"+title_links+"|"+epi
                     itemlist.append( Item(channel=__channel__, title = title_torrent , action=action, url=url_torrent, server="torrent", thumbnail=item.extra, fanart=item.show,extra=extra,category=item.category,plot = item.plot,  folder=True) )
@@ -1577,7 +1703,6 @@ def findvideos_peli(item):
                     if "x0" in epi:
                         epi = epi.replace( "x0","")
                     title_links = title_link
-                    print title_links
                     action ="episodios"
                     extra = season+"|"+title_links+"|"+epi
                     itemlist.append( Item(channel=__channel__, title = title_torrent , action=action, url=url_torrent, server="torrent", thumbnail=item.extra, fanart=item.show,extra=extra,category=item.category,plot = item.plot,  folder=True) )
@@ -1716,7 +1841,6 @@ def info(item):
             quit = "Pulsa"+" [COLOR crimson][B]INTRO [/B][/COLOR]"+ "para quitar"
 
         for plot, title in matches:
-            print title
             title = title.upper()
             title = title.replace(title,"[COLOR sandybrown][B]"+title+"[/B][/COLOR]")
             title = re.sub(r"&#.*?;|\[HD .*?\]|","",title)
