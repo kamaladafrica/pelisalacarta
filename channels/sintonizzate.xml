@@ -7,12 +7,13 @@
 	<active>false</active>
 	<include_in_global_search>false</include_in_global_search>
 	<version>0</version>
-	<adult>false</adult>
+	<adult>true</adult>
 	<date></date>
 	<changes></changes>
 	<fanart></fanart>
 	<thumbnail></thumbnail>
 	<categories>
 		<category>movie</category>
+		<category>adult</category>
 	</categories>
 </channel>

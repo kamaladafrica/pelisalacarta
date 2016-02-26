@@ -549,14 +549,28 @@ def findvideos(item):
             opcion = "Ver"
         title = opcion+": "+servername.strip()+" ("+calidad.strip()+")"+" ("+idioma.strip()+")"
         title = scrapertools.htmlclean(title)
-        thumbnail = item.thumbnail
-        plot = item.title+"\n\n"+scrapertools.find_single_match(data,'<meta property="og:description" content="([^"]+)"')
-        plot = scrapertools.htmlclean(plot)
-        fanart = scrapertools.find_single_match(data,'<div style="background-image.url. ([^\s]+)')
+        #Se comprueba si existe el conector y si se oculta en caso de premium
+        servername = servername.lower().split(".")[0]
 
-        url+= "###" + id + ";" + type
+        if servername == "streamin": servername = "streaminto"
+        if servername== "waaw": servername = "netutv"
+        if servername == "ul": servername = "uploadedto"
+        mostrar_server = True
+        if config.get_setting("hidepremium")=="true":
+            mostrar_server= servertools.is_server_enabled (servername)
+        if mostrar_server:
+            try:
+                servers_module = __import__("servers."+servername)
+                thumbnail = item.thumbnail
+                plot = item.title+"\n\n"+scrapertools.find_single_match(data,'<meta property="og:description" content="([^"]+)"')
+                plot = scrapertools.htmlclean(plot)
+                fanart = scrapertools.find_single_match(data,'<div style="background-image.url. ([^\s]+)')
 
-        itemlist.append( Item( channel=__channel__, action="play", title=title, fulltitle=title, url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, show=item.show, folder=True ) )
+                url+= "###" + id + ";" + type
+
+                itemlist.append( Item( channel=__channel__, action="play", title=title, fulltitle=title, url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, show=item.show, folder=True ) )
+            except:
+                pass
 
     ## 2 = película
     if type == "2" and item.category != "Cine":

@@ -21,9 +21,8 @@ def mainlist(item):
     logger.info("pelisalacarta.channels.ayuda mainlist")
     itemlist = []
 
-    platform_name = config.get_platform()
     cuantos = 0
-    if "kodi" in platform_name or platform_name=="xbmceden" or platform_name=="xbmcfrodo" or platform_name=="xbmcgotham":
+    if config.is_xbmc():
         itemlist.append( Item(channel=CHANNELNAME, action="force_creation_advancedsettings" , title="Crear fichero advancedsettings.xml optimizado"))
         cuantos = cuantos + 1
         

@@ -40,41 +40,30 @@ season: debe ir en orden descendente
 episode: la "temporada 1" siempre son "0 capitulos", la "temporada 2" es el "numero de capitulos de la temporada 1"
 
 FAIRY TAIL:
-    - SEASON 1: EPISODE 48 --> season 1: total_episode: 0
-    - SEASON 2: EPISODE 48 --> season 2: total_episode: 48
-    - SEASON 3: EPISODE 54 --> season 3: total_episode: 96 ( [48=season2] +[ 48=season1] )
-    - SEASON 4: EPISODE 175 --> season 4: total_episode: 150 ( [54=season3] + [48=season2] + [48=season3] )
+    - SEASON 1: EPISODE 48 --> [season 1, episode: 0]
+    - SEASON 2: EPISODE 48 --> [season 2, episode: 48]
+    - SEASON 3: EPISODE 54 --> [season 3, episode: 96 ( [48=season2] +[ 48=season1] )]
+    - SEASON 4: EPISODE 175 --> [season 4: episode: 150 ( [54=season3] + [48=season2] + [48=season3] )]
 
-animeflv.data.json
+animeflv_data.json
 {
-   "SERIES":{
-      "Fairy Tail":{
-         "season":[
-            4,
-            3,
-            2,
-            1
-         ],
-         "total_episode":[
-            150,
-            96,
-            48,
-            0
-         ]
-      },
-      "Fairy Tail (2014)":{
-         "season":[
-            6,
-            5
-         ],
-         "total_episode":[
-            51,
-            0
-         ]
-      }
-   }
+    "TVSHOW_RENUMBER": {
+        "Fairy Tail": {
+            "season_episode": [
+                [4, 150],
+                [3, 96],
+                [2, 48],
+                [1, 0]
+            ]
+        },
+        "Fairy Tail (2014)": {
+            "season_episode": [
+                [6, 51],
+                [5, 0]
+            ]
+        }
+    }
 }
-
 '''
 
 
@@ -471,16 +460,23 @@ def numbered_for_tratk(show, season, episode):
     dict_series = {}
 
     name_file = os.path.splitext(os.path.basename(__file__))[0]
-    fname = os.path.join(config.get_data_path(), "channels", name_file + ".data.json")
+    fname = os.path.join(config.get_data_path(), "channels", name_file + "_data.json")
 
     if os.path.isfile(fname):
-        infile = open(fname, "rb")
-        data = infile.read()
-        infile.close()
+
+        data = ""
+
+        try:
+            with open(fname, "r") as f:
+                for line in f:
+                    data += line
+        except EnvironmentError:
+            logger("ERROR al leer el archivo: {0}".format(fname))
+
         json_data = jsontools.load_json(data)
 
-        if 'SERIES' in json_data:
-            dict_series = json_data['SERIES']
+        if 'TVSHOW_RENUMBER' in json_data:
+            dict_series = json_data['TVSHOW_RENUMBER']
 
         # ponemos en minusculas el key, ya que previamente hemos hecho lo mismo con show.
         for key in dict_series.keys():
@@ -492,16 +488,17 @@ def numbered_for_tratk(show, season, episode):
     if show in dict_series:
         logger.info("ha encontrado algo: {0}".format(dict_series[show]))
 
-        if dict_series[show]['total_episode']:
-            for idx, valor in enumerate(dict_series[show]['total_episode']):
+        if len(dict_series[show]['season_episode']) > 1:
+            for row in dict_series[show]['season_episode']:
 
-                if new_episode > valor:
-                    new_episode -= valor
-                    new_season = dict_series[show]['season'][idx]
+                if new_episode > row[1]:
+                    new_episode -= row[1]
+                    new_season = row[0]
                     break
 
         else:
-            new_season = dict_series[show]['season']
+            new_season = dict_series[show]['season_episode'][0][0]
+            new_episode += dict_series[show]['season_episode'][0][1]
 
     logger.info("pelisalacarta.channels.animeflv numbered_for_tratk: {0}:{1}".format(new_season, new_episode))
     return new_season, new_episode

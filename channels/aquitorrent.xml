@@ -8,13 +8,13 @@
 	<language>es</language>
 
 	<fanart></fanart>
-	<thumbnail>http://media.tvalacarta.info/pelisalacarta/squares/aquitorrent.png</thumbnail>
+	<thumbnail>http://s6.postimg.org/kta7oe8y9/aquitorrentlogo.png</thumbnail>
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/aquitorrent.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>1</version>
+	<version>2</version>
 	<date>28/08/2015</date>
-	<changes>First pelisalacarta 4 release</changes>
+	<changes>Cambios web.Mejorado fanart</changes>
 
 	<categories>
 		<category>torrent</category>

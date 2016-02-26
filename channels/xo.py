@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para xo
@@ -17,7 +17,7 @@ __channel__ = "xo"
 __category__ = "F,S"
 __type__ = "generic"
 __title__ = "XO"
-__language__ = "ES"
+__language__ = "RO"
 __creationdate__ = "20131223"
 
 DEBUG = config.get_setting("debug")
