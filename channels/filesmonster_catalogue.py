@@ -42,7 +42,7 @@ def mainlist(item):
     itemlist = []
     itemlist.append( Item(channel=__channel__, action="menu_1"  ,  url="hetero",  title="canal filesmonster.filesdl.net" , thumbnail="http://filesmonster.biz/img/logo.png"))    
     itemlist.append( Item(channel=__channel__, action="menu_2"  ,  url="gay",  title="canal filesmonster.biz" , thumbnail="http://filesmonster.biz/img/logo.png"))        
-
+    itemlist.append( Item(channel=__channel__, title="Búsqueda global"     , action="search") )
     return itemlist
 
 
@@ -56,7 +56,7 @@ def menu_1(item):
     itemlist.append( Item(channel=__channel__, action="gay"  ,  title="Categorías porno gay y lesbian" , thumbnail="http://photosex.biz/imager/w_400/h_500/93df13c85224d428c195ea6581e7cdb3.jpg"))   
     itemlist.append( Item(channel=__channel__, action="bisex"  , title="Categorías porno bisex, trans y otras" , thumbnail="http://photosex.biz/imager/w_400/9dbaf07ad77788fd3d1f2f533bb25544.jpg"))     
     itemlist.append( Item(channel=__channel__, action="lista_categoria"  ,  title="Listado global (todas las categorías)" ,  url="http://filesmonster.filesdl.net/posts/index/",  thumbnail="http://photosex.biz/imager/w_400/h_400/9f869c6cb63e12f61b58ffac2da822c9.jpg"))         
-    itemlist.append( Item(channel=__channel__, title="Búsqueda global"     , action="search") )
+
     return itemlist
 
 
@@ -133,7 +133,6 @@ def bisex(item):
     itemlist.append( Item(channel=__channel__, action="lista_categoria"  ,  title="Transsexual" ,  url="http://filesmonster.filesdl.net/posts/category/52/transsexual",  thumbnail="http://photosex.biz/imager/w_400/h_500/6edcad5b6475cb2bf09fe6eeb912d4d4.jpg"))    
     itemlist.append( Item(channel=__channel__, action="lista_categoria"  ,  title="Other" ,  url="http://filesmonster.filesdl.net/posts/category/0/other",  thumbnail="http://photosex.biz/imager/w_400/h_500/5854a2da100a8e69ae6c54296bdcf79a.jpg"))    
     itemlist.append( Item(channel=__channel__, action="lista_categoria"  ,  title="Bisexual" ,  url="http://filesmonster.filesdl.net/posts/category/7/big-boobs",  thumbnail="http://photosex.biz/imager/w_400/h_500/9b0fdf1b9b29d816694740867a39de10.jpg"))    
-  
      
     return itemlist
 
@@ -294,9 +293,70 @@ def lista_buscar(item):
         tipo = match[2]     
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
         scrapedplot=strip_tags(scrapedplot)
-        if (scrapedtitle!="All" and scrapedthumbnail!="http://filesmonster.filesdl.net/img/pornbutton.gif") : itemlist.append( Item(channel=__channel__, action="detail", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        if (scrapedtitle!="All" and scrapedthumbnail!="http://filesmonster.filesdl.net/img/pornbutton.gif") : itemlist.append( Item(channel=__channel__, action="detail", title=scrapedtitle+" [en filesmonster.filesdl.net]" , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
         if (scrapedtitle!="All" and scrapedthumbnail!="http://filesmonster.filesdl.net/img/pornbutton.gif") :cuantos_videos=cuantos_videos+1 
 
+ 
+ 
+ # Descarga la pagina  con (plot es la pagina)
+    
+    if (item.plot!=''): pagina=item.plot
+    if (item.plot==""):pagina="1"
+    url="http://filesmonster.biz/index.php?q="+texto+"&page="+pagina
+    data1= scrapertools.downloadpageGzip(url)
+    
+    pagina=int(pagina)
+    pagina=pagina+1
+    pagina=str(pagina)
+    url="http://filesmonster.biz/index.php?q="+texto+"&page="+pagina
+    data2= scrapertools.downloadpageGzip(url)
+    
+    pagina=int(pagina)
+    pagina=pagina+1
+    pagina=str(pagina)
+    url="http://filesmonster.biz/index.php?q="+texto+"&page="+pagina
+    data3= scrapertools.downloadpageGzip(url)
+    
+    pagina=int(pagina)
+    pagina=pagina+1
+    pagina=str(pagina)
+    url="http://filesmonster.biz/index.php?q="+texto+"&page="+pagina
+    data4= scrapertools.downloadpageGzip(url)
+    
+    pagina=int(pagina)
+    pagina=pagina+1
+    pagina=str(pagina)
+    url="http://filesmonster.biz/index.php?q="+texto+"&page="+pagina
+    data5= scrapertools.downloadpageGzip(url)
+    
+    data=data1+data2+data3+data4+data5
+    
+
+
+    
+    # Extrae las entradas (carpetas)
+    
+   
+    #patronvideos ='<h1 class="product_title"><a href="([^"]+)">([^<]+)</a>.*?<img src="([^"]+)"'
+
+    patronvideos ='</td><td><a href="([^"]+)" title=".*?">([^<]+)</a>';
+        
+    matches = re.compile(patronvideos,re.DOTALL).findall(data)
+
+    for match in matches:
+        scrapedtitle = match[1]
+        scrapedtitle = scrapedtitle.replace("&#8211;","-")
+        scrapedtitle = scrapedtitle.replace("&#8217;","'")
+        scrapedtitle =scrapedtitle.strip()
+        scrapedurl= "http://filesmonster.biz/"+match[0]
+        scrapedthumbnail = match[0]
+        imagen = ""
+        scrapedplot = match[0]   
+        scrapedplot=strip_tags(scrapedplot)
+        itemlist.append( Item(channel=__channel__, action="detail", title=scrapedtitle+" [en filesmonster.biz]" , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+     
+ 
+ 
  
  #creamos los enlaces a las pÃ¡ginas consecutivas
 
@@ -364,7 +424,7 @@ def search(item,texto):
     
    
     #patronvideos ='<h1 class="product_title"><a href="([^"]+)">([^<]+)</a>.*?<img src="([^"]+)"'
-    
+
     patronvideos='<div class="panel-heading">.*?<a href="([^"]+)">([^<]+).*?</a>.*?<img src="([^"]+)"'  
         
     matches = re.compile(patronvideos,re.DOTALL).findall(data)
@@ -381,9 +441,78 @@ def search(item,texto):
         tipo = match[2]     
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
         scrapedplot=strip_tags(scrapedplot)
-        if (scrapedtitle!="All" and scrapedthumbnail!="http://filesmonster.filesdl.net/img/pornbutton.gif") : itemlist.append( Item(channel=__channel__, action="detail", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        if (scrapedtitle!="All" and scrapedthumbnail!="http://filesmonster.filesdl.net/img/pornbutton.gif") : itemlist.append( Item(channel=__channel__, action="detail", title=scrapedtitle+" [en filesmonster.filesdl.net]" , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
         if (scrapedtitle!="All" and scrapedthumbnail!="http://filesmonster.filesdl.net/img/pornbutton.gif") :cuantos_videos=cuantos_videos+1 
 
+ 
+ 
+ 
+	
+	
+	
+		
+    
+ # Descarga la pagina  con (plot es la pagina)
+    
+    if (item.plot!=''): pagina=item.plot
+    if (item.plot==""):pagina="1"
+    url="http://filesmonster.biz/index.php?q="+texto+"&page="+pagina
+    data1= scrapertools.downloadpageGzip(url)
+    
+    pagina=int(pagina)
+    pagina=pagina+1
+    pagina=str(pagina)
+    url="http://filesmonster.biz/index.php?q="+texto+"&page="+pagina
+    data2= scrapertools.downloadpageGzip(url)
+    
+    pagina=int(pagina)
+    pagina=pagina+1
+    pagina=str(pagina)
+    url="http://filesmonster.biz/index.php?q="+texto+"&page="+pagina
+    data3= scrapertools.downloadpageGzip(url)
+    
+    pagina=int(pagina)
+    pagina=pagina+1
+    pagina=str(pagina)
+    url="http://filesmonster.biz/index.php?q="+texto+"&page="+pagina
+    data4= scrapertools.downloadpageGzip(url)
+    
+    pagina=int(pagina)
+    pagina=pagina+1
+    pagina=str(pagina)
+    url="http://filesmonster.biz/index.php?q="+texto+"&page="+pagina
+    data5= scrapertools.downloadpageGzip(url)
+    
+    data=data1+data2+data3+data4+data5
+    
+
+
+    
+    # Extrae las entradas (carpetas)
+    
+   
+    #patronvideos ='<h1 class="product_title"><a href="([^"]+)">([^<]+)</a>.*?<img src="([^"]+)"'
+
+    patronvideos ='</td><td><a href="([^"]+)" title=".*?">([^<]+)</a>';
+        
+    matches = re.compile(patronvideos,re.DOTALL).findall(data)
+
+    for match in matches:
+        scrapedtitle = match[1]
+        scrapedtitle = scrapedtitle.replace("&#8211;","-")
+        scrapedtitle = scrapedtitle.replace("&#8217;","'")
+        scrapedtitle =scrapedtitle.strip()
+        scrapedurl= "http://filesmonster.biz/"+match[0]
+        scrapedthumbnail = match[0]
+        imagen = ""
+        scrapedplot = match[0]   
+        scrapedplot=strip_tags(scrapedplot)
+        itemlist.append( Item(channel=__channel__, action="detail_2", title=scrapedtitle+" [en filesmonster.biz]" , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+    
+
+	
+ 
+ 
  
  #creamos los enlaces a las pÃ¡ginas consecutivas
 
@@ -395,6 +524,8 @@ def search(item,texto):
     pagina=str(pagina)
     if (cuantos_videos==25 ) : itemlist.append( Item(channel=__channel__, action="lista_buscar", title=">> siguientes resultados (páginas "+pagina +" a "+pagina_despues+")", url=texto , thumbnail="", plot=pagina , folder=True) )
     itemlist.append( Item(channel=__channel__, action="mainlist", title="<< volver al inicio",  folder=True) )
+  
+  
   
   
     return itemlist
@@ -489,7 +620,6 @@ def menu_2(item):
     itemlist.append( Item(channel=__channel__, action="categorias_2"  ,  url="gay",  title="Categorías porno gay, lesbian, bisexual" , thumbnail="http://photosex.biz/imager/w_400/h_500/93df13c85224d428c195ea6581e7cdb3.jpg"))        
     itemlist.append( Item(channel=__channel__, action="categorias_2"  ,  url="", title="Todas las categorÍas" , thumbnail="http://photosex.biz/imager/w_400/9dbaf07ad77788fd3d1f2f533bb25544.jpg"))     
     itemlist.append( Item(channel=__channel__, action="lista_categoria_2"  ,  title="Listado global (vídeos de todas las categorías)" ,  url="http://filesmonster.biz/index.php?page=1",  thumbnail="http://photosex.biz/imager/w_400/h_400/9f869c6cb63e12f61b58ffac2da822c9.jpg"))         
-
     return itemlist
 
 
@@ -714,7 +844,6 @@ def detail_2(item):
 
 
     return itemlist
-    
     
     
     
