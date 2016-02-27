@@ -73,6 +73,7 @@ def get_setting(name, channel=""):
         File_settings= os.path.join(get_data_path(), "settings_channels", channel+"_data.json")
         dict_file = {}
         dict_settings= {}
+        list_controls = []
         try:
             if os.path.exists(File_settings):
                 # Obtenemos configuracion guardada de ../settings/channel_data.json
@@ -90,8 +91,12 @@ def get_setting(name, channel=""):
                 # Obtenemos controles del archivo ../channels/channel.xml
                 channel_xml =os.path.join(get_runtime_path() , 'channels' , channel + ".xml")
                 channel_json = jsontools.xmlTojson(channel_xml)
-                list_controls= channel_json['channel']['settings']
-        
+                settings = channel_json['channel']['settings']
+                if type(settings) == list:
+                    list_controls = settings
+                else:
+                    list_controls.append(settings)
+                
                 # Le asignamos los valores por defecto
                 for ds in list_controls:
                     try:
@@ -102,14 +107,16 @@ def get_setting(name, channel=""):
                                 dict_settings[ds['id']] = ds['default']
                     except: # Si algun control de la lista  no tiene id, type o default lo ignoramos
                         pass
-                dict_file['settings']= dict_settings
-                # Creamos el archivo ../settings/channel_data.json
-                json_data = jsontools.dump_json(dict_file)
-                try:
-                    with open(File_settings, "w") as f:
-                        f.write(json_data)
-                except EnvironmentError:
-                    logger.info("[config.py] ERROR al salvar el archivo: {0}".format(File_settings))
+                
+                if  dict_settings.has_key(name): # Si el parametro existe en el channel.xml creamos el channel_data.json
+                    dict_file['settings']= dict_settings 
+                    # Creamos el archivo ../settings/channel_data.json
+                    json_data = jsontools.dump_json(dict_file)
+                    try:
+                        with open(File_settings, "w") as f:
+                            f.write(json_data)
+                    except EnvironmentError:
+                        logger.info("[config.py] ERROR al salvar el archivo: {0}".format(File_settings))
 
             # Devolvemos el valor del parametro local 'name' si existe        
             return dict_settings[name]
