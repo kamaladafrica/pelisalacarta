@@ -14,6 +14,7 @@ from core import config
 from core import scrapertools
 from core.item import Item
 from servers import servertools
+from platformcode import guitools
 
 __channel__ = "megaforo"
 __category__ = "F"
@@ -40,8 +41,8 @@ def isGeneric():
 def login():
     logger.info("[megaforo.py] login")
     # Calcula el hash del password
-    LOGIN = config.get_setting("megaforouser") 
-    PASSWORD = config.get_setting("megaforopassword")
+    LOGIN = config.get_setting("megaforouser",__channel__) 
+    PASSWORD = config.get_setting("megaforopassword",__channel__)
     logger.info("LOGIN="+LOGIN)
     logger.info("PASSWORD="+PASSWORD)
     # Hace el submit del login
@@ -54,8 +55,8 @@ def login():
 def mainlist(item):
     logger.info("[megaforo.py] mainlist")
     itemlist = []
-    if config.get_setting("megaforoaccount")!="true":
-        itemlist.append( Item( channel=__channel__ , title="Habilita tu cuenta en la configuración..." , action="" , url="" , folder=False ) )
+    if config.get_setting("megaforouser",__channel__) == "":
+        itemlist.append( Item( channel=__channel__ , title="Habilita tu cuenta en la configuración..." , action="settingCanal" , url="") )
     else:
         if login():
             itemlist.append( Item( channel=__channel__ , title="Series" , action="foro" , url="http://mega-foro.com/series-de-tv/" , folder=True ) )
@@ -65,11 +66,15 @@ def mainlist(item):
             itemlist.append( Item( channel=__channel__ , title="Contenido Online" , action="foro" , url="http://mega-foro.com/online/" , folder=True ) )
             itemlist.append( Item( channel=__channel__ , title="Anime & Manga" , action="foro" , url="http://mega-foro.com/anime-manga/" , folder=True ) )
             itemlist.append( Item( channel=__channel__ , title="Música" , action="foro" , url="http://mega-foro.com/musica/" , folder=True ) )
+            itemlist.append( Item(channel=__channel__, action="settingCanal"    , title="Configuración..."     , url="" ))
         else:
             itemlist.append( Item( channel=__channel__ , title="Cuenta incorrecta, revisa la configuración..." , action="" , url="" , folder=False ) )
     return itemlist
 
-
+def settingCanal(item):           
+    ventana = guitools.show_settings(item.channel)
+    return ventana
+    
 def foro(item):
     logger.info("[megaforo.py] foro")
     itemlist=[]
