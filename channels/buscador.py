@@ -5,11 +5,14 @@
 # ------------------------------------------------------------
 
 import os
-
+import glob
+import imp
 from core import config
 from core import logger
 from core.item import Item
 from core import channeltools
+from platformcode import guitools
+
 
 __channel__ = "buscador"
 
@@ -36,10 +39,62 @@ def mainlist(item,preferred_thumbnail="squares"):
 
     if len(saved_searches_list) > 0:
         itemlist.append(Item(channel=__channel__, action="clear_saved_searches", title="Borrar búsquedas guardadas"))
+    
+    if config.is_xbmc():
+        itemlist.append(Item(channel=__channel__, action="settingCanal", title=config.get_localized_string(30100)))
 
     return itemlist
 
+def settingCanal(item):
+    # Only in xbmc/kodi
+    # Abre un cuadro de dialogo con todos los canales q pueden incluirse en la busqueda global para su configuracion
+    channels_path = os.path.join(config.get_runtime_path(), "channels", '*.xml')
+    channel_language = config.get_setting("channel_language")
+    if channel_language == "":
+        channel_language = "all"
+    
+    list_true =[]
+    list_false =[]
+    
+    list_controls = []
+    for infile in sorted(glob.glob(channels_path)):
+        channel_name = os.path.basename(infile)[:-4]
+        channel_parameters = channeltools.get_channel_parameters(channel_name)
+        
+        # No incluir si es un canal inactivo
+        if channel_parameters["active"] != "true":
+            continue
+        
+        # No incluir si es un canal para adultos, y el modo adulto está desactivado
+        if channel_parameters["adult"] == "true" and config.get_setting("adult_mode") == "false":
+            continue
 
+        # No incluir si el canal es en un idioma filtrado
+        if channel_language != "all" and channel_parameters["language"] != channel_language:
+            continue
+        
+        # No incluir si en la configuracion del canal no existe "include_in_global_search"
+        include_in_global_search = config.get_setting("include_in_global_search",channel_name)
+        if include_in_global_search == "":
+            continue
+        
+        control = {'id': channel_name,
+                      'type': "bool",                    
+                      'label': channel_parameters["title"],
+                      'default': include_in_global_search,
+                      'enabled': True,
+                      'visible': True}
+
+        list_controls.append(control)
+ 
+    ventana = guitools.SettingWindow(list_controls, caption= "Canales incluidos en la búsqueda global")
+    ventana.doModal()
+    if ventana.isConfirmed():
+        for canal, value in ventana.get_values().items():
+            config.set_setting("include_in_global_search",value,canal)
+    
+        
+        
 # Al llamar a esta función, el sistema pedirá primero el texto a buscar
 # y lo pasará en el parámetro "tecleado"
 def search(item, tecleado):
@@ -59,10 +114,6 @@ def do_search(item):
     tecleado = item.extra
 
     itemlist = []
-
-    import os
-    import glob
-    import imp
 
     channels_path = os.path.join(config.get_runtime_path(), "channels", '*.xml')
     logger.info("pelisalacarta.channels.buscador channels_path="+channels_path)
@@ -101,10 +152,6 @@ def do_search(item):
         if channel_parameters["active"] != "true":
             continue
 
-        # No busca si es un canal excluido de la busqueda global
-        if channel_parameters["include_in_global_search"] != "true":
-            continue
-
         # No busca si es un canal para adultos, y el modo adulto está desactivado
         if channel_parameters["adult"] == "true" and config.get_setting("adult_mode") == "false":
             continue
@@ -112,7 +159,15 @@ def do_search(item):
         # No busca si el canal es en un idioma filtrado
         if channel_language != "all" and channel_parameters["language"] != channel_language:
             continue
-
+        
+        # No busca si es un canal excluido de la busqueda global
+        include_in_global_search = channel_parameters["include_in_global_search"]
+        if include_in_global_search == "":
+            #Buscar en la configuracion del canal
+            include_in_global_search = str(config.get_setting("include_in_global_search",basename_without_extension))
+        if include_in_global_search.lower() != "true":
+            continue
+            
         if show_dialog:
             progreso.update(percentage, ' Buscando "' + tecleado + '"', basename_without_extension)
 

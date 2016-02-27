@@ -88,11 +88,13 @@ def dialogBox(item):
     
 def get_setting(item):
     #name= 'fanart'
-    name= 'pordedenumberlinks'
+    #name= 'pordedenumberlinks'
     #name= 'nameControl2' # El parametro no existe
     #name= 'debug' # El parametro solo existe en la configuracion global
-    value= config.get_setting(name,item.channel) # Pruebas en configuracion local
+    #value= config.get_setting(name,item.channel) # Pruebas en configuracion local
     #value= config.get_setting(name) # Pruebas en configuracion global
+    name= 'include_in_global_search'
+    value= config.get_setting(name,"cinehanwer")
     guitools.dialog_ok(name, "El valor actual es: " + str(value))
     
     
