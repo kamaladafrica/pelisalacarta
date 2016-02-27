@@ -124,7 +124,7 @@ def show_settings(channel_action, list_controls=None, dict_values=None, caption=
                         {'id': "nameControl4",
                           'type': "label",                       # bool, text, list, label 
                           'label': "Control 4: tipo Etiqueta",
-                          'default': '0xFFee66CC',               # En este caso: valor opcional que representa el color del texto
+                          'default': '0xFFee66CC',               # En este caso representa el color del texto
                           'enabled': true,
                           'visible': true,
                           'lvalues':""                         # only for type = list
@@ -210,7 +210,8 @@ def show_settings(channel_action, list_controls=None, dict_values=None, caption=
     if File_settings == "":
         File_settings= os.path.join(config.get_data_path(),"settings_channels" ,channel +"_data.json")
     if caption =="":
-        caption = "Configuración -- " + channel.capitalize()
+        caption = config.get_localized_string(30100) + " -- " + channel.capitalize()
+       
     if list_controls is None:
         list_controls =[]
         # Obtenemos controles del archivo ../channels/channel.xml
@@ -220,6 +221,9 @@ def show_settings(channel_action, list_controls=None, dict_values=None, caption=
             list_controls= channel_json['channel']['settings']
             # Convertir los campos boleanos de str a bool
             for c in list_controls:
+                if not c.has_key('id') or not c.has_key('type') or not c.has_key('default'):
+                    # Si algun control de la lista  no tiene id, type o default lo ignoramos
+                    continue
                 if not c.has_key('enabled') or c['enabled'] is None: 
                     c['enabled']= True
                 else:
@@ -337,26 +341,30 @@ class SettingWindow( xbmcgui.WindowDialog ):
                                 {'id': "nameControl3",
                                   'type': "list",                       # bool, text, list, label 
                                   'label': "Control 3: tipo Lista",
-                                  'default': "item1",
+                                  'default': "item1",                   # En este caso puede ser el valor o el indice precedido de '#' 
                                   'enabled': True,
                                   'visible': True,
-                                  'lvalues':["item1", "item2", "item3", "item4"],                         # only for type = list
+                                  'lvalues':["item1", "item2", "item3", "item4"],  # only for type = list
                                 },
                                 {'id': "nameControl4",
                                   'type': "label",                       # bool, text, list, label 
                                   'label': "Control 4: tipo Etiqueta",
-                                  'default': '0xFFee66CC',               # En este caso: valor opcional que representa el color del texto
+                                  'default': '0xFFee66CC',               # En este caso representa el color del texto
                                   'enabled': True,
                                   'visible': True,
                                   'lvalues':"",                         # only for type = list
                                 }]
+                    Los campos 'label', 'default' y 'lvalues' pueden ser un numero precedido de '@'. En cuyo caso se buscara el literal en el archivo string.xml del idioma seleccionado.
+                    El campo 'default' de los controles tipo 'list' puede contener un valor de la lista o un numero precedido de '#' que representa el indice en la lista 'lvalues'.
+                    El campo 'default' de los controles tipo 'label' representa el color del texto en formato ARGB hexadecimal.
                 (opcional)dict_values: (dict) Diccionario que representa el par (id: valor) de los controles de la lista.
                     Si algun control de la lista no esta incluido en este diccionario se le asignara el valor por defecto.
                         dict_values={"nameControl1": False,
                                      "nameControl2": "Esto es un ejemplo"}
-                (opcional) caption: (str) Titulo de la ventana de configuracion.
+                (opcional) caption: (str) Titulo de la ventana de configuracion. Se puede localizar mediante un numero precedido de '@'
     Metodos principales:
         get_values(): Retorna un diccionario con los pares (id: valor) obteniendo los datos de los controles de la ventana.
+            Para los controles del tipo 'list' se devuelve una lista con dos elemento: [valor, indice]
         isConfirmed(): Retorna True si se han confirmado los cambios en la ventana, False en caso contrario.
     
     '''
@@ -392,6 +400,8 @@ class SettingWindow( xbmcgui.WindowDialog ):
         
         #           Titulo de ventana
         if caption:
+            if caption.startswith('@') and unicode(caption[1:]).isnumeric():
+                caption = config.get_localized_string(int(caption[1:]))
             self.caption_background = xbmcgui.ControlImage(self.screen_x, pos_y , self.screen_w, 60, 
                                                             os.path.join(_path_imagen,'Controls', 'dialogheader.png'))
             self.addControl(self.caption_background)
@@ -400,21 +410,21 @@ class SettingWindow( xbmcgui.WindowDialog ):
             self.addControl(self.caption)
             
         #           Botones Aceptar y cancelar
-            self.window_ok_button = xbmcgui.ControlButton( self.screen_x + self.screen_w - 350 , self.screen_y + self.screen_h - 70 , 150, 40, 'Aceptar',
-                        alignment = ALIGN_CENTER,
-                        focusTexture=os.path.join(_path_imagen, 'KeyboardKey.png'),
-                        noFocusTexture=os.path.join(_path_imagen, 'KeyboardKeyNF.png'))
-            self.addControl(self.window_ok_button)
-            
-            self.window_cancel_button = xbmcgui.ControlButton( self.screen_x + self.screen_w - 180 , self.screen_y + self.screen_h - 70 , 150, 40, 'Cancelar',
-                        alignment = ALIGN_CENTER,
-                        focusTexture=os.path.join(_path_imagen, 'KeyboardKey.png'),
-                        noFocusTexture=os.path.join(_path_imagen, 'KeyboardKeyNF.png'))
-            self.addControl(self.window_cancel_button)
-            
-            self.setFocus(self.window_ok_button)
-            self.window_ok_button.controlRight(self.window_cancel_button)
-            self.window_cancel_button.controlLeft(self.window_ok_button)
+        self.window_ok_button = xbmcgui.ControlButton( self.screen_x + self.screen_w - 350 , self.screen_y + self.screen_h - 70 , 150, 40, 'Aceptar',
+                    alignment = ALIGN_CENTER,
+                    focusTexture=os.path.join(_path_imagen, 'KeyboardKey.png'),
+                    noFocusTexture=os.path.join(_path_imagen, 'KeyboardKeyNF.png'))
+        self.addControl(self.window_ok_button)
+        
+        self.window_cancel_button = xbmcgui.ControlButton( self.screen_x + self.screen_w - 180 , self.screen_y + self.screen_h - 70 , 150, 40, 'Cancelar',
+                    alignment = ALIGN_CENTER,
+                    focusTexture=os.path.join(_path_imagen, 'KeyboardKey.png'),
+                    noFocusTexture=os.path.join(_path_imagen, 'KeyboardKeyNF.png'))
+        self.addControl(self.window_cancel_button)
+        
+        self.setFocus(self.window_ok_button)
+        self.window_ok_button.controlRight(self.window_cancel_button)
+        self.window_cancel_button.controlLeft(self.window_ok_button)
         
         #           Controles de paginacion
         
@@ -527,6 +537,29 @@ class SettingWindow( xbmcgui.WindowDialog ):
         num_control = 0
         
         for c in list_controls:
+            # Si algun control de la lista  no tiene id, type o default lo ignoramos
+            if not c.has_key('id') or not c.has_key('type') or not c.has_key('default'):
+                continue
+            
+            # Translation
+            if c['label'].startswith('@') and unicode(c['label'][1:]).isnumeric():
+                c['label'] = config.get_localized_string(int(c['label'][1:]))
+            if type(c['default']) == str:
+                if c['default'].startswith('@')and unicode(c['default'][1:]).isnumeric():
+                    c['default']  = config.get_localized_string(int(c['default'][1:]))
+            if c['type'] == 'list':
+                lvalues=[]
+                for li in c['lvalues']:
+                    if li.startswith('@') and unicode(li[1:]).isnumeric():
+                        lvalues.append(config.get_localized_string(int(li[1:])))
+                    else:
+                        lvalues.append(li)
+                c['lvalues'] = lvalues
+                if c['default'].startswith('#')and unicode(c['default'][1:]).isnumeric(): # Contiene el indice precedido de '#'
+                    indice = int(c['default'][1:]) if int(c['default'][1:]) <= len(c['lvalues']) else 0
+                    c['default'] = c['lvalues'][indice]
+                    
+            
             # Fijar valores por defecto para cada control
             if not c.has_key('enabled') or c['enabled'] is None: c['enabled']= True
             if not c.has_key('visible') or c['visible'] is None: c['visible']= True
@@ -567,7 +600,8 @@ class SettingWindow( xbmcgui.WindowDialog ):
                 self.controles[control.getId()]= c
                 
             elif c['type'] == 'list':
-                control= ListControl(self, pos_x + 10, pos_y, width_control,30, c['label'], c['lvalues'], c['value'])
+                value = c['value'][0] if type(c['value']) == list else c['value']  
+                control= ListControl(self, pos_x + 10, pos_y, width_control,30, c['label'], c['lvalues'], value)
                 self.addControl(control)
                 c['control']= control
                 self.controles[control.getId()-1] =  c # Boton up
@@ -678,7 +712,7 @@ class ListControl(xbmcgui.ControlLabel):
         super(ListControl, self).setVisible(visible)
     
     def getSelectedValue(self):
-        return self.options[self.selectedIndex]
+        return [self.options[self.selectedIndex],self.selectedIndex]
         
     def getSelectedIndex(self):
         return self.selectedIndex

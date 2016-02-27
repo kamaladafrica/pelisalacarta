@@ -94,12 +94,14 @@ def get_setting(name, channel=""):
         
                 # Le asignamos los valores por defecto
                 for ds in list_controls:
-                    if ds['type'] != "label":
-                        if ds['type'] == 'bool':
-                            dict_settings[ds['id']] = True if ds['default'].lower() == "true" else False
-                        else:
-                            dict_settings[ds['id']] = ds['default']
-                
+                    try:
+                        if ds['type'] != "label":
+                            if ds['type'] == 'bool':
+                                dict_settings[ds['id']] = True if ds['default'].lower() == "true" else False
+                            else:
+                                dict_settings[ds['id']] = ds['default']
+                    except: # Si algun control de la lista  no tiene id, type o default lo ignoramos
+                        pass
                 dict_file['settings']= dict_settings
                 # Creamos el archivo ../settings/channel_data.json
                 json_data = jsontools.dump_json(dict_file)
@@ -164,11 +166,14 @@ def set_setting(name,value, channel=""):
                 
                 # Le asignamos los valores por defecto
                 for ds in list_controls:
-                    if ds['type'] != "label":
-                        if ds['type'] == 'bool':
-                            dict_settings[ds['id']] = True if ds['default'].lower() == "true" else False
-                        else:
-                            dict_settings[ds['id']] = ds['default']
+                    try:
+                        if ds['type'] != "label":
+                            if ds['type'] == 'bool':
+                                dict_settings[ds['id']] = True if ds['default'].lower() == "true" else False
+                            else:
+                                dict_settings[ds['id']] = ds['default']
+                    except: # Si algun control de la lista  no tiene id, type o default lo ignoramos
+                        pass
             
             dict_settings[name] = value
             dict_data['settings']= dict_settings

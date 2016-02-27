@@ -19,7 +19,7 @@
 	<settings>
 		<id>pordedeuser</id>
 		<type>text</type>
-		<label>Usuario:</label>
+		<label>@30014</label>
 		<default></default>
 		<enabled>true</enabled>
 		<visible>true</visible>
@@ -27,8 +27,8 @@
 	<settings>
 		<id>pordedepassword</id>
 		<type>text</type>
-		<label>Password:</label>
-		<default></default>
+		<label>@30015</label>
+		<default>@30054</default>
 		<enabled>true</enabled>
 		<visible>true</visible>
 	</settings>
@@ -52,7 +52,7 @@
 		<id>pordedesortlinks</id>
 		<type>list</type>
 		<label>Ordenar enlaces</label>
-		<default>No</default>
+		<default>#4</default>
 		<enabled>true</enabled>
 		<visible>true</visible>
 		<lvalues>No</lvalues>
@@ -62,6 +62,21 @@
 		<lvalues>Por Idioma y Calidad</lvalues>
 		<lvalues>Por Idioma y Valoración</lvalues>
 		<lvalues>Por Idioma, Calidad y Valoración</lvalues>
+	</settings>
+	<settings>
+		<id>idiomas</id>
+		<type>list</type>
+		<label>@30019</label>
+		<default>Español</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+		<lvalues>@30026</lvalues>
+		<lvalues>@30027</lvalues>
+		<lvalues>@30028</lvalues>
+		<lvalues>@30029</lvalues>
+		<lvalues>@30046</lvalues>
+		<lvalues>@30016</lvalues>
+		<lvalues>@30023</lvalues>
 	</settings>
 	<settings>
 		<id>pordedeshowlinks</id>
@@ -78,7 +93,7 @@
 		<id>pordedenumberlinks</id>
 		<type>list</type>
 		<label>Limitar número de enlaces</label>
-		<default>No</default>
+		<default>5</default>
 		<enabled>true</enabled>
 		<visible>true</visible>
 		<lvalues>No</lvalues>
