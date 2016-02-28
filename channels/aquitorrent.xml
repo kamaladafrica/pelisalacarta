@@ -6,7 +6,8 @@
 	<active>true</active>
 	<adult>false</adult>
 	<language>es</language>
-
+	<include_in_global_search>disabled</include_in_global_search>
+	
 	<fanart></fanart>
 	<thumbnail>http://s6.postimg.org/kta7oe8y9/aquitorrentlogo.png</thumbnail>
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/aquitorrent.png</bannermenu>
@@ -24,8 +25,4 @@
 		<category>anime</category>
 		<category>vos</category>
 	</categories>
-
-	<settings>
-		<include_in_global_search>false</include_in_global_search>
-	</settings>
 </channel>

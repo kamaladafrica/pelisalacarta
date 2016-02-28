@@ -6,13 +6,14 @@
 	<active>true</active>
 	<adult>true</adult>
 	<language>es</language>
-
+	<include_in_global_search>false</include_in_global_search>
+	
 	<fanart></fanart>
 	<thumbnail>http://media.tvalacarta.info/pelisalacarta/squares/filesmonster_catalogue.png</thumbnail>
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/filesmonster_catalogue.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>0</version>
+	<version>0.1</version>
 	<date></date>
 	<changes></changes>
 
@@ -21,7 +22,4 @@
 		<category>movie</category>
 	</categories>
 
-	<settings>
-		<include_in_global_search>false</include_in_global_search>
-	</settings>
 </channel>

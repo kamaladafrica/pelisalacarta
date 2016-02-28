@@ -12,7 +12,7 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/seriesyonkis.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>27</version>
+	<version>27.1</version>
 	<date>11/12/2015</date>
 	<changes>Corregido errores en funcion addChaperts y findvideos</changes>
 
@@ -23,6 +23,11 @@
 	</categories>
 
 	<settings>
-		<include_in_global_search>true</include_in_global_search>
+		<id>include_in_global_search</id>
+		<type>bool</type>
+		<label>Incluir en busqueda global</label>
+		<default>false</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
 	</settings>
 </channel>

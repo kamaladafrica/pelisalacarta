@@ -37,10 +37,16 @@ def mainlist(item):
 
 def search(item,texto):
     logger.info("pelisalacarta.channels.descargasmix search")
-    item.url= item.url + texto
-    itemlist = busqueda(item)
-    return itemlist
-
+    try:
+        item.url= item.url + texto
+        itemlist = busqueda(item)
+        return itemlist
+    # Se captura la excepción, para no interrumpir al buscador global si un canal falla
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error( "%s" % line )
+        return []
 def busqueda(item):
     logger.info("pelisalacarta.channels.descargasmix busqueda")
     itemlist = []

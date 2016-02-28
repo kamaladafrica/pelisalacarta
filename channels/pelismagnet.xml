@@ -8,11 +8,11 @@
 	<language>es</language>
 
 	<fanart></fanart>
-	<thumbnail>https://scontent-mad1-1.xx.fbcdn.net/hphotos-xap1/v/t1.0-9/12347847_1076909009009716_7103785122088615061_n.jpg?oh=7e01f94af38ae5bac10e1d02d36f695b&oe=570141FA</thumbnail>
+	<thumbnail>https://goo.gl/YijemA</thumbnail>
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/pelismagnet.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>1</version>
+	<version>1.1</version>
 	<date>21/02/2016</date>
 	<changes>añadida funcionalidad de series, mejorar en graficos e información mostrada</changes>
 
@@ -24,6 +24,11 @@
 	</categories>
 
 	<settings>
-		<include_in_global_search>false</include_in_global_search>
+		<id>include_in_global_search</id>
+		<type>bool</type>
+		<label>Incluir en busqueda global</label>
+		<default>false</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
 	</settings>
 </channel>

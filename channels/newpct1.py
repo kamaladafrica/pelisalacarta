@@ -43,7 +43,14 @@ def search(item,texto):
     
     item.url = "http://www.newpct1.com/index.php?page=buscar&q=%27" + texto +"%27&ordenar=Fecha&inon=Descendente"
     item.extra="buscar-list"
-    return completo(item)
+    try:
+        return completo(item)
+    # Se captura la excepción, para no interrumpir al buscador global si un canal falla
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error( "%s" % line )
+        return []
 
 def submenu(item):
     logger.info("[newpct1.py] submenu")

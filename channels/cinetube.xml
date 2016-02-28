@@ -5,7 +5,7 @@
 	<language>es</language>
 	<update_url></update_url>
 	<active>false</active>
-	<version>16</version>
+	<version>16.1</version>
 	<adult>false</adult>
 	<date>19/05/2013</date>
 	<changes>Añadidas series, documentales y anime a cinetube (Gracias a prunk)</changes>
@@ -18,6 +18,11 @@
 		<category>documentary</category>
 	</categories>
 	<settings>
-		<include_in_global_search>false</include_in_global_search>
+		<id>include_in_global_search</id>
+		<type>bool</type>
+		<label>Incluir en busqueda global</label>
+		<default>false</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
 	</settings>
 </channel>

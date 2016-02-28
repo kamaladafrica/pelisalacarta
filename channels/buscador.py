@@ -41,7 +41,7 @@ def mainlist(item,preferred_thumbnail="squares"):
         itemlist.append(Item(channel=__channel__, action="clear_saved_searches", title="Borrar búsquedas guardadas"))
     
     if config.is_xbmc():
-        itemlist.append(Item(channel=__channel__, action="settingCanal", title=config.get_localized_string(30100)))
+        itemlist.append(Item(channel=__channel__, action="settingCanal", title="Canales incluidos..."))
 
     return itemlist
 
@@ -52,9 +52,6 @@ def settingCanal(item):
     channel_language = config.get_setting("channel_language")
     if channel_language == "":
         channel_language = "all"
-    
-    list_true =[]
-    list_false =[]
     
     list_controls = []
     for infile in sorted(glob.glob(channels_path)):
@@ -86,12 +83,13 @@ def settingCanal(item):
                       'visible': True}
 
         list_controls.append(control)
- 
+                
     ventana = guitools.SettingWindow(list_controls, caption= "Canales incluidos en la búsqueda global")
     ventana.doModal()
     if ventana.isConfirmed():
         for canal, value in ventana.get_values().items():
             config.set_setting("include_in_global_search",value,canal)
+    
     
         
         

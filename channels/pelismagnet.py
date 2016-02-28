@@ -180,9 +180,15 @@ def pelis(item):
 
 def search(item, texto):
     logger.info("pelisalacarta.pelismagnet search")
-
-    item.url = item.url % texto.replace(' ', '%20')
-    if "/seapi" in item.url:
-        return series(item)
-    else:
-        return pelis(item)
+    try:
+        item.url = item.url % texto.replace(' ', '%20')
+        if "/seapi" in item.url:
+            return series(item)
+        else:
+            return pelis(item)
+    # Se captura la excepción, para no interrumpir al buscador global si un canal falla
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error( "%s" % line )
+        return []

@@ -48,7 +48,14 @@ def search(item,texto, categoria="*"):
     post = 'keyword='+texto[0:18] + '&search_type=serie'
     
     data = scrapertools.cache_page(url,post=post)
-    return getsearchresults(item, data, "episodios")
+    try:
+        return getsearchresults(item, data, "episodios")
+    # Se captura la excepción, para no interrumpir al buscador global si un canal falla
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error( "%s" % line )
+        return []
     
 def getsearchresults(item, data, action):
     itemlist = []

@@ -168,12 +168,12 @@ class Xml2Json:
     def start(self, tag, attrs):
         assert attrs == {}
         assert self._data.strip() == ''
-        print "START", repr(tag)
+        #print "START", repr(tag)
         self._stack.append([tag])
         self._data = ''
 
     def end(self, tag):
-        print "END", repr(tag)
+        #print "END", repr(tag)
         last_tag = self._stack.pop()
         assert last_tag[0] == tag
         if len(last_tag) == 1: #leaf

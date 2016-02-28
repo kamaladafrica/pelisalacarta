@@ -47,9 +47,15 @@ def mainlist(item):
 def search(item,texto):
     logger.info("pelisalacarta.channels.seriesdanko search")
     item.url = "http://seriesdanko.com/pag_search.php?q1="+texto
-
-    return series(item)
-
+    try:
+        return series(item)
+    # Se captura la excepción, para no interrumpir al buscador global si un canal falla
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error( "%s" % line )
+        return []
+        
 def novedades(item):
     logger.info("pelisalacarta.channels.seriesdanko novedades")
 

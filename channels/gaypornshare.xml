@@ -3,6 +3,8 @@
 	<id>gaypornshare</id>
 	<name>gaypornshare</name>
 	<language>es</language>
+	<include_in_global_search>false</include_in_global_search>
+	
 	<update_url></update_url>
 	<active>false</active>
 	<version>3</version>
@@ -14,7 +16,4 @@
 	<categories>
 		<category>documentary</category>
 	</categories>
-	<settings>
-		<include_in_global_search>false</include_in_global_search>
-	</settings>
 </channel>
