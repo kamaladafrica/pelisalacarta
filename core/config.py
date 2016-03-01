@@ -18,7 +18,7 @@ import xbmc
 
 PLATFORM_NAME = "kodi-jarvis"
 
-PLUGIN_NAME = "pelisalacarta"
+PLUGIN_NAME = "pelisalacarta_sb"
 __settings__ = xbmcaddon.Addon(id="plugin.video."+PLUGIN_NAME)
 __language__ = __settings__.getLocalizedString
 
@@ -54,7 +54,7 @@ def get_setting(name, channel=""):
 
     Devuelve el valor del parametro 'name' en la configuracion global o en la configuracion propia del canal 'channel'.
     
-    Si se especifica el nombre del canal busca en la ruta \addon_data\plugin.video.pelisalacarta\settings_channels el archivo channel_data.json
+    Si se especifica el nombre del canal busca en la ruta \addon_data\plugin.video.pelisalacarta_sb\settings_channels el archivo channel_data.json
     y lee el valor del parametro 'name'. Si el archivo channel_data.json no existe busca en la carpeta channels el archivo 
     channel.xml y crea un archivo channel_data.json antes de retornar el valor solicitado.
     Si el parametro 'name' no existe en channel_data.json lo busca en la configuracion global y si ahi tampoco existe devuelve un str vacio.
@@ -104,7 +104,13 @@ def get_setting(name, channel=""):
                             if ds['type'] == 'bool':
                                 dict_settings[ds['id']] = True if ds['default'].lower() == "true" else False
                             else:
+                                if c['default'].startswith('@')and unicode(c['default'][1:]).isnumeric():
+                                    c['default']  = get_localized_string(int(c['default'][1:]))
+                                elif ds['type'] == 'list' and c['default'].startswith('#') and unicode(c['default'][1:]).isnumeric():
+                                    indice = int(c['default'][1:]) if int(c['default'][1:]) <= len(c['lvalues']) else 0
+                                    c['default'] = c['lvalues'][indice]
                                 dict_settings[ds['id']] = ds['default']
+                                
                     except: # Si algun control de la lista  no tiene id, type o default lo ignoramos
                         pass
                 
@@ -131,7 +137,7 @@ def set_setting(name,value, channel=""):
     Establece 'value' como el valor del parametro 'name' en la configuracion global o en la configuracion propia del canal 'channel'.
     Devuelve el valor cambiado o None si la asignacion no se ha podido completar.
     
-    Si se especifica el nombre del canal busca en la ruta \addon_data\plugin.video.pelisalacarta\settings_channels el archivo channel_data.json
+    Si se especifica el nombre del canal busca en la ruta \addon_data\plugin.video.pelisalacarta_sb\settings_channels el archivo channel_data.json
     y establece el parametro 'name' al valor indicado por 'value'. Si el archivo channel_data.json no existe busca en la carpeta channels el archivo 
     channel.xml y crea un archivo channel_data.json antes de modificar el parametro 'name'.
     Si el parametro 'name' no existe lo añade, con su valor, al archivo correspondiente.
@@ -178,7 +184,13 @@ def set_setting(name,value, channel=""):
                             if ds['type'] == 'bool':
                                 dict_settings[ds['id']] = True if ds['default'].lower() == "true" else False
                             else:
+                                if c['default'].startswith('@')and unicode(c['default'][1:]).isnumeric():
+                                    c['default']  = get_localized_string(int(c['default'][1:]))
+                                elif ds['type'] == 'list' and c['default'].startswith('#') and unicode(c['default'][1:]).isnumeric():
+                                    indice = int(c['default'][1:]) if int(c['default'][1:]) <= len(c['lvalues']) else 0
+                                    c['default'] = c['lvalues'][indice]
                                 dict_settings[ds['id']] = ds['default']
+                                
                     except: # Si algun control de la lista  no tiene id, type o default lo ignoramos
                         pass
             
