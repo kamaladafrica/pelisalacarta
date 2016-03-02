@@ -215,6 +215,8 @@ def findvideos(item):
     links = re.findall('<tr.+?<span>(.+?)</span>.*?banderas/([^\.]+).+?href="([^"]+).+?servidores/([^\.]+).*?</td>.*?<td>.*?<span>(.+?)</span>.*?<span>(.*?)</span>.*?</tr>', online[0], re.MULTILINE | re.DOTALL)
 
     for date, language, link, server, uploader, quality in links:
+        if not quality:
+            quality = "SD"
         title = "{0} en {1} [{2}] [{3}] ({4}: {5})".format("Ver", server, IDIOMAS[language],
                                                            quality, uploader, date)
 
@@ -224,6 +226,8 @@ def findvideos(item):
     links = re.findall('<tr.+?<span>(.+?)</span>.*?banderas/([^\.]+).+?href="([^"]+).+?servidores/([^\.]+).*?</td>.*?<td>.*?<span>(.+?)</span>.*?<span>(.*?)</span>.*?</tr>', online[0], re.MULTILINE | re.DOTALL)
 
     for date, language, link, server, uploader, quality in links:
+        if not quality:
+            quality = "SD"
         title = "{0} en {1} [{2}] [{3}] ({4}: {5})".format("Descargar", server, IDIOMAS[language],
                                                            quality, uploader, date)
         itemlist.append(Item(channel=__channel__, title=title, url=urlparse.urljoin(HOST, link), action="play",
