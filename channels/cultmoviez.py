@@ -143,6 +143,7 @@ def commonlists(item):
             pass
         if 'hd_thumb.png' in match: title += " [HD]"
         if thumbnail == "" : thumbnail = scrapertools.get_match(match,'<img src="([^"]+)"')
+        itemlist.append( Item(channel=__channel__, action="findvideos" ,title=html2symbol(title), url=urlparse.urljoin(host,url), thumbnail=thumbnail, fanart=fanart, plot=str(sinopsis), fulltitle=title.split('(')[0], contentTitle=title.split('(')[0], context="0" ) )
 
     ## paginación
     # <a class="nextpostslink" href="http://www.cultmoviez.info/archivos/peliculas/page/2" rel="next">»</a>
@@ -193,6 +194,7 @@ def series(item):
         for temporada_id, temporada in matches:
             extra+= temporada+","+serie_id+"|"
 
+        itemlist.append( Item(channel=__channel__, action="episodios" ,title=html2symbol(scrapedtitle), url="",  extra=extra[:-2], thumbnail=thumbnail, fanart=fanart, plot= sinopsis, fulltitle=scrapedtitle, contentTitle=scrapedtitle, context="2", Folder=True ) )
 
     return itemlist
 
