@@ -12,9 +12,9 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/seriesblanco.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>7</version>
-	<date>06/01/2016</date>
-	<changes>- añadido thumbnail, añadido plot, eliminadas variables que no se usaban, PEP8</changes>
+	<version>8</version>
+	<date>02/03/2016</date>
+	<changes>- Arreglado el findVindeos</changes>
 
 	<categories>
 		<category>serie</category>
