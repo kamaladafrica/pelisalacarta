@@ -210,60 +210,26 @@ def findvideos(item):
     params = scrapertools.get_match(data, 'data : "(action=load[^\"]+)"')
     data = scrapertools.cachePagePost(HOST + 'ajax.php', params)
 
-    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
-    data = re.sub(r"<!--.*?-->", "", data)
-    data = unicode(data, "iso-8859-1", errors="replace").encode("utf-8")
+    online = re.findall('<table class="as_gridder_table">(.+?)</table>', data, re.MULTILINE | re.DOTALL)
 
-    data = re.sub(r"<center>|</center>|</a>", "", data)
-    data = re.sub(r'<div class="grid_content([^>]+)><span></span>', r'<div class="grid_content\1><span>SD</span>', data)
+    links = re.findall('<tr.+?<span>(.+?)</span>.*?banderas/([^\.]+).+?href="([^"]+).+?servidores/([^\.]+).*?</td>.*?<td>.*?<span>(.+?)</span>.*?<span>(.*?)</span>.*?</tr>', online[0], re.MULTILINE | re.DOTALL)
 
-    '''
-    <td><div class="grid_content*ATTR*><span>(*FECHA*)</span></div></td>
-    <td><div class="grid_content2*ATTR*><span><img src="*PATH*/(*IDIOMA*)\.*ATTR*></span></td>
-    <td>
-        <div class="grid_content*ATTR*>
-            <span><a href="(*ENLACE*)"*ATTR*><img src='/servidores/(*SERVIDOR*).*ATTR*></span>
-        </div>
-    </td>
-    <td><div class="grid_content*ATTR*><span>(*UPLOADER*)</span></td>
-    <td><div class="grid_content*ATTR*><span>(*SUB|CALIDAD*)</span></td>
-    '''
+    print online[0]
 
-    online = scrapertools.get_match(data, '<table class="as_gridder_table">(.+?)</table>')
-    download = scrapertools.get_match(data, '<div class="grid_heading"><h2>Descarga</h2></div>(.*)')
+    quality="none"
+    for date, language, link, server, uploader, quality in links:
+        title = "{0} en {1} [{2}] [{3}] ({4}: {5})".format("Ver", server, IDIOMAS[language],
+                                                           quality, uploader, date)
 
-    online = re.sub(r"<td><div class=\"grid_content[^>]+><span>([^>]+)</span></div></td><td>" +
-                    "<div class=\"grid_content2[^>]+><span><img src=\".+?banderas/([^\.]+)\.[^>]+></span></td>" +
-                    "<td><div class=\"grid_content[^>]+><span><a href=\"([^\"]+)\"[^>]+>"
-                    "<img src='/servidores/([^\.]+)\.[^>]+></span></div></td>" +
-                    "<td><div class=\"grid_content[^>]+><span>([^>]+)</span></td>" +
-                    "<td><div class=\"grid_content[^>]+><span>([^>]+)</span></td>",
-                    r"<patron>\3;\2;\1;\4;\5;\6;Ver</patron>", online)
+        itemlist.append(Item(channel=__channel__, title=title, url=urlparse.urljoin(HOST, link), action="play",
+                             show=item.show))
 
-    download = re.sub(r"<td><div class=\"grid_content[^>]+><span>([^>]+)</span></div></td><td>" +
-                      "<div class=\"grid_content2[^>]+><span><img src=\".+?banderas/([^\.]+)\.[^>]+></span></td>" +
-                      "<td><div class=\"grid_content[^>]+><span><a href=\"([^\"]+)\"[^>]+>"
-                      "<img src='/servidores/([^\.]+)\.[^>]+></span></div></td>" +
-                      "<td><div class=\"grid_content[^>]+><span>([^>]+)</span></td>" +
-                      "<td><div class=\"grid_content[^>]+><span>([^>]+)</span></td>",
-                      r"<patron>\3;\2;\1;\4;\5;\6;Descargar</patron>", download)
+    links = re.findall('<tr.+?<span>(.+?)</span>.*?banderas/([^\.]+).+?href="([^"]+).+?servidores/([^\.]+).*?</td>.*?<td>.*?<span>(.+?)</span>.*?<span>(.*?)</span>.*?</tr>', online[0], re.MULTILINE | re.DOTALL)
 
-    data = online+download
-
-    '''
-    <patron>*URL*;*IDIOMA*;*FECHA*;*SERVIDOR*;*UPLOADER*;*SUB|CALIDAD*;*TIPO*</patron>
-    '''
-
-    patron = '<patron>([^;]+);([^;]+);([^;]+);([^;]+);([^;]+);([^;]+);([^<]+)</patron>'
-
-    matches = re.compile(patron, re.DOTALL).findall(data)
-
-    for scrapedurl, scrapedidioma, scrapedfecha, scrapedservidor, scrapeduploader, scrapedsubcalidad, scrapedtipo \
-            in matches:
-        title = "{0} en {1} [{2}] [{3}] ({4}: {5})".format(scrapedtipo, scrapedservidor, IDIOMAS[scrapedidioma],
-                                                           scrapedsubcalidad, scrapeduploader, scrapedfecha)
-
-        itemlist.append(Item(channel=__channel__, title=title, url=urlparse.urljoin(HOST, scrapedurl), action="play",
+    for date, language, link, server, uploader, quality in links:
+        title = "{0} en {1} [{2}] [{3}] ({4}: {5})".format("Descargar", server, IDIOMAS[language],
+                                                           quality, uploader, date)
+        itemlist.append(Item(channel=__channel__, title=title, url=urlparse.urljoin(HOST, link), action="play",
                              show=item.show))
 
     return itemlist
