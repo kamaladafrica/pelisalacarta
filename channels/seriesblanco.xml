@@ -14,7 +14,7 @@
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
 	<version>8</version>
 	<date>02/03/2016</date>
-	<changes>- Arreglado el findVindeos</changes>
+	<changes>- Arreglado el findVindeos, añadido strip() en el nombre de las series</changes>
 
 	<categories>
 		<category>serie</category>
