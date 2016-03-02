@@ -101,8 +101,8 @@ def search(item, texto):
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     for scrapedthumb, scrapedurl, scrapedtitle in matches:
-        itemlist.append(Item(channel=__channel__, title=scrapedtitle, url=urlparse.urljoin(HOST, scrapedurl),
-                             action="episodios", show=scrapedtitle, thumbnail=scrapedthumb))
+        itemlist.append(Item(channel=__channel__, title=scrapedtitle.strip(), url=urlparse.urljoin(HOST, scrapedurl),
+                             action="episodios", show=scrapedtitle.strip(), thumbnail=scrapedthumb))
 
     try:
         return itemlist
@@ -132,8 +132,8 @@ def series(item):
     thumbnail = channel_xml["thumbnail"]
 
     for scrapedurl, scrapedtitle in matches:
-        itemlist.append(Item(channel=__channel__, title=scrapedtitle, url=urlparse.urljoin(HOST, scrapedurl),
-                             action="episodios", show=scrapedtitle, thumbnail=thumbnail))
+        itemlist.append(Item(channel=__channel__, title=scrapedtitle.strip(), url=urlparse.urljoin(HOST, scrapedurl),
+                             action="episodios", show=scrapedtitle.strip(), thumbnail=thumbnail))
 
     return itemlist
 
