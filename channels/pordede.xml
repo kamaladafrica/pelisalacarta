@@ -41,7 +41,7 @@
 		<id>pordedesortlinks</id>
 		<type>list</type>
 		<label>Ordenar enlaces</label>
-		<default>#0</default>
+		<default>No</default>
 		<enabled>true</enabled>
 		<visible>true</visible>
 		<lvalues>No</lvalues>

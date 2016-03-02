@@ -17,6 +17,7 @@ from core import logger
 from math import ceil
 from core import config
 from core.item import Item
+from core import channeltools
 
 
 def dialog_ok(heading, line1, line2="", line3=""):
@@ -211,34 +212,11 @@ def show_settings(channel_action, list_controls=None, dict_values=None, caption=
         File_settings= os.path.join(config.get_data_path(),"settings_channels" ,channel +"_data.json")
     if caption =="":
         caption = config.get_localized_string(30100) + " -- " + channel.capitalize()
-       
+     
     if list_controls is None:
-        list_controls =[]
         # Obtenemos controles del archivo ../channels/channel.xml
-        channel_xml =os.path.join( config.get_runtime_path() , 'channels' , channel + ".xml")
-        channel_json = jsontools.xmlTojson(channel_xml)
-        try:
-            list_controls= channel_json['channel']['settings']
-            # Convertir los campos boleanos de str a bool
-            for c in list_controls:
-                if not c.has_key('id') or not c.has_key('type') or not c.has_key('default'):
-                    # Si algun control de la lista  no tiene id, type o default lo ignoramos
-                    continue
-                if not c.has_key('enabled') or c['enabled'] is None: 
-                    c['enabled']= True
-                else:
-                    c['enabled'] = True if c['enabled'].lower() == "true" else False
-                if not c.has_key('visible') or c['visible'] is None: 
-                    c['visible']= True
-                else:
-                    c['visible'] = True if c['visible'].lower() == "true" else False
-                if c['type'] == 'bool':
-                    c['default'] = True if c['default'].lower() == "true" else False
-                  
-        except:
-            logger.info("ERROR al leer el archivo: {0}".format(channel_xml))
-            return ret
-    
+        list_controls, dict_settings = channeltools.get_channel_controls_settings(channel)
+          
     # Obtenemos valores actuales si existen
     dict_file= {}
     if os.path.exists(File_settings):
@@ -250,7 +228,7 @@ def show_settings(channel_action, list_controls=None, dict_values=None, caption=
             logger.info("ERROR al leer el archivo: {0}".format(File_settings))
         dict_file= jsontools.load_json(data)
         if dict_file.has_key('settings'):
-            dict_values= dict_file['settings']
+            dict_values= dict_file['settings'] 
 
             
     # Mostramos la ventana
@@ -355,7 +333,6 @@ class SettingWindow( xbmcgui.WindowDialog ):
                                   'lvalues':"",                         # only for type = list
                                 }]
                     Los campos 'label', 'default' y 'lvalues' pueden ser un numero precedido de '@'. En cuyo caso se buscara el literal en el archivo string.xml del idioma seleccionado.
-                    El campo 'default' de los controles tipo 'list' puede contener un valor de la lista o un numero precedido de '#' que representa el indice en la lista 'lvalues'.
                     El campo 'default' de los controles tipo 'label' representa el color del texto en formato ARGB hexadecimal.
                 (opcional)dict_values: (dict) Diccionario que representa el par (id: valor) de los controles de la lista.
                     Si algun control de la lista no esta incluido en este diccionario se le asignara el valor por defecto.
@@ -364,7 +341,6 @@ class SettingWindow( xbmcgui.WindowDialog ):
                 (opcional) caption: (str) Titulo de la ventana de configuracion. Se puede localizar mediante un numero precedido de '@'
     Metodos principales:
         get_values(): Retorna un diccionario con los pares (id: valor) obteniendo los datos de los controles de la ventana.
-            Para los controles del tipo 'list' se devuelve una lista con dos elemento: [valor, indice]
         isConfirmed(): Retorna True si se han confirmado los cambios en la ventana, False en caso contrario.
     
     '''
@@ -529,7 +505,6 @@ class SettingWindow( xbmcgui.WindowDialog ):
                 self.dict_values[v['id']] = v['control'].getSelectedValue()    
            
     def __add_controles(self, list_controls, pos_ini):
-                
         pos_x = self.screen_x + 20
         width_control = self.screen_w - 75
         pagina= 1
@@ -541,12 +516,9 @@ class SettingWindow( xbmcgui.WindowDialog ):
             if not c.has_key('id') or not c.has_key('type') or not c.has_key('default'):
                 continue
             
-            # Translation
+            # Translation label y lvalues
             if c['label'].startswith('@') and unicode(c['label'][1:]).isnumeric():
                 c['label'] = config.get_localized_string(int(c['label'][1:]))
-            if type(c['default']) == str:
-                if c['default'].startswith('@')and unicode(c['default'][1:]).isnumeric():
-                    c['default']  = config.get_localized_string(int(c['default'][1:]))
             if c['type'] == 'list':
                 lvalues=[]
                 for li in c['lvalues']:
@@ -555,18 +527,20 @@ class SettingWindow( xbmcgui.WindowDialog ):
                     else:
                         lvalues.append(li)
                 c['lvalues'] = lvalues
-                if c['default'].startswith('#')and unicode(c['default'][1:]).isnumeric(): # Contiene el indice precedido de '#'
-                    indice = int(c['default'][1:]) if int(c['default'][1:]) <= len(c['lvalues']) else 0
-                    c['default'] = c['lvalues'][indice]
+                
                     
             
-            # Fijar valores por defecto para cada control
+            # Fijar valores por defecto para cada control y traducir si es necesario
             if not c.has_key('enabled') or c['enabled'] is None: c['enabled']= True
             if not c.has_key('visible') or c['visible'] is None: c['visible']= True
             if self.dict_values.has_key(c['id']): 
                 c['value'] = self.dict_values[c['id']]
             else:
                 c['value'] = c['default']
+            if type(c['value']) == str:
+                if c['value'].startswith('@')and unicode(c['value'][1:]).isnumeric():
+                    c['value']  = config.get_localized_string(int(c['value'][1:]))    
+                
             
             c['pagina']= pagina
             if c['type'] == 'bool':
@@ -600,8 +574,9 @@ class SettingWindow( xbmcgui.WindowDialog ):
                 self.controles[control.getId()]= c
                 
             elif c['type'] == 'list':
-                value = c['value'][0] if type(c['value']) == list else c['value']  
-                control= ListControl(self, pos_x + 10, pos_y, width_control,30, c['label'], c['lvalues'], value)
+                #value = c['value'][0] if type(c['value']) == list else c['value']  
+                #control= ListControl(self, pos_x + 10, pos_y, width_control,30, c['label'], c['lvalues'], value)
+                control= ListControl(self, pos_x + 10, pos_y, width_control,30, c['label'], c['lvalues'], c['value'])
                 self.addControl(control)
                 c['control']= control
                 self.controles[control.getId()-1] =  c # Boton up
@@ -712,7 +687,8 @@ class ListControl(xbmcgui.ControlLabel):
         super(ListControl, self).setVisible(visible)
     
     def getSelectedValue(self):
-        return [self.options[self.selectedIndex],self.selectedIndex]
+        #return [self.options[self.selectedIndex],self.selectedIndex]
+        return self.options[self.selectedIndex]
         
     def getSelectedIndex(self):
         return self.selectedIndex

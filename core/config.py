@@ -18,7 +18,7 @@ import xbmc
 
 PLATFORM_NAME = "kodi-jarvis"
 
-PLUGIN_NAME = "pelisalacarta_sb"
+PLUGIN_NAME = "pelisalacarta"
 __settings__ = xbmcaddon.Addon(id="plugin.video."+PLUGIN_NAME)
 __language__ = __settings__.getLocalizedString
 
@@ -54,7 +54,7 @@ def get_setting(name, channel=""):
 
     Devuelve el valor del parametro 'name' en la configuracion global o en la configuracion propia del canal 'channel'.
     
-    Si se especifica el nombre del canal busca en la ruta \addon_data\plugin.video.pelisalacarta_sb\settings_channels el archivo channel_data.json
+    Si se especifica el nombre del canal busca en la ruta \addon_data\plugin.video.pelisalacarta\settings_channels el archivo channel_data.json
     y lee el valor del parametro 'name'. Si el archivo channel_data.json no existe busca en la carpeta channels el archivo 
     channel.xml y crea un archivo channel_data.json antes de retornar el valor solicitado.
     Si el parametro 'name' no existe en channel_data.json lo busca en la configuracion global y si ahi tampoco existe devuelve un str vacio.
@@ -68,13 +68,14 @@ def get_setting(name, channel=""):
     
     """ 
     import logger
-    from core import jsontools
+    from core import jsontools   
     if channel:
-        File_settings= os.path.join(get_data_path(), "settings_channels", channel+"_data.json")
-        dict_file = {}
-        dict_settings= {}
-        list_controls = []
         try:
+            File_settings= os.path.join(get_data_path(), "settings_channels", channel+"_data.json")
+            dict_file = {}
+            dict_settings= {}
+            list_controls = []
+        
             if os.path.exists(File_settings):
                 # Obtenemos configuracion guardada de ../settings/channel_data.json
                 data = ""
@@ -89,31 +90,9 @@ def get_setting(name, channel=""):
             
             if len(dict_settings) == 0:
                 # Obtenemos controles del archivo ../channels/channel.xml
-                channel_xml =os.path.join(get_runtime_path() , 'channels' , channel + ".xml")
-                channel_json = jsontools.xmlTojson(channel_xml)
-                settings = channel_json['channel']['settings']
-                if type(settings) == list:
-                    list_controls = settings
-                else:
-                    list_controls.append(settings)
-                
-                # Le asignamos los valores por defecto
-                for ds in list_controls:
-                    try:
-                        if ds['type'] != "label":
-                            if ds['type'] == 'bool':
-                                dict_settings[ds['id']] = True if ds['default'].lower() == "true" else False
-                            else:
-                                if c['default'].startswith('@')and unicode(c['default'][1:]).isnumeric():
-                                    c['default']  = get_localized_string(int(c['default'][1:]))
-                                elif ds['type'] == 'list' and c['default'].startswith('#') and unicode(c['default'][1:]).isnumeric():
-                                    indice = int(c['default'][1:]) if int(c['default'][1:]) <= len(c['lvalues']) else 0
-                                    c['default'] = c['lvalues'][indice]
-                                dict_settings[ds['id']] = ds['default']
+                from core import channeltools
+                list_controls, dict_settings = channeltools.get_channel_controls_settings(channel)
                                 
-                    except: # Si algun control de la lista  no tiene id, type o default lo ignoramos
-                        pass
-                
                 if  dict_settings.has_key(name): # Si el parametro existe en el channel.xml creamos el channel_data.json
                     dict_file['settings']= dict_settings 
                     # Creamos el archivo ../settings/channel_data.json
@@ -137,7 +116,7 @@ def set_setting(name,value, channel=""):
     Establece 'value' como el valor del parametro 'name' en la configuracion global o en la configuracion propia del canal 'channel'.
     Devuelve el valor cambiado o None si la asignacion no se ha podido completar.
     
-    Si se especifica el nombre del canal busca en la ruta \addon_data\plugin.video.pelisalacarta_sb\settings_channels el archivo channel_data.json
+    Si se especifica el nombre del canal busca en la ruta \addon_data\plugin.video.pelisalacarta\settings_channels el archivo channel_data.json
     y establece el parametro 'name' al valor indicado por 'value'. Si el archivo channel_data.json no existe busca en la carpeta channels el archivo 
     channel.xml y crea un archivo channel_data.json antes de modificar el parametro 'name'.
     Si el parametro 'name' no existe lo añade, con su valor, al archivo correspondiente.
@@ -155,49 +134,33 @@ def set_setting(name,value, channel=""):
     import logger
     from core import jsontools
     if channel:
-        File_settings= os.path.join(get_data_path(),"settings_channels", channel+"_data.json")
-        dict_settings= {}
-        dict_data= {}
         try:
+            File_settings= os.path.join(get_data_path(),"settings_channels", channel+"_data.json")
+            dict_settings= {}
+            dict_file= {}
+            list_controls = []
+            
             if os.path.exists(File_settings):
                 # Obtenemos configuracion guardada de ../settings/channel_data.json
                 data = ""
                 try:
                     with open(File_settings, "r") as f:
                         data= f.read()
+                    dict_file = jsontools.load_json(data)
+                    if dict_file.has_key('settings'):
+                        dict_settings = dict_file['settings']
                 except EnvironmentError:
                     logger.info("ERROR al leer el archivo: {0}".format(File_settings))
                 
-                dict_data = jsontools.load_json(data)
-                if dict_data.has_key('settings'):
-                    dict_settings = dict_data['settings']
-            else:            
+            if len(dict_settings) == 0:            
                 # Obtenemos controles del archivo ../channels/channel.xml
-                channel_xml =os.path.join(get_runtime_path() , 'channels' , channel + ".xml")
-                channel_json = jsontools.xmlTojson(channel_xml)
-                list_controls= channel_json['channel']['settings']
-                
-                # Le asignamos los valores por defecto
-                for ds in list_controls:
-                    try:
-                        if ds['type'] != "label":
-                            if ds['type'] == 'bool':
-                                dict_settings[ds['id']] = True if ds['default'].lower() == "true" else False
-                            else:
-                                if c['default'].startswith('@')and unicode(c['default'][1:]).isnumeric():
-                                    c['default']  = get_localized_string(int(c['default'][1:]))
-                                elif ds['type'] == 'list' and c['default'].startswith('#') and unicode(c['default'][1:]).isnumeric():
-                                    indice = int(c['default'][1:]) if int(c['default'][1:]) <= len(c['lvalues']) else 0
-                                    c['default'] = c['lvalues'][indice]
-                                dict_settings[ds['id']] = ds['default']
-                                
-                    except: # Si algun control de la lista  no tiene id, type o default lo ignoramos
-                        pass
-            
+                from core import channeltools
+                list_controls, dict_settings = channeltools.get_channel_controls_settings(channel)
+                               
             dict_settings[name] = value
-            dict_data['settings']= dict_settings
+            dict_file['settings']= dict_settings
             # Creamos el archivo ../settings/channel_data.json
-            json_data = jsontools.dump_json(dict_data)
+            json_data = jsontools.dump_json(dict_file)
             try:
                 with open(File_settings, "w") as f:
                     f.write(json_data)
@@ -217,6 +180,7 @@ def set_setting(name,value, channel=""):
             
     return value
 
+    
 def get_localized_string(code):
     dev = __language__(code)
 
