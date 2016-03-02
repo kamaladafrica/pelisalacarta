@@ -214,9 +214,6 @@ def findvideos(item):
 
     links = re.findall('<tr.+?<span>(.+?)</span>.*?banderas/([^\.]+).+?href="([^"]+).+?servidores/([^\.]+).*?</td>.*?<td>.*?<span>(.+?)</span>.*?<span>(.*?)</span>.*?</tr>', online[0], re.MULTILINE | re.DOTALL)
 
-    print online[0]
-
-    quality="none"
     for date, language, link, server, uploader, quality in links:
         title = "{0} en {1} [{2}] [{3}] ({4}: {5})".format("Ver", server, IDIOMAS[language],
                                                            quality, uploader, date)
