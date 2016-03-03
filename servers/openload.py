@@ -45,7 +45,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     #Header para la descarga
     header_down = "|User-Agent="+headers['User-Agent']+"|"
     if video == True:
-        videourl = scrapertools.find_single_match(text_decode, "vs=(.*?);")
+        videourl = scrapertools.find_single_match(text_decode, "(?:vs|vr)=(.*?);")
         videourl = scrapertools.get_header_from_response(videourl,header_to_get="location")
         videourl = videourl.replace("https://","http://").replace("?mime=true","")
         extension = videourl[-4:]
@@ -109,13 +109,17 @@ def decode(text):
             char = char.replace( x, str(eval(x)) )
         txt+= char + "|"
     txt = txt[:-1].replace('+','').replace('(0-0)','0')
-    txt_result = "".join([ chr(int(n, 8)) for n in txt.split('|') ])
-    txt_result = txt_result.replace('9<<2','36').replace("'","")
-    txt_temp = scrapertools.find_multiple_matches(txt_result, '([\d.]+).toString\(([\d]+)\)')
-    for numero, base in txt_temp:
-        code = toString(int(numero.replace('.0','')),int(base))
-        txt_result = txt_result.replace(numero+".toString("+base+")", code)
-    return txt_result.replace('+','')
+    try:
+        txt_result = "".join([ chr(int(n, 8)) for n in txt.split('|') ])
+        txt_result = txt_result.replace('9<<2','36').replace("'","")
+        txt_temp = scrapertools.find_multiple_matches(txt_result, '([\d.]+).toString\(([\d]+)\)')
+        for numero, base in txt_temp:
+            code = toString(int(numero.replace('.0','')),int(base))
+            txt_result = txt_result.replace(numero+".toString("+base+")", code)
+        return txt_result.replace('+','')
+    except:
+        txt_result = "".join([ chr(int(n, 8)) for n in txt.split('|') ])
+        return txt_result.replace("'","")
 
 def toString(number,base):
    string = "0123456789abcdefghijklmnopqrstuvwxyz"
