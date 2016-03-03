@@ -71,6 +71,7 @@ def get_channel_json(channel_name):
 def get_channel_controls_settings(channel_name):    
     logger.info("pelisalacarta.core.channeltools get_channel_controls_settings channel_name="+channel_name)
     dict_settings= {}
+    list_controls=[]
     
     settings= get_channel_json(channel_name)['settings']
     if type(settings) == list:
