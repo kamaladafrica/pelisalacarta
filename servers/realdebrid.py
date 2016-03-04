@@ -40,7 +40,7 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
     else:
         logger.info("Ya estas logueado en Real-Debrid")
 
-    url = 'https://real-debrid.com/ajax/unrestrict.php?link=%s' % page_url
+    url = 'https://real-debrid.com/ajax/unrestrict.php?link=%s&password=%s' % (urllib.quote(page_url), video_password)
     req = urllib2.Request(url)
     req.add_header('Cookie',"cookie_accept=y; https=1; lang=es; auth="+scrapertools.find_single_match(data,'auth=(.*?);'))
     response = urllib2.urlopen(req)
