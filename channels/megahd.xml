@@ -13,7 +13,7 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/megahd.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>2.1</version>
+	<version>2</version>
 	<date>30/07/2013</date>
 	<changes>Implementado mega-streamer.net como servidor de video</changes>
 

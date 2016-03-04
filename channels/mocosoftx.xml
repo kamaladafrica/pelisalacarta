@@ -13,7 +13,7 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/mocosoftx.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>3.1</version>
+	<version>3</version>
 	<date>19/06/2012</date>
 	<changes>Arreglado listado completo</changes>
 

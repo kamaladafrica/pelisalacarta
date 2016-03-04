@@ -12,7 +12,7 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/divxatope.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>5.1</version>
+	<version>5</version>
 	<date>31/12/2015</date>
 	<changes>Corregida expresion regular para los torrents</changes>
 

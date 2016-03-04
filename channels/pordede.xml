@@ -12,7 +12,7 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/pordede.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>8.1</version>
+	<version>8</version>
 	<date>03/02/2016</date>
 	<changes>Correccion por cambios menores en la web y añadidos fanart e info/sinopsis por super_berny</changes>
 

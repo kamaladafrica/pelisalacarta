@@ -12,7 +12,7 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/hdfull.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>2.1</version>
+	<version>2</version>
 	<date>25/02/2016</date>
 	<changes>Cambios en findvideos para que muestre solo los servidores que tienen conector y se oculten los premium si esta marcada esa opcion</changes>
 

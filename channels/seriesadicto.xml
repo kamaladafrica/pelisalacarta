@@ -12,7 +12,7 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/seriesadicto.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>2.1</version>
+	<version>2</version>
 	<date>29/12/2014</date>
 	<changes>Arreglado por cambios en la web</changes>
 

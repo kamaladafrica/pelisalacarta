@@ -300,10 +300,10 @@ def updatechannel(channel_name):
             patronvideos  = '<version>([^<]+)</version>' 
 
         matches = re.compile(patronvideos,re.DOTALL).findall(data)
+
         local_version = int(matches[0])
     else:
         local_version = 0
-    
     logger.info("pelisalacarta.core.updater local_version=%d" % local_version)
     
     # Comprueba si ha cambiado
