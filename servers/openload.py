@@ -45,13 +45,14 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     #Header para la descarga
     header_down = "|User-Agent="+headers['User-Agent']+"|"
     if video == True:
-        videourl = scrapertools.find_single_match(text_decode, "(?:vs|vr)=(.*?);")
+        try: videourl = scrapertools.get_match(text_decode, "vs=([^;]+);")
+        except: videourl = scrapertools.get_match(text_decode, "vr='([^']+)'")
         videourl = scrapertools.get_header_from_response(videourl,header_to_get="location")
         videourl = videourl.replace("https://","http://").replace("?mime=true","")
         extension = videourl[-4:]
         video_urls.append([ extension + " [Openload]", videourl+header_down+extension])
     else:
-        videourl = scrapertools.find_single_match(text_decode, '"href",(.*?)\)')
+        videourl = scrapertools.find_single_match(text_decode, '"href",(?:\s|)\'([^\']+)\'')
         videourl = videourl.replace("https://","http://")
         extension = videourl[-4:]
         video_urls.append([ extension + " [Openload]", videourl+header_down+extension])
@@ -107,19 +108,17 @@ def decode(text):
             char = char.replace( x, str(eval(x)) )
         for x in scrapertools.find_multiple_matches(char,'(\(\d\+\d\))'):
             char = char.replace( x, str(eval(x)) )
+        for x in scrapertools.find_multiple_matches(char,'(\(\d\-\d\))'):
+            char = char.replace( x, str(eval(x)) )
         txt+= char + "|"
-    txt = txt[:-1].replace('+','').replace('(0-0)','0')
-    try:
-        txt_result = "".join([ chr(int(n, 8)) for n in txt.split('|') ])
-        txt_result = txt_result.replace('9<<2','36').replace("'","")
-        txt_temp = scrapertools.find_multiple_matches(txt_result, '([\d.]+).toString\(([\d]+)\)')
+    txt = txt[:-1].replace('+','')
+    txt_result = "".join([ chr(int(n, 8)) for n in txt.split('|') ])
+    if ".toString(" in txt_result:
+        txt_temp = scrapertools.find_multiple_matches(txt_result, '(\d+)\.0.\w+.([^\)]+).')
         for numero, base in txt_temp:
-            code = toString(int(numero.replace('.0','')),int(base))
-            txt_result = txt_result.replace(numero+".toString("+base+")", code)
-        return txt_result.replace('+','')
-    except:
-        txt_result = "".join([ chr(int(n, 8)) for n in txt.split('|') ])
-        return txt_result.replace("'","")
+            code = toString( int(numero), eval(base) )
+            txt_result = re.sub( r"'|\+", '', txt_result.replace(numero+".0.toString("+base+")", code) )
+    return txt_result
 
 def toString(number,base):
    string = "0123456789abcdefghijklmnopqrstuvwxyz"
