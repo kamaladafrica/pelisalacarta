@@ -1,0 +1,22 @@
+{
+    "channel": {
+        "id": "doramastv", 
+        "name": "DoramasTV", 
+        "active": true, 
+        "adult": false, 
+        "category": [
+            "serie"
+        ], 
+        "language": "es", 
+        "thumbnail": "http://s.doramastv.com/beta/img/logo-doramastv3.png", 
+        "fanart": "", 
+        "bannermenu": "http://s.doramastv.com/beta/img/logo-doramastv3.png", 
+        "update_url": "",
+        "version": "1",
+        "changes": "Primer version", 
+        "date": "16/02/2016"
+   },
+   "settings": {
+        "include_in_global_search": true
+   }
+}
