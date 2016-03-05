@@ -45,8 +45,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     #Header para la descarga
     header_down = "|User-Agent="+headers['User-Agent']+"|"
     if video == True:
-        try: videourl = scrapertools.get_match(text_decode, "vs=([^;]+);")
-        except: videourl = scrapertools.get_match(text_decode, "vr='([^']+)'")
+        videourl = scrapertools.get_match(text_decode, "(http.*?true)")
         videourl = scrapertools.get_header_from_response(videourl,header_to_get="location")
         videourl = videourl.replace("https://","http://").replace("?mime=true","")
         extension = videourl[-4:]
@@ -93,16 +92,20 @@ def decode(text):
     txt = ""
     for char in chars:
         char = char \
-            .replace("c^_^o", "0") \
+            .replace("(oﾟｰﾟo)","u") \
+            .replace("c", "0") \
+            .replace("(ﾟДﾟ)['0']", "c") \
             .replace("ﾟΘﾟ", "1") \
             .replace("!+[]", "1") \
-            .replace("-~-~", "2+") \
-            .replace("o^_^o", "3") \
+            .replace("-~", "1+") \
+            .replace("o", "3") \
+            .replace("_", "3") \
             .replace("ﾟｰﾟ", "4") \
-            .replace("(+", "(") \
-            .replace("-~", "1+")
+            .replace("(+", "(")
         char = re.sub(r'\((\d)\)', r'\1', char)
         for x in scrapertools.find_multiple_matches(char,'(\(\d\+\d\))'):
+            char = char.replace( x, str(eval(x)) )
+        for x in scrapertools.find_multiple_matches(char,'(\(\d\^\d\^\d\))'):
             char = char.replace( x, str(eval(x)) )
         for x in scrapertools.find_multiple_matches(char,'(\(\d\+\d\+\d\))'):
             char = char.replace( x, str(eval(x)) )
@@ -110,14 +113,25 @@ def decode(text):
             char = char.replace( x, str(eval(x)) )
         for x in scrapertools.find_multiple_matches(char,'(\(\d\-\d\))'):
             char = char.replace( x, str(eval(x)) )
-        txt+= char + "|"
+        if 'u' not in char: txt+= char + "|"
     txt = txt[:-1].replace('+','')
     txt_result = "".join([ chr(int(n, 8)) for n in txt.split('|') ])
+    sum_base = ""
+    m3 = False
     if ".toString(" in txt_result:
-        txt_temp = scrapertools.find_multiple_matches(txt_result, '(\d+)\.0.\w+.([^\)]+).')
+        if "+(" in  txt_result:
+            m3 = True
+            sum_base = "+"+scrapertools.find_single_match(txt_result,".toString...(\d+).")
+            txt_pre_temp = scrapertools.find_multiple_matches(txt_result,"..(\d),(\d+).")
+            txt_temp = [ (n, b) for b ,n in txt_pre_temp ]
+        else:
+            txt_temp = scrapertools.find_multiple_matches(txt_result, '(\d+)\.0.\w+.([^\)]+).')
         for numero, base in txt_temp:
-            code = toString( int(numero), eval(base) )
-            txt_result = re.sub( r"'|\+", '', txt_result.replace(numero+".0.toString("+base+")", code) )
+            code = toString( int(numero), eval(base+sum_base) )
+            if m3:
+                txt_result = re.sub( r'"|\+', '', txt_result.replace("("+base+","+numero+")", code) )
+            else:
+                txt_result = re.sub( r"'|\+", '', txt_result.replace(numero+".0.toString("+base+")", code) )
     return txt_result
 
 def toString(number,base):
