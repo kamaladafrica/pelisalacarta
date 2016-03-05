@@ -18,9 +18,9 @@ from core import logger
 # Lista de los servidores que se pueden ver sin cuenta premium de ningún tipo
 FREE_SERVERS = []
 FREE_SERVERS.extend(['directo','allmyvideos','adnstream','divxstage','facebook','fourshared','twitvid'])
-FREE_SERVERS.extend(['googlevideo','mediafire','moevideos','movshare','novamov'])
+FREE_SERVERS.extend(['googlevideo','mediafire','moevideos','movshare','auroravid'])
 FREE_SERVERS.extend(['royalvids','sockshare','stagevu','tutv','userporn','veoh','videobam'])
-FREE_SERVERS.extend(['vidbux','videoweed','vimeo','vk','watchfreeinhd','youtube'])
+FREE_SERVERS.extend(['vidbux','bitvidsx','vimeo','vk','watchfreeinhd','youtube'])
 FREE_SERVERS.extend(['jumbofiles','nowvideo','streamcloud', 'dailymotion', 'vidbull'])
 FREE_SERVERS.extend(['nosvideo','videopremium','flashx','upafile'])
 FREE_SERVERS.extend(['fileflyer','tunepk','powvideo','mega','videomega','vidspot','netutv','rutube'])
