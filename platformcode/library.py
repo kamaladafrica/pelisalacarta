@@ -34,7 +34,7 @@ DEBUG = True
 LIBRARY_PATH = config.get_library_path()
 if not os.path.exists(LIBRARY_PATH):
     logger.info("[library.py] Library path doesn't exist:"+LIBRARY_PATH)
-    os.mkdir(LIBRARY_PATH)
+    config.verify_directories_created()
 
 #MOVIES_PATH
 MOVIES_PATH = xbmc.translatePath( os.path.join( LIBRARY_PATH, 'CINE' ) )
@@ -130,8 +130,8 @@ def savelibrary(titulo="",url="",thumbnail="",server="",plot="",canal="",categor
         raise
 #    itemurl = '%s?channel=%s&action=%s&category=%s&title=%s&url=%s&thumbnail=%s&plot=%s&server=%s' % ( sys.argv[ 0 ] , canal , "strm" , urllib.quote_plus( category ) , urllib.quote_plus( titulo ) , urllib.quote_plus( url ) , urllib.quote_plus( thumbnail ) , urllib.quote_plus( plot ) , server )
 # Eliminación de plot y thumnail
-    addon_name = sys.argv[ 0 ]
-    if addon_name.strip()=="":
+    addon_name = sys.argv[ 0 ].strip()
+    if not addon_name or not addon_name.startswith("plugin://"):
         addon_name="plugin://plugin.video.pelisalacarta/"
     itemurl = '%s?channel=%s&action=%s&category=%s&title=%s&url=%s&thumbnail=%s&plot=%s&server=%s&Serie=%s&subtitle=%s&extra=%s' % ( addon_name , canal , accion , urllib.quote_plus( category ) , urllib.quote_plus( titulo ) , urllib.quote_plus( url ) , "" , "" , server , Serie , urllib.quote_plus(subtitle) , urllib.quote_plus(extra) )
     logger.info("[library.py] savelibrary fullfilename=%s , itemurl=%s" % (fullfilename,itemurl))
