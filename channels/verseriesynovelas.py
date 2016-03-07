@@ -100,6 +100,7 @@ def novedades(item):
             titleinfo = re.split("Temporada", titleinfo, flags=re.IGNORECASE)[0]
             try:
                 sinopsis, fanart, thumbnail = info(titleinfo)
+                if thumbnail == "": thumbnail = scrapedthumbnail
             except:
                 sinopsis = ""
                 fanart = item.fanart
@@ -138,6 +139,7 @@ def ultimas(item):
             titleinfo = titleinfo.split('Temporada')[0]
             try:
                 sinopsis, fanart, thumbnail = info(titleinfo)
+                if thumbnail == "": thumbnail = scrapedthumbnail
             except:
                 sinopsis = ""
                 fanart = item.fanart
@@ -175,6 +177,7 @@ def episodios(item):
         for scrapedurl, scrapedtitle in matches:
             try:
                 sinopsis, fanart, thumbnail = infoepi(otmdb, scrapedtitle.rsplit(' ', 1)[1], plot)
+                if thumbnail == "": thumbnail = item.thumbnail
             except:
                 thumbnail = item.thumbnail
                 fanart = item.fanart
