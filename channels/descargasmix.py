@@ -349,7 +349,6 @@ def infoepi(otmdb, episode):
         episodio = otmdb.get_episodio(infolabels['season'], infolabels['episode'])
         if episodio["episodio_sinopsis"] == "": infolabels['plot'] = otmdb.get_sinopsis()
         else: infolabels['plot'] = episodio["episodio_sinopsis"]
-        if episodio["episodio_titulo"] != "": infolabels['title'] =  episodio["episodio_titulo"]
         infolabels['year']= otmdb.result["release_date"][:4]
         infolabels['genre'] = otmdb.get_generos()
         infolabels['rating'] = float(otmdb.result["vote_average"])
