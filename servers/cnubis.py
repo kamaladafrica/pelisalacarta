@@ -35,13 +35,14 @@ def find_videos(text):
     devuelve = []
 	
 	# https://cnubis.com/plugins/mediaplayer/site/_1embed.php?u=9mk&w=640&h=320
-    patronvideos  = 'cnubis.com/plugins/mediaplayer/site/(?:_embed|_embed1|_1embed).php\?u\=([A-Za-z0-9]+)'
+	# http://cnubis.com/plugins/mediaplayer/site/_2embed.php?u=2aZD
+    patronvideos  = 'cnubis.com/plugins/mediaplayer/site/([^.]+).php\?u\=([A-Za-z0-9]+)'
     logger.info("pelisalacarta.servers.cnubis find_videos #"+patronvideos+"#")
     matches = re.compile(patronvideos,re.DOTALL).findall(text)
 
-    for match in matches:
+    for embedprex, match in matches:
         titulo = "[cnubis]"
-        url = "http://cnubis.com/plugins/mediaplayer/site/_1embed.php?u="+match
+        url = "http://cnubis.com/plugins/mediaplayer/site/%s.php?u=%s" % (embedprex, match)
         if url not in encontrados and id != "":
             logger.info("  url="+url)
             devuelve.append( [ titulo , url , 'cnubis' ] )
