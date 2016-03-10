@@ -662,15 +662,9 @@ def play_video(channel="",server="",url="",category="",title="", thumbnail="",pl
         logger.info("fin")
     '''
 
-    if config.get_setting("subtitulo") == "true" and view:
+    if subtitle!="" and view:
         logger.info("b11")
-        from platformcode import subtitletools
-        wait2second()
-        subtitletools.set_Subtitle()
-        if subtitle!="":
-            xbmc.Player().setSubtitles(subtitle)
-    #FIXME: Qué cosa más fea...
-    elif channel=="moviezet":
+        logger.info("Subtítulos externos: "+subtitle)
         xbmc.Player().setSubtitles(subtitle)
 
 def handle_wait(time_to_wait,title,text):
