@@ -151,6 +151,7 @@ def episodios(item):
 
     data = re.sub(r"a></td><td> <img src=/banderas/", "a><idioma/", data)
     data = re.sub(r"<img src=/banderas/", "|", data)
+    data = re.sub(r"\s\|", "|", data)
     data = re.sub(r"\.png border='\d+' height='\d+' width='\d+'[^>]+><", "/idioma><", data)
     data = re.sub(r"\.png border='\d+' height='\d+' width='\d+'[^>]+>", "", data)
 
