@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Utilidades para detectar vídeos de los diferentes conectores
@@ -18,9 +18,9 @@ from core import logger
 # Lista de los servidores que se pueden ver sin cuenta premium de ningún tipo
 FREE_SERVERS = []
 FREE_SERVERS.extend(['directo','allmyvideos','adnstream','divxstage','facebook','fourshared','twitvid'])
-FREE_SERVERS.extend(['googlevideo','mediafire','moevideos','movshare','novamov'])
+FREE_SERVERS.extend(['googlevideo','mediafire','moevideos','movshare','auroravid'])
 FREE_SERVERS.extend(['royalvids','sockshare','stagevu','tutv','userporn','veoh','videobam'])
-FREE_SERVERS.extend(['vidbux','videoweed','vimeo','vk','watchfreeinhd','youtube'])
+FREE_SERVERS.extend(['vidbux','bitvidsx','vimeo','vk','watchfreeinhd','youtube'])
 FREE_SERVERS.extend(['jumbofiles','nowvideo','streamcloud', 'dailymotion', 'vidbull'])
 FREE_SERVERS.extend(['nosvideo','videopremium','flashx','upafile'])
 FREE_SERVERS.extend(['fileflyer','tunepk','powvideo','mega','videomega','vidspot','netutv','rutube'])
@@ -47,7 +47,7 @@ REALDEBRID_SERVERS = ['one80upload','tenupload','onefichier','onehostclick','two
                    'filesend','filesmonster','filevelocity','freakshare','free','furk','fyels','gigasize','gigaup','glumbouploads','goldfile','hitfile','hipfile','hostingbulk',
                    'hulu','ifile','jakfile','jumbofiles','letitbit','loadto','mediafire','mega','megashare','megashares','mixturevideo','muchshare','netload',
                    'novafile','nowdownload','purevid','putbit','putlocker','redtube','rapidgator','rapidshare','rutube','ryushare','scribd','sendspace','sharebees','shareflare','shragle','slingfile','sockshare',
-                   'soundcloud','speedyshare','turbobit','unibytes','uploadc','uploadedto','uploading','uploadspace','uptobox',
+                   'soundcloud','speedyshare','turbobit','unibytes','uploadc','uploadedto','uploading','uploadspace','uptobox','openload','clicknupload','youwatch',
                    'userporn','veevr','vidbux','vidxden','vimeo','vipfile','wattv','xfileshare','youporn','youtube','yunfile','zippyshare','nowvideo','filesmonster','oboom','hugefiles']
 #wupload,fileserve
 

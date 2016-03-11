@@ -11,13 +11,23 @@ from core import scrapertools
 from core import logger
 from core import jsunpack
 
+headers = [['User-Agent','Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.14) Gecko/20080404 Firefox/2.0.0.14']]
+	
+def test_video_exists(page_url):
+    logger.info("pelisalacarta.servers.flashx test_video_exists(page_url='%s')" % page_url)
+
+    data = scrapertools.cache_page(page_url, headers=headers)
+
+    if 'FILE NOT FOUND' in data:
+        return False, "[FlashX] El archivo no existe o ha sido borrado" 
+
+    return True, ""
+
 def get_video_url( page_url , premium = False , user="" , password="", video_password="" ):
     logger.info("pelisalacarta.servers.flashx url="+page_url)
 
     # Lo pide una vez
-    headers = [['User-Agent','Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.14) Gecko/20080404 Firefox/2.0.0.14']]
     data = scrapertools.cache_page( page_url , headers=headers )
-
     match = scrapertools.find_single_match(data,"<script type='text/javascript'>(.*?)</script>")
 
     if match.startswith("eval"):	
@@ -51,7 +61,7 @@ def find_videos(data):
 
     for match in matches:
         titulo = "[flashx]"
-        url = "http://www.flashx.pw/fxplay-%s.html" % match
+        url = "http://www.flashx.pw/fxplaynew-%s.html" % match
         if url not in encontrados:
             logger.info("  url="+url)
             devuelve.append( [ titulo , url , 'flashx' ] )
