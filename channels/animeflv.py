@@ -460,7 +460,7 @@ def numbered_for_tratk(show, season, episode):
     dict_series = {}
 
     name_file = os.path.splitext(os.path.basename(__file__))[0]
-    fname = os.path.join(config.get_data_path(), "channels", name_file + "_data.json")
+    fname = os.path.join(config.get_data_path(), "settings_channels", name_file + "_data.json")
 
     if os.path.isfile(fname):
 
