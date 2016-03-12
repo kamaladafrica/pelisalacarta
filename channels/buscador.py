@@ -29,7 +29,10 @@ def mainlist(item,preferred_thumbnail="squares"):
     logger.info("pelisalacarta.channels.buscador mainlist")
 
     itemlist = list()
-    itemlist.append(Item(channel=__channel__, action="search", title="Realizar nueva búsqueda..."))
+    itemlist.append(Item(channel=__channel__, action="search", title="Búsqueda genérica..."))
+
+    if config.is_xbmc():
+        itemlist.append(Item(channel=__channel__, action="search", title="Búsqueda por categorías...", extra="categorias"))
 
     saved_searches_list = get_saved_searches()
 
@@ -91,7 +94,50 @@ def settingCanal(item):
             config.set_setting("include_in_global_search",value,canal)
     
     
-        
+def searchbycat():
+    # Only in xbmc/kodi
+    # Abre un cuadro de dialogo con las categorías en las que hacer la búsqueda
+    channels_path = os.path.join(config.get_runtime_path(), "channels", '*.xml')
+    channel_language = config.get_setting("channel_language")
+    if channel_language == "":
+        channel_language = "all"
+
+    categories = [ "Películas","Series","Anime","Documentales","VOS","Latino"]
+    categories_id = [ "movie","serie","anime","documentary","vos","latino"]
+    list_controls = []
+    for i, category in enumerate(categories):
+        control = {'id': categories_id[i],
+                      'type': "bool",
+                      'label': category,
+                      'default': False,
+                      'enabled': True,
+                      'visible': True}
+
+        list_controls.append(control)
+    control = {'id': "separador",
+                      'type': "label",
+                      'label': '',
+                      'default': "",
+                      'enabled': True,
+                      'visible': True}    
+    list_controls.append(control)
+    control = {'id': "torrent",
+                      'type': "bool",
+                      'label': 'Incluir en la búsqueda canales Torrent',
+                      'default': True,
+                      'enabled': True,
+                      'visible': True}    
+    list_controls.append(control)
+                
+    ventana = guitools.SettingWindow(list_controls, caption= "Elegir categorías")
+    ventana.doModal()
+    if ventana.isConfirmed():
+        cat = []
+        for category, value in ventana.get_values().items():
+            if value:
+                cat.append(category)
+        return cat
+    else: return False
         
 # Al llamar a esta función, el sistema pedirá primero el texto a buscar
 # y lo pasará en el parámetro "tecleado"
@@ -101,12 +147,17 @@ def search(item, tecleado):
     if tecleado != "":
         save_search(tecleado)
 
+    if item.extra == "categorias":
+        categories = searchbycat()
+        if not categories: return
+    else: categories = []
+
     item.extra = tecleado
-    return do_search(item)
+    return do_search(item, categories)
 
 
 # Esta es la función que realmente realiza la búsqueda
-def do_search(item):
+def do_search(item, categories=[]):
     logger.info("pelisalacarta.channels.buscador do_search")
 
     tecleado = item.extra
@@ -149,7 +200,12 @@ def do_search(item):
         # No busca si es un canal inactivo
         if channel_parameters["active"] != "true":
             continue
-
+        
+        # En caso de busqueda por categorias
+        if categories:
+            if not any(cat in channel_parameters["categories"] for cat in categories):
+                continue
+                
         # No busca si es un canal para adultos, y el modo adulto está desactivado
         if channel_parameters["adult"] == "true" and config.get_setting("adult_mode") == "false":
             continue
@@ -180,13 +236,12 @@ def do_search(item):
             for item in channel_result_itemlist:
                 item.title = item.title + "[" + basename_without_extension + "]"
                 item.viewmode = "list"
-
+                
+            channel_result_itemlist = sorted(channel_result_itemlist, key=lambda Item: Item.title) 
             itemlist.extend(channel_result_itemlist)
         except:
             import traceback
             logger.error(traceback.format_exc())
-
-    itemlist = sorted(itemlist, key=lambda Item: Item.title) 
 
     if show_dialog:
         progreso.close()
@@ -198,22 +253,21 @@ def save_search(text):
 
     saved_searches_limit = (10, 20, 30, 40, )[int(config.get_setting("saved_searches_limit"))]
 
-    if os.path.exists(os.path.join(config.get_data_path(), "saved_searches.txt")):
-        f = open(os.path.join(config.get_data_path(), "saved_searches.txt"), "r")
+    infile= os.path.join(config.get_data_path(), "saved_searches.txt")
+    if os.path.exists(infile):
+        f = open(infile, "r")
         saved_searches_list = f.readlines()
         f.close()
     else:
         saved_searches_list = []
+        
+    if (text + "\n") in saved_searches_list:
+        saved_searches_list.remove(text+ "\n")
+        
+    saved_searches_list.insert(0,text + "\n")
 
-    saved_searches_list.append(text)
-
-    if len(saved_searches_list) >= saved_searches_limit:
-        # Corta la lista por el principio, eliminando los más recientes
-        saved_searches_list = saved_searches_list[-saved_searches_limit:]
-
-    f = open(os.path.join(config.get_data_path(), "saved_searches.txt"), "w")
-    for saved_search in saved_searches_list:
-        f.write(saved_search+"\n")
+    f = open(infile, "w")
+    f.writelines(saved_searches_list)
     f.close()
 
 
@@ -232,9 +286,6 @@ def get_saved_searches():
         f.close()
     else:
         saved_searches_list = []
-
-    # Invierte la lista, para que el último buscado salga el primero
-    saved_searches_list.reverse()
 
     trimmed = []
     for saved_search_text in saved_searches_list:
