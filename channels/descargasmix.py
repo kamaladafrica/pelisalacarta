@@ -19,7 +19,7 @@ __language__ = "ES"
 
 DEBUG = config.get_setting("debug")
 
-DEFAULT_HEADERS = ["User-Agent","Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; es-ES; rv:1.9.2.12) Gecko/20101026 Firefox/3.6.12"]
+DEFAULT_HEADERS = [["User-Agent","Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; es-ES; rv:1.9.2.12) Gecko/20101026 Firefox/3.6.12"]]
 
 def isGeneric():
     return True
@@ -32,13 +32,13 @@ def mainlist(item):
     itemlist.append( Item(channel=__channel__, title="Documentales"   , action="entradas", url="http://descargasmix.net/documentales/", thumbnail= "http://i.imgur.com/tBTqIlV.jpg?1", fanart="http://i.imgur.com/Q7fsFI6.png"))
     itemlist.append( Item(channel=__channel__, title="Anime"          , action="entradas", url="http://descargasmix.net/anime/", thumbnail= "http://i.imgur.com/tBTqIlV.jpg?1", fanart="http://i.imgur.com/whhzo8f.png"))
     itemlist.append( Item(channel=__channel__, title="Deportes"       , action="entradas", url="http://descargasmix.net/deportes/", thumbnail= "http://i.imgur.com/tBTqIlV.jpg?1", fanart="http://i.imgur.com/ggFFR8o.png"))
-    itemlist.append( Item(channel=__channel__, title="Buscar..."      , action="search"  , url="http://descargasmix.net/?s=", thumbnail= "http://i.imgur.com/tBTqIlV.jpg?1", extra= "Buscar"))
+    itemlist.append( Item(channel=__channel__, title="Buscar..."      , action="search"  , thumbnail= "http://i.imgur.com/tBTqIlV.jpg?1"))
     return itemlist
 
 def search(item,texto):
     logger.info("pelisalacarta.channels.descargasmix search")
     try:
-        item.url= item.url + texto
+        item.url= "http://descargasmix.net/?s=" + texto
         itemlist = busqueda(item)
         return itemlist
     # Se captura la excepción, para no interrumpir al buscador global si un canal falla
@@ -60,9 +60,9 @@ def busqueda(item):
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
         if ("Películas" in scrapedcat) | ("Documentales" in scrapedcat):
             titulo = scrapedtitle.split("[")[0]
-            itemlist.append( Item(channel=__channel__, action='findvideos', title= scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail, fulltitle=titulo, context = "0", folder=True) )
+            itemlist.append( Item(channel=__channel__, action='findvideos', title= scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail, fulltitle=titulo, context = "0", contentTitle=titulo,folder=True) )
         else:
-            itemlist.append( Item(channel=__channel__, action='temporadas', title= scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail, fulltitle=scrapedtitle, context = "2", folder=True) )
+            itemlist.append( Item(channel=__channel__, action='temporadas', title= scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail, fulltitle=scrapedtitle, context = "2", contentTitle=scrapedtitle, folder=True) )
 
     patron = '<a class="nextpostslink".*?href="([^"]+)"'
     matches = scrapertools.find_single_match(data, patron)
@@ -105,7 +105,7 @@ def entradas(item):
             scrapedtitle = scrapertools.decodeHtmlentities(scrapedtitle)
             scrapedthumbnail = "http:"+scrapedthumbnail.replace("-129x180","")
             if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-            itemlist.append( Item(channel=__channel__, action='temporadas', title= titulo , url=scrapedurl , thumbnail=scrapedthumbnail, fanart=item.fanart, fulltitle=scrapedtitle, context = "2", folder=True) )
+            itemlist.append( Item(channel=__channel__, action='temporadas', title= titulo , url=scrapedurl , thumbnail=scrapedthumbnail, fanart=item.fanart, fulltitle=scrapedtitle, context = "2", contentTitle=scrapedtitle, folder=True) )
     else:
         patron = '<a class="clip-link".*?href="([^"]+)".*?<img alt="([^"]+)" src="([^"]+)"'
         matches = scrapertools.find_multiple_matches(bloque, patron)
@@ -114,7 +114,7 @@ def entradas(item):
             scrapedtitle = scrapertools.decodeHtmlentities(scrapedtitle.split("[")[0])
             scrapedthumbnail = "http:"+scrapedthumbnail.replace("-129x180","")
             if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-            itemlist.append( Item(channel=__channel__, action='findvideos', title= titulo , url=scrapedurl , thumbnail=scrapedthumbnail, fanart=item.fanart, fulltitle=scrapedtitle, context = "0", folder=True) )
+            itemlist.append( Item(channel=__channel__, action='findvideos', title= titulo , url=scrapedurl , thumbnail=scrapedthumbnail, fanart=item.fanart, fulltitle=scrapedtitle, context = "0", contentTitle=scrapedtitle, folder=True) )
     #Paginación
     patron = '<a class="nextpostslink".*?href="([^"]+)"'
     matches = scrapertools.find_single_match(data, patron)
@@ -138,7 +138,7 @@ def temporadas(item):
     patron = '<div class="season".*?>(.*?)<'
     matches = scrapertools.find_multiple_matches(data, patron)
     for scrapedtitle in matches:
-        itemlist.append( Item(channel=__channel__, action="episodios", title=scrapedtitle , fulltitle = item.fulltitle, url=item.url , thumbnail=item.thumbnail , fanart=fanart, plot=str(sinopsis), context = "2", folder=True) )
+        itemlist.append( Item(channel=__channel__, action="episodios", title=scrapedtitle , fulltitle = item.fulltitle, url=item.url , thumbnail=item.thumbnail , fanart=fanart, plot=str(sinopsis), context = "2", contentTitle=item.fulltitle, folder=True) )
     return itemlist
 
 def episodios(item):
@@ -168,9 +168,9 @@ def episodios(item):
             pass
         try:
             fulltitle = item.fulltitle+match.split(item.fulltitle)[1]
-            itemlist.append( Item(channel=__channel__, action="epienlaces", title=titulo, fulltitle = fulltitle, url=item.url , thumbnail=thumbnail , fanart=fanart, plot=str(item.plot), context = "2", extra=scrapedtitle, folder=True ))
+            itemlist.append( Item(channel=__channel__, action="epienlaces", title=titulo, fulltitle = fulltitle, url=item.url , thumbnail=thumbnail , fanart=fanart, plot=str(item.plot), context = "2", contentTitle=fulltitle, extra=scrapedtitle, folder=True ))
         except:
-            itemlist.append( Item(channel=__channel__, action="epienlaces", title=titulo, fulltitle = item.fulltitle, url=item.url , thumbnail=thumbnail , fanart=fanart, plot=str(item.plot), context = "2", extra=scrapedtitle, folder=True ))
+            itemlist.append( Item(channel=__channel__, action="epienlaces", title=titulo, fulltitle = item.fulltitle, url=item.url , thumbnail=thumbnail , fanart=fanart, plot=str(item.plot), context = "2", contentTitle=item.fulltitle, extra=scrapedtitle, folder=True ))
     return itemlist
 
 def epienlaces(item):
@@ -193,6 +193,7 @@ def epienlaces(item):
     matches = scrapertools.find_multiple_matches(bloque, patron)
     for scrapedurl, scrapedserver, scrapedcalidad in matches:
         if scrapedserver == "ul": scrapedserver = "uploadedto"
+        scrapedserver = scrapedserver.replace("abelhas","lolabits")
         titulo = scrapedserver.capitalize()+" ["+scrapedcalidad+"]"
         #Enlaces descarga
         if delimitador.startswith("Descargar"):
@@ -212,10 +213,14 @@ def epienlaces(item):
             itemlist.sort(key=lambda item: item.title, reverse=True)
         #Enlaces online
         else:
+            if "http://descargasmix" in scrapedurl:
+                DEFAULT_HEADERS.append( ["Referer", item.url] )
+                scrapedurl = scrapertools.get_header_from_response(scrapedurl,header_to_get="location",headers=DEFAULT_HEADERS)
             enlaces = servertools.findvideos(data=scrapedurl)
             if len(enlaces)> 0:
-                titulo = "Enlace encontrado en [COLOR sandybrown]"+enlaces[0][0]+"[/COLOR] ["+scrapedcalidad+"]"
-                itemlist.append( Item(channel=__channel__, action="play", server=enlaces[0][2], title=titulo , url=enlaces[0][1] , fulltitle = item.fulltitle, thumbnail=item.thumbnail , fanart=item.fanart, plot=item.plot, folder=False) )
+                for enlace in enlaces:
+                    titulo = "Enlace encontrado en [COLOR sandybrown]"+enlaces[0][0]+"[/COLOR] ["+scrapedcalidad+"]"
+                    itemlist.append( Item(channel=__channel__, action="play", server=enlaces[0][2], title=titulo , url=enlaces[0][1] , fulltitle = item.fulltitle, thumbnail=item.thumbnail , fanart=item.fanart, plot=item.plot, folder=False) )
 
     return itemlist
 
@@ -225,8 +230,7 @@ def play_episodios(item):
     #IF en caso de redireccion
     if "http://descargasmix" in item.url:
         DEFAULT_HEADERS.append( ["Referer",item.extra] )
-        data = scrapertools.cachePage(item.url,headers=DEFAULT_HEADERS)
-        item.url = scrapertools.find_single_match(data,'src="([^"]+)"')
+        item.url = scrapertools.get_header_from_response(item.url,header_to_get="location",headers=DEFAULT_HEADERS)
     enlaces = servertools.findvideos(data=item.url)
     if len(enlaces)> 0:
         titulo = "Enlace encontrado en "+enlaces[0][0]
@@ -247,7 +251,7 @@ def findvideos(item):
     patron = 'class="separate3 magnet".*?href="([^"]+)"'
     matches = scrapertools.find_multiple_matches(data, patron)
     for scrapedurl in matches:
-        itemlist.append( Item(channel=__channel__, action="play", server="torrent", title="[COLOR green][Enlace en Torrent][/COLOR]" , fulltitle = item.fulltitle, url=scrapedurl , thumbnail=item.thumbnail , fanart=fanart, plot=str(sinopsis) , context = "0", folder=False) )
+        itemlist.append( Item(channel=__channel__, action="play", server="torrent", title="[COLOR green][Enlace en Torrent][/COLOR]" , fulltitle = item.fulltitle, url=scrapedurl , thumbnail=item.thumbnail , fanart=fanart, plot=str(sinopsis) , context = "0", contentTitle=item.fulltitle, folder=False) )
     
     #Patron online
     data_online = scrapertools.find_single_match(data, 'Enlaces para ver online(.*?)<div class="section-box related-posts">')
@@ -259,7 +263,7 @@ def findvideos(item):
             enlaces = servertools.findvideos(data=enlace)
             titulo = "Enlace encontrado en [COLOR sandybrown]"+enlaces[0][0]+"[/COLOR]"
             if len(enlaces)> 0:
-                itemlist.append( Item(channel=__channel__, action="play", server=enlaces[0][2], title=titulo, url=enlaces[0][1] , fulltitle = item.fulltitle, thumbnail=item.thumbnail , fanart=fanart, plot=str(sinopsis) , context = "0", folder=False) )
+                itemlist.append( Item(channel=__channel__, action="play", server=enlaces[0][2], title=titulo, url=enlaces[0][1] , fulltitle = item.fulltitle, thumbnail=item.thumbnail , fanart=fanart, plot=str(sinopsis) , context = "0", contentTitle=item.fulltitle, viewmode="movie_with_plot", folder=False) )
 
     #Patron descarga
     data_descarga = scrapertools.find_single_match(data, 'Enlaces de descarga(.*?)<script>')
@@ -267,6 +271,7 @@ def findvideos(item):
     matches = scrapertools.find_multiple_matches(data_descarga, patron)
     for scrapedserver, scrapedurl in matches:
         if (scrapedserver == "ul") | (scrapedserver == "uploaded"): scrapedserver = "uploadedto"
+        scrapedserver = scrapedserver.replace("abelhas","lolabits")
         titulo = scrapedserver.capitalize()
         if titulo == "Magnet":continue
         mostrar_server= True
@@ -281,7 +286,7 @@ def findvideos(item):
                 patron = 'dm\(c.a\(\'([^\']+)\''
                 matches_enlaces = scrapertools.find_multiple_matches(data_enlaces,patron)
                 numero = str(len(matches_enlaces))
-                itemlist.append( Item(channel=__channel__, action="enlaces", title=titulo+" - Nº enlaces:"+numero , url=item.url , fulltitle = item.fulltitle, thumbnail=item.thumbnail , fanart=fanart, plot=str(sinopsis) , extra=scrapedurl, context = "0", folder=True) )
+                itemlist.append( Item(channel=__channel__, action="enlaces", title=titulo+" - Nº enlaces:"+numero , url=item.url , fulltitle = item.fulltitle, thumbnail=item.thumbnail , fanart=fanart, plot=str(sinopsis) , extra=scrapedurl, context = "0", contentTitle=item.fulltitle, viewmode="movie_with_plot", folder=True) )
             except:
                 pass
     return itemlist
@@ -297,12 +302,15 @@ def enlaces(item):
     matches = scrapertools.find_multiple_matches(data_enlaces, patron)
     numero = len(matches)
     for code in matches:
-        titulo = item.title.split("-")[0]+" - Enlace "+str(numero)
-        numero -= 1
         enlace = dm(code)
         enlaces = servertools.findvideos(data=enlace)
         if len(enlaces)> 0:
-            itemlist.append( Item(channel=__channel__, action="play", server=enlaces[0][2], title=titulo , url=enlaces[0][1] , fulltitle = item.fulltitle, thumbnail=item.thumbnail , fanart=item.fanart, plot=item.plot, folder=False) )
+            for link in enlaces:
+                if "/folder/" in enlace: titulo = link[0]
+                else:
+                    titulo = item.title.split("-")[0]+" - Enlace "+str(numero)
+                    numero -= 1
+                itemlist.append( Item(channel=__channel__, action="play", server=link[2], title=titulo , url=link[1] , fulltitle = item.fulltitle, thumbnail=item.thumbnail , fanart=item.fanart, plot=item.plot, folder=False) )
     itemlist.sort(key=lambda item: item.title)
     return itemlist
 
@@ -347,7 +355,6 @@ def infoepi(otmdb, episode):
         episodio = otmdb.get_episodio(infolabels['season'], infolabels['episode'])
         if episodio["episodio_sinopsis"] == "": infolabels['plot'] = otmdb.get_sinopsis()
         else: infolabels['plot'] = episodio["episodio_sinopsis"]
-        if episodio["episodio_titulo"] != "": infolabels['title'] =  episodio["episodio_titulo"]
         infolabels['year']= otmdb.result["release_date"][:4]
         infolabels['genre'] = otmdb.get_generos()
         infolabels['rating'] = float(otmdb.result["vote_average"])

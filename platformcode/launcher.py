@@ -201,18 +201,24 @@ def run():
 
                     logger.info("item.server=#"+item.server+"#")
                     # Ejecuta find_videos, del canal o común
-                    try:
-                        itemlist = channel.findvideos(item)
-
-                        if config.get_setting('filter_servers') == 'true':
-                            itemlist = filtered_servers(itemlist, server_white_list, server_black_list) 
-
-                    except:
-                        from servers import servertools
-                        itemlist = servertools.find_video_items(item)
-
-                        if config.get_setting('filter_servers') == 'true':
-                            itemlist = filtered_servers(itemlist, server_white_list, server_black_list) 
+                    if item.server != "":
+                        try:
+                            from servers import servertools
+                            videourls = servertools.resolve_video_urls_for_playing(server=item.server, url=item.url, video_password=item.video_password)
+                            return videourls
+                        except:
+                            itemlist = []
+                            pass						
+                    else:
+                        try:
+                            itemlist = channel.findvideos(item)
+                            if config.get_setting('filter_servers') == 'true':
+                                itemlist = filtered_servers(itemlist, server_white_list, server_black_list) 
+                        except:
+                            from servers import servertools
+                            itemlist = servertools.find_video_items(item)
+                            if config.get_setting('filter_servers') == 'true':
+                                itemlist = filtered_servers(itemlist, server_white_list, server_black_list)
 
                     if len(itemlist)>0:
                         #for item2 in itemlist:

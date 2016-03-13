@@ -39,6 +39,8 @@ def mainlist(item):
     itemlist.append(Item(channel=__channel__, action="pelis", title="     + Populares", url=api + "?page=0"))
     itemlist.append(Item(channel=__channel__, action="pelis", title="     + Valoradas",
                          url=api + "?sort_by=rating&page=0"))
+    itemlist.append(Item(channel=__channel__, action="menu_ord", title="     Ordenado por...",
+                         url=api))
     itemlist.append(Item(channel=__channel__, action="search", title="     Buscar...", url=api + "?keywords=%s&page=0"))
     itemlist.append(Item(channel=__channel__, action="series", title="[B]Series[/B]",
                          url=api_serie + "?sort_by=''&page=0"))
@@ -47,8 +49,54 @@ def mainlist(item):
     itemlist.append(Item(channel=__channel__, action="series", title="     + Populares", url=api_serie + "?page=0"))
     itemlist.append(Item(channel=__channel__, action="series", title="     + Valoradas",
                          url=api_serie + "?sort_by=rating&page=0"))
+    itemlist.append(Item(channel=__channel__, action="menu_ord", title="     Ordenado por...",
+                         url=api_serie))
     itemlist.append(Item(channel=__channel__, action="search", title="     Buscar...",
                          url=api_serie + "?keywords=%s&page=0"))
+    return itemlist
+
+
+def menu_ord(item):
+    logger.info("pelisalacarta.pelismagnet menu_ord")
+
+    itemlist = list()
+    itemlist.append(Item(channel=__channel__, action="menu_alf", title="Alfabético",
+                         url=item.url))
+    itemlist.append(Item(channel=__channel__, action="menu_genero", title="Género",
+                         url=item.url))
+
+    return itemlist
+
+
+def menu_alf(item):
+    logger.info("pelisalacarta.pelismagnet menu_alf")
+
+    itemlist = []
+
+    for letra in ['[0-9]', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
+                  'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']:
+        itemlist.append(Item(channel=__channel__, action="series", title=letra,
+                             url=item.url+"?keywords=^"+letra+"&page=0"))
+
+    return itemlist
+
+
+def menu_genero(item):
+    logger.info("pelisalacarta.pelismagnet menu_genero")
+
+    itemlist = []
+
+    data = scrapertools.cachePage(host+"/principal")
+    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
+
+    data = scrapertools.find_single_match(data, '<ul class="dropdown-menu.*?>(.*?)</ul>')
+    patron = '<li><a href="genero/([^"]+)">(.*?)<'
+    matches = re.compile(patron, re.DOTALL).findall(data)
+
+    for genero, nombre in matches:
+        itemlist.append(Item(channel=__channel__, action="series", title=nombre,
+                             url=item.url+"?genre="+genero+"&page=0"))
+
     return itemlist
 
 
@@ -96,9 +144,15 @@ def episodios(item):
 
     data = scrapertools.cachePage(item.url)
     data = jsontools.load_json(data)
-    # logger.info("lista {0}".format(data))
 
     for i in data.get("temporadas", []):
+
+        titulo = "{temporada} ({total} Episodios)".format(temporada=i.get("nomtemporada", ""),
+                                                          total=len(i.get("capituls", "0")))
+        itemlist.append(Item(channel=__channel__, action="episodios", title=titulo, url=item.url,
+                             server="torrent", fanart=item.fanart, thumbnail=item.thumbnail, plot=data.get("info", ""),
+                             folder=False))
+
         for j in i.get("capituls", []):
 
             numero = j.get("infocapitul", "")
@@ -113,7 +167,7 @@ def episodios(item):
             if j.get("links", {}).get("calitat", ""):
                 calidad = " [{calidad}]".format(calidad=j.get("links", {}).get("calitat", ""))
 
-            title = "{numero} {titulo}{calidad}".format(numero=numero, titulo=titulo, calidad=calidad)
+            title = "     {numero} {titulo}{calidad}".format(numero=numero, titulo=titulo, calidad=calidad)
 
             if j.get("links", {}).get("magnet", ""):
                 url = j.get("links", {}).get("magnet", "")

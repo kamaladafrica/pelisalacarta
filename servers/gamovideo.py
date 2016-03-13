@@ -5,32 +5,31 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import urlparse,urllib2,urllib,re
-import os
+import re
 
 from core import scrapertools
 from core import logger
 from core import config
 from core import jsunpack
 
+headers = [["User-Agent","Mozilla/5.0 (Windows NT 10.0; WOW64; rv:44.0) Gecko/20100101 Firefox/44.0"]]
+
 def test_video_exists( page_url ):
-    logger.info("pelisalacarta.gamovideo test_video_exists(page_url='%s')" % page_url)
-    return True,""
+    logger.info("pelisalacarta.servers.gamovideo test_video_exists(page_url='%s')" % page_url)
+    data = scrapertools.cache_page(page_url, headers=headers)
+
+    if ("File was deleted" or "Not Found") in data:
+        return False, "[Gamovideo] El archivo no existe o ha sido borrado" 
+
+    return True, ""
 
 def get_video_url( page_url , premium = False , user="" , password="", video_password="" ):
-    logger.info("pelisalacarta.gamovideo get_video_url(page_url='%s')" % page_url)
+    logger.info("pelisalacarta.servers.gamovideo get_video_url(page_url='%s')" % page_url)
     if not "embed" in page_url:
-        page_url = page_url.replace("http://gamovideo.com/","http://gamovideo.com/embed-") + "-640x360.html"
+        page_url = page_url.replace("http://gamovideo.com/","http://gamovideo.com/embed-") + ".html"
 
-    HEADERS = []
-    HEADERS.append(["User-Agent","Firefox"])
-
-    data = scrapertools.cache_page(page_url,headers=HEADERS)
-    logger.info("pelisalacarta.gamovideo data=="+data)
-
+    data = scrapertools.cache_page(page_url,headers=headers)
     data = scrapertools.find_single_match(data,"<script type='text/javascript'>(eval.function.p,a,c,k,e,d..*?)</script>")
-    logger.info("pelisalacarta.gamovideo data=="+data)
-
     data = jsunpack.unpack(data)
 
     host = scrapertools.get_match(data, 'image:"(http://[^/]+/)')
@@ -43,7 +42,7 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
     #video_urls.append(["RTMP [gamovideo]",rtmp_url])      
 
     for video_url in video_urls:
-        logger.info("[gamovideo.py] %s - %s" % (video_url[0],video_url[1]))
+        logger.info("pelisalacarta.servers.gamovideo %s - %s" % (video_url[0],video_url[1]))
 
     return video_urls
 
@@ -54,23 +53,9 @@ def find_videos(data):
 
     # http://gamovideo.com/auoxxtvyoy
     # http://gamovideo.com/h1gvpjarjv88
-    patronvideos  = 'gamovideo.com/([a-z0-9]+)'
-    logger.info("pelisalacarta.gamovideo find_videos #"+patronvideos+"#")
-    matches = re.compile(patronvideos,re.DOTALL).findall(data)
-
-    for match in matches:
-        titulo = "[gamovideo]"
-        url = "http://gamovideo.com/"+match
-        if url not in encontrados and match!="embed":
-            logger.info("  url="+url)
-            devuelve.append( [ titulo , url , 'gamovideo' ] )
-            encontrados.add(url)
-        else:
-            logger.info("  url duplicada="+url)
-            
     # http://gamovideo.com/embed-sbb9ptsfqca2-588x360.html
-    patronvideos  = 'gamovideo.com/embed-([a-z0-9]+)'
-    logger.info("pelisalacarta.gamovideo find_videos #"+patronvideos+"#")
+    patronvideos  = 'gamovideo.com/(?:embed-|)([a-z0-9]+)'
+    logger.info("pelisalacarta.servers.gamovideo find_videos #"+patronvideos+"#")
     matches = re.compile(patronvideos,re.DOTALL).findall(data)
 
     for match in matches:
