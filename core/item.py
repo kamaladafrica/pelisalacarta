@@ -46,7 +46,7 @@ class Item(object):
         kwargs.setdefault("password", "")           #Password del video
 
         kwargs.setdefault("folder", True)           #Carpeta o vídeo
-        kwargs.setdefault("server", "directo")      #Servidor que contiene el vídeo
+        kwargs.setdefault("server", "")      #Servidor que contiene el vídeo
         kwargs.setdefault("extra", "")              #Datos extra
         
         kwargs.setdefault("language", "")           #Idioma del contenido
