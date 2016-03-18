@@ -199,10 +199,23 @@ def episodios(item):
     return itemlist
 
 
+def parseVideos(item, typeStr, data):
+    itemlist = []
+    links = re.findall('<tr.+?<span>(.+?)</span>.*?banderas/([^\.]+).+?href="([^"]+).+?servidores/([^\.]+).*?</td>.*?<td>.*?<span>(.+?)</span>.*?<span>(.*?)</span>.*?</tr>', data, re.MULTILINE | re.DOTALL)
+
+    for date, language, link, server, uploader, quality in links:
+        if not quality:
+            quality = "SD"
+        title = "{0} en {1} [{2}] [{3}] ({4}: {5})".format(typeStr, server, IDIOMAS[language],
+                                                           quality, uploader, date)
+
+        itemlist.append(Item(channel=__channel__, title=title, url=urlparse.urljoin(HOST, link), action="play",
+                             show=item.show))
+    return itemlist
+
+
 def findvideos(item):
     logger.info("pelisalacarta.seriesblanco findvideos")
-
-    itemlist = []
 
     # Descarga la página
     data = scrapertools.cache_page(item.url)
@@ -213,28 +226,7 @@ def findvideos(item):
 
     online = re.findall('<table class="as_gridder_table">(.+?)</table>', data, re.MULTILINE | re.DOTALL)
 
-    links = re.findall('<tr.+?<span>(.+?)</span>.*?banderas/([^\.]+).+?href="([^"]+).+?servidores/([^\.]+).*?</td>.*?<td>.*?<span>(.+?)</span>.*?<span>(.*?)</span>.*?</tr>', online[0], re.MULTILINE | re.DOTALL)
-
-    for date, language, link, server, uploader, quality in links:
-        if not quality:
-            quality = "SD"
-        title = "{0} en {1} [{2}] [{3}] ({4}: {5})".format("Ver", server, IDIOMAS[language],
-                                                           quality, uploader, date)
-
-        itemlist.append(Item(channel=__channel__, title=title, url=urlparse.urljoin(HOST, link), action="play",
-                             show=item.show))
-
-    links = re.findall('<tr.+?<span>(.+?)</span>.*?banderas/([^\.]+).+?href="([^"]+).+?servidores/([^\.]+).*?</td>.*?<td>.*?<span>(.+?)</span>.*?<span>(.*?)</span>.*?</tr>', online[0], re.MULTILINE | re.DOTALL)
-
-    for date, language, link, server, uploader, quality in links:
-        if not quality:
-            quality = "SD"
-        title = "{0} en {1} [{2}] [{3}] ({4}: {5})".format("Descargar", server, IDIOMAS[language],
-                                                           quality, uploader, date)
-        itemlist.append(Item(channel=__channel__, title=title, url=urlparse.urljoin(HOST, link), action="play",
-                             show=item.show))
-
-    return itemlist
+    return parseVideos(item, "Ver", online[0]) + parseVideos(item, "Descargar", online[1])
 
 
 def play(item):
