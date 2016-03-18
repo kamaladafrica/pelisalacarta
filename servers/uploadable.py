@@ -28,13 +28,13 @@ def find_videos(data):
     devuelve = []
 
     # https://www.uploadable.ch/list/cKMCXrm7gZqv
-    patronvideos  = 'uploadable.ch/list/([A-Za-z0-9]+)'
+    patronvideos  = 'uploadable.ch/((?:list/|file/)[\w]+)'
     logger.info("pelisalacarta.servers.uploadable find_videos #"+patronvideos+"#")
     matches = re.compile(patronvideos,re.DOTALL).findall(data)
 
     for match in matches:
         titulo = "[uploadable]"
-        url = "https://www.uploadable.ch/list/"+match
+        url = "https://www.uploadable.ch/"+match
         if url not in encontrados:
             logger.info("  url="+url)
             devuelve.append( [ titulo , url , 'uploadable' ] )
