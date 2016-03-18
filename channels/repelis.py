@@ -238,13 +238,13 @@ def verpeli(item):
    #estos son los datos para plot 
    patron = '<h2>Sinopsis</h2>.*?<p>(.*?)</p>.*?<div id="informacion".*?</h2>.*?<p>(.*?)</p>' #titulo
    matches = re.compile(patron,re.DOTALL).findall(data)    
-   #scrapertools.printMatches(matches)
+   scrapertools.printMatches(matches)
    for sinopsis,title in matches:
        title = "[COLOR white][B]" + title + "[/B][/COLOR]"
    
    patron = '<div id="informacion".*?>(.*?)</div>'
    matches = re.compile(patron,re.DOTALL).findall(data)    
-   #scrapertools.printMatches(matches)
+   scrapertools.printMatches(matches)
    for scrapedplot in matches:
        splot = title + "\n\n"
        plot = scrapedplot
@@ -254,22 +254,37 @@ def verpeli(item):
        plot = re.sub('</p>',"[/COLOR]\n",plot)
        plot = re.sub('<[^>]+>',"",plot)
        splot += plot + "\n[COLOR red][B] Sinopsis[/B][/COLOR]\n " + sinopsis
-        
-    
+       
+
+      
    #datos de los enlaces
-   patron = '<a rel="nofollow".*?</a>.*?</td>.*?<td>(.*?)</td>.*?<td>(.*?)</td>.*?src="http://www.google.com/s2/favicons\?domain=(.*?)"'
-   matches = re.compile(patron,re.DOTALL).findall(data)    
-   scrapertools.printMatches(matches)
-         
-   for scrapedlang, scrapedquality, scrapedurl in matches:
+   '''
+   <a rel="nofollow" href="(.*?)".*?<td><img.*?</td><td>(.*?)</td><td>(.*?)</td></tr> 
+   
+   ">Vimple</td>
+   '''
+   
+   
+   patron='<tbody>(.*?)</tbody>'
+   matchesx = re.compile(patron,re.DOTALL).findall(data)       
+   scrapertools.printMatches(matchesx)
+
+   for bloq in matchesx:
+       patron='<tr>.*?<td><a rel="nofollow" href="(.*?)".*?<td><img src.*?">(.*?)</td>.*?<td>(.*?)</td>.*?<td>(.*?)</td>.*?</tr> <tr>'
+       
+       matches = re.compile(patron,re.DOTALL).findall(bloq)           
+       #scrapertools.printMatches(matches)
+            
+   for scrapedurl,scrapedserver,scrapedlang,scrapedquality in matches:
       url = urlparse.urljoin(item.url,scrapedurl)
-      #logger.info("[repelis] Lang:["+scrapedlang+"] Quality["+scrapedquality+"] URL["+url+"]")
+      logger.info("[repelis] Lang:["+scrapedlang+"] Quality["+scrapedquality+"] URL["+url+"]")
       patronenlaces= '.*?://(.*?)/'
       matchesenlaces = re.compile(patronenlaces,re.DOTALL).findall(scrapedurl)      
-      #scrapertools.printMatches(matchesenlaces)
+      scrapertools.printMatches(matchesenlaces)
       scrapedtitle = ""
       for scrapedenlace in matchesenlaces:
-          scrapedtitle = title + "  [COLOR white][ [/COLOR]" +"[COLOR green]" +scrapedquality+"[/COLOR]" +"[COLOR white] ][/COLOR]" + " [COLOR red]" + scrapedlang +"[/COLOR]  » " + scrapedenlace
+          scrapedtitle = title + "  [COLOR white][ [/COLOR]" +"[COLOR green]" +scrapedquality+"[/COLOR]" +"[COLOR white] ][/COLOR]" + " [COLOR red]" + scrapedlang +"[/COLOR]  » " +scrapedserver
+          #+ scrapedenlace
       itemlist.append( Item(channel=__channel__, action="play" ,  title=scrapedtitle  , extra=title, url=url, fanart=item.thumbnail, thumbnail=item.thumbnail, plot=splot, folder=False))
       
    return itemlist
