@@ -391,6 +391,7 @@ def infoepi(otmdb, season, episode):
         infolabels['rating'] = float(otmdb.result["vote_average"])
         if episodio["episodio_imagen"] == "": thumbnail = otmdb.get_poster()
         else: thumbnail = episodio["episodio_imagen"]
+        infolabels['mediatype'] = "episode"
         plot['infoLabels'] = infolabels
         return plot, thumbnail
     except:
