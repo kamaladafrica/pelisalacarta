@@ -221,9 +221,7 @@ def run():
                                 itemlist = filtered_servers(itemlist, server_white_list, server_black_list)
 
                     if len(itemlist)>0:
-                        #for item2 in itemlist:
-                        #    logger.info(item2.title+" "+item2.subtitle)
-    
+                        
                         # El usuario elige el mirror
                         opciones = []
                         for item in itemlist:
@@ -352,10 +350,13 @@ def run():
                 else:
                     logger.info("pelisalacarta.platformcode.launcher executing channel '"+action+"' method")
                     if action!="findvideos":
-                        exec "itemlist = channel."+action+"(item)"
-                            
-                        #for item in itemlist:
-                        #    logger.info("viemode="+item.viewmode)
+                        # Intenta ejecutar la accion en el canal
+                        if hasattr(channel, action):
+                            exec "itemlist = channel."+action+"(item)"
+                        else:
+                            # Si no existe la accion dentro del canal salimos sin hacer nada (item tipo Tag)
+                            logger.info("pelisalacarta.platformcode.launcher no channel '"+action+"' method") 
+                            return 
                     else:
 
                         # Intenta ejecutar una posible funcion "findvideos" del canal
