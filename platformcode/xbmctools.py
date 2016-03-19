@@ -25,74 +25,42 @@ except:
 
 DEBUG = True
 
-def addnewfolderextra( canal , accion , category , title , url , thumbnail , plot , extradata ,Serie="",totalItems=0,fanart="",context="",show="",fulltitle="",hasContentDetails="false",contentTitle="",contentThumbnail="",contentPlot=""):
-    if fulltitle=="":
-        fulltitle=title
+def addnewfolderextra( item): 
+    # TODO: Posible error en trailertools.py 
+    if item.fulltitle=="":
+        item.fulltitle=item.title
     
     contextCommands = []
     ok = False
     
     try:
-        context = urllib.unquote_plus(context)
+        item.context = urllib.unquote_plus(item.context)
     except:
-        context=""
+        item.context=""
     
-    if "|" in context:
-        context = context.split("|")
+    if "|" in item.context:
+        item.context = item.context.split("|")
     
     if DEBUG:
-        try:
-            logger.info('[xbmctools.py] addnewfolderextra( "'+extradata+'","'+canal+'" , "'+accion+'" , "'+category+'" , "'+title+'" , "' + url + '" , "'+thumbnail+'" , "'+plot+'")" , "'+Serie+'")"')
-        except:
-            logger.info('[xbmctools.py] addnewfolderextra(<unicode>)')
+        logger.info('[xbmctools.py] addnewfolderextra(' + item.tostring() +')')
 
-    logger.info("[xbmctools.py] addnewfolderextra hasContentDetails="+hasContentDetails+" contentTitle="+contentTitle+", contentThumbnail="+contentThumbnail+", contentPlot="+contentPlot)
+    listitem = xbmcgui.ListItem( item.title, iconImage="DefaultFolder.png", thumbnailImage=item.thumbnail )
 
-    listitem = xbmcgui.ListItem( title, iconImage="DefaultFolder.png", thumbnailImage=thumbnail )
+    if item.action !="":
+        listitem.setInfo( "video", { "Title" : item.title, "Plot" : item.plot, "Studio" : item.channel.capitalize() } )
+        set_infoLabels(listitem,item.plot) # Modificacion introducida por super_berny para añadir infoLabels al ListItem
 
-    listitem.setInfo( "video", { "Title" : title, "Plot" : plot, "Studio" : canal.capitalize() } )
+    if item.fanart!="":
+        listitem.setProperty('fanart_image',item.fanart) 
+        xbmcplugin.setPluginFanart(pluginhandle, item.fanart)
 
-    set_infoLabels(listitem,plot) # Modificacion introducida por super_berny para añadir infoLabels al ListItem
-
-    if fanart!="":
-        listitem.setProperty('fanart_image',fanart) 
-        xbmcplugin.setPluginFanart(pluginhandle, fanart)
-    #Realzamos un quote sencillo para evitar problemas con títulos unicode
-#    title = title.replace("&","%26").replace("+","%2B").replace("%","%25")
     try:
-        title = title.encode ("utf-8") #This only aplies to unicode strings. The rest stay as they are.
+        item.title = item.title.encode ("utf-8") #This only aplies to unicode strings. The rest stay as they are.
     except:
         pass
 
-    itemurl = '%s?fanart=%s&channel=%s&action=%s&category=%s&title=%s&fulltitle=%s&url=%s&thumbnail=%s&plot=%s&extradata=%s&Serie=%s&show=%s&hasContentDetails=%s&contentTitle=%s&contentThumbnail=%s&contentPlot=%s' % ( sys.argv[ 0 ] , urllib.quote_plus(fanart), canal , accion , urllib.quote_plus( category ) , urllib.quote_plus(title) , urllib.quote_plus(fulltitle) , urllib.quote_plus( url ) , urllib.quote_plus( thumbnail ) , urllib.quote_plus( plot ) , urllib.quote_plus( extradata ) , Serie, urllib.quote_plus( show ), urllib.quote_plus( hasContentDetails ), urllib.quote_plus( contentTitle ), urllib.quote_plus( contentThumbnail ), urllib.quote_plus( contentPlot ))
-
-    if Serie != "": #Añadimos opción contextual para Añadir la serie completa a la biblioteca
-        addSerieCommand = "XBMC.RunPlugin(%s?channel=%s&action=addlist2Library&category=%s&title=%s&fulltitle=%s&url=%s&extradata=%s&Serie=%s&show=%s)" % ( sys.argv[ 0 ] , canal , urllib.quote_plus( category ) , urllib.quote_plus( title ) , urllib.quote_plus(fulltitle) , urllib.quote_plus( url ) , urllib.quote_plus( extradata ) , Serie, urllib.quote_plus( show ) )
-        contextCommands.append(("Añadir Serie a Biblioteca",addSerieCommand))
-        
-    if "1" in context and accion != "por_teclado":
-        DeleteCommand = "XBMC.RunPlugin(%s?channel=buscador&action=borrar_busqueda&title=%s&url=%s&show=%s)" % ( sys.argv[ 0 ]  ,  urllib.quote_plus( title ) , urllib.quote_plus( url ) , urllib.quote_plus( show ) )
-        contextCommands.append((config.get_localized_string( 30300 ),DeleteCommand))
-    if "4" in context:
-        searchSubtitleCommand = "XBMC.RunPlugin(%s?channel=subtitletools&action=searchSubtitle&title=%s&url=%s&category=%s&fulltitle=%s&url=%s&thumbnail=%s&plot=%s&extradata=%s&Serie=%s&show=%s)" % ( sys.argv[ 0 ]  ,  urllib.quote_plus( title ) , urllib.quote_plus( url ), urllib.quote_plus( category ), urllib.quote_plus(fulltitle) , urllib.quote_plus( url ) , urllib.quote_plus( thumbnail ) , urllib.quote_plus( plot ) , urllib.quote_plus( extradata ) , Serie, urllib.quote_plus( show ) )
-        contextCommands.append(("XBMC Subtitle",searchSubtitleCommand))
-    if "5" in context:
-        trailerCommand = "XBMC.Container.Update(%s?channel=%s&action=%s&category=%s&title=%s&url=%s&thumbnail=%s&plot=%s)" % ( sys.argv[ 0 ] , "trailertools" , "buscartrailer" , urllib.quote_plus( category ) , urllib.quote_plus( title ) , urllib.quote_plus( url ) , urllib.quote_plus( thumbnail ) , urllib.quote_plus( "" )  )
-        contextCommands.append((config.get_localized_string(30162),trailerCommand))
-    if "6" in context:
-        justinCommand = "XBMC.PlayMedia(%s?channel=%s&action=%s&category=%s&title=%s&url=%s&thumbnail=%s&plot=%s)" % ( sys.argv[ 0 ] , "justintv" , "playVideo" , urllib.quote_plus( category ) , urllib.quote_plus( title ) , urllib.quote_plus( url ) , urllib.quote_plus( thumbnail ) , urllib.quote_plus( "" )  )
-        contextCommands.append((config.get_localized_string(30410),justinCommand))
-
-    if "8" in context:# Añadir canal a favoritos justintv
-        justinCommand = "XBMC.RunPlugin(%s?channel=%s&action=%s&category=%s&title=%s&url=%s&thumbnail=%s&plot=%s)" % ( sys.argv[ 0 ] , "justintv" , "addToFavorites" , urllib.quote_plus( category ) , urllib.quote_plus( title ) , urllib.quote_plus( url ) , urllib.quote_plus( thumbnail ) , urllib.quote_plus( "" )  )
-        contextCommands.append((config.get_localized_string(30406),justinCommand))
-
-    if "9" in context:# Remover canal de favoritos justintv
-        justinCommand = "XBMC.Container.Update(%s?channel=%s&action=%s&category=%s&title=%s&url=%s&thumbnail=%s&plot=%s)" % ( sys.argv[ 0 ] , "justintv" , "removeFromFavorites" , urllib.quote_plus( category ) , urllib.quote_plus( title ) , urllib.quote_plus( url ) , urllib.quote_plus( thumbnail ) , urllib.quote_plus( "" )  )
-        contextCommands.append((config.get_localized_string(30407),justinCommand))
-
-    logger.info("[xbmctools.py] addnewfolderextra itemurl="+itemurl)
-
+    itemurl = '%s?fanart=%s&channel=%s&action=%s&category=%s&title=%s&fulltitle=%s&url=%s&thumbnail=%s&plot=%s&extradata=%s&show=%s&hasContentDetails=%s&contentTitle=%s&contentThumbnail=%s&contentPlot=%s' % ( sys.argv[ 0 ] , urllib.quote_plus(item.fanart), item.channel , item.action , urllib.quote_plus( item.category ) , urllib.quote_plus(item.title) , urllib.quote_plus(item.fulltitle) , urllib.quote_plus( item.url ) , urllib.quote_plus( item.thumbnail ) , urllib.quote_plus( item.plot ) , urllib.quote_plus( item.extra ) , urllib.quote_plus( item.show ), urllib.quote_plus( item.hasContentDetails ), urllib.quote_plus( item.contentTitle ), urllib.quote_plus( item.contentThumbnail ), urllib.quote_plus( item.contentPlot ))
+    
     if config.get_platform()=="boxee":
         #logger.info("Modo boxee")
         ok = xbmcplugin.addDirectoryItem( handle = pluginhandle, url = itemurl , listitem=listitem, isFolder=True)
@@ -100,89 +68,62 @@ def addnewfolderextra( canal , accion , category , title , url , thumbnail , plo
         #logger.info("Modo xbmc")
         if len(contextCommands) > 0:
             listitem.addContextMenuItems ( contextCommands, replaceItems=False)
-    
-        if totalItems == 0:
+        if item.action == "":
+            listitem.addContextMenuItems ( list(), replaceItems=True)
+            
+        if item.totalItems == 0:
             ok = xbmcplugin.addDirectoryItem( handle = pluginhandle, url = itemurl , listitem=listitem, isFolder=True)
         else:
-            ok = xbmcplugin.addDirectoryItem( handle = pluginhandle, url = itemurl , listitem=listitem, isFolder=True, totalItems=totalItems)
+            ok = xbmcplugin.addDirectoryItem( handle = pluginhandle, url = itemurl , listitem=listitem, isFolder=True, totalItems=item.totalItems)
     return ok
 
-def addnewvideo( canal , accion , category , server , title , url , thumbnail, plot ,Serie="",duration="",fanart="",IsPlayable='false',context = "", subtitle="", viewmode="", totalItems = 0, show="", password="", extra="",fulltitle="",hasContentDetails="false",contentTitle="",contentThumbnail="",contentPlot=""):
+def addnewvideo(item): 
+    # TODO: Posible error en trailertools.py
     contextCommands = []
     ok = False
     try:
-        context = urllib.unquote_plus(context)
+        item.context = urllib.unquote_plus(item.context)
     except:
-        context=""
-    if "|" in context:
-        context = context.split("|")
+        item.context=""
+    if "|" in item.context:
+        item.context = item.context.split("|")
     if DEBUG:
-        try:
-            logger.info('[xbmctools.py] addnewvideo( "'+canal+'" , "'+accion+'" , "'+category+'" , "'+server+'" , "'+title+'" ("'+fulltitle+'") , "' + url + '" , "'+thumbnail+'" , "'+plot+'")" , "'+Serie+'")"')
-        except:
-            logger.info('[xbmctools.py] addnewvideo(<unicode>)')
+        logger.info('[xbmctools.py] addnewfolderextra(' + item.tostring() +')')
 
-    logger.info("[xbmctools.py] addnewvideo hasContentDetails="+hasContentDetails+" contentTitle="+contentTitle+", contentThumbnail="+contentThumbnail+", contentPlot="+contentPlot)
-
-    icon_image = os.path.join( config.get_runtime_path() , "resources" , "images" , "servers" , server+".png" )
+    icon_image = os.path.join( config.get_runtime_path() , "resources" , "images" , "servers" , item.server+".png" )
     if not os.path.exists(icon_image):
         icon_image = "DefaultVideo.png"
 
-    listitem = xbmcgui.ListItem( title, iconImage="DefaultVideo.png", thumbnailImage=thumbnail )
-    listitem.setInfo( "video", { "Title" : title, "FileName" : title, "Plot" : plot, "Duration" : duration, "Studio" : canal.capitalize(), "Genre" : category } )
+    listitem = xbmcgui.ListItem( item.title, iconImage="DefaultVideo.png", thumbnailImage=item.thumbnail )
+    if item.action !="":
+        listitem.setInfo( "video", { "Title" : item.title, "Plot" : item.plot, "Studio" : item.channel.capitalize() } )
+        set_infoLabels(listitem,item.plot) # Modificacion introducida por super_berny para añadir infoLabels al ListItem
+   
+    if item.fanart!="":
+        #logger.info("item.fanart :%s" %item.fanart)
+        listitem.setProperty('fanart_image',item.fanart)
+        xbmcplugin.setPluginFanart(pluginhandle, item.fanart)
 
-    set_infoLabels(listitem,plot) # Modificacion introducida por super_berny para añadir infoLabels al ListItem
-        
-    if fanart!="":
-        #logger.info("fanart :%s" %fanart)
-        listitem.setProperty('fanart_image',fanart)
-        xbmcplugin.setPluginFanart(pluginhandle, fanart)
-
-    if IsPlayable == 'true': #Esta opcion es para poder utilizar el xbmcplugin.setResolvedUrl()
+    if item.isPlayable == 'true': #Esta opcion es para poder utilizar el xbmcplugin.setResolvedUrl()
         listitem.setProperty('IsPlayable', 'true')
-    #listitem.setProperty('fanart_image',os.path.join(IMAGES_PATH, "cinetube.png"))
-    if "1" in context: #El uno añade al menu contextual la opcion de guardar en megalive un canal a favoritos
-        addItemCommand = "XBMC.RunPlugin(%s?channel=%s&action=%s&category=%s&title=%s&fulltitle=%s&url=%s&thumbnail=%s&plot=%s&server=%s&Serie=%s&show=%s&password=%s&extradata=%s)" % ( sys.argv[ 0 ] , canal , "saveChannelFavorites" , urllib.quote_plus( category ) , urllib.quote_plus( title ) , urllib.quote_plus( fulltitle ) , urllib.quote_plus( url ) , urllib.quote_plus( thumbnail ) , urllib.quote_plus( plot ) , server , Serie, urllib.quote_plus(show), urllib.quote_plus( password) , urllib.quote_plus(extra) )
-        contextCommands.append((config.get_localized_string(30301),addItemCommand))
-        
-    if "2" in context:#El dos añade al menu contextual la opciones de eliminar y/o renombrar un canal en favoritos 
-        addItemCommand = "XBMC.RunPlugin(%s?channel=%s&action=%s&category=%s&title=%s&url=%s&thumbnail=%s&plot=%s&server=%s&Serie=%s&show=%s&password=%s&extradata=%s)" % ( sys.argv[ 0 ] , canal , "deleteSavedChannel" , urllib.quote_plus( category ) , urllib.quote_plus( title ) , urllib.quote_plus( fulltitle ) , urllib.quote_plus( url ) , urllib.quote_plus( thumbnail ) , urllib.quote_plus( plot ) , server , Serie, urllib.quote_plus( show), urllib.quote_plus( password) , urllib.quote_plus(extra) )
-        contextCommands.append((config.get_localized_string(30302),addItemCommand))
-        addItemCommand = "XBMC.RunPlugin(%s?channel=%s&action=%s&category=%s&title=%s&url=%s&thumbnail=%s&plot=%s&server=%s&Serie=%s&show=%s&password=%s&extradata=%s)" % ( sys.argv[ 0 ] , canal , "renameChannelTitle" , urllib.quote_plus( category ) , urllib.quote_plus( title ) , urllib.quote_plus( fulltitle ) , urllib.quote_plus( url ) , urllib.quote_plus( thumbnail ) , urllib.quote_plus( plot ) , server , Serie, urllib.quote_plus( show),urllib.quote_plus( password) , urllib.quote_plus(extra) )
-        contextCommands.append((config.get_localized_string(30303),addItemCommand))
-            
-    if "6" in context:# Ver canal en vivo en justintv
-        justinCommand = "XBMC.PlayMedia(%s?channel=%s&action=%s&category=%s&title=%s&url=%s&thumbnail=%s&plot=%s)" % ( sys.argv[ 0 ] , "justintv" , "playVideo" , urllib.quote_plus( category ) , urllib.quote_plus( title ) , urllib.quote_plus( url ) , urllib.quote_plus( thumbnail ) , urllib.quote_plus( plot )  )
-        contextCommands.append((config.get_localized_string(30410),justinCommand))
 
-    if "7" in context:# Listar videos archivados en justintv
-        justinCommand = "XBMC.Container.Update(%s?channel=%s&action=%s&category=%s&title=%s&url=%s&thumbnail=%s&plot=%s)" % ( sys.argv[ 0 ] , "justintv" , "listarchives" , urllib.quote_plus( category ) , urllib.quote_plus( title ) , urllib.quote_plus( url ) , urllib.quote_plus( thumbnail ) , urllib.quote_plus( "" )  )
-        contextCommands.append((config.get_localized_string(30409),justinCommand))
-
-    if "8" in context:# Añadir canal a favoritos justintv
-        justinCommand = "XBMC.RunPlugin(%s?channel=%s&action=%s&category=%s&title=%s&url=%s&thumbnail=%s&plot=%s)" % ( sys.argv[ 0 ] , "justintv" , "addToFavorites" , urllib.quote_plus( category ) , urllib.quote_plus( title ) , urllib.quote_plus( url ) , urllib.quote_plus( thumbnail ) , urllib.quote_plus( "" )  )
-        contextCommands.append((config.get_localized_string(30406),justinCommand))
-
-    if "9" in context:# Remover canal de favoritos justintv
-        justinCommand = "XBMC.Container.Update(%s?channel=%s&action=%s&category=%s&title=%s&url=%s&thumbnail=%s&plot=%s)" % ( sys.argv[ 0 ] , "justintv" , "removeFromFavorites" , urllib.quote_plus( category ) , urllib.quote_plus( title ) , urllib.quote_plus( url ) , urllib.quote_plus( thumbnail ) , urllib.quote_plus( "" )  )
-        contextCommands.append((config.get_localized_string(30407),justinCommand))
 
     if len (contextCommands) > 0:
         listitem.addContextMenuItems ( contextCommands, replaceItems=False)
+    if item.action == "":
+            listitem.addContextMenuItems ( list(), replaceItems=True)
     try:
-        title = title.encode ("utf-8")     #This only aplies to unicode strings. The rest stay as they are.
-        plot  = plot.encode ("utf-8")
+        item.title = item.title.encode ("utf-8")     #This only aplies to unicode strings. The rest stay as they are.
+        item.plot  = item.plot.encode ("utf-8")
     except:
         pass
 
-    # Lo restauro como estaba antes, la nueva formula no es compatible con Boxee    
-    itemurl = '%s?fanart=%s&channel=%s&action=%s&category=%s&title=%s&fulltitle=%s&url=%s&thumbnail=%s&plot=%s&server=%s&Serie=%s&subtitle=%s&viewmode=%s&show=%s&extradata=%s&hasContentDetails=%s&contentTitle=%s&contentThumbnail=%s&contentPlot=%s' % ( sys.argv[ 0 ] , urllib.quote_plus(fanart), canal , accion , urllib.quote_plus( category ) , urllib.quote_plus( title ) , urllib.quote_plus( fulltitle ) , urllib.quote_plus( url ) , urllib.quote_plus( thumbnail ) , urllib.quote_plus( plot ) , server , Serie , urllib.quote_plus(subtitle), urllib.quote_plus(viewmode), urllib.quote_plus( show ) , urllib.quote_plus(extra) , urllib.quote_plus( hasContentDetails ), urllib.quote_plus( contentTitle ), urllib.quote_plus( contentThumbnail ), urllib.quote_plus( contentPlot ))
-
-    #logger.info("[xbmctools.py] itemurl=%s" % itemurl)
-    if totalItems == 0:
+    itemurl = '%s?fanart=%s&channel=%s&action=%s&category=%s&title=%s&fulltitle=%s&url=%s&thumbnail=%s&plot=%s&extradata=%s&show=%s&hasContentDetails=%s&contentTitle=%s&contentThumbnail=%s&contentPlot=%s' % ( sys.argv[ 0 ] , urllib.quote_plus(item.fanart), item.channel , item.action , urllib.quote_plus( item.category ) , urllib.quote_plus(item.title) , urllib.quote_plus(item.fulltitle) , urllib.quote_plus( item.url ) , urllib.quote_plus( item.thumbnail ) , urllib.quote_plus( item.plot ) , urllib.quote_plus( item.extra ) , urllib.quote_plus( item.show ), urllib.quote_plus( item.hasContentDetails ), urllib.quote_plus( item.contentTitle ), urllib.quote_plus( item.contentThumbnail ), urllib.quote_plus( item.contentPlot ))
+    
+    if item.totalItems == 0:
         ok = xbmcplugin.addDirectoryItem( handle = pluginhandle, url=itemurl, listitem=listitem, isFolder=False)
     else:
-        ok = xbmcplugin.addDirectoryItem( handle = pluginhandle, url=itemurl, listitem=listitem, isFolder=False, totalItems=totalItems)
+        ok = xbmcplugin.addDirectoryItem( handle = pluginhandle, url=itemurl, listitem=listitem, isFolder=False, totalItems=item.totalItems)
     return ok
 
 # FIXME: ¿Por qué no pasar el item en lugar de todos los parámetros?
@@ -628,39 +569,6 @@ def play_video(channel="",server="",url="",category="",title="", thumbnail="",pl
             logger.info("b10")
             xbmc.executebuiltin( "PlayMedia("+mediaurl+")" )
         
-    # Descarga en segundo plano para vidxden, sólo en modo free
-    '''
-    elif server=="vidxden" and seleccion==0:
-        from core import downloadtools
-        import thread,os
-        import xbmc
-        
-        logger.info("[xbmctools.py] ---------------------------------")
-        logger.info("[xbmctools.py] DESCARGA EN SEGUNDO PLANO")
-        logger.info("[xbmctools.py]   de "+mediaurl)
-        temp_file = config.get_temp_file("background.file")
-        if os.path.exists(temp_file):
-            os.remove(temp_file)
-        logger.info("[xbmctools.py]   a "+temp_file)
-        logger.info("[xbmctools.py] ---------------------------------")
-        thread.start_new_thread(downloadtools.downloadfile, (mediaurl,temp_file), {'silent':True})
-
-        handle_wait(60,"Descarga en segundo plano","Se está descargando un trozo antes de empezar")
-
-        playlist = xbmc.PlayList( xbmc.PLAYLIST_VIDEO )
-        playlist.clear()
-        playlist.add( temp_file, xlistitem )
-    
-        player_type = xbmc.PLAYER_CORE_AUTO
-        xbmcPlayer = xbmc.Player( player_type )
-        xbmcPlayer.play(playlist)
-        
-        while xbmcPlayer.isPlaying():
-            xbmc.sleep(5000)
-            logger.info("sigo aquí...")
-
-        logger.info("fin")
-    '''
 
     if subtitle!="" and view:
         logger.info("b11")
@@ -852,6 +760,8 @@ def renderItems(itemlist, params, url, category, isPlayable='false'):
     if itemlist <> None:
         for item in itemlist:
             logger.info("item="+item.tostring())
+            item.totalItems = len(itemlist)
+            item.isPlayable = isPlayable
             
             if item.category == "":
                 item.category = category
@@ -869,16 +779,12 @@ def renderItems(itemlist, params, url, category, isPlayable='false'):
                     item.fanart = os.path.join(config.get_runtime_path(),"fanart.jpg")
 
             if item.folder:
-                addnewfolderextra( item.channel , item.action , item.category , item.title , item.url , item.thumbnail , item.plot , extradata = item.extra , totalItems = len(itemlist), fanart=item.fanart , context=item.context, show=item.show, fulltitle=item.fulltitle, hasContentDetails=item.hasContentDetails, contentTitle=item.contentTitle, contentThumbnail=item.contentThumbnail, contentPlot=item.contentPlot )
+                addnewfolderextra(item) 
             else:
                 if config.get_setting("player_mode")=="1": # SetResolvedUrl debe ser siempre "isPlayable = true"
-                    isPlayable = "true"
-
-                if item.duration:
-                    addnewvideo( item.channel , item.action , item.category , item.server, item.title , item.url , item.thumbnail , item.plot , "" ,  duration = item.duration , fanart = item.fanart, IsPlayable=isPlayable,context = item.context , subtitle=item.subtitle, totalItems = len(itemlist), show=item.show, password = item.password, extra = item.extra, fulltitle=item.fulltitle, hasContentDetails=item.hasContentDetails, contentTitle=item.contentTitle, contentThumbnail=item.contentThumbnail, contentPlot=item.contentPlot )
-                else:
-                    addnewvideo( item.channel , item.action , item.category , item.server, item.title , item.url , item.thumbnail , item.plot, fanart = item.fanart, IsPlayable=isPlayable , context = item.context , subtitle = item.subtitle , totalItems = len(itemlist), show=item.show , password = item.password , extra=item.extra, fulltitle=item.fulltitle, hasContentDetails=item.hasContentDetails, contentTitle=item.contentTitle, contentThumbnail=item.contentThumbnail, contentPlot=item.contentPlot )
-            
+                    item.isPlayable = 'true'
+                addnewvideo(item) 
+                
             if item.viewmode!="list":
                 viewmode = item.viewmode
 
