@@ -50,9 +50,9 @@ def addnewfolderextra( canal , accion , category , title , url , thumbnail , plo
 
     listitem = xbmcgui.ListItem( title, iconImage="DefaultFolder.png", thumbnailImage=thumbnail )
 
-    listitem.setInfo( "video", { "Title" : title, "Plot" : plot, "Studio" : canal.capitalize() } )
-
-    set_infoLabels(listitem,plot) # Modificacion introducida por super_berny para añadir infoLabels al ListItem
+    if accion !="":
+        listitem.setInfo( "video", { "Title" : title, "Plot" : plot, "Studio" : canal.capitalize() } )
+        set_infoLabels(listitem,plot) # Modificacion introducida por super_berny para añadir infoLabels al ListItem
 
     if fanart!="":
         listitem.setProperty('fanart_image',fanart) 
@@ -100,7 +100,9 @@ def addnewfolderextra( canal , accion , category , title , url , thumbnail , plo
         #logger.info("Modo xbmc")
         if len(contextCommands) > 0:
             listitem.addContextMenuItems ( contextCommands, replaceItems=False)
-    
+        if accion == "":
+            listitem.addContextMenuItems ( list(), replaceItems=True)
+            
         if totalItems == 0:
             ok = xbmcplugin.addDirectoryItem( handle = pluginhandle, url = itemurl , listitem=listitem, isFolder=True)
         else:
@@ -129,9 +131,10 @@ def addnewvideo( canal , accion , category , server , title , url , thumbnail, p
         icon_image = "DefaultVideo.png"
 
     listitem = xbmcgui.ListItem( title, iconImage="DefaultVideo.png", thumbnailImage=thumbnail )
-    listitem.setInfo( "video", { "Title" : title, "FileName" : title, "Plot" : plot, "Duration" : duration, "Studio" : canal.capitalize(), "Genre" : category } )
-
-    set_infoLabels(listitem,plot) # Modificacion introducida por super_berny para añadir infoLabels al ListItem
+    
+    if accion !="":
+        listitem.setInfo( "video", { "Title" : title, "FileName" : title, "Plot" : plot, "Duration" : duration, "Studio" : canal.capitalize(), "Genre" : category } )
+        set_infoLabels(listitem,plot) # Modificacion introducida por super_berny para añadir infoLabels al ListItem
         
     if fanart!="":
         #logger.info("fanart :%s" %fanart)
@@ -169,6 +172,8 @@ def addnewvideo( canal , accion , category , server , title , url , thumbnail, p
 
     if len (contextCommands) > 0:
         listitem.addContextMenuItems ( contextCommands, replaceItems=False)
+    if accion == "":
+        listitem.addContextMenuItems ( list(), replaceItems=True)
     try:
         title = title.encode ("utf-8")     #This only aplies to unicode strings. The rest stay as they are.
         plot  = plot.encode ("utf-8")
