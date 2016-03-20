@@ -7,14 +7,14 @@
 	<adult>false</adult>
 	<language>es</language>
 
-	<fanart></fanart>
+	<fanart>https://d18.usercdn.com/i/03860/v89p218dygxz.jpg</fanart>
 	<thumbnail>http://media.tvalacarta.info/pelisalacarta/squares/oranline.png</thumbnail>
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/oranline.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>2</version>
-	<date>23/08/2013</date>
-	<changes>Actualizado</changes>
+	<version>3</version>
+	<date>23/03/2016</date>
+	<changes>Modo grafico</changes>
 
 	<categories>
 		<category>latino</category>

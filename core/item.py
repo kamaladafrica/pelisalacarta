@@ -46,7 +46,7 @@ class Item(object):
         kwargs.setdefault("password", "")           #Password del video
 
         kwargs.setdefault("folder", True)           #Carpeta o vídeo
-        kwargs.setdefault("server", "")      #Servidor que contiene el vídeo
+        kwargs.setdefault("server", "")             #Servidor que contiene el vídeo
         kwargs.setdefault("extra", "")              #Datos extra
         
         kwargs.setdefault("language", "")           #Idioma del contenido
@@ -54,6 +54,8 @@ class Item(object):
         kwargs.setdefault("subtitle", "")           #Subtitulos
         kwargs.setdefault("duration", 0)            #Duracion de la pelicula
         kwargs.setdefault("category", "")           #Categoria de la pelicula
+        
+        kwargs.setdefault("infoLabels", dict())     #Diccionario con informacion extra sobre la pelicula o serie
         
         kwargs.setdefault("viewmode", "list")       #Modo de ventana
 
@@ -94,7 +96,97 @@ class Item(object):
             self.contentSeason = parentContent.contentSeason;
             self.contentEpisodeNumber = parentContent.contentEpisodeNumber;
             self.contentEpisodeTitle = parentContent.contentEpisodeTitle;
+    
+    def getInfoLabels(self, reload=False, idioma_busqueda='es'):
+        # reload= True hace una busqueda en tmdb
+        titulo = self.fulltitle if self.fulltitle !='' else (self.contentTitle if self.contentTitle !='' else self.title)
+        tvshowtitle = self.show if self.show !='' else self.contentSerieName
+        tipo = 'tv' if tvshowtitle !='' else 'movie'
+        
+        if not self.infoLabels.has_key('year'): self.infoLabels['year'] = ''
+        if not self.infoLabels.has_key('IMDBNumber'): self.infoLabels['IMDBNumber'] = ''
+        if not self.infoLabels.has_key('code'): self.infoLabels['code'] = ''
+        if not self.infoLabels.has_key('imdb_id'): self.infoLabels['imdb_id'] = ''
+        
+        if reload: 
+            from core.tmdb import Tmdb
+            otmdb = None
+            sources = ("tvdb_id","imdb_id","freebase_mid","freebase_id","tvrage_id") if tipo == 'tv' else ("imdb_id")
+            if self.infoLabels['IMDBNumber'] or self.infoLabels['code'] or self.infoLabels['imdb_id']:
+                if self.infoLabels['IMDBNumber']:
+                    self.infoLabels['code'] ==  self.infoLabels['IMDBNumber']
+                    self.infoLabels['imdb_id'] == self.infoLabels['IMDBNumber']
+                elif self.infoLabels['code']:
+                    self.infoLabels['IMDBNumber'] ==  self.infoLabels['code']
+                    self.infoLabels['imdb_id'] == self.infoLabels['code']
+                else:     
+                    self.infoLabels['code'] == self.infoLabels['imdb_id']
+                    self.infoLabels['IMDBNumber'] == self.infoLabels['imdb_id']     
+                #buscar con imdb code
+                otmdb= Tmdb(self.infoLabels['imdb_id'], "imdb_id", tipo, idioma_busqueda= idioma_busqueda)
+            
+            elif (titulo and self.infoLabels['year']):
+                #buscar con titulo y nombre
+                otmdb= Tmdb(texto_buscado= titulo,tipo= tipo, year= str(self.infoLabels['year']), idioma_busqueda= idioma_busqueda)  
+                
+            elif tipo == 'tv': #buscar con otros codigos
+                if self.infoLabels['tvdb_id']:
+                    otmdb= Tmdb(self.infoLabels['tvdb_id'], "tvdb_id", tipo, idioma_busqueda= idioma_busqueda)
+                elif self.infoLabels['freebase_mid']:
+                    otmdb= Tmdb(self.infoLabels['freebase_mid'], "freebase_mid", tipo, idioma_busqueda= idioma_busqueda) 
+                elif self.infoLabels['freebase_id']:
+                    otmdb= Tmdb(self.infoLabels['freebase_id'], "freebase_id", tipo, idioma_busqueda= idioma_busqueda) 
+                elif self.infoLabels['tvrage_id']:
+                    otmdb= Tmdb(self.infoLabels['tvrage_id'], "tvrage_id", tipo, idioma_busqueda= idioma_busqueda) 
+            
+   
+            if otmdb == None: #No se puede hacer la busqueda en tmdb
+                reload = False
+            elif not otmdb.get_id(): #La busqueda no ha dado resultado
+                reload = False
+            else: #La busqueda ha encontrado un resultado valido
+                
+                #self.infoLabels['tvshowtitle'] 
 
+                for k,v in otmdb.result.items():
+                    if k == 'overview':
+                        self.infoLabels['plot'] = otmdb.get_sinopsis()
+                    elif k == 'release_date' and v!='':
+                        self.infoLabels['year'] = int(v[:4])
+                    elif k == 'original_title':
+                        self.infoLabels['originaltitle'] = v
+                    elif k == 'vote_average' and v !='':
+                        self.infoLabels['rating'] = float(v)
+                    elif k == 'vote_count':
+                        self.infoLabels['votes'] = v
+                    elif k == 'poster_path' and v !='':
+                        self.thumbnail = 'http://image.tmdb.org/t/p/original' + v
+                    elif k == 'backdrop_path' and v !='':
+                        self.fanart = 'http://image.tmdb.org/t/p/original' + v
+                    elif k == 'imdb_id':
+                        self.infoLabels['IMDBNumber'] = v
+                        self.infoLabels['code'] = v
+                    elif k == 'genres':
+                        self.infoLabels['genre'] = otmdb.get_generos()
+                    elif type(v) == str:
+                        self.infoLabels[k] = v
+                    
+                    
+        if not reload:
+            self.infoLabels['title'] = titulo
+            self.infoLabels['tvshowtitle'] = tvshowtitle
+            self.infoLabels['plot'] = self.plot if self.plot !='' else self.contentPlot
+            self.infoLabels['genre'] = self.category
+            if self.contentSeason !='': self.infoLabels['season'] = int(self.contentSeason)
+            if self.contentEpisodeNumber !='': self.infoLabels['episode'] = int(self.contentEpisodeNumber)
+            if self.contentEpisodeTitle !='': self.infoLabels['episodeName'] = self.contentEpisodeTitle
+             
+        #      
+        self.infoLabels['duration'] = self.duration
+        self.infoLabels['AudioLanguage'] = self.language
+             
+             
+             
     def tostring(self):
         '''
         Genera una cadena de texto con los datos del item para el log
@@ -192,3 +284,6 @@ class Item(object):
         
         else:
             return value
+
+    
+           

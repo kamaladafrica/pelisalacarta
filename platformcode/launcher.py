@@ -34,7 +34,7 @@ def run():
     logger.info("pelisalacarta.platformcode.launcher run")
 
     # Extract parameters from sys.argv
-    params, fanart, channel_name, title, fulltitle, url, thumbnail, plot, action, server, extra, subtitle, viewmode, category, show, password, hasContentDetails, contentTitle, contentThumbnail, contentPlot = extract_parameters()
+    params, fanart, channel_name, title, fulltitle, url, thumbnail, plot, action, server, extra, subtitle, viewmode, category, show, password, hasContentDetails, contentTitle, contentThumbnail, contentPlot, infoLabels = extract_parameters()
     logger.info("pelisalacarta.platformcode.launcher fanart=%s, channel_name=%s, title=%s, fulltitle=%s, url=%s, thumbnail=%s, plot=%s, action=%s, server=%s, extra=%s, subtitle=%s, category=%s, show=%s, password=%s, hasContentDetails=%s contentTitle=%s contentThumbnail=%s contentPlot=%s" % (fanart, channel_name, title, fulltitle, url, thumbnail, plot, action, server, extra, subtitle, category, show, password,hasContentDetails, contentTitle, contentThumbnail, contentPlot))
 
     if config.get_setting('filter_servers') == 'true':
@@ -158,7 +158,11 @@ def run():
             else:            
                 logger.info("pelisalacarta.platformcode.launcher multiplatform channel")
                 from core.item import Item
-                item = Item(channel=channel_name, title=title , fulltitle=fulltitle, url=url, thumbnail=thumbnail , plot=plot , server=server, category=category, extra=extra, subtitle=subtitle, viewmode=viewmode, show=show, password=password, fanart=fanart, hasContentDetails=hasContentDetails, contentTitle=contentTitle, contentThumbnail=contentThumbnail, contentPlot=contentPlot)
+                try:
+                    infoLabels = eval(infoLabels)
+                except:
+                    infoLabels = dict()
+                item = Item(channel=channel_name, title=title , fulltitle=fulltitle, url=url, thumbnail=thumbnail , plot=plot , server=server, category=category, extra=extra, subtitle=subtitle, viewmode=viewmode, show=show, password=password, fanart=fanart, hasContentDetails=hasContentDetails, contentTitle=contentTitle, contentThumbnail=contentThumbnail, contentPlot=contentPlot, infoLabels =infoLabels)
                 
                 '''
                 if item.subtitle!="":
@@ -475,11 +479,11 @@ def extract_parameters():
     # Extrae la categoria
     if (params.has_key("category")):
         category = urllib.unquote_plus( params.get("category") )
-    else:
+        '''else:
         if params.has_key("channel"):
-            category = params.get("channel")
-        else:
-            category = ""
+            category = params.get("channel")'''
+    else:
+        category = ""
             
     # Extrae el título de la serie
     if (params.has_key("show")):
@@ -554,6 +558,13 @@ def extract_parameters():
     else:
         contentPlot = ""
 
+    if params.has_key("infoLabels"):
+        infoLabels = urllib.unquote_plus( params.get("infoLabels") )
+    else:
+        infoLabels = ""
+
+
+    
     if params.has_key("show"):
         show = urllib.unquote_plus( params.get("show") )
     else:
@@ -562,7 +573,7 @@ def extract_parameters():
         else:
             show = ""
 
-    return params, fanart, channel, title, fulltitle, url, thumbnail, plot, action, server, extra, subtitle, viewmode, category, show, password, hasContentDetails, contentTitle, contentThumbnail, contentPlot
+    return params, fanart, channel, title, fulltitle, url, thumbnail, plot, action, server, extra, subtitle, viewmode, category, show, password, hasContentDetails, contentTitle, contentThumbnail, contentPlot, infoLabels
 
 def episodio_ya_descargado(show_title,episode_title):
 

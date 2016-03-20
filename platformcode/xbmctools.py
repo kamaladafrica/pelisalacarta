@@ -47,8 +47,8 @@ def addnewfolderextra( item):
     listitem = xbmcgui.ListItem( item.title, iconImage="DefaultFolder.png", thumbnailImage=item.thumbnail )
 
     if item.action !="":
-        listitem.setInfo( "video", { "Title" : item.title, "Plot" : item.plot, "Studio" : item.channel.capitalize() } )
-        set_infoLabels(listitem,item.plot) # Modificacion introducida por super_berny para añadir infoLabels al ListItem
+        #listitem.setInfo( "video", { "Title" : item.title, "Plot" : item.plot, "Studio" : item.channel.capitalize() } )
+        set_infoLabels(listitem,item) # Modificacion introducida por super_berny para añadir infoLabels al ListItem
 
     if item.fanart!="":
         listitem.setProperty('fanart_image',item.fanart) 
@@ -58,8 +58,12 @@ def addnewfolderextra( item):
         item.title = item.title.encode ("utf-8") #This only aplies to unicode strings. The rest stay as they are.
     except:
         pass
-
-    itemurl = '%s?fanart=%s&channel=%s&action=%s&category=%s&title=%s&fulltitle=%s&url=%s&thumbnail=%s&plot=%s&extradata=%s&show=%s&hasContentDetails=%s&contentTitle=%s&contentThumbnail=%s&contentPlot=%s' % ( sys.argv[ 0 ] , urllib.quote_plus(item.fanart), item.channel , item.action , urllib.quote_plus( item.category ) , urllib.quote_plus(item.title) , urllib.quote_plus(item.fulltitle) , urllib.quote_plus( item.url ) , urllib.quote_plus( item.thumbnail ) , urllib.quote_plus( item.plot ) , urllib.quote_plus( item.extra ) , urllib.quote_plus( item.show ), urllib.quote_plus( item.hasContentDetails ), urllib.quote_plus( item.contentTitle ), urllib.quote_plus( item.contentThumbnail ), urllib.quote_plus( item.contentPlot ))
+    
+    itemurl = '%s?fanart=%s&channel=%s&action=%s&category=%s&title=%s&fulltitle=%s&url=%s&thumbnail=%s&plot=%s&extradata=%s&show=%s&hasContentDetails=%s&contentTitle=%s&contentThumbnail=%s&contentPlot=%s&infoLabels=%s' % (
+                    sys.argv[ 0 ] , urllib.quote_plus(item.fanart), item.channel , item.action , urllib.quote_plus( item.category ) , urllib.quote_plus(item.title) , urllib.quote_plus(item.fulltitle) , 
+                    urllib.quote_plus( item.url ) , urllib.quote_plus( item.thumbnail ) , urllib.quote_plus( item.plot ) , urllib.quote_plus( item.extra ) , urllib.quote_plus( item.show ), 
+                    urllib.quote_plus( item.hasContentDetails ), urllib.quote_plus( item.contentTitle ), urllib.quote_plus( item.contentThumbnail ), urllib.quote_plus( item.contentPlot ),
+                    urllib.quote_plus(repr(item.infoLabels)))
     
     if config.get_platform()=="boxee":
         #logger.info("Modo boxee")
@@ -96,8 +100,8 @@ def addnewvideo(item):
 
     listitem = xbmcgui.ListItem( item.title, iconImage="DefaultVideo.png", thumbnailImage=item.thumbnail )
     if item.action !="":
-        listitem.setInfo( "video", { "Title" : item.title, "Plot" : item.plot, "Studio" : item.channel.capitalize() } )
-        set_infoLabels(listitem,item.plot) # Modificacion introducida por super_berny para añadir infoLabels al ListItem
+        #listitem.setInfo( "video", { "Title" : item.title, "Plot" : item.plot, "Studio" : item.channel.capitalize() } )
+        set_infoLabels(listitem,item) # Modificacion introducida por super_berny para añadir infoLabels al ListItem
    
     if item.fanart!="":
         #logger.info("item.fanart :%s" %item.fanart)
@@ -118,8 +122,12 @@ def addnewvideo(item):
     except:
         pass
 
-    itemurl = '%s?fanart=%s&channel=%s&action=%s&category=%s&title=%s&fulltitle=%s&url=%s&thumbnail=%s&plot=%s&extradata=%s&show=%s&hasContentDetails=%s&contentTitle=%s&contentThumbnail=%s&contentPlot=%s' % ( sys.argv[ 0 ] , urllib.quote_plus(item.fanart), item.channel , item.action , urllib.quote_plus( item.category ) , urllib.quote_plus(item.title) , urllib.quote_plus(item.fulltitle) , urllib.quote_plus( item.url ) , urllib.quote_plus( item.thumbnail ) , urllib.quote_plus( item.plot ) , urllib.quote_plus( item.extra ) , urllib.quote_plus( item.show ), urllib.quote_plus( item.hasContentDetails ), urllib.quote_plus( item.contentTitle ), urllib.quote_plus( item.contentThumbnail ), urllib.quote_plus( item.contentPlot ))
-    
+    itemurl = '%s?fanart=%s&channel=%s&action=%s&category=%s&title=%s&fulltitle=%s&url=%s&thumbnail=%s&plot=%s&extradata=%s&show=%s&hasContentDetails=%s&contentTitle=%s&contentThumbnail=%s&contentPlot=%s&infoLabels=%s' % (
+                    sys.argv[ 0 ] , urllib.quote_plus(item.fanart), item.channel , item.action , urllib.quote_plus( item.category ) , urllib.quote_plus(item.title) , urllib.quote_plus(item.fulltitle) , 
+                    urllib.quote_plus( item.url ) , urllib.quote_plus( item.thumbnail ) , urllib.quote_plus( item.plot ) , urllib.quote_plus( item.extra ) , urllib.quote_plus( item.show ), 
+                    urllib.quote_plus( item.hasContentDetails ), urllib.quote_plus( item.contentTitle ), urllib.quote_plus( item.contentThumbnail ), urllib.quote_plus( item.contentPlot ),
+                    urllib.quote_plus(repr(item.infoLabels)))
+                    
     if item.totalItems == 0:
         ok = xbmcplugin.addDirectoryItem( handle = pluginhandle, url=itemurl, listitem=listitem, isFolder=False)
     else:
@@ -770,14 +778,21 @@ def renderItems(itemlist, params, url, category, isPlayable='false'):
                 item.fulltitle=item.title
             
             if item.fanart=="":
-
                 channel_fanart = os.path.join( config.get_runtime_path(), 'resources', 'images', 'fanart', item.channel+'.jpg')
 
                 if os.path.exists(channel_fanart):
                     item.fanart = channel_fanart
                 else:
                     item.fanart = os.path.join(config.get_runtime_path(),"fanart.jpg")
-
+            
+            # Formatear titulo
+            if 'text_color' in item and item.text_color:
+                item.title= '[COLOR %s]%s[/COLOR]' %(item.text_color, item.title)
+            if 'text_blond' in item and item.text_blond:
+                item.title= '[B]%s[/B]' %(item.title)
+            if 'text_italic' in item and item.text_italic:
+                item.title= '[I]%s[/I]' %(item.title)
+                
             if item.folder:
                 addnewfolderextra(item) 
             else:
@@ -857,9 +872,9 @@ def alert_no_puedes_ver_video(server,url,motivo):
     else:
         resultado = advertencia.ok( "No puedes ver ese vídeo porque...","El servidor donde está alojado no está","soportado en pelisalacarta todavía",url)
         
-def set_infoLabels(listitem,plot):
+def set_infoLabels(listitem,item):
     # Modificacion introducida por super_berny para añadir infoLabels al ListItem
-    if plot.startswith("{'infoLabels'"):
+    if item.plot.startswith("{'infoLabels'"):
         # Necesitaba un parametro que pase los datos desde Item hasta esta funcion 
         # y el que parecia mas idoneo era plot.
         # plot tiene que ser un str con el siguiente formato:
@@ -867,8 +882,11 @@ def set_infoLabels(listitem,plot):
         #               http://mirrors.xbmc.org/docs/python-docs/14.x-helix/xbmcgui.html#ListItem-setInfo}}"
         try:
             import ast
-            infodict=ast.literal_eval(plot)['infoLabels']
-            listitem.setInfo( "video", infodict)
+            infodict=ast.literal_eval(item.plot)['infoLabels']
+            if not infodict.has_key('title'): infodict['title'] = item.title
+            listitem.setInfo( "video", infodict)  
         except:
             pass
-            
+    elif len(item.infoLabels) >0:
+        listitem.setInfo( "video", item.infoLabels)
+    
