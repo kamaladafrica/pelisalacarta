@@ -26,6 +26,7 @@ def isGeneric():
     return True
 
 # Main list manual
+   
 def listav(item):
 
     itemlist=[]
@@ -59,11 +60,53 @@ def listav(item):
         patronvideo='<a href="([^"]+)"'
         matchesx = re.compile(patronvideo,re.DOTALL).findall(bloque)            
         for scrapedurl in matchesx:          
-            url = urlparse.urljoin(item.url,scrapedurl)                        
+            url = urlparse.urljoin(item.url,'https://www.youtube.com'+scrapedurl)                        
         # solo me quedo con el ultimo enlace
         itemlist.append( Item(channel=__channel__, action="listav", title="Siguiente pag >>", fulltitle="Siguiente Pag >>" , url=url, thumbnail=item.thumbnail,fanart=item.fanart) )     
    	   
     return itemlist
+
+def busqueda(item):
+    itemlist=[]
+    keyboard = xbmc.Keyboard("","Busqueda")
+    keyboard.doModal()
+    if (keyboard.isConfirmed()):
+         myurl = keyboard.getText()         
+      
+    data = scrapertools.cache_page('https://www.youtube.com/results?q='+myurl)
+    data = data.replace("\n","").replace("\t", "")
+    data = scrapertools.decodeHtmlentities(data)
+    
+    
+
+    patronbloque='<li><div class="yt-lockup.*?<img src="[^"]+" alt="" data-thumb="([^"]+)".*?<h3 class="yt-lockup-title "><a href="([^"]+)".*?title="([^"]+)".*?</h3>'	
+    #patronbloque='<li><div class="yt-lockup.*?<img src="([^"]+)".*?<h3 class="yt-lockup-title "><a href="([^"]+)".*?title="([^"]+)".*?</h3>'	
+    matchesbloque = re.compile(patronbloque,re.DOTALL).findall(data)    
+    scrapertools.printMatches(matchesbloque)
+    
+    
+    for scrapedthumbnail,scrapedurl,scrapedtitle in matchesbloque:
+        scrapedtitle=remover_acentos(scrapedtitle)
+        url = scrapedurl               
+        thumbnail=scrapedthumbnail
+        xbmc.log("$ "+scrapedurl+" "+scrapedtitle+" "+scrapedthumbnail)   
+        itemlist.append( Item(channel=__channel__, action="play", title=scrapedtitle, fulltitle=scrapedtitle , url=url, thumbnail=thumbnail,fanart=thumbnail) )    
+    
+    
+    #Paginacion 
+    
+    patronbloque='<div class="yt-uix-pager search-pager branded-page-box spf-link " role="navigation">(.*?)</div>'	
+    matches = re.compile(patronbloque,re.DOTALL).findall(data)    
+    for bloque in matches:              
+        patronvideo='<a href="([^"]+)"'
+        matchesx = re.compile(patronvideo,re.DOTALL).findall(bloque)            
+        for scrapedurl in matchesx:          
+            url = 'https://www.youtube.com'+scrapedurl                        
+        # solo me quedo con el ultimo enlace
+        itemlist.append( Item(channel=__channel__, action="listav", title="Siguiente pag >>", fulltitle="Siguiente Pag >>" , url=url) )     
+   	   
+    return itemlist
+
 
 def mainlist(item):
 
@@ -84,6 +127,13 @@ def mainlist(item):
     
     itemlist.append( Item(channel=__channel__, action="listav", title=scrapedtitle, fulltitle=scrapedtitle , url=item.url, thumbnail=item.thumbnail, fanart=item.fanart) )    
     
+    scrapedtitle="[COLOR red]buscar ...[/COLOR]"    
+    item.thumbnail=urlparse.urljoin(item.thumbnail,"http://cuatrostatic-a.akamaihd.net/cuarto-milenio/Cuarto-Milenio-analiza-fantasma-Granada_MDSVID20100924_0063_3.jpg")
+    item.fanart=urlparse.urljoin(item.fanart,"http://cuatrostatic-a.akamaihd.net/cuarto-milenio/programas/temporada-07/t07xp32/fantasma-universidad_MDSVID20120420_0001_3.jpg")
+    
+    itemlist.append( Item(channel=__channel__, action="busqueda", title=scrapedtitle, fulltitle=scrapedtitle , thumbnail=item.thumbnail, fanart=item.fanart) )    
+   
+
 
     return itemlist
     
