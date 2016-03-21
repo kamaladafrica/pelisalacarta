@@ -31,6 +31,8 @@ def listav(item):
     itemlist=[]
     
     data = scrapertools.cache_page(item.url).decode('iso-8859-1').encode('utf-8')                   
+    data = data.replace("\n","").replace("\t", "")
+    data = scrapertools.decodeHtmlentities(data)
     
     patronbloque='<li><div class="yt-lockup.*?<img src="(.*?)".*?<h3 class="yt-lockup-title "><a href="(.*?)".*?title="(.*?)".*?</h3>'	
     matchesbloque = re.compile(patronbloque,re.DOTALL).findall(data)    
@@ -53,7 +55,7 @@ def listav(item):
         for scrapedurl in matchesx:          
             url = urlparse.urljoin(item.url,scrapedurl)                        
         # solo me quedo con el ultimo enlace
-        itemlist.append( Item(channel=__channel__, action="listav", title="Siguiente pag "+url, fulltitle="Siguiente Pag" , url=url, thumbnail=item.thumbnail,fanart=item.fanart) )     
+        itemlist.append( Item(channel=__channel__, action="listav", title="Siguiente pag >>", fulltitle="Siguiente Pag >>" , url=url, thumbnail=item.thumbnail,fanart=item.fanart) )     
    	   
     return itemlist
 
