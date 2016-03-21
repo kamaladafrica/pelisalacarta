@@ -72,6 +72,12 @@ def mainlist(item):
     
     itemlist.append( Item(channel=__channel__, action="listav", title=scrapedtitle, fulltitle=scrapedtitle , url=item.url, thumbnail=item.thumbnail, fanart=item.fanart) )    
     
+    item.url='https://www.youtube.com/results?q=milenio+3+cuarto+milenio+oficial&sp=CAI%253D'
+    scrapedtitle="[COLOR red]Cuarto Milenio[/COLOR]"    
+    item.thumbnail=urlparse.urljoin(item.thumbnail,"http://cuatrostatic-a.akamaihd.net/cuarto-milenio/Cuarto-Milenio-analiza-fantasma-Granada_MDSVID20100924_0063_3.jpg")
+    item.fanart=urlparse.urljoin(item.fanart,"http://cuatrostatic-a.akamaihd.net/cuarto-milenio/programas/temporada-07/t07xp32/fantasma-universidad_MDSVID20120420_0001_3.jpg")
+    
+    itemlist.append( Item(channel=__channel__, action="listav", title=scrapedtitle, fulltitle=scrapedtitle , url=item.url, thumbnail=item.thumbnail, fanart=item.fanart) )    
     
 
     return itemlist
