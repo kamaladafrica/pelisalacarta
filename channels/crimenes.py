@@ -35,15 +35,20 @@ def listav(item):
     data = data.replace("\n","").replace("\t", "")
     data = scrapertools.decodeHtmlentities(data)
     
-    patronbloque='<li><div class="yt-lockup.*?<img src="(.*?)".*?<h3 class="yt-lockup-title "><a href="(.*?)".*?title="(.*?)".*?</h3>'	
+    
+
+    patronbloque='<li><div class="yt-lockup.*?<img src="[^"]+" alt="" data-thumb="([^"]+)".*?<h3 class="yt-lockup-title "><a href="([^"]+)".*?title="([^"]+)".*?</h3>'	
+    #patronbloque='<li><div class="yt-lockup.*?<img src="([^"]+)".*?<h3 class="yt-lockup-title "><a href="([^"]+)".*?title="([^"]+)".*?</h3>'	
     matchesbloque = re.compile(patronbloque,re.DOTALL).findall(data)    
+    scrapertools.printMatches(matchesbloque)
     
     
-    for scrapedthumbnail,scrapedurl,scrapedtitle, in matchesbloque:
+    for scrapedthumbnail,scrapedurl,scrapedtitle in matchesbloque:
         scrapedtitle=remover_acentos(scrapedtitle)
         url = urlparse.urljoin(item.url,scrapedurl)               
-        thumbnail=urlparse.urljoin(item.thumbnail,scrapedthumbnail)   
-        itemlist.append( Item(channel=__channel__, action="play", title=scrapedtitle, fulltitle=scrapedtitle , url=url, thumbnail=thumbnail,fanart=item.fanart) )    
+        thumbnail=urlparse.urljoin(item.thumbnail,scrapedthumbnail)
+        xbmc.log("$ "+scrapedurl+" "+scrapedtitle+" "+scrapedthumbnail)   
+        itemlist.append( Item(channel=__channel__, action="play", title=scrapedtitle, fulltitle=scrapedtitle , url=url, thumbnail=thumbnail,fanart=thumbnail) )    
     
     
     #Paginacion 
@@ -65,15 +70,15 @@ def mainlist(item):
     logger.info("[crimenes] mainlist")
     itemlist = []
     
-    item.url='https://www.youtube.com/results?q=crimenes+imperfectos+temporada&sp=CAI%253D'
-    scrapedtitle="[COLOR red]Crimenes Imperfectos[/COLOR]"    
+    item.url='https://www.youtube.com/results?q=crimenes+imperfectos&sp=CAI%253D'
+    scrapedtitle="[COLOR white]Crimenes [COLOR red]Imperfectos[/COLOR]"    
     item.thumbnail=urlparse.urljoin(item.thumbnail,"https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcQ2PcyvcYIg6acvdUZrHGFFk_E3mXK9QSh-5TypP8Rk6zQ6S1yb2g")
     item.fanart=urlparse.urljoin(item.fanart,"https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcQ2PcyvcYIg6acvdUZrHGFFk_E3mXK9QSh-5TypP8Rk6zQ6S1yb2g")
     
     itemlist.append( Item(channel=__channel__, action="listav", title=scrapedtitle, fulltitle=scrapedtitle , url=item.url, thumbnail=item.thumbnail, fanart=item.fanart) )    
     
-    item.url='https://www.youtube.com/results?q=milenio+3+cuarto+milenio+oficial&sp=CAI%253D'
-    scrapedtitle="[COLOR red]Cuarto Milenio[/COLOR]"    
+    item.url='https://www.youtube.com/results?q=cuarto+milenio+%2Boficial&sp=CAI%253D'
+    scrapedtitle="[COLOR green]Cuarto[/COLOR] [COLOR White]Milenio[/COLOR]"    
     item.thumbnail=urlparse.urljoin(item.thumbnail,"http://cuatrostatic-a.akamaihd.net/cuarto-milenio/Cuarto-Milenio-analiza-fantasma-Granada_MDSVID20100924_0063_3.jpg")
     item.fanart=urlparse.urljoin(item.fanart,"http://cuatrostatic-a.akamaihd.net/cuarto-milenio/programas/temporada-07/t07xp32/fantasma-universidad_MDSVID20120420_0001_3.jpg")
     
