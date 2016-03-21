@@ -9,7 +9,7 @@ from core.item import Item
 from servers import servertools
 
 __channel__ = "crimenes"
-__category__ = "F"
+__category__ = "D"
 __type__ = "generic"
 __title__ = "Crimenes"
 __language__ = "ES"
@@ -30,7 +30,8 @@ def listav(item):
 
     itemlist=[]
     
-    data = scrapertools.cache_page(item.url).decode('iso-8859-1').encode('utf-8')                   
+    #data = scrapertools.cache_page(item.url).decode('iso-8859-1').encode('utf-8')                   
+    data = scrapertools.cache_page(item.url)
     data = data.replace("\n","").replace("\t", "")
     data = scrapertools.decodeHtmlentities(data)
     
@@ -77,7 +78,7 @@ def mainlist(item):
     
     
 def play(item):
-   logger.info("[peelink] play url="+item.url)
+   logger.info("[crimenes] play url="+item.url)
    
    itemlist = servertools.find_video_items(data=item.url)
     
