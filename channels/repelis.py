@@ -293,7 +293,10 @@ def verpeli(item):
 def play(item):
    logger.info("[repelis] play url="+item.url)
    
-   itemlist = servertools.find_video_items(data=item.url)
+   #itemlist = servertools.find_video_items(data=item.url)
+   
+   url = scrapertools.find_single_match(scrapertools.cache_page(item.url),'<iframe src="([^"]+)"')
+   itemlist = servertools.find_video_items(data=url)
     
    return itemlist
    
