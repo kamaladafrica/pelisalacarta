@@ -442,12 +442,13 @@ def series_library(item):
 def findvideos(item):
     logger.info("pelisalacarta.channels.tvvip findvideos")
     itemlist = []
+
     # En caso de llamarse a la función desde una serie de la biblioteca
     if item.title.startswith("http"): item.url = item.title.split('%')[0]
     data = anti_cloudflare(item.url)
     data = jsontools.load_json(data)
     for child in data["profiles"].keys():
-        videopath = data["profiles"][child]['videoPath']
+        videopath = data["profiles"][child]['videoUri']
         extension = videopath[-4:]
         head = header_string + get_cookie_value(extension)
         for i in range(0, len(data["profiles"][child]['servers'])):
@@ -459,6 +460,12 @@ def findvideos(item):
             # Para poner enlaces de mayor calidad al comienzo de la lista
             if data["profiles"][child]["profileId"] == "default": itemlist.insert(i, Item(channel=__channel__, action='play', server='directo', title=title , url=url , thumbnail=item.thumbnail, fanart=item.fanart, fulltitle=item.fulltitle, plot=item.plot, folder=False) )
             else: itemlist.append( Item(channel=__channel__, action='play', server='directo', title=title , url=url , thumbnail=item.thumbnail, fanart=item.fanart, fulltitle=item.fulltitle, plot=item.plot, folder=False) )
+    for transcoder in data["transcoders"]:
+        if transcoder == "hn": continue
+        head = header_string + get_cookie_value(data['id'][-4:])
+        url_default = "http://"+transcoder+".tv-vip.com/transcoder/"+data['id']+"/default/"+data['id']+head
+        title = "Ver vídeo en ["+data["videoResolution"]+"] "+data["sizeHuman"]+" [COLOR purple]Mirror 1[/COLOR]"
+        itemlist.insert(0, Item(channel=__channel__, action='play', server='directo', title=title , url=url_default , thumbnail=item.thumbnail, fanart=item.fanart, fulltitle=item.fulltitle, plot=item.plot, folder=False) )
     if len(itemlist) > 0 and item.category == "tvvip":
         if config.get_library_support():
             itemlist.append( Item(channel=__channel__, title="[COLOR green]Añadir enlaces a la biblioteca[/COLOR]", url=item.url, action="add_pelicula_to_library", fulltitle=item.fulltitle))
