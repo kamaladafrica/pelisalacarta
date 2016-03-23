@@ -362,7 +362,10 @@ def play_video(channel="",server="",url="",category="",title="", thumbnail="",pl
     # Ha elegido uno de los vídeos
     elif seleccion < len(video_urls):
         mediaurl = video_urls[seleccion][1]
-        if len(video_urls[seleccion])>2:
+        if len(video_urls[seleccion])>3:
+            wait_time = video_urls[seleccion][2]
+            subtitle = video_urls[seleccion][3]
+        elif len(video_urls[seleccion])>3:
             wait_time = video_urls[seleccion][2]
         else:
             wait_time = 0
