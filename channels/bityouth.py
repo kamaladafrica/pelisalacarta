@@ -48,15 +48,21 @@ def browser(url):
     
     # User-Agent (this is cheating, ok?)
     br.addheaders = [('User-agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5) AppleWebKit/600.7.12 (KHTML, like Gecko) Version/7.1.7 Safari/537.85.16')]
-    br.addheaders =[('Cookie','SRCHD=D=4210979&AF=NOFORM; domain=.bing.com; expires=Wednesday, 09-Nov-06 23:12:40 GMT; MUIDB=36F71C46589F6EAD0BE714175C9F68FC; domain=www.bing.com;	expires=15 de enero de 2018 08:43:26 GMT+1')]
+    #br.addheaders =[('Cookie','SRCHD=D=4210979&AF=NOFORM; domain=.bing.com; expires=Wednesday, 09-Nov-06 23:12:40 GMT; MUIDB=36F71C46589F6EAD0BE714175C9F68FC; domain=www.bing.com;	expires=15 de enero de 2018 08:43:26 GMT+1')]
     # Open some site, let's pick a random one, the first that pops in mind
     r = br.open(url)
     response = r.read()
+        #if "z{a:1}" in response:
+    if not ".ftrH,.ftrHd,.ftrD>" in response:
+        print "proooxyy"
+        r = br.open("http://anonymouse.org/cgi-bin/anon-www.cgi/"+url)
+        response = r.read()
     return response
-#def proxy(url):
+    ###def proxy(url):
     '''from lib import requests
-    proxies = {"http": "40.76.53.46"}
-    
+    proxies = {"http": "http://anonymouse.org/cgi-bin/anon-www.cgi/"+url}
+    print "zorro"
+    print proxies
     rsp = requests.get(url, proxies=proxies,stream=True)
     print rsp.raw._fp.fp._sock.getpeername()
     print rsp.content
@@ -432,6 +438,7 @@ def fanart(item):
                 data = proxy(urlbing_imdb)'''
             try:
                 subdata_imdb = scrapertools.get_match(data,'<li class="b_algo">(.*?)h="ID')
+                subdata_imdb = re.sub("http://anonymouse.org/cgi-bin/anon-www.cgi/","",subdata_imdb)
             except:
                 pass
                      
@@ -480,6 +487,7 @@ def fanart(item):
                     data = proxy(urlbing_imdb)'''
                 try:
                     subdata_imdb = scrapertools.get_match(data,'<li class="b_algo">(.*?)h="ID')
+                    subdata_imdb = re.sub("http://anonymouse.org/cgi-bin/anon-www.cgi/","",subdata_imdb)
                 except:
                     pass
                 try:
@@ -821,14 +829,21 @@ def fanart(item):
         data = browser (url_imdb)
         '''if "z{a:1}"in data:
             data = proxy(url_imdb)'''
+        print "perro"
+        print data
         data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
     
         try:
             subdata_imdb = scrapertools.get_match(data,'<li class="b_algo">(.*?)h="ID')
+            print "ostia"
+            print subdata_imdb
         except:
             pass
+            print "joder"
         try:
             imdb_id = scrapertools.get_match(subdata_imdb,'<a href=.*?http.*?imdb.com/title/(.*?)/.*?"')
+            print "siii?"
+            print imdb_id
         except:
             imdb_id = ""
         ### Busca id de tvdb mediante imdb id
@@ -1445,6 +1460,7 @@ def info(item):
     
     ventana2 = TextBox1(title=title, plot=plot, info=info, thumbnail=photo, fanart=foto, quit= quit)
     ventana2.doModal()
+ACTION_GESTURE_SWIPE_LEFT = 511
 ACTION_SELECT_ITEM = 7
 class TextBox1( xbmcgui.WindowDialog ):
          """ Create a skinned textbox window """
@@ -1488,7 +1504,7 @@ class TextBox1( xbmcgui.WindowDialog ):
              self.show()
                 
          def onAction(self, action):
-             if action == ACTION_SELECT_ITEM:
+             if action == ACTION_SELECT_ITEM or action == ACTION_GESTURE_SWIPE_LEFT:
                 import os, sys
                 import xbmc
                 APPCOMMANDDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "customapp.xml")
@@ -1567,7 +1583,7 @@ def info_capitulos(item):
     ventana.doModal()
 
 
-
+ACTION_GESTURE_SWIPE_LEFT = 511
 ACTION_SELECT_ITEM = 7
 class TextBox2( xbmcgui.WindowDialog ):
         """ Create a skinned textbox window """
@@ -1606,7 +1622,7 @@ class TextBox2( xbmcgui.WindowDialog ):
             self.show()
         
         def onAction(self, action):
-            if action == ACTION_SELECT_ITEM:
+            if action == ACTION_SELECT_ITEM or action == ACTION_GESTURE_SWIPE_LEFT:
                import os, sys
                import xbmc
                APPCOMMANDDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "customapp.xml")
