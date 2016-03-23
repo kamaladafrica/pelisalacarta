@@ -464,7 +464,7 @@ def findvideos(item):
         if transcoder == "hn": continue
         head = header_string + get_cookie_value(data['id'][-4:])
         url_default = "http://"+transcoder+".tv-vip.com/transcoder/"+data['id']+"/default/"+data['id']+head
-        title = "Ver vídeo en ["+data["videoResolution"]+"] "+data["sizeHuman"]+" [COLOR purple]Mirror 1[/COLOR]"
+        title = "Ver vídeo en  ["+data["videoResolution"]+"] "+data["sizeHuman"]+" [COLOR purple]Mirror 1[/COLOR]"
         itemlist.insert(0, Item(channel=__channel__, action='play', server='directo', title=title , url=url_default , thumbnail=item.thumbnail, fanart=item.fanart, fulltitle=item.fulltitle, plot=item.plot, folder=False) )
     if len(itemlist) > 0 and item.category == "tvvip":
         if config.get_library_support():
