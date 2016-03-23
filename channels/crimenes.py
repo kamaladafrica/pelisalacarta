@@ -17,10 +17,6 @@ __language__ = "ES"
 DEBUG = config.get_setting("debug")
 from unicodedata import normalize
 
-def remover_acentos(txt):
-    codif='utf-8'
-    txt.replace('Ã','i')
-    return txt
 
 def isGeneric():
     return True
@@ -30,22 +26,18 @@ def isGeneric():
 def listav(item):
 
     itemlist=[]
-    
-    #data = scrapertools.cache_page(item.url).decode('iso-8859-1').encode('utf-8')                   
+        
     data = scrapertools.cache_page(item.url)
-    data = data.replace("\n","").replace("\t", "")
-    data = scrapertools.decodeHtmlentities(data)
-    
-    
-
-    patronbloque='<li><div class="yt-lockup.*?<img src="[^"]+" alt="" data-thumb="([^"]+)".*?<h3 class="yt-lockup-title "><a href="([^"]+)".*?title="([^"]+)".*?</h3>'	
-    #patronbloque='<li><div class="yt-lockup.*?<img src="([^"]+)".*?<h3 class="yt-lockup-title "><a href="([^"]+)".*?title="([^"]+)".*?</h3>'	
+        
+    patronbloque='<li><div class="yt-lockup.*?<img src="[^"]+" alt="" data-thumb="([^"]+)".*?'
+    patronbloque+='<h3 class="yt-lockup-title "><a href="([^"]+)".*?title="([^"]+)".*?'	
+    patronbloque+='</a><span class=.*?">(.*?)</span></h3>'	
     matchesbloque = re.compile(patronbloque,re.DOTALL).findall(data)    
     scrapertools.printMatches(matchesbloque)
     
-    
-    for scrapedthumbnail,scrapedurl,scrapedtitle in matchesbloque:
-        scrapedtitle=remover_acentos(scrapedtitle)
+    scrapedduration=''
+    for scrapedthumbnail,scrapedurl,scrapedtitle,scrapedduration in matchesbloque:
+        scrapedtitle='[COLOR white]'+scrapedtitle+'[/COLOR] [COLOR red]'+scrapedduration+'[/COLOR]'
         url = urlparse.urljoin(item.url,scrapedurl)               
         thumbnail=urlparse.urljoin(item.thumbnail,scrapedthumbnail)
         xbmc.log("$ "+scrapedurl+" "+scrapedtitle+" "+scrapedthumbnail)   
@@ -79,14 +71,15 @@ def busqueda(item):
     
     
 
-    patronbloque='<li><div class="yt-lockup.*?<img src="[^"]+" alt="" data-thumb="([^"]+)".*?<h3 class="yt-lockup-title "><a href="([^"]+)".*?title="([^"]+)".*?</h3>'	
-    #patronbloque='<li><div class="yt-lockup.*?<img src="([^"]+)".*?<h3 class="yt-lockup-title "><a href="([^"]+)".*?title="([^"]+)".*?</h3>'	
+    patronbloque='<li><div class="yt-lockup.*?<img src="[^"]+" alt="" data-thumb="([^"]+)".*?'
+    patronbloque+='<h3 class="yt-lockup-title "><a href="([^"]+)".*?title="([^"]+)".*?'	
+    patronbloque+='</a><span class=.*?">(.*?)</span></h3>'	
     matchesbloque = re.compile(patronbloque,re.DOTALL).findall(data)    
     scrapertools.printMatches(matchesbloque)
     
     
-    for scrapedthumbnail,scrapedurl,scrapedtitle in matchesbloque:
-        scrapedtitle=remover_acentos(scrapedtitle)
+    for scrapedthumbnail,scrapedurl,scrapedtitle, scrapedduracion in matchesbloque:
+        scrapedtitle=scrapedtitle+' '+scrapedduracion
         url = scrapedurl               
         thumbnail=scrapedthumbnail
         xbmc.log("$ "+scrapedurl+" "+scrapedtitle+" "+scrapedthumbnail)   
@@ -120,12 +113,22 @@ def mainlist(item):
     
     itemlist.append( Item(channel=__channel__, action="listav", title=scrapedtitle, fulltitle=scrapedtitle , url=item.url, thumbnail=item.thumbnail, fanart=item.fanart) )    
     
-    item.url='https://www.youtube.com/results?q=cuarto+milenio+%2Boficial&sp=CAI%253D'
+    item.url='https://www.youtube.com/results?search_query=cuarto+milenio+programa+completo'
     scrapedtitle="[COLOR green]Cuarto[/COLOR] [COLOR White]Milenio[/COLOR]"    
     item.thumbnail=urlparse.urljoin(item.thumbnail,"http://cuatrostatic-a.akamaihd.net/cuarto-milenio/Cuarto-Milenio-analiza-fantasma-Granada_MDSVID20100924_0063_3.jpg")
     item.fanart=urlparse.urljoin(item.fanart,"http://cuatrostatic-a.akamaihd.net/cuarto-milenio/programas/temporada-07/t07xp32/fantasma-universidad_MDSVID20120420_0001_3.jpg")
     
     itemlist.append( Item(channel=__channel__, action="listav", title=scrapedtitle, fulltitle=scrapedtitle , url=item.url, thumbnail=item.thumbnail, fanart=item.fanart) )    
+    
+    
+    
+    item.url='https://www.youtube.com/results?q=milenio+3&sp=CAI%253D'
+    scrapedtitle="[COLOR green]Milenio[/COLOR] [COLOR White]3- Podcasts[/COLOR]"    
+    item.thumbnail=urlparse.urljoin(item.thumbnail,"http://cuatrostatic-a.akamaihd.net/cuarto-milenio/Cuarto-Milenio-analiza-fantasma-Granada_MDSVID20100924_0063_3.jpg")
+    item.fanart=urlparse.urljoin(item.fanart,"http://cuatrostatic-a.akamaihd.net/cuarto-milenio/programas/temporada-07/t07xp32/fantasma-universidad_MDSVID20120420_0001_3.jpg")
+    
+    itemlist.append( Item(channel=__channel__, action="listav", title=scrapedtitle, fulltitle=scrapedtitle , url=item.url, thumbnail=item.thumbnail, fanart=item.fanart) )    
+    
     
     scrapedtitle="[COLOR red]buscar ...[/COLOR]"    
     item.thumbnail=urlparse.urljoin(item.thumbnail,"http://cuatrostatic-a.akamaihd.net/cuarto-milenio/Cuarto-Milenio-analiza-fantasma-Granada_MDSVID20100924_0063_3.jpg")
