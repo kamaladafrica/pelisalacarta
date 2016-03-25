@@ -436,31 +436,12 @@ def play(item):
 
     data = scrapertools.cache_page(item.url)
 
-    patron = '<input type="hidden" name="id" value="([^"]+)" />.*?'
-    patron+= '<img src="([^"]+)"'
+    patron = '<div id="url2">.*?<a href="([^"]+)'
+    match = re.search(patron, data, re.MULTILINE | re.DOTALL)
 
-    matches = re.compile(patron,re.DOTALL).findall(data)
+    logger.info("match = {0}".format(match.group(1)))
 
-    id = matches[0][0]
-    captcha = matches[0][1]
-
-    image = os.path.join( config.get_data_path(), 'captcha.png')
-
-    imgurl = "http://seriesdanko.com/" + captcha
-    req = urllib2.Request(imgurl)
-    req.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:35.0) Gecko/20100101 Firefox/35.0')
-    req.add_header('Accept-Encoding','gzip, deflate')
-    f = urllib2.urlopen(req)
-    img = open(image, 'wb')
-    img.write(f.read())
-    img.close()
-
-    spc = get_captcha(image)
-    post = "id=%s&spc=%s" % (id,spc)
-
-    data = scrapertools.cache_page( "http://seriesdanko.com/anonim.php", post=post )
-
-    return servertools.find_video_items(data=data)
+    return servertools.find_video_items(data=match.group(1))
 
 def get_captcha(image):
 
