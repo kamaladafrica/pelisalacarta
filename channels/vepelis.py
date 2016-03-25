@@ -12,7 +12,7 @@ from core import logger
 from core import config
 from core import scrapertools
 from core.item import Item
-from servers import servertools
+from core import servertools
 
 __channel__ = "vepelis"
 __category__ = "F"
@@ -105,7 +105,7 @@ def play(item):
     itemlist=[]
 
 
-    from servers import servertools
+    from core import servertools
     itemlist = servertools.find_video_items(data=item.url)
     for videoitem in itemlist:
         videoitem.channel=__channel__
@@ -304,7 +304,7 @@ def search(item,texto):
 
 # Verificación automática de canales: Esta función debe devolver "True" si está ok el canal.
 def test():
-    from servers import servertools
+    from core import servertools
     
     # mainlist
     mainlist_items = mainlist(Item())

@@ -14,7 +14,7 @@ from core import config
 from core import scrapertools
 from core import jsontools
 from core.item import Item
-from servers import servertools
+from core import servertools
 
 __adult__ = "false"
 __category__ = "F,S"

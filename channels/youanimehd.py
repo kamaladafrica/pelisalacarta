@@ -12,7 +12,7 @@ from core import logger
 from core import config
 from core import scrapertools
 from core.item import Item
-from servers import servertools
+from core import servertools
 
 DEBUG = config.get_setting("debug")
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:20.0) Gecko/20100101 Firefox/20.0"
@@ -198,7 +198,7 @@ def play(item):
     data = scrapertools.cache_page(item.url)
     logger.info("data="+data)
 
-    from servers import servertools
+    from core import servertools
     itemlist.extend(servertools.find_video_items(data=data))
     for videoitem in itemlist:
         videoitem.channel=__channel__

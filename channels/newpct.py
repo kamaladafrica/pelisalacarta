@@ -12,7 +12,7 @@ from core import logger
 from core import config
 from core import scrapertools
 from core.item import Item
-from servers import servertools
+from core import servertools
 
 DEBUG = config.get_setting("debug")
 
@@ -76,7 +76,7 @@ def buscador(item):
         scrapedtitle = scrapedtitle + "(Tamaño:" + scrapedinfo + "--" + scrapedcreatedate+")"
         itemlist.append( Item(channel=__channel__, title=scrapedtitle, url=scrapedurl, action="play", server="torrent", thumbnail=scrapedthumbnail, fulltitle=scrapedtitle, folder=True) )
     
-    from servers import servertools
+    from core import servertools
     itemlist.extend(servertools.find_video_items(data=data))
     for videoitem in itemlist:
         videoitem.channel=__channel__
@@ -318,7 +318,7 @@ def findvideos(item):
     if torrent_url!="":
         itemlist.append( Item(channel=__channel__, action="play" , title="Torrent" , url=torrent_url, server="torrent"))
 
-    from servers import servertools
+    from core import servertools
     itemlist.extend(servertools.find_video_items(data=data))
     for videoitem in itemlist:
         videoitem.channel=__channel__

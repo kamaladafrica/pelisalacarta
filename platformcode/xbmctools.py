@@ -13,7 +13,7 @@ import xbmcplugin
 import sys
 import os
 
-from servers import servertools
+from core import servertools
 from core import config
 from core import logger
 
@@ -187,7 +187,7 @@ def addnewvideo( canal , accion , category , server , title , url , thumbnail, p
 
 # FIXME: ¿Por qué no pasar el item en lugar de todos los parámetros?
 def play_video(channel="",server="",url="",category="",title="", thumbnail="",plot="",extra="",desdefavoritos=False,desdedescargados=False,desderrordescargas=False,strmfile=False,Serie="",subtitle="", video_password="",fulltitle="", hasContentDetails="", contentTitle="", contentThumbnail="", contentPlot=""):
-    from servers import servertools
+    from core import servertools
     import sys
     import xbmcgui,xbmc
     try:

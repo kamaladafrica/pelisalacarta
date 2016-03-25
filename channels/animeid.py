@@ -11,7 +11,7 @@ from core import logger
 from core import config
 from core import scrapertools
 from core.item import Item
-from servers import servertools
+from core import servertools
 
 DEBUG = config.get_setting("debug")
 
@@ -273,7 +273,7 @@ def findvideos(item):
             itemlist.append( Item(channel=__channel__, action="play" , title="[directo]" , server="directo", url=url, thumbnail="", plot="", show=item.show, folder=False))
             encontrados.add(url)
 
-    from servers import servertools
+    from core import servertools
     itemlist.extend(servertools.find_video_items(data=data))
     for videoitem in itemlist:
         videoitem.channel=__channel__

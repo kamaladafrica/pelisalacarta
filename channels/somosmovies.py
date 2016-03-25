@@ -11,7 +11,7 @@ from core import logger
 from core import config
 from core import scrapertools
 from core.item import Item
-from servers import servertools
+from core import servertools
 
 __channel__ = "somosmovies"
 __category__ = "F,S,D,A"
@@ -295,7 +295,7 @@ def play(item):
         return play(item)
 
     else:
-        from servers import servertools
+        from core import servertools
         itemlist=servertools.find_video_items(data=item.url)
         for videoitem in itemlist:
             videoitem.channel=__channel__

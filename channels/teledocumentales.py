@@ -13,7 +13,7 @@ from core import scrapertools
 from core import config
 from core import logger
 from core.item import Item
-from servers import servertools
+from core import servertools
 
 __channel__ = "teledocumentales"
 __category__ = "D"

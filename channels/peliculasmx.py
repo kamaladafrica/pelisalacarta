@@ -12,7 +12,7 @@ from core import logger
 from core import config
 from core import scrapertools
 from core.item import Item
-from servers import servertools
+from core import servertools
 
 __channel__ = "peliculasmx"
 __category__ = "F"
@@ -193,7 +193,7 @@ def search(item,texto):
 
 # Verificación automática de canales: Esta función debe devolver "True" si está ok el canal.
 def test():
-    from servers import servertools
+    from core import servertools
     
     mainlist_items = mainlist(Item())
     novedades_items = peliculas(mainlist_items[0])

@@ -11,7 +11,7 @@ from core import logger
 from core import config
 from core import scrapertools
 from core.item import Item
-from servers import servertools
+from core import servertools
 
 __channel__ = "vertelenovelas"
 __category__ = "S"
@@ -128,7 +128,7 @@ def findvideos(item):
         itemlist.append( Item(channel=__channel__, action="play", server="directo", title=item.title , url=principio+"/"+final , thumbnail=item.thumbnail , plot=item.plot , folder=False) )
 
 
-    from servers import servertools
+    from core import servertools
     itemlist.extend(servertools.find_video_items(data=data))
     for videoitem in itemlist:
         videoitem.channel=__channel__

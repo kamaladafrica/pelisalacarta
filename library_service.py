@@ -40,7 +40,7 @@ from core import scrapertools
 from core import config
 from core import logger
 from core.item import Item
-from servers import servertools
+from core import servertools
 
 logger.info("pelisalacarta.library_service Actualizando series...")
 from platformcode import library

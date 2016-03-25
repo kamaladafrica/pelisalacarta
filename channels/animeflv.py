@@ -387,7 +387,7 @@ def findvideos(item):
     data = data.replace("\\/", "/")
     logger.info("data={0}".format(data))
 
-    from servers import servertools
+    from core import servertools
     itemlist.extend(servertools.find_video_items(data=data))
     for videoitem in itemlist:
         videoitem.channel = __channel__

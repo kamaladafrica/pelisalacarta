@@ -11,7 +11,7 @@ from core import logger
 from core import config
 from core import scrapertools
 from core.item import Item
-from servers import servertools
+from core import servertools
 
 __channel__ = "shurweb"
 __category__ = "F,S,D,A"
@@ -114,7 +114,7 @@ def findvideos(item):
     from servers import longurl
     data=longurl.get_long_urls(data)   
     itemlist = []
-    from servers import servertools
+    from core import servertools
     itemlist.extend(servertools.find_video_items(data=data))
     for videoitem in itemlist:
             videoitem.channel=__channel__
@@ -248,7 +248,7 @@ def peliculas(item,data=""):
 
 # Verificación automática de canales: Esta función debe devolver "True" si está ok el canal.
 def test():
-    from servers import servertools
+    from core import servertools
 
     item = Item(channel=__channel__, title="Peliculas", action="peliculas", url="http://www.tushurweb.com/peliculas/")
     peliculas_items = peliculas(item)
