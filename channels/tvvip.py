@@ -21,12 +21,12 @@ DEBUG = config.get_setting("debug")
 host = "http://tv-vip.com"
 
 headers = [
-    ["User-Agent","Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:22.0) Gecko/20100101 Firefox/22.0"],
+    ["User-Agent","Mozilla"],
     ["Accept-Encoding","gzip, deflate"],
     ["Referer",host]
     ]
 
-header_string = "|User-Agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:22.0) Gecko/20100101 Firefox/22.0&Accept-Encoding=gzip, deflate&Referer=http://tv-vip.com"
+header_string = "|User-Agent=Mozilla&Accept-Encoding=gzip, deflate&Referer=http://tv-vip.com"
 
 def isGeneric():
     return True
@@ -447,12 +447,14 @@ def findvideos(item):
     if item.title.startswith("http"): item.url = item.title.split('%')[0]
     data = anti_cloudflare(item.url)
     data = jsontools.load_json(data)
+    urls = []
     for child in data["profiles"].keys():
         videopath = data["profiles"][child]['videoUri']
         extension = videopath[-4:]
         head = header_string + get_cookie_value(extension)
         for i in range(0, len(data["profiles"][child]['servers'])):
             url = data["profiles"][child]['servers'][i]['url'] + videopath + head
+            urls.append(url)
             size = "  "+data["profiles"][child]["sizeHuman"]
             resolution = " ["+(data["profiles"][child]['videoResolution'])+"]"
             if i == 0: title = "Ver vídeo en " + resolution.replace('1920x1080','HD-1080p') + size + " [COLOR purple]Mirror "+str(i+1)+"[/COLOR]"
@@ -464,8 +466,8 @@ def findvideos(item):
         if transcoder == "hn": continue
         head = header_string + get_cookie_value(data['id'][-4:])
         url_default = "http://"+transcoder+".tv-vip.com/transcoder/"+data['id']+"/default/"+data['id']+head
-        title = "Ver vídeo en  ["+data["videoResolution"]+"] "+data["sizeHuman"]+" [COLOR purple]Mirror 1[/COLOR]"
-        itemlist.insert(0, Item(channel=__channel__, action='play', server='directo', title=title , url=url_default , thumbnail=item.thumbnail, fanart=item.fanart, fulltitle=item.fulltitle, plot=item.plot, folder=False) )
+        title = "Ver vídeo en  ["+data["videoResolution"].replace('1920x1080','HD-1080p')+"] "+data["sizeHuman"]
+        if not url_default in urls: itemlist.insert(0, Item(channel=__channel__, action='play', server='directo', title=title , url=url_default , thumbnail=item.thumbnail, fanart=item.fanart, fulltitle=item.fulltitle, plot=item.plot, folder=False) )
     if len(itemlist) > 0 and item.category == "tvvip":
         if config.get_library_support():
             itemlist.append( Item(channel=__channel__, title="[COLOR green]Añadir enlaces a la biblioteca[/COLOR]", url=item.url, action="add_pelicula_to_library", fulltitle=item.fulltitle))
