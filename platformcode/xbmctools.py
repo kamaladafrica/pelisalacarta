@@ -568,14 +568,15 @@ def play_video(channel="",server="",url="",category="",title="", thumbnail="",pl
             logger.info("Error al descargar el subtítulo")
 
     # Lanza el reproductor
-    if strmfile: #Si es un fichero strm no hace falta el play
+        # Lanza el reproductor
+    if strmfile:  # Si es un fichero strm no hace falta el play
         logger.info("b6")
         import sys
-        xbmcplugin.setResolvedUrl(int(sys.argv[ 1 ]),True,xlistitem)
-        #if subtitle!="" and (opciones[seleccion].startswith("Ver") or opciones[seleccion].startswith("Watch")):
-        #    logger.info("[xbmctools.py] Con subtitulos")
-        #    setSubtitles()
-        
+        xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, xlistitem)
+        if subtitle != "":
+            xbmc.sleep(2000)
+            xbmc.Player().setSubtitles(subtitle)
+
     else:
         logger.info("b7")
         logger.info("player_mode="+config.get_setting("player_mode"))
