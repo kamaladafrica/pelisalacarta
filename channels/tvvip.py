@@ -21,12 +21,12 @@ DEBUG = config.get_setting("debug")
 host = "http://tv-vip.com"
 
 headers = [
-    ["User-Agent","Mozilla"],
+    ["User-Agent","Magic Browser"],
     ["Accept-Encoding","gzip, deflate"],
     ["Referer",host]
     ]
 
-header_string = "|User-Agent=Mozilla&Accept-Encoding=gzip, deflate&Referer=http://tv-vip.com"
+header_string = "|User-Agent=Magic Browser&Accept-Encoding=gzip, deflate&Referer=http://tv-vip.com"
 
 def isGeneric():
     return True
