@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para seriesdanko.com
@@ -77,10 +77,10 @@ def novedades(item):
     totalItems = len(matches)
     for match in matches:
         try:
-            scrapedurl = urlparse.urljoin(item.url,re.compile(r"href=\"(serie.+?)\">").findall(match)[0])
+            scrapedurl = urlparse.urljoin(item.url,re.compile(r"href='(serie.+?)'").findall(match)[0])
         except:continue
         try:
-            scrapedthumbnail = re.compile(r"src='(.+?)'").findall(match)[0]
+            scrapedthumbnail = re.compile(r"src='(http.+?)'").findall(match)[0]
         except:
             scrapedthumbnail = ""
         try:
@@ -107,7 +107,7 @@ def allserieslist(item):
     #logger.info(data)
 
     # Extrae el bloque de las series
-    patronvideos = "Listado de series disponibles</h2>(.*?)<div class='clear'></div>"
+    patronvideos = 'Todas las Series</h2>(.*?)<div class="clear">'
     matches = re.compile(patronvideos,re.DOTALL).findall(data)
     data = matches[0]
     scrapertools.printMatches(matches)
@@ -312,7 +312,7 @@ def episodios(item):
         scrapedurl = urlparse.urljoin(item.url,match[0]).replace("\n","").replace("\r","")
         if not item.thumbnail:
             try:
-                scrapedthumbnail = re.compile(r"src=([^']+)'").findall(contenidos)[0]
+                scrapedthumbnail = re.compile(r"<img src='([^']+)'").findall(contenidos)[0]
             except:
                     scrapedthumbnail = ""
         else:
