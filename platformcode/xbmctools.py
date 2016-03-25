@@ -490,7 +490,7 @@ def play_video(channel="",server="",url="",category="",title="", thumbnail="",pl
         titulo = fulltitle
         if fulltitle=="":
             titulo = title
-        library.savelibrary(titulo,url,thumbnail,server,plot,canal=channel,category=category,Serie=Serie)
+        library.savelibrary(titulo,url,thumbnail,server,plot,canal=channel,category=category,Serie=Serie,subtitle=subtitle)
         advertencia = xbmcgui.Dialog()
         resultado = advertencia.ok(config.get_localized_string(30101) , fulltitle , config.get_localized_string(30135)) # 'se ha añadido a la lista de descargas'
         return
