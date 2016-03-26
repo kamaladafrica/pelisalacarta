@@ -23,6 +23,8 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
     logger.info("pelisalacarta.servers.allvid url="+page_url)
     
     data = scrapertools.cache_page( page_url )
+    redirect_url = scrapertools.find_single_match(data,'<iframe src="([^"]+)')
+    data = scrapertools.cache_page( redirect_url )
     matches = scrapertools.find_single_match(data, "<script type='text/javascript'>(eval\(function\(p,a,c,k,e,d.*?)</script>")
     matchjs = jsunpack.unpack(matches).replace("\\","")
 
