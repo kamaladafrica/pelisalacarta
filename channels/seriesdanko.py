@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para seriesdanko.com
@@ -77,10 +77,10 @@ def novedades(item):
     totalItems = len(matches)
     for match in matches:
         try:
-            scrapedurl = urlparse.urljoin(item.url,re.compile(r"href=\"(serie.+?)\">").findall(match)[0])
+            scrapedurl = urlparse.urljoin(item.url,re.compile(r"href='(serie.+?)'").findall(match)[0])
         except:continue
         try:
-            scrapedthumbnail = re.compile(r"src='(.+?)'").findall(match)[0]
+            scrapedthumbnail = re.compile(r"src='(http.+?)'").findall(match)[0]
         except:
             scrapedthumbnail = ""
         try:
@@ -107,7 +107,7 @@ def allserieslist(item):
     #logger.info(data)
 
     # Extrae el bloque de las series
-    patronvideos = "Listado de series disponibles</h2>(.*?)<div class='clear'></div>"
+    patronvideos = 'Todas las Series</h2>(.*?)<div class="clear">'
     matches = re.compile(patronvideos,re.DOTALL).findall(data)
     data = matches[0]
     scrapertools.printMatches(matches)
@@ -312,7 +312,7 @@ def episodios(item):
         scrapedurl = urlparse.urljoin(item.url,match[0]).replace("\n","").replace("\r","")
         if not item.thumbnail:
             try:
-                scrapedthumbnail = re.compile(r"src=([^']+)'").findall(contenidos)[0]
+                scrapedthumbnail = re.compile(r"<img src='([^']+)'").findall(contenidos)[0]
             except:
                     scrapedthumbnail = ""
         else:
@@ -436,31 +436,12 @@ def play(item):
 
     data = scrapertools.cache_page(item.url)
 
-    patron = '<input type="hidden" name="id" value="([^"]+)" />.*?'
-    patron+= '<img src="([^"]+)"'
+    patron = '<div id="url2">.*?<a href="([^"]+)'
+    match = re.search(patron, data, re.MULTILINE | re.DOTALL)
 
-    matches = re.compile(patron,re.DOTALL).findall(data)
+    logger.info("match = {0}".format(match.group(1)))
 
-    id = matches[0][0]
-    captcha = matches[0][1]
-
-    image = os.path.join( config.get_data_path(), 'captcha.png')
-
-    imgurl = "http://seriesdanko.com/" + captcha
-    req = urllib2.Request(imgurl)
-    req.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:35.0) Gecko/20100101 Firefox/35.0')
-    req.add_header('Accept-Encoding','gzip, deflate')
-    f = urllib2.urlopen(req)
-    img = open(image, 'wb')
-    img.write(f.read())
-    img.close()
-
-    spc = get_captcha(image)
-    post = "id=%s&spc=%s" % (id,spc)
-
-    data = scrapertools.cache_page( "http://seriesdanko.com/anonim.php", post=post )
-
-    return servertools.find_video_items(data=data)
+    return servertools.find_video_items(data=match.group(1))
 
 def get_captcha(image):
 

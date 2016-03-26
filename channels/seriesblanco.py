@@ -198,12 +198,14 @@ def episodios(item):
 
     return itemlist
 
-
 def parseVideos(item, typeStr, data):
     itemlist = []
-    links = re.findall('<tr.+?<span>(.+?)</span>.*?banderas/([^\.]+).+?href="([^"]+).+?servidores/([^\.]+).*?</td>.*?<td>.*?<span>(.+?)</span>.*?<span>(.*?)</span>.*?</tr>', data, re.MULTILINE | re.DOTALL)
 
-    for date, language, link, server, uploader, quality in links:
+    # language, date, link, server, uploader, quality
+    pattern = '<tr.+?banderas/([^\.]+).+?<td[^>]*>(.+?)</td>.+?href=[\'"]([^\'"]+).+?servidores/([^\.]+).*?</td>.*?<td[^>]*>.*?<a[^>]+>(.+?)</a>.*?</td>.*?<td[^>]*>(.*?)</td>.*?</tr>'
+    links = re.findall(pattern, data, re.MULTILINE | re.DOTALL)
+
+    for language, date, link, server, uploader, quality in links:
         if not quality:
             quality = "SD"
         title = "{0} en {1} [{2}] [{3}] ({4}: {5})".format(typeStr, server, IDIOMAS[language],
@@ -213,21 +215,15 @@ def parseVideos(item, typeStr, data):
                              show=item.show))
     return itemlist
 
-
 def findvideos(item):
     logger.info("pelisalacarta.seriesblanco findvideos")
 
     # Descarga la página
     data = scrapertools.cache_page(item.url)
 
-    # Hacer la petición ajax con los enlaces
-    params = scrapertools.get_match(data, 'data : "(action=load[^\"]+)"')
-    data = scrapertools.cachePagePost(HOST + 'ajax.php', params)
-
-    online = re.findall('<table class="as_gridder_table">(.+?)</table>', data, re.MULTILINE | re.DOTALL)
+    online = re.findall("<table class='zebra'>(.+?)<[Bb][Rr]>", data, re.MULTILINE | re.DOTALL)
 
     return parseVideos(item, "Ver", online[0]) + parseVideos(item, "Descargar", online[1])
-
 
 def play(item):
     logger.info("pelisalacarta.channels.seriesblanco play url={0}".format(item.url))
