@@ -159,8 +159,8 @@ def epienlaces(item):
     data = scrapertools.cachePage(item.url)
     data = data.replace("\n","").replace("\t", "")
 
-    #Bloque de enlaces si viene de enlaces de descarga u online
-    delimitador = item.title.rsplit(" ",1)[1]
+    #Bloque de enlaces
+    delimitador = item.title.replace(item.show,"")
     patron = delimitador+'\s*</strong>(.*?)(?:</strong>|<div class="section-box related-posts")'
     bloque = scrapertools.find_single_match(data, patron)
 
@@ -217,9 +217,13 @@ def findvideos(item):
     matches = scrapertools.find_multiple_matches(data, patron)
     for scrapedurl in matches:
         title = urllib.unquote(scrapedurl)
-        if item.fulltitle != "": titulo = item.fulltitle.strip().rsplit(" ",1)[1]
-        else: titulo = item.title.strip().rsplit(" ",1)[1]
-        title = "["+scrapertools.find_single_match(title, titulo+" (.*?) [wW]")+"]"
+        try:
+            if item.fulltitle != "": titulo = item.fulltitle.strip().rsplit(" ",1)[1]
+            else: titulo = item.title.strip().rsplit(" ",1)[1]
+        except:
+            if item.fulltitle != "": titulo = item.fulltitle.strip()
+            else: titulo = item.title.strip()
+        title = "["+scrapertools.find_single_match(title, titulo+"(?:\.|)(.*?)(?:\.|[wW])")+"]"
         itemlist.append( Item(channel=__channel__, action="play", server="torrent", title="[COLOR green][Enlace en Torrent][/COLOR] "+title , fulltitle = item.fulltitle, url=scrapedurl , thumbnail=item.thumbnail , fanart=fanart, plot=str(sinopsis) , context = "0", contentTitle=item.fulltitle, folder=False) )
     
     #Patron online
