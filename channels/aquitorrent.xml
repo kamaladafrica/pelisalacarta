@@ -9,12 +9,12 @@
 
 	<fanart></fanart>
 	<thumbnail>http://s6.postimg.org/kta7oe8y9/aquitorrentlogo.png</thumbnail>
-	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/aquitorrent.png</bannermenu>
+	<bannermenu>http://s6.postimg.org/kta7oe8y9/aquitorrentlogo.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>2</version>
-	<date>28/08/2015</date>
-	<changes>Cambios web.Mejorado fanart</changes>
+	<version>3</version>
+	<date>23/03/2016</date>
+	<changes>Mejoras código</changes>
 
 	<categories>
 		<category>torrent</category>
