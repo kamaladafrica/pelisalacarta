@@ -11,9 +11,11 @@ from core import logger
 from core import config
 from core import scrapertools
 from core.item import Item
+from core.tmdb import Tmdb
 from servers import servertools
 from servers import sh
 from servers import linkbucks
+from channelselector import get_thumbnail_path
 
 
 __channel__ = "descargacineclasico"
@@ -37,11 +39,13 @@ def isGeneric():
 def mainlist(item):
     logger.info("[pelisadicto.py] mainlist")
 
+    thumb_buscar = get_thumbnail_path()+ "thumb_buscar.png"
+
     itemlist = []
     itemlist.append( Item(channel=__channel__, title="Últimas agregadas"  , action="agregadas", url="http://www.descargacineclasico.net/"))
     itemlist.append( Item(channel=__channel__, title="Listado por género" , action="porGenero", url="http://www.descargacineclasico.net/"))
-    itemlist.append( Item(channel=__channel__, title="Buscar" , action="search", url="http://www.descargacineclasico.net/") )
-    
+    itemlist.append( Item(channel=__channel__, title="Buscar" , action="search", url="http://www.descargacineclasico.net/", thumbnail=thumb_buscar) )
+
     return itemlist
 
 def porGenero(item):
@@ -144,9 +148,12 @@ def findvideos(item):
     data = scrapertools.cache_page(item.url)
 
     data = scrapertools.unescape(data)
-  
-    plot = ""
+
     titulo = item.title
+    titulo_tmdb = re.sub("([0-9+])", "", titulo.strip())
+
+    oTmdb= Tmdb(texto_buscado=titulo_tmdb, idioma_busqueda="es")
+    item.fanart=oTmdb.get_backdrop()
 
     # Descarga la pagina
 #    data = scrapertools.cache_page(item.url)
@@ -155,8 +162,8 @@ def findvideos(item):
     for scrapedidioma, scrapedcalidad, scrapedserver, scrapedurl in matches:
 
         title = titulo + "_" + scrapedidioma + "_"+ scrapedserver + "_" + scrapedcalidad
-        itemlist.append( Item(channel=__channel__, action="play", title=title, fulltitle=title , url=scrapedurl , thumbnail="" , plot=plot , show = item.show) )
-        
+        itemlist.append( Item(channel=__channel__, action="play", title=title, fulltitle=title, url=scrapedurl, thumbnail=item.thumbnail, plot=item.plot, show=item.show, fanart=item.fanart) )
+
     return itemlist	
 
 def play(item):
