@@ -21,12 +21,12 @@ DEBUG = config.get_setting("debug")
 host = "http://tv-vip.com"
 
 headers = [
-    ["User-Agent","Magic Browser"],
+    ["User-Agent","Mozilla/5.0 (Windows NT 10.0; WOW64; rv:45.0) Gecko/20100101 Firefox/45.0"],
     ["Accept-Encoding","gzip, deflate"],
     ["Referer",host]
     ]
 
-header_string = "|User-Agent=Magic Browser&Accept-Encoding=gzip, deflate&Referer=http://tv-vip.com"
+header_string = "|User-Agent=Mozilla/5.0 (Windows NT 10.0; WOW64; rv:45.0) Gecko/20100101 Firefox/45.0&Accept-Encoding=gzip, deflate&Referer=http://tv-vip.com"
 
 def isGeneric():
     return True
@@ -513,7 +513,12 @@ def anti_cloudflare(url):
 
         scrapertools.get_headers_from_response(host + '/' + resp_headers['refresh'][7:], headers=headers)
 
-    return scrapertools.cache_page(url, headers=headers)
+    try:
+        data = scrapertools.downloadpageGzip(url)
+    except:
+        data = scrapertools.cache_page(url, headers=headers)
+
+    return data
 
 def get_cookie_value(extension=""):
     cookies = config.get_cookie_data()
