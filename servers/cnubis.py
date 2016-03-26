@@ -22,7 +22,7 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
     logger.info("media_url="+media_url[0])
 
     # URL del vídeo
-    video_urls.append( [ "."+ media_url[1] + " [cnubis]",media_url[0] ] )
+    video_urls.append( [ "."+ media_url[1] + " [cnubis]", media_url[0].replace("https","http") ] )
 
     for video_url in video_urls:
        logger.info("pelisalacarta.servers.cnubis %s - %s" % (video_url[0],video_url[1]))
@@ -34,14 +34,15 @@ def find_videos(text):
     encontrados = set()
     devuelve = []
 	
-	# https://cnubis.com/plugins/mediaplayer/site/_embed.php?u=9mk&w=640&h=320
-    patronvideos  = 'cnubis.com/plugins/mediaplayer/site/_embed.php\?u\=([A-Za-z0-9]+)'
+	# https://cnubis.com/plugins/mediaplayer/site/_1embed.php?u=9mk&w=640&h=320
+	# http://cnubis.com/plugins/mediaplayer/site/_2embed.php?u=2aZD
+    patronvideos  = 'cnubis.com/plugins/mediaplayer/site/([^.]+).php\?u\=([A-Za-z0-9]+)'
     logger.info("pelisalacarta.servers.cnubis find_videos #"+patronvideos+"#")
     matches = re.compile(patronvideos,re.DOTALL).findall(text)
 
-    for match in matches:
+    for embedprex, match in matches:
         titulo = "[cnubis]"
-        url = "http://cnubis.com/plugins/mediaplayer/site/_embed.php?u="+match
+        url = "http://cnubis.com/plugins/mediaplayer/site/%s.php?u=%s" % (embedprex, match)
         if url not in encontrados and id != "":
             logger.info("  url="+url)
             devuelve.append( [ titulo , url , 'cnubis' ] )
@@ -53,5 +54,5 @@ def find_videos(text):
 
 def test():
 
-    video_urls = get_video_url("http://cnubis.com/plugins/mediaplayer/site/_embed.php?u=9mk&w=640&h=320")
+    video_urls = get_video_url("http://cnubis.com/plugins/mediaplayer/site/_embed1.php?u=9mk&w=640&h=320")
     return len(video_urls)>0

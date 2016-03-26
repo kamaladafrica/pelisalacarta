@@ -12,9 +12,9 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/pelismagnet.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>0</version>
-	<date></date>
-	<changes></changes>
+	<version>2</version>
+	<date>21/02/2016</date>
+	<changes>mejoras en el menú</changes>
 
 	<categories>
 		<category>torrent</category>

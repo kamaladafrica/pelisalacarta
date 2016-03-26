@@ -64,7 +64,7 @@ def addnewfolderextra( canal , accion , category , title , url , thumbnail , plo
     except:
         pass
 
-    itemurl = '%s?fanart=%s&channel=%s&action=%s&category=%s&title=%s&fulltitle=%s&url=%s&thumbnail=%s&plot=%s&extradata=%s&Serie=%s&show=%s&hasContentDetails=%s&contentTitle=%s&contentThumbnail=%s&contentPlot=%s' % ( sys.argv[ 0 ] , fanart, canal , accion , urllib.quote_plus( category ) , urllib.quote_plus(title) , urllib.quote_plus(fulltitle) , urllib.quote_plus( url ) , urllib.quote_plus( thumbnail ) , urllib.quote_plus( plot ) , urllib.quote_plus( extradata ) , Serie, urllib.quote_plus( show ), urllib.quote_plus( hasContentDetails ), urllib.quote_plus( contentTitle ), urllib.quote_plus( contentThumbnail ), urllib.quote_plus( contentPlot ))
+    itemurl = '%s?fanart=%s&channel=%s&action=%s&category=%s&title=%s&fulltitle=%s&url=%s&thumbnail=%s&plot=%s&extradata=%s&Serie=%s&show=%s&hasContentDetails=%s&contentTitle=%s&contentThumbnail=%s&contentPlot=%s' % ( sys.argv[ 0 ] , urllib.quote_plus(fanart), canal , accion , urllib.quote_plus( category ) , urllib.quote_plus(title) , urllib.quote_plus(fulltitle) , urllib.quote_plus( url ) , urllib.quote_plus( thumbnail ) , urllib.quote_plus( plot ) , urllib.quote_plus( extradata ) , Serie, urllib.quote_plus( show ), urllib.quote_plus( hasContentDetails ), urllib.quote_plus( contentTitle ), urllib.quote_plus( contentThumbnail ), urllib.quote_plus( contentPlot ))
 
     if Serie != "": #Añadimos opción contextual para Añadir la serie completa a la biblioteca
         addSerieCommand = "XBMC.RunPlugin(%s?channel=%s&action=addlist2Library&category=%s&title=%s&fulltitle=%s&url=%s&extradata=%s&Serie=%s&show=%s)" % ( sys.argv[ 0 ] , canal , urllib.quote_plus( category ) , urllib.quote_plus( title ) , urllib.quote_plus(fulltitle) , urllib.quote_plus( url ) , urllib.quote_plus( extradata ) , Serie, urllib.quote_plus( show ) )
@@ -176,7 +176,7 @@ def addnewvideo( canal , accion , category , server , title , url , thumbnail, p
         pass
 
     # Lo restauro como estaba antes, la nueva formula no es compatible con Boxee    
-    itemurl = '%s?fanart=%s&channel=%s&action=%s&category=%s&title=%s&fulltitle=%s&url=%s&thumbnail=%s&plot=%s&server=%s&Serie=%s&subtitle=%s&viewmode=%s&show=%s&extradata=%s&hasContentDetails=%s&contentTitle=%s&contentThumbnail=%s&contentPlot=%s' % ( sys.argv[ 0 ] , fanart, canal , accion , urllib.quote_plus( category ) , urllib.quote_plus( title ) , urllib.quote_plus( fulltitle ) , urllib.quote_plus( url ) , urllib.quote_plus( thumbnail ) , urllib.quote_plus( plot ) , server , Serie , urllib.quote_plus(subtitle), urllib.quote_plus(viewmode), urllib.quote_plus( show ) , urllib.quote_plus(extra) , urllib.quote_plus( hasContentDetails ), urllib.quote_plus( contentTitle ), urllib.quote_plus( contentThumbnail ), urllib.quote_plus( contentPlot ))
+    itemurl = '%s?fanart=%s&channel=%s&action=%s&category=%s&title=%s&fulltitle=%s&url=%s&thumbnail=%s&plot=%s&server=%s&Serie=%s&subtitle=%s&viewmode=%s&show=%s&extradata=%s&hasContentDetails=%s&contentTitle=%s&contentThumbnail=%s&contentPlot=%s' % ( sys.argv[ 0 ] , urllib.quote_plus(fanart), canal , accion , urllib.quote_plus( category ) , urllib.quote_plus( title ) , urllib.quote_plus( fulltitle ) , urllib.quote_plus( url ) , urllib.quote_plus( thumbnail ) , urllib.quote_plus( plot ) , server , Serie , urllib.quote_plus(subtitle), urllib.quote_plus(viewmode), urllib.quote_plus( show ) , urllib.quote_plus(extra) , urllib.quote_plus( hasContentDetails ), urllib.quote_plus( contentTitle ), urllib.quote_plus( contentThumbnail ), urllib.quote_plus( contentPlot ))
 
     #logger.info("[xbmctools.py] itemurl=%s" % itemurl)
     if totalItems == 0:
@@ -662,15 +662,9 @@ def play_video(channel="",server="",url="",category="",title="", thumbnail="",pl
         logger.info("fin")
     '''
 
-    if config.get_setting("subtitulo") == "true" and view:
+    if subtitle!="" and view:
         logger.info("b11")
-        from platformcode import subtitletools
-        wait2second()
-        subtitletools.set_Subtitle()
-        if subtitle!="":
-            xbmc.Player().setSubtitles(subtitle)
-    #FIXME: Qué cosa más fea...
-    elif channel=="moviezet":
+        logger.info("Subtítulos externos: "+subtitle)
         xbmc.Player().setSubtitles(subtitle)
 
 def handle_wait(time_to_wait,title,text):

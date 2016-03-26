@@ -1,20 +1,19 @@
 # -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
-# Conector para gamovideo
+# Conector para youwatch
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import urlparse,urllib2,urllib,re
-import os
+import re
 
 from core import scrapertools
 from core import logger
-from core import config
-from core import unpackerjs3
 
 def test_video_exists( page_url ):
-    logger.info("youwatch test_video_exists(page_url='%s')" % page_url)
+    logger.info("pelisalacarta.servers.youwatch test_video_exists(page_url='%s')" % page_url)
+    data = scrapertools.cache_page(page_url)
+    if "File Not Found" in data: return False, "[Youwatch] El archivo no existe o ha sido borrado"
     return True,""
 
 def get_video_url( page_url , premium = False , user="" , password="", video_password="" ):
@@ -23,14 +22,15 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
       page_url = page_url.replace("http://youwatch.org/","http://youwatch.org/embed-") + ".html"
 
     data = scrapertools.cache_page(page_url)
-    data = scrapertools.find_single_match(data,"<span id='flvplayer'></span>\n<script type='text/javascript'>(.*?)\n;</script>")
-    data = unpackerjs3.unpackjs(data,0)
-    url = scrapertools.get_match(data, 'file:"([^"]+)"')
+    url_redirect = scrapertools.find_single_match(data,'<iframe src="([^"]+)"')
+    data = scrapertools.cache_page(url_redirect)	
+
+    url = scrapertools.get_match(data, '{file:"([^"]+)"')
     video_urls = []
     video_urls.append([scrapertools.get_filename_from_url(url)[-4:]+" [youwatch]",url])
 
     for video_url in video_urls:
-        logger.info("[youwatch.py] %s - %s" % (video_url[0],video_url[1]))
+        logger.info("pelisalacarta.servers.youwatch %s - %s" % (video_url[0],video_url[1]))
         
 
     return video_urls
@@ -42,7 +42,7 @@ def find_videos(data):
 
 
     patronvideos  = 'http://youwatch.org/([a-z0-9]+)'
-    logger.info("youwatch find_videos #"+patronvideos+"#")
+    logger.info("pelisalacarta.servers.youwatch find_videos #"+patronvideos+"#")
     matches = re.compile(patronvideos,re.DOTALL).findall(data)
 
     for match in matches:
@@ -57,7 +57,7 @@ def find_videos(data):
             
 
     patronvideos  = 'http://youwatch.org/embed-([a-z0-9]+)'
-    logger.info("youwatch find_videos #"+patronvideos+"#")
+    logger.info("pelisalacarta.servers.youwatch find_videos #"+patronvideos+"#")
     matches = re.compile(patronvideos,re.DOTALL).findall(data)
 
     for match in matches:

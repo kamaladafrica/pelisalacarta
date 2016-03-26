@@ -6,8 +6,8 @@
             "serie", 
             "vos"
         ], 
-        "changes": "añadido thumbnail, añadido plot, eliminadas variables que no se usaban, PEP8", 
-        "date": "06/01/2016", 
+        "changes": "Arreglado la sección descargas de findVideos de seriesblanco", 
+        "date": "18/03/2016", 
         "fanart": "", 
         "id": "seriesblanco", 
         "include_in_global_search": false, 
@@ -15,7 +15,7 @@
         "name": "Seriesblanco", 
         "thumbnail": "", 
         "update_url": "", 
-        "version": "7.0"
+        "version": "9.0"
     }, 
     "settings": {}
 }

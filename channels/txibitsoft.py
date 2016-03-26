@@ -189,7 +189,7 @@ def fanart(item):
         title= title.replace('ú','u')
         title= title.replace('ñ','n')
         title= title.replace(' ','%20')
-        url="http://api.themoviedb.org/3/search/movie?api_key=57983e31fb435df4df77afb854740ea9&query=" + title + "&language=es&include_adult=false"
+        url="http://api.themoviedb.org/3/search/movie?api_key=2e2160006592024ba87ccdf78c28f49f&query=" + title + "&language=es&include_adult=false"
         data = scrapertools.cachePage(url)
         data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
         patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":"\\\(.*?)"'
@@ -211,7 +211,7 @@ def fanart(item):
                     posterdb = item.thumbnail
                 fanart="https://image.tmdb.org/t/p/original" + fan
                 item.extra= fanart
-                url ="http://api.themoviedb.org/3/movie/"+id+"/images?api_key=57983e31fb435df4df77afb854740ea9"
+                url ="http://api.themoviedb.org/3/movie/"+id+"/images?api_key=2e2160006592024ba87ccdf78c28f49f"
                 data = scrapertools.cachePage(url)
                 data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
                     
@@ -317,7 +317,7 @@ def fanart(item):
           title= title.replace('ú','u')
           title= title.replace('ñ','n')
           title= title.replace(' ','%20')
-          url="http://api.themoviedb.org/3/search/movie?api_key=57983e31fb435df4df77afb854740ea9&query=" + title + "&language=es&include_adult=false"
+          url="http://api.themoviedb.org/3/search/movie?api_key=2e2160006592024ba87ccdf78c28f49f&query=" + title + "&language=es&include_adult=false"
           data = scrapertools.cachePage(url)
           data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
           patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":"\\\(.*?)"'
@@ -339,7 +339,7 @@ def fanart(item):
                       posterdb = item.thumbnail
                   fanart="https://image.tmdb.org/t/p/original" + fan
                   item.extra= fanart
-                  url ="http://api.themoviedb.org/3/movie/"+id+"/images?api_key=57983e31fb435df4df77afb854740ea9"
+                  url ="http://api.themoviedb.org/3/movie/"+id+"/images?api_key=2e2160006592024ba87ccdf78c28f49f"
                   data = scrapertools.cachePage(url)
                   data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
                       
@@ -757,17 +757,17 @@ def findvideos(item):
             title= re.sub(r"\[.*?\]|-|Temporada.*?\d+|\d+x\d+|Fin","",title)
             title= title.replace(' ','%20')
             title= title.replace('Temporada','')
-            url="http://api.themoviedb.org/3/search/tv?api_key=57983e31fb435df4df77afb854740ea9&query="+title+"&language=es&include_adult=false"
+            url="http://api.themoviedb.org/3/search/tv?api_key=2e2160006592024ba87ccdf78c28f49f&query="+title+"&language=es&include_adult=false"
             if "%2090210%20Sensacion%20de%20vivir" in url:
-                url="http://api.themoviedb.org/3/search/tv?api_key=57983e31fb435df4df77afb854740ea9&query=90210&language=es&include_adult=false"
+                url="http://api.themoviedb.org/3/search/tv?api_key=2e2160006592024ba87ccdf78c28f49f&query=90210&language=es&include_adult=false"
             if "%20De%20vuelta%20al%20nido%20" in url:
-                url ="http://api.themoviedb.org/3/search/tv?api_key=57983e31fb435df4df77afb854740ea9&query=packed%20to%20the%20rafter&language=es&include_adult=false"
+                url ="http://api.themoviedb.org/3/search/tv?api_key=2e2160006592024ba87ccdf78c28f49f&query=packed%20to%20the%20rafter&language=es&include_adult=false"
             if "%20Asuntos%20de%20estado%20" in url:
-                url="http://api.themoviedb.org/3/search/tv?api_key=57983e31fb435df4df77afb854740ea9&query=state%20of%20affair&language=es&include_adult=false"
+                url="http://api.themoviedb.org/3/search/tv?api_key=2e2160006592024ba87ccdf78c28f49f&query=state%20of%20affair&language=es&include_adult=false"
             if "%20Como%20defender%20a%20un%20asesino%20" in url:
-                url="http://api.themoviedb.org/3/search/tv?api_key=57983e31fb435df4df77afb854740ea9&query=how%20to%20get%20away%20with%20murder&language=es&include_adult=false"
+                url="http://api.themoviedb.org/3/search/tv?api_key=2e2160006592024ba87ccdf78c28f49f&query=how%20to%20get%20away%20with%20murder&language=es&include_adult=false"
             if "Rizzoli%20and%20Isles%20%20%20" in url:
-                url="http://api.themoviedb.org/3/search/tv?api_key=57983e31fb435df4df77afb854740ea9&query=Rizzoli%20&%20Isles%20%20%20&language=es&include_adult=false"
+                url="http://api.themoviedb.org/3/search/tv?api_key=2e2160006592024ba87ccdf78c28f49f&query=Rizzoli%20&%20Isles%20%20%20&language=es&include_adult=false"
             data = scrapertools.cachePage(url)
             data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
             patron = 'page":1.*?,"id":(.*?),"'
@@ -791,7 +791,7 @@ def findvideos(item):
                          fanart = fanart_3
                 else:
                     fanart= item.fanart
-                url ="https://api.themoviedb.org/3/tv/"+id+"/season/"+temp+"/episode/"+epi+"/images?api_key=57983e31fb435df4df77afb854740ea9"
+                url ="https://api.themoviedb.org/3/tv/"+id+"/season/"+temp+"/episode/"+epi+"/images?api_key=2e2160006592024ba87ccdf78c28f49f"
                 data = scrapertools.cachePage(url)
                 data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
                 patron = '{"id".*?"file_path":"(.*?)","height"'
@@ -813,7 +813,7 @@ def findvideos(item):
                     scrapedtitle = title_tag + scrapedtitle
                     itemlist.append( Item(channel=__channel__, title=scrapedtitle, url=scrapedurl, action="play", server="torrent", thumbnail=thumbnail, category = item.category, fanart=fanart, folder=False) )
             ###thumb temporada###
-            url= "http://api.themoviedb.org/3/tv/"+id+"/season/"+temp+"/images?api_key=57983e31fb435df4df77afb854740ea9"
+            url= "http://api.themoviedb.org/3/tv/"+id+"/season/"+temp+"/images?api_key=2e2160006592024ba87ccdf78c28f49f"
             data = scrapertools.cachePage(url)
             data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
             patron = '{"id".*?"file_path":"(.*?)","height"'
@@ -824,7 +824,7 @@ def findvideos(item):
                 print "@@@@@"+thumtemp
                 thumbnail= "https://image.tmdb.org/t/p/original"+ thumtemp
             ####fanart info####
-            url ="http://api.themoviedb.org/3/tv/"+id+"/images?api_key=57983e31fb435df4df77afb854740ea9"
+            url ="http://api.themoviedb.org/3/tv/"+id+"/images?api_key=2e2160006592024ba87ccdf78c28f49f"
             data = scrapertools.cachePage(url)
             data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
             patron = '{"backdrops".*?"file_path":".*?","height".*?"file_path":"(.*?)",'

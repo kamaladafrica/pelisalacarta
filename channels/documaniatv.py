@@ -85,9 +85,10 @@ def categorias(item):
     itemlist = []
     
     data = scrapertools.cache_page(item.url)
+    data = data.replace("\n","")
 
     # Saca el bloque con las categorias
-    data = scrapertools.get_match(data,"""Categorias (.*?)</ul></li>""")
+    data = scrapertools.get_match(data,"Categorias<b(.*?)</ul></li>")
 
     #
     patron = '<li[^<]+<a href="([^"]+)"[^>]+>([^<]+)</a>'
@@ -178,26 +179,17 @@ def play(item):
     itemlist = []
 
     # Descarga la pagina
-    data1 = scrapertools.cachePage(item.url) 
-    logger.info(data1)
-    patron= 'itemprop="embedURL" content="(.*?)"'
+    url = "http://www.documaniatv.com/ajax.php?p=video&do=getplayer&vid=%s&aid=3&player=detail" % re.search("video_(.*?).html", item.url).group(1)
+    data1 = scrapertools.cachePage(url) 
+
+    patron= '<iframe src="(.*?)"'
     matc = re.compile(patron,re.DOTALL).findall(data1)
     logger.info(matc[0])
- 
-    data = scrapertools.cachePage(matc[0])
-    logger.info(data)
 
     # Busca los enlaces a los videos
-    video_itemlist = servertools.find_video_items(data=data)
+    video_itemlist = servertools.find_video_items(data=matc[0])
     for video_item in video_itemlist:
         itemlist.append( Item(channel=__channel__ , action="play" , server=video_item.server, title=item.title+video_item.title,url=video_item.url, thumbnail=video_item.thumbnail, plot=video_item.plot, folder=False))
-
-    # Extrae los enlaces a los videos (Directo)
-    patronvideos = "src= '([^']+)'"
-    matches = re.compile(patronvideos,re.DOTALL).findall(data)
-    if len(matches)>0:
-        if not "www.youtube" in matches[0]:
-            itemlist.append( Item(channel=__channel__ , action="play" , server="Directo", title=item.title+" [directo]",url=matches[0], thumbnail=item.thumbnail, plot=item.plot))
 
     return itemlist
 
