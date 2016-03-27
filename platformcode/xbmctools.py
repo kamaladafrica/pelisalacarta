@@ -788,7 +788,7 @@ def renderItems(itemlist, params, url, category, isPlayable='false'):
             # Formatear titulo
             if 'text_color' in item and item.text_color:
                 item.title= '[COLOR %s]%s[/COLOR]' %(item.text_color, item.title)
-            if 'text_blond' in item and item.text_blond:
+            if 'text_blod' in item and item.text_blod:
                 item.title= '[B]%s[/B]' %(item.title)
             if 'text_italic' in item and item.text_italic:
                 item.title= '[I]%s[/I]' %(item.title)
