@@ -46,12 +46,11 @@ def mainlist(item):
         itemlist.append( Item( channel=__channel__ , title="Habilita tu cuenta en la configuración..." , action="openconfig" , url="" , folder=False ) )
     else:
         login()
-        itemlist.append( Item(channel=__channel__, action="menuseries"    , title="Series"              , url="" ))
-        itemlist.append( Item(channel=__channel__, action="menupeliculas" , title="Películas"           , url="" ))
-        itemlist.append( Item(channel=__channel__, action="listas_sigues" , title="Listas que sigues"   , url="http://www.pordede.com/lists/following" ))
-        itemlist.append( Item(channel=__channel__, action="tus_listas"    , title="Tus listas"          , url="http://www.pordede.com/lists/yours" ))
-        itemlist.append( Item(channel=__channel__, action="listas_sigues" , title="Top listas"          , url="http://www.pordede.com/lists" ))
-       
+        itemlist.append( Item(channel=__channel__, action="menuseries"    , title="Series"                   , url="" ))
+        itemlist.append( Item(channel=__channel__, action="menupeliculas" , title="Películas y documentales" , url="" ))
+        itemlist.append( Item(channel=__channel__, action="listas_sigues" , title="Listas que sigues"        , url="http://www.pordede.com/lists/following" ))
+        itemlist.append( Item(channel=__channel__, action="tus_listas"    , title="Tus listas"               , url="http://www.pordede.com/lists/yours" ))
+        itemlist.append( Item(channel=__channel__, action="listas_sigues" , title="Top listas"               , url="http://www.pordede.com/lists" ))       
     return itemlist
 
 def openconfig(item):
@@ -177,11 +176,12 @@ def parse_mixed_results(item,data):
         #http://www.pordede.com/peli/the-lego-movie
         #http://www.pordede.com/links/view/slug/the-lego-movie/what/peli?popup=1
       
-        if "/peli/" in scrapedurl:
+        if "/peli/" in scrapedurl or "/docu/" in scrapedurl:
+            sectionStr = "peli" if "/peli/" in scrapedurl else "docu"
             referer = urlparse.urljoin(item.url,scrapedurl)
-            url = referer.replace("/peli/","/links/view/slug/")+"/what/peli"
+            url = referer.replace("/{0}/".format(sectionStr),"/links/view/slug/")+"/what/{0}".format(sectionStr)
             if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-            itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, fanart=fanart, viewmode="movie"))
+            itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, fanart=fanart, viewmode="movie"))        
         else:
             referer = item.url
             url = urlparse.urljoin(item.url,scrapedurl)
