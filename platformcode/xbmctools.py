@@ -49,7 +49,6 @@ def addnewfolderextra( item):
     if item.action !="":
         #listitem.setInfo( "video", { "Title" : item.title, "Plot" : item.plot, "Studio" : item.channel.capitalize() } )
         set_infoLabels(listitem,item) # Modificacion introducida por super_berny para añadir infoLabels al ListItem
-
     if item.fanart!="":
         listitem.setProperty('fanart_image',item.fanart) 
         xbmcplugin.setPluginFanart(pluginhandle, item.fanart)
@@ -102,6 +101,7 @@ def addnewvideo(item):
     if item.action !="":
         #listitem.setInfo( "video", { "Title" : item.title, "Plot" : item.plot, "Studio" : item.channel.capitalize() } )
         set_infoLabels(listitem,item) # Modificacion introducida por super_berny para añadir infoLabels al ListItem
+        listitem.setInfo( "video", { "Title" : title, "FileName" : title, "Plot" : plot, "Duration" : duration, "Studio" : canal.capitalize(), "Genre" : category } )
    
     if item.fanart!="":
         #logger.info("item.fanart :%s" %item.fanart)
