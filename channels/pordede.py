@@ -127,7 +127,7 @@ def search(item,texto):
 
     # Mete el referer en item.extra
     item.extra = item.url
-    item.url = item.url+"/search/query/"+texto+"/years/1950/on/undefined/showlist/all"
+    item.url = item.url+"/loadmedia/offset/0/query/"+texto+"/years/1950/on/undefined/showlist/all"
     try:
         return buscar(item)
     # Se captura la excepción, para no interrumpir al buscador global si un canal falla
@@ -187,7 +187,7 @@ def parse_mixed_results(item,data):
             url = urlparse.urljoin(item.url,scrapedurl)
             itemlist.append( Item(channel=__channel__, action="episodios" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=title, fanart=fanart, viewmode="movie"))
 
-    if "offset/" in item.url:
+    if len(itemlist) == 60 and "offset/" in item.url:
         old_offset = scrapertools.find_single_match(item.url,"offset/(\d+)/")
         new_offset = int(old_offset)+60
         url = item.url.replace("offset/"+old_offset,"offset/"+str(new_offset))
