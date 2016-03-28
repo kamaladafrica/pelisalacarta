@@ -4,7 +4,7 @@
 # Canal para tvvip
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urllib, unicodedata, sys, time, urllib2
+import urllib, unicodedata, sys, time, urllib2, os
 from core import logger
 from core import config
 from core import scrapertools
@@ -34,8 +34,9 @@ def isGeneric():
 def mainlist(item):
     logger.info("pelisalacarta.channels.tvvip mainlist")
     itemlist = []
-    data = anti_cloudflare("http://tv-vip.com/json/playlist/home/index.json")
-    head = header_string + get_cookie_value()
+    data, cloudflare = anti_cloudflare("http://tv-vip.com/json/playlist/home/index.json")
+    if cloudflare: head = header_string + get_cookie_value()
+    else: head = ""
     itemlist.append( Item(channel=__channel__, title="Películas"         , action="submenu", thumbnail= "http://tv-vip.com/json/playlist/peliculas/thumbnail.jpg"+head, fanart="http://tv-vip.com/json/playlist/peliculas/background.jpg"+head, viewmode="movie"))
     itemlist.append( Item(channel=__channel__, title="Series"   , action="submenu", thumbnail= "http://tv-vip.com/json/playlist/series/poster.jpg"+head, fanart="http://tv-vip.com/json/playlist/series/background.jpg"+head))
     itemlist.append( Item(channel=__channel__, title="Versión Original"   , action="entradasconlistas", url="http://tv-vip.com/json/playlist/version-original/index.json", thumbnail= "http://tv-vip.com/json/playlist/version-original/thumbnail.jpg"+head, fanart="http://tv-vip.com/json/playlist/version-original/background.jpg"+head))
@@ -62,9 +63,10 @@ def busqueda(item):
     logger.info("pelisalacarta.channels.tvvip busqueda")
     itemlist = []
 
-    data = anti_cloudflare(item.url)
+    data, cloudflare = anti_cloudflare(item.url)
     data = jsontools.load_json(data)
-    head = header_string + get_cookie_value()
+    if cloudflare: head = header_string + get_cookie_value()
+    else: head = ""
     for child in data["objectList"]:
         infolabels={}
         plot={}
@@ -112,12 +114,13 @@ def busqueda(item):
 def submenu(item):
     logger.info("pelisalacarta.channels.tvvip submenu")
     itemlist = []
-    data = anti_cloudflare("http://tv-vip.com/json/playlist/home/index.json")
-    head = header_string + get_cookie_value()
+    data, cloudflare = anti_cloudflare("http://tv-vip.com/json/playlist/home/index.json")
+    if cloudflare: head = header_string + get_cookie_value()
+    else: head = ""
     if item.title == "Series":
         itemlist.append( Item(channel=__channel__, title="Nuevos Capítulos"         , action="episodios", url="http://tv-vip.com/json/playlist/nuevos-capitulos/index.json", thumbnail= "http://tv-vip.com/json/playlist/nuevos-capitulos/background.jpg"+head, fanart="http://tv-vip.com/json/playlist/nuevos-capitulos/background.jpg"+head, viewmode="movie"))
         itemlist.append( Item(channel=__channel__, title="Más Vistas"   , action="series", url="http://tv-vip.com/json/playlist/top-series/index.json", thumbnail= "http://tv-vip.com/json/playlist/top-series/thumbnail.jpg"+head, fanart="http://tv-vip.com/json/playlist/top-series/background.jpg"+head, contentTitle="Series"))
-        itemlist.append( Item(channel=__channel__, title="Últimas Series"   , action="series", url="http://tv-vip.com/json/playlist/series/index.json", thumbnail= item.thumbnail, fanart=item.fanart, contentTitle="Series"))
+        itemlist.append( Item(channel=__channel__, title="Últimas Series"   , action="series", url="http://tv-vip.com/json/playlist/novedades/index.json", thumbnail= item.thumbnail, fanart=item.fanart, contentTitle="Series"))
         itemlist.append( Item(channel=__channel__, title="Lista de Series A-Z"       , action="series", url="http://tv-vip.com/json/playlist/series/index.json", thumbnail= item.thumbnail, fanart=item.fanart, contentTitle="Series"))
     else:
         itemlist.append( Item(channel=__channel__, title="Novedades"         , action="entradas", url="http://tv-vip.com/json/playlist/000-novedades/index.json", thumbnail= "http://tv-vip.com/json/playlist/ultimas-peliculas/thumbnail.jpg"+head, fanart="http://tv-vip.com/json/playlist/ultimas-peliculas/background.jpg"+head, viewmode="movie"))
@@ -130,9 +133,10 @@ def cat(item):
     logger.info("pelisalacarta.channels.tvvip cat")
     itemlist = []
 
-    data = anti_cloudflare(item.url)
+    data, cloudflare = anti_cloudflare(item.url)
     data = jsontools.load_json(data)
-    head = header_string + get_cookie_value()
+    if cloudflare: head = header_string + get_cookie_value()
+    else: head = ""
     exception = ["peliculas-mas-vistas", "ultimas-peliculas"]
     for child in data["sortedPlaylistChilds"]:
         if child["id"] not in exception:
@@ -155,9 +159,10 @@ def entradas(item):
     itemlist = []
     if item.title == "Nuevos Capítulos": context = ""
     else: context = "0"
-    data = anti_cloudflare(item.url)
+    data, cloudflare = anti_cloudflare(item.url)
     data = jsontools.load_json(data)
-    head = header_string + get_cookie_value()
+    if cloudflare: head = header_string + get_cookie_value()
+    else: head = ""
     for child in data["sortedRepoChilds"]:
         infolabels={}
         plot={}
@@ -196,9 +201,10 @@ def entradasconlistas(item):
     logger.info("pelisalacarta.channels.tvvip entradasconlistas")
     itemlist = []
 
-    data = anti_cloudflare(item.url)
+    data, cloudflare = anti_cloudflare(item.url)
     data = jsontools.load_json(data)
-    head = header_string + get_cookie_value()
+    if cloudflare: head = header_string + get_cookie_value()
+    else: head = ""
     # Si hay alguna lista
     if data['playListChilds']:
         itemlist.append( Item(channel=__channel__, title="[COLOR red][B]**LISTAS**[/B][/COLOR]", fulltitle="**LISTAS**", folder=False) )
@@ -215,7 +221,7 @@ def entradasconlistas(item):
             thumbnail += head
             fanart += head
             itemlist.append( Item(channel=__channel__, action='entradasconlistas', title=title, url=url, thumbnail=thumbnail, fanart=fanart, fulltitle=child['id'], plot=str(plot), viewmode="movie_with_plot", folder=True) )
-	    itemlist.sort(key=lambda item: item.fulltitle)
+	    #itemlist.sort(key=lambda item: item.fulltitle)
 
     if data["sortedRepoChilds"] and len(itemlist) > 0:
         itemlist.append( Item(channel=__channel__, title="[COLOR blue][B]**VÍDEOS**[/B][/COLOR]", folder=False) )
@@ -260,9 +266,10 @@ def series(item):
     logger.info("pelisalacarta.channels.tvvip series")
     itemlist = []
 
-    data = anti_cloudflare(item.url)
+    data, cloudflare = anti_cloudflare(item.url)
     data = jsontools.load_json(data)
-    head = header_string + get_cookie_value()
+    if cloudflare: head = header_string + get_cookie_value()
+    else: head = ""
     exception = ["top-series", "nuevos-capitulos"]
     for child in data["sortedPlaylistChilds"]:
         if child["id"] not in exception:
@@ -292,7 +299,7 @@ def series(item):
                 fulltitle = fulltitle.replace('-','')
                 title = child['name']+ " (" + child['year'] + ")"
                 if "Temporada" not in title: title += "     [Temporadas: [COLOR gold]"+str(child['numberOfSeasons'])+"[/COLOR]]"
-                else: title = title.replace("- Temporada", "--- Temporada")
+                elif item.title == "Más Vistas": title = title.replace("- Temporada","--- Temporada")
             else:
                 fulltitle = unicodedata.normalize('NFD', unicode(data['name'], 'utf-8')).encode('ASCII', 'ignore').decode("utf-8")
                 if child['seasonNumber']: title = data['name']+ " --- Temporada "+child['seasonNumber']+"  [COLOR gold]("+str(child['number'])+")[/COLOR]"
@@ -305,7 +312,8 @@ def series(item):
                 itemlist.sort(key=lambda item: item.title, reverse=True)
                 if config.get_library_support():
                     itemlist.append( Item(channel=__channel__, title="[COLOR green]Añadir esta serie a la biblioteca[/COLOR]", url=item.url, action="add_serie_to_library", extra="series_library", fulltitle=data['name'], show=data['name']))
-                
+
+    if item.title == "Últimas Series": return itemlist
     if item.title == "Lista de Series A-Z": itemlist.sort(key=lambda item: item.fulltitle)
 
     if data["sortedRepoChilds"] and len(itemlist) > 0:
@@ -354,9 +362,10 @@ def episodios(item):
         itemlist = series_library(item)
         return itemlist
 
-    data = anti_cloudflare(item.url)
+    data, cloudflare = anti_cloudflare(item.url)
     data = jsontools.load_json(data)
-    head = header_string + get_cookie_value()
+    if cloudflare: head = header_string + get_cookie_value()
+    else: head = ""
     # Se prueba un método u otro porque algunas series no están bien listadas
     if data["sortedRepoChilds"]:
         for child in data["sortedRepoChilds"]:
@@ -404,13 +413,13 @@ def series_library(item):
     itemlist = []
     show = item.show.strip()
   
-    data_serie = anti_cloudflare(item.url)
+    data_serie, cloudflare = anti_cloudflare(item.url)
     data_serie = jsontools.load_json(data_serie)
     # Para series que en la web se listan divididas por temporadas
     if data_serie["sortedPlaylistChilds"]:
         for season_name in data_serie["sortedPlaylistChilds"]:
             url_season = "http://tv-vip.com/json/playlist/%s/index.json" % season_name['id']
-            data = anti_cloudflare(url_season)
+            data, cloudflare = anti_cloudflare(url_season)
             data = jsontools.load_json(data)
 
             if data["sortedRepoChilds"]:
@@ -445,8 +454,10 @@ def findvideos(item):
 
     # En caso de llamarse a la función desde una serie de la biblioteca
     if item.title.startswith("http"): item.url = item.title.split('%')[0]
-    data = anti_cloudflare(item.url)
+    data, cloudflare = anti_cloudflare(item.url)
     data = jsontools.load_json(data)
+    if cloudflare: head = header_string + get_cookie_value()
+    else: head = ""
     urls = []
     for child in data["profiles"].keys():
         videopath = data["profiles"][child]['videoUri']
@@ -464,7 +475,8 @@ def findvideos(item):
             else: itemlist.append( Item(channel=__channel__, action='play', server='directo', title=title , url=url , thumbnail=item.thumbnail, fanart=item.fanart, fulltitle=item.fulltitle, plot=item.plot, folder=False) )
     for transcoder in data["transcoders"]:
         if transcoder == "hn": continue
-        head = header_string + get_cookie_value(data['id'][-4:])
+        if cloudflare: head = header_string + get_cookie_value(data['id'][-4:])
+        else: head = ""
         url_default = "http://"+transcoder+".tv-vip.com/transcoder/"+data['id']+"/default/"+data['id']+head
         title = "Ver vídeo en  ["+data["videoResolution"].replace('1920x1080','HD-1080p')+"] "+data["sizeHuman"]
         if not url_default in urls: itemlist.insert(0, Item(channel=__channel__, action='play', server='directo', title=title , url=url_default , thumbnail=item.thumbnail, fanart=item.fanart, fulltitle=item.fulltitle, plot=item.plot, folder=False) )
@@ -478,7 +490,7 @@ def listas(item):
     logger.info("pelisalacarta.channels.tvvip listas")
     # Para añadir listas a la biblioteca en carpeta CINE
     itemlist = []
-    data = anti_cloudflare(item.url)
+    data, cloudflare = anti_cloudflare(item.url)
     data = jsontools.load_json(data)
     for child in data["sortedRepoChilds"]:
         url = "http://tv-vip.com/json/repo/%s/index.json" % child["id"]
@@ -515,13 +527,15 @@ def anti_cloudflare(url):
 
     try:
         data = scrapertools.downloadpageGzip(url)
+        cloudflare = False
     except:
         data = scrapertools.cache_page(url, headers=headers)
+        cloudflare = True
 
-    return data
+    return data, cloudflare
 
 def get_cookie_value(extension=""):
-    cookies = config.get_cookie_data()
+    cookies = os.path.join( config.get_data_path(), 'cookies.dat' )
     cfduid = scrapertools.find_single_match(cookies,"tv-vip.*?__cfduid\s+([A-Za-z0-9\+\=]+)")
     cf_clearance = scrapertools.find_single_match(cookies,"tv-vip.*?cf_clearance\s+([A-Za-z0-9\+\=-]+)")
     cookie = "&Cookie=__cfduid="+cfduid+extension+"; cf_clearance="+cf_clearance
