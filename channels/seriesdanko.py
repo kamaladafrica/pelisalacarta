@@ -56,9 +56,9 @@ def novedades(item):
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     for scrapedtitle, scrapedurl, scrapedthumb in matches:
-        patron = "(.*?)(?:Ya Disponible|Disponible|Disponbile|disponible|\(Actualizada\))$"
-        match = re.compile(patron, re.DOTALL).findall(scrapedtitle)
-        title = scrapertools.decodeHtmlentities(match[0])
+        # patron = "^(.*?)(?:Ya Disponible|Disponible|Disponbile|disponible|\(Actualizada\))$"
+        # match = re.compile(patron, re.DOTALL).findall(scrapedtitle)
+        title = scrapertools.decodeHtmlentities(scrapedtitle)
 
         itemlist.append(Item(channel=__channel__, title=title, url=urlparse.urljoin(HOST, scrapedurl),
                         action="episodios", thumbnail=scrapedthumb))
