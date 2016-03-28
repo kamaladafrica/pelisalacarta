@@ -232,8 +232,6 @@ def findvideos(item):
     # Descarga la página
     data = scrapertools.cache_page(item.url)
 
-    logger.info(data)
-
     online = re.findall('<table class="as_gridder_table">(.+?)</table>', data, re.MULTILINE | re.DOTALL)
 
     if online is None:
