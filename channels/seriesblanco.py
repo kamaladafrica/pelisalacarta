@@ -199,20 +199,31 @@ def episodios(item):
     return itemlist
 
 def parseVideos(item, typeStr, data):
+    videoPatternsStr = [
+        '<tr.+?<span>(?P<date>.+?)</span>.*?banderas/(?P<language>[^\.]+).+?href="(?P<link>[^"]+).+?servidores/(?P<server>[^\.]+).*?</td>.*?<td>.*?<span>(?P<uploader>.+?)</span>.*?<span>(?P<quality>.*?)</span>.*?</tr>',
+        '<tr.+?banderas/(?P<language>[^\.]+).+?<td[^>]*>(?P<date>.+?)</td>.+?href=[\'"](?P<link>[^\'"]+).+?servidores/(?P<server>[^\.]+).*?</td>.*?<td[^>]*>.*?<a[^>]+>(?P<uploader>.+?)</a>.*?</td>.*?<td[^>]*>(?P<quality>.*?)</td>.*?</tr>'
+    ]
+
+    vPattIter = None
+    for vPatStr in videoPatternsStr:
+        vPattIter = re.compile(vPatStr, re.MULTILINE | re.DOTALL).finditer(data)
+        if vPattIter:
+            break
+
     itemlist = []
 
-    # language, date, link, server, uploader, quality
-    pattern = '<tr.+?banderas/([^\.]+).+?<td[^>]*>(.+?)</td>.+?href=[\'"]([^\'"]+).+?servidores/([^\.]+).*?</td>.*?<td[^>]*>.*?<a[^>]+>(.+?)</a>.*?</td>.*?<td[^>]*>(.*?)</td>.*?</tr>'
-    links = re.findall(pattern, data, re.MULTILINE | re.DOTALL)
+    if vPattIter:
+        for vMatch in vPattIter:
+            vFields = vMatch.groupdict()
+            quality = vFields.get("quality")
+            if not quality:
+                quality = "SD"
 
-    for language, date, link, server, uploader, quality in links:
-        if not quality:
-            quality = "SD"
-        title = "{0} en {1} [{2}] [{3}] ({4}: {5})".format(typeStr, server, IDIOMAS[language],
-                                                           quality, uploader, date)
+            title = "{0} en {1} [{2}] [{3}] ({4}: {5})".format(typeStr, vFields.get("server"), IDIOMAS[vFields.get("language")],
+                                                                   quality, vFields.get("uploader"), vFields.get("date"))
+            itemlist.append(Item(channel=__channel__, title=title, url=urlparse.urljoin(HOST, vFields.get("link")), action="play",
+                                 show=item.show))
 
-        itemlist.append(Item(channel=__channel__, title=title, url=urlparse.urljoin(HOST, link), action="play",
-                             show=item.show))
     return itemlist
 
 def findvideos(item):
@@ -221,7 +232,12 @@ def findvideos(item):
     # Descarga la página
     data = scrapertools.cache_page(item.url)
 
-    online = re.findall("<table class='zebra'>(.+?)<[Bb][Rr]>", data, re.MULTILINE | re.DOTALL)
+    logger.info(data)
+
+    online = re.findall('<table class="as_gridder_table">(.+?)</table>', data, re.MULTILINE | re.DOTALL)
+
+    if online is None:
+        online = re.findall("<table class='zebra'>(.+?)<[Bb][Rr]>", data, re.MULTILINE | re.DOTALL)
 
     return parseVideos(item, "Ver", online[0]) + parseVideos(item, "Descargar", online[1])
 
