@@ -204,15 +204,11 @@ def parseVideos(item, typeStr, data):
         '<tr.+?banderas/(?P<language>[^\.]+).+?<td[^>]*>(?P<date>.+?)</td>.+?href=[\'"](?P<link>[^\'"]+).+?servidores/(?P<server>[^\.]+).*?</td>.*?<td[^>]*>.*?<a[^>]+>(?P<uploader>.+?)</a>.*?</td>.*?<td[^>]*>(?P<quality>.*?)</td>.*?</tr>'
     ]
 
-    vPattIter = None
     for vPatStr in videoPatternsStr:
         vPattIter = re.compile(vPatStr, re.MULTILINE | re.DOTALL).finditer(data)
-        if vPattIter:
-            break
 
-    itemlist = []
+        itemlist = []
 
-    if vPattIter:
         for vMatch in vPattIter:
             vFields = vMatch.groupdict()
             quality = vFields.get("quality")
@@ -224,7 +220,10 @@ def parseVideos(item, typeStr, data):
             itemlist.append(Item(channel=__channel__, title=title, url=urlparse.urljoin(HOST, vFields.get("link")), action="play",
                                  show=item.show))
 
-    return itemlist
+        if len(itemlist) > 0:
+            return itemlist
+
+    return []
 
 def findvideos(item):
     logger.info("pelisalacarta.seriesblanco findvideos")
@@ -234,7 +233,7 @@ def findvideos(item):
 
     online = re.findall('<table class="as_gridder_table">(.+?)</table>', data, re.MULTILINE | re.DOTALL)
 
-    if online is None:
+    if len(online) == 0:
         online = re.findall("<table class='zebra'>(.+?)<[Bb][Rr]>", data, re.MULTILINE | re.DOTALL)
 
     return parseVideos(item, "Ver", online[0]) + parseVideos(item, "Descargar", online[1])
