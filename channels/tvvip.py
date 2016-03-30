@@ -536,7 +536,10 @@ def anti_cloudflare(url):
 
 def get_cookie_value(extension=""):
     cookies = os.path.join( config.get_data_path(), 'cookies.dat' )
-    cfduid = scrapertools.find_single_match(cookies,"tv-vip.*?__cfduid\s+([A-Za-z0-9\+\=]+)")
-    cf_clearance = scrapertools.find_single_match(cookies,"tv-vip.*?cf_clearance\s+([A-Za-z0-9\+\=-]+)")
+    cookiedatafile = open(cookies,'r')
+    cookiedata = cookiedatafile.read()
+    cookiedatafile.close();
+    cfduid = scrapertools.find_single_match(cookiedata,"tv-vip.*?__cfduid\s+([A-Za-z0-9\+\=]+)")
+    cf_clearance = scrapertools.find_single_match(cookiedata,"tv-vip.*?cf_clearance\s+([A-Za-z0-9\+\=-]+)")
     cookie = "&Cookie=__cfduid="+cfduid+extension+"; cf_clearance="+cf_clearance
     return cookie
