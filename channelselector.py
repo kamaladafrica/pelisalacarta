@@ -63,20 +63,8 @@ def mainlist(params,url,category):
                 logger.info("channelselector.mainlist Verificar actualizaciones desactivado")
 
     itemlist = getmainlist()
-    for elemento in itemlist:
-        logger.info("channelselector.mainlist item="+elemento.title)
-        addfolder(elemento.title , elemento.channel , elemento.action , thumbnail=elemento.thumbnail, folder=elemento.folder)
-
-    # Label (top-right)...
-    import xbmcplugin
-    xbmcplugin.setPluginCategory( handle=int( sys.argv[ 1 ] ), category="" )
-    xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_NONE )
-    xbmcplugin.endOfDirectory( handle=int( sys.argv[ 1 ] ), succeeded=True )
-
-    if config.get_setting("forceview")=="true":
-        # Confluence - Thumbnail
-        import xbmc
-        xbmc.executebuiltin("Container.SetViewMode(500)")
+	#Se devuelve el itemlist para que xbmctools se encarge de mostrarlo
+    return itemlist
 
 def getchanneltypes(preferred_thumb=""):
     logger.info("channelselector getchanneltypes")
@@ -153,51 +141,15 @@ def channeltypes(params,url,category):
     logger.info("channelselector.mainlist channeltypes")
 
     lista = getchanneltypes()
-    for item in lista:
-        addfolder(item.title,item.channel,item.action,item.category,item.thumbnail,item.thumbnail)
-
-    # Label (top-right)...
-    import xbmcplugin
-    xbmcplugin.setPluginCategory( handle=int( sys.argv[ 1 ] ), category="" )
-    xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_NONE )
-    xbmcplugin.endOfDirectory( handle=int( sys.argv[ 1 ] ), succeeded=True )
-
-    if config.get_setting("forceview")=="true":
-        # Confluence - Thumbnail
-        import xbmc
-        xbmc.executebuiltin("Container.SetViewMode(500)")
+	#Se devuelve el itemlist para que xbmctools se encarge de mostrarlo
+    return lista
 
 def listchannels(params,url,category):
     logger.info("channelselector.listchannels")
 
     lista = filterchannels(category)
-    for channel in lista:
-        if channel.type=="xbmc" or channel.type=="generic":
-            if channel.channel=="personal":
-                thumbnail=config.get_setting("personalchannellogo")
-            elif channel.channel=="personal2":
-                thumbnail=config.get_setting("personalchannellogo2")
-            elif channel.channel=="personal3":
-                thumbnail=config.get_setting("personalchannellogo3")
-            elif channel.channel=="personal4":
-                thumbnail=config.get_setting("personalchannellogo4")
-            elif channel.channel=="personal5":
-                thumbnail=config.get_setting("personalchannellogo5")
-            else:
-                thumbnail=channel.thumbnail
-
-            addfolder(channel.title , channel.channel , "mainlist" , channel.channel, thumbnail = thumbnail)
-
-    # Label (top-right)...
-    import xbmcplugin
-    xbmcplugin.setPluginCategory( handle=int( sys.argv[ 1 ] ), category=category )
-    xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_NONE )
-    xbmcplugin.endOfDirectory( handle=int( sys.argv[ 1 ] ), succeeded=True )
-
-    if config.get_setting("forceview")=="true":
-        # Confluence - Thumbnail
-        import xbmc
-        xbmc.executebuiltin("Container.SetViewMode(500)")
+	#Se devuelve el itemlist para que xbmctools se encarge de mostrarlo
+    return lista
 
 def filterchannels(category,preferred_thumb=""):
     logger.info("channelselector.filterchannels")
@@ -275,20 +227,6 @@ def filterchannels(category,preferred_thumb=""):
         channelslist.insert( 0 , Item( title="Tengo una URL"  ,action="mainlist", channel="tengourl" , thumbnail=channel_parameters["thumbnail"], type="generic"  ))
 
     return channelslist
-
-def addfolder(nombre,channelname,accion,category="",thumbnailname="",thumbnail="",folder=True):
-    if category == "":
-        try:
-            category = unicode( nombre, "utf-8" ).encode("iso-8859-1")
-        except:
-            pass
-    
-    import xbmc
-    import xbmcgui
-    import xbmcplugin
-    listitem = xbmcgui.ListItem( nombre , iconImage="DefaultFolder.png", thumbnailImage=thumbnail)
-    itemurl = '%s?channel=%s&action=%s&category=%s' % ( sys.argv[ 0 ] , channelname , accion , category )
-    xbmcplugin.addDirectoryItem( handle = int(sys.argv[ 1 ]), url = itemurl , listitem=listitem, isFolder=folder)
 
 def get_thumbnail_path(preferred_thumb=""):
 

@@ -22,7 +22,7 @@
 # along with pelisalacarta 4.  If not, see <http://www.gnu.org/licenses/>.
 #------------------------------------------------------------
 
-import json
+from core import jsontools as json
 import base64
 import urllib
 import copy
