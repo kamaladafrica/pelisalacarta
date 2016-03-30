@@ -462,7 +462,6 @@ def findvideos(item):
     for child in data["profiles"].keys():
         videopath = data["profiles"][child]['videoUri']
         extension = videopath[-4:]
-        head = header_string + get_cookie_value(extension)
         for i in range(0, len(data["profiles"][child]['servers'])):
             url = data["profiles"][child]['servers'][i]['url'] + videopath + head
             urls.append(url)
