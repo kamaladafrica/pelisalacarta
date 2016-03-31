@@ -6,12 +6,17 @@
 
 import os
 import glob
+import time
 import imp
+import urlparse
+import re
+import channelselector
 from core import config
 from core import logger
 from core.item import Item
 from core import channeltools
-from platformcode import guitools
+from platformcode import platformtools
+from threading import Thread
 
 
 __channel__ = "buscador"
@@ -31,22 +36,27 @@ def mainlist(item,preferred_thumbnail="squares"):
     itemlist = list()
     itemlist.append(Item(channel=__channel__, action="search", title="Búsqueda genérica..."))
 
-    if config.is_xbmc():
-        itemlist.append(Item(channel=__channel__, action="search", title="Búsqueda por categorías...", extra="categorias"))
+
+    itemlist.append(Item(channel=__channel__, action="search", title="Búsqueda por categorías...", extra="categorias"))
+    itemlist.append(Item(channel=__channel__, action="opciones", title="Opciones"))
 
     saved_searches_list = get_saved_searches()
 
     for saved_search_text in saved_searches_list:
-        itemlist.append(Item(channel=__channel__, action="do_search", title=' "'+saved_search_text+'"',
-                             extra=saved_search_text))
-
-    if len(saved_searches_list) > 0:
-        itemlist.append(Item(channel=__channel__, action="clear_saved_searches", title="Borrar búsquedas guardadas"))
-    
-    if config.is_xbmc():
-        itemlist.append(Item(channel=__channel__, action="settingCanal", title="Canales incluidos..."))
+        itemlist.append(Item(channel=__channel__, action="do_search", title=' "'+saved_search_text+'"', extra=saved_search_text))
 
     return itemlist
+    
+    
+def opciones(item):
+    itemlist = []
+    itemlist.append(Item(channel=__channel__, action="clear_saved_searches", title="Borrar búsquedas guardadas"))
+    itemlist.append(Item(channel=__channel__, action="settingCanal", title="Canales incluidos..."))
+    itemlist.append(Item(channel=__channel__, action="settings", title="Ajustes buscador"))
+    return itemlist
+        
+def settings(item):
+    platformtools.show_channel_settings(channel_action="buscador", caption= "Opciones")
 
 def settingCanal(item):
     # Only in xbmc/kodi
@@ -87,11 +97,9 @@ def settingCanal(item):
 
         list_controls.append(control)
                 
-    ventana = guitools.SettingWindow(list_controls, caption= "Canales incluidos en la búsqueda global")
-    ventana.doModal()
-    if ventana.isConfirmed():
-        for canal, value in ventana.get_values().items():
-            config.set_setting("include_in_global_search",value,canal)
+    values = platformtools.show_channel_settings(list_controls=list_controls, caption= "Canales incluidos en la búsqueda global")
+    for canal, value in values.items():
+        config.set_setting("include_in_global_search",value,canal)
     
     
 def searchbycat():
@@ -129,15 +137,17 @@ def searchbycat():
                       'visible': True}    
     list_controls.append(control)
                 
-    ventana = guitools.SettingWindow(list_controls, caption= "Elegir categorías")
-    ventana.doModal()
-    if ventana.isConfirmed():
-        cat = []
-        for category, value in ventana.get_values().items():
-            if value:
-                cat.append(category)
-        return cat
-    else: return False
+    values = platformtools.show_channel_settings(list_controls=list_controls , caption= "Elegir categorías")
+
+    cat = []
+    for category, value in values.items():
+        if value:
+            cat.append(category)
+    
+    if not len(cat):
+      return false
+    else:
+      return cat
         
 # Al llamar a esta función, el sistema pedirá primero el texto a buscar
 # y lo pasará en el parámetro "tecleado"
@@ -154,10 +164,47 @@ def search(item, tecleado):
 
     item.extra = tecleado
     return do_search(item, categories)
+  
+def channel_result(item):
+  extra = item.extra.split("{}")[0]
+  channel = item.extra.split("{}")[1]
+  tecleado = item.extra.split("{}")[2]
+  exec "from channels import " + channel + " as module"
+  item.channel = channel
+  item.extra = extra
+  print item.url
+  itemlist = module.search(item, tecleado)
+  return itemlist
 
+def channel_search(search_results, channel_parameters,tecleado):
+    ListaCanales = []
+    try:
+      exec "from channels import " + channel_parameters["channel"] + " as module"
+      mainlist = module.mainlist(Item())
+      search_items = [item for item in mainlist if item.action=="search"]
+      
+      for item in search_items:
+            result = module.search(item.clone(), tecleado)
+            if result ==None: result = []
+            if len(result):
+              if not channel_parameters["title"] in search_results:
+                search_results[channel_parameters["title"]] = []
+              search_results[channel_parameters["title"]].append({"item": item, "itemlist":result})
+                
+
+              
+    except:
+      logger.error("No se puede buscar en: "+ channel_parameters["title"])  
+      import traceback
+      logger.error(traceback.format_exc())
+      
+            
 
 # Esta es la función que realmente realiza la búsqueda
 def do_search(item, categories=[]):
+    multithread = config.get_setting("multithread","buscador")
+    modes = ["Todo junto", "Por canales"]
+    result_mode = modes.index(config.get_setting("result_mode","buscador"))
     logger.info("pelisalacarta.channels.buscador do_search")
 
     tecleado = item.extra
@@ -173,22 +220,23 @@ def do_search(item, categories=[]):
         channel_language = "all"
         logger.info("pelisalacarta.channels.buscador channel_language="+channel_language)
 
-    show_dialog = False
-    progreso = None
-    if config.is_xbmc():
-        show_dialog = True
+    #Para Kodi es necesario esperar antes de cargar el progreso, de lo contrario
+    #el cuadro de progreso queda "detras" del cuadro "cargando..." y no se le puede dar a cancelar
+    time.sleep(0.5)
+    
+    progreso = platformtools.dialog_progress("Buscando " + tecleado.title(),"")
 
-    try:
-        import xbmcgui
-        progreso = xbmcgui.DialogProgressBG()
-        progreso.create("Buscando " + tecleado.title())
-    except ImportError:
-        xbmcgui = None
-        show_dialog = False
 
     channel_files = glob.glob(channels_path)
     number_of_channels = len(channel_files)
-
+    
+    searches = []
+    search_results = {}
+    start_time = time.time()
+    
+    if multithread:
+      progreso.update(0, "Buscando %s en %d canales" % (tecleado, len(channel_files)))
+      
     for index, infile in enumerate(channel_files):
         percentage = index*100/number_of_channels
 
@@ -222,29 +270,58 @@ def do_search(item, categories=[]):
         if include_in_global_search.lower() != "true":
             continue
             
-        if show_dialog:
-            progreso.update(percentage, ' Buscando "' + tecleado + '"', basename_without_extension)
+        if progreso.iscanceled(): break
+        
+        #Modo Multi Thread            
+        if multithread:
+          t = Thread(target=channel_search,args=[search_results, channel_parameters, tecleado])
+          t.setDaemon(True) 
+          t.start()
+          searches.append(t)
+        
+        #Modo single Thread
+        else:
+          logger.info("pelisalacarta.channels.buscador Intentado busqueda en " + basename_without_extension + " de " + tecleado)
 
-        logger.info("pelisalacarta.channels.buscador Intentado busqueda en " + basename_without_extension + " de " +
-                    tecleado)
-        try:
+          progreso.update(percentage, "Buscando %s en %s" % (tecleado, channel_parameters["title"]))
+          channel_search(search_results, channel_parameters, tecleado)
+    
 
-            # http://docs.python.org/library/imp.html?highlight=imp#module-imp
-            obj = imp.load_source(basename_without_extension, infile[:-4]+".py")
-            logger.info("pelisalacarta.channels.buscador cargado " + basename_without_extension + " de " + infile)
-            channel_result_itemlist = obj.search(Item(), tecleado)
-            for item in channel_result_itemlist:
-                item.title = item.title + "[" + basename_without_extension + "]"
-                item.viewmode = "list"
-                
-            channel_result_itemlist = sorted(channel_result_itemlist, key=lambda Item: Item.title) 
-            itemlist.extend(channel_result_itemlist)
-        except:
-            import traceback
-            logger.error(traceback.format_exc())
+    #Modo Multi Thread
+    if multithread :
+      pendent =  len([a for a in searches if a.is_alive()])
+      while pendent:
+        pendent =  len([a for a in searches if a.is_alive()])
+        percentage =  (len(searches) - pendent) * 100 / len(searches)
+        progreso.update(percentage, "Buscando %s en %d canales" % (tecleado, len(channel_files)))
+        if progreso.iscanceled(): break
+        time.sleep(0.5)
+          
+    total = 0 
+    
+    for channel in sorted(search_results.keys()):
+      for search in search_results[channel]:
+        total+= len(search["itemlist"])
+        if result_mode ==1:
+            title = channel
+            if len(search_results[channel]) > 1:
+              title += " [" + search["item"].title.strip() + "]"
+            title +=" (" + str(len(search["itemlist"])) + ")"
+            
+            title = re.sub("\[COLOR [^\]]+\]","",title)
+            title = re.sub("\[/COLOR]","",title)
+            
+            extra = search["item"].extra + "{}" + search["item"].channel + "{}" + tecleado
+            itemlist.append(Item(title=title, channel="buscador",action="channel_result", url=search["item"].url, extra = extra, folder=True))
+        else:
+          itemlist.extend(search["itemlist"])
+  
+  
+  
+    title="[COLOR yellow]Buscando: '%s' | Encontrado: %d vídeos | Tiempo: %2.f segundos[/COLOR]" % (tecleado,total, time.time()-start_time)
+    itemlist.insert(0,Item(title=title))
 
-    if show_dialog:
-        progreso.close()
+    progreso.close()
 
     return itemlist
 
@@ -276,6 +353,7 @@ def clear_saved_searches(item):
     f = open(os.path.join(config.get_data_path(), "saved_searches.txt"), "w")
     f.write("")
     f.close()
+    platformtools.dialog_ok("Buscador","Búsquedas borradas correctamente")
 
 
 def get_saved_searches():

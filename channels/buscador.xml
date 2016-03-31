@@ -20,4 +20,23 @@
 	<categories>
 		<category>movie</category>
 	</categories>
+	
+  <settings>
+		<id>multithread</id>
+		<type>bool</type>
+		<label>Buscador MultiThread</label>
+		<default>true</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
+  <settings>
+    <id>result_mode</id>
+    <type>list</type>
+    <label>Mostrar resultados:</label>
+    <default>Por canales</default>
+    <enabled>true</enabled>
+    <visible>true</visible>
+    <lvalues>Por canales</lvalues>
+    <lvalues>Todo junto</lvalues>
+  </settings>
 </channel>

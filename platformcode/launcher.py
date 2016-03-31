@@ -16,7 +16,7 @@ from core import config
 from core import scrapertools
 from core import channeltools
 from core import updater
-from platformcode import guitools
+from platformcode import platformtools
 from platformcode import xbmctools
 
 def start():
@@ -383,7 +383,8 @@ def run():
                     xbmcplugin.setContent(int( handle ),"movies")
                     
                     # Añade los items a la lista de XBMC
-                    xbmctools.renderItems(itemlist, params, url, category)
+                    if type(itemlist) == list:
+                      xbmctools.renderItems(itemlist, params, url, category)
 
     except urllib2.URLError,e:
         import traceback,sys
