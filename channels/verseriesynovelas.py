@@ -4,7 +4,7 @@
 # Canal para verseriesynovelas
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import re
+import re, urllib2, time
 from core import logger
 from core import config
 from core import scrapertools
@@ -18,6 +18,14 @@ __title__ = "Ver Series y Novelas"
 __language__ = "ES"
 
 DEBUG = config.get_setting("debug")
+
+host = "http://www.verseriesynovelas.tv"
+
+headers = [
+    ["User-Agent","Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:22.0) Gecko/20100101 Firefox/22.0"],
+    ["Accept-Encoding","gzip, deflate"],
+    ["Referer",host]
+    ]
 
 def isGeneric():
     return True
@@ -36,7 +44,7 @@ def indices(item):
     logger.info("pelisalacarta.channels.verseriesynovelas indices")
 
     itemlist = []
-    data = scrapertools.cache_page(item.url)
+    data = anti_cloudflare(item.url)
     data = data.replace("\n","").replace("\t","")
 
     if item.title == "Series [Categorías]":
@@ -56,12 +64,19 @@ def search(item,texto):
     logger.info("pelisalacarta.channels.verseriesynovelas search")
     item.url = "http://www.verseriesynovelas.tv/archivos/h1/?s=" + texto
     if item.title == "Buscar...": return ultimas(item)
-    else: return busqueda(item)
+    else:
+        try:
+            return busqueda(item)
+        except:
+            import sys
+            for line in sys.exc_info():
+                logger.error( "%s" % line )
+            return []
 
 def busqueda(item):
     logger.info("pelisalacarta.channels.verseriesynovelas busqueda")
     itemlist = []
-    data = scrapertools.cachePage(item.url)
+    data = anti_cloudflare(item.url)
     data = data.replace("\n","").replace("\t","")
 
     bloque = scrapertools.find_single_match(data, '<ul class="list-paginacion">(.*?)</section>')
@@ -86,7 +101,7 @@ def busqueda(item):
 def novedades(item):
     logger.info("pelisalacarta.channels.verseriesynovelas novedades")
     itemlist = []
-    data = scrapertools.cachePage(item.url)
+    data = anti_cloudflare(item.url)
     data = data.replace("\n","").replace("\t","")
 
     bloque = scrapertools.find_single_match(data, '<section class="list-galeria">(.*?)</section>')
@@ -112,7 +127,7 @@ def novedades(item):
             if "LA.png" in match: scrapedtitle += "[COLOR red][LAT][/COLOR]"
             if "EN.png" in match: scrapedtitle += "[COLOR blue][V.O][/COLOR]"
             if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-            itemlist.append( Item(channel=__channel__, action='enlaces', title= scrapedtitle , url=scrapedurl , thumbnail=thumbnail, fanart=fanart, fulltitle=scrapedtitle, plot=str(sinopsis), folder=True) )
+            itemlist.append( Item(channel=__channel__, action='findvideos', title= scrapedtitle , url=scrapedurl , thumbnail=thumbnail, fanart=fanart, fulltitle=scrapedtitle, plot=str(sinopsis), folder=True) )
     #Paginación
     patron = '<a class="nextpostslink".*?href="([^"]+)">'
     match = scrapertools.find_single_match(data, patron)
@@ -124,7 +139,7 @@ def novedades(item):
 def ultimas(item):
     logger.info("pelisalacarta.channels.verseriesynovelas ultimas")
     itemlist = []
-    data = scrapertools.cachePage(item.url)
+    data = anti_cloudflare(item.url)
     data = data.replace("\n","").replace("\t","")
 
     bloque = scrapertools.find_single_match(data, '<ul class="list-paginacion">(.*?)</section>')
@@ -135,8 +150,8 @@ def ultimas(item):
         matches = scrapertools.find_multiple_matches(match, patron)
         for scrapedurl, scrapedthumbnail, scrapedtitle in matches:
             scrapedtitle = scrapertools.decodeHtmlentities(scrapedtitle).replace(" online","")
-            titleinfo = re.sub(r'(?i)((primera|segunda|tercera|cuarta|quinta|sexta) Temporada)', "Temporada", scrapedtitle)
-            titleinfo = titleinfo.split('Temporada')[0]
+            titleinfo = re.sub(r'(?i)((primera|segunda|tercera|cuarta|quinta|sexta) [Tt]emporada)', "Temporada", scrapedtitle)
+            titleinfo = titleinfo.split('Temporada')[0].strip()
             try:
                 sinopsis, fanart, thumbnail = info(titleinfo)
                 if thumbnail == "": thumbnail = scrapedthumbnail
@@ -159,14 +174,14 @@ def episodios(item):
     logger.info("pelisalacarta.channels.verseriesynovelas episodios")
     itemlist = []
 
-    data = scrapertools.cache_page(item.url)
+    data = anti_cloudflare(item.url)
     data = data.replace("\n","").replace("\t","")
-
-    try:
-        from core.tmdb import Tmdb
-        otmdb= Tmdb(texto_buscado=item.fulltitle, tipo="tv")
-    except:
-        pass
+    if item.show == "":
+        try:
+            from core.tmdb import Tmdb
+            otmdb= Tmdb(texto_buscado=item.fulltitle, tipo="tv")
+        except:
+            pass
     plot = scrapertools.find_single_match(data, '<p><p>(.*?)</p>')
     if len(plot)>0: plot = scrapertools.htmlclean(plot)
     patron = '<td data-th="Temporada"(.*?)</div>'
@@ -175,97 +190,82 @@ def episodios(item):
         patron = '.*?href="([^"]+)".*?title="([^"]+)"'
         matches = scrapertools.find_multiple_matches(match, patron)
         for scrapedurl, scrapedtitle in matches:
-            try:
-                sinopsis, fanart, thumbnail = infoepi(otmdb, scrapedtitle.rsplit(' ', 1)[1], plot)
-                if thumbnail == "": thumbnail = item.thumbnail
-            except:
+            if item.show == "":
+                try:
+                    sinopsis, fanart, thumbnail = infoepi(otmdb, scrapedtitle.rsplit(' ', 1)[1], plot)
+                    if thumbnail == "": thumbnail = item.thumbnail
+                except:
+                    thumbnail = item.thumbnail
+                    fanart = item.fanart
+                    sinopsis = plot
+                    pass
+            else:
                 thumbnail = item.thumbnail
                 fanart = item.fanart
-                sinopsis = plot
-                pass
+                sinopsis = plot                
             scrapedtitle = scrapertools.decodeHtmlentities(scrapedtitle)+ " "
+            scrapedtitle = scrapedtitle.replace('Temporada','')
             if "ES.png" in match: scrapedtitle += "[COLOR sandybrown][CAST][/COLOR]"
             if "SUB.png" in match: scrapedtitle += "[COLOR green][VOSE][/COLOR]"
             if "LA.png" in match: scrapedtitle += "[COLOR red][LAT][/COLOR]"
             if "EN.png" in match: scrapedtitle += "[COLOR blue][V.O][/COLOR]"
             if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"]")
-            itemlist.append( Item(channel=__channel__, action='enlaces', title= scrapedtitle , url=scrapedurl , thumbnail=thumbnail, fanart=fanart, fulltitle=scrapedtitle, plot=str(sinopsis), folder=True) )
+            if item.show != "":
+                scrapedtitle = scrapedurl + "%" + scrapedtitle
+                scrapedurl = item.url
+            itemlist.append( Item(channel=__channel__, action='findvideos', title= scrapedtitle , url=scrapedurl , thumbnail=thumbnail, fanart=fanart, fulltitle=item.fulltitle, plot=str(sinopsis), show=item.show, folder=True) )
+
+    if len(itemlist) > 0 and item.show == "":
+        if config.get_library_support():
+            itemlist.append( Item(channel=__channel__, title="[COLOR green]Añadir esta temporada a la biblioteca[/COLOR]", url=item.url, action="add_serie_to_library", extra="episodios", fulltitle=item.fulltitle, show=item.fulltitle ))
 
     return itemlist
 
-def enlaces(item):
-    logger.info("pelisalacarta.channels.verseriesynovelas enlaces")
-    itemlist = []
-    itemlist.append( Item(channel=__channel__, action='findvideos', title= "Enlaces Streaming >>" , url=item.url , thumbnail=item.thumbnail, fanart=item.fanart, fulltitle=item.fulltitle, plot=item.plot, folder=True) )
-    itemlist.append( Item(channel=__channel__, action='findvideos', title= "Enlaces Descarga >>" , url=item.url , thumbnail=item.thumbnail, fanart=item.fanart, fulltitle=item.fulltitle, plot=item.plot, folder=True) )
-    return itemlist
 
 def findvideos(item):
     logger.info("pelisalacarta.channels.verseriesynovelas findvideos")
     itemlist = []
-    data = scrapertools.cache_page(item.url)
+    if item.title.startswith("http"): item.url = item.title.split('%')[0]
+    data = anti_cloudflare(item.url)
     data = data.replace("\n","").replace("\t","")
 
-    if item.title == "Enlaces Streaming >>":
-        #Patron online
-        data_online = scrapertools.find_single_match(data, '<div class="titles4">(.*?)</table>')
-        if len(data_online)> 0:
-            patron = '<tr><td data-th="Idioma">(.*?)</div>'
-            bloque = scrapertools.find_multiple_matches(data_online, patron)
-            for match in bloque:
-                patron = '.*?data-th="Calidad">(.*?)<.*?'
-                patron += '"Servidor".*?src="http://www.google.com/s2/favicons\?domain=(.*?)\.'
-                patron += '.*?<td data-th="Enlace"><a href="(http://www.verseriesynovelas.tv/enlaces.php.*?)"'
-                matches = scrapertools.find_multiple_matches(match, patron)
-                for quality, server, url in matches:
-                    if server == "streamin": server = "streaminto"
-                    if server== "waaw": server = "netutv"
-                    try:
-                        servers_module = __import__("servers."+server)
-                        title = "Enlace encontrado en "+server+" ["+quality+"]"
-                        if "Español.png" in match: title += " [COLOR sandybrown][CAST][/COLOR]"
-                        if "VOS.png" in match: title += " [COLOR green][VOSE][/COLOR]"
-                        if "Latino.png" in match: title += " [COLOR red][LAT][/COLOR]"
-                        if "VO.png" in match: title += " [COLOR blue][V.O][/COLOR]"
-                        itemlist.append( Item(channel=__channel__, action="play", title=title , url=url , fulltitle = item.fulltitle, thumbnail=item.thumbnail , fanart=item.fanart, plot=item.plot, folder=True) )
-                    except:
-                        pass
+    patron = '<tr><td data-th="Idioma">(.*?)</div>'
+    bloque = scrapertools.find_multiple_matches(data, patron)
+    for match in bloque:
+        patron = '.*?data-th="Calidad">(.*?)<.*?'
+        patron += '"Servidor".*?src="http://www.google.com/s2/favicons\?domain=(.*?)\.'
+        patron += '.*?<td data-th="Enlace"><a href="(http://www.verseriesynovelas.tv/enlaces.php.*?)"'
+        matches = scrapertools.find_multiple_matches(match, patron)
+        for quality, server, url in matches:
+            if server == "streamin": server = "streaminto"
+            if server== "waaw": server = "netutv"
+            if server == "ul": server = "uploadedto"
+            try:
+                servers_module = __import__("servers."+server)
+                title = "Enlace encontrado en "+server+" ["+quality+"]"
+                if "Español.png" in match: title += " [COLOR sandybrown][CAST][/COLOR]"
+                if "VOS.png" in match: title += " [COLOR green][VOSE][/COLOR]"
+                if "Latino.png" in match: title += " [COLOR red][LAT][/COLOR]"
+                if "VO.png" in match: title += " [COLOR blue][V.O][/COLOR]"
+                itemlist.append( Item(channel=__channel__, action="play", title=title , url=url , fulltitle = item.fulltitle, thumbnail=item.thumbnail , fanart=item.fanart, plot=item.plot, folder=True) )
+            except:
+                pass
 
-    else:
-        #Patron descarga
-        data_download = scrapertools.find_single_match(data, '<div class="titles4"><h3>Descargar(.*?)</table>')
-        if len(data_download)> 0:
-            patron = '<tr><td data-th="Idioma">(.*?)</div>'
-            bloque = scrapertools.find_multiple_matches(data_download, patron)
-            for match in bloque:
-                patron = '.*?data-th="Calidad">(.*?)<.*?'
-                patron += '"Servidor".*?src="http://www.google.com/s2/favicons\?domain=(.*?)\.'
-                patron += '.*?<td data-th="Enlace"><a href="(http://www.verseriesynovelas.tv/enlaces.php.*?)"'
-                matches = scrapertools.find_multiple_matches(match, patron)
-                for quality, server, url in matches:
-                    if server == "ul": server = "uploadedto"
-                    try:
-                        servers_module = __import__("servers."+server)
-                        title = "Enlace encontrado en "+server+" ["+quality+"]"
-                        if "Español.png" in match: title += " [COLOR sandybrown][CAST][/COLOR]"
-                        if "VOS.png" in match: title += " [COLOR green][VOSE][/COLOR]"
-                        if "Latino.png" in match: title += " [COLOR red][LAT][/COLOR]"
-                        if "VO.png" in match: title += " [COLOR blue][V.O][/COLOR]"
-                        itemlist.append( Item(channel=__channel__, action="play", title=title , url=url , fulltitle = item.fulltitle, thumbnail=item.thumbnail , fanart=item.fanart, plot=item.plot, folder=True) )
-                    except:
-                        pass
     if len(itemlist) == 0: 
         itemlist.append( Item(channel=__channel__, action="", title="No se ha encontrado ningún enlace" , url="" , thumbnail="", fanart=item.fanart, folder=False) )
+    else:
+        if config.get_library_support() and item.category == "verseriesynovelas":
+            itemlist.append( Item(channel=__channel__, title="[COLOR green]Añadir enlaces a la biblioteca[/COLOR]", url=item.url, action="add_pelicula_to_library", fulltitle=item.title.split(" [")[0], show=item.title))
     return itemlist
 
 
 def play(item):
     logger.info("pelisalacarta.channels.verseriesynovelas play")
     itemlist = []
-    data = scrapertools.cache_page(item.url)
-    if "Redireccionando" in data: data = scrapertools.cache_page(item.url)
+    data = anti_cloudflare(item.url)
+    if "Redireccionando" in data: data = anti_cloudflare(item.url)
     enlace = scrapertools.find_single_match(data, 'class="btn" href="([^"]+)"')
-    location = scrapertools.getLocationHeaderFromResponse(enlace)
+    location = anti_cloudflare(enlace, location=True)
     enlaces = servertools.findvideos(data=location)
     if len(enlaces)> 0:
         titulo = "Enlace encontrado en "+enlaces[0][0]
@@ -317,7 +317,30 @@ def infoepi(otmdb, episode, sinopsis=""):
             thumbnail = otmdb.get_poster()
         else:
             thumbnail = episodio["episodio_imagen"]
+        infolabels['mediatype'] = "episode"
         plot['infoLabels']=infolabels
         return plot, fanart, thumbnail
     except:
         pass
+
+def anti_cloudflare(url, location=False):
+    # global headers
+    respuesta = ""
+    try:
+        resp_headers = scrapertools.get_headers_from_response(url, headers=headers)
+        resp_headers = dict(resp_headers)
+        if resp_headers.has_key('location'): respuesta = resp_headers['location']
+    except urllib2.HTTPError, e:
+        resp_headers = e.headers
+
+    if 'refresh' in resp_headers:
+        time.sleep(int(resp_headers['refresh'][:1]))
+
+        resp = scrapertools.get_headers_from_response(host + '/' + resp_headers['refresh'][7:], headers=headers)
+        resp_headers = dict(resp_headers)
+        if resp_headers.has_key('islocation'): respuesta = resp_headers['islocation']
+
+    if not location:
+        return scrapertools.cache_page(url, headers=headers)
+    else:
+        return respuesta

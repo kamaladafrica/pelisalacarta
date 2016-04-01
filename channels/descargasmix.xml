@@ -6,10 +6,10 @@
 	<update_url></update_url>
 	<active>true</active>
 	<include_in_global_search>false</include_in_global_search>
-	<version>2</version>
+	<version>3</version>
 	<adult>false</adult>
-	<date>07/03/2016</date>
-	<changes>Reparado por cambios en la web en los enlaces online</changes>
+	<date>26/03/2016</date>
+	<changes>Reparado el canal ya que fallaba en la opcion Series y se incluye soporte para la biblioteca</changes>
 	<fanart></fanart>
 	<thumbnail>http://i.imgur.com/tBTqIlV.jpg?1</thumbnail>
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/descargasmix.png</bannermenu>
