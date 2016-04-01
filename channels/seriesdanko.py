@@ -219,15 +219,19 @@ def parse_videos(item, tipo, data):
 
     pattern = "<td.+?<img src='/assets/img/banderas/([^\.]+).+?</td><td.+?>(.*?)</td><td.+?" \
               "<img src='/assets/img/servidores/([^\.]+).+?</td><td.+?href='([^']+)'.+?>.*?</a></td>" \
-              "<td.+?>(.+?)</td><td.+?>.*?</td>"
+              "<td.+?>(.+?)</td><td.+?>(.*?)</td>"
 
     links = re.findall(pattern, data, re.MULTILINE | re.DOTALL)
 
-    for language, date, server, link, uploader in links:
-        title = "{0} en {1} [{2}] ({3}: {4})".format(tipo, server, IDIOMAS.get(language, "OVOS"), uploader, date)
+    for language, date, server, link, uploader, quality in links:
+        if quality == "":
+            quality = "SD"
+        title = "{tipo} en {server} [{idioma}] [{quality}] ({uploader}: {fecha})".\
+            format(tipo=tipo, server=server, idioma=IDIOMAS.get(language, "OVOS"), quality=quality, uploader=uploader,
+                   fecha=date)
 
         itemlist.append(Item(channel=__channel__, title=title, url=urlparse.urljoin(HOST, link), action="play",
-                             show=item.show, language=IDIOMAS.get(language, "OVOS")))
+                             show=item.show, language=IDIOMAS.get(language, "OVOS"), quality=quality))
 
     return itemlist
 
