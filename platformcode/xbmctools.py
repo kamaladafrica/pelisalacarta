@@ -562,7 +562,7 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
 
     # Lanza el reproductor
         # Lanza el reproductor
-    if strmfile and server != "torrent": #Si es un fichero strm no hace falta el play
+    if strmfile and item.server != "torrent": #Si es un fichero strm no hace falta el play
         logger.info("b6")
         import sys
         xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, xlistitem)
