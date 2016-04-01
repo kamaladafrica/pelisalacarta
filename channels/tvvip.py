@@ -460,7 +460,7 @@ def findvideos(item):
     else: head = ""
     urls = []
     for child in data["profiles"].keys():
-        videopath = data["profiles"][child]['videoUri']
+        videopath = urllib.quote(data["profiles"][child]['videoUri'])
         extension = videopath[-4:]
         for i in range(0, len(data["profiles"][child]['servers'])):
             url = data["profiles"][child]['servers'][i]['url'] + videopath + head
@@ -476,7 +476,8 @@ def findvideos(item):
         if transcoder == "hn": continue
         if cloudflare: head = header_string + get_cookie_value(data['id'][-4:])
         else: head = ""
-        url_default = "http://"+transcoder+".tv-vip.com/transcoder/"+data['id']+"/default/"+data['id']+head
+        id = urllib.quote(data['id'])
+        url_default = "http://"+transcoder+".tv-vip.com/transcoder/"+id+"/default/"+id+head
         title = "Ver vídeo en  ["+data["videoResolution"].replace('1920x1080','HD-1080p')+"] "+data["sizeHuman"]
         if not url_default in urls: itemlist.insert(0, Item(channel=__channel__, action='play', server='directo', title=title , url=url_default , thumbnail=item.thumbnail, fanart=item.fanart, fulltitle=item.fulltitle, plot=item.plot, folder=False) )
     if len(itemlist) > 0 and item.category == "tvvip":
