@@ -6,8 +6,8 @@
             "serie", 
             "vos"
         ], 
-        "changes": "Actualizado por cambios en la web", 
-        "date": "24/07/2012", 
+        "changes": "Fix el play()", 
+        "date": "25/03/2016", 
         "fanart": "", 
         "id": "seriesdanko", 
         "include_in_global_search": false, 
@@ -15,7 +15,7 @@
         "name": "Seriesdanko", 
         "thumbnail": "", 
         "update_url": "", 
-        "version": "3.0"
+        "version": "4.0"
     }, 
     "settings": {}
 }
