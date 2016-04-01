@@ -27,46 +27,41 @@ def test_video_exists( page_url ):
 def get_video_url( page_url , premium = False , user="" , password="", video_password="" ):
     logger.info("pelisalacarta.servers.uptobox get_video_url(page_url='%s')" % page_url)
     video_urls = []
-    limit = False
-
-    data = scrapertools.cache_page(page_url)
-    #Si el archivo tiene enlace de streaming se redirige a uptostream
-    if "Streaming link:" in data:
-        url = "http://uptostream.com/iframe/"+scrapertools.find_single_match(page_url,'uptobox.com/([a-z0-9]+)')
-        data_uptostream = scrapertools.cache_page(url)
-        if 'Vous avez atteint la limite des 120 minutes' not in data_uptostream:
+    #Si el enlace es directo de upstream
+    if "uptobox" not in page_url:
+        data = scrapertools.cache_page(page_url)
+        patron = "<source src='//([^']+)' type='video/([^']+)' data-res='([^']+)'"
+        media = scrapertools.find_multiple_matches(data_uptostream, patron)
+        for match in media:
+            media_url = "http://"+match[0]
+            extension = "."+match[1] + " ("+match[2]+")"
+            video_urls.append( [ extension+" [uptobox]", media_url])
+    else:
+        data = scrapertools.cache_page(page_url)
+        #Si el archivo tiene enlace de streaming se redirige a upstream
+        if "Streaming link:" in data:
+            url = "http://uptostream.com/"+scrapertools.find_single_match(page_url,'uptobox.com/([a-z0-9]+)')
+            data = scrapertools.cache_page(url)
             patron = "<source src='//([^']+)' type='video/([^']+)' data-res='([^']+)'"
-            media = scrapertools.find_multiple_matches(data_uptostream, patron)
+            media = scrapertools.find_multiple_matches(data, patron)
             for match in media:
                 media_url = "http://"+match[0]
                 extension = "."+match[1] + " ("+match[2]+")"
                 video_urls.append( [ extension+" [uptobox]", media_url])
-        else: 
-            limit = True
-            logger.info("pelisalacarta.servers.uptobox Límite diario de 120 minutos alcanzado en Uptostream")
+        else:
+            #Si no lo tiene se utiliza la descarga normal
+            post = ""
+            matches = scrapertools.find_multiple_matches(data, '<input type="hidden".*?name="([^"]+)".*?value="([^"]*)">')
+            for inputname, inputvalue in matches:
+                post += inputname + "=" + inputvalue + "&"
 
-    if len(video_urls) == 0:
-        #Si no tiene streaming o se ha llegado al limite en uptostream se utiliza la descarga normal
-        wait = scrapertools.find_single_match(data, "You have to wait ([0-9]+) (minute|second)")
-        #Si se ha llegado al límite en uptobox
-        if len(wait)>0:
-            tiempo = wait[1].replace("minute","minuto/s").replace("second","segundos")
-            video_urls.append( ["[Uptobox] Alcanzado límite de descarga.Tiempo de espera:"+wait[0]+" "+tiempo, ""])
-            if limit: video_urls.append( ["[Uptostream] Superado el límite diario de 120 minutos", ""])
-            return video_urls
-        post = ""
-        matches = scrapertools.find_multiple_matches(data, '<input type="hidden".*?name="([^"]+)".*?value="([^"]*)">')
-        for inputname, inputvalue in matches:
-            post += inputname + "=" + inputvalue + "&"
-
-        data = scrapertools.cache_page( page_url , post=post)
-        media = scrapertools.find_single_match(data, '<!--DOWNLOAD BUTTON-->[\s\S]+<a href="([^"]+)">')
-        #Solo es necesario codificar la ultima parte de la url
-        url_strip = urllib.quote(media.rsplit('/', 1)[1])
-        media_url = media.rsplit('/', 1)[0] +"/"+url_strip
-        extension = media_url[-4:]
-        video_urls.append( [ extension+" [uptobox]", media_url])
-
+            data = scrapertools.cache_page( page_url , post=post)
+            media = scrapertools.find_single_match(data, '<!--DOWNLOAD BUTTON-->[\s\S]+<a href="([^"]+)">')
+            #Solo es necesario codificar la ultima parte de la url
+            url_strip = urllib.quote(media.rsplit('/', 1)[1])
+            media_url = media.rsplit('/', 1)[0] +"/"+url_strip
+            extension = media_url[-4:]
+            video_urls.append( [ extension+" [uptobox]", media_url])
 
     for video_url in video_urls:
         logger.info("pelisalacarta.servers.uptobox %s - %s" % (video_url[0],video_url[1]))
@@ -86,7 +81,10 @@ def find_videos(data):
 
     for match in matches:
         titulo = "[uptobox]"
-        url = "http://uptobox.com/"+match
+        if "uptostream" in data:
+            url = "http://uptostream.com/"+match
+        else:
+            url = "http://uptobox.com/"+match
         if url not in encontrados:
             logger.info("  url="+url)
             devuelve.append( [ titulo , url , 'uptobox' ] )

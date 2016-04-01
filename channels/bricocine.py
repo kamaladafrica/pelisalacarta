@@ -24,7 +24,6 @@ __language__ = "ES"
 DEBUG = config.get_setting("debug")
 ## Cargar los datos con la librería 'requests'
 def get_page( url ):
-    
     from lib import requests
     response = requests.get( url )
     return response.content
@@ -49,10 +48,15 @@ def browser(url):
     
     # User-Agent (this is cheating, ok?)
     br.addheaders = [('User-agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5) AppleWebKit/600.7.12 (KHTML, like Gecko) Version/7.1.7 Safari/537.85.16')]
-    br.addheaders =[('Cookie','SRCHD=D=210979&AF=NOFORM; domain=.bing.com; expires=2 de enero de 2018 07:59:05 GMT+1; MUIDB=36F71C46589F6EAD0BE714175C9F68FC; domain=www.bing.com;	expires=15 de enero de 2018 08:43:26 GMT+1')]
+    #br.addheaders =[('Cookie','SRCHD=AF=QBRE; domain=.bing.com; expires=25 de febrero de 2018 13:00:28 GMT+1; MUIDB=3B942052D204686335322894D3086911; domain=www.bing.com;expires=24 de febrero de 2018 13:00:28 GMT+1')]
     # Open some site, let's pick a random one, the first that pops in mind
     r = br.open(url)
     response = r.read()
+    print response
+    if not ".ftrH,.ftrHd,.ftrD>" in response:
+        r = br.open("http://anonymouse.org/cgi-bin/anon-www.cgi/"+url)
+        print "prooooxy"
+        response = r.read()
     return response
 
 
@@ -260,7 +264,7 @@ def peliculas(item):
         scrapedcreatedate = scrapedcreatedate.replace(scrapedcreatedate,"[COLOR sandybrown][B]"+scrapedcreatedate+"[/B][/COLOR]")
         title = title.replace(title,"[COLOR white]"+title+"[/COLOR]")
         title = title +"(Puntuación:" + scrapedcreatedate + ")"
-        show = title_fan+"|"+scrapedyear
+        show = title_fan+"|"+scrapedyear    
         itemlist.append( Item(channel=__channel__, title=title, url=scrapedurl, action="fanart", thumbnail=scrapedthumbnail, fanart="http://s15.postimg.org/id6ec47vf/bricocinefondo.jpg",show= show,extra=item.extra,  folder=True) )
 
     
@@ -705,12 +709,12 @@ def fanart(item):
                      
                      try:
                         subdata_imdb = scrapertools.get_match(data,'<li class="b_algo">(.*?)h="ID')
+                        subdata_imdb = re.sub("http://anonymouse.org/cgi-bin/anon-www.cgi/","",subdata_imdb)
                      except:
                         pass
 
                      try:
                         url_imdb = scrapertools.get_match(subdata_imdb,'<a href="([^"]+)"')
-                
                      except:
                         pass
                      try:
@@ -749,13 +753,14 @@ def fanart(item):
                       urlbing_imdb="http://www.bing.com/search?q=imdb+movie+%s+%s" % (title.replace(' ', '+'),  year)
                       
                       data = browser (urlbing_imdb)
-                      
                       try:
                           subdata_imdb = scrapertools.get_match(data,'<li class="b_algo">(.*?)h="ID')
+                          subdata_imdb = re.sub("http://anonymouse.org/cgi-bin/anon-www.cgi/","",subdata_imdb)
                       except:
                           pass
                       try:
                          url_imdb = scrapertools.get_match(subdata_imdb,'<a href="([^"]+)"')
+                         url_imdb =re.sub("http://www.imdb.comhttp://anonymouse.org/cgi-bin/anon-www.cgi/","",url_imdb)
                       except:
                          url_imdb = data
                       data = scrapertools.cachePage( url_imdb )
@@ -1878,6 +1883,7 @@ def info(item):
 
     ventana2 = TextBox1(title=title, plot=plot, info= info, thumbnail=photo, fanart=foto, quit= quit)
     ventana2.doModal()
+ACTION_GESTURE_SWIPE_LEFT = 511
 ACTION_SELECT_ITEM = 7
 class TextBox1( xbmcgui.WindowDialog ):
         """ Create a skinned textbox window """
@@ -1923,7 +1929,7 @@ class TextBox1( xbmcgui.WindowDialog ):
             self.show()
             
         def onAction(self, action):
-            if action == ACTION_SELECT_ITEM:
+            if action == ACTION_SELECT_ITEM or action == ACTION_GESTURE_SWIPE_LEFT:
                ###Se vuelven a cargar Customkey al salir de info
                import os, sys
                import xbmc
@@ -2017,7 +2023,7 @@ def info_capitulos(item):
     ventana.doModal()
 
 
-
+ACTION_GESTURE_SWIPE_LEFT = 511
 ACTION_SELECT_ITEM = 7
 class TextBox2( xbmcgui.WindowDialog ):
         """ Create a skinned textbox window """
@@ -2056,7 +2062,7 @@ class TextBox2( xbmcgui.WindowDialog ):
             self.show()
         
         def onAction(self, action):
-            if action == ACTION_SELECT_ITEM:
+            if action == ACTION_SELECT_ITEM or action == ACTION_GESTURE_SWIPE_LEFT:
                import os, sys
                import xbmc
                APPCOMMANDDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "customapp.xml")

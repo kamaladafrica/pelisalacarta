@@ -42,6 +42,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
         text_encode = scrapertools.get_match(data,"<video[^<]+<script[^>]+>(.*?)</script>")
         text_decode = decode(data)
 
+    subtitle = scrapertools.find_single_match(data, '<track kind="captions" src="([^"]+)" srclang="es"')
     #Header para la descarga
     header_down = "|User-Agent="+headers['User-Agent']+"|"
     if video == True:
@@ -49,7 +50,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
         videourl = scrapertools.get_header_from_response(videourl,header_to_get="location")
         videourl = videourl.replace("https://","http://").replace("?mime=true","")
         extension = videourl[-4:]
-        video_urls.append([ extension + " [Openload]", videourl+header_down+extension])
+        video_urls.append([ extension + " [Openload]", videourl+header_down+extension, 0, subtitle])
     else:
         videourl = scrapertools.find_single_match(text_decode, '"href",(?:\s|)\'([^\']+)\'')
         videourl = videourl.replace("https://","http://")

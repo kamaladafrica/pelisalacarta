@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <channel>
-	<id>bricocine</id>
-	<name>Bricocine</name>
+	<id>pelispedia</id>
+	<name>PelisPedia</name>
 
 	<active>true</active>
 	<adult>false</adult>
 	<language>es</language>
 
-	<fanart></fanart>
-	<thumbnail>http://s6.postimg.org/9u8m1ep8x/bricocine.jpg</thumbnail>
-	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/bricocine.png</bannermenu>
-	
+	<fanart>http://i.imgur.com/9QbyJrf.jpg</fanart>
+	<thumbnail>http://i.imgur.com/g3QiMOs.png</thumbnail>
+	<bannermenu></bannermenu>
+
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>6</version>
-	<date>23/03/2016</date>
-	<changes>mejoras código</changes>
-	
+	<version>1</version>
+	<date>20/03/2016</date>
+	<changes>Nuevo canal</changes>
+
 	<categories>
-		<category>torrent</category>
 		<category>movie</category>
 		<category>serie</category>
+		<category>vos</category>
 	</categories>
 
 	<settings>
