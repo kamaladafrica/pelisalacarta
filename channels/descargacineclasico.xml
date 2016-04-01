@@ -6,12 +6,14 @@
 	<update_url></update_url>
 	<active>true</active>
 	<include_in_global_search>false</include_in_global_search>
-	<version>4</version>
+	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
+	<version>5</version>
 	<adult>false</adult>
-	<date>18/02/2015</date>
-	<changes>Eliminado del patrn calidad de las fichas.</changes>
+	<date>26/03/2016</date>
+	<changes>Añadidos iconos y banner</changes>
 	<fanart></fanart>
-	<thumbnail></thumbnail>
+	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/descargacineclasico.png</bannermenu>
+	<thumbnail>http://media.tvalacarta.info/pelisalacarta/squares/descargacineclasico.png</thumbnail>
 	<categories>
 		<category>movie</category>
 	</categories>

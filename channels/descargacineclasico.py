@@ -14,6 +14,7 @@ from core.item import Item
 from core.tmdb import Tmdb
 from servers import servertools
 from servers import expurl
+from servers import linkbucks
 from channelselector import get_thumbnail_path
 
 
@@ -163,7 +164,7 @@ def findvideos(item):
         title = titulo + "_" + scrapedidioma + "_"+ scrapedserver + "_" + scrapedcalidad
         itemlist.append( Item(channel=__channel__, action="play", title=title, fulltitle=title, url=scrapedurl, thumbnail=item.thumbnail, plot=item.plot, show=item.show, fanart=item.fanart) )
 
-    return itemlist    
+    return itemlist
 
 def play(item):
     
