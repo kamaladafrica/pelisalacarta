@@ -362,7 +362,10 @@ def play_video(channel="",server="",url="",category="",title="", thumbnail="",pl
     # Ha elegido uno de los vídeos
     elif seleccion < len(video_urls):
         mediaurl = video_urls[seleccion][1]
-        if len(video_urls[seleccion])>2:
+        if len(video_urls[seleccion])>3:
+            wait_time = video_urls[seleccion][2]
+            subtitle = video_urls[seleccion][3]
+        elif len(video_urls[seleccion])>2:
             wait_time = video_urls[seleccion][2]
         else:
             wait_time = 0
@@ -487,7 +490,7 @@ def play_video(channel="",server="",url="",category="",title="", thumbnail="",pl
         titulo = fulltitle
         if fulltitle=="":
             titulo = title
-        library.savelibrary(titulo,url,thumbnail,server,plot,canal=channel,category=category,Serie=Serie)
+        library.savelibrary(titulo,url,thumbnail,server,plot,canal=channel,category=category,Serie=Serie,subtitle=subtitle)
         advertencia = xbmcgui.Dialog()
         resultado = advertencia.ok(config.get_localized_string(30101) , fulltitle , config.get_localized_string(30135)) # 'se ha añadido a la lista de descargas'
         return
@@ -565,14 +568,15 @@ def play_video(channel="",server="",url="",category="",title="", thumbnail="",pl
             logger.info("Error al descargar el subtítulo")
 
     # Lanza el reproductor
-    if strmfile: #Si es un fichero strm no hace falta el play
+        # Lanza el reproductor
+    if strmfile and server != "torrent": #Si es un fichero strm no hace falta el play
         logger.info("b6")
         import sys
-        xbmcplugin.setResolvedUrl(int(sys.argv[ 1 ]),True,xlistitem)
-        #if subtitle!="" and (opciones[seleccion].startswith("Ver") or opciones[seleccion].startswith("Watch")):
-        #    logger.info("[xbmctools.py] Con subtitulos")
-        #    setSubtitles()
-        
+        xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, xlistitem)
+        if subtitle != "":
+            xbmc.sleep(2000)
+            xbmc.Player().setSubtitles(subtitle)
+
     else:
         logger.info("b7")
         logger.info("player_mode="+config.get_setting("player_mode"))
