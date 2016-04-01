@@ -168,7 +168,7 @@ def listado(item):
 
     data = scrapertools.cache_page(item.url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
-    logger.info("data -- {}".format(data))
+    #logger.info("data -- {}".format(data))
 
     patron = '<li[^>]+><a href="([^"]+)" alt="([^<]+).*?<img src="([^"]+).*?>.*?<span>\(([^)]+).*?' \
              '<p class="font12">(.*?)</p>'

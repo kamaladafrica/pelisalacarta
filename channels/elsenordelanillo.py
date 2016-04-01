@@ -185,30 +185,20 @@ def peliculas(item):
 
 def findvideos(item):
     logger.info("pelisalacarta.channels.elsenordelanillo findvideos")
-    itemlist = []
 
     # Descarga la pagina
     data = scrapertools.cache_page(item.url)
     #logger.info("data="+data)
+    bloque = scrapertools.find_single_match(data,"function cargamos.*?window.open.'([^']+)'")
+    data = scrapertools.cache_page(bloque)
 
-    bloquecalidades = scrapertools.find_single_match(data,'<ul class="tabs(.*?)</ul>')
-    logger.info("bloquecalidades="+bloquecalidades)
-    patroncalidades = '<li><a href=".([^"]+)">([^<]+)</a></li>'
-    matchescalidades = re.compile(patroncalidades,re.DOTALL).findall(bloquecalidades)
-
-    for idcalidad,nombrecalidad in matchescalidades:
-        if nombrecalidad.lower().strip()!="publicidad":
-            bloquelink = scrapertools.find_single_match(data,'<div id="'+idcalidad+'"(.*?)</div> ')
-            logger.info("bloquelink="+bloquelink)
-            title = nombrecalidad
-            url = bloquelink
-            thumbnail = ""
-            plot = ""
-            if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-            itemlist.append( Item(channel=__channel__, action="play" , title=title , url=url, thumbnail=thumbnail, plot=plot, folder=False))
+    from servers import servertools
+    itemlist = servertools.find_video_items(data=data)
+    for videoitem in itemlist:
+        videoitem.channel = __channel__
+        videoitem.folder = False
 
     return itemlist
-
 
 def play(item):
     logger.info("pelisalacarta.channels.elsenordelanillo play url="+item.url)

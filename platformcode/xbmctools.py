@@ -26,8 +26,9 @@ except:
 DEBUG = True
 
 def addnewfolderextra(item, totalItems=0):
+
     if item.fulltitle=="":
-        item.fulltitle=title
+        item.fulltitle=item.title
     
     contextCommands = []
     ok = False
@@ -476,10 +477,11 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
 
     elif opciones[seleccion]==config.get_localized_string(30161): #"Añadir a Biblioteca":  # Library
         from platformcode import library
+        
         titulo = item.fulltitle
         if fulltitle=="":
-
-        titulo = item.title
+            titulo = item.title
+        
         library.savelibrary(item.titulo,item.url,item.thumbnail,item.server,item.plot,canal=item.channel,category=item.category,Serie=item.show)
 
         advertencia = xbmcgui.Dialog()
