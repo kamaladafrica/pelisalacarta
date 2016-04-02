@@ -58,19 +58,36 @@ def run():
         if ( item.action=="selectchannel" ):
             import channelselector
             itemlist = channelselector.mainlist(params, item.url, item.category)
+            
+            # Verifica actualizaciones solo en el primer nivel
+            if config.get_setting("updatecheck2") == "true":
+              logger.info("channelselector.mainlist Verificar actualizaciones activado")
+              from core import updater
+              try:
+                version = updater.checkforupdates()
+                
+                if version:
+                  import xbmcgui
+                  advertencia = xbmcgui.Dialog()
+                  advertencia.ok("Versión "+version+" disponible","Ya puedes descargar la nueva versión del plugin\ndesde el listado principal")
+                  itemlist.insert(0,Item(title="Descargar version "+version, version=version, channel="updater", action="update", thumbnail=channelselector.get_thumbnail_path() + "Crystal_Clear_action_info.png"))
+              except:
+                import xbmcgui
+                advertencia = xbmcgui.Dialog()
+                advertencia.ok("No se puede conectar","No ha sido posible comprobar","si hay actualizaciones")
+                logger.info("channelselector.mainlist Fallo al verificar la actualización")
+
+            else:
+              logger.info("channelselector.mainlist Verificar actualizaciones desactivado")
+                
             from platformcode import xbmctools
             xbmctools.renderItems(itemlist, item)
 
         # Actualizar version
-        elif ( item.action=="update" ):
-            try:
-                from core import updater
-                updater.update(params)
-            except ImportError:
-                logger.info("pelisalacarta.platformcode.launcher Actualizacion automática desactivada")
-
-            #import channelselector as plugin
-            #plugin.listchannels(params, url, category)
+        elif (item.action=="update"):
+   
+            from core import updater
+            updater.update(item)
             if config.get_system_platform()!="xbox":
                 import xbmc
                 xbmc.executebuiltin( "Container.Refresh" )
