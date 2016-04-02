@@ -148,10 +148,16 @@
     <setting id="subtitlepath_keyboard" type="text" enable ="eq(-3,1)+eq(-4,true)" label="30437" default=""/-->
 
     <setting type="sep" />
+<<<<<<< HEAD
+    <setting id="downloadpath" type="folder" label="30017" default=""/>
+    <setting id="downloadlistpath" type="folder" label="30018" default=""/>
+    <setting id="bookmarkpath" type="folder" source="video" option="writeable" label="30030" default=""/>
+=======
     <setting id="downloadpath" type="text" label="30017" default=""/>
     <setting id="downloadlistpath" type="text" label="30018" default=""/>
     <setting id="bookmarkpath" type="text" source="video" option="writeable" label="30030" default=""/>
-    <setting id="librarypath" type="text" label="30067" default=""/>
+>>>>>>> origin/master
+    <setting id="librarypath" type="folder" label="30067" default=""/>
     <setting id="saved_searches_limit" type="enum" values="10|20|30|40" label="30024" default="0"/>
   </category>
 
