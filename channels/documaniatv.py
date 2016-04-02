@@ -28,7 +28,7 @@ def mainlist(item):
     logger.info("[documaniatv.py] mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, action="novedades"  , title="Novedades"      , url="http://www.documaniatv.com/newvideos.html"))
+    itemlist.append( Item(channel=__channel__, action="novedades"  , title="Novedades"      , url="http://www.documaniatv.com"))
     itemlist.append( Item(channel=__channel__, action="categorias" , title="Por categorías" , url="http://www.documaniatv.com"))
     itemlist.append( Item(channel=__channel__, action="novedades"  , title="Top"      , url="http://www.documaniatv.com/topvideos.html"))
     itemlist.append( Item(channel=__channel__, action="canales" , title="Por canales" , url="http://www.documaniatv.com"))

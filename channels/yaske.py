@@ -186,7 +186,7 @@ def findvideos(item):
             calidad = scrapertools.get_match(tr,'<td align="center" class="center"[^<]+<span title="[^"]*" style="text-transform.capitalize.">([^<]+)</span></td>')
             
             #<a [....] href="http://api.ysk.pe/noref/?u=< URL Vídeo >">
-            url = scrapertools.get_match(tr,'<a.*?href="([^"]+)"').split("=")[1]
+            url = scrapertools.get_match(tr,'<a.*?href="([^"]+)"')
 
             # Para extraer netutv se necesita en la actualidad pasar por varias páginas con lo que relentiza mucho la carga.
             # De momento mostrará "No hay nada que reproducir"

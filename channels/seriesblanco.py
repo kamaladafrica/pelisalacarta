@@ -199,21 +199,31 @@ def episodios(item):
     return itemlist
 
 def parseVideos(item, typeStr, data):
-    itemlist = []
+    videoPatternsStr = [
+        '<tr.+?<span>(?P<date>.+?)</span>.*?banderas/(?P<language>[^\.]+).+?href="(?P<link>[^"]+).+?servidores/(?P<server>[^\.]+).*?</td>.*?<td>.*?<span>(?P<uploader>.+?)</span>.*?<span>(?P<quality>.*?)</span>.*?</tr>',
+        '<tr.+?banderas/(?P<language>[^\.]+).+?<td[^>]*>(?P<date>.+?)</td>.+?href=[\'"](?P<link>[^\'"]+).+?servidores/(?P<server>[^\.]+).*?</td>.*?<td[^>]*>.*?<a[^>]+>(?P<uploader>.+?)</a>.*?</td>.*?<td[^>]*>(?P<quality>.*?)</td>.*?</tr>'
+    ]
 
-    # language, date, link, server, uploader, quality
-    pattern = '<tr.+?banderas/([^\.]+).+?<td[^>]*>(.+?)</td>.+?href=[\'"]([^\'"]+).+?servidores/([^\.]+).*?</td>.*?<td[^>]*>.*?<a[^>]+>(.+?)</a>.*?</td>.*?<td[^>]*>(.*?)</td>.*?</tr>'
-    links = re.findall(pattern, data, re.MULTILINE | re.DOTALL)
+    for vPatStr in videoPatternsStr:
+        vPattIter = re.compile(vPatStr, re.MULTILINE | re.DOTALL).finditer(data)
 
-    for language, date, link, server, uploader, quality in links:
-        if not quality:
-            quality = "SD"
-        title = "{0} en {1} [{2}] [{3}] ({4}: {5})".format(typeStr, server, IDIOMAS[language],
-                                                           quality, uploader, date)
+        itemlist = []
 
-        itemlist.append(Item(channel=__channel__, title=title, url=urlparse.urljoin(HOST, link), action="play",
-                             show=item.show))
-    return itemlist
+        for vMatch in vPattIter:
+            vFields = vMatch.groupdict()
+            quality = vFields.get("quality")
+            if not quality:
+                quality = "SD"
+
+            title = "{0} en {1} [{2}] [{3}] ({4}: {5})".format(typeStr, vFields.get("server"), IDIOMAS[vFields.get("language")],
+                                                                   quality, vFields.get("uploader"), vFields.get("date"))
+            itemlist.append(Item(channel=__channel__, title=title, url=urlparse.urljoin(HOST, vFields.get("link")), action="play",
+                                 show=item.show))
+
+        if len(itemlist) > 0:
+            return itemlist
+
+    return []
 
 def findvideos(item):
     logger.info("pelisalacarta.seriesblanco findvideos")
@@ -221,7 +231,10 @@ def findvideos(item):
     # Descarga la página
     data = scrapertools.cache_page(item.url)
 
-    online = re.findall("<table class='zebra'>(.+?)<[Bb][Rr]>", data, re.MULTILINE | re.DOTALL)
+    online = re.findall('<table class="as_gridder_table">(.+?)</table>', data, re.MULTILINE | re.DOTALL)
+
+    if len(online) == 0:
+        online = re.findall("<table class='zebra'>(.+?)<[Bb][Rr]>", data, re.MULTILINE | re.DOTALL)
 
     return parseVideos(item, "Ver", online[0]) + parseVideos(item, "Descargar", online[1])
 

@@ -6,8 +6,8 @@
             "movie", 
             "serie"
         ], 
-        "changes": "Correccion por cambios menores en la web y añadidos fanart e info/sinopsis por super_berny", 
-        "date": "03/02/2016", 
+        "changes": "Soporte para documentales", 
+        "date": "27/03/2016", 
         "fanart": "", 
         "id": "pordede", 
         "include_in_global_search": false, 
@@ -15,7 +15,7 @@
         "name": "Pordede", 
         "thumbnail": "", 
         "update_url": "", 
-        "version": "8.0"
+        "version": "9.0"
     }, 
     "settings": {}
 }
