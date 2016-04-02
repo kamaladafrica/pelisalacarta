@@ -46,6 +46,8 @@ def ultimo(item):
     # Extrae las entradas    
     patron = '<div class="imagen"(.*?)<div style="clear.both">'
     matches = re.compile(patron,re.DOTALL).findall(data)
+    print "manolo"
+    print matches
 
     for match in matches:
         scrapedtitle = scrapertools.get_match(match,'<img src="[^"]+" alt="([^"]+)"')
@@ -53,7 +55,7 @@ def ultimo(item):
         scrapedurl = scrapertools.get_match(match,'<a href="([^"]+)"')
         scrapedthumbnail = scrapertools.get_match(match,'<img src="([^"]+)" alt="[^"]+"')
         scrapedplot = scrapertools.get_match(match,'<div class="excerpt">([^<]+)</div>')
-        itemlist.append( Item(channel=item.channel , action="findvideos"  , title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail, plot=scrapedplot , fanart=scrapedthumbnail, viewmode="movie_with_plot" ))
+        itemlist.append( Item(channel=item.channel , action="play"  , title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail, plot=scrapedplot , fanart=scrapedthumbnail, viewmode="movie_with_plot"))
 
     # Extrae la marca de siguiente pagina
     try:
@@ -98,6 +100,25 @@ def ListaCat(item):
             itemlist.append( Item(channel=item.channel , action="ultimo"  , title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail, plot=scrapedplot , fanart=scrapedthumbnail ))
 
     return itemlist
+
+
+def play(item):
+    logger.info("[telecodocumentales.py] play")
+    
+    data = scrapertools.cachePage(item.url)
+    
+    urlvideo = scrapertools.get_match(data,'<!-- end navigation -->.*?<iframe src="([^"]+)"')
+    data = scrapertools.cachePage(urlvideo)
+    url = scrapertools.get_match(data,'iframe src="([^"]+)"')
+    
+    itemlist = servertools.find_video_items(data=url)
+    
+    for videoitem in itemlist:
+        videoitem.title = item.title
+        videoitem.channel = __channel__
+    
+    return itemlist
+
 
 # Verificación automática de canales: Esta función debe devolver "True" si todo está ok en el canal.
 def test():

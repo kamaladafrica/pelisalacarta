@@ -27,7 +27,7 @@ import socket
 
 # True - Muestra las cabeceras HTTP en el log
 # False - No las muestra
-DEBUG_LEVEL = True
+DEBUG_LEVEL = False
 
 CACHE_ACTIVA = "0"  # Automatica
 CACHE_SIEMPRE = "1" # Cachear todo
@@ -35,12 +35,14 @@ CACHE_NUNCA = "2"   # No cachear nada
 
 CACHE_PATH = config.get_setting("cache.dir")
 
-DEBUG = True
+DEFAULT_TIMEOUT = 20
 
-def cache_page(url,post=None,headers=[['User-Agent', 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; es-ES; rv:1.9.2.12) Gecko/20101026 Firefox/3.6.12']],modo_cache=CACHE_ACTIVA, timeout=socket.getdefaulttimeout()):
+DEBUG = False
+
+def cache_page(url,post=None,headers=[['User-Agent', 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; es-ES; rv:1.9.2.12) Gecko/20101026 Firefox/3.6.12']],modo_cache=CACHE_ACTIVA, timeout=DEFAULT_TIMEOUT):
     return cachePage(url,post,headers,modo_cache,timeout=timeout)
 
-def cachePage(url,post=None,headers=[['User-Agent', 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; es-ES; rv:1.9.2.12) Gecko/20101026 Firefox/3.6.12']],modoCache=CACHE_ACTIVA, timeout=socket.getdefaulttimeout()):
+def cachePage(url,post=None,headers=[['User-Agent', 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; es-ES; rv:1.9.2.12) Gecko/20101026 Firefox/3.6.12']],modoCache=CACHE_ACTIVA, timeout=DEFAULT_TIMEOUT):
     logger.info("pelisalacarta.core.scrapertools cachePage url="+url)
 
     # Cache desactivada
@@ -304,7 +306,7 @@ class NoRedirectHandler(urllib2.HTTPRedirectHandler):
     http_error_303 = http_error_302
     http_error_307 = http_error_302
 
-def downloadpage(url,post=None,headers=[['User-Agent', 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; es-ES; rv:1.9.2.12) Gecko/20101026 Firefox/3.6.12']],follow_redirects=True, timeout=socket.getdefaulttimeout(), header_to_get=None):
+def downloadpage(url,post=None,headers=[['User-Agent', 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; es-ES; rv:1.9.2.12) Gecko/20101026 Firefox/3.6.12']],follow_redirects=True, timeout=DEFAULT_TIMEOUT, header_to_get=None):
     logger.info("pelisalacarta.core.scrapertools downloadpage")
     logger.info("pelisalacarta.core.scrapertools url="+url)
     
@@ -1038,6 +1040,8 @@ def slugify(title):
 
     return title
 
+def remove_htmltags(string):
+    return re.sub('<[^<]+?>', '', string)
 
 def remove_show_from_title(title,show):
     #print slugify(title)+" == "+slugify(show)

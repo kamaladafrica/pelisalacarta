@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Conector para yaske-netutv, netutv, hqqtv waawtv
@@ -83,8 +83,8 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
 
         ## Doble decode y escape
         utf8 = double_b64(b64_data)
-
-        match_at = '<input name="at" id="text" value="([^"]+)">'
+        
+        match_at = '<input name="at" type="text" value="([^"]+)">'
         at = scrapertools.get_match(utf8, match_at)
 
         ### b_m3u8 ###
@@ -125,10 +125,10 @@ def find_videos(data):
     # http://waaw.tv/watch_video.php?v=96WDAAA71A8K
     patterns = [
         '/netu/tv/embed_(.*?$)',
-        'hqq.tv/[^=]+=([A-Z0-9]+)',
-        'netu.tv/[^=]+=([A-Z0-9]+)',
-        'waaw.tv/[^=]+=([A-Z0-9]+)',
-        'netu.php\?nt=([A-Z0-9]+)'
+        'hqq.tv/[^=]+=([a-zA-Z0-9]+)',
+        'netu.tv/[^=]+=([a-zA-Z0-9]+)',
+        'waaw.tv/[^=]+=([a-zA-Z0-9]+)',
+        'netu.php\?nt=([a-zA-Z0-9]+)'
     ]
 
     if '/netu/tv/embed_' in data:
@@ -148,6 +148,7 @@ def find_videos(data):
                 logger.info("  url="+url)
                 devuelve.append( [ titulo , url , 'netutv' ] )
                 encontrados.add(url)
+                break
             else:
                 logger.info("  url duplicada="+url)
 

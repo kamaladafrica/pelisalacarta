@@ -51,7 +51,8 @@ def search(item,texto):
         headers.append(["X-Requested-With","XMLHttpRequest"])
         data = scrapertools.cache_page(item.url, headers=headers)
         data = data.replace("\\","")
-        logger.info("data="+data)
+        if DEBUG: logger.info("data="+data)
+        
         patron = '{"id":"([^"]+)","text":"([^"]+)","date":"[^"]*","image":"([^"]+)","link":"([^"]+)"}'
         matches = re.compile(patron,re.DOTALL).findall(data)
         

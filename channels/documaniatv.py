@@ -28,7 +28,7 @@ def mainlist(item):
     logger.info("[documaniatv.py] mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, action="novedades"  , title="Novedades"      , url="http://www.documaniatv.com/newvideos.html"))
+    itemlist.append( Item(channel=__channel__, action="novedades"  , title="Novedades"      , url="http://www.documaniatv.com"))
     itemlist.append( Item(channel=__channel__, action="categorias" , title="Por categorías" , url="http://www.documaniatv.com"))
     itemlist.append( Item(channel=__channel__, action="novedades"  , title="Top"      , url="http://www.documaniatv.com/topvideos.html"))
     itemlist.append( Item(channel=__channel__, action="canales" , title="Por canales" , url="http://www.documaniatv.com"))
@@ -85,9 +85,10 @@ def categorias(item):
     itemlist = []
     
     data = scrapertools.cache_page(item.url)
+    data = data.replace("\n","")
 
     # Saca el bloque con las categorias
-    data = scrapertools.get_match(data,"""Categorias (.*?)</ul></li>""")
+    data = scrapertools.get_match(data,"Categorias<b(.*?)</ul></li>")
 
     #
     patron = '<li[^<]+<a href="([^"]+)"[^>]+>([^<]+)</a>'
@@ -160,12 +161,13 @@ def viendo(item):
 def search(item,texto):
     #http://www.documaniatv.com/search.php?keywords=luna&btn=Buscar
     logger.info("[documaniatv.py] search")
-    if item.url=="":
-        item.url="http://www.documaniatv.com/search.php?keywords=%s"
+    data = scrapertools.cache_page("http://www.documaniatv.com")
+    cx = scrapertools.find_single_match(data, "var cx='([^']+)'")
+    item.url="https://www.googleapis.com/customsearch/v1element?key=AIzaSyCVAXiUzRYsML1Pv6RwSG1gunmMikTzQqY&cx=%s&q=%s&start=0"
     texto = texto.replace(" ","+")
-    item.url = item.url % texto
+    item.url = item.url % (cx, texto)
     try:
-        return novedades(item)
+        return busqueda(item)
     # Se captura la excepción, para no interrumpir al buscador global si un canal falla
     except:
         import sys
@@ -173,31 +175,54 @@ def search(item,texto):
             logger.error( "%s" % line )
         return []
 
+def busqueda(item):
+    logger.info("[documaniatv.py] busqueda")
+    itemlist = []
+    data = scrapertools.cache_page(item.url)
+    data = jsontools.load_json(data)
+    if int(data['cursor']['resultCount'].replace(".","")) == 0:
+        itemlist.append( Item(channel=__channel__, action="", title="No hay resultados" , url="" , folder=False) )
+        return itemlist
+    for results in data['results']:
+        try:
+            scrapedurl = results['richSnippet']['metatags']['ogUrl']
+            scrapedtitle = results['richSnippet']['metatags']['ogTitle']
+            scrapedthumbnail = results['richSnippet']['metatags']['ogImage']
+            scrapedplot = results['richSnippet']['videoobject']['description']
+            if "/tags/" in scrapedurl:
+                action = "novedades"
+            else:
+                action = "play"
+        except:
+            scrapedurl = results['unescapedUrl']
+            scrapedtitle = results['titleNoFormatting']
+            scrapedthumbnail = ""
+            scrapedplot = ""
+            action = "novedades"
+        itemlist.append( Item(channel=__channel__, action=action, title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , fanart=scrapedthumbnail, folder=True) )
+    if int(data['cursor']['resultCount'].replace(".","")) > 10:
+        page = int(scrapertools.find_single_match(item.url, 'start=(\d+)')) + 10
+        if page <= 90:
+            scrapedurl = re.sub(r'start=(\d+)','start='+str(page), item.url)
+            itemlist.append( Item(channel=__channel__, action="busqueda", title=">> Siguiente página" , url=scrapedurl , folder=True) )
+    return itemlist
+
 def play(item):
     logger.info("documaniatv.play")
     itemlist = []
 
     # Descarga la pagina
-    data1 = scrapertools.cachePage(item.url) 
-    logger.info(data1)
-    patron= 'itemprop="embedURL" content="(.*?)"'
+    url = "http://www.documaniatv.com/ajax.php?p=video&do=getplayer&vid=%s&aid=3&player=detail" % re.search("video_(.*?).html", item.url).group(1)
+    data1 = scrapertools.cachePage(url) 
+
+    patron= '<iframe src="(.*?)"'
     matc = re.compile(patron,re.DOTALL).findall(data1)
     logger.info(matc[0])
- 
-    data = scrapertools.cachePage(matc[0])
-    logger.info(data)
 
     # Busca los enlaces a los videos
-    video_itemlist = servertools.find_video_items(data=data)
+    video_itemlist = servertools.find_video_items(data=matc[0])
     for video_item in video_itemlist:
         itemlist.append( Item(channel=__channel__ , action="play" , server=video_item.server, title=item.title+video_item.title,url=video_item.url, thumbnail=video_item.thumbnail, plot=video_item.plot, folder=False))
-
-    # Extrae los enlaces a los videos (Directo)
-    patronvideos = "src= '([^']+)'"
-    matches = re.compile(patronvideos,re.DOTALL).findall(data)
-    if len(matches)>0:
-        if not "www.youtube" in matches[0]:
-            itemlist.append( Item(channel=__channel__ , action="play" , server="Directo", title=item.title+" [directo]",url=matches[0], thumbnail=item.thumbnail, plot=item.plot))
 
     return itemlist
 

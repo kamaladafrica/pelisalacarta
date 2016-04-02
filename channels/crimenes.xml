@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <channel>
 	<id>crimenes</id>
-	<name>Crimenes Imperfectos+Cuarto Milenio</name>
+	<name>Crimenes Imperfectos</name>
 
 	<active>true</active>
 	<adult>false</adult>

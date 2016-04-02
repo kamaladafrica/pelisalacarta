@@ -46,12 +46,11 @@ def mainlist(item):
         itemlist.append( Item( channel=__channel__ , title="Habilita tu cuenta en la configuración..." , action="openconfig" , url="" , folder=False ) )
     else:
         login()
-        itemlist.append( Item(channel=__channel__, action="menuseries"    , title="Series"              , url="" ))
-        itemlist.append( Item(channel=__channel__, action="menupeliculas" , title="Películas"           , url="" ))
-        itemlist.append( Item(channel=__channel__, action="listas_sigues" , title="Listas que sigues"   , url="http://www.pordede.com/lists/following" ))
-        itemlist.append( Item(channel=__channel__, action="tus_listas"    , title="Tus listas"          , url="http://www.pordede.com/lists/yours" ))
-        itemlist.append( Item(channel=__channel__, action="listas_sigues" , title="Top listas"          , url="http://www.pordede.com/lists" ))
-       
+        itemlist.append( Item(channel=__channel__, action="menuseries"    , title="Series"                   , url="" ))
+        itemlist.append( Item(channel=__channel__, action="menupeliculas" , title="Películas y documentales" , url="" ))
+        itemlist.append( Item(channel=__channel__, action="listas_sigues" , title="Listas que sigues"        , url="http://www.pordede.com/lists/following" ))
+        itemlist.append( Item(channel=__channel__, action="tus_listas"    , title="Tus listas"               , url="http://www.pordede.com/lists/yours" ))
+        itemlist.append( Item(channel=__channel__, action="listas_sigues" , title="Top listas"               , url="http://www.pordede.com/lists" ))       
     return itemlist
 
 def openconfig(item):
@@ -128,7 +127,7 @@ def search(item,texto):
 
     # Mete el referer en item.extra
     item.extra = item.url
-    item.url = item.url+"/search/query/"+texto+"/years/1950/on/undefined/showlist/all"
+    item.url = item.url+"/loadmedia/offset/0/query/"+texto+"/years/1950/on/undefined/showlist/all"
     try:
         return buscar(item)
     # Se captura la excepción, para no interrumpir al buscador global si un canal falla
@@ -157,7 +156,7 @@ def buscar(item):
 
 def parse_mixed_results(item,data):
     patron  = '<a class="defaultLink extended" href="([^"]+)"[^<]+'
-    patron += '<div class="coverMini shadow tiptip" title="([^"]+)"[^<]+'
+    patron += '<div class="coverMini     shadow tiptip" title="([^"]+)"[^<]+'
     patron += '<img class="centeredPic.*?src="([^"]+)"'
     patron += '[^<]+<img[^<]+<div class="extra-info">'
     patron += '<span class="year">([^<]+)</span>'
@@ -172,23 +171,25 @@ def parse_mixed_results(item,data):
         if scrapedvalue != '':
             title += " ("+scrapedvalue+")"
         thumbnail = urlparse.urljoin(item.url,scrapedthumbnail)
+        fanart = thumbnail.replace("mediathumb","mediabigcover")
         plot = ""
         #http://www.pordede.com/peli/the-lego-movie
         #http://www.pordede.com/links/view/slug/the-lego-movie/what/peli?popup=1
-
-        if "/peli/" in scrapedurl:
+      
+        if "/peli/" in scrapedurl or "/docu/" in scrapedurl:
+            sectionStr = "peli" if "/peli/" in scrapedurl else "docu"
             referer = urlparse.urljoin(item.url,scrapedurl)
-            url = referer.replace("/peli/","/links/view/slug/")+"/what/peli"
+            url = referer.replace("/{0}/".format(sectionStr),"/links/view/slug/")+"/what/{0}".format(sectionStr)
             if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-            itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
+            itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, fanart=fanart, viewmode="movie"))        
         else:
             referer = item.url
             url = urlparse.urljoin(item.url,scrapedurl)
-            itemlist.append( Item(channel=__channel__, action="episodios" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=title, viewmode="movie"))
+            itemlist.append( Item(channel=__channel__, action="episodios" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=title, fanart=fanart, viewmode="movie"))
 
-    if "offset/" in item.url:
+    if len(itemlist) == 60 and "offset/" in item.url:
         old_offset = scrapertools.find_single_match(item.url,"offset/(\d+)/")
-        new_offset = int(old_offset)+30
+        new_offset = int(old_offset)+60
         url = item.url.replace("offset/"+old_offset,"offset/"+str(new_offset))
         itemlist.append( Item(channel=__channel__, action="lista" , title=">> Página siguiente" , extra=item.extra, url=url))
 
@@ -217,7 +218,7 @@ def siguientes(item):
     if (DEBUG): logger.info("html2="+json_object["html"])
     data = json_object["html"]
     patron = ''
-    patron += '<div class="coverMini shadow tiptip" title="([^"]+)">[^<]+'
+    patron += '<div class="coverMini     shadow tiptip" title="([^"]+)">[^<]+'
     patron += '<img class="centeredPic centeredPicFalse"  onerror="[^"]+"  src="([^"]+)"[^<]+'
     patron += '<img src="/images/loading-mini.gif" class="loader"/>[^<]+'
     patron += '<div class="extra-info"><span class="year">[^<]+'
@@ -235,6 +236,7 @@ def siguientes(item):
         session = scrapertools.htmlclean(scrapedsession)
         episode = scrapertools.htmlclean(scrapedepisode)
         thumbnail = urlparse.urljoin(item.url,scrapedthumbnail)
+        fanart = thumbnail.replace("mediathumb","mediabigcover")
         plot = ""
         title = session + "x" + episode + " - " + title
         #http://www.pordede.com/peli/the-lego-movie
@@ -243,7 +245,7 @@ def siguientes(item):
         referer = urlparse.urljoin(item.url,scrapedurl)
         url = referer
         #itemlist.append( Item(channel=__channel__, action="episodios" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=title, viewmode="movie"))
-        itemlist.append( Item(channel=__channel__, action="episodio" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=title, viewmode="movie", extra=session+"|"+episode))
+        itemlist.append( Item(channel=__channel__, action="episodio" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=title, fanart=fanart, viewmode="movie", extra=session+"|"+episode))
 
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
@@ -282,7 +284,7 @@ def episodio(item):
             #http://www.pordede.com/links/viewepisode/id/475011?popup=1
             epid = scrapertools.find_single_match(scrapedurl,"id/(\d+)")
             url = "http://www.pordede.com/links/viewepisode/id/"+epid
-            itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=item.show))
+            itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, fanart=item.fanart, show=item.show))
             if (DEBUG): logger.info("Abrimos title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
     itemlist2 = []
@@ -331,14 +333,15 @@ def episodios(item):
         for scrapedurl,numero,scrapedtitle,info,visto in matches:
             visto_string = "[visto] " if visto.strip()=="active" else ""
             title = visto_string+nombre_temporada.replace("Temporada ", "").replace("Extras", "Extras 0")+"x"+numero+" "+scrapertools.htmlclean(scrapedtitle)
-            thumbnail = ""
+            thumbnail = item.thumbnail
+            fanart= item.fanart
             plot = ""
             #http://www.pordede.com/peli/the-lego-movie
             #http://www.pordede.com/links/view/slug/the-lego-movie/what/peli?popup=1
             #http://www.pordede.com/links/viewepisode/id/475011?popup=1
             epid = scrapertools.find_single_match(scrapedurl,"id/(\d+)")
             url = "http://www.pordede.com/links/viewepisode/id/"+epid
-            itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=item.show))
+            itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, fanart= fanart, show=item.show))
 
             if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
@@ -455,8 +458,8 @@ def findvideos(item, verTodos=False):
     matches = re.compile(patron,re.DOTALL).findall(data)
     itemlist = []
 
-    if config.get_platform().startswith("xbmc") and "/what/peli" in item.url:
-        itemlist.append( Item(channel=__channel__, action="infosinopsis" , title="INFO / SINOPSIS" , url=item.url, thumbnail=item.thumbnail,  folder=False ))
+    if (config.get_platform().startswith("xbmc") or config.get_platform().startswith("kodi")) and "/what/peli" in item.url:
+        itemlist.append( Item(channel=__channel__, action="infosinopsis" , title="INFO / SINOPSIS" , url=item.url, thumbnail=item.thumbnail, fanart=item.fanart,  folder=False ))
 
     itemsort = []
     sortlinks = config.get_setting("pordedesortlinks") # 0:no, 1:valoracion, 2:idioma, 3:calidad, 4:idioma+calidad, 5:idioma+valoracion, 6:idioma+calidad+valoracion
@@ -522,9 +525,9 @@ def findvideos(item, verTodos=False):
                 orden = (valora_idioma(idioma_0, idioma_1) * 1000) + valoracion
             elif sortlinks == 6:
                 orden = (valora_idioma(idioma_0, idioma_1) * 100000) + (valora_calidad(calidad_video, calidad_audio) * 1000) + valoracion
-            itemsort.append({'action': "play", 'title': title, 'url':url, 'thumbnail':thumbnail, 'plot':plot, 'extra':sesion+"|"+item.url, 'fulltitle':title, 'orden1': (jdown == ''), 'orden2':orden})
+            itemsort.append({'action': "play", 'title': title, 'url':url, 'thumbnail':thumbnail, 'fanart':item.fanart, 'plot':plot, 'extra':sesion+"|"+item.url, 'fulltitle':title, 'orden1': (jdown == ''), 'orden2':orden})
         else:
-            itemlist.append( Item(channel=__channel__, action="play" , title=title , url=url, thumbnail=thumbnail, plot=plot, extra=sesion+"|"+item.url, fulltitle=title))
+            itemlist.append( Item(channel=__channel__, action="play" , title=title , url=url, thumbnail=thumbnail, fanart= item.fanart, plot=plot, extra=sesion+"|"+item.url, fulltitle=title))
 
     if sortlinks > 0:
         numberlinks = config.get_setting("pordedenumberlinks") # 0:todos, > 0:n*5 (5,10,15,20,...)
@@ -536,7 +539,7 @@ def findvideos(item, verTodos=False):
             if verTodos == False and i >= numberlinks:
                 itemlist.append(Item(channel=__channel__, action='findallvideos' , title='Ver todos los enlaces', url=item.url, extra=item.extra ))
                 break
-            itemlist.append( Item(channel=__channel__, action=subitem['action'] , title=subitem['title'] , url=subitem['url'] , thumbnail=subitem['thumbnail'] , plot=subitem['plot'] , extra=subitem['extra'] , fulltitle=subitem['fulltitle'] ))
+            itemlist.append( Item(channel=__channel__, action=subitem['action'] , title=subitem['title'] , url=subitem['url'] , thumbnail=subitem['thumbnail'] , fanart= subitem['fanart'], plot=subitem['plot'] , extra=subitem['extra'] , fulltitle=subitem['fulltitle'] ))
 
     return itemlist
 
@@ -556,7 +559,7 @@ def play(item):
     data = scrapertools.cache_page(item.url,post="_s="+item.extra.split("|")[0],headers=headers)
     if (DEBUG): logger.info("data="+data)
     #url = scrapertools.find_single_match(data,'<a href="([^"]+)" target="_blank"><button>Visitar enlace</button>')
-    url = scrapertools.find_single_match(data,'<p class="links">\s+<a href="([^"]+)" target="_blank"')
+    url = scrapertools.find_single_match(data,'<p class="nicetry links">\s+<a href="([^"]+)" target="_blank"')
     url = urlparse.urljoin(item.url,url)
 
     headers = DEFAULT_HEADERS[:]
@@ -657,7 +660,8 @@ try:
             pass
     
         def onAction( self, action ):
-            self.close()
+            if action == 7:
+                self.close()
     
         def ask(self, title, text ):
             self.title = title

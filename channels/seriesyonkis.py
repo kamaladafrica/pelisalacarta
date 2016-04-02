@@ -241,7 +241,7 @@ def episodios(item):
 def addChapters(item):
     #<tr > <td class="episode-title"> <span class="downloads allkind" title="Disponibles enlaces a descarga directa y visualizaciones"></span>
     #<a href="/capitulo/bones/capitulo-2/2870"> <strong> 1x02 </strong> - El hombre en la unidad especial de victimas </a> </td> <td> 18/08/2007 </td> <td class="episode-lang">  <span class="flags_peq spa" title="Español"></span>  </td> <td class="score"> 8 </td> </tr>
-    matches = re.compile('<tr[^<]+<td class="episode-title.*?<a href="([^"]+)"[^<]+<strong>([^<]+)</strong>(.*?)</a>(.*?)</tr>', re.S).findall(item.extra)
+    matches = re.compile('<a class="episodeLink p1" href="([^"]+)"[^<]+<strong>([^<]+)</strong>(.*?)</a>(.*?)</tr>', re.S).findall(item.extra)
     scrapertools.printMatches(matches)
     
     itemlist=[]
@@ -267,8 +267,8 @@ def findvideos(item):
         fmt=id=""
 
         # Acota la zona de búsqueda
-        data = scrapertools.cache_page(item.url)    
-        data = scrapertools.get_match(data,'<div id="section-content"(.*?)<div id="fixed-footer">')
+        data = scrapertools.cache_page(item.url)
+        data = scrapertools.get_match(data,'<div id="section-content"(.*?)</table>')
         
         # Procesa línea por línea
         matches = re.compile('<tr>.*?</tr>', re.S).findall(data)

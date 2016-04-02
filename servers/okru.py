@@ -27,13 +27,9 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
 
     data = scrapertools.cache_page(page_url.split('|')[0], headers=headers)
 
-    headers.append(['X-Requested-With', 'ShockwaveFlash/99.999.999.999'])
-    _headers = urllib.urlencode(dict(headers))
-
     # URL del vídeo
     for type, url in re.findall(r'\{"name":"([^"]+)","url":"([^"]+)"', data, re.DOTALL):
         url = url.replace("%3B", ";").replace(r"\u0026", "&")
-        url += '|' + _headers
         video_urls.append([type + " [okru]", url])
 
     return video_urls

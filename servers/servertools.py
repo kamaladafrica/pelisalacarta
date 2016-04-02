@@ -1,10 +1,10 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Utilidades para detectar vídeos de los diferentes conectores
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-#LvX Edited Patched
+
 import re,sys
 import urllib2
 
@@ -17,42 +17,46 @@ from core import logger
 
 # Lista de los servidores que se pueden ver sin cuenta premium de ningún tipo
 FREE_SERVERS = []
-FREE_SERVERS.extend(['directo','allmyvideos','adnstream','bliptv','divxstage','facebook','fourshared', 'hulkshare', 'twitvid'])
-FREE_SERVERS.extend(['googlevideo','mediafire','moevideos','movshare','novamov'])
+FREE_SERVERS.extend(['directo','allmyvideos','adnstream','divxstage','facebook','fourshared','twitvid'])
+FREE_SERVERS.extend(['googlevideo','mediafire','moevideos','movshare','auroravid'])
 FREE_SERVERS.extend(['royalvids','sockshare','stagevu','tutv','userporn','veoh','videobam'])
-FREE_SERVERS.extend(['vidbux','videoweed','vimeo','vk','watchfreeinhd','youtube'])
-FREE_SERVERS.extend(['jumbofiles','nowvideo','streamcloud', 'zinwa', 'dailymotion','justintv', 'vidbull'])
-FREE_SERVERS.extend(['vureel','nosvideo','videopremium','movreel','flashx','upafile'])
-FREE_SERVERS.extend(['fileflyer','playedto','tunepk','powvideo','videomega','mega','vidspot','netutv','rutube'])
-FREE_SERVERS.extend(['videozed','documentary','hugefiles', 'firedrive','videott','tumitv','gamovideo'])
+FREE_SERVERS.extend(['vidbux','bitvidsx','vimeo','vk','watchfreeinhd','youtube'])
+FREE_SERVERS.extend(['jumbofiles','nowvideo','streamcloud', 'dailymotion', 'vidbull'])
+FREE_SERVERS.extend(['nosvideo','videopremium','flashx','upafile', 'zippyshare'])
+FREE_SERVERS.extend(['fileflyer','tunepk','powvideo','mega','videomega','vidspot','netutv','rutube'])
+FREE_SERVERS.extend(['videozed','documentary', 'firedrive','videott','gamovideo'])
 FREE_SERVERS.extend(['torrent','video4you','mailru','streaminto','backin','akstream', 'speedvideo', 'junkyvideo', 'rapidvideo', 'realvid', 'cloudzilla', 'fakingstv'])
-FREE_SERVERS.extend(['meuvideos', 'cumlouder','v4y','streamable','videostoring','youwatch'])
-FREE_SERVERS.extend(['vodlocker','thevideome','rocvideo','vidxtreme','vidtome','vidzi','letwatch','sendvid','okru']) #,'vimpleru'])
+FREE_SERVERS.extend(['cumlouder','v4y','streamable','videostoring','youwatch'])
+FREE_SERVERS.extend(['vodlocker','thevideome','rocvideo','vidxtreme','vidtome','vidzi','letwatch','sendvid','vkpass','okru','cnubis','yourupload','mp4upload','turbovideos','vimpleru','spruto','openload','idowatch','xvideos'])
+FREE_SERVERS.extend(['videowood','thevideos','uptobox','lolabits','streame','vidgg','allvid','vodbeast','clicknupload','streamplay'])
+
+# Servidores no soportados, pero se ponen como free porque necesitas tener el patrón para poder informar
+FREE_SERVERS.extend(['cloudsix'])
 
 # Lista de TODOS los servidores que funcionan con cuenta premium individual
-PREMIUM_SERVERS = ['uploadedto','nowvideo','onefichier']
+PREMIUM_SERVERS = ['uploadedto','nowvideo','onefichier','filesmonster']
 
 # Lista de TODOS los servidores soportados por Filenium
 #FILENIUM_SERVERS = jsontools.load_json(urllib2.urlopen('http://filenium.com/domainsxbmc'))
 FILENIUM_SERVERS = []
-FILENIUM_SERVERS.extend(["nitroflare","lolabits","1fichier","dl","dl","mega","allmyvideos","allmyvideos","cliphunter","dailymotion","divxstage","facebook","filefactory","filepost","filesmonster","firedrive","gigasize","justin","k2s","keep2share","keep2share","letitbit","mediafire","metacafe","mitele","moevideos","netload","nowvideo","nowvideo","nowvideo","oboom","played","pornhub","rapidgator","rg","shareflare","streamcloud","turbobit","uploadable","uploaded","uploaded","ul","userporn","videoweed","vidspot","vimeo","vk","xenubox","youngpornvideos","youtube","zippyshare","lix","safelinking","linkto","2shared","4shared","hugefiles","nowdownload","nowdownload","tusfiles","uploading","uptobox"]);
+FILENIUM_SERVERS.extend(["nitroflare","lolabits","1fichier","mega","allmyvideos","cliphunter","dailymotion","divxstage","facebook","filefactory","filepost","filesmonster","firedrive","gigasize","keep2share","keep2share","letitbit","mediafire","metacafe","mitele","moevideos","netload","nowvideo","oboom","played","pornhub","rapidgator","shareflare","streamcloud","turbobit","uploadable","uploaded","uploaded","userporn","videoweed","vidspot","vimeo","vk","xenubox","youngpornvideos","youtube","zippyshare","lix","safelinking","linkto","2shared","4shared","hugefiles","nowdownload","tusfiles","uploading","uptobox"]);
 
 # Lista de TODOS los servidores soportados por Real-Debrid
-REALDEBRID_SERVERS = ['one80upload','tenupload','onefichier','onehostclick','twoshared','fourfastfile','fourshared','abc','asfile','badongo','bitshare','cbscom','cloudzer','cramit','crocko','cwtv','dailymotion','dateito',
-                    'dengee','diglo','extabit','fiberupload','filedino','filefactory','fileflyer','filekeen','filemade','filemates','fileover','filepost',
+REALDEBRID_SERVERS = ['one80upload','tenupload','onefichier','onehostclick','twoshared','fourfastfile','fourshared','abc','asfile','badongo','bitshare','cbscom','crocko','cwtv','dailymotion','dateito',
+                    'dengee','diglo','extabit','filedino','filefactory','fileflyer','filekeen','filemade','filemates','fileover','filepost',
                    'filesend','filesmonster','filevelocity','freakshare','free','furk','fyels','gigasize','gigaup','glumbouploads','goldfile','hitfile','hipfile','hostingbulk',
-                   'hotfile','hulkshare','hulu','ifile','jakfile','jumbofiles','justintv','letitbit','loadto','mediafire','mega','megashare','megashares','mixturevideo','muchshare','netload',
+                   'hulu','ifile','jakfile','jumbofiles','letitbit','loadto','mediafire','mega','megashare','megashares','mixturevideo','muchshare','netload',
                    'novafile','nowdownload','purevid','putbit','putlocker','redtube','rapidgator','rapidshare','rutube','ryushare','scribd','sendspace','sharebees','shareflare','shragle','slingfile','sockshare',
-                   'soundcloud','speedyshare','turbobit','unibytes','uploadc','uploadedto','uploading','uploadspace','uptobox',
-                   'userporn','veevr','vidbux','vidhog','vidxden','vimeo','vipfile','wattv','xfileshare','youporn','youtube','yunfile','zippyshare','justintv','nowvideo','ultramegabit','filesmonster','oboom']
+                   'soundcloud','speedyshare','turbobit','unibytes','uploadc','uploadedto','uploading','uploadspace','uptobox','openload','clicknupload','youwatch',
+                   'userporn','veevr','vidbux','vidxden','vimeo','vipfile','wattv','xfileshare','youporn','youtube','yunfile','zippyshare','nowvideo','filesmonster','oboom','hugefiles','uploadable','bigfile']
 #wupload,fileserve
 
-ALLDEBRID_SERVERS = ['one80upload','onefichier','twoshared','fourfastfile','fourshared','albafile','bitshare','cloudzer','cramit','crocko','cyberlocker','dailymotion','dengee',
+ALLDEBRID_SERVERS = ['one80upload','onefichier','twoshared','fourfastfile','fourshared','albafile','bitshare','crocko','cyberlocker','dailymotion','dengee',
                    'depfile','dlfree','extabit','extmatrix','filefactory','fileflyer','filegag','filehost','fileover','filepost','filerio','filesabc',
-                   'filesend','filesmonster','filestay','freakshare','gigasize','hotfile','hulkshare','jumbofiles','letitbit','loadto','mediafire','megashares','mixturevideo','netload',
+                   'filesend','filesmonster','filestay','freakshare','gigasize','jumbofiles','letitbit','loadto','mediafire','megashares','mixturevideo','netload',
                    'nitrobits','oteupload','purevid','putlocker','rapidgator','rapidshare','redtube','scribd','secureupload','sharebees','shareflare','slingfile','sockshare',
                    'soundcloud','speedload','speedyshare','turbobit', 'uloadto', 'uploadc','uploadedto','uploading','uptobox',
-                   'userporn','vimeo','vipfile','youporn','youtube','yunfile','zippyshare','lumfile','ultramegabit','filesmonster']
+                   'userporn','vimeo','vipfile','youporn','youtube','yunfile','zippyshare','filesmonster']
     
 # Lista completa de todos los servidores soportados por pelisalacarta, usada para buscar patrones
 #ALL_SERVERS = list( set(FREE_SERVERS) | set(FILENIUM_SERVERS) | set(REALDEBRID_SERVERS) | set(ALLDEBRID_SERVERS) )
@@ -81,14 +85,14 @@ ENABLED_SERVERS.sort()
 
 # Función genérica para encontrar vídeos en una página
 def find_video_items(item=None, data=None, channel=""):
-    logger.info("[launcher.py] findvideos")
+    logger.info("[servertools.py] find_video_items")
 
     # Descarga la página
     if data is None:
         from core import scrapertools
         data = scrapertools.cache_page(item.url)
         #logger.info(data)
-    
+
     # Busca los enlaces a los videos
     from core.item import Item
     from servers import servertools
@@ -104,9 +108,37 @@ def find_video_items(item=None, data=None, channel=""):
         server = video[2]
         thumbnail = "http://media.tvalacarta.info/servers/server_"+server+".png"
         
-        itemlist.append( Item(channel=item.channel, title=scrapedtitle , action="play" , server=server, page=item.page, url=scrapedurl, thumbnail=thumbnail, show=item.show , plot=item.plot , folder=False) )
+        itemlist.append( Item(channel=item.channel, title=scrapedtitle , action="play" , server=server, url=scrapedurl, thumbnail=thumbnail, show=item.show , plot=item.plot , parentContent=item, folder=False) )
 
     return itemlist
+
+def guess_server_thumbnail(title):
+    logger.info("[servertools.py] guess_server_thumbnail title="+title)
+
+    lowcase_title = title.lower()
+
+    if "netu" in lowcase_title:
+        logger.info("[servertools.py] guess_server_thumbnail caso especial netutv")
+        return "http://media.tvalacarta.info/servers/server_netutv.png"
+
+    if "ul.to" in lowcase_title:
+        logger.info("[servertools.py] guess_server_thumbnail caso especial ul.to")
+        return "http://media.tvalacarta.info/servers/server_uploadedto.png"
+
+    if "waaw" in lowcase_title:
+        logger.info("[servertools.py] guess_server_thumbnail caso especial waaw")
+        return "http://media.tvalacarta.info/servers/server_waaw.png"
+
+    if "streamin" in lowcase_title:
+        logger.info("[servertools.py] guess_server_thumbnail caso especial streamin")
+        return "http://media.tvalacarta.info/servers/server_streaminto.png"
+
+    for serverid in ENABLED_SERVERS:
+        if serverid in lowcase_title:
+            logger.info("[servertools.py] guess_server_thumbnail encontrado "+serverid)
+            return "http://media.tvalacarta.info/servers/server_"+serverid+".png"
+
+    return ""
 
 def findvideosbyserver(data, serverid):
     logger.info("[servertools.py] findvideos")

@@ -6,6 +6,7 @@
 #------------------------------------------------------------
 import urlparse,urllib2,urllib,re
 import os, sys
+import time
 
 from core import logger
 from core import config
@@ -18,6 +19,14 @@ __category__ = "F"
 __type__ = "generic"
 __title__ = "Cinetux"
 __language__ = "ES"
+
+host = "http://www.cinetux.org/"
+
+headers = [
+    ["User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:22.0) Gecko/20100101 Firefox/22.0"],
+    ["Accept-Encoding", "gzip, deflate"],
+    ["Referer", host]
+]
 
 DEBUG = config.get_setting("debug")
 
@@ -40,6 +49,21 @@ def mainlist(item):
 
     return itemlist
     
+def anti_cloudflare(url):
+    # global headers
+
+    try:
+        resp_headers = scrapertools.get_headers_from_response(url, headers=headers)
+        resp_headers = dict(resp_headers)
+    except urllib2.HTTPError, e:
+        resp_headers = e.headers
+
+    if 'refresh' in resp_headers:
+        time.sleep(int(resp_headers['refresh'][:1]))
+        scrapertools.get_headers_from_response(host + '/' + resp_headers['refresh'][7:], headers=headers)
+
+    return scrapertools.cache_page(url, headers=headers)
+
 def search(item,texto):
     logger.info("[cinetux.py] search")
     if item.url=="":
@@ -60,7 +84,7 @@ def busqueda(item):
     itemlist = []
 
     # Descarga la página
-    data = scrapertools.cachePage(item.url)
+    data = anti_cloudflare(item.url)
     #data = scrapertools.get_match(data,item.extra+'</h6>(.*?)</div>')
     
     #<a target="_blank" href="http://www.cinetux.org/2013/04/ver-pelicula-dark-skies-online-gratis-2013.html"><img style="border:1px solid #FDC101;" src="http://4.bp.blogspot.com/-UlKHsLS3Tsk/URJotTqg-_I/AAAAAAAAA5c/8lhe3kY4jzc/s80/Dark+Skies+%282013%29+Movie+Review.jpg" height="75" width="47">
@@ -85,7 +109,7 @@ def peliculas(item):
     itemlist = []
 
     # Descarga la página
-    data = scrapertools.cachePage(item.url)
+    data = anti_cloudflare(item.url)
 
     '''
     <div style="width: 620px; padding: 0; margin-left: 10px;"><center><div id="post-18159">
@@ -102,17 +126,20 @@ def peliculas(item):
     '''
 
     # Extrae las entradas (carpetas)
-    patron  = '<!--PELICULA--><div class="movielist textcenter[^<]+'
+    patron  = '<div class="movielist textcenter[^<]+'
     patron += '<div id="titlecat[^<]+<a href="([^"]+)" rel="bookmark" title="([^"]+)"><img style="[^"]+" width="[^"]+" height="[^"]+" src=(.*?) /[^<]+'
     matches = re.compile(patron,re.DOTALL).findall(data)
+    logger.info("[cinetux.py] peliculas [patron 1]")
     scrapertools.printMatches(matches)
 
     for scrapedurl,title,thumbnail in matches:
         scrapedplot = ""
         scrapedthumbnail = thumbnail[:-2]
         scrapedtitle = title[14:]
+        scrapedtitle = scrapedtitle.replace("Online Gratis","")
+        scrapedtitle = scrapedtitle.replace("Online 2015 Gratis","")
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , fulltitle=scrapedtitle, url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , viewmode="movie", fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg", folder=True) )
+        itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , fulltitle=scrapedtitle, url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , viewmode="movie", fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg", folder=True, hasContentDetails="true", contentTitle=scrapedtitle, contentThumbnail=scrapedthumbnail) )
 
 
     '''
@@ -130,6 +157,7 @@ def peliculas(item):
     patron += '<a href="([^"]+)[^<]+<img alt="" src="([^"]+)".*?'
     patron += '<span class="rosa">(.*?)</span>'
     matches = re.compile(patron,re.DOTALL).findall(data)
+    logger.info("[cinetux.py] peliculas [patron 2]")
     scrapertools.printMatches(matches)
 
     for scrapedurl,scrapedthumbnail,calidad in matches:
@@ -144,7 +172,7 @@ def peliculas(item):
         scrapedplot = ""
         scrapedtitle = titulo + " ["+calidad+"]"
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , fulltitle=scrapedtitle, url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , viewmode="movie", fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg",  folder=True) )
+        itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , fulltitle=scrapedtitle, url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , viewmode="movie", fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg",  folder=True, hasContentDetails="true", contentTitle=scrapedtitle, contentThumbnail=scrapedthumbnail) )
 
     '''
     <div id="post-57573">
@@ -156,14 +184,52 @@ def peliculas(item):
     patron += '<a href="([^"]+)" rel="[^"]+" title="([^"]+)"[^<]+'
     patron += '<img style="[^"]+" width="\d+" height="\d+" src=([^>]+)>'
     matches = re.compile(patron,re.DOTALL).findall(data)
+    logger.info("[cinetux.py] peliculas [patron 3]")
     scrapertools.printMatches(matches)
 
     for scrapedurl,title,thumbnail in matches:
         scrapedplot = ""
         scrapedthumbnail = thumbnail[:-2]
         scrapedtitle = title[14:]
+        scrapedtitle = scrapedtitle.replace("Online Gratis","")
+        scrapedtitle = scrapedtitle.replace("Online 2015 Gratis","")
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , fulltitle=scrapedtitle, url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , viewmode="movie", fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg", folder=True) )
+        itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , fulltitle=scrapedtitle, url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , viewmode="movie", fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg", folder=True, hasContentDetails="true", contentTitle=scrapedtitle, contentThumbnail=scrapedthumbnail) )
+
+    '''
+    <td class="contenido">
+    <a href="http://www.cinetux.org/2015/08/ver-pelicula-upsss-donde-esta-noe-ooops-noah-is-gone-online-gratis-2015.html">
+    <img 
+        src="http://2.bp.blogspot.com/-Mj60_QHkIcw/VWEhjbHY91I/AAAAAAAAFb8/oMx22CB2ML8/s350/ups-1.jpg" 
+        style="border: 1px solid #000;margin: 5px; margin-bottom:10px;" 
+        alt="Ver Película ¡Upsss! ¿Dónde está Noé&#8230;? (Ooops! Noah is Gone&#8230;) Online Gratis (2015)" title="Ver Película ¡Upsss! ¿Dónde está Noé&#8230;? (Ooops! Noah is Gone&#8230;) Online Gratis (2015)" height="200" align="left" width="140"></a>
+    <div id="puntoscinetux"><div style="margin-top:12px; margin-left:95px;"><span class="rating"><img src="http://www.cinetux.org/wp-content/plugins/wp-postratings/images/stars_crystal/rating_on.png" alt="4 votes, average: 5,00 out of 5" title="4 votes, average: 5,00 out of 5" class="post-ratings-image"/><img src="http://www.cinetux.org/wp-content/plugins/wp-postratings/images/stars_crystal/rating_on.png" alt="4 votes, average: 5,00 out of 5" title="4 votes, average: 5,00 out of 5" class="post-ratings-image"/><img src="http://www.cinetux.org/wp-content/plugins/wp-postratings/images/stars_crystal/rating_on.png" alt="4 votes, average: 5,00 out of 5" title="4 votes, average: 5,00 out of 5" class="post-ratings-image"/><img src="http://www.cinetux.org/wp-content/plugins/wp-postratings/images/stars_crystal/rating_on.png" alt="4 votes, average: 5,00 out of 5" title="4 votes, average: 5,00 out of 5" class="post-ratings-image"/><img src="http://www.cinetux.org/wp-content/plugins/wp-postratings/images/stars_crystal/rating_on.png" alt="4 votes, average: 5,00 out of 5" title="4 votes, average: 5,00 out of 5" class="post-ratings-image"/></span></div></div>
+    <br></br>
+    <b>Año de estreno:</b><font color="#0066FF"> <a href="http://www.cinetux.org/ano/2015" rel="tag">2015</a></font><br>
+    <b>Actor (es):</b> <font color="#0066FF"><a href="http://www.cinetux.org/actor/animacion-2" rel="tag">Animación</a></font><br>
+    <font color="#000000"><b>Género:</b></font> <font color="#0066FF"><a href="http://www.cinetux.org/genero/animacion" rel="category tag">Animacion</a>, <a href="http://www.cinetux.org/genero/aventura" rel="category tag">Aventura</a>, <a href="http://www.cinetux.org/genero/familiar" rel="category tag">Familiar</a>, <a href="http://www.cinetux.org/genero/infantil" rel="category tag">Infantil</a></font><br>
+    Sinopsis: Se acerca el Diluvio Universal y Noé ha construido un gran Arca para salvar a una pareja de cada especie animal pero dos Nestrians, padre e hijo, no son admitidos a entrar. La ayuda involuntaria de dos Grymps, madre e hija, les permite colarse en el Arca. Sin embargo, los niños Finny y Leah [&hellip;]...
+    <a href="http://www.cinetux.org/2015/08/ver-pelicula-upsss-donde-esta-noe-ooops-noah-is-gone-online-gratis-2015.html" style="font-weight: bold; font-size: 11pt; float:right;"><img src="http://1.bp.blogspot.com/-KEUuDAGf8ag/Uky6siiAdYI/AAAAAAAAn38/t-J3yxgEwvY/s30/WMP_Play_button-740053.png" border="0"> <font color="#0066FF" size="3">VER PELÍCULA</font></a></td>
+    <td></td>
+    </tr>
+    </tbody></table>
+    </div>
+    '''
+    patron  = '<td class="contenido"[^<]+'
+    patron += '<a href="([^"]+)"[^<]+'
+    patron += '<img src="([^"]+)" style="[^"]+" alt="([^"]+)"'
+    matches = re.compile(patron,re.DOTALL).findall(data)
+    logger.info("[cinetux.py] peliculas [patron 4]")
+    scrapertools.printMatches(matches)
+
+    for scrapedurl,thumbnail,title in matches:
+        scrapedplot = ""
+        scrapedthumbnail = thumbnail
+        scrapedtitle = title[14:]
+        scrapedtitle = scrapedtitle.replace("Online Gratis","")
+        scrapedtitle = scrapedtitle.replace("Online 2015 Gratis","")
+        if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
+        itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , fulltitle=scrapedtitle, url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , viewmode="movie", fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg", folder=True, hasContentDetails="true", contentTitle=scrapedtitle, contentThumbnail=scrapedthumbnail) )
 
     # Extrae el paginador
     next_page_link = scrapertools.find_single_match(data,'<a href="([^"]+)"[^<]+<strong>Siguiente</strong>')
@@ -177,7 +243,7 @@ def bloque(item):
     itemlist = []
 
     # Descarga la página
-    data = scrapertools.cachePage(item.url)
+    data = anti_cloudflare(item.url)
     #data = scrapertools.get_match(data,item.extra+'</h6>(.*?)</div>')
     
     #<a target="_blank" href="http://www.cinetux.org/2013/04/ver-pelicula-dark-skies-online-gratis-2013.html"><img style="border:1px solid #FDC101;" src="http://4.bp.blogspot.com/-UlKHsLS3Tsk/URJotTqg-_I/AAAAAAAAA5c/8lhe3kY4jzc/s80/Dark+Skies+%282013%29+Movie+Review.jpg" height="75" width="47">
@@ -199,7 +265,7 @@ def bloque(item):
         scrapedtitle = scrapedtitle.capitalize()
 
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , fulltitle=scrapedtitle, url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , viewmode="movie", fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg" , folder=True) )
+        itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , fulltitle=scrapedtitle, url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , viewmode="movie", fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg" , folder=True, hasContentDetails="true", contentTitle=scrapedtitle, contentThumbnail=scrapedthumbnail) )
 
     return itemlist
 
@@ -208,7 +274,7 @@ def generos(item):
     itemlist = []
 
     # Descarga la página
-    data = scrapertools.cachePage(item.url)
+    data = anti_cloudflare(item.url)
     data = scrapertools.get_match(data,'neros</h6>(.*?)</div>')
     
     patron = '<a href="([^"]+)">([^<]+)<'
@@ -228,7 +294,7 @@ def tags(item):
     itemlist = []
 
     # Descarga la página
-    data = scrapertools.cachePage(item.url)
+    data = anti_cloudflare(item.url)
     data = scrapertools.get_match(data,'Tags</h6>(.*?)</div>')
     patron = "<a href='([^']+)'[^>]+>([^<]+)<"
     matches = re.compile(patron,re.DOTALL).findall(data)
@@ -247,33 +313,12 @@ def findvideos(item):
     itemlist=[]
 
     # Busca el argumento
-    data = scrapertools.cache_page(item.url)
+    data = anti_cloudflare(item.url)
     logger.info("data="+data)
-    '''
-    <tr class="tabletr">
-    <td class="episode-server" align="left"><img src="http://www.cinetux.org/imagenes/veronline.png" alt="" width="22" height="22" />Opción 01</td>
-    <td class="episode-server-img" align="center">PutLocker</td>
-    <td class="episode-lang" align="center">Español</td>
-    <td align="center">DVD-SCR</td>
-    <td class="center" align="center"><a rel="nofollow" target="_blank" class="myButtonLink" href="http://www.putlocker.com/file/BADCD9ACA395E318"></a></td>
-    <td align="center">Anónimo</td>
-    </tr>
-    '''
-    patron  = '<tr class="tabletr">[^<]+'
-    patron += '<td class="opcion-td"><img[^>]+>([^>]+)</td>[^<]+'
-    patron += '<td class="server-td[^>]+>([^<]+)</td>[^<]+'
-    patron += '<td class="idioma-td[^>]+>([^>]+)</td>[^<]+'
-    patron += '<td class="calidad-td[^<]+</td>[^<]+'
-    patron += '<td class="fuente-td[^>]+>([^<]+)</td>[^<]+'
-    patron += '<td class="link-td">(.*?)</td>'
-    matches = re.compile(patron,re.DOTALL).findall(data)
-    scrapertools.printMatches(matches)
-    for scrapedtitle,scrapedserver,scrapedlanguage,scrapedquality,scrapedlink in matches:
-        title = "Ver "+scrapedtitle+" en "+scrapedserver+" ("+scrapedlanguage+") ("+scrapedquality+")"
-        url = scrapedlink
-        thumbnail = item.thumbnail
-        plot = ""
-        itemlist.append( Item(channel=__channel__, action="play", title=title , fulltitle=item.fulltitle+" ["+scrapedlanguage+"]["+scrapedquality+"]", url=url , thumbnail=thumbnail , plot=plot , fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg" , folder=False) )
+
+    item.plot = scrapertools.find_single_match(data,'<td><span class="info">Sinops[^<]+</span>([^<]+)</td>')
+    item.plot = scrapertools.htmlclean(item.plot)
+    item.contentPlot = item.plot
 
     patron  = '<tr class="tabletr">[^<]+'
     patron += '<td class="opcion-td"><img[^>]+>([^>]+)</td>[^<]+'
@@ -286,9 +331,9 @@ def findvideos(item):
     for scrapedtitle,scrapedserver,scrapedlanguage,scrapedquality,scrapedlink in matches:
         title = "Ver "+scrapedtitle+" en "+scrapedserver+" ("+scrapedlanguage+") ("+scrapedquality+")"
         url = scrapedlink
-        thumbnail = item.thumbnail
+        thumbnail = servertools.guess_server_thumbnail(scrapedserver)
         plot = ""
-        itemlist.append( Item(channel=__channel__, action="play", title=title , fulltitle=item.fulltitle, url=url , thumbnail=thumbnail , plot=plot , fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg" , folder=False) )
+        itemlist.append( Item(channel=__channel__, action="play", title=title , fulltitle=item.fulltitle, url=url , thumbnail=thumbnail , plot=plot , fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg" , parentContent=item , folder=False) )
 
     patron  = '<tr class="tabletr">[^<]+'
     patron += '<td class="episode-server[^>]+><img[^>]+>([^>]+)</td>[^<]+'
@@ -301,12 +346,12 @@ def findvideos(item):
     for scrapedtitle,scrapedserver,scrapedlanguage,scrapedquality,scrapedlink in matches:
         title = "Ver "+scrapedtitle+" en "+scrapedserver+" ("+scrapedlanguage+") ("+scrapedquality+")"
         url = scrapedlink
-        thumbnail = item.thumbnail
+        thumbnail = servertools.guess_server_thumbnail(scrapedserver)
         plot = ""
-        itemlist.append( Item(channel=__channel__, action="play", title=title , fulltitle=item.fulltitle+" ["+scrapedlanguage+"]["+scrapedquality+"]", url=url , thumbnail=thumbnail , plot=plot , folder=False) )
+        itemlist.append( Item(channel=__channel__, action="play", title=title , fulltitle=item.fulltitle+" ["+scrapedlanguage+"]["+scrapedquality+"]", url=url , thumbnail=thumbnail , plot=plot , parentContent=item , folder=False) )
 
     if len(itemlist)==0:
-        itemlist = servertools.find_video_items(data=data)
+        itemlist = servertools.find_video_items(item=item,data=data)
         i=1
         for videoitem in itemlist:
             videoitem.title = "Ver Opción %d en %s" % (i,videoitem.server)
@@ -318,7 +363,7 @@ def findvideos(item):
 def play(item):
     logger.info("[cinetux.py] play item.url="+item.url)
     itemlist=[]
-    itemlist = servertools.find_video_items(data=item.url)
+    itemlist = servertools.find_video_items(item=item,data=item.url)
     i=1
     for videoitem in itemlist:
         videoitem.title = "Mirror %d%s" % (i,videoitem.title)

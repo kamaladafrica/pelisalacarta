@@ -284,7 +284,6 @@ def verpeli(item):
       scrapedtitle = ""
       for scrapedenlace in matchesenlaces:
           scrapedtitle = title + "  [COLOR white][ [/COLOR]" +"[COLOR green]" +scrapedquality+"[/COLOR]" +"[COLOR white] ][/COLOR]" + " [COLOR red] [" + scrapedlang +"][/COLOR]  » " +scrapedserver
-          #+ scrapedenlace
       itemlist.append( Item(channel=__channel__, action="play" ,  title=scrapedtitle  , extra=title, url=url, fanart=item.thumbnail, thumbnail=item.thumbnail, plot=splot, folder=False))
       
    return itemlist

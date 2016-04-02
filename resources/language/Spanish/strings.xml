@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <strings>
     <!-- Los id disponibles son de 30000 a 30999 -->
 
@@ -7,11 +7,11 @@
     <!-- ======================================= -->
     
     <!-- Comunes -->
-    <string id="30000">Reproductor:</string>
+    <string id="30000">Reproductor (solo XBOX):</string>
     <string id="30001">Comprobar actualizaciones:</string>
     <string id="30004">Actualizar automáticamente canales:</string>
     <string id="30201">Actualizar la biblioteca al abrir XBMC</string>
-    <string id="30002">Activar modo adultos:</string>
+    <string id="30002">Mostrar canales para adultos</string>
     <string id="30003">Generar log detallado:</string>
     <string id="30043">Forzar el modo de vista:</string>
 
@@ -74,6 +74,13 @@
     <string id="30049">Logo del canal</string>
     <string id="30045">URL/fichero con los vídeos</string>
     <string id="30047">Elementos por página</string>
+
+    <!-- Filtros -->
+    <string id="30068">Filtrar por servidores:</string>
+    <string id="30069">Lista Blanca:</string>
+    <string id="30070">Lista Negra:</string>
+    <string id="30071">Para poner varios servidores utiliza "," como separador</string>
+
 
     <!-- =============================================================== -->
     <!-- De 30050 a 30099: Mensajes informativos - error                 -->
@@ -216,6 +223,7 @@
     <string id="30500">Cuentas</string>
     <string id="30501">Rutas</string>
     <string id="30502">Otros</string>
+    <string id="30503">Filtros</string>
     
     <!-- TVShack strings -->
     <string id="30900">TVShack</string>

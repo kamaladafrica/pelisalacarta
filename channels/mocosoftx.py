@@ -42,30 +42,47 @@ def isGeneric():
 def login():
 
     # Averigua el id de sesión
-    data = scrapertools.cache_page("http://www.mocosoftx.com/foro/index.php")
-    cur_session_id = scrapertools.get_match(data,'form action="[^"]+" method="post" accept-charset="ISO-8859-1" onsubmit="hashLoginPassword\(this, \'([a-z0-9]+)\'')
+    data = scrapertools.cache_page("http://mocosoftx.com/foro/login/")
+    cur_session_id = scrapertools.get_match(data,'form action="[^"]+" name="frmLogin" id="frmLogin" method="post" accept-charset="ISO-8859-1"  onsubmit="hashLoginPassword\(this, \'([a-z0-9]+)\'')
+    cur_session_id="c95633073dc6afaa813d33b2bfeda520"
     logger.info("cur_session_id="+cur_session_id)
 
     # Calcula el hash del password
-    LOGIN = config.get_setting("mocosoftxuser")
-    PASSWORD = config.get_setting("mocosoftxpassword")
-    logger.info("LOGIN="+LOGIN)
-    logger.info("PASSWORD="+PASSWORD)
+    email = config.get_setting("mocosoftxuser")
+    password = config.get_setting("mocosoftxpassword")
+    logger.info("email="+email)
+    logger.info("password="+password)
     
     #doForm.hash_passwrd.value = hex_sha1(hex_sha1(doForm.user.value.php_to8bit().php_strtolower() + doForm.passwrd.value.php_to8bit()) + cur_session_id);
-    hash_passwrd = scrapertools.get_sha1( scrapertools.get_sha1( LOGIN.lower() + PASSWORD.lower() ) + cur_session_id)
+    hash_passwrd = scrapertools.get_sha1( scrapertools.get_sha1( email.lower() + password.lower() ) + cur_session_id)
     logger.info("hash_passwrd="+hash_passwrd)
 
-    # Hace el submit del login
-    post = "user="+LOGIN+"&passwrd=&cookielength=-1&hash_passwrd="+hash_passwrd
+    # Hace el submit del email
+    #post = "user="+email+"&passwrd=&cookieneverexp=on&hash_passwrd="+hash_passwrd
+    post =  urllib.urlencode({'user':email,"passwrd":password})+"&cookieneverexp=on&hash_passwrd="
     logger.info("post="+post)
 
-    data = scrapertools.cache_page("http://mocosoftx.com/foro/login2/" , post=post, headers=MAIN_HEADERS)
+    headers = []
+    headers.append( ["Host","mocosoftx.com"] )
+    headers.append( ["User-Agent","Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.111 Safari/537.36"] )
+    headers.append( ["Accept","text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"] )
+    headers.append( ["Accept-Language","es-ES,es;q=0.8,en;q=0.6,gl;q=0.4"] )
+    headers.append( ["Accept-Encoding","gzip, deflate"] )
+    headers.append( ["Connection","keep-alive"] )
+    headers.append( ["Referer","http://mocosoftx.com/foro/login/"] )
+    headers.append( ["Origin","http://mocosoftx.com"] )
+    headers.append( ["Content-Type","application/x-www-form-urlencoded"] )
+    headers.append( ["Content-Length",str(len(post))] )
+    headers.append( ["Cache-Control","max-age=0"] )
+    headers.append( ["Upgrade-Insecure-Requests","1"] )
+
+    data = scrapertools.cache_page("http://mocosoftx.com/foro/login2/", post=post, headers=headers)
+    logger.info("data="+data)
 
     return True
 
 def mainlist(item):
-    logger.info("[mocosoftx.py] mainlist")
+    logger.info("pelisalacarta.channels.mocosoftx mainlist")
     itemlist = []
     
     if config.get_setting("mocosoftxaccount")!="true":
@@ -80,7 +97,7 @@ def mainlist(item):
     return itemlist
 
 def foro(item):
-    logger.info("[mocosoftx.py] foro")
+    logger.info("pelisalacarta.channels.mocosoftx foro")
     itemlist = []
     
     # Descarga la página
@@ -137,12 +154,13 @@ def foro(item):
     return itemlist
 
 def findvideos(item):
-    logger.info("[mocosoftx.py] findvideos")
+    logger.info("pelisalacarta.channels.mocosoftx findvideos")
     itemlist=[]
 
     # Busca el thumbnail y el argumento
     data = scrapertools.cache_page(item.url)
-    
+    logger.info("pelisalacarta.channels.mocosoftx data="+data)
+
     try:
         thumbnail = scrapertools.get_match(data,'<div class="post">.*?<img src="([^"]+)"')
     except:

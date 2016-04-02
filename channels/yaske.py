@@ -68,7 +68,7 @@ def search(item,texto):
         return []
 
 def peliculas(item):
-    logger.info("pelisalacarta.yaske listado")
+    logger.info("pelisalacarta.yaske peliculas")
 
     data = scrapertools.cache_page(item.url,headers=HEADER)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
@@ -101,12 +101,14 @@ def peliculas(item):
         title = scrapedtitle.strip()+" "+idiomas_disponibles+"["+calidad+"]"
         title = scrapertools.htmlclean(title)
 
+        contentTitle = scrapertools.htmlclean(scrapedtitle.strip())
+
         url = scrapedurl
 
         thumbnail = scrapedthumbnail
         scrapedplot = ""
 
-        itemlist.append( Item(channel=__channel__, action="findvideos", title=title , url=url , thumbnail=thumbnail , plot=scrapedplot , fulltitle=scrapertools.htmlclean(scrapedtitle.strip()), viewmode="movie", folder=True) )
+        itemlist.append( Item(channel=__channel__, action="findvideos", title=title , url=url , thumbnail=thumbnail , plot=scrapedplot , fulltitle=scrapertools.htmlclean(scrapedtitle.strip()), viewmode="movie", folder=True, hasContentDetails="true", contentTitle=contentTitle, contentThumbnail=thumbnail) )
 
     # Extrae el paginador
     patronvideos  = "<a href='([^']+)'>\&raquo\;</a>"
@@ -149,6 +151,10 @@ def findvideos(item):
     # Descarga la página
     data = scrapertools.cache_page(item.url,headers=HEADER)
 
+    item.plot = scrapertools.find_single_match(data,'<meta name="sinopsis" content="([^"]+)"')
+    item.plot = scrapertools.htmlclean(item.plot)
+    item.contentPlot = item.plot
+
     # Extrae las entradas
     '''
     <tr bgcolor="">
@@ -180,7 +186,7 @@ def findvideos(item):
             calidad = scrapertools.get_match(tr,'<td align="center" class="center"[^<]+<span title="[^"]*" style="text-transform.capitalize.">([^<]+)</span></td>')
             
             #<a [....] href="http://api.ysk.pe/noref/?u=< URL Vídeo >">
-            url = scrapertools.get_match(tr,'<a.*?href="([^"]+)"').split("=")[1]
+            url = scrapertools.get_match(tr,'<a.*?href="([^"]+)"')
 
             # Para extraer netutv se necesita en la actualidad pasar por varias páginas con lo que relentiza mucho la carga.
             # De momento mostrará "No hay nada que reproducir"
@@ -204,17 +210,16 @@ def findvideos(item):
                 url = "http://netu.tv/watch_video.php?v="+id_video
             '''
 
-            thumbnail = ""
-            plot = ""
-
             title = title.replace("&nbsp;","")
 
             if "es_es" in idioma:
-                scrapedtitle = title + " en "+server.strip()+" [Español]["+calidad+"]"
+                scrapedtitle = title + " en "+server.strip()+" [ESP]["+calidad+"]"
             elif "la_la" in idioma:
-                scrapedtitle = title + " en "+server.strip()+" [Latino]["+calidad+"]"
+                scrapedtitle = title + " en "+server.strip()+" [LAT]["+calidad+"]"
             elif "en_es" in idioma:
-                scrapedtitle = title + " en "+server.strip()+" [Inglés SUB Español]["+calidad+"]"
+                scrapedtitle = title + " en "+server.strip()+" [SUB]["+calidad+"]"
+            elif "en_en" in idioma:
+                scrapedtitle = title + " en "+server.strip()+" [ENG]["+calidad+"]"
             else:
                 scrapedtitle = title + " en "+server.strip()+" ["+idioma+" / "+subtitulos+"]["+calidad+"]"
             scrapedtitle = scrapertools.entityunescape(scrapedtitle)
@@ -222,10 +227,11 @@ def findvideos(item):
 
             scrapedurl = url
 
-            scrapedthumbnail = thumbnail
-            scrapedplot = plot
+            scrapedthumbnail = servertools.guess_server_thumbnail(scrapedtitle)
 
-            itemlist.append( Item(channel=__channel__, action="play", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , fulltitle=item.fulltitle , folder=False) )
+            logger.info("server="+server+", scrapedurl="+scrapedurl)
+            if scrapedurl.startswith("http"):
+                itemlist.append( Item(channel=__channel__, action="play", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , folder=False, parentContent=item) )
         except:
             import traceback
             logger.info("Excepcion: "+traceback.format_exc())
@@ -237,9 +243,21 @@ def play(item):
     
     itemlist=[]
 
-    data = item.url
+    # http%3A%2F%2Folo.gg%2Fs%2FcJinsNv1%3Fs%3Dhttp%253A%252F%252Fwww.nowvideo.to%252Fvideo%252F9c8bf2ed9d4fd
+    data = urllib.unquote(item.url)
 
-    itemlist = servertools.find_video_items(data=data)
+    logger.info("pelisalacarta.yaske play item.url="+data)
+
+    # http://olo.gg/s/cJinsNv1?s=http%3A%2F%2Fwww.nowvideo.to%2Fvideo%2F9c8bf2ed9d4fd
+    newdata = scrapertools.find_single_match(data,'olo.gg/s/[a-zA-Z0-9]+.s.(.*?)$')
+    if newdata!="":
+        data = newdata
+    logger.info("pelisalacarta.yaske play item.url="+data)
+
+    data = urllib.unquote(data)
+    logger.info("pelisalacarta.yaske play item.url="+data)
+
+    itemlist = servertools.find_video_items(item=item,data=data)
     for newitem in itemlist:
         newitem.fulltitle = item.fulltitle
     
