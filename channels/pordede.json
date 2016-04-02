@@ -1,0 +1,21 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": false, 
+        "category": [
+            "movie", 
+            "serie"
+        ], 
+        "changes": "Soporte para documentales", 
+        "date": "27/03/2016", 
+        "fanart": "", 
+        "id": "pordede", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "Pordede", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "9.0"
+    }, 
+    "settings": {}
+}

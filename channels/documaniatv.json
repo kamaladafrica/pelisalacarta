@@ -1,0 +1,20 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": false, 
+        "category": [
+            "documentary"
+        ], 
+        "changes": "Actualizado por cambios en la web (Gracias a prunk)", 
+        "date": "11/10/2014", 
+        "fanart": "", 
+        "id": "documaniatv", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "Documaniatv", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "6.0"
+    }, 
+    "settings": {}
+}

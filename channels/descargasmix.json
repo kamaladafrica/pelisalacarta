@@ -1,0 +1,26 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": false, 
+        "category": [
+            "movie", 
+            "vos",
+		    "latino",
+		    "documentary",
+		    "anime",
+		    "serie",
+		    "torrent"
+        ], 
+        "changes": "Primera version", 
+        "date": "02/02/2016", 
+        "fanart": "", 
+        "id": "descargasmix", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "DescargasMIX", 
+        "thumbnail": "http://i.imgur.com/tBTqIlV.jpg?1", 
+        "update_url": "", 
+        "version": "1.0"
+    }, 
+    "settings": {}
+}

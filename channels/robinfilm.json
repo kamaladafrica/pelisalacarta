@@ -1,0 +1,20 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": false, 
+        "category": [
+            "movie"
+        ], 
+        "changes": "fixed", 
+        "date": "17/05/2012", 
+        "fanart": "", 
+        "id": "robinfilm", 
+        "include_in_global_search": false, 
+        "language": "it", 
+        "name": "Robinfilm (it)", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "3.0"
+    }, 
+    "settings": {}
+}

@@ -1,0 +1,21 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": true, 
+        "category": [
+            "adult", 
+            "movie"
+        ], 
+        "changes": "First pelisalacarta 4 release", 
+        "date": "28/08/2015", 
+        "fanart": "", 
+        "id": "cinetemagay", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "Cinetemagay", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "1.0"
+    }, 
+    "settings": {}
+}

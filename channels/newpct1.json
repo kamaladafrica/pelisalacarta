@@ -1,0 +1,22 @@
+{
+    "channel": {
+        "active": true, 
+        "adult": false, 
+        "category": [
+            "movie", 
+            "serie", 
+            "anime"
+        ], 
+        "changes": "Corregido titulo en enlaces para descargas", 
+        "date": "14/01/16", 
+        "fanart": "", 
+        "id": "newpct1", 
+        "include_in_global_search": false, 
+        "language": "es", 
+        "name": "Newpct1", 
+        "thumbnail": "", 
+        "update_url": "", 
+        "version": "13.3"
+    }, 
+    "settings": {}
+}
