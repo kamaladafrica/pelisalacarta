@@ -40,6 +40,7 @@ def getmainlist(preferred_thumb=""):
 # TODO: (3.1) Pasar el código específico de XBMC al laucher
 def mainlist(params,url,category):
     logger.info("channelselector.mainlist")
+<<<<<<< HEAD
 
     # Verifica actualizaciones solo en el primer nivel
     if config.get_platform()!="boxee":
@@ -61,8 +62,11 @@ def mainlist(params,url,category):
             else:
                 logger.info("channelselector.mainlist Verificar actualizaciones desactivado")
 
+=======
+    
+>>>>>>> develop
     itemlist = getmainlist()
-	#Se devuelve el itemlist para que xbmctools se encarge de mostrarlo
+    #Se devuelve el itemlist para que xbmctools se encarge de mostrarlo
     return itemlist
 
 def getchanneltypes(preferred_thumb=""):
