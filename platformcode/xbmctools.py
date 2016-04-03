@@ -3,7 +3,6 @@
 # pelisalacarta - XBMC Plugin
 # XBMC Tools
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-# Modificado por super_berny: inclusion de infoLabels
 #------------------------------------------------------------
 
 import urllib, urllib2
@@ -47,7 +46,6 @@ def addnewfolderextra( item):
     listitem = xbmcgui.ListItem( item.title, iconImage="DefaultFolder.png", thumbnailImage=item.thumbnail )
 
     if item.action !="":
-        #listitem.setInfo( "video", { "Title" : item.title, "Plot" : item.plot, "Studio" : item.channel.capitalize() } )
         set_infoLabels(listitem,item) # Modificacion introducida por super_berny para añadir infoLabels al ListItem
     if item.fanart!="":
         listitem.setProperty('fanart_image',item.fanart) 
@@ -99,9 +97,7 @@ def addnewvideo(item):
 
     listitem = xbmcgui.ListItem( item.title, iconImage="DefaultVideo.png", thumbnailImage=item.thumbnail )
     if item.action !="":
-        #listitem.setInfo( "video", { "Title" : item.title, "Plot" : item.plot, "Studio" : item.channel.capitalize() } )
         set_infoLabels(listitem,item) # Modificacion introducida por super_berny para añadir infoLabels al ListItem
-        listitem.setInfo( "video", { "Title" : title, "FileName" : title, "Plot" : plot, "Duration" : duration, "Studio" : canal.capitalize(), "Genre" : category } )
    
     if item.fanart!="":
         #logger.info("item.fanart :%s" %item.fanart)
@@ -873,13 +869,16 @@ def alert_no_puedes_ver_video(server,url,motivo):
         resultado = advertencia.ok( "No puedes ver ese vídeo porque...","El servidor donde está alojado no está","soportado en pelisalacarta todavía",url)
         
 def set_infoLabels(listitem,item):
-    # Modificacion introducida por super_berny para añadir infoLabels al ListItem
+    '''
+    Metodo para añadir informacion extra al listitem.
+    Se mantiene por retocompatibilidad, pero deberia despreciarse en futuras versiones.
+    '''
     if item.plot.startswith("{'infoLabels'"):
-        # Necesitaba un parametro que pase los datos desde Item hasta esta funcion 
-        # y el que parecia mas idoneo era plot.
+        # Esta forma de pasar la informacion al listitem es obsoleta y deberia despreciarse
         # plot tiene que ser un str con el siguiente formato:
         #   plot="{'infoLabels':{dicionario con los pares de clave/valor descritos en 
         #               http://mirrors.xbmc.org/docs/python-docs/14.x-helix/xbmcgui.html#ListItem-setInfo}}"
+        
         try:
             import ast
             infodict=ast.literal_eval(item.plot)['infoLabels']
@@ -888,5 +887,12 @@ def set_infoLabels(listitem,item):
         except:
             pass
     elif len(item.infoLabels) >0:
+        # Nuevo modelo para pasar la informacion al listitem (ver Item.get_InfoLabels() )
+        # item.infoLabels es un dicionario con los pares de clave/valor descritos en: 
+        # http://mirrors.xbmc.org/docs/python-docs/14.x-helix/xbmcgui.html#ListItem-setInfo
         listitem.setInfo( "video", item.infoLabels)
+    
+    elif item.plot !='':
+        # Retrocompatibilidad con canales q no utilizan infoLabels de ningun tipo
+        listitem.setInfo( "video", { "Title" : item.title, "Plot" : item.plot, "Studio" : item.channel.capitalize() } )
     
