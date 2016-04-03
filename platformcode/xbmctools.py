@@ -354,7 +354,7 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
         mediaurl = video_urls[seleccion][1]
         if len(video_urls[seleccion])>3:
             wait_time = video_urls[seleccion][2]
-            subtitle = video_urls[seleccion][3]
+            item.subtitle = video_urls[seleccion][3]
         elif len(video_urls[seleccion])>2:
             wait_time = video_urls[seleccion][2]
         else:
@@ -537,38 +537,15 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
         
         #set_infoLabels(listitem,plot) # Modificacion introducida por super_berny para añadir infoLabels al ListItem
     
-    # Descarga el subtitulo
-    if item.channel=="cuevana" and item.subtitle!="" and (opciones[seleccion].startswith("Ver") or opciones[seleccion].startswith("Watch")):
-        logger.info("b5")
-        try:
-            import os
-            ficherosubtitulo = os.path.join( config.get_data_path(), 'subtitulo.srt' )
-            if os.path.exists(ficherosubtitulo):
-                try:
-                  os.remove(ficherosubtitulo)
-                except IOError:
-                  logger.info("Error al eliminar el archivo subtitulo.srt "+ficherosubtitulo)
-                  raise
-        
-            from core import scrapertools
-            data = scrapertools.cache_page(item.subtitle)
-            fichero = open(ficherosubtitulo,"w")
-            fichero.write(data)
-            fichero.close()
-            #from core import downloadtools
-            #downloadtools.downloadfile(subtitle, ficherosubtitulo )
-        except:
-            logger.info("Error al descargar el subtítulo")
-
     # Lanza el reproductor
         # Lanza el reproductor
     if strmfile and item.server != "torrent": #Si es un fichero strm no hace falta el play
         logger.info("b6")
         import sys
         xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, xlistitem)
-        if subtitle != "":
+        if item.subtitle != "":
             xbmc.sleep(2000)
-            xbmc.Player().setSubtitles(subtitle)
+            xbmc.Player().setSubtitles(item.subtitle)
 
     else:
         logger.info("b7")
@@ -842,7 +819,7 @@ def playstrm(params,url,category):
     saveSubtitleName(item)
     play_video("Biblioteca pelisalacarta",server,url,category,title,thumbnail,plot,strmfile=True,Serie=serie,subtitle=subtitle)
 
-def renderItems(itemlist, params, url, category, isPlayable='false'):
+def renderItems(itemlist, item, isPlayable='false'):
     
     viewmode = "list"
     
@@ -851,7 +828,7 @@ def renderItems(itemlist, params, url, category, isPlayable='false'):
             logger.info("item="+item.tostring())
             
             if item.category == "":
-                item.category = category
+                item.category = item.category
                 
             if item.fulltitle=="":
                 item.fulltitle=item.title
@@ -878,7 +855,7 @@ def renderItems(itemlist, params, url, category, isPlayable='false'):
 
         # Cierra el directorio
         xbmcplugin.setContent(pluginhandle,"Movies")
-        xbmcplugin.setPluginCategory( handle=pluginhandle, category=category )
+        xbmcplugin.setPluginCategory( handle=pluginhandle, category=item.category )
         xbmcplugin.addSortMethod( handle=pluginhandle, sortMethod=xbmcplugin.SORT_METHOD_NONE )
 
         # Modos biblioteca

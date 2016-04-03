@@ -59,7 +59,7 @@ def run():
             import channelselector
             itemlist = channelselector.mainlist(params, item.url, item.category)
             from platformcode import xbmctools
-            xbmctools.renderItems(itemlist, params, item.url, item.category)
+            xbmctools.renderItems(itemlist, item)
 
         # Actualizar version
         elif ( item.action=="update" ):
@@ -79,13 +79,13 @@ def run():
             import channelselector
             itemlist = channelselector.channeltypes(params,item.url,item.category)
             from platformcode import xbmctools
-            xbmctools.renderItems(itemlist, params, item.url, item.category)
+            xbmctools.renderItems(itemlist, item)
 
         elif (item.action=="listchannels"):
             import channelselector
             itemlist = channelselector.listchannels(params,item.url,item.category)
             from platformcode import xbmctools
-            xbmctools.renderItems(itemlist, params, item.url, item.category)
+            xbmctools.renderItems(itemlist, item)
 
         # El resto de acciones vienen en el parámetro "action", y el canal en el parámetro "channel"
         else:
@@ -313,7 +313,7 @@ def run():
                     
                     # FIXME:jesus Comentado porque no funciona bien en todas las versiones de XBMC
                     #library.update(totalepisodes,errores,nuevos)
-                    xbmctools.renderItems(itemlist, params, url, category)
+                    xbmctools.renderItems(itemlist, item)
                     
                     #Lista con series para actualizar
                     nombre_fichero_config_canal = os.path.join( config.get_library_path() , "series.xml" )
@@ -347,7 +347,7 @@ def run():
                         itemlist = channel.search(item,tecleado)
                     else:
                         itemlist = []
-                    xbmctools.renderItems(itemlist, params, item.url, item.category)
+                    xbmctools.renderItems(itemlist, item)
 
                 else:
                     logger.info("pelisalacarta.platformcode.launcher executing channel '"+item.action+"' method")
@@ -383,7 +383,7 @@ def run():
                     xbmcplugin.setContent(int( handle ),"movies")
                     
                     # Añade los items a la lista de XBMC
-                    xbmctools.renderItems(itemlist, params, item.url, item.category)
+                    xbmctools.renderItems(itemlist, item)
 
     except urllib2.URLError,e:
         import traceback

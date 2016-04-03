@@ -127,7 +127,7 @@ def episodios(item):
     itemlist = []
     fanart = item.fanart
     thumbnail = item.thumbnail
-    if item.category == "descargasmix":
+    if item.category == "":
         try:
             from core.tmdb import Tmdb
             otmdb= Tmdb(texto_buscado=item.fulltitle, tipo="tv")
@@ -139,7 +139,7 @@ def episodios(item):
     patron = '<strong>(.*?)</strong>'
     matches = scrapertools.find_multiple_matches(bloque, patron)
     for scrapedtitle in matches:
-        if item.category == "descargasmix":
+        if item.category == "":
             try:
                 item.plot, fanart, thumbnail = infoepi(otmdb, scrapedtitle)
             except:
@@ -172,7 +172,6 @@ def epienlaces(item):
     for scrapedurl, scrapedserver, scrapedcalidad in matches:
         if scrapedserver == "ul": scrapedserver = "uploadedto"
         if scrapedserver == "streamin": scrapedserver = "streaminto"
-        scrapedserver = scrapedserver.replace("abelhas","lolabits")
         titulo = scrapedserver.capitalize()+" ["+scrapedcalidad+"]"
         #Enlaces descarga
         if scrapedserver == "magnet":
@@ -189,14 +188,15 @@ def epienlaces(item):
                         DEFAULT_HEADERS.append( ["Referer", item.url] )
                         data = scrapertools.cache_page(scrapedurl, headers=DEFAULT_HEADERS)
                         scrapedurl = scrapertools.find_single_match(data, 'iframe src="([^"]+)"')
-                        enlaces = servertools.findvideos(data=scrapedurl)
-                        if len(enlaces)> 0:
-                            for enlace in enlaces:
-                                titulo = "Enlace encontrado en [COLOR sandybrown]"+enlaces[0][0]+"[/COLOR] ["+scrapedcalidad+"]"
-                                itemlist.append( Item(channel=__channel__, action="play", server=enlaces[0][2], title=titulo , url=enlaces[0][1] , fulltitle = item.fulltitle, thumbnail=item.thumbnail , fanart=item.fanart, plot=item.plot, folder=False) )
+                         
+                    enlaces = servertools.findvideos(data=scrapedurl)
+                    if len(enlaces)> 0:
+                        for enlace in enlaces:
+                            titulo = "Enlace encontrado en [COLOR sandybrown]"+enlaces[0][0]+"[/COLOR] ["+scrapedcalidad+"]"
+                            itemlist.append( Item(channel=__channel__, action="play", server=enlaces[0][2], title=titulo , url=enlaces[0][1] , fulltitle = item.fulltitle, thumbnail=item.thumbnail , fanart=item.fanart, plot=item.plot, folder=False) )
                 except:
                     pass
-    if config.get_library_support() and item.category == "descargasmix":
+    if config.get_library_support() and item.category == "":
         itemlist.append( Item(channel=__channel__, title="[COLOR green]Añadir enlaces a la biblioteca[/COLOR]", url=item.url+"|", action="add_pelicula_to_library", extra="epienlaces", fulltitle=item.title, show=item.title))
 
     return itemlist
@@ -207,9 +207,10 @@ def findvideos(item):
     if item.category == "Series" or item.show!="": return epienlaces(item)
     itemlist = []
     data = scrapertools.cachePage(item.url)
+
     fanart = item.fanart
     sinopsis = scrapertools.find_single_match(data, '<strong>SINOPSIS</strong>:(.*?)</p>')
-    if item.category == "descargasmix":
+    if item.category == "":
         try:
             sinopsis, fanart = info(item.fulltitle, "movie", sinopsis)
         except:
@@ -247,7 +248,6 @@ def findvideos(item):
     matches = scrapertools.find_multiple_matches(data_descarga, patron)
     for scrapedserver, scrapedurl in matches:
         if (scrapedserver == "ul") | (scrapedserver == "uploaded"): scrapedserver = "uploadedto"
-        scrapedserver = scrapedserver.replace("abelhas","lolabits")
         titulo = scrapedserver.capitalize()
         if titulo == "Magnet":continue
         mostrar_server= True
@@ -262,11 +262,11 @@ def findvideos(item):
                 patron = 'dm\(c.a\(\'([^\']+)\''
                 matches_enlaces = scrapertools.find_multiple_matches(data_enlaces,patron)
                 numero = str(len(matches_enlaces))
-                if item.category == "descargasmix": itemlist.append( Item(channel=__channel__, action="enlaces", server="", title=titulo+" - Nº enlaces:"+numero , url=item.url , fulltitle = item.fulltitle, thumbnail=item.thumbnail , fanart=fanart, plot=str(sinopsis) , extra=scrapedurl, context = "0", contentTitle=item.fulltitle, viewmode="movie_with_plot", folder=True) )
+                if item.category == "": itemlist.append( Item(channel=__channel__, action="enlaces", server="", title=titulo+" - Nº enlaces:"+numero , url=item.url , fulltitle = item.fulltitle, thumbnail=item.thumbnail , fanart=fanart, plot=str(sinopsis) , extra=scrapedurl, context = "0", contentTitle=item.fulltitle, viewmode="movie_with_plot", folder=True) )
             except:
                 pass
 
-    if config.get_library_support() and item.category == "descargasmix":
+    if config.get_library_support() and item.category == "":
         itemlist.append( Item(channel=__channel__, title="[COLOR green]Añadir enlaces a la biblioteca[/COLOR]", url=item.url, action="add_pelicula_to_library", extra="findvideos", fulltitle=item.fulltitle.strip()))
     return itemlist
 	

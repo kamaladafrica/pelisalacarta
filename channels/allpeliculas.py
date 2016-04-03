@@ -230,7 +230,7 @@ def findvideos(item):
                 itemlist.append(Item(channel=__channel__, action="play", server=servidor, title=titulo , url=enlaces[0][1] , fulltitle = item.fulltitle, thumbnail=item.thumbnail , fanart=fanart, plot=str(sinopsis) , extra=idioma, folder=False) )
 
     itemlist.sort(key=lambda item:(item.extra, item.server))
-    if len(itemlist) > 0 and item.category == "allpeliculas" or item.category == "Buscador":
+    if len(itemlist) > 0 and item.category == "" or item.category == "Buscador":
         if config.get_library_support():
             itemlist.append( Item(channel=__channel__, title="[COLOR green]Añadir enlaces a la biblioteca[/COLOR]", url=item.url, action="add_pelicula_to_library", fulltitle=item.fulltitle, show=item.fulltitle))
     return itemlist
