@@ -33,9 +33,9 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
 def find_videos(text):
     encontrados = set()
     devuelve = []
-	
-	# https://cnubis.com/plugins/mediaplayer/site/_1embed.php?u=9mk&w=640&h=320
-	# http://cnubis.com/plugins/mediaplayer/site/_2embed.php?u=2aZD
+
+    # https://cnubis.com/plugins/mediaplayer/site/_1embed.php?u=9mk&w=640&h=320
+    # http://cnubis.com/plugins/mediaplayer/site/_2embed.php?u=2aZD
     # http://cnubis.com/plugins/mediaplayer/embed/_2embed.php?u=U6w
     patronvideos  = 'cnubis.com/plugins/mediaplayer/(.*?/[^.]+.php\?u\=[A-Za-z0-9]+)'
     logger.info("pelisalacarta.servers.cnubis find_videos #"+patronvideos+"#")
