@@ -254,7 +254,7 @@ def findvideos(item):
     if len(itemlist) == 0: 
         itemlist.append( Item(channel=__channel__, action="", title="No se ha encontrado ningún enlace" , url="" , thumbnail="", fanart=item.fanart, folder=False) )
     else:
-        if config.get_library_support() and item.category == "verseriesynovelas":
+        if config.get_library_support() and item.category == "":
             itemlist.append( Item(channel=__channel__, title="[COLOR green]Añadir enlaces a la biblioteca[/COLOR]", url=item.url, action="add_pelicula_to_library", fulltitle=item.title.split(" [")[0], show=item.title))
     return itemlist
 
