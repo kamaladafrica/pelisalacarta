@@ -6,6 +6,7 @@
 	<active>true</active>
 	<adult>false</adult>
 	<language>es</language>
+	<include_in_global_search>disabled</include_in_global_search>
 
 	<fanart></fanart>
 	<thumbnail>http://media.tvalacarta.info/pelisalacarta/squares/megahd.png</thumbnail>
@@ -24,6 +25,21 @@
 	</categories>
 
 	<settings>
-		<include_in_global_search>false</include_in_global_search>
+		<id>megahduser</id>
+		<type>text</type>
+		<label>@30014</label>
+		<default></default>
+		<enabled>true</enabled>
+		<visible>true</visible>
 	</settings>
+	<settings>
+		<id>megahdpassword</id>
+		<type>text</type>
+		<label>@30015</label>
+		<default></default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
+
+	
 </channel>

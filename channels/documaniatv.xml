@@ -6,7 +6,8 @@
 	<active>true</active>
 	<adult>false</adult>
 	<language>es</language>
-
+	<include_in_global_search>disabled</include_in_global_search>
+	
 	<fanart></fanart>
 	<thumbnail>http://media.tvalacarta.info/pelisalacarta/squares/documaniatv.png</thumbnail>
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/documaniatv.png</bannermenu>
@@ -19,8 +20,12 @@
 	<categories>
 		<category>documentary</category>
 	</categories>
-
 	<settings>
-		<include_in_global_search>true</include_in_global_search>
+		<id>include_in_global_search</id>
+		<type>bool</type>
+		<label>Incluir en busqueda global</label>
+		<default>true</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
 	</settings>
 </channel>

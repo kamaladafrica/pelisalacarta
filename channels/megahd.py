@@ -13,6 +13,7 @@ from core import config
 from core import scrapertools
 from core.item import Item
 from servers import servertools
+from platformcode import guitools
 
 __channel__ = "megahd"
 __category__ = "F"
@@ -45,8 +46,8 @@ def login():
     logger.info("channels.megahd cur_session_id="+cur_session_id)
 
     # Calcula el hash del password
-    LOGIN = config.get_setting("megahduser")
-    PASSWORD = config.get_setting("megahdpassword")
+    LOGIN = config.get_setting("megahduser",__channel__)
+    PASSWORD = config.get_setting("megahdpassword",__channel__)
     logger.info("channels.megahd LOGIN="+LOGIN)
     logger.info("channels.megahd PASSWORD="+PASSWORD)
     
@@ -66,9 +67,8 @@ def mainlist(item):
     logger.info("channels.megahd mainlist")
     itemlist = []
     
-    if config.get_setting("megahdaccount")!="true":
-    
-        itemlist.append( Item( channel=__channel__ , title="Habilita tu cuenta en la configuración..." , action="openconfig" , url="" , folder=False ) )
+    if config.get_setting("megahduser",__channel__) == "":
+        itemlist.append( Item( channel=__channel__ , title="Habilita tu cuenta en la configuración..." , action="settingCanal" , url="" ) )
     else:
         if login():
             itemlist.append( Item( channel=__channel__ , title="Películas" , action="foro" , url="http://megahd.me/peliculas/" , folder=True ) )
@@ -76,14 +76,14 @@ def mainlist(item):
             itemlist.append( Item( channel=__channel__ , title="Series" , action="foro" , url="http://megahd.me/series/" , folder=True ) )
             itemlist.append( Item( channel=__channel__ , title="Documentales y Deportes" , action="foro" , url="http://megahd.me/documentales/" , folder=True ) )
             itemlist.append( Item( channel=__channel__ , title="Zona Infantil" , action="foro" , url="http://megahd.me/zona-infantil/" , folder=True ) )
+            itemlist.append( Item(channel=__channel__, action="settingCanal"    , title="Configuración..."     , url="" ))
         else:
             itemlist.append( Item( channel=__channel__ , title="Cuenta incorrecta, revisa la configuración..." , action="" , url="" , folder=False ) )
     return itemlist
 
-def openconfig(item):
-    if "xbmc" in config.get_platform() or "boxee" in config.get_platform():
-        config.open_settings( )
-    return []
+def settingCanal(item):
+    ventana = guitools.show_settings(item.channel)
+    return ventana
 
 def foro(item):
     logger.info("channels.megahd foro")

@@ -7,13 +7,17 @@
 # Herramientas responsables de adaptar los diferentes 
 # cuadros de dialogo a una plataforma en concreto,
 # en este caso Kodi.
-# version 1.3
+# version 1.6
 # ------------------------------------------------------------
 import xbmcgui
 import xbmc
-import os
+import os, io
+from core import jsontools
+from core import logger
 from math import ceil
 from core import config
+from core.item import Item
+from core import channeltools
 
 
 def dialog_ok(heading, line1, line2="", line3=""):
@@ -79,7 +83,170 @@ class DialogoProgreso(object):
     self.Progreso.close()
     self.Closed = True    
     
+
     
+def show_settings(channel_action, list_controls=None, dict_values=None, caption="", File_settings=""):
+    '''Muestra un cuadro de dialogo personalizado y guarda los datos al cerrarlo.
+    
+    Abre un cuadro de dialogo adaptado a la plataforma que estemos utilizando y guarda los datos en un fichero.
+    
+    Parametros:
+    channel_action (str) -- Puede estar compuesto por el nombre del canal y el nombre de una funcion de dicho canal 
+        unidos por el caracter '|' o bien exclusivamente por el nombre del canal. En el primer caso este valor sera 
+        devuelto si la funcion termino correctamente, en el segundo caso la funcion devuelve None. 
+        Es utilizado por algunas plataformas como indicador de que se ha ejecutar cuando se cierra el cuadro.
+    
+    (opcional) list_controls (list) -- Lista de controles a incluir en el cuadro de dialogo. 
+        La list de controles puede incluir cuatro tipos basicos de controles y ha de seguir el siguiente esquema:
+            list_controls= [{'id': "nameControl1",
+                          'type': "bool",                       # bool, text, list, label 
+                          'label': "Control 1: tipo RadioButton",
+                          'default': false,
+                          'enabled': true,
+                          'visible': true,
+                          'lvalues':""                         # only for type = list
+                        },
+                        {'id': "nameControl2",
+                          'type': "text",                       # bool, text, list, label 
+                          'label': "Control 2: tipo Cuadro de texto",
+                          'default': "Valor por defecto",
+                          'enabled': true,
+                          'visible': true,
+                          'lvalues':""                         # only for type = list
+                        },
+                        {'id': "nameControl3",
+                          'type': "list",                       # bool, text, list, label 
+                          'label': "Control 3: tipo Lista",
+                          'default': "item1",
+                          'enabled': true,
+                          'visible': true,
+                          'lvalues':["item1", "item2", "item3", "item4"]  # only for type = list
+                        },
+                        {'id': "nameControl4",
+                          'type': "label",                       # bool, text, list, label 
+                          'label': "Control 4: tipo Etiqueta",
+                          'default': '0xFFee66CC',               # En este caso representa el color del texto
+                          'enabled': true,
+                          'visible': true,
+                          'lvalues':""                         # only for type = list
+                        }]
+        En caso de no incluirse este argumento se leera la lista del archivo ../channels/channel.xml que ha de tener el siguiente esquema:
+            <?xml version="1.0" encoding="UTF-8" ?>
+            <channel>
+                ...
+                ...
+                <settings>
+                    <id>nameControl1</id>
+                    <type>bool</type>
+                    <label>Control 1: tipo RadioButton</label>
+                    <default>false</default>
+                    <enabled>true</enabled>
+                    <visible>true</visible>
+                    <lvalues></lvalues>
+                </settings>
+                <settings>
+                    <id>nameControl2</id>
+                    <type>text</type>
+                    <label>Control 2: tipo Cuadro de texto</label>
+                    <default>Valor por defecto</default>
+                    <enabled>true</enabled>
+                    <visible>true</visible>
+                    <lvalues></lvalues>
+                </settings>
+                <settings>
+                    <id>nameControl3</id>
+                    <type>list</type>
+                    <label>Control 3: tipo Lista</label>
+                    <default>item1</default>
+                    <enabled>true</enabled>
+                    <visible>true</visible>
+                    <lvalues>item1</lvalues>
+                    <lvalues>item2</lvalues>
+                    <lvalues>item3</lvalues>
+                    <lvalues>item4</lvalues>
+                </settings>
+                <settings>
+                    <id>nameControl4</id>
+                    <type>label</type>
+                    <label>Control 4: tipo Etiqueta</label>
+                    <default>0xFFee66CC</default>
+                    <enabled>true</enabled>
+                    <visible>true</visible>
+                    <lvalues></lvalues>
+                </settings>
+                ...
+            </channel>  
+        
+    (opcional) dict_values: (dict) Diccionario que representa el par (id: valor) de los controles de la lista.
+        Si algun control de la lista no esta incluido en este diccionario se le asignara el valor por defecto.
+            dict_values={"nameControl1": False, "nameControl2": "Esto es un ejemplo"}
+    
+    (opcional) caption: (str) Titulo de la ventana de configuracion. Si se omite el titulo sera: "Configuracion -- channel"
+    
+    (opcional) File_settings: (str) Ruta al fichero json donde se guardan los datos tras cerrar el cuadro de dialogo.
+        Si no se especifica ninguno tomara por defecto: 
+            "..\userdata\addon_data\plugin.video.pelisalacarta\settings_channels\channel_data.json"
+        Si el fichero no existe o no tiene un elemento 'settings', el cuadro de dialogo mostrara los valores por defecto 
+        tomados del list_controls.
+        Si el fichero existe y tiene un elemento 'settings', el cuadro de dialogo mostrara los valores leidos del fichero 
+        obviando los valores por defecto y los incluidos en su caso en dict_values.
+        Al cerrar el cuadro de dialogo se añadira o actualizara el elemento 'settings' con los datos actualizados en este fichero.
+    
+    Retorna:
+    Si el argumento channel_action incluye la accion, la funcion retornara el argumento channel_action. 
+    Por contra, si solo se incluye en nombre del canal, la funcion retornara None.
+    
+    '''
+    # Obtener argumentos
+    if dict_values is None:
+        dict_values = dict()
+    if "|" in channel_action:
+        channel = channel_action.split("|")[0]
+        action = channel_action.split("|")[1]
+        ret =  channel_action
+    else:
+        channel = channel_action
+        action = ""
+        ret = None
+    if File_settings == "":
+        File_settings= os.path.join(config.get_data_path(),"settings_channels" ,channel +"_data.json")
+    if caption =="":
+        caption = config.get_localized_string(30100) + " -- " + channel.capitalize()
+     
+    if list_controls is None:
+        # Obtenemos controles del archivo ../channels/channel.xml
+        list_controls, dict_settings = channeltools.get_channel_controls_settings(channel)
+          
+    # Obtenemos valores actuales si existen
+    dict_file= {}
+    if os.path.exists(File_settings):
+        data = ""
+        try:
+            with open(File_settings, "r") as f:
+                data= f.read()
+        except EnvironmentError:
+            logger.info("ERROR al leer el archivo: {0}".format(File_settings))
+        dict_file= jsontools.load_json(data)
+        if dict_file.has_key('settings'):
+            dict_values= dict_file['settings'] 
+
+            
+    # Mostramos la ventana
+    ventana = SettingWindow(list_controls, dict_values, caption)
+    ventana.doModal()
+    if ventana.isConfirmed():
+        dict_values= ventana.get_values()
+        dict_file['settings']= dict_values
+        json_data = jsontools.dump_json(dict_file)
+        try:
+            with open(File_settings, "w") as f:
+                f.write(json_data)
+        except EnvironmentError:
+            logger.info("ERROR al salvar el archivo: {0}".format(File_settings))
+    
+    return ret
+    
+
     
 #---------------------------------------------------------------------------
 #  Clases para la pantalla de configuracion
@@ -122,7 +289,7 @@ ACTION_MOUSE_MOVE = 107
 
 
 class SettingWindow( xbmcgui.WindowDialog ):
-    ''' Clase derivada que permite utilizar cuadors de configuracion personalizados.
+    ''' Clase derivada que permite utilizar cuadros de configuracion personalizados.
     
     Esta clase deriva de xbmcgui.WindowDialog y permite crear un cuadro de dialogo con controles del tipo:
     Radio Button (bool), Cuadro de texto (text), Lista (list) y Etiquetas informativas (label).
@@ -152,32 +319,37 @@ class SettingWindow( xbmcgui.WindowDialog ):
                                 {'id': "nameControl3",
                                   'type': "list",                       # bool, text, list, label 
                                   'label': "Control 3: tipo Lista",
-                                  'default': "item1",
+                                  'default': "item1",                   # En este caso puede ser el valor o el indice precedido de '#' 
                                   'enabled': True,
                                   'visible': True,
-                                  'lvalues':["item1", "item2", "item3", "item4"],                         # only for type = list
+                                  'lvalues':["item1", "item2", "item3", "item4"],  # only for type = list
                                 },
                                 {'id': "nameControl4",
                                   'type': "label",                       # bool, text, list, label 
                                   'label': "Control 4: tipo Etiqueta",
-                                  'default': '0xFFee66CC',               # En este caso: valor opcional que representa el color del texto
+                                  'default': '0xFFee66CC',               # En este caso representa el color del texto
                                   'enabled': True,
                                   'visible': True,
                                   'lvalues':"",                         # only for type = list
                                 }]
-                dict_values: (dict) Diccionario que representa el par (id: valor) de cada control de la lista.
+                    Los campos 'label', 'default' y 'lvalues' pueden ser un numero precedido de '@'. En cuyo caso se buscara el literal en el archivo string.xml del idioma seleccionado.
+                    El campo 'default' de los controles tipo 'label' representa el color del texto en formato ARGB hexadecimal.
+                (opcional)dict_values: (dict) Diccionario que representa el par (id: valor) de los controles de la lista.
                     Si algun control de la lista no esta incluido en este diccionario se le asignara el valor por defecto.
                         dict_values={"nameControl1": False,
                                      "nameControl2": "Esto es un ejemplo"}
-                (opcional) caption: (str) Titulo de la ventana de configuracion.
+                (opcional) caption: (str) Titulo de la ventana de configuracion. Se puede localizar mediante un numero precedido de '@'
     Metodos principales:
         get_values(): Retorna un diccionario con los pares (id: valor) obteniendo los datos de los controles de la ventana.
         isConfirmed(): Retorna True si se han confirmado los cambios en la ventana, False en caso contrario.
+    
     '''
     window_next_page = None
     window_prev_page = None
     
-    def __init__( self, list_controls , dict_values, caption=""):
+    def __init__( self, list_controls , dict_values=None, caption=""):
+        if dict_values is None:
+              dict_values = dict()
         self.dict_values= dict_values
         self.modificado = False
         self.confirmado = False
@@ -187,7 +359,7 @@ class SettingWindow( xbmcgui.WindowDialog ):
         self.screen_x = 40
         self.screen_y = 30
         self.screen_w = 1080 - self.screen_x
-        self.screen_h = 720 - int(self.screen_y * 1.5)
+        self.screen_h = (720 - int(self.screen_y * 1.5)) if len(list_controls) >9 else 455            
         self.num_controles_x_page = 15.0
         pos_y= self.screen_y + 10
         
@@ -204,6 +376,8 @@ class SettingWindow( xbmcgui.WindowDialog ):
         
         #           Titulo de ventana
         if caption:
+            if caption.startswith('@') and unicode(caption[1:]).isnumeric():
+                caption = config.get_localized_string(int(caption[1:]))
             self.caption_background = xbmcgui.ControlImage(self.screen_x, pos_y , self.screen_w, 60, 
                                                             os.path.join(_path_imagen,'Controls', 'dialogheader.png'))
             self.addControl(self.caption_background)
@@ -212,21 +386,21 @@ class SettingWindow( xbmcgui.WindowDialog ):
             self.addControl(self.caption)
             
         #           Botones Aceptar y cancelar
-            self.window_ok_button = xbmcgui.ControlButton( self.screen_x + self.screen_w - 350 , self.screen_y + self.screen_h - 70 , 150, 40, 'Aceptar',
-                        alignment = ALIGN_CENTER,
-                        focusTexture=os.path.join(_path_imagen, 'KeyboardKey.png'),
-                        noFocusTexture=os.path.join(_path_imagen, 'KeyboardKeyNF.png'))
-            self.addControl(self.window_ok_button)
-            
-            self.window_cancel_button = xbmcgui.ControlButton( self.screen_x + self.screen_w - 180 , self.screen_y + self.screen_h - 70 , 150, 40, 'Cancelar',
-                        alignment = ALIGN_CENTER,
-                        focusTexture=os.path.join(_path_imagen, 'KeyboardKey.png'),
-                        noFocusTexture=os.path.join(_path_imagen, 'KeyboardKeyNF.png'))
-            self.addControl(self.window_cancel_button)
-            
-            self.setFocus(self.window_ok_button)
-            self.window_ok_button.controlRight(self.window_cancel_button)
-            self.window_cancel_button.controlLeft(self.window_ok_button)
+        self.window_ok_button = xbmcgui.ControlButton( self.screen_x + self.screen_w - 350 , self.screen_y + self.screen_h - 70 , 150, 40, 'Aceptar',
+                    alignment = ALIGN_CENTER,
+                    focusTexture=os.path.join(_path_imagen, 'KeyboardKey.png'),
+                    noFocusTexture=os.path.join(_path_imagen, 'KeyboardKeyNF.png'))
+        self.addControl(self.window_ok_button)
+        
+        self.window_cancel_button = xbmcgui.ControlButton( self.screen_x + self.screen_w - 180 , self.screen_y + self.screen_h - 70 , 150, 40, 'Cancelar',
+                    alignment = ALIGN_CENTER,
+                    focusTexture=os.path.join(_path_imagen, 'KeyboardKey.png'),
+                    noFocusTexture=os.path.join(_path_imagen, 'KeyboardKeyNF.png'))
+        self.addControl(self.window_cancel_button)
+        
+        self.setFocus(self.window_ok_button)
+        self.window_ok_button.controlRight(self.window_cancel_button)
+        self.window_cancel_button.controlLeft(self.window_ok_button)
         
         #           Controles de paginacion
         
@@ -308,31 +482,7 @@ class SettingWindow( xbmcgui.WindowDialog ):
                 v['control'].setVisible(False)
             else:
                 v['control'].setVisible(v['visible'])
-                '''
-                # navegacion entre controles. Lo comento por q no parece funcionar bien
-                if num_control == 0: 
-                    # Primer control
-                    if self.window_prev_page:
-                        self.window_prev_page.controlDown(v['control'])
-                        self.window_next_page.controlDown(v['control'])
-                        v['control'].controlUp(self.window_next_page)
-                    else:
-                        self.window_ok_button.controlUp(v['control'])
-                        self.window_cancel_button.controlup(v['control'])
-                        v['control'].controlUp(self.window_ok_button)
-                else:
-                    # Controles intermedios
-                    v['control'].controlUp(control_anterior)
-                    control_anterior.controlDown(v['control'])
                 
-                num_control += 1
-                if num_control == 16:
-                    # Ultimo control
-                    v['control'].controlDown(self.window_ok_button)
-                    num_control = 0
-                
-                control_anterior = v['control']
-                '''
                 
     def __do_you_want_to_save(self):
         if not self.modificado:
@@ -348,14 +498,13 @@ class SettingWindow( xbmcgui.WindowDialog ):
         self.confirmado = True
         for v in self.controles.values():
             if v['type'] == 'bool':
-                self.dict_values[v['id']] = v['control'].isSelected()
+                self.dict_values[v['id']] = True if v['control'].isSelected()== 1 else False
             elif v['type'] == 'text':
                 self.dict_values[v['id']] = v['control'].getText()
             elif v['type'] == 'list':
                 self.dict_values[v['id']] = v['control'].getSelectedValue()    
            
     def __add_controles(self, list_controls, pos_ini):
-                
         pos_x = self.screen_x + 20
         width_control = self.screen_w - 75
         pagina= 1
@@ -363,13 +512,35 @@ class SettingWindow( xbmcgui.WindowDialog ):
         num_control = 0
         
         for c in list_controls:
-            # Fijar valores por defecto para cada control
+            # Si algun control de la lista  no tiene id, type o default lo ignoramos
+            if not c.has_key('id') or not c.has_key('type') or not c.has_key('default'):
+                continue
+            
+            # Translation label y lvalues
+            if c['label'].startswith('@') and unicode(c['label'][1:]).isnumeric():
+                c['label'] = config.get_localized_string(int(c['label'][1:]))
+            if c['type'] == 'list':
+                lvalues=[]
+                for li in c['lvalues']:
+                    if li.startswith('@') and unicode(li[1:]).isnumeric():
+                        lvalues.append(config.get_localized_string(int(li[1:])))
+                    else:
+                        lvalues.append(li)
+                c['lvalues'] = lvalues
+                
+                    
+            
+            # Fijar valores por defecto para cada control y traducir si es necesario
             if not c.has_key('enabled') or c['enabled'] is None: c['enabled']= True
             if not c.has_key('visible') or c['visible'] is None: c['visible']= True
             if self.dict_values.has_key(c['id']): 
                 c['value'] = self.dict_values[c['id']]
             else:
                 c['value'] = c['default']
+            if type(c['value']) == str:
+                if c['value'].startswith('@')and unicode(c['value'][1:]).isnumeric():
+                    c['value']  = config.get_localized_string(int(c['value'][1:]))    
+                
             
             c['pagina']= pagina
             if c['type'] == 'bool':
@@ -403,6 +574,8 @@ class SettingWindow( xbmcgui.WindowDialog ):
                 self.controles[control.getId()]= c
                 
             elif c['type'] == 'list':
+                #value = c['value'][0] if type(c['value']) == list else c['value']  
+                #control= ListControl(self, pos_x + 10, pos_y, width_control,30, c['label'], c['lvalues'], value)
                 control= ListControl(self, pos_x + 10, pos_y, width_control,30, c['label'], c['lvalues'], c['value'])
                 self.addControl(control)
                 c['control']= control
@@ -459,7 +632,9 @@ class ListControl(xbmcgui.ControlLabel):
     
            
     def __new__(cls, *args, **kwargs):
-        return super(ListControl, cls).__new__ (cls, args[1], args[2], args[3] -10 - (2*args[4]), args[4], "", alignment = ALIGN_RIGHT)
+        selectedIndex = args[6].index(args[7])
+        label_ini = args[6][selectedIndex]
+        return super(ListControl, cls).__new__ (cls, args[1], args[2], args[3] -10 - (2*args[4]), args[4], label_ini, alignment = ALIGN_RIGHT)
         
     def __init__(self, window, x, y, width, height, label, lvalues, value):
         self.options = lvalues
@@ -477,7 +652,6 @@ class ListControl(xbmcgui.ControlLabel):
                         noFocusTexture=os.path.join(_path_imagen,'Controls', 'spinUp-noFocus.png'))
         window.addControl(self.upBtn)
         self.selectedIndex = lvalues.index(value)
-        self.__setSelected();
         
     def __setSelected(self):
         length = self.options.__len__()
@@ -489,7 +663,6 @@ class ListControl(xbmcgui.ControlLabel):
         self.downBtn.setEnabled(self.selectedIndex != 0)
         self.upBtn.setEnabled(self.selectedIndex != length - 1)
         self.setLabel(self.options[self.selectedIndex])
-        
     
     def forwardInput(self):
         focusedItem = self.window.getFocus()
@@ -514,6 +687,7 @@ class ListControl(xbmcgui.ControlLabel):
         super(ListControl, self).setVisible(visible)
     
     def getSelectedValue(self):
+        #return [self.options[self.selectedIndex],self.selectedIndex]
         return self.options[self.selectedIndex]
         
     def getSelectedIndex(self):

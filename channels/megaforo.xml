@@ -6,7 +6,8 @@
 	<active>true</active>
 	<adult>false</adult>
 	<language>es</language>
-
+	<include_in_global_search>disabled</include_in_global_search>
+	
 	<fanart></fanart>
 	<thumbnail>http://media.tvalacarta.info/pelisalacarta/squares/megaforo.png</thumbnail>
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/megaforo.png</bannermenu>
@@ -21,8 +22,23 @@
 		<category>serie</category>
 		<category>documentary</category>
 	</categories>
-
 	<settings>
-		<include_in_global_search>false</include_in_global_search>
+		<id>megaforouser</id>
+		<type>text</type>
+		<label>@30014</label>
+		<default></default>
+		<enabled>true</enabled>
+		<visible>true</visible>
 	</settings>
+	<settings>
+		<id>megaforopassword</id>
+		<type>text</type>
+		<label>@30015</label>
+		<default></default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
+	
+	
+
 </channel>

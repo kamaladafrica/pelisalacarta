@@ -16,5 +16,5 @@
 	<date></date>
 	<changes></changes>
 
-	<include_in_global_search>false</include_in_global_search>
+	<include_in_global_search>disabled</include_in_global_search>
 </channel>

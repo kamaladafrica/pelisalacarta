@@ -6,7 +6,8 @@
 	<active>true</active>
 	<adult>true</adult>
 	<language>es</language>
-
+	<include_in_global_search>disabled</include_in_global_search>
+	
 	<fanart></fanart>
 	<thumbnail>http://media.tvalacarta.info/pelisalacarta/squares/mocosoftx.png</thumbnail>
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/mocosoftx.png</bannermenu>
@@ -22,6 +23,19 @@
 	</categories>
 
 	<settings>
-		<include_in_global_search>false</include_in_global_search>
+		<id>mocosoftxuser</id>
+		<type>text</type>
+		<label>@30014</label>
+		<default></default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<id>mocosoftxpassword</id>
+		<type>text</type>
+		<label>@30015</label>
+		<default></default>
+		<enabled>true</enabled>
+		<visible>true</visible>
 	</settings>
 </channel>

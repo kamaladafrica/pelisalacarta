@@ -176,31 +176,38 @@ def search(item,texto):
     logger.info("[veranime.py] search")
     itemlist = []
     
-    # Descarga la página con la busqueda
-    data = scrapertools.cache_page( "http://www.vanime.net/core/search.php" , post="searchword="+texto )
+    try:
+        # Descarga la página con la busqueda
+        data = scrapertools.cache_page( "http://www.vanime.net/core/search.php" , post="searchword="+texto )
 
-    # Extrae las entradas de todas series
-    '''
-    <li class="rslcnt icob">
-    <div class="srcimg flol"><a href="/anime/avatar-libro-fuego.html"><img height="53" widht="41" src="http://www.vimagen.net/va/avatarfuego.gif" alt="Avatar Libro Fuego" /></a></div>
-    <div class="srctxt flor">
-    <h2><a href="/anime/avatar-libro-fuego.html">Avatar Libro Fuego</a></h2>
-    <p class="pln1"><strong>Fecha de Publicacion</strong> 2009-01-06</p>
-    <p class="pln2"><strong>Anime:</strong> <strong>Anime</strong>: Finalizado</p>    
-    </div>
-    </li>
-    '''
-    patron  = '<li class="rslcnt icob">[^<]+'
-    patron += '<div class="srcimg flol"><a href="([^"]+)"><img height="\d+" widht="\d+" src="([^"]+)" alt="([^"]+)" /></a></div>'
-    matches = re.compile(patron,re.DOTALL).findall(data)
-    for url,thumbnail,title in matches:
-        scrapedtitle = title.strip()
-        scrapedurl = urlparse.urljoin("http://www.vanime.net",url)
-        scrapedthumbnail = thumbnail
-        scrapedplot = ""
+        # Extrae las entradas de todas series
+        '''
+        <li class="rslcnt icob">
+        <div class="srcimg flol"><a href="/anime/avatar-libro-fuego.html"><img height="53" widht="41" src="http://www.vimagen.net/va/avatarfuego.gif" alt="Avatar Libro Fuego" /></a></div>
+        <div class="srctxt flor">
+        <h2><a href="/anime/avatar-libro-fuego.html">Avatar Libro Fuego</a></h2>
+        <p class="pln1"><strong>Fecha de Publicacion</strong> 2009-01-06</p>
+        <p class="pln2"><strong>Anime:</strong> <strong>Anime</strong>: Finalizado</p>    
+        </div>
+        </li>
+        '''
+        patron  = '<li class="rslcnt icob">[^<]+'
+        patron += '<div class="srcimg flol"><a href="([^"]+)"><img height="\d+" widht="\d+" src="([^"]+)" alt="([^"]+)" /></a></div>'
+        matches = re.compile(patron,re.DOTALL).findall(data)
+        for url,thumbnail,title in matches:
+            scrapedtitle = title.strip()
+            scrapedurl = urlparse.urljoin("http://www.vanime.net",url)
+            scrapedthumbnail = thumbnail
+            scrapedplot = ""
 
-        # Añade al listado
-        itemlist.append( Item(channel=__channel__, action="episodios", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , show = scrapedtitle, folder=True) )
+            # Añade al listado
+            itemlist.append( Item(channel=__channel__, action="episodios", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , show = scrapedtitle, folder=True) )
 
-    itemlist = sorted(itemlist, key=lambda Item: Item.title) 
-    return itemlist
+        itemlist = sorted(itemlist, key=lambda Item: Item.title) 
+        return itemlist
+    # Se captura la excepción, para no interrumpir al buscador global si un canal falla
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error( "%s" % line )
+        return []
