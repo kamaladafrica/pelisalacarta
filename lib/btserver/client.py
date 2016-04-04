@@ -100,7 +100,7 @@ class Client(object):
             if len(self.files) > 1:
                 return "http://" + self.ip + ":" + str(self.port) + "/playlist.pls"
             else:
-                return "http://" + self.ip + ":" + str(self.port) + "/" + urllib.quote(self.files[0].path.encode("utf8"))
+                return "http://" + self.ip + ":" + str(self.port) + "/" + urllib.quote(self.files[0].path)
 
     def get_files(self):
         #Esperamos a lo metadatos
@@ -112,7 +112,7 @@ class Client(object):
         if self.files:
             #Creamos el dict con los archivos
             for file in self.files:
-                n = file.path.encode("utf8")
+                n = file.path
                 u = "http://" + self.ip + ":" + str(self.port) + "/" + urllib.quote(n)
                 s = file.size
                 files.append({"name":n,"url":u,"size":s})
