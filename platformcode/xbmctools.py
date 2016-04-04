@@ -887,7 +887,7 @@ def set_infoLabels(listitem,item):
         except:
             pass
     elif len(item.infoLabels) >0:
-        # Nuevo modelo para pasar la informacion al listitem (ver Item.get_InfoLabels() )
+        # Nuevo modelo para pasar la informacion al listitem (ver tmdb.set_InfoLabels() )
         # item.infoLabels es un dicionario con los pares de clave/valor descritos en: 
         # http://mirrors.xbmc.org/docs/python-docs/14.x-helix/xbmcgui.html#ListItem-setInfo
         listitem.setInfo( "video", item.infoLabels)

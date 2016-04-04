@@ -388,7 +388,8 @@ def run():
                     xbmcplugin.setContent(int( handle ),"movies")
                     
                     # Añade los items a la lista de XBMC
-                    xbmctools.renderItems(itemlist, params, url, category)
+                    if type(itemlist) == list:
+                        xbmctools.renderItems(itemlist, params, url, category)
 
     except urllib2.URLError,e:
         import traceback,sys
