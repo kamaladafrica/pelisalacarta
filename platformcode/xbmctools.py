@@ -553,6 +553,7 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
         #Opciones disponibles para Reproducir torrents
         torrent_options = []
         torrent_options.append(["Cliente interno (necesario libtorrent)"])
+        torrent_options.append(["Cliente interno MCT (necesario libtorrent)"])
         
         #Plugins externos se pueden añadir otros
         if xbmc.getCondVisibility('System.HasAddon("plugin.video.xbmctorrent")'):
@@ -576,8 +577,12 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
           seleccion = 0
           
         #Plugins externos
-        if seleccion > 0:
+        if seleccion > 1:
           xbmc.executebuiltin("XBMC.RunPlugin(" + torrent_options[seleccion][1] % (item.url) + ")")
+          
+        if seleccion ==1:
+          from platformcode import mct
+          mct.play( mediaurl, xbmcgui.ListItem("", iconImage=item.thumbnail, thumbnailImage=item.thumbnail), subtitle=item.subtitle )
         
         #Reproductor propio (libtorrent)
         if seleccion == 0:
