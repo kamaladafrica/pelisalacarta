@@ -63,9 +63,7 @@ class Client(object):
         #Sesion
         self._cache=Cache(self.temp_path)
         self._ses=lt.session()
-        self._ses.listen_on(0, 0)
-        self._start_services()
-
+        self._ses.listen_on(0,0)
         #Cargamos el archivo de estado (si esxiste)
         if os.path.exists(os.path.join(self.temp_path,self.state_file)):
             try:
@@ -74,7 +72,10 @@ class Client(object):
                     self._ses.load_state(state)
             except:
                 pass
-
+                
+        
+        self._start_services()
+        
         #Monitor & Dispatcher
         self._monitor= Monitor(self)
         if print_status:
@@ -279,11 +280,14 @@ class Client(object):
         
         tp.update(self.torrent_paramss)
         self._th = self._ses.add_torrent(tp)
+        
 
         for tr in self.INITIAL_TRACKERS:
             self._th.add_tracker({'url':tr})
 
         self._th.set_sequential_download(True)
+        self._th.force_reannounce()
+        self._th.force_dht_announce()
 
         self._monitor.start()
         self._dispatcher.do_start(self._th, self._ses)
@@ -307,6 +311,8 @@ class Client(object):
         self.closed = True
 
     def _start_services(self):
+        self._ses.add_dht_router("router.bittorrent.com",6881)
+        self._ses.add_dht_router("router.bitcomet.com",554)
         self._ses.add_dht_router("router.utorrent.com",6881)
         self._ses.start_dht()
         self._ses.start_lsd()
