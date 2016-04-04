@@ -67,7 +67,25 @@ def addnewfolderextra(item, totalItems=0):
     if item.show != "": #Añadimos opción contextual para Añadir la serie completa a la biblioteca
         addSerieCommand = "XBMC.RunPlugin(%s?%s)" % ( sys.argv[ 0 ] , item.clone(action="addlist2Library").tourl())
         contextCommands.append(("Añadir Serie a Biblioteca",addSerieCommand))
-        
+
+    if "menu filtro" in item.context:
+        filter_serie_command = "XBMC.RunPlugin(%s?%s)" % \
+                               (sys.argv[0], item.clone(channel="filtertools", action="config_filter",
+                                                        from_channel=item.channel).tourl())
+        contextCommands.append(("Menu Filtro", filter_serie_command))
+
+    if "guardar filtro" in item.context:
+        filter_serie_command = "XBMC.RunPlugin(%s%s)" % \
+                               (sys.argv[0], item.clone(channel="filtertools", action="save_filter",
+                                                        from_channel=item.channel).tourl())
+        contextCommands.append(("guardar filtro serie", filter_serie_command))
+
+    if "borrar filtro" in item.context:
+        filter_serie_command = "XBMC.Container.Update(%s%s)" % \
+                               (sys.argv[0], item.clone(channel="filtertools", action="del_filter",
+                                                        from_channel=item.channel).tourl())
+        contextCommands.append(("Eliminar Filtro", filter_serie_command))
+
     if "1" in item.context and accion != "por_teclado":
         DeleteCommand = "XBMC.RunPlugin(%s?%s)" % ( sys.argv[ 0 ] , item.clone(channel="buscador", action="borrar_busqueda").tourl())
         contextCommands.append((config.get_localized_string( 30300 ),DeleteCommand))
@@ -936,4 +954,3 @@ def set_infoLabels(listitem,plot):
             listitem.setInfo( "video", infodict)
         except:
             pass
-            
