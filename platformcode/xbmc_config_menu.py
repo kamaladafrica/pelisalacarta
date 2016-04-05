@@ -74,6 +74,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             if self.isConfirmed:
               return self.values
             else:
+              self.values.clear()
               return {}
 
         def onInit(self):

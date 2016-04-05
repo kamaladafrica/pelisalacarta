@@ -99,8 +99,9 @@ def settingCanal(item):
                 
     values = {}
     platformtools.show_channel_settings(list_controls=list_controls, caption= "Canales incluidos en la búsqueda global", dict_values= values)
-    for canal, value in values.items():
-        config.set_setting("include_in_global_search",value,canal)
+    if len(values) > 0: #isConfirmed == True
+        for canal, value in values.items():
+            config.set_setting("include_in_global_search",value,canal)
     
     
 def searchbycat():
