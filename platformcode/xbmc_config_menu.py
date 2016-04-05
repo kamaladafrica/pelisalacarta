@@ -76,7 +76,133 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             else:
               self.values.clear()
               return {}
+              
+        def setEnabled(self, c, val):
+            if c["type"] == "list":
+              c["control"].setEnabled(val)
+              c["downBtn"].setEnabled(val)
+              c["upBtn"].setEnabled(val)
+              c["label"].setEnabled(val)
+            else:
+              c["control"].setEnabled(val)
+        
+        def setVisible(self, c, val):
+            if c["type"] == "list":
+              c["control"].setVisible(val)
+              c["downBtn"].setVisible(val)
+              c["upBtn"].setVisible(val)
+              c["label"].setVisible(val)
+            else:
+              c["control"].setVisible(val)
+        
+        def evaluate_conditions(self):
+            for c in self.controls:
+              self.setEnabled(c,self.evaluate(self.controls.index(c),  c["enabled"]))
+              self.setVisible(c,self.evaluate(self.controls.index(c),  c["visible"]))
+          
+            
+        def evaluate(self,index,cond):
+            import re
+            #Si la condicion es True o False, no hay mas que evaluar, ese es el valor
+            if type(cond)== bool: return cond
+            
+            #Obtenemos las condiciones
+            conditions =  re.compile("(!?eq|!?gt|!?lt)?\(([^,]+),([^\)]+)\)[ ]*([+||])?").findall(cond)
+            
+            for operator, id, value, next in conditions:
 
+              #El id tiene que ser un numero, sino, no es valido y devuelve False
+              try:
+                id = int(id)
+              except:
+                return False
+                
+              #El control sobre el que evaluar, tiene que estar dentro del rango, sino devuelve False  
+              if index + id < 0 or index + id >= len(self.controls): 
+                return False
+                
+              else: 
+                #Obtenemos el valor del control sobre el que se compara
+                c =  self.controls[index + id]
+                if c["type"] == "bool": control_value = bool(c["control"].isSelected())
+                if c["type"] == "text": control_value = c["control"].getText() 
+                if c["type"] == "list": control_value = c["control"].getLabel() 
+                if c["type"] == "label": control_value = c["control"].getLabel() 
+     
+              
+              #Operaciones lt "menor que" y gt "mayor que", requieren que las comparaciones sean numeros, sino devuelve False
+              if operator in ["lt","!lt","gt","!gt"]:
+                try:
+                  value = int(value)
+                except:
+                  return False
+               
+              #Operacion eq "igual a" puede comparar cualquier cosa, como el valor lo obtenemos mediante el xml no sabemos su tipo (todos son str) asi que 
+              #intentamos detectarlo  
+              if operator in ["eq","!eq"]:
+              #valor int
+               try:
+                  value = int(value)
+               except:
+                  pass
+               
+               #valor bool   
+               if value.lower() == "true": value = True
+               elif value.lower() == "false": value = False
+              
+              
+              #operacion "eq" "igual a"
+              if operator =="eq":
+                if control_value == value: 
+                  ok = True
+                else:
+                  ok = False
+                  
+              #operacion "eq" "no igual a"
+              if operator =="!eq":
+                if not control_value == value: 
+                  ok = True
+                else:
+                  ok = False
+              
+              #operacion "gt" "mayor que"    
+              if operator =="gt":
+                if control_value > value: 
+                  ok = True
+                else:
+                  ok = False
+              
+              #operacion "gt" "no mayor que"    
+              if operator =="!gt":
+                if not control_value > value: 
+                  ok = True
+                else:
+                  ok = False    
+              
+              #operacion "lt" "menor que"    
+              if operator =="lt":
+                if control_value < value: 
+                  ok = True
+                else:
+                  ok = False
+              
+              #operacion "lt" "no menor que"
+              if operator =="!lt":
+                if not control_value < value: 
+                  ok = True
+                else:
+                  ok = False
+              
+              #Siguiente operación, si es "|" (or) y el resultado es True, no tiene sentido seguir, es True   
+              if next == "|" and ok ==True: break
+              #Siguiente operación, si es "+" (and) y el resultado es False, no tiene sentido seguir, es False
+              if next == "+" and ok ==False: break
+              
+              #Siguiente operación, si es "+" (and) y el resultado es True, Seguira, para comprobar el siguiente valor
+              #Siguiente operación, si es "|" (or) y el resultado es False, Seguira, para comprobar el siguiente valor
+              
+            return ok  
+              
         def onInit(self):
             #Ponemos el título
             self.getControl(10002).setLabel(self.title)
@@ -127,11 +253,15 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                 if c["type"] == "list" and not "default" in c: c["default"] = 0
                 if c["type"] == "label" and not "color" in c: c["color"] = "0xFF0066CC"
                 if c["type"] == "label" and not "id" in c: c["id"] = None
+                if not "visible" in c: c["show"] = True
+                if not "enabled" in c: c["enabled"] = True
                 
                 #Para simplificar el codigo pasamos los campos a veriables
                 id = c["id"]
                 label = c['label']
                 ctype = c["type"]
+                visible = c["visible"]
+                enabled = c["enabled"]
                 if ctype == "label": color = c["color"]
                 if ctype == "list": lvalues = c["lvalues"]
                 if ctype == "text": hidden = c["hidden"]
@@ -146,6 +276,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                         value = self.values[id]
 
                 
+                  
                 #Control "bool"
                 if ctype == "bool":
                     #Creamos el control
@@ -165,7 +296,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                     control.setVisible(False)
                     
                     #Lo añadimos al listado
-                    self.controls.append({"id": id, "type": ctype, "control": control, "x": self.ContolsX - 10, "y": PosY, "default": default})
+                    self.controls.append({"id": id, "type": ctype, "control": control, "x": self.ContolsX - 10, "y": PosY, "default": default, "enabled": enabled, "visible": visible})
                 
                 #Control "text"
                 elif ctype == 'text':
@@ -185,7 +316,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                     control.setHeight(self.height_control)
                     
                     #Lo añadimos al listado
-                    self.controls.append({"id": id, "type": ctype, "control": control, "x": self.ContolsX, "y": PosY, "default": default})
+                    self.controls.append({"id": id, "type": ctype, "control": control, "x": self.ContolsX, "y": PosY, "default": default, "enabled": enabled, "visible": visible})
                 
                 #Control "list"
                 elif ctype == 'list':
@@ -216,9 +347,9 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                     upBtn.setVisible(False)
                     downBtn.setVisible(False)
                     
+                    
                     #Lo añadimos al listado
-                    self.controls.append({"id": id, "type": ctype, "control": control, "label": label, "downBtn": downBtn, "upBtn": upBtn, "x": self.ContolsX, "y": PosY, "lvalues": c["lvalues"], "default": default})
-
+                    self.controls.append({"id": id, "type": ctype, "control": control, "label": label, "downBtn": downBtn, "upBtn": upBtn, "x": self.ContolsX, "y": PosY, "lvalues": c["lvalues"], "default": default, "enabled": enabled, "visible": visible})
 
                 #Control "label"
                 elif ctype == 'label':
@@ -232,7 +363,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                     control.setVisible(False)
                     
                     #Lo añadimos al listado
-                    self.controls.append({"id": None, "type": ctype, "control": control, "x": self.ContolsX, "y": PosY})
+                    self.controls.append({"id": None, "type": ctype, "control": control, "x": self.ContolsX, "y": PosY, "enabled": enabled, "visible": visible})
                 
                 
                 #Esto es para reposicionar el control en la ventana
@@ -242,6 +373,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                 
             #Ponemos el foco en el primer control   
             self.setFocus(self.controls[0]["control"])
+            self.evaluate_conditions()
 
 
         def MoveUp(self):
@@ -275,7 +407,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                     if self.controls[x]["type"] == "label": return
                     
                     #Si el control seleccionado no esta visible (esta fuera de la ventana en el scroll) sube el scroll hasta que este visible    
-                    while not self.controls[x]["visible"]: self.Scroll(1)
+                    while not self.controls[x]["show"]: self.Scroll(1)
                     
                     #Pasamos el foco al control
                     self.setFocus(self.controls[x]["control"])
@@ -315,7 +447,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                         return
                         
                     #Si el control seleccionado no esta visible (esta fuera de la ventana en el scroll) baja el scroll hasta que este visible      
-                    while not self.controls[x]["visible"]: self.Scroll(-1)
+                    while not self.controls[x]["show"]: self.Scroll(-1)
                     
                     #Pasamos el foco al control
                     self.setFocus(self.controls[x]["control"])
@@ -356,7 +488,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                         control["downBtn"].setVisible(True)
                         
                     #Marca el control en la lista de controles como visible
-                    control["visible"] = True
+                    control["show"] = True
                     
                 #Si el control no está dentro del espació visible lo marca como no visible    
                 else:
@@ -369,18 +501,18 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                         control["upBtn"].setVisible(False)
                     
                     #Marca el control en la lista de controles como no visible
-                    control["visible"] = False
+                    control["show"] = False
             
             #Calculamos la posicion y tamaño del ScrollBar
-            show_controls   = [control for control in self.controls if control["visible"] == True]
-            hidden_controls = [control for control in self.controls if control["visible"] == False]
+            show_controls   = [control for control in self.controls if control["show"] == True]
+            hidden_controls = [control for control in self.controls if control["show"] == False]
             position        = self.controls.index(show_controls[0])
   
             scrollbar_height = self.getControl(10008).getHeight() - (len(hidden_controls) * 5)
             scrollbar_y = self.getControl(10008).getY() + (position * 5)
             self.getControl(10009).setPosition(self.getControl(10008).getX(), scrollbar_y)
             self.getControl(10009).setHeight(scrollbar_height)
-
+            self.evaluate_conditions()
 
         def onClick(self, id):
             #Valores por defecto
@@ -441,6 +573,8 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                 
                 #Si esl control es un "text", guardamos el nuevo valor
                 if cont["type"] == "text" and cont["control"] == control: self.values[cont["id"]] = cont["control"].getText()
+                
+                self.evaluate_conditions()
 
         def onAction(self, action):
             #Accion 1: Flecha derecha

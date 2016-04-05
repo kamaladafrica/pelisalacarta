@@ -12,7 +12,7 @@ from core import logger
 from core import config
 from core import jsunpack
 
-headers = [["User-Agent","Mozilla/5.0 (Windows NT 10.0; WOW64; rv:44.0) Gecko/20100101 Firefox/44.0"]]
+headers = [["User-Agent","Mozilla/5.0 (Windows NT 10.0; WOW64; rv:45.0) Gecko/20100101 Firefox/45.0"]]
 
 def test_video_exists( page_url ):
     logger.info("pelisalacarta.servers.gamovideo test_video_exists(page_url='%s')" % page_url)

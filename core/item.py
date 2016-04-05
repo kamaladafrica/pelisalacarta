@@ -22,7 +22,7 @@
 # along with pelisalacarta 4.  If not, see <http://www.gnu.org/licenses/>.
 #------------------------------------------------------------
 
-import json
+from core import jsontools as json
 import base64
 import urllib
 import copy
@@ -46,7 +46,7 @@ class Item(object):
         kwargs.setdefault("password", "")           #Password del video
 
         kwargs.setdefault("folder", True)           #Carpeta o vídeo
-        kwargs.setdefault("server", "directo")      #Servidor que contiene el vídeo
+        kwargs.setdefault("server", "")      #Servidor que contiene el vídeo
         kwargs.setdefault("extra", "")              #Datos extra
         
         kwargs.setdefault("language", "")           #Idioma del contenido

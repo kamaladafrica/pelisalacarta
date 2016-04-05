@@ -138,8 +138,8 @@ def searchbycat():
                       'enabled': True,
                       'visible': True}    
     list_controls.append(control)
-                
-    values = platformtools.show_channel_settings(list_controls=list_controls , caption= "Elegir categorías")
+    values = {}            
+    platformtools.show_channel_settings(list_controls=list_controls , caption= "Elegir categorías", dict_values= values)
 
     cat = []
     for category, value in values.items():

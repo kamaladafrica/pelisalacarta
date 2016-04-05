@@ -6,6 +6,7 @@
 #------------------------------------------------------------
 import urlparse,urllib2,urllib,re
 import os, sys
+import time
 
 from core import logger
 from core import config
@@ -18,6 +19,14 @@ __category__ = "F"
 __type__ = "generic"
 __title__ = "Cinetux"
 __language__ = "ES"
+
+host = "http://www.cinetux.org/"
+
+headers = [
+    ["User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:22.0) Gecko/20100101 Firefox/22.0"],
+    ["Accept-Encoding", "gzip, deflate"],
+    ["Referer", host]
+]
 
 DEBUG = config.get_setting("debug")
 
@@ -40,6 +49,21 @@ def mainlist(item):
 
     return itemlist
     
+def anti_cloudflare(url):
+    # global headers
+
+    try:
+        resp_headers = scrapertools.get_headers_from_response(url, headers=headers)
+        resp_headers = dict(resp_headers)
+    except urllib2.HTTPError, e:
+        resp_headers = e.headers
+
+    if 'refresh' in resp_headers:
+        time.sleep(int(resp_headers['refresh'][:1]))
+        scrapertools.get_headers_from_response(host + '/' + resp_headers['refresh'][7:], headers=headers)
+
+    return scrapertools.cache_page(url, headers=headers)
+
 def search(item,texto):
     logger.info("[cinetux.py] search")
     if item.url=="":
@@ -60,7 +84,7 @@ def busqueda(item):
     itemlist = []
 
     # Descarga la página
-    data = scrapertools.cachePage(item.url)
+    data = anti_cloudflare(item.url)
     #data = scrapertools.get_match(data,item.extra+'</h6>(.*?)</div>')
     
     #<a target="_blank" href="http://www.cinetux.org/2013/04/ver-pelicula-dark-skies-online-gratis-2013.html"><img style="border:1px solid #FDC101;" src="http://4.bp.blogspot.com/-UlKHsLS3Tsk/URJotTqg-_I/AAAAAAAAA5c/8lhe3kY4jzc/s80/Dark+Skies+%282013%29+Movie+Review.jpg" height="75" width="47">
@@ -85,7 +109,7 @@ def peliculas(item):
     itemlist = []
 
     # Descarga la página
-    data = scrapertools.cachePage(item.url)
+    data = anti_cloudflare(item.url)
 
     '''
     <div style="width: 620px; padding: 0; margin-left: 10px;"><center><div id="post-18159">
@@ -219,7 +243,7 @@ def bloque(item):
     itemlist = []
 
     # Descarga la página
-    data = scrapertools.cachePage(item.url)
+    data = anti_cloudflare(item.url)
     #data = scrapertools.get_match(data,item.extra+'</h6>(.*?)</div>')
     
     #<a target="_blank" href="http://www.cinetux.org/2013/04/ver-pelicula-dark-skies-online-gratis-2013.html"><img style="border:1px solid #FDC101;" src="http://4.bp.blogspot.com/-UlKHsLS3Tsk/URJotTqg-_I/AAAAAAAAA5c/8lhe3kY4jzc/s80/Dark+Skies+%282013%29+Movie+Review.jpg" height="75" width="47">
@@ -250,7 +274,7 @@ def generos(item):
     itemlist = []
 
     # Descarga la página
-    data = scrapertools.cachePage(item.url)
+    data = anti_cloudflare(item.url)
     data = scrapertools.get_match(data,'neros</h6>(.*?)</div>')
     
     patron = '<a href="([^"]+)">([^<]+)<'
@@ -270,7 +294,7 @@ def tags(item):
     itemlist = []
 
     # Descarga la página
-    data = scrapertools.cachePage(item.url)
+    data = anti_cloudflare(item.url)
     data = scrapertools.get_match(data,'Tags</h6>(.*?)</div>')
     patron = "<a href='([^']+)'[^>]+>([^<]+)<"
     matches = re.compile(patron,re.DOTALL).findall(data)
@@ -289,38 +313,12 @@ def findvideos(item):
     itemlist=[]
 
     # Busca el argumento
-    data = scrapertools.cache_page(item.url)
+    data = anti_cloudflare(item.url)
     logger.info("data="+data)
 
     item.plot = scrapertools.find_single_match(data,'<td><span class="info">Sinops[^<]+</span>([^<]+)</td>')
     item.plot = scrapertools.htmlclean(item.plot)
     item.contentPlot = item.plot
-
-    '''
-    <tr class="tabletr">
-    <td class="episode-server" align="left"><img src="http://www.cinetux.org/imagenes/veronline.png" alt="" width="22" height="22" />Opción 01</td>
-    <td class="episode-server-img" align="center">PutLocker</td>
-    <td class="episode-lang" align="center">Español</td>
-    <td align="center">DVD-SCR</td>
-    <td class="center" align="center"><a rel="nofollow" target="_blank" class="myButtonLink" href="http://www.putlocker.com/file/BADCD9ACA395E318"></a></td>
-    <td align="center">Anónimo</td>
-    </tr>
-    '''
-    patron  = '<tr class="tabletr">[^<]+'
-    patron += '<td class="opcion-td"><img[^>]+>([^>]+)</td>[^<]+'
-    patron += '<td class="server-td[^>]+>([^<]+)</td>[^<]+'
-    patron += '<td class="idioma-td[^>]+>([^>]+)</td>[^<]+'
-    patron += '<td class="calidad-td[^<]+</td>[^<]+'
-    patron += '<td class="fuente-td[^>]+>([^<]+)</td>[^<]+'
-    patron += '<td class="link-td">(.*?)</td>'
-    matches = re.compile(patron,re.DOTALL).findall(data)
-    scrapertools.printMatches(matches)
-    for scrapedtitle,scrapedserver,scrapedlanguage,scrapedquality,scrapedlink in matches:
-        title = "Ver "+scrapedtitle+" en "+scrapedserver+" ("+scrapedlanguage+") ("+scrapedquality+")"
-        url = scrapedlink
-        thumbnail = servertools.guess_server_thumbnail(scrapedserver)
-        plot = ""
-        itemlist.append( Item(channel=__channel__, action="play", title=title , fulltitle=item.fulltitle+" ["+scrapedlanguage+"]["+scrapedquality+"]", url=url , thumbnail=thumbnail , plot=plot , fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg" , parentContent=item, folder=False) )
 
     patron  = '<tr class="tabletr">[^<]+'
     patron += '<td class="opcion-td"><img[^>]+>([^>]+)</td>[^<]+'

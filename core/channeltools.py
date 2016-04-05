@@ -87,11 +87,13 @@ def get_channel_controls_settings(channel_name):
         if not c.has_key('enabled') or c['enabled'] is None: 
             c['enabled']= True
         else:
-            c['enabled'] = True if c['enabled'].lower() == "true" else False
+            if c['enabled'].lower() == "true": c['enabled'] = True 
+            elif c['enabled'].lower() == "false": c['enabled'] = False  
         if not c.has_key('visible') or c['visible'] is None: 
             c['visible']= True
         else:
-            c['visible'] = True if c['visible'].lower() == "true" else False
+            if c['visible'].lower() == "true": c['visible'] = True 
+            elif c['visible'].lower() == "false": c['visible'] = False 
         if c['type'] == 'bool':
             c['default'] = True if c['default'].lower() == "true" else False
         dict_settings[c['id']] = c['default']

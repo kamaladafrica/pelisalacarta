@@ -41,10 +41,14 @@ def browser(url):
     
     # User-Agent (this is cheating, ok?)
     br.addheaders = [('User-agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5) AppleWebKit/600.7.12 (KHTML, like Gecko) Version/7.1.7 Safari/537.85.16')]
-    br.addheaders =[('Cookie','SRCHD=D=4210979&AF=NOFORM; domain=.bing.com; expires=Wednesday, 09-Nov-06 23:12:40 GMT; MUIDB=36F71C46589F6EAD0BE714175C9F68FC; domain=www.bing.com;	expires=15 de enero de 2018 08:43:26 GMT+1')]
+    #br.addheaders =[('Cookie','SRCHD=D=4210979&AF=NOFORM; domain=.bing.com; expires=Wednesday, 09-Nov-06 23:12:40 GMT; MUIDB=36F71C46589F6EAD0BE714175C9F68FC; domain=www.bing.com;	expires=15 de enero de 2018 08:43:26 GMT+1')]
     # Open some site, let's pick a random one, the first that pops in mind
     r = br.open(url)
     response = r.read()
+    if not ".ftrH,.ftrHd,.ftrD>" in response:
+       print "proooxyy"
+       r = br.open("http://anonymouse.org/cgi-bin/anon-www.cgi/"+url)
+       response = r.read()
     return response
 
 
@@ -534,7 +538,7 @@ def fix_url(url):
 
 def unzip(url):
     import zipfile
-    
+    itemlist=   []
     # Path para guardar el zip como tem.zip los .torrent extraidos del zip
     torrents_path = config.get_library_path()+'/torrents'
     
@@ -566,14 +570,16 @@ def unzip(url):
         import xbmc, time
         xbmc.executebuiltin( "XBMC.Action(back)" )
         xbmc.sleep(100)
-        xbmc.executebuiltin('Notification([COLOR yellow][B]Torrent temporalmente[/B][/COLOR], [COLOR green][B]'+'no disponible'.upper()+'[/B][/COLOR],5000,"http://s6.postimg.org/j1bopgpu5/verserienobusqicon.png")')
+        xbmc.executebuiltin('Notification([COLOR yellow][B]Torrent temporalmente[/B][/COLOR], [COLOR green][B]'+'no disponible'.upper()+'[/B][/COLOR],5000,"http://s6.postimg.org/kta7oe8y9/aquitorrentlogo.png")')
 
     if not torrents_path.startswith("/"):
         torrents_path = "/"+torrents_path
-    
-    torrent = "file://"+torrents_path+"/"+name
-    
-    return torrent
+    try:
+       torrent = "file://"+torrents_path+"/"+name
+
+       return torrent
+    except:
+       return itemlist
 
 def info(item):
     logger.info("pelisalacarta.aquitorrents info")

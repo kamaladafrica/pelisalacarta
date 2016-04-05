@@ -12,9 +12,9 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/seriesblanco.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>8</version>
-	<date>02/03/2016</date>
-	<changes>- Arreglado el findVindeos, añadido strip() en el nombre de las series</changes>
+	<version>10</version>
+	<date>25/03/2016</date>
+	<changes>- Arreglado la sección findVideos de seriesblanco</changes>
 
 	<categories>
 		<category>serie</category>
