@@ -34,17 +34,10 @@
     <type>list</type>
     <label>Mostrar resultados:</label>
     <default>Por canales</default>
-    <enabled>eq(-1,true)</enabled>
-    <visible>eq(-1,true)</visible>
+    <enabled>true</enabled>
+    <visible>true</visible>
     <lvalues>Por canales</lvalues>
     <lvalues>Todo junto</lvalues>
   </settings>
-  <settings>
-    <id>result_modes</id>
-    <type>text</type>
-    <label>Mostrar resultados:</label>
-    <default>Por canales</default>
-    <enabled>eq(-2,true)</enabled>
-    <visible>True</visible>
-  </settings>
+
 </channel>

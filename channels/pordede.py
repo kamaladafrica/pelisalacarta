@@ -14,7 +14,7 @@ from core import scrapertools
 from core import jsontools
 from core.item import Item
 from servers import servertools
-from platformcode import platfromtools
+from platformcode import platformtools
 
 DEBUG = config.get_setting("debug")
 
