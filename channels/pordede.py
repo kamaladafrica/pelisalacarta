@@ -14,7 +14,7 @@ from core import scrapertools
 from core import jsontools
 from core.item import Item
 from servers import servertools
-from platformcode import guitools
+from platformcode import platfromtools
 
 DEBUG = config.get_setting("debug")
 
@@ -56,8 +56,7 @@ def mainlist(item):
     return itemlist
 
 def settingCanal(item):
-    ventana = guitools.show_settings(item.channel)
-    return ventana 
+    platformtools.show_channel_settings(item.channel)
 
 def menuseries(item):
     logger.info("pelisalacarta.channels.pordede menuseries")
