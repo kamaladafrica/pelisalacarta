@@ -24,7 +24,7 @@ __language__ = "ES"
 
 #Pasar a configuracion del canal
 __modo_grafico__ = True 
-__perfil__= 0
+__perfil__= 0 # 0-2
 
 
 DEBUG = config.get_setting("debug")

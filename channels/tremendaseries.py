@@ -184,7 +184,7 @@ def listadoCapitulos(item):
 
         scrapedtitle = re.sub(r'(S\d*E\d*)', scrapedcapitulo, scrapedtitle, re.I) #Sustituir S01E01 por 1x01
         newItem= item.clone(title= scrapedtitle, url= scrapedurl, text_color= color1, action="findvideos")
-        item.infoLabels['season'] = temporada
+        newItem.infoLabels['season'] = temporada
         newItem.infoLabels['episode'] = episodio
         
         if not 'background-color' in scrapedtenlaces:
