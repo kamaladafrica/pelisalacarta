@@ -154,29 +154,24 @@ def findvideos(item):
     scrapedthumbnail = item.thumbnail
     itemlist = []
     '''
-    <th class="headtable" align="left"><img src="http://peliculasaudiolatino.com/images/movie-camera2.gif" align=absmiddle>&nbsp;5</th>
-    <th class="headmovil" align="left"><img src="http://www.google.com/s2/favicons?domain=vidspot.net" width="16"/>vidspot.net</th>
+    <tr>
+    <th class="headtable" align="left"><a href="http://peliculasaudiolatino.com/perfil/KAOSNORMAL.html" target="_blank"><img class="smallpic" src="http://peliculasaudiolatino.com/userpic/userpic1457229143.jpg" height="20" width="20">KAOSNORMAL</a></th>
+    <th class="headmovil" align="left"><img src="http://www.google.com/s2/favicons?domain=gamovideo.com" width="16"/>gamovideo.com</th>
     <th class="headmovil" align="left"><img src="http://peliculasaudiolatino.com/images/la_la.png" width="22" align=absmiddle></th>
-    <th class="headtable" align="left"><img src="http://peliculasaudiolatino.com/images/1ts.png"> TS</th>
-    <th class="slink" align="left"><div id="btnp"><a href="javascript:void(0);" style="cursor:pointer" onClick="window.open('http://peliculasaudiolatino.com/movies/intensamente/129120.html','mywindow','width=1000,height=800,location=no,status=no,scrollbars=yes,toolbar=no,menubar=no,directories=no');"><span class="headmovil">Ver</span>
-    </a></div> </th>
+    <th class="headtable" align="left"><img src="http://peliculasaudiolatino.com/images/1dvd.png"> DVD</th>
+    <th class="slink" align="left"><div id="btnp"><a href="javascript:void(0);" style="cursor:pointer" onClick="window.open('http://peliculasaudiolatino.com/movies/Samba/141400.html','mywindow','width=1000,height=800,location=no,status=no,scrollbars=yes,toolbar=no,menubar=no,directories=no');"><span class="headmovil">Ver</span></a></div> </th>
+    </tr>
     '''
     '''
-    <th class="headtable" align="left"><img src="http://peliculasaudiolatino.com/images/movie-camera2.gif" align=absmiddle>&nbsp;3</th>
-    <th class="headmovil" align="left"><img src="http://www.google.com/s2/favicons?domain=vidxtreme.to" width="16"/>vidxtreme.to</th>
+    <tr>
+    <th class="headtable" align="left"><a href="http://peliculasaudiolatino.com/perfil/KAOSNORMAL.html" target="_blank"><img class="smallpic" src="http://peliculasaudiolatino.com/userpic/userpic1457229143.jpg" height="20" width="20">KAOSNORMAL</a></th>
+    <th class="headmovil" align="left"><img src="http://www.google.com/s2/favicons?domain=userscloud.com" width="16"/>userscloud.com</th>
     <th class="headmovil" align="left"><img src="http://peliculasaudiolatino.com/images/la_la.png" width="22" align=absmiddle></th>
-    <th class="headtable" align="left"><img src="http://peliculasaudiolatino.com/images/1ts.png"> TS</th>
-    <th class="slink" align="left"><div id="btnp"><a href="http://www.vidxtreme.to/kccahcsouxm0" target="_blank"><span class="headmovil">Ver</span>
-    </a></div> </th>
+    <th class="headtable" align="left"><img src="http://peliculasaudiolatino.com/images/1dvd.png"> DVD</th>
+    <th class="slink" align="left"><div id="btnp"><a href="http://peliculasaudiolatino.com/externo.php?host=http://www.userscloud.com/rid15pn653zu" target="_blank"><span class="headmovil">Descargar</span></a></div> </th>
+    </tr>
     '''
-    '''
-    <th class="headtable" align="left"><img src="http://peliculasaudiolatino.com/images/movie-camera2.gif" align=absmiddle>&nbsp;5</th>
-    <th class="headmovil" align="left"><img src="http://www.google.com/s2/favicons?domain=rapidgator.net" width="16"/>rapidgator.net</th>
-    <th class="headmovil" align="left"><img src="http://peliculasaudiolatino.com/images/la_la.png" width="22" align=absmiddle></th>
-    <th class="headtable" align="left"><img src="http://peliculasaudiolatino.com/images/1ts.png"> TS</th>
-    <th class="slink" align="left"><div id="btnp"><a href="http://peliculasaudiolatino.com/externo.php?host=http://www.rapidgator.net/file/2705d8b31ba704a8a7b53de390e46c45/INT3NS4HDTS-L4T.mkv.html" target="_blank"><span class="headmovil">Descargar</span></a></div> </th>
-    '''
-    patron  = '<th class="headtable" align="left"><img[^<]+</th[^<]+'
+    patron  = '<th class="headtable" align="left">.*?</th[^<]+'
     patron += '<th class="headmovil" align="left"><img[^>]+>([^<]+)</th[^<]+'
     patron += '<th class="headmovil" align="left"><img src="([^"]+)"[^<]+</th[^<]+'
     patron += '<th class="headtable" align="left"><img[^>]+>([^<]+)</th>'

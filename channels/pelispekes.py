@@ -85,6 +85,8 @@ def findvideos(item):
 
     # Descarga la página para obtener el argumento
     data = scrapertools.cachePage(item.url)
+    data = data.replace("www.pelispekes.com/player/tune.php?nt=","netu.tv/watch_video.php?v=")
+
     item.plot = scrapertools.find_single_match(data,'<h2>Sinopsis</h2>(.*?)<div')
     item.plot = scrapertools.htmlclean(item.plot).strip()
     item.contentPlot = item.plot

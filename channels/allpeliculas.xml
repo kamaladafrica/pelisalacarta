@@ -6,10 +6,10 @@
 	<update_url></update_url>
 	<active>true</active>
 	<include_in_global_search>true</include_in_global_search>
-	<version>1</version>
+	<version>2</version>
 	<adult>false</adult>
-	<date>02/02/2016</date>
-	<changes>Primera version</changes>
+	<date>19/03/2016</date>
+	<changes>Añadido soporte para la biblioteca y reparada busqueda global.</changes>
 	<fanart></fanart>
 	<thumbnail>http://i.imgur.com/aWCDWtn.png</thumbnail>
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/allpeliculas.png</bannermenu>

@@ -28,7 +28,7 @@ def mainlist(item):
     logger.info("[documaniatv.py] mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, action="novedades"  , title="Novedades"      , url="http://www.documaniatv.com/newvideos.html"))
+    itemlist.append( Item(channel=__channel__, action="novedades"  , title="Novedades"      , url="http://www.documaniatv.com"))
     itemlist.append( Item(channel=__channel__, action="categorias" , title="Por categorías" , url="http://www.documaniatv.com"))
     itemlist.append( Item(channel=__channel__, action="novedades"  , title="Top"      , url="http://www.documaniatv.com/topvideos.html"))
     itemlist.append( Item(channel=__channel__, action="canales" , title="Por canales" , url="http://www.documaniatv.com"))
@@ -161,18 +161,51 @@ def viendo(item):
 def search(item,texto):
     #http://www.documaniatv.com/search.php?keywords=luna&btn=Buscar
     logger.info("[documaniatv.py] search")
-    if item.url=="":
-        item.url="http://www.documaniatv.com/search.php?keywords=%s"
+    data = scrapertools.cache_page("http://www.documaniatv.com")
+    cx = scrapertools.find_single_match(data, "var cx='([^']+)'")
+    item.url="https://www.googleapis.com/customsearch/v1element?key=AIzaSyCVAXiUzRYsML1Pv6RwSG1gunmMikTzQqY&cx=%s&q=%s&start=0"
     texto = texto.replace(" ","+")
-    item.url = item.url % texto
+    item.url = item.url % (cx, texto)
     try:
-        return novedades(item)
+        return busqueda(item)
     # Se captura la excepción, para no interrumpir al buscador global si un canal falla
     except:
         import sys
         for line in sys.exc_info():
             logger.error( "%s" % line )
         return []
+
+def busqueda(item):
+    logger.info("[documaniatv.py] busqueda")
+    itemlist = []
+    data = scrapertools.cache_page(item.url)
+    data = jsontools.load_json(data)
+    if int(data['cursor']['resultCount'].replace(".","")) == 0:
+        itemlist.append( Item(channel=__channel__, action="", title="No hay resultados" , url="" , folder=False) )
+        return itemlist
+    for results in data['results']:
+        try:
+            scrapedurl = results['richSnippet']['metatags']['ogUrl']
+            scrapedtitle = results['richSnippet']['metatags']['ogTitle']
+            scrapedthumbnail = results['richSnippet']['metatags']['ogImage']
+            scrapedplot = results['richSnippet']['videoobject']['description']
+            if "/tags/" in scrapedurl:
+                action = "novedades"
+            else:
+                action = "play"
+        except:
+            scrapedurl = results['unescapedUrl']
+            scrapedtitle = results['titleNoFormatting']
+            scrapedthumbnail = ""
+            scrapedplot = ""
+            action = "novedades"
+        itemlist.append( Item(channel=__channel__, action=action, title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , fanart=scrapedthumbnail, folder=True) )
+    if int(data['cursor']['resultCount'].replace(".","")) > 10:
+        page = int(scrapertools.find_single_match(item.url, 'start=(\d+)')) + 10
+        if page <= 90:
+            scrapedurl = re.sub(r'start=(\d+)','start='+str(page), item.url)
+            itemlist.append( Item(channel=__channel__, action="busqueda", title=">> Siguiente página" , url=scrapedurl , folder=True) )
+    return itemlist
 
 def play(item):
     logger.info("documaniatv.play")
