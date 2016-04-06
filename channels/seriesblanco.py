@@ -225,17 +225,23 @@ def parseVideos(item, typeStr, data):
 
     return []
 
+def extractVideoSection(data):
+    result = re.findall('<table class="as_gridder_table">(.+?)</table>|<table class=\'zebra\'>(.+?)<[Bb][Rr]>|data : "(action=load[^\"]+)"', data, re.MULTILINE | re.DOTALL)
+
+    if len(result) == 1 and result[0][2]:
+        return extractVideoSection(scrapertools.cachePagePost(HOST + 'ajax.php', result[0][2]))
+
+    idx = 1 if result[0][1] else 0
+
+    return [result[0][idx], result[1][idx]]
+
 def findvideos(item):
     logger.info("pelisalacarta.seriesblanco findvideos")
 
     # Descarga la página
     data = scrapertools.cache_page(item.url)
 
-    online = re.findall('<table class="as_gridder_table">(.+?)</table>', data, re.MULTILINE | re.DOTALL)
-
-    if len(online) == 0:
-        online = re.findall("<table class='zebra'>(.+?)<[Bb][Rr]>", data, re.MULTILINE | re.DOTALL)
-
+    online = extractVideoSection(data)
     return parseVideos(item, "Ver", online[0]) + parseVideos(item, "Descargar", online[1])
 
 def play(item):
