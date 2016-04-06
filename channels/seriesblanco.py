@@ -225,11 +225,11 @@ def parseVideos(item, typeStr, data):
 
     return []
 
-def extractVideoSection(data):
+def extractVideosSection(data):
     result = re.findall('<table class="as_gridder_table">(.+?)</table>|<table class=\'zebra\'>(.+?)<[Bb][Rr]>|data : "(action=load[^\"]+)"', data, re.MULTILINE | re.DOTALL)
 
     if len(result) == 1 and result[0][2]:
-        return extractVideoSection(scrapertools.cachePagePost(HOST + 'ajax.php', result[0][2]))
+        return extractVideosSection(scrapertools.cachePagePost(HOST + 'ajax.php', result[0][2]))
 
     idx = 1 if result[0][1] else 0
 
@@ -241,7 +241,7 @@ def findvideos(item):
     # Descarga la página
     data = scrapertools.cache_page(item.url)
 
-    online = extractVideoSection(data)
+    online = extractVideosSection(data)
     return parseVideos(item, "Ver", online[0]) + parseVideos(item, "Descargar", online[1])
 
 def play(item):
