@@ -98,5 +98,16 @@ def get_channel_controls_settings(channel_name):
             c['default'] = True if c['default'].lower() == "true" else False
         dict_settings[c['id']] = c['default']
     
-    return list_controls, dict_settings
-                        
+    return list_controls, dict_settings    
+    
+    
+def get_channel_module(channel_name, package = "channels"):
+    # Sustituye al que hay en servertools.py ...
+    # ...pero añade la posibilidad de incluir un paquete diferente de "channels"
+    if not package.endswith('.'): package +='.'
+    logger.info("pelisalacarta.core.channeltools Importando " + package + channel_name)
+    channels_module = __import__(package + channel_name)
+    channel_module = getattr(channels_module,channel_name)
+    logger.info("pelisalacarta.core.channeltools Importado " + package + channel_name)
+    
+    return channel_module 

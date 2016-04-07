@@ -56,7 +56,7 @@ def mainlist(item):
     return itemlist
 
 def settingCanal(item):
-    platformtools.show_channel_settings(item.channel)
+    return platformtools.show_channel_settings()
 
 def menuseries(item):
     logger.info("pelisalacarta.channels.pordede menuseries")

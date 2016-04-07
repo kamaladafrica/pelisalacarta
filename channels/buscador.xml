@@ -39,5 +39,17 @@
 		<lvalues>Por canales</lvalues>
 		<lvalues>Todo junto</lvalues>
 	</settings>
+	<settings>
+		<id>saved_searches_limit</id>
+		<type>list</type>
+		<label>Presets:</label>
+		<default>10</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+		<lvalues>10</lvalues>
+		<lvalues>20</lvalues>
+		<lvalues>30</lvalues>
+		<lvalues>40</lvalues>
+	</settings>
 
 </channel>
