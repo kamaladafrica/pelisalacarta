@@ -16,65 +16,53 @@ from core import config
 from core import logger
 class SettingsWindow(xbmcgui.WindowXMLDialog):
 
-        def get_channel_settings(self):
-            #Obtenemos el canal desde donde se ha echo la llamada y cargamos los settings disponibles para ese canal
-            channelpath = inspect.currentframe().f_back.f_back.f_back.f_code.co_filename
-            channelname = os.path.basename(channelpath).replace(".py", "")
-            channelsfolder = os.path.join(config.get_runtime_path(), "channels")
-            if channelsfolder in channelpath:
-                # La llamada se hace desde un canal
-                list_controls, dict_settings = channeltools.get_channel_controls_settings(channelname)
-                self.list_controls = list_controls
-                self.JSONFileData = os.path.join(config.get_data_path(), "settings_channels", channelname + "_data.json")
-
-
-        def Start(self, channel=None, json_file=None,list_controls=None, values=None, title="Opciones"):
-        
+        def Start(self, list_controls=None, values=None, title="Opciones", cb=None, item = None):
+            logger.info("[xbmc_config_menu] start")
+            
+            #Ruta para las imagenes de la ventana
             self.mediapath = os.path.join(config.get_runtime_path(), 'resources', 'skins', 'Default', 'media')
-            self.title = title
-            self.JSONFileData = None
+            
+            #Capturamos los parametros
             self.list_controls = list_controls
             self.values = values
-            self.channel = channel
-            self.isConfirmed = False
+            self.title = title
+            self.cb = cb
+            self.item = item
             
-            if self.title.startswith('@') and unicode(self.title[1:]).isnumeric():
-                self.title = config.get_localized_string(int(self.title[1:]))
+            #Obtenemos el canal desde donde se ha echo la llamada y cargamos los settings disponibles para ese canal
+            channelpath = inspect.currentframe().f_back.f_back.f_code.co_filename
+            self.channel = os.path.basename(channelpath).replace(".py", "")
             
-            #Si no se pasan controles, intenta buscar los controles para el canal desde el que se ha llamado
-            if self.list_controls is None:
-              
-              #Si no se indica canal, intenta detectarllo
-              if self.channel is None:
-                self.get_channel_settings()
-              
-              #Si se indica canal, lee los controles del xml
+            #Si no tenemos list_controls, hay que sacarlos del xml del canal
+            if not self.list_controls:      
+    
+              #Si la ruta del canal esta en la carpeta "channels", obtenemos los controles y valores mediante chaneltools
+              if os.path.join(config.get_runtime_path(), "channels") in channelpath:
+      
+              # La llamada se hace desde un canal
+                self.list_controls, default_values = channeltools.get_channel_controls_settings(self.channel)
+               
+              #En caso contrario salimos
               else:
-                self.list_controls, dict_settings = channeltools.get_channel_controls_settings(self.channel)
-                self.JSONFileData = os.path.join(config.get_data_path(), "settings_channels", self.channel + "_data.json")
-                
-            #Si llegados a este punto no hay controles, devuelve un error  
-            if self.list_controls is None: raise Exception("No controls loaded")
+                return None
+                          
+
+            #Si no se pasan dict_values, creamos un dict en blanco
+            if  self.values == None:
+              self.values = {}
             
-            #Si se indica la ruta para guardar, se usa esta
-            if json_file: self.JSONFileData = json_file
-            
-            #Si no hay valores, leerlos del JSON
-            if self.JSONFileData is not None and self.values == None:
-              try:
-                  self.values = json.loads(open(self.JSONFileData, "r").read())
-              except:
-                pass
-            
-            #Si sigue sin haber valores, crea un dict vacio    
-            if self.values is None: self.values = {}
-            
+            #Ponemos el titulo
+            if self.title =="": 
+              self.title = str(config.get_localized_string(30100)) + " -- " + self.channel.capitalize()
+              
+            elif self.title.startswith('@') and unicode(self.title[1:]).isnumeric():
+                self.title = config.get_localized_string(int(self.title[1:]))
+
             #Muestra la ventana
+            self.return_value = None
             self.doModal()
-            if self.isConfirmed:
-              return self.values
-            else:
-              return {}
+            return self.return_value
+            
               
         def setEnabled(self, c, val):
             if c["type"] == "list":
@@ -96,8 +84,9 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
         
         def evaluate_conditions(self):
             for c in self.controls:
-              self.setEnabled(c,self.evaluate(self.controls.index(c),  c["enabled"]))
-              self.setVisible(c,self.evaluate(self.controls.index(c),  c["visible"]))
+              if c["show"]:
+                self.setEnabled(c,self.evaluate(self.controls.index(c),  c["enabled"]))
+                self.setVisible(c,self.evaluate(self.controls.index(c),  c["visible"]))
           
             
         def evaluate(self,index,cond):
@@ -106,10 +95,9 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             if type(cond)== bool: return cond
             
             #Obtenemos las condiciones
-            conditions =  re.compile("(!?eq|!?gt|!?lt)?\(([^,]+),([^\)]+)\)[ ]*([+||])?").findall(cond)
+            conditions =  re.compile("(!?eq|!?gt|!?lt)?\(([^,]+),[\"|']?([^)|'|\"]*)['|\"]?\)[ ]*([+||])?").findall(cond)
             
             for operator, id, value, next in conditions:
-
               #El id tiene que ser un numero, sino, no es valido y devuelve False
               try:
                 id = int(id)
@@ -157,7 +145,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                 else:
                   ok = False
                   
-              #operacion "eq" "no igual a"
+              #operacion "!eq" "no igual a"
               if operator =="!eq":
                 if not control_value == value: 
                   ok = True
@@ -171,7 +159,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                 else:
                   ok = False
               
-              #operacion "gt" "no mayor que"    
+              #operacion "!gt" "no mayor que"    
               if operator =="!gt":
                 if not control_value > value: 
                   ok = True
@@ -185,7 +173,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                 else:
                   ok = False
               
-              #operacion "lt" "no menor que"
+              #operacion "!lt" "no menor que"
               if operator =="!lt":
                 if not control_value < value: 
                   ok = True
@@ -252,7 +240,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                 if c["type"] == "list" and not "default" in c: c["default"] = 0
                 if c["type"] == "label" and not "color" in c: c["color"] = "0xFF0066CC"
                 if c["type"] == "label" and not "id" in c: c["id"] = None
-                if not "visible" in c: c["show"] = True
+                if not "visible" in c: c["visible"] = True
                 if not "enabled" in c: c["enabled"] = True
                 
                 #Para simplificar el codigo pasamos los campos a veriables
@@ -268,13 +256,19 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                 #Decidimos si usar el valor por defecto o el valor guardado
                 if ctype in ["bool", "text", "list"]:
                     default = c["default"]
-                    if id in self.values:
-                        value = self.values[id]
-                    else:
-                        self.values[id] = c["default"]
-                        value = self.values[id]
-
-                
+                    if not id in self.values:
+                      if not self.cb:
+                        self.values[id] = config.get_setting(id,self.channel)
+                        if self.values[id] == "":
+                          self.values[id] = default
+                      else:
+                        self.values[id] = default
+                     
+                      value = self.values[id]
+                    
+                if ctype == "bool":
+                    c["default"] = bool(c["default"])
+                    self.values[id] = bool(self.values[id])
                   
                 #Control "bool"
                 if ctype == "bool":
@@ -533,13 +527,15 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                 
             #Boton Aceptar    
             if id == 10004:
-                #Si tenemos el archivo donde guardar los ajustes, los guardamos
-                if self.JSONFileData is not None:
-                  open(self.JSONFileData, "w").write(json.dumps(self.values, indent=4, sort_keys=True))
+                if not self.cb:
+                  for v in self.values:
+                    config.set_setting(v, self.values[v], self.channel)
+                  self.close()
+                else:
+                  self.close()
+                  exec "from channels import " + self.channel + " as cb_channel"
+                  exec "self.return_value =  cb_channel." + self.cb + "(self.item,self.values)"
                 
-                #Cerramos la ventana
-                self.isConfirmed = True
-                self.close()
             
             #Controles de ajustes, si se cambia el valor de un ajuste, cambiamos el valor guardado en el listado de controles
             #Obtenemos el control sobre el que se ha echo click

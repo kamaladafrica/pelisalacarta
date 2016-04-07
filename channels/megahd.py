@@ -82,7 +82,7 @@ def mainlist(item):
     return itemlist
 
 def settingCanal(item):
-    platformtools.show_channel_settings(item.channel)
+    return platformtools.show_channel_settings()
 
 def foro(item):
     logger.info("channels.megahd foro")

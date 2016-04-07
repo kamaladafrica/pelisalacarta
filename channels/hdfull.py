@@ -29,7 +29,7 @@ def isGeneric():
     return True
 
 def settingCanal(item):
-    platformtools.show_channel_settings(item.channel)
+    return platformtools.show_channel_settings()
 
 def login():
     logger.info("pelisalacarta.channels.hdfull login")

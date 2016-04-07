@@ -73,6 +73,6 @@ def play_video(item):
     #Por implementar (traer de xbmctools)
     pass
     
-def show_channel_settings(channel_action=None, list_controls=None, dict_values=None, caption="", File_settings=""):
+def show_channel_settings(list_controls=None, dict_values=None, caption="", cb=None, item=None):
     from xbmc_config_menu import SettingsWindow
-    return SettingsWindow("ChannelSettings.xml", config.get_runtime_path()).Start(channel = channel_action, json_file=File_settings,list_controls=list_controls, values=dict_values, title=caption)
+    return SettingsWindow("ChannelSettings.xml", config.get_runtime_path()).Start(list_controls=list_controls, values=dict_values, title=caption, cb=cb, item=item)

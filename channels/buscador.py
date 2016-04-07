@@ -34,10 +34,10 @@ def mainlist(item,preferred_thumbnail="squares"):
     logger.info("pelisalacarta.channels.buscador mainlist")
 
     itemlist = list()
-    itemlist.append(Item(channel=__channel__, action="search", title="Búsqueda genérica..."))
+    itemlist.append(Item(channel=__channel__, action="search", title="Busqueda generica..."))
 
 
-    itemlist.append(Item(channel=__channel__, action="search", title="Búsqueda por categorías...", extra="categorias"))
+    itemlist.append(Item(channel=__channel__, action="search", title="Busqueda por categorias...", extra="categorias"))
     itemlist.append(Item(channel=__channel__, action="opciones", title="Opciones"))
 
     saved_searches_list = get_saved_searches()
@@ -56,13 +56,12 @@ def opciones(item):
     return itemlist
         
 def settings(item):
-    platformtools.show_channel_settings(channel_action="buscador", caption= "Opciones")
+    return platformtools.show_channel_settings()
 
 def settingCanal(item):
-    # Only in xbmc/kodi
-    # Abre un cuadro de dialogo con todos los canales q pueden incluirse en la busqueda global para su configuracion
     channels_path = os.path.join(config.get_runtime_path(), "channels", '*.xml')
     channel_language = config.get_setting("channel_language")
+
     if channel_language == "":
         channel_language = "all"
     
@@ -97,12 +96,13 @@ def settingCanal(item):
 
         list_controls.append(control)
                 
-    values = platformtools.show_channel_settings(list_controls=list_controls, caption= "Canales incluidos en la búsqueda global")
-    for canal, value in values.items():
-        config.set_setting("include_in_global_search",value,canal)
+    return platformtools.show_channel_settings(list_controls=list_controls, caption= "Canales incluidos en la búsqueda global", cb="save_settings", item=item)
     
+def save_settings(item,dict_values):
+  for v in dict_values:
+    config.set_setting("include_in_global_search", dict_values[v],v)
     
-def searchbycat():
+def searchbycat(item):
     # Only in xbmc/kodi
     # Abre un cuadro de dialogo con las categorías en las que hacer la búsqueda
     channels_path = os.path.join(config.get_runtime_path(), "channels", '*.xml')
@@ -137,18 +137,22 @@ def searchbycat():
                       'visible': True}    
     list_controls.append(control)
                 
-    values = platformtools.show_channel_settings(list_controls=list_controls , caption= "Elegir categorías")
+    return platformtools.show_channel_settings(list_controls=list_controls, caption= "Elegir categorías", cb="cb", item=item)
 
+def cb(item,values=""):
     cat = []
-    for category, value in values.items():
-        if value:
-            cat.append(category)
-    
+    for c in values:
+      if values[c]:
+        cat.append(c)
+
     if not len(cat):
-      return false
+      return None
     else:
-      return cat
-        
+      logger.info(item.tostring())
+      logger.info(str(cat))
+      return do_search(item, cat)
+  
+  
 # Al llamar a esta función, el sistema pedirá primero el texto a buscar
 # y lo pasará en el parámetro "tecleado"
 def search(item, tecleado):
@@ -158,12 +162,11 @@ def search(item, tecleado):
         save_search(tecleado)
 
     if item.extra == "categorias":
-        categories = searchbycat()
-        if not categories: return
-    else: categories = []
+        item.extra = tecleado
+        return searchbycat(item)
 
     item.extra = tecleado
-    return do_search(item, categories)
+    return do_search(item, [])
   
 def channel_result(item):
   extra = item.extra.split("{}")[0]
@@ -224,7 +227,7 @@ def do_search(item, categories=[]):
     #el cuadro de progreso queda "detras" del cuadro "cargando..." y no se le puede dar a cancelar
     time.sleep(0.5)
     
-    progreso = platformtools.dialog_progress("Buscando " + tecleado.title(),"")
+    progreso = platformtools.dialog_progress("Buscando " + tecleado,"")
 
 
     channel_files = glob.glob(channels_path)
@@ -235,7 +238,7 @@ def do_search(item, categories=[]):
     start_time = time.time()
     
     if multithread:
-      progreso.update(0, "Buscando %s en %d canales" % (tecleado, len(channel_files)))
+      progreso.update(0, "Buscando %s..." % (tecleado))
       
     for index, infile in enumerate(channel_files):
         percentage = index*100/number_of_channels
@@ -283,7 +286,7 @@ def do_search(item, categories=[]):
         else:
           logger.info("pelisalacarta.channels.buscador Intentado busqueda en " + basename_without_extension + " de " + tecleado)
 
-          progreso.update(percentage, "Buscando %s en %s" % (tecleado, channel_parameters["title"]))
+          progreso.update(percentage, "Buscando %s en %s..." % (tecleado, channel_parameters["title"]))
           channel_search(search_results, channel_parameters, tecleado)
     
 
@@ -293,7 +296,7 @@ def do_search(item, categories=[]):
       while pendent:
         pendent =  len([a for a in searches if a.is_alive()])
         percentage =  (len(searches) - pendent) * 100 / len(searches)
-        progreso.update(percentage, "Buscando %s en %d canales" % (tecleado, len(channel_files)))
+        progreso.update(percentage, "Buscando %s en %d canales..." % (tecleado, len(searches)))
         if progreso.iscanceled(): break
         time.sleep(0.5)
           
@@ -328,7 +331,7 @@ def do_search(item, categories=[]):
 
 def save_search(text):
 
-    saved_searches_limit = (10, 20, 30, 40, )[int(config.get_setting("saved_searches_limit"))]
+    saved_searches_limit = int(config.get_setting("saved_searches_limit","buscador"))
 
     infile= os.path.join(config.get_data_path(), "saved_searches.txt")
     if os.path.exists(infile):
