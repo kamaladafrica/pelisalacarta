@@ -16,7 +16,7 @@ from core import config
 from core import logger
 class SettingsWindow(xbmcgui.WindowXMLDialog):
 
-        def Start(self, list_controls=None, values=None, title="Opciones", cb=None, item = None):
+        def Start(self, list_controls=None, values=None, title="Opciones", callback=None, item = None):
             logger.info("[xbmc_config_menu] start")
             
             #Ruta para las imagenes de la ventana
@@ -26,7 +26,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             self.list_controls = list_controls
             self.values = values
             self.title = title
-            self.cb = cb
+            self.callback = callback
             self.item = item
             
             #Obtenemos el canal desde donde se ha echo la llamada y cargamos los settings disponibles para ese canal
@@ -257,14 +257,14 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                 if ctype in ["bool", "text", "list"]:
                     default = c["default"]
                     if not id in self.values:
-                      if not self.cb:
+                      if not self.callback:
                         self.values[id] = config.get_setting(id,self.channel)
                         if self.values[id] == "":
                           self.values[id] = default
                       else:
                         self.values[id] = default
                      
-                      value = self.values[id]
+                    value = self.values[id]
                     
                 if ctype == "bool":
                     c["default"] = bool(c["default"])
@@ -527,17 +527,17 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                 
             #Boton Aceptar    
             if id == 10004:
-                if not self.cb:
+                if not self.callback:
                   for v in self.values:
                     config.set_setting(v, self.values[v], self.channel)
                   self.close()
                 else:
                   self.close()
                   exec "from channels import " + self.channel + " as cb_channel"
-                  exec "self.return_value =  cb_channel." + self.cb + "(self.item,self.values)"
+                  exec "self.return_value =  cb_channel." + self.callback + "(self.item,self.values)"
                 
             
-            #Controles de ajustes, si se cambia el valor de un ajuste, cambiamos el valor guardado en el listado de controles
+            #Controles de ajustes, si se cambia el valor de un ajuste, cambiamos el valor guardado en el diccionario de valores
             #Obtenemos el control sobre el que se ha echo click
             control = self.getControl(id)
             
@@ -560,7 +560,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                         if index < len(cont["lvalues"]) - 1:
                             cont["label"].setLabel(cont["lvalues"][index + 1])
                     
-                    #Guardamos el nuevo valor en el listado de controles
+                    #Guardamos el nuevo valor en el diccionario de valores
                     self.values[cont["id"]] = cont["label"].getLabel()
                     
                 #Si esl control es un "bool", guardamos el nuevo valor True/False    

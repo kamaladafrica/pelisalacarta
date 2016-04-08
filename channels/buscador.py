@@ -96,7 +96,7 @@ def settingCanal(item):
 
         list_controls.append(control)
                 
-    return platformtools.show_channel_settings(list_controls=list_controls, caption= "Canales incluidos en la búsqueda global", cb="save_settings", item=item)
+    return platformtools.show_channel_settings(list_controls=list_controls, caption= "Canales incluidos en la búsqueda global", callback="save_settings", item=item)
     
 def save_settings(item,dict_values):
   for v in dict_values:
@@ -137,9 +137,9 @@ def searchbycat(item):
                       'visible': True}    
     list_controls.append(control)
                 
-    return platformtools.show_channel_settings(list_controls=list_controls, caption= "Elegir categorías", cb="cb", item=item)
+    return platformtools.show_channel_settings(list_controls=list_controls, caption= "Elegir categorías", callback="search_cb", item=item)
 
-def cb(item,values=""):
+def search_cb(item,values=""):
     cat = []
     for c in values:
       if values[c]:
