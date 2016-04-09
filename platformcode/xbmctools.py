@@ -828,7 +828,7 @@ def renderItems(itemlist, parentitem, isPlayable='false'):
             logger.info("item="+item.tostring())
             
             if item.category == "":
-                item.category = item.category
+                item.category = parentitem.category
                 
             if item.fulltitle=="":
                 item.fulltitle=item.title
@@ -856,7 +856,7 @@ def renderItems(itemlist, parentitem, isPlayable='false'):
         # Cierra el directorio
         if not parentitem.channel in ["channelselector",""]:
           xbmcplugin.setContent(pluginhandle,"Movies")
-        xbmcplugin.setPluginCategory( handle=pluginhandle, category=item.category )
+        xbmcplugin.setPluginCategory( handle=pluginhandle, category=parentitem.category )
         xbmcplugin.addSortMethod( handle=pluginhandle, sortMethod=xbmcplugin.SORT_METHOD_NONE )
 
         # Modos biblioteca
