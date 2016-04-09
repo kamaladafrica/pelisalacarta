@@ -47,7 +47,7 @@ def run():
       params = ""
       
     logger.info(item.tostring())
-    
+
     server_white_list = []
     server_black_list = []
     if config.get_setting('filter_servers') == 'true':
@@ -714,9 +714,7 @@ def play_from_library(item, channel, server_white_list, server_black_list):
 
     from platformcode import xbmctools
 
-    xbmctools.play_video(strmfile=True, channel=item.channel, server=item.server, url=item.url, category=item.category,
-                         title=item.title, thumbnail=item.thumbnail, plot=item.plot, extra=item.extra,
-                         subtitle=item.subtitle, video_password=item.password, fulltitle=fulltitle)
+    xbmctools.play_video(item, strmfile=True)
     logger.info("se espera 5 segundos por si falla al reproducir el fichero")
     import xbmc
     xbmc.sleep(5000)
