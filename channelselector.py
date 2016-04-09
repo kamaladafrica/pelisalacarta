@@ -70,10 +70,14 @@ def getchanneltypes(preferred_thumb=""):
     logger.info("channelselector getchanneltypes")
 
     # Lista de categorias
-    valid_types = [ "movie","serie","anime","documentary","vos","torrent","latino","adult"]
+    valid_types = ["movie", "serie", "anime", "documentary", "vos", "torrent", "latino", "adult"]
+    dict_cat_lang = {'movie': config.get_localized_string(30122), 'serie': config.get_localized_string(30123),
+                     'anime': config.get_localized_string(30124), 'documentary': config.get_localized_string(30125),
+                     'vos': config.get_localized_string(30136), 'adult': config.get_localized_string(30126),
+                     'latino': config.get_localized_string(30127)}
 
     # Lee la lista de canales
-    channel_path = os.path.join( config.get_runtime_path() , "channels" , '*.xml' )
+    channel_path = os.path.join(config.get_runtime_path(), "channels", '*.xml')
     logger.info("channelselector.getchanneltypes channel_path="+channel_path)
 
     channel_files = glob.glob(channel_path)
@@ -92,11 +96,11 @@ def getchanneltypes(preferred_thumb=""):
                 logger.info("channelselector.filterchannels channel_parameters="+repr(channel_parameters))
 
                 # Si es un canal para adultos y el modo adulto está desactivado, se lo salta
-                if channel_parameters["adult"]=="true" and config.get_setting("adult_mode")=="false":
+                if channel_parameters["adult"] == "true" and config.get_setting("adult_mode") == "false":
                     continue
 
                 # Si el canal está en un idioma filtrado
-                if channel_language!="all" and channel_parameters["language"]!=channel_language:
+                if channel_language != "all" and channel_parameters["language"] != channel_language:
                     continue
 
                 categories = channel_parameters["categories"]
@@ -113,29 +117,22 @@ def getchanneltypes(preferred_thumb=""):
         logger.info("channelselector.getchanneltypes channel_type="+channel_type)
 
     # Ahora construye el itemlist ordenadamente
-    itemlist = []
-
-    dict_cat_lang = {'movie': config.get_localized_string(30122), 'serie': config.get_localized_string(30123),
-                     'anime': config.get_localized_string(30124), 'documentary': config.get_localized_string(30125),
-                     'vos': config.get_localized_string(30136), 'adult': config.get_localized_string(30126),
-                     'latino': config.get_localized_string(30127)}
+    itemlist = list()
 
     itemlist.append(Item(title=config.get_localized_string(30121), channel="channelselector", action="listchannels",
                          category="all", thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),
-                                                                    "thumb_canales_todos.png"),viewmode="movie"))
+                                                                    "thumb_canales_todos.png"), viewmode="movie"))
     logger.info("channelselector.getchanneltypes Ordenados:")
     for channel_type in valid_types:
         logger.info("channelselector.getchanneltypes channel_type="+channel_type)
         if channel_type in channel_types:
-            title = channel_type
-            if channel_type in dict_cat_lang:
-                title = dict_cat_lang[channel_type]
-
+            title = dict_cat_lang.get(channel_type, channel_type)
             itemlist.append(Item(title=title, channel="channelselector", action="listchannels", category=channel_type,
                                  thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),
-                                                            "thumb_canales_"+channel_type+".png"),viewmode="movie"))
+                                                            "thumb_canales_"+channel_type+".png"), viewmode="movie"))
 
     return itemlist
+
 
 def channeltypes(params,url,category):
     logger.info("channelselector.mainlist channeltypes")
