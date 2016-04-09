@@ -47,7 +47,9 @@ def run():
       params = ""
       
     logger.info(item.tostring())
-
+    
+    server_white_list = []
+    server_black_list = []
     if config.get_setting('filter_servers') == 'true':
         server_white_list, server_black_list = set_server_list() 
 
