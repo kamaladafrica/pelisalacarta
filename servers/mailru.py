@@ -42,9 +42,10 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
     cookie_video_key = scrapertools.get_match(cookie[1], '(video_key=[a-f0-9]+)')
 
     ## Formar url del video + cookie video_key
-    media_url = data['videos'][0]['url'] + "|Cookie=" + cookie_video_key
-
-    video_urls.append( [ scrapertools.get_filename_from_url(media_url)[-4:] + " [mail.ru]", media_url ] )
+    for videos in data['videos']:
+        media_url = videos['url'] + "|Cookie=" + cookie_video_key
+        quality = " "+videos['key']
+        video_urls.append( [ scrapertools.get_filename_from_url(media_url)[-4:] + quality +" [mail.ru]", media_url ] )
 
     for video_url in video_urls:
         logger.info("[mail.ru] %s - %s" % (video_url[0],video_url[1]))
@@ -58,13 +59,13 @@ def find_videos(data):
     devuelve = []
 
     # http://videoapi.my.mail.ru/videos/embed/mail/bartos1100/_myvideo/1136.html
-    patronvideos  = 'videoapi.my.mail.ru/videos/embed/mail/([a-zA-Z0-9]+)/_myvideo/(\d+).html'
+    patronvideos  = 'videoapi.my.mail.ru/videos/embed/(mail|inbox)/([\w]+)/_myvideo/(\d+).html'
     logger.info("[mailru.py] find_videos #"+patronvideos+"#")
     matches = re.compile(patronvideos,re.DOTALL).findall(data)
 
     for match in matches:
         titulo = "[mail.ru]"
-        url = "http://videoapi.my.mail.ru/videos/embed/mail/"+match[0]+"/_myvideo/"+match[1]+".html"
+        url = "http://videoapi.my.mail.ru/videos/embed/"+match[0]+"/"+match[1]+"/_myvideo/"+match[2]+".html"
         if url not in encontrados:
             logger.info("  url="+url)
             devuelve.append( [ titulo , url , 'mailru' ] )
