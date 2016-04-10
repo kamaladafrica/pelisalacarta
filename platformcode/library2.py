@@ -64,7 +64,18 @@ LIST_PLATFORM_COMPATIBLE = ["xbmc-frodo", "xbmc-gotham", "kodi-helix", "kodi-ise
 
 
 def is_compatible():
-    if config.get_platform() in LIST_PLATFORM_COMPATIBLE:
+    logger.info("[library2.py] is_compatible")
+    if config.get_platform() in LIST_PLATFORM_COMPATIBLE and library_in_kodi():
+        return True
+    else:
+        return False
+
+
+def library_in_kodi():
+    logger.info("[library2.py] library_in_kodi")
+    path = xbmc.translatePath(os.path.join("special://masterprofile/", "sources.xml"))
+    data = read_file(path)
+    if "special://home/userdata/addon_data/plugin.video.pelisalacarta/library/" in data:
         return True
     else:
         return False
@@ -179,7 +190,7 @@ def read_file(fname):
     :return: data
     :rtype: string
     """
-    logger.info("[filtertools.py] read_file")
+    logger.info("[library2.py] read_file")
     data = ""
 
     if os.path.isfile(fname):
@@ -190,6 +201,7 @@ def read_file(fname):
         except EnvironmentError:
             logger.info("ERROR al leer el archivo: {0}".format(fname))
 
+    # logger.info("[library2.py] read_file-data {0}".format(data))
     return data
 
 
