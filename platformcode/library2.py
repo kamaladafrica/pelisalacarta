@@ -108,8 +108,8 @@ def title_to_folder_name(title):
     return folder_name
 
 
-def save_library(item):
-    logger.info("[library2.py] save_library")
+def savelibrary(item):
+    logger.info("[library2.py] savelibrary")
 
     path = LIBRARY_PATH
     filename = ""
@@ -127,7 +127,7 @@ def save_library(item):
             path = xbmc.translatePath(os.path.join(TVSHOWS_PATH, tvshow))
 
         if not os.path.exists(path):
-            logger.info("[library2.py] save_library Creando directorio serie:"+path)
+            logger.info("[library2.py] savelibrary Creando directorio serie:"+path)
             try:
                 os.mkdir(path)
             except OSError as exception:
@@ -162,12 +162,12 @@ def save_library(item):
     save_strm(fullfilename, itemurl)
 
     if os.path.exists(fullfilename):
-        logger.info("[library2.py] save_library el fichero existe. Se sobreescribe")
+        logger.info("[library2.py] savelibrary el fichero existe. Se sobreescribe")
         nuevo = 0
     else:
         nuevo = 1
 
-    logger.info("[library2.py] save_library - Fin")
+    logger.info("[library2.py] savelibrary - Fin")
 
     return nuevo
 
@@ -192,6 +192,7 @@ def read_file(fname):
 
     return data
 
+
 def save_strm(fname, data):
     logger.info("[library2.py] save_strm")
     logger.info("default encoding: {0}".format(sys.getdefaultencoding()))
@@ -210,6 +211,7 @@ def save_strm(fname, data):
 
 
 def get_movies(item):
+    logger.info("[library2.py] get_movies")
     path = MOVIES_PATH
 
     itemlist = []
@@ -222,6 +224,7 @@ def get_movies(item):
 
 
 def get_tvshows(item):
+    logger.info("[library2.py] get_tvshows")
     path = TVSHOWS_PATH
 
     itemlist = []
@@ -238,19 +241,41 @@ def get_tvshows(item):
             begin = data.find("channel=")
             end = data.find("&", begin)
             channel = data[begin+8:end]
-            logger.info("channel {}".format(channel))
             channel = urllib.unquote_plus(channel)
-            logger.info("channel2 {}".format(channel))
+
             begin = data.find("url=")
             end = data.find("&", begin)
             url = data[begin+4:end]
-            logger.info("url {}".format(url))
             url = urllib.unquote_plus(url)
-            logger.info("url2 {}".format(url))
             folder = False
 
         itemlist.append(Item(channel=channel, action=item.action, title=i, element=2, path=i, url=url,
                              folder=folder))
+
+    return itemlist
+
+
+def tvshows_file(item):
+    logger.info("[library2.py] tvshows_file")
+
+    itemlist = []
+
+    tvshow_file = os.path.join(config.get_library_path(), "series.xml")
+    if not os.path.exists(tvshow_file):
+        tvshow_file = os.path.join(config.get_data_path(), "series.xml")
+
+    logger.info("leer el archivo: {0}".format(tvshow_file))
+
+    try:
+        with open(tvshow_file, "r") as f:
+            for line in f:
+                aux = line.rstrip('\n').split(",")
+                logger.info("archivo: {0}".format(aux))
+                itemlist.append(Item(channel=item.channel, action=item.action, title="[{channel}] {show}"
+                                     .format(channel=aux[2], show=aux[0])))
+    except EnvironmentError:
+        logger.info("ERROR al leer el archivo: {0}".format(tvshow_file))
+        return []
 
     return itemlist
 
