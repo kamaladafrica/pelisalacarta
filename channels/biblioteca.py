@@ -40,19 +40,21 @@ def peliculas(item):
     return itemlist
 
 
+def kodi_pelis(item):
+    logger.info("pelisalacarta.channels.biblioteca kodi_pelis")
+
+    from platformcode import library2
+
+    return library2.get_movies(item.clone(element=2, action="mainlist"))
+
+
 def kodi_series(item):
     logger.info("pelisalacarta.channels.biblioteca kodi_series")
-    itemlist = []
 
     from platformcode import library2
     if hasattr(item, "element"):
-        new_item = item
+        new_item = item.clone(action="play_from_library", url=item.url)
     else:
         new_item = item.clone(element=1)
 
-    series_name = library2.get_tvshows_list(new_item)
-
-    for serie in series_name:
-        itemlist.append(Item(channel=__channel__, action="kodi_series", title=serie, element=2, path=serie))
-
-    return itemlist
+    return library2.get_tvshows(new_item)
