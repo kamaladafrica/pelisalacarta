@@ -654,7 +654,6 @@ def play_from_library(item, channel, server_white_list, server_black_list):
 
     category = item.category
     fulltitle = item.show + " " + item.title
-    elegido = Item(url="")
 
     logger.info("item.server=#"+item.server+"#")
     # Ejecuta find_videos, del canal o común
@@ -741,7 +740,6 @@ def add_pelicula_to_library(item):
 
 def add_serie_to_library(item, channel):
     logger.info("pelisalacarta.platformcode.launcher add_serie_to_library, show=#"+item.show+"#")
-    logger.info("puta mierda {}".format(channel))
 
     import xbmcgui
 
@@ -807,8 +805,33 @@ def add_serie_to_library(item, channel):
     else:
         itemlist.append(Item(title="La serie se ha añadido a la biblioteca"))
         logger.info("[launcher.py] Ningún error al añadir "+str(errores)+" episodios")
-        library.save_tvshow_in_file_xml(item)
 
     # FIXME:jesus Comentado porque no funciona bien en todas las versiones de XBMC
     # library.update(totalepisodes,errores,nuevos)
     xbmctools.renderItems(itemlist, item)
+
+    from platformcode import library2 as library
+
+    if library.is_compatible():
+        library.save_tvshow_in_file_xml(item)
+
+    else:
+        from platformcode import library
+
+        # Lista con series para actualizar
+        nombre_fichero_config_canal = os.path.join(config.get_library_path(), "series.xml")
+        if not os.path.exists(nombre_fichero_config_canal):
+            nombre_fichero_config_canal = os.path.join(config.get_data_path(), "series.xml")
+
+        logger.info("nombre_fichero_config_canal="+nombre_fichero_config_canal)
+        if not os.path.exists(nombre_fichero_config_canal):
+            f = open(nombre_fichero_config_canal, "w")
+        else:
+            f = open(nombre_fichero_config_canal, "r")
+            contenido = f.read()
+            f.close()
+            f = open(nombre_fichero_config_canal, "w")
+            f.write(contenido)
+        from platformcode import library
+        f.write(library.title_to_folder_name(item.show)+","+item.url+","+item.channel+"\n")
+        f.close()
