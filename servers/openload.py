@@ -37,10 +37,10 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
         url = page_url.replace("/embed/","/f/")
         data = scrapertools.downloadpageWithoutCookies(url)
         text_encode = scrapertools.get_match(data,"Click to start Download.*?<script[^>]+>(.*?)</script")
-        text_decode = decode(data)
+        text_decode = decode(text_encode)
     else:
         text_encode = scrapertools.get_match(data,"<video[^<]+<script[^>]+>(.*?)</script>")
-        text_decode = decode(data)
+        text_decode = decode(text_encode)
 
     subtitle = scrapertools.find_single_match(data, '<track kind="captions" src="([^"]+)" srclang="es"')
     #Header para la descarga
@@ -90,6 +90,7 @@ def decode(text):
     data = text.split("+(ﾟДﾟ)[ﾟoﾟ]")[1]
     chars = data.split("+(ﾟДﾟ)[ﾟεﾟ]+")[1:]
 
+
     txt = ""
     for char in chars:
         char = char \
@@ -104,18 +105,14 @@ def decode(text):
             .replace("ﾟｰﾟ", "4") \
             .replace("(+", "(")
         char = re.sub(r'\((\d)\)', r'\1', char)
-        for x in scrapertools.find_multiple_matches(char,'(\(\d\+\d\))'):
-            char = char.replace( x, str(eval(x)) )
-        for x in scrapertools.find_multiple_matches(char,'(\(\d\^\d\^\d\))'):
-            char = char.replace( x, str(eval(x)) )
-        for x in scrapertools.find_multiple_matches(char,'(\(\d\+\d\+\d\))'):
-            char = char.replace( x, str(eval(x)) )
-        for x in scrapertools.find_multiple_matches(char,'(\(\d\+\d\))'):
-            char = char.replace( x, str(eval(x)) )
-        for x in scrapertools.find_multiple_matches(char,'(\(\d\-\d\))'):
-            char = char.replace( x, str(eval(x)) )
-        if 'u' not in char: txt+= char + "|"
+        c = ""; subchar = ""
+        for v in char:
+            c+= v
+            try: x = c; subchar+= str(eval(x)); c = ""
+            except: pass
+        if subchar != '': txt+= subchar + "|"
     txt = txt[:-1].replace('+','')
+
     txt_result = "".join([ chr(int(n, 8)) for n in txt.split('|') ])
     sum_base = ""
     m3 = False

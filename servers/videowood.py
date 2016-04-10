@@ -29,19 +29,47 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     video_urls = []
 
     data = scrapertools.cache_page(page_url)
-    data = scrapertools.find_single_match(data, "(eval.function.p,a,c,k,e,.*?)\s*</script>")
-    data = jsunpack.unpack(data).replace("\\","")
-
+    text_encode = scrapertools.find_single_match(data, "(ﾟωﾟ.*?)</script>")
+    text_decode = decode(text_encode)
 
     # URL del vídeo
-    pattern = r'"file"\s*:\s*"([^"]+/video/[^"]+)'
-    match = re.search(pattern, data, re.DOTALL)
+    patron = "'([^']+)'"
+    media_url = scrapertools.find_single_match(text_decode, patron)
 
-    url = match.group(1)
-    video_urls.append([url[-4:] + " [Videowood]", url])
+    video_urls.append([media_url[-4:] + " [Videowood]", media_url])
 
     return video_urls
 
+def decode(text):
+    text = re.sub(r"\s+", "", text)
+    data = text.split("+(ﾟДﾟ)[ﾟoﾟ]")[0]
+    chars = data.split("+(ﾟДﾟ)[ﾟεﾟ]+")[1:]
+
+    txt = ""
+    for char in chars:
+        char = char \
+            .replace("(oﾟｰﾟo)","u") \
+            .replace("c", "0") \
+            .replace("(ﾟДﾟ)['0']", "c") \
+            .replace("ﾟΘﾟ", "1") \
+            .replace("!+[]", "1") \
+            .replace("-~", "1+") \
+            .replace("o", "3") \
+            .replace("_", "3") \
+            .replace("ﾟｰﾟ", "4") \
+            .replace("(+", "(")
+        char = re.sub(r'\((\d)\)', r'\1', char)
+        c = ""; subchar = ""
+        for v in char:
+            c+= v
+            try: x = c; subchar+= str(eval(x)); c = ""
+            except: pass
+        txt+= subchar + "|"
+    txt = txt[:-1].replace('+','')
+    txt_result = "".join([ chr(int(n, 8)) for n in txt.split('|') ])
+
+    return txt_result
+        
 
 # Encuentra vídeos del servidor en el texto pasado
 def find_videos(data):
