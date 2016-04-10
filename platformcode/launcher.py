@@ -21,22 +21,22 @@ def start():
     ''' Primera funcion que se ejecuta al entrar en el plugin.
     Dentro de esta funcion deberian ir todas las llamadas a las
     funciones que deseamos que se ejecuten nada mas abrir el plugin.
-    
+
     '''
     logger.info("pelisalacarta.platformcode.launcher start")
-    
+
     # Test if all the required directories are created
     config.verify_directories_created()
-      
+
 def run():
     logger.info("pelisalacarta.platformcode.launcher run")
-    
+
     # Extract item from sys.argv
     if sys.argv[2]:
       try:
         item = Item().fromurl(sys.argv[2])
         params = ""
-        
+
       #Esto es para mantener la compatiblidad con el formato anterior...
       #Contretamente para que funcionen los STRM hasta que no se actualicen al nuevo formato
       except:
@@ -45,13 +45,13 @@ def run():
     else:
       item = Item(action= "selectchannel")
       params = ""
-      
+
     logger.info(item.tostring())
 
     server_white_list = []
     server_black_list = []
     if config.get_setting('filter_servers') == 'true':
-        server_white_list, server_black_list = set_server_list() 
+        server_white_list, server_black_list = set_server_list()
 
     try:
         # Default action: open channel and launch mainlist function
@@ -75,7 +75,7 @@ def run():
                 import xbmc
                 xbmc.executebuiltin( "Container.Refresh" )
 
-        elif (item.action=="channeltypes"):      
+        elif (item.action=="channeltypes"):
             import channelselector
             itemlist = channelselector.channeltypes(params,item.url,item.category)
             from platformcode import xbmctools
@@ -96,7 +96,7 @@ def run():
 
                 # If it is an adult channel, and user has configured pin, asks for it
                 if channeltools.is_adult(item.channel) and config.get_setting("adult_pin")!="":
-                    
+
                     import xbmc
                     keyboard = xbmc.Keyboard("","PIN para canales de adultos",True)
                     keyboard.doModal()
@@ -131,17 +131,20 @@ def run():
             logger.info("pelisalacarta.platformcode.launcher regular_channel_path=%s" % regular_channel_path)
             logger.info("pelisalacarta.platformcode.launcher core_channel_path=%s" % core_channel_path)
 
-            if item.channel=="personal" or item.channel=="personal2" or item.channel=="personal3" or item.channel=="personal4" or item.channel=="personal5":
+            if (item.channel == "personal" or item.channel == "personal2" or item.channel == "personal3" or
+                    item.channel == "personal4" or item.channel == "personal5"):
                 import channels.personal as channel
-            elif os.path.exists( regular_channel_path ):
-                exec "import channels."+item.channel+" as channel"
-            elif os.path.exists( core_channel_path ):
-                exec "from core import "+item.channel+" as channel"
+            elif os.path.exists(regular_channel_path):
+                channel = __import__('channels.%s' % item.channel, fromlist=["channels.%s" % item.channel])
 
-            logger.info("pelisalacarta.platformcode.launcher running channel %s %s" % (channel.__name__ , channel.__file__))
+            elif os.path.exists(core_channel_path):
+                channel = __import__('channels.%s' % item.channel, fromlist=["channels.%s" % item.channel])
+
+            logger.info("pelisalacarta.platformcode.launcher running channel {0} {1}".format(
+                channel.__name__, channel.__file__))
 
             generico = False
-            # Esto lo he puesto asi porque el buscador puede ser generico o normal, esto estará asi hasta que todos los canales sean genericos 
+            # Esto lo he puesto asi porque el buscador puede ser generico o normal, esto estará asi hasta que todos los canales sean genericos
             if item.category == "Buscador_Generico":
                 generico = True
             else:
@@ -152,28 +155,14 @@ def run():
 
             if not generico:
                 logger.info("pelisalacarta.platformcode.launcher xbmc native channel")
-                if (item.action=="strm"):
+                if item.action == "strm":
                     from platformcode import xbmctools
                     xbmctools.playstrm(params, item.url, item.category)
                 else:
-                    exec "channel."+item.action+"(params, item.url, item.category)"
-            else:            
+                    getattr(channel, item.action)(params, item.url, item.category)
+            else:
                 logger.info("pelisalacarta.platformcode.launcher multiplatform channel")
-                
-                '''
-                if item.subtitle!="":
-                    logger.info("pelisalacarta.platformcode.launcher Downloading subtitle file "+item.subtitle)
-                    from core import downloadtools
-                    
-                    ficherosubtitulo = os.path.join( config.get_data_path() , "subtitulo.srt" )
-                    if os.path.exists(ficherosubtitulo):
-                        os.remove(ficherosubtitulo)
 
-                    downloadtools.downloadfile(item.subtitle, ficherosubtitulo )
-                    config.set_setting("subtitulo","true")
-                else:
-                    logger.info("pelisalacarta.platformcode.launcher No subtitle")
-                '''
                 from platformcode import xbmctools
 
                 if item.action=="play":
@@ -193,14 +182,14 @@ def run():
                         logger.info("pelisalacarta.platformcode.launcher no channel 'play' method, executing core method")
                         xbmctools.play_video(item)
 
-                elif item.action=="strm_detail" or item.action=="play_from_library":
+                elif item.action == "play_from_library":
                     play_from_library(item, channel, server_white_list, server_black_list)
 
-                elif item.action=="add_pelicula_to_library":
+                elif item.action == "add_pelicula_to_library":
                     add_pelicula_to_library(item)
 
-                elif item.action=="add_serie_to_library":
-                    add_serie_to_library(item, channel, params, url, category)
+                elif item.action == "add_serie_to_library":
+                    add_serie_to_library(item, channel)
 
                 elif item.action=="download_all_episodes":
                     download_all_episodes(item,channel)
@@ -220,16 +209,13 @@ def run():
 
                 else:
                     logger.info("pelisalacarta.platformcode.launcher executing channel '"+item.action+"' method")
-                    if item.action!="findvideos":
-                        exec "itemlist = channel."+item.action+"(item)"
-
-                        #for item in itemlist:
-                        #    logger.info("viemode="+item.viewmode)
+                    if item.action != "findvideos":
+                        itemlist = getattr(channel, item.action)(item)
                     else:
 
                         # Intenta ejecutar una posible funcion "findvideos" del canal
                         if hasattr(channel, 'findvideos'):
-                            exec "itemlist = channel."+item.action+"(item)"
+                            itemlist = getattr(channel, item.action)(item)
 
                             if config.get_setting('filter_servers') == 'true':
                                 itemlist = filtered_servers(itemlist, server_white_list, server_black_list)
@@ -517,7 +503,7 @@ def download_all_episodes(item,channel,first_episode="",preferred_server="vidspo
         action = item.extra.split("###")[0]
         item.extra = item.extra.split("###")[1]
 
-    exec "episode_itemlist = channel."+action+"(item)"
+    episode_itemlist = getattr(channel, action)(item)
 
     # Ordena los episodios para que funcione el filtro de first_episode
     episode_itemlist = sorted(episode_itemlist, key=lambda Item: Item.title)
@@ -673,7 +659,7 @@ def play_from_library(item, channel, server_white_list, server_black_list):
     logger.info("item.server=#"+item.server+"#")
     # Ejecuta find_videos, del canal o común
     try:
-        itemlist = channel.findvideos(item)
+        itemlist = getattr(channel, "findvideos")(item)
 
         if config.get_setting('filter_servers') == 'true':
             itemlist = filtered_servers(itemlist, server_white_list, server_black_list)
@@ -753,20 +739,16 @@ def add_pelicula_to_library(item):
                             pedirnombre=False, subtitle=item.subtitle)
 
 
-def add_serie_to_library(item, channel, params, url, category):
+def add_serie_to_library(item, channel):
     logger.info("pelisalacarta.platformcode.launcher add_serie_to_library, show=#"+item.show+"#")
+    logger.info("puta mierda {}".format(channel))
 
     import xbmcgui
 
     # Obtiene el listado desde el que se llamó
     action = item.extra
 
-    # # Esta marca es porque el item tiene algo más aparte en el atributo "extra"
-    # if "###" in item.extra:
-    #     action = item.extra.split("###")[0]
-    #     item.extra = item.extra.split("###")[1]
-
-    exec "itemlist = channel."+action+"(item)"
+    itemlist = getattr(channel, action)(item)
 
     # TODO arreglar progress dialog
     # Progreso
@@ -828,7 +810,7 @@ def add_serie_to_library(item, channel, params, url, category):
 
     # FIXME:jesus Comentado porque no funciona bien en todas las versiones de XBMC
     # library.update(totalepisodes,errores,nuevos)
-    xbmctools.renderItems(itemlist, params, url, category)
+    xbmctools.renderItems(itemlist, item)
 
     # Lista con series para actualizar
     nombre_fichero_config_canal = os.path.join(config.get_library_path(), "series.xml")
