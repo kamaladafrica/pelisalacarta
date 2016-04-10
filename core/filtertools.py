@@ -206,7 +206,7 @@ def read_file(fname):
                 for line in f:
                     data += line
         except EnvironmentError:
-            logger("ERROR al leer el archivo: {0}".format(fname))
+            logger.info("ERROR al leer el archivo: {0}".format(fname))
 
     return data
 
@@ -291,6 +291,7 @@ def mainlist_filter(item):
 
 def config_filter(item):
     logger.info("[filtertools.py] config_filter")
+    logger.info("item {0}".format(item.tostring()))
 
     # OBTENEMOS LOS DATOS DEL channel.xml
     channel_xml = channeltools.get_channel_parameters(item.from_channel)
@@ -417,7 +418,6 @@ def config_filter(item):
 
         else:
             logger.info("borrado")
-            logger.info("mierder {}".format(dict_data_saved))
             dict_series.pop(item.show.strip().lower(), None)
 
             message = "FILTRO ELIMINADO"  # "[COLOR red]FILTRO ELIMINADO,[/COLOR] "
