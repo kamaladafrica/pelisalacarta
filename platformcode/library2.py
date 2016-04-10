@@ -14,6 +14,7 @@ import urllib
 import xbmc
 
 from core import config
+from core.item import Item
 from core import jsontools
 from core import logger
 # TODO EVITAR USAR REQUESTS
@@ -171,6 +172,26 @@ def save_library(item):
     return nuevo
 
 
+def read_file(fname):
+    """
+    pythonic way to read from file
+    :param: fname:
+    :return: data
+    :rtype: string
+    """
+    logger.info("[filtertools.py] read_file")
+    data = ""
+
+    if os.path.isfile(fname):
+        try:
+            with open(fname, "r") as f:
+                for line in f:
+                    data += line
+        except EnvironmentError:
+            logger.info("ERROR al leer el archivo: {0}".format(fname))
+
+    return data
+
 def save_strm(fname, data):
     logger.info("[library2.py] save_strm")
     logger.info("default encoding: {0}".format(sys.getdefaultencoding()))
@@ -188,11 +209,49 @@ def save_strm(fname, data):
     return True
 
 
-def get_tvshows_list(item):
+def get_movies(item):
+    path = MOVIES_PATH
+
+    itemlist = []
+
+    aux_list = next(os.walk(path))[item.element]
+    for i in aux_list:
+        itemlist.append(Item(channel=item.channel, action=item.action, title=i, element=2, path=i))
+
+    return itemlist
+
+
+def get_tvshows(item):
     path = TVSHOWS_PATH
+
+    itemlist = []
+
     if item.element != 1:
         path = os.path.join(path, item.path)
-    itemlist = next(os.walk(path))[item.element]
+    aux_list = next(os.walk(path))[item.element]
+    for i in aux_list:
+        url = ""
+        folder = True
+        channel = item.channel
+        if ".strm" in i:
+            data = read_file(os.path.join(path, i))
+            begin = data.find("channel=")
+            end = data.find("&", begin)
+            channel = data[begin+8:end]
+            logger.info("channel {}".format(channel))
+            channel = urllib.unquote_plus(channel)
+            logger.info("channel2 {}".format(channel))
+            begin = data.find("url=")
+            end = data.find("&", begin)
+            url = data[begin+4:end]
+            logger.info("url {}".format(url))
+            url = urllib.unquote_plus(url)
+            logger.info("url2 {}".format(url))
+            folder = False
+
+        itemlist.append(Item(channel=channel, action=item.action, title=i, element=2, path=i, url=url,
+                             folder=folder))
+
     return itemlist
 
 
