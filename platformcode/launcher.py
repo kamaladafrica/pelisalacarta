@@ -728,7 +728,7 @@ def add_pelicula_to_library(item):
     if library.is_compatible():
         # if config.get_platform() == "kodi-jarvis":
         new_item = item.clone(action="play_from_library", category="Cine")
-        library.save_library(new_item)
+        library.savelibrary(new_item)
     # retrocompatibilidad :)
     else:
         from platformcode import library
@@ -780,7 +780,7 @@ def add_serie_to_library(item, channel):
                 if library.is_compatible():
                     # if config.get_platform() == "kodi-jarvis":
                     new_item = item.clone(action="play_from_library", category="Series")
-                    nuevos = nuevos + library.save_library(new_item)
+                    nuevos = nuevos + library.savelibrary(new_item)
 
                 # retrocompatibilidad :)
                 else:
@@ -807,25 +807,8 @@ def add_serie_to_library(item, channel):
     else:
         itemlist.append(Item(title="La serie se ha añadido a la biblioteca"))
         logger.info("[launcher.py] Ningún error al añadir "+str(errores)+" episodios")
+        library.save_tvshow_in_file_xml(item)
 
     # FIXME:jesus Comentado porque no funciona bien en todas las versiones de XBMC
     # library.update(totalepisodes,errores,nuevos)
     xbmctools.renderItems(itemlist, item)
-
-    # Lista con series para actualizar
-    nombre_fichero_config_canal = os.path.join(config.get_library_path(), "series.xml")
-    if not os.path.exists(nombre_fichero_config_canal):
-        nombre_fichero_config_canal = os.path.join(config.get_data_path(), "series.xml")
-
-    logger.info("nombre_fichero_config_canal="+nombre_fichero_config_canal)
-    if not os.path.exists(nombre_fichero_config_canal):
-        f = open(nombre_fichero_config_canal, "w")
-    else:
-        f = open(nombre_fichero_config_canal, "r")
-        contenido = f.read()
-        f.close()
-        f = open(nombre_fichero_config_canal, "w")
-        f.write(contenido)
-    from platformcode import library
-    f.write(library.title_to_folder_name(item.show)+","+item.url+","+item.channel+"\n")
-    f.close()
