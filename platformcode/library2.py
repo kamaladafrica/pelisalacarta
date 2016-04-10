@@ -292,6 +292,24 @@ def tvshows_file(item):
     return itemlist
 
 
+def save_tvshow_in_file_xml(item):
+    # Lista con series para actualizar
+    nombre_fichero_config_canal = os.path.join(config.get_library_path(), "series.xml")
+    if not os.path.exists(nombre_fichero_config_canal):
+        nombre_fichero_config_canal = os.path.join(config.get_data_path(), "series.xml")
+    logger.info("nombre_fichero_config_canal=" + nombre_fichero_config_canal)
+    if not os.path.exists(nombre_fichero_config_canal):
+        f = open(nombre_fichero_config_canal, "w")
+    else:
+        f = open(nombre_fichero_config_canal, "r")
+        contenido = f.read()
+        f.close()
+        f = open(nombre_fichero_config_canal, "w")
+        f.write(contenido)
+    f.write(title_to_folder_name(item.show) + "," + item.url + "," + item.channel + "\n")
+    f.close()
+
+
 def mark_as_watched(category):
     logger.info("[library2.py] mark_as_watched - category:{cat}".format(cat=category))
 
