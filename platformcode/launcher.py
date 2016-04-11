@@ -126,8 +126,8 @@ def run():
                     pass
 
             # La acción puede estar en el core, o ser un canal regular. El buscador es un canal especial que está en pelisalacarta
-            regular_channel_path = os.path.join( config.get_runtime_path() , 'channels' , item.channel+".py" )
-            core_channel_path = os.path.join( config.get_runtime_path(), 'core' , item.channel+".py" )
+            regular_channel_path = os.path.join(config.get_runtime_path(), 'channels', item.channel+".py")
+            core_channel_path = os.path.join(config.get_runtime_path(), 'core', item.channel+".py")
             logger.info("pelisalacarta.platformcode.launcher regular_channel_path=%s" % regular_channel_path)
             logger.info("pelisalacarta.platformcode.launcher core_channel_path=%s" % core_channel_path)
 
@@ -138,7 +138,7 @@ def run():
                 channel = __import__('channels.%s' % item.channel, fromlist=["channels.%s" % item.channel])
 
             elif os.path.exists(core_channel_path):
-                channel = __import__('channels.%s' % item.channel, fromlist=["channels.%s" % item.channel])
+                channel = __import__('core.%s' % item.channel, fromlist=["core.%s" % item.channel])
 
             logger.info("pelisalacarta.platformcode.launcher running channel {0} {1}".format(
                 channel.__name__, channel.__file__))
