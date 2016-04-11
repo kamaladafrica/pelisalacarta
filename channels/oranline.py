@@ -306,8 +306,18 @@ def findvideos(item):
     <span>
     <a href="/wp-content/themes/reviewit/enlace.php?id=375879" rel="get:id=10" rev="abcwin[700,580]"><img style="width:103px" src="http://www.oranline.com/wp-content/themes/reviewit/servidores/uploaded.jpg"></img></a></span></p>
     '''
+    '''
+    <p>
+    <span><img src="http://www.oranline.com/wp-content/themes/reviewit/images/1.png" width="25"></span>      
+    <span>HD-1080 </span>
+    <span><img src="http://www.oranline.com/wp-content/themes/reviewit/images/calidad5.png"></span>
+    <span>Anonymous_xxx</span> 
+    <span><a onclick='reportar("reportarpelicula","505001")'><img  src='http://www.oranline.com/wp-content/themes/reviewit/images/tool.png' title="reportar enlace"></img></a></span>
+    <span>
+    <a href="/wp-content/themes/reviewit/enlace.php?id=505001" rel="get:id=10" rev="abcwin[700,580]"><img style="width:103px" src="http://www.oranline.com/wp-content/themes/reviewit/servidores/powvideo.jpg"></img></a></span></p>
+    '''
     patron  = '<p[^<]+'
-    patron += '<span[^<]+<img width="\d+" src="([^"]+)[^<]+</span[^<]+'
+    patron += '<span[^<]+<img.*?src="([^"]+)[^<]+</span[^<]+'
     patron += '<span>([^<]+)</span.*?'
     patron += 'href="([^"]+)"[^<]+<img style="[^"]+" src="([^"]+)"'
     matches2 = re.compile(patron, re.DOTALL).findall(data)
