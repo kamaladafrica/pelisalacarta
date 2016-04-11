@@ -29,7 +29,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     video_urls = []
 
     data = scrapertools.cache_page(page_url)
-    text_encode = scrapertools.find_single_match(data, "(ﾟωﾟ.*?)</script>")
+    text_encode = scrapertools.find_single_match(data, "(eval\(function\(p,a,c,k,e,d.*?)</script>")
     text_decode = decode(text_encode)
 
     # URL del vídeo
@@ -41,8 +41,8 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     return video_urls
 
 def decode(text):
-    text = re.sub(r"\s+", "", text)
-    data = text.split("+(ﾟДﾟ)[ﾟoﾟ]")[0]
+    text = re.sub(r"\s+|/\*.*?\*/", "", text)
+    data = text.split("+(ﾟДﾟ)[ﾟoﾟ]")[1]
     chars = data.split("+(ﾟДﾟ)[ﾟεﾟ]+")[1:]
 
     txt = ""
