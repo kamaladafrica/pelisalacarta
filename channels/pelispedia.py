@@ -178,7 +178,8 @@ def listado(item):
         title = "{title} ({year})".format(title=scrapertools.unescape(scrapedtitle.strip()), year=scrapedyear)
         plot = scrapertools.entityunescape(scrapedplot)
         itemlist.append(Item(channel=__channel__, title=title, url=urlparse.urljoin(HOST, scrapedurl), action=action,
-                             thumbnail=scrapedthumbnail, plot=plot, context="", show=title, extra=item.extra))
+                             thumbnail=scrapedthumbnail, plot=plot, context="",
+                             show=scrapertools.unescape(scrapedtitle.strip()), extra=item.extra))
 
     # no se muestra ordenado porque la paginación de la página no se hace correctamente
     # itemlist.sort(key=lambda item: item.title)
@@ -298,7 +299,7 @@ def findvideos(item):
                 itemlist.append(Item(channel=__channel__, title=title, url=url, action="play"))
         else:
             title = "Ver vídeo en ["+scrapedtitle+"]"
-            itemlist.append(Item(channel=__channel__, title=title, url=scrapedurl, action="play"))
+            itemlist.append(Item(channel=__channel__, title=title, url=scrapedurl, action="play", extra=item.url))
 
     # Opción "Añadir esta serie a la biblioteca de XBMC"
     if item.extra == "movies" and config.get_library_support() and len(itemlist) > 0:
@@ -313,13 +314,13 @@ def play(item):
 
     itemlist = []
     # Para videos flash y html5
-    if "pelispedia" in item.url:
+    if "pelispedia.tv" in item.url:
         key = scrapertools.find_single_match(item.url, 'index.php\?id=([^&]+)&sub=([^&]+)&.+?imagen=([^&]+)')
 
         subtitle = ""
         thumbnail = ""
 
-        if key[2] != "":
+        if len(key) > 2:
             thumbnail = key[2]
         if key[1] != "":
             subtitle = "http://www.pelispedia.tv/Pe_Player_Html5/bajarsub.php?sub=%s" % key[1]
@@ -336,6 +337,23 @@ def play(item):
             url = media_urls[len(media_urls)-1].replace("\\", "")
             itemlist.append(Item(channel=__channel__, title=item.title, url=url, server="directo", action="play",
                                  subtitle=subtitle, thumbnail=thumbnail))
+
+    elif "pelispedia.biz" in item.url:
+        logger.info("estoy en el otro html5")
+        key = scrapertools.find_single_match(item.url, 'v=([^&]+).+?imagen=([^&]+)')
+
+        thumbnail = ""
+        if len(key) > 1:
+            thumbnail = key[1]
+
+        headers = [['Referer', item.extra]]
+        data = scrapertools.cache_page(item.url, headers=headers)
+
+        media_url = scrapertools.find_single_match(data, '"file":"([^"]+)"').replace("\\", "")
+        sub = scrapertools.find_single_match(data, 'file:\s"([^"]+)".+?label:\s"Spanish"')
+        itemlist.append(Item(channel=__channel__, title=item.title, url=media_url, server="directo", action="play",
+                             subtitle=sub, thumbnail=thumbnail))
+
     else:
         itemlist = servertools.find_video_items(data=item.url)
         for videoitem in itemlist:
