@@ -5,33 +5,21 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import urlparse,urllib2,urllib,re
-import os
+import re
 
 from core import scrapertools
 from core import logger
-from core import config
 from core import jsontools
 
 def get_video_url( page_url , premium = False , user="" , password="", video_password="" ):
     logger.info("[mailru.py] get_video_url(page_url='%s')" % (page_url))
 
     video_urls = []
-
-    ## Carga la página
-    ## Nueva url al final de los datos
+    ## Carga la página para coger las cookies
     data = scrapertools.cache_page(page_url)
 
-    ## Carga los nuevos datos de la nueva url
-    #<a href="http://r.mail.ru/clb15944866/my.mail.ru/mail/gottsu04/video/_myvideo/709.html?from=watchonmailru" class="b-player__button" target="_blank">Watch video</a>
-    url = scrapertools.get_match(data,'<a href="([^"]+)" class="b-player__button" target="_blank">Watch video</a>')
-    data = scrapertools.cache_page(url)
-
-    ## API ##
-    ## Se necesita la id del vídeo para formar la url de la API
-    #<link rel="image_src" href="http://filed9-14.my.mail.ru/pic?url=http%3A%2F%2Fvideoapi.my.mail.ru%2Ffile%2Fsc03%2F3450622080461046469&mw=&mh=&sig=5d50e747aa59107d805263043e3efe64" />
-    id_api_video = scrapertools.get_match(data,'sc\d+%2F([^&]+)&mw')
-    url = "http://videoapi.my.mail.ru/videos/" + id_api_video + ".json"
+    ## Nueva url
+    url = page_url.replace("embed/","").replace(".html",".json")
     ## Carga los datos y los headers
     data, headers = scrapertools.read_body_and_headers(url)
     data = jsontools.load_json( data )
@@ -54,7 +42,7 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
 
 # Encuentra vídeos del servidor en el texto pasado
 def find_videos(data):
-    logger.info("[mailru.py] find_videos") #(data='%s')" % (data))
+    logger.info("[mailru.py] find_videos")
     encontrados = set()
     devuelve = []
 
