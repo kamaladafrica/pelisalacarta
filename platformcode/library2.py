@@ -158,19 +158,7 @@ def savelibrary(item):
     if addon_name.strip() == "":
         addon_name = "plugin://plugin.video.pelisalacarta/"
 
-    # TODO arreglar esto
-    # itemurl = "{addon}?channel={channel}&action={action}&category={category}&title={title}&url={url}&" \
-    #           "thumbnail={thumb}&plot={plot}&server={server}&show={show}&subtitle={subtitle}"\
-    #     .format(addon=addon_name, channel=item.channel(), action=item.action, category=urllib.quote_plus(item.category),
-    #             title=urllib.quote_plus(item.title), url=urllib.quote_plus(item.url),
-    #             thumb=urllib.quote_plus(item.thumbnail), plot=urllib.quote_plus(item.plot), server=item.server,
-    #             show=item.show, subtitle=urllib.quote_plus(item.subtitle))  # , extra=urllib.quote_plus(extra))
-    itemurl = '%s?channel=%s&action=%s&category=%s&title=%s&url=%s&thumbnail=%s&plot=%s&server=%s&Serie=%s' \
-              '&subtitle=%s&extra=%s' % (addon_name, item.channel, item.action, urllib.quote_plus(item.category),
-                                         urllib.quote_plus(item.title), urllib.quote_plus(item.url), "", "",
-                                         item.server, item.show, urllib.quote_plus(item.subtitle),
-                                         urllib.quote_plus(item.extra))
-    save_strm(fullfilename, itemurl)
+    save_strm(fullfilename, '{addon}?{url}'.format(addon=addon_name, url=item.tourl()))
 
     if os.path.exists(fullfilename):
         logger.info("[library2.py] savelibrary el fichero existe. Se sobreescribe")
