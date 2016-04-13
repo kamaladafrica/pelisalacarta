@@ -7,10 +7,8 @@
 # ------------------------------------------------------------
 
 import re
-
 from core import scrapertools
 from core import logger
-from core import jsunpack
 
 
 def test_video_exists(page_url):
@@ -30,7 +28,9 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
 
     data = scrapertools.cache_page(page_url)
     text_encode = scrapertools.find_single_match(data, "(eval\(function\(p,a,c,k,e,d.*?)</script>")
-    text_decode = decode(text_encode)
+
+    from aadecode import decode as aadecode
+    text_decode = aadecode(text_encode)
 
     # URL del vídeo
     patron = "'([^']+)'"
@@ -40,36 +40,6 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
 
     return video_urls
 
-def decode(text):
-    text = re.sub(r"\s+|/\*.*?\*/", "", text)
-    data = text.split("+(ﾟДﾟ)[ﾟoﾟ]")[1]
-    chars = data.split("+(ﾟДﾟ)[ﾟεﾟ]+")[1:]
-
-    txt = ""
-    for char in chars:
-        char = char \
-            .replace("(oﾟｰﾟo)","u") \
-            .replace("c", "0") \
-            .replace("(ﾟДﾟ)['0']", "c") \
-            .replace("ﾟΘﾟ", "1") \
-            .replace("!+[]", "1") \
-            .replace("-~", "1+") \
-            .replace("o", "3") \
-            .replace("_", "3") \
-            .replace("ﾟｰﾟ", "4") \
-            .replace("(+", "(")
-        char = re.sub(r'\((\d)\)', r'\1', char)
-        c = ""; subchar = ""
-        for v in char:
-            c+= v
-            try: x = c; subchar+= str(eval(x)); c = ""
-            except: pass
-        txt+= subchar + "|"
-    txt = txt[:-1].replace('+','')
-    txt_result = "".join([ chr(int(n, 8)) for n in txt.split('|') ])
-
-    return txt_result
-        
 
 # Encuentra vídeos del servidor en el texto pasado
 def find_videos(data):
