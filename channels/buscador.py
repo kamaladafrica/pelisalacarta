@@ -43,8 +43,6 @@ def mainlist(item,preferred_thumbnail="squares"):
     saved_searches_list = get_saved_searches()
 
     for saved_search_text in saved_searches_list:
-        itemlist.append(Item(channel=__channel__, action="do_search", title=' "'+saved_search_text+'"',
-                             extra=saved_search_text))
         itemlist.append(Item(channel=__channel__, action="do_search", title=' "'+saved_search_text+'"', extra=saved_search_text))
 
     return itemlist
@@ -61,7 +59,6 @@ def settings(item):
     return platformtools.show_channel_settings()
 
 def settingCanal(item):
-    # Abre un cuadro de dialogo con todos los canales q pueden incluirse en la busqueda global para su configuracion
     channels_path = os.path.join(config.get_runtime_path(), "channels", '*.xml')
     channel_language = config.get_setting("channel_language")
 

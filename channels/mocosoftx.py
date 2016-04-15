@@ -13,7 +13,7 @@ from core import config
 from core import scrapertools
 from core.item import Item
 from servers import servertools
-from platformcode import guitools
+from platformcode import platformtools
 
 __channel__ = "mocosoftx"
 __category__ = "F"
@@ -98,8 +98,7 @@ def mainlist(item):
     return itemlist
 
 def settingCanal(item):           
-    ventana = guitools.show_settings(item.channel)
-    return ventana    
+    return platformtools.show_channel_settings()
     
 def foro(item):
     logger.info("pelisalacarta.channels.mocosoftx foro")

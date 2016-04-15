@@ -21,7 +21,7 @@
 	<categories>
 		<category>movie</category>
 	</categories>
-K:\Git Pelisalacarta 4.X\python\main-classic\channels\buscador.xml	
+	
 	<settings>
 		<id>multithread</id>
 		<type>bool</type>

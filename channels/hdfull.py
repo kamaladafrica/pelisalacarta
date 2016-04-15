@@ -13,7 +13,7 @@ from core import scrapertools
 from core import jsontools
 from core.item import Item
 from servers import servertools
-from platformcode import guitools
+from platformcode import platformtools
 
 __channel__ = "hdfull"
 __category__ = "F,S,D"
@@ -29,8 +29,7 @@ def isGeneric():
     return True
 
 def settingCanal(item):
-    ventana = guitools.show_settings(item.channel)
-    return ventana 
+    return platformtools.show_channel_settings()
 
 def login():
     logger.info("pelisalacarta.channels.hdfull login")
