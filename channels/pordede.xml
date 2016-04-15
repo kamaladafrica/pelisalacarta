@@ -25,25 +25,32 @@
 		<id>pordedeuser</id>
 		<type>text</type>
 		<label>@30014</label>
-		<default></default>
 		<enabled>true</enabled>
 		<visible>true</visible>
 	</settings>
 	<settings>
 		<id>pordedepassword</id>
 		<type>text</type>
+		<hidden>true</hidden>
 		<label>@30015</label>
-		<default></default>
-		<enabled>true</enabled>
+		<enabled>!eq(-1,'')</enabled>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<id>include_in_global_search</id>
+		<type>bool</type>
+		<label>Incluir en busqueda global</label>
+		<default>false</default>
+		<enabled>!eq(-1,'') + !eq(-2,'')</enabled>
 		<visible>true</visible>
 	</settings>
 	<settings>
 		<id>pordedesortlinks</id>
 		<type>list</type>
 		<label>Ordenar enlaces</label>
-		<default>No</default>
+		<default>0</default>
 		<enabled>true</enabled>
-		<visible>true</visible>
+		<visible>!eq(-2,'') + !eq(-3,'')</visible>
 		<lvalues>No</lvalues>
 		<lvalues>Por Valoración</lvalues>
 		<lvalues>Por Idioma</lvalues>
@@ -56,9 +63,9 @@
 		<id>pordedeshowlinks</id>
 		<type>list</type>
 		<label>Mostrar enlaces</label>
-		<default>Todos</default>
+		<default>0</default>
 		<enabled>true</enabled>
-		<visible>true</visible>
+		<visible>!eq(-3,'') + !eq(-4,'')</visible>
 		<lvalues>Todos</lvalues>
 		<lvalues>Ver online</lvalues>
 		<lvalues>Descargar</lvalues>
@@ -67,9 +74,9 @@
 		<id>pordedenumberlinks</id>
 		<type>list</type>
 		<label>Limitar número de enlaces</label>
-		<default>No</default>
+		<default>0</default>
 		<enabled>true</enabled>
-		<visible>true</visible>
+		<visible>!eq(-4,'') + !eq(-5,'')</visible>
 		<lvalues>No</lvalues>
 		<lvalues>5</lvalues>
 		<lvalues>10</lvalues>
@@ -77,13 +84,5 @@
 		<lvalues>20</lvalues>
 		<lvalues>25</lvalues>
 		<lvalues>30</lvalues>
-	</settings>
-	<settings>
-		<id>include_in_global_search</id>
-		<type>bool</type>
-		<label>Incluir en busqueda global</label>
-		<default>true</default>
-		<enabled>true</enabled>
-		<visible>true</visible>
 	</settings>
 </channel>

@@ -36,8 +36,8 @@
 		<id>megahdpassword</id>
 		<type>text</type>
 		<label>@30015</label>
-		<default></default>
-		<enabled>true</enabled>
+		<hidden>true</hidden>
+		<enabled>!eq(-1,'')</enabled>
 		<visible>true</visible>
 	</settings>
 

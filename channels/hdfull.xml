@@ -26,7 +26,6 @@
 		<id>hdfulluser</id>
 		<type>text</type>
 		<label>@30014</label>
-		<default></default>
 		<enabled>true</enabled>
 		<visible>true</visible>
 	</settings>
@@ -34,16 +33,16 @@
 		<id>hdfullpassword</id>
 		<type>text</type>
 		<label>@30015</label>
-		<default></default>
-		<enabled>true</enabled>
+		<hidden>true</hidden>
+		<enabled>!eq(-1,'')</enabled>
 		<visible>true</visible>
 	</settings>
 	<settings>
 		<id>include_in_global_search</id>
 		<type>bool</type>
 		<label>Incluir en busqueda global</label>
-		<default>true</default>
-		<enabled>true</enabled>
+		<default>false</default>
+		<enabled>!eq(-1,'') + !eq(-2,'')</enabled>
 		<visible>false</visible>
 	</settings>
 </channel>
