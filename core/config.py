@@ -66,47 +66,13 @@ def get_setting(name, channel=""):
     Retorna:
     value -- El valor del parametro 'name'
     
-    """ 
-    import logger
-    from core import jsontools   
+    """   
     if channel:
-        try:
-            File_settings= os.path.join(get_data_path(), "settings_channels", channel+"_data.json")
-            dict_file = {}
-            dict_settings= {}
-            list_controls = []
-        
-            if os.path.exists(File_settings):
-                # Obtenemos configuracion guardada de ../settings/channel_data.json
-                data = ""
-                try:
-                    with open(File_settings, "r") as f:
-                        data= f.read()
-                    dict_file = jsontools.load_json(data)
-                    if dict_file.has_key('settings'):
-                        dict_settings = dict_file['settings']
-                except EnvironmentError:
-                    logger.info("ERROR al leer el archivo: {0}".format(File_settings))
-            
-            if len(dict_settings) == 0:
-                # Obtenemos controles del archivo ../channels/channel.xml
-                from core import channeltools
-                list_controls, dict_settings = channeltools.get_channel_controls_settings(channel)
-                                
-                if  dict_settings.has_key(name): # Si el parametro existe en el channel.xml creamos el channel_data.json
-                    dict_file['settings']= dict_settings 
-                    # Creamos el archivo ../settings/channel_data.json
-                    json_data = jsontools.dump_json(dict_file)
-                    try:
-                        with open(File_settings, "w") as f:
-                            f.write(json_data)
-                    except EnvironmentError:
-                        logger.info("[config.py] ERROR al salvar el archivo: {0}".format(File_settings))
+      from core import channeltools
+      value = channeltools.get_channel_setting(name, channel)
+      if not value is None:
+        return value
 
-            # Devolvemos el valor del parametro local 'name' si existe        
-            return dict_settings[name]
-        except: pass
-        
     # Devolvemos el valor del parametro global 'name'        
     return __settings__.getSetting( name ) 
 
@@ -131,54 +97,17 @@ def set_setting(name,value, channel=""):
     'value' en caso de que se haya podido fijar el valor y None en caso contrario
         
     """ 
-    import logger
-    from core import jsontools
     if channel:
-        try:
-            File_settings= os.path.join(get_data_path(),"settings_channels", channel+"_data.json")
-            dict_settings= {}
-            dict_file= {}
-            list_controls = []
-            
-            if os.path.exists(File_settings):
-                # Obtenemos configuracion guardada de ../settings/channel_data.json
-                data = ""
-                try:
-                    with open(File_settings, "r") as f:
-                        data= f.read()
-                    dict_file = jsontools.load_json(data)
-                    if dict_file.has_key('settings'):
-                        dict_settings = dict_file['settings']
-                except EnvironmentError:
-                    logger.info("ERROR al leer el archivo: {0}".format(File_settings))
-                
-            if len(dict_settings) == 0:            
-                # Obtenemos controles del archivo ../channels/channel.xml
-                from core import channeltools
-                list_controls, dict_settings = channeltools.get_channel_controls_settings(channel)
-                               
-            dict_settings[name] = value
-            dict_file['settings']= dict_settings
-            # Creamos el archivo ../settings/channel_data.json
-            json_data = jsontools.dump_json(dict_file)
-            try:
-                with open(File_settings, "w") as f:
-                    f.write(json_data)
-            except EnvironmentError:
-                logger.info("[config.py] ERROR al salvar el archivo: {0}".format(File_settings))
-                return None
-
-        except: 
-            logger.info("[config.py] ERROR al fijar el parametro {0}= {1}".format(name, value))
-            return None
-    else:     
-        try:
-            __settings__.setSetting(name,value)
-        except:
-            logger.info("[config.py] ERROR al fijar el parametro global {0}= {1}".format(name, value))
-            return None
-            
-    return value
+      from core import channeltools
+      return channeltools.set_channel_setting(name,value, channel)
+    else:
+      try:
+          __settings__.setSetting(name,value)
+      except:
+          logger.info("[config.py] ERROR al fijar el parametro global {0}= {1}".format(name, value))
+          return None
+              
+      return value
 
     
 def get_localized_string(code):
