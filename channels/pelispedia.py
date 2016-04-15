@@ -303,7 +303,7 @@ def findvideos(item):
 
     # Opción "Añadir esta serie a la biblioteca de XBMC"
     if item.extra == "movies" and config.get_library_support() and len(itemlist) > 0:
-        itemlist.append(Item(channel=__channel__, title="Añadir esta serie a la biblioteca de XBMC", url=item.url,
+        itemlist.append(Item(channel=__channel__, title="Añadir esta película a la biblioteca de XBMC", url=item.url,
                              action="add_pelicula_to_library", extra="findvideos", fulltitle=item.title))
 
     return itemlist
@@ -323,7 +323,7 @@ def play(item):
         if len(key) > 2:
             thumbnail = key[2]
         if key[1] != "":
-            subtitle = "http://www.pelispedia.tv/Pe_Player_Html5/bajarsub.php?sub=%s" % key[1]
+            subtitle = "{host}/sub/{sub}.srt".format(host=HOST, sub=key[1])
         if "Player_Html5" in item.url:
             url = "http://www.pelispedia.tv/Pe_Player_Html5/pk/pk/plugins/protected.php"
             post = "fv=20&url="+urllib.quote(key[0])+"&sou=pic"
