@@ -217,7 +217,6 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
         
         #Obtenemos las condiciones
         conditions =  re.compile("(!?eq|!?gt|!?lt)?\(([^,]+),[\"|']?([^)|'|\"]*)['|\"]?\)[ ]*([+||])?").findall(cond)
-        logger.debug(self.controls[index]["id"])
         for operator, id, value, next in conditions:
           #El id tiene que ser un numero, sino, no es valido y devuelve False
           try:
