@@ -96,7 +96,7 @@ def settingCanal(item):
 
         list_controls.append(control)
                 
-    return platformtools.show_channel_settings(list_controls=list_controls, caption= "Canales incluidos en la búsqueda global", cb="save_settings", item=item)
+    return platformtools.show_channel_settings(list_controls=list_controls, caption= "Canales incluidos en la búsqueda global", callback="save_settings", item=item)
     
 def save_settings(item,dict_values):
   for v in dict_values:
@@ -137,9 +137,9 @@ def searchbycat(item):
                       'visible': True}    
     list_controls.append(control)
                 
-    return platformtools.show_channel_settings(list_controls=list_controls, caption= "Elegir categorías", cb="cb", item=item)
+    return platformtools.show_channel_settings(list_controls=list_controls, caption= "Elegir categorías", callback="search_cb", item=item)
 
-def cb(item,values=""):
+def search_cb(item,values=""):
     cat = []
     for c in values:
       if values[c]:
@@ -206,8 +206,7 @@ def channel_search(search_results, channel_parameters,tecleado):
 # Esta es la función que realmente realiza la búsqueda
 def do_search(item, categories=[]):
     multithread = config.get_setting("multithread","buscador")
-    modes = ["Todo junto", "Por canales"]
-    result_mode = modes.index(config.get_setting("result_mode","buscador"))
+    result_mode = config.get_setting("result_mode","buscador")
     logger.info("pelisalacarta.channels.buscador do_search")
 
     tecleado = item.extra
@@ -331,7 +330,7 @@ def do_search(item, categories=[]):
 
 def save_search(text):
 
-    saved_searches_limit = int(config.get_setting("saved_searches_limit","buscador"))
+    saved_searches_limit = (10, 20, 30, 40, )[int(config.get_setting("saved_searches_limit", "buscador"))]
 
     infile= os.path.join(config.get_data_path(), "saved_searches.txt")
     if os.path.exists(infile):
