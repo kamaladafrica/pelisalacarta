@@ -58,7 +58,7 @@ def novedades(item):
             #logger.info(scrapedurl)
             scrapedthumbnail = scrapertools.get_match(match,'<img src="(.*?)"')
             #logger.info(scrapedthumbnail)
-            scrapedplot = scrapertools.get_match(match,'<p class="pm-video-attr-desc">(.*?)</p>')
+            scrapedplot = scrapertools.find_single_match(match,'<p class="pm-video-attr-desc">(.*?)</p>')
             #scrapedplot = scrapertools.htmlclean(scrapedplot)
             scrapedplot = scrapertools.entityunescape(scrapedplot)
             #logger.info(scrapedplot)
