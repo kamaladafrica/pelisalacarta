@@ -39,14 +39,14 @@ def mainlist(item):
 def peliculas(item):
     logger.info("pelisalacarta.channels.biblioteca peliculas")
 
-    return library.get_movies(item.clone(element=2, action="play_from_library"))
+    return library.get_movies(item.clone(element=2))
 
 
 def series(item):
     logger.info("pelisalacarta.channels.biblioteca series")
 
     if hasattr(item, "element"):
-        new_item = item.clone(action="play_from_library", url=item.url)
+        new_item = item
     else:
         new_item = item.clone(element=1)
 
