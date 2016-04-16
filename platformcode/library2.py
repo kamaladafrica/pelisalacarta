@@ -218,7 +218,28 @@ def get_movies(item):
 
     aux_list = next(os.walk(path))[item.element]
     for i in aux_list:
-        itemlist.append(Item(channel=item.channel, action=item.action, title=i, element=2, path=i))
+        url = ""
+        channel = item.channel
+        mode_info = "movie"
+        action = item.action
+
+        if ".strm" in i:
+            data = read_file(os.path.join(path, i))
+            begin = data.find("channel=")
+            end = data.find("&", begin)
+            channel = data[begin+8:end]
+            channel = urllib.unquote_plus(channel)
+
+            begin = data.find("url=")
+            end = data.find("&", begin)
+            url = data[begin+4:end]
+            url = urllib.unquote_plus(url)
+            mode_info = "episode"
+            action = "findvideos" # se deberia obtener al insertar en la biblioteca es el action original del canal
+
+        new_item = Item(channel=channel, action=action, title=i, element=2, path=i, url=url)
+        # new_item.infoLabels = get_info_labels(new_item, mode_info)
+        itemlist.append(new_item)
 
     return itemlist
 
@@ -234,8 +255,10 @@ def get_tvshows(item):
     aux_list = next(os.walk(path))[item.element]
     for i in aux_list:
         url = ""
-        folder = True
         channel = item.channel
+        mode_info = "tvshow"
+        action = item.action
+
         if ".strm" in i:
             data = read_file(os.path.join(path, i))
             begin = data.find("channel=")
@@ -247,10 +270,12 @@ def get_tvshows(item):
             end = data.find("&", begin)
             url = data[begin+4:end]
             url = urllib.unquote_plus(url)
-            folder = False
+            mode_info = "episode"
+            action = "findvideos"
 
-        itemlist.append(Item(channel=channel, action=item.action, title=i, element=2, path=i, url=url,
-                             folder=folder))
+        new_item = Item(channel=channel, action=action, title=i, element=2, path=i, url=url)
+        # new_item.infoLabels = get_info_labels(new_item, mode_info)
+        itemlist.append(new_item)
 
     return itemlist
 

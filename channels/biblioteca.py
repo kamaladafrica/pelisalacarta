@@ -8,6 +8,7 @@
 from core import config
 from core import logger
 from core.item import Item
+
 try:
     from platformcode import library2 as library
 except ImportError:
@@ -23,7 +24,7 @@ def isGeneric():
 
 def mainlist(item):
     logger.info("pelisalacarta.channels.biblioteca mainlist")
-   
+
     itemlist = list()
     if library:
         itemlist.append(Item(channel=__channel__, action="peliculas", title="Películas"))
@@ -38,7 +39,7 @@ def mainlist(item):
 def peliculas(item):
     logger.info("pelisalacarta.channels.biblioteca peliculas")
 
-    return library.get_movies(item.clone(element=2, action="mainlist"))
+    return library.get_movies(item.clone(element=2, action="play_from_library"))
 
 
 def series(item):
@@ -49,6 +50,7 @@ def series(item):
     else:
         new_item = item.clone(element=1)
 
+    logger.info("new_item {}".format(new_item.tostring()))
     return library.get_tvshows(new_item)
 
 
