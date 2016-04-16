@@ -82,6 +82,7 @@ class Client(object):
             self._monitor.add_listener(self.print_status)
         self._monitor.add_listener(self._check_meta)
         self._monitor.add_listener(self.save_state)
+        self._monitor.add_listener(self.priorize_start_file)
         if self.auto_shutdown:
             self._monitor.add_listener(self._auto_shutdown)
         self._dispatcher=Dispatcher(self)
@@ -155,6 +156,7 @@ class Client(object):
         if alert_type == 'read_piece_alert' and self.file:
             self.file.update_piece(alert.piece, alert.buffer)
             
+            
     def _check_meta(self):
         if self.status.state>=3 and  self.status.state <= 5 and not self.has_meta:
 
@@ -197,8 +199,21 @@ class Client(object):
         fmap=self.meta.map_file(f.index, 0,1)
         self.file=File(f.path, self.temp_path, f.index, f.size, fmap, self.meta.piece_length(), self)
         self.prioritize_file()
-        for x in range(self.buffer_size):
-            self.prioritize_piece(x,x)
+        
+    def priorize_start_file(self):
+        #Si tenemos un archivo seleccionado, pero no hay conexion, priorizamos el inicio del archivo
+        if self.file and not self.file.cursor:
+          for x in range(self.file.first_piece,self.file.last_piece):
+
+            if not self._th.have_piece(x):
+                for y in range(x,x+self.buffer_size):
+                  if y == x+self.buffer_size-1 and not self._th.have_piece(self.file.last_piece):
+                    self.prioritize_piece(self.file.last_piece,y-x)
+                  else:
+                    self.prioritize_piece(y,y-x)
+                break
+            
+        
 
 
 
@@ -230,21 +245,9 @@ class Client(object):
 
 
     def download_torrent(self,url):
-        import urllib2
-        from StringIO import StringIO
-        import gzip
-
-        request = urllib2.Request(url)
-        request.add_header('Accept-encoding', 'gzip')
-        request.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1')
-        response = urllib2.urlopen(request)
-        if response.info().get('Content-Encoding') == 'gzip':
-            buf = StringIO( response.read())
-            f = gzip.GzipFile(fileobj=buf)
-            data = f.read()
-            return data
-        else:
-            data = response.read()
+        from core import scrapertools
+        
+        data = scrapertools.downloadpage(url)
         return data
 
 
@@ -359,7 +362,8 @@ class Client(object):
                 s.buffer = int(percent)
 
             elif self.file:
-                percent = len([x for x in range(self.buffer_size ) if self._th.have_piece(x)])
+                bp = [True if (x == self.buffer_size -1 and self._th.have_piece(self.file.last_piece)) or (x < self.buffer_size -1 and self._th.have_piece(x)) else False for x in range(self.buffer_size ) ]
+                percent = len([a for a in bp if a == True])
                 percent = percent * 100 / self.buffer_size
                 s.buffer = int(percent)
 

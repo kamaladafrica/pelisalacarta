@@ -76,7 +76,7 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
                     self.server.file=client.file
                     break
 
-        while not self.server._client.meta:
+        while not self.server._client.has_meta:
             time.sleep(1)
         if self.server.file and urllib.unquote(url)=='/'+self.server.file.path:
             self.offset=0
