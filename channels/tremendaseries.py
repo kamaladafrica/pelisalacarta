@@ -23,9 +23,13 @@ __title__ = "Tremenda Series"
 __language__ = "ES"
 __adult__ = "false"
 
-#Pasar a configuracion del canal
-__modo_grafico__ = True 
-__perfil__= 1
+# Configuracion del canal
+try:
+    __modo_grafico__ = config.get_setting('modo_grafico',__channel__)
+    __perfil__= int(config.get_setting('perfil',__channel__))
+except:
+    __modo_grafico__ = True 
+    __perfil__= 1
 
 host ="http://tremendaseries.com/"
 
@@ -124,12 +128,12 @@ def listadoTemporadas(item):
     itemlist = []
     
     data = re.sub(r"\n|\r|\t|\s{2}|(<!--.*?-->)","",scrapertools.cache_page(item.url))
-    patron = '<div class="tit_enlaces"><span class="icon-play3"(.*?)<div class="addthis_sharing_toolbox"'
-    logger.debug(item.url)
+    patron = '<div class="tit_enlaces"><ul>(.*?)<div class="addthis_sharing_toolbox"'
     data = scrapertools.find_single_match(data,patron)
-    patron  = 'ico_enlaces"></span><h2[^>]+>([^<]+)'
+    logger.debug(data) 
+    patron  = '<a href="javascript:void\(\);">([^<]+)<br>'
     matches = scrapertools.find_multiple_matches(data,patron)
-    
+
     for scrapedtitle in matches:
         temporada = scrapertools.find_single_match(scrapedtitle, '(\d+)')
         newItem= item.clone(title= scrapedtitle, text_color= color1, action="listadoCapitulos", extra=temporada)
@@ -163,7 +167,7 @@ def listadoCapitulos(item):
     conEnlaces= False
     
     data = re.sub(r"\n|\r|\t|\s{2}|(<!--.*?-->)","",scrapertools.cache_page(item.url))
-    patron = '<div class="tit_enlaces"><span class="icon-play3"(.*?)<div class="addthis_sharing_toolbox"'
+    patron = '<div class="tit_enlaces"><ul>(.*?)<div class="addthis_sharing_toolbox"'
     
     data = scrapertools.find_single_match(data,patron)
     patron  = '<a href="([^"]+).*?' #url

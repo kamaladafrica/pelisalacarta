@@ -125,9 +125,6 @@ def addnewvideo(item, IsPlayable='false', totalItems = 0):
         pass
 
     itemurl = '%s?%s' % ( sys.argv[ 0 ] , item.tourl())
-                    urllib.quote_plus( item.url ) , urllib.quote_plus( item.thumbnail ) , urllib.quote_plus( item.plot ) , urllib.quote_plus( item.extra ) , urllib.quote_plus( item.show ), 
-                    urllib.quote_plus( item.hasContentDetails ), urllib.quote_plus( item.contentTitle ), urllib.quote_plus( item.contentThumbnail ), urllib.quote_plus( item.contentPlot ),
-                    urllib.quote_plus(repr(item.infoLabels)))
                     
     if item.totalItems == 0:
         ok = xbmcplugin.addDirectoryItem( handle = pluginhandle, url=itemurl, listitem=listitem, isFolder=False)
@@ -780,10 +777,7 @@ def renderItems(itemlist, item, isPlayable='false'):
             else:
                 if config.get_setting("player_mode")=="1": # SetResolvedUrl debe ser siempre "isPlayable = true"
                     item.isPlayable = 'true'
-                addnewvideo(item) 
-                    isPlayable = "true"
-
-                addnewvideo( item, IsPlayable=isPlayable, totalItems = len(itemlist))
+                addnewvideo( item, IsPlayable=item.isPlayable, totalItems = len(itemlist))
                 
             if item.viewmode!="list":
                 viewmode = item.viewmode

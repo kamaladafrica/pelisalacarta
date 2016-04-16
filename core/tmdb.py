@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+ï»¿# -*- coding: utf-8 -*-
 #--------------------------------------------------------------------------------------------------------------------------------------------
 import urllib2
 import traceback
@@ -22,7 +22,7 @@ from core import logger
 #       
 #       Obtener datos basicos de una pelicula: 
 #           Antes de llamar al metodo set_infoLabels el titulo a buscar debe estar en item.fulltitle 
-#           o en item.contentTitle y el año en item.infoLabels['year'].
+#           o en item.contentTitle y el aÃ±o en item.infoLabels['year'].
 #           
 #       Obtener datos basicos de una serie: 
 #           Antes de llamar al metodo set_infoLabels el titulo a buscar debe estar en item.show o en item.contentSerieName.
@@ -341,12 +341,12 @@ def infoLabels_tostring(item, separador="\n"):
 #   Scraper para pelisalacarta, palco y otros plugin de XBMC/Kodi basado en el Api de https://www.themoviedb.org/
 #   version 1.4:
 #       - Documentada limitacion de uso de la API (ver mas abajo).
-#       - Añadido metodo get_temporada()
+#       - AÃ±adido metodo get_temporada()
 #   version 1.3:
 #       - Corregido error al devolver None el path_poster y el backdrop_path
 #       - Corregido error que hacia que en el listado de generos se fueran acumulando de una llamada a otra
-#       - Añadido metodo get_generos()
-#       - Añadido parametros opcional idioma_alternativo al metodo get_sinopsis()
+#       - AÃ±adido metodo get_generos()
+#       - AÃ±adido parametros opcional idioma_alternativo al metodo get_sinopsis()
 #
 #
 #   Uso:
@@ -357,7 +357,7 @@ def infoLabels_tostring(item, separador="\n"):
 #            tipo: ("movie" o "tv") Tipo de resultado buscado peliculas o series. Por defecto "movie"
 #            (opcional) idioma_busqueda: (str) codigo del idioma segun ISO 639-1
 #            (opcional) include_adult: (bool) Se incluyen contenidos para adultos en la busqueda o no. Por defecto 'False'
-#            (opcional) year: (str) Año de lanzamiento.
+#            (opcional) year: (str) AÃ±o de lanzamiento.
 #            (opcional) page: (int) Cuando hay muchos resultados para una busqueda estos se organizan por paginas. 
 #                            Podemos cargar la pagina que deseemos aunque por defecto siempre es la primera.
 #        Return:
@@ -489,7 +489,7 @@ class Tmdb(object):
             return None
         try:    
             try:
-                from core import jsontools # 1ª opcion utilizar jsontools.py ...
+                from core import jsontools # 1Âª opcion utilizar jsontools.py ...
                 return jsontools.load_json(response_body)
             except:
                 import json # ... y si falla probar con el json incluido
@@ -700,9 +700,9 @@ class Tmdb(object):
         #       size: ("w45", "w92", "w154", "w185", "w300", "w342", "w500", "w600", "h632", "w780", "w1280", "original") 
         #               Indica la anchura(w) o altura(h) de la imagen a descargar. Por defecto "original"
         #   Return:
-        #       Si el tipo_respuesta es "list" devuelve un listado con todas las urls de las imagenes tipo poster del tamaño especificado. 
-        #       Si el tipo_respuesta es "str" devuelve la url de la imagen tipo poster, mas valorada, del tamaño especificado.
-        #       Si el tamaño especificado no existe se retornan las imagenes al tamaño original.
+        #       Si el tipo_respuesta es "list" devuelve un listado con todas las urls de las imagenes tipo poster del tamaÃ±o especificado. 
+        #       Si el tipo_respuesta es "str" devuelve la url de la imagen tipo poster, mas valorada, del tamaÃ±o especificado.
+        #       Si el tamaÃ±o especificado no existe se retornan las imagenes al tamaÃ±o original.
         #--------------------------------------------------------------------------------------------------------------------------------------------
         ret=[]
         if not size in ("w45", "w92", "w154", "w185", "w300", "w342", "w500", "w600", "h632", "w780", "w1280", "original"): 
@@ -726,7 +726,7 @@ class Tmdb(object):
             for i in self.result['images_posters']:
                 imagen_path= i['file_path']
                 if size!= "original":
-                    # No podemos pedir tamaños mayores que el original
+                    # No podemos pedir tamaÃ±os mayores que el original
                     if size[1]== 'w' and int(imagen['width']) < int(size[1:]): size="original"
                     elif size[1]== 'h' and int(imagen['height']) < int(size[1:]): size="original"
                 ret.append('http://image.tmdb.org/t/p/' + size + imagen_path)
@@ -742,9 +742,9 @@ class Tmdb(object):
         #       size: ("w45", "w92", "w154", "w185", "w300", "w342", "w500", "w600", "h632", "w780", "w1280", "original") 
         #               Indica la anchura(w) o altura(h) de la imagen a descargar. Por defecto "original"
         #   Return:
-        #       Si el tipo_respuesta es "list" devuelve un listado con todas las urls de las imagenes tipo backdrop del tamaño especificado. 
-        #       Si el tipo_respuesta es "str" devuelve la url de la imagen tipo backdrop, mas valorada, del tamaño especificado.
-        #       Si el tamaño especificado no existe se retornan las imagenes al tamaño original.
+        #       Si el tipo_respuesta es "list" devuelve un listado con todas las urls de las imagenes tipo backdrop del tamaÃ±o especificado. 
+        #       Si el tipo_respuesta es "str" devuelve la url de la imagen tipo backdrop, mas valorada, del tamaÃ±o especificado.
+        #       Si el tamaÃ±o especificado no existe se retornan las imagenes al tamaÃ±o original.
         #--------------------------------------------------------------------------------------------------------------------------------------------
         ret=[]
         if not size in ("w45", "w92", "w154", "w185", "w300", "w342", "w500", "w600", "h632", "w780", "w1280", "original"): 
@@ -768,7 +768,7 @@ class Tmdb(object):
             for i in self.result['images_backdrops']:
                 imagen_path= i['file_path']
                 if size!= "original":
-                    # No podemos pedir tamaños mayores que el original
+                    # No podemos pedir tamaÃ±os mayores que el original
                     if size[1]== 'w' and int(imagen['width']) < int(size[1:]): size="original"
                     elif size[1]== 'h' and int(imagen['height']) < int(size[1:]): size="original"
                 ret.append('http://image.tmdb.org/t/p/' + size + imagen_path)
@@ -782,7 +782,7 @@ class Tmdb(object):
         #   Parametros:
         #       tipo: ("hdclearlogo", "poster",	"banner", "thumbs",	"hdclearart", "clearart", "background",	"clearlogo", "characterart", "seasonthumb", "seasonposter", "seasonbanner", "moviedisc")
         #           Indica el tipo de Art que se desea obtener, segun la web Fanart.tv. Alguno de estos tipos pueden estar solo disponibles para peliculas o series segun el caso. Por defecto "hdclearart"
-        #       (opcional) idioma: (list) Codigos del idioma segun ISO 639-1, "all" (por defecto) para todos los idiomas o "00" para ninguno. Por ejemplo: idioma=["es","00","en"] Incluiria los resultados en español, sin idioma definido y en ingles, en este orden.
+        #       (opcional) idioma: (list) Codigos del idioma segun ISO 639-1, "all" (por defecto) para todos los idiomas o "00" para ninguno. Por ejemplo: idioma=["es","00","en"] Incluiria los resultados en espaÃ±ol, sin idioma definido y en ingles, en este orden.
         #       (opcional solo para series) temporada: (str) Un numero entero que representa el numero de temporada, el numero cero para especiales o "all" para imagenes validas para cualquier temporada. Por defecto "all"
         #   Return: (list)
         #       Retorna una lista con las url de las imagenes segun los parametros de entrada y ordenadas segun las votaciones de Fanart.tv

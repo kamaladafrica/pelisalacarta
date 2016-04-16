@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 # ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para oranline
@@ -22,9 +22,13 @@ __type__ = "generic"
 __title__ = "oranline"
 __language__ = "ES"
 
-#Pasar a configuracion del canal
-__modo_grafico__ = True 
-__perfil__= 0 # 0-2
+# Configuracion del canal
+try:
+    __modo_grafico__ = config.get_setting('modo_grafico',__channel__)
+    __perfil__= int(config.get_setting('perfil',__channel__))
+except:
+    __modo_grafico__ = True 
+    __perfil__= 0
 
 
 DEBUG = config.get_setting("debug")

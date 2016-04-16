@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <channel>
 	<id>oranline</id>
 	<name>Oranline</name>
@@ -23,6 +23,30 @@
 	</categories>
 
 	<settings>
-		<include_in_global_search>true</include_in_global_search>
+		<id>include_in_global_search</id>
+		<type>bool</type>
+		<label>Incluir en busqueda global</label>
+		<default>false</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<id>modo_grafico</id>
+		<type>bool</type>
+		<label>Buscar información extra</label>
+		<default>true</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<id>perfil</id>
+		<type>list</type>
+		<label>Perfil de color</label>
+		<default>1</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+		<lvalues>Perfil 1</lvalues>
+		<lvalues>Perfil 2</lvalues>
+		<lvalues>Perfil 3</lvalues>
 	</settings>
 </channel>

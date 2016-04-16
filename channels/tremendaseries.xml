@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <channel>
 	<id>tremendaseries</id>
 	<name>Tremenda Series</name>
@@ -7,7 +7,6 @@
 	<adult>false</adult>
 	<language>es</language>
 	
-	<include_in_global_search>false</include_in_global_search>
 	
 	<fanart>https://raw.githubusercontent.com/master-1970/resources/master/images/fanart/tremendaseries.jpg</fanart>
 	<thumbnail>https://raw.githubusercontent.com/master-1970/resources/master/images/squares/tremendaseries.png</thumbnail>
@@ -21,3 +20,33 @@
 	<categories>
 		<category>serie</category>
 	</categories>
+	
+	<settings>
+		<id>include_in_global_search</id>
+		<type>bool</type>
+		<label>Incluir en busqueda global</label>
+		<default>false</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<id>modo_grafico</id>
+		<type>bool</type>
+		<label>Buscar información extra</label>
+		<default>true</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<id>perfil</id>
+		<type>list</type>
+		<label>Perfil de color</label>
+		<default>1</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+		<lvalues>Perfil 1</lvalues>
+		<lvalues>Perfil 2</lvalues>
+		<lvalues>Perfil 3</lvalues>
+	</settings>
+	
+</channel>
