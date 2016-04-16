@@ -34,7 +34,7 @@
 		<id>result_mode</id>
 		<type>list</type>
 		<label>Mostrar resultados:</label>
-    		<default>0</default>
+    	<default>0</default>
 		<enabled>true</enabled>
 		<visible>true</visible>
 		<lvalues>Por canales</lvalues>
@@ -43,8 +43,8 @@
 	<settings>
 		<id>saved_searches_limit</id>
 		<type>list</type>
-		<label>Presets:</label>
-    		<default>0</default>
+		<label>Busquedas guardadas:</label>
+    	<default>0</default>
 		<enabled>true</enabled>
 		<visible>true</visible>
 		<lvalues>10</lvalues>

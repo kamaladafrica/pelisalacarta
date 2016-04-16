@@ -304,7 +304,7 @@ def do_search(item, categories=[]):
     for channel in sorted(search_results.keys()):
       for search in search_results[channel]:
         total+= len(search["itemlist"])
-        if result_mode ==1:
+        if result_mode ==0:
             title = channel
             if len(search_results[channel]) > 1:
               title += " [" + search["item"].title.strip() + "]"
@@ -320,8 +320,8 @@ def do_search(item, categories=[]):
   
   
   
-    title="[COLOR yellow]Buscando: '%s' | Encontrado: %d vídeos | Tiempo: %2.f segundos[/COLOR]" % (tecleado,total, time.time()-start_time)
-    itemlist.insert(0,Item(title=title))
+    title="Buscando: '%s' | Encontrado: %d vídeos | Tiempo: %2.f segundos" % (tecleado,total, time.time()-start_time)
+    itemlist.insert(0,Item(title=title, color='yellow'))
 
     progreso.close()
 
@@ -330,45 +330,32 @@ def do_search(item, categories=[]):
 
 def save_search(text):
 
-    saved_searches_limit = (10, 20, 30, 40, )[int(config.get_setting("saved_searches_limit", "buscador"))]
+    saved_searches_limit = int((10, 20, 30, 40, )[int(config.get_setting("saved_searches_limit", "buscador"))])
 
-    infile= os.path.join(config.get_data_path(), "saved_searches.txt")
-    if os.path.exists(infile):
-        f = open(infile, "r")
-        saved_searches_list = f.readlines()
-        f.close()
-    else:
-        saved_searches_list = []
-        
+    saved_searches_list = list(config.get_setting("saved_searches_list", "buscador"))
+
     if (text + "\n") in saved_searches_list:
         saved_searches_list.remove(text+ "\n")
         
     saved_searches_list.insert(0,text + "\n")
-
-    f = open(infile, "w")
-    f.writelines(saved_searches_list)
-    f.close()
+    
+    
+    config.set_setting("saved_searches_list", saved_searches_list[:saved_searches_limit], "buscador")
 
 
 def clear_saved_searches(item):
-
-    f = open(os.path.join(config.get_data_path(), "saved_searches.txt"), "w")
-    f.write("")
-    f.close()
-    platformtools.dialog_ok("Buscador","Búsquedas borradas correctamente")
+    
+    config.set_setting("saved_searches_list", list(), "buscador")
 
 
 def get_saved_searches():
 
-    if os.path.exists(os.path.join(config.get_data_path(), "saved_searches.txt")):
-        f = open(os.path.join(config.get_data_path(), "saved_searches.txt"), "r")
-        saved_searches_list = f.readlines()
-        f.close()
-    else:
-        saved_searches_list = []
-
+    saved_searches_list = list(config.get_setting("saved_searches_list", "buscador"))
+    
     trimmed = []
     for saved_search_text in saved_searches_list:
         trimmed.append(saved_search_text.strip())
     
     return trimmed
+    
+    
