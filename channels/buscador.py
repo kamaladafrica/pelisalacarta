@@ -334,28 +334,21 @@ def save_search(text):
 
     saved_searches_list = list(config.get_setting("saved_searches_list", "buscador"))
 
-    if (text + "\n") in saved_searches_list:
-        saved_searches_list.remove(text+ "\n")
+    if text in saved_searches_list:
+        saved_searches_list.remove(text)
         
-    saved_searches_list.insert(0,text + "\n")
-    
+    saved_searches_list.insert(0,text)
     
     config.set_setting("saved_searches_list", saved_searches_list[:saved_searches_limit], "buscador")
-
 
 def clear_saved_searches(item):
     
     config.set_setting("saved_searches_list", list(), "buscador")
+    platformtools.dialog_ok("Buscador","Búsquedas borradas correctamente")
 
 
 def get_saved_searches():
 
-    saved_searches_list = list(config.get_setting("saved_searches_list", "buscador"))
-    
-    trimmed = []
-    for saved_search_text in saved_searches_list:
-        trimmed.append(saved_search_text.strip())
-    
-    return trimmed
+    return list(config.get_setting("saved_searches_list", "buscador"))
     
     
