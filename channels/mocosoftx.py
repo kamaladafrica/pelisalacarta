@@ -40,7 +40,6 @@ def isGeneric():
     return True
 
 def login():
-
     # Averigua el id de sesión
     data = scrapertools.cache_page("http://mocosoftx.com/foro/login/")
     cur_session_id = scrapertools.get_match(data,'form action="[^"]+" name="frmLogin" id="frmLogin" method="post" accept-charset="ISO-8859-1"  onsubmit="hashLoginPassword\(this, \'([a-z0-9]+)\'')
@@ -48,8 +47,8 @@ def login():
     logger.info("cur_session_id="+cur_session_id)
 
     # Calcula el hash del password
-    email = config.get_setting("mocosoftxuser")
-    password = config.get_setting("mocosoftxpassword")
+    email = config.get_setting("mocosoftxuser","mocosoftx")
+    password = config.get_setting("mocosoftxpassword","mocosoftx")
     logger.info("email="+email)
     logger.info("password="+password)
     
@@ -85,17 +84,21 @@ def mainlist(item):
     logger.info("pelisalacarta.channels.mocosoftx mainlist")
     itemlist = []
     
-    if config.get_setting("mocosoftxaccount")!="true":
-        itemlist.append( Item( channel=__channel__ , title="Habilita tu cuenta en la configuración..." , action="" , url="" , folder=False ) )
+    if config.get_setting("mocosoftxuser","mocosoftx")=="":
+        itemlist.append( Item( channel=__channel__ , title="Habilita tu cuenta en la configuración..." , action="settingCanal" , url="") )
     else:
         if login():
             item.url = "http://mocosoftx.com/foro/forum/"
-            return foro(item)
+            itemlist = foro(item)
+            itemlist.append( Item(channel=__channel__, action="settingCanal"    , title="Configuración..."     , url="" ))
         else:
             itemlist.append( Item( channel=__channel__ , title="Cuenta incorrecta, revisa la configuración..." , action="" , url="" , folder=False ) )
 
     return itemlist
 
+def settingCanal(item):           
+    return platformtools.show_channel_settings()
+    
 def foro(item):
     logger.info("pelisalacarta.channels.mocosoftx foro")
     itemlist = []

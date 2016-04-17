@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <channel>
     <id>cinehanwer</id>
     <name>Cinehanwer</name>
 
     <active>true</active>
-    <adult>false</version>
+    <adult>false</adult>
     <language>es</language>
 
     <fanart></fanart>
@@ -21,6 +21,11 @@
     </categories>
 
     <settings>
-        <include_in_global_search>true</include_in_global_search>
-    </settings>
+		<id>include_in_global_search</id>
+		<type>bool</type>
+		<label>Incluir en busqueda global</label>
+		<default>false</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
 </channel>

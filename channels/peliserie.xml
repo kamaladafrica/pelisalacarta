@@ -5,7 +5,7 @@
 	<language>es</language>
 	<update_url></update_url>
 	<active>false</active>
-	<include_in_global_search>false</include_in_global_search>
+	<include_in_global_search>disabled</include_in_global_search>
 	<version>3</version>
 	<adult>false</adult>
 	<date>18/03/2015</date>

@@ -6,7 +6,8 @@
 	<active>true</active>
 	<adult>false</adult>
 	<language>es</language>
-
+	<include_in_global_search>false</include_in_global_search>
+		
 	<fanart></fanart>
 	<thumbnail>http://media.tvalacarta.info/pelisalacarta/squares/elitetorrent.png</thumbnail>
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/elitetorrent.png</bannermenu>
@@ -23,8 +24,4 @@
 		<category>documentary</category>
 		<category>vos</category>
 	</categories>
-
-	<settings>
-		<include_in_global_search>false</include_in_global_search>
-	</settings>
 </channel>

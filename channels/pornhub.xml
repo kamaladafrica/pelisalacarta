@@ -6,7 +6,8 @@
 	<active>true</active>
 	<adult>true</adult>
 	<language>es</language>
-
+	<include_in_global_search>disabled</include_in_global_search>
+	
 	<fanart></fanart>
 	<thumbnail>http://s22.postimg.org/5lzcocfqp/pornhub_logo.jpg</thumbnail>
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/pornhub.png</bannermenu>
@@ -20,8 +21,4 @@
 		<category>adult</category>
 		<category>movie</category>
 	</categories>
-
-	<settings>
-		<include_in_global_search>false</include_in_global_search>
-	</settings>
 </channel>

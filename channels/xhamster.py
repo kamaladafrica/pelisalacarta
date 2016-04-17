@@ -44,8 +44,14 @@ def search(item,texto):
     tecleado = texto.replace( " ", "+" )
     item.url = item.url % tecleado
     item.extra = "buscar"
-    return videos(item)
-
+    try:
+        return videos(item)
+    # Se captura la excepción, para no interrumpir al buscador global si un canal falla
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error( "%s" % line )
+        return []
 # SECCION ENCARGADA DE BUSCAR
 
 def videos(item):
