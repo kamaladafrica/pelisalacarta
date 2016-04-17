@@ -40,31 +40,7 @@ def getmainlist(preferred_thumb=""):
 # TODO: (3.1) Pasar el código específico de XBMC al laucher
 def mainlist(params,url,category):
     logger.info("channelselector.mainlist")
-<<<<<<< HEAD
-
-    # Verifica actualizaciones solo en el primer nivel
-    if config.get_platform()!="boxee":
-
-        try:
-            from core import updater
-        except ImportError:
-            logger.info("channelselector.mainlist No disponible modulo actualizaciones")
-        else:
-            if config.get_setting("updatecheck2") == "true":
-                logger.info("channelselector.mainlist Verificar actualizaciones activado")
-                try:
-                    updater.checkforupdates()
-                except:
-                    from platformcode import platformtools
-                    platformtools.dialog_ok("No se puede conectar","No ha sido posible comprobar","si hay actualizaciones")
-                    logger.info("channelselector.mainlist Fallo al verificar la actualización")
-                    pass
-            else:
-                logger.info("channelselector.mainlist Verificar actualizaciones desactivado")
-
-=======
     
->>>>>>> develop
     itemlist = getmainlist()
     #Se devuelve el itemlist para que xbmctools se encarge de mostrarlo
     return itemlist
