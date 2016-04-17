@@ -545,7 +545,124 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
         if item.subtitle != "":
             xbmc.sleep(2000)
             xbmc.Player().setSubtitles(item.subtitle)
+    
+    #Movido del conector "torrent" aqui
+    elif item.server=="torrent":
+        
+        #Opciones disponibles para Reproducir torrents
+        torrent_options = []
+        torrent_options.append(["Cliente interno (necesario libtorrent)"])
+        torrent_options.append(["Cliente interno MCT (necesario libtorrent)"])
+        
+        #Plugins externos se pueden añadir otros
+        if xbmc.getCondVisibility('System.HasAddon("plugin.video.xbmctorrent")'):
+          torrent_options.append(["Plugin externo: xbmctorrent","plugin://plugin.video.xbmctorrent/play/%s"])
+        if xbmc.getCondVisibility('System.HasAddon("plugin.video.pulsar")'):
+          torrent_options.append(["Plugin externo: pulsar","plugin://plugin.video.pulsar/play?uri=%s"])
+        if xbmc.getCondVisibility('System.HasAddon("plugin.video.quasar")'):
+          torrent_options.append(["Plugin externo: quasar","plugin://plugin.video.quasar/play?uri=%s"])
+        if xbmc.getCondVisibility('System.HasAddon("plugin.video.stream")'):
+          torrent_options.append(["Plugin externo: stream","plugin://plugin.video.stream/play/%s"])
+        if xbmc.getCondVisibility('System.HasAddon("plugin.video.torrenter")'):
+          torrent_options.append(["Plugin externo: torrenter","plugin://plugin.video.torrenter/?action=playSTRM&item.url=%s"])
+        if xbmc.getCondVisibility('System.HasAddon("plugin.video.torrentin")'):
+          torrent_options.append(["Plugin externo: torrentin","plugin://plugin.video.torrentin/?uri=%s&image="])
+           
+      
+        if len(torrent_options)>1:
+          import xbmcgui
+          seleccion = xbmcgui.Dialog().select("Abrir torrent con...", [opcion[0] for opcion in torrent_options])
+        else:
+          seleccion = 0
+          
+        #Plugins externos
+        if seleccion > 1:
+          xbmc.executebuiltin("XBMC.RunPlugin(" + torrent_options[seleccion][1] % (item.url) + ")")
+          
+        if seleccion ==1:
+          from platformcode import mct
+          mct.play( mediaurl, xbmcgui.ListItem("", iconImage=item.thumbnail, thumbnailImage=item.thumbnail), subtitle=item.subtitle )
+        
+        #Reproductor propio (libtorrent)
+        if seleccion == 0:
+          import time
+          import os
+          videourl = None
+          played = False
+          
+          
+          #Importamos el cliente
+          from btserver import Client
+          
+          #Iniciamos el cliente:
+          c = Client(url=mediaurl, is_playing_fnc= xbmc.Player().isPlaying, wait_time=None, timeout=5, temp_path =os.path.join(config.get_data_path(),"torrent") )
 
+          #Mostramos el progreso
+          progreso = xbmcgui.DialogProgress()
+          progreso.create( "Pelisalacarta - Torrent" , "Iniciando...")
+          
+          
+          #Mientras el progreso no sea cancelado ni el cliente cerrado
+          while not progreso.iscanceled() and not c.closed:
+
+            try:
+              #Obtenemos el estado del torrent
+              s = c.status
+              
+              #Montamos las tres lineas con la info del torrent
+              txt = '%.2f%% de %.1fMB %s | %.1f kB/s' % \
+              (s.progress_file, s.file_size, s.str_state, s._download_rate)
+              txt2 =  'S: %d(%d) P: %d(%d) | DHT:%s (%d) | Trakers: %d' % \
+              (s.num_seeds, s.num_complete, s.num_peers, s.num_incomplete, s.dht_state, s.dht_nodes, s.trackers)
+              txt3 = 'Origen Peers TRK: %d DHT: %d PEX: %d LSD %d ' % \
+              (s.trk_peers,s.dht_peers, s.pex_peers, s.lsd_peers)
+              
+              progreso.update(s.buffer,txt, txt2, txt3)
+              
+              
+              time.sleep(1)
+              
+              #Si el buffer se ha llenado y la reproduccion no ha sido iniciada, se inicia
+              if s.buffer == 100 and not played:
+                
+                #Cerramos el progreso
+                progreso.close()
+                
+                #Obtenemos el playlist del torrent
+                videourl = c.get_play_list()
+                
+                #Iniciamos el reproductor
+                playlist = xbmc.PlayList( xbmc.PLAYLIST_VIDEO )
+                playlist.clear()
+                playlist.add( videourl, xlistitem )
+                xbmcPlayer = xbmc.Player()
+                xbmcPlayer.play(playlist)
+                
+                #Marcamos como reproducido para que no se vuelva a iniciar
+                played = True
+                
+                #Y esperamos a que el reproductor se cierre
+                while xbmc.Player().isPlaying():
+                  time.sleep(1)
+                
+                #Cuando este cerrado,  Volvemos a mostrar el dialogo
+                progreso.create( "Pelisalacarta - Torrent" , "Iniciando...")
+
+            except:
+              import traceback
+              logger.info(traceback.format_exc())
+              break
+              
+          progreso.update(100,"Terminando y eliminando datos"," "," ")
+          
+          #Detenemos el cliente
+          if not c.closed:
+            c.stop()
+           
+          #Y cerramos el progreso
+          progreso.close()
+          
+        return
     else:
         logger.info("b7")
         logger.info("player_mode="+config.get_setting("player_mode"))
