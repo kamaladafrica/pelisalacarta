@@ -234,7 +234,6 @@ def generos(item):
 
     return itemlist
 
-
 def idiomas(item):
     logger.info("pelisalacarta.channels.oranline idiomas")
     itemlist = []
@@ -277,7 +276,6 @@ def idiomas(item):
 
     return itemlist
 
-
 def get_main_page(url):
     logger.info("pelisalacarta.channels.oranline get_main_page")
 
@@ -293,13 +291,35 @@ def get_main_page(url):
 
     return data
 
-
 def findvideos(item):
     logger.info("pelisalacarta.channels.oranline findvideos")
     itemlist = []
 
     data = scrapertools.cache_page(item.url)
-    patron = '<p>.*?<span>.*?<img.*?src="(.*?)".*?></span>.*?<span>(.*?)</span>.*?href=.*?href="(.*?)".*?src="(.*?)"'
+    '''
+    <p>
+    <span><img width="29" src="http://www.oranline.com/wp-content/themes/reviewit/images/1.png"></span>      
+    <span>HD-Rip </span>
+    <span><img src="http://www.oranline.com/wp-content/themes/reviewit/images/calidad4.png"></span>
+    <span>ashley</span>
+    <span><a href="#" title="HDRip - 1,63 Gb - CASTELLANO" class="tooltip"><img src="http://www.oranline.com/wp-content/themes/reviewit/images/informacion.png" width="20"></img></a> <a onclick='reportar("reportarpelicula","375879")'><img  src='http://www.oranline.com/wp-content/themes/reviewit/images/tool.png' title="reportar enlace"></img></a></span>
+    <span>
+    <a href="/wp-content/themes/reviewit/enlace.php?id=375879" rel="get:id=10" rev="abcwin[700,580]"><img style="width:103px" src="http://www.oranline.com/wp-content/themes/reviewit/servidores/uploaded.jpg"></img></a></span></p>
+    '''
+    '''
+    <p>
+    <span><img src="http://www.oranline.com/wp-content/themes/reviewit/images/1.png" width="25"></span>      
+    <span>HD-1080 </span>
+    <span><img src="http://www.oranline.com/wp-content/themes/reviewit/images/calidad5.png"></span>
+    <span>Anonymous_xxx</span> 
+    <span><a onclick='reportar("reportarpelicula","505001")'><img  src='http://www.oranline.com/wp-content/themes/reviewit/images/tool.png' title="reportar enlace"></img></a></span>
+    <span>
+    <a href="/wp-content/themes/reviewit/enlace.php?id=505001" rel="get:id=10" rev="abcwin[700,580]"><img style="width:103px" src="http://www.oranline.com/wp-content/themes/reviewit/servidores/powvideo.jpg"></img></a></span></p>
+    '''
+    patron  = '<p[^<]+'
+    patron += '<span[^<]+<img.*?src="([^"]+)[^<]+</span[^<]+'
+    patron += '<span>([^<]+)</span.*?'
+    patron += 'href="([^"]+)"[^<]+<img style="[^"]+" src="([^"]+)"'
     matches2 = re.compile(patron, re.DOTALL).findall(data)
     scrapertools.printMatches(matches2)
 
@@ -316,10 +336,8 @@ def findvideos(item):
         url = urlparse.urljoin(item.url, scrapedurl)
         thumbnail = ""
         plot = ""
-        if DEBUG:
-            logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
-        itemlist.append(Item(channel=__channel__, action="play", title=title, url=url, thumbnail=thumbnail, plot=plot,
-                             folder=True))
+        if DEBUG: logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
+        itemlist.append(Item(channel=__channel__, action="play", title=title, url=url, thumbnail=thumbnail, plot=plot, folder=True))
 
     return itemlist
 
