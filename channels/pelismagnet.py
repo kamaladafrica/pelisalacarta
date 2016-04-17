@@ -6,11 +6,10 @@
 # ------------------------------------------------------------
 import re
 
+from core import jsontools
 from core import logger
 from core import scrapertools
 from core.item import Item
-
-from core import jsontools
 
 __channel__ = "pelismagnet"
 __category__ = "F,S,D"

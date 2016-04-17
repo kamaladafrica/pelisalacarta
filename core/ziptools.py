@@ -4,9 +4,12 @@
 # Zip Tools
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import base64, re, urllib, string, sys, zipfile, os, os.path
-import config
+import os
+import os.path
+import zipfile
+
 import logger
+
 
 class ziptools:
 

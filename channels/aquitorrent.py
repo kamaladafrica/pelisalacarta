@@ -3,14 +3,16 @@
 # pelisalacarta - XBMC Plugin
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os, sys, random
+import os
+import re
+import sys
+import urllib2
+import urlparse
 
-from core import logger
 from core import config
+from core import logger
 from core import scrapertools
 from core.item import Item
-from core import servertools
 
 __channel__ = "aquitorrent"
 __category__ = "F"
@@ -692,14 +694,3 @@ try:
 
 except:
     pass
-
-
-
-
-
-
-
-
-
-
-

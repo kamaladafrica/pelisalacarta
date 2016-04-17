@@ -3,17 +3,13 @@
 # pelisalacarta - XBMC Plugin
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import cookielib
-import urlparse,urllib2,urllib,re
-import os
+import re
 import sys
 
-from core import logger
 from core import config
+from core import logger
 from core import scrapertools
 from core.item import Item
-from core import servertools
-import urllib
 
 __channel__ = "submityouflicks"
 __category__ = "F"

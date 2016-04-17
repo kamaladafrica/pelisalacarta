@@ -5,19 +5,18 @@
 # http://blog.tvalacarta.info/plugin-xbmc/
 #------------------------------------------------------------
 
-import urllib
-import urllib2
 import os
 import re
 import sys
-from core.item import Item
-from core import logger
-from core import config
-from core import scrapertools
+import urllib
+import urllib2
+
 from core import channeltools
-from core import updater
-from platformcode import platformtools
-from platformcode import xbmctools
+from core import config
+from core import logger
+from core import scrapertools
+from core.item import Item
+
 
 def start():
     ''' Primera funcion que se ejecuta al entrar en el plugin.

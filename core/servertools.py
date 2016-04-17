@@ -5,13 +5,11 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import re,sys,os
-import urllib2
+import os
 
-from core import scrapertools
-from core import jsontools as json
 from core import config
 from core import logger
+from core import scrapertools
 
 
 

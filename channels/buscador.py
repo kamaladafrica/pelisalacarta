@@ -4,20 +4,17 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 # ------------------------------------------------------------
 
-import os
 import glob
-import time
-import imp
-import urlparse
+import os
 import re
-import channelselector
+import time
+from threading import Thread
+
+from core import channeltools
 from core import config
 from core import logger
 from core.item import Item
-from core import channeltools
 from platformcode import platformtools
-from threading import Thread
-
 
 __channel__ = "buscador"
 

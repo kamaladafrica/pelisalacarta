@@ -5,11 +5,13 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import urllib2,urllib,re
+import re
+import urllib
+import urllib2
 
-from core import scrapertools
 from core import logger
-from core import config
+from core import scrapertools
+
 
 # Returns an array of possible video url's from the page_url
 def get_video_url( page_url , premium = False , user="" , password="", video_password="" ):

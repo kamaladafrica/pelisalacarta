@@ -2,15 +2,13 @@
 
 import os
 import sys
-import re
-import xbmc
+import urllib
+
 import xbmcgui
 from xbmcaddon import Addon
+
 from core import config
 from core import logger
-from core import scrapertools
-
-import urllib2, urllib, httplib, time
 
 __settings__ = Addon( "plugin.video.pelisalacarta" )
 __addonDir__ = __settings__.getAddonInfo( "path" )

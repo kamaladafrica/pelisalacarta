@@ -4,21 +4,21 @@
 # MCT - Mini Cliente Torrent para pelisalacarta
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
 import os
-import sys
-
-import shutil, tempfile
+import re
+import shutil
+import tempfile
+import urllib
+import urllib2
 
 import libtorrent as lt
-
 import xbmc
 import xbmcgui
 
+from core import config
+from core import scrapertools
 from platformcode import library
 
-from core import scrapertools
-from core import config
 
 def play(url, xlistitem, is_view=None, subtitle=""):
 

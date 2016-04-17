@@ -5,12 +5,11 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import os
-import urlparse,urllib2,urllib,re
+import re
 
-from core import scrapertools
 from core import logger
-from core import config
+from core import scrapertools
+
 
 # Returns an array of possible video url's from the page_url
 def get_video_url( page_url , premium = False , user="" , password="", video_password="" ):
@@ -26,7 +25,7 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
     logger.info("[googlevideo.py] url="+url)
     data = scrapertools.cache_page(url)
     
-    # Extrae el vídeo
+    # Extrae el vï¿½deo
     newpatron = '</script>.*?<a href="(.*?)" title="Click to Download">'
     newmatches = re.compile(newpatron,re.DOTALL).findall(data)
     if len(newmatches)>0:
@@ -37,7 +36,7 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
 
     return video_urls
 
-# Encuentra vídeos del servidor en el texto pasado
+# Encuentra vï¿½deos del servidor en el texto pasado
 def find_videos(data):
     encontrados = set()
     devuelve = []

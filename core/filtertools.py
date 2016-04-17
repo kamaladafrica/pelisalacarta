@@ -9,14 +9,14 @@
 import os
 import string
 import sys
+
 import xbmc
 
 from core import channeltools
 from core import config
-from core import logger
 from core import jsontools
+from core import logger
 from core.item import Item
-
 
 TAG_TVSHOWS = "TVSHOW_FILTER"
 TAG_LANGUAGE = "language"

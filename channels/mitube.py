@@ -5,8 +5,13 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import urlparse,urllib2,urllib,re
-import os, sys,json,time
+import json
+import os
+import re
+import sys
+import time
+import urllib2
+
 from lib import pafy
 
 if sys.version_info[:2] >= (3, 0):
@@ -25,7 +30,6 @@ from core import logger
 from core import config
 from core import scrapertools
 from core.item import Item
-from core import servertools
 
 DEBUG = config.get_setting("debug")
 

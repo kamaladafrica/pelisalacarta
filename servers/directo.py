@@ -5,9 +5,7 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 import re
-import urllib
 
-from core import scrapertools
 from core import logger
 
 # Returns an array of possible video url's from the page_url

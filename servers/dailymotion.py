@@ -4,12 +4,10 @@
 # Conector para dailymotion
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os
+import re
 
-from core import scrapertools
 from core import logger
-from core import config
+from core import scrapertools
 
 DEFAULT_HEADERS = []
 DEFAULT_HEADERS.append( [ "User-Agent" , "Mozilla/5.0 (iPad; CPU OS 6_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10A5355d Safari/8536.25" ] )

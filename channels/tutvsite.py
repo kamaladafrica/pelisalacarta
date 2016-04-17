@@ -4,15 +4,14 @@
 # Canal para buscar en tu.tv
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os
+import re
 import sys
+import urlparse
 
-from core import scrapertools
 from core import config
 from core import logger
+from core import scrapertools
 from core.item import Item
-from core import servertools
 
 __channel__ = "tutvsite"
 __category__ = "G"
@@ -33,22 +32,22 @@ def mainlist(item):
 
     return itemlist
 
-# Al llamarse "search" la función, el launcher pide un texto a buscar y lo añade como parámetro
+# Al llamarse "search" la funciï¿½n, el launcher pide un texto a buscar y lo aï¿½ade como parï¿½metro
 def search(item,texto):
     logger.info("[tutvsite.py] search")
 
     try:
-        # La URL puede venir vacía, por ejemplo desde el buscador global
+        # La URL puede venir vacï¿½a, por ejemplo desde el buscador global
         if item.url=="":
             item.url="http://www.tu.tv/buscar/?str=%s"
     
-        # Reemplaza el texto en la cadena de búsqueda
+        # Reemplaza el texto en la cadena de bï¿½squeda
         item.url = item.url % texto
 
         # Devuelve los resultados
         return list(item)
     
-    # Se captura la excepción, para no interrumpir al buscador global si un canal falla
+    # Se captura la excepciï¿½n, para no interrumpir al buscador global si un canal falla
     except:
         import sys
         for line in sys.exc_info():
@@ -59,7 +58,7 @@ def list(item):
     logger.info("[tutvsite.py] list")
     itemlist=[]
 
-    # Descarga la página
+    # Descarga la pï¿½gina
     data = scrapertools.cachePage(item.url)
 
     # Extrae las entradas (carpetas)
@@ -67,8 +66,8 @@ def list(item):
     <div class="fila clearfix">
     <div class="datos">
     De: <a href="/usuario/avatarenlinea"><img src="http://uimg.tu.tv/imagenes/minis/usuarios/DEFECTO.gif" width="16" height="16" align="absmiddle"/></a> 		<a href="/usuario/avatarenlinea">avatarenlinea</a><br />
-    Categoría: <a href="/categorias/arte-y-animaciones/">Arte y animaciones</a><br />    
-    Añadido: 7/5/2007<br />
+    Categorï¿½a: <a href="/categorias/arte-y-animaciones/">Arte y animaciones</a><br />    
+    Aï¿½adido: 7/5/2007<br />
     <strong>385 votos</strong><br />
     Reproducciones: 238.215 
     </div>

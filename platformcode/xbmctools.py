@@ -6,14 +6,14 @@
 # Modificado por super_berny: inclusion de infoLabels
 #------------------------------------------------------------
 
-import urllib, urllib2
+import os
+import sys
+import urllib
+
 import xbmc
 import xbmcgui
 import xbmcplugin
-import sys
-import os
 
-from core import servertools
 from core import config
 from core import logger
 
@@ -198,7 +198,6 @@ def addnewvideo(item, IsPlayable='false', totalItems = 0):
 
 def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescargas=False,strmfile=False):
     from servers import servertools
-    import sys
     import xbmcgui,xbmc
     
     logger.info("[xbmctools.py] play_video")

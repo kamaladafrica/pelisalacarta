@@ -5,15 +5,18 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import urlparse,urllib2,urllib,re
-import os, sys
+import os
+import re
+import sys
+import urlparse
 
-from core import logger
 from core import config
-from core import scrapertools
 from core import jsontools
+from core import logger
+from core import scrapertools
 from core.item import Item
-from core import servertools
+from platformcode import platformtools
+from servers import servertools
 
 DEBUG = config.get_setting("debug")
 
@@ -50,7 +53,7 @@ def mainlist(item):
         itemlist.append( Item(channel=__channel__, action="menupeliculas" , title="Películas y documentales" , url="" ))
         itemlist.append( Item(channel=__channel__, action="listas_sigues" , title="Listas que sigues"        , url="http://www.pordede.com/lists/following" ))
         itemlist.append( Item(channel=__channel__, action="tus_listas"    , title="Tus listas"               , url="http://www.pordede.com/lists/yours" ))
-        itemlist.append( Item(channel=__channel__, action="listas_sigues" , title="Top listas"               , url="http://www.pordede.com/lists" ))       
+        itemlist.append( Item(channel=__channel__, action="listas_sigues" , title="Top listas"               , url="http://www.pordede.com/lists" ))
         itemlist.append( Item(channel=__channel__, action="settingCanal"    , title="Configuración..."     , url="" ))
     return itemlist
 
@@ -70,7 +73,7 @@ def menuseries(item):
     itemlist.append( Item(channel=__channel__, action="peliculas" , title="Terminadas"           , url="http://www.pordede.com/series/seen" ))
     itemlist.append( Item(channel=__channel__, action="peliculas" , title="Recomendadas"         , url="http://www.pordede.com/series/recommended" ))
     itemlist.append( Item(channel=__channel__, action="search"    , title="Buscar..."            , url="http://www.pordede.com/series" ))
-  
+
     return itemlist
 
 def menupeliculas(item):
@@ -84,14 +87,14 @@ def menupeliculas(item):
     itemlist.append( Item(channel=__channel__, action="peliculas" , title="Vistas"               , url="http://www.pordede.com/pelis/seen" ))
     itemlist.append( Item(channel=__channel__, action="peliculas" , title="Recomendadas"         , url="http://www.pordede.com/pelis/recommended" ))
     itemlist.append( Item(channel=__channel__, action="search"  , title="Buscar..."              , url="http://www.pordede.com/pelis" ))
-  
+
     return itemlist
 
 def generos(item):
     logger.info("pelisalacarta.channels.pordede generos")
 
     headers = DEFAULT_HEADERS[:]
-    
+
     # Descarga la pagina
     data = scrapertools.cache_page(item.url, headers=headers)
     if (DEBUG): logger.info("data="+data)
@@ -101,7 +104,7 @@ def generos(item):
     patron  = '<a class="mediaFilterLink" data-value="([^"]+)" href="([^"]+)">([^<]+)<span class="num">\((\d+)\)</span></a>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     itemlist = []
-    
+
     for textid,scrapedurl,scrapedtitle,cuantos in matches:
         title = scrapedtitle.strip()+" ("+cuantos+")"
         thumbnail = ""
@@ -146,7 +149,7 @@ def buscar(item):
     data = scrapertools.cache_page(item.url,headers=headers)
     if (DEBUG): logger.info("data="+data)
 
-    # Extrae las entradas (carpetas)  
+    # Extrae las entradas (carpetas)
     json_object = jsontools.load_json(data)
     if (DEBUG): logger.info("html="+json_object["html"])
     data = json_object["html"]
@@ -174,13 +177,13 @@ def parse_mixed_results(item,data):
         plot = ""
         #http://www.pordede.com/peli/the-lego-movie
         #http://www.pordede.com/links/view/slug/the-lego-movie/what/peli?popup=1
-      
+
         if "/peli/" in scrapedurl or "/docu/" in scrapedurl:
             sectionStr = "peli" if "/peli/" in scrapedurl else "docu"
             referer = urlparse.urljoin(item.url,scrapedurl)
             url = referer.replace("/{0}/".format(sectionStr),"/links/view/slug/")+"/what/{0}".format(sectionStr)
             if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-            itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, fanart=fanart, viewmode="movie"))        
+            itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, fanart=fanart, viewmode="movie"))
         else:
             referer = item.url
             url = urlparse.urljoin(item.url,scrapedurl)
@@ -212,7 +215,7 @@ def siguientes(item):
     data = scrapertools.cache_page(item.url,headers=headers)
     if (DEBUG): logger.info("data="+data)
 
-    # Extrae las entradas (carpetas)  
+    # Extrae las entradas (carpetas)
     json_object = jsontools.load_json(data)
     if (DEBUG): logger.info("html2="+json_object["html"])
     data = json_object["html"]
@@ -228,7 +231,7 @@ def siguientes(item):
     patron += '<a class="userepiinfo defaultLink" href="([^"]+)">(\d+)x(\d+)'
     matches = re.compile(patron,re.DOTALL).findall(data)
     itemlist = []
-    
+
     #for scrapedurl,scrapedtitle,scrapedthumbnail in matches:
     for scrapedtitle,scrapedthumbnail,scrapedurl,scrapedsession,scrapedepisode in matches:
         title = scrapertools.htmlclean(scrapedtitle)
@@ -253,7 +256,7 @@ def siguientes(item):
 def episodio(item):
     logger.info("pelisalacarta.channels.pordede episodio")
     itemlist = []
-    
+
     headers = DEFAULT_HEADERS[:]
 
     # Descarga la pagina
@@ -271,7 +274,7 @@ def episodio(item):
         # Extrae los episodios
         patron  = '<span class="title defaultPopup" href="([^"]+)"><span class="number">'+episode+' </span>([^<]+)</span>(\s*</div>\s*<span[^>]*><span[^>]*>[^<]*</span><span[^>]*>[^<]*</span></span><div[^>]*><button[^>]*><span[^>]*>[^<]*</span><span[^>]*>[^<]*</span></button><div class="action([^"]*)" data-action="seen">)?'
         matches = re.compile(patron,re.DOTALL).findall(bloque_episodios)
-        
+
         for scrapedurl,scrapedtitle,info,visto in matches:
             visto_string = "[visto] " if visto.strip()=="active" else ""
             numero=episode
@@ -301,7 +304,7 @@ def peliculas(item):
     data = scrapertools.cache_page(item.url,headers=headers)
     if (DEBUG): logger.info("data="+data)
 
-    # Extrae las entradas (carpetas)  
+    # Extrae las entradas (carpetas)
     json_object = jsontools.load_json(data)
     if (DEBUG): logger.info("html="+json_object["html"])
     data = json_object["html"]
@@ -311,7 +314,7 @@ def peliculas(item):
 def episodios(item):
     logger.info("pelisalacarta.channels.pordede episodios")
     itemlist = []
-    
+
     headers = DEFAULT_HEADERS[:]
 
     # Descarga la pagina
@@ -328,7 +331,7 @@ def episodios(item):
         # Extrae los episodios
         patron  = '<span class="title defaultPopup" href="([^"]+)"><span class="number">([^<]+)</span>([^<]+)</span>(\s*</div>\s*<span[^>]*><span[^>]*>[^<]*</span><span[^>]*>[^<]*</span></span><div[^>]*><button[^>]*><span[^>]*>[^<]*</span><span[^>]*>[^<]*</span></button><div class="action([^"]*)" data-action="seen">)?'
         matches = re.compile(patron,re.DOTALL).findall(bloque_episodios)
-        
+
         for scrapedurl,numero,scrapedtitle,info,visto in matches:
             visto_string = "[visto] " if visto.strip()=="active" else ""
             title = visto_string+nombre_temporada.replace("Temporada ", "").replace("Extras", "Extras 0")+"x"+numero+" "+scrapertools.htmlclean(scrapedtitle)
@@ -367,14 +370,14 @@ def parse_listas(item, patron):
     data = scrapertools.cache_page(item.url,headers=headers)
     if (DEBUG): logger.info("data="+data)
 
-    # Extrae las entradas (carpetas)  
+    # Extrae las entradas (carpetas)
     json_object = jsontools.load_json(data)
     if (DEBUG): logger.info("html="+json_object["html"])
     data = json_object["html"]
 
     matches = re.compile(patron,re.DOTALL).findall(data)
     itemlist = []
-    
+
     for scrapedurl,scrapedtitle,scrapeduser,scrapedfichas in matches:
         title = scrapertools.htmlclean(scrapedtitle + ' (' + scrapedfichas + ' fichas, por ' + scrapeduser + ')')
         url = urlparse.urljoin(item.url,scrapedurl) + "/offset/0/loadmedia"
@@ -428,7 +431,7 @@ def lista(item):
     data = scrapertools.cache_page(item.url,headers=headers)
     if (DEBUG): logger.info("data="+data)
 
-    # Extrae las entradas (carpetas)  
+    # Extrae las entradas (carpetas)
     json_object = jsontools.load_json(data)
     if (DEBUG): logger.info("html="+json_object["html"])
     data = json_object["html"]
@@ -445,7 +448,7 @@ def findvideos(item, verTodos=False):
     data = scrapertools.cache_page(item.url,headers=headers)
     if (DEBUG): logger.info("data="+data)
 
-    # Extrae las entradas (carpetas)  
+    # Extrae las entradas (carpetas)
     #json_object = jsontools.load_json(data)
     #if (DEBUG): logger.info("html="+json_object["html"])
     #data = json_object["html"]
@@ -489,7 +492,7 @@ def findvideos(item, verTodos=False):
         if (DEBUG): logger.info("thumb_servidor="+thumb_servidor)
         nombre_servidor = scrapertools.find_single_match(thumb_servidor,"popup_([^\.]+)\.png")
         if (DEBUG): logger.info("nombre_servidor="+nombre_servidor)
-        
+
         title = ("Download " if jdown != '' else "Ver en ")+nombre_servidor+" ("+idioma+") (Calidad "+calidad_video.strip()+", audio "+calidad_audio.strip()+")"
 
         cuenta = []
@@ -581,7 +584,7 @@ def play(item):
         videoitem.thumbnail = item.thumbnail
         videoitem.channel = __channel__
 
-    return itemlist    
+    return itemlist
 
 def checkseen(item):
     logger.info("pelisalacarta.channels.pordede checkseen "+item)
@@ -643,23 +646,23 @@ try:
         """ Create a skinned textbox window """
         def __init__( self, *args, **kwargs):
             pass
-            
+
         def onInit( self ):
             try:
                 self.getControl( 5 ).setText( self.text )
                 self.getControl( 1 ).setLabel( self.title )
             except: pass
-    
+
         def onClick( self, controlId ):
             pass
-    
+
         def onFocus( self, controlId ):
             pass
-    
+
         def onAction( self, action ):
             if action == 7:
                 self.close()
-    
+
         def ask(self, title, text ):
             self.title = title
             self.text = text

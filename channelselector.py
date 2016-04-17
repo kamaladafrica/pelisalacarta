@@ -3,16 +3,15 @@
 # pelisalacarta - XBMC Plugin
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse
-import os
-import sys
-import traceback
 import glob
+import os
+import traceback
+import urlparse
 
+from core import channeltools
 from core import config
 from core import logger
 from core.item import Item
-from core import channeltools
 
 DEBUG = True
 CHANNELNAME = "channelselector"

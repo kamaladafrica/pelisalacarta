@@ -4,15 +4,17 @@
 # Canal para bityouth
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os,sys
+import os
+import re
+import urllib
+import urllib2
+import urlparse
 
-from core import logger
 from core import config
+from core import logger
 from core import scrapertools
-from core import jsontools
 from core.item import Item
-from core import servertools
+
 try:
     import xbmc
     import xbmcgui
@@ -81,7 +83,7 @@ def mainlist(item):
     itemlist.append( Item(channel=__channel__, title="[COLOR skyblue][B]Generos[/B][/COLOR]"      , action="generos", url="http://bityouth.com", thumbnail="http://s6.postimg.org/ybey4gxu9/bityougenerosthum3.png", fanart="http://s18.postimg.org/l4judlx09/bityougenerosfan.jpg"))
     itemlist.append( Item(channel=__channel__, title="[COLOR skyblue][B]Puntuacion[/B][/COLOR]"      , action="scraper", url="http://bityouth.com/more_elements/0/?o=pd", thumbnail="http://s6.postimg.org/n1qtn9i6p/bityoupuntothum4.png", fanart="http://s6.postimg.org/qrh9oof9t/bityoupuntofan.jpg"))
     itemlist.append( Item(channel=__channel__, title="[COLOR skyblue][B]Novedades[/B][/COLOR]" , action="scraper", url="http://bityouth.com/more_elements/0/?o=",  thumbnail="http://s6.postimg.org/bry3sbd5d/bityounovedathum2.png", fanart="http://s6.postimg.org/ys4r4naz5/bityounovedadfan.jpg"))
-    import xbmc, time
+    import xbmc
     if xbmc.Player().isPlaying():
        xbmc.executebuiltin('xbmc.PlayMedia(Stop)')
     SEARCHDESTFILE= os.path.join(xbmc.translatePath('special://userdata/keymaps'), "search.txt")
@@ -735,7 +737,7 @@ def fanart(item):
         
         
         ###Prepara customkeys y borra cuando vuelve
-        import xbmc,time
+        import xbmc
         if not xbmc.Player().isPlaying() and not os.path.exists ( TRAILERDESTFILE ):
             
             TESTPYDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "test.py")
@@ -1088,7 +1090,7 @@ def fanart(item):
 def findvideos(item):
     logger.info("pelisalacarta.bityouth search")
     itemlist = []
-    import xbmc, time
+    import xbmc
     SEARCHDESTFILE= os.path.join(xbmc.translatePath('special://userdata/keymaps'), "search.txt")
     TESTPYDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "test.py")
     KEYMAPDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "customkey.xml")
@@ -1174,7 +1176,7 @@ def findvideos(item):
 def episodios(item):
     logger.info("pelisalacarta.bityouth episodios")
     itemlist = []
-    import xbmc, time
+    import xbmc
     if not xbmc.Player().isPlaying():
         TESTPYDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "test.py")
         KEYMAPDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "customkey.xml")
@@ -1505,7 +1507,7 @@ class TextBox1( xbmcgui.WindowDialog ):
                 
          def onAction(self, action):
              if action == ACTION_SELECT_ITEM or action == ACTION_GESTURE_SWIPE_LEFT:
-                import os, sys
+                import os
                 import xbmc
                 APPCOMMANDDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "customapp.xml")
                 NOBACKDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "noback.xml")
@@ -1623,7 +1625,7 @@ class TextBox2( xbmcgui.WindowDialog ):
         
         def onAction(self, action):
             if action == ACTION_SELECT_ITEM or action == ACTION_GESTURE_SWIPE_LEFT:
-               import os, sys
+               import os
                import xbmc
                APPCOMMANDDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "customapp.xml")
                NOBACKDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "noback.xml")

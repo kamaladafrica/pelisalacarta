@@ -4,15 +4,15 @@
 # Canal para oranline
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 # ------------------------------------------------------------
-import urlparse
 import re
 import sys
+import urlparse
 
-from core import logger
 from core import config
+from core import logger
 from core import scrapertools
-from core.item import Item
 from core import servertools
+from core.item import Item
 
 __channel__ = "oranline"
 __category__ = "F"
@@ -355,8 +355,6 @@ def play(item):
 
 # Verificación automática de canales: Esta función debe devolver "True" si está ok el canal.
 def test():
-    from core import servertools
-    
     # mainlist es "peliculas | documentales"
     mainlist_items = mainlist(Item())
 

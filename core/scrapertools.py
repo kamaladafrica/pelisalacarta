@@ -16,14 +16,17 @@
 # Historial de cambios:
 #------------------------------------------------------------
 
-import urlparse,urllib2,urllib
-import time
 import os
-import config
-import logger
 import re
-import downloadtools
 import socket
+import time
+import urllib
+import urllib2
+import urlparse
+
+import config
+import downloadtools
+import logger
 
 # True - Muestra las cabeceras HTTP en el log
 # False - No las muestra
@@ -736,8 +739,7 @@ def downloadpageGzip(url):
 
     #txheaders =  {'User-Agent':'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
     #              'Referer':'http://www.megavideo.com/?s=signup'}
-    
-    import httplib
+
     parsedurl = urlparse.urlparse(url)
     logger.info("parsedurl="+str(parsedurl))
         

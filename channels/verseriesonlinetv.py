@@ -1,20 +1,22 @@
-    # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os, sys
-
-from core import logger
-from core import config
-from core import scrapertools
-from core.item import Item
-from core import servertools
-from core.scrapertools import decodeHtmlentities as dhe
+import os
+import re
+import sys
+import urllib
+import urllib2
 
 import xbmcgui
 
+from core import config
+from core import logger
+from core import scrapertools
+from core import servertools
+from core.item import Item
+from core.scrapertools import decodeHtmlentities as dhe
 
 __channel__ = "verseriesonlinetv"
 __category__ = "F"
@@ -71,7 +73,7 @@ def mainlist(item):
     logger.info("pelisalacarta.bricocine mainlist")
 
     itemlist = []
-    import xbmc, time
+    import xbmc
     ###Para musica(si hay) y borra customkeys
     if xbmc.Player().isPlaying():
        xbmc.executebuiltin('xbmc.PlayMedia(Stop)')
@@ -94,7 +96,7 @@ def mainlist(item):
         print "No hay customs"
     
     itemlist.append( Item(channel=__channel__, title="[COLOR chartreuse][B]Series[/B][/COLOR]"         , action="scraper", url="http://www.verseriesonline.tv/series", thumbnail="http://s6.postimg.org/6hpa9tzgx/verseriesthumb.png", fanart="http://s6.postimg.org/71zpys3bl/verseriesfan2.jpg"))
-    import xbmc, time
+    import xbmc
     if xbmc.Player().isPlaying():
        xbmc.executebuiltin('xbmc.PlayMedia(Stop)')
     TESTPYDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "test.py")
@@ -300,7 +302,7 @@ def fanart(item):
         
     title_tunes= (translate(title,"en"))
     ###Prepara customkeys
-    import xbmc,time
+    import xbmc
     if not xbmc.Player().isPlaying() and not os.path.exists ( TRAILERDESTFILE ):
             
         TESTPYDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "test.py")
@@ -631,7 +633,7 @@ def temporadas(item):
     
     itemlist = []
     ###Ubicacion Customkey
-    import xbmc, time
+    import xbmc
     SEARCHDESTFILE= os.path.join(xbmc.translatePath('special://userdata/keymaps'), "search.txt")
     TESTPYDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "test.py")
     KEYMAPDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "customkey.xml")
@@ -652,7 +654,7 @@ def temporadas(item):
     data = dhe( scrapertools.cachePage(item.url) )
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
     ###Borra Customkey cuando no hay música
-    import xbmc, time
+    import xbmc
     if not xbmc.Player().isPlaying():
         TESTPYDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "test.py")
         KEYMAPDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "customkey.xml")
@@ -770,7 +772,7 @@ def capitulos(item):
     logger.info("pelisalacarta.verseriesonlinetv capitulos")
     itemlist = []
     ###Borra Customkey si no hay música
-    import xbmc, time
+    import xbmc
     xbmc.executebuiltin('Action(reloadkeymaps)')
     TESTPYDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "test.py")
     if not xbmc.Player().isPlaying() and os.path.exists ( TESTPYDESTFILE ):
@@ -816,7 +818,7 @@ def findvideos(item):
     logger.info("pelisalacarta.verseriesonlinetv findvideos")
     itemlist = []
     ###Borra Customkey si no hay música
-    import xbmc, time
+    import xbmc
     xbmc.executebuiltin('Action(reloadkeymaps)')
     TESTPYDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "test.py")
     if not xbmc.Player().isPlaying() and os.path.exists ( TESTPYDESTFILE ):

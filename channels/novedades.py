@@ -4,13 +4,10 @@
 # Canal para novedades
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
 
-from core import logger
 from core import config
-from core import scrapertools
+from core import logger
 from core.item import Item
-from core import servertools
 
 __channel__ = "novedades"
 __category__ = "F"

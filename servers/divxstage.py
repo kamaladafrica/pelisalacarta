@@ -8,12 +8,10 @@
 # Unwise and main algorithm taken from Eldorado url resolver
 # https://github.com/Eldorados/script.module.urlresolver/blob/master/lib/urlresolver/plugins/divxstage.py
 
-import urlparse,urllib2,urllib,re
-import os
+import re
 
-from core import scrapertools
 from core import logger
-from core import config
+from core import scrapertools
 from core import unwise
 
 def test_video_exists( page_url ):

@@ -5,14 +5,14 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import urlparse,urllib2,urllib,re
-import os, sys
+import re
+import sys
+import urlparse
 
-from core import logger
 from core import config
+from core import logger
 from core import scrapertools
 from core.item import Item
-from core import servertools
 
 __channel__ = "peliculasmx"
 __category__ = "F"
@@ -193,8 +193,6 @@ def search(item,texto):
 
 # Verificación automática de canales: Esta función debe devolver "True" si está ok el canal.
 def test():
-    from core import servertools
-    
     mainlist_items = mainlist(Item())
     novedades_items = peliculas(mainlist_items[0])
 

@@ -1,12 +1,11 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Utilidades para detectar vídeos de los diferentes conectores
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import re,sys
-import urllib2
+import sys
 
 from core import scrapertools
 #from core import jsontools

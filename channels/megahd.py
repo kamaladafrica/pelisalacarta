@@ -4,15 +4,14 @@
 # Canal para megahd
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os
-import sys
+import re
+import urlparse
 
-from core import logger
 from core import config
+from core import logger
 from core import scrapertools
 from core.item import Item
-from core import servertools
+from platformcode import platformtools
 
 __channel__ = "megahd"
 __category__ = "F"
@@ -49,7 +48,7 @@ def login():
     PASSWORD = config.get_setting("megahdpassword",__channel__)
     logger.info("channels.megahd LOGIN="+LOGIN)
     logger.info("channels.megahd PASSWORD="+PASSWORD)
-    
+
     #doForm.hash_passwrd.value = hex_sha1(hex_sha1(doForm.user.value.php_to8bit().php_strtolower() + doForm.passwrd.value.php_to8bit()) + cur_session_id);
     hash_passwrd = scrapertools.get_sha1( scrapertools.get_sha1( LOGIN.lower() + PASSWORD.lower() ) + cur_session_id)
     logger.info("channels.megahd hash_passwrd="+hash_passwrd)
@@ -65,7 +64,7 @@ def login():
 def mainlist(item):
     logger.info("channels.megahd mainlist")
     itemlist = []
-    
+
     if config.get_setting("megahduser",__channel__) == "":
         itemlist.append( Item( channel=__channel__ , title="Habilita tu cuenta en la configuración..." , action="settingCanal" , url="" ) )
     else:
@@ -87,14 +86,14 @@ def foro(item):
     logger.info("channels.megahd foro")
     itemlist=[]
     data = scrapertools.cache_page(item.url)
-    
+
     if '<h3 class="catbg">Subforos</h3>' in data:
         patron = '<a class="subje(.*?)t" href="([^"]+)" name="[^"]+">([^<]+)</a>&nbsp' # HAY SUBFOROS
         action = "foro"
     else:
         patron = '<td class="subject windowbg2">.*?<div >.*?<span id="([^"]+)"> <a href="([^"]+)".*?>([^<]+)</a> </span>'
         action = "findvideos"
-       
+
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedmsg, scrapedurl,scrapedtitle in matches:
             scrapedmsg = scrapedmsg.replace("msg_","msg=")
@@ -105,7 +104,7 @@ def foro(item):
             plot = scrapedmsg
             # Añade al listado
             itemlist.append( Item(channel=__channel__, action=action, title= title, url=url , thumbnail=thumbnail , plot=plot , folder=True) )
-    
+
     # EXTREA EL LINK DE LA SIGUIENTE PAGINA
     patron = '<div class="pagelinks">Páginas:.*?\[<strong>[^<]+</strong>\].*?<a class="navPages" href="(?!\#bot)([^"]+)">[^<]+</a>.*?</div>'
     matches = re.compile(patron,re.DOTALL).findall(data)
@@ -120,7 +119,7 @@ def foro(item):
     return itemlist
 
 
-    
+
 def findvideos(item):
   logger.info("channels.megahd findvideos url="+item.url+", title="+item.title)
 
@@ -128,7 +127,7 @@ def findvideos(item):
   data = scrapertools.cache_page(item.url)
 
   itemlist=[]
-	
+
   if '?action=thankyou;'+item.plot in data:
     logger.info("channels.megahd findvideos thankyou needed")
     item.plot = item.plot.replace("msg=","?action=thankyou;msg=")
@@ -136,7 +135,7 @@ def findvideos(item):
     data = scrapertools.cache_page(item.url)
 
   logger.info("data="+data)
-		
+
   if 'MegaHD' in data:
     patronimage = '<div class="inner" id="msg_\d{1,9}".*?<img src="([^"]+)".*?mega.co.nz/\#\![A-Za-z0-9\-\_]+\![A-Za-z0-9\-\_]+'
     matches = re.compile(patronimage,re.DOTALL).findall(data)
@@ -145,8 +144,8 @@ def findvideos(item):
       thumbnail = scrapertools.htmlclean(thumbnail)
       thumbnail = unicode( thumbnail, "iso-8859-1" , errors="replace" ).encode("utf-8")
       item.thumbnail = thumbnail
-   
-    from core import servertools
+
+    from servers import servertools
     itemlist.extend(servertools.find_video_items(data=data))
     for videoitem in itemlist:
      videoitem.channel=__channel__
@@ -156,11 +155,11 @@ def findvideos(item):
      videoitem.show = show
     if config.get_library_support():
        itemlist.append( Item(channel=item.channel, title="Añadir esta serie a la biblioteca de XBMC", url=item.url, action="add_serie_to_library", extra="findvideos") )
-    return itemlist   
+    return itemlist
   else:
     item.thumbnail = ""
     item.plot = ""
-    from core import servertools
+    from servers import servertools
     itemlist.extend(servertools.find_video_items(data=data))
     for videoitem in itemlist:
      videoitem.channel=__channel__
@@ -181,5 +180,3 @@ def test():
         if not itemlist is None and len(itemlist)>=0:
             return True
     return False
-
-    
