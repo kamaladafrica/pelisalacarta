@@ -77,6 +77,7 @@ def force_creation_advancedsettings(item):
 
 
 def updatebiblio(item):
+    import library_service
     itemlist = []
     itemlist.append(Item(channel=CHANNELNAME, action="", title="Actualizacion en curso..."))
     
