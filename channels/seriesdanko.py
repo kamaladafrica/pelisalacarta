@@ -11,7 +11,7 @@ from core import config
 from core.item import Item
 from core import logger
 from core import scrapertools
-from servers import servertools
+from core import servertools
 
 __channel__ = "seriesdanko"
 __category__ = "S"

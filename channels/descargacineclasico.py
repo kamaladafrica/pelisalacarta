@@ -13,7 +13,7 @@ from core import scrapertools
 from core.item import Item
 
 from core.tmdb import Tmdb
-from servers import servertools
+from core import servertools
 from servers import expurl
 from servers import linkbucks
 from channelselector import get_thumbnail_path

@@ -197,7 +197,7 @@ def addnewvideo(item, IsPlayable='false', totalItems = 0):
     return ok
 
 def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescargas=False,strmfile=False):
-    from servers import servertools
+    from core import servertools
     import sys
     import xbmcgui,xbmc
     
