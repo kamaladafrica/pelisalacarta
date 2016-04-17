@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Utilidades para detectar vídeos de los diferentes conectores
@@ -10,7 +10,6 @@ import os
 from core import config
 from core import logger
 from core import scrapertools
-
 
 
 # Funciónn genérica para encontrar ídeos en una página
@@ -144,13 +143,13 @@ def resolve_video_urls_for_playing(server,url,video_password="",muestra_dialogo=
     logger.info("[servertools.py] resolve_video_urls_for_playing, server="+server+", url="+url)
     video_urls = []
     torrent = False
-    
+
     server = server.lower()
 
     # Si el vídeo es "directo", no hay que buscar más
     if server=="directo" or server=="local":
         logger.info("[servertools.py] server=directo, la url es la buena")
-        
+
         try:
             import urlparse
             parsed_url = urlparse.urlparse(url)
@@ -164,7 +163,7 @@ def resolve_video_urls_for_playing(server,url,video_password="",muestra_dialogo=
 
     # Averigua las URL de los vídeos
     else:
-        
+
         #if server=="torrent":
         #    server="filenium"
         #    torrent = True
@@ -173,14 +172,13 @@ def resolve_video_urls_for_playing(server,url,video_password="",muestra_dialogo=
         try:
             # Muestra un diágo de progreso
             if muestra_dialogo:
-                import xbmcgui
-                progreso = xbmcgui.DialogProgress()
-                progreso.create( "pelisalacarta" , "Conectando con "+server)
+                from platformcode import platformtools
+                progreso = platformtools.dialog_progress( "pelisalacarta" , "Conectando con "+server)
             server_parameters = get_server_parameters(server)
 
             #Cuenta las opciones disponibles, para calcular el porcentaje
             opciones = []
-            if server_parameters["free"]: 
+            if server_parameters["free"]:
               opciones.append("free")
             opciones.extend([premium for premium in server_parameters["premium"] if config.get_setting(premium+"premium")=="true"])
             logger.info("[servertools.py] opciones disponibles para " + server + ": " + str(len(opciones)) + " "+str(opciones))
@@ -191,7 +189,7 @@ def resolve_video_urls_for_playing(server,url,video_password="",muestra_dialogo=
             server_connector = getattr(servers_module,server)
 
             logger.info("[servertools.py] servidor de "+server+" importado")
-           
+
             # Si tiene una función para ver si el vídeo existe, lo comprueba ahora
             if hasattr(server_connector, 'test_video_exists'):
                 logger.info("[servertools.py] invocando a "+server+".test_video_exists")
@@ -209,10 +207,10 @@ def resolve_video_urls_for_playing(server,url,video_password="",muestra_dialogo=
             if server_parameters["free"]=="true":
                 if muestra_dialogo:
                   progreso.update((100 / len(opciones)) * opciones.index("free")  , "Conectando con "+server)
-                
+
                 logger.info("[servertools.py] invocando a "+server+".get_video_url")
                 video_urls = server_connector.get_video_url( page_url=url , video_password=video_password )
-                
+
                 # Si no se encuentran vídeos en modo free, es porque el vídeo no existe
                 if len(video_urls)==0:
                     if muestra_dialogo: progreso.close()
@@ -226,7 +224,7 @@ def resolve_video_urls_for_playing(server,url,video_password="",muestra_dialogo=
                 exec "from servers import premium as premium_conector"
                 video_urls.extend(premium_conector.get_video_url( page_url=url , premium=True , user=config.get_setting(premium+"user") , password=config.get_setting(premium+"password"), video_password=video_password ))
 
-            
+
             if muestra_dialogo:
                 progreso.update( 100 , "Proceso finalizado")
 
@@ -236,7 +234,7 @@ def resolve_video_urls_for_playing(server,url,video_password="",muestra_dialogo=
             # Llegas hasta aquí y no tienes ningún enlace para ver, así que no vas a poder ver el vídeo
             if len(video_urls)==0:
                 # ¿Cual es el motivo?
-                
+
                 # 1) No existe -> Ya está controlado
                 # 2) No tienes alguna de las cuentas premium compatibles
 
@@ -244,7 +242,7 @@ def resolve_video_urls_for_playing(server,url,video_password="",muestra_dialogo=
                 listapremium = []
                 for premium in server_parameters["premium"]:
                   listapremium.append(get_server_parameters(premium)["name"])
-    
+
                 return video_urls,False,"Para ver un vídeo en "+server+" necesitas<br/>una cuenta en "+" o ".join(listapremium)
 
         except:
@@ -254,13 +252,13 @@ def resolve_video_urls_for_playing(server,url,video_password="",muestra_dialogo=
             return video_urls,False,"Se ha producido un error en<br/>el conector con "+server
 
     return video_urls,True,""
-    
+
 def is_server_enabled (server):
     try:
       return get_server_parameters(server)["active"]
     except:
       return False
-    
+
 def get_server_parameters(server):
     server=scrapertools.find_single_match(server,'([^\.]+)')
     try:
@@ -274,7 +272,7 @@ def get_server_parameters(server):
       import traceback
       logger.info(traceback.format_exc())
       return {}
-         
+
 def get_servers_list():
   logger.info("[servertools.py] get_servers_list")
   ServersPath = os.path.join(config.get_runtime_path(),"servers")
@@ -283,10 +281,10 @@ def get_servers_list():
     if server.endswith(".xml"):
       try:
         server_parameters =  get_server_parameters(server)
-       
+
         #Si no esta activo, lo saltamos.
         if not server_parameters["active"]=="true": continue
-      
+
         #Ocultar servidores premium sin cuenta
         if config.get_setting("hidepremium")=="true" and not server_parameters["free"]:
           for premium in server_parameters["premium"]:
@@ -299,19 +297,19 @@ def get_servers_list():
         import traceback
         logger.info(traceback.format_exc())
   return ServerList
-  
+
 def xml2dict(file = None, xmldata = None):
   import re, sys, os
   parse = globals().get(sys._getframe().f_code.co_name)
-  
+
   if xmldata == None and file == None:  raise Exception("No hay nada que convertir!")
   if xmldata == None:
     if not os.path.exists(file): raise Exception("El archivo no existe!")
     xmldata = open(file, "rb").read()
 
   matches = re.compile("<(?P<tag>[^>]+)>[\n]*[\s]*[\t]*(?P<value>.*?)[\n]*[\s]*[\t]*<\/(?P=tag)\s*>",re.DOTALL).findall(xmldata)
-  
-  return_dict = {} 
+
+  return_dict = {}
   for tag, value in matches:
     #Si tiene elementos
     if "<" and "</" in value:
@@ -323,7 +321,7 @@ def xml2dict(file = None, xmldata = None):
           return_dict[tag].append(parse(xmldata=value))
       else:
           return_dict[tag] = parse(xmldata=value)
-      
+
     else:
       if tag in return_dict:
         if type(return_dict[tag])== list:
@@ -332,6 +330,5 @@ def xml2dict(file = None, xmldata = None):
           return_dict[tag] = [return_dict[tag]]
           return_dict[tag].append(value)
       else:
-        return_dict[tag] = value 
+        return_dict[tag] = value
   return return_dict
-

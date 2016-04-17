@@ -11,10 +11,10 @@ from channelselector import get_thumbnail_path
 from core import config
 from core import logger
 from core import scrapertools
+from core import servertools
 from core.item import Item
 from core.tmdb import Tmdb
 from servers import expurl
-from servers import servertools
 
 __channel__ = "descargacineclasico"
 __category__ = "F"
