@@ -11,7 +11,7 @@ from core import logger
 from core import config
 from core import scrapertools
 from core.item import Item
-from servers import servertools
+from core import servertools
 
 __channel__ = "mcanime"
 __category__ = "A"
@@ -487,7 +487,7 @@ def forumdetail(item):
 
 # Verificación automática de canales: Esta función debe devolver "True" si está ok el canal.
 def test():
-    from servers import servertools
+    from core import servertools
     
     # mainlist
     mainlist_items = mainlist(Item())

@@ -11,7 +11,7 @@ from core import logger
 from core import config
 from core import scrapertools
 from core.item import Item
-from servers import servertools
+from core import servertools
 
 #from pelisalacarta import buscador
 
@@ -164,7 +164,7 @@ def detail(item):
 
 # VerificaciÃ³n automÃ¡tica de canales: Esta funciÃ³n debe devolver "True" si estÃ¡ ok el canal.
 def test():
-    from servers import servertools
+    from core import servertools
     
     # mainlist
     mainlist_items = mainlist(Item())

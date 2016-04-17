@@ -13,7 +13,7 @@ import xbmcplugin
 import sys
 import os
 
-from servers import servertools
+from core import servertools
 from core import config
 from core import logger
 
@@ -178,7 +178,6 @@ def addnewvideo(item, IsPlayable='false', totalItems = 0):
         ok = xbmcplugin.addDirectoryItem( handle = pluginhandle, url=itemurl, listitem=listitem, isFolder=False, totalItems=totalItems)
     return ok
 
-# FIXME: ¿Por qué no pasar el item en lugar de todos los parámetros?
 def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescargas=False,strmfile=False):
     from servers import servertools
     import sys

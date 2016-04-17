@@ -11,7 +11,7 @@ from core import logger
 from core import config
 from core import scrapertools
 from core.item import Item
-from servers import servertools
+from core import servertools
 
 __channel__ = "piratestreaming"
 __category__ = "F"
@@ -191,7 +191,7 @@ def peliculas(item):
 
 # Verificaci�n autom�tica de canales: Esta funci�n debe devolver "True" si est� ok el canal.
 def test():
-    from servers import servertools
+    from core import servertools
     
     # mainlist
     mainlist_items = mainlist(Item())

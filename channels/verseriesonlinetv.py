@@ -10,7 +10,7 @@ from core import logger
 from core import config
 from core import scrapertools
 from core.item import Item
-from servers import servertools
+from core import servertools
 from core.scrapertools import decodeHtmlentities as dhe
 
 import xbmcgui

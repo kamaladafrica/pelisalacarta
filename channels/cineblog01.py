@@ -243,7 +243,7 @@ def test():
     
             bien = False
             for episodio_item in itemlist:
-                from servers import servertools
+                from core import servertools
                 mirrors = servertools.find_video_items(item=episodio_item)
                 if len(mirrors)>0:
                     bien = True

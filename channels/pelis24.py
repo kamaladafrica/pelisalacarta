@@ -186,7 +186,7 @@ def idiomas(item):
     
 # Verificacion automatica de canales: Esta funcion debe devolver "True" si esta ok el canal.
 def test():
-    from servers import servertools
+    from core import servertools
     
     # mainlist
     mainlist_items = mainlist(Item())

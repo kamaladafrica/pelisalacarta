@@ -13,7 +13,7 @@ from core import logger
 from core import config
 from core import scrapertools
 from core.item import Item
-from servers import servertools
+from core import servertools
 
 __channel__ = "megaforo"
 __category__ = "F"
@@ -134,7 +134,7 @@ def findvideos(item):
      plot = scrapertools.htmlclean(plot)
      item.plot = ""
     
-    from servers import servertools
+    from core import servertools
     itemlist.extend(servertools.find_video_items(data=data))
     for videoitem in itemlist:
      videoitem.channel=__channel__
@@ -153,7 +153,7 @@ def findvideos(item):
   else:
     item.thumbnail = ""
     item.plot = ""    
-    from servers import servertools
+    from core import servertools
     itemlist.extend(servertools.find_video_items(data=data))
     for videoitem in itemlist:
      videoitem.channel=__channel__

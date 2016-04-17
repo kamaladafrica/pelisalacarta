@@ -220,7 +220,7 @@ def run():
                     # Ejecuta find_videos, del canal o común
                     if item.server != "":
                         try:
-                            from servers import servertools
+                            from core import servertools
                             videourls = servertools.resolve_video_urls_for_playing(server=item.server, url=item.url, video_password=item.video_password)
                             return videourls
                         except:
@@ -232,7 +232,7 @@ def run():
                             if config.get_setting('filter_servers') == 'true':
                                 itemlist = filtered_servers(itemlist, server_white_list, server_black_list) 
                         except:
-                            from servers import servertools
+                            from core import servertools
                             itemlist = servertools.find_video_items(item)
                             if config.get_setting('filter_servers') == 'true':
                                 itemlist = filtered_servers(itemlist, server_white_list, server_black_list)
@@ -385,7 +385,7 @@ def run():
                         # Si no funciona, lanza el método genérico para detectar vídeos
                         else:
                             logger.info("pelisalacarta.platformcode.launcher no channel 'findvideos' method, executing core method")
-                            from servers import servertools
+                            from core import servertools
                             itemlist = servertools.find_video_items(item)
                             if config.get_setting('filter_servers') == 'true':
                                 itemlist = filtered_servers(itemlist, server_white_list, server_black_list)
@@ -670,7 +670,7 @@ def download_all_episodes(item,channel,first_episode="",preferred_server="vidspo
     # Ordena los episodios para que funcione el filtro de first_episode
     episode_itemlist = sorted(episode_itemlist, key=lambda Item: Item.title) 
 
-    from servers import servertools
+    from core import servertools
     from core import downloadtools
     from core import scrapertools
 

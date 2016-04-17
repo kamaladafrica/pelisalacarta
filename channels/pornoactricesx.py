@@ -12,7 +12,7 @@ from core import logger
 from core import config
 from core import scrapertools
 from core.item import Item
-from servers import servertools
+from core import servertools
 
 __channel__ = "pornoactricesx"
 __category__ = "F"
@@ -103,7 +103,7 @@ def play(item):
     data = scrapertools.cachePage(item.url)
     data = scrapertools.unescape(data)
     logger.info(data)
-    from servers import servertools
+    from core import servertools
     itemlist.extend(servertools.find_video_items(data=data))
     for videoitem in itemlist:
         videoitem.thumbnail = item.thumbnail
