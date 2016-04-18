@@ -213,7 +213,7 @@ def play(item):
     itemlist = []
 
     # Descarga la pagina
-    url = "http://www.documaniatv.com/ajax.php?p=video&do=getplayer&vid=%s&aid=3&player=detail" % re.search("video_(.*?).html", item.url).group(1)
+    url = "http://www.documaniatv.com/ajax.php?p=video&do=getplayerr&vid=%s&aid=3&player=detail" % re.search("video_(.*?).html", item.url).group(1)
     data1 = scrapertools.cachePage(url) 
 
     patron= '<iframe src="(.*?)"'
