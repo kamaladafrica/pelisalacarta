@@ -222,10 +222,7 @@ def do_search(item, categories=[]):
     #Para Kodi es necesario esperar antes de cargar el progreso, de lo contrario
     #el cuadro de progreso queda "detras" del cuadro "cargando..." y no se le puede dar a cancelar
     time.sleep(0.5)
-    
     progreso = platformtools.dialog_progress("Buscando " + tecleado,"")
-
-
     channel_files = glob.glob(channels_path)
     number_of_channels = len(channel_files)
     

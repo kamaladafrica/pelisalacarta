@@ -26,7 +26,7 @@ DESTINATION_FOLDER = os.path.join(config.get_runtime_path(),"..")
 
 #Todas las plataformas son "pelisalacarta-nombre-plataforma-version.zip" excepto para xbmc que es "pelisalacarta-xbmc-plugin-version.zip"
 if config.get_platform()=="xbmc":
-  REMOTE_FILE = "http://descargas.tvalacarta.info/%s-%s-" % ("xbmc-plugin", config.get_platform())
+  REMOTE_FILE = "http://descargas.tvalacarta.info/%s-%s-" % (config.PLUGIN_NAME, "xbmc-plugin")
 
 else:
   REMOTE_FILE = "http://descargas.tvalacarta.info/%s-%s-" % (config.PLUGIN_NAME, config.get_platform())
@@ -86,6 +86,8 @@ def update(item):
     logger.info("pelisalacarta.core.updater update")
     remotefilename = REMOTE_FILE+item.version+".zip"
     localfilename = LOCAL_FILE+item.version+".zip"
+    if os.path.exists(localfilename):
+      os.remove(localfilename)
     logger.info("pelisalacarta.core.updater remotefilename=%s" % remotefilename)
     logger.info("pelisalacarta.core.updater localfilename=%s" % localfilename)
     logger.info("pelisalacarta.core.updater descarga fichero...")

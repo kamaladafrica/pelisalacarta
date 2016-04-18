@@ -13,6 +13,7 @@ import config
 import jsontools
 import logger
 import scrapertools
+import jsontools
 
 
 def is_adult(channel_name):
@@ -244,11 +245,11 @@ def set_channel_setting(name, value, channel):
     
 def get_channel_module(channel_name, package = "channels"):
     # Sustituye al que hay en servertools.py ...
-    # ...pero a�ade la posibilidad de incluir un paquete diferente de "channels"
+    # ...pero anade la posibilidad de incluir un paquete diferente de "channels"
     if not package.endswith('.'): package +='.'
     logger.info("pelisalacarta.core.channeltools Importando " + package + channel_name)
     channels_module = __import__(package + channel_name)
     channel_module = getattr(channels_module,channel_name)
     logger.info("pelisalacarta.core.channeltools Importado " + package + channel_name)
     
-    return channel_module 
+    return channel_module
