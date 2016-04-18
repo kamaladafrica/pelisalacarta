@@ -66,7 +66,7 @@ def guess_server_thumbnail(title):
         logger.info("[servertools.py] guess_server_thumbnail caso especial streamin")
         return "http://media.tvalacarta.info/servers/server_streaminto.png"
 
-	servers = get_servers_list()
+    servers = get_servers_list()
     for serverid in servers:
         if serverid in lowcase_title:
             logger.info("[servertools.py] guess_server_thumbnail encontrado "+serverid)
