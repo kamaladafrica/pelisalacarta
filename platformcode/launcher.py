@@ -33,15 +33,9 @@ def run():
 
     # Extract item from sys.argv
     if sys.argv[2]:
-      try:
-        item = Item().fromurl(sys.argv[2])
-        params = ""
+      item = Item().fromurl(sys.argv[2])
+      params = ""
 
-      #Esto es para mantener la compatiblidad con el formato anterior...
-      #Contretamente para que funcionen los STRM hasta que no se actualicen al nuevo formato
-      except:
-        params, fanart, channel_name, title, fulltitle, url, thumbnail, plot, action, server, extra, subtitle, viewmode, category, show, password, hasContentDetails, contentTitle, contentThumbnail, contentPlot = extract_parameters()
-        item = Item(fanart=fanart, channel=channel_name, title=title, fulltitle=fulltitle, url=url, thumbnail=thumbnail, plot=plot, action=action, server=server, extra=extra, subtitle=subtitle, viewmode=viewmode, category=category, show=show, password=password, hasContentDetails=hasContentDetails, contentTitle=contentTitle, contentThumbnail=contentThumbnail, contentPlot=contentPlot)
     else:
       item = Item(action= "selectchannel")
       params = ""
@@ -199,63 +193,8 @@ def run():
                         logger.info("pelisalacarta.platformcode.launcher no channel 'play' method, executing core method")
                         xbmctools.play_video(item)
 
-                elif item.action=="strm_detail" or item.action=="play_from_library":
-                    logger.info("pelisalacarta.platformcode.launcher play_from_library")
-
-                    fulltitle = item.show + " " + item.title
-                    elegido = Item(url="")                    
-
-                    logger.info("item.server=#"+item.server+"#")
-                    # Ejecuta find_videos, del canal o común
-                    if item.server != "":
-                        try:
-                            from core import servertools
-                            videourls = servertools.resolve_video_urls_for_playing(server=item.server, url=item.url, video_password=item.video_password)
-                            return videourls
-                        except:
-                            itemlist = []
-                            pass						
-                    else:
-                        try:
-                            itemlist = channel.findvideos(item)
-                            if config.get_setting('filter_servers') == 'true':
-                                itemlist = filtered_servers(itemlist, server_white_list, server_black_list) 
-                        except:
-                            from core import servertools
-                            itemlist = servertools.find_video_items(item)
-                            if config.get_setting('filter_servers') == 'true':
-                                itemlist = filtered_servers(itemlist, server_white_list, server_black_list)
-
-                    if len(itemlist)>0:
-                        #for item2 in itemlist:
-                        #    logger.info(item2.title+" "+item2.subtitle)
-    
-                        # El usuario elige el mirror
-                        opciones = []
-                        for item in itemlist:
-                            opciones.append(item.title)
-                    
-                        import xbmcgui
-                        dia = xbmcgui.Dialog()
-                        seleccion = dia.select(config.get_localized_string(30163), opciones)
-                        elegido = itemlist[seleccion]
-    
-                        if seleccion==-1:
-                            return
-                    else:
-                        elegido = item
-                
-                    # Ejecuta el método play del canal, si lo hay
-                    try:
-                        itemlist = channel.play(elegido)
-                        item = itemlist[0]
-                    except:
-                        item = elegido
-                    logger.info("Elegido %s (sub %s)" % (item.title,item.subtitle))
-                    
-                    from platformcode import xbmctools
-                    logger.info("subtitle="+item.subtitle)
-                    xbmctools.play_video(item, strmfile=True)
+                elif item.action == "play_from_library":
+                    play_from_library(item, channel, server_white_list, server_black_list)
 
                 elif item.action == "add_pelicula_to_library":
                     add_pelicula_to_library(item)
@@ -280,9 +219,14 @@ def run():
                     xbmctools.renderItems(itemlist, item)
 
                 else:
-                    logger.info("pelisalacarta.platformcode.launcher executing channel '"+item.action+"' method")
                     if item.action != "findvideos":
-                        itemlist = getattr(channel, item.action)(item)
+                        try:
+                            logger.info("pelisalacarta.platformcode.launcher executing channel '"+item.action+"' method")
+                            itemlist = getattr(channel, item.action)(item)
+                        except:
+                            #Error al ejecutar la accion o item tipo Tag
+                            logger.info("pelisalacarta.platformcode.launcher no se ha podido ejecutar la accion %s" %item.action)
+                            return 
                     else:
 
                         # Intenta ejecutar una posible funcion "findvideos" del canal
@@ -310,7 +254,7 @@ def run():
                     xbmcplugin.setContent(int( handle ),"movies")
 
                     # Añade los items a la lista de XBMC
-                    if type(itemlist) == list:
+                    if type(itemlist) == list and itemlist:
                       xbmctools.renderItems(itemlist, item)
 
     except urllib2.URLError,e:
@@ -336,161 +280,7 @@ def run():
             texto = (config.get_localized_string(30051) % e.code) # "El sitio web no funciona correctamente (error http %d)"
             ok = ventana_error.ok ("plugin", texto)
 
-# Parse XBMC params - based on script.module.parsedom addon
-def get_params():
-    logger.info("get_params")
-
-    param_string = sys.argv[2]
-
-    logger.info("get_params "+str(param_string))
-
-    commands = {}
-
-    if param_string:
-        split_commands = param_string[param_string.find('?') + 1:].split('&')
-
-        for command in split_commands:
-            logger.info("get_params command="+str(command))
-            if len(command) > 0:
-                if "=" in command:
-                    split_command = command.split('=')
-                    key = split_command[0]
-                    value = split_command[1] #urllib.unquote_plus()
-                    commands[key] = value
-                else:
-                    commands[command] = ""
-
-    logger.info("get_params "+repr(commands))
-    return commands
-
-# Extract parameters from sys.argv
-def extract_parameters():
-    logger.info("pelisalacarta.platformcode.launcher extract_parameters")
-    #Imprime en el log los parámetros de entrada
-    logger.info("pelisalacarta.platformcode.launcher sys.argv=%s" % str(sys.argv))
-
-    # Crea el diccionario de parametros
-    #params = dict()
-    #if len(sys.argv)>=2 and len(sys.argv[2])>0:
-    #    params = dict(part.split('=') for part in sys.argv[ 2 ][ 1: ].split('&'))
-    params = get_params()
-    logger.info("pelisalacarta.platformcode.launcher params=%s" % str(params))
-
-    if (params.has_key("channel")):
-        channel = urllib.unquote_plus( params.get("channel") )
-    else:
-        channel=''
-
-    # Extrae la url de la página
-    if (params.has_key("url")):
-        url = urllib.unquote_plus( params.get("url") )
-    else:
-        url=''
-
-    # Extrae la accion
-    if (params.has_key("action")):
-        action = params.get("action")
-    else:
-        action = "selectchannel"
-
-    # Extrae el server
-    if (params.has_key("server")):
-        server = params.get("server")
-    else:
-        server = ""
-
-    # Extrae la categoria
-    if (params.has_key("category")):
-        category = urllib.unquote_plus( params.get("category") )
-    else:
-        if params.has_key("channel"):
-            category = params.get("channel")
-        else:
-            category = ""
-
-    # Extrae el título de la serie
-    if (params.has_key("show")):
-        show = params.get("show")
-    else:
-        show = ""
-
-    # Extrae el título del video
-    if params.has_key("title"):
-        title = urllib.unquote_plus( params.get("title") )
-    else:
-        title = ""
-
-    # Extrae el título del video
-    if params.has_key("fulltitle"):
-        fulltitle = urllib.unquote_plus( params.get("fulltitle") )
-    else:
-        fulltitle = ""
-
-    if params.has_key("thumbnail"):
-        thumbnail = urllib.unquote_plus( params.get("thumbnail") )
-    else:
-        thumbnail = ""
-
-    if params.has_key("fanart"):
-        fanart = urllib.unquote_plus( params.get("fanart") )
-    else:
-        fanart = ""
-
-    if params.has_key("plot"):
-        plot = urllib.unquote_plus( params.get("plot") )
-    else:
-        plot = ""
-
-    if params.has_key("extradata"):
-        extra = urllib.unquote_plus( params.get("extradata") )
-    else:
-        extra = ""
-
-    if params.has_key("subtitle"):
-        subtitle = urllib.unquote_plus( params.get("subtitle") )
-    else:
-        subtitle = ""
-
-    if params.has_key("viewmode"):
-        viewmode = urllib.unquote_plus( params.get("viewmode") )
-    else:
-        viewmode = ""
-
-    if params.has_key("password"):
-        password = urllib.unquote_plus( params.get("password") )
-    else:
-        password = ""
-
-    if params.has_key("hasContentDetails"):
-        hasContentDetails = urllib.unquote_plus( params.get("hasContentDetails") )
-    else:
-        hasContentDetails = ""
-
-    if params.has_key("contentTitle"):
-        contentTitle = urllib.unquote_plus( params.get("contentTitle") )
-    else:
-        contentTitle = ""
-
-    if params.has_key("contentThumbnail"):
-        contentThumbnail = urllib.unquote_plus( params.get("contentThumbnail") )
-    else:
-        contentThumbnail = ""
-
-    if params.has_key("contentPlot"):
-        contentPlot = urllib.unquote_plus( params.get("contentPlot") )
-    else:
-        contentPlot = ""
-
-    if params.has_key("show"):
-        show = urllib.unquote_plus( params.get("show") )
-    else:
-        if params.has_key("Serie"):
-            show = urllib.unquote_plus( params.get("Serie") )
-        else:
-            show = ""
-
-    return params, fanart, channel, title, fulltitle, url, thumbnail, plot, action, server, extra, subtitle, viewmode, category, show, password, hasContentDetails, contentTitle, contentThumbnail, contentPlot
-
+            
 def episodio_ya_descargado(show_title,episode_title):
 
     ficheros = os.listdir( "." )
@@ -658,7 +448,7 @@ def download_all_episodes(item,channel,first_episode="",preferred_server="vidspo
         for mirror_item in mirrors_itemlist:
             logger.info("pelisalacarta.platformcode.launcher download_all_episodes, mirror="+mirror_item.title)
 
-            if "(Español)" in mirror_item.title:
+            if "(EspaÃƒÂ±ol)" in mirror_item.title:
                 idioma="(Español)"
                 codigo_idioma="es"
             elif "(Latino)" in mirror_item.title:
@@ -689,13 +479,13 @@ def download_all_episodes(item,channel,first_episode="",preferred_server="vidspo
             if len(video_items)>0:
                 video_item = video_items[0]
 
-                # Comprueba que esté disponible
+                # Comprueba que está disponible
                 video_urls, puedes, motivo = servertools.resolve_video_urls_for_playing( video_item.server , video_item.url , video_password="" , muestra_dialogo=False)
 
                 # Lo añade a la lista de descargas
                 if puedes:
                     logger.info("pelisalacarta.platformcode.launcher download_all_episodes, downloading mirror started...")
-                    # El vídeo de más calidad es el último
+                    # El vídeo de más calidad es el útimo
                     mediaurl = video_urls[len(video_urls)-1][1]
                     devuelve = downloadtools.downloadbest(video_urls,show_title+" "+episode_title+" "+idioma+" ["+video_item.server+"]",continuar=False)
 
