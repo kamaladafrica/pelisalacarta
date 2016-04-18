@@ -12,7 +12,7 @@ from core import logger
 from core import config
 from core import scrapertools
 from core.item import Item
-from servers import servertools
+from core import servertools
 
 __channel__ = "serviporno"
 __category__ = "F"
@@ -42,8 +42,15 @@ def search(item,texto):
     logger.info("[serviporno.py] search")
     texto = texto.replace(" ", "+")
     item.url = item.url + texto
-    return videos(item)
-
+    try:
+        return videos(item)
+    # Se captura la excepción, para no interrumpir al buscador global si un canal falla
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error( "%s" % line )
+        return []
+        
 def videos(item):
     logger.info("[serviporno.py] videos")
     itemlist = []

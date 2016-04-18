@@ -38,9 +38,15 @@ def mainlist(item):
 
 def search(item,texto):
     logger.info("pelisalacarta.channels.pelis24 search")
- 
-    return buscar(item,texto)
-  
+    try:
+        return buscar(item,texto)
+    # Se captura la excepci?n, para no interrumpir al buscador global si un canal falla
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error( "%s" % line )
+        return []
+        
 def buscar(item, texto=""):
     if item.extra:
       post = item.extra
@@ -186,7 +192,7 @@ def idiomas(item):
     
 # Verificacion automatica de canales: Esta funcion debe devolver "True" si esta ok el canal.
 def test():
-    from servers import servertools
+    from core import servertools
     
     # mainlist
     mainlist_items = mainlist(Item())

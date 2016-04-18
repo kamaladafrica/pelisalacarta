@@ -14,7 +14,7 @@ from core import scrapertools
 from core import channeltools
 from core import tmdb
 from core.item import Item
-from servers import servertools
+from core import servertools
 
 __channel__ = "oranline"
 __category__ = "F"
@@ -236,7 +236,6 @@ def generos(item):
                              folder=True, text_color= color2, fanart=fanart))
     return itemlist
 
-
 def idiomas(item):
     logger.info("pelisalacarta.channels.oranline idiomas")
     itemlist = []
@@ -278,7 +277,6 @@ def get_main_page(url):
 
     return data
 
-
 def findvideos(item):
     logger.info("pelisalacarta.channels.oranline findvideos")
     itemlist = []
@@ -286,6 +284,29 @@ def findvideos(item):
     
     # Ampliamos datos en tmdb
     tmdb.set_infoLabels(item, __modo_grafico__)
+    <p>
+    <span><img width="29" src="http://www.oranline.com/wp-content/themes/reviewit/images/1.png"></span>      
+    <span>HD-Rip </span>
+    <span><img src="http://www.oranline.com/wp-content/themes/reviewit/images/calidad4.png"></span>
+    <span>ashley</span>
+    <span><a href="#" title="HDRip - 1,63 Gb - CASTELLANO" class="tooltip"><img src="http://www.oranline.com/wp-content/themes/reviewit/images/informacion.png" width="20"></img></a> <a onclick='reportar("reportarpelicula","375879")'><img  src='http://www.oranline.com/wp-content/themes/reviewit/images/tool.png' title="reportar enlace"></img></a></span>
+    <span>
+    <a href="/wp-content/themes/reviewit/enlace.php?id=375879" rel="get:id=10" rev="abcwin[700,580]"><img style="width:103px" src="http://www.oranline.com/wp-content/themes/reviewit/servidores/uploaded.jpg"></img></a></span></p>
+    '''
+    '''
+    <p>
+    <span><img src="http://www.oranline.com/wp-content/themes/reviewit/images/1.png" width="25"></span>      
+    <span>HD-1080 </span>
+    <span><img src="http://www.oranline.com/wp-content/themes/reviewit/images/calidad5.png"></span>
+    <span>Anonymous_xxx</span> 
+    <span><a onclick='reportar("reportarpelicula","505001")'><img  src='http://www.oranline.com/wp-content/themes/reviewit/images/tool.png' title="reportar enlace"></img></a></span>
+    <span>
+    <a href="/wp-content/themes/reviewit/enlace.php?id=505001" rel="get:id=10" rev="abcwin[700,580]"><img style="width:103px" src="http://www.oranline.com/wp-content/themes/reviewit/servidores/powvideo.jpg"></img></a></span></p>
+    '''
+    patron  = '<p[^<]+'
+    patron += '<span[^<]+<img.*?src="([^"]+)[^<]+</span[^<]+'
+    patron += '<span>([^<]+)</span.*?'
+    patron += 'href="([^"]+)"[^<]+<img style="[^"]+" src="([^"]+)"'
     
     def finvideos_by_Category(item, data_0):
         list_0 =[]
@@ -336,7 +357,7 @@ def play(item):
 
 # Verificación automática de canales: Esta función debe devolver "True" si está ok el canal.
 '''def test():
-    from servers import servertools
+    from core import servertools
     
     # mainlist es "peliculas | documentales"
     mainlist_items = mainlist(Item())

@@ -10,7 +10,7 @@ from core import logger
 from core import config
 from core import scrapertools
 from core.item import Item
-from servers import servertools
+from core import servertools
 
 __channel__ = "zpeliculas"
 __category__ = "F"
@@ -105,30 +105,36 @@ def generos(item):
     return itemlist
 
 def search(item,texto):
+    try:
+        post = urllib.urlencode({"story": texto, "do": "search", "subaction": "search", "x": "0", "y": "0"})
+        data = scrapertools.cache_page("http://www.zpeliculas.com",post=post)
 
-    post = urllib.urlencode({"story": texto, "do": "search", "subaction": "search", "x": "0", "y": "0"})
-    data = scrapertools.cache_page("http://www.zpeliculas.com",post=post)
+        patron  = '<div class="leftpane">(.*?)<div class="clear"'
+        matches = re.compile(patron,re.DOTALL).findall(data)
+        itemlist = []
 
-    patron  = '<div class="leftpane">(.*?)<div class="clear"'
-    matches = re.compile(patron,re.DOTALL).findall(data)
-    itemlist = []
+        for match in matches:
+            scrapedtitle = scrapertools.find_single_match(match,'<div class="shortname">([^<]+)</div>')
+            scrapedurl = scrapertools.find_single_match(match,'<a href="([^"]+)"')
+            scrapedthumbnail = scrapertools.find_single_match(match,'<img src="([^"]+)"')
+            scrapedyear = scrapertools.find_single_match(match,'<div class="year"[^>]+>([^<]+)</div>')
+            scrapedidioma = scrapertools.find_single_match(match,'title="Idioma">([^<]+)</div>')
+            scrapedcalidad = scrapertools.find_single_match(match,'<div class="shortname"[^<]+</div[^<]+<div[^>]+>([^<]+)</div>')
 
-    for match in matches:
-        scrapedtitle = scrapertools.find_single_match(match,'<div class="shortname">([^<]+)</div>')
-        scrapedurl = scrapertools.find_single_match(match,'<a href="([^"]+)"')
-        scrapedthumbnail = scrapertools.find_single_match(match,'<img src="([^"]+)"')
-        scrapedyear = scrapertools.find_single_match(match,'<div class="year"[^>]+>([^<]+)</div>')
-        scrapedidioma = scrapertools.find_single_match(match,'title="Idioma">([^<]+)</div>')
-        scrapedcalidad = scrapertools.find_single_match(match,'<div class="shortname"[^<]+</div[^<]+<div[^>]+>([^<]+)</div>')
+            title = scrapedtitle + ' ('+scrapedyear+') ['+scrapedidioma+'] ['+scrapedcalidad+']'
+            url = scrapedurl
+            thumbnail = scrapedthumbnail
+            plot = ""
+            if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+            itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, show=title, viewmode="movie", fanart=thumbnail, hasContentDetails="true", contentTitle=title, contentThumbnail=thumbnail))
 
-        title = scrapedtitle + ' ('+scrapedyear+') ['+scrapedidioma+'] ['+scrapedcalidad+']'
-        url = scrapedurl
-        thumbnail = scrapedthumbnail
-        plot = ""
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, show=title, viewmode="movie", fanart=thumbnail, hasContentDetails="true", contentTitle=title, contentThumbnail=thumbnail))
-
-    return itemlist
+        return itemlist
+    # Se captura la excepción, para no interrumpir al buscador global si un canal falla
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error( "%s" % line )
+        return []
 
 def peliculas(item):
     logger.info("pelisalacarta.channels.zpeliculas peliculas")

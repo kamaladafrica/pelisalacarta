@@ -10,7 +10,7 @@ from core import logger
 from core import config
 from core import scrapertools
 from core.item import Item
-from servers import servertools
+from core import servertools
 
 __channel__ = "descargasmix"
 __category__ = "A"
@@ -38,10 +38,16 @@ def mainlist(item):
 
 def search(item,texto):
     logger.info("pelisalacarta.channels.descargasmix search")
-    item.url= "http://descargasmix.net/?s=" + texto
-    itemlist = busqueda(item)
-    return itemlist
-
+    try:
+        item.url= "http://descargasmix.net/?s=" + texto
+        itemlist = busqueda(item)
+        return itemlist
+    # Se captura la excepción, para no interrumpir al buscador global si un canal falla
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error( "%s" % line )
+        return []
 def busqueda(item):
     logger.info("pelisalacarta.channels.descargasmix busqueda")
     itemlist = []

@@ -7,7 +7,7 @@
 import urlparse,urllib2,urllib,re
 import os
 import sys
-from servers import servertools
+from core import servertools
 from core import config
 from core.item import Item
 from core import logger
@@ -175,8 +175,14 @@ def search(item):
     logger.info("[tupornotv.py] search")
     tecleado = item.extra.replace(" ", "+")
     item.url = "http://tuporno.tv/buscador/?str=" + tecleado
-    itemlist = getsearch(item)
-    return itemlist
+    try:
+        return getsearch(item)
+    # Se captura la excepción, para no interrumpir al buscador global si un canal falla
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error( "%s" % line )
+        return []
    
 def getsearch(item):
     logger.info("[tupornotv.py] getsearch")

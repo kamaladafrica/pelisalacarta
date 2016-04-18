@@ -25,7 +25,7 @@ from core import logger
 from core import config
 from core import scrapertools
 from core.item import Item
-from servers import servertools
+from core import servertools
 
 DEBUG = config.get_setting("debug")
 

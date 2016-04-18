@@ -14,7 +14,7 @@ from core import samba
 from core import favoritos
 from core.item import Item
 from core import downloadtools
-from servers import servertools
+from core import servertools
 
 CHANNELNAME = "descargas"
 DEBUG = True

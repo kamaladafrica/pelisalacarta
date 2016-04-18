@@ -12,7 +12,7 @@ from core import logger
 from core import config
 from core import scrapertools
 from core.item import Item
-from servers import servertools
+from core import servertools
 
 __channel__ = "pornoactricesx"
 __category__ = "F"
@@ -39,9 +39,14 @@ def search(item,texto):
     logger.info("[pornoactricesx.py] search")
     texto = texto.replace( " ", "+" )
     item.url = item.url + texto
-    
-    return videos(item)
-
+    try:
+        return videos(item)
+    # Se captura la excepción, para no interrumpir al buscador global si un canal falla
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error( "%s" % line )
+        return []
 def videos(item):
     logger.info("[pornoactricesx.py] videos")
     itemlist = []
@@ -103,7 +108,7 @@ def play(item):
     data = scrapertools.cachePage(item.url)
     data = scrapertools.unescape(data)
     logger.info(data)
-    from servers import servertools
+    from core import servertools
     itemlist.extend(servertools.find_video_items(data=data))
     for videoitem in itemlist:
         videoitem.thumbnail = item.thumbnail

@@ -16,12 +16,33 @@
 	<date>25/02/2016</date>
 	<changes>Cambios en findvideos para que muestre solo los servidores que tienen conector y se oculten los premium si esta marcada esa opcion</changes>
 
+
 	<categories>
 		<category>movie</category>
 		<category>serie</category>
 	</categories>
 
 	<settings>
-		<include_in_global_search>true</include_in_global_search>
+		<id>hdfulluser</id>
+		<type>text</type>
+		<label>@30014</label>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<id>hdfullpassword</id>
+		<type>text</type>
+		<label>@30015</label>
+		<hidden>true</hidden>
+		<enabled>!eq(-1,'')</enabled>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<id>include_in_global_search</id>
+		<type>bool</type>
+		<label>Incluir en busqueda global</label>
+		<default>false</default>
+		<enabled>!eq(-1,'') + !eq(-2,'')</enabled>
+		<visible>false</visible>
 	</settings>
 </channel>

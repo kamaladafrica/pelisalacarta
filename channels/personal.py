@@ -12,7 +12,7 @@ from core import logger
 from core import config
 from core import scrapertools
 from core.item import Item
-from servers import servertools
+from core import servertools
 
 DEBUG = config.get_setting("debug")
 
@@ -125,7 +125,7 @@ def play(item):
     logger.info("[personal.py] play")
     itemlist = []
 
-    from servers import servertools
+    from core import servertools
     itemlist=servertools.find_video_items(data=item.url)
     for videoitem in itemlist:
         videoitem.channel=__channel__

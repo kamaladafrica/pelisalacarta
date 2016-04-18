@@ -10,7 +10,7 @@ from core import logger
 from core import config
 from core import scrapertools
 from core.item import Item
-from servers import servertools
+from core import servertools
 from core.scrapertools import decodeHtmlentities as dhe
 
 import xbmcgui
@@ -207,12 +207,6 @@ def scraper(item):
 
     # Descarga la página
     data = dhe( scrapertools.cachePage(item.url) )
-    if item.extra== "search":
-       if "<h2>No se ha encontrado</h2>" in data:
-          import xbmc, time
-          xbmc.executebuiltin( "XBMC.Action(back)" )
-          xbmc.sleep(100)
-          xbmc.executebuiltin('Notification([COLOR coral][B]Busqueda[/B][/COLOR], [COLOR green][B]'+'sin resultados'.upper()+'[/B][/COLOR],4000,"http://s6.postimg.org/j1bopgpu5/verserienobusqicon.png")')
 
     patron = '<li class="item">.*?<a class="poster" href="([^"]+)".*?<img src="([^"]+)" alt="([^<]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)

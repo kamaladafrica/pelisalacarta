@@ -13,7 +13,7 @@ from core import config
 from core import scrapertools
 from core import jsontools
 from core.item import Item
-from servers import servertools
+from core import servertools
 
 DEBUG = config.get_setting("debug")
 
@@ -137,7 +137,7 @@ def findvideos(item):
     data = data.replace('http://ozhe.larata.in/repro-d/nov?v=','http://www.novamov.com/video/')
     itemlist = []
 
-    from servers import servertools
+    from core import servertools
     itemlist.extend(servertools.find_video_items(data=data))
     for videoitem in itemlist:
         videoitem.channel = __channel__

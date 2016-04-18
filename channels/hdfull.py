@@ -12,7 +12,7 @@ from core import config
 from core import scrapertools
 from core import jsontools
 from core.item import Item
-from servers import servertools
+from core import servertools
 
 __channel__ = "hdfull"
 __category__ = "F,S,D"
@@ -22,15 +22,13 @@ __language__ = "ES"
 
 host = "http://hdfull.tv"
 
-account = ( config.get_setting("hdfullaccount") == "true" )
+account = ( config.get_setting('hdfulluser',__channel__) != "" )
 
 def isGeneric():
     return True
 
-def openconfig(item):
-    if config.get_library_support():
-        config.open_settings( )
-    return []
+def settingCanal(item):
+    return platformtools.show_channel_settings()
 
 def login():
     logger.info("pelisalacarta.channels.hdfull login")
@@ -40,7 +38,7 @@ def login():
     patron = "<input type='hidden' name='__csrf_magic' value=\"([^\"]+)\" />"
     sid = scrapertools.find_single_match(data, patron)
 
-    post = urllib.urlencode({'__csrf_magic':sid})+"&username="+config.get_setting('hdfulluser')+"&password="+config.get_setting('hdfullpassword')+"&action=login"
+    post = urllib.urlencode({'__csrf_magic':sid})+"&username="+config.get_setting('hdfulluser',__channel__)+"&password="+config.get_setting('hdfullpassword',__channel__)+"&action=login"
 
     data = scrapertools.cache_page(host,post=post)
 
@@ -49,14 +47,14 @@ def mainlist(item):
 
     itemlist = []
 
-    if not account:
-        itemlist.append( Item( channel=__channel__ , title=bbcode_kodi2html("[COLOR orange][B]Habilita tu cuenta para activar los items de usuario...[/B][/COLOR]"), action="openconfig", url="", folder=False ) )
-    else:
-        login()
-
     itemlist.append( Item( channel=__channel__, action="menupeliculas", title="Películas", url=host, folder=True ) )
     itemlist.append( Item( channel=__channel__, action="menuseries", title="Series", url=host, folder=True ) )
     itemlist.append( Item( channel=__channel__, action="search", title="Buscar..." ) )
+    if not account:
+        itemlist.append( Item( channel=__channel__ , title=bbcode_kodi2html("[COLOR orange][B]Habilita tu cuenta para activar los items de usuario...[/B][/COLOR]"), action="settingCanal", url="" ) )
+    else:
+        login()
+        itemlist.append( Item(channel=__channel__, action="settingCanal"    , title="Configuración..."     , url="" ))
 
     return itemlist
 

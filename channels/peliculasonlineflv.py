@@ -11,7 +11,7 @@ from core import logger
 from core import config
 from core import scrapertools
 from core.item import Item
-from servers import servertools
+from core import servertools
 
 __channel__ = "peliculasonlineflv"
 __category__ = "F,D"
@@ -156,7 +156,7 @@ def findvideos(item):
     # Descarga la p?gina
     data = scrapertools.cachePage(item.url)
 
-    from servers import servertools
+    from core import servertools
     itemlist.extend(servertools.find_video_items(data=data))
     for videoitem in itemlist:
         videoitem.channel=__channel__

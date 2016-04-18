@@ -12,7 +12,7 @@ from core import logger
 from core import config
 from core import scrapertools
 from core.item import Item
-from servers import servertools
+from core import servertools
 import urllib
 
 __channel__ = "submityouflicks"
@@ -41,8 +41,15 @@ def search(item,texto):
     logger.info("pelisalacarta.channels.submityourflicks search")
     tecleado = texto.replace( " ", "+" )
     item.url = item.url % tecleado
-    return videos(item)
-
+    try:
+        return videos(item)
+    # Se captura la excepción, para no interrumpir al buscador global si un canal falla
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error( "%s" % line )
+        return []
+        
 # SECCION ENCARGADA DE BUSCAR
 
 def videos(item):

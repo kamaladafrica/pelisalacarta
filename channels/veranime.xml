@@ -5,7 +5,7 @@
 	<language>es</language>
 	<update_url></update_url>
 	<active>false</active>
-	<include_in_global_search>false</include_in_global_search>
+
 	<version>3</version>
 	<adult>false</adult>
 	<date>10/07/2012</date>
@@ -15,4 +15,13 @@
 	<categories>
 		<category>anime</category>
 	</categories>
+	
+	<settings>
+		<id>include_in_global_search</id>
+		<type>bool</type>
+		<label>Incluir en busqueda global</label>
+		<default>false</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
 </channel>

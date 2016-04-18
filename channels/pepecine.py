@@ -14,7 +14,7 @@ from core import config
 from core import scrapertools
 from core import jsontools
 from core.item import Item
-from servers import servertools
+from core import servertools
 
 __adult__ = "false"
 __category__ = "F,S"
@@ -96,9 +96,16 @@ def sub_filtrar(item):
 
 def search(item,texto):
     logger.info("[pepecine.py] search:" + texto)
-    item.url = item.url + "&query=" + texto 
-    return listado(item) 
-
+    item.url = item.url + "&query=" + texto
+    try:
+        return listado(item) 
+    # Se captura la excepción, para no interrumpir al buscador global si un canal falla
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error( "%s" % line )
+        return []
+        
 def listado(item):
     #import json
     logger.info("[pepecine.py] listado")

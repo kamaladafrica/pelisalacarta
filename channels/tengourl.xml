@@ -6,7 +6,8 @@
 	<active>false</active>
 	<adult>false</adult>
 	<language></language>
-
+	<include_in_global_search>disabled</include_in_global_search>
+	
 	<fanart></fanart>
 	<thumbnail>http://media.tvalacarta.info/pelisalacarta/squares/tengourl.png</thumbnail>
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/tengourl.png</bannermenu>
@@ -18,8 +19,4 @@
 
 	<categories>
 	</categories>
-
-	<settings>
-		<include_in_global_search>true</include_in_global_search>
-	</settings>
 </channel>

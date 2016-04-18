@@ -11,7 +11,7 @@ from core import logger
 from core import config
 from core import scrapertools
 from core.item import Item
-from servers import servertools
+from core import servertools
 
 __channel__ = "seriecanal"
 __category__ = "S,VOS"
@@ -39,11 +39,17 @@ def mainlist(item):
 def search(item,texto):
     logger.info("pelisalacarta.channels.seriecanal search")
     item.url="http://www.seriecanal.com/index.php?page=portada&do=category&method=post&category_id=0&order=C_Create&view=thumb&pgs=1&p2=1"
-    
-    post = "keyserie="+texto 
-    item.extra = post
-    itemlist = series(item)
-    return itemlist
+    try:
+        post = "keyserie="+texto 
+        item.extra = post
+        itemlist = series(item)
+        return itemlist
+    # Se captura la excepción, para no interrumpir al buscador global si un canal falla
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error( "%s" % line )
+        return []
 
 def genero(item):
     logger.info("pelisalacarta.channels.seriecanal genero")

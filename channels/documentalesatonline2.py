@@ -12,7 +12,7 @@ from core import scrapertools
 from core import config
 from core import logger
 from core.item import Item
-from servers import servertools
+from core import servertools
 
 import xml.dom.minidom
 
@@ -133,7 +133,7 @@ def novedades(item):
 
 # Verificación automática de canales: Esta función debe devolver "True" si está ok el canal.
 def test():
-    from servers import servertools
+    from core import servertools
     # mainlist
     mainlist_items = mainlist(Item())
     # Da por bueno el canal si alguno de los vídeos de "Novedades" devuelve mirrors

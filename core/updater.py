@@ -185,10 +185,10 @@ def updatechannel(channel_name):
             patronvideos  = '<version>([^<]+)</version>' 
 
         matches = re.compile(patronvideos,re.DOTALL).findall(data)
+
         local_version = int(matches[0])
     else:
         local_version = 0
-    
     logger.info("pelisalacarta.core.updater local_version=%d" % local_version)
     
     # Comprueba si ha cambiado
@@ -211,7 +211,7 @@ def download_channel(channel_name):
     # Descarga el canal
     updated_channel_data = scrapertools.cachePage( remote_channel_url )
     try:
-        outfile = open(local_channel_path,"w")
+        outfile = open(local_channel_path,"wb")
         outfile.write(updated_channel_data)
         outfile.flush()
         outfile.close()
