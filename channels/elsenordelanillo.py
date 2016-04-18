@@ -191,7 +191,7 @@ def findvideos(item):
     bloque = scrapertools.find_single_match(data,"function cargamos.*?window.open.'([^']+)'")
     data = scrapertools.cache_page(bloque)
 
-    from servers import servertools
+    from core import servertools
     itemlist = servertools.find_video_items(data=data)
     for videoitem in itemlist:
         videoitem.channel = __channel__

@@ -14,6 +14,7 @@ from core import scrapertools
 from core import servertools
 from core.item import Item
 from core.tmdb import Tmdb
+from core import servertools
 from servers import expurl
 
 __channel__ = "descargacineclasico"
