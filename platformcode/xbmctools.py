@@ -953,7 +953,7 @@ def playstrm(params,url,category):
     saveSubtitleName(item)
     play_video("Biblioteca pelisalacarta",server,url,category,title,thumbnail,plot,strmfile=True,Serie=serie,subtitle=subtitle)
 
-def renderItems(itemlist, item, isPlayable='false'):
+def renderItems(itemlist, parentitem, isPlayable='false'):
     
     viewmode = "list"
     
@@ -962,7 +962,7 @@ def renderItems(itemlist, item, isPlayable='false'):
             logger.info("item="+item.tostring())
             
             if item.category == "":
-                item.category = item.category
+                item.category = parentitem.category
                 
             if item.fulltitle=="":
                 item.fulltitle=item.title
@@ -988,8 +988,9 @@ def renderItems(itemlist, item, isPlayable='false'):
                 viewmode = item.viewmode
 
         # Cierra el directorio
-        xbmcplugin.setContent(pluginhandle,"Movies")
-        xbmcplugin.setPluginCategory( handle=pluginhandle, category=item.category )
+        if not parentitem.channel in ["channelselector",""]:
+          xbmcplugin.setContent(pluginhandle,"Movies")
+        xbmcplugin.setPluginCategory( handle=pluginhandle, category=parentitem.category )
         xbmcplugin.addSortMethod( handle=pluginhandle, sortMethod=xbmcplugin.SORT_METHOD_NONE )
 
         # Modos biblioteca
