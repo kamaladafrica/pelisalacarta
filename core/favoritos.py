@@ -4,10 +4,10 @@
 # Lista de vídeos favoritos
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urllib
 import os
 import sys
-import downloadtools
+import urllib
+
 import config
 import logger
 import samba

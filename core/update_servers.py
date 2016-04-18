@@ -4,14 +4,11 @@
 # update_servers.py
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
 import os
-import sys
+import urlparse
 
-from core import scrapertools
 from core import config
-from core import logger
-from core.item import Item
+from core import scrapertools
 from core import servertools
 
 DEBUG = config.get_setting("debug")
@@ -31,9 +28,8 @@ def update_servers():
 def update_servers_files( update_servers_list ):
 
     # ----------------------------
-    import xbmcgui
-    progress = xbmcgui.DialogProgressBG()
-    progress.create( "Update servers list" )
+    from platformcode import platformtools
+    progress = platformtools.dialog_progress_bg( "Update servers list" )
     # ----------------------------
 
     for index, server in enumerate( update_servers_list ):
@@ -79,9 +75,8 @@ def read_remote_servers_list( local_servers ):
             servers.append( server_id )
 
     # ----------------------------
-    import xbmcgui
-    progress = xbmcgui.DialogProgressBG()
-    progress.create( "Remote servers list" )
+    from platformcode import platformtools
+    progress = platformtools.dialog_progress_bg( "Remote servers list" )
     # ----------------------------
 
     remote_servers = []
@@ -130,9 +125,8 @@ def read_local_servers_list():
             servers.append( server_id )
 
     # ----------------------------
-    import xbmcgui
-    progress = xbmcgui.DialogProgressBG()
-    progress.create( "Local servers list" )
+    from platformcode import platformtools
+    progress = platformtools.dialog_progress_bg( "Local servers list" )
     # ----------------------------
 
     local_servers = []

@@ -4,20 +4,17 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 # ------------------------------------------------------------
 
-import os
 import glob
-import time
-import imp
-import urlparse
+import os
 import re
-import channelselector
+import time
+from threading import Thread
+
+from core import channeltools
 from core import config
 from core import logger
 from core.item import Item
-from core import channeltools
 from platformcode import platformtools
-from threading import Thread
-
 
 __channel__ = "buscador"
 
@@ -225,10 +222,7 @@ def do_search(item, categories=[]):
     #Para Kodi es necesario esperar antes de cargar el progreso, de lo contrario
     #el cuadro de progreso queda "detras" del cuadro "cargando..." y no se le puede dar a cancelar
     time.sleep(0.5)
-    
     progreso = platformtools.dialog_progress("Buscando " + tecleado,"")
-
-
     channel_files = glob.glob(channels_path)
     number_of_channels = len(channel_files)
     

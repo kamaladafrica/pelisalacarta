@@ -4,20 +4,18 @@
 # Canal para cuevana
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,re
+import re
+import urlparse
 
-
-from core import logger
-from core import config
-from core import scrapertools
-from core.item import Item
-
-from core.tmdb import Tmdb
-from servers import servertools
-from servers import expurl
-from servers import linkbucks
 from channelselector import get_thumbnail_path
-
+from core import config
+from core import logger
+from core import scrapertools
+from core import servertools
+from core.item import Item
+from core.tmdb import Tmdb
+from core import servertools
+from servers import expurl
 
 __channel__ = "descargacineclasico"
 __category__ = "F"

@@ -1,23 +1,21 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # tvalacarta
 # XBMC Launcher (xbmc / xbmc-dharma / boxee)
 # http://blog.tvalacarta.info/plugin-xbmc/
 #------------------------------------------------------------
 
-import urllib
-import urllib2
 import os
 import re
 import sys
-from core.item import Item
-from core import logger
-from core import config
-from core import scrapertools
+import urllib
+import urllib2
+
 from core import channeltools
-from core import updater
-from platformcode import platformtools
-from platformcode import xbmctools
+from core import config
+from core import logger
+from core import scrapertools
+from core.item import Item
 
 def start():
     ''' Primera funcion que se ejecuta al entrar en el plugin.
@@ -65,13 +63,13 @@ def run():
                 if version:
                   import xbmcgui
                   advertencia = xbmcgui.Dialog()
-                  advertencia.ok("VersiÃ³n "+version+" disponible","Ya puedes descargar la nueva versiÃ³n del plugin\ndesde el listado principal")
+                  advertencia.ok("Versión "+version+" disponible","Ya puedes descargar la nueva versión del plugin\ndesde el listado principal")
                   itemlist.insert(0,Item(title="Descargar version "+version, version=version, channel="updater", action="update", thumbnail=channelselector.get_thumbnail_path() + "Crystal_Clear_action_info.png"))
               except:
                 import xbmcgui
                 advertencia = xbmcgui.Dialog()
                 advertencia.ok("No se puede conectar","No ha sido posible comprobar","si hay actualizaciones")
-                logger.info("channelselector.mainlist Fallo al verificar la actualizaciÃ³n")
+                logger.info("channelselector.mainlist Fallo al verificar la actualización")
 
             else:
               logger.info("channelselector.mainlist Verificar actualizaciones desactivado")
@@ -80,15 +78,10 @@ def run():
             xbmctools.renderItems(itemlist, item)
 
         # Actualizar version
-        elif ( item.action=="update" ):
-            try:
-                from core import updater
-                updater.update(params)
-            except ImportError:
-                logger.info("pelisalacarta.platformcode.launcher Actualizacion automÃ¡tica desactivada")
-
-            #import channelselector as plugin
-            #plugin.listchannels(params, url, category)
+        elif (item.action=="update"):
+   
+            from core import updater
+            updater.update(item)
             if config.get_system_platform()!="xbox":
                 import xbmc
                 xbmc.executebuiltin( "Container.Refresh" )
@@ -105,7 +98,7 @@ def run():
             from platformcode import xbmctools
             xbmctools.renderItems(itemlist, item)
 
-        # El resto de acciones vienen en el parÃ¡metro "action", y el canal en el parÃ¡metro "channel"
+        # El resto de acciones vienen en el parámetro "action", y el canal en el parámetro "channel"
         else:
 
             if item.action=="mainlist":
@@ -143,7 +136,7 @@ def run():
                 except:
                     pass
 
-            # La acciÃ³n puede estar en el core, o ser un canal regular. El buscador es un canal especial que estÃ¡ en pelisalacarta
+            # La acción puede estar en el core, o ser un canal regular. El buscador es un canal especial que está en pelisalacarta
             regular_channel_path = os.path.join(config.get_runtime_path(), 'channels', item.channel+".py")
             core_channel_path = os.path.join(config.get_runtime_path(), 'core', item.channel+".py")
             logger.info("pelisalacarta.platformcode.launcher regular_channel_path=%s" % regular_channel_path)
@@ -162,7 +155,7 @@ def run():
                 channel.__name__, channel.__file__))
 
             generico = False
-            # Esto lo he puesto asi porque el buscador puede ser generico o normal, esto estarÃ¡ asi hasta que todos los canales sean genericos
+            # Esto lo he puesto asi porque el buscador puede ser generico o normal, esto estará asi hasta que todos los canales sean genericos
             if item.category == "Buscador_Generico":
                 generico = True
             else:
@@ -185,7 +178,7 @@ def run():
 
                 if item.action=="play":
                     logger.info("pelisalacarta.platformcode.launcher play")
-                    # Si el canal tiene una acciÃ³n "play" tiene prioridad
+                    # Si el canal tiene una acción "play" tiene prioridad
                     if hasattr(channel, 'play'):
                         logger.info("pelisalacarta.platformcode.launcher executing channel 'play' method")
                         itemlist = channel.play(item)
@@ -226,9 +219,14 @@ def run():
                     xbmctools.renderItems(itemlist, item)
 
                 else:
-                    logger.info("pelisalacarta.platformcode.launcher executing channel '"+item.action+"' method")
                     if item.action != "findvideos":
-                        itemlist = getattr(channel, item.action)(item)
+                        try:
+                            logger.info("pelisalacarta.platformcode.launcher executing channel '"+item.action+"' method")
+                            itemlist = getattr(channel, item.action)(item)
+                        except:
+                            #Error al ejecutar la accion o item tipo Tag
+                            logger.info("pelisalacarta.platformcode.launcher no se ha podido ejecutar la accion %s" %item.action)
+                            return 
                     else:
 
                         # Intenta ejecutar una posible funcion "findvideos" del canal
@@ -238,7 +236,7 @@ def run():
                             if config.get_setting('filter_servers') == 'true':
                                 itemlist = filtered_servers(itemlist, server_white_list, server_black_list)
 
-                        # Si no funciona, lanza el mÃ©todo genÃ©rico para detectar vÃ­deos
+                        # Si no funciona, lanza el método genérico para detectar vídeos
                         else:
                             logger.info("pelisalacarta.platformcode.launcher no channel 'findvideos' method, executing core method")
                             from core import servertools
@@ -249,14 +247,14 @@ def run():
                         from platformcode import subtitletools
                         subtitletools.saveSubtitleName(item)
 
-                    # Activa el modo biblioteca para todos los canales genÃ©ricos, para que se vea el argumento
+                    # Activa el modo biblioteca para todos los canales genéricos, para que se vea el argumento
                     import xbmcplugin
 
                     handle = sys.argv[1]
                     xbmcplugin.setContent(int( handle ),"movies")
 
-                    # AÃ±ade los items a la lista de XBMC
-                    if type(itemlist) == list:
+                    # Añade los items a la lista de XBMC
+                    if type(itemlist) == list and itemlist:
                       xbmctools.renderItems(itemlist, item)
 
     except urllib2.URLError,e:
@@ -360,10 +358,10 @@ def download_all_episodes(item,channel,first_episode="",preferred_server="vidspo
     logger.info("pelisalacarta.platformcode.launcher download_all_episodes, show="+item.show)
     show_title = item.show
 
-    # Obtiene el listado desde el que se llamÃ³
+    # Obtiene el listado desde el que se llamó
     action = item.extra
 
-    # Esta marca es porque el item tiene algo mÃ¡s aparte en el atributo "extra"
+    # Esta marca es porque el item tiene algo más aparte en el atributo "extra"
     if "###" in item.extra:
         action = item.extra.split("###")[0]
         item.extra = item.extra.split("###")[1]
@@ -423,8 +421,8 @@ def download_all_episodes(item,channel,first_episode="",preferred_server="vidspo
 
         for mirror_item in mirrors_itemlist:
 
-            # Si estÃ¡ en espaÃ±ol va al principio, si no va al final
-            if "(EspaÃ±ol)" in mirror_item.title:
+            # Si está en español va al principio, si no va al final
+            if "(Español)" in mirror_item.title:
                 if best_server in mirror_item.title.lower():
                     new_mirror_itemlist_1.append(mirror_item)
                 else:
@@ -450,8 +448,8 @@ def download_all_episodes(item,channel,first_episode="",preferred_server="vidspo
         for mirror_item in mirrors_itemlist:
             logger.info("pelisalacarta.platformcode.launcher download_all_episodes, mirror="+mirror_item.title)
 
-            if "(EspaÃ±ol)" in mirror_item.title:
-                idioma="(EspaÃ±ol)"
+            if "(EspaÃƒÂ±ol)" in mirror_item.title:
+                idioma="(Español)"
                 codigo_idioma="es"
             elif "(Latino)" in mirror_item.title:
                 idioma="(Latino)"
@@ -481,13 +479,13 @@ def download_all_episodes(item,channel,first_episode="",preferred_server="vidspo
             if len(video_items)>0:
                 video_item = video_items[0]
 
-                # Comprueba que estÃ© disponible
+                # Comprueba que está disponible
                 video_urls, puedes, motivo = servertools.resolve_video_urls_for_playing( video_item.server , video_item.url , video_password="" , muestra_dialogo=False)
 
-                # Lo aÃ±ade a la lista de descargas
+                # Lo añade a la lista de descargas
                 if puedes:
                     logger.info("pelisalacarta.platformcode.launcher download_all_episodes, downloading mirror started...")
-                    # El vÃ­deo de mÃ¡s calidad es el Ãºltimo
+                    # El vídeo de más calidad es el útimo
                     mediaurl = video_urls[len(video_urls)-1][1]
                     devuelve = downloadtools.downloadbest(video_urls,show_title+" "+episode_title+" "+idioma+" ["+video_item.server+"]",continuar=False)
 
@@ -521,7 +519,7 @@ def play_from_library(item, channel, server_white_list, server_black_list):
     fulltitle = item.show + " " + item.title
 
     logger.info("item.server=#"+item.server+"#")
-    # Ejecuta find_videos, del canal o comÃºn
+    # Ejecuta find_videos, del canal o común
     try:
         itemlist = getattr(channel, "findvideos")(item)
 
@@ -554,7 +552,7 @@ def play_from_library(item, channel, server_white_list, server_black_list):
     else:
         elegido = item
 
-    # Ejecuta el mÃ©todo play del canal, si lo hay
+    # Ejecuta el método play del canal, si lo hay
     try:
         itemlist = channel.play(elegido)
         item = itemlist[0]
@@ -596,7 +594,7 @@ def add_pelicula_to_library(item):
     # retrocompatibilidad :)
     else:
         from platformcode import library
-        # Obtiene el listado desde el que se llamÃ³
+        # Obtiene el listado desde el que se llamó
         library.savelibrary(titulo=item.fulltitle, url=item.url, thumbnail=item.thumbnail,
                             server=item.server, plot=item.plot, canal=item.channel, category="Cine",
                             Serie=item.show.strip(), verbose=False, accion="play_from_library",
@@ -608,7 +606,7 @@ def add_serie_to_library(item, channel):
 
     import xbmcgui
 
-    # Obtiene el listado desde el que se llamÃ³
+    # Obtiene el listado desde el que se llamó
     action = item.extra
 
     itemlist = getattr(channel, action)(item)
@@ -616,8 +614,8 @@ def add_serie_to_library(item, channel):
     # TODO arreglar progress dialog
     # Progreso
     p_dialog = xbmcgui.DialogProgress()
-    ret = p_dialog.create('pelisalacarta', 'AÃ±adiendo episodios...')
-    p_dialog.update(0, 'AÃ±adiendo episodio...')
+    ret = p_dialog.create('pelisalacarta', 'Añadiendo episodios...')
+    p_dialog.update(0, 'Añadiendo episodio...')
     totalepisodes = len(itemlist)
 
     logger.info("[launcher.py] Total Episodios:"+str(totalepisodes))
@@ -627,13 +625,13 @@ def add_serie_to_library(item, channel):
     for item in itemlist:
         logger.info("title:: {}".format(item.title))
         i += 1
-        p_dialog.update(i*100/totalepisodes, 'AÃ±adiendo episodio...', item.title)
+        p_dialog.update(i*100/totalepisodes, 'Añadiendo episodio...', item.title)
         logger.info("pelisalacarta.platformcode.launcher add_serie_to_library, title="+item.title)
         if p_dialog.iscanceled():
             return
 
         try:
-            # AÃ±ade todos menos el que dice "AÃ±adir esta serie..." o "Descargar esta serie..."
+            # Añade todos menos el que dice "Añadir esta serie..." o "Descargar esta serie..."
             if item.action != "add_serie_to_library" and item.action != "download_all_episodes":
 
                 from platformcode import library2 as library
@@ -665,11 +663,11 @@ def add_serie_to_library(item, channel):
     # Actualizacion de la biblioteca
     itemlist = []
     if errores > 0:
-        itemlist.append(Item(title="ERROR, la serie NO se ha aÃ±adido a la biblioteca o lo ha hecho incompleta"))
-        logger.info("[launcher.py] No se pudo aÃ±adir "+str(errores)+" episodios")
+        itemlist.append(Item(title="ERROR, la serie NO se ha añadido a la biblioteca o lo ha hecho incompleta"))
+        logger.info("[launcher.py] No se pudo añadir "+str(errores)+" episodios")
     else:
-        itemlist.append(Item(title="La serie se ha aÃ±adido a la biblioteca"))
-        logger.info("[launcher.py] NingÃºn error al aÃ±adir "+str(errores)+" episodios")
+        itemlist.append(Item(title="La serie se ha añadido a la biblioteca"))
+        logger.info("[launcher.py] Ningún error al añadir "+str(errores)+" episodios")
 
     # FIXME:jesus Comentado porque no funciona bien en todas las versiones de XBMC
     # library.update(totalepisodes,errores,nuevos)

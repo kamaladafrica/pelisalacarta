@@ -5,23 +5,23 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import urlparse,urllib2,urllib,re
-import sys
-import xbmc
+import os
+import re
 import string
+import sys
+import urllib
+import urllib2
+import urlparse
+
+import xbmc
 import xbmcgui
 import xbmcplugin
 
-import gdata.youtube
-import gdata.youtube.service
-from servers import youtube
-
-from platformcode import xbmctools
-from core import scrapertools
-from core import logger
 from core import config
+from core import logger
+from core import scrapertools
+from platformcode import xbmctools
 
-import os
 CHANNELNAME = "trailertools"
 
 DEBUG = True

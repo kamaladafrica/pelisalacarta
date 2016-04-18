@@ -6,11 +6,10 @@
 # ------------------------------------------------------------
 
 import re
-from core import scrapertools
-from core import logger
-from core import config
 
-           
+from core import logger
+from core import scrapertools
+
 headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:22.0) Gecko/20100101 Firefox/22.0',
        'Accept-Encoding': 'none'}
 

@@ -5,13 +5,11 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import urlparse,urllib2,urllib,re
-import os
+import re
 
-from core import scrapertools
-from core import logger
-from core import config
 from core import jsontools
+from core import logger
+from core import scrapertools
 
 def get_video_url( page_url , premium = False , user="" , password="", video_password="" ):
     logger.info("[mailru.py] get_video_url(page_url='%s')" % (page_url))

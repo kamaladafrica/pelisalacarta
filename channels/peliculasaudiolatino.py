@@ -5,14 +5,15 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import urlparse,urllib2,urllib,re
-import os, sys
+import re
+import sys
+import urlparse
 
-from core import logger
 from core import config
+from core import logger
 from core import scrapertools
-from core.item import Item
 from core import servertools
+from core.item import Item
 
 __channel__ = "peliculasaudiolatino"
 __category__ = "F"
@@ -258,8 +259,6 @@ def play(item):
 
 # Verificación automática de canales: Esta función debe devolver "True" si está ok el canal.
 def test():
-    from core import servertools
-    
     # mainlist
     mainlist_items = mainlist(Item())
     # Da por bueno el canal si alguno de los vídeos de "Novedades" devuelve mirrors

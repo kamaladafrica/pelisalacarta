@@ -5,12 +5,11 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import re, urlparse, urllib, urllib2
-import os
+import re
 
-from core import scrapertools
 from core import logger
-from core import config
+from core import scrapertools
+
 
 #Location: http://www.modovideo.com/MakeLightBox.php?retURL=&h1=Video Has been removed&p=
 

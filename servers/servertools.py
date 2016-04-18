@@ -241,9 +241,8 @@ def resolve_video_urls_for_playing(server,url,video_password="",muestra_dialogo=
         try:
             # Muestra un diálogo de progreso
             if muestra_dialogo:
-                import xbmcgui
-                progreso = xbmcgui.DialogProgress()
-                progreso.create( "pelisalacarta" , "Conectando con "+server)
+                from platformcode import platformtools
+                progreso = platformtools.dialog_progress( "pelisalacarta" , "Conectando con "+server)
 
             # Sustituye el código por otro "Plex compatible"
             #exec "from servers import "+server+" as server_connector"

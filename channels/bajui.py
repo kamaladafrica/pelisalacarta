@@ -4,14 +4,15 @@
 # Canal para bajui
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os,sys
+import re
+import sys
+import urlparse
 
-from core import logger
 from core import config
+from core import logger
 from core import scrapertools
-from core.item import Item
 from core import servertools
+from core.item import Item
 
 __channel__ = "bajui"
 __category__ = "F,S,D"
@@ -251,7 +252,6 @@ def findvideos(item):
 
 # Verificación automática de canales: Esta función debe devolver "True" si está ok el canal.
 def test():
-    import time
     # mainlist
     mainlist_items = mainlist(Item())
     

@@ -5,14 +5,14 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import urllib, urllib2
+import os
+import sys
+import urllib
+
 import xbmc
 import xbmcgui
 import xbmcplugin
-import sys
-import os
 
-from core import servertools
 from core import config
 from core import logger
 
@@ -151,7 +151,7 @@ def addnewvideo(item, IsPlayable='false', totalItems = 0):
     return ok
 
 def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescargas=False,strmfile=False):
-    from servers import servertools
+    from core import servertools
     import sys
     import xbmcgui,xbmc
     
@@ -874,7 +874,7 @@ def playstrm(params,url,category):
     saveSubtitleName(item)
     play_video("Biblioteca pelisalacarta",server,url,category,title,thumbnail,plot,strmfile=True,Serie=serie,subtitle=subtitle)
 
-def renderItems(itemlist, item, isPlayable='false'):
+def renderItems(itemlist, parentitem, isPlayable='false'):
     
     viewmode = "list"
     
@@ -885,7 +885,7 @@ def renderItems(itemlist, item, isPlayable='false'):
             item.isPlayable = isPlayable
             
             if item.category == "":
-                item.category = item.category
+                item.category = parentitem.category
                 
             if item.fulltitle=="":
                 item.fulltitle=item.title
@@ -917,8 +917,9 @@ def renderItems(itemlist, item, isPlayable='false'):
                 viewmode = item.viewmode
 
         # Cierra el directorio
-        xbmcplugin.setContent(pluginhandle,"Movies")
-        xbmcplugin.setPluginCategory( handle=pluginhandle, category=item.category )
+        if not parentitem.channel in ["channelselector",""]:
+          xbmcplugin.setContent(pluginhandle,"Movies")
+        xbmcplugin.setPluginCategory( handle=pluginhandle, category=parentitem.category )
         xbmcplugin.addSortMethod( handle=pluginhandle, sortMethod=xbmcplugin.SORT_METHOD_NONE )
 
         # Modos biblioteca

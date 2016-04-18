@@ -5,12 +5,11 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import re, sys
-import urlparse, urllib, urllib2
+import urllib
 
-from core import scrapertools
 from core import logger
-from core import config
+from core import scrapertools
+
 
 # Obtiene la URL que hay detrás de un enlace a linkbucks
 def get_long_url(short_url):

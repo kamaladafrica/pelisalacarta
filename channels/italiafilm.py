@@ -4,14 +4,13 @@
 # Canal para italiafilm
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os,sys
- 
+import re
+import sys
+import urlparse
+
 from core import logger
-from core import config
 from core import scrapertools
 from core.item import Item
-from core import servertools
 
 __channel__ = "italiafilm"
 __category__ = "F,S,A"
@@ -66,7 +65,7 @@ def categorias(item):
 
     return itemlist
 
-# Al llamarse "search" la funci√≥n, el launcher pide un texto a buscar y lo a√±ade como par√°metro
+# Al llamarse "search" la funciÛn, el launcher pide un texto a buscar y lo aÒade como par·metro
 def search(item,texto):
     logger.info("[italiafilm.py] search "+texto)
     itemlist = []
@@ -76,7 +75,7 @@ def search(item,texto):
 
     try:
         return peliculas(item)
-    # Se captura la excepci√≥n, para no interrumpir al buscador global si un canal falla
+    # Se captura la excepciÛn, para no interrumpir al buscador global si un canal falla
     except:
         import sys
         for line in sys.exc_info():
@@ -103,7 +102,7 @@ def peliculas(item):
 
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
-        # A√±ade al listado de XBMC
+        # AÒade al listado de XBMC
         itemlist.append( Item(channel=__channel__, action='findvideos', title=title , url=url , thumbnail=thumbnail , fanart=thumbnail, plot=plot , viewmode="movie_with_plot", folder=True) )
 
     # Siguiente
@@ -115,12 +114,12 @@ def peliculas(item):
 
     return itemlist
 
-# Verificaci√≥n autom√°tica de canales: Esta funci√≥n debe devolver "True" si est√° ok el canal.
+# VerificaciÛn autom·tica de canales: Esta funciÛn debe devolver "True" si est· ok el canal.
 def test():
     from core import servertools
     # mainlist
     mainlist_items = mainlist(Item())
-    # Da por bueno el canal si alguno de los v√≠deos de "Novedades" devuelve mirrors
+    # Da por bueno el canal si alguno de los vÌdeos de "Novedades" devuelve mirrors
     peliculas_items = peliculas(mainlist_items[0])
     bien = False
     for pelicula_item in peliculas_items:

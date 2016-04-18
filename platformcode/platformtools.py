@@ -9,10 +9,11 @@
 # en este caso Kodi.
 # version 2.0
 # ------------------------------------------------------------
-import xbmcgui
 import xbmc
-import os
+import xbmcgui
+
 from core import config
+
 
 def dialog_ok(heading, line1, line2="", line3=""):
     dialog = xbmcgui.Dialog()

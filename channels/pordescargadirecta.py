@@ -4,15 +4,12 @@
 # Canal Descarregadirecta Carles Carmona
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os
-import sys
+import re
 
-from core import scrapertools
-from core import config
 from core import logger
-from core.item import Item
+from core import scrapertools
 from core import servertools
+from core.item import Item
 
 CHANNELNAME = "pordescargadirecta"
 DEBUG = True

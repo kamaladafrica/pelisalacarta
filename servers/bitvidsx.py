@@ -5,13 +5,10 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import re, urlparse, urllib, urllib2
-import os
+import re
 
-from core import scrapertools
 from core import logger
-from core import config
-from core import unwise
+from core import scrapertools
 
 
 # Returns an array of possible video url's from the page_url

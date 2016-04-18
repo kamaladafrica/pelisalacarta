@@ -4,16 +4,14 @@
 # Canal para cinetemagay.com por sdfasd
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os,sys
+import os
+import re
 
-from core import logger
 from core import config
+from core import logger
 from core import scrapertools
-from core.item import Item
 from core import servertools
-
-#from pelisalacarta import buscador
+from core.item import Item
 
 __channel__ = "cinetemagay"
 __category__ = "D"

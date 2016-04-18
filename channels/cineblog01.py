@@ -4,14 +4,13 @@
 # Canal para cineblog01
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os
+import re
 import sys
-import re, htmlentitydefs
+import urlparse
 
-from core import scrapertools
-from core import logger
 from core import config
+from core import logger
+from core import scrapertools
 from core.item import Item
 
 __channel__ = "cineblog01"
@@ -92,7 +91,7 @@ def menuanyos(item):
 
     return itemlist
 
-# Al llamarse "search" la función, el launcher pide un texto a buscar y lo añade como parámetro
+# Al llamarse "search" la funciï¿½n, el launcher pide un texto a buscar y lo aï¿½ade como parï¿½metro
 def search(item,texto):
     logger.info("[cineblog01.py] "+item.url+" search "+texto)
 
@@ -105,7 +104,7 @@ def search(item,texto):
             item.url = "http://www.cb01.org/?s="+texto
             return peliculas(item)
 
-    # Se captura la excepción, para no interrumpir al buscador global si un canal falla
+    # Se captura la excepciï¿½n, para no interrumpir al buscador global si un canal falla
     except:
         import sys
         for line in sys.exc_info():
@@ -119,7 +118,7 @@ def peliculas(item):
     if item.url =="":
         item.url = sito
 
-    # Descarga la página
+    # Descarga la pï¿½gina
     data = scrapertools.cache_page(item.url)
     if DEBUG: logger.info(data)
 
@@ -134,7 +133,7 @@ def peliculas(item):
     <a href="http://www.cb01.eu/testament-of-youth-sub-ita-2014/"> <h1>Testament of Youth [Sub-ITA] (2014)</h1></a>
     <!--<p>COMEDY - DURATION 92 '- USA<br>-->
     <p><strong>BIOGRAFICO &#8211; DURATA 132&#8242; &#8211; USA</strong>                                <br />
-    L&#8217;incontenibile e intelligente Vera Brittain sfida i pregiudizi della famiglia e della città natale per ottenere una borsa di studio a Oxford. Mentre persegue i suoi sogni letterari, Vera si innamora di Roland Leighton, il migliore amico del fratello&#8230;
+    L&#8217;incontenibile e intelligente Vera Brittain sfida i pregiudizi della famiglia e della cittï¿½ natale per ottenere una borsa di studio a Oxford. Mentre persegue i suoi sogni letterari, Vera si innamora di Roland Leighton, il migliore amico del fratello&#8230;
     +Info &raquo;
     ...
     <div class="rating">
@@ -152,7 +151,7 @@ def peliculas(item):
 
 
     FANTASCIENZA / MISTERO / DRAMMATICO (2013-)
-    È una tiepida mattina d&#8217;autunno a Chester&#8217;s Mill, nel Maine, una mattina come tante altre. All&#8217;improvviso, una specie di cilindro trasparente cala sulla cittadina, tranciando in due tutto quello che si trova lungo il suo perimetro: cose, animali, persone. Come se dal cielo fosse scesa l                                <br><a href="http://www.cb01.eu/serietv/under-the-dome/">+ info » ...</a><br><br>
+    ï¿½ una tiepida mattina d&#8217;autunno a Chester&#8217;s Mill, nel Maine, una mattina come tante altre. All&#8217;improvviso, una specie di cilindro trasparente cala sulla cittadina, tranciando in due tutto quello che si trova lungo il suo perimetro: cose, animali, persone. Come se dal cielo fosse scesa l                                <br><a href="http://www.cb01.eu/serietv/under-the-dome/">+ info ï¿½ ...</a><br><br>
     <!--</div>-->
     <!--<div class="info">-->
     <div class="rating"> 
@@ -189,7 +188,7 @@ def listserie(item):
     logger.info("[cineblog01.py] mainlist")
     itemlist = []
 
-    # Descarga la página
+    # Descarga la pï¿½gina
     data = scrapertools.cache_page(item.url)
     if DEBUG: logger.info(data)
 
@@ -207,7 +206,7 @@ def listserie(item):
         scrapedplot = scrapertools.unescape(match[3])
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
 
-        # Añade al listado de XBMC
+        # Aï¿½ade al listado de XBMC
         itemlist.append( Item(channel=__channel__, action="findvideos" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot))
 
     # Put the next page mark
@@ -219,7 +218,7 @@ def listserie(item):
 
     return itemlist
 
-# Verificación automática de canales: Esta función debe devolver "True" si todo está ok en el canal.
+# Verificaciï¿½n automï¿½tica de canales: Esta funciï¿½n debe devolver "True" si todo estï¿½ ok en el canal.
 def test():
     bien = True
     
@@ -231,12 +230,12 @@ def test():
         if mainlist_item.action.startswith("menu"):
             exec "itemlist = "+mainlist_item.action+"(mainlist_item)"
             
-            # Lee la primera categoría sólo
+            # Lee la primera categorï¿½a sï¿½lo
             exec "itemlist2 ="+itemlist[0].action+"(itemlist[0])"
             if len(itemlist2)==0:
                 return false
 
-    # Comprueba si alguno de los vídeos de "Novedades" devuelve mirrors
+    # Comprueba si alguno de los vï¿½deos de "Novedades" devuelve mirrors
     for mainlist_item in mainlist_items:
         if mainlist_item.action=="peliculas" or mainlist_item.action=="listserie":
             exec "itemlist = "+mainlist_item.action+"(mainlist_item)"

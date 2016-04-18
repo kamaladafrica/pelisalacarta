@@ -9,12 +9,10 @@
 # Licencia: GPL (http://www.gnu.org/licenses/gpl-3.0.html)
 #------------------------------------------------------------
 
-import sys
 import os
-import xbmcaddon
+
 import xbmc
-
-
+import xbmcaddon
 
 PLATFORM_NAME = "kodi-jarvis"
 

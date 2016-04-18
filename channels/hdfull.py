@@ -4,15 +4,18 @@
 # Canal para hdfull
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os, sys
+import re
+import sys
+import urllib
+import urlparse
 
-from core import logger
 from core import config
-from core import scrapertools
 from core import jsontools
+from core import logger
+from core import scrapertools
 from core.item import Item
-from core import servertools
+from platformcode import platformtools
+from servers import servertools
 
 __channel__ = "hdfull"
 __category__ = "F,S,D"
@@ -637,7 +640,7 @@ def play(item):
         post = "target_id=%s&target_type=%s&target_status=1" % (id, type)
         data = scrapertools.cache_page(host+"/a/status",post=post)
 
-    return itemlist    
+    return itemlist
 
 ## --------------------------------------------------------------------------------
 ## --------------------------------------------------------------------------------

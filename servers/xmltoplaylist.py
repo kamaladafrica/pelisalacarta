@@ -4,13 +4,12 @@
 # Convierte una lista de vídeos en xml a una playlist PLS
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import re, os
-import urlparse, urllib, urllib2
+import os
+import re
 
-from core import scrapertools
-from core import logger
 from core import config
-from core import downloadtools
+from core import logger
+from core import scrapertools
 
 DEBUG = True
 CHANNELNAME = "xmltoplaylist"

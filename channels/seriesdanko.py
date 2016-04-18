@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 # ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
@@ -8,10 +8,10 @@ import re
 import urlparse
 
 from core import config
-from core.item import Item
 from core import logger
 from core import scrapertools
-from servers import servertools
+from core import servertools
+from core.item import Item
 
 __channel__ = "seriesdanko"
 __category__ = "S"

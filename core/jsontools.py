@@ -7,8 +7,10 @@
 # ------------------------------------------------------------
 
 import traceback
+
 import logger
-import re
+
+
 #Incorporadas las funciones loads() y dumps() para json y simplejson
 def loads(*args, **kwargs):
   try:

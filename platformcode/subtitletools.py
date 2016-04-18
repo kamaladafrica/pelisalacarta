@@ -8,17 +8,14 @@
 # cuyos autores son: amet,mr_blobby
 #------------------------------------------------------------
 import os
-import urllib
 import re
-import sys
-import xbmc
-import shutil
-import time
 import string
-import xbmcgui
-import xbmcplugin
-
+import urllib
 from unicodedata import normalize
+
+import xbmc
+import xbmcgui
+
 from core import config
 from core import logger
 

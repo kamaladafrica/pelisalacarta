@@ -3,18 +3,18 @@
 # pelisalacarta - XBMC Plugin
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 # ------------------------------------------------------------
-import urlparse
-import re
 import os
+import re
 import sys
+import urlparse
 
-from core import channeltools
-from core import logger
-from core import config
-from core import scrapertools
-from core.item import Item
-from core import servertools
 from channelselector import get_thumbnail_path
+from core import channeltools
+from core import config
+from core import logger
+from core import scrapertools
+from core import servertools
+from core.item import Item
 
 __channel__ = "seriesblanco"
 __category__ = "F"

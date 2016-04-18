@@ -8,8 +8,8 @@
 
 import re
 
-from core import scrapertools
 from core import logger
+from core import scrapertools
 
 
 headers = [

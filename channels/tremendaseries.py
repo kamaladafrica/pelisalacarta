@@ -241,7 +241,7 @@ def findvideos(item):
             servidor =  servidor.split('.')[0] if '.' in servidor else servidor
             titulo += ' (' + idioma + ') [' + calidad + ']'
             
-            newItem = item.clone(action="play", title=titulo, url=url, folder=True, text_color= color1)
+            newItem = item.clone(action="play", title=titulo, url=url, folder=True, text_color= color1, server= servidor)
             list_0.append(newItem)
         return list_0
               
@@ -266,9 +266,14 @@ def findvideos(item):
  
 def play(item):
     logger.info("pelisalacarta.channels.tremendaseries play")
-
-    data2 = scrapertools.getLocationHeaderFromResponse(item.url)
-    #logger.info("pelisalacarta.channels.tremendaseries data2="+data2)
+    print item.url
+    
+    data= scrapertools.cache_page(item.url)
+    url_base = 'http://tremendaseries.com/saliendo'
+    patron = url_base + '(.*?)">'
+    data2 = url_base + scrapertools.find_single_match(data,patron)
+    data2 = scrapertools.getLocationHeaderFromResponse(data2)
+    logger.info("pelisalacarta.channels.tremendaseries data2="+data2)
 
     itemlist = servertools.find_video_items(data=data2)
     

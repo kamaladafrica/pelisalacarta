@@ -4,10 +4,10 @@
 # Funciones para hacer canales a partir de un canal de YouTube
 # http://blog.tvalacarta.info/plugin-xbmc/tvalacarta/
 #------------------------------------------------------------
-import os,sys,re,urllib
+import urllib
 
-from core import logger
 from core import jsontools
+from core import logger
 from core import scrapertools
 from core.item import Item
 

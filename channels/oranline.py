@@ -1,20 +1,20 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 # ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para oranline
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 # ------------------------------------------------------------
-import urlparse
 import re
 import sys
+import urlparse
 
-from core import logger
 from core import config
+from core import logger
 from core import scrapertools
 from core import channeltools
 from core import tmdb
-from core.item import Item
 from core import servertools
+from core.item import Item
 
 __channel__ = "oranline"
 __category__ = "F"
@@ -284,15 +284,7 @@ def findvideos(item):
     
     # Ampliamos datos en tmdb
     tmdb.set_infoLabels(item, __modo_grafico__)
-    <p>
-    <span><img width="29" src="http://www.oranline.com/wp-content/themes/reviewit/images/1.png"></span>      
-    <span>HD-Rip </span>
-    <span><img src="http://www.oranline.com/wp-content/themes/reviewit/images/calidad4.png"></span>
-    <span>ashley</span>
-    <span><a href="#" title="HDRip - 1,63 Gb - CASTELLANO" class="tooltip"><img src="http://www.oranline.com/wp-content/themes/reviewit/images/informacion.png" width="20"></img></a> <a onclick='reportar("reportarpelicula","375879")'><img  src='http://www.oranline.com/wp-content/themes/reviewit/images/tool.png' title="reportar enlace"></img></a></span>
-    <span>
-    <a href="/wp-content/themes/reviewit/enlace.php?id=375879" rel="get:id=10" rev="abcwin[700,580]"><img style="width:103px" src="http://www.oranline.com/wp-content/themes/reviewit/servidores/uploaded.jpg"></img></a></span></p>
-    '''
+    
     '''
     <p>
     <span><img src="http://www.oranline.com/wp-content/themes/reviewit/images/1.png" width="25"></span>      
@@ -322,7 +314,7 @@ def findvideos(item):
             url = urlparse.urljoin(item.url, scrapedurl)            
             if DEBUG:
                 logger.info("title=[{0}], url=[{1}]".format(title, url))  
-            newItem = item.clone(action="play", title=title, url=url, folder=True, text_color= color1)
+            newItem = item.clone(action="play", title=title, url=url, folder=True, text_color= color1, server= servidor)
             list_0.append(newItem)
         return list_0
     
@@ -346,10 +338,10 @@ def findvideos(item):
 
 def play(item):
     logger.info("pelisalacarta.channels.oranline play")
-
+    itemlist = []
     data2 = scrapertools.cache_page(item.url)
-    logger.info("pelisalacarta.channels.oranline data2="+data2)
-
+    
+    #logger.info("pelisalacarta.channels.oranline data2="+data2)
     itemlist = servertools.find_video_items(data=data2)
     
     return itemlist    
@@ -357,8 +349,6 @@ def play(item):
 
 # Verificación automática de canales: Esta función debe devolver "True" si está ok el canal.
 '''def test():
-    from core import servertools
-    
     # mainlist es "peliculas | documentales"
     mainlist_items = mainlist(Item())
 

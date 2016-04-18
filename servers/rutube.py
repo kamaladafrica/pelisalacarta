@@ -5,12 +5,11 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import urlparse,urllib2,urllib,re
-import os
+import re
 
-from core import scrapertools
 from core import logger
-from core import config
+from core import scrapertools
+
 
 def test_video_exists( page_url ):
     try:
@@ -43,7 +42,7 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
     
     return video_urls
 
-# Encuentra vídeos de este servidor en el texto pasado
+# Encuentra vï¿½deos de este servidor en el texto pasado
 def find_videos(text):
     encontrados = set()
     devuelve = []
