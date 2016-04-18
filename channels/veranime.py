@@ -4,15 +4,15 @@
 # Canal para http://www.veranime.net/
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os
+import re
 import sys
+import urlparse
 
-from core import scrapertools
 from core import config
 from core import logger
-from core.item import Item
+from core import scrapertools
 from core import servertools
+from core.item import Item
 
 __channel__ = "veranime"
 __category__ = "A"

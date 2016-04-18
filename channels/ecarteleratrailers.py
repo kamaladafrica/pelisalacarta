@@ -5,14 +5,13 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import urlparse,urllib2,urllib,re
-import os, sys
+import re
+import urlparse
 
-from core import logger
 from core import config
+from core import logger
 from core import scrapertools
 from core.item import Item
-from core import servertools
 
 DEBUG = config.get_setting("debug")
 
@@ -33,13 +32,13 @@ def mainlist(item):
         item.url="http://www.ecartelera.com/videos/"
     
     # ------------------------------------------------------
-    # Descarga la p√°gina
+    # Descarga la p·gina
     # ------------------------------------------------------
     data = scrapertools.cachePage(item.url)
     #logger.info(data)
 
     # ------------------------------------------------------
-    # Extrae las pel√≠culas
+    # Extrae las pelÌculas
     # ------------------------------------------------------
     patron  = '<div class="cuadronoticia">.*?<img src="([^"]+)".*?'
     patron += '<div class="cnottxtv">.*?<h3><a href="([^"]+)">([^<]+)</a></h3>.*?'
@@ -54,7 +53,7 @@ def mainlist(item):
         if match[3]=="fl_1.gif":
             scrapedtitle += " (Castellano)"
         elif match[3]=="fl_2.gif":
-            scrapedtitle += " (Ingl√©s)"
+            scrapedtitle += " (InglÈs)"
         
         scrapedurl = match[1]
         scrapedthumbnail = match[0]
@@ -64,7 +63,7 @@ def mainlist(item):
         itemlist.append( Item(channel=__channel__, action="play" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot, server="directo", viewmode="movie_with_plot", folder=False))
 
     # ------------------------------------------------------
-    # Extrae la p√°gina siguiente
+    # Extrae la p·gina siguiente
     # ------------------------------------------------------
     patron = '<a href="([^"]+)">Siguiente</a>'
     matches = re.compile(patron,re.DOTALL).findall(data)
@@ -77,20 +76,20 @@ def mainlist(item):
         scrapedthumbnail = ""
         scrapeddescription = ""
 
-        # A√±ade al listado de XBMC
+        # AÒade al listado de XBMC
         itemlist.append( Item(channel=__channel__, action="mainlist" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot, server="directo", folder=True))
 
     return itemlist
 
-# Reproducir un v√≠deo
+# Reproducir un vÌdeo
 def play(item):
     logger.info("[ecarteleratrailers.py] play")
     itemlist=[]
-    # Descarga la p√°gina
+    # Descarga la p·gina
     data = scrapertools.cachePage(item.url)
     logger.info(data)
 
-    # Extrae las pel√≠culas
+    # Extrae las pelÌculas
     patron  = "file\: '([^']+)'"
     matches = re.compile(patron,re.DOTALL).findall(data)
 
@@ -102,17 +101,15 @@ def play(item):
     return itemlist
 
 
-# Verificaci√≥n autom√°tica de canales: Esta funci√≥n debe devolver "True" si est√° ok el canal.
+# VerificaciÛn autom·tica de canales: Esta funciÛn debe devolver "True" si est· ok el canal.
 def test():
-    from core import servertools
-    
     # mainlist
     mainlist_items = mainlist(Item())
     if len(mainlist_items)==0:
-        print "ecartelera: Lista de canales vac√≠a"
+        print "ecartelera: Lista de canales vacÌa"
         return False
     
-    # Da por bueno el canal si alguno de los v√≠deos de "Novedades" devuelve mirrors
+    # Da por bueno el canal si alguno de los vÌdeos de "Novedades" devuelve mirrors
     video_items = play(mainlist_items[0])
     if len(mainlist_items)==0:
         print "ecartelera: No devuelve videos"

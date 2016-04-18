@@ -5,17 +5,16 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import re, sys
-import urlparse, urllib, urllib2
+import re
 
-from core import scrapertools
 from core import logger
-from core import config
+from core import scrapertools
+
 
 def get_video_url( page_url , premium = False , user="" , password="" , video_password="" ):
     logger.info("[adnstream.py] get_video_url(page_url='%s')" % page_url)
 
-    # Saca el código del vídeo
+    # Saca el cÃ³digo del vÃ­deo
     if page_url.startswith("http://"):
         try:
             code = scrapertools.get_match(page_url,"http\://www.adnstream.com/video/([a-zA-Z]+)/")
@@ -37,7 +36,7 @@ def get_video_url( page_url , premium = False , user="" , password="" , video_pa
 
     return video_urls
 
-# Encuentra vídeos del servidor en el texto pasado
+# Encuentra vÃ­deos del servidor en el texto pasado
 def find_videos(data):
     logger.info("[adnstream.py] find_videos")
 

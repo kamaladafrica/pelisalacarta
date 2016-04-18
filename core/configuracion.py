@@ -5,7 +5,6 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-from core import downloadtools
 from core import config
 from core import logger
 

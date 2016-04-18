@@ -4,12 +4,18 @@
 # Canal para tvvip
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urllib, unicodedata, sys, time, urllib2, os
-from core import logger
+import os
+import sys
+import time
+import unicodedata
+import urllib
+import urllib2
+
 from core import config
+from core import jsontools
+from core import logger
 from core import scrapertools
 from core.item import Item
-from core import jsontools
 
 __channel__ = "tvvip"
 __category__ = "F,S,D"

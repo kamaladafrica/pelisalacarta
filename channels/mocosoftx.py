@@ -4,15 +4,16 @@
 # Canal para mocosoftx
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os
-import sys
+import re
+import urllib
+import urlparse
 
-from core import logger
 from core import config
+from core import logger
 from core import scrapertools
 from core.item import Item
-from core import servertools
+from platformcode import platformtools
+from servers import servertools
 
 __channel__ = "mocosoftx"
 __category__ = "F"
@@ -51,7 +52,7 @@ def login():
     password = config.get_setting("mocosoftxpassword","mocosoftx")
     logger.info("email="+email)
     logger.info("password="+password)
-    
+
     #doForm.hash_passwrd.value = hex_sha1(hex_sha1(doForm.user.value.php_to8bit().php_strtolower() + doForm.passwrd.value.php_to8bit()) + cur_session_id);
     hash_passwrd = scrapertools.get_sha1( scrapertools.get_sha1( email.lower() + password.lower() ) + cur_session_id)
     logger.info("hash_passwrd="+hash_passwrd)
@@ -83,7 +84,7 @@ def login():
 def mainlist(item):
     logger.info("pelisalacarta.channels.mocosoftx mainlist")
     itemlist = []
-    
+
     if config.get_setting("mocosoftxuser","mocosoftx")=="":
         itemlist.append( Item( channel=__channel__ , title="Habilita tu cuenta en la configuración..." , action="settingCanal" , url="") )
     else:
@@ -96,16 +97,16 @@ def mainlist(item):
 
     return itemlist
 
-def settingCanal(item):           
+def settingCanal(item):
     return platformtools.show_channel_settings()
-    
+
 def foro(item):
     logger.info("pelisalacarta.channels.mocosoftx foro")
     itemlist = []
-    
+
     # Descarga la página
     data = scrapertools.cache_page(item.url,headers=MAIN_HEADERS)
-    
+
     # Extrae los foros y subforos
     patron  = '<h4><a href="([^"]+)"[^>]+>([^<]+)</a>'
     matches = re.compile(patron,re.DOTALL).findall(data)
@@ -120,7 +121,7 @@ def foro(item):
         thumbnail = ""
         plot = ""
         itemlist.append( Item( channel=__channel__ , title=title , action="foro" , url=url , plot=plot, thumbnail=thumbnail, folder=True ) )
-    
+
     # Extrae los hilos individuales
     patron = '<td class="icon2 windowbgb">[^<]+'
     patron += '<img src="([^"]+)"[^<]+'
@@ -144,7 +145,7 @@ def foro(item):
     patronvideos = '<strong>\d+</strong[^<]+<a class="navPages" href="([^"]+)">'
     matches = re.compile(patronvideos,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
-    
+
     if len(matches)>0:
         scrapedtitle = ">> Página siguiente"
         scrapedurl = urlparse.urljoin(item.url,matches[0])
@@ -168,9 +169,9 @@ def findvideos(item):
         thumbnail = scrapertools.get_match(data,'<div class="post">.*?<img src="([^"]+)"')
     except:
         thumbnail = ""
-    
+
     plot = ""
-    
+
     # Ahora busca los vídeos
     itemlist = servertools.find_video_items(data=data)
 

@@ -4,12 +4,15 @@
 # Canal para verseriesynovelas
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import re, urllib2, time
-from core import logger
+import re
+import time
+import urllib2
+
 from core import config
+from core import logger
 from core import scrapertools
-from core.item import Item
 from core import servertools
+from core.item import Item
 
 __channel__ = "verseriesynovelas"
 __category__ = "S,VOS,L"

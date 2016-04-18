@@ -4,14 +4,16 @@
 # Canal para divxatope
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os, sys
+import re
+import sys
+import urllib
+import urlparse
 
-from core import logger
 from core import config
+from core import logger
 from core import scrapertools
-from core.item import Item
 from core import servertools
+from core.item import Item
 
 __channel__ = "divxatope"
 __category__ = "F,S,D"

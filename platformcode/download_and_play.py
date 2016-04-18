@@ -8,22 +8,21 @@
 #---------------------------------------------------------------------------
 
 import os
-import sys
 import re
-import urlparse
-import urllib
-import urllib2
-import locale
+import socket
+import sys
 import threading
 import time
-import socket
+import urllib
+import urllib2
 
 import xbmc
 import xbmcgui
 
 from core import config
-from core import logger
 from core import downloadtools
+from core import logger
+
 
 # Download a file and start playing while downloading
 def download_and_play(url,file_name,download_path):
@@ -199,7 +198,6 @@ class DownloadThread(threading.Thread):
 
         logger.info("DownloadThread.download_file destino="+self.download_path)
 
-        import subprocess
         os.system( comando+" '"+self.url+ "' \"" + self.download_path+"\"" )
         #p = subprocess.Popen([comando , self.url , self.download_path], cwd=cwd, stdout=subprocess.PIPE , stderr=subprocess.PIPE )
         #out, err = p.communicate()

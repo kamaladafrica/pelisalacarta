@@ -4,17 +4,16 @@
 # Lista de vídeos descargados
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
 import os
 import sys
 
 from core import config
+from core import downloadtools
+from core import favoritos
 from core import logger
 from core import samba
-from core import favoritos
-from core.item import Item
-from core import downloadtools
 from core import servertools
+from core.item import Item
 
 CHANNELNAME = "descargas"
 DEBUG = True

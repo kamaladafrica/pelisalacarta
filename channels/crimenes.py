@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
-import urlparse,urllib2,urllib,re
-import os, sys, xbmc,xbmcgui
+import re
+import urlparse
 
-from core import logger
+import xbmc
+
 from core import config
+from core import logger
 from core import scrapertools
+from core import servertools
 from core.item import Item
-from servers import servertools
 
 __channel__ = "crimenes"
 __category__ = "D"
@@ -15,7 +17,6 @@ __title__ = "Crimenes"
 __language__ = "ES"
 
 DEBUG = config.get_setting("debug")
-from unicodedata import normalize
 
 
 def isGeneric():

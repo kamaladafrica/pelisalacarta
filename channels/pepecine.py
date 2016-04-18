@@ -5,16 +5,17 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import urlparse,urllib2,urllib,re
-import os, sys
 import ast
+import re
+import sys
+import urlparse
 
-from core import logger
 from core import config
-from core import scrapertools
 from core import jsontools
-from core.item import Item
+from core import logger
+from core import scrapertools
 from core import servertools
+from core.item import Item
 
 __adult__ = "false"
 __category__ = "F,S"
@@ -495,10 +496,8 @@ class myItem(Item):
 #   - El parametro 'plot' incluye las infoLabels en el caso de que la plataforma sea XBMC/KODI o solo 
 #     la sinopsis en caso contrario. En realidad deberia ser xbmctools o equivalente quien se encargara de interpretarlo.
 ##########################################################################################
-    import re
-    import ast
 
-    def __init__(self, channel="", title="", url="", page="", thumbnail="", plot="", duration="", fanart="", action="", server="directo", extra="", show="", category = "" , language = "" , subtitle="" , folder=True, context = "",totalItems = 0, overlay = None, type="", password="", fulltitle="", viewmode="list" ):
+def __init__(self, channel="", title="", url="", page="", thumbnail="", plot="", duration="", fanart="", action="", server="directo", extra="", show="", category = "" , language = "" , subtitle="" , folder=True, context = "",totalItems = 0, overlay = None, type="", password="", fulltitle="", viewmode="list" ):
         Item.__init__(self, channel=channel, title=self.format_text(title), url=url, page=page, thumbnail=thumbnail, 
                       plot=self.format_plot(plot), duration=duration, fanart=fanart, action=action, server=server, extra=extra, 
                       show=show, category =category , language =language , subtitle=subtitle , folder=folder, 

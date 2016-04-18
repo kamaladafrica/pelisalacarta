@@ -4,8 +4,8 @@
 # Conector para enlaces a torrent y magnet
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-from core import logger, config
-import urllib
+from core import logger
+
 
 # Returns an array of possible video url's from the page_url
 def get_video_url( page_url , premium = False , user="" , password="" , video_password="" ):

@@ -7,8 +7,8 @@
 
 
 import urlparse
-from lib import unshortenit
 
+from lib import unshortenit
 
 SERVICES_SHORT = ["adf.ly","sh.st","bit.ly","ul.to"]
 

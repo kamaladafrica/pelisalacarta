@@ -16,11 +16,14 @@
 # Historial de cambios:
 #------------------------------------------------------------
 
-import sys, os.path
+import os.path
 import re
-import urllib,urllib2
-import time
 import socket
+import sys
+import time
+import urllib
+import urllib2
+
 import config
 import logger
 

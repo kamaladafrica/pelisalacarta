@@ -20,12 +20,11 @@ __title__ = "Beeg"
 __type__ = "generic"
 __version__ = 3
 
-import urlparse,urllib2,urllib,re
-import os
+import re
 import sys
 
-from core import logger
 from core import config
+from core import logger
 from core import scrapertools
 from core.item import Item
 

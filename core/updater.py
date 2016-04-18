@@ -5,14 +5,14 @@
 # XBMC Plugin
 #------------------------------------------------------------
 
-import urlparse,urllib2,urllib,re
 import os
+import re
 import sys
-import scrapertools
 import time
+
 import config
 import logger
-
+import scrapertools
 
 ROOT_DIR = config.get_runtime_path()
 

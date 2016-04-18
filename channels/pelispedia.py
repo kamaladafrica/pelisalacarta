@@ -4,14 +4,14 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 # ------------------------------------------------------------
 
+import re
 import urllib
 import urlparse
-import re
 
-from core import logger
 from core import config
+from core import logger
 from core import scrapertools
-from servers import servertools
+from core import servertools
 from core.item import Item
 
 __channel__ = "pelispedia"

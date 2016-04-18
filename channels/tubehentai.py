@@ -4,15 +4,13 @@
 # Canal para tubehentai
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os
-import sys
+import re
+import urlparse
 
-from core import scrapertools
 from core import config
 from core import logger
+from core import scrapertools
 from core.item import Item
-from core import servertools
 
 __channel__ = "tubehentai"
 __category__ = "A"

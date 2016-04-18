@@ -4,16 +4,14 @@
 # Canal para discoverymx
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os
-import sys
+import re
+import urlparse
 
-from core import scrapertools
 from core import config
 from core import logger
-from core.item import Item
+from core import scrapertools
 from core import servertools
-#from pelisalacarta import buscador
+from core.item import Item
 
 __channel__ = "discoverymx"
 __category__ = "D"
@@ -41,7 +39,7 @@ def DocuSeries(item):
     logger.info("[discoverymx.py] DocuSeries")
     itemlist=[]
     
-    # Descarga la p√°gina
+    # Descarga la p·gina
     data = scrapertools.cache_page(item.url)
 
     # Extrae las entradas (carpetas)
@@ -63,7 +61,7 @@ def DocuTag(item):
     logger.info("[discoverymx.py] DocuSeries")
     itemlist=[]
 
-    # Descarga la p√°gina
+    # Descarga la p·gina
     data = scrapertools.cache_page(item.url)
     patronvideos  =    "<a dir='ltr' href='([^']+)'>([^<]+)</a>[^<]+<span class='label-count' dir='ltr'>(.+?)</span>"
     matches = re.compile(patronvideos,re.DOTALL).findall(data)
@@ -83,7 +81,7 @@ def DocuARCHIVO(item):
     logger.info("[discoverymx.py] DocuSeries")
     itemlist=[]
 
-    # Descarga la p√°gina
+    # Descarga la p·gina
     data = scrapertools.cache_page(item.url)
     patronvideos = "<a class='post-count-link' href='([^']+)'>([^<]+)</a>[^<]+"
     patronvideos +=    "<span class='post-count' dir='ltr'>(.+?)</span>"
@@ -107,7 +105,7 @@ def listvideos(item):
     scrapedthumbnail = ""
     scrapedplot = ""
 
-    # Descarga la p√°gina
+    # Descarga la p·gina
     data = scrapertools.cache_page(item.url)
     patronvideos  = "<h3 class='post-title entry-title'[^<]+"
     patronvideos += "<a href='([^']+)'>([^<]+)</a>.*?"
@@ -137,16 +135,16 @@ def listvideos(item):
         scrapedplot = scrapertools.unescape(scrapedplot)
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
 
-        # A√±ade al listado de XBMC
+        # AÒade al listado de XBMC
         itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
 
-    # Extrae la marca de siguiente p√°gina
+    # Extrae la marca de siguiente p·gina
     patronvideos = "<a class='blog-pager-older-link' href='([^']+)'"
     matches = re.compile(patronvideos,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
 
     if len(matches)>0:
-        scrapedtitle = "P√°gina siguiente"
+        scrapedtitle = "P·gina siguiente"
         scrapedurl = urlparse.urljoin(item.url,matches[0])
         scrapedthumbnail = ""
         scrapedplot = ""
@@ -158,7 +156,7 @@ def findvideos(item):
     logger.info("[discoverymx.py] findvideos")
     itemlist=[]
     
-    # Descarga la p√°gina
+    # Descarga la p·gina
     data = scrapertools.cachePage(item.url)
     data = scrapertools.get_match(data,"<div class='post-body entry-content'(.*?)<div class='post-footer'>")
 
@@ -174,14 +172,14 @@ def findvideos(item):
 
     return itemlist
 
-# Verificaci√≥n autom√°tica de canales: Esta funci√≥n debe devolver "True" si todo est√° ok en el canal.
+# VerificaciÛn autom·tica de canales: Esta funciÛn debe devolver "True" si todo est· ok en el canal.
 def test():
     bien = True
     
     # mainlist
     mainlist_items = mainlist(Item())
     
-    # Da por bueno el canal si alguno de los v√≠deos de "Novedades" devuelve mirrors
+    # Da por bueno el canal si alguno de los vÌdeos de "Novedades" devuelve mirrors
     documentales_items = listvideos(mainlist_items[0])
     
     bien = False

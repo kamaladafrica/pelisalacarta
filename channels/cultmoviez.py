@@ -6,14 +6,16 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import urlparse,urllib,re
+import re
 import sys
+import urllib
+import urlparse
 
-from core import logger
 from core import config
+from core import logger
 from core import scrapertools
-from core.item import Item
 from core import servertools
+from core.item import Item
 
 DEBUG = config.get_setting("debug")
 

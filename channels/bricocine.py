@@ -1,19 +1,21 @@
-    # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os, sys
-
-from core import logger
-from core import config
-from core import scrapertools
-from core.item import Item
-from core import servertools
+import os
+import re
+import sys
+import urllib
+import urllib2
 
 import xbmcgui
 
+from core import config
+from core import logger
+from core import scrapertools
+from core import servertools
+from core.item import Item
 
 __channel__ = "bricocine"
 __category__ = "F"
@@ -73,7 +75,7 @@ def mainlist(item):
     itemlist.append( Item(channel=__channel__, title="[COLOR sandybrown][B]Pelis Bluray-Rip[/B][/COLOR]" , action="peliculas", url="http://www.bricocine.com/c/bluray-rip/",  thumbnail="http://s6.postimg.org/5w82dorpt/blueraybrico.jpg", fanart="http://i59.tinypic.com/11rdnjm.jpg"))
     itemlist.append( Item(channel=__channel__, title="[COLOR sandybrown][B]Pelis DVD-Rip[/B][/COLOR]" , action="peliculas", url="http://www.bricocine.com/c/dvdrip/", thumbnail="http://s6.postimg.org/d2dlld4y9/dvd2.jpg", fanart="http://s6.postimg.org/hcehbq5w1/brico_blue_fan.jpg"))
     itemlist.append( Item(channel=__channel__, title="[COLOR sandybrown][B]Pelis 3D[/B][/COLOR]" , action="peliculas", url="http://www.bricocine.com/c/3d/", thumbnail="http://www.eias3d.com/wp-content/uploads/2011/07/3d2_5.png", fanart="http://s6.postimg.org/u18rvec0h/bric3dd.jpg"))
-    import xbmc, time
+    import xbmc
     ###Para musica(si hay) y borra customkeys
     if xbmc.Player().isPlaying():
        xbmc.executebuiltin('xbmc.PlayMedia(Stop)')
@@ -96,7 +98,7 @@ def mainlist(item):
         print "No hay customs"
     
     itemlist.append( Item(channel=__channel__, title="[COLOR sandybrown][B]Series[/B][/COLOR]"         , action="peliculas", url="http://www.bricocine.com/c/series", thumbnail="http://img0.mxstatic.com/wallpapers/bc795faa71ba7c490fcf3961f3b803bf_large.jpeg", fanart="http://s6.postimg.org/z1ath370x/bricoseries.jpg",extra="Series"))
-    import xbmc, time
+    import xbmc
     if xbmc.Player().isPlaying():
        print "PLAYIIING"
        xbmc.executebuiltin('xbmc.PlayMedia(Stop)')
@@ -345,7 +347,7 @@ def fanart(item):
         title_tunes= re.sub(r"\(.*?\)","",title)
         title_tunes= (translate(title_tunes,"en"))
         ###Prepara customkeys y borra cuando vuelve
-        import xbmc,time
+        import xbmc
         if not xbmc.Player().isPlaying() and not os.path.exists ( TRAILERDESTFILE ):
             
            TESTPYDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "test.py")
@@ -1044,7 +1046,7 @@ def findvideos(item):
     
     itemlist = []
     ###Ubicacion Customkey
-    import xbmc, time
+    import xbmc
     SEARCHDESTFILE= os.path.join(xbmc.translatePath('special://userdata/keymaps'), "search.txt")
     TESTPYDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "test.py")
     KEYMAPDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "customkey.xml")
@@ -1065,7 +1067,7 @@ def findvideos(item):
     data = get_page( item.url )
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;| - REPARADO","",data)
     ###Borra Customkey cuando no hay música
-    import xbmc, time
+    import xbmc
     if not xbmc.Player().isPlaying():
         TESTPYDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "test.py")
         KEYMAPDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "customkey.xml")
@@ -1421,7 +1423,7 @@ def episodios(item):
     logger.info("pelisalacarta.bricocine episodios")
     itemlist = []
     ###Borra Customkey si no hay música
-    import xbmc, time
+    import xbmc
     TESTPYDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "test.py")
     if not xbmc.Player().isPlaying() and os.path.exists ( TESTPYDESTFILE ):
         TESTPYDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "test.py")

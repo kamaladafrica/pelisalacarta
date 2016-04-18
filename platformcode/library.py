@@ -1,23 +1,21 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Herramientas de integración en Librería
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 # Autor: jurrabi
 #------------------------------------------------------------
-import urllib
 import os
-import re
+import string
 import sys
+import urllib
+import xml.parsers.expat
+
 import xbmc
 import xbmcgui
-import string
-import xml.parsers.expat
 
 from core import config
 from core import logger
-from core import downloadtools
-from core import scrapertools
 
 CHANNELNAME = "library"
 allchars = string.maketrans('', '')

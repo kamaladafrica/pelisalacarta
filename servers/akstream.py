@@ -6,12 +6,10 @@
 # by be4t5
 #------------------------------------------------------------
 
-import urlparse,urllib2,urllib,re
-import os
+import re
 
-from core import scrapertools
 from core import logger
-from core import config
+from core import scrapertools
 from lib import mechanize
 
 def get_video_url( page_url , premium = False , user="" , password="", video_password="" ):
