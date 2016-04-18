@@ -212,16 +212,24 @@ def play(item):
     logger.info("documaniatv.play")
     itemlist = []
 
-    # Descarga la pagina
-    url = "http://www.documaniatv.com/ajax.php?p=video&do=getplayerr&vid=%s&aid=3&player=detail" % re.search("video_(.*?).html", item.url).group(1)
+    data = scrapertools.cachePage(item.url)
+    patron = 'preroll_timeleft.*?data:\{"([^"]+)":"([^"]+)","' \
+             '([^"]+)":"([^"]+)","([^"]+)":"([^"]+)","([^"]+)"' \
+             ':"([^"]+)","([^"]+)":"([^"]+)"\}'
+    match = scrapertools.find_single_match(data, patron)
+    params = "{0}={1}&{2}={3}&{4}={5}&{6}={7}&{8}={9}".format(match[0],match[1],match[2],
+                                                              match[3],match[4],match[5],
+                                                              match[6],match[7],match[8],
+                                                              match[9])
+    url = "http://www.documaniatv.com/ajax.php?%s"  % params
     data1 = scrapertools.cachePage(url) 
 
     patron= '<iframe src="(.*?)"'
-    matc = re.compile(patron,re.DOTALL).findall(data1)
-    logger.info(matc[0])
+    match = re.compile(patron,re.DOTALL).findall(data1)
+    logger.info(match[0])
 
     # Busca los enlaces a los videos
-    video_itemlist = servertools.find_video_items(data=matc[0])
+    video_itemlist = servertools.find_video_items(data=match[0])
     for video_item in video_itemlist:
         itemlist.append( Item(channel=__channel__ , action="play" , server=video_item.server, title=item.title+video_item.title,url=video_item.url, thumbnail=video_item.thumbnail, plot=video_item.plot, folder=False))
 
