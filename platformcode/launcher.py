@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # tvalacarta
 # XBMC Launcher (xbmc / xbmc-dharma / boxee)
@@ -448,7 +448,7 @@ def download_all_episodes(item,channel,first_episode="",preferred_server="vidspo
         for mirror_item in mirrors_itemlist:
             logger.info("pelisalacarta.platformcode.launcher download_all_episodes, mirror="+mirror_item.title)
 
-            if "(EspaÃƒÂ±ol)" in mirror_item.title:
+            if "(Español)" in mirror_item.title:
                 idioma="(Español)"
                 codigo_idioma="es"
             elif "(Latino)" in mirror_item.title:
