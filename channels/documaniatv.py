@@ -213,6 +213,8 @@ def play(item):
     itemlist = []
 
     data = scrapertools.cachePage(item.url)
+    var_url, ajax = scrapertools.find_single_match(data, 'preroll_timeleft.*?url:([^+]+)\+"([^"]+)"')
+    url_base = scrapertools.find_single_match(data, 'var.*?' + var_url + '="([^"]+)"')
     patron = 'preroll_timeleft.*?data:\{"([^"]+)":"([^"]+)","' \
              '([^"]+)":"([^"]+)","([^"]+)":"([^"]+)","([^"]+)"' \
              ':"([^"]+)","([^"]+)":"([^"]+)"\}'
@@ -221,8 +223,8 @@ def play(item):
                                                               match[3],match[4],match[5],
                                                               match[6],match[7],match[8],
                                                               match[9])
-    url = "http://www.documaniatv.com/ajax.php?%s"  % params
-    data1 = scrapertools.cachePage(url) 
+    url = url_base + ajax + "?" + params
+    data1 = scrapertools.cachePage(url)
 
     patron= '<iframe src="(.*?)"'
     match = re.compile(patron,re.DOTALL).findall(data1)
