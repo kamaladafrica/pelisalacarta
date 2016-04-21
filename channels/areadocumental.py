@@ -4,12 +4,15 @@
 # Canal para Area-Documental
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urllib, os, requests
 
-from core import logger
+import os
+import urllib
+
 from core import config
+from core import logger
 from core import scrapertools
 from core.item import Item
+from lib import requests
 
 
 __channel__ = "areadocumental"
@@ -109,7 +112,7 @@ def entradas(item):
 
     next_page = scrapertools.find_single_match(data2, '<a href="([^"]+)"> ></a>')
     if next_page != "":	
-        itemlist.append(Item(channel=__channel__, action="entradas", title="Siguiente", url=host+next_page, folder=True))
+        itemlist.append(Item(channel=__channel__, action="entradas", title=">> Siguiente", url=host+next_page, folder=True))
     return itemlist
 
 
