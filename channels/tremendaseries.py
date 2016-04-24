@@ -130,7 +130,7 @@ def listadoTemporadas(item):
     data = re.sub(r"\n|\r|\t|\s{2}|(<!--.*?-->)","",scrapertools.cache_page(item.url))
     patron = '<div class="tit_enlaces"><ul>(.*?)<div class="addthis_sharing_toolbox"'
     data = scrapertools.find_single_match(data,patron)
-    logger.debug(data) 
+    #logger.debug(data)
     patron  = '<a href="javascript:void\(\);">([^<]+)<br>'
     matches = scrapertools.find_multiple_matches(data,patron)
 
