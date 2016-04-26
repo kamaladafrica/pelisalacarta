@@ -130,7 +130,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             Así abre la ventana con los controles pasados y los valores de dict_values, si no se pasa dict_values, carga los valores por defecto de los controles,
             cuando le das a aceptar, llama a la función 'cb' del canal desde donde se ha llamado, pasando como parámetros, el ítem y el dict_values
     '''
-    def Start(self, list_controls=None, values=None, title="Opciones", callback=None, item = None):
+    def Start(self, list_controls=None, dict_values=None, title="Opciones", callback=None, item = None):
         logger.info("[xbmc_config_menu] start")
 
         #Ruta para las imagenes de la ventana
@@ -138,7 +138,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
 
         #Capturamos los parametros
         self.list_controls = list_controls
-        self.values = values
+        self.values = dict_values
         self.title = title
         self.callback = callback
         self.item = item
@@ -384,7 +384,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                     self.values[id] = default
 
                 value = self.values[id]
-                logger.info(str(type(config.get_setting(id,self.channel))))
+                
             if ctype == "bool":
                 c["default"] = bool(c["default"])
                 self.values[id] = bool(self.values[id])
@@ -486,6 +486,9 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
         #Ponemos el foco en el primer control
         self.setFocus(self.controls[0]["control"])
         self.evaluate_conditions()
+        self.check_default()
+        self.check_ok(self.values)
+        
 
 
     def MoveUp(self):
@@ -625,7 +628,27 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
         self.getControl(10009).setPosition(self.getControl(10008).getX(), scrollbar_y)
         self.getControl(10009).setHeight(scrollbar_height)
         self.evaluate_conditions()
+    
+    def check_ok(self, dict_values=None):
+      if not self.callback:
+        if dict_values: 
+          self.init_values = dict_values.copy()
+          self.getControl(10004).setEnabled(False)
+          
+        else:
+          if self.init_values == self.values:
+            self.getControl(10004).setEnabled(False)
+          else:
+            self.getControl(10004).setEnabled(True)
+        
+    def check_default(self):
+      def_values = dict([[c["id"], c["default"]] for c in self.controls])
 
+      if def_values == self.values:
+        self.getControl(10006).setEnabled(False)
+      else:
+        self.getControl(10006).setEnabled(True)
+        
     def onClick(self, id):
         #Valores por defecto
         if id == 10006:
@@ -637,8 +660,12 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                     c["control"].setSelected(c["default"])
                     self.values[c["id"]] = c["default"]
                 if c["type"] == "list":
-                    c["label"].setLabel(c["default"])
+                    c["label"].setLabel(c["lvalues"][c["default"]])
                     self.values[c["id"]] = c["default"]
+                    
+            self.evaluate_conditions()
+            self.check_default()
+            self.check_ok()
 
         #Boton Cancelar y [X]
         if id == 10003 or id == 10005:
@@ -652,7 +679,13 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
               self.close()
             else:
               self.close()
-              exec "from channels import " + self.channel + " as cb_channel"
+              try:
+                exec "from channels import " + self.channel + " as cb_channel"
+              except:
+                  try:
+                    exec "from core import " + self.channel + " as cb_channel"
+                  except:
+                      logger.error ('Imposible importar %s' % self.channel )
               exec "self.return_value =  cb_channel." + self.callback + "(self.item,self.values)"
 
 
@@ -688,7 +721,9 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             #Si esl control es un "text", guardamos el nuevo valor
             if cont["type"] == "text" and cont["control"] == control: self.values[cont["id"]] = cont["control"].getText()
 
-            self.evaluate_conditions()
+        self.evaluate_conditions()
+        self.check_default()
+        self.check_ok()
 
     def onAction(self, action):
             #Accion 1: Flecha derecha
