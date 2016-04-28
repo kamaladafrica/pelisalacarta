@@ -23,7 +23,7 @@ __title__ = "Series Blanco"
 __language__ = "ES"
 
 channel_xml = channeltools.get_channel_parameters(__channel__)
-HOST = "http://seriesblanco.tv/"
+HOST = "http://seriesblanco.com/"
 IDIOMAS = {'es': 'Español', 'la': 'Latino', 'vos': 'VOS', 'vo': 'VO', 'japovose': 'VOSE', 'jp-sub': 'VOSE'}
 
 
