@@ -32,11 +32,15 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
     xml = ET.fromstring(data)
     base_url = xml.find('{http://ns.adobe.com/f4m/1.0}baseURL').text
     for media in xml.findall('{http://ns.adobe.com/f4m/1.0}media'):
+        if ".m3u8" in media.get('url'): continue
         media_url = base_url + "/" + media.get('url')
-        height = media.get('height')
-        width = media.get('width')
-        label = width + "x" + height
-        video_urls.append( [ scrapertools.get_filename_from_url(media_url)[-4:]+" ("+label+") [playwire]",media_url])
+        try:
+            height = media.get('height')
+            width = media.get('width')
+            label = "("+ width + "x" + height + ")"
+        except:
+            label = ""
+        video_urls.append( [ scrapertools.get_filename_from_url(media_url)[-4:]+" "+label+" [playwire]",media_url])
 
 
     for video_url in video_urls:
