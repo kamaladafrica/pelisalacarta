@@ -130,7 +130,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             Así abre la ventana con los controles pasados y los valores de dict_values, si no se pasa dict_values, carga los valores por defecto de los controles,
             cuando le das a aceptar, llama a la función 'cb' del canal desde donde se ha llamado, pasando como parámetros, el ítem y el dict_values
     '''
-    def Start(self, list_controls=None, values=None, title="Opciones", callback=None, item = None):
+    def Start(self, list_controls=None, dict_values=None, title="Opciones", callback=None, item = None):
         logger.info("[xbmc_config_menu] start")
 
         #Ruta para las imagenes de la ventana
@@ -138,7 +138,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
 
         #Capturamos los parametros
         self.list_controls = list_controls
-        self.values = values
+        self.values = dict_values
         self.title = title
         self.callback = callback
         self.item = item
@@ -637,7 +637,8 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                     c["control"].setSelected(c["default"])
                     self.values[c["id"]] = c["default"]
                 if c["type"] == "list":
-                    c["label"].setLabel(c["default"])
+                    logger.debug(str(c))
+                    c["label"].setLabel(c["lvalues"][c["default"]])
                     self.values[c["id"]] = c["default"]
 
         #Boton Cancelar y [X]
@@ -652,7 +653,13 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
               self.close()
             else:
               self.close()
-              exec "from channels import " + self.channel + " as cb_channel"
+              try:
+                exec "from channels import " + self.channel + " as cb_channel"
+              except:
+                  try:
+                    exec "from core import " + self.channel + " as cb_channel"
+                  except:
+                      logger.error ('Imposible importar %s' % self.channel )
               exec "self.return_value =  cb_channel." + self.callback + "(self.item,self.values)"
 
 
@@ -688,7 +695,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             #Si esl control es un "text", guardamos el nuevo valor
             if cont["type"] == "text" and cont["control"] == control: self.values[cont["id"]] = cont["control"].getText()
 
-            self.evaluate_conditions()
+        self.evaluate_conditions()
 
     def onAction(self, action):
             #Accion 1: Flecha derecha
