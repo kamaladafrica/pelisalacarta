@@ -7,7 +7,6 @@
 	<id>allmyvideos</id>
 	<name>allmyvideos</name>
 	<premium>
-		<value>filenium</value>
 	</premium>
 	<thumbnail>http://media.tvalacarta.info/servers/server_allmyvideos.png</thumbnail>
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/servers/</update_url>
