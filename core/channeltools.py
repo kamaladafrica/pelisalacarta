@@ -13,7 +13,6 @@ import config
 import jsontools
 import logger
 import scrapertools
-import jsontools
 
 
 def is_adult(channel_name):
@@ -56,28 +55,6 @@ def get_channel_parameters(channel_name):
             category_list.append(match)
 
         channel_parameters["categories"] = category_list
-
-        dict_tvshow_lang = dict()
-        data = re.sub(r"\n|\r|\t|\s{2}", "", data)
-        info = scrapertools.find_single_match(data, "<tvshow_lang>(.*?)</tvshow_lang>")
-
-        if info:
-            patron = "<(.*?)>(.*?)</[^>]+>"
-            matches = re.compile(patron, re.DOTALL).findall(info)
-            for key, value in matches:
-                dict_tvshow_lang.update({key: value})
-
-        channel_parameters["dict_tvshow_lang"] = dict_tvshow_lang
-
-        list_quality = list()
-        info = scrapertools.find_single_match(data, "<quality>(.*?)</quality>")
-        if info:
-            patron = "<item>(.*?)</item>"
-            matches = re.compile(patron, re.DOTALL).findall(info)
-            for value in matches:
-                list_quality.append(value)
-
-        channel_parameters["list_quality"] = list_quality
 
         logger.info("pelisalacarta.core.channeltools get_channel_parameters channel_parameters={chn}".
                     format(chn=channel_parameters))
