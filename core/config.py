@@ -16,7 +16,7 @@ import xbmcaddon
 
 PLATFORM_NAME = "kodi-jarvis"
 
-PLUGIN_NAME = "pelisalacarta_sb"
+PLUGIN_NAME = "pelisalacarta"
 __settings__ = xbmcaddon.Addon(id="plugin.video."+PLUGIN_NAME)
 __language__ = __settings__.getLocalizedString
 
