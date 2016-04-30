@@ -166,7 +166,7 @@ def get_channel_setting(name, channel):
         except EnvironmentError:
             logger.info("ERROR al leer el archivo: {0}".format(file_settings))
 
-    if len(dict_settings) == 0 or dict_settings.has_key(name):
+    if len(dict_settings) == 0 or not dict_settings.has_key(name):
         # Obtenemos controles del archivo ../channels/channel.xml
         from core import channeltools
         try:
