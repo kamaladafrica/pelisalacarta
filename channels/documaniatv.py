@@ -13,6 +13,7 @@ from core import logger
 from core import scrapertools
 from core import servertools
 from core.item import Item
+from core import jsontools
 
 __channel__ = "documaniatv"
 __category__ = "D"
@@ -37,6 +38,26 @@ def mainlist(item):
     itemlist.append( Item(channel=__channel__, action="search"     , title="Buscar"))
     return itemlist
 
+def newest(categoria):
+    itemlist = []
+    item = Item()
+    try:
+        if categoria == 'documentales':
+            item.url = "http://www.documaniatv.com/newvideos.html"
+            itemlist= novedades(item)
+
+            if itemlist[-1].action == "novedades":
+                itemlist.pop()
+
+    # Se captura la excepción, para no interrumpir al canal novedades si un canal falla
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error("{0}".format(line))
+        return []
+
+    return itemlist
+
 def novedades(item):
     logger.info("[documaniatv.py] novedades")
     itemlist = []
@@ -45,7 +66,7 @@ def novedades(item):
     data = scrapertools.cache_page(item.url)
     logger.info(data)
     matches = re.compile('<li[^<]+<div class="pm-li-video">(.*?)</li>',re.DOTALL).findall(data)
-    
+
     for match in matches:
         logger.info(str(match))
         try:
@@ -58,13 +79,15 @@ def novedades(item):
             #logger.info(scrapedurl)
             scrapedthumbnail = scrapertools.get_match(match,'<img src="(.*?)"')
             #logger.info(scrapedthumbnail)
-            scrapedplot = scrapertools.get_match(match,'<p class="pm-video-attr-desc">(.*?)</p>')
+            scrapedplot = scrapertools.find_single_match(match,'<p class="pm-video-attr-desc">(.*?)</p>')
             #scrapedplot = scrapertools.htmlclean(scrapedplot)
             scrapedplot = scrapertools.entityunescape(scrapedplot)
             #logger.info(scrapedplot)
             if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
 
-            itemlist.append( Item(channel=__channel__, action="play", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , fanart=scrapedthumbnail, folder=False) )
+            itemlist.append( Item(channel=__channel__, action="play", title=scrapedtitle , url=scrapedurl ,
+                                  thumbnail=scrapedthumbnail , plot=scrapedplot , fanart=scrapedthumbnail,
+                                  folder=False, contentTitle= scrapedtitle) )
 
         except:
             logger.info("documaniatv.novedades Error al añadir entrada "+match)
@@ -78,13 +101,13 @@ def novedades(item):
         itemlist.append( Item(channel=__channel__, action="novedades", title=">> Pagina siguiente" , url=next_page_url , thumbnail="" , plot="" , folder=True) )
     except:
         logger.info("documaniatv.novedades Siguiente pagina no encontrada")
-    
+
     return itemlist
 
 def categorias(item):
     logger.info("[documaniatv.py] categorias")
     itemlist = []
-    
+
     data = scrapertools.cache_page(item.url)
     data = data.replace("\n","")
 
@@ -97,7 +120,7 @@ def categorias(item):
     for match in matches:
         #itemlist.append( Item(channel=__channel__ , action="novedades" , title=match[1],url="http://www.documaniatv.com"+match[0]))
         itemlist.append( Item(channel=__channel__ , action="novedades" , title=match[1],url=match[0]))
-        
+
     return itemlist
 
 
@@ -114,7 +137,7 @@ def tags(item):
     matches = re.compile(patron,re.DOTALL).findall(data)
     for match in matches:
         itemlist.append( Item(channel=__channel__ , action="novedades" , title=match[1],url="http://www.documaniatv.com"+match[0]))
-    
+
     return itemlist
 
 def canales(item):
@@ -133,7 +156,7 @@ def canales(item):
     for match in matches:
         #itemlist.append( Item(channel=__channel__ , action="novedades" , title=match[1],url="http://www.documaniatv.com"+match[0]))
         itemlist.append( Item(channel=__channel__ , action="novedades" , title=match[1],url=match[0]))
-    
+
     return itemlist
 
 
@@ -145,18 +168,18 @@ def viendo(item):
     data = scrapertools.cache_page(item.url)
     logger.info(data)
     data = scrapertools.get_match(data,"""<ul class="pm-ul-wn-videos clearfix" id="pm-ul-wn-videos">(.*?)</ul>""")
-    
+
 
     #
     patron = '<a href="([^"]+)"[^>]+>([^<]+)</a>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     imgs= '<img src="([^"]+)"[^>]+>'
     matc = re.compile(imgs,re.DOTALL).findall(data)
-    
+
     for match,m in zip(matches,matc):
         logger.error(str(match))
         itemlist.append( Item(channel=__channel__ , action="play" , title=match[1],url=match[0],thumbnail=m))
-    
+
     return itemlist
 
 def search(item,texto):
@@ -212,16 +235,26 @@ def play(item):
     logger.info("documaniatv.play")
     itemlist = []
 
-    # Descarga la pagina
-    url = "http://www.documaniatv.com/ajax.php?p=video&do=getplayer&vid=%s&aid=3&player=detail" % re.search("video_(.*?).html", item.url).group(1)
-    data1 = scrapertools.cachePage(url) 
+    data = scrapertools.cachePage(item.url)
+    var_url, ajax = scrapertools.find_single_match(data, 'preroll_timeleft.*?url:([^+]+)\+"([^"]+)"')
+    url_base = scrapertools.find_single_match(data, 'var.*?' + var_url + '="([^"]+)"')
+    patron = 'preroll_timeleft.*?data:\{"([^"]+)":"([^"]+)","' \
+             '([^"]+)":"([^"]+)","([^"]+)":"([^"]+)","([^"]+)"' \
+             ':"([^"]+)","([^"]+)":"([^"]+)"\}'
+    match = scrapertools.find_single_match(data, patron)
+    params = "{0}={1}&{2}={3}&{4}={5}&{6}={7}&{8}={9}".format(match[0],match[1],match[2],
+                                                              match[3],match[4],match[5],
+                                                              match[6],match[7],match[8],
+                                                              match[9])
+    url = url_base + ajax + "?" + params
+    data1 = scrapertools.cachePage(url)
 
     patron= '<iframe src="(.*?)"'
-    matc = re.compile(patron,re.DOTALL).findall(data1)
-    logger.info(matc[0])
+    match = re.compile(patron,re.DOTALL).findall(data1)
+    logger.info(match[0])
 
     # Busca los enlaces a los videos
-    video_itemlist = servertools.find_video_items(data=matc[0])
+    video_itemlist = servertools.find_video_items(data=match[0])
     for video_item in video_itemlist:
         itemlist.append( Item(channel=__channel__ , action="play" , server=video_item.server, title=item.title+video_item.title,url=video_item.url, thumbnail=video_item.thumbnail, plot=video_item.plot, folder=False))
 

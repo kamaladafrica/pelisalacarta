@@ -384,7 +384,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                     self.values[id] = default
 
                 value = self.values[id]
-                logger.info(str(type(config.get_setting(id,self.channel))))
+                #logger.info(str(type(config.get_setting(id,self.channel))))
             if ctype == "bool":
                 c["default"] = bool(c["default"])
                 self.values[id] = bool(self.values[id])
