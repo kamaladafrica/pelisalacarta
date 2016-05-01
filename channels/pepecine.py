@@ -484,7 +484,8 @@ def find_videos(url):
            'servidor':""}
     
     # Ejecuta el find_videos en cada servidor hasta que encuentra una coicidencia
-    for serverid in servertools.ENABLED_SERVERS:
+    lista_servers = servertools.get_servers_list()
+    for serverid in lista_servers:
         try:
             servers_module = __import__("servers."+serverid)
             server_module = getattr(servers_module,serverid)
@@ -495,8 +496,8 @@ def find_videos(url):
                 ret["url"]=devuelve[0][1]
                 ret["servidor"]=devuelve[0][2]
                 # reordenar el listado, es probable q el proximo enlace sea del mismo servidor
-                servertools.ENABLED_SERVERS.remove(serverid)
-                servertools.ENABLED_SERVERS.insert(0,serverid)
+                lista_servers.remove(serverid)
+                lista_servers.insert(0,serverid)
                 break
            
         except ImportError:
