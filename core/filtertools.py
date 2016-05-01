@@ -169,14 +169,6 @@ def get_filtered_tvshows(from_channel):
     if TAG_TVSHOWS in dict_data:
         dict_series = dict_data[TAG_TVSHOWS]
 
-        # # TODO esto se deberia quitar, ya que se deberia guardar los keys con minusculas
-        # # ponemos en minusculas el key, ya que usamos el nombre de la serie como key.
-        # for key in dict_series.keys():
-        #     new_key = key.lower()
-        #     if new_key != key:
-        #         dict_series[new_key] = dict_series[key]
-        #         del dict_series[key]
-
     if DEBUG:
         logger.info("json_series: {0}".format(dict_series))
 
@@ -306,8 +298,8 @@ def config_filter(item):
     # OBTENEMOS LOS DATOS DEL JSON
     dict_series = get_filtered_tvshows(item.from_channel)
 
-    lang_selected = dict_series.get(item.show, {}).get(TAG_LANGUAGE, 'Español')
-    list_quality = dict_series.get(item.show, {}).get(TAG_QUALITY_NOT_ALLOWED, "")
+    lang_selected = dict_series.get(item.show.lower(), {}).get(TAG_LANGUAGE, 'Español')
+    list_quality = dict_series.get(item.show.lower(), {}).get(TAG_QUALITY_NOT_ALLOWED, "")
     # logger.info("lang selected {}".format(lang_selected))
     # logger.info("list quality {}".format(list_quality))
 
