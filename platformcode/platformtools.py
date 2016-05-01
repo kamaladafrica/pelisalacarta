@@ -81,4 +81,4 @@ def show_channel_settings(list_controls=None, dict_values=None, caption="", call
     Parametros: ver descripcion en xbmc_config_menu.SettingsWindow
     '''
     from xbmc_config_menu import SettingsWindow
-    return SettingsWindow("ChannelSettings.xml", config.get_runtime_path()).Start(list_controls=list_controls, values=dict_values, title=caption, callback=callback, item=item)
+    return SettingsWindow("ChannelSettings.xml", config.get_runtime_path()).Start(list_controls=list_controls, dict_values=dict_values, title=caption, callback=callback, item=item)
