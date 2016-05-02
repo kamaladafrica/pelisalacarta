@@ -2,7 +2,7 @@
 # ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 import glob
 import os
 import traceback
@@ -12,11 +12,6 @@ from core import channeltools
 from core import config
 from core import logger
 from core.item import Item
-
-try:
-    from platformcode import library
-except ImportError:
-    library = None
 
 DEBUG = True
 CHANNELNAME = "channelselector"
@@ -39,7 +34,7 @@ def getmainlist(preferred_thumb=""):
     itemlist.append(Item(title=config.get_localized_string(30102), channel="favoritos", action="mainlist",
                          thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb), "thumb_favoritos.png"),
                          viewmode="movie"))
-    if library:
+    if config.get_library_support():
         itemlist.append(Item(title=config.get_localized_string(30131), channel="biblioteca", action="mainlist",
                              thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb), "thumb_biblioteca.png"),
                              viewmode="movie"))
