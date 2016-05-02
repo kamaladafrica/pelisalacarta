@@ -12,7 +12,6 @@ import sys
 import urllib
 
 import xbmc
-
 from core import config
 from core import jsontools
 from core import logger
@@ -299,8 +298,10 @@ def set_infoLabels_from_library(itemlist, tipo):
     if result:
         for i in itemlist:
             for r in result:
-                r_filename = r['file'][:-1] if r['file'].endswith(os.sep) else r['file']
-                r_filename = os.path.basename(r_filename)
+                r_filename_aux = r['file'][:-1] if r['file'].endswith(os.sep) else r['file']
+                r_filename = os.path.basename(r_filename_aux)
+                if not r_filename:
+                    r_filename = os.path.basename(r_filename_aux[:-1])
                 # logger.debug(os.path.basename(i.path) + '\n' + r_filename)
                 if os.path.basename(i.path) == r_filename:
                     infoLabels = r
