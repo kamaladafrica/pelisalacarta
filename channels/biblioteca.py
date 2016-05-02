@@ -96,7 +96,11 @@ def get_capitulos(item):
             itemlist.append(new_item)
 
     library.set_infoLabels_from_library(itemlist, tipo='Episodes')
-    return sorted(itemlist, key=lambda it:  it.title.lower())
+    return sorted(itemlist, key=get_sort_temp_epi)
+
+
+def get_sort_temp_epi(item):
+    return int(item.infoLabels['season']), int(item.infoLabels['episode'])
 
 
 def fichero_series(item):
