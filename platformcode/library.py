@@ -155,9 +155,8 @@ def savelibrary(item):
                 if exception.errno != errno.EEXIST:
                     raise
 
-        season_episode = scrapertools.get_season_and_episode(item.title)
+        season_episode = scrapertools.get_season_and_episode(item.title.lower())
         logger.info("{title} -> {name}".format(title=item.title, name=season_episode))
-
         filename = "{name}.strm".format(name=season_episode)
 
     fullfilename = os.path.join(path, filename)

@@ -11,12 +11,9 @@ from core import config
 from core import jsontools
 from core import logger
 from core import scrapertools
-from core.item import Item
 
-try:
-    from platformcode import library
-except ImportError:
-    library = None
+from core.item import Item
+from platformcode import library
 
 __channel__ = "biblioteca"
 DEBUG = True
@@ -30,13 +27,10 @@ def mainlist(item):
     logger.info("pelisalacarta.channels.biblioteca mainlist")
 
     itemlist = list()
-    if library:
-        itemlist.append(Item(channel=__channel__, action="peliculas", title="Películas"))
-        itemlist.append(Item(channel=__channel__, action="series", title="Series"))
-        itemlist.append(Item(channel=__channel__, action="fichero_series", title="Fichero de series"))
-    else:
-        itemlist.append(Item(channel=__channel__, action="", title="Módulo de biblioteca no disponible para [{0}]".
-                             format(config.get_platform())))
+    itemlist.append(Item(channel=__channel__, action="peliculas", title="Películas"))
+    itemlist.append(Item(channel=__channel__, action="series", title="Series"))
+    itemlist.append(Item(channel=__channel__, action="fichero_series", title="Fichero de series"))
+
     return itemlist
 
 
