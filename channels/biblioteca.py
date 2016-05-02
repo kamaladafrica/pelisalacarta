@@ -10,6 +10,7 @@ import os
 from core import config
 from core import jsontools
 from core import logger
+from core import scrapertools
 from core.item import Item
 
 try:
@@ -100,7 +101,11 @@ def get_capitulos(item):
 
 
 def get_sort_temp_epi(item):
-    return int(item.infoLabels['season']), int(item.infoLabels['episode'])
+    if item.infoLabels:
+        return int(item.infoLabels.get('season', "1")), int(item.infoLabels.get('episode', "1"))
+    else:
+        temporada, capitulo = scrapertools.get_season_and_episode(item.title.lower()).split('x')
+        return int(temporada), int(capitulo)
 
 
 def fichero_series(item):
