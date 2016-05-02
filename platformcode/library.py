@@ -85,7 +85,8 @@ def library_in_kodi():
     logger.info("[library.py] library_in_kodi")
     path = xbmc.translatePath(os.path.join("special://masterprofile/", "sources.xml"))
     data = read_file(path)
-    if "special://home/userdata/addon_data/plugin.video.pelisalacarta/library/" in data:
+
+    if config.get_library_path() in data:
         return True
     else:
         return False
@@ -154,8 +155,7 @@ def savelibrary(item):
                 if exception.errno != errno.EEXIST:
                     raise
 
-        temporada, capitulo = scrapertools.get_season_and_episode(item.title).split('x')
-        season_episode = temporada+"x"+capitulo
+        season_episode = scrapertools.get_season_and_episode(item.title)
         logger.info("{title} -> {name}".format(title=item.title, name=season_episode))
 
         filename = "{name}.strm".format(name=season_episode)
@@ -281,10 +281,10 @@ def set_infoLabels_from_library(itemlist, tipo):
                    "id": 1}
 
     data = get_data(payload)
-    # logger.debug("JSON-RPC: {}".format(data))
+    # logger.debug("JSON-RPC: {0}".format(data))
 
     if 'error' in data:
-        logger.error("JSON-RPC: {}".format(data))
+        logger.error("JSON-RPC: {0}".format(data))
 
     elif 'movies' in data['result']:
         result = data['result']['movies']
@@ -298,10 +298,8 @@ def set_infoLabels_from_library(itemlist, tipo):
     if result:
         for i in itemlist:
             for r in result:
-                r_filename_aux = r['file'][:-1] if r['file'].endswith(os.sep) else r['file']
+                r_filename_aux = r['file'][:-1] if r['file'].endswith(os.sep) or r['file'].endswith('/') else r['file']
                 r_filename = os.path.basename(r_filename_aux)
-                if not r_filename:
-                    r_filename = os.path.basename(r_filename_aux[:-1])
                 # logger.debug(os.path.basename(i.path) + '\n' + r_filename)
                 if os.path.basename(i.path) == r_filename:
                     infoLabels = r
@@ -362,11 +360,8 @@ def clean_up_file(item):
     raiz, carpetas_series, files = os.walk(path).next()
 
     for key in dict_data.keys():
-        # logger.info("key {}".format(key))
         for key2 in dict_data[key].keys():
-            # logger.info("key2 {}".format(key2))
             if key2 not in carpetas_series:
-                # logger.info("borro key2 {} carpeta {}".format(key2, carpetas_series))
                 dict_data[key].pop(key2, None)
 
     json_data = jsontools.dump_json(dict_data)
@@ -385,7 +380,7 @@ def save_tvshow_in_file(item):
     fname = os.path.join(config.get_data_path(), TVSHOW_FILE)
     dict_data = jsontools.load_json(read_file(fname))
     dict_data[item.channel][title_to_filename(item.show)] = item.url
-    logger.info("dict_data {}".format(dict_data))
+    logger.info("dict_data {0}".format(dict_data))
     json_data = jsontools.dump_json(dict_data)
     save_file(json_data, fname)
 
@@ -420,7 +415,7 @@ def mark_as_watched(category):
         payload = {"jsonrpc": "2.0", "method": "Player.GetActivePlayers", "id": 1}
 
         data = get_data(payload)
-        logger.info("call1 {}".format(data))
+        logger.info("call1 {0}".format(data))
 
         # TODO datos actuales del reproductor tiempo y demás
         # {"jsonrpc":"2.0","method":"Player.GetProperties","params":{ "playerid": 1, "properties": ["speed", "time",
@@ -428,7 +423,7 @@ def mark_as_watched(category):
 
         if data['result']:
             player_id = data['result'][0]["playerid"]
-            logger.info("call1 Categoria={}".format(category))
+            logger.info("call1 Categoria={0}".format(category))
 
             if category == "Series":
                 payload = {"jsonrpc": "2.0", "params": {"playerid": player_id,
@@ -436,7 +431,7 @@ def mark_as_watched(category):
                            "method": "Player.GetItem", "id": "libGetItem"}
                 # TODO añadir el año para sacar el filtro
                 data = get_data(payload)
-                logger.info("call2 {}".format(data))
+                logger.info("call2 {0}".format(data))
 
                 if data['result']:
 
@@ -444,7 +439,7 @@ def mark_as_watched(category):
                     episode = data['result']['item']['episode']
                     showtitle = data['result']['item']['showtitle']
 
-                    logger.info("titulo es {}".format(showtitle))
+                    logger.info("titulo es {0}".format(showtitle))
 
                     payload = {"jsonrpc": "2.0", "method": "VideoLibrary.GetEpisodes", "params": {
                         "filter": {"and": [{"field": "season", "operator": "is", "value": str(season)},
@@ -456,13 +451,13 @@ def mark_as_watched(category):
                                        "dateadded", "uniqueid"]}, "id": 1}
 
                     data = get_data(payload)
-                    logger.info("call3 {}".format(data))
+                    logger.info("call3 {0}".format(data))
 
                     if data['result']:
                         episodeid = 0
-                        logger.info("entrooo {}:{}".format(data, showtitle))
+                        logger.info("entrooo {0}:{1}".format(data, showtitle))
                         for d in data['result']['episodes']:
-                            logger.info("show title {}".format(d['showtitle']))
+                            logger.info("show title {0}".format(d['showtitle']))
                             if d['showtitle'] == showtitle:
                                 logger.info("he llegado!!")
                                 episodeid = d['episodeid']
@@ -474,7 +469,7 @@ def mark_as_watched(category):
                                 "episodeid": episodeid, "playcount": 1}, "id": 1}
 
                             data = get_data(payload)
-                            logger.info("call4 {}".format(data))
+                            logger.info("call4 {0}".format(data))
 
                             if data['result'] != 'OK':
                                 logger.info("ERROR al poner el capitulo como visto")
@@ -486,13 +481,13 @@ def mark_as_watched(category):
                            "method": "Player.GetItem", "id": "libGetItem"}
 
                 data = get_data(payload)
-                logger.info("call2 {}".format(data))
+                logger.info("call2 {0}".format(data))
 
                 if data['result']:
                     title = data['result']['item']['title']
                     year = data['result']['item']['year']
 
-                    logger.info("titulo es {}".format(title))
+                    logger.info("titulo es {0}".format(title))
 
                     payload = {"jsonrpc": "2.0", "method": "VideoLibrary.GetMovies", "params": {
                         "filter": {"and": [{"field": "title", "operator": "is", "value": title},
@@ -503,13 +498,13 @@ def mark_as_watched(category):
                                        "resume", "dateadded"]}, "id": 1}
 
                     data = get_data(payload)
-                    logger.info("call3 {}".format(data))
+                    logger.info("call3 {0}".format(data))
 
                     if data['result']:
                         movieid = 0
-                        logger.info("entrooo {}:{}".format(data, title))
+                        logger.info("entrooo {0}:{1}".format(data, title))
                         for d in data['result']['movies']:
-                            logger.info("title {}".format(d['title']))
+                            logger.info("title {0}".format(d['title']))
                             if d['title'] == title:
                                 logger.info("he llegado!!")
                                 movieid = d['movieid']
@@ -522,7 +517,7 @@ def mark_as_watched(category):
 
                             data = get_data(payload)
 
-                            logger.info("call4 {}".format(data))
+                            logger.info("call4 {0}".format(data))
 
                             if data['result'] != 'OK':
                                 logger.info("ERROR al poner el capitulo como visto")
@@ -580,7 +575,7 @@ def convert_xml_to_json(flag):
                             if aux[0] in dict_data[aux[2]]:
                                 dict_data[aux[2]][aux[0]] = aux[1]
                         else:
-                            dict_data = {aux[2]: {aux[0]: aux[1]}}
+                            dict_data.update({aux[2]: {aux[0]: aux[1]}})
 
             except EnvironmentError:
                 logger.info("ERROR al leer el archivo: {0}".format(fname))
