@@ -231,9 +231,10 @@ def extractVideosSection(data):
     if len(result) == 1 and result[0][2]:
         return extractVideosSection(scrapertools.cachePagePost(HOST + 'ajax.php', result[0][2]))
 
-    idx = 1 if result[0][1] else 0
+    row = 1 if result[0][2] else 0
+    idx = 1 if result[row][1] else 0
 
-    return [result[0][idx], result[1][idx]]
+    return [result[row][idx], result[row + 1][idx]]
 
 def findvideos(item):
     logger.info("pelisalacarta.seriesblanco findvideos")
