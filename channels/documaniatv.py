@@ -12,6 +12,7 @@ from core import config
 from core import scrapertools
 from core.item import Item
 from servers import servertools
+from core import jsontools
 
 __channel__ = "documaniatv"
 __category__ = "D"
@@ -57,7 +58,7 @@ def novedades(item):
             #logger.info(scrapedurl)
             scrapedthumbnail = scrapertools.get_match(match,'<img src="(.*?)"')
             #logger.info(scrapedthumbnail)
-            scrapedplot = scrapertools.get_match(match,'<p class="pm-video-attr-desc">(.*?)</p>')
+            scrapedplot = scrapertools.find_single_match(match,'<p class="pm-video-attr-desc">(.*?)</p>')
             #scrapedplot = scrapertools.htmlclean(scrapedplot)
             scrapedplot = scrapertools.entityunescape(scrapedplot)
             #logger.info(scrapedplot)
@@ -211,16 +212,26 @@ def play(item):
     logger.info("documaniatv.play")
     itemlist = []
 
-    # Descarga la pagina
-    url = "http://www.documaniatv.com/ajax.php?p=video&do=getplayer&vid=%s&aid=3&player=detail" % re.search("video_(.*?).html", item.url).group(1)
-    data1 = scrapertools.cachePage(url) 
+    data = scrapertools.cachePage(item.url)
+    var_url, ajax = scrapertools.find_single_match(data, 'preroll_timeleft.*?url:([^+]+)\+"([^"]+)"')
+    url_base = scrapertools.find_single_match(data, 'var.*?' + var_url + '="([^"]+)"')
+    patron = 'preroll_timeleft.*?data:\{"([^"]+)":"([^"]+)","' \
+             '([^"]+)":"([^"]+)","([^"]+)":"([^"]+)","([^"]+)"' \
+             ':"([^"]+)","([^"]+)":"([^"]+)"\}'
+    match = scrapertools.find_single_match(data, patron)
+    params = "{0}={1}&{2}={3}&{4}={5}&{6}={7}&{8}={9}".format(match[0],match[1],match[2],
+                                                              match[3],match[4],match[5],
+                                                              match[6],match[7],match[8],
+                                                              match[9])
+    url = url_base + ajax + "?" + params
+    data1 = scrapertools.cachePage(url)
 
     patron= '<iframe src="(.*?)"'
-    matc = re.compile(patron,re.DOTALL).findall(data1)
-    logger.info(matc[0])
+    match = re.compile(patron,re.DOTALL).findall(data1)
+    logger.info(match[0])
 
     # Busca los enlaces a los videos
-    video_itemlist = servertools.find_video_items(data=matc[0])
+    video_itemlist = servertools.find_video_items(data=match[0])
     for video_item in video_itemlist:
         itemlist.append( Item(channel=__channel__ , action="play" , server=video_item.server, title=item.title+video_item.title,url=video_item.url, thumbnail=video_item.thumbnail, plot=video_item.plot, folder=False))
 
