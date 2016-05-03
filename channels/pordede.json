@@ -6,8 +6,8 @@
             "movie", 
             "serie"
         ], 
-        "changes": "Soporte para documentales", 
-        "date": "27/03/2016", 
+        "changes": "Fix paginación", 
+        "date": "10/04/2016", 
         "fanart": "", 
         "id": "pordede", 
         "include_in_global_search": false, 
@@ -15,7 +15,7 @@
         "name": "Pordede", 
         "thumbnail": "", 
         "update_url": "", 
-        "version": "9.0"
+        "version": "10.0"
     }, 
     "settings": {}
 }
