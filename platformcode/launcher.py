@@ -16,6 +16,7 @@ from core import config
 from core import logger
 from core import scrapertools
 from core.item import Item
+from platformcode import xbmctools
 
 def start():
     ''' Primera funcion que se ejecuta al entrar en el plugin.
