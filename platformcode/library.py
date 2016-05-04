@@ -24,11 +24,10 @@ from lib import requests
 # Make sure "Allow control of XBMC via HTTP" is set to ON in Settings ->
 # Services -> Webserver
 xbmc_host = 'localhost'  # TODO meterlo en settings
-
 # Configured in Settings -> Services -> Webserver -> Port
 xbmc_port = 555  # TODO meterlo en settings
-
-modo_cliente = False  # TODO sacarlo de settings config.get....
+marcar_como_visto = bool(config.get_setting("mark_as_watched"))
+modo_cliente = bool(config.get_setting("library_mode"))
 
 # Base URL of the json RPC calls. For GET calls we append a "request" URI
 # parameter. For POSTs, we add the payload as JSON the the HTTP request body
@@ -316,7 +315,7 @@ def set_infoLabels_from_library(itemlist, tipo):
                     # Adaptar algunos campos al formato infoLables
                     if 'cast' in infoLabels:
                         l_castandrole = list()
-                        for c in sorted(infoLabels['cast'], key=lambda c: c["order"]):
+                        for c in sorted(infoLabels['cast'], key=lambda _c: _c["order"]):
                             l_castandrole.append((c['name'], c['role']))
                         infoLabels.pop('cast')
                         infoLabels['castandrole'] = l_castandrole
@@ -384,142 +383,143 @@ def save_tvshow_in_file(item):
     save_file(json_data, fname)
 
 
-def mark_as_watched(category):
+def mark_as_watched(category, id_video=0):
     """
     marca el capitulo como visto en la libreria de Kodi
     @type category: string
     @param category: categoria "Series" o "Cine"
+    @type id_video: int
+    @param id_video: identificador 'episodeid' o 'movieid' en la BBDD
     """
     logger.info("[library.py] mark_as_watched - category:{0}".format(category))
-    # TODO revisar entero
-    # TODO mirar como traktv para pillar la duración y establecer cuanto tiempo hay que esperar para poner el "visto"??
-    # TODO establecer una opción que permita elegir el tiempo pasado??
 
-    # se espera 5 min y luego se setea como visto
-    import time
-    time.sleep(300)
+    logger.info("se espera 5 segundos por si falla al reproducir el fichero")
+    xbmc.sleep(5000)
 
-    # wait_video_break = 20
-    # wait_video = time.time()
-    #
-    # if (time.time() - wait_video) < 5:
-    #     xbmc.sleep((5 - int(time.time() - wait_video)) * 1000)
-
-    # while not xbmc.Player().isPlaying():
-    #     xbmc.sleep(10000)
-    #     if (time.time() - wait_video) > wait_video_break: break
+    if not is_compatible() or not marcar_como_visto:
+        return
 
     if xbmc.Player().isPlaying():
-
         payload = {"jsonrpc": "2.0", "method": "Player.GetActivePlayers", "id": 1}
-
         data = get_data(payload)
-        logger.info("call1 {0}".format(data))
-
-        # TODO datos actuales del reproductor tiempo y demás
-        # {"jsonrpc":"2.0","method":"Player.GetProperties","params":{ "playerid": 1, "properties": ["speed", "time",
-        # "totaltime", "percentage"]},"id":1}
 
         if data['result']:
+            payload_f = ''
             player_id = data['result'][0]["playerid"]
-            logger.info("call1 Categoria={0}".format(category))
 
             if category == "Series":
-                payload = {"jsonrpc": "2.0", "params": {"playerid": player_id,
-                                                        "properties": ["season", "episode", "file", "showtitle"]},
-                           "method": "Player.GetItem", "id": "libGetItem"}
-                # TODO añadir el año para sacar el filtro
-                data = get_data(payload)
-                logger.info("call2 {0}".format(data))
-
-                if data['result']:
-
-                    season = data['result']['item']['season']
-                    episode = data['result']['item']['episode']
-                    showtitle = data['result']['item']['showtitle']
-
-                    logger.info("titulo es {0}".format(showtitle))
-
-                    payload = {"jsonrpc": "2.0", "method": "VideoLibrary.GetEpisodes", "params": {
-                        "filter": {"and": [{"field": "season", "operator": "is", "value": str(season)},
-                                           {"field": "episode", "operator": "is", "value": str(episode)},
-                                           ]},
-                        "properties": ["title", "plot", "votes", "rating", "writer", "firstaired", "playcount",
-                                       "runtime", "director", "productioncode", "season", "episode", "originaltitle",
-                                       "showtitle", "lastplayed", "fanart", "thumbnail", "file", "resume", "tvshowid",
-                                       "dateadded", "uniqueid"]}, "id": 1}
+                episodeid = id_video
+                if episodeid == 0:
+                    payload = {"jsonrpc": "2.0", "params": {"playerid": player_id,
+                                                            "properties": ["season", "episode", "file", "showtitle"]},
+                               "method": "Player.GetItem", "id": "libGetItem"}
 
                     data = get_data(payload)
-                    logger.info("call3 {0}".format(data))
-
                     if data['result']:
-                        episodeid = 0
-                        logger.info("entrooo {0}:{1}".format(data, showtitle))
-                        for d in data['result']['episodes']:
-                            logger.info("show title {0}".format(d['showtitle']))
-                            if d['showtitle'] == showtitle:
-                                logger.info("he llegado!!")
-                                episodeid = d['episodeid']
-                                break
+                        season = data['result']['item']['season']
+                        episode = data['result']['item']['episode']
+                        showtitle = data['result']['item']['showtitle']
+                        # logger.info("titulo es {0}".format(showtitle))
 
-                        if episodeid != 0:
+                        payload = {
+                            "jsonrpc": "2.0", "method": "VideoLibrary.GetEpisodes",
+                            "params": {
+                                "filter": {"and": [{"field": "season", "operator": "is", "value": str(season)},
+                                                   {"field": "episode", "operator": "is", "value": str(episode)}]},
+                                "properties": ["title", "plot", "votes", "rating", "writer", "firstaired", "playcount",
+                                               "runtime", "director", "productioncode", "season", "episode",
+                                               "originaltitle", "showtitle", "lastplayed", "fanart", "thumbnail",
+                                               "file", "resume", "tvshowid", "dateadded", "uniqueid"]},
+                            "id": 1}
 
-                            payload = {"jsonrpc": "2.0", "method": "VideoLibrary.SetEpisodeDetails", "params": {
-                                "episodeid": episodeid, "playcount": 1}, "id": 1}
+                        data = get_data(payload)
+                        if data['result']:
+                            for d in data['result']['episodes']:
+                                if d['showtitle'] == showtitle:
+                                    episodeid = d['episodeid']
+                                    break
 
-                            data = get_data(payload)
-                            logger.info("call4 {0}".format(data))
+                if episodeid != 0:
+                    payload_f = {"jsonrpc": "2.0", "method": "VideoLibrary.SetEpisodeDetails", "params": {
+                        "episodeid": episodeid, "playcount": 1}, "id": 1}
 
-                            if data['result'] != 'OK':
-                                logger.info("ERROR al poner el capitulo como visto")
+            else:  # Categoria == 'Movies'
+                movieid = id_video
+                if movieid == 0:
 
-            else:
-                payload = {"jsonrpc": "2.0", "params": {"playerid": 1,
-                                                        "properties": ["year", "file", "title", "uniqueid",
-                                                                       "originaltitle"]},
-                           "method": "Player.GetItem", "id": "libGetItem"}
-
-                data = get_data(payload)
-                logger.info("call2 {0}".format(data))
-
-                if data['result']:
-                    title = data['result']['item']['title']
-                    year = data['result']['item']['year']
-
-                    logger.info("titulo es {0}".format(title))
-
-                    payload = {"jsonrpc": "2.0", "method": "VideoLibrary.GetMovies", "params": {
-                        "filter": {"and": [{"field": "title", "operator": "is", "value": title},
-                                           {"field": "year", "operator": "is", "value": str(year)}
-                                           ]},
-                        "properties": ["title", "plot", "votes", "rating", "writer", "playcount", "runtime",
-                                       "director", "originaltitle", "lastplayed", "fanart", "thumbnail", "file",
-                                       "resume", "dateadded"]}, "id": 1}
+                    payload = {"jsonrpc": "2.0", "method": "Player.GetItem",
+                               "params": {"playerid": 1,
+                                          "properties": ["year", "file", "title", "uniqueid", "originaltitle"]},
+                               "id": "libGetItem"}
 
                     data = get_data(payload)
-                    logger.info("call3 {0}".format(data))
+                    if data['result']:
+                        title = data['result']['item']['title']
+                        year = data['result']['item']['year']
+                        # logger.info("titulo es {0}".format(title))
+
+                        payload = {"jsonrpc": "2.0", "method": "VideoLibrary.GetMovies",
+                                   "params": {
+                                       "filter": {"and": [{"field": "title", "operator": "is", "value": title},
+                                                          {"field": "year", "operator": "is", "value": str(year)}]},
+                                       "properties": ["title", "plot", "votes", "rating", "writer", "playcount",
+                                                      "runtime", "director", "originaltitle", "lastplayed", "fanart",
+                                                      "thumbnail", "file", "resume", "dateadded"]},
+                                   "id": 1}
+
+                        data = get_data(payload)
+                        if data['result']:
+                            for d in data['result']['movies']:
+                                logger.info("title {0}".format(d['title']))
+                                if d['title'] == title:
+                                    movieid = d['movieid']
+                                    break
+
+                if movieid != 0:
+                    payload_f = {"jsonrpc": "2.0", "method": "VideoLibrary.SetMovieDetails", "params": {
+                            "movieid": movieid, "playcount": 1}, "id": 1}
+
+            if payload_f:
+                condicion = config.get_setting("watched_setting")
+
+                payload = {"jsonrpc": "2.0", "method": "Player.GetProperties",
+                           "params": {"playerid": player_id,
+                                      "properties": ["time", "totaltime", "percentage"]},
+                           "id": 1}
+
+                while xbmc.Player().isPlaying():
+                    data = get_data(payload)
+                    # logger.debug("Player.GetProperties: {0}".format(data))
+                    # 'result': {'totaltime': {'hours': 0, 'seconds': 13, 'minutes': 41, 'milliseconds': 341},
+                    #            'percentage': 0.209716334939003,
+                    #            'time': {'hours': 0, 'seconds': 5, 'minutes': 0, 'milliseconds': 187}}
 
                     if data['result']:
-                        movieid = 0
-                        logger.info("entrooo {0}:{1}".format(data, title))
-                        for d in data['result']['movies']:
-                            logger.info("title {0}".format(d['title']))
-                            if d['title'] == title:
-                                logger.info("he llegado!!")
-                                movieid = d['movieid']
-                                break
+                        from datetime import timedelta, time
+                        totaltime = data['result']['totaltime']
+                        totaltime = totaltime['seconds'] + 60 * totaltime['minutes'] + 3600 * totaltime['hours']
+                        tiempo_actual = data['result']['time']
+                        tiempo_actual = time(tiempo_actual['hours'], tiempo_actual['minutes'], tiempo_actual['seconds'])
 
-                        if movieid != 0:
+                        if condicion == 0:  # '5 minutos'
+                            mark_time = time(0, 5, 0)
+                        elif condicion == 1:  # '30%'
+                            mark_time = timedelta(seconds=totaltime * 0.3)
+                        elif condicion == 2:  # '50%'
+                            mark_time = timedelta(seconds=totaltime * 0.5)
+                        elif condicion == 3:  # '80%'
+                            mark_time = timedelta(seconds=totaltime * 0.8)
 
-                            payload = {"jsonrpc": "2.0", "method": "VideoLibrary.SetMovieDetails", "params": {
-                                    "movieid": movieid, "playcount": 1}, "id": 1}
+                        logger.debug(str(mark_time))
 
-                            data = get_data(payload)
-
-                            logger.info("call4 {0}".format(data))
-
+                        if tiempo_actual > mark_time:
+                            # Marcar como visto
+                            data = get_data(payload_f)
                             if data['result'] != 'OK':
-                                logger.info("ERROR al poner el capitulo como visto")
+                                logger.info("ERROR al poner el contenido como visto")
+                            break
+
+                    xbmc.sleep(30000)
 
 
 def get_data(payload):

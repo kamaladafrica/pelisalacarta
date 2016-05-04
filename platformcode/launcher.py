@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # tvalacarta
 # XBMC Launcher (xbmc / xbmc-dharma / boxee)
 # http://blog.tvalacarta.info/plugin-xbmc/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 
 import os
 import re
@@ -54,14 +54,14 @@ def run():
         if ( item.action=="selectchannel" ):
             import channelselector
             itemlist = channelselector.mainlist(params, item.url, item.category)
-            
+
             # Verifica actualizaciones solo en el primer nivel
             if config.get_setting("updatecheck2") == "true":
               logger.info("channelselector.mainlist Verificar actualizaciones activado")
               from core import updater
               try:
                 version = updater.checkforupdates()
-                
+
                 if version:
                   import xbmcgui
                   advertencia = xbmcgui.Dialog()
@@ -75,12 +75,12 @@ def run():
 
             else:
               logger.info("channelselector.mainlist Verificar actualizaciones desactivado")
-                
+
             xbmctools.renderItems(itemlist, item)
 
         # Actualizar version
         elif (item.action=="update"):
-   
+
             from core import updater
             updater.update(item)
             if config.get_system_platform()!="xbox":
@@ -90,13 +90,13 @@ def run():
         elif (item.action=="channeltypes"):
             import channelselector
             itemlist = channelselector.channeltypes(params,item.url,item.category)
-            
+
             xbmctools.renderItems(itemlist, item)
 
         elif (item.action=="listchannels"):
             import channelselector
             itemlist = channelselector.listchannels(params,item.url,item.category)
-            
+
             xbmctools.renderItems(itemlist, item)
 
         # El resto de acciones vienen en el parámetro "action", y el canal en el parámetro "channel"
@@ -168,31 +168,46 @@ def run():
             if not generico:
                 logger.info("pelisalacarta.platformcode.launcher xbmc native channel")
                 if item.action == "strm":
-                    
+
                     xbmctools.playstrm(params, item.url, item.category)
                 else:
                     getattr(channel, item.action)(params, item.url, item.category)
             else:
                 logger.info("pelisalacarta.platformcode.launcher multiplatform channel")
 
-                
-
-                if item.action=="play":
+                if item.action == "play":
                     logger.info("pelisalacarta.platformcode.launcher play")
+                    # logger.debug(str(item.infoLabels))
+
+                    # Marcar como vistos los items del canal Biblioteca
+                    id_video = 0
+                    category = ''
+                    if 'infoLabels' in item:
+                        if 'episodeid' in item.infoLabels and item.infoLabels['episodeid']:
+                            category = 'Series'
+                            id_video = item.infoLabels['episodeid']
+                        elif 'movieid' in item.infoLabels and item.infoLabels['movieid']:
+                            category = 'Movies'
+                            id_video = item.infoLabels['movieid']
+
                     # Si el canal tiene una acción "play" tiene prioridad
                     if hasattr(channel, 'play'):
                         logger.info("pelisalacarta.platformcode.launcher executing channel 'play' method")
                         itemlist = channel.play(item)
-                        if len(itemlist)>0:
+                        if len(itemlist) > 0:
                             item = itemlist[0]
                             xbmctools.play_video(item)
+                            if id_video != 0:
+                                library.mark_as_watched(category, id_video)
                         else:
                             import xbmcgui
                             ventana_error = xbmcgui.Dialog()
-                            ok = ventana_error.ok ("plugin", "No hay nada para reproducir")
+                            ok = ventana_error.ok("plugin", "No hay nada para reproducir")
                     else:
                         logger.info("pelisalacarta.platformcode.launcher no channel 'play' method, executing core method")
                         xbmctools.play_video(item)
+                        if id_video != 0:
+                            library.mark_as_watched(category, id_video)
 
                 elif item.action == "play_from_library":
                     play_from_library(item, channel, server_white_list, server_black_list)
@@ -245,6 +260,15 @@ def run():
                             if config.get_setting('filter_servers') == 'true':
                                 itemlist = filtered_servers(itemlist, server_white_list, server_black_list)
 
+                        # Propagar las infoLabels
+                        if 'infoLabels' in item:
+                            item.infoLabels.pop('title') # Excepto el titulo
+                            new_itemlist = itemlist[:]
+                            itemlist = []
+                            for i in new_itemlist:
+                                itemlist.append(i.clone(infoLabels=item.infoLabels))
+
+
                         from platformcode import subtitletools
                         subtitletools.saveSubtitleName(item)
 
@@ -281,7 +305,7 @@ def run():
             texto = (config.get_localized_string(30051) % e.code) # "El sitio web no funciona correctamente (error http %d)"
             ok = ventana_error.ok ("plugin", texto)
 
-            
+
 def episodio_ya_descargado(show_title,episode_title):
 
     ficheros = os.listdir( "." )
@@ -558,20 +582,7 @@ def play_from_library(item, channel, server_white_list, server_black_list):
     logger.info("Elegido %s (sub %s)" % (item.title, item.subtitle))
 
     xbmctools.play_video(item, strmfile=True)
-    logger.info("se espera 5 segundos por si falla al reproducir el fichero")
-    import xbmc
-    xbmc.sleep(5000)
-
-    if xbmc.Player().isPlaying():
-
-        logger.info("pelisalacarta.platformcode.launcher play_from_library [{platform}]"
-                    .format(platform=config.get_platform()))
-
-        if library.is_compatible():
-            # if config.get_platform() == "kodi-jarvis":
-            # TODO crear variable en settings que diga si quieres marcar los episodios
-            if 1 == 1:
-                library.mark_as_watched(category)
+    library.mark_as_watched(category, 0)
 
 
 def add_pelicula_to_library(item):
