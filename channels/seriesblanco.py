@@ -217,7 +217,7 @@ def parseVideos(item, typeStr, data):
 
             title = "{0} en {1} [{2}] [{3}] ({4}: {5})".format(typeStr, vFields.get("server"), IDIOMAS[vFields.get("language")],
                                                                    quality, vFields.get("uploader"), vFields.get("date"))
-            itemlist.append(Item(channel=__channel__, title=title, url=vFields.get("link"), action="play",
+            itemlist.append(Item(channel=__channel__, title=title, url=urlparse.urljoin(HOST, vFields.get("link")), action="play",
                                  show=item.show))
 
         if len(itemlist) > 0:
@@ -248,7 +248,7 @@ def findvideos(item):
 def play(item):
     logger.info("pelisalacarta.channels.seriesblanco play url={0}".format(item.url))
 
-    if item.url.startswith("http"):
+    if item.url.startswith(HOST):
         url = item.url
     else:
         data = scrapertools.cache_page(item.url)
