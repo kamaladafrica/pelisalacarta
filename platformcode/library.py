@@ -82,6 +82,9 @@ def library_in_kodi():
     @return:  si está configurada la libreria en xbmc/Kodi.
     """
     logger.info("[library.py] library_in_kodi")
+    # TODO arreglar
+    return True
+
     path = xbmc.translatePath(os.path.join("special://masterprofile/", "sources.xml"))
     data = read_file(path)
 
@@ -480,8 +483,7 @@ def mark_as_watched(category, id_video=0):
                             "movieid": movieid, "playcount": 1}, "id": 1}
 
             if payload_f:
-                condicion = config.get_setting("watched_setting")
-
+                condicion = int(config.get_setting("watched_setting"))
                 payload = {"jsonrpc": "2.0", "method": "Player.GetProperties",
                            "params": {"playerid": player_id,
                                       "properties": ["time", "totaltime", "percentage"]},
