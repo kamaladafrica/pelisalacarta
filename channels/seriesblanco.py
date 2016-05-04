@@ -231,7 +231,7 @@ def extractVideosSection(data):
     if len(result) == 1 and result[0][2]:
         return extractVideosSection(scrapertools.cachePagePost(HOST + 'ajax.php', result[0][2]))
 
-    row = 1 if result[0][2] else 0
+    row = len(result) - 2
     idx = 1 if result[row][1] else 0
 
     return [result[row][idx], result[row + 1][idx]]
@@ -249,12 +249,12 @@ def play(item):
     logger.info("pelisalacarta.channels.seriesblanco play url={0}".format(item.url))
 
     if item.url.startswith(HOST):
-        url = item.url
-    else:
         data = scrapertools.cache_page(item.url)
 
         patron = "<input type='button' value='Ver o Descargar' onclick='window.open\(\"([^\"]+)\"\);'/>"
         url = scrapertools.find_single_match(data, patron)
+    else:
+        url = item.url
 
     itemlist = servertools.find_video_items(data=url)
 
