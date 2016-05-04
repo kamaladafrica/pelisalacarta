@@ -13,13 +13,18 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/documaniatv.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>9</version>
+	<version>10</version>
 
 	<changes>
 		<change> 
-			<date>29/04/16</date>
+			<date>5/05/16</date>
 			<autor>super_berny</autor>
 			<description>Adaptar a Buscador global y Novedades Documentales</description>
+		</change>
+		<change> 
+			<date>4/05/2016</date>
+			<autor>cmos</autor>
+			<description>Añadida cuenta de usuario y reparacion por cambios en la web</description>
 		</change>
 		<change> 
 			<date>22/03/2016</date>
@@ -32,6 +37,21 @@
 		<category>documentary</category>
 	</categories>
 	
+	<settings>
+		<id>documaniatvuser</id>
+		<type>text</type>
+		<label>@30014</label>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<id>documaniatvpassword</id>
+		<type>text</type>
+		<label>@30015</label>
+		<hidden>true</hidden>
+		<enabled>!eq(-1,'')</enabled>
+		<visible>true</visible>
+	</settings>
 	<settings>
 		<id>include_in_global_search</id>
 		<type>bool</type>
