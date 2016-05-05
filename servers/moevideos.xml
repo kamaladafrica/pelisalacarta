@@ -7,7 +7,6 @@
 	<id>moevideos</id>
 	<name>moevideos</name>
 	<premium>
-		<value>filenium</value>
 	</premium>
 	<thumbnail>http://media.tvalacarta.info/servers/server_moevideos.png</thumbnail>
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/servers/</update_url>
