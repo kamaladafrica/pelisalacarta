@@ -530,8 +530,10 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
 
         try:
             xlistitem = xbmcgui.ListItem( play_title, iconImage="DefaultVideo.png", thumbnailImage=play_thumbnail, path=mediaurl)
+            logger.info("b4.1")
         except:
             xlistitem = xbmcgui.ListItem( play_title, iconImage="DefaultVideo.png", thumbnailImage=play_thumbnail)
+            logger.info("b4.2")      
         
         xlistitem.setInfo( "video", { "Title": play_title, "Plot" : play_plot , "Studio" : item.channel , "Genre" : item.category } )
         
@@ -539,7 +541,7 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
     
     # Lanza el reproductor
         # Lanza el reproductor
-    if strmfile and item.server != "torrent": #Si es un fichero strm no hace falta el play
+    if strmfile:           # and item.server != "torrent": #Si es un fichero strm no hace falta el play
         logger.info("b6")
         import sys
         xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, xlistitem)
@@ -594,48 +596,14 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
 
         elif config.get_setting("player_mode")=="1":
             logger.info("b9")
-            #xlistitem.setProperty('IsPlayable', 'true')
-            #xlistitem.setProperty('path', mediaurl)
+            logger.info("mediaurl :"+ mediaurl)
+            logger.info("Tras setResolvedUrl")
             xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, xbmcgui.ListItem(path=mediaurl))
         
         elif config.get_setting("player_mode")=="2":
             logger.info("b10")
             xbmc.executebuiltin( "PlayMedia("+mediaurl+")" )
-        
-    # Descarga en segundo plano para vidxden, sólo en modo free
-    '''
-    elif server=="vidxden" and seleccion==0:
-        from core import downloadtools
-        import thread,os
-        import xbmc
-        
-        logger.info("[xbmctools.py] ---------------------------------")
-        logger.info("[xbmctools.py] DESCARGA EN SEGUNDO PLANO")
-        logger.info("[xbmctools.py]   de "+mediaurl)
-        temp_file = config.get_temp_file("background.file")
-        if os.path.exists(temp_file):
-            os.remove(temp_file)
-        logger.info("[xbmctools.py]   a "+temp_file)
-        logger.info("[xbmctools.py] ---------------------------------")
-        thread.start_new_thread(downloadtools.downloadfile, (mediaurl,temp_file), {'silent':True})
-
-        handle_wait(60,"Descarga en segundo plano","Se está descargando un trozo antes de empezar")
-
-        playlist = xbmc.PlayList( xbmc.PLAYLIST_VIDEO )
-        playlist.clear()
-        playlist.add( temp_file, xlistitem )
-    
-        player_type = xbmc.PLAYER_CORE_AUTO
-        xbmcPlayer = xbmc.Player( player_type )
-        xbmcPlayer.play(playlist)
-        
-        while xbmcPlayer.isPlaying():
-            xbmc.sleep(5000)
-            logger.info("sigo aquí...")
-
-        logger.info("fin")
-    '''
-
+      
     if item.subtitle!="" and view:
         logger.info("b11")
         logger.info("Subtítulos externos: "+item.subtitle)

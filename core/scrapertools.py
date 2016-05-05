@@ -24,6 +24,8 @@ import logger
 import re
 import downloadtools
 import socket
+import StringIO
+import gzip
 
 # True - Muestra las cabeceras HTTP en el log
 # False - No las muestra
@@ -1462,7 +1464,7 @@ def read_body_and_headers(url, post=None, headers=[], follow_redirects=False, ti
 
     # Lee los datos y cierra
     if handle.info().get('Content-Encoding') == 'gzip':
-        buf = StringIO( handle.read())
+        buf = StringIO.StringIO( handle.read())
         f = gzip.GzipFile(fileobj=buf)
         data = f.read()
     else:

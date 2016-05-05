@@ -93,12 +93,13 @@ def buscador(item):
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
 
 
-    patron = '<div class="resultados".*?'
-    patron += '<a href="([^"]+)".*?'
-    patron += 'title="([^<]+)".*?'
-    patron += 'src="([^<]+.jpg)".*?'
-    patron += 'rel="tag">([^<]+)</a>.*?'
-    patron += 'Calidad.*?rel="tag">([^<]+)</a>'
+    patron = '<div class="karatula".*?'
+    patron += 'src="([^"]+)".*?'
+    patron += '<div class="tisearch"><a href="([^"]+)">'
+    patron += '([^<]+)<.*?'
+    patron += 'Audio:(.*?)</a>.*?'
+    patron += 'Género:(.*?)</a>.*?'
+    patron += 'Calidad:(.*?),'
     
 
     matches = re.compile(patron,re.DOTALL).findall(data)
@@ -106,22 +107,34 @@ def buscador(item):
     if len(matches)==0 :
         itemlist.append( Item(channel=__channel__, title=bbcode_kodi2html("[COLOR gold][B]Sin resultados...[/B][/COLOR]"), thumbnail ="http://s6.postimg.org/t8gfes7rl/pdknoisethumb.png", fanart ="http://s6.postimg.org/oy1rj72oh/pdknoisefan.jpg",folder=False) )
 
-    for scrapedurl, scrapedtitle, scrapedthumbnail, scrapedlenguaje, scrapedcalidad in matches:
-        scrapedcalidad = scrapedcalidad.replace(scrapedcalidad,bbcode_kodi2html("[COLOR orange]"+scrapedcalidad+"[/COLOR]"))
-        scrapedlenguaje = scrapedlenguaje.replace(scrapedlenguaje,bbcode_kodi2html("[COLOR orange]"+scrapedlenguaje+"[/COLOR]"))
-        try:
-            yeartrailer = scrapertools.get_match(scrapedtitle,'\((.*?)\)')
-        except:
-            yeartrailer = ""
-        try:
-            titletrailer= scrapertools.get_match(scrapedtitle,'(.*?)\(')
-        except:
-            titletrailer=""
-        trailer = titletrailer + yeartrailer + "trailer"
-        trailer = urllib.quote(trailer)
-        scrapedtitle = scrapedtitle + "-(Idioma: " + scrapedlenguaje + ")" + "-(Calidad: " + scrapedcalidad +")"
-        scrapedtitle = scrapedtitle.replace(scrapedtitle,bbcode_kodi2html("[COLOR white]"+scrapedtitle+"[/COLOR]"))
-        itemlist.append( Item(channel=__channel__, title =scrapedtitle , url=scrapedurl, action="fanart", thumbnail=scrapedthumbnail,plot = trailer, fanart="http://s18.postimg.org/h9kb22mnt/pdkfanart.jpg", folder=True) )
+    for scrapedthumbnail,scrapedurl, scrapedtitle,  scrapedlenguaje, scrapedgenero, scrapedcalidad in matches:
+        scrapedcalidad = re.sub(r"<a href.*?>|</a>|</span>","",scrapedcalidad).strip()
+        scrapedlenguaje = re.sub(r"<a href.*?>|</a>|</span>","",scrapedlenguaje).strip()
+        
+        if not "Adultos" in scrapedgenero and not "Adultos" in scrapedlenguaje and not "Adultos" in scrapedcalidad:
+           scrapedcalidad = scrapedcalidad.replace(scrapedcalidad,bbcode_kodi2html("[COLOR orange]"+scrapedcalidad+"[/COLOR]"))
+           scrapedlenguaje = scrapedlenguaje.replace(scrapedlenguaje,bbcode_kodi2html("[COLOR orange]"+scrapedlenguaje+"[/COLOR]"))
+           try:
+               yeartrailer = scrapertools.get_match(scrapedtitle,'\((.*?)\)')
+           except:
+               yeartrailer = ""
+           try:
+               titletrailer= scrapertools.get_match(scrapedtitle,'(.*?)\(')
+           except:
+               titletrailer=""
+           trailer = titletrailer + yeartrailer + "trailer"
+           trailer = urllib.quote(trailer)
+           scrapedtitle = scrapedtitle + "-(Idioma: " + scrapedlenguaje + ")" + "-(Calidad: " + scrapedcalidad +")"
+           scrapedtitle = scrapedtitle.replace(scrapedtitle,bbcode_kodi2html("[COLOR white]"+scrapedtitle+"[/COLOR]"))
+           itemlist.append( Item(channel=__channel__, title =scrapedtitle , url=scrapedurl, action="fanart", thumbnail=scrapedthumbnail,plot = trailer, fanart="http://s18.postimg.org/h9kb22mnt/pdkfanart.jpg", folder=True) )
+    try:
+        next_page = scrapertools.get_match(data,'<span class="current">.*?<a href="(.*?)".*?>Siguiente &raquo;</a></div>')
+
+
+        title ="siguiente>>"
+        title = title.replace(title,bbcode_kodi2html("[COLOR red]"+title+"[/COLOR]"))
+        itemlist.append( Item(channel=__channel__, action="buscador", title=title , url=next_page , thumbnail="http://s6.postimg.org/uej03x4r5/bricoflecha.png", fanart="http://s18.postimg.org/h9kb22mnt/pdkfanart.jpg",  folder=True) )
+    except: pass
 
     return itemlist
 
@@ -144,38 +157,44 @@ def peliculas(item):
     patron += '<a href="([^"]+)" '
     patron += 'title="([^<]+)">'
     patron += '<img src="([^"]+)".*?'
-    patron += 'rel="tag">([^"]+)</a>'
-    patron += '</br>Calidad.*?rel="tag">([^"]+)</a>'
+    patron += 'Audio:(.*?)</br>.*?'
+    patron += 'Calidad:(.*?)</br>.*?'
+    patron +='Género:.*?tag">(.*?)</a>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
 
 
-    for scrapedurl, scrapedtitle, scrapedthumbnail, scrapedlenguaje, scrapedcalidad in matches:
+    for scrapedurl, scrapedtitle, scrapedthumbnail, scrapedlenguaje, scrapedcalidad , scrapedgenero in matches:
+        scrapedcalidad = re.sub(r"<a href.*?>|</a>","",scrapedcalidad).strip()
+        scrapedlenguaje = re.sub(r"<a href.*?>|</a>","",scrapedlenguaje).strip()
         scrapedcalidad = scrapedcalidad.replace(scrapedcalidad,bbcode_kodi2html("[COLOR orange]"+scrapedcalidad+"[/COLOR]"))
-        scrapedlenguaje = scrapedlenguaje.replace(scrapedlenguaje,bbcode_kodi2html("[COLOR orange]"+scrapedlenguaje+"[/COLOR]"))
-        try:
-           yeartrailer = scrapertools.get_match(scrapedtitle,'\((.*?)\)')
-        except:
-           yeartrailer = ""
-        try:
-           titletrailer= scrapertools.get_match(scrapedtitle,'(.*?)\(')
-        except:
-           titletrailer=""
-        trailer = titletrailer + yeartrailer + "trailer"
-        trailer = urllib.quote(trailer)
-        print "@@@@@"+trailer
-        scrapedtitle = scrapedtitle + "-(Idioma: " + scrapedlenguaje + ")" + "-(Calidad: " + scrapedcalidad +")"
-        scrapedtitle = scrapedtitle.replace(scrapedtitle,bbcode_kodi2html("[COLOR white]"+scrapedtitle+"[/COLOR]"))
-        itemlist.append( Item(channel=__channel__, title =scrapedtitle , url=scrapedurl, action="fanart", thumbnail=scrapedthumbnail,plot = trailer, fanart="http://s18.postimg.org/h9kb22mnt/pdkfanart.jpg", folder=True) )
+        
+       
+        if not "Adultos" in scrapedgenero and not "Adultos" in scrapedlenguaje and not "Adultos" in scrapedcalidad:
+        
+           scrapedlenguaje = scrapedlenguaje.replace(scrapedlenguaje,bbcode_kodi2html("[COLOR orange]"+scrapedlenguaje+"[/COLOR]"))
+           try:
+              yeartrailer = scrapertools.get_match(scrapedtitle,'\((.*?)\)')
+           except:
+              yeartrailer = ""
+           try:
+              titletrailer= scrapertools.get_match(scrapedtitle,'(.*?)\(')
+           except:
+              titletrailer=""
+           trailer = titletrailer + yeartrailer + "trailer"
+           trailer = urllib.quote(trailer)
+          
+           scrapedtitle = scrapedtitle + "-(Idioma: " + scrapedlenguaje + ")" + "-(Calidad: " + scrapedcalidad +")"
+           scrapedtitle = scrapedtitle.replace(scrapedtitle,bbcode_kodi2html("[COLOR white]"+scrapedtitle+"[/COLOR]"))
+           
+           itemlist.append( Item(channel=__channel__, title =scrapedtitle , url=scrapedurl, action="fanart", thumbnail=scrapedthumbnail,plot = trailer, fanart="http://s18.postimg.org/h9kb22mnt/pdkfanart.jpg", folder=True) )
     ## Paginación
-    patronvideos  = '<a href="([^"]+)" >Siguiente &raquo;</a></div>'
-    matches = re.compile(patronvideos,re.DOTALL).findall(data)
-    scrapertools.printMatches(matches)
-    if len(matches)>0:
-        scrapedurl = urlparse.urljoin(item.url,matches[0])
-        title ="siguiente>>"
-        title = title.replace(title,bbcode_kodi2html("[COLOR red]"+title+"[/COLOR]"))
-        itemlist.append( Item(channel=__channel__, action="peliculas", title=title , url=scrapedurl , thumbnail="http://s6.postimg.org/uej03x4r5/bricoflecha.png", fanart="http://s18.postimg.org/h9kb22mnt/pdkfanart.jpg",  folder=True) )
+    
+    next_page = scrapertools.get_match(data,'<span class="current">.*?<a href="(.*?)".*?>Siguiente &raquo;</a></div>')
+    
+    title ="siguiente>>"
+    title = title.replace(title,bbcode_kodi2html("[COLOR red]"+title+"[/COLOR]"))
+    itemlist.append( Item(channel=__channel__, action="peliculas", title=title , url=next_page , thumbnail="http://s6.postimg.org/uej03x4r5/bricoflecha.png", fanart="http://s18.postimg.org/h9kb22mnt/pdkfanart.jpg",  folder=True) )
     
 
     return itemlist
@@ -184,6 +203,7 @@ def fanart(item):
     logger.info("pelisalacarta.peliculasdk fanart")
     itemlist = []
     url = item.url
+    
     data = scrapertools.cachePage(url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
     title= scrapertools.get_match(data,'<title>Ver Película(.*?) \(')
@@ -363,12 +383,18 @@ def findvideos(item):
     data = scrapertools.cache_page(item.url)
     data = re.sub(r"<!--.*?-->","",data)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-   
+    
     
     
     servers_data_list = {}
-    patron = '<div id="tab\d+" class="tab_content"><script>(\w+)\("([^"]+)"\)</script></div>'
+    
+    patron = '<div id="tab\d+" class="tab_content"><script type="text/rocketscript">(\w+)\("([^"]+)"\)</script></div>'
     matches = re.compile(patron,re.DOTALL).findall(data)
+    
+    if len(matches)==0:
+        patron = '<div id="tab\d+" class="tab_content"><script>(\w+)\("([^"]+)"\)</script></div>'
+        matches = re.compile(patron,re.DOTALL).findall(data)
+        print matches
     
     for server, id in matches:
         
@@ -395,7 +421,19 @@ def findvideos(item):
 
     for server, url in matches:
         
-
+        '''if  "carajo" in manolo:
+            print "tu viejaaaa"
+            import xbmc, time
+                    
+            timeout = time.time()+1
+            while time.time()< timeout:
+                  xbmc.executebuiltin( "Action(back)" )
+                  time.sleep(1)
+                                    
+                                    
+            xbmc.executebuiltin('Notification([COLOR crimson][B]Video[/B][/COLOR], [COLOR yellow][B]'+'No compatible'.upper()+'[/B][/COLOR],4000,"http://s29.postimg.org/wzw749oon/pldklog.jpg")')
+                      
+            break'''
         if server in servers_data_list:
             video_url = re.sub(r"embed\-|\-630x400\.html","",url)
             video_url = video_url.replace("'+codigo+'",servers_data_list[server])
@@ -407,6 +445,10 @@ def findvideos(item):
             servertitle = servertitle.replace("hqq.tv","netu.tv")
             title = bbcode_kodi2html("[COLOR orange]Ver en --[/COLOR]") + servertitle
             itemlist.append( Item(channel=__channel__, title =title , url=video_url, action="play", thumbnail=item.category, plot=scrapedplot, fanart=item.show ) )
+         
+           
+           
+
 
     return itemlist
 
@@ -504,6 +546,7 @@ def info(item):
 
     ventana2 = TextBox1(title=title, plot=plot, info=info, thumbnail=photo, fanart=foto, quit= quit)
     ventana2.doModal()
+ACTION_GESTURE_SWIPE_LEFT = 511
 ACTION_SELECT_ITEM = 7
 class TextBox1( xbmcgui.WindowDialog ):
         """ Create a skinned textbox window """
@@ -547,7 +590,7 @@ class TextBox1( xbmcgui.WindowDialog ):
             self.show()
         
         def onAction(self, action):
-            if action == ACTION_SELECT_ITEM:
+            if action == ACTION_SELECT_ITEM or action == ACTION_GESTURE_SWIPE_LEFT:
                self.close()
 
 def test():
