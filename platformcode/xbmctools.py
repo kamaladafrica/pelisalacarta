@@ -479,13 +479,13 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
         from platformcode import library
         
         titulo = item.fulltitle
-        if fulltitle=="":
+        if item.fulltitle=="":
             titulo = item.title
         
-        library.savelibrary(item.titulo,item.url,item.thumbnail,item.server,item.plot,canal=item.channel,category=item.category,Serie=item.show)
+        library.savelibrary(titulo,item.url,item.thumbnail,item.server,item.plot,canal=item.channel,category=item.category,Serie=item.show)
 
         advertencia = xbmcgui.Dialog()
-        resultado = advertencia.ok(config.get_localized_string(30101) , fulltitle , config.get_localized_string(30135)) # 'se ha añadido a la lista de descargas'
+        resultado = advertencia.ok(config.get_localized_string(30101) , titulo , config.get_localized_string(30135)) # 'se ha añadido a la lista de descargas'
         return
 
     elif opciones[seleccion]==config.get_localized_string(30162): #"Buscar Trailer":
