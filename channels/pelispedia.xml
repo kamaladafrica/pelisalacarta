@@ -13,8 +13,8 @@
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
 	<version>1</version>
-	<date>20/03/2016</date>
-	<changes>Nuevo canal</changes>
+	<date>12/04/2016</date>
+	<changes>arreglo play html5</changes>
 
 	<categories>
 		<category>movie</category>
