@@ -7,10 +7,8 @@
 # ------------------------------------------------------------
 
 import re
-
 from core import scrapertools
 from core import logger
-from core import jsunpack
 
 
 def test_video_exists(page_url):
@@ -29,16 +27,16 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     video_urls = []
 
     data = scrapertools.cache_page(page_url)
-    data = scrapertools.find_single_match(data, "(eval.function.p,a,c,k,e,.*?)\s*</script>")
-    data = jsunpack.unpack(data).replace("\\","")
+    text_encode = scrapertools.find_single_match(data, "(eval\(function\(p,a,c,k,e,d.*?)</script>")
 
+    from aadecode import decode as aadecode
+    text_decode = aadecode(text_encode)
 
     # URL del vídeo
-    pattern = r'"file"\s*:\s*"([^"]+/video/[^"]+)'
-    match = re.search(pattern, data, re.DOTALL)
+    patron = "'([^']+)'"
+    media_url = scrapertools.find_single_match(text_decode, patron)
 
-    url = match.group(1)
-    video_urls.append([url[-4:] + " [Videowood]", url])
+    video_urls.append([media_url[-4:] + " [Videowood]", media_url])
 
     return video_urls
 
