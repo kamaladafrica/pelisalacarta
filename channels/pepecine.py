@@ -106,7 +106,39 @@ def search(item,texto):
         for line in sys.exc_info():
             logger.error( "%s" % line )
         return []
-        
+
+def newest(categoria):
+    itemlist = []
+    item = Item()
+    try:
+        if categoria == 'peliculas':
+            item.url = urlparse.urljoin(__url_base__,"plugins/last_update_links.php?type=movie&offset=0&limit=30")
+            item.extra = "movie"
+
+        elif categoria == 'infantiles':
+            item.url = urlparse.urljoin(__url_base__, "plugins/last_update_links.php?type=movie&offset=0&limit=30&genre=Animación")
+            item.extra = "movie"
+
+        elif categoria == 'series':
+            item.url = urlparse.urljoin(__url_base__,"plugins/combined_json.php?&offset=0&limit=30&type=series")
+            item.extra="series_novedades"
+
+        else:
+            return []
+
+        itemlist = listado(item)
+        if itemlist[-1].action == "listado":
+            itemlist.pop()
+
+    # Se captura la excepción, para no interrumpir al canal novedades si un canal falla
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error("{0}".format(line))
+        return []
+
+    return itemlist
+
 def listado(item):
     #import json
     logger.info("[pepecine.py] listado")
@@ -123,6 +155,7 @@ def listado(item):
     for i in data_dict["result"]:
         infoLabels={}
         plot={}
+        idioma =''
         
         if item.extra=="movie":
             action="get_movie"
@@ -171,8 +204,17 @@ def listado(item):
         
         if infoLabels: 
             plot['infoLabels']=infoLabels
-        
-        itemlist.append( myItem( channel=__channel__, action=action, title=title, url=url, extra=item.extra, fanart=fanart, plot=str(plot), thumbnail=thumbnail, viewmode="movie_with_plot") )
+
+        newItem = myItem(channel=__channel__, action=action, title=title, url=url, extra=item.extra,
+                         fanart=fanart, plot=str(plot), thumbnail=thumbnail, viewmode="movie_with_plot",
+                         language=idioma)
+        newItem.year=i['year']
+        newItem.contentTitle=i['title']
+        if 'season' in infoLabels and infoLabels['season']:
+            newItem.contentSeason = infoLabels['season']
+        if 'episode' in infoLabels and infoLabels['episode']:
+            newItem.contentEpisodeNumber = infoLabels['episode']
+        itemlist.append(newItem)
     
     # Paginacion
     if int(data_dict["total_results"]) == int(limit):
@@ -442,7 +484,8 @@ def find_videos(url):
            'servidor':""}
     
     # Ejecuta el find_videos en cada servidor hasta que encuentra una coicidencia
-    for serverid in servertools.ENABLED_SERVERS:
+    lista_servers = servertools.get_servers_list()
+    for serverid in lista_servers:
         try:
             servers_module = __import__("servers."+serverid)
             server_module = getattr(servers_module,serverid)
@@ -453,8 +496,8 @@ def find_videos(url):
                 ret["url"]=devuelve[0][1]
                 ret["servidor"]=devuelve[0][2]
                 # reordenar el listado, es probable q el proximo enlace sea del mismo servidor
-                servertools.ENABLED_SERVERS.remove(serverid)
-                servertools.ENABLED_SERVERS.insert(0,serverid)
+                lista_servers.remove(serverid)
+                lista_servers.insert(0,serverid)
                 break
            
         except ImportError:
@@ -497,13 +540,14 @@ class myItem(Item):
 #     la sinopsis en caso contrario. En realidad deberia ser xbmctools o equivalente quien se encargara de interpretarlo.
 ##########################################################################################
 
-def __init__(self, channel="", title="", url="", page="", thumbnail="", plot="", duration="", fanart="", action="", server="directo", extra="", show="", category = "" , language = "" , subtitle="" , folder=True, context = "",totalItems = 0, overlay = None, type="", password="", fulltitle="", viewmode="list" ):
-        Item.__init__(self, channel=channel, title=self.format_text(title), url=url, page=page, thumbnail=thumbnail, 
-                      plot=self.format_plot(plot), duration=duration, fanart=fanart, action=action, server=server, extra=extra, 
-                      show=show, category =category , language =language , subtitle=subtitle , folder=folder, 
-                      context = context,totalItems = totalItems, overlay = overlay, type=type, password=password, 
-                      fulltitle=fulltitle, viewmode=viewmode )
+    def __init__(self, channel="", title="", url="", page="", thumbnail="", plot="", duration="", fanart="", action="", server="directo", extra="", show="", category = "" , language = "" , subtitle="" , folder=True, context = "",totalItems = 0, overlay = None, type="", password="", fulltitle="", viewmode="list" ):
+        Item.__init__(self, channel=channel, title=self.format_text(title), url=url, page=page, thumbnail=thumbnail,
+                  plot=self.format_plot(plot), duration=duration, fanart=fanart, action=action, server=server, extra=extra,
+                  show=show, category =category , language =language , subtitle=subtitle , folder=folder,
+                  context = context,totalItems = totalItems, overlay = overlay, type=type, password=password,
+                  fulltitle=fulltitle, viewmode=viewmode )
         
+
     def set_title(self,title):
         self.title=format_text(title)
         

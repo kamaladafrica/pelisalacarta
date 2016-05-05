@@ -2,17 +2,52 @@
 <channel>
 	<id>novedades</id>
 	<name>Novedades</name>
-	<language>es</language>
-	<update_url></update_url>
+	
 	<active>false</active>
-	<include_in_global_search>disabled</include_in_global_search>
-	<version>0</version>
 	<adult>false</adult>
-	<date></date>
-	<changes></changes>
+	<language>es</language>
+	<include_in_global_search>disabled</include_in_global_search>
+	
 	<fanart></fanart>
 	<thumbnail></thumbnail>
+	
+	<update_url></update_url>
+	<version>1</version>
+	
+	<changes>
+		<change> 
+			<date>29/04/16</date>
+			<autor>super_berny</autor>
+			<description>Posibilidad de incluir otros canales, mediante configuracion</description>
+		</change>
+		<change> 
+			<date></date>
+			<autor>jesus</autor>
+			<description>Version inicial</description>
+		</change>
+	</changes>
+	
 	<categories>
 		<category>movie</category>
 	</categories>
+	
+	<settings>
+		<id>multithread</id>
+		<type>bool</type>
+		<label>MultiThread</label>
+		<default>false</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<id>result_mode</id>
+		<type>list</type>
+		<label>Mostrar resultados:</label>
+    	<default>0</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+		<lvalues>Agrupados por contenido</lvalues>
+		<lvalues>Agrupados por canales</lvalues>
+		<lvalues>Sin Agrupar</lvalues>
+	</settings>
 </channel>

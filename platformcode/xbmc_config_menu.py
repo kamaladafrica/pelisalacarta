@@ -384,7 +384,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                     self.values[id] = default
 
                 value = self.values[id]
-                
+
             if ctype == "bool":
                 c["default"] = bool(c["default"])
                 self.values[id] = bool(self.values[id])
