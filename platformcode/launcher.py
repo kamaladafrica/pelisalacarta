@@ -236,13 +236,13 @@ def run():
 
                 else:
                     if item.action != "findvideos":
-                        #try:
-                        logger.info("pelisalacarta.platformcode.launcher executing channel '"+item.action+"' method")
-                        itemlist = getattr(channel, item.action)(item)
-                        '''except:
+                        try:
+                            logger.info("pelisalacarta.platformcode.launcher executing channel '"+item.action+"' method")
+                            itemlist = getattr(channel, item.action)(item)
+                        except:
                             #Error al ejecutar la accion o item tipo Tag
                             logger.info("pelisalacarta.platformcode.launcher no se ha podido ejecutar la accion %s" %item.action)
-                            return '''
+                            return
                     else:
 
                         # Intenta ejecutar una posible funcion "findvideos" del canal

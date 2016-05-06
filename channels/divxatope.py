@@ -72,6 +72,43 @@ def search(item,texto):
             logger.error( "%s" % line )
         return []
 
+def newest(categoria):
+    itemlist = []
+    item = Item()
+    try:
+        if categoria == 'peliculas':
+            item.url = "http://www.divxatope.com/categoria/peliculas"
+
+        elif categoria == 'series':
+            item.url = "http://www.divxatope.com/categoria/series"
+
+        else:
+            return []
+
+        itemlist = lista(item)
+        if itemlist[-1].title == ">> Página siguiente":
+            itemlist.pop()
+
+
+        # Esta pagina coloca a veces contenido duplicado, intentamos descartarlo
+        dict_aux = {}
+        for i in itemlist:
+            if not i.url in dict_aux:
+                dict_aux[i.url] = i
+            else:
+                itemlist.remove(i)
+
+    # Se captura la excepción, para no interrumpir al canal novedades si un canal falla
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error("{0}".format(line))
+        return []
+
+    #return dict_aux.values()
+    return itemlist
+
+
 def lista(item):
     logger.info("pelisalacarta.channels.divxatope lista")
     itemlist = []
@@ -102,17 +139,42 @@ def lista(item):
     scrapertools.printMatches(matches)
 
     for scrapedurl,scrapedthumbnail,scrapedtitle,calidad in matches:
+
         title = scrapedtitle.strip()+" ("+scrapertools.htmlclean(calidad)+")"
         url = urlparse.urljoin(item.url,scrapedurl)
         thumbnail = urlparse.urljoin(item.url,scrapedthumbnail)
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
+        contentTitle = scrapertools.htmlclean(scrapedtitle).strip()
+        patron = '([^<]+)<br>'
+        matches = re.compile(patron, re.DOTALL).findall(calidad + '<br>')
+        idioma = ''
+
         if "divxatope.com/serie" in url:
-            itemlist.append( Item(channel=__channel__, action="episodios", title=title , fulltitle = title, url=url , thumbnail=thumbnail , plot=plot , folder=True) )
+            contentTitle = re.sub('\s+-|\.{3}$', '', contentTitle)
+            capitulo = ''
+
+            if len(matches) == 3:
+                calidad = matches[0].strip()
+                idioma = matches[1].strip()
+                capitulo = matches[2].replace('Cap','x').replace('Temp','').replace(' ','')
+                temporada, episodio = capitulo.strip().split('x')
+
+            itemlist.append( Item(channel=__channel__, action="episodios", title=title , fulltitle = title, url=url ,
+                                  thumbnail=thumbnail , plot=plot , folder=True, hasContentDetails="true",
+                                  contentTitle=contentTitle, language=idioma, contentSeason=int(temporada),
+                                  contentEpisodeNumber=int(episodio), contentCalidad=calidad))
+
         else:
-            contentTitle = scrapertools.htmlclean(title.strip())
-            itemlist.append( Item(channel=__channel__, action="findvideos", title=title , fulltitle = title, url=url , thumbnail=thumbnail , plot=plot , folder=True, hasContentDetails="true", contentTitle=contentTitle, contentThumbnail=thumbnail) )
+            if len(matches) == 2:
+                calidad = matches[0].strip()
+                idioma = matches[1].strip()
+
+            itemlist.append( Item(channel=__channel__, action="findvideos", title=title , fulltitle = title, url=url ,
+                                  thumbnail=thumbnail , plot=plot , folder=True, hasContentDetails="true",
+                                  contentTitle=contentTitle, language=idioma, contentThumbnail=thumbnail,
+                                  contentCalidad=calidad))
 
     next_page_url = scrapertools.find_single_match(data,'<li><a href="([^"]+)">Next</a></li>')
     if next_page_url!="":

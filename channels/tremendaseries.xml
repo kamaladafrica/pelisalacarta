@@ -1,27 +1,26 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <channel>
-	<id>oranline</id>
-	<name>Oranline</name>
+	<id>tremendaseries</id>
+	<name>Tremenda Series</name>
 
 	<active>true</active>
 	<adult>false</adult>
 	<language>es</language>
-
-	<fanart>https://d18.usercdn.com/i/03860/v89p218dygxz.jpg</fanart>
-	<thumbnail>http://media.tvalacarta.info/pelisalacarta/squares/oranline.png</thumbnail>
-	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/oranline.png</bannermenu>
+	
+	
+	<fanart>https://raw.githubusercontent.com/master-1970/resources/master/images/fanart/tremendaseries.jpg</fanart>
+	<thumbnail>https://raw.githubusercontent.com/master-1970/resources/master/images/squares/tremendaseries.png</thumbnail>
+	<bannermenu>https://raw.githubusercontent.com/master-1970/resources/master/images/bannermenu/tremendaseries.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>3</version>
-	<date>23/03/2016</date>
-	<changes>Modo grafico</changes>
+	<version>1</version>
+	<date>27/03/2016</date>
+	<changes>Version inicial</changes>
 
 	<categories>
-		<category>latino</category>
-		<category>movie</category>
-		<category>documentary</category>
+		<category>serie</category>
 	</categories>
-
+	
 	<settings>
 		<id>include_in_global_search</id>
 		<type>bool</type>
@@ -49,4 +48,5 @@
 		<lvalues>Perfil 2</lvalues>
 		<lvalues>Perfil 3</lvalues>
 	</settings>
+	
 </channel>

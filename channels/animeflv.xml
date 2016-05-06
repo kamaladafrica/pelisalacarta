@@ -12,11 +12,21 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/animeflv.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>7</version>
-	<date>10/03/2016</date>
-    <changes>actualizada la ruta de la carpeta</changes>
-
-
+	<version>8</version>
+	
+    <changes>
+		<change> 
+			<date>29/04/16</date>
+			<autor>super_berny</autor>
+			<description>Adaptar a Buscador global y Novedades Anime</description>
+		</change>
+		<change> 
+			<date>10/03/2016</date>
+			<autor></autor>
+			<description>actualizada la ruta de la carpeta</description>
+		</change>
+	</changes>
+	
 	<categories>
 		<category>anime</category>
 	</categories>
@@ -26,6 +36,15 @@
 		<type>bool</type>
 		<label>Incluir en busqueda global</label>
 		<default>false</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
+	
+	<settings>
+		<id>include_in_newest_anime</id>
+		<type>bool</type>
+		<label>Incluir en Novedades - Episodios de anime</label>
+		<default>true</default>
 		<enabled>true</enabled>
 		<visible>true</visible>
 	</settings>

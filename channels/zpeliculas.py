@@ -137,6 +137,32 @@ def search(item,texto):
             logger.error( "%s" % line )
         return []
 
+def newest(categoria):
+    itemlist = []
+    item = Item()
+    try:
+        if categoria == 'peliculas':
+            item.url = "http://www.zpeliculas.com"
+
+        elif categoria == 'infantiles':
+            item.url = "http://www.zpeliculas.com/peliculas/p-animacion/"
+
+        else:
+            return []
+
+        itemlist = peliculas(item)
+        if itemlist[-1].extra == "next_page":
+            itemlist.pop()
+
+    # Se captura la excepción, para no interrumpir al canal novedades si un canal falla
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error("{0}".format(line))
+        return []
+
+    return itemlist
+
 def peliculas(item):
     logger.info("pelisalacarta.channels.zpeliculas peliculas")
 
@@ -180,17 +206,17 @@ def peliculas(item):
         scrapedcalidad = scrapertools.find_single_match(match,'<div class="shortname">[^<]+</div[^<]+<div class="[^"]+">([^<]+)')
         scrapedyear = scrapertools.find_single_match(match,'<div class="year[^>]+>([^<]+)')
         scrapedidioma = scrapertools.find_single_match(match,'<div class="year[^>]+>[^<]+</div[^<]+<div class[^>]+>([^<]+)')
-        
-        title = scrapedtitle
+
+        contentTitle = scrapertools.htmlclean(scrapedtitle)
         #logger.info("title="+scrapedtitle)
-        title = title + ' ('+scrapedyear+') ['+scrapedidioma+'] ['+scrapedcalidad+']'
-        title = scrapertools.htmlclean(title)
+        title = contentTitle + ' ('+scrapedyear+') ['+scrapedidioma+'] ['+scrapedcalidad+']'
+        #title = scrapertools.htmlclean(title)
         url = scrapedurl
         thumbnail = scrapedthumbnail
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
         
-        itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, hasContentDetails="true", contentTitle=title, contentThumbnail=thumbnail, viewmode="movie", fanart=thumbnail))
+        itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, hasContentDetails="true", contentTitle=contentTitle, contentThumbnail=thumbnail, viewmode="movie", fanart=thumbnail))
 
     next_page = scrapertools.find_single_match(body,'<a href="([^"]+)">Siguiente')
     if next_page!="":

@@ -83,6 +83,8 @@ class Client(object):
         self._monitor.add_listener(self._check_meta)
         self._monitor.add_listener(self.save_state)
         self._monitor.add_listener(self.priorize_start_file)
+        self._monitor.add_listener(self.announce_torrent)
+        
         if self.auto_shutdown:
             self._monitor.add_listener(self._auto_shutdown)
         self._dispatcher=Dispatcher(self)
@@ -120,6 +122,10 @@ class Client(object):
                 files.append({"name":n,"url":u,"size":s})
 
         return files
+
+    def announce_torrent(self):
+        self._th.force_reannounce()
+        self._th.force_dht_announce()
 
     def _auto_shutdown(self, *args, **kwargs):
         if self.file and self.file.cursor:
