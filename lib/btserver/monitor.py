@@ -2,8 +2,8 @@ from threading import Thread, Lock, Event
 
 
 class Monitor(Thread):
-        def __init__(self, client, name="Status Monitor"):
-            Thread.__init__(self,name=name)
+        def __init__(self, client):
+            Thread.__init__(self)
             self.daemon=True
             self.listeners=[]
             self.lock = Lock()

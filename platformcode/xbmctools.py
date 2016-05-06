@@ -3,7 +3,6 @@
 # pelisalacarta - XBMC Plugin
 # XBMC Tools
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-# Modificado por super_berny: inclusion de infoLabels
 #------------------------------------------------------------
 
 import os
@@ -42,32 +41,26 @@ def addnewfolderextra(item, totalItems=0):
         item.context = item.context.split("|")
     
     if DEBUG:
-       
-        logger.info('[xbmctools.py] addnewfolderextra')
+        logger.info('[xbmctools.py] addnewfolderextra(' + item.tostring() +')')
         logger.info(item.tostring())
 
     listitem = xbmcgui.ListItem( item.title, iconImage="DefaultFolder.png", thumbnailImage=item.thumbnail )
 
-    listitem.setInfo( "video", { "Title" : item.title, "Plot" : item.plot, "Studio" : item.channel.capitalize() } )
-
-    set_infoLabels(listitem,item.plot) # Modificacion introducida por super_berny para añadir infoLabels al ListItem
-
+    if item.action !="":
+        set_infoLabels(listitem,item) # Modificacion introducida por super_berny para añadir infoLabels al ListItem
     if item.fanart!="":
         listitem.setProperty('fanart_image',item.fanart) 
         xbmcplugin.setPluginFanart(pluginhandle, item.fanart)
-    #Realzamos un quote sencillo para evitar problemas con títulos unicode
-#    title = title.replace("&","%26").replace("+","%2B").replace("%","%25")
+
     try:
         item.title = item.title.encode ("utf-8") #This only aplies to unicode strings. The rest stay as they are.
     except:
         pass
-
+    
     itemurl = '%s?%s' % ( sys.argv[ 0 ] , item.tourl())
-
     if item.show != "": #Añadimos opción contextual para Añadir la serie completa a la biblioteca
         addSerieCommand = "XBMC.RunPlugin(%s?%s)" % ( sys.argv[ 0 ] , item.clone(action="addlist2Library").tourl())
         contextCommands.append(("Añadir Serie a Biblioteca",addSerieCommand))
-
     if "menu filtro" in item.context:
         filter_serie_command = "XBMC.RunPlugin(%s?%s)" % \
                                (sys.argv[0], item.clone(channel="filtertools", action="config_filter",
@@ -88,27 +81,10 @@ def addnewfolderextra(item, totalItems=0):
 
     if "1" in item.context and accion != "por_teclado":
         DeleteCommand = "XBMC.RunPlugin(%s?%s)" % ( sys.argv[ 0 ] , item.clone(channel="buscador", action="borrar_busqueda").tourl())
-        contextCommands.append((config.get_localized_string( 30300 ),DeleteCommand))
     if "4" in item.context:
         searchSubtitleCommand = "XBMC.RunPlugin(%s?%s)" % ( sys.argv[ 0 ] , item.clone(channel="subtitletools", action="searchSubtitle").tourl())
-        contextCommands.append(("XBMC Subtitle",searchSubtitleCommand))
     if "5" in item.context:
         trailerCommand = "XBMC.Container.Update(%s?%s)" % ( sys.argv[ 0 ] , item.clone(channel="trailertools", action="buscartrailer").tourl())
-        contextCommands.append((config.get_localized_string(30162),trailerCommand))
-    if "6" in item.context:# Ver canal en vivo en justintv
-        justinCommand = "XBMC.PlayMedia(%s?%s)" % ( sys.argv[ 0 ] , item.clone(channel="justintv", action="playVideo").tourl())
-        contextCommands.append((config.get_localized_string(30410),justinCommand))
-
-    if "8" in item.context:# Añadir canal a favoritos justintv
-        justinCommand = "XBMC.RunPlugin(%s?%s)" % ( sys.argv[ 0 ] , item.clone(channel="justintv", action="addToFavorites").tourl())
-        contextCommands.append((config.get_localized_string(30406),justinCommand))
-
-    if "9" in item.context:# Remover canal de favoritos justintv
-        justinCommand = "XBMC.Container.Update(%s?%s)" % ( sys.argv[ 0 ] , item.clone(channel="justintv", action="removeFromFavorites").tourl())
-        contextCommands.append((config.get_localized_string(30407),justinCommand))
-
-    logger.info("[xbmctools.py] addnewfolderextra itemurl="+itemurl)
-
     if config.get_platform()=="boxee":
         #logger.info("Modo boxee")
         ok = xbmcplugin.addDirectoryItem( handle = pluginhandle, url = itemurl , listitem=listitem, isFolder=True)
@@ -116,14 +92,17 @@ def addnewfolderextra(item, totalItems=0):
         #logger.info("Modo xbmc")
         if len(contextCommands) > 0:
             listitem.addContextMenuItems ( contextCommands, replaceItems=False)
-    
-        if totalItems == 0:
+        if item.action == "":
+            listitem.addContextMenuItems ( list(), replaceItems=True)
+            
+        if item.totalItems == 0:
             ok = xbmcplugin.addDirectoryItem( handle = pluginhandle, url = itemurl , listitem=listitem, isFolder=True)
         else:
-            ok = xbmcplugin.addDirectoryItem( handle = pluginhandle, url = itemurl , listitem=listitem, isFolder=True, totalItems=totalItems)
+            ok = xbmcplugin.addDirectoryItem( handle = pluginhandle, url = itemurl , listitem=listitem, isFolder=True, totalItems=item.totalItems)
     return ok
 
 def addnewvideo(item, IsPlayable='false', totalItems = 0):
+    # TODO: Posible error en trailertools.py
     contextCommands = []
     ok = False
     try:
@@ -141,46 +120,22 @@ def addnewvideo(item, IsPlayable='false', totalItems = 0):
         icon_image = "DefaultVideo.png"
 
     listitem = xbmcgui.ListItem( item.title, iconImage="DefaultVideo.png", thumbnailImage=item.thumbnail )
-    listitem.setInfo( "video", { "Title" : item.title, "FileName" : item.title, "Plot" : item.plot, "Duration" : item.duration, "Studio" : item.channel.capitalize(), "Genre" : item.category } )
-
-    set_infoLabels(listitem,item.plot) # Modificacion introducida por super_berny para añadir infoLabels al ListItem
-        
+    if item.action !="":
+        set_infoLabels(listitem,item) # Modificacion introducida por super_berny para añadir infoLabels al ListItem
+   
     if item.fanart!="":
-        #logger.info("fanart :%s" %fanart)
+        #logger.info("item.fanart :%s" %item.fanart)
         listitem.setProperty('fanart_image',item.fanart)
         xbmcplugin.setPluginFanart(pluginhandle, item.fanart)
 
-    if IsPlayable == 'true': #Esta opcion es para poder utilizar el xbmcplugin.setResolvedUrl()
+    if item.isPlayable == 'true': #Esta opcion es para poder utilizar el xbmcplugin.setResolvedUrl()
         listitem.setProperty('IsPlayable', 'true')
-    #listitem.setProperty('fanart_image',os.path.join(IMAGES_PATH, "cinetube.png"))
-    if "1" in item.context: #El uno añade al menu contextual la opcion de guardar en megalive un canal a favoritos
-        addItemCommand = "XBMC.RunPlugin(%s?%s)" % ( sys.argv[ 0 ] , item.clone(action="saveChannelFavorites").tourl())
-        contextCommands.append((config.get_localized_string(30301),addItemCommand))
-        
-    if "2" in item.context:#El dos añade al menu contextual la opciones de eliminar y/o renombrar un canal en favoritos 
-        addItemCommand = "XBMC.RunPlugin(%s?%s)" % ( sys.argv[ 0 ] , item.clone(action="deleteSavedChannel").tourl())
-        contextCommands.append((config.get_localized_string(30302),addItemCommand))
-        addItemCommand = "XBMC.RunPlugin(%s?%s)" % ( sys.argv[ 0 ] , item.clone(action="renameChannelTitle").tourl())
-        contextCommands.append((config.get_localized_string(30303),addItemCommand))
-            
-    if "6" in item.context:# Ver canal en vivo en justintv
-        justinCommand = "XBMC.PlayMedia(%s?%s)" % ( sys.argv[ 0 ] , item.clone(channel="justintv", action="playVideo").tourl())
-        contextCommands.append((config.get_localized_string(30410),justinCommand))
 
-    if "7" in item.context:# Listar videos archivados en justintv
-        justinCommand = "XBMC.Container.Update(%s?%s)" % ( sys.argv[ 0 ] , item.clone(channel="justintv", action="listarchives").tourl())
-        contextCommands.append((config.get_localized_string(30409),justinCommand))
-
-    if "8" in item.context:# Añadir canal a favoritos justintv
-        justinCommand = "XBMC.RunPlugin(%s?%s)" % ( sys.argv[ 0 ] , item.clone(channel="justintv", action="addToFavorites").tourl())
-        contextCommands.append((config.get_localized_string(30406),justinCommand))
-
-    if "9" in item.context:# Remover canal de favoritos justintv
-        justinCommand = "XBMC.Container.Update(%s?%s)" % ( sys.argv[ 0 ] , item.clone(channel="justintv", action="removeFromFavorites").tourl())
-        contextCommands.append((config.get_localized_string(30407),justinCommand))
 
     if len (contextCommands) > 0:
         listitem.addContextMenuItems ( contextCommands, replaceItems=False)
+    if item.action == "":
+            listitem.addContextMenuItems ( list(), replaceItems=True)
     try:
         item.title = item.title.encode ("utf-8")     #This only aplies to unicode strings. The rest stay as they are.
         item.plot  = item.plot.encode ("utf-8")
@@ -188,12 +143,11 @@ def addnewvideo(item, IsPlayable='false', totalItems = 0):
         pass
 
     itemurl = '%s?%s' % ( sys.argv[ 0 ] , item.tourl())
-
-    #logger.info("[xbmctools.py] itemurl=%s" % itemurl)
-    if totalItems == 0:
+                    
+    if item.totalItems == 0:
         ok = xbmcplugin.addDirectoryItem( handle = pluginhandle, url=itemurl, listitem=listitem, isFolder=False)
     else:
-        ok = xbmcplugin.addDirectoryItem( handle = pluginhandle, url=itemurl, listitem=listitem, isFolder=False, totalItems=totalItems)
+        ok = xbmcplugin.addDirectoryItem( handle = pluginhandle, url=itemurl, listitem=listitem, isFolder=False, totalItems=item.totalItems)
     return ok
 
 def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescargas=False,strmfile=False):
@@ -736,39 +690,6 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
             logger.info("b10")
             xbmc.executebuiltin( "PlayMedia("+mediaurl+")" )
         
-    # Descarga en segundo plano para vidxden, sólo en modo free
-    '''
-    elif server=="vidxden" and seleccion==0:
-        from core import downloadtools
-        import thread,os
-        import xbmc
-        
-        logger.info("[xbmctools.py] ---------------------------------")
-        logger.info("[xbmctools.py] DESCARGA EN SEGUNDO PLANO")
-        logger.info("[xbmctools.py]   de "+mediaurl)
-        temp_file = config.get_temp_file("background.file")
-        if os.path.exists(temp_file):
-            os.remove(temp_file)
-        logger.info("[xbmctools.py]   a "+temp_file)
-        logger.info("[xbmctools.py] ---------------------------------")
-        thread.start_new_thread(downloadtools.downloadfile, (mediaurl,temp_file), {'silent':True})
-
-        handle_wait(60,"Descarga en segundo plano","Se está descargando un trozo antes de empezar")
-
-        playlist = xbmc.PlayList( xbmc.PLAYLIST_VIDEO )
-        playlist.clear()
-        playlist.add( temp_file, xlistitem )
-    
-        player_type = xbmc.PLAYER_CORE_AUTO
-        xbmcPlayer = xbmc.Player( player_type )
-        xbmcPlayer.play(playlist)
-        
-        while xbmcPlayer.isPlaying():
-            xbmc.sleep(5000)
-            logger.info("sigo aquí...")
-
-        logger.info("fin")
-    '''
 
     if item.subtitle!="" and view:
         logger.info("b11")
@@ -808,7 +729,7 @@ def getLibraryInfo (mediaurl):
     '''Obtiene información de la Biblioteca si existe (ficheros strm) o de los parámetros
     '''
     if DEBUG:
-        logger.info('[xbmctools.py] playlist OBTENCIÓN DE DATOS DE BIBLIOTECA')
+        logger.info('[xbmctools.py] playlist OBTENCIÃ“N DE DATOS DE BIBLIOTECA')
 
     # Información básica
     label = xbmc.getInfoLabel( 'listitem.label' )
@@ -929,7 +850,7 @@ def alertanomegauploadlow(server):
     #'Prueba a reproducir en otra calidad'
     resultado = advertencia.ok( config.get_localized_string(30055) , config.get_localized_string(30061) , config.get_localized_string(30062))
 
-# AÑADIDO POR JUR. SOPORTE DE FICHEROS STRM
+# AÃ‘ADIDO POR JUR. SOPORTE DE FICHEROS STRM
 def playstrm(params,url,category):
     '''Play para videos en ficheros strm
     '''
@@ -960,6 +881,8 @@ def renderItems(itemlist, parentitem, isPlayable='false'):
     if itemlist <> None:
         for item in itemlist:
             logger.info("item="+item.tostring())
+            item.totalItems = len(itemlist)
+            item.isPlayable = isPlayable
             
             if item.category == "":
                 item.category = parentitem.category
@@ -968,21 +891,27 @@ def renderItems(itemlist, parentitem, isPlayable='false'):
                 item.fulltitle=item.title
             
             if item.fanart=="":
-
                 channel_fanart = os.path.join( config.get_runtime_path(), 'resources', 'images', 'fanart', item.channel+'.jpg')
 
                 if os.path.exists(channel_fanart):
                     item.fanart = channel_fanart
                 else:
                     item.fanart = os.path.join(config.get_runtime_path(),"fanart.jpg")
-
+            
+            # Formatear titulo
+            if 'text_color' in item and item.text_color:
+                item.title= '[COLOR %s]%s[/COLOR]' %(item.text_color, item.title)
+            if 'text_blod' in item and item.text_blod:
+                item.title= '[B]%s[/B]' %(item.title)
+            if 'text_italic' in item and item.text_italic:
+                item.title= '[I]%s[/I]' %(item.title)
+                
             if item.folder:
                 addnewfolderextra(item, totalItems = len(itemlist))
             else:
                 if config.get_setting("player_mode")=="1": # SetResolvedUrl debe ser siempre "isPlayable = true"
-                    isPlayable = "true"
-
-                addnewvideo( item, IsPlayable=isPlayable, totalItems = len(itemlist))
+                    item.isPlayable = 'true'
+                addnewvideo( item, IsPlayable=item.isPlayable, totalItems = len(itemlist))
                 
             if item.viewmode!="list":
                 viewmode = item.viewmode
@@ -1057,17 +986,31 @@ def alert_no_puedes_ver_video(server,url,motivo):
     else:
         resultado = advertencia.ok( "No puedes ver ese vídeo porque...","El servidor donde está alojado no está","soportado en pelisalacarta todavía",url)
         
-def set_infoLabels(listitem,plot):
-    # Modificacion introducida por super_berny para añadir infoLabels al ListItem
-    if plot.startswith("{'infoLabels'"):
-        # Necesitaba un parametro que pase los datos desde Item hasta esta funcion 
-        # y el que parecia mas idoneo era plot.
+def set_infoLabels(listitem,item):
+    '''
+    Metodo para añadir informacion extra al listitem.
+    Se mantiene por retocompatibilidad, pero deberia despreciarse en futuras versiones.
+    '''
+    if item.plot.startswith("{'infoLabels'"):
+        # Esta forma de pasar la informacion al listitem es obsoleta y deberia despreciarse
         # plot tiene que ser un str con el siguiente formato:
         #   plot="{'infoLabels':{dicionario con los pares de clave/valor descritos en 
         #               http://mirrors.xbmc.org/docs/python-docs/14.x-helix/xbmcgui.html#ListItem-setInfo}}"
+        
         try:
             import ast
-            infodict=ast.literal_eval(plot)['infoLabels']
-            listitem.setInfo( "video", infodict)
+            infodict=ast.literal_eval(item.plot)['infoLabels']
+            if not infodict.has_key('title'): infodict['title'] = item.title
+            listitem.setInfo( "video", infodict)  
         except:
             pass
+    elif len(item.infoLabels) >0:
+        # Nuevo modelo para pasar la informacion al listitem (ver tmdb.set_InfoLabels() )
+        # item.infoLabels es un dicionario con los pares de clave/valor descritos en: 
+        # http://mirrors.xbmc.org/docs/python-docs/14.x-helix/xbmcgui.html#ListItem-setInfo
+        listitem.setInfo( "video", item.infoLabels)
+    
+    elif item.plot !='':
+        # Retrocompatibilidad con canales q no utilizan infoLabels de ningun tipo
+        listitem.setInfo( "video", { "Title" : item.title, "Plot" : item.plot, "Studio" : item.channel.capitalize() } )
+    
