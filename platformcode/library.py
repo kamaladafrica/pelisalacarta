@@ -20,15 +20,14 @@ from core import scrapertools
 # TODO EVITAR USAR REQUESTS
 from lib import requests
 
+modo_cliente = int(config.get_setting("library_mode"))
 # Host name where XBMC is running, leave as localhost if on this PC
 # Make sure "Allow control of XBMC via HTTP" is set to ON in Settings ->
 # Services -> Webserver
-xbmc_host = 'localhost'  # TODO meterlo en settings
+xbmc_host = config.get_setting("xbmc_host")
 # Configured in Settings -> Services -> Webserver -> Port
-xbmc_port = 555  # TODO meterlo en settings
+xbmc_port = int(config.get_setting("xbmc_port"))
 marcar_como_visto = bool(config.get_setting("mark_as_watched"))
-modo_cliente = bool(config.get_setting("library_mode"))
-
 # Base URL of the json RPC calls. For GET calls we append a "request" URI
 # parameter. For POSTs, we add the payload as JSON the the HTTP request body
 xbmc_json_rpc_url = "http://{host}:{port}/jsonrpc".format(host=xbmc_host, port=xbmc_port)
@@ -296,6 +295,7 @@ def set_infoLabels_from_library(itemlist, tipo):
     elif 'episodes' in data['result']:
         result = data['result']['episodes']
 
+    logger.info("resultooo {}".format(result))
     if result:
         for i in itemlist:
             for r in result:
@@ -379,6 +379,10 @@ def save_tvshow_in_file(item):
     """
     logger.info("[library.py] save_tvshow_in_file")
     fname = os.path.join(config.get_data_path(), TVSHOW_FILE)
+    # comprobación por si no ha llamada al library_service para ejecutar library.convert_xml_to_json()
+    if not os.path.isfile(fname):
+        convert_xml_to_json(True)
+
     dict_data = jsontools.load_json(read_file(fname))
     dict_data[item.channel][title_to_filename(item.show)] = item.url
     logger.info("dict_data {0}".format(dict_data))
@@ -536,10 +540,26 @@ def get_data(payload):
     headers = {'content-type': 'application/json'}
 
     if modo_cliente:
-        response = requests.post(xbmc_json_rpc_url, data=jsontools.dump_json(payload), headers=headers)
-        data = jsontools.load_json(response.text)
+        try:
+            response = requests.post(xbmc_json_rpc_url, data=jsontools.dump_json(payload), headers=headers)
+            logger.info("[library.py] get_data:: response {0}".format(response))
+            data = jsontools.load_json(response.text)
+        except requests.exceptions.ConnectionError:
+            logger.info("[library.py] get_data:: xbmc_json_rpc_url: Error de conexion")
+            data = ["error"]
+        except Exception as ex:
+            template = "An exception of type {0} occured. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            logger.info("[library.py] get_data:: error en xbmc_json_rpc_url: {0}".format(message))
+            data = ["error"]
     else:
-        data = jsontools.load_json(xbmc.executeJSONRPC(jsontools.dump_json(payload)))
+        try:
+            data = jsontools.load_json(xbmc.executeJSONRPC(jsontools.dump_json(payload)))
+        except Exception as ex:
+            template = "An exception of type {0} occured. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            logger.info("[library.py] get_data:: error en xbmc.executeJSONRPC: {0}".format(message))
+            data = ["error"]
 
     logger.info("[library.py] get_data:: data {0}".format(data))
 
@@ -583,5 +603,6 @@ def convert_xml_to_json(flag):
             else:
                 os.rename(os.path.join(config.get_data_path(), TVSHOW_FILE_OLD),
                           os.path.join(config.get_data_path(), "series_old.xml"))
+
                 json_data = jsontools.dump_json(dict_data)
                 save_file(json_data, os.path.join(config.get_data_path(), TVSHOW_FILE))
