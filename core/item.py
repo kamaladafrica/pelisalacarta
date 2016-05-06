@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta 4
 # Copyright 2015 tvalacarta@gmail.com
@@ -57,6 +57,8 @@ class Item(object):
         kwargs.setdefault("duration", 0)            #Duracion de la pelicula
         kwargs.setdefault("category", "")           #Categoria de la pelicula
         
+        kwargs.setdefault("infoLabels", dict())     #Diccionario con informacion extra sobre la pelicula o serie
+        
         kwargs.setdefault("viewmode", "list")       #Modo de ventana
 
         kwargs.setdefault("hasContentDetails", "false")
@@ -102,9 +104,9 @@ class Item(object):
         Genera una cadena de texto con los datos del item para el log
         Uso: logger.info(item.tostring())
         '''
-        return ", ".join([var + "=["+str(self.__dict__[var])+"]" for var in sorted(self.__dict__)])        
+        return ", ".join([var + "=["+str(self.__dict__[var])+"]" for var in sorted(self.__dict__)])    
+    
         
-
     def tourl(self):
         '''
         Genera una cadena de texto con los datos del item para crear una url, para volver generar el Item usar item.fromurl()
@@ -115,12 +117,25 @@ class Item(object):
 
     def fromurl(self,url): 
         '''
-        Genera un item a partir de la cadena de texto creada por la funcion tourl()
+        Genera un item a partir de una cadena de texto. La cadena puede ser creada por la funcion tourl() o tener 
+        el formato antiguo: plugin://plugin.video.pelisalacarta/?channel=... (+ otros parametros)
         Uso: item.fromurl("cadena")
         '''
-        STRItem = base64.b64decode(urllib.unquote(url))
-        JSONItem = json.loads(STRItem,object_hook=self.toutf8)
-        self.__dict__.update(JSONItem)
+        try:
+            STRItem = base64.b64decode(urllib.unquote(url))
+            JSONItem = json.loads(STRItem,object_hook=self.toutf8)
+            self.__dict__.update(JSONItem)
+        except:
+            if '?' in url: url= url.split('?')[1] # nos quedamos solo con los parametros
+            url = urllib.unquote_plus(url)
+            print url
+            JSONItem = {}
+            for p in url.split('&'):
+                k = p.split('=')[0]
+                v = p.split('=')[1]
+                JSONItem [k] = v
+            self.__dict__.update(JSONItem)    
+        
         return self
 
 

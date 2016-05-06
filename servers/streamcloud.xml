@@ -7,7 +7,6 @@
 	<id>streamcloud</id>
 	<name>streamcloud</name>
 	<premium>
-		<value>filenium</value>
 	</premium>
 	<thumbnail>http://media.tvalacarta.info/servers/server_streamcloud.png</thumbnail>
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/servers/</update_url>

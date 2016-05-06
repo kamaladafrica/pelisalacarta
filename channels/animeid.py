@@ -36,6 +36,21 @@ def mainlist(item):
 
     return itemlist
 
+def newest(categoria):
+    itemlist = []
+    item = Item()
+    try:
+        if categoria == 'anime':
+            item.url = "http://animeid.tv/"
+            itemlist= novedades_episodios(item)
+    # Se captura la excepción, para no interrumpir al canal novedades si un canal falla
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error("{0}".format(line))
+        return []
+    return itemlist
+
 def search(item,texto):
     logger.info("pelisalacarta.channels.animeid search")
     itemlist = []
@@ -103,18 +118,25 @@ def novedades_episodios(item):
     #<img pagespeed_high_res_src="
     data = scrapertools.cache_page(item.url)
     data = scrapertools.get_match(data,'<section class="lastcap">(.*?)</section>')
+
     patronvideos  = '<article> <a href="([^"]+)"> <header>([^<]+)</header> <figure><img[\sa-z_]+src="([^"]+)"[^<]+</figure><div[^<]+</div[^<]+<aside[^<]+<span class="p"[^<]+<strong[^<]+</strong[^<]+</span[^<]+<span[^<]+<strong[^<]+</strong[^<]+</span[^<]+</aside[^<]+</a[^<]+<p>(.*?)</p>'
     matches = re.compile(patronvideos,re.DOTALL).findall(data)
     itemlist = []
     
     for url,title,thumbnail,plot in matches:
-        scrapedtitle = title
+        scrapedtitle = scrapertools.entityunescape(title)
         scrapedurl = urlparse.urljoin(item.url,url)
         scrapedthumbnail = thumbnail
         scrapedplot = plot
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
 
-        itemlist.append( Item(channel=__channel__, action="findvideos" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot, viewmode="movie_with_plot"))
+        episodio = scrapertools.get_match(scrapedtitle,'\s+#(\d+)$')
+        contentTitle = scrapedtitle.replace('#'+ episodio, '')
+
+        itemlist.append( Item(channel=__channel__, action="findvideos" , title=scrapedtitle , url=scrapedurl,
+                              thumbnail=scrapedthumbnail, plot=scrapedplot, viewmode="movie_with_plot",
+                              hasContentDetails="true", contentSeason=1, contentTitle=contentTitle,
+                              contentEpisodeNumber=int(episodio)))
 
     return itemlist
 

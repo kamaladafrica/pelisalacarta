@@ -2,7 +2,7 @@ from monitor import Monitor
 import libtorrent as lt
 class Dispatcher(Monitor):
     def __init__(self, client):
-        super(Dispatcher,self).__init__(client, name='Torrent Events Dispatcher')
+        super(Dispatcher,self).__init__(client)
 
     def do_start(self, th, ses):
         self._th = th

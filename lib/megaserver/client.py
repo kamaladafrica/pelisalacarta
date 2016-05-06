@@ -10,6 +10,7 @@ from Crypto.Cipher import AES
 from file import File
 from handler import Handler
 from server import Server
+from core import logger
 
 
 class Client(object):
@@ -43,7 +44,7 @@ class Client(object):
         t= Thread(target=self._auto_shutdown)
         t.setDaemon(True)
         t.start()
-        print "MEGA Server Started"
+        logger.info("MEGA Server Started")
 
     def _auto_shutdown(self):
         while self.running:
@@ -56,7 +57,7 @@ class Client(object):
 
             if self.auto_shutdown:
                 #shudown por haber cerrado el reproductor
-                if self.connected and self.is_playing_fnc and not self.is_playing_fnc():
+                if self.connected and self.last_connect and self.is_playing_fnc and not self.is_playing_fnc():
                     if time.time() - self.last_connect - 1 > self.timeout:
                         self.stop()
 
@@ -66,14 +67,14 @@ class Client(object):
                         self.stop()
 
                 #shutdown tras la ultima conexion
-                if (not self.file or not self.file.cursor) and self.timeout and self.connected and not self.is_playing_fnc:
+                if (not self.file or not self.file.cursor) and self.timeout and self.connected and self.last_connect and not self.is_playing_fnc:
                     if time.time() - self.last_connect - 1 > self.timeout:
                         self.stop()
 
     def stop(self):
         self.running = False
         self._server.stop()
-        print "MEGA Server Stopped"
+        logger.info("MEGA Server Stopped")
 
     def get_play_list(self):
         if len(self.files) > 1:
