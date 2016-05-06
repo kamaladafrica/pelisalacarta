@@ -295,7 +295,6 @@ def set_infoLabels_from_library(itemlist, tipo):
     elif 'episodes' in data['result']:
         result = data['result']['episodes']
 
-    logger.info("resultooo {}".format(result))
     if result:
         for i in itemlist:
             for r in result:

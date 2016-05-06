@@ -113,7 +113,6 @@
     <setting id="downloadlistpath" type="text" label="30018" default=""/>
     <setting id="bookmarkpath" type="text" source="video" option="writeable" label="30030" default=""/>
     <setting id="librarypath" type="text" label="30067" default=""/>
-    <setting id="saved_searches_limit" type="enum" values="10|20|30|40" label="30024" default="0"/>
   </category>
 
   <category label="Otros"><!--30503 -->
@@ -122,7 +121,7 @@
     <setting id="updatelibrary" type="bool" label="30201" default="false"/>
     <setting id="library_mode" type="enum" values="Servidor|Cliente" label="Modo" default="0"/>
     <setting id="xbmc_host" type="text" label="Nombre Servidor" enable="eq(-1,1)" default=""/>
-    <setting id="xbmc_port" type="number" label="Puerto Servidor" enable="eq(-2,1)" default=""/>
+    <setting id="xbmc_port" type="number" label="Puerto Servidor" enable="eq(-2,1)" default="0"/>
     <setting id="mark_as_watched" type="bool" label="Marcar automáticamente como visto" default="false"/>
     <setting id="watched_setting" type="enum" values="5 Min|30%|50%|80%" label="Tiempo necesario del video" default="3" enable="eq(-1,true)"/>
     <setting type="sep" />
