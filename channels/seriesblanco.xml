@@ -12,9 +12,9 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/seriesblanco.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>10</version>
-	<date>25/03/2016</date>
-	<changes>- Arreglado la sección findVideos de seriesblanco</changes>
+	<version>11</version>
+	<date>07/05/2016</date>
+	<changes>Adaptado para filtertools</changes>
 
 	<categories>
 		<category>serie</category>
