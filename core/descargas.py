@@ -1,9 +1,9 @@
 # -*- coding: iso-8859-1 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Lista de vídeos descargados
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 import os
 import sys
 
@@ -11,42 +11,48 @@ from core import config
 from core import downloadtools
 from core import favoritos
 from core import logger
-from core import samba
 from core import servertools
 from core.item import Item
+from lib.samba import libsmb as samba
+from platformcode import library
 
 CHANNELNAME = "descargas"
 DEBUG = True
 
 DOWNLOAD_LIST_PATH = config.get_setting("downloadlistpath")
-IMAGES_PATH = os.path.join( config.get_runtime_path(), 'resources' , 'images' )
-ERROR_PATH = os.path.join( DOWNLOAD_LIST_PATH, 'error' )
-usingsamba = DOWNLOAD_LIST_PATH.upper().startswith("SMB://")
+IMAGES_PATH = os.path.join(config.get_runtime_path(), 'resources', 'images')
+ERROR_PATH = library.join_path(DOWNLOAD_LIST_PATH, 'error')
+usingsamba = samba.usingsamba(DOWNLOAD_LIST_PATH)
+
 
 def isGeneric():
     return True
 
+
 def mainlist(item):
     logger.info("[descargas.py] mainlist")
-    itemlist=[]
+    itemlist = []
 
     # Lee la ruta de descargas
     downloadpath = config.get_setting("downloadpath")
 
     logger.info("[descargas.py] downloadpath=" + downloadpath)
 
-    itemlist.append( Item( channel="descargas", action="pendientes", title="Descargas pendientes"))
-    itemlist.append( Item( channel="descargas", action="errores", title="Descargas con error"))
+    itemlist.append(Item(channel="descargas", action="pendientes", title="Descargas pendientes"))
+    itemlist.append(Item(channel="descargas", action="errores", title="Descargas con error"))
 
     # Añade al listado de XBMC
     try:
         ficheros = os.listdir(downloadpath)
         for fichero in ficheros:
             logger.info("[descargas.py] fichero=" + fichero)
-            if fichero!="lista" and fichero!="error" and fichero!=".DS_Store" and not fichero.endswith(".nfo") and not fichero.endswith(".tbn") and os.path.join(downloadpath,fichero)!=config.get_setting("downloadlistpath"):
-                url = os.path.join( downloadpath , fichero )
+            if fichero != "lista" and fichero != "error" and fichero != ".DS_Store" and not fichero.endswith(".nfo") \
+                    and not fichero.endswith(".tbn") \
+                    and os.path.join(downloadpath, fichero) != config.get_setting("downloadlistpath"):
+                url = os.path.join(downloadpath, fichero)
                 if not os.path.isdir(url):
-                    itemlist.append( Item( channel="descargas", action="play", title=fichero, fulltitle=fichero, url=url, server="local", folder=False))
+                    itemlist.append(Item(channel="descargas", action="play", title=fichero, fulltitle=fichero, url=url,
+                                         server="local", folder=False))
 
     except:
         logger.info("[descargas.py] exception on mainlist")
@@ -54,9 +60,10 @@ def mainlist(item):
 
     return itemlist
 
+
 def pendientes(item):
     logger.info("[descargas.py] pendientes")
-    itemlist=[]
+    itemlist = []
 
     # Crea un listado con las entradas de favoritos
     if usingsamba:
@@ -72,29 +79,34 @@ def pendientes(item):
         logger.info("fichero="+fichero)
         try:
             # Lee el bookmark
-            canal,titulo,thumbnail,plot,server,url,fulltitle = favoritos.readbookmark(fichero,DOWNLOAD_LIST_PATH)
-            if canal=="":
-                canal="descargas"
+            canal, titulo, thumbnail, plot, server, url, fulltitle = favoritos.readbookmark(fichero, DOWNLOAD_LIST_PATH)
+            if canal == "":
+                canal = "descargas"
 
-            logger.info("canal="+canal+", titulo="+titulo+", thumbnail="+thumbnail+", server="+server+", url="+url+", fulltitle="+fulltitle+", plot="+plot)
+            logger.info("canal="+canal+", titulo="+titulo+", thumbnail="+thumbnail+", server="+server+", url="+url +
+                        ", fulltitle="+fulltitle+", plot="+plot)
 
             # Crea la entrada
             # En la categoría va el nombre del fichero para poder borrarlo
-            itemlist.append( Item( channel=canal , action="play" , url=url , server=server, title=titulo, fulltitle=fulltitle, thumbnail=thumbnail, plot=plot, fanart=thumbnail, extra=os.path.join( DOWNLOAD_LIST_PATH, fichero ), folder=False ))
+            itemlist.append(Item(channel=canal, action="play", url=url, server=server, title=titulo,
+                                 fulltitle=fulltitle, thumbnail=thumbnail, plot=plot, fanart=thumbnail,
+                                 extra=os.path.join(DOWNLOAD_LIST_PATH, fichero), folder=False))
 
         except:
             pass
             logger.info("[descargas.py] error al leer bookmark")
             for line in sys.exc_info():
-                logger.error( "%s" % line )
+                logger.error("%s" % line)
 
-    itemlist.append( Item( channel=CHANNELNAME , action="downloadall" , title="(Empezar la descarga de la lista)", thumbnail=os.path.join(IMAGES_PATH, "Crystal_Clear_action_db_update.png") , folder=False ))
+    itemlist.append(Item(channel=CHANNELNAME, action="downloadall", title="(Empezar la descarga de la lista)",
+                         thumbnail=os.path.join(IMAGES_PATH, "Crystal_Clear_action_db_update.png"), folder=False))
 
     return itemlist
 
+
 def errores(item):
     logger.info("[descargas.py] errores")
-    itemlist=[]
+    itemlist = []
 
     # Crea un listado con las entradas de favoritos
     if usingsamba:
@@ -110,21 +122,24 @@ def errores(item):
         logger.info("[descargas.py] fichero="+fichero)
         try:
             # Lee el bookmark
-            canal,titulo,thumbnail,plot,server,url,fulltitle = favoritos.readbookmark(fichero,ERROR_PATH)
-            if canal=="":
-                canal="descargas"
+            canal, titulo, thumbnail, plot, server, url, fulltitle = favoritos.readbookmark(fichero, ERROR_PATH)
+            if canal == "":
+                canal = "descargas"
 
             # Crea la entrada
             # En la categoría va el nombre del fichero para poder borrarlo
-            itemlist.append( Item( channel=canal , action="play" , url=url , server=server, title=titulo, fulltitle=fulltitle, thumbnail=thumbnail, plot=plot, fanart=thumbnail, category="errores", extra=os.path.join( ERROR_PATH, fichero ), folder=False ))
+            itemlist.append(Item(channel=canal, action="play", url=url, server=server, title=titulo,
+                                 fulltitle=fulltitle, thumbnail=thumbnail, plot=plot, fanart=thumbnail,
+                                 category="errores", extra=os.path.join(ERROR_PATH, fichero), folder=False))
 
         except:
             pass
             logger.info("[descargas.py] error al leer bookmark")
             for line in sys.exc_info():
-                logger.error( "%s" % line )
+                logger.error("%s" % line)
 
     return itemlist
+
 
 def downloadall(item):
     logger.info("[descargas.py] downloadall")
@@ -145,23 +160,24 @@ def downloadall(item):
         # El primer video de la lista
         logger.info("[descargas.py] fichero="+fichero)
 
-        if fichero!="error" and fichero!=".DS_Store":
+        if fichero != "error" and fichero != ".DS_Store":
             # Descarga el vídeo
             try:
                 # Lee el bookmark
-                canal,titulo,thumbnail,plot,server,url,fulltitle = favoritos.readbookmark(fichero,DOWNLOAD_LIST_PATH)
+                canal, titulo, thumbnail, plot, server, url, fulltitle = \
+                    favoritos.readbookmark(fichero, DOWNLOAD_LIST_PATH)
                 logger.info("[descargas.py] url="+url)
 
                 # Averigua la URL del vídeo
-                video_urls,puedes,motivo = servertools.resolve_video_urls_for_playing(server,url,"",False)
+                video_urls, puedes, motivo = servertools.resolve_video_urls_for_playing(server, url, "", False)
 
                 # La última es la de mayor calidad, lo mejor para la descarga
-                mediaurl = video_urls[ len(video_urls)-1 ][1]
+                mediaurl = video_urls[len(video_urls)-1][1]
                 logger.info("[descargas.py] mediaurl="+mediaurl)
 
                 # Genera el NFO
-                nfofilepath = downloadtools.getfilefromtitle("sample.nfo",fulltitle)
-                outfile = open(nfofilepath,"w")
+                nfofilepath = downloadtools.getfilefromtitle("sample.nfo", fulltitle)
+                outfile = open(nfofilepath, "w")
                 outfile.write("<movie>\n")
                 outfile.write("<title>("+fulltitle+")</title>\n")
                 outfile.write("<originaltitle></originaltitle>\n")
@@ -194,21 +210,20 @@ def downloadall(item):
                 
                 # Descarga el thumbnail
                 if thumbnail != "":
-                   logger.info("[descargas.py] thumbnail="+thumbnail)
-                   thumbnailfile = downloadtools.getfilefromtitle(thumbnail,fulltitle)
-                   thumbnailfile = thumbnailfile[:-4] + ".tbn"
-                   logger.info("[descargas.py] thumbnailfile="+thumbnailfile)
-                   try:
-                       downloadtools.downloadfile(thumbnail,thumbnailfile)
-                       logger.info("[descargas.py] Thumbnail descargado")
-                   except:
-                       logger.info("[descargas.py] error al descargar thumbnail")
-                       for line in sys.exc_info():
-                           logger.error( "%s" % line )
+                    logger.info("[descargas.py] thumbnail="+thumbnail)
+                    thumbnailfile = downloadtools.getfilefromtitle(thumbnail, fulltitle)
+                    thumbnailfile = thumbnailfile[:-4] + ".tbn"
+                    logger.info("[descargas.py] thumbnailfile="+thumbnailfile)
+                    try:
+                        downloadtools.downloadfile(thumbnail, thumbnailfile)
+                        logger.info("[descargas.py] Thumbnail descargado")
+                    except:
+                        logger.info("[descargas.py] error al descargar thumbnail")
+                        for line in sys.exc_info():
+                            logger.error("%s" % line)
                 
                 # Descarga el video
-                #dev = downloadtools.downloadtitle(mediaurl,fulltitle)
-                dev = downloadtools.downloadbest(video_urls,fulltitle)
+                dev = downloadtools.downloadbest(video_urls, fulltitle)
                 if dev == -1:
                     # El usuario ha cancelado la descarga
                     logger.info("[descargas.py] Descarga cancelada")
@@ -217,17 +232,17 @@ def downloadall(item):
                     # Error en la descarga, lo mueve a ERROR y continua con el siguiente
                     logger.info("[descargas.py] ERROR EN DESCARGA DE "+fichero)
                     if not usingsamba:
-                        origen = os.path.join( DOWNLOAD_LIST_PATH , fichero )
-                        destino = os.path.join( ERROR_PATH , fichero )
+                        origen = os.path.join(DOWNLOAD_LIST_PATH, fichero)
+                        destino = os.path.join(ERROR_PATH, fichero)
                         import shutil
-                        shutil.move( origen , destino )
+                        shutil.move(origen, destino)
                     else:
-                        favoritos.savebookmark(canal,titulo, url, thumbnail, server, plot, fulltitle, ERROR_PATH)
+                        favoritos.savebookmark(canal, titulo, url, thumbnail, server, plot, fulltitle, ERROR_PATH)
                         favoritos.deletebookmark(fichero, DOWNLOAD_LIST_PATH)
                 else:
                     logger.info("[descargas.py] Video descargado")
                     # Borra el bookmark e itera para obtener el siguiente video
-                    filepath = os.path.join( DOWNLOAD_LIST_PATH , fichero )
+                    filepath = os.path.join(DOWNLOAD_LIST_PATH, fichero)
                     if usingsamba:
                         os.remove(filepath)
                     else:
@@ -237,29 +252,34 @@ def downloadall(item):
                 logger.info("[descargas.py] ERROR EN DESCARGA DE "+fichero)
                 import sys
                 for line in sys.exc_info():
-                    logger.error( "%s" % line )
+                    logger.error("%s" % line)
                 if not usingsamba:
-                    origen = os.path.join( DOWNLOAD_LIST_PATH , fichero )
-                    destino = os.path.join( ERROR_PATH , fichero )
+                    origen = os.path.join(DOWNLOAD_LIST_PATH, fichero)
+                    destino = os.path.join(ERROR_PATH, fichero)
                     import shutil
-                    shutil.move( origen , destino )
+                    shutil.move(origen, destino)
                 else:
-                    favoritos.savebookmark(canal,titulo, url, thumbnail, server, plot, fulltitle,ERROR_PATH)
+                    favoritos.savebookmark(canal, titulo, url, thumbnail, server, plot, fulltitle, ERROR_PATH)
                     favoritos.deletebookmark(fichero, DOWNLOAD_LIST_PATH)
 
-def savebookmark(canal=CHANNELNAME,titulo="",url="",thumbnail="",server="",plot="",fulltitle="",savepath=DOWNLOAD_LIST_PATH):
-    favoritos.savebookmark(canal,titulo,url,thumbnail,server,plot,fulltitle,savepath)
 
-def deletebookmark(fullfilename,deletepath=DOWNLOAD_LIST_PATH):
-    favoritos.deletebookmark(fullfilename,deletepath)
+def savebookmark(canal=CHANNELNAME, titulo="", url="", thumbnail="", server="", plot="", fulltitle="",
+                 savepath=DOWNLOAD_LIST_PATH):
+    favoritos.savebookmark(canal, titulo, url, thumbnail, server, plot, fulltitle, savepath)
 
-def delete_error_bookmark(fullfilename,deletepath=ERROR_PATH):
-    favoritos.deletebookmark(fullfilename,deletepath)
+
+def deletebookmark(fullfilename, deletepath=DOWNLOAD_LIST_PATH):
+    favoritos.deletebookmark(fullfilename, deletepath)
+
+
+def delete_error_bookmark(fullfilename, deletepath=ERROR_PATH):
+    favoritos.deletebookmark(fullfilename, deletepath)
+
 
 def mover_descarga_error_a_pendiente(fullfilename):
     # La categoría es el nombre del fichero en favoritos, así que lee el fichero
-    canal,titulo,thumbnail,plot,server,url,fulltitle = favoritos.readbookmark(fullfilename,"")
+    canal, titulo, thumbnail, plot, server, url, fulltitle = favoritos.readbookmark(fullfilename, "")
     # Lo añade a la lista de descargas
-    savebookmark(canal,titulo,url,thumbnail,server,plot,fulltitle)
+    savebookmark(canal, titulo, url, thumbnail, server, plot, fulltitle)
     # Y lo borra de la lista de errores
     os.remove(fullfilename)
