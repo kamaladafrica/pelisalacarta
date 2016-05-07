@@ -452,7 +452,7 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
         if titulo == "":
             titulo = item.title
 
-        new_item = item.clone(title=titulo, action="play_from_library", category="Cine")
+        new_item = item.clone(title=titulo, action="play_from_library", category="Series")
         res = library.savelibrary(new_item)
 
         advertencia = xbmcgui.Dialog()
@@ -694,7 +694,6 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
             logger.info("b10")
             xbmc.executebuiltin( "PlayMedia("+mediaurl+")" )
 
-
     if item.subtitle!="" and view:
         logger.info("b11")
         logger.info("Subtítulos externos: "+item.subtitle)
@@ -733,7 +732,7 @@ def getLibraryInfo (mediaurl):
     '''Obtiene información de la Biblioteca si existe (ficheros strm) o de los parámetros
     '''
     if DEBUG:
-        logger.info('[xbmctools.py] playlist OBTENCIÓN DE DATOS DE BIBLIOTECA')
+        logger.info('[xbmctools.py] playlist OBTENCIÃ“N DE DATOS DE BIBLIOTECA')
 
     # Información básica
     label = xbmc.getInfoLabel( 'listitem.label' )
@@ -854,7 +853,7 @@ def alertanomegauploadlow(server):
     #'Prueba a reproducir en otra calidad'
     resultado = advertencia.ok( config.get_localized_string(30055) , config.get_localized_string(30061) , config.get_localized_string(30062))
 
-# AÑADIDO POR JUR. SOPORTE DE FICHEROS STRM
+# AÃ‘ADIDO POR JUR. SOPORTE DE FICHEROS STRM
 def playstrm(params,url,category):
     '''Play para videos en ficheros strm
     '''
@@ -879,21 +878,21 @@ def playstrm(params,url,category):
     play_video("Biblioteca pelisalacarta",server,url,category,title,thumbnail,plot,strmfile=True,Serie=serie,subtitle=subtitle)
 
 def renderItems(itemlist, parentitem, isPlayable='false'):
-    
+
     viewmode = "list"
-    
+
     if itemlist <> None:
         for item in itemlist:
             logger.info("item="+item.tostring())
             item.totalItems = len(itemlist)
             item.isPlayable = isPlayable
-            
+
             if item.category == "":
                 item.category = parentitem.category
-                
+
             if item.fulltitle=="":
                 item.fulltitle=item.title
-            
+
             if item.fanart=="":
                 channel_fanart = os.path.join( config.get_runtime_path(), 'resources', 'images', 'fanart', item.channel+'.jpg')
 
@@ -901,7 +900,7 @@ def renderItems(itemlist, parentitem, isPlayable='false'):
                     item.fanart = channel_fanart
                 else:
                     item.fanart = os.path.join(config.get_runtime_path(),"fanart.jpg")
-            
+
             # Formatear titulo
             if 'text_color' in item and item.text_color:
                 item.title= '[COLOR %s]%s[/COLOR]' %(item.text_color, item.title)
@@ -909,14 +908,14 @@ def renderItems(itemlist, parentitem, isPlayable='false'):
                 item.title= '[B]%s[/B]' %(item.title)
             if 'text_italic' in item and item.text_italic:
                 item.title= '[I]%s[/I]' %(item.title)
-                
+
             if item.folder:
                 addnewfolderextra(item, totalItems = len(itemlist))
             else:
                 if config.get_setting("player_mode")=="1": # SetResolvedUrl debe ser siempre "isPlayable = true"
                     item.isPlayable = 'true'
                 addnewvideo( item, IsPlayable=item.isPlayable, totalItems = len(itemlist))
-                
+
             if item.viewmode!="list":
                 viewmode = item.viewmode
 
@@ -932,7 +931,7 @@ def renderItems(itemlist, parentitem, isPlayable='false'):
         # Modos fichero
         # WideIconView - 505
         # ThumbnailView - 500
-        
+
         if config.get_setting("forceview")=="true":
             if viewmode=="list":
                 xbmc.executebuiltin("Container.SetViewMode(50)")
@@ -951,7 +950,7 @@ def wait2second():
         logger.info("[xbmctools.py] setSubtitles: Waiting 2 seconds for video to start before setting subtitles")
         time.sleep(2)
         contador = contador + 1
-        
+
         if contador>10:
             break
 
@@ -963,7 +962,7 @@ def setSubtitles():
         logger.info("[xbmctools.py] setSubtitles: Waiting 2 seconds for video to start before setting subtitles")
         time.sleep(2)
         contador = contador + 1
-        
+
         if contador>10:
             break
 
@@ -989,7 +988,7 @@ def alert_no_puedes_ver_video(server,url,motivo):
             resultado = advertencia.ok( "No puedes ver ese vídeo porque...",motivo,url)
     else:
         resultado = advertencia.ok( "No puedes ver ese vídeo porque...","El servidor donde está alojado no está","soportado en pelisalacarta todavía",url)
-        
+
 def set_infoLabels(listitem,item):
     '''
     Metodo para añadir informacion extra al listitem.
@@ -998,22 +997,23 @@ def set_infoLabels(listitem,item):
     if item.plot.startswith("{'infoLabels'"):
         # Esta forma de pasar la informacion al listitem es obsoleta y deberia despreciarse
         # plot tiene que ser un str con el siguiente formato:
-        #   plot="{'infoLabels':{dicionario con los pares de clave/valor descritos en 
+        #   plot="{'infoLabels':{dicionario con los pares de clave/valor descritos en
         #               http://mirrors.xbmc.org/docs/python-docs/14.x-helix/xbmcgui.html#ListItem-setInfo}}"
-        
+
         try:
             import ast
             infodict=ast.literal_eval(item.plot)['infoLabels']
             if not infodict.has_key('title'): infodict['title'] = item.title
-            listitem.setInfo( "video", infodict)  
+            listitem.setInfo( "video", infodict)
         except:
             pass
     elif len(item.infoLabels) >0:
         # Nuevo modelo para pasar la informacion al listitem (ver tmdb.set_InfoLabels() )
-        # item.infoLabels es un dicionario con los pares de clave/valor descritos en: 
+        # item.infoLabels es un dicionario con los pares de clave/valor descritos en:
         # http://mirrors.xbmc.org/docs/python-docs/14.x-helix/xbmcgui.html#ListItem-setInfo
         listitem.setInfo( "video", item.infoLabels)
-    
+
     elif item.plot !='':
         # Retrocompatibilidad con canales q no utilizan infoLabels de ningun tipo
         listitem.setInfo( "video", { "Title" : item.title, "Plot" : item.plot, "Studio" : item.channel.capitalize() } )
+
