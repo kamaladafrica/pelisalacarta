@@ -15,25 +15,23 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     def parse_range(self, range):
         if range:
-            m=re.compile(r'bytes=(\d+)-').match(range)
+            m=re.compile(r'bytes=(\d+)-(\d+)?').match(range)
             if m:
-                try:
-                    return int(m.group(1))
-                except:
-                    pass
-        return 0
+              return m.group(1), m.group(2)
+        return None, None
 
     def do_GET(self):
-        if self.server.request: self.server.request.wfile.close()
-        self.server.request = self
         self.server._client.connected = True
 
         if self.do_HEAD():
             with self.server._client.file.create_cursor(self.offset) as f:
-                while True:
+                sended = 0
+                while sended < self.size:
                     buf= f.read(1024*16)
                     if buf:
+                        if sended + len(buf) > self.size: buf=buf[:self.size-sended]
                         self.wfile.write(buf)
+                        sended +=len(buf)
                     else:
                         break
 
@@ -67,19 +65,28 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
                     self.server._client.file = f
                     break
 
+
         if self.server._client.file and urllib.unquote(url)[1:] == self.server._client.file.name:
+            range = False
             self.offset=0
             size, mime = self._file_info()
-            range=self.parse_range(self.headers.get('Range', None))
-            if range:
-                self.offset=range
-                range=(range, size-1, size)
-
+            start, end = self.parse_range(self.headers.get('Range', ""))
+            self.size = size
+            
+            if start <> None:
+                if end == None: end = size - 1
+                self.offset=int(start)
+                self.size=int(end) - int(start) + 1
+                range=(int(start), int(end), int(size))
+            else:
+                range = None
+            
             self.send_resp_header(mime, size, range)
             return True
 
         else:
             self.send_error(404, 'Not Found')
+
 
     def _file_info(self):
         size=self.server._client.file.size
@@ -89,15 +96,15 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
             mime='application/octet-stream'
         return size,mime
 
-    def send_resp_header(self, cont_type, cont_length, range=False):
+
+    def send_resp_header(self, cont_type, size, range=False):
+    
         if range:
             self.send_response(206, 'Partial Content')
         else:
             self.send_response(200, 'OK')
 
         self.send_header('Content-Type', cont_type)
-        self.send_header('transferMode.dlna.org', 'Streaming')
-        self.send_header('contentFeatures.dlna.org', 'DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01700000000000000000000000000000')
         self.send_header('Accept-Ranges', 'bytes')
 
         if range:
@@ -107,9 +114,9 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
             else:
                 raise ValueError('Invalid range value')
         else:
-            self.send_header('Content-Length', cont_length)
-        self.finish_header()
-
-    def finish_header(self):
+            self.send_header('Content-Length', size)
+            
         self.send_header('Connection', 'close')
         self.end_headers()
+
+        

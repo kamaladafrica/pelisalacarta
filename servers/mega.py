@@ -9,6 +9,7 @@ import re
 
 from core import logger
 from core import scrapertools
+from platformcode import platformtools
 
 
 def test_video_exists( page_url ):
@@ -20,16 +21,8 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
     logger.info("[mega.py] get_video_url(page_url='%s')" % page_url)
     video_urls = []
     from megaserver import Client
-    
-    #Para XBMC se pasa la funcion encargada de detectar cuando se cierra el reproductor, para detener el servidor.
-    #Si es None, se detiene con un timeout despues de cerrar la ultima conexion
-    try:
-      import xbmc
-      is_playing = xbmc.Player().isPlaying
-    except:
-      is_playing = None
-    
-    c = Client(url=page_url,is_playing_fnc = is_playing)
+        
+    c = Client(url=page_url,is_playing_fnc = platformtools.is_playing)
     
     files = c.get_files()
     

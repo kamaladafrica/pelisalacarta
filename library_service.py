@@ -24,18 +24,13 @@
 # Service for updating new episodes on library series
 # ------------------------------------------------------------
 
-# -- Update servertools and servers from repository pelisalacarta ------
-#try:
-#    from core import update_servers
-#except:
-#    logger.info("pelisalacarta.library_service Error en update_servers")
-# ---------------------------------------------------------------------- 
-
-import os
-import xbmc
 import imp
+import os
+
+import xbmc
 
 from core import config
+from core import jsontools
 from core import logger
 from core.item import Item
 from platformcode import library
@@ -48,49 +43,53 @@ logger.info("directorio="+directorio)
 if not os.path.exists(directorio):
     os.mkdir(directorio)
 
-nombre_fichero_config_canal = os.path.join(config.get_library_path(), "series.xml")
-if not os.path.exists(nombre_fichero_config_canal):
-    nombre_fichero_config_canal = os.path.join(config.get_data_path(), "series.xml")
+library.check_tvshow_xml()
+nombre_fichero_config_canal = os.path.join(config.get_data_path(), library.TVSHOW_FILE)
 
 try:
 
     if config.get_setting("updatelibrary") == "true":
-        config_canal = open(nombre_fichero_config_canal, "r")
-        
-        for serie in config_canal.readlines():
-            logger.info("pelisalacarta.library_service serie="+serie)
-            serie = serie.split(",")
-        
-            ruta = os.path.join(config.get_library_path(), "SERIES", serie[0])
-            logger.info("pelisalacarta.library_service ruta =#"+ruta+"#")
-            if os.path.exists(ruta):
-                logger.info("pelisalacarta.library_service Actualizando "+serie[0])
-                item = Item(url=serie[1], show=serie[0])
-                try:
+
+        data = library.read_file(nombre_fichero_config_canal)
+        dict_data = jsontools.load_json(data)
+
+        for channel in dict_data.keys():
+            logger.info("pelisalacarta.library_service_json canal="+channel)
+
+            itemlist = []
+
+            for tvshow in dict_data.get(channel).keys():
+                logger.info("pelisalacarta.library_service serie="+tvshow)
+
+                ruta = os.path.join(config.get_library_path(), "SERIES", tvshow)
+                logger.info("pelisalacarta.library_service ruta =#"+ruta+"#")
+                if os.path.exists(ruta):
+                    logger.info("pelisalacarta.library_service Actualizando "+tvshow)
+                    logger.info("pelisalacarta.library_service url "+dict_data.get(channel).get(tvshow))
+
+                    item = Item(url=dict_data.get(channel).get(tvshow), show=tvshow)
+                    try:
+                        pathchannels = os.path.join(config.get_runtime_path(), 'channels', channel + '.py')
+                        logger.info("pelisalacarta.library_service Cargando canal  " + pathchannels + " " + channel)
+                        obj = imp.load_source(channel, pathchannels)
+                        itemlist = obj.episodios(item)
+
+                    except:
+                        import traceback
+                        logger.error(traceback.format_exc())
+                        itemlist = []
+                else:
+                    logger.info("pelisalacarta.library_service No actualiza " + tvshow + " (no existe el directorio)")
                     itemlist = []
 
-                    pathchannels = os.path.join(config.get_runtime_path(), 'channels', serie[2].strip() + '.py')
-                    logger.info("pelisalacarta.library_service Cargando canal  " + pathchannels + " " + serie[2].strip())
-                    obj = imp.load_source(serie[2].strip(), pathchannels)
-                    itemlist = obj.episodios(item)
-
-                except:
-                    import traceback
-                    logger.error(traceback.format_exc())
-                    itemlist = []
-            else:
-                logger.info("pelisalacarta.library_service No actualiza "+serie[0]+" (no existe el directorio)")
-                itemlist = []
-
-            for item in itemlist:
-                try:
-                    item.show=serie[0].strip()
-                    library.savelibrary(titulo=item.title, url=item.url, thumbnail=item.thumbnail, server=item.server,
-                                        plot=item.plot, canal=item.channel, category="Series", Serie=item.show,
-                                        verbose=False, accion="play_from_library", pedirnombre=False,
-                                        subtitle=item.subtitle)
-                except:
-                    logger.info("pelisalacarta.library_service Capitulo no valido")
+                for item in itemlist:
+                    try:
+                        item.show = tvshow
+                        new_item = item.clone(action="play_from_library", category="Series")
+                        logger.info("new item {}".format(new_item.tostring()))
+                        library.savelibrary(new_item)
+                    except:
+                        logger.info("pelisalacarta.library_service Capitulo no valido")
 
         import xbmc
         xbmc.executebuiltin('UpdateLibrary(video)')

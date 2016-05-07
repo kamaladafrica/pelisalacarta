@@ -602,7 +602,7 @@ def file_cine_library(item,url_targets):
     import os
     from platformcode import library
     librarypath = os.path.join(config.get_library_path(),"CINE")
-    archivo = library.title_to_folder_name(item.show.strip())
+    archivo = library.title_to_filename(item.show.strip())
     strmfile = archivo+".strm"
     strmfilepath = os.path.join(librarypath,strmfile)
 
@@ -612,9 +612,11 @@ def file_cine_library(item,url_targets):
 
     return itemlist
 
+
 def add_file_cine_library(item):
     from platformcode import library, xbmctools
-    library.savelibrary( titulo=item.show , url=item.url , thumbnail=item.thumbnail , server=item.server , plot=item.plot , canal=item.channel , category="Cine" , Serie="" , verbose=False, accion="play_from_library", pedirnombre=False, subtitle=item.subtitle )
+    new_item = item.clone(title=item.show, action="play_from_library")
+    library.savelibrary(new_item)
     itemlist = []
     itemlist.append(Item(title='El vídeo '+item.show+' se ha añadido a la biblioteca'))
     xbmctools.renderItems(itemlist, "", "", "")

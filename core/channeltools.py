@@ -13,6 +13,7 @@ import config
 import jsontools
 import logger
 import scrapertools
+import jsontools
 
 
 def is_adult(channel_name):
@@ -56,8 +57,7 @@ def get_channel_parameters(channel_name):
 
         channel_parameters["categories"] = category_list
 
-        logger.info("pelisalacarta.core.channeltools get_channel_parameters channel_parameters={chn}".
-                    format(chn=channel_parameters))
+        logger.info("pelisalacarta.core.channeltools get_channel_parameters channel_parameters="+repr(channel_parameters) )
 
     else:
         logger.info("pelisalacarta.core.channeltools get_channel_parameters "+channel_name+".xml NOT found")
@@ -143,19 +143,18 @@ def get_channel_setting(name, channel):
         except EnvironmentError:
             logger.info("ERROR al leer el archivo: {0}".format(file_settings))
 
-    if len(dict_settings) == 0 or dict_settings.has_key(name):
+    if len(dict_settings) == 0 or not dict_settings.has_key(name):
         # Obtenemos controles del archivo ../channels/channel.xml
         from core import channeltools
         try:
           list_controls, default_settings = channeltools.get_channel_controls_settings(channel)
         except:
           default_settings = {}
-                        
         if  default_settings.has_key(name): # Si el parametro existe en el channel.xml creamos el channel_data.json
             default_settings.update(dict_settings)
             dict_settings = default_settings
             dict_file = {}
-            dict_file['settings']= dict_settings 
+            dict_file['settings']= dict_settings
             # Creamos el archivo ../settings/channel_data.json
             json_data = jsontools.dump_json(dict_file)
             try:
@@ -222,7 +221,7 @@ def set_channel_setting(name, value, channel):
     
 def get_channel_module(channel_name, package = "channels"):
     # Sustituye al que hay en servertools.py ...
-    # ...pero anade la posibilidad de incluir un paquete diferente de "channels"
+    # ...pero añade la posibilidad de incluir un paquete diferente de "channels"
     if not package.endswith('.'): package +='.'
     logger.info("pelisalacarta.core.channeltools Importando " + package + channel_name)
     channels_module = __import__(package + channel_name)

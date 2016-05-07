@@ -75,7 +75,7 @@ def mainlist(item):
     logger.info("pelisalacarta.channels.animeflv mainlist")
 
     itemlist = list([])
-    itemlist.append(Item(channel=__channel__, action="novedades", title="Últimos episodios", url=host))
+    itemlist.append(Item(channel=__channel__, action="novedades_episodios", title="Últimos episodios", url=host))
     itemlist.append(Item(channel=__channel__, action="menuseries", title="Series",
                          url=urlparse.urljoin(host, "animes/?orden=nombre&mostrar=series")))
     itemlist.append(Item(channel=__channel__, action="menuovas", title="OVAS",
@@ -194,8 +194,24 @@ def search(item, texto):
             logger.error("{0}".format(line))
         return []
 
+def newest(categoria):
+    itemlist = []
+    item = Item()
+    try:
+        if categoria == 'anime':
+            item.url = "http://animeflv.net/"
+            itemlist= novedades_episodios(item)
 
-def novedades(item):
+    # Se captura la excepción, para no interrumpir al canal novedades si un canal falla
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error("{0}".format(line))
+        return []
+
+    return itemlist
+
+def novedades_episodios(item):
     logger.info("pelisalacarta.channels.animeflv novedades")
 
     data = anti_cloudflare(item.url)
@@ -225,8 +241,21 @@ def novedades(item):
             logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(scrapedtitle, scrapedurl,
                                                                          scrapedthumbnail))
 
-        itemlist.append(Item(channel=__channel__, action="findvideos", title=scrapedtitle, url=scrapedurl,
-                             thumbnail=scrapedthumbnail, plot=scrapedplot, fulltitle=fulltitle, viewmode="movie"))
+        newItem = Item(channel=__channel__, action="findvideos", title=scrapedtitle, url=scrapedurl,
+                       thumbnail=scrapedthumbnail, plot=scrapedplot, fulltitle=fulltitle, viewmode="movie")
+
+        contentTitle = scrapertools.entityunescape(match[1])
+        if contentTitle:
+            episode = scrapertools.get_match(contentTitle, '\s+(\d+)$')
+            contentTitle = contentTitle.replace(episode, '')
+            season, episode = numbered_for_tratk(contentTitle, 1, episode)
+            newItem.hasContentDetails = "true"
+            newItem.contentTitle = contentTitle
+            newItem.contentSeason = season
+            newItem.contentEpisodeNumber = int(episode)
+
+        itemlist.append(newItem)
+
 
     return itemlist
 

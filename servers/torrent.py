@@ -5,6 +5,7 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 from core import logger
+import re
 
 
 # Returns an array of possible video url's from the page_url
