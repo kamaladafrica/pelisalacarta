@@ -16,6 +16,7 @@ from core import config
 from core import jsontools
 from core import logger
 from core import scrapertools
+from lib.samba import libsmb as samba
 
 # TODO EVITAR USAR REQUESTS
 from lib import requests
@@ -34,23 +35,58 @@ xbmc_json_rpc_url = "http://{host}:{port}/jsonrpc".format(host=xbmc_host, port=x
 
 DEBUG = True
 
+def path_exists(path):
+    """
+    comprueba si la ruta existe, samba necesita la raíz para conectar y la carpeta
+    """
+    if not samba.usingsamba(path):
+        return os.path.exists(path)
+    else:
+        path_samba, folder_samba = path.rsplit('/',1)
+        return samba.folder_exists(folder_samba, path_samba)
+
+
+def make_dir(path):
+    """
+    crea un directorio, samba necesita la raíz para conectar y la carpeta
+    """
+    if not samba.usingsamba(path):
+        os.mkdir(path)
+    else:
+        path_samba, folder_samba = path.rsplit('/',1)
+        samba.create_directory(folder_samba, path_samba)
+
+
+def join_path(path, name):
+    """
+    una la ruta, el name puede ser carpeta o archivo
+    """
+    if not samba.usingsamba(path):
+        path = xbmc.translatePath(os.path.join(path, name))
+    else:
+        path = path + "/" + name
+
+    return path
+
+
 LIBRARY_PATH = config.get_library_path()
-if not os.path.exists(LIBRARY_PATH):
-    logger.info("[library.py] Library path doesn't exist:"+LIBRARY_PATH)
-    config.verify_directories_created()
+if not samba.usingsamba(LIBRARY_PATH):
+    if not path_exists(LIBRARY_PATH):
+        logger.info("[library.py] Library path doesn't exist:"+LIBRARY_PATH)
+        config.verify_directories_created()
 
 # TODO permitir cambiar las rutas y nombres en settings para 'cine' y 'series'
 FOLDER_MOVIES = "CINE"  # config.get_localized_string(30072)
-MOVIES_PATH = xbmc.translatePath(os.path.join(LIBRARY_PATH, FOLDER_MOVIES))
-if not os.path.exists(MOVIES_PATH):
+MOVIES_PATH = join_path(LIBRARY_PATH, FOLDER_MOVIES)
+if not path_exists(MOVIES_PATH):
     logger.info("[library.py] Movies path doesn't exist:"+MOVIES_PATH)
-    os.mkdir(MOVIES_PATH)
+    make_dir(MOVIES_PATH)
 
 FOLDER_TVSHOWS = "SERIES"  # config.get_localized_string(30073)
-TVSHOWS_PATH = xbmc.translatePath(os.path.join(LIBRARY_PATH, FOLDER_TVSHOWS))
-if not os.path.exists(TVSHOWS_PATH):
+TVSHOWS_PATH = join_path(LIBRARY_PATH, FOLDER_TVSHOWS)
+if not path_exists(TVSHOWS_PATH):
     logger.info("[library.py] Tvshows path doesn't exist:"+TVSHOWS_PATH)
-    os.mkdir(TVSHOWS_PATH)
+    make_dir(TVSHOWS_PATH)
 
 TVSHOW_FILE = "series.json"
 TVSHOW_FILE_OLD = "series.xml"
@@ -146,12 +182,12 @@ def savelibrary(item):
             return -1  # Salimos sin guardar
 
         tvshow = title_to_filename(item.show)
-        path = xbmc.translatePath(os.path.join(TVSHOWS_PATH, tvshow))
+        path = join_path(TVSHOWS_PATH, tvshow)
 
-        if not os.path.exists(path):
+        if not path_exists(path):
             logger.info("[library.py] savelibrary Creando directorio serie:"+path)
             try:
-                os.mkdir(path)
+                make_dir(path)
             except OSError as exception:
                 if exception.errno != errno.EEXIST:
                     raise
@@ -160,7 +196,7 @@ def savelibrary(item):
         logger.info("{title} -> {name}".format(title=item.title, name=season_episode))
         filename = "{name}.strm".format(name=season_episode)
 
-    fullfilename = os.path.join(path, filename)
+    fullfilename = join_path(path, filename)
 
     addon_name = sys.argv[0]
     if addon_name.strip() == "":
@@ -168,7 +204,7 @@ def savelibrary(item):
 
     save_file('{addon}?{url}'.format(addon=addon_name, url=item.tourl()), fullfilename)
 
-    if os.path.exists(fullfilename):
+    if path_exists(fullfilename):
         logger.info("[library.py] savelibrary el fichero existe. Se sobreescribe")
         nuevo = 0
     else:
@@ -192,13 +228,24 @@ def read_file(fname):
     logger.info("[library.py] read_file")
     data = ""
 
-    if os.path.isfile(fname):
-        try:
-            with open(fname, "r") as f:
-                for line in f:
-                    data += line
-        except EnvironmentError:
-            logger.info("ERROR al leer el archivo: {0}".format(fname))
+    if not samba.usingsamba(fname):
+        if os.path.isfile(fname):
+            try:
+                with open(fname, "r") as f:
+                    for line in f:
+                        data += line
+            except EnvironmentError:
+                logger.info("ERROR al leer el archivo: {0}".format(fname))
+    else:
+        path, filename = fname.rsplit('/',1)
+        if samba.file_exists(filename, path):
+            try:
+                with samba.get_file_handle_for_reading(filename, path) as f:
+                    for line in f:
+                        data += line
+            except EnvironmentError:
+                logger.info("ERROR al leer el archivo: {0}".format(fname))
+
 
     # logger.info("[library.py] read_file-data {0}".format(data))
     return data
@@ -218,16 +265,24 @@ def save_file(data, fname):
     """
     logger.info("[library.py] save_file")
     logger.info("default encoding: {0}".format(sys.getdefaultencoding()))
-    try:
-        with open(fname, "w") as f:
-            try:
-                f.write(data)
-            except UnicodeEncodeError:
-                logger.info("Error al realizar el encode, se usa uft8")
-                f.write(data.encode('utf-8'))
-    except EnvironmentError:
-        logger.info("[library.py] save_file - Error al guardar el archivo: {0}".format(fname))
-        return False
+    if not samba.usingsamba(fname):
+        try:
+            with open(fname, "w") as f:
+                try:
+                    f.write(data)
+                except UnicodeEncodeError:
+                    logger.info("Error al realizar el encode, se usa uft8")
+                    f.write(data.encode('utf-8'))
+        except EnvironmentError:
+            logger.info("[library.py] save_file - Error al guardar el archivo: {0}".format(fname))
+            return False
+    else:
+        try:
+            path, filename = fname.rsplit('/',1)
+            samba.store_File(filename, data, path)
+        except EnvironmentError:
+            logger.info("[library.py] save_file - Error al guardar el archivo: {0}".format(fname))
+            return False
 
     return True
 
@@ -365,7 +420,7 @@ def clean_up_file(item):
                 dict_data[key].pop(key2, None)
 
     json_data = jsontools.dump_json(dict_data)
-    save_file(json_data, os.path.join(config.get_data_path(), TVSHOW_FILE))
+    save_file(json_data, join_path(config.get_data_path(), TVSHOW_FILE))
 
     return []
 
