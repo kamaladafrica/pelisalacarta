@@ -503,8 +503,10 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
 
         try:
             xlistitem = xbmcgui.ListItem( play_title, iconImage="DefaultVideo.png", thumbnailImage=play_thumbnail, path=mediaurl)
+            logger.info("b4.1")
         except:
             xlistitem = xbmcgui.ListItem( play_title, iconImage="DefaultVideo.png", thumbnailImage=play_thumbnail)
+            logger.info("b4.2")
 
         xlistitem.setInfo( "video", { "Title": play_title, "Plot" : play_plot , "Studio" : item.channel , "Genre" : item.category } )
 
@@ -512,7 +514,7 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
 
     # Lanza el reproductor
         # Lanza el reproductor
-    if strmfile and item.server != "torrent": #Si es un fichero strm no hace falta el play
+    if strmfile:           # and item.server != "torrent": #Si es un fichero strm no hace falta el play
         logger.info("b6")
         import sys
         xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, xlistitem)
@@ -684,8 +686,8 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
 
         elif config.get_setting("player_mode")=="1":
             logger.info("b9")
-            #xlistitem.setProperty('IsPlayable', 'true')
-            #xlistitem.setProperty('path', mediaurl)
+            logger.info("mediaurl :"+ mediaurl)
+            logger.info("Tras setResolvedUrl")
             xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, xbmcgui.ListItem(path=mediaurl))
 
         elif config.get_setting("player_mode")=="2":
