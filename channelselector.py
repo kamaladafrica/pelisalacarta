@@ -2,7 +2,7 @@
 # ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 import glob
 import os
 import traceback
@@ -34,9 +34,10 @@ def getmainlist(preferred_thumb=""):
     itemlist.append(Item(title=config.get_localized_string(30102), channel="favoritos", action="mainlist",
                          thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb), "thumb_favoritos.png"),
                          viewmode="movie"))
-    itemlist.append(Item(title=config.get_localized_string(30131), channel="biblioteca", action="mainlist",
-                         thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb), "thumb_biblioteca.png"),
-                         viewmode="movie"))
+    if config.get_library_support():
+        itemlist.append(Item(title=config.get_localized_string(30131), channel="biblioteca", action="mainlist",
+                             thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb), "thumb_biblioteca.png"),
+                             viewmode="movie"))
     itemlist.append(Item(title=config.get_localized_string(30101), channel="descargas", action="mainlist",
                          thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb), "thumb_descargas.png"),
                          viewmode="movie"))

@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # tvalacarta
 # XBMC Launcher (xbmc / xbmc-dharma / boxee)
 # http://blog.tvalacarta.info/plugin-xbmc/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 
 import os
 import re
 import sys
-import urllib
 import urllib2
 
 from core import channeltools
@@ -16,6 +15,9 @@ from core import config
 from core import logger
 from core import scrapertools
 from core.item import Item
+from platformcode import library
+from platformcode import xbmctools
+
 
 def start():
     ''' Primera funcion que se ejecuta al entrar en el plugin.
@@ -52,14 +54,14 @@ def run():
         if ( item.action=="selectchannel" ):
             import channelselector
             itemlist = channelselector.mainlist(params, item.url, item.category)
-            
+
             # Verifica actualizaciones solo en el primer nivel
             if config.get_setting("updatecheck2") == "true":
               logger.info("channelselector.mainlist Verificar actualizaciones activado")
               from core import updater
               try:
                 version = updater.checkforupdates()
-                
+
                 if version:
                   import xbmcgui
                   advertencia = xbmcgui.Dialog()
@@ -73,13 +75,12 @@ def run():
 
             else:
               logger.info("channelselector.mainlist Verificar actualizaciones desactivado")
-                
-            from platformcode import xbmctools
+
             xbmctools.renderItems(itemlist, item)
 
         # Actualizar version
         elif (item.action=="update"):
-   
+
             from core import updater
             updater.update(item)
             if config.get_system_platform()!="xbox":
@@ -89,13 +90,13 @@ def run():
         elif (item.action=="channeltypes"):
             import channelselector
             itemlist = channelselector.channeltypes(params,item.url,item.category)
-            from platformcode import xbmctools
+
             xbmctools.renderItems(itemlist, item)
 
         elif (item.action=="listchannels"):
             import channelselector
             itemlist = channelselector.listchannels(params,item.url,item.category)
-            from platformcode import xbmctools
+
             xbmctools.renderItems(itemlist, item)
 
         # El resto de acciones vienen en el parámetro "action", y el canal en el parámetro "channel"
@@ -167,31 +168,46 @@ def run():
             if not generico:
                 logger.info("pelisalacarta.platformcode.launcher xbmc native channel")
                 if item.action == "strm":
-                    from platformcode import xbmctools
+
                     xbmctools.playstrm(params, item.url, item.category)
                 else:
                     getattr(channel, item.action)(params, item.url, item.category)
             else:
                 logger.info("pelisalacarta.platformcode.launcher multiplatform channel")
 
-                from platformcode import xbmctools
-
-                if item.action=="play":
+                if item.action == "play":
                     logger.info("pelisalacarta.platformcode.launcher play")
+                    # logger.debug(str(item.infoLabels))
+
+                    # Marcar como vistos los items del canal Biblioteca
+                    id_video = 0
+                    category = ''
+                    if 'infoLabels' in item:
+                        if 'episodeid' in item.infoLabels and item.infoLabels['episodeid']:
+                            category = 'Series'
+                            id_video = item.infoLabels['episodeid']
+                        elif 'movieid' in item.infoLabels and item.infoLabels['movieid']:
+                            category = 'Movies'
+                            id_video = item.infoLabels['movieid']
+
                     # Si el canal tiene una acción "play" tiene prioridad
                     if hasattr(channel, 'play'):
                         logger.info("pelisalacarta.platformcode.launcher executing channel 'play' method")
                         itemlist = channel.play(item)
-                        if len(itemlist)>0:
+                        if len(itemlist) > 0:
                             item = itemlist[0]
                             xbmctools.play_video(item)
+                            if id_video != 0:
+                                library.mark_as_watched(category, id_video)
                         else:
                             import xbmcgui
                             ventana_error = xbmcgui.Dialog()
-                            ok = ventana_error.ok ("plugin", "No hay nada para reproducir")
+                            ok = ventana_error.ok("plugin", "No hay nada para reproducir")
                     else:
                         logger.info("pelisalacarta.platformcode.launcher no channel 'play' method, executing core method")
                         xbmctools.play_video(item)
+                        if id_video != 0:
+                            library.mark_as_watched(category, id_video)
 
                 elif item.action == "play_from_library":
                     play_from_library(item, channel, server_white_list, server_black_list)
@@ -226,7 +242,7 @@ def run():
                         except:
                             #Error al ejecutar la accion o item tipo Tag
                             logger.info("pelisalacarta.platformcode.launcher no se ha podido ejecutar la accion %s" %item.action)
-                            return 
+                            return
                     else:
 
                         # Intenta ejecutar una posible funcion "findvideos" del canal
@@ -243,6 +259,15 @@ def run():
                             itemlist = servertools.find_video_items(item)
                             if config.get_setting('filter_servers') == 'true':
                                 itemlist = filtered_servers(itemlist, server_white_list, server_black_list)
+
+                        # Propagar las infoLabels
+                        if 'infoLabels' in item:
+                            item.infoLabels.pop('title') # Excepto el titulo
+                            new_itemlist = itemlist[:]
+                            itemlist = []
+                            for i in new_itemlist:
+                                itemlist.append(i.clone(infoLabels=item.infoLabels))
+
 
                         from platformcode import subtitletools
                         subtitletools.saveSubtitleName(item)
@@ -280,7 +305,7 @@ def run():
             texto = (config.get_localized_string(30051) % e.code) # "El sitio web no funciona correctamente (error http %d)"
             ok = ventana_error.ok ("plugin", texto)
 
-            
+
 def episodio_ya_descargado(show_title,episode_title):
 
     ficheros = os.listdir( "." )
@@ -448,7 +473,7 @@ def download_all_episodes(item,channel,first_episode="",preferred_server="vidspo
         for mirror_item in mirrors_itemlist:
             logger.info("pelisalacarta.platformcode.launcher download_all_episodes, mirror="+mirror_item.title)
 
-            if "(EspaÃƒÂ±ol)" in mirror_item.title:
+            if "(Español)" in mirror_item.title:
                 idioma="(Español)"
                 codigo_idioma="es"
             elif "(Latino)" in mirror_item.title:
@@ -485,7 +510,7 @@ def download_all_episodes(item,channel,first_episode="",preferred_server="vidspo
                 # Lo añade a la lista de descargas
                 if puedes:
                     logger.info("pelisalacarta.platformcode.launcher download_all_episodes, downloading mirror started...")
-                    # El vídeo de más calidad es el útimo
+                    # El vídeo de más calidad es el último
                     mediaurl = video_urls[len(video_urls)-1][1]
                     devuelve = downloadtools.downloadbest(video_urls,show_title+" "+episode_title+" "+idioma+" ["+video_item.server+"]",continuar=False)
 
@@ -516,7 +541,6 @@ def play_from_library(item, channel, server_white_list, server_black_list):
     logger.info("pelisalacarta.platformcode.launcher play_from_library")
 
     category = item.category
-    fulltitle = item.show + " " + item.title
 
     logger.info("item.server=#"+item.server+"#")
     # Ejecuta find_videos, del canal o común
@@ -534,9 +558,6 @@ def play_from_library(item, channel, server_white_list, server_black_list):
             itemlist = filtered_servers(itemlist, server_white_list, server_black_list)
 
     if len(itemlist) > 0:
-        # for item2 in itemlist:
-        #    logger.info(item2.title+" "+item2.subtitle)
-
         # El usuario elige el mirror
         opciones = []
         for item in itemlist:
@@ -560,45 +581,15 @@ def play_from_library(item, channel, server_white_list, server_black_list):
         item = elegido
     logger.info("Elegido %s (sub %s)" % (item.title, item.subtitle))
 
-    from platformcode import xbmctools
-
     xbmctools.play_video(item, strmfile=True)
-    logger.info("se espera 5 segundos por si falla al reproducir el fichero")
-    import xbmc
-    xbmc.sleep(5000)
-
-    if xbmc.Player().isPlaying():
-        from platformcode import library2 as library
-
-        logger.info("pelisalacarta.platformcode.launcher play_from_library [{platform}]"
-                    .format(platform=config.get_platform()))
-
-        if library.is_compatible():
-            # if config.get_platform() == "kodi-jarvis":
-            # TODO crear variable en settings que diga si quieres marcar los episodios
-            if 1 == 1:
-                library.mark_as_watched(category)
+    library.mark_as_watched(category, 0)
 
 
 def add_pelicula_to_library(item):
     logger.info("pelisalacarta.platformcode.launcher add_pelicula_to_library")
-    from platformcode import library2 as library
 
-    logger.info("pelisalacarta.platformcode.launcher add_pelicula_to_library [{platform}]"
-                .format(platform=config.get_platform()))
-
-    if library.is_compatible():
-        # if config.get_platform() == "kodi-jarvis":
-        new_item = item.clone(action="play_from_library", category="Cine")
-        library.savelibrary(new_item)
-    # retrocompatibilidad :)
-    else:
-        from platformcode import library
-        # Obtiene el listado desde el que se llamó
-        library.savelibrary(titulo=item.fulltitle, url=item.url, thumbnail=item.thumbnail,
-                            server=item.server, plot=item.plot, canal=item.channel, category="Cine",
-                            Serie=item.show.strip(), verbose=False, accion="play_from_library",
-                            pedirnombre=False, subtitle=item.subtitle)
+    new_item = item.clone(action="play_from_library", category="Cine")
+    library.savelibrary(new_item)
 
 
 def add_serie_to_library(item, channel):
@@ -606,9 +597,13 @@ def add_serie_to_library(item, channel):
 
     import xbmcgui
 
-    # Obtiene el listado desde el que se llamó
+    # Esta marca es porque el item tiene algo más aparte en el atributo "extra"
     action = item.extra
+    if "###" in item.extra:
+        action = item.extra.split("###")[0]
+        item.extra = item.extra.split("###")[1]
 
+    # Obtiene el listado desde el que se llamó
     itemlist = getattr(channel, action)(item)
 
     # TODO arreglar progress dialog
@@ -634,23 +629,13 @@ def add_serie_to_library(item, channel):
             # Añade todos menos el que dice "Añadir esta serie..." o "Descargar esta serie..."
             if item.action != "add_serie_to_library" and item.action != "download_all_episodes":
 
-                from platformcode import library2 as library
-
-                logger.info("pelisalacarta.platformcode.launcher add_serie_to_library [{platform}]"
-                            .format(platform=config.get_platform()))
-                if library.is_compatible():
-                    # if config.get_platform() == "kodi-jarvis":
-                    new_item = item.clone(action="play_from_library", category="Series")
-                    nuevos = nuevos + library.savelibrary(new_item)
-
-                # retrocompatibilidad :)
+                new_item = item.clone(action="play_from_library", category="Series")
+                res = library.savelibrary(new_item)
+                if res >= 0:
+                    nuevos += res
                 else:
-                    from platformcode import library
-                    nuevos = nuevos + library.savelibrary(titulo=item.title, url=item.url, thumbnail=item.thumbnail,
-                                                          server=item.server, plot=item.plot, canal=item.channel,
-                                                          category="Series", Serie=item.show.strip(), verbose=False,
-                                                          accion="play_from_library", pedirnombre=False,
-                                                          subtitle=item.subtitle, extra=item.extra)
+                    errores += 1
+
         except IOError:
             import sys
             for line in sys.exc_info():
@@ -663,38 +648,13 @@ def add_serie_to_library(item, channel):
     # Actualizacion de la biblioteca
     itemlist = []
     if errores > 0:
-        itemlist.append(Item(title="ERROR, la serie NO se ha añadido a la biblioteca o lo ha hecho incompleta"))
+        itemlist.append(Item(title="ERROR, la serie NO se ha añadido a la biblioteca o lo ha hecho incompleta",
+                             channel=item.channel))
         logger.info("[launcher.py] No se pudo añadir "+str(errores)+" episodios")
     else:
-        itemlist.append(Item(title="La serie se ha añadido a la biblioteca"))
+        itemlist.append(Item(title="La serie se ha añadido a la biblioteca", channel=item.channel))
         logger.info("[launcher.py] Ningún error al añadir "+str(errores)+" episodios")
 
-    # FIXME:jesus Comentado porque no funciona bien en todas las versiones de XBMC
-    # library.update(totalepisodes,errores,nuevos)
     xbmctools.renderItems(itemlist, item)
 
-    from platformcode import library2 as library
-
-    if library.is_compatible():
-        library.save_tvshow_in_file_xml(item)
-
-    else:
-        from platformcode import library
-
-        # Lista con series para actualizar
-        nombre_fichero_config_canal = os.path.join(config.get_library_path(), "series.xml")
-        if not os.path.exists(nombre_fichero_config_canal):
-            nombre_fichero_config_canal = os.path.join(config.get_data_path(), "series.xml")
-
-        logger.info("nombre_fichero_config_canal="+nombre_fichero_config_canal)
-        if not os.path.exists(nombre_fichero_config_canal):
-            f = open(nombre_fichero_config_canal, "w")
-        else:
-            f = open(nombre_fichero_config_canal, "r")
-            contenido = f.read()
-            f.close()
-            f = open(nombre_fichero_config_canal, "w")
-            f.write(contenido)
-        from platformcode import library
-        f.write(library.title_to_folder_name(item.show)+","+item.url+","+item.channel+"\n")
-        f.close()
+    library.save_tvshow_in_file(item)

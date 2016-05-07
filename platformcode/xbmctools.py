@@ -15,6 +15,7 @@ import xbmcplugin
 
 from core import config
 from core import logger
+from platformcode import library
 
 # Esto permite su ejecución en modo emulado
 try:
@@ -152,7 +153,6 @@ def addnewvideo(item, IsPlayable='false', totalItems = 0):
 
 def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescargas=False,strmfile=False):
     from core import servertools
-    import sys
     import xbmcgui,xbmc
     
     logger.info("[xbmctools.py] play_video")
@@ -446,17 +446,19 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
             resultado = advertencia.ok(config.get_localized_string(30101) , download_title , config.get_localized_string(30109)) # 'se ha añadido a la lista de descargas'
         return
 
-    elif opciones[seleccion]==config.get_localized_string(30161): #"Añadir a Biblioteca":  # Library
-        from platformcode import library
-        
+    elif opciones[seleccion] == config.get_localized_string(30161):  # "Añadir a Biblioteca":  # Library
+
         titulo = item.fulltitle
-        if item.fulltitle=="":
+        if titulo == "":
             titulo = item.title
-        
-        library.savelibrary(titulo,item.url,item.thumbnail,item.server,item.plot,canal=item.channel,category=item.category,Serie=item.show)
+
+        new_item = item.clone(title=titulo, action="play_from_library", category="Series")
+        res = library.savelibrary(new_item)
 
         advertencia = xbmcgui.Dialog()
-        resultado = advertencia.ok(config.get_localized_string(30101) , titulo , config.get_localized_string(30135)) # 'se ha añadido a la lista de descargas'
+        if res == 1:
+            advertencia.ok(config.get_localized_string(30131), titulo,
+                           config.get_localized_string(30135))  # 'se ha añadido a la biblioteca'
         return
 
     elif opciones[seleccion]==config.get_localized_string(30162): #"Buscar Trailer":
@@ -719,7 +721,7 @@ def handle_wait(time_to_wait,title,text):
              cancelled = True
              break
 
-    if cancelled == True:     
+    if cancelled:
          logger.info ('Espera cancelada')
          return False
     else:

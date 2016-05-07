@@ -1,31 +1,36 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Herramientas de integración en Librería
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-# Autor: jurrabi
-#------------------------------------------------------------
+# ------------------------------------------------------------
+
+import errno
 import os
 import string
 import sys
 import urllib
-import xml.parsers.expat
 
 import xbmc
-import xbmcgui
-
 from core import config
+from core import jsontools
 from core import logger
+from core import scrapertools
 
-CHANNELNAME = "library"
-allchars = string.maketrans('', '')
-deletechars = '\\/:*"<>|?' #Caracteres no válidos en nombres de archivo
-# Esto permite su ejecución en modo emulado (preguntar a jesus por esto)
-# seguro que viene bien para debuguear
-try:
-    pluginhandle = int( sys.argv[ 1 ] )
-except:
-    pluginhandle = ""
+# TODO EVITAR USAR REQUESTS
+from lib import requests
+
+modo_cliente = int(config.get_setting("library_mode"))
+# Host name where XBMC is running, leave as localhost if on this PC
+# Make sure "Allow control of XBMC via HTTP" is set to ON in Settings ->
+# Services -> Webserver
+xbmc_host = config.get_setting("xbmc_host")
+# Configured in Settings -> Services -> Webserver -> Port
+xbmc_port = int(config.get_setting("xbmc_port"))
+marcar_como_visto = bool(config.get_setting("mark_as_watched"))
+# Base URL of the json RPC calls. For GET calls we append a "request" URI
+# parameter. For POSTs, we add the payload as JSON the the HTTP request body
+xbmc_json_rpc_url = "http://{host}:{port}/jsonrpc".format(host=xbmc_host, port=xbmc_port)
 
 DEBUG = True
 
@@ -34,249 +39,569 @@ if not os.path.exists(LIBRARY_PATH):
     logger.info("[library.py] Library path doesn't exist:"+LIBRARY_PATH)
     config.verify_directories_created()
 
-#MOVIES_PATH
-MOVIES_PATH = xbmc.translatePath( os.path.join( LIBRARY_PATH, 'CINE' ) )
+# TODO permitir cambiar las rutas y nombres en settings para 'cine' y 'series'
+FOLDER_MOVIES = "CINE"  # config.get_localized_string(30072)
+MOVIES_PATH = xbmc.translatePath(os.path.join(LIBRARY_PATH, FOLDER_MOVIES))
 if not os.path.exists(MOVIES_PATH):
     logger.info("[library.py] Movies path doesn't exist:"+MOVIES_PATH)
     os.mkdir(MOVIES_PATH)
 
-#SERIES_PATH
-SERIES_PATH = xbmc.translatePath( os.path.join( LIBRARY_PATH, 'SERIES' ) )
-if not os.path.exists(SERIES_PATH):
-    logger.info("[library.py] Series path doesn't exist:"+SERIES_PATH)
-    os.mkdir(SERIES_PATH)
+FOLDER_TVSHOWS = "SERIES"  # config.get_localized_string(30073)
+TVSHOWS_PATH = xbmc.translatePath(os.path.join(LIBRARY_PATH, FOLDER_TVSHOWS))
+if not os.path.exists(TVSHOWS_PATH):
+    logger.info("[library.py] Tvshows path doesn't exist:"+TVSHOWS_PATH)
+    os.mkdir(TVSHOWS_PATH)
+
+TVSHOW_FILE = "series.json"
+TVSHOW_FILE_OLD = "series.xml"
+
+
+# Versions compatible with JSONRPC v6
+LIST_PLATFORM_COMPATIBLE = ["xbmc-frodo", "xbmc-gotham", "kodi-helix", "kodi-isengard", "kodi-jarvis"]
+
+
+def is_compatible():
+    """
+    comprueba si la plataforma es xbmc/Kodi, la version es compatible y si está configurada la libreria en Kodi.
+    @rtype:   bool
+    @return:  si es compatible.
+
+    """
+    logger.info("[library.py] is_compatible")
+    if config.get_platform() in LIST_PLATFORM_COMPATIBLE and library_in_kodi():
+        return True
+    else:
+        return False
+
+
+def library_in_kodi():
+    """
+    comprueba si la libreria de pelisalacarta está configurada en xbmc/Kodi
+    @rtype:   bool
+    @return:  si está configurada la libreria en xbmc/Kodi.
+    """
+    logger.info("[library.py] library_in_kodi")
+    # TODO arreglar
+    return True
+
+    path = xbmc.translatePath(os.path.join("special://masterprofile/", "sources.xml"))
+    data = read_file(path)
+
+    if config.get_library_path() in data:
+        return True
+    else:
+        return False
+
 
 def elimina_tildes(s):
-    s = s.replace("Á","a")
-    s = s.replace("É","e")
-    s = s.replace("Í","i")
-    s = s.replace("Ó","o")
-    s = s.replace("Ú","u")
-    s = s.replace("á","a")
-    s = s.replace("é","e")
-    s = s.replace("í","i")
-    s = s.replace("ó","o")
-    s = s.replace("ú","u")
-    s = s.replace("À","a")
-    s = s.replace("È","e")
-    s = s.replace("Ì","i")
-    s = s.replace("Ò","o")
-    s = s.replace("Ù","u")
-    s = s.replace("à","a")
-    s = s.replace("è","e")
-    s = s.replace("ì","i")
-    s = s.replace("ò","o")
-    s = s.replace("ù","u")
-    s = s.replace("ç","c")
-    s = s.replace("Ç","C")
-    s = s.replace("Ñ","n")
-    s = s.replace("ñ","n")
-    return s
+    """
+    elimina las tildes de la cadena
+    @type s: string
+    @param s: cadena.
+    @rtype:   string
+    @return:  cadena sin tildes.
+    """
+    logger.info("[library.py] elimina_tildes")
+    import unicodedata
+    if not isinstance(s, unicode):
+        s = s.decode("UTF-8")
+    return ''.join((c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn'))
 
-def title_to_folder_name(title):
-    logger.info("Serie="+title)
-    Serie = elimina_tildes(title)
-    logger.info("Serie="+Serie)
-    Serie = string.translate(Serie,allchars,deletechars)
-    logger.info("Serie="+Serie)
-    return Serie
- 
-def savelibrary(titulo="",url="",thumbnail="",server="",plot="",canal="",category="Cine",Serie="",verbose=True,accion="play_from_library",pedirnombre=True, subtitle="", extra=""):
-    logger.info("[library.py] savelibrary titulo="+titulo+", url="+url+", server="+server+", canal="+canal+", category="+category+", serie="+Serie+", accion="+accion+", subtitle="+subtitle)
 
-    if category != "Series":  #JUR - DEBUGIN INTERNO PARA 2.14
-        category = "Cine"
-        
-    if category == "Cine":
-        filename=string.translate(titulo,allchars,deletechars)+".strm"
-        fullfilename = os.path.join(MOVIES_PATH,filename)
-    elif category == "Series":
-        if Serie == "": #Añadir comprobación de len>0 bien hecha
-            logger.info('[library.py] savelibrary ERROR: intentando añadir una serie y serie=""')
-            pathserie = SERIES_PATH
-        else:
-            #Eliminamos caracteres indeseados para archivos en el nombre de la serie
-            Serie = title_to_folder_name(Serie)
-            pathserie = xbmc.translatePath( os.path.join( SERIES_PATH, Serie ) )
-        if not os.path.exists(pathserie):
-            logger.info("[library.py] savelibrary Creando directorio serie:"+pathserie)
+def title_to_filename(title):
+    """
+    devuelve un titulo con caracteres válidos para crear un fichero
+    @type title: string
+    @param title: title.
+    @rtype:   string
+    @return:  cadena correcta sin tildes.
+    """
+    logger.info("[library.py] title_to_filename")
+    safechars = string.letters + string.digits + " -_."
+    folder_name = filter(lambda c: c in safechars, elimina_tildes(title))
+    return str(folder_name)
+
+
+def savelibrary(item):
+    """
+    guarda en la ruta correspondiente el elemento item, con los valores que contiene.
+    @type item: item
+    @param item: elemento que se va a guardar.
+    @rtype:   int
+    @return:  el número de elemento insertado.
+    """
+    logger.info("[library.py] savelibrary")
+
+    path = LIBRARY_PATH
+    filename = ""
+
+    # MOVIES
+    if item.category == "Cine":  # config.get_localized_string(30072):
+        path = MOVIES_PATH
+        filename = title_to_filename(item.fulltitle) + ".strm"
+    # TVSHOWS
+    elif item.category == "Series":  # config.get_localized_string(30073):
+
+        if item.show == "":
+            return -1  # Salimos sin guardar
+
+        tvshow = title_to_filename(item.show)
+        path = xbmc.translatePath(os.path.join(TVSHOWS_PATH, tvshow))
+
+        if not os.path.exists(path):
+            logger.info("[library.py] savelibrary Creando directorio serie:"+path)
             try:
-                os.mkdir(pathserie)
-            except:
-                os.mkdir(pathserie)
+                os.mkdir(path)
+            except OSError as exception:
+                if exception.errno != errno.EEXIST:
+                    raise
 
-        #Limpiamos el titulo para usarlo como fichero
-        from  core import scrapertools
-        filename = scrapertools.get_season_and_episode(titulo)+".strm"
-        #filename=string.translate(titulo,allchars,deletechars)+".strm"
+        season_episode = scrapertools.get_season_and_episode(item.title.lower())
+        logger.info("{title} -> {name}".format(title=item.title, name=season_episode))
+        filename = "{name}.strm".format(name=season_episode)
 
-        fullfilename = os.path.join(pathserie,filename)
-    else:    #Resto de categorias de momento en la raiz de library
-        fullfilename = os.path.join(LIBRARY_PATH,filename)
-    
-        
+    fullfilename = os.path.join(path, filename)
+
+    addon_name = sys.argv[0]
+    if addon_name.strip() == "":
+        addon_name = "plugin://plugin.video.pelisalacarta/"
+
+    save_file('{addon}?{url}'.format(addon=addon_name, url=item.tourl()), fullfilename)
+
     if os.path.exists(fullfilename):
         logger.info("[library.py] savelibrary el fichero existe. Se sobreescribe")
         nuevo = 0
     else:
         nuevo = 1
-    try:
-        LIBRARYfile = open(fullfilename,"w")
-    except IOError:
-        logger.info("[library.py] savelibrary Error al grabar el archivo "+fullfilename)
-        nuevo = 0
-        raise
-#    itemurl = '%s?channel=%s&action=%s&category=%s&title=%s&url=%s&thumbnail=%s&plot=%s&server=%s' % ( sys.argv[ 0 ] , canal , "strm" , urllib.quote_plus( category ) , urllib.quote_plus( titulo ) , urllib.quote_plus( url ) , urllib.quote_plus( thumbnail ) , urllib.quote_plus( plot ) , server )
-# Eliminación de plot y thumnail
-    addon_name = sys.argv[ 0 ].strip()
-    if not addon_name or not addon_name.startswith("plugin://"):
-        addon_name="plugin://plugin.video.pelisalacarta/"
-    itemurl = '%s?channel=%s&action=%s&category=%s&title=%s&url=%s&thumbnail=%s&plot=%s&server=%s&Serie=%s&subtitle=%s&extra=%s' % ( addon_name , canal , accion , urllib.quote_plus( category ) , urllib.quote_plus( titulo ) , urllib.quote_plus( url ) , "" , "" , server , Serie , urllib.quote_plus(subtitle) , urllib.quote_plus(extra) )
-    logger.info("[library.py] savelibrary fullfilename=%s , itemurl=%s" % (fullfilename,itemurl))
 
-    LIBRARYfile.write(itemurl)
-#    LIBRARYfile.write(urllib.quote_plus(url)+'\n')
-#    LIBRARYfile.write(urllib.quote_plus(thumbnail)+'\n')
-#    LIBRARYfile.write(urllib.quote_plus(server)+'\n')
-#    LIBRARYfile.write(urllib.quote_plus(downloadtools.limpia_nombre_excepto_1(plot))+'\n')
-    LIBRARYfile.flush();
-    LIBRARYfile.close()
-
-    logger.info("[library.py] savelibrary acaba")
+    logger.info("[library.py] savelibrary - Fin")
 
     return nuevo
-    
-def update(total,errores=0, nuevos=0, serie="No indicada"):
-    logger.info("[library.py] update")
-    """Pide Resumen de actualización. Además pregunta y actualiza la Biblioteca
-    
-    nuevos: Número de episodios actualizados. Se muestra como resumen en la ventana 
-            de confirmación.
-    total:  Número de episodios Totales en la Biblioteca. Se muestra como resumen 
-            en la ventana de confirmación.
-    Erores: Número de episodios que no se pudo añadir (generalmente por caracteres 
-            no válidos en el nombre del archivo o por problemas de permisos.
+
+
+def read_file(fname):
     """
-    
-    if nuevos == 1:
-        texto = 'Se ha añadido 1 episodio a la Biblioteca (%d en total)' % (total,)
-    else:
-        texto = 'Se han añadido %d episodios a la Biblioteca (%d en total)' % (nuevos,total)
+    pythonic way to read from file
 
-    logger.info("[library.py] update - %s" % texto)
-    advertencia = xbmcgui.Dialog()
+    @type  fname: string
+    @param fname: filename.
 
-    # Pedir confirmación para actualizar la biblioteca
-    if nuevos > 0:
-        logger.info("[library.py] update - nuevos")
-        if errores == 0:
-            actualizar = advertencia.yesno('pelisalacarta' , texto ,'¿Deseas que actualice ahora la Biblioteca?')
-        else:  # Si hubo errores muestra una línea adicional en la pregunta de actualizar biblioteca
-            if errores == 1:
-                texto2 = '(No se pudo añadir 1 episodio)'
-            else:
-                texto2 = '(No se pudieron añadir '+str(errores)+' episodios)'
-            actualizar = advertencia.yesno('pelisalacarta' , texto , texto2 , '¿Deseas que actualice ahora la Biblioteca?')
-    else: #No hay episodios nuevos -> no actualizar
-        logger.info("[library.py] update - no nuevos")
-        if errores == 0:
-            texto2 = ""
-        elif errores == 1:
-            texto2 = '(No se pudo añadir 1 episodio)'
-        else:
-            texto2 = '(No se pudieron añadir '+str(errores)+' episodios)'
-        #advertencia.ok('pelisalacarta',texto,texto2)
-        actualizar = False
-    
-    if actualizar:
-        logger.info("Actualizando biblioteca...")
-        xbmc.executebuiltin('UpdateLibrary(video)')
-    else:
-        logger.info("No actualiza biblioteca...")
+    @rtype:   string
+    @return:  data from filename.
+    """
+    logger.info("[library.py] read_file")
+    data = ""
 
-    logger.info ('[Library update] Serie: "%s". Total: %d, Erroneos: %d, Nuevos: %d' %(serie, total, errores, nuevos))
+    if os.path.isfile(fname):
+        try:
+            with open(fname, "r") as f:
+                for line in f:
+                    data += line
+        except EnvironmentError:
+            logger.info("ERROR al leer el archivo: {0}".format(fname))
 
-def MonitorSerie ( canal, accion, server, url, serie): 
-    ''' Añade una serie a la lista de series a monitorizar.
-    
-    Si se configura para que lo haga pelisalacarta arrancará un proceso al inicio de XBMC
-    para monitorizar las series que se desee mediante una llamada a esta función.
-    Los episodios nuevos que vayan apareciendo en la web del canal para la serie indicada
-    se irán añdiendo a la biblioteca.
-    Para dejar de monitorizar una serie llamar a StopMonitorSerie
-    '''
-    parser = xml.parsers.expat.ParserCreate()
-    
-    
-def fixStrmLibrary(path = LIBRARY_PATH):
-    '''Revisa todos los ficheros strm de la librería y repara la url del plugin
-    
-    Este cambio es necesario con el paso a XBMC Dharma (10.5) donde las url de
-    plugin cambiaron de:
-      plugin://video/pelisalacarta/
-    a: 
-      plugin://plugin.video.pelisalacarta/
-    dado que esto podría volver a pasar (en ciertos momentos se ha estado
-    experimentando con urls del tipo addon://... hemos decidido crear esta función
-    para arreglar los strm en cualquier momento.
-    '''
-    logger.info("[library.py] fixStrm")
-    logger.info("[library.py] fixStrm path="+path)
-    # Comprobamos la validez del parámetro
-    if not os.path.exists(path):
-        logger.info("[library.py] fixStrm ERROR: PATH NO EXISTE")
-        return 0
-    if not os.path.isdir(path):
-        logger.info("[library.py] fixStrm ERROR: PATH NO ES DIRECTORIO")
-        return 0
-    else:
-        logger.info("[library.py] fixStrm El path es un directorio")
-    total,errores = 0,0 
-    for dirpath, dirnames, filenames in os.walk(path):
-        for file in filenames:
-            if file[-5:] == '.strm':
-                if fixStrm (os.path.join(dirpath,file)):
-                    total = total + 1
-                else:
-                    logger.info("[library.py] fixStrm ERROR al fixear "+file)
-                    errores = errores + 1
-        #Excluye las carpetas de Subversión de la búsqueda
-        if ".svn" in dirnames:
-            dirnames.remove (".svn")
-    return total,errores
-   
-def fixStrm (file):
-    logger.info("[library.py] fixStrm file: "+file)
-    url = LeeStrm (file)
-    if len(url)==0:
-        return False
-    args = url.split('?',1)
-    url2 = '%s?%s' % (sys.argv[ 0 ],args [1])
-    logger.info ("[library.py] fixStrm new url: "+url2)
-    return SaveStrm (file,url2)
-    
-def LeeStrm(file):
-    try:
-        fp = open(file,'r')
-        data = fp.read()
-        fp.close()
-    except:
-        data = ""
+    # logger.info("[library.py] read_file-data {0}".format(data))
     return data
 
-def SaveStrm (file, data):
+
+def save_file(data, fname):
+    """
+    pythonic way to write a file
+
+    @type  fname: string
+    @param fname: filename.
+    @type  data: string
+    @param data: data to save.
+
+    @rtype:   bool
+    @return:  result of saving.
+    """
+    logger.info("[library.py] save_file")
+    logger.info("default encoding: {0}".format(sys.getdefaultencoding()))
     try:
-        LIBRARYfile = open(file,"w")
-        LIBRARYfile.write(data)
-        LIBRARYfile.flush()
-        LIBRARYfile.close()
-    except IOError:
-        logger.info("Error al grabar el archivo "+file)
+        with open(fname, "w") as f:
+            try:
+                f.write(data)
+            except UnicodeEncodeError:
+                logger.info("Error al realizar el encode, se usa uft8")
+                f.write(data.encode('utf-8'))
+    except EnvironmentError:
+        logger.info("[library.py] save_file - Error al guardar el archivo: {0}".format(fname))
         return False
+
     return True
 
 
-def dlog (text):
-    if DEBUG:
+def set_infoLabels_from_library(itemlist, tipo):
+    """
+    guarda los datos (thumbnail, fanart, plot, actores, etc) a mostrar de la library de Kodi.
+    @type itemlist: list
+    @param itemlist: item
+    @type tipo: string
+    @param tipo:
+    @rtype:   infoLabels
+    @return:  result of saving.
+    """
+    logger.info("[library.py] set_infoLabels_from_library")
+    payload = dict()
+    result = list()
 
-        logger.info(text)
+    if tipo == 'Movies':
+        payload = {"jsonrpc": "2.0",
+                   "method": "VideoLibrary.GetMovies",
+                   "params": {"properties": ["title", "year", "rating", "trailer", "tagline", "plot", "plotoutline",
+                                             "originaltitle", "lastplayed", "playcount", "writer", "mpaa", "cast",
+                                             "imdbnumber", "runtime", "set", "top250", "votes", "fanart", "tag",
+                                             "thumbnail", "file", "director", "country", "studio", "genre",
+                                             "sorttitle", "setid", "dateadded"
+                                             ]},
+                   "id": "libMovies"}
+
+    elif tipo == 'TVShows':
+        payload = {"jsonrpc": "2.0",
+                   "method": "VideoLibrary.GetTVShows",
+                   "params": {"properties": ["title", "genre", "year", "rating", "plot", "studio", "mpaa", "cast",
+                                             "playcount", "episode", "imdbnumber", "premiered", "votes", "lastplayed",
+                                             "fanart", "thumbnail", "file", "originaltitle", "sorttitle",
+                                             "episodeguide", "season", "watchedepisodes", "dateadded", "tag"
+                                             ]},
+                   "id": "libTvShows"}
+
+    elif tipo == 'Episodes' and 'tvshowid' in itemlist[0].infoLabels and itemlist[0].infoLabels['tvshowid']:
+        tvshowid = itemlist[0].infoLabels['tvshowid']
+        payload = {"jsonrpc": "2.0",
+                   "method": "VideoLibrary.GetEpisodes",
+                   "params": {"tvshowid": tvshowid,
+                              "properties": ["title", "plot", "votes", "rating", "writer", "firstaired", "playcount",
+                                             "runtime", "director", "productioncode", "season", "episode",
+                                             "originaltitle",
+                                             "showtitle", "cast", "lastplayed", "fanart", "thumbnail",
+                                             "file", "dateadded", "tvshowid"
+                                             ]},
+                   "id": 1}
+
+    data = get_data(payload)
+    # logger.debug("JSON-RPC: {0}".format(data))
+
+    if 'error' in data:
+        logger.error("JSON-RPC: {0}".format(data))
+
+    elif 'movies' in data['result']:
+        result = data['result']['movies']
+
+    elif 'tvshows' in data['result']:
+        result = data['result']['tvshows']
+
+    elif 'episodes' in data['result']:
+        result = data['result']['episodes']
+
+    if result:
+        for i in itemlist:
+            for r in result:
+                r_filename_aux = r['file'][:-1] if r['file'].endswith(os.sep) or r['file'].endswith('/') else r['file']
+                r_filename = os.path.basename(r_filename_aux)
+                # logger.debug(os.path.basename(i.path) + '\n' + r_filename)
+                if os.path.basename(i.path) == r_filename:
+                    infoLabels = r
+
+                    # Obtener imagenes y asignarlas al item
+                    if 'thumbnail' in infoLabels:
+                        infoLabels['thumbnail'] = urllib.unquote_plus(infoLabels['thumbnail']).replace('image://', '')
+                        i.thumbnail = infoLabels['thumbnail'][:-1] if infoLabels['thumbnail'].endswith('/') else \
+                            infoLabels['thumbnail']
+                    if 'fanart' in infoLabels:
+                        infoLabels['fanart'] = urllib.unquote_plus(infoLabels['fanart']).replace('image://', '')
+                        i.fanart = infoLabels['fanart'][:-1] if infoLabels['fanart'].endswith('/') else infoLabels[
+                            'fanart']
+
+                    # Adaptar algunos campos al formato infoLables
+                    if 'cast' in infoLabels:
+                        l_castandrole = list()
+                        for c in sorted(infoLabels['cast'], key=lambda _c: _c["order"]):
+                            l_castandrole.append((c['name'], c['role']))
+                        infoLabels.pop('cast')
+                        infoLabels['castandrole'] = l_castandrole
+                    if 'genre' in infoLabels:
+                        infoLabels['genre'] = ', '.join(infoLabels['genre'])
+                    if 'writer' in infoLabels:
+                        infoLabels['writer'] = ', '.join(infoLabels['writer'])
+                    if 'director' in infoLabels:
+                        infoLabels['director'] = ', '.join(infoLabels['director'])
+                    if 'country' in infoLabels:
+                        infoLabels['country'] = ', '.join(infoLabels['country'])
+                    if 'studio' in infoLabels:
+                        infoLabels['studio'] = ', '.join(infoLabels['studio'])
+                    if 'runtime' in infoLabels:
+                        infoLabels['duration'] = infoLabels.pop('runtime')
+
+                    # Fijar el titulo si existe y añadir infoLabels al item
+                    if 'label' in infoLabels:
+                        i.title = infoLabels['label']
+                    i.infoLabels = infoLabels
+                    result.remove(r)
+                    break
+
+
+def clean_up_file(item):
+    """
+    borra los elementos del fichero "series" que no existen como carpetas en la libreria de "SERIES"
+    @type item: item
+    @param item: elemento
+    @rtype:   list
+    @return:  vacío para navegue.
+    """
+    logger.info("[library.py] clean_up_file")
+
+    path = TVSHOWS_PATH
+
+    dict_data = item.dict_fichero
+
+    # Obtenemos las carpetas de las series
+    raiz, carpetas_series, files = os.walk(path).next()
+
+    for key in dict_data.keys():
+        for key2 in dict_data[key].keys():
+            if key2 not in carpetas_series:
+                dict_data[key].pop(key2, None)
+
+    json_data = jsontools.dump_json(dict_data)
+    save_file(json_data, os.path.join(config.get_data_path(), TVSHOW_FILE))
+
+    return []
+
+
+def save_tvshow_in_file(item):
+    """
+    guarda nombre de la serie, canal y url para actualizar dentro del fichero 'series.xml'
+    @type item: item
+    @param item: elemento
+    """
+    logger.info("[library.py] save_tvshow_in_file")
+    fname = os.path.join(config.get_data_path(), TVSHOW_FILE)
+    # comprobación por si no ha llamada al library_service para ejecutar library.convert_xml_to_json()
+    if not os.path.isfile(fname):
+        convert_xml_to_json(True)
+
+    dict_data = jsontools.load_json(read_file(fname))
+    dict_data[item.channel][title_to_filename(item.show)] = item.url
+    logger.info("dict_data {0}".format(dict_data))
+    json_data = jsontools.dump_json(dict_data)
+    save_file(json_data, fname)
+
+
+def mark_as_watched(category, id_video=0):
+    """
+    marca el capitulo como visto en la libreria de Kodi
+    @type category: string
+    @param category: categoria "Series" o "Cine"
+    @type id_video: int
+    @param id_video: identificador 'episodeid' o 'movieid' en la BBDD
+    """
+    logger.info("[library.py] mark_as_watched - category:{0}".format(category))
+
+    logger.info("se espera 5 segundos por si falla al reproducir el fichero")
+    xbmc.sleep(5000)
+
+    if not is_compatible() or not marcar_como_visto:
+        return
+
+    if xbmc.Player().isPlaying():
+        payload = {"jsonrpc": "2.0", "method": "Player.GetActivePlayers", "id": 1}
+        data = get_data(payload)
+
+        if data['result']:
+            payload_f = ''
+            player_id = data['result'][0]["playerid"]
+
+            if category == "Series":
+                episodeid = id_video
+                if episodeid == 0:
+                    payload = {"jsonrpc": "2.0", "params": {"playerid": player_id,
+                                                            "properties": ["season", "episode", "file", "showtitle"]},
+                               "method": "Player.GetItem", "id": "libGetItem"}
+
+                    data = get_data(payload)
+                    if data['result']:
+                        season = data['result']['item']['season']
+                        episode = data['result']['item']['episode']
+                        showtitle = data['result']['item']['showtitle']
+                        # logger.info("titulo es {0}".format(showtitle))
+
+                        payload = {
+                            "jsonrpc": "2.0", "method": "VideoLibrary.GetEpisodes",
+                            "params": {
+                                "filter": {"and": [{"field": "season", "operator": "is", "value": str(season)},
+                                                   {"field": "episode", "operator": "is", "value": str(episode)}]},
+                                "properties": ["title", "plot", "votes", "rating", "writer", "firstaired", "playcount",
+                                               "runtime", "director", "productioncode", "season", "episode",
+                                               "originaltitle", "showtitle", "lastplayed", "fanart", "thumbnail",
+                                               "file", "resume", "tvshowid", "dateadded", "uniqueid"]},
+                            "id": 1}
+
+                        data = get_data(payload)
+                        if data['result']:
+                            for d in data['result']['episodes']:
+                                if d['showtitle'] == showtitle:
+                                    episodeid = d['episodeid']
+                                    break
+
+                if episodeid != 0:
+                    payload_f = {"jsonrpc": "2.0", "method": "VideoLibrary.SetEpisodeDetails", "params": {
+                        "episodeid": episodeid, "playcount": 1}, "id": 1}
+
+            else:  # Categoria == 'Movies'
+                movieid = id_video
+                if movieid == 0:
+
+                    payload = {"jsonrpc": "2.0", "method": "Player.GetItem",
+                               "params": {"playerid": 1,
+                                          "properties": ["year", "file", "title", "uniqueid", "originaltitle"]},
+                               "id": "libGetItem"}
+
+                    data = get_data(payload)
+                    if data['result']:
+                        title = data['result']['item']['title']
+                        year = data['result']['item']['year']
+                        # logger.info("titulo es {0}".format(title))
+
+                        payload = {"jsonrpc": "2.0", "method": "VideoLibrary.GetMovies",
+                                   "params": {
+                                       "filter": {"and": [{"field": "title", "operator": "is", "value": title},
+                                                          {"field": "year", "operator": "is", "value": str(year)}]},
+                                       "properties": ["title", "plot", "votes", "rating", "writer", "playcount",
+                                                      "runtime", "director", "originaltitle", "lastplayed", "fanart",
+                                                      "thumbnail", "file", "resume", "dateadded"]},
+                                   "id": 1}
+
+                        data = get_data(payload)
+                        if data['result']:
+                            for d in data['result']['movies']:
+                                logger.info("title {0}".format(d['title']))
+                                if d['title'] == title:
+                                    movieid = d['movieid']
+                                    break
+
+                if movieid != 0:
+                    payload_f = {"jsonrpc": "2.0", "method": "VideoLibrary.SetMovieDetails", "params": {
+                            "movieid": movieid, "playcount": 1}, "id": 1}
+
+            if payload_f:
+                condicion = int(config.get_setting("watched_setting"))
+                payload = {"jsonrpc": "2.0", "method": "Player.GetProperties",
+                           "params": {"playerid": player_id,
+                                      "properties": ["time", "totaltime", "percentage"]},
+                           "id": 1}
+
+                while xbmc.Player().isPlaying():
+                    data = get_data(payload)
+                    # logger.debug("Player.GetProperties: {0}".format(data))
+                    # 'result': {'totaltime': {'hours': 0, 'seconds': 13, 'minutes': 41, 'milliseconds': 341},
+                    #            'percentage': 0.209716334939003,
+                    #            'time': {'hours': 0, 'seconds': 5, 'minutes': 0, 'milliseconds': 187}}
+
+                    if data['result']:
+                        from datetime import timedelta, time
+                        totaltime = data['result']['totaltime']
+                        totaltime = totaltime['seconds'] + 60 * totaltime['minutes'] + 3600 * totaltime['hours']
+                        tiempo_actual = data['result']['time']
+                        tiempo_actual = time(tiempo_actual['hours'], tiempo_actual['minutes'], tiempo_actual['seconds'])
+
+                        if condicion == 0:  # '5 minutos'
+                            mark_time = time(0, 5, 0)
+                        elif condicion == 1:  # '30%'
+                            mark_time = timedelta(seconds=totaltime * 0.3)
+                        elif condicion == 2:  # '50%'
+                            mark_time = timedelta(seconds=totaltime * 0.5)
+                        elif condicion == 3:  # '80%'
+                            mark_time = timedelta(seconds=totaltime * 0.8)
+
+                        logger.debug(str(mark_time))
+
+                        if tiempo_actual > mark_time:
+                            # Marcar como visto
+                            data = get_data(payload_f)
+                            if data['result'] != 'OK':
+                                logger.info("ERROR al poner el contenido como visto")
+                            break
+
+                    xbmc.sleep(30000)
+
+
+def get_data(payload):
+    """
+    obtiene la información de la llamada JSON-RPC con la información pasada en payload
+    @type payload: dict
+    @param payload: data
+    :return:
+    """
+    logger.info("[library.py] get_data:: payload {0}".format(payload))
+    # Required header for XBMC JSON-RPC calls, otherwise you'll get a 415 HTTP response code - Unsupported media type
+    headers = {'content-type': 'application/json'}
+
+    if modo_cliente:
+        try:
+            response = requests.post(xbmc_json_rpc_url, data=jsontools.dump_json(payload), headers=headers)
+            logger.info("[library.py] get_data:: response {0}".format(response))
+            data = jsontools.load_json(response.text)
+        except requests.exceptions.ConnectionError:
+            logger.info("[library.py] get_data:: xbmc_json_rpc_url: Error de conexion")
+            data = ["error"]
+        except Exception as ex:
+            template = "An exception of type {0} occured. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            logger.info("[library.py] get_data:: error en xbmc_json_rpc_url: {0}".format(message))
+            data = ["error"]
+    else:
+        try:
+            data = jsontools.load_json(xbmc.executeJSONRPC(jsontools.dump_json(payload)))
+        except Exception as ex:
+            template = "An exception of type {0} occured. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            logger.info("[library.py] get_data:: error en xbmc.executeJSONRPC: {0}".format(message))
+            data = ["error"]
+
+    logger.info("[library.py] get_data:: data {0}".format(data))
+
+    return data
+
+
+def check_tvshow_xml():
+    logger.info("[library.py] check_tvshow_xml")
+    fname = os.path.join(config.get_data_path(), TVSHOW_FILE_OLD)
+    flag = True
+    if not os.path.exists(fname):
+        flag = False
+    else:
+        data = read_file(fname)
+        if data == "":
+            flag = False
+
+    convert_xml_to_json(flag)
+
+
+def convert_xml_to_json(flag):
+    logger.info("[library.py] convert_xml_to_json:: flag:{0}".format(flag))
+    if flag:
+        fname = os.path.join(config.get_data_path(), TVSHOW_FILE_OLD)
+
+        dict_data = {}
+
+        if os.path.isfile(fname):
+            try:
+                with open(fname, "r") as f:
+                    for line in f:
+                        aux = line.rstrip('\n').split(",")
+                        if aux[2] in dict_data:
+                            if aux[0] in dict_data[aux[2]]:
+                                dict_data[aux[2]][aux[0]] = aux[1]
+                        else:
+                            dict_data.update({aux[2]: {aux[0]: aux[1]}})
+
+            except EnvironmentError:
+                logger.info("ERROR al leer el archivo: {0}".format(fname))
+            else:
+                os.rename(os.path.join(config.get_data_path(), TVSHOW_FILE_OLD),
+                          os.path.join(config.get_data_path(), "series_old.xml"))
+
+                json_data = jsontools.dump_json(dict_data)
+                save_file(json_data, os.path.join(config.get_data_path(), TVSHOW_FILE))
