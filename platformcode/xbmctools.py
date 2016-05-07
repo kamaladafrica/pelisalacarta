@@ -12,7 +12,6 @@ import urllib
 import xbmc
 import xbmcgui
 import xbmcplugin
-
 from core import config
 from core import logger
 from platformcode import library
@@ -732,7 +731,7 @@ def getLibraryInfo (mediaurl):
     '''Obtiene información de la Biblioteca si existe (ficheros strm) o de los parámetros
     '''
     if DEBUG:
-        logger.info('[xbmctools.py] playlist OBTENCIÃ“N DE DATOS DE BIBLIOTECA')
+        logger.info('[xbmctools.py] playlist OBTENCIÓN DE DATOS DE BIBLIOTECA')
 
     # Información básica
     label = xbmc.getInfoLabel( 'listitem.label' )
@@ -853,7 +852,7 @@ def alertanomegauploadlow(server):
     #'Prueba a reproducir en otra calidad'
     resultado = advertencia.ok( config.get_localized_string(30055) , config.get_localized_string(30061) , config.get_localized_string(30062))
 
-# AÃ‘ADIDO POR JUR. SOPORTE DE FICHEROS STRM
+# AÑADIDO POR JUR. SOPORTE DE FICHEROS STRM
 def playstrm(params,url,category):
     '''Play para videos en ficheros strm
     '''
