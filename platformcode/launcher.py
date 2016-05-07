@@ -551,7 +551,7 @@ def play_from_library(item, channel, server_white_list, server_black_list):
             itemlist = filtered_servers(itemlist, server_white_list, server_black_list)
 
     except:
-        from servers import servertools
+        from core import servertools
         itemlist = servertools.find_video_items(item)
 
         if config.get_setting('filter_servers') == 'true':

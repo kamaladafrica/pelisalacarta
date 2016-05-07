@@ -18,27 +18,30 @@ def test_video_exists( page_url ):
     data = scrapertools.cache_page(page_url, headers=headers)
 
     if ("File was deleted" or "Not Found") in data:
-        return False, "[Gamovideo] El archivo no existe o ha sido borrado" 
+        return False, "[Gamovideo] El archivo no existe o ha sido borrado"
 
     return True, ""
 
 def get_video_url( page_url , premium = False , user="" , password="", video_password="" ):
     logger.info("pelisalacarta.servers.gamovideo get_video_url(page_url='%s')" % page_url)
-    if not "embed" in page_url:
-        page_url = page_url.replace("http://gamovideo.com/","http://gamovideo.com/embed-") + ".html"
 
     data = scrapertools.cache_page(page_url,headers=headers)
-    data = scrapertools.find_single_match(data,"<script type='text/javascript'>(eval.function.p,a,c,k,e,d..*?)</script>")
-    data = jsunpack.unpack(data)
+    packer = scrapertools.find_single_match(data,"<script type='text/javascript'>(eval.function.p,a,c,k,e,d..*?)</script>")
+    unpacker = jsunpack.unpack(data) if packer != "" else ""
+    if unpacker != "": data = unpacker
 
-    host = scrapertools.get_match(data, 'image:"(http://[^/]+/)')
-    flv_url = scrapertools.get_match(data, ',\{file:"([^"]+)"')
-    rtmp_url = scrapertools.get_match(data, '\[\{file:"([^"]+)"')
-    flv = host+flv_url.split("=")[1]+"/v.flv"
+    data = re.sub(r'\n|\t|\s+', '', data)
+
+    host = scrapertools.get_match(data, '\[\{image:"(http://[^/]+/)')
+    mediaurl = host+scrapertools.get_match(data, ',\{file:"([^"]+)"').split("=")[1]+"/v.flv"
+   
+    rtmp_url = scrapertools.get_match(data, 'file:"(rtmp[^"]+)"')
+    playpath = scrapertools.get_match(rtmp_url, 'vod\?h=[\w]+/(.*$)')
+    rtmp_url = rtmp_url.split(playpath)[0]+" playpath="+playpath+" swfUrl=http://gamovideo.com/player61/jwplayer.flash.swf"
 
     video_urls = []
-    video_urls.append([scrapertools.get_filename_from_url(flv)[-4:]+" [gamovideo]",flv])
-    #video_urls.append(["RTMP [gamovideo]",rtmp_url])      
+    video_urls.append([scrapertools.get_filename_from_url(mediaurl)[-4:]+" [gamovideo]",mediaurl])
+    video_urls.append(["RTMP [gamovideo]",rtmp_url])     
 
     for video_url in video_urls:
         logger.info("pelisalacarta.servers.gamovideo %s - %s" % (video_url[0],video_url[1]))
@@ -59,14 +62,14 @@ def find_videos(data):
 
     for match in matches:
         titulo = "[gamovideo]"
-        url = "http://gamovideo.com/"+match
+        url = "http://gamovideo.com//embed-%s.html" % match
         if url not in encontrados:
             logger.info("  url="+url)
             devuelve.append( [ titulo , url , 'gamovideo' ] )
             encontrados.add(url)
         else:
             logger.info("  url duplicada="+url)
-            
+           
     return devuelve
 
 def test():

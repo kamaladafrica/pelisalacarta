@@ -211,7 +211,8 @@ class Item(object):
         Descodifica las HTML entities
         '''
         try:
-            return HTMLParser().unescape(value).encode("utf8")
+            unicode_title = unicode(value, "utf8", "ignore")
+            return HTMLParser().unescape(unicode_title).encode("utf8")
         except:
             return value
 

@@ -29,7 +29,7 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
     logger.info("pelisalacarta.servers.spruto data="+data)
 
     video_urls = []
-    media_urls = scrapertools.find_multiple_matches(data,'file: "([^"]+)"')
+    media_urls = scrapertools.find_multiple_matches(data,'file:"([^"]+)')
 
     for media_url in media_urls:
         extension = scrapertools.get_filename_from_url(media_url)[-3:]
