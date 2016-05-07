@@ -35,31 +35,44 @@ xbmc_json_rpc_url = "http://{host}:{port}/jsonrpc".format(host=xbmc_host, port=x
 
 DEBUG = True
 
+
 def path_exists(path):
     """
     comprueba si la ruta existe, samba necesita la raíz para conectar y la carpeta
+    @type path: string
+    @param path: la ruta del fichero
+    @rtype:   string
+    @return:  devuelve si existe la ruta.
     """
     if not samba.usingsamba(path):
         return os.path.exists(path)
     else:
-        path_samba, folder_samba = path.rsplit('/',1)
+        path_samba, folder_samba = path.rsplit('/', 1)
         return samba.folder_exists(folder_samba, path_samba)
 
 
 def make_dir(path):
     """
     crea un directorio, samba necesita la raíz para conectar y la carpeta
+    @type path: string
+    @param path: la ruta del fichero
     """
     if not samba.usingsamba(path):
         os.mkdir(path)
     else:
-        path_samba, folder_samba = path.rsplit('/',1)
+        path_samba, folder_samba = path.rsplit('/', 1)
         samba.create_directory(folder_samba, path_samba)
 
 
 def join_path(path, name):
     """
-    una la ruta, el name puede ser carpeta o archivo
+    une la ruta, el name puede ser carpeta o archivo
+    @type path: string
+    @param path: la ruta del fichero
+    @type name: string
+    @param name: nombre del fichero
+    @rtype:   string
+    @return:  devuelve si existe la ruta.
     """
     if not samba.usingsamba(path):
         path = xbmc.translatePath(os.path.join(path, name))
@@ -237,7 +250,7 @@ def read_file(fname):
             except EnvironmentError:
                 logger.info("ERROR al leer el archivo: {0}".format(fname))
     else:
-        path, filename = fname.rsplit('/',1)
+        path, filename = fname.rsplit('/', 1)
         if samba.file_exists(filename, path):
             try:
                 with samba.get_file_handle_for_reading(filename, path) as f:
@@ -245,7 +258,6 @@ def read_file(fname):
                         data += line
             except EnvironmentError:
                 logger.info("ERROR al leer el archivo: {0}".format(fname))
-
 
     # logger.info("[library.py] read_file-data {0}".format(data))
     return data
@@ -278,7 +290,7 @@ def save_file(data, fname):
             return False
     else:
         try:
-            path, filename = fname.rsplit('/',1)
+            path, filename = fname.rsplit('/', 1)
             samba.store_File(filename, data, path)
         except EnvironmentError:
             logger.info("[library.py] save_file - Error al guardar el archivo: {0}".format(fname))
@@ -555,14 +567,15 @@ def mark_as_watched(category, id_video=0):
                     #            'time': {'hours': 0, 'seconds': 5, 'minutes': 0, 'milliseconds': 187}}
 
                     if data['result']:
-                        from datetime import timedelta, time
+                        from datetime import timedelta
                         totaltime = data['result']['totaltime']
                         totaltime = totaltime['seconds'] + 60 * totaltime['minutes'] + 3600 * totaltime['hours']
                         tiempo_actual = data['result']['time']
-                        tiempo_actual = time(tiempo_actual['hours'], tiempo_actual['minutes'], tiempo_actual['seconds'])
+                        tiempo_actual = timedelta(hours=tiempo_actual['hours'], minutes=tiempo_actual['minutes'],
+                                                  seconds=tiempo_actual['seconds'])
 
                         if condicion == 0:  # '5 minutos'
-                            mark_time = time(0, 5, 0)
+                            mark_time = timedelta(seconds=300)
                         elif condicion == 1:  # '30%'
                             mark_time = timedelta(seconds=totaltime * 0.3)
                         elif condicion == 2:  # '50%'

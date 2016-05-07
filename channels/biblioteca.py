@@ -50,16 +50,17 @@ def peliculas(item):
         aux_list.extend([library.join_path(raiz, f) for f in ficheros if os.path.splitext(f)[1] == ".strm"])
         for carpeta in subcarpetas:
             carpeta = library.join_path(raiz, carpeta)
-            for file in samba.get_files(carpeta):
-                if os.path.splitext(file)[1] == ".strm":
-                    aux_list.extend([library.join_path(carpeta, file)])
+            for _file in samba.get_files(carpeta):
+                if os.path.splitext(_file)[1] == ".strm":
+                    aux_list.extend([library.join_path(carpeta, _file)])
 
     # Crear un item en la lista para cada strm encontrado
     for i in aux_list:
         if not samba.usingsamba(i):
             strm_item = Item().fromurl(library.read_file(i))
             new_item = strm_item.clone(action=strm_item.action, path=i,
-                                       title=os.path.splitext(os.path.basename(i))[0].capitalize(), extra=strm_item.extra)
+                                       title=os.path.splitext(os.path.basename(i))[0].capitalize(),
+                                       extra=strm_item.extra)
         else:
             new_item = item.clone(action="play_strm", path=i,
                                   title=os.path.splitext(os.path.basename(i))[0].capitalize())
@@ -126,10 +127,9 @@ def play_strm(item):
     logger.info("pelisalacarta.channels.biblioteca play_strm")
     itemlist = list()
 
-    data = library.read_file(item.path)
     strm_item = Item().fromurl(library.read_file(item.path))
     new_item = Item(channel=strm_item.channel, action=strm_item.action, title=strm_item.title, path=item.path,
-                          extra=strm_item.extra, url=strm_item.url, viewmode=strm_item.viewmode)
+                    extra=strm_item.extra, url=strm_item.url, viewmode=strm_item.viewmode)
     itemlist.append(new_item)
 
     return itemlist
