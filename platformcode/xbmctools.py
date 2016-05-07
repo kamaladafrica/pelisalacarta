@@ -451,7 +451,7 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
         if titulo == "":
             titulo = item.title
 
-        new_item = item.clone(title=titulo, action="play_from_library", category="Series")
+        new_item = item.clone(title=titulo, action="play_from_library", category="Cine")
         res = library.savelibrary(new_item)
 
         advertencia = xbmcgui.Dialog()
