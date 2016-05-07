@@ -16,7 +16,7 @@ from core import logger
 from core import scrapertools
 from core.item import Item
 from platformcode import platformtools
-from servers import servertools
+from core import servertools
 
 DEBUG = config.get_setting("debug")
 
@@ -189,9 +189,9 @@ def parse_mixed_results(item,data):
             url = urlparse.urljoin(item.url,scrapedurl)
             itemlist.append( Item(channel=__channel__, action="episodios" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=title, fanart=fanart, viewmode="movie"))
 
-    if len(itemlist) == 60 and "offset/" in item.url:
+    if len(itemlist) in [30, 60] and "offset/" in item.url:
         old_offset = scrapertools.find_single_match(item.url,"offset/(\d+)/")
-        new_offset = int(old_offset)+60
+        new_offset = int(old_offset)+len(itemlist)
         url = item.url.replace("offset/"+old_offset,"offset/"+str(new_offset))
         itemlist.append( Item(channel=__channel__, action="lista" , title=">> Página siguiente" , extra=item.extra, url=url))
 

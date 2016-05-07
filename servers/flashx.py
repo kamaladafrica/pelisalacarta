@@ -39,7 +39,7 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
     media_urls = scrapertools.find_multiple_matches(match,'\{file\:"([^"]+)"')
     for media_url in media_urls:
         if not media_url.endswith("png"):
-            video_urls.append( [ media_url[-4:]+" [flashx]",media_url])
+            video_urls.append( [ "."+media_url.rsplit('.',1)[1]+" [flashx]",media_url])
 
     for video_url in video_urls:
         logger.info("pelisalacarta.servers.flashx %s - %s" % (video_url[0],video_url[1]))
@@ -61,7 +61,7 @@ def find_videos(data):
 
     for match in matches:
         titulo = "[flashx]"
-        url = "http://www.flashx.pw/fxplaynew-%s.html" % match
+        url = "http://www.flashx.tv/playthis-%s.html" % match
         if url not in encontrados:
             logger.info("  url="+url)
             devuelve.append( [ titulo , url , 'flashx' ] )
