@@ -21,6 +21,8 @@ import re
 import socket
 import time
 import urllib
+import StringIO
+import gzip
 import urllib2
 import urlparse
 
@@ -1485,7 +1487,7 @@ def read_body_and_headers(url, post=None, headers=[], follow_redirects=False, ti
 
     # Lee los datos y cierra
     if handle.info().get('Content-Encoding') == 'gzip':
-        buf = StringIO( handle.read())
+        buf = StringIO.StringIO( handle.read())
         f = gzip.GzipFile(fileobj=buf)
         data = f.read()
     else:

@@ -14,7 +14,7 @@ from core import scrapertools
 from core import channeltools
 from core import tmdb
 from core.item import Item
-from servers import servertools
+from core import servertools
 
 __channel__ = "tremendaseries"
 __category__ = "F"

@@ -145,7 +145,7 @@ def findvideos(item):
       thumbnail = unicode( thumbnail, "iso-8859-1" , errors="replace" ).encode("utf-8")
       item.thumbnail = thumbnail
 
-    from servers import servertools
+    from core import servertools
     itemlist.extend(servertools.find_video_items(data=data))
     for videoitem in itemlist:
      videoitem.channel=__channel__
@@ -159,7 +159,7 @@ def findvideos(item):
   else:
     item.thumbnail = ""
     item.plot = ""
-    from servers import servertools
+    from core import servertools
     itemlist.extend(servertools.find_video_items(data=data))
     for videoitem in itemlist:
      videoitem.channel=__channel__
