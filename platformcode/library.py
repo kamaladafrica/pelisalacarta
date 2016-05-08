@@ -426,10 +426,12 @@ def clean_up_file(item):
     # Obtenemos las carpetas de las series
     raiz, carpetas_series, files = os.walk(path).next()
 
-    for key in dict_data.keys():
-        for key2 in dict_data[key].keys():
-            if key2 not in carpetas_series:
-                dict_data[key].pop(key2, None)
+    for channel in dict_data.keys():
+        for tvshow in dict_data[channel].keys():
+            if tvshow not in carpetas_series:
+                dict_data[channel].pop(tvshow, None)
+                if not dict_data[channel]:
+                    dict_data.pop(channel, None)
 
     json_data = jsontools.dump_json(dict_data)
     save_file(json_data, join_path(config.get_data_path(), TVSHOW_FILE))
