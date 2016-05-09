@@ -430,17 +430,7 @@ def getfilefromtitle(url,title):
             nombrefichero = title + ".flv"
         if "videobam" in url:
             nombrefichero = title+"."+url.rsplit(".",1)[1][0:3]
-        if "filenium" in url:
-            # Content-Disposition	filename="filenium_El.Gato.con.Botas.TSScreener.Latino.avi"
-            import scrapertools
-            content_disposition_header = scrapertools.get_header_from_response(url,header_to_get="Content-Disposition")
-            logger.info("content_disposition="+content_disposition_header)
-            partes=content_disposition_header.split("=")
-            if len(partes)<=1:
-                raise Exception('filenium', 'no existe')
-                
-            extension = partes[1][-5:-1]
-            nombrefichero = title + extension
+
         logger.info("pelisalacarta.core.downloadtools getfilefromtitle: nombrefichero=%s" % nombrefichero)
 
         nombrefichero = limpia_nombre_caracteres_especiales(nombrefichero)
@@ -563,13 +553,6 @@ def downloadfile(url,nombrefichero,headers=[],silent=False,continuar=False):
         if progreso is None:
             silent = True
 
-        # Login y password Filenium
-        # http://abcd%40gmail.com:mipass@filenium.com/get/Oi8vd3d3/LmZpbGVz/ZXJ2ZS5j/b20vZmls/ZS9kTnBL/dm11/b0/?.zip
-        if "filenium" in url:
-            from servers import filenium
-            url , authorization_header = filenium.extract_authorization_header(url)
-            headers.append( [ "Authorization", authorization_header ] )
-    
         if "|" in url:
             additional_headers = url.split("|")[1]
             if "&" in additional_headers:

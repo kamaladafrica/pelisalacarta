@@ -164,10 +164,6 @@ def resolve_video_urls_for_playing(server,url,video_password="",muestra_dialogo=
     # Averigua las URL de los vídeos
     else:
 
-        #if server=="torrent":
-        #    server="filenium"
-        #    torrent = True
-
         # Carga el conector
         try:
             # Muestra un diágo de progreso
