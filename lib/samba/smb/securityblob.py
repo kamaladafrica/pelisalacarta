@@ -1,5 +1,5 @@
-from samba.pyasn1.codec.der import encoder, decoder
-from samba.pyasn1.type import tag, univ, namedtype, namedval, constraint
+from lib.samba.pyasn1.codec.der import encoder, decoder
+from lib.samba.pyasn1.type import tag, univ, namedtype, namedval, constraint
 
 __all__ = [ 'generateNegotiateSecurityBlob', 'generateAuthSecurityBlob', 'decodeChallengeSecurityBlob', 'decodeAuthResponseSecurityBlob' ]
 

@@ -1,8 +1,8 @@
 import logging
 
-from samba.pyasn1 import __version__
-from samba.pyasn1 import error
-from samba.pyasn1.compat.octets import octs2ints
+from lib.samba.pyasn1 import __version__
+from lib.samba.pyasn1 import error
+from lib.samba.pyasn1.compat.octets import octs2ints
 
 flagNone     = 0x0000
 flagEncoder  = 0x0001

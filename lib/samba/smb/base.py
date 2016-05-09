@@ -1,7 +1,7 @@
 import hmac
 from datetime import datetime
 
-from samba.nmb.base import NMBSession
+from lib.samba.nmb.base import NMBSession
 
 import ntlm
 import securityblob

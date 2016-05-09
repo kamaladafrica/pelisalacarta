@@ -1,4 +1,4 @@
-from samba.pyasn1 import error
+from lib.samba.pyasn1 import error
 
 class TagMap:
     def __init__(self, posMap={}, negMap={}, defType=None):

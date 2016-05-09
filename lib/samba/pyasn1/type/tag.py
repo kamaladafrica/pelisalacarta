@@ -1,7 +1,7 @@
 # ASN.1 types tags
 from operator import getitem
 
-from samba.pyasn1 import error
+from lib.samba.pyasn1 import error
 
 tagClassUniversal = 0x00
 tagClassApplication = 0x40
