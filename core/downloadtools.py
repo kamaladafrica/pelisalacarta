@@ -558,9 +558,11 @@ def downloadfile(url,nombrefichero,headers=[],silent=False,continuar=False):
         # Crea el diálogo de progreso
         if not silent:
             progreso = platformtools.dialog_progress( "plugin" , "Descargando..." , url , nombrefichero )
-        else:
-            progreso = ""
-    
+
+        # Si la plataforma no devuelve un cuadro de diálogo válido, asume modo silencio
+        if progreso is None:
+            silent = True
+
         # Login y password Filenium
         # http://abcd%40gmail.com:mipass@filenium.com/get/Oi8vd3d3/LmZpbGVz/ZXJ2ZS5j/b20vZmls/ZS9kTnBL/dm11/b0/?.zip
         if "filenium" in url:
