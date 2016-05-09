@@ -132,7 +132,7 @@ class Item(object):
         for attr in parentContent.__dict__:
 
             if attr.startswith("content") or attr == "infoLabels":
-                self.__setattr__(attr, parentContent.__dict__["attr"])
+                self.__setattr__(attr, parentContent.__dict__[attr])
 
     def tostring(self, separator=", "):
         '''
