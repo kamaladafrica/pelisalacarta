@@ -221,13 +221,6 @@ class DownloadThread(threading.Thread):
         f = open(self.file_name, 'wb')
         grabado = 0
 
-        # Login y password Filenium
-        # http://abcd%40gmail.com:mipass@filenium.com/get/Oi8vd3d3/LmZpbGVz/ZXJ2ZS5j/b20vZmls/ZS9kTnBL/dm11/b0/?.zip
-        if "filenium" in self.url:
-            from servers import filenium
-            self.url , authorization_header = filenium.extract_authorization_header(self.url)
-            headers.append( [ "Authorization", authorization_header ] )
-
         # Interpreta las cabeceras en una URL como en XBMC
         if "|" in self.url:
             additional_headers = self.url.split("|")[1]

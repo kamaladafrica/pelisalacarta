@@ -1,8 +1,8 @@
 # CER decoder
-from samba.pyasn1 import error
-from samba.pyasn1.codec.ber import decoder
-from samba.pyasn1.compat.octets import oct2int
-from samba.pyasn1.type import univ
+from lib.samba.pyasn1 import error
+from lib.samba.pyasn1.codec.ber import decoder
+from lib.samba.pyasn1.compat.octets import oct2int
+from lib.samba.pyasn1.type import univ
 
 
 class BooleanDecoder(decoder.AbstractSimpleDecoder):

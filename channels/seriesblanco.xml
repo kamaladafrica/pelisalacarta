@@ -13,8 +13,8 @@
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
 	<version>11</version>
-	<date>05/04/2016</date>
-	<changes>- Cambio de dominio</changes>
+	<date>07/05/2016</date>
+	<changes>Adaptado para filtertools</changes>
 
 	<categories>
 		<category>serie</category>

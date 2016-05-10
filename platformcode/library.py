@@ -47,8 +47,15 @@ def path_exists(path):
     if not samba.usingsamba(path):
         return os.path.exists(path)
     else:
-        path_samba, folder_samba = path.rsplit('/', 1)
-        return samba.folder_exists(folder_samba, path_samba)
+        try:
+            from socket import gaierror
+            path_samba, folder_samba = path.rsplit('/', 1)
+            return samba.folder_exists(folder_samba, path_samba)
+        except gaierror:
+            logger.info("[library.py] path_exists: No es posible conectar con la ruta")
+            import platformtools
+            platformtools.dialog_notification("No es posible conectar con la ruta", path)
+            return True
 
 
 def make_dir(path):
@@ -57,11 +64,23 @@ def make_dir(path):
     @type path: string
     @param path: la ruta del fichero
     """
+    logger.info("[library.py] make_dir")
     if not samba.usingsamba(path):
-        os.mkdir(path)
+        try:
+            os.mkdir(path)
+        except OSError:
+            logger.info("[library.py] make_dir: Error al crear la ruta")
+            import platformtools
+            platformtools.dialog_notification("Error al crear la ruta", path)
     else:
-        path_samba, folder_samba = path.rsplit('/', 1)
-        samba.create_directory(folder_samba, path_samba)
+        try:
+            from socket import gaierror
+            path_samba, folder_samba = path.rsplit('/', 1)
+            samba.create_directory(folder_samba, path_samba)
+        except gaierror:
+            logger.info("[library.py] make_dir: Error al crear la ruta")
+            import platformtools
+            platformtools.dialog_notification("Error al crear la ruta", path)
 
 
 def join_path(path, name):
@@ -253,11 +272,12 @@ def read_file(fname):
         path, filename = fname.rsplit('/', 1)
         if samba.file_exists(filename, path):
             try:
+                from lib.samba.smb.smb_structs import OperationFailure
                 with samba.get_file_handle_for_reading(filename, path) as f:
                     for line in f:
                         data += line
-            except EnvironmentError:
-                logger.info("ERROR al leer el archivo: {0}".format(fname))
+            except OperationFailure:
+                logger.info("ERROR al leer el archivo: {0}".format(filename))
 
     # logger.info("[library.py] read_file-data {0}".format(data))
     return data
@@ -290,9 +310,14 @@ def save_file(data, fname):
             return False
     else:
         try:
+            from lib.samba.smb.smb_structs import OperationFailure
             path, filename = fname.rsplit('/', 1)
-            samba.store_File(filename, data, path)
-        except EnvironmentError:
+            try:
+                samba.store_File(filename, data, path)
+            except UnicodeEncodeError:
+                logger.info("Error al realizar el encode, se usa uft8")
+                samba.store_File(filename, data.encode('utf-8'), path)
+        except OperationFailure:
             logger.info("[library.py] save_file - Error al guardar el archivo: {0}".format(fname))
             return False
 

@@ -4,16 +4,26 @@
 # Download Tools
 # Based on the code from VideoMonkey XBMC Plugin
 #------------------------------------------------------------
-# pelisalacarta
-# http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
+# pelisalacarta 4
+# Copyright 2015 tvalacarta@gmail.com
+#
+# Distributed under the terms of GNU General Public License v3 (GPLv3)
+# http://www.gnu.org/licenses/gpl-3.0.html
 #------------------------------------------------------------
-# Creado por:
-# Jesús (tvalacarta@gmail.com)
-# jurrabi (jurrabi@gmail.com)
-# bandavi (xbandavix@gmail.com)
-# Licencia: GPL (http://www.gnu.org/licenses/gpl-3.0.html)
-#------------------------------------------------------------
-# Historial de cambios:
+# This file is part of pelisalacarta 4.
+#
+# pelisalacarta 4 is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# pelisalacarta 4 is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with pelisalacarta 4.  If not, see <http://www.gnu.org/licenses/>.
 #------------------------------------------------------------
 
 import os
@@ -1143,13 +1153,6 @@ def get_header_from_response(url,header_to_get="",post=None,headers=[['User-Agen
         logger.info("pelisalacarta.core.scrapertools petición GET")
     else:
         logger.info("pelisalacarta.core.scrapertools petición POST")
-
-    # Login y password Filenium
-    # http://abcd%40gmail.com:mipass@filenium.com/get/Oi8vd3d3/LmZpbGVz/ZXJ2ZS5j/b20vZmls/ZS9kTnBL/dm11/b0/?.zip
-    if "filenium" in url:
-        from servers import filenium
-        url , authorization_header = filenium.extract_authorization_header(url)
-        headers.append( [ "Authorization",authorization_header ] )
 
     # Array de cabeceras
     logger.info("pelisalacarta.core.scrapertools ---------------------------")

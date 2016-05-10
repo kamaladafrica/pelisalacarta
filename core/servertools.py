@@ -164,10 +164,6 @@ def resolve_video_urls_for_playing(server,url,video_password="",muestra_dialogo=
     # Averigua las URL de los vídeos
     else:
 
-        #if server=="torrent":
-        #    server="filenium"
-        #    torrent = True
-
         # Carga el conector
         try:
             # Muestra un diágo de progreso
@@ -221,7 +217,7 @@ def resolve_video_urls_for_playing(server,url,video_password="",muestra_dialogo=
               if config.get_setting(premium+"premium")=="true":
                 if muestra_dialogo:
                   progreso.update((100 / len(opciones)) * opciones.index(premium)  , "Conectando con "+premium)
-                exec "from servers import premium as premium_conector"
+                exec "from servers import "+premium+" as premium_conector"
                 video_urls.extend(premium_conector.get_video_url( page_url=url , premium=True , user=config.get_setting(premium+"user") , password=config.get_setting(premium+"password"), video_password=video_password ))
 
 

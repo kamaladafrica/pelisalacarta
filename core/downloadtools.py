@@ -430,17 +430,7 @@ def getfilefromtitle(url,title):
             nombrefichero = title + ".flv"
         if "videobam" in url:
             nombrefichero = title+"."+url.rsplit(".",1)[1][0:3]
-        if "filenium" in url:
-            # Content-Disposition	filename="filenium_El.Gato.con.Botas.TSScreener.Latino.avi"
-            import scrapertools
-            content_disposition_header = scrapertools.get_header_from_response(url,header_to_get="Content-Disposition")
-            logger.info("content_disposition="+content_disposition_header)
-            partes=content_disposition_header.split("=")
-            if len(partes)<=1:
-                raise Exception('filenium', 'no existe')
-                
-            extension = partes[1][-5:-1]
-            nombrefichero = title + extension
+
         logger.info("pelisalacarta.core.downloadtools getfilefromtitle: nombrefichero=%s" % nombrefichero)
 
         nombrefichero = limpia_nombre_caracteres_especiales(nombrefichero)
@@ -558,16 +548,11 @@ def downloadfile(url,nombrefichero,headers=[],silent=False,continuar=False):
         # Crea el diálogo de progreso
         if not silent:
             progreso = platformtools.dialog_progress( "plugin" , "Descargando..." , url , nombrefichero )
-        else:
-            progreso = ""
-    
-        # Login y password Filenium
-        # http://abcd%40gmail.com:mipass@filenium.com/get/Oi8vd3d3/LmZpbGVz/ZXJ2ZS5j/b20vZmls/ZS9kTnBL/dm11/b0/?.zip
-        if "filenium" in url:
-            from servers import filenium
-            url , authorization_header = filenium.extract_authorization_header(url)
-            headers.append( [ "Authorization", authorization_header ] )
-    
+
+        # Si la plataforma no devuelve un cuadro de diálogo válido, asume modo silencio
+        if progreso is None:
+            silent = True
+
         if "|" in url:
             additional_headers = url.split("|")[1]
             if "&" in additional_headers:
@@ -969,3 +954,173 @@ def downloadIfNotModifiedSince(url,timestamp):
     logger.info("Descargado en %d segundos " % (fin-inicio+1))
 
     return updated,data
+
+def download_all_episodes(item,channel,first_episode="",preferred_server="vidspot",filter_language=""):
+    logger.info("pelisalacarta.core.downloadtools download_all_episodes, show="+item.show)
+    show_title = item.show
+
+    # Obtiene el listado desde el que se llamó
+    action = item.extra
+
+    # Esta marca es porque el item tiene algo más aparte en el atributo "extra"
+    if "###" in item.extra:
+        action = item.extra.split("###")[0]
+        item.extra = item.extra.split("###")[1]
+
+    episode_itemlist = getattr(channel, action)(item)
+
+    # Ordena los episodios para que funcione el filtro de first_episode
+    episode_itemlist = sorted(episode_itemlist, key=lambda Item: Item.title)
+
+    from core import servertools
+    from core import downloadtools
+    from core import scrapertools
+
+    best_server = preferred_server
+    worst_server = "moevideos"
+
+    # Para cada episodio
+    if first_episode=="":
+        empezar = True
+    else:
+        empezar = False
+
+    for episode_item in episode_itemlist:
+        try:
+            logger.info("pelisalacarta.core.downloadtools download_all_episodes, episode="+episode_item.title)
+            episode_title = scrapertools.get_match(episode_item.title,"(\d+x\d+)")
+            logger.info("pelisalacarta.core.downloadtools download_all_episodes, episode="+episode_title)
+        except:
+            import traceback
+            logger.info(traceback.format_exc())
+            continue
+
+        if first_episode!="" and episode_title==first_episode:
+            empezar = True
+
+        if episodio_ya_descargado(show_title,episode_title):
+            continue
+
+        if not empezar:
+            continue
+
+        # Extrae los mirrors
+        try:
+            mirrors_itemlist = channel.findvideos(episode_item)
+        except:
+            mirrors_itemlist = servertools.find_video_items(episode_item)
+        print mirrors_itemlist
+
+        descargado = False
+
+        new_mirror_itemlist_1 = []
+        new_mirror_itemlist_2 = []
+        new_mirror_itemlist_3 = []
+        new_mirror_itemlist_4 = []
+        new_mirror_itemlist_5 = []
+        new_mirror_itemlist_6 = []
+
+        for mirror_item in mirrors_itemlist:
+
+            # Si está en español va al principio, si no va al final
+            if "(Español)" in mirror_item.title:
+                if best_server in mirror_item.title.lower():
+                    new_mirror_itemlist_1.append(mirror_item)
+                else:
+                    new_mirror_itemlist_2.append(mirror_item)
+            elif "(Latino)" in mirror_item.title:
+                if best_server in mirror_item.title.lower():
+                    new_mirror_itemlist_3.append(mirror_item)
+                else:
+                    new_mirror_itemlist_4.append(mirror_item)
+            elif "(VOS)" in mirror_item.title:
+                if best_server in mirror_item.title.lower():
+                    new_mirror_itemlist_3.append(mirror_item)
+                else:
+                    new_mirror_itemlist_4.append(mirror_item)
+            else:
+                if best_server in mirror_item.title.lower():
+                    new_mirror_itemlist_5.append(mirror_item)
+                else:
+                    new_mirror_itemlist_6.append(mirror_item)
+
+        mirrors_itemlist = new_mirror_itemlist_1 + new_mirror_itemlist_2 + new_mirror_itemlist_3 + new_mirror_itemlist_4 + new_mirror_itemlist_5 + new_mirror_itemlist_6
+
+        for mirror_item in mirrors_itemlist:
+            logger.info("pelisalacarta.core.downloadtools download_all_episodes, mirror="+mirror_item.title)
+
+            if "(Español)" in mirror_item.title:
+                idioma="(Español)"
+                codigo_idioma="es"
+            elif "(Latino)" in mirror_item.title:
+                idioma="(Latino)"
+                codigo_idioma="lat"
+            elif "(VOS)" in mirror_item.title:
+                idioma="(VOS)"
+                codigo_idioma="vos"
+            elif "(VO)" in mirror_item.title:
+                idioma="(VO)"
+                codigo_idioma="vo"
+            else:
+                idioma="(Desconocido)"
+                codigo_idioma="desconocido"
+
+            logger.info("pelisalacarta.core.downloadtools filter_language=#"+filter_language+"#, codigo_idioma=#"+codigo_idioma+"#")
+            if filter_language=="" or (filter_language!="" and filter_language==codigo_idioma):
+                logger.info("pelisalacarta.core.downloadtools download_all_episodes, downloading mirror")
+            else:
+                logger.info("pelisalacarta.core.downloadtools language "+codigo_idioma+" filtered, skipping")
+                continue
+
+            if hasattr(channel, 'play'):
+                video_items = channel.play(mirror_item)
+            else:
+                video_items = [mirror_item]
+
+            if len(video_items)>0:
+                video_item = video_items[0]
+
+                # Comprueba que está disponible
+                video_urls, puedes, motivo = servertools.resolve_video_urls_for_playing( video_item.server , video_item.url , video_password="" , muestra_dialogo=False)
+
+                # Lo añade a la lista de descargas
+                if puedes:
+                    logger.info("pelisalacarta.core.downloadtools download_all_episodes, downloading mirror started...")
+                    # El vídeo de más calidad es el último
+                    mediaurl = video_urls[len(video_urls)-1][1]
+                    devuelve = downloadtools.downloadbest(video_urls,show_title+" "+episode_title+" "+idioma+" ["+video_item.server+"]",continuar=False)
+
+                    if devuelve==0:
+                        logger.info("pelisalacarta.core.downloadtools download_all_episodes, download ok")
+                        descargado = True
+                        break
+                    elif devuelve==-1:
+                        try:
+                            import xbmcgui
+                            advertencia = xbmcgui.Dialog()
+                            resultado = advertencia.ok("plugin" , "Descarga abortada")
+                        except:
+                            pass
+                        return
+                    else:
+                        logger.info("pelisalacarta.core.downloadtools download_all_episodes, download error, try another mirror")
+                        continue
+
+                else:
+                    logger.info("pelisalacarta.core.downloadtools download_all_episodes, downloading mirror not available... trying next")
+
+        if not descargado:
+            logger.info("pelisalacarta.core.downloadtools download_all_episodes, EPISODIO NO DESCARGADO "+episode_title)
+
+def episodio_ya_descargado(show_title,episode_title):
+
+    import scrapertools
+    ficheros = os.listdir( "." )
+
+    for fichero in ficheros:
+        #logger.info("fichero="+fichero)
+        if fichero.lower().startswith(show_title.lower()) and scrapertools.find_single_match(fichero,"(\d+x\d+)")==episode_title:
+            logger.info("encontrado!")
+            return True
+
+    return False
