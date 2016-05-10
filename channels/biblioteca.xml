@@ -12,9 +12,21 @@
 	<bannermenu></bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>1</version>
-	<date>30/04/2016</date>
-	<changes>se crea el canal</changes>
+	<version>2</version>
 
-	<include_in_global_search>false</include_in_global_search>
+
+	<changes>
+		<change>
+			<date>10/05/16</date>
+			<autor>super_berny</autor>
+			<description></description>
+		</change>
+		<change>
+			<date>30/04/2016</date>
+			<autor>Seitan</autor>
+			<description>Version inicial</description>
+		</change>
+	</changes>
+
+	<include_in_global_search>disabled</include_in_global_search>
 </channel>

@@ -86,12 +86,39 @@ def series(item):
     # Crear un item en la lista para cada carpeta encontrada
     for i in carpetas_series:
         path = library.join_path(raiz, i)
-        new_item = Item(channel=item.channel, action='get_capitulos', title=i, path=path)
+        new_item = Item(channel=item.channel, action='get_temporadas', title=i, path=path)
         itemlist.append(new_item)
 
     library.set_infoLabels_from_library(itemlist, tipo='TVShows')
 
     return sorted(itemlist, key=lambda it: library.elimina_tildes(it.title).lower())
+
+
+def get_temporadas(item):
+    logger.info("pelisalacarta.channels.biblioteca get_temporadas")
+    itemlist = list()
+    dict_temp ={}
+
+    # Obtenemos los archivos de los capitulos
+    if not samba.usingsamba(item.path):
+        raiz, carpetas_series, ficheros = os.walk(item.path).next()
+    else:
+        raiz = item.path
+        ficheros = samba.get_files(item.path)
+
+    # Obtenemos las temporadas del listado de strm
+    for i in ficheros:
+        if i.endswith('.strm'):
+            season = i.split('x')[0]
+            dict_temp[season] = "Temporada " + str(season)
+
+    # Creamos un item por cada temporada
+    for k, v in dict_temp.items():
+        new_item = item.clone(action='get_capitulos', title = v, contentSeason = k, contentEpisodeNumber="")
+        itemlist.append(new_item)
+
+    return sorted(itemlist, key=lambda it: it.title)
+
 
 
 def get_capitulos(item):
@@ -108,6 +135,10 @@ def get_capitulos(item):
     # Crear un item en la lista para cada strm encontrado
     for i in ficheros:
         if i.endswith('.strm'):
+
+            if item.contentSeason and not i.startswith(item.contentSeason):
+                continue
+                #print item.contentSeason, i, i.startswith(item.contentSeason)
 
             path = library.join_path(raiz, i)
             if not samba.usingsamba(raiz):
