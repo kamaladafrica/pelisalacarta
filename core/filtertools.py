@@ -14,6 +14,7 @@ from core import config
 from core import jsontools
 from core import logger
 from core.item import Item
+from platformcode import library
 from platformcode import platformtools
 
 TAG_TVSHOWS = "TVSHOW_FILTER"
@@ -72,8 +73,9 @@ def get_filtered_links(list_item):
     _filter = None
 
     dict_filtered_shows = get_filtered_tvshows(channel)
-    if list_item[0].show.lower().strip() in dict_filtered_shows.keys():
-        _filter = Filter(dict_filtered_shows[list_item[0].show.lower().strip()])
+    tvshow = library.title_to_filename(list_item[0].show.lower().strip())
+    if tvshow in dict_filtered_shows.keys():
+        _filter = Filter(dict_filtered_shows[tvshow])
 
     if _filter:
         logger.info("filter datos: {0}".format(_filter))
@@ -390,6 +392,7 @@ def guardar_valores(item, dict_data_saved):
 
         # OBTENEMOS LOS DATOS DEL JSON
         dict_series = get_filtered_tvshows(item.from_channel)
+        tvshow = library.title_to_filename(item.show.strip().lower())
 
         if dict_data_saved["checkbox_deleted"] != 1:
             logger.info("Se actualiza los datos")
@@ -401,14 +404,14 @@ def guardar_valores(item, dict_data_saved):
 
             lang_selected = item.list_idiomas[dict_data_saved[TAG_LANGUAGE]]
             dict_filter = {TAG_QUALITY_NOT_ALLOWED: list_quality, TAG_LANGUAGE: lang_selected}
-            dict_series[item.show.strip().lower()] = dict_filter
+            dict_series[tvshow] = dict_filter
 
             message = "FILTRO GUARDADO"
 
         else:
             logger.info("borrado")
             lang_selected = item.list_idiomas[dict_data_saved[TAG_LANGUAGE]]
-            dict_series.pop(item.show.strip().lower(), None)
+            dict_series.pop(tvshow, None)
 
             message = "FILTRO ELIMINADO"
 
@@ -417,7 +420,6 @@ def guardar_valores(item, dict_data_saved):
 
         heading = "{0} [{1}]".format(string.capwords(item.show), lang_selected)
         platformtools.dialog_notification(heading, message)
-
 
 
 def update_json_data(dict_series, name_file):
