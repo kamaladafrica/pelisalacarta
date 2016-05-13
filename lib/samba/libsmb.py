@@ -76,8 +76,10 @@ def connect(server_name, user, password, domain='', use_ntlm_v2=True):
     logger.info("[lib.samba.py] Crea smb...")
     try:
         remote = SMBConnection(user, password, domain, server_name, use_ntlm_v2=use_ntlm_v2)
+        conn = remote.connect(server_ip, 139)
     except:
         remote = SMBConnection(user, password, domain, server_ip, use_ntlm_v2=use_ntlm_v2)
+        conn = remote.connect(server_ip, 139)
 
     logger.info("[lib.samba.py] Conexión realizada con éxito")
 
