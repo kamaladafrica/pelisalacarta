@@ -1,5 +1,5 @@
 # DER decoder
-from samba.pyasn1.codec.cer import decoder
+from pyasn1.codec.cer import decoder
 
 tagMap = decoder.tagMap
 typeMap = decoder.typeMap

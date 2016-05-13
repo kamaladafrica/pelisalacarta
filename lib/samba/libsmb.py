@@ -1,9 +1,9 @@
-# -*- coding: iso-8859-1 -*-
-#------------------------------------------------------------
+# -*- coding: utf-8 -*-
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Acceso a directorios con samba
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 import os
 
 from core import config
@@ -16,11 +16,11 @@ def parse_url(url):
     # Algunas trampas para facilitar el parseo de la url
     url = url.strip()
     if not url.endswith("/"):
-        url = url + "/"
+        url += "/"
 
     import re
     patron = 'smb\:\/\/([^\:]+)\:([^\@]+)@([^\/]+)\/([^\/]+)/(.*/)?'
-    matches = re.compile(patron,re.DOTALL).findall(url)
+    matches = re.compile(patron, re.DOTALL).findall(url)
 
     if len(matches) > 0:
         logger.info("url con login y password")
@@ -32,7 +32,7 @@ def parse_url(url):
     else:
         logger.info("url sin login y password")
         patron = 'smb\:\/\/([^\/]+)\/([^\/]+)/(.*/)?'
-        matches = re.compile(patron,re.DOTALL).findall(url)
+        matches = re.compile(patron, re.DOTALL).findall(url)
 
         if len(matches) > 0:
             server_name = matches[0][0]
@@ -50,9 +50,11 @@ def parse_url(url):
     if path == "":
         path = "/"
 
-    #logger.info("[lib.samba.py] server_name=" + server_name + ", share_name=" + share_name + ", path=" + path + ", user=" + user + ", password=" + password)
+    # logger.info("[lib.samba.py] server_name=" + server_name + ", share_name=" + share_name + ", path=" + path + ",
+    # user=" + user + ", password=" + password)
 
-    return server_name, share_name, path ,user, password
+    return server_name, share_name, path, user, password
+
 
 def connect(server_name, user, password, domain='', use_ntlm_v2=True):
     logger.info("[lib.samba.py] connect")
@@ -63,11 +65,9 @@ def connect(server_name, user, password, domain='', use_ntlm_v2=True):
     from smb import smb_structs
     smb_structs.SUPPORT_SMB2 = False
 
-    if user == 'quest' or user == 'anonnimo' or \
-       user == 'invitado' or user == 'anonimo' or \
-       user == '' or user is None:
-           user = 'quest'
-           password = ''
+    if user == 'quest' or user == 'anonnimo' or user == 'invitado' or user == 'anonimo' or user == '' or user is None:
+        user = 'quest'
+        password = ''
 
     logger.info("[lib.samba.py] Averigua IP...")
     server_ip = socket.gethostbyname(server_name)
@@ -76,19 +76,18 @@ def connect(server_name, user, password, domain='', use_ntlm_v2=True):
     logger.info("[lib.samba.py] Crea smb...")
     try:
         remote = SMBConnection(user, password, domain, server_name, use_ntlm_v2=use_ntlm_v2)
-        conn = remote.connect(server_ip, 139)
     except:
         remote = SMBConnection(user, password, domain, server_ip, use_ntlm_v2=use_ntlm_v2)
-        conn = remote.connect(server_ip, 139)
 
-    logger.info("ok")
+    logger.info("[lib.samba.py] Conexión realizada con éxito")
 
     return remote
+
 
 def get_files(url):
     logger.info("[lib.samba.py] get_files")
 
-    server_name, share_name, path ,user, password = parse_url(url)
+    server_name, share_name, path, user, password = parse_url(url)
     remote = connect(server_name, user, password)
 
     files = []
@@ -104,10 +103,11 @@ def get_files(url):
 
     return files
 
+
 def get_directories(url):
     logger.info("[lib.samba.py] get_directories")
 
-    server_name, share_name, path ,user, password = parse_url(url)
+    server_name, share_name, path, user, password = parse_url(url)
     remote = connect(server_name, user, password)
 
     directories = []
@@ -123,10 +123,11 @@ def get_directories(url):
 
     return directories
 
+
 def get_files_and_directories(url):
     logger.info("[lib.samba.py] get_files_and_directories")
 
-    server_name, share_name, path ,user, password = parse_url(url)
+    server_name, share_name, path, user, password = parse_url(url)
     remote = connect(server_name, user, password)
 
     files = []
@@ -144,27 +145,30 @@ def get_files_and_directories(url):
 
     return files, directories
 
-def get_attributes(file_or_folder, url ):
+
+def get_attributes(file_or_folder, url):
     logger.info("[lib.samba.py] get_attributes" + file_or_folder)
 
     if file_exists(file_or_folder, url) or folder_exists(file_or_folder, url):
-        server_name, share_name, path ,user, password = parse_url(url)
+        server_name, share_name, path, user, password = parse_url(url)
         remote = connect(server_name, user, password)
         attributes = remote.getAttributes(share_name, path + file_or_folder)
         remote.close()
         return attributes
-    else: return None
+    else:
+        return None
 
-def store_File(file, data, url):
+
+def store_File(_file, data, url):
     logger.info("[lib.samba.py] write_file")
 
-    server_name, share_name, path ,user, password = parse_url(url)
+    server_name, share_name, path, user, password = parse_url(url)
     remote = connect(server_name, user, password)
 
     logger.info("Crea fichero temporal")
     try:
         import xbmc
-        localfilename = xbmc.translatePath( "special://temp" )
+        localfilename = xbmc.translatePath("special://temp")
     except:
         localfilename = config.get_data_path()
     logger.info("localfilename="+localfilename)
@@ -178,7 +182,7 @@ def store_File(file, data, url):
     # Copia el bookmark al directorio Samba
     logger.info("Crea el fichero remoto")
     bookmarkfile = open(localfilename, "rb")
-    remote.storeFile(share_name, path + file, bookmarkfile)
+    remote.storeFile(share_name, path + _file, bookmarkfile)
     bookmarkfile.close()
 
     # Borra el fichero temporal
@@ -187,25 +191,27 @@ def store_File(file, data, url):
 
     remote.close()
 
+
 def create_directory(folder, url):
     logger.info("[lib.samba.py] create_directory " + folder)
 
-    server_name, share_name, path ,user, password = parse_url(url)
+    server_name, share_name, path, user, password = parse_url(url)
     remote = connect(server_name, user, password)
     remote.createDirectory(share_name, path + folder)
     remote.close()
 
-def get_file_handle_for_reading(file, url):
+
+def get_file_handle_for_reading(_file, url):
     logger.info("[lib.samba.py] get_file_handle_for_reading")
 
-    server_name, share_name, path ,user, password = parse_url(url)
+    server_name, share_name, path, user, password = parse_url(url)
     remote = connect(server_name, user, password)
 
     # Crea un fichero temporal con el bookmark
     logger.info("[lib.samba.py] Crea fichero temporal")
     try:
         import xbmc
-        localfilename = xbmc.translatePath( "special://temp" )
+        localfilename = xbmc.translatePath("special://temp")
     except:
         localfilename = config.get_data_path()
     logger.info("[lib.samba.py] localfilename=" + localfilename)
@@ -217,7 +223,7 @@ def get_file_handle_for_reading(file, url):
 
     # Lo copia de la URL
     try:
-        remote.retrieveFile(share_name, path + file, bookmarkfile)
+        remote.retrieveFile(share_name, path + _file, bookmarkfile)
     finally:
         bookmarkfile.close()
 
@@ -225,10 +231,11 @@ def get_file_handle_for_reading(file, url):
 
     return open(localfilename)
 
-def file_exists(file, url):
-    logger.info("[lib.samba.py] file_exists " + file)
 
-    server_name, share_name, path ,user, password = parse_url(url)
+def file_exists(_file, url):
+    logger.info("[lib.samba.py] file_exists " + _file)
+
+    server_name, share_name, path, user, password = parse_url(url)
     remote = connect(server_name, user, password)
 
     files = []
@@ -243,55 +250,56 @@ def file_exists(file, url):
     remote.close()
 
     try:
-        logger.info( str(files.index(file) ))
+        logger.info(str(files.index(_file)))
         return True
     except:
         return False
 
+
 def folder_exists(folder, url):
     logger.info("[lib.samba.py] folder_exists " + folder)
 
+    server_name, share_name, path, user, password = parse_url(url)
+    remote = connect(server_name, user, password)
+
+    directory = []
+    for f in remote.listPath(share_name, path):
+        name = f.filename
+        if name == '.' or name == '..':
+            continue
+        if not f.isDirectory:
+            continue
+        directory.append(name)
+
+    remote.close()
+
     try:
-        server_name, share_name, path ,user, password = parse_url(url)
-        remote = connect(server_name, user, password)
-
-        directory = []
-        for f in remote.listPath(share_name, path):
-            name = f.filename
-            if name == '.' or name == '..':
-                continue
-            if not f.isDirectory:
-                continue
-            directory.append(name)
-
-        remote.close()
-
-        try:
-            logger.info( str(directory.index(folder) ))
-            return True
-        except:
-            return False
+        logger.info(str(directory.index(folder)))
+        return True
     except:
         return False
 
-def delete_files(file, url):
-    logger.info("[lib.samba.py] delete_files " + file)
 
-    if file_exists(file, url):
-        server_name, share_name, path ,user, password = parse_url(url)
+def delete_files(_file, url):
+    logger.info("[lib.samba.py] delete_files " + _file)
+
+    if file_exists(_file, url):
+        server_name, share_name, path, user, password = parse_url(url)
         remote = connect(server_name, user, password)
-        remote.deleteFiles(share_name, path + file)
+        remote.deleteFiles(share_name, path + _file)
         remote.close()
+
 
 def delete_directory(folder, url):
     logger.info("[lib.samba.py] create_directory " + folder)
 
     if folder_exists(folder, url):
-        server_name, share_name, path ,user, password = parse_url(url)
+        server_name, share_name, path, user, password = parse_url(url)
         remote = connect(server_name, user, password)
         remote.deleteDirectory(share_name, path + folder)
 
         remote.close()
+
 
 def usingsamba(path):
     return path.upper().startswith("SMB://")

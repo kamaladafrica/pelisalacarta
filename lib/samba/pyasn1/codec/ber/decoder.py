@@ -1,8 +1,8 @@
 # BER decoder
-from samba.pyasn1 import debug, error
-from samba.pyasn1.codec.ber import eoo
-from samba.pyasn1.compat.octets import oct2int, isOctetsType
-from samba.pyasn1.type import tag, univ, char, useful, tagmap
+from pyasn1 import debug, error
+from pyasn1.codec.ber import eoo
+from pyasn1.compat.octets import oct2int, isOctetsType
+from pyasn1.type import tag, univ, char, useful, tagmap
 
 
 class AbstractDecoder:

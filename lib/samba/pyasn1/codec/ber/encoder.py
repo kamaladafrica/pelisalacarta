@@ -1,8 +1,8 @@
 # BER encoder
-from samba.pyasn1 import debug, error
-from samba.pyasn1.codec.ber import eoo
-from samba.pyasn1.compat.octets import int2oct, oct2int, ints2octs, null, str2octs
-from samba.pyasn1.type import base, tag, univ, char, useful
+from pyasn1 import debug, error
+from pyasn1.codec.ber import eoo
+from pyasn1.compat.octets import int2oct, oct2int, ints2octs, null, str2octs
+from pyasn1.type import base, tag, univ, char, useful
 
 
 class Error(Exception): pass

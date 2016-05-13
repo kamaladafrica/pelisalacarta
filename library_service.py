@@ -37,14 +37,14 @@ from platformcode import library
 
 logger.info("pelisalacarta.library_service Actualizando series...")
 
-directorio = os.path.join(config.get_library_path(), "SERIES")
+directorio = library.join_path(config.get_library_path(), "SERIES")
 logger.info("directorio="+directorio)
 
-if not os.path.exists(directorio):
-    os.mkdir(directorio)
+if not library.path_exists(directorio):
+    library.make_dir(directorio)
 
 library.check_tvshow_xml()
-nombre_fichero_config_canal = os.path.join(config.get_data_path(), library.TVSHOW_FILE)
+nombre_fichero_config_canal = library.join_path(config.get_data_path(), library.TVSHOW_FILE)
 
 try:
 
@@ -61,15 +61,15 @@ try:
             for tvshow in dict_data.get(channel).keys():
                 logger.info("pelisalacarta.library_service serie="+tvshow)
 
-                ruta = os.path.join(config.get_library_path(), "SERIES", tvshow)
+                ruta = library.join_path(config.get_library_path(), "SERIES", tvshow)
                 logger.info("pelisalacarta.library_service ruta =#"+ruta+"#")
-                if os.path.exists(ruta):
+                if library.path_exists(ruta):
                     logger.info("pelisalacarta.library_service Actualizando "+tvshow)
                     logger.info("pelisalacarta.library_service url "+dict_data.get(channel).get(tvshow))
 
                     item = Item(url=dict_data.get(channel).get(tvshow), show=tvshow)
                     try:
-                        pathchannels = os.path.join(config.get_runtime_path(), 'channels', channel + '.py')
+                        pathchannels = library.join_path(config.get_runtime_path(), 'channels', channel + '.py')
                         logger.info("pelisalacarta.library_service Cargando canal  " + pathchannels + " " + channel)
                         obj = imp.load_source(channel, pathchannels)
                         itemlist = obj.episodios(item)

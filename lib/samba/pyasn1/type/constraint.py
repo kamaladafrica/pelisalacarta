@@ -13,7 +13,7 @@
 #
 import sys
 
-from samba.pyasn1.type import error
+from pyasn1.type import error
 
 
 class AbstractConstraint:

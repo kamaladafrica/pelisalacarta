@@ -3,10 +3,10 @@ import math
 import operator
 import sys
 
-from samba.pyasn1 import error
-from samba.pyasn1.codec.ber import eoo
-from samba.pyasn1.compat import octets
-from samba.pyasn1.type import base, tag, constraint, namedtype, namedval, tagmap
+from pyasn1 import error
+from pyasn1.codec.ber import eoo
+from pyasn1.compat import octets
+from pyasn1.type import base, tag, constraint, namedtype, namedval, tagmap
 
 
 # "Simple" ASN.1 types (yet incomplete)

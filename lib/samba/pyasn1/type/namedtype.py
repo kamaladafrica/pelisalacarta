@@ -1,8 +1,8 @@
 # NamedType specification for constructed types
 import sys
 
-from samba.pyasn1 import error
-from samba.pyasn1.type import tagmap
+from pyasn1 import error
+from pyasn1.type import tagmap
 
 
 class NamedType:

@@ -1,5 +1,5 @@
 # ASN.1 "useful" types
-from samba.pyasn1.type import char, tag
+from pyasn1.type import char, tag
 
 class ObjectDescriptor(char.GraphicString):
     tagSet = char.GraphicString.tagSet.tagImplicitly(

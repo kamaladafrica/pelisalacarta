@@ -1,8 +1,8 @@
 # Base classes for ASN.1 types
 import sys
 
-from samba.pyasn1 import error
-from samba.pyasn1.type import constraint, tagmap, tag
+from pyasn1 import error
+from pyasn1.type import constraint, tagmap, tag
 
 
 class Asn1Item: pass

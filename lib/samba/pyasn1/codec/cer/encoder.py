@@ -1,9 +1,9 @@
 # CER encoder
-from samba.pyasn1 import error
-from samba.pyasn1.codec.ber import encoder
-from samba.pyasn1.compat.octets import int2oct, str2octs, null
-from samba.pyasn1.type import univ
-from samba.pyasn1.type import useful
+from pyasn1 import error
+from pyasn1.codec.ber import encoder
+from pyasn1.compat.octets import int2oct, str2octs, null
+from pyasn1.type import univ
+from pyasn1.type import useful
 
 
 class BooleanEncoder(encoder.IntegerEncoder):
