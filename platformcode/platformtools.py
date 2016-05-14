@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # platformtools
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # Herramientas responsables de adaptar los diferentes 
 # cuadros de dialogo a una plataforma en concreto,
 # en este caso Kodi.
@@ -18,11 +18,13 @@ from core import config
 def dialog_ok(heading, line1, line2="", line3=""):
     dialog = xbmcgui.Dialog()
     return dialog.ok(heading, line1, line2, line3)
-    
+
+
 def dialog_notification(heading, message, icon=0, time=5000, sound=True):
     dialog = xbmcgui.Dialog()
-    l_icono=(xbmcgui.NOTIFICATION_INFO , xbmcgui.NOTIFICATION_WARNING, xbmcgui.NOTIFICATION_ERROR)
-    dialog.notification (heading, message, l_icono[icon], time, sound)
+    l_icono = xbmcgui.NOTIFICATION_INFO, xbmcgui.NOTIFICATION_WARNING, xbmcgui.NOTIFICATION_ERROR
+    dialog.notification(heading, message, l_icono[icon], time, sound)
+
 
 def dialog_yesno(heading, line1, line2="", line3="", nolabel="No", yeslabel="Si", autoclose=""):
     dialog = xbmcgui.Dialog()
@@ -30,55 +32,69 @@ def dialog_yesno(heading, line1, line2="", line3="", nolabel="No", yeslabel="Si"
         return dialog.yesno(heading, line1, line2, line3, nolabel, yeslabel, autoclose)
     else:
         return dialog.yesno(heading, line1, line2, line3, nolabel, yeslabel)
-  
-def dialog_select(heading, list): 
-    return xbmcgui.Dialog().select(heading, list)
-    
+
+
+def dialog_select(heading, _list):
+    return xbmcgui.Dialog().select(heading, _list)
+
+
 def dialog_progress(heading, line1, line2="", line3=""):
     dialog = xbmcgui.DialogProgress()
     dialog.create(heading, line1, line2, line3)
     return dialog
+
 
 def dialog_progress_bg(heading, message=""):
     dialog = xbmcgui.DialogProgressBG()
     dialog.create(heading, message)
     return dialog
 
+
 def dialog_input(default="", heading="", hidden=False):
     keyboard = xbmc.Keyboard(default, heading, hidden)
     keyboard.doModal()
-    if (keyboard.isConfirmed()):
+    if keyboard.isConfirmed():
         return keyboard.getText()
     else:
         return None
 
-def dialog_numeric(type, heading, default=""):
+
+def dialog_numeric(_type, heading, default=""):
     dialog = xbmcgui.Dialog()
-    dialog.numeric(type, heading, default)
+    dialog.numeric(_type, heading, default)
     return dialog
-        
+
+
 def itemlist_refresh():
     xbmc.executebuiltin("Container.Refresh")
+
 
 def itemlist_update(item):
     xbmc.executebuiltin("Container.Update(" + sys.argv[0] + "?" + item.tourl() + ")")
 
+
 def render_items(itemlist, parentitem):
-    #Por implementar (traer de xbmctools)
+    # Por implementar (traer de xbmctools)
     pass
-    
+
+
 def is_playing():
     return xbmc.Player().isPlaying()
 
+
 def play_video(item):
-    #Por implementar (traer de xbmctools)
+    # Por implementar (traer de xbmctools)
     pass
-    
-def show_channel_settings(list_controls=None, dict_values=None, caption="", callback=None, item=None):
-    '''
+
+
+def show_channel_settings(list_controls=None, dict_values=None, caption="", callback=None, item=None,
+                          custom_button=None):
+    """
     Muestra un cuadro de configuracion personalizado para cada canal y guarda los datos al cerrarlo.
     
     Parametros: ver descripcion en xbmc_config_menu.SettingsWindow
-    '''
+    """
     from xbmc_config_menu import SettingsWindow
-    return SettingsWindow("ChannelSettings.xml", config.get_runtime_path()).Start(list_controls=list_controls, dict_values=dict_values, title=caption, callback=callback, item=item)
+    return SettingsWindow("ChannelSettings.xml", config.get_runtime_path())\
+        .start(list_controls=list_controls, dict_values=dict_values, title=caption, callback=callback, item=item,
+                 custom_button=custom_button)

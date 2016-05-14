@@ -329,9 +329,11 @@ def config_filter(item):
     # logger.info("list quality {}".format(list_quality))
 
     active = True
-    allow_options = False
+    custom_method = ""
+    allow_option = False
     if library.title_to_filename(item.show.lower().strip()) in dict_series:
-        allow_options = True
+        allow_option = True
+        custom_method = "borrar_filtro"
         active = dict_series.get(library.title_to_filename(item.show.lower().strip()), {}).get(TAG_ACTIVE, False)
 
     list_controls = [{
@@ -340,8 +342,8 @@ def config_filter(item):
             "label": "¿Activar/Desactivar filtro?",
             "color": "",
             "default": active,
-            "enabled": allow_options,
-            "visible": allow_options,
+            "enabled": allow_option,
+            "visible": allow_option,
         },
         {
             "id": "language",
@@ -379,29 +381,32 @@ def config_filter(item):
         # concatenamos list_controls con list_controls_calidad
         list_controls.extend(list_controls_calidad)
 
-    list_controls_deleted_option = [
-        {
-            "id": "linea_blanco",
-            "type": "label",
-            "label": "",
-            "color": "0xffC6C384",
-            "enabled": allow_options,
-            "visible": allow_options,
-        },
-        {
-            "id": "checkbox_deleted",
-            "type": "bool",
-            "label": "¿Borrar filtro?",
-            "color": "",
-            "default": False,
-            "enabled": allow_options,
-            "visible": allow_options,
-        }
-    ]
-    list_controls.extend(list_controls_deleted_option)
+    custom_button = {'name': 'Borrar', 'method': custom_method}
 
     platformtools.show_channel_settings(list_controls=list_controls, callback='guardar_valores', item=item,
-                                        caption="Filtrado de enlaces para: [COLOR blue]{0}[/COLOR]".format(item.show))
+                                        caption="Filtrado de enlaces para: [COLOR blue]{0}[/COLOR]".format(item.show),
+                                        custom_button=custom_button)
+
+
+def borrar_filtro(item):
+    logger.info("[filtertools.py] borrar_filtro")
+    if item:
+        # OBTENEMOS LOS DATOS DEL JSON
+        dict_series = get_filtered_tvshows(item.from_channel)
+        tvshow = library.title_to_filename(item.show.strip().lower())
+
+        heading = "¿Está seguro que desea eliminar el filtro?"
+        line1 = "Pulse 'Si' para eliminar el filtro de [COLOR blue]{0}[/COLOR], pulse 'No' o cierre la ventana para " \
+                "no hacer nada.".format(item.show.strip())
+
+        if platformtools.dialog_yesno(heading, line1) == 1:
+            lang_selected = dict_series.get(tvshow, {}).get(TAG_LANGUAGE, "")
+            dict_series.pop(tvshow, None)
+            message = "FILTRO ELIMINADO"
+            fname, json_data = update_json_data(dict_series, item.from_channel)
+            message = save_file(json_data, fname, message)
+            heading = "{0} [{1}]".format(item.show.strip(), lang_selected)
+            platformtools.dialog_notification(heading, message)
 
 
 def guardar_valores(item, dict_data_saved):
@@ -422,33 +427,54 @@ def guardar_valores(item, dict_data_saved):
         dict_series = get_filtered_tvshows(item.from_channel)
         tvshow = library.title_to_filename(item.show.strip().lower())
 
-        if dict_data_saved["checkbox_deleted"] != 1:
-            logger.info("Se actualiza los datos")
+        logger.info("Se actualiza los datos")
 
-            list_quality = []
-            for id, value in dict_data_saved.items():
-                if id in item.list_calidad and value:
-                        list_quality.append(id.lower())
+        list_quality = []
+        for _id, value in dict_data_saved.items():
+            if _id in item.list_calidad and value:
+                    list_quality.append(_id.lower())
 
-            lang_selected = item.list_idiomas[dict_data_saved[TAG_LANGUAGE]]
-            dict_filter = {TAG_NAME: item.show, TAG_ACTIVE: dict_data_saved[TAG_ACTIVE], TAG_LANGUAGE: lang_selected,
-                           TAG_QUALITY_NOT_ALLOWED: list_quality}
-            dict_series[tvshow] = dict_filter
+        lang_selected = item.list_idiomas[dict_data_saved[TAG_LANGUAGE]]
+        dict_filter = {TAG_NAME: item.show, TAG_ACTIVE: dict_data_saved[TAG_ACTIVE], TAG_LANGUAGE: lang_selected,
+                       TAG_QUALITY_NOT_ALLOWED: list_quality}
+        dict_series[tvshow] = dict_filter
 
-            message = "FILTRO GUARDADO"
-
-        else:
-            logger.info("borrado")
-            lang_selected = item.list_idiomas[dict_data_saved[TAG_LANGUAGE]]
-            dict_series.pop(tvshow, None)
-
-            message = "FILTRO ELIMINADO"
+        message = "FILTRO GUARDADO"
 
         fname, json_data = update_json_data(dict_series, item.from_channel)
         message = save_file(json_data, fname, message)
 
         heading = "{0} [{1}]".format(item.show.strip(), lang_selected)
         platformtools.dialog_notification(heading, message)
+
+
+        # if dict_data_saved["checkbox_deleted"] != 1:
+        #     logger.info("Se actualiza los datos")
+        #
+        #     list_quality = []
+        #     for id, value in dict_data_saved.items():
+        #         if id in item.list_calidad and value:
+        #                 list_quality.append(id.lower())
+        #
+        #     lang_selected = item.list_idiomas[dict_data_saved[TAG_LANGUAGE]]
+        #     dict_filter = {TAG_NAME: item.show, TAG_ACTIVE: dict_data_saved[TAG_ACTIVE], TAG_LANGUAGE: lang_selected,
+        #                    TAG_QUALITY_NOT_ALLOWED: list_quality}
+        #     dict_series[tvshow] = dict_filter
+        #
+        #     message = "FILTRO GUARDADO"
+        #
+        # else:
+        #     logger.info("borrado")
+        #     lang_selected = item.list_idiomas[dict_data_saved[TAG_LANGUAGE]]
+        #     dict_series.pop(tvshow, None)
+        #
+        #     message = "FILTRO ELIMINADO"
+        #
+        # fname, json_data = update_json_data(dict_series, item.from_channel)
+        # message = save_file(json_data, fname, message)
+        #
+        # heading = "{0} [{1}]".format(item.show.strip(), lang_selected)
+        # platformtools.dialog_notification(heading, message)
 
 
 def update_json_data(dict_series, filename):
