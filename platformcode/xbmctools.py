@@ -919,8 +919,8 @@ def renderItems(itemlist, parentitem, isPlayable='false'):
                 viewmode = item.viewmode
 
         # Cierra el directorio
-        if not parentitem.channel in ["channelselector",""]:
-          xbmcplugin.setContent(pluginhandle,"Movies")
+        # if not parentitem.channel in ["channelselector",""]:
+        # xbmcplugin.setContent(pluginhandle,"Movies")
         xbmcplugin.setPluginCategory( handle=pluginhandle, category=parentitem.category )
         xbmcplugin.addSortMethod( handle=pluginhandle, sortMethod=xbmcplugin.SORT_METHOD_NONE )
 
