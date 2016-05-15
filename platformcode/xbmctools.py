@@ -852,30 +852,6 @@ def alertanomegauploadlow(server):
     #'Prueba a reproducir en otra calidad'
     resultado = advertencia.ok( config.get_localized_string(30055) , config.get_localized_string(30061) , config.get_localized_string(30062))
 
-# AÑADIDO POR JUR. SOPORTE DE FICHEROS STRM
-def playstrm(params,url,category):
-    '''Play para videos en ficheros strm
-    '''
-    logger.info("[xbmctools.py] playstrm url="+url)
-
-    title = unicode( xbmc.getInfoLabel( "ListItem.Title" ), "utf-8" )
-    thumbnail = urllib.unquote_plus( params.get("thumbnail") )
-    plot = unicode( xbmc.getInfoLabel( "ListItem.Plot" ), "utf-8" )
-    server = params["server"]
-    if (params.has_key("Serie")):
-        serie = params.get("Serie")
-    else:
-        serie = ""
-    if (params.has_key("subtitle")):
-        subtitle = params.get("subtitle")
-    else:
-        subtitle = ""
-    from core.item import Item
-    from platformcode.subtitletools import saveSubtitleName
-    item = Item(title=title,show=serie)
-    saveSubtitleName(item)
-    play_video("Biblioteca pelisalacarta",server,url,category,title,thumbnail,plot,strmfile=True,Serie=serie,subtitle=subtitle)
-
 
 def renderItems(itemlist, parentitem, is_playable=False):
 

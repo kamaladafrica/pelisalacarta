@@ -167,11 +167,7 @@ def run():
 
             if not generico:
                 logger.info("pelisalacarta.platformcode.launcher xbmc native channel")
-                if item.action == "strm":
-
-                    xbmctools.playstrm(params, item.url, item.category)
-                else:
-                    getattr(channel, item.action)(params, item.url, item.category)
+                getattr(channel, item.action)(params, item.url, item.category)
             else:
                 logger.info("pelisalacarta.platformcode.launcher multiplatform channel")
 
