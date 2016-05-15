@@ -876,53 +876,55 @@ def playstrm(params,url,category):
     saveSubtitleName(item)
     play_video("Biblioteca pelisalacarta",server,url,category,title,thumbnail,plot,strmfile=True,Serie=serie,subtitle=subtitle)
 
-def renderItems(itemlist, parentitem, isPlayable='false'):
+
+def renderItems(itemlist, parentitem, is_playable=False):
 
     viewmode = "list"
 
-    if itemlist <> None:
+    if itemlist is not None:
         for item in itemlist:
             logger.info("item="+item.tostring())
             item.totalItems = len(itemlist)
-            item.isPlayable = isPlayable
+            item.isPlayable = is_playable
 
             if item.category == "":
                 item.category = parentitem.category
 
-            if item.fulltitle=="":
-                item.fulltitle=item.title
+            if item.fulltitle == "":
+                item.fulltitle = item.title
 
-            if item.fanart=="":
-                channel_fanart = os.path.join( config.get_runtime_path(), 'resources', 'images', 'fanart', item.channel+'.jpg')
+            if item.fanart == "":
+                channel_fanart = os.path.join( config.get_runtime_path(), 'resources', 'images', 'fanart',
+                                               item.channel+'.jpg')
 
                 if os.path.exists(channel_fanart):
                     item.fanart = channel_fanart
                 else:
-                    item.fanart = os.path.join(config.get_runtime_path(),"fanart.jpg")
+                    item.fanart = os.path.join(config.get_runtime_path(), "fanart.jpg")
 
             # Formatear titulo
             if 'text_color' in item and item.text_color:
-                item.title= '[COLOR %s]%s[/COLOR]' %(item.text_color, item.title)
+                item.title = '[COLOR %s]%s[/COLOR]' % item.text_color, item.title
             if 'text_blod' in item and item.text_blod:
-                item.title= '[B]%s[/B]' %(item.title)
+                item.title = '[B]%s[/B]' % item.title
             if 'text_italic' in item and item.text_italic:
-                item.title= '[I]%s[/I]' %(item.title)
+                item.title = '[I]%s[/I]' % item.title
 
             if item.folder:
-                addnewfolderextra(item, totalItems = len(itemlist))
+                addnewfolderextra(item, totalItems=len(itemlist))
             else:
-                if config.get_setting("player_mode")=="1": # SetResolvedUrl debe ser siempre "isPlayable = true"
+                if config.get_setting("player_mode") == "1":  # SetResolvedUrl debe ser siempre "isPlayable = true"
                     item.isPlayable = 'true'
-                addnewvideo( item, IsPlayable=item.isPlayable, totalItems = len(itemlist))
+                addnewvideo(item, IsPlayable=item.isPlayable, totalItems=len(itemlist))
 
-            if item.viewmode!="list":
+            if item.viewmode != "list":
                 viewmode = item.viewmode
 
         # Cierra el directorio
         # if not parentitem.channel in ["channelselector",""]:
         # xbmcplugin.setContent(pluginhandle,"Movies")
-        xbmcplugin.setPluginCategory( handle=pluginhandle, category=parentitem.category )
-        xbmcplugin.addSortMethod( handle=pluginhandle, sortMethod=xbmcplugin.SORT_METHOD_NONE )
+        xbmcplugin.setPluginCategory(handle=pluginhandle, category=parentitem.category)
+        xbmcplugin.addSortMethod(handle=pluginhandle, sortMethod=xbmcplugin.SORT_METHOD_NONE)
 
         # Modos biblioteca
         # MediaInfo3 - 503
@@ -931,15 +933,16 @@ def renderItems(itemlist, parentitem, isPlayable='false'):
         # WideIconView - 505
         # ThumbnailView - 500
 
-        if config.get_setting("forceview")=="true":
-            if viewmode=="list":
+        if config.get_setting("forceview") == "true":
+            if viewmode == "list":
                 xbmc.executebuiltin("Container.SetViewMode(50)")
-            elif viewmode=="movie_with_plot":
+            elif viewmode == "movie_with_plot":
                 xbmc.executebuiltin("Container.SetViewMode(503)")
-            elif viewmode=="movie":
+            elif viewmode == "movie":
                 xbmc.executebuiltin("Container.SetViewMode(500)")
 
-    xbmcplugin.endOfDirectory( handle=pluginhandle, succeeded=True )
+    xbmcplugin.endOfDirectory(handle=pluginhandle, succeeded=True)
+
 
 def wait2second():
     logger.info("[xbmctools.py] wait2second")
