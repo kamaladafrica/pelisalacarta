@@ -464,8 +464,8 @@ def findvideos(item, verTodos=False):
         itemlist.append( Item(channel=__channel__, action="infosinopsis" , title="INFO / SINOPSIS" , url=item.url, thumbnail=item.thumbnail, fanart=item.fanart,  folder=False ))
 
     itemsort = []
-    sortlinks = ["No", "Por Valoración", "Por Idioma", "Por Calidad", "Por Idioma y Calidad", "Por Idioma y Valoración", "Por Idioma, Calidad y Valoración"].index(config.get_setting("pordedesortlinks",__channel__)) # 0:no, 1:valoracion, 2:idioma, 3:calidad, 4:idioma+calidad, 5:idioma+valoracion, 6:idioma+calidad+valoracion
-    showlinks = ["Todos", "Ver online", "Descargar"].index(config.get_setting("pordedeshowlinks",__channel__)) # 0:todos, 1:ver online, 2:descargar
+    sortlinks = config.get_setting("pordedesortlinks",__channel__) # 0:no, 1:valoracion, 2:idioma, 3:calidad, 4:idioma+calidad, 5:idioma+valoracion, 6:idioma+calidad+valoracion
+    showlinks = config.get_setting("pordedeshowlinks",__channel__) # 0:todos, 1:ver online, 2:descargar
 
     for match in matches:
         if (DEBUG): logger.info("match="+match)
@@ -525,7 +525,9 @@ def findvideos(item, verTodos=False):
                 orden = (valora_idioma(idioma_0, idioma_1) * 1000) + valoracion
             elif sortlinks == 6:
                 orden = (valora_idioma(idioma_0, idioma_1) * 100000) + (valora_calidad(calidad_video, calidad_audio) * 1000) + valoracion
-            itemsort.append({'action': "play", 'title': title, 'url':url, 'thumbnail':thumbnail, 'fanart':item.fanart, 'plot':plot, 'extra':sesion+"|"+item.url, 'fulltitle':title, 'orden1': (jdown == ''), 'orden2':orden})
+            itemsort.append({'action': "play", 'title': title, 'url':url, 'thumbnail':thumbnail, 'fanart':item.fanart,
+                             'plot':plot, 'extra':sesion+"|"+item.url, 'fulltitle':title, 'orden1': (jdown == ''),
+                             'orden2':orden})
         else:
             itemlist.append( Item(channel=__channel__, action="play" , title=title , url=url, thumbnail=thumbnail, fanart= item.fanart, plot=plot, extra=sesion+"|"+item.url, fulltitle=title))
 
