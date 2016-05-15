@@ -59,13 +59,14 @@ def peliculas(item):
     for i in aux_list:
         if not samba.usingsamba(i):
             strm_item = Item().fromurl(library.read_file(i))
-            new_item = strm_item.clone(action=strm_item.action, path=i,
+            new_item = strm_item.clone(action=strm_item.action, path=i, from_biblioteca= True,
                                        title=os.path.splitext(os.path.basename(i))[0].capitalize(),
                                        extra=strm_item.extra)
         else:
             new_item = item.clone(action="play_strm", path=i,
                                   title=os.path.splitext(os.path.basename(i))[0].capitalize())
 
+        logger.debug(new_item.tostring('\n'))
         itemlist.append(new_item)
 
     library.set_infoLabels_from_library(itemlist, tipo='Movies')
@@ -173,14 +174,17 @@ def get_capitulos(item):
             if not samba.usingsamba(raiz):
                 strm_item = Item().fromurl(library.read_file(path))
                 new_item = item.clone(channel=strm_item.channel, action="findvideos", title=i, path=path,
-                                      extra=strm_item.extra, url=strm_item.url, viewmode=strm_item.viewmode)
+                                      extra=strm_item.extra, url=strm_item.url, viewmode=strm_item.viewmode,
+                                      contentEpisodeNumber= i.split('x')[1])
             else:
-                new_item = item.clone(channel=item.channel, action="play_strm", title=i, path=path)
+                new_item = item.clone(channel=item.channel, action="play_strm", title=i, path=path,
+                                      contentEpisodeNumber=i.split('x')[1])
 
             itemlist.append(new_item)
 
     library.set_infoLabels_from_library(itemlist, tipo='Episodes')
-    return sorted(itemlist, key=get_sort_temp_epi)
+    #return sorted(itemlist, key=get_sort_temp_epi)
+    return sorted(itemlist, key=lambda it: (int(it.contentSeason), int(it.contentEpisodeNumber)))
 
 
 def play_strm(item):
@@ -202,6 +206,7 @@ def get_sort_temp_epi(item): # TODO SEitan: No se si esto es realmente necesario
     else:
         temporada, capitulo = scrapertools.get_season_and_episode(item.title.lower()).split('x')
         return int(temporada), int(capitulo)
+
 
 '''
 def fichero_series(item):

@@ -209,6 +209,7 @@ def savelibrary_movie(item):
 
     filename = title_to_filename("{0} [{1}].strm".format(item.fulltitle.capitalize(),
                                                          item.channel.capitalize()))
+    logger.debug(filename)
     fullfilename = join_path(MOVIES_PATH, filename)
     addon_name = sys.argv[0].strip()
     if not addon_name:
@@ -749,6 +750,7 @@ def mark_as_watched(category, id_video=0):
                                "id": "libGetItem"}
 
                     data = get_data(payload)
+                    logger.debug(repr(data))
                     if data['result']:
                         title = data['result']['item']['title']
                         year = data['result']['item']['year']
@@ -764,6 +766,7 @@ def mark_as_watched(category, id_video=0):
                                    "id": 1}
 
                         data = get_data(payload)
+
                         if data['result']:
                             for d in data['result']['movies']:
                                 logger.info("title {0}".format(d['title']))
