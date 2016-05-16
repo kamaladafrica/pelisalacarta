@@ -1,5 +1,5 @@
 # ASN.1 named integers
-from lib.samba.pyasn1 import error
+from pyasn1 import error
 
 __all__ = [ 'NamedValues' ]
 

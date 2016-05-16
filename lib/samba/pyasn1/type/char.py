@@ -1,5 +1,5 @@
 # ASN.1 "character string" types
-from lib.samba.pyasn1.type import univ, tag
+from pyasn1.type import univ, tag
 
 class NumericString(univ.OctetString):
     tagSet = univ.OctetString.tagSet.tagImplicitly(

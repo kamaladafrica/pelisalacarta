@@ -1,7 +1,7 @@
 # DER encoder
-from lib.samba.pyasn1 import error
-from lib.samba.pyasn1.codec.cer import encoder
-from lib.samba.pyasn1.type import univ
+from pyasn1 import error
+from pyasn1.codec.cer import encoder
+from pyasn1.type import univ
 
 
 class SetOfEncoder(encoder.SetOfEncoder):

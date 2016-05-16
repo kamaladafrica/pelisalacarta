@@ -1,4 +1,4 @@
-from lib.samba.pyasn1.type import base, tag
+from pyasn1.type import base, tag
 
 class EndOfOctets(base.AbstractSimpleAsn1Item):
     defaultValue = 0
