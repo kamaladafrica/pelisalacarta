@@ -13,9 +13,9 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/peliculaseroticas.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>1</version>
-	<date>01/11/2011</date>
-	<changes>Website changed</changes>
+	<version>2</version>
+	<date>16/05/2016</date>
+	<changes>Limpieza de codigo</changes>
 
 	<categories>
 		<category>adult</category>

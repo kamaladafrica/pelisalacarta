@@ -12,8 +12,6 @@ from core import logger
 from core import scrapertools
 from core.item import Item
 
-__channel__ = "peliculaseroticas"
-
 DEBUG = config.get_setting("debug")
 
 def isGeneric():
@@ -45,7 +43,7 @@ def mainlist(item):
         plot = ""
 
         # Añade al listado
-        itemlist.append( Item(channel=__channel__, action="findvideos", title=title , fulltitle=title, url=url , thumbnail=thumbnail , plot=plot , viewmode="movie", folder=True) )
+        itemlist.append( Item(channel=item.channel, action="findvideos", title=title , fulltitle=title, url=url , thumbnail=thumbnail , plot=plot , viewmode="movie", folder=True) )
 
     # Extrae la marca de siguiente página
     if item.url=="http://www.peliculaseroticas.net/":
@@ -55,6 +53,6 @@ def mainlist(item):
         next_page = int(current_page)+1
         next_page_url = "http://www.peliculaseroticas.net/cine-erotico/"+str(next_page)+".html"
 
-    itemlist.append( Item(channel=__channel__, action="peliculas", title=">> Página siguiente" , url=next_page_url, folder=True) )
+    itemlist.append( Item(channel=item.channel, action="peliculas", title=">> Página siguiente" , url=next_page_url, folder=True) )
 
     return itemlist
