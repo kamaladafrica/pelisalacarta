@@ -50,6 +50,10 @@ def run():
         server_white_list, server_black_list = set_server_list()
 
     try:
+        if item.action == "":
+          logger.info("Item tipo TAG")
+          return
+          
         # Default action: open channel and launch mainlist function
         if ( item.action=="selectchannel" ):
             import channelselector
@@ -236,13 +240,10 @@ def run():
 
                 else:
                     if item.action != "findvideos":
-                        try:
-                            logger.info("pelisalacarta.platformcode.launcher executing channel '"+item.action+"' method")
-                            itemlist = getattr(channel, item.action)(item)
-                        except:
-                            #Error al ejecutar la accion o item tipo Tag
-                            logger.info("pelisalacarta.platformcode.launcher no se ha podido ejecutar la accion %s" %item.action)
-                            return
+
+                      logger.info("pelisalacarta.platformcode.launcher executing channel '"+item.action+"' method")
+                      itemlist = getattr(channel, item.action)(item)
+                   
                     else:
 
                         # Intenta ejecutar una posible funcion "findvideos" del canal
