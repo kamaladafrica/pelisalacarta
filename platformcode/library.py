@@ -17,11 +17,13 @@ from core import jsontools
 from core import logger
 from core import scrapertools
 
-librerias = os.path.join( config.get_runtime_path(), 'lib', 'samba' )
-if not librerias in sys.path: sys.path.append(librerias)
+librerias = os.path.join(config.get_runtime_path(), 'lib', 'samba')
+if librerias not in sys.path:
+    sys.path.append(librerias)
 
-libreria_libsmb = xbmc.translatePath( os.path.join( config.get_runtime_path(), 'lib', 'samba', 'libsmb' ) )
-if not libreria_libsmb in sys.path: sys.path.append( libreria_libsmb )
+libreria_libsmb = xbmc.translatePath(os.path.join(config.get_runtime_path(), 'lib', 'samba', 'libsmb'))
+if libreria_libsmb not in sys.path:
+    sys.path.append(libreria_libsmb)
 
 import libsmb as samba
 
