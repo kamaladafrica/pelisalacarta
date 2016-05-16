@@ -194,11 +194,183 @@ def title_to_filename(title):
     @return:  cadena correcta sin tildes.
     """
     logger.info("[library.py] title_to_filename")
-    safechars = string.letters + string.digits + " -_."
+    safechars = string.letters + string.digits + " -_.[]()"
     folder_name = filter(lambda c: c in safechars, elimina_tildes(title))
     return str(folder_name)
 
 
+def savelibrary_movie(item):
+    """
+        guarda en la libreria de peliculas el elemento item, con los valores que contiene.
+        @type item: item
+        @param item: elemento que se va a guardar.
+        @rtype insertados: int
+        @return:  el número de elementos insertados
+        @rtype sobreescritos: int
+        @return:  el número de elementos sobreescritos
+        @rtype fallidos: int
+        @return:  el número de elementos fallidos
+        """
+    logger.info("[library.py] savelibrary_movie")
+    insertados = 0
+    sobreescritos = 0
+    fallidos = 0
+
+    filename = title_to_filename("{0} [{1}].strm".format(item.fulltitle.capitalize(),
+                                                         item.channel.capitalize()))
+    logger.debug(filename)
+    fullfilename = join_path(MOVIES_PATH, filename)
+    addon_name = sys.argv[0].strip()
+    if not addon_name:
+        addon_name = "plugin://plugin.video.pelisalacarta/"
+
+    if path_exists(fullfilename):
+        logger.info("[library.py] savelibrary el fichero existe. Se sobreescribe")
+        insertados += 1
+    else:
+        sobreescritos += 1
+
+    if save_file('{addon}?{url}'.format(addon=addon_name, url=item.tourl()), fullfilename):
+        return insertados, sobreescritos, fallidos
+    else:
+        return 0, 0, 1
+
+def savelibrary_tvshow(serie, episodelist):
+    """
+        guarda en la libreria de series la serie con todos los capitulos incluidos en la lista episodelist
+        @type serie: item
+        @param serie: item que representa la serie a guardar
+        @type episodelist: list
+        @param episodelist: listado de items que representan los episodios que se van a guardar.
+        @rtype insertados: int
+        @return:  el número de episodios insertados
+        @rtype sobreescritos: int
+        @return:  el número de episodios sobreescritos
+        @rtype fallidos: int
+        @return:  el número de episodios fallidos o -1 si ha fallado toda la serie
+        """
+    logger.info("[library.py] savelibrary_tvshow")
+
+    if serie.show == "":
+        return 0, 0, -1  # Salimos sin guardar
+
+    if not 'infoLabels' in serie: serie.infoLabels = {}
+    if not serie.infoLabels.has_key('title'): serie.infoLabels['title'] = serie.show
+
+    from core import tmdb
+    tmdb.set_infoLabels(serie,True)
+    #logger.debug(tmdb.infoLabels_tostring(serie))
+    if not 'tmdb_id' in serie.infoLabels:
+        return 0, 0, -1  # Salimos sin guardar
+
+    # Cargar el registro series.json
+    fname = os.path.join(config.get_data_path(), TVSHOW_FILE)
+    dict_series = jsontools.load_json(read_file(fname))
+    if not dict_series:
+        dict_series = {}
+
+    path = join_path(TVSHOWS_PATH, title_to_filename(serie.infoLabels['title']).capitalize())
+
+    # Si la serie no existe en el registro ...
+    if not serie.infoLabels['tmdb_id'] in dict_series:
+        # ... añadir la serie al registro
+        dict_series[serie.infoLabels['tmdb_id']] = {"Title": serie.infoLabels['title']}
+        logger.info("[library.py] savelibrary Creando directorio serie:" + path)
+        try:
+            make_dir(path)
+        except OSError as exception:
+            if exception.errno != errno.EEXIST:
+                raise
+
+    folder = title_to_filename("{0} [{1}]".format(serie.infoLabels['title'].capitalize(), serie.channel.capitalize()))
+    path = join_path(path,folder)
+
+    # Si no hay datos del canal en el registro para esta serie...
+    if not serie.channel in dict_series[serie.infoLabels['tmdb_id']]:
+        # ... añadir canal al registro de la serie
+        dict_series[serie.infoLabels['tmdb_id']][serie.channel] = serie.url
+        logger.info("[library.py] savelibrary Creando directorio serie:" + path)
+        try:
+            make_dir(path)
+        except OSError as exception:
+            if exception.errno != errno.EEXIST:
+                raise
+
+    # Guardar los episodios
+    insertados, sobreescritos, fallidos = savelibrary_episodes(path, episodelist)
+
+    if fallidos > -1 and (insertados + sobreescritos) > 0:
+        # Guardar el registro series.json actualizado
+        json_data = jsontools.dump_json(dict_series)
+        save_file(json_data, fname)
+
+
+    return insertados, sobreescritos, fallidos
+
+
+def savelibrary_episodes(path, episodelist):
+    """
+        guarda en la ruta indicada todos los capitulos incluidos en la lista episodelist
+        @type path: str
+        @param path: ruta donde guardar los episodios
+        @type episodelist: list
+        @param episodelist: listado de items que representan los episodios que se van a guardar.
+        @rtype insertados: int
+        @return:  el número de episodios insertados
+        @rtype sobreescritos: int
+        @return:  el número de episodios sobreescritos
+        @rtype fallidos: int
+        @return:  el número de episodios fallidos
+        """
+    logger.info("[library.py] savelibrary_episodes")
+    insertados = 0
+    sobreescritos = 0
+    fallidos = 0
+
+    # TODO ¿control de huerfanas?
+    # progress dialog
+    from platformcode import platformtools
+    p_dialog = platformtools.dialog_progress('pelisalacarta', 'Añadiendo episodios...')
+    p_dialog.update(0, 'Añadiendo episodio...')
+    i = 0
+    t = 100 / len(episodelist)
+
+    addon_name = sys.argv[0].strip()
+    if not addon_name:
+        addon_name = "plugin://plugin.video.pelisalacarta/"
+
+    for e in episodelist:
+        i += 1
+        p_dialog.update(i * t, 'Añadiendo episodio...', e.title)
+        # Añade todos menos el que dice "Añadir esta serie..." o "Descargar esta serie..."
+        if e.action == "add_serie_to_library" or e.action == "download_all_episodes": continue
+
+        e.action = "play_from_library"
+        e.category="Series"
+
+        nuevo = False
+        filename = "{0}.strm".format(scrapertools.get_season_and_episode(e.title.lower()))
+        fullfilename = join_path(path, filename)
+        #logger.debug(fullfilename)
+
+        if not path_exists(fullfilename):
+            nuevo = True
+
+        if save_file('{addon}?{url}'.format(addon=addon_name, url=e.tourl()), fullfilename):
+            if nuevo:
+                insertados += 1
+            else:
+                sobreescritos += 1
+        else:
+            fallidos += 1
+
+    p_dialog.close()
+
+    logger.debug("insertados= {0}, sobreescritos={1}, fallidos={2}".format(insertados, sobreescritos, fallidos))
+    return insertados, sobreescritos, fallidos
+
+
+'''
 def savelibrary(item):
     """
     guarda en la ruta correspondiente el elemento item, con los valores que contiene.
@@ -214,17 +386,37 @@ def savelibrary(item):
 
     # MOVIES
     if item.category == "Cine":  # config.get_localized_string(30072):
+        filename = title_to_filename("{0} [{1}]".format(item.fulltitle.capitalize(),item.channel.capitalize()))
         path = MOVIES_PATH
-        filename = title_to_filename(item.fulltitle) + ".strm"
+        filename = filename + ".strm"
     # TVSHOWS
     elif item.category == "Series":  # config.get_localized_string(30073):
 
         if item.show == "":
             return -1  # Salimos sin guardar
 
-        tvshow = title_to_filename(item.show)
-        path = join_path(TVSHOWS_PATH, tvshow)
+        from core import tmdb
+        tmdb.set_infoLabels(item)
+        if not 'tmdb' in item.infoLabels:
+            return -1  # Salimos sin guardar
 
+        # Cargar series.json
+        fname = os.path.join(config.get_data_path(), TVSHOW_FILE)
+        dict_series = jsontools.load_json(read_file(fname))
+
+        path = join_path(TVSHOWS_PATH, title_to_filename(item.infoLabels['title']).capitalize())
+
+        if not item.infoLabels['tmdb'] in dict_series:
+            # Añadir la serie al registro
+            dict_series[item.infoLabels['tmdb']] = {"Title": item.infoLabels['title']}
+            logger.info("[library.py] savelibrary Creando directorio serie:" + path)
+            try:
+                make_dir(path)
+            except OSError as exception:
+                if exception.errno != errno.EEXIST:
+                    raise
+
+        path = title_to_filename("{0} [{1}]".format(path, item.channel.capitalize()))
         if not path_exists(path):
             logger.info("[library.py] savelibrary Creando directorio serie:"+path)
             try:
@@ -238,12 +430,9 @@ def savelibrary(item):
         filename = "{name}.strm".format(name=season_episode)
 
     fullfilename = join_path(path, filename)
-
-    addon_name = sys.argv[0]
-    if addon_name.strip() == "":
+    addon_name = sys.argv[0].strip()
+    if not addon_name:
         addon_name = "plugin://plugin.video.pelisalacarta/"
-
-    save_file('{addon}?{url}'.format(addon=addon_name, url=item.tourl()), fullfilename)
 
     if path_exists(fullfilename):
         logger.info("[library.py] savelibrary el fichero existe. Se sobreescribe")
@@ -251,9 +440,11 @@ def savelibrary(item):
     else:
         nuevo = 1
 
-    logger.info("[library.py] savelibrary - Fin")
-
-    return nuevo
+    if save_file('{addon}?{url}'.format(addon=addon_name, url=item.tourl()), fullfilename):
+        return nuevo
+    else:
+        return 0
+'''
 
 
 def read_file(fname):
@@ -382,7 +573,7 @@ def set_infoLabels_from_library(itemlist, tipo):
                    "id": 1}
 
     data = get_data(payload)
-    # logger.debug("JSON-RPC: {0}".format(data))
+    logger.debug("JSON-RPC: {0}".format(data))
 
     if 'error' in data:
         logger.error("JSON-RPC: {0}".format(data))
@@ -402,7 +593,11 @@ def set_infoLabels_from_library(itemlist, tipo):
                 r_filename_aux = r['file'][:-1] if r['file'].endswith(os.sep) or r['file'].endswith('/') else r['file']
                 r_filename = os.path.basename(r_filename_aux)
                 # logger.debug(os.path.basename(i.path) + '\n' + r_filename)
-                if os.path.basename(i.path) == r_filename:
+                i_filename = os.path.basename(i.path)
+                '''if  i_filename.endswith("[{}]".format(i.channel)):
+                    i_filename = i_filename.replace("[{}]".format(i.channel),'').strip()
+                    r_filename = r_filename.replace("[{}]".format(i.channel),'').strip()'''
+                if i_filename == r_filename:
                     infoLabels = r
 
                     # Obtener imagenes y asignarlas al item
@@ -443,6 +638,7 @@ def set_infoLabels_from_library(itemlist, tipo):
                     break
 
 
+'''
 def clean_up_file(item):
     """
     borra los elementos del fichero "series" que no existen como carpetas en la libreria de "SERIES"
@@ -490,6 +686,7 @@ def save_tvshow_in_file(item):
     logger.info("dict_data {0}".format(dict_data))
     json_data = jsontools.dump_json(dict_data)
     save_file(json_data, fname)
+'''
 
 
 def mark_as_watched(category, id_video=0):
@@ -562,6 +759,7 @@ def mark_as_watched(category, id_video=0):
                                "id": "libGetItem"}
 
                     data = get_data(payload)
+                    logger.debug(repr(data))
                     if data['result']:
                         title = data['result']['item']['title']
                         year = data['result']['item']['year']
@@ -577,6 +775,7 @@ def mark_as_watched(category, id_video=0):
                                    "id": 1}
 
                         data = get_data(payload)
+
                         if data['result']:
                             for d in data['result']['movies']:
                                 logger.info("title {0}".format(d['title']))
