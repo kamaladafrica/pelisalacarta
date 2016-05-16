@@ -7,14 +7,25 @@
 
 import os
 import re
+import sys
 
+import xbmc
 from core import config
-from core import jsontools
 from core import logger
 from core import scrapertools
 from core.item import Item
-from lib.samba import libsmb as samba
 from platformcode import library
+
+# TODO repensar
+librerias = os.path.join(config.get_runtime_path(), 'lib', 'samba')
+if librerias not in sys.path:
+    sys.path.append(librerias)
+
+libreria_libsmb = xbmc.translatePath(os.path.join(config.get_runtime_path(), 'lib', 'samba', 'libsmb'))
+if libreria_libsmb not in sys.path:
+    sys.path.append(libreria_libsmb)
+
+import libsmb as samba
 
 __channel__ = "biblioteca"
 DEBUG = True
@@ -30,7 +41,7 @@ def mainlist(item):
     itemlist = list()
     itemlist.append(Item(channel=__channel__, action="peliculas", title="Películas"))
     itemlist.append(Item(channel=__channel__, action="series", title="Series"))
-    #itemlist.append(Item(channel=__channel__, action="fichero_series", title="Fichero de series"))
+    # itemlist.append(Item(channel=__channel__, action="fichero_series", title="Fichero de series"))
 
     return itemlist
 
@@ -39,7 +50,7 @@ def peliculas(item):
     logger.info("pelisalacarta.channels.biblioteca peliculas")
     path = library.MOVIES_PATH
     itemlist = []
-    aux_list = list()
+    aux_list = []
 
     # Obtenemos todos los strm de la biblioteca de CINE recursivamente
     if not samba.usingsamba(path):
@@ -59,14 +70,14 @@ def peliculas(item):
     for i in aux_list:
         if not samba.usingsamba(i):
             strm_item = Item().fromurl(library.read_file(i))
-            new_item = strm_item.clone(action=strm_item.action, path=i, from_biblioteca= True,
+            new_item = strm_item.clone(action=strm_item.action, path=i, from_biblioteca=True,
                                        title=os.path.splitext(os.path.basename(i))[0].capitalize(),
                                        extra=strm_item.extra)
         else:
             new_item = item.clone(action="play_strm", path=i,
                                   title=os.path.splitext(os.path.basename(i))[0].capitalize())
 
-        logger.debug(new_item.tostring('\n'))
+        # logger.debug(new_item.tostring('\n'))
         itemlist.append(new_item)
 
     library.set_infoLabels_from_library(itemlist, tipo='Movies')
@@ -88,7 +99,7 @@ def series(item):
     # Crear un item en la lista para cada carpeta encontrada
     for i in carpetas_series:
         path = library.join_path(raiz, i)
-        new_item = Item(channel=item.channel, action ='get_temporadas', title=i, path=path)
+        new_item = Item(channel=item.channel, action='get_temporadas', title=i, path=path)
         itemlist.append(new_item)
 
     library.set_infoLabels_from_library(itemlist, tipo='TVShows')
@@ -98,8 +109,8 @@ def series(item):
 
 def get_temporadas(item):
     logger.info("pelisalacarta.channels.biblioteca get_temporadas")
-    itemlist = list()
-    dict_temp ={}
+    itemlist = []
+    dict_temp = {}
 
     # Obtenemos las carpetas de los canales y los archivos de los capitulos
     if not samba.usingsamba(item.path):
@@ -116,10 +127,10 @@ def get_temporadas(item):
             path = library.join_path(raiz, c)
             logger.debug(item.tostring('\n'))
             title = c
-            canal = re.search('\[(.*?)\]',c)
+            canal = re.search('\[(.*?)\]', c)
             if canal:
                 canal = canal.group(1).capitalize()
-                title = "{0} [{1}]".format(item.title,canal)
+                title = "{0} [{1}]".format(item.title, canal)
             new_item = item.clone(action='get_temporadas', title=title, path=path)
             itemlist.append(new_item)
 
@@ -137,23 +148,23 @@ def get_temporadas(item):
                 dict_temp[season] = "Temporada " + str(season)
 
         # Creamos un item por cada temporada
-        for k, v in dict_temp.items():
-            new_item = item.clone(action='get_capitulos', title = v, contentSeason = k, contentEpisodeNumber="",
-                                  filtrar_season = True)
+        for season, title in dict_temp.items():
+            new_item = item.clone(action='get_capitulos', title=title, contentSeason=season, contentEpisodeNumber="",
+                                  filtrar_season=True)
             itemlist.append(new_item)
             logger.debug(new_item.tostring())
 
         if len(itemlist) > 1:
             itemlist = sorted(itemlist, key=lambda it: int(it.contentSeason))
-            new_item = item.clone(action='get_capitulos', title ="*Todas las temporadas")
-            itemlist.insert(0,new_item)
+            new_item = item.clone(action='get_capitulos', title="*Todas las temporadas")
+            itemlist.insert(0, new_item)
 
     return itemlist
 
 
 def get_capitulos(item):
     logger.info("pelisalacarta.channels.biblioteca get_capitulos")
-    itemlist = list()
+    itemlist = []
     logger.debug(item.tostring('\n'))
     # Obtenemos los archivos de los capitulos
     if not samba.usingsamba(item.path):
@@ -164,10 +175,10 @@ def get_capitulos(item):
 
     # Crear un item en la lista para cada strm encontrado
     for i in ficheros:
-        if i.endswith('.strm'):
-
+        if i.endswith(".strm"):
+            season, episode = scrapertools.get_season_and_episode(i).split("x")
             # Si hay q filtrar por temporada, ignoramos los capitulos de otras temporadas
-            if item.filtrar_season and int(i.split('x')[0]) != int(item.contentSeason):
+            if item.filtrar_season and int(season) != int(item.contentSeason):
                 continue
 
             path = library.join_path(raiz, i)
@@ -175,21 +186,21 @@ def get_capitulos(item):
                 strm_item = Item().fromurl(library.read_file(path))
                 new_item = item.clone(channel=strm_item.channel, action="findvideos", title=i, path=path,
                                       extra=strm_item.extra, url=strm_item.url, viewmode=strm_item.viewmode,
-                                      contentEpisodeNumber= i.split('x')[1])
+                                      contentEpisodeNumber=episode)
             else:
                 new_item = item.clone(channel=item.channel, action="play_strm", title=i, path=path,
-                                      contentEpisodeNumber=i.split('x')[1])
+                                      contentEpisodeNumber=episode)
 
             itemlist.append(new_item)
 
-    library.set_infoLabels_from_library(itemlist, tipo='Episodes')
-    #return sorted(itemlist, key=get_sort_temp_epi)
+    library.set_infoLabels_from_library(itemlist, tipo="Episodes")
+    # return sorted(itemlist, key=get_sort_temp_epi)
     return sorted(itemlist, key=lambda it: (int(it.contentSeason), int(it.contentEpisodeNumber)))
 
 
 def play_strm(item):
     logger.info("pelisalacarta.channels.biblioteca play_strm")
-    itemlist = list()
+    itemlist = []
 
     strm_item = Item().fromurl(library.read_file(item.path))
     new_item = Item(channel=strm_item.channel, action=strm_item.action, title=strm_item.title, path=item.path,
@@ -198,17 +209,15 @@ def play_strm(item):
 
     return itemlist
 
-
-def get_sort_temp_epi(item): # TODO SEitan: No se si esto es realmente necesario
-    #logger.debug(item.tostring())
+'''
+def get_sort_temp_epi(item):  # TODO SEitan: No se si esto es realmente necesario
+    # logger.debug(item.tostring())
     if item.infoLabels:
         return int(item.infoLabels.get('season', "1")), int(item.infoLabels.get('episode', "1"))
     else:
         temporada, capitulo = scrapertools.get_season_and_episode(item.title.lower()).split('x')
         return int(temporada), int(capitulo)
 
-
-'''
 def fichero_series(item):
     logger.info("pelisalacarta.channels.biblioteca fichero_series")
 

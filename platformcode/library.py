@@ -17,6 +17,7 @@ from core import jsontools
 from core import logger
 from core import scrapertools
 
+# TODO repensar
 librerias = os.path.join(config.get_runtime_path(), 'lib', 'samba')
 if librerias not in sys.path:
     sys.path.append(librerias)
@@ -48,9 +49,9 @@ DEBUG = True
 def path_exists(path):
     """
     comprueba si la ruta existe, samba necesita la raíz para conectar y la carpeta
-    @type path: string
+    @type path: str
     @param path: la ruta del fichero
-    @rtype:   string
+    @rtype:   str
     @return:  devuelve si existe la ruta.
     """
     if not samba.usingsamba(path):
@@ -70,7 +71,7 @@ def path_exists(path):
 def make_dir(path):
     """
     crea un directorio, samba necesita la raíz para conectar y la carpeta
-    @type path: string
+    @type path: str
     @param path: la ruta del fichero
     """
     logger.info("[library.py] make_dir")
@@ -95,11 +96,11 @@ def make_dir(path):
 def join_path(path, name):
     """
     une la ruta, el name puede ser carpeta o archivo
-    @type path: string
+    @type path: str
     @param path: la ruta del fichero
-    @type name: string
+    @type name: str
     @param name: nombre del fichero
-    @rtype:   string
+    @rtype:   str
     @return:  devuelve si existe la ruta.
     """
     if not samba.usingsamba(path):
@@ -173,9 +174,9 @@ def library_in_kodi():
 def elimina_tildes(s):
     """
     elimina las tildes de la cadena
-    @type s: string
+    @type s: str
     @param s: cadena.
-    @rtype:   string
+    @rtype:   str
     @return:  cadena sin tildes.
     """
     logger.info("[library.py] elimina_tildes")
@@ -188,9 +189,9 @@ def elimina_tildes(s):
 def title_to_filename(title):
     """
     devuelve un titulo con caracteres válidos para crear un fichero
-    @type title: string
+    @type title: str
     @param title: title.
-    @rtype:   string
+    @rtype:   str
     @return:  cadena correcta sin tildes.
     """
     logger.info("[library.py] title_to_filename")
@@ -201,16 +202,16 @@ def title_to_filename(title):
 
 def savelibrary_movie(item):
     """
-        guarda en la libreria de peliculas el elemento item, con los valores que contiene.
-        @type item: item
-        @param item: elemento que se va a guardar.
-        @rtype insertados: int
-        @return:  el número de elementos insertados
-        @rtype sobreescritos: int
-        @return:  el número de elementos sobreescritos
-        @rtype fallidos: int
-        @return:  el número de elementos fallidos
-        """
+    guarda en la libreria de peliculas el elemento item, con los valores que contiene.
+    @type item: item
+    @param item: elemento que se va a guardar.
+    @rtype insertados: int
+    @return:  el número de elementos insertados
+    @rtype sobreescritos: int
+    @return:  el número de elementos sobreescritos
+    @rtype fallidos: int
+    @return:  el número de elementos fallidos
+    """
     logger.info("[library.py] savelibrary_movie")
     insertados = 0
     sobreescritos = 0
@@ -235,32 +236,35 @@ def savelibrary_movie(item):
     else:
         return 0, 0, 1
 
+
 def savelibrary_tvshow(serie, episodelist):
     """
-        guarda en la libreria de series la serie con todos los capitulos incluidos en la lista episodelist
-        @type serie: item
-        @param serie: item que representa la serie a guardar
-        @type episodelist: list
-        @param episodelist: listado de items que representan los episodios que se van a guardar.
-        @rtype insertados: int
-        @return:  el número de episodios insertados
-        @rtype sobreescritos: int
-        @return:  el número de episodios sobreescritos
-        @rtype fallidos: int
-        @return:  el número de episodios fallidos o -1 si ha fallado toda la serie
-        """
+    guarda en la libreria de series la serie con todos los capitulos incluidos en la lista episodelist
+    @type serie: item
+    @param serie: item que representa la serie a guardar
+    @type episodelist: list
+    @param episodelist: listado de items que representan los episodios que se van a guardar.
+    @rtype insertados: int
+    @return:  el número de episodios insertados
+    @rtype sobreescritos: int
+    @return:  el número de episodios sobreescritos
+    @rtype fallidos: int
+    @return:  el número de episodios fallidos o -1 si ha fallado toda la serie
+    """
     logger.info("[library.py] savelibrary_tvshow")
 
     if serie.show == "":
         return 0, 0, -1  # Salimos sin guardar
 
-    if not 'infoLabels' in serie: serie.infoLabels = {}
-    if not serie.infoLabels.has_key('title'): serie.infoLabels['title'] = serie.show
+    if 'infoLabels' not in serie:
+        serie.infoLabels = {}
+    if 'title' not in serie.infoLabels:
+        serie.infoLabels['title'] = serie.show
 
     from core import tmdb
-    tmdb.set_infoLabels(serie,True)
-    #logger.debug(tmdb.infoLabels_tostring(serie))
-    if not 'tmdb_id' in serie.infoLabels:
+    tmdb.set_infoLabels(serie, True)
+    # logger.debug(tmdb.infoLabels_tostring(serie))
+    if 'tmdb_id' not in serie.infoLabels:
         return 0, 0, -1  # Salimos sin guardar
 
     # Cargar el registro series.json
@@ -283,10 +287,10 @@ def savelibrary_tvshow(serie, episodelist):
                 raise
 
     folder = title_to_filename("{0} [{1}]".format(serie.infoLabels['title'].capitalize(), serie.channel.capitalize()))
-    path = join_path(path,folder)
+    path = join_path(path, folder)
 
     # Si no hay datos del canal en el registro para esta serie...
-    if not serie.channel in dict_series[serie.infoLabels['tmdb_id']]:
+    if serie.channel not in dict_series[serie.infoLabels['tmdb_id']]:
         # ... añadir canal al registro de la serie
         dict_series[serie.infoLabels['tmdb_id']][serie.channel] = serie.url
         logger.info("[library.py] savelibrary Creando directorio serie:" + path)
@@ -304,24 +308,23 @@ def savelibrary_tvshow(serie, episodelist):
         json_data = jsontools.dump_json(dict_series)
         save_file(json_data, fname)
 
-
     return insertados, sobreescritos, fallidos
 
 
 def savelibrary_episodes(path, episodelist):
     """
-        guarda en la ruta indicada todos los capitulos incluidos en la lista episodelist
-        @type path: str
-        @param path: ruta donde guardar los episodios
-        @type episodelist: list
-        @param episodelist: listado de items que representan los episodios que se van a guardar.
-        @rtype insertados: int
-        @return:  el número de episodios insertados
-        @rtype sobreescritos: int
-        @return:  el número de episodios sobreescritos
-        @rtype fallidos: int
-        @return:  el número de episodios fallidos
-        """
+    guarda en la ruta indicada todos los capitulos incluidos en la lista episodelist
+    @type path: str
+    @param path: ruta donde guardar los episodios
+    @type episodelist: list
+    @param episodelist: listado de items que representan los episodios que se van a guardar.
+    @rtype insertados: int
+    @return:  el número de episodios insertados
+    @rtype sobreescritos: int
+    @return:  el número de episodios sobreescritos
+    @rtype fallidos: int
+    @return:  el número de episodios fallidos
+    """
     logger.info("[library.py] savelibrary_episodes")
     insertados = 0
     sobreescritos = 0
@@ -343,15 +346,16 @@ def savelibrary_episodes(path, episodelist):
         i += 1
         p_dialog.update(i * t, 'Añadiendo episodio...', e.title)
         # Añade todos menos el que dice "Añadir esta serie..." o "Descargar esta serie..."
-        if e.action == "add_serie_to_library" or e.action == "download_all_episodes": continue
+        if e.action == "add_serie_to_library" or e.action == "download_all_episodes":
+            continue
 
         e.action = "play_from_library"
-        e.category="Series"
+        e.category = "Series"
 
         nuevo = False
         filename = "{0}.strm".format(scrapertools.get_season_and_episode(e.title.lower()))
         fullfilename = join_path(path, filename)
-        #logger.debug(fullfilename)
+        # logger.debug(fullfilename)
 
         if not path_exists(fullfilename):
             nuevo = True
@@ -451,10 +455,10 @@ def read_file(fname):
     """
     pythonic way to read from file
 
-    @type  fname: string
+    @type  fname: str
     @param fname: filename.
 
-    @rtype:   string
+    @rtype:   str
     @return:  data from filename.
     """
     logger.info("[library.py] read_file")
@@ -487,9 +491,9 @@ def save_file(data, fname):
     """
     pythonic way to write a file
 
-    @type  fname: string
+    @type  fname: str
     @param fname: filename.
-    @type  data: string
+    @type  data: str
     @param data: data to save.
 
     @rtype:   bool
@@ -529,7 +533,7 @@ def set_infoLabels_from_library(itemlist, tipo):
     guarda los datos (thumbnail, fanart, plot, actores, etc) a mostrar de la library de Kodi.
     @type itemlist: list
     @param itemlist: item
-    @type tipo: string
+    @type tipo: str
     @param tipo:
     @rtype:   infoLabels
     @return:  result of saving.
@@ -667,7 +671,7 @@ def clean_up_file(item):
     save_file(json_data, join_path(config.get_data_path(), TVSHOW_FILE))
 
     return []
-
+'''
 
 def save_tvshow_in_file(item):
     """
@@ -686,13 +690,12 @@ def save_tvshow_in_file(item):
     logger.info("dict_data {0}".format(dict_data))
     json_data = jsontools.dump_json(dict_data)
     save_file(json_data, fname)
-'''
 
 
 def mark_as_watched(category, id_video=0):
     """
     marca el capitulo como visto en la libreria de Kodi
-    @type category: string
+    @type category: str
     @param category: categoria "Series" o "Cine"
     @type id_video: int
     @param id_video: identificador 'episodeid' o 'movieid' en la BBDD
@@ -911,3 +914,11 @@ def convert_xml_to_json(flag):
 
                 json_data = jsontools.dump_json(dict_data)
                 save_file(json_data, os.path.join(config.get_data_path(), TVSHOW_FILE))
+
+
+def update():
+    logger.info("[library.py] update")
+    # Se comenta la llamada normal para reutilizar 'payload' dependiendo del modo cliente
+    # xbmc.executebuiltin('UpdateLibrary(video)')
+    payload = {"jsonrpc": "2.0", "method": "VideoLibrary.Scan", "id": 1}
+    get_data(payload)

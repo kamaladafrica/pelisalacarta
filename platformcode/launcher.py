@@ -13,7 +13,6 @@ import urllib2
 from core import channeltools
 from core import config
 from core import logger
-from core import scrapertools
 from core.item import Item
 from platformcode import library
 from platformcode import xbmctools
@@ -368,6 +367,7 @@ def filtered_servers(itemlist, server_white_list, server_black_list):
 
     return new_list
 
+
 def play_from_library(item, channel, server_white_list, server_black_list):
     logger.info("pelisalacarta.platformcode.launcher play_from_library")
 
@@ -421,6 +421,7 @@ def add_pelicula_to_library(item):
 
     new_item = item.clone(action="play_from_library", category="Cine")
     insertados, sobreescritos, fallidos = library.savelibrary_movie(new_item)
+    itemlist = []
 
     if fallidos == 0:
         itemlist.append(Item(title="La pelicula se ha añadido a la biblioteca", channel=item.channel))
@@ -429,14 +430,11 @@ def add_pelicula_to_library(item):
 
     xbmctools.renderItems(itemlist, item)
 
-    import xbmc
-    xbmc.executebuiltin('UpdateLibrary(video)')
+    library.update()
 
 
 def add_serie_to_library(item, channel):
     logger.info("pelisalacarta.platformcode.launcher add_serie_to_library, show=#"+item.show+"#")
-
-    import xbmcgui
 
     # Esta marca es porque el item tiene algo más aparte en el atributo "extra"
     action = item.extra
@@ -458,13 +456,12 @@ def add_serie_to_library(item, channel):
     elif fallidos > 0:
         itemlist.append(Item(title="ERROR, la serie NO se ha añadido completa a la biblioteca",
                              channel=item.channel))
-        logger.error("No se han podido añadir {0} episodios de la serie {1} a la biblioteca".format(fallidos, item.show))
+        logger.error("No se han podido añadir {0} episodios de la serie {1} a la biblioteca".format(fallidos,
+                                                                                                    item.show))
     else:
         itemlist.append(Item(title="La serie se ha añadido a la biblioteca", channel=item.channel))
-        logger.info("[launcher.py] Se han añadido {0} episodios de la serie {1} a la biblioteca".format(insertados, item.show))
+        logger.info("[launcher.py] Se han añadido {0} episodios de la serie {1} a la biblioteca".format(insertados,
+                                                                                                        item.show))
 
     xbmctools.renderItems(itemlist, item)
-    '''import xbmc
-    xbmc.executebuiltin('UpdateLibrary(video)')''' # Esto provoca un bucle
-
-
+    library.update()
