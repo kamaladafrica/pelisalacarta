@@ -305,6 +305,26 @@ def run():
             logger.info("codigo de error HTTP : %d" %e.code)
             texto = (config.get_localized_string(30051) % e.code) # "El sitio web no funciona correctamente (error http %d)"
             ok = ventana_error.ok ("plugin", texto)
+    
+    except:
+      import traceback
+      import xbmcgui
+      logger.error(traceback.format_exc())
+      
+      patron = 'File "'+os.path.join(config.get_runtime_path(),"channels","").replace("\\","\\\\")+'([^.]+)\.py"'
+      canal = scrapertools.find_single_match(traceback.format_exc(),patron)
+      
+      if canal:
+        xbmcgui.Dialog().ok(
+          "Se ha producido un error en el canal " + canal,
+          "Esto puede ser causado por varias razones: \n"
+          " - El servidor no está disponible, o no esta respondiendo.\n"
+          " - Cambios en el diseño de la web.\n"
+          "Comprueba el log para ver mas detalles del error.")
+      else:
+        xbmcgui.Dialog().ok(
+          "Se ha producido un error en pelisalacarta",
+          "Comprueba el log para ver mas detalles del error." )
 
 
 def episodio_ya_descargado(show_title,episode_title):
