@@ -210,12 +210,16 @@ def savelibrary_movie(item):
     @rtype sobreescritos: int
     @return:  el número de elementos sobreescritos
     @rtype fallidos: int
-    @return:  el número de elementos fallidos
+    @return:  el número de elementos fallidos o -1 si ha fallado todo
     """
     logger.info("[library.py] savelibrary_movie")
     insertados = 0
     sobreescritos = 0
     fallidos = 0
+    logger.debug(item.tostring('\n'))
+
+    if not item.fulltitle or not item.channel:
+        return 0, 0, -1  # Salimos sin guardar
 
     filename = title_to_filename("{0} [{1}].strm".format(item.fulltitle.capitalize(),
                                                          item.channel.capitalize()))
@@ -227,9 +231,9 @@ def savelibrary_movie(item):
 
     if path_exists(fullfilename):
         logger.info("[library.py] savelibrary el fichero existe. Se sobreescribe")
-        insertados += 1
-    else:
         sobreescritos += 1
+    else:
+        insertados += 1
 
     if save_file('{addon}?{url}'.format(addon=addon_name, url=item.tourl()), fullfilename):
         return insertados, sobreescritos, fallidos
@@ -712,7 +716,7 @@ def mark_as_watched(category, id_video=0):
         payload = {"jsonrpc": "2.0", "method": "Player.GetActivePlayers", "id": 1}
         data = get_data(payload)
 
-        if data['result']:
+        if 'result' in data:
             payload_f = ''
             player_id = data['result'][0]["playerid"]
 
@@ -724,7 +728,7 @@ def mark_as_watched(category, id_video=0):
                                "method": "Player.GetItem", "id": "libGetItem"}
 
                     data = get_data(payload)
-                    if data['result']:
+                    if 'result' in data:
                         season = data['result']['item']['season']
                         episode = data['result']['item']['episode']
                         showtitle = data['result']['item']['showtitle']
@@ -742,7 +746,7 @@ def mark_as_watched(category, id_video=0):
                             "id": 1}
 
                         data = get_data(payload)
-                        if data['result']:
+                        if 'result' in data:
                             for d in data['result']['episodes']:
                                 if d['showtitle'] == showtitle:
                                     episodeid = d['episodeid']
@@ -763,7 +767,7 @@ def mark_as_watched(category, id_video=0):
 
                     data = get_data(payload)
                     logger.debug(repr(data))
-                    if data['result']:
+                    if 'result' in data:
                         title = data['result']['item']['title']
                         year = data['result']['item']['year']
                         # logger.info("titulo es {0}".format(title))
@@ -779,7 +783,7 @@ def mark_as_watched(category, id_video=0):
 
                         data = get_data(payload)
 
-                        if data['result']:
+                        if 'result' in data:
                             for d in data['result']['movies']:
                                 logger.info("title {0}".format(d['title']))
                                 if d['title'] == title:
@@ -804,7 +808,7 @@ def mark_as_watched(category, id_video=0):
                     #            'percentage': 0.209716334939003,
                     #            'time': {'hours': 0, 'seconds': 5, 'minutes': 0, 'milliseconds': 187}}
 
-                    if data['result']:
+                    if 'result' in data:
                         from datetime import timedelta
                         totaltime = data['result']['totaltime']
                         totaltime = totaltime['seconds'] + 60 * totaltime['minutes'] + 3600 * totaltime['hours']

@@ -155,7 +155,7 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
     import xbmcgui,xbmc
     
     logger.info("[xbmctools.py] play_video")
-    logger.info(item.tostring())
+    #logger.info(item.tostring('\n'))
 
     try:
         item.server = item.server.lower()
@@ -451,7 +451,8 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
         if titulo == "":
             titulo = item.title
         #library.savelibrary(titulo,item.url,item.thumbnail,item.server,item.plot,canal=item.channel,category=item.category,Serie=item.show)
-
+        # TODO ¿SOLO peliculas?
+        #logger.debug(item.tostring('\n'))
         new_item = item.clone(title=titulo, action="play_from_library", category="Cine",
                               fulltitle=item.fulltitle, channel=item.channel)
         #logger.debug(new_item.tostring('\n'))

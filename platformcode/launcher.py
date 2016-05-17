@@ -173,7 +173,7 @@ def run():
                     getattr(channel, item.action)(params, item.url, item.category)
             else:
                 logger.info("pelisalacarta.platformcode.launcher multiplatform channel")
-
+                #logger.debug(item.tostring('\n'))
                 if item.action == "play":
                     logger.info("pelisalacarta.platformcode.launcher play")
                     # logger.debug(str(item.infoLabels))

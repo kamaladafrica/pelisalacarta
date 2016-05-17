@@ -68,14 +68,14 @@ def peliculas(item):
 
     # Crear un item en la lista para cada strm encontrado
     for i in aux_list:
-        if not samba.usingsamba(i):
-            strm_item = Item().fromurl(library.read_file(i))
-            new_item = strm_item.clone(action=strm_item.action, path=i, from_biblioteca=True,
-                                       title=os.path.splitext(os.path.basename(i))[0].capitalize(),
-                                       extra=strm_item.extra)
-        else:
+        #if not samba.usingsamba(i):
+        strm_item = Item().fromurl(library.read_file(i))
+        new_item = strm_item.clone(action=strm_item.action, path=i, from_biblioteca=True,
+                                   title=os.path.splitext(os.path.basename(i))[0].capitalize(),
+                                   extra=strm_item.extra)
+        '''else:
             new_item = item.clone(action="play_strm", path=i,
-                                  title=os.path.splitext(os.path.basename(i))[0].capitalize())
+                                  title=os.path.splitext(os.path.basename(i))[0].capitalize())'''
 
         # logger.debug(new_item.tostring('\n'))
         itemlist.append(new_item)
@@ -117,7 +117,7 @@ def get_temporadas(item):
         raiz, carpetas_series, ficheros = os.walk(item.path).next()
     else:
         raiz = item.path
-        carpetas_series = samba.get_directories(path)
+        carpetas_series = samba.get_directories(item.path)
         ficheros = samba.get_files(item.path)
 
     if len(carpetas_series) > 1:
@@ -182,14 +182,14 @@ def get_capitulos(item):
                 continue
 
             path = library.join_path(raiz, i)
-            if not samba.usingsamba(raiz):
-                strm_item = Item().fromurl(library.read_file(path))
-                new_item = item.clone(channel=strm_item.channel, action="findvideos", title=i, path=path,
-                                      extra=strm_item.extra, url=strm_item.url, viewmode=strm_item.viewmode,
-                                      contentEpisodeNumber=episode)
-            else:
+            #if not samba.usingsamba(raiz): TODO Esto no es necesario
+            strm_item = Item().fromurl(library.read_file(path))
+            new_item = item.clone(channel=strm_item.channel, action="findvideos", title=i, path=path,
+                                  extra=strm_item.extra, url=strm_item.url, viewmode=strm_item.viewmode,
+                                  contentEpisodeNumber=episode)
+            '''else:
                 new_item = item.clone(channel=item.channel, action="play_strm", title=i, path=path,
-                                      contentEpisodeNumber=episode)
+                                      contentEpisodeNumber=episode)'''
 
             itemlist.append(new_item)
 
