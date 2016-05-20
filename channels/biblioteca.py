@@ -11,6 +11,7 @@ import sys
 
 import xbmc
 from core import config
+from core import jsontools
 from core import logger
 from core import scrapertools
 from core.item import Item
@@ -219,6 +220,7 @@ def get_sort_temp_epi(item):  # TODO SEitan: No se si esto es realmente necesari
         return int(temporada), int(capitulo)
 '''
 
+
 def fichero_series(item):
     logger.info("pelisalacarta.channels.biblioteca fichero_series")
 
@@ -237,13 +239,13 @@ def fichero_series(item):
         if show.startswith("t_"):
             show = show[2:]
 
-        itemlist.append(Item(channel=item.channel, action=item.action,
-                                 title="{0}".format(show)))
+        itemlist.append(Item(channel=item.channel, action=item.action, title="{0}".format(show)))
 
         for channel in dict_data[tvshow_id]["channels"].keys():
 
             itemlist.append(Item(channel=item.channel, action=item.action,
-                                 title="[{channel}] {show}".format(channel=channel, show=dict_data[tvshow_id]["channels"][channel]["tvshow"])))
+                                 title="     [{channel}] {show}".format(
+                                     channel=channel, show=dict_data[tvshow_id]["channels"][channel]["tvshow"])))
 
     return itemlist
 
