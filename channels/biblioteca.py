@@ -70,7 +70,10 @@ def peliculas(item):
     for i in aux_list:
         #if not samba.usingsamba(i):
         strm_item = Item().fromurl(library.read_file(i))
-        new_item = strm_item.clone(action=strm_item.action, path=i, from_biblioteca=True,
+        '''new_item = strm_item.clone(action=strm_item.action, path=i, from_biblioteca=True,
+                                   title=os.path.splitext(os.path.basename(i))[0].capitalize(),
+                                   extra=strm_item.extra)'''
+        new_item = strm_item.clone(action="findvideos", path=i, from_biblioteca=True,
                                    title=os.path.splitext(os.path.basename(i))[0].capitalize(),
                                    extra=strm_item.extra)
         '''else:

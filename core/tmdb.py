@@ -360,15 +360,15 @@ def infoLabels_tostring(item, separador="\n"):
 
 #--------------------------------------------------------------------------------------------------------------------------------------------
 # class Tmdb:
-#   Scraper para pelisalacarta, palco y otros plugin de XBMC/Kodi basado en el Api de https://www.themoviedb.org/
+#   Scraper para pelisalacarta basado en el Api de https://www.themoviedb.org/
 #   version 1.4:
 #       - Documentada limitacion de uso de la API (ver mas abajo).
 #       - Añadido metodo get_temporada()
 #   version 1.3:
 #       - Corregido error al devolver None el path_poster y el backdrop_path
 #       - Corregido error que hacia que en el listado de generos se fueran acumulando de una llamada a otra
-#       - Aï¿½adido metodo get_generos()
-#       - Aï¿½adido parametros opcional idioma_alternativo al metodo get_sinopsis()
+#       - Añadido metodo get_generos()
+#       - Añadido parametros opcional idioma_alternativo al metodo get_sinopsis()
 #
 #
 #   Uso:
@@ -379,7 +379,7 @@ def infoLabels_tostring(item, separador="\n"):
 #            tipo: ("movie" o "tv") Tipo de resultado buscado peliculas o series. Por defecto "movie"
 #            (opcional) idioma_busqueda: (str) codigo del idioma segun ISO 639-1
 #            (opcional) include_adult: (bool) Se incluyen contenidos para adultos en la busqueda o no. Por defecto 'False'
-#            (opcional) year: (str) Aï¿½o de lanzamiento.
+#            (opcional) year: (str) Año de lanzamiento.
 #            (opcional) page: (int) Cuando hay muchos resultados para una busqueda estos se organizan por paginas. 
 #                            Podemos cargar la pagina que deseemos aunque por defecto siempre es la primera.
 #        Return:
@@ -444,18 +444,16 @@ class Tmdb(object):
         # http://api.themoviedb.org/3/search/movie?api_key=f7f51775877e0bb6703520952b3c7840&query=superman&language=es&include_adult=false&page=1
         url='http://api.themoviedb.org/3/search/%s?api_key=f7f51775877e0bb6703520952b3c7840&query=%s&language=%s&include_adult=%s&page=%s' %(self.busqueda["tipo"], self.busqueda["texto"].replace(' ','%20') , self.busqueda["idioma"], self.busqueda["include_adult"], str(page))
         if self.busqueda["year"] !='': url+= '&year=' + self.busqueda["year"] 
+
         buscando= self.busqueda["texto"].capitalize()
-        
-        logger.info("[Tmdb.py] Buscando '" + buscando + "' en pagina " + str(page))
-        print url
+        logger.debug("Buscando %s en pagina %s:\n%s" %(buscando, page, url))
+
         try:
             response_dic= self.__get_json(url)
-                        
             self.total_results= response_dic["total_results"]
             self.total_pages= response_dic["total_pages"]
         except:
             self.total_results= 0
-
 
         if self.total_results > 0:
             self.results=response_dic["results"]
@@ -464,7 +462,8 @@ class Tmdb(object):
             self.__leer_resultado(self.results[index_resultado])
         else:
             # No hay resultados de la busqueda
-            logger.info("[Tmdb.py] La busqueda de '" + buscando + "' no dio resultados para la pagina " + str(page))
+            logger.debug("La busqueda de %s no dio resultados para la pagina %s" %(buscando, page))
+
 
     def __by_id(self,source="tmdb"):
         
@@ -479,8 +478,7 @@ class Tmdb(object):
             url='http://api.themoviedb.org/3/find/%s?external_source=%s&api_key=f7f51775877e0bb6703520952b3c7840&language=%s' %(self.busqueda["id"], source, self.busqueda["idioma"])
             buscando= source.capitalize() + ": " + self.busqueda["id"]
              
-        logger.info("[Tmdb.py] Buscando " + buscando)    
-        #print url
+        logger.debug("Buscando %s:\n%s" %(buscando,url))
         resultado=self.__get_json(url)
         
         if source!="tmdb":
@@ -500,29 +498,29 @@ class Tmdb(object):
             self.__leer_resultado(resultado)
             
         else: # No hay resultados de la busqueda
-            logger.info("[Tmdb.py] La busqueda de " + buscando + " no dio resultados.")
-     
+            logger.debug("La busqueda de %s no dio resultados." % (buscando))
+
+
     def __get_json(self,url):
         try:
             headers = {'Accept': 'application/json'}
             request = urllib2.Request(url , headers=headers)
             response_body = urllib2.urlopen(request).read()
         except:
-            logger.info("[Tmdb.py] Fallo la busqueda")
-            logger.info(traceback.format_exc())
+            logger.error("Fallo la busqueda\n %s" %traceback.format_exc())
             return None
         try:    
             try:
-                from core import jsontools # 1ï¿½ opcion utilizar jsontools.py ...
+                from core import jsontools # Primera opcion utilizar jsontools.py ...
                 return jsontools.load_json(response_body)
             except:
                 import json # ... y si falla probar con el json incluido
                 return json.loads(response_body)
         except:
-            logger.info("[Tmdb.py] Fallo json")
-            logger.info(traceback.format_exc())
+            logger.error("Fallo json\n %s" % traceback.format_exc())
             return None
-            
+
+
     def __inicializar(self):    
         # Inicializamos las colecciones de resultados, fanart y temporada
         for i in (self.result, self.fanart, self.temporada):
@@ -533,6 +531,7 @@ class Tmdb(object):
                     i[k]=[]
                 elif type(i[k]) == dict: 
                     i[k]={}
+
 
     def __init__(self, **kwargs):
         self.page=kwargs.get('page',1)
@@ -567,6 +566,7 @@ class Tmdb(object):
                     'production_countries':[],
                     'origin_country':[],
                     'release_date':"",
+                    'first_air_date':"",
                     'revenue':"", # recaudacion
                     'runtime':"", #runtime duracion
                     #spoken_languages
@@ -620,6 +620,7 @@ class Tmdb(object):
         else:
             raise Exception ("Parametros no validos al crear el objeto Tmdb.\nConsulte los modos de uso.")
 
+
     def __leer_resultado(self,data):    
         for k,v in data.items():
             if k=="genre_ids": # Lista de generos (lista con los id de los generos)
@@ -663,17 +664,32 @@ class Tmdb(object):
 
 
     def load_resultado(self,index_resultado=0,page=1):
-        if self.total_results <= 1: # Si no hay mas un resultado no podemos cambiar
+        if self.total_results <= 1: # Si no hay mas de un resultado no podemos cambiar
             return None 
         if page < 1 or page > self.total_pages: page=1
         if index_resultado < 0: index_resultado=0
         self.__inicializar()
-        if page !=self.page:
+        if page != self.page:
             self.__search(index_resultado=index_resultado, page=page)
         else:
-            print self.result["genres"]
+            #print self.result["genres"]
             self.__leer_resultado(self.results[index_resultado])
-    
+
+    def get_list_resultados(self):
+        # TODO documentar
+        from core.item import Item
+        res = []
+
+        for r in self.results:
+            self.__inicializar()
+            self.__leer_resultado(r)
+            self.result['thumbnail'] = self.get_poster(size="w300")
+            self.result['fanart'] = self.get_backdrop()
+            res.append(self.result.copy())
+
+        return res
+
+
     def get_generos(self):
         #--------------------------------------------------------------------------------------------------------------------------------------------
         #   Parametros:
@@ -682,7 +698,8 @@ class Tmdb(object):
         #       Devuelve la lista de generos a los que pertenece la pelicula o serie.
         #--------------------------------------------------------------------------------------------------------------------------------------------
         return ', '.join(self.result["genres"])
-    
+
+
     def get_id(self):
         #--------------------------------------------------------------------------------------------------------------------------------------------
         #   Parametros:
@@ -692,7 +709,8 @@ class Tmdb(object):
         #       Se puede utilizar este metodo para saber si una busqueda ha dado resultado o no.
         #--------------------------------------------------------------------------------------------------------------------------------------------
         return str(self.result['id'])
-        
+
+
     def get_sinopsis(self, idioma_alternativo=""):
         #--------------------------------------------------------------------------------------------------------------------------------------------
         #   Parametros:
@@ -718,7 +736,8 @@ class Tmdb(object):
                         self.result['overview'] = resultado['overview']
                         ret = self.result['overview']
         return ret
-                    
+
+
     def get_poster(self, tipo_respuesta="str", size="original"):
         #--------------------------------------------------------------------------------------------------------------------------------------------
         #   Parametros:
@@ -726,9 +745,9 @@ class Tmdb(object):
         #       size: ("w45", "w92", "w154", "w185", "w300", "w342", "w500", "w600", "h632", "w780", "w1280", "original") 
         #               Indica la anchura(w) o altura(h) de la imagen a descargar. Por defecto "original"
         #   Return:
-        #       Si el tipo_respuesta es "list" devuelve un listado con todas las urls de las imagenes tipo poster del tamaï¿½o especificado. 
-        #       Si el tipo_respuesta es "str" devuelve la url de la imagen tipo poster, mas valorada, del tamaï¿½o especificado.
-        #       Si el tamaï¿½o especificado no existe se retornan las imagenes al tamaï¿½o original.
+        #       Si el tipo_respuesta es "list" devuelve un listado con todas las urls de las imagenes tipo poster del tamaño especificado. 
+        #       Si el tipo_respuesta es "str" devuelve la url de la imagen tipo poster, mas valorada, del tamaño especificado.
+        #       Si el tamaño especificado no existe se retornan las imagenes al tamaño original.
         #--------------------------------------------------------------------------------------------------------------------------------------------
         ret=[]
         if not size in ("w45", "w92", "w154", "w185", "w300", "w342", "w500", "w600", "h632", "w780", "w1280", "original"): 
@@ -752,7 +771,7 @@ class Tmdb(object):
             for i in self.result['images_posters']:
                 imagen_path= i['file_path']
                 if size!= "original":
-                    # No podemos pedir tamaï¿½os mayores que el original
+                    # No podemos pedir tamaños mayores que el original
                     if size[1]== 'w' and int(imagen['width']) < int(size[1:]): size="original"
                     elif size[1]== 'h' and int(imagen['height']) < int(size[1:]): size="original"
                 ret.append('http://image.tmdb.org/t/p/' + size + imagen_path)
@@ -760,7 +779,8 @@ class Tmdb(object):
             ret.append(poster_path)
             
         return ret
-    
+
+
     def get_backdrop(self, tipo_respuesta="str", size="original"):
         #--------------------------------------------------------------------------------------------------------------------------------------------
         #   Parametros:
@@ -768,9 +788,9 @@ class Tmdb(object):
         #       size: ("w45", "w92", "w154", "w185", "w300", "w342", "w500", "w600", "h632", "w780", "w1280", "original") 
         #               Indica la anchura(w) o altura(h) de la imagen a descargar. Por defecto "original"
         #   Return:
-        #       Si el tipo_respuesta es "list" devuelve un listado con todas las urls de las imagenes tipo backdrop del tamaï¿½o especificado. 
-        #       Si el tipo_respuesta es "str" devuelve la url de la imagen tipo backdrop, mas valorada, del tamaï¿½o especificado.
-        #       Si el tamaï¿½o especificado no existe se retornan las imagenes al tamaï¿½o original.
+        #       Si el tipo_respuesta es "list" devuelve un listado con todas las urls de las imagenes tipo backdrop del tamaño especificado. 
+        #       Si el tipo_respuesta es "str" devuelve la url de la imagen tipo backdrop, mas valorada, del tamaño especificado.
+        #       Si el tamaño especificado no existe se retornan las imagenes al tamaño original.
         #--------------------------------------------------------------------------------------------------------------------------------------------
         ret=[]
         if not size in ("w45", "w92", "w154", "w185", "w300", "w342", "w500", "w600", "h632", "w780", "w1280", "original"): 
@@ -794,7 +814,7 @@ class Tmdb(object):
             for i in self.result['images_backdrops']:
                 imagen_path= i['file_path']
                 if size!= "original":
-                    # No podemos pedir tamaï¿½os mayores que el original
+                    # No podemos pedir tamaños mayores que el original
                     if size[1]== 'w' and int(imagen['width']) < int(size[1:]): size="original"
                     elif size[1]== 'h' and int(imagen['height']) < int(size[1:]): size="original"
                 ret.append('http://image.tmdb.org/t/p/' + size + imagen_path)
@@ -802,13 +822,14 @@ class Tmdb(object):
             ret.append(backdrop_path)
             
         return ret
-        
+
+
     def get_fanart(self, tipo="hdclearart", idioma=["all"], temporada="all"):
         #--------------------------------------------------------------------------------------------------------------------------------------------
         #   Parametros:
         #       tipo: ("hdclearlogo", "poster",	"banner", "thumbs",	"hdclearart", "clearart", "background",	"clearlogo", "characterart", "seasonthumb", "seasonposter", "seasonbanner", "moviedisc")
         #           Indica el tipo de Art que se desea obtener, segun la web Fanart.tv. Alguno de estos tipos pueden estar solo disponibles para peliculas o series segun el caso. Por defecto "hdclearart"
-        #       (opcional) idioma: (list) Codigos del idioma segun ISO 639-1, "all" (por defecto) para todos los idiomas o "00" para ninguno. Por ejemplo: idioma=["es","00","en"] Incluiria los resultados en espaï¿½ol, sin idioma definido y en ingles, en este orden.
+        #       (opcional) idioma: (list) Codigos del idioma segun ISO 639-1, "all" (por defecto) para todos los idiomas o "00" para ninguno. Por ejemplo: idioma=["es","00","en"] Incluiria los resultados en español, sin idioma definido y en ingles, en este orden.
         #       (opcional solo para series) temporada: (str) Un numero entero que representa el numero de temporada, el numero cero para especiales o "all" para imagenes validas para cualquier temporada. Por defecto "all"
         #   Return: (list)
         #       Retorna una lista con las url de las imagenes segun los parametros de entrada y ordenadas segun las votaciones de Fanart.tv
@@ -886,6 +907,7 @@ class Tmdb(object):
         #print ret_list   
         return ret_list
 
+
     def get_episodio(self, numtemporada=1, capitulo=1):
         #--------------------------------------------------------------------------------------------------------------------------------------------
         #   Parametros:
@@ -921,7 +943,8 @@ class Tmdb(object):
         ret_dic["episodio_imagen"]=('http://image.tmdb.org/t/p/original'+ episodio["still_path"])  if episodio["still_path"] else ""
         
         return ret_dic
-        
+
+
     def get_temporada(self, numtemporada=1):
         #--------------------------------------------------------------------------------------------------------------------------------------------
         #   Parametros:

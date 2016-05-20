@@ -257,19 +257,19 @@ def savelibrary_tvshow(serie, episodelist):
     """
     logger.info("[library.py] savelibrary_tvshow")
 
-    if serie.show == "":
-        return 0, 0, -1  # Salimos sin guardar
+    if serie.show == "": # TODO ¿otras opciones?
+        return 0, 0, -1  # Salimos sin guardar: La serie no tiene el titulo fijado
 
     if 'infoLabels' not in serie:
         serie.infoLabels = {}
     if 'title' not in serie.infoLabels:
         serie.infoLabels['title'] = serie.show
 
-    from core import tmdb
-    tmdb.set_infoLabels(serie, True)
-    # logger.debug(tmdb.infoLabels_tostring(serie))
+    # Abrir ventana de seleccion de serie
+    get_tvshow_from_tmdb(serie)
+
     if 'tmdb_id' not in serie.infoLabels:
-        return 0, 0, -1  # Salimos sin guardar
+        return 0, 0, -1  # Salimos sin guardar: La serie no se encuentra en tmdb.org (pendiente de introduccion manual)
 
     # Cargar el registro series.json
     fname = os.path.join(config.get_data_path(), TVSHOW_FILE)
@@ -277,12 +277,12 @@ def savelibrary_tvshow(serie, episodelist):
     if not dict_series:
         dict_series = {}
 
-    path = join_path(TVSHOWS_PATH, title_to_filename(serie.infoLabels['title']).capitalize())
+    path = join_path(TVSHOWS_PATH, title_to_filename(serie.infoLabels['name']).capitalize())
 
     # Si la serie no existe en el registro ...
     if not serie.infoLabels['tmdb_id'] in dict_series:
         # ... añadir la serie al registro
-        dict_series[serie.infoLabels['tmdb_id']] = {"Title": serie.infoLabels['title']}
+        dict_series[serie.infoLabels['tmdb_id']] = {"name": serie.infoLabels['name']}
         logger.info("[library.py] savelibrary Creando directorio serie:" + path)
         try:
             make_dir(path)
@@ -290,7 +290,7 @@ def savelibrary_tvshow(serie, episodelist):
             if exception.errno != errno.EEXIST:
                 raise
 
-    folder = title_to_filename("{0} [{1}]".format(serie.infoLabels['title'].capitalize(), serie.channel.capitalize()))
+    folder = title_to_filename("{0} [{1}]".format(serie.infoLabels['name'].capitalize(), serie.channel.capitalize()))
     path = join_path(path, folder)
 
     # Si no hay datos del canal en el registro para esta serie...
@@ -305,7 +305,7 @@ def savelibrary_tvshow(serie, episodelist):
                 raise
 
     # Guardar los episodios
-    insertados, sobreescritos, fallidos = savelibrary_episodes(path, episodelist)
+    insertados, sobreescritos, fallidos = 15, 5, 0 #savelibrary_episodes(path, episodelist)
 
     if fallidos > -1 and (insertados + sobreescritos) > 0:
         # Guardar el registro series.json actualizado
@@ -313,6 +313,53 @@ def savelibrary_tvshow(serie, episodelist):
         save_file(json_data, fname)
 
     return insertados, sobreescritos, fallidos
+
+
+def get_tvshow_from_tmdb(serie): #TODO decidir nombre
+    '''
+        hace una busqueda en tmdb por el nombre (y año si esta presente) y
+        presenta una 'ventana' para seleccionar uno
+        Retorna el item pasado como parametro con algunos infoLabels actualizados
+    '''
+    from core import tmdb
+    otmdb = tmdb.Tmdb(texto_buscado=serie.infoLabels['title'], tipo='tv', year=serie.infoLabels.get('year',''))
+    list_resultados = otmdb.get_list_resultados()
+    list_series =[]
+    i = 0
+    for r in list_resultados:
+        #logger.debug(repr(r))
+        if 'name' in r:
+            list_series.insert(i, r['name'])
+        else:
+            list_series.insert(i, r['title']) #for movies
+
+        if 'original_name' in r and not r['original_name'] in (list_series[i],''):
+            list_series[i] = '%s -%s-' %(list_series[i],r['original_name'])
+        elif 'original_title' in r and not r['original_title'] in (list_series[i],''): #for movies
+            list_series[i] = '%s -%s-' % (list_series[i], r['original_title'])
+
+        if 'first_air_date' in r and len(r['first_air_date'])>3:
+            list_series[i] = '%s (%s)' % (list_series[i], r['first_air_date'][:4])
+        elif 'release_date' in r and len(r['release_date'])>3: #for movies
+            list_series[i] = '%s (%s)' % (list_series[i], r['release_date'][:4])
+        i +=1
+
+    #logger.debug(repr(list_series))
+
+    #Temporalmente lo abrimos con un cuadro de seleccion, pero lo suyo es un cuadro de dialogo especial
+    from platformcode import platformtools
+    index_serie = platformtools.dialog_select("Seleccione la serie correcta",list_series) #TODO pasar heading a loc
+    if index_serie < 0 or index_serie > len(list_series)-1:
+        return None
+
+    # Fijamos los infoLabels
+    logger.debug(repr(list_resultados[index_serie]))
+    serie.infoLabels.update(list_resultados[index_serie])
+    serie.infoLabels['tmdb_id'] = list_resultados[index_serie]['id']
+    #serie.infoLabels['title'] =   list_resultados['name'] #Si fuesen movies seria title
+    logger.debug(tmdb.infoLabels_tostring(serie))
+    return serie
+
 
 
 def savelibrary_episodes(path, episodelist):
