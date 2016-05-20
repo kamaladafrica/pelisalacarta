@@ -430,7 +430,7 @@ def add_pelicula_to_library(item):
 
     xbmctools.renderItems(itemlist, item)
 
-    #library.update()
+    library.update()
 
 
 def add_serie_to_library(item, channel):
@@ -464,4 +464,4 @@ def add_serie_to_library(item, channel):
                                                                                                         item.show))
 
     xbmctools.renderItems(itemlist, item)
-    library.update()
+    #library.update() TODO entramos en bucle

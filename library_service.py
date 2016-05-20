@@ -25,9 +25,6 @@
 # ------------------------------------------------------------
 
 import imp
-import os
-
-import xbmc
 
 from core import config
 from core import jsontools
@@ -43,7 +40,7 @@ logger.info("directorio="+directorio)
 if not library.path_exists(directorio):
     library.make_dir(directorio)
 
-library.check_tvshow_xml()
+flag = library.check_tvshow_xml()
 nombre_fichero_config_canal = library.join_path(config.get_data_path(), library.TVSHOW_FILE)
 
 try:
@@ -53,21 +50,28 @@ try:
         data = library.read_file(nombre_fichero_config_canal)
         dict_data = jsontools.load_json(data)
 
-        for channel in dict_data.keys():
-            logger.info("pelisalacarta.library_service_json canal="+channel)
+        for tvshow_id in dict_data.keys():
+            logger.info("pelisalacarta.library_service serie="+dict_data[tvshow_id]["name"])
 
             itemlist = []
 
-            for tvshow in dict_data.get(channel).keys():
-                logger.info("pelisalacarta.library_service serie="+tvshow)
-
-                ruta = library.join_path(config.get_library_path(), "SERIES", tvshow)
+            for channel in dict_data[tvshow_id]["channels"].keys():
+                carpeta = "{0} [{1}]".format(library.title_to_filename(
+                    dict_data[tvshow_id]["channels"][channel]["tvshow"].lower()), channel)
+                # carpeta = dict_serie[tvshow_id]["channels"][channel]["path"]
+                ruta = library.join_path(config.get_library_path(), "SERIES", carpeta)
                 logger.info("pelisalacarta.library_service ruta =#"+ruta+"#")
-                if library.path_exists(ruta):
-                    logger.info("pelisalacarta.library_service Actualizando "+tvshow)
-                    logger.info("pelisalacarta.library_service url "+dict_data.get(channel).get(tvshow))
 
-                    item = Item(url=dict_data.get(channel).get(tvshow), show=tvshow)
+                if flag:
+                    library.make_dir(ruta)
+
+                if library.path_exists(ruta):
+                    logger.info("pelisalacarta.library_service Actualizando "+carpeta)
+                    logger.info("pelisalacarta.library_service url "+dict_data[tvshow_id]["channels"][channel]["url"])
+
+                    item = Item(url=dict_data[tvshow_id]["channels"][channel]["url"],
+                                show=(dict_data[tvshow_id]["channels"][channel]["tvshow"]))
+
                     try:
                         pathchannels = library.join_path(config.get_runtime_path(), 'channels', channel + '.py')
                         logger.info("pelisalacarta.library_service Cargando canal  " + pathchannels + " " + channel)
@@ -79,20 +83,13 @@ try:
                         logger.error(traceback.format_exc())
                         itemlist = []
                 else:
-                    logger.info("pelisalacarta.library_service No actualiza " + tvshow + " (no existe el directorio)")
+                    logger.info("pelisalacarta.library_service No actualiza {0} (no existe el directorio)".
+                                format(dict_data[tvshow_id]["name"]))
                     itemlist = []
 
-                for item in itemlist:
-                    try:
-                        item.show = tvshow
-                        new_item = item.clone(action="play_from_library", category="Series")
-                        logger.info("new item {}".format(new_item.tostring()))
-                        library.savelibrary(new_item)
-                    except:
-                        logger.info("pelisalacarta.library_service Capitulo no valido")
+                library.savelibrary_tvshow(itemlist[0], itemlist, flag)
 
-        import xbmc
-        xbmc.executebuiltin('UpdateLibrary(video)')
+        library.update()
     else:
         logger.info("No actualiza la biblioteca, está desactivado en la configuración de pelisalacarta")
 
