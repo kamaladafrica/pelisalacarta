@@ -53,21 +53,22 @@ try:
         data = library.read_file(nombre_fichero_config_canal)
         dict_data = jsontools.load_json(data)
 
-        for channel in dict_data.keys():
-            logger.info("pelisalacarta.library_service_json canal="+channel)
+        for tvshow_id in dict_data.keys():
+            logger.info("pelisalacarta.library_service serie="+dict_data[tvshow_id]["name"])
 
             itemlist = []
 
-            for tvshow in dict_data.get(channel).keys():
-                logger.info("pelisalacarta.library_service serie="+tvshow)
-
-                ruta = library.join_path(config.get_library_path(), "SERIES", tvshow)
+            for channel in dict_data[tvshow_id]["channels"].keys():
+                carpeta = "{0} [{1}].format(title_to_filename(dict_serie[tvshow_id]["channels"][channel]["tvshow"].lower()), channel)
+                # carpeta = dict_serie[tvshow_id]["channels"][channel]["path"]
+                ruta = library.join_path(config.get_library_path(), "SERIES", carpeta)
                 logger.info("pelisalacarta.library_service ruta =#"+ruta+"#")
                 if library.path_exists(ruta):
-                    logger.info("pelisalacarta.library_service Actualizando "+tvshow)
-                    logger.info("pelisalacarta.library_service url "+dict_data.get(channel).get(tvshow))
+                    logger.info("pelisalacarta.library_service Actualizando "+carpeta)
+                    logger.info("pelisalacarta.library_service url "+dict_serie[tvshow_id]["channels"][channel]["url"])
+                    
+                    item = Item(url=dict_serie[tvshow_id]["channels"][channel]["url"], show=(dict_serie[tvshow_id]["channels"][channel]["tvshow"])
 
-                    item = Item(url=dict_data.get(channel).get(tvshow), show=tvshow)
                     try:
                         pathchannels = library.join_path(config.get_runtime_path(), 'channels', channel + '.py')
                         logger.info("pelisalacarta.library_service Cargando canal  " + pathchannels + " " + channel)
