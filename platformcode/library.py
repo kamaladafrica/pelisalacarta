@@ -160,7 +160,7 @@ def library_in_kodi():
     # TODO arreglar
     return True
 
-    path = xbmc.translatePath(os.path.join("special://masterprofile/", "sources.xml"))
+    path = xbmc.translatePath(os.path.join("special://profile/", "sources.xml"))
     data = read_file(path)
 
     if config.get_library_path() in data:
