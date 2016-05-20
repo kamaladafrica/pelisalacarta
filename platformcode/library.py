@@ -284,9 +284,6 @@ def savelibrary_tvshow(serie, episodelist):
         dict_series = {}
 
     path = join_path(TVSHOWS_PATH, title_to_filename("{0} [{1}]".format(serie.show.strip().lower(), serie.channel)))
-
-    logger.info("create_nfo {}".format(create_nfo))
-
     if not path_exists(path):
         logger.info("[library.py] savelibrary Creando directorio serie:" + path)
         try:
@@ -817,37 +814,82 @@ def check_tvshow_xml():
 
     convert_xml_to_json(flag)
 
-# TODO pendiente de actualizar al nuevo formato
+
 def convert_xml_to_json(flag):
     logger.info("[library.py] convert_xml_to_json:: flag:{0}".format(flag))
     if flag:
-        fname = os.path.join(config.get_data_path(), TVSHOW_FILE_OLD)
+        os.rename(TVSHOWS_PATH, os.path.join(config.get_data_path(), "SERIES_OLD"))
+        if not path_exists(TVSHOWS_PATH):
+    
+            make_dir(TVSHOWS_PATH)
+            if path_exists(TVSHOWS_PATH):
+                fname = os.path.join(config.get_data_path(), TVSHOW_FILE_OLD)
+        
+                dict_data = {}
+        
+                if os.path.isfile(fname):
+                    try:
+                        with open(fname, "r") as f:
+                            for line in f:
+                                aux = line.rstrip('\n').split(",")
+                                serie = aux[0].strip()
+                                url = aux[1].strip()
+                                channel = aux[2].strip()
 
-        dict_data = {}
+                                serie.infoLabels = {}
+                                serie.infoLabels['title'] = serie.show
+        
+                                create_nfo = False
+        
+                                from core import tmdb
+                                tmdb.set_infoLabels(serie, True)
+                                # logger.debug(tmdb.infoLabels_tostring(serie))
+                                if 'tmdb_id' in serie.infoLabels:
+                                    tvshow_id = serie.infoLabels['tmdb_id']
+                                    create_nfo = True
+                                else:
+                                    tvshow_id = "t_{0}_[{1}]".format(serie.strip().replace(" ", "_"), channel)
+        
+                                path = join_path(TVSHOWS_PATH, title_to_filename("{0} [{1}]".format(serie.strip().lower(), channel)))
+        
+                                logger.info("[library.py] savelibrary Creando directorio serie:" + path)
+                                try:
+                                    make_dir(path)
+                                    # si no existia la ruta, creamos el fichero nfo.
+                                    if create_nfo:
+                                        create_nfo_file(tvshow_id, path, "serie")
+                        
+                                except OSError as exception:
+                                    if exception.errno != errno.EEXIST:
+                                        raise
+                                
+                                # Si la serie no existe en el registro ...
+                                if tvshow_id not in dict_series:
+                                    # ... añadir la serie al registro
+                                    dict_series[tvshow_id] = {"name": serie.infoLabels['title'], "channels": {}}
 
-        if os.path.isfile(fname):
-            try:
-                with open(fname, "r") as f:
-                    for line in f:
-                        aux = line.rstrip('\n').split(",")
-                        tvshow = aux[0].strip()
-                        url = aux[1].strip()
-                        channel = aux[2].strip()
+                                # Si no hay datos del canal en el registro para esta serie...
+                                if channel not in dict_series[tvshow_id]["channels"]:
+                                    # ... añadir canal al registro de la serie
+                                    dict_channel = {"tvshow": serie.strip(), "url": url, "path": path}
+                                    dict_series[tvshow_id]["channels"][channel] = dict_channel
 
-                        if channel in dict_data:
-                            dict_data[channel][tvshow] = url
-                        else:
-                            dict_data.update({channel: {tvshow: url}})
-
-            except EnvironmentError:
-                logger.info("ERROR al leer el archivo: {0}".format(fname))
+                    except EnvironmentError:
+                        logger.info("ERROR al leer el archivo: {0}".format(fname))
+                    else:
+                        os.rename(os.path.join(config.get_data_path(), TVSHOW_FILE_OLD),
+                                  os.path.join(config.get_data_path(), "series_old.xml"))
+        
+                        json_data = jsontools.dump_json(dict_data)
+                        save_file(json_data, os.path.join(config.get_data_path(), TVSHOW_FILE))
+                    
+                    # llamamos al servicio para que se generen de nuevo los strm en el nuevo directorio con la estructura correcta.
+                    import library_service
+                    # TODO ARREGLAR BUCLE DE LIBRARY_SERVICE
             else:
-                os.rename(os.path.join(config.get_data_path(), TVSHOW_FILE_OLD),
-                          os.path.join(config.get_data_path(), "series_old.xml"))
-
-                json_data = jsontools.dump_json(dict_data)
-                save_file(json_data, os.path.join(config.get_data_path(), TVSHOW_FILE))
-
+                logger.info("ERROR, no se ha podido crear la nueva carpeta de SERIES")
+        else:
+            logger.info("ERROR, no se ha podido renombrar la antigua carpeta de SERIES")
 
 def update():
     """
