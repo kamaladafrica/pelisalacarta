@@ -41,7 +41,7 @@ def mainlist(item):
     itemlist = list()
     itemlist.append(Item(channel=__channel__, action="peliculas", title="Películas"))
     itemlist.append(Item(channel=__channel__, action="series", title="Series"))
-    # itemlist.append(Item(channel=__channel__, action="fichero_series", title="Fichero de series"))
+    itemlist.append(Item(channel=__channel__, action="fichero_series", title="Fichero de series"))
 
     return itemlist
 
@@ -217,6 +217,7 @@ def get_sort_temp_epi(item):  # TODO SEitan: No se si esto es realmente necesari
     else:
         temporada, capitulo = scrapertools.get_season_and_episode(item.title.lower()).split('x')
         return int(temporada), int(capitulo)
+'''
 
 def fichero_series(item):
     logger.info("pelisalacarta.channels.biblioteca fichero_series")
@@ -231,10 +232,18 @@ def fichero_series(item):
     itemlist.append(Item(channel=item.channel, action="limpiar_fichero",
                          title="[COLOR yellow]Eliminar entradas de series huerfanas[/COLOR]", dict_fichero=dict_data))
 
-    for channel in dict_data.keys():
-        for tvshow in dict_data.get(channel).keys():
+    for tvshow_id in dict_data.keys():
+        show = dict_data[tvshow_id]["name"]
+        if show.startswith("t_"):
+            show = show[2:]
+
+        itemlist.append(Item(channel=item.channel, action=item.action,
+                                 title="{0}".format(show)))
+
+        for channel in dict_data[tvshow_id]["channels"].keys():
+
             itemlist.append(Item(channel=item.channel, action=item.action,
-                                 title="[{channel}] {show}".format(channel=channel, show=tvshow)))
+                                 title="[{channel}] {show}".format(channel=channel, show=dict_data[tvshow_id]["channels"][channel]["tvshow"])))
 
     return itemlist
 
@@ -244,4 +253,3 @@ def limpiar_fichero(item):
 
     # eliminar huerfanos
     return library.clean_up_file(item)
-'''
