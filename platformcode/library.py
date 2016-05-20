@@ -275,7 +275,7 @@ def savelibrary_tvshow(serie, episodelist):
         tvshow_id = serie.infoLabels['tmdb_id']
         create_nfo = True
     else:
-        tvshow_id = "t_{0}_[{1}]".format(serie.show.replace(" ", "_"), serie.channel)
+        tvshow_id = "t_{0}_[{1}]".format(serie.show.strip().replace(" ", "_"), serie.channel)
 
     # Cargar el registro series.json
     fname = os.path.join(config.get_data_path(), TVSHOW_FILE)
@@ -307,7 +307,7 @@ def savelibrary_tvshow(serie, episodelist):
     # Si no hay datos del canal en el registro para esta serie...
     if serie.channel not in dict_series[tvshow_id]["channels"]:
         # ... añadir canal al registro de la serie
-        dict_channel = {"tvshow": serie.show, "url": serie.url, "path": path}
+        dict_channel = {"tvshow": serie.show.strip(), "url": serie.url, "path": path}
         dict_series[tvshow_id]["channels"][serie.channel] = dict_channel
 
     # Guardar los episodios
@@ -381,83 +381,6 @@ def savelibrary_episodes(path, episodelist):
 
     logger.debug("insertados= {0}, sobreescritos={1}, fallidos={2}".format(insertados, sobreescritos, fallidos))
     return insertados, sobreescritos, fallidos
-
-
-'''
-def savelibrary(item):
-    """
-    guarda en la ruta correspondiente el elemento item, con los valores que contiene.
-    @type item: item
-    @param item: elemento que se va a guardar.
-    @rtype:   int
-    @return:  el número de elemento insertado.
-    """
-    logger.info("[library.py] savelibrary")
-
-    path = LIBRARY_PATH
-    filename = ""
-
-    # MOVIES
-    if item.category == "Cine":  # config.get_localized_string(30072):
-        filename = title_to_filename("{0} [{1}]".format(item.fulltitle.capitalize(),item.channel.capitalize()))
-        path = MOVIES_PATH
-        filename = filename + ".strm"
-    # TVSHOWS
-    elif item.category == "Series":  # config.get_localized_string(30073):
-
-        if item.show == "":
-            return -1  # Salimos sin guardar
-
-        from core import tmdb
-        tmdb.set_infoLabels(item)
-        if not 'tmdb' in item.infoLabels:
-            return -1  # Salimos sin guardar
-
-        # Cargar series.json
-        fname = os.path.join(config.get_data_path(), TVSHOW_FILE)
-        dict_series = jsontools.load_json(read_file(fname))
-
-        path = join_path(TVSHOWS_PATH, title_to_filename(item.infoLabels['title']).capitalize())
-
-        if not item.infoLabels['tmdb'] in dict_series:
-            # Añadir la serie al registro
-            dict_series[item.infoLabels['tmdb']] = {"Title": item.infoLabels['title']}
-            logger.info("[library.py] savelibrary Creando directorio serie:" + path)
-            try:
-                make_dir(path)
-            except OSError as exception:
-                if exception.errno != errno.EEXIST:
-                    raise
-
-        path = title_to_filename("{0} [{1}]".format(path, item.channel.capitalize()))
-        if not path_exists(path):
-            logger.info("[library.py] savelibrary Creando directorio serie:"+path)
-            try:
-                make_dir(path)
-            except OSError as exception:
-                if exception.errno != errno.EEXIST:
-                    raise
-
-        season_episode = scrapertools.get_season_and_episode(item.title.lower())
-        logger.info("{title} -> {name}".format(title=item.title, name=season_episode))
-        filename = "{name}.strm".format(name=season_episode)
-
-    fullfilename = join_path(path, filename)
-    addon_name = sys.argv[0].strip()
-    if not addon_name:
-        addon_name = "plugin://plugin.video.pelisalacarta/"
-
-    if path_exists(fullfilename):
-        logger.info("[library.py] savelibrary el fichero existe. Se sobreescribe")
-        nuevo = 0
-    else:
-        nuevo = 1
-
-    if save_file('{addon}?{url}'.format(addon=addon_name, url=item.tourl()), fullfilename):
-        return nuevo
-    else:
-        return 0
-'''
 
 
 def read_file(fname):
@@ -663,19 +586,21 @@ def clean_up_file(item):
 
     path = TVSHOWS_PATH
 
-    # dict_data = item.dict_fichero
-    #
-    # # Obtenemos las carpetas de las series
-    # raiz, carpetas_series, files = os.walk(path).next()
-    #
-    # for channel in dict_data.keys():
-    #     for tvshow in dict_data[channel].keys():
-    #         if tvshow not in carpetas_series:
-    #             dict_data[channel].pop(tvshow, None)
-    #             if not dict_data[channel]:
-    #                 dict_data.pop(channel, None)
-    #
-    # json_data = jsontools.dump_json(dict_data)
+    dict_data = item.dict_fichero
+    
+    # Obtenemos las carpetas de las series
+    raiz, carpetas_series, files = os.walk(path).next()
+    
+    for tvshow_id in dict_data.keys():
+        for channel in dict_data[tvshow_id]["channels"].keys():
+            carpeta = "{0} [{1}].format(title_to_filename(dict_serie[tvshow_id]["channels"][channel]["tvshow"].lower()), channel)
+            if carpeta not in carpetas_series:
+                dict_data[tvshow_id]["channels"].pop(channel, None)
+                if not dict_data[tvshow_id]["channels"]:
+                    dict_data.pop(tvshow_id, None)
+    
+    json_data = jsontools.dump_json(dict_data)
+    # TODO probar
     # save_file(json_data, join_path(config.get_data_path(), TVSHOW_FILE))
 
     return []
