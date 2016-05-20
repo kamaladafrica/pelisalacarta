@@ -263,6 +263,14 @@ def savelibrary_tvshow(serie, episodelist):
 
     if 'infoLabels' not in serie:
         serie.infoLabels = {}
+    
+    patron = "^(.+)[\s]\((\d{4})\)$"
+    matches = re.compile(patron, re.DOTALL).findall(serie.show)
+    
+    if matches:
+        serie.infoLabels['title'] = matches[0]
+        serie.infoLabels['year'] = matches[1]
+    
     if 'title' not in serie.infoLabels:
         serie.infoLabels['title'] = serie.show
 
@@ -837,8 +845,15 @@ def convert_xml_to_json(flag):
                                 channel = aux[2].strip()
 
                                 serie.infoLabels = {}
-                                serie.infoLabels['title'] = serie.show
-        
+                                patron = "^(.+)[\s]\((\d{4})\)$"
+                                matches = re.compile(patron, re.DOTALL).findall(serie)
+
+                                if matches:
+                                    serie.infoLabels['title'] = matches[0]
+                                    serie.infoLabels['year'] = matches[1]
+                                else:
+                                    serie.infoLabels['title'] = serie
+
                                 create_nfo = False
         
                                 from core import tmdb
