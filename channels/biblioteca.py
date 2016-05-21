@@ -90,25 +90,36 @@ def peliculas(item):
 
 def series(item):
     logger.info("pelisalacarta.channels.biblioteca series")
-    path = library.TVSHOWS_PATH
     itemlist = []
 
-    # Obtenemos las carpetas de las series
-    if not samba.usingsamba(path):
-        raiz, carpetas_series, files = os.walk(path).next()
-    else:
-        raiz = path
-        carpetas_series = samba.get_directories(path)
+    #Obtenemos el registro de series guardadas
+    dict_series = library.get_dict_series()
 
-    # Crear un item en la lista para cada carpeta encontrada
-    for i in carpetas_series:
-        path = library.join_path(raiz, i)
-        new_item = Item(channel=item.channel, action='get_temporadas', title=i, path=path)
+    # Recorremos cada una de las series guardadas
+    for s in dict_series.values():
+        new_item = Item(channel=item.channel, action='get_temporadas', title=s['name'],
+                        path=s["channels"].values()[0]['path'])
+        if len(s["channels"]) > 1:
+            # Si hay mas de un canal
+            new_item.action='get_canales'
+            new_item.dict_channels= s["channels"]
         itemlist.append(new_item)
 
     library.set_infoLabels_from_library(itemlist, tipo='TVShows')
 
     return sorted(itemlist, key=lambda it: library.elimina_tildes(it.title).lower())
+
+
+def get_canales(item):
+    logger.info("pelisalacarta.channels.biblioteca get_canales")
+    itemlist = []
+
+    # Recorremos el diccionario de canales
+    for k,v in item.dict_channels.items():
+        title = '%s [%s]' %(item.title, k.capitalize())
+        itemlist.append (item.clone(action='get_temporadas', title=title, path=v['path']))
+
+    return itemlist
 
 
 def get_temporadas(item):

@@ -292,10 +292,7 @@ def savelibrary_tvshow(serie, episodelist, create_nfo=False):
         tvshow_id = "t_{0}_[{1}]".format(serie.show.strip().replace(" ", "_"), serie.channel)
 
     # Cargar el registro series.json
-    fname = join_path(config.get_data_path(), TVSHOW_FILE)
-    dict_series = jsontools.load_json(read_file(fname))
-    if not dict_series:
-        dict_series = {}
+    dict_series = get_dict_series()
 
     #
     path = join_path(TVSHOWS_PATH, title_to_filename("{0} [{1}]".format(serie.infoLabels['title'], serie.channel)).lower())
@@ -331,6 +328,13 @@ def savelibrary_tvshow(serie, episodelist, create_nfo=False):
         save_file(json_data, fname)
 
     return insertados, sobreescritos, fallidos
+
+
+def get_dict_series():
+    dict_series = {}
+    fname = join_path(config.get_data_path(), TVSHOW_FILE)
+    dict_series = jsontools.load_json(read_file(fname))
+    return dict_series
 
 
 def get_tvshow_from_tmdb(serie): #TODO decidir nombre
