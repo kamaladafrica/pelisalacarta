@@ -443,7 +443,7 @@ class Tmdb(object):
     def __search(self, index_resultado=0, page=1):
         # http://api.themoviedb.org/3/search/movie?api_key=f7f51775877e0bb6703520952b3c7840&query=superman&language=es&include_adult=false&page=1
         url='http://api.themoviedb.org/3/search/%s?api_key=f7f51775877e0bb6703520952b3c7840&query=%s&language=%s&include_adult=%s&page=%s' %(self.busqueda["tipo"], self.busqueda["texto"].replace(' ','%20') , self.busqueda["idioma"], self.busqueda["include_adult"], str(page))
-        if self.busqueda["year"] !='': url+= '&year=' + self.busqueda["year"]
+        if self.busqueda["year"] !='': url+= '&year=' + str(self.busqueda["year"])
 
         buscando= self.busqueda["texto"].capitalize()
         logger.debug("Buscando %s en pagina %s:\n%s" %(buscando, page, url))

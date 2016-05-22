@@ -283,6 +283,12 @@ def save_library_tvshow(serie, episodelist):
     return insertados, sobreescritos, fallidos
 
 
+def get_dict_series():
+    fname = join_path(config.get_data_path(), TVSHOW_FILE)
+    dict_series = jsontools.load_json(read_file(fname))
+    return dict_series
+
+
 def get_video_id_from_scraper(serie, scraper=1):
     """
     Hace una busqueda con el scraper seleccionado *tmdb por defecto* por el nombre (y año si esta presente) y presenta
