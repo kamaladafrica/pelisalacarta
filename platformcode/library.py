@@ -198,7 +198,7 @@ def title_to_filename(title):
     return str(folder_name)
 
 
-def savelibrary_movie(item):
+def save_library_movie(item):
     """
     guarda en la libreria de peliculas el elemento item, con los valores que contiene.
     @type item: item
@@ -248,15 +248,13 @@ def savelibrary_movie(item):
         return 0, 0, 1
 
 
-def savelibrary_tvshow(serie, episodelist, create_nfo=False):
+def save_library_tvshow(serie, episodelist):
     """
     guarda en la libreria de series la serie con todos los capitulos incluidos en la lista episodelist
     @type serie: item
     @param serie: item que representa la serie a guardar
     @type episodelist: list
     @param episodelist: listado de items que representan los episodios que se van a guardar.
-    @type create_nfo: bool
-    @param create_nfo: variable que hace que se cree el fichero .nfo
     @rtype insertados: int
     @return:  el número de episodios insertados
     @rtype sobreescritos: int
@@ -266,39 +264,11 @@ def savelibrary_tvshow(serie, episodelist, create_nfo=False):
     """
     logger.info("[library.py] savelibrary_tvshow")
 
-    if serie.show == "": # TODO ¿otras opciones?
+    if serie.show == "":  # TODO ¿otras opciones?
         return 0, 0, -1  # Salimos sin guardar: La serie no tiene el titulo fijado
 
-    if 'infoLabels' not in serie:
-        serie.infoLabels = {}
-
-    patron = "^(.+)[\s]\((\d{4})\)$" #TODO ¿solo busca el año al final?
-    matches = re.compile(patron, re.DOTALL).findall(serie.show)
-
-    if matches:
-        serie.infoLabels['title'] = matches[0]
-        serie.infoLabels['year'] = matches[1]
-
-    if 'title' not in serie.infoLabels:
-        serie.infoLabels['title'] = serie.show
-
-    # Abrir ventana de seleccion de serie
-    get_tvshow_from_tmdb(serie)
-
-    if 'tmdb_id' in serie.infoLabels:
-        tvshow_id = serie.infoLabels['tmdb_id']
-        create_nfo = True
-    else:
-        tvshow_id = "t_{0}_[{1}]".format(serie.show.strip().replace(" ", "_"), serie.channel)
-
-    # Cargar el registro series.json
-    fname = join_path(config.get_data_path(), TVSHOW_FILE)
-    dict_series = jsontools.load_json(read_file(fname))
-    if not dict_series:
-        dict_series = {}
-
-    #
-    path = join_path(TVSHOWS_PATH, title_to_filename("{0} [{1}]".format(serie.infoLabels['title'], serie.channel)).lower())
+    path = join_path(TVSHOWS_PATH, "{0} [{1}]".format(title_to_filename(serie.show.strip().lower()),
+                                                      serie.channel).lower())
     if not path_exists(path):
         logger.info("[library.py] savelibrary Creando directorio serie:" + path)
         try:
@@ -307,79 +277,64 @@ def savelibrary_tvshow(serie, episodelist, create_nfo=False):
             if exception.errno != errno.EEXIST:
                 raise
 
-    # si no existia la ruta, creamos el fichero nfo.
-    if create_nfo:
-        create_nfo_file(tvshow_id, path, "serie")
-
-    # Si la serie no existe en el registro ...
-    if tvshow_id not in dict_series:
-        # ... añadir la serie al registro
-        dict_series[tvshow_id] = {"name": serie.infoLabels['title'], "channels": {}}
-
-    # Si no hay datos del canal en el registro para esta serie...
-    if serie.channel not in dict_series[tvshow_id]["channels"]:
-        # ... añadir canal al registro de la serie
-        dict_channel = {"tvshow": serie.show.strip(), "url": serie.url, "path": path}
-        dict_series[tvshow_id]["channels"][serie.channel] = dict_channel
-
     # Guardar los episodios
-    insertados, sobreescritos, fallidos = savelibrary_episodes(path, episodelist)
-
-    if fallidos > -1 and (insertados + sobreescritos) > 0:
-        # Guardar el registro series.json actualizado
-        json_data = jsontools.dump_json(dict_series)
-        save_file(json_data, fname)
+    insertados, sobreescritos, fallidos = save_library_episodes(path, episodelist)
 
     return insertados, sobreescritos, fallidos
 
 
-def get_tvshow_from_tmdb(serie): #TODO decidir nombre
-    '''
-        hace una busqueda en tmdb por el nombre (y año si esta presente) y
-        presenta una 'ventana' para seleccionar uno
-        Retorna el item pasado como parametro con algunos infoLabels actualizados
-    '''
-    from core import tmdb
-    otmdb = tmdb.Tmdb(texto_buscado=serie.infoLabels['title'], tipo='tv', year=serie.infoLabels.get('year',''))
-    list_resultados = otmdb.get_list_resultados()
-    list_series =[]
-    i = 0
-    for r in list_resultados:
-        #logger.debug(repr(r))
-        if 'name' in r:
-            list_series.insert(i, r['name'])
-        else:
-            list_series.insert(i, r['title']) #for movies
+def get_video_id_from_scraper(serie, scraper=1):
+    """
+    Hace una busqueda con el scraper seleccionado *tmdb por defecto* por el nombre (y año si esta presente) y presenta
+    una 'ventana' para seleccionar uno.
+    Retorna el item pasado como parametro con algunos infoLabels actualizados
+    @type serie: item
+    @param serie: video para obtener identificar
+    @type scraper: int
+    @param scraper: scraper con el que se va a identificar el video.
+    """
+    # TODO preparar para peliculas
+    if scraper == 1:
+        from core import tmdb
+        otmdb = tmdb.Tmdb(texto_buscado=serie.infoLabels['title'], tipo='tv', year=serie.infoLabels.get('year', ''))
+        list_resultados = otmdb.get_list_resultados()
+        list_options = []
 
-        if 'original_name' in r and not r['original_name'] in (list_series[i],''):
-            list_series[i] = '%s -%s-' %(list_series[i],r['original_name'])
-        elif 'original_title' in r and not r['original_title'] in (list_series[i],''): #for movies
-            list_series[i] = '%s -%s-' % (list_series[i], r['original_title'])
+        for i, r in enumerate(list_resultados):
+            # logger.debug(repr(r))
+            if 'name' in r:
+                list_options.insert(i, r['name'])
+            else:
+                list_options.insert(i, r['title'])  # for movies
 
-        if 'first_air_date' in r and len(r['first_air_date'])>3:
-            list_series[i] = '%s (%s)' % (list_series[i], r['first_air_date'][:4])
-        elif 'release_date' in r and len(r['release_date'])>3: #for movies
-            list_series[i] = '%s (%s)' % (list_series[i], r['release_date'][:4])
-        i +=1
+            if 'original_name' in r and not r['original_name'] in (list_options[i], ''):
+                list_options[i] = '%s -%s-' % (list_options[i], r['original_name'])
+            elif 'original_title' in r and not r['original_title'] in (list_options[i], ''):  # for movies
+                list_options[i] = '%s -%s-' % (list_options[i], r['original_title'])
 
-    #logger.debug(repr(list_series))
+            if 'first_air_date' in r and len(r['first_air_date']) > 3:
+                list_options[i] = '%s (%s)' % (list_options[i], r['first_air_date'][:4])
+            elif 'release_date' in r and len(r['release_date']) > 3:  # for movies
+                list_options[i] = '%s (%s)' % (list_options[i], r['release_date'][:4])
 
-    #Temporalmente lo abrimos con un cuadro de seleccion, pero lo suyo es un cuadro de dialogo especial
-    from platformcode import platformtools
-    index_serie = platformtools.dialog_select("Seleccione la serie correcta",list_series)
-    if index_serie < 0 or index_serie > len(list_series)-1:
-        return None
+        # logger.debug(repr(list_series))
 
-    # Fijamos los infoLabels
-    logger.debug(repr(list_resultados[index_serie]))
-    serie.infoLabels.update(list_resultados[index_serie])
-    serie.infoLabels['tmdb_id'] = list_resultados[index_serie]['id']
-    serie.infoLabels['title'] = list_resultados[index_serie]['name'].strip() #Si fuesen movies seria title
-    logger.debug(tmdb.infoLabels_tostring(serie))
+        # Temporalmente lo abrimos con un cuadro de seleccion, pero lo suyo es un cuadro de dialogo especial
+        selected_option = platformtools.dialog_select("Seleccione la serie correcta", list_options)
+        if selected_option < 0 or selected_option > len(list_options)-1:
+            return None
+
+        # Fijamos los infoLabels
+        logger.debug(repr(list_resultados[selected_option]))
+        serie.infoLabels.update(list_resultados[selected_option])
+        serie.infoLabels['tmdb_id'] = list_resultados[selected_option]['id']
+        serie.infoLabels['title'] = list_resultados[selected_option]['name'].strip()  # Si fuesen movies seria title
+        logger.debug(tmdb.infoLabels_tostring(serie))
+
     return serie
 
 
-def savelibrary_episodes(path, episodelist):
+def save_library_episodes(path, episodelist):
     """
     guarda en la ruta indicada todos los capitulos incluidos en la lista episodelist
     @type path: str
@@ -398,19 +353,16 @@ def savelibrary_episodes(path, episodelist):
     sobreescritos = 0
     fallidos = 0
 
-    # TODO ¿control de huerfanas?
     # progress dialog
     p_dialog = platformtools.dialog_progress('pelisalacarta', 'Añadiendo episodios...')
     p_dialog.update(0, 'Añadiendo episodio...')
-    i = 0
     t = 100 / len(episodelist)
 
     addon_name = sys.argv[0].strip()
     if not addon_name:
         addon_name = "plugin://plugin.video.pelisalacarta/"
 
-    for e in episodelist:
-        i += 1
+    for i, e in enumerate(episodelist):
         p_dialog.update(i * t, 'Añadiendo episodio...', e.title)
         # Añade todos menos el que dice "Añadir esta serie..." o "Descargar esta serie..."
         if e.action == "add_serie_to_library" or e.action == "download_all_episodes":
@@ -434,6 +386,9 @@ def savelibrary_episodes(path, episodelist):
                 sobreescritos += 1
         else:
             fallidos += 1
+
+        if p_dialog.iscanceled():
+            break
 
     p_dialog.close()
 
@@ -659,17 +614,16 @@ def clean_up_file(item):
                     dict_data.pop(tvshow_id, None)
     
     json_data = jsontools.dump_json(dict_data)
-    # TODO probar
-    # save_file(json_data, join_path(config.get_data_path(), TVSHOW_FILE))
+    save_file(json_data, join_path(config.get_data_path(), TVSHOW_FILE))
 
     return []
 
 
-def save_tvshow_in_file(item):
+def save_tvshow_in_file(serie):
     """
-    guarda nombre de la serie, canal y url para actualizar dentro del fichero 'series.xml'
-    @type item: item
-    @param item: elemento
+    Guarda los datos de la serie dentro del fichero 'series.json'
+    @type serie: item
+    @param serie: elemento
     """
     logger.info("[library.py] save_tvshow_in_file")
     fname = join_path(config.get_data_path(), TVSHOW_FILE)
@@ -677,10 +631,51 @@ def save_tvshow_in_file(item):
     if not os.path.isfile(fname):
         convert_xml_to_json(True)
 
-    dict_data = jsontools.load_json(read_file(fname))
-    dict_data[item.channel][title_to_filename(item.show)] = item.url
-    logger.info("dict_data {0}".format(dict_data))
-    json_data = jsontools.dump_json(dict_data)
+    if 'infoLabels' not in serie:
+        serie.infoLabels = {}
+
+    patron = "^(.+)[\s]\((\d{4})\)$"
+    matches = re.compile(patron, re.DOTALL).findall(serie.show)
+
+    if matches:
+        serie.infoLabels['title'] = matches[0]
+        serie.infoLabels['year'] = matches[1]
+
+    if 'title' not in serie.infoLabels:
+        serie.infoLabels['title'] = serie.show
+
+    # Abrir ventana de seleccion de serie
+    serie = get_video_id_from_scraper(serie)
+
+    if 'tmdb_id' in serie.infoLabels:
+        tvshow_id = serie.infoLabels['tmdb_id']
+    else:
+        tvshow_id = "t_{0}_[{1}]".format(serie.show.strip().replace(" ", "_"), serie.channel)
+
+    # Cargar el registro series.json
+    fname = join_path(config.get_data_path(), TVSHOW_FILE)
+    dict_series = jsontools.load_json(read_file(fname))
+    if not dict_series:
+        dict_series = {}
+
+    path = join_path(TVSHOWS_PATH, title_to_filename("{0} [{1}]".format(serie.infoLabels['title'],
+                                                                        serie.channel)).lower())
+    if path_exists(path):
+        create_nfo_file(tvshow_id, path, "serie")
+
+    # Si la serie no existe en el registro ...
+    if tvshow_id not in dict_series:
+        # ... añadir la serie al registro
+        dict_series[tvshow_id] = {"name": serie.infoLabels['title'], "channels": {}}
+
+    # Si no hay datos del canal en el registro para esta serie...
+    if serie.channel not in dict_series[tvshow_id]["channels"]:
+        # ... añadir canal al registro de la serie
+        dict_channel = {"tvshow": serie.show.strip(), "url": serie.url, "path": path}
+        dict_series[tvshow_id]["channels"][serie.channel] = dict_channel
+
+    logger.info("dict_series {0}".format(dict_series))
+    json_data = jsontools.dump_json(dict_series)
     save_file(json_data, fname)
 
 
@@ -877,8 +872,6 @@ def check_tvshow_xml():
 
     convert_xml_to_json(flag)
 
-    return flag
-
 
 def convert_xml_to_json(flag):
     logger.info("[library.py] convert_xml_to_json:: flag:{0}".format(flag))
@@ -915,10 +908,10 @@ def convert_xml_to_json(flag):
                                     serie.infoLabels['title'] = tvshow
 
                                 create_nfo = False
-        
-                                from core import tmdb
-                                tmdb.set_infoLabels(serie, True)
-                                logger.debug(tmdb.infoLabels_tostring(serie))
+
+                                # Abrir ventana de seleccion para identificar la serie
+                                serie = get_video_id_from_scraper(serie)
+
                                 if 'tmdb_id' in serie.infoLabels:
                                     tvshow_id = serie.infoLabels['tmdb_id']
                                     create_nfo = True
@@ -931,7 +924,6 @@ def convert_xml_to_json(flag):
                                 logger.info("[library.py] savelibrary Creando directorio serie:" + path)
                                 try:
                                     make_dir(path)
-                                    # si no existia la ruta, creamos el fichero nfo.
                                     if create_nfo:
                                         create_nfo_file(tvshow_id, path, "serie")
                         
@@ -959,11 +951,7 @@ def convert_xml_to_json(flag):
         
                         json_data = jsontools.dump_json(dict_data)
                         save_file(json_data, join_path(config.get_data_path(), TVSHOW_FILE))
-                    
-                    # llamamos al servicio para que se generen de nuevo los strm en el nuevo directorio
-                    # con la estructura correcta.
-                    # TODO ARREGLAR BUCLE DE LIBRARY_SERVICE
-                    import library_service
+
             else:
                 logger.info("ERROR, no se ha podido crear la nueva carpeta de SERIES")
         else:
@@ -980,7 +968,8 @@ def update():
     # Se comenta la llamada normal para reutilizar 'payload' dependiendo del modo cliente
     # xbmc.executebuiltin('UpdateLibrary(video)')
     payload = {"jsonrpc": "2.0", "method": "VideoLibrary.Scan", "id": 1}
-    get_data(payload)
+    data = get_data(payload)
+    logger.info("[library.py] update data:{0}".format(data))
 
 
 def create_nfo_file(video_id, path, type_video):

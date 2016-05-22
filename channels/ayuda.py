@@ -74,8 +74,8 @@ def force_creation_advancedsettings(item):
 
 
 def updatebiblio(item):
+    logger.info("pelisalacarta.channels.ayuda updatebiblio")
     import library_service
-    itemlist = []
-    itemlist.append(Item(channel=CHANNELNAME, action="", title="Actualizacion en curso..."))
-    
-    return itemlist
+    library_service.main()
+
+    return []
