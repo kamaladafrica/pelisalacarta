@@ -883,6 +883,10 @@ def check_tvshow_xml():
 def convert_xml_to_json(flag):
     logger.info("[library.py] convert_xml_to_json:: flag:{0}".format(flag))
     if flag:
+        platformtools.dialog_ok("Biblioteca: Se va a actualizar al nuevo formato",
+                                "Seleccione el nombre correcto de cada serie, si no está seguro pulse 'Cancelar'.",
+                                "Hay nuevas opciones en 'Biblioteca' y en la 'configuración' del addon.")
+
         # TODO soporte samba
         os.rename(TVSHOWS_PATH, os.path.join(config.get_library_path(), "SERIES_OLD"))
         if not path_exists(TVSHOWS_PATH):
