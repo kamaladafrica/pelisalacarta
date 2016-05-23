@@ -92,17 +92,17 @@ def series(item):
     logger.info("pelisalacarta.channels.biblioteca series")
     itemlist = []
 
-    #Obtenemos el registro de series guardadas
+    # Obtenemos el registro de series guardadas
     dict_series = library.get_dict_series()
 
     # Recorremos cada una de las series guardadas
-    for s in dict_series.values():
-        new_item = Item(channel=item.channel, action='get_temporadas', title=s['name'],
-                        path=s["channels"].values()[0]['path'])
-        if len(s["channels"]) > 1:
+    for serie in dict_series.values():
+        new_item = Item(channel=item.channel, action='get_temporadas', title=serie['name'],
+                        path=serie["channels"].values()[0]['path'])
+        if len(serie["channels"]) > 1:
             # Si hay mas de un canal
-            new_item.action='get_canales'
-            new_item.dict_channels= s["channels"]
+            new_item.action = "get_canales"
+            new_item.dict_channels = serie["channels"]
         itemlist.append(new_item)
 
     library.set_infoLabels_from_library(itemlist, tipo='TVShows')
@@ -115,9 +115,9 @@ def get_canales(item):
     itemlist = []
 
     # Recorremos el diccionario de canales
-    for k,v in item.dict_channels.items():
-        title = '%s [%s]' %(item.title, k.capitalize())
-        itemlist.append (item.clone(action='get_temporadas', title=title, path=v['path']))
+    for name, channel in item.dict_channels.items():
+        title = '{0} [{1}]'.format(item.title, name.capitalize())
+        itemlist.append(item.clone(action='get_temporadas', title=title, path=channel['path']))
 
     return itemlist
 
@@ -157,22 +157,33 @@ def get_temporadas(item):
     else:
         # ...si ya estamos dentro del canal...
         # ...obtenemos las temporadas del listado de strm
+
+        logger.info("apilar {}".format(config.get_setting("no_pile_on_seasons")))
+
+        if config.get_setting("no_pile_on_seasons") == "Siempre":
+            return get_capitulos(item)
+
         for i in ficheros:
             if i.endswith('.strm'):
                 season = i.split('x')[0]
                 dict_temp[season] = "Temporada " + str(season)
 
-        # Creamos un item por cada temporada
-        for season, title in dict_temp.items():
-            new_item = item.clone(action='get_capitulos', title=title, contentSeason=season, contentEpisodeNumber="",
-                                  filtrar_season=True)
-            itemlist.append(new_item)
-            logger.debug(new_item.tostring())
+        if config.get_setting("no_pile_on_seasons") == "Sólo si hay una temporada" and len(dict_temp) == 1:
+            return get_capitulos(item)
+        else:
+            # Creamos un item por cada temporada
+            for season, title in dict_temp.items():
+                new_item = item.clone(action='get_capitulos', title=title, contentSeason=season,
+                                      contentEpisodeNumber="", filtrar_season=True)
+                itemlist.append(new_item)
+                logger.debug(new_item.tostring())
 
-        if len(itemlist) > 1:
-            itemlist = sorted(itemlist, key=lambda it: int(it.contentSeason))
-            new_item = item.clone(action='get_capitulos', title="*Todas las temporadas")
-            itemlist.insert(0, new_item)
+            if len(itemlist) > 1:
+                itemlist = sorted(itemlist, key=lambda it: int(it.contentSeason))
+
+                if config.get_setting("show_all_seasons") == "true":
+                        new_item = item.clone(action='get_capitulos', title="*Todas las temporadas")
+                        itemlist.insert(0, new_item)
 
     return itemlist
 
@@ -209,8 +220,8 @@ def get_capitulos(item):
             itemlist.append(new_item)
 
     library.set_infoLabels_from_library(itemlist, tipo="Episodes")
-    # return sorted(itemlist, key=get_sort_temp_epi)
-    return sorted(itemlist, key=lambda it: (int(it.contentSeason), int(it.contentEpisodeNumber)))
+    return sorted(itemlist, key=get_sort_temp_epi)
+    # return sorted(itemlist, key=lambda it: (int(it.contentSeason), int(it.contentEpisodeNumber)))
 
 
 def play_strm(item):
@@ -224,7 +235,7 @@ def play_strm(item):
 
     return itemlist
 
-'''
+
 def get_sort_temp_epi(item):  # TODO SEitan: No se si esto es realmente necesario
     # logger.debug(item.tostring())
     if item.infoLabels:
@@ -232,7 +243,7 @@ def get_sort_temp_epi(item):  # TODO SEitan: No se si esto es realmente necesari
     else:
         temporada, capitulo = scrapertools.get_season_and_episode(item.title.lower()).split('x')
         return int(temporada), int(capitulo)
-'''
+
 
 
 def fichero_series(item):
