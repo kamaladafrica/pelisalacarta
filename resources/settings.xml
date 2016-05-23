@@ -149,9 +149,9 @@
         <setting id="watched_setting" type="enum" values="5 Min|30%|50%|80%" label="Tiempo necesario del video"
                  default="3" enable="eq(-1,true)"/>
         <setting id="show_all_seasons" type="bool" label="Mostrar la opción &quot;Todos las temporadas&quot;"
-                 default="false" enable="false"/>
-        <setting id="pile_on_seasons" type="select" label="No apilar temporadas de series"
-                 values="Nunca|Sólo si hay una temporada|Siempre" default="Sólo si hay una temporada" enable="false"/>
+                 default="true"/>
+        <setting id="no_pile_on_seasons" type="select" label="No apilar temporadas de series"
+                 values="Nunca|Solo si hay una temporada|Siempre" default="Sólo si hay una temporada"/>
         <setting id="scrap_ask_name" type="bool" label="Confirmar nombre de la pelicula/serie al añadir a la biblioteca"
                  default="true" enable="false"/>
         <setting type="sep"/>
