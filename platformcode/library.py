@@ -328,7 +328,7 @@ def get_video_id_from_scraper(serie, scraper=1):
         # Temporalmente lo abrimos con un cuadro de seleccion, pero lo suyo es un cuadro de dialogo especial
         selected_option = platformtools.dialog_select("Seleccione la serie correcta", list_options)
         if selected_option < 0 or selected_option > len(list_options)-1:
-            return None
+            return serie
 
         # Fijamos los infoLabels
         logger.debug(repr(list_resultados[selected_option]))
@@ -549,9 +549,6 @@ def set_infoLabels_from_library(itemlist, tipo):
                 r_filename = os.path.basename(r_filename_aux)
                 # logger.debug(os.path.basename(i.path) + '\n' + r_filename)
                 i_filename = os.path.basename(i.path)
-                '''if  i_filename.endswith("[{}]".format(i.channel)):
-                    i_filename = i_filename.replace("[{}]".format(i.channel),'').strip()
-                    r_filename = r_filename.replace("[{}]".format(i.channel),'').strip()'''
                 if i_filename == r_filename:
                     infoLabels = r
 
@@ -653,8 +650,10 @@ def save_tvshow_in_file(serie):
     # Abrir ventana de seleccion de serie
     serie = get_video_id_from_scraper(serie)
 
+    create_nfo = False
     if 'tmdb_id' in serie.infoLabels:
         tvshow_id = serie.infoLabels['tmdb_id']
+        create_nfo = True
     else:
         tvshow_id = "t_{0}_[{1}]".format(serie.show.strip().replace(" ", "_"), serie.channel)
 
@@ -664,10 +663,12 @@ def save_tvshow_in_file(serie):
     if not dict_series:
         dict_series = {}
 
-    path = join_path(TVSHOWS_PATH, title_to_filename("{0} [{1}]".format(serie.infoLabels['title'],
-                                                                        serie.channel)).lower())
+    path = join_path(TVSHOWS_PATH, "{0} [{1}]".format(title_to_filename(serie.show.strip().lower()),
+                                                      serie.channel).lower())
+
     if path_exists(path):
-        create_nfo_file(tvshow_id, path, "serie")
+        if create_nfo:
+            create_nfo_file(tvshow_id, path, "serie")
 
     # Si la serie no existe en el registro ...
     if tvshow_id not in dict_series:
