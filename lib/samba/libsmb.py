@@ -13,12 +13,12 @@ from core import logger
 try:
     import xbmc
     librerias = xbmc.translatePath(os.path.join(config.get_runtime_path(), 'lib', 'samba'))
-    sys.path.append(librerias)
 except ImportError:
     xbmc = None
     librerias = os.path.join(config.get_runtime_path(), 'lib', 'samba')
 
-sys.path.append(librerias)
+if librerias not in sys.path:
+    sys.path.append(librerias)
 
 
 def parse_url(url):
