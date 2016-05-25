@@ -220,8 +220,8 @@ def save_library_movie(item):
         return 0, 0, -1  # Salimos sin guardar
 
     # progress dialog
-    p_dialog = platformtools.dialog_progress('pelisalacarta', 'Añadiendo episodios...')
-    p_dialog.update(0, 'Añadiendo episodio...')
+    p_dialog = platformtools.dialog_progress('pelisalacarta', 'Añadiendo película...')
+    p_dialog.update(0, 'Añadiendo película...')
     i = 0
     t = 100 / 1
 
@@ -239,7 +239,7 @@ def save_library_movie(item):
     else:
         insertados += 1
 
-    p_dialog.update(i * t, 'Añadiendo episodio...', item.fulltitle)
+    p_dialog.update(i * t, 'Añadiendo película...', item.fulltitle)
     p_dialog.close()
 
     if save_file('{addon}?{url}'.format(addon=addon_name, url=item.tourl()), fullfilename):
