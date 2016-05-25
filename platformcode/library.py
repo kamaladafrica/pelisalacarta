@@ -22,19 +22,15 @@ from core import scrapertools
 from core.item import Item
 from platformcode import platformtools
 
-# TODO repensar
-librerias = os.path.join(config.get_runtime_path(), 'lib', 'samba')
-if librerias not in sys.path:
+try:
+    from samba import libsmb as samba
+except ImportError:
+    librerias = xbmc.translatePath(os.path.join(config.get_runtime_path(), 'lib'))
     sys.path.append(librerias)
-
-libreria_libsmb = xbmc.translatePath(os.path.join(config.get_runtime_path(), 'lib', 'samba', 'libsmb'))
-if libreria_libsmb not in sys.path:
-    sys.path.append(libreria_libsmb)
-
-import libsmb as samba
+    from samba import libsmb as samba
 
 # TODO EVITAR USAR REQUESTS
-from lib import requests
+import requests
 
 modo_cliente = int(config.get_setting("library_mode"))
 # Host name where XBMC is running, leave as localhost if on this PC
@@ -466,10 +462,10 @@ def save_file(data, fname):
             from samba.smb.smb_structs import OperationFailure
             path, filename = fname.rsplit('/', 1)
             try:
-                samba.store_File(filename, data, path)
+                samba.store_file(filename, data, path)
             except UnicodeEncodeError:
                 logger.info("Error al realizar el encode, se usa uft8")
-                samba.store_File(filename, data.encode('utf-8'), path)
+                samba.store_file(filename, data.encode('utf-8'), path)
         except OperationFailure:
             logger.info("[library.py] save_file - Error al guardar el archivo: {0}".format(fname))
             return False

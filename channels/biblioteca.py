@@ -7,26 +7,14 @@
 
 import os
 import re
-import sys
 
-import xbmc
 from core import config
 from core import jsontools
 from core import logger
 from core import scrapertools
 from core.item import Item
+from samba import libsmb as samba
 from platformcode import library
-
-# TODO repensar
-librerias = os.path.join(config.get_runtime_path(), 'lib', 'samba')
-if librerias not in sys.path:
-    sys.path.append(librerias)
-
-libreria_libsmb = xbmc.translatePath(os.path.join(config.get_runtime_path(), 'lib', 'samba', 'libsmb'))
-if libreria_libsmb not in sys.path:
-    sys.path.append(libreria_libsmb)
-
-import libsmb as samba
 
 __channel__ = "biblioteca"
 DEBUG = True
@@ -69,17 +57,17 @@ def peliculas(item):
 
     # Crear un item en la lista para cada strm encontrado
     for i in aux_list:
-        #if not samba.usingsamba(i):
+        # if not samba.usingsamba(i):
         strm_item = Item().fromurl(library.read_file(i))
-        '''new_item = strm_item.clone(action=strm_item.action, path=i, from_biblioteca=True,
-                                   title=os.path.splitext(os.path.basename(i))[0].capitalize(),
-                                   extra=strm_item.extra)'''
+        # new_item = strm_item.clone(action=strm_item.action, path=i, from_biblioteca=True,
+        #                            title=os.path.splitext(os.path.basename(i))[0].capitalize(),
+        #                            extra=strm_item.extra)
         new_item = strm_item.clone(action="findvideos", path=i, from_biblioteca=True,
                                    title=os.path.splitext(os.path.basename(i))[0].capitalize(),
                                    extra=strm_item.extra)
-        '''else:
-            new_item = item.clone(action="play_strm", path=i,
-                                  title=os.path.splitext(os.path.basename(i))[0].capitalize())'''
+        # else:
+        #     new_item = item.clone(action="play_strm", path=i,
+        #                           title=os.path.splitext(os.path.basename(i))[0].capitalize())
 
         # logger.debug(new_item.tostring('\n'))
         itemlist.append(new_item)
@@ -243,7 +231,6 @@ def get_sort_temp_epi(item):  # TODO SEitan: No se si esto es realmente necesari
     else:
         temporada, capitulo = scrapertools.get_season_and_episode(item.title.lower()).split('x')
         return int(temporada), int(capitulo)
-
 
 
 def fichero_series(item):
