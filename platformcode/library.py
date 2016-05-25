@@ -307,8 +307,9 @@ def get_video_id_from_scraper(serie, ask=False, video_type="tv"):
     from core import tmdb
     otmdb = tmdb.Tmdb(texto_buscado=serie.infoLabels['title'], tipo=video_type, year=serie.infoLabels.get('year', ''))
     if ask:
-        select = platformtools.show_video_info(otmdb.get_list_resultados(), caption="Seleccione la serie correcta",
-                                               callback='cb_select_from_tmdb')
+        select = platformtools.show_video_info(otmdb.get_list_resultados(),
+                                               caption="[{0}]: Seleccione la serie correcta".
+                                               format(serie.infoLabels['title']), callback='cb_select_from_tmdb')
         if select:
             serie.infoLabels.update(select)
             logger.debug(tmdb.infoLabels_tostring(serie))
