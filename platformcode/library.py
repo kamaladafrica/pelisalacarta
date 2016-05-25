@@ -38,7 +38,6 @@ modo_cliente = int(config.get_setting("library_mode"))
 xbmc_host = config.get_setting("xbmc_host")
 # Configured in Settings -> Services -> Webserver -> Port
 xbmc_port = int(config.get_setting("xbmc_port"))
-marcar_como_visto = bool(config.get_setting("mark_as_watched"))
 # Base URL of the json RPC calls. For GET calls we append a "request" URI
 # parameter. For POSTs, we add the payload as JSON the the HTTP request body
 xbmc_json_rpc_url = "http://{host}:{port}/jsonrpc".format(host=xbmc_host, port=xbmc_port)
@@ -276,77 +275,55 @@ def save_library_tvshow(serie, episodelist):
 
 
 def get_dict_series():
+    """
+    devuelve un diccionario con las series obtenidas de 'series.json'
+    @rtype dict_series: dict
+    @return:  diccionario con las series.
+    """
+    logger.info("[library.py] get_dict_series")
     fname = join_path(config.get_data_path(), TVSHOW_FILE)
     dict_series = jsontools.load_json(read_file(fname))
     return dict_series
 
 
-def get_video_id_from_scraper(serie, ask=False, scraper=1):
+def get_video_id_from_scraper(serie, ask=False, video_type="tv"):
     """
     Hace una busqueda con el scraper seleccionado *tmdb por defecto* por el nombre (y año si esta presente) y presenta
     una 'ventana' para seleccionar uno.
     Retorna el item pasado como parametro con algunos infoLabels actualizados
     @type serie: item
     @param serie: video para obtener identificar
-    @type scraper: int
-    @param scraper: scraper con el que se va a identificar el video.
+    @type ask: bool
+    @param ask: muestra la ventana de información para seleccionar el titulo correcto de la serie/pelicula.
+    @type video_type: str
+    @param video_type: tipo de video para buscar, 'tv' o 'movie'
+    @rtype serie: item
+    @return:  devuelve el item 'serie' con la información seteada.
     """
     logger.info("[library.py] get_video_id_from_scraper")
     from core import tmdb
-    otmdb = tmdb.Tmdb(texto_buscado=serie.infoLabels['title'], tipo='tv', year=serie.infoLabels.get('year', ''))
-    select = platformtools.show_video_info(otmdb.get_list_resultados(), caption="Seleccione la serie correcta",
-                                           callback='cb_select_from_tmdb')
-    if select:
-        serie.infoLabels.update(select)
-        logger.debug(tmdb.infoLabels_tostring(serie))
+    otmdb = tmdb.Tmdb(texto_buscado=serie.infoLabels['title'], tipo=video_type, year=serie.infoLabels.get('year', ''))
+    if ask:
+        select = platformtools.show_video_info(otmdb.get_list_resultados(), caption="Seleccione la serie correcta",
+                                               callback='cb_select_from_tmdb')
+        if select:
+            serie.infoLabels.update(select)
+            logger.debug(tmdb.infoLabels_tostring(serie))
+    else:
+        if len(otmdb.get_list_resultados()) == 0:
+            return serie
+
+        # Fijamos los infoLabels
+        serie.infoLabels.update(otmdb.get_list_resultados()[0])
+        serie.infoLabels['id_Tmdb'] = otmdb.get_list_resultados()[0]['id']
+        serie.infoLabels['title'] = otmdb.get_list_resultados()[0]['name'].strip()  # Si fuesen movies seria title
 
     return serie
 
 
 def cb_select_from_tmdb(dic):
-    print repr(dic)
+    # print repr(dic)
     return dic
-
-
-    # TODO preparar para peliculas
-    # if scraper == 1:
-    #     from core import tmdb
-    #     otmdb = tmdb.Tmdb(texto_buscado=serie.infoLabels['title'], tipo='tv', year=serie.infoLabels.get('year', ''))
-    #     list_resultados = otmdb.get_list_resultados()
-    #     list_options = []
-    #
-    #     for i, r in enumerate(list_resultados):
-    #         # logger.debug(repr(r))
-    #         if 'name' in r:
-    #             list_options.insert(i, r['name'])
-    #         else:
-    #             list_options.insert(i, r['title'])  # for movies
-    #
-    #         if 'original_name' in r and not r['original_name'] in (list_options[i], ''):
-    #             list_options[i] = '%s -%s-' % (list_options[i], r['original_name'])
-    #         elif 'original_title' in r and not r['original_title'] in (list_options[i], ''):  # for movies
-    #             list_options[i] = '%s -%s-' % (list_options[i], r['original_title'])
-    #
-    #         if 'first_air_date' in r and len(r['first_air_date']) > 3:
-    #             list_options[i] = '%s (%s)' % (list_options[i], r['first_air_date'][:4])
-    #         elif 'release_date' in r and len(r['release_date']) > 3:  # for movies
-    #             list_options[i] = '%s (%s)' % (list_options[i], r['release_date'][:4])
-    #
-    #     # logger.debug(repr(list_series))
-    #
-    #     # Temporalmente lo abrimos con un cuadro de seleccion, pero lo suyo es un cuadro de dialogo especial
-    #     selected_option = platformtools.dialog_select("Seleccione la serie correcta", list_options)
-    #     if selected_option < 0 or selected_option > len(list_options)-1:
-    #         return serie
-    #
-    #     # Fijamos los infoLabels
-    #     logger.debug(repr(list_resultados[selected_option]))
-    #     serie.infoLabels.update(list_resultados[selected_option])
-    #     serie.infoLabels['tmdb_id'] = list_resultados[selected_option]['id']
-    #     serie.infoLabels['title'] = list_resultados[selected_option]['name'].strip()  # Si fuesen movies seria title
-    #     logger.debug(tmdb.infoLabels_tostring(serie))
-    #
-    # return serie
 
 
 def save_library_episodes(path, episodelist):
@@ -658,8 +635,7 @@ def save_tvshow_in_file(serie):
         serie.infoLabels['title'] = serie.show
 
     # Abrir ventana de seleccion de serie
-    # getvalue from settings
-    serie = get_video_id_from_scraper(serie, False)
+    serie = get_video_id_from_scraper(serie, config.get_setting("scrap_ask_name") == "true")
 
     create_nfo = False
     if 'id_Tmdb' in serie.infoLabels:
@@ -710,7 +686,7 @@ def mark_as_watched(category, video_id=0):
     logger.info("se espera 5 segundos por si falla al reproducir el fichero")
     xbmc.sleep(5000)
 
-    if not is_compatible() or not marcar_como_visto:
+    if not is_compatible() or not config.get_setting("mark_as_watched") == "true":
         return
 
     if xbmc.Player().isPlaying():
@@ -933,7 +909,7 @@ def convert_xml_to_json():
                             create_nfo = False
 
                             # Abrir ventana de seleccion para identificar la serie
-                            serie = get_video_id_from_scraper(serie)
+                            serie = get_video_id_from_scraper(serie, True)
 
                             if 'id_Tmdb' in serie.infoLabels:
                                 tvshow_id = serie.infoLabels['id_Tmdb']
