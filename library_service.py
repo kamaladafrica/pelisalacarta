@@ -25,6 +25,7 @@
 # ------------------------------------------------------------
 
 import imp
+import math
 
 from core import config
 from core import jsontools
@@ -56,7 +57,8 @@ def main():
             p_dialog = platformtools.dialog_progress_bg('pelisalacarta', heading)
             p_dialog.update(0, '')
             i = 0
-            t = 100 / len(dict_data.keys())
+            # fix float porque la division se hace mal en python 2.x
+            t = float(100) / len(dict_data.keys())
 
             for tvshow_id in dict_data.keys():
                 logger.info("pelisalacarta.library_service serie="+dict_data[tvshow_id]["name"])
@@ -74,7 +76,7 @@ def main():
                         logger.info("pelisalacarta.library_service url " +
                                     dict_data[tvshow_id]["channels"][channel]["url"])
 
-                        p_dialog.update(i * t, heading, dict_data[tvshow_id]["name"])
+                        p_dialog.update(int(math.ceil(i * t)), heading, dict_data[tvshow_id]["name"])
 
                         item = Item(url=dict_data[tvshow_id]["channels"][channel]["url"],
                                     show=dict_data[tvshow_id]["channels"][channel]["tvshow"], channel=channel)
@@ -103,7 +105,7 @@ def main():
                         logger.info("pelisalacarta.library_service No actualiza {0} (no existe el directorio)".
                                     format(dict_data[tvshow_id]["name"]))
 
-                        p_dialog.update(i * t, 'Error al obtener ruta...', dict_data[tvshow_id]["name"])
+                        p_dialog.update(int(math.ceil(i * t)), 'Error al obtener ruta...', dict_data[tvshow_id]["name"])
 
             p_dialog.close()
             library.update()

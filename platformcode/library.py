@@ -6,6 +6,7 @@
 # ------------------------------------------------------------
 
 import errno
+import math
 import os
 import re
 import string
@@ -221,10 +222,6 @@ def save_library_movie(item):
 
     # progress dialog
     p_dialog = platformtools.dialog_progress('pelisalacarta', 'Añadiendo película...')
-    p_dialog.update(0, 'Añadiendo película...')
-    i = 0
-    t = 100 / 1
-
     filename = title_to_filename("{0} [{1}].strm".format(item.fulltitle.strip().lower(),
                                                          item.channel))
     logger.debug(filename)
@@ -239,7 +236,7 @@ def save_library_movie(item):
     else:
         insertados += 1
 
-    p_dialog.update(i * t, 'Añadiendo película...', item.fulltitle)
+    p_dialog.update(100, 'Añadiendo película...', item.fulltitle)
     p_dialog.close()
 
     if save_file('{addon}?{url}'.format(addon=addon_name, url=item.tourl()), fullfilename):
@@ -362,14 +359,15 @@ def save_library_episodes(path, episodelist):
     # progress dialog
     p_dialog = platformtools.dialog_progress('pelisalacarta', 'Añadiendo episodios...')
     p_dialog.update(0, 'Añadiendo episodio...')
-    t = 100 / len(episodelist)
+    # fix float porque la division se hace mal en python 2.x
+    t = float(100) / len(episodelist)
 
     addon_name = sys.argv[0].strip()
     if not addon_name:
         addon_name = "plugin://plugin.video.pelisalacarta/"
 
     for i, e in enumerate(episodelist):
-        p_dialog.update(i * t, 'Añadiendo episodio...', e.title)
+        p_dialog.update(int(math.ceil(i * t)), 'Añadiendo episodio...', e.title)
         # Añade todos menos el que dice "Añadir esta serie..." o "Descargar esta serie..."
         if e.action == "add_serie_to_library" or e.action == "download_all_episodes":
             continue
