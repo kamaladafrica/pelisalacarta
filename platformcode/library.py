@@ -29,8 +29,7 @@ except ImportError:
     sys.path.append(librerias)
     from samba import libsmb as samba
 
-# TODO EVITAR USAR REQUESTS
-import requests
+import urllib2
 
 modo_cliente = int(config.get_setting("library_mode"))
 # Host name where XBMC is running, leave as localhost if on this PC
@@ -834,12 +833,13 @@ def get_data(payload):
 
     if modo_cliente:
         try:
-            response = requests.post(xbmc_json_rpc_url, data=jsontools.dump_json(payload), headers=headers)
+            req = urllib2.Request(xbmc_json_rpc_url, data=jsontools.dump_json(payload), headers=headers)
+            f = urllib2.urlopen(req)
+            response = f.read()
+            f.close()
+
             logger.info("[library.py] get_data:: response {0}".format(response))
-            data = jsontools.load_json(response.text)
-        except requests.exceptions.ConnectionError:
-            logger.info("[library.py] get_data:: xbmc_json_rpc_url: Error de conexion")
-            data = ["error"]
+            data = jsontools.load_json(response)
         except Exception as ex:
             template = "An exception of type {0} occured. Arguments:\n{1!r}"
             message = template.format(type(ex).__name__, ex.args)
