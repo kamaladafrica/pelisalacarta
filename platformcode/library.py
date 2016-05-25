@@ -234,6 +234,9 @@ def save_library_movie(item):
     p_dialog.close()
 
     if save_file('{addon}?{url}'.format(addon=addon_name, url=item.tourl()), fullfilename):
+        item = get_video_id_from_scraper(item, config.get_setting("scrap_ask_name") == "true", "movie")
+        if 'id_Tmdb' in item.infoLabels:
+            create_nfo_file(item.infoLabels['id_Tmdb'], fullfilename[:-5], "cine")
         return insertados, sobreescritos, fallidos
     else:
         return 0, 0, 1
