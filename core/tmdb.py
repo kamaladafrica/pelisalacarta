@@ -458,7 +458,7 @@ class Tmdb(object):
         if self.total_results > 0:
             self.results=response_dic["results"]
 
-        if len(self.results) >0 :
+        if len(self.results) >0:
             self.__leer_resultado(self.results[index_resultado])
         else:
             # No hay resultados de la busqueda
@@ -490,6 +490,7 @@ class Tmdb(object):
                 resultado=resultado[0]
 
         if len(resultado) >0 :
+            self.result = resultado
             if self.total_results==0:
                 self.results.append(resultado)
                 self.total_results= 1
@@ -624,12 +625,14 @@ class Tmdb(object):
     def __leer_resultado(self,data):
         for k,v in data.items():
             if k=="genre_ids": # Lista de generos (lista con los id de los generos)
+                self.result["genres"] = []
                 for i in v:
                     try:
                         self.result["genres"].append(self.dic_generos[self.busqueda["idioma"]][self.busqueda["tipo"]][str(i)])
                     except:
                         pass
-            elif k=="genres": # Lista  de generos (lista de objetos {id,nombre})
+            elif k=="genre" or k=="genres": # Lista  de generos (lista de objetos {id,nombre})
+                self.result["genres"] = []
                 for i in v:
                     self.result["genres"].append(i['name'])
 
@@ -664,29 +667,44 @@ class Tmdb(object):
 
 
     def load_resultado(self,index_resultado=0,page=1):
-        if self.total_results <= 1: # Si no hay mas de un resultado no podemos cambiar
+        # Si no hay mas de un resultado no podemos cambiar
+        if self.total_results <= 1:
             return None
+
         if page < 1 or page > self.total_pages: page=1
         if index_resultado < 0: index_resultado=0
+
         self.__inicializar()
         if page != self.page:
-            self.__search(index_resultado=index_resultado, page=page)
+            self.__search(page=page)
+            self.page = page
         else:
             #print self.result["genres"]
             self.__leer_resultado(self.results[index_resultado])
 
-    def get_list_resultados(self):
+
+    def get_list_resultados(self, numResult= 20):
         # TODO documentar
         from core.item import Item
         res = []
 
-        for r in self.results:
-            self.__inicializar()
-            self.__leer_resultado(r)
-            self.result['thumbnail'] = self.get_poster(size="w300")
-            self.result['fanart'] = self.get_backdrop()
-            res.append(self.result.copy())
+        numResult = numResult if numResult > 0 else self.total_results
+        numResult = min([numResult,self.total_results])
 
+        cr = 0
+        for p in range(1, self.total_pages+1):
+            for r in range(0,len(self.results)+1):
+                try:
+                    self.load_resultado(r,p)
+                    self.result['type'] = self.busqueda.get("tipo", "movie")
+                    self.result['thumbnail'] = self.get_poster(size="w300")
+                    self.result['fanart'] = self.get_backdrop()
+                    res.append(self.result.copy())
+                    cr +=1
+                    if cr >= numResult:
+                        return res
+                except:
+                    continue
         return res
 
 
@@ -915,7 +933,8 @@ class Tmdb(object):
         #       capitulo: (int) Numero de capitulo. Por defecto 1.
         #   Return: (dic)
         #       Devuelve un dicionario con los siguientes elementos:
-        #           "temporada_nombre", "temporada_sinopsis", "temporada_poster", "episodio_titulo", "episodio_sinopsis" y  "episodio_imagen"
+        #           "temporada_nombre", "temporada_sinopsis", "temporada_poster", "temporada_num_episodios"(int),
+        #           "episodio_titulo", "episodio_sinopsis" y  "episodio_imagen"
         #--------------------------------------------------------------------------------------------------------------------------------------------
         if self.result["id"] == "" or self.busqueda["tipo"] !="tv": return {}
 
@@ -935,6 +954,7 @@ class Tmdb(object):
         ret_dic["temporada_nombre"]= temporada["name"]
         ret_dic["temporada_sinopsis"]= temporada["overview"]
         ret_dic["temporada_poster"]=('http://image.tmdb.org/t/p/original'+ temporada["poster_path"])  if temporada["poster_path"] else ""
+        ret_dic["temporada_num_episodios"] = len(temporada["episodes"])
 
 
         episodio= temporada["episodes"][capitulo -1]
@@ -979,5 +999,3 @@ class Tmdb(object):
                 return {}
 
         return self.temporada[numtemporada]
-
-

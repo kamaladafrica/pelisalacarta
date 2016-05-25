@@ -281,7 +281,7 @@ def get_dict_series():
     return dict_series
 
 
-def get_video_id_from_scraper(serie, scraper=1):
+def get_video_id_from_scraper(serie, ask=False, scraper=1):
     """
     Hace una busqueda con el scraper seleccionado *tmdb por defecto* por el nombre (y año si esta presente) y presenta
     una 'ventana' para seleccionar uno.
@@ -291,45 +291,62 @@ def get_video_id_from_scraper(serie, scraper=1):
     @type scraper: int
     @param scraper: scraper con el que se va a identificar el video.
     """
-    # TODO preparar para peliculas
-    if scraper == 1:
-        from core import tmdb
-        otmdb = tmdb.Tmdb(texto_buscado=serie.infoLabels['title'], tipo='tv', year=serie.infoLabels.get('year', ''))
-        list_resultados = otmdb.get_list_resultados()
-        list_options = []
-
-        for i, r in enumerate(list_resultados):
-            # logger.debug(repr(r))
-            if 'name' in r:
-                list_options.insert(i, r['name'])
-            else:
-                list_options.insert(i, r['title'])  # for movies
-
-            if 'original_name' in r and not r['original_name'] in (list_options[i], ''):
-                list_options[i] = '%s -%s-' % (list_options[i], r['original_name'])
-            elif 'original_title' in r and not r['original_title'] in (list_options[i], ''):  # for movies
-                list_options[i] = '%s -%s-' % (list_options[i], r['original_title'])
-
-            if 'first_air_date' in r and len(r['first_air_date']) > 3:
-                list_options[i] = '%s (%s)' % (list_options[i], r['first_air_date'][:4])
-            elif 'release_date' in r and len(r['release_date']) > 3:  # for movies
-                list_options[i] = '%s (%s)' % (list_options[i], r['release_date'][:4])
-
-        # logger.debug(repr(list_series))
-
-        # Temporalmente lo abrimos con un cuadro de seleccion, pero lo suyo es un cuadro de dialogo especial
-        selected_option = platformtools.dialog_select("Seleccione la serie correcta", list_options)
-        if selected_option < 0 or selected_option > len(list_options)-1:
-            return serie
-
-        # Fijamos los infoLabels
-        logger.debug(repr(list_resultados[selected_option]))
-        serie.infoLabels.update(list_resultados[selected_option])
-        serie.infoLabels['tmdb_id'] = list_resultados[selected_option]['id']
-        serie.infoLabels['title'] = list_resultados[selected_option]['name'].strip()  # Si fuesen movies seria title
+    logger.info("[library.py] get_video_id_from_scraper")
+    from core import tmdb
+    otmdb = tmdb.Tmdb(texto_buscado=serie.infoLabels['title'], tipo='tv', year=serie.infoLabels.get('year', ''))
+    select = platformtools.show_video_info(otmdb.get_list_resultados(), caption="Seleccione la serie correcta",
+                                           callback='cb_select_from_tmdb')
+    if select:
+        serie.infoLabels.update(select)
         logger.debug(tmdb.infoLabels_tostring(serie))
 
     return serie
+
+
+def cb_select_from_tmdb(dic):
+    print repr(dic)
+    return dic
+
+
+    # TODO preparar para peliculas
+    # if scraper == 1:
+    #     from core import tmdb
+    #     otmdb = tmdb.Tmdb(texto_buscado=serie.infoLabels['title'], tipo='tv', year=serie.infoLabels.get('year', ''))
+    #     list_resultados = otmdb.get_list_resultados()
+    #     list_options = []
+    #
+    #     for i, r in enumerate(list_resultados):
+    #         # logger.debug(repr(r))
+    #         if 'name' in r:
+    #             list_options.insert(i, r['name'])
+    #         else:
+    #             list_options.insert(i, r['title'])  # for movies
+    #
+    #         if 'original_name' in r and not r['original_name'] in (list_options[i], ''):
+    #             list_options[i] = '%s -%s-' % (list_options[i], r['original_name'])
+    #         elif 'original_title' in r and not r['original_title'] in (list_options[i], ''):  # for movies
+    #             list_options[i] = '%s -%s-' % (list_options[i], r['original_title'])
+    #
+    #         if 'first_air_date' in r and len(r['first_air_date']) > 3:
+    #             list_options[i] = '%s (%s)' % (list_options[i], r['first_air_date'][:4])
+    #         elif 'release_date' in r and len(r['release_date']) > 3:  # for movies
+    #             list_options[i] = '%s (%s)' % (list_options[i], r['release_date'][:4])
+    #
+    #     # logger.debug(repr(list_series))
+    #
+    #     # Temporalmente lo abrimos con un cuadro de seleccion, pero lo suyo es un cuadro de dialogo especial
+    #     selected_option = platformtools.dialog_select("Seleccione la serie correcta", list_options)
+    #     if selected_option < 0 or selected_option > len(list_options)-1:
+    #         return serie
+    #
+    #     # Fijamos los infoLabels
+    #     logger.debug(repr(list_resultados[selected_option]))
+    #     serie.infoLabels.update(list_resultados[selected_option])
+    #     serie.infoLabels['tmdb_id'] = list_resultados[selected_option]['id']
+    #     serie.infoLabels['title'] = list_resultados[selected_option]['name'].strip()  # Si fuesen movies seria title
+    #     logger.debug(tmdb.infoLabels_tostring(serie))
+    #
+    # return serie
 
 
 def save_library_episodes(path, episodelist):
@@ -641,11 +658,12 @@ def save_tvshow_in_file(serie):
         serie.infoLabels['title'] = serie.show
 
     # Abrir ventana de seleccion de serie
-    serie = get_video_id_from_scraper(serie)
+    # getvalue from settings
+    serie = get_video_id_from_scraper(serie, False)
 
     create_nfo = False
-    if 'tmdb_id' in serie.infoLabels:
-        tvshow_id = serie.infoLabels['tmdb_id']
+    if 'id_Tmdb' in serie.infoLabels:
+        tvshow_id = serie.infoLabels['id_Tmdb']
         create_nfo = True
     else:
         tvshow_id = "t_{0}_[{1}]".format(serie.show.strip().replace(" ", "_"), serie.channel)
@@ -917,8 +935,8 @@ def convert_xml_to_json():
                             # Abrir ventana de seleccion para identificar la serie
                             serie = get_video_id_from_scraper(serie)
 
-                            if 'tmdb_id' in serie.infoLabels:
-                                tvshow_id = serie.infoLabels['tmdb_id']
+                            if 'id_Tmdb' in serie.infoLabels:
+                                tvshow_id = serie.infoLabels['id_Tmdb']
                                 create_nfo = True
                             else:
                                 tvshow_id = "t_{0}_[{1}]".format(tvshow.strip().replace(" ", "_"), channel)
