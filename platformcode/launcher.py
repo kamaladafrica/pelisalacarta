@@ -50,6 +50,10 @@ def run():
         server_white_list, server_black_list = set_server_list()
 
     try:
+        if item.action == "":
+          logger.info("Item tipo TAG")
+          return
+          
         # Default action: open channel and launch mainlist function
         if ( item.action=="selectchannel" ):
             import channelselector
@@ -237,13 +241,10 @@ def run():
 
                 else:
                     if item.action != "findvideos":
-                        try:
-                            logger.info("pelisalacarta.platformcode.launcher executing channel '"+item.action+"' method")
-                            itemlist = getattr(channel, item.action)(item)
-                        except:
-                            #Error al ejecutar la accion o item tipo Tag
-                            logger.info("pelisalacarta.platformcode.launcher no se ha podido ejecutar la accion %s" %item.action)
-                            return
+
+                      logger.info("pelisalacarta.platformcode.launcher executing channel '"+item.action+"' method")
+                      itemlist = getattr(channel, item.action)(item)
+                   
                     else:
 
                         # Intenta ejecutar una posible funcion "findvideos" del canal
@@ -305,6 +306,26 @@ def run():
             logger.info("codigo de error HTTP : %d" %e.code)
             texto = (config.get_localized_string(30051) % e.code) # "El sitio web no funciona correctamente (error http %d)"
             ok = ventana_error.ok ("plugin", texto)
+    
+    except:
+      import traceback
+      import xbmcgui
+      logger.error(traceback.format_exc())
+      
+      patron = 'File "'+os.path.join(config.get_runtime_path(),"channels","").replace("\\","\\\\")+'([^.]+)\.py"'
+      canal = scrapertools.find_single_match(traceback.format_exc(),patron)
+      
+      if canal:
+        xbmcgui.Dialog().ok(
+          "Se ha producido un error en el canal " + canal,
+          "Esto puede ser causado por varias razones: \n"
+          " - El servidor no está disponible, o no esta respondiendo.\n"
+          " - Cambios en el diseño de la web.\n"
+          "Comprueba el log para ver mas detalles del error.")
+      else:
+        xbmcgui.Dialog().ok(
+          "Se ha producido un error en pelisalacarta",
+          "Comprueba el log para ver mas detalles del error." )
 
 
 def set_server_list():
