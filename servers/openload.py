@@ -38,7 +38,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
         text_encode = scrapertools.get_match(data,"Click to start Download.*?<script[^>]+>(.*?)</script")
 
     else:
-        text_encode = scrapertools.get_match(data,"<video[^<]+<script[^>]+>(.*?)</script>")
+        text_encode = scrapertools.get_match(data,"</div[^<]+<script[^>]+>(.*?)</script>")
 
     from aadecode import decode as aadecode
     text_decode = aadecode(text_encode)

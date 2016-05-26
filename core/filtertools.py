@@ -7,42 +7,38 @@
 # ------------------------------------------------------------
 
 import os
-import string
 import sys
 
 from core import config
 from core import jsontools
 from core import logger
 from core.item import Item
+from platformcode import library
 from platformcode import platformtools
 
-TAG_TVSHOWS = "TVSHOW_FILTER"
+TAG_TVSHOW_FILTER = "TVSHOW_FILTER"
+TAG_NAME = "name"
+TAG_ACTIVE = "active"
 TAG_LANGUAGE = "language"
 TAG_QUALITY_NOT_ALLOWED = "quality_not_allowed"
 
 
-# TODO arreglar el filter para que haga el constructor con el json
 class Filter:
+    active = False
     language = ""
-    # quality = []
     quality_not_allowed = ""
 
     def __init__(self, dict_filter):
+        self.active = dict_filter[TAG_ACTIVE]
         self.language = dict_filter[TAG_LANGUAGE]
         self.quality_not_allowed = dict_filter[TAG_QUALITY_NOT_ALLOWED]
 
-
-# todo mejorar tema de colores
+# TODO mejorar tema de colores
 # TODO mejorar logger
-# todo echar un ojo a los .strip() y lower() que algunos son redundantes
-# todo cuidado con el tema de los nombres raros de serie...
-# todo documentar metodos
-# todo meter try/catch
-# todo echar un ojo a https://pyformat.info/, se puede formatear el estilo y hacer referencias directamente a elementos
+# TODO meter try/catch
+# TODO echar un ojo a https://pyformat.info/, se puede formatear el estilo y hacer referencias directamente a elementos
 
-# todo mirar
 __channel__ = "filtertools"
-
 DEBUG = config.get_setting("debug")
 
 
@@ -51,12 +47,14 @@ def isGeneric():
     return True
 
 
-def get_filtered_links(list_item):
+def get_filtered_links(list_item, channel):
     """
     Devuelve una lista de enlaces filtrados.
 
     :param list_item: lista de enlaces
     :type list_item: list[Item]
+    :param channel: nombre del canal a filtrar
+    :type channel: str
     :return: lista de Item
     :rtype: list[Item]
     """
@@ -68,14 +66,14 @@ def get_filtered_links(list_item):
     new_itemlist = []
     quality_count = 0
     language_count = 0
-    channel = list_item[0].channel
     _filter = None
 
     dict_filtered_shows = get_filtered_tvshows(channel)
-    if list_item[0].show.lower().strip() in dict_filtered_shows.keys():
-        _filter = Filter(dict_filtered_shows[list_item[0].show.lower().strip()])
+    tvshow = library.title_to_filename(list_item[0].show.lower().strip())
+    if tvshow in dict_filtered_shows.keys():
+        _filter = Filter(dict_filtered_shows[tvshow])
 
-    if _filter:
+    if _filter and _filter.active:
         logger.info("filter datos: {0}".format(_filter))
 
         for item in list_item:
@@ -99,12 +97,8 @@ def get_filtered_links(list_item):
             is_quality_valid = True
             quality = ""
 
-            # TODO mirar si hace falta quitar este if
             if _filter.quality_not_allowed:
-                # if DEBUG:
-                #     logger.info("entra: calidad_no_permitida")
                 if hasattr(item, 'quality'):
-                    #quality = item.quality.lower()
                     if item.quality.lower() not in _filter.quality_not_allowed:
                         quality_count += 1
                     else:
@@ -129,18 +123,38 @@ def get_filtered_links(list_item):
                             _filter.quality_not_allowed, quality_count))
 
         if len(new_itemlist) == 0:
-            # new_itemlist.append(Item(channel=__channel__, title="Obtener todos los servidores sin filtro",
-            #                      url="", action="mainlist", show="kaka"))
-            # new_itemlist = list_item
-            # TODO CAMBIAR PARA QUE LLAME A GET_LINKS SIN FILTRO Y CAMBIAR CHANNEL Y ACTION??
-            new_itemlist.append(Item(channel=channel, action="mainlist",
-                                     title="[COLOR red]No se han encontrado items con el filtro [{0}] y ![{1}][/COLOR]"
-                                     .format(_filter.language, _filter.quality_not_allowed), url="", thumbnail="",
-                                     plot="", context="borrar filtro", show=list_item[0].show))
+            lista = []
+            for i in list_item:
+                lista.append(i.tourl())
+
+            new_itemlist.append(Item(channel=__channel__, action="no_filter",
+                                     title="[COLOR red]No hay elementos con filtro [{0}] y ![{1}], pulsa para mostrar "
+                                           "sin filtro[/COLOR]"
+                                     .format(_filter.language, _filter.quality_not_allowed), context="borrar filtro",
+                                     lista=lista, from_channel=channel, show=list_item[0].show))
+
     else:
         new_itemlist = list_item
 
     return new_itemlist
+
+
+def no_filter(item):
+    """
+    Muestra los enlaces sin filtrar
+
+    :param item: item
+    :type item: Item
+    :return: liasta de enlaces
+    :rtype: list[Item]
+    """
+    logger.info("[filtertools.py] no_filter")
+
+    lista = []
+    for i in item.lista:
+        lista.append(Item().fromurl(i))
+
+    return lista
 
 
 def get_filtered_tvshows(from_channel):
@@ -148,7 +162,7 @@ def get_filtered_tvshows(from_channel):
     Obtiene las series filtradas de un canal
 
     :param from_channel: canal que tiene las series filtradas
-    :type from_channel: string
+    :type from_channel: str
     :return: dict con las series
     :rtype: dict
     """
@@ -166,8 +180,8 @@ def get_filtered_tvshows(from_channel):
 
     check_json_file(data, fname, dict_data)
 
-    if TAG_TVSHOWS in dict_data:
-        dict_series = dict_data[TAG_TVSHOWS]
+    if TAG_TVSHOW_FILTER in dict_data:
+        dict_series = dict_data[TAG_TVSHOW_FILTER]
 
     if DEBUG:
         logger.info("json_series: {0}".format(dict_series))
@@ -178,10 +192,11 @@ def get_filtered_tvshows(from_channel):
 def read_file(fname):
     """
     pythonic way to read from file
-    @type fname: string
-    @param fname: filename
-    @rtype:   string
-    @return:  data from filename.
+
+    :param fname: filename
+    :type fname: str
+    :return: data from filename.
+    :rtype: str
     """
     logger.info("[filtertools.py] read_file")
     data = ""
@@ -201,15 +216,14 @@ def save_file(data, fname, message):
     """
     pythonic way to write a file
 
-    @type  fname: string
-    @param fname: filename.
-    @type  data: string
-    @param data: data to save.
-    @type  message: string
-    @param message: message to display.
-
-    @rtype:   bool
-    @return:  result of saving.
+    :param fname: filename.
+    :type fname: str
+    :param data: data to save.
+    :type data: str
+    :param message: message to display
+    :type message: str
+    :return: result of saving.
+    :rtype: bool
     """
     logger.info("[filtertools.py] save_file")
     logger.info("default encoding: {0}".format(sys.getdefaultencoding()))
@@ -258,29 +272,38 @@ def mainlist_filter(channel, list_idiomas, list_calidad):
     """
     Muestra una lista de las series filtradas
 
-    @param channel: nombre del canal para obtener las series filtradas
-    @type channel: string
-    @param list_idiomas: lista de idiomas del canal
-    @type list_idiomas: list
-    @param list_calidad: lista de calidades del canal
-    @type list_calidad: list
-    @rtype:   list
-    @return:  itemlist.
+    :param channel: nombre del canal para obtener las series filtradas
+    :type channel: str
+    :param list_idiomas: lista de idiomas del canal
+    :type list_idiomas: list
+    :param list_calidad: lista de calidades del canal
+    :type list_calidad: list
+    :return: lista de Item
+    :rtype: list[Item]
     """
     logger.info("[filtertools.py] mainlist_filter")
     itemlist = list([])
     dict_series = get_filtered_tvshows(channel)
 
     idx = 0
-    for key in sorted(dict_series):
-        tag_color = "green"
+    for tvshow in sorted(dict_series):
+        tag_color = "0xff008000" if dict_series[tvshow][TAG_ACTIVE] else "0xff00fa9a"
         if idx % 2 == 0:
-            tag_color = "blue"
-        idx += 1
-        title = "Configurar [COLOR {0}][{1}][/COLOR]".format(tag_color, string.capwords(key))
+            tag_color = "blue" if dict_series[tvshow][TAG_ACTIVE] else "0xff00bfff"
 
-        itemlist.append(Item(channel=__channel__, action="config_filter", title=title, show=key,
+        idx += 1
+        name = dict_series.get(tvshow, {}).get(TAG_NAME, tvshow)
+        activo = " (desactivado)"
+        if dict_series[tvshow][TAG_ACTIVE]:
+            activo = ""
+        title = "Configurar [COLOR {0}][{1}][/COLOR]{2}".format(tag_color, name, activo)
+
+        itemlist.append(Item(channel=__channel__, action="config_filter", title=title, show=name,
                              list_idiomas=list_idiomas, list_calidad=list_calidad, from_channel=channel))
+
+    if len(itemlist) == 0:
+        itemlist.append(Item(channel=channel, action="mainlist",
+                             title="No existen filtros, busca una serie y pulsa en menú contextual 'Menu Filtro'"))
 
     return itemlist
 
@@ -289,8 +312,8 @@ def config_filter(item):
     """
     muestra una serie filtrada para su configuración
 
-    @param item: item
-    @type item: item
+    :param item: item
+    :type item: Item
     """
     logger.info("[filtertools.py] config_filter")
     logger.info("item {0}".format(item.tostring()))
@@ -298,18 +321,29 @@ def config_filter(item):
     # OBTENEMOS LOS DATOS DEL JSON
     dict_series = get_filtered_tvshows(item.from_channel)
 
-    lang_selected = dict_series.get(item.show.lower(), {}).get(TAG_LANGUAGE, 'Español')
-    list_quality = dict_series.get(item.show.lower(), {}).get(TAG_QUALITY_NOT_ALLOWED, "")
+    tvshow = library.title_to_filename(item.show.lower().strip())
+
+    lang_selected = dict_series.get(tvshow, {}).get(TAG_LANGUAGE, 'Español')
+    list_quality = dict_series.get(tvshow, {}).get(TAG_QUALITY_NOT_ALLOWED, "")
     # logger.info("lang selected {}".format(lang_selected))
     # logger.info("list quality {}".format(list_quality))
 
+    active = True
+    custom_method = ""
+    allow_option = False
+    if library.title_to_filename(item.show.lower().strip()) in dict_series:
+        allow_option = True
+        custom_method = "borrar_filtro"
+        active = dict_series.get(library.title_to_filename(item.show.lower().strip()), {}).get(TAG_ACTIVE, False)
+
     list_controls = [{
-            "id": "serie",
-            "type": "label",
-            "label": string.capwords(item.show),
+            "id": "active",
+            "type": "bool",
+            "label": "¿Activar/Desactivar filtro?",
             "color": "",
-            "enabled": True,
-            "visible": True,
+            "default": active,
+            "enabled": allow_option,
+            "visible": allow_option,
         },
         {
             "id": "language",
@@ -347,106 +381,131 @@ def config_filter(item):
         # concatenamos list_controls con list_controls_calidad
         list_controls.extend(list_controls_calidad)
 
-    allow_delete = False
-    if item.show.strip().lower() in dict_series:
-        allow_delete = True
+    custom_button = {'name': 'Borrar', 'method': custom_method}
 
-    list_controls_deleted_option = [
-        {
-            "id": "linea_blanco",
-            "type": "label",
-            "label": "",
-            "color": "0xffC6C384",
-            "enabled": allow_delete,
-            "visible": allow_delete,
-        },
-        {
-            "id": "checkbox_deleted",
-            "type": "bool",
-            "label": "¿Borrar filtro?",
-            "color": "",
-            "default": False,
-            "enabled": allow_delete,
-            "visible": allow_delete,
-        }
-    ]
-    list_controls.extend(list_controls_deleted_option)
+    platformtools.show_channel_settings(list_controls=list_controls, callback='guardar_valores', item=item,
+                                        caption="Filtrado de enlaces para: [COLOR blue]{0}[/COLOR]".format(item.show),
+                                        custom_button=custom_button)
 
-    platformtools.show_channel_settings(list_controls=list_controls, caption="Filtrado de enlaces por Serie",
-                                        callback='guardar_valores', item=item)
+
+def borrar_filtro(item):
+    logger.info("[filtertools.py] borrar_filtro")
+    if item:
+        # OBTENEMOS LOS DATOS DEL JSON
+        dict_series = get_filtered_tvshows(item.from_channel)
+        tvshow = library.title_to_filename(item.show.strip().lower())
+
+        heading = "¿Está seguro que desea eliminar el filtro?"
+        line1 = "Pulse 'Si' para eliminar el filtro de [COLOR blue]{0}[/COLOR], pulse 'No' o cierre la ventana para " \
+                "no hacer nada.".format(item.show.strip())
+
+        if platformtools.dialog_yesno(heading, line1) == 1:
+            lang_selected = dict_series.get(tvshow, {}).get(TAG_LANGUAGE, "")
+            dict_series.pop(tvshow, None)
+            message = "FILTRO ELIMINADO"
+            fname, json_data = update_json_data(dict_series, item.from_channel)
+            message = save_file(json_data, fname, message)
+            heading = "{0} [{1}]".format(item.show.strip(), lang_selected)
+            platformtools.dialog_notification(heading, message)
 
 
 def guardar_valores(item, dict_data_saved):
     """
     Guarda los valores configurados en la ventana
-    @param item: item
-    @type item: item
-    @param dict_data_saved: diccionario con los datos salvados
-    @type dict_data_saved: dict
+
+    :param item: item
+    :type item: Item
+    :param dict_data_saved: diccionario con los datos salvados
+    :type dict_data_saved: dict
     """
+    logger.info("[filtertools.py] guardar_valores")
     # Aqui tienes q gestionar los datos obtenidos del cuadro de dialogo
     if item and dict_data_saved:
         logger.debug('item: {0}\ndatos: {1}'.format(item.tostring(), dict_data_saved))
 
         # OBTENEMOS LOS DATOS DEL JSON
         dict_series = get_filtered_tvshows(item.from_channel)
+        tvshow = library.title_to_filename(item.show.strip().lower())
 
-        if dict_data_saved["checkbox_deleted"] != 1:
-            logger.info("Se actualiza los datos")
+        logger.info("Se actualiza los datos")
 
-            list_quality = []
-            for id, value in dict_data_saved.items():
-                if id in item.list_calidad and value:
-                        list_quality.append(id.lower())
+        list_quality = []
+        for _id, value in dict_data_saved.items():
+            if _id in item.list_calidad and value:
+                    list_quality.append(_id.lower())
 
-            lang_selected = item.list_idiomas[dict_data_saved[TAG_LANGUAGE]]
-            dict_filter = {TAG_QUALITY_NOT_ALLOWED: list_quality, TAG_LANGUAGE: lang_selected}
-            dict_series[item.show.strip().lower()] = dict_filter
+        lang_selected = item.list_idiomas[dict_data_saved[TAG_LANGUAGE]]
+        dict_filter = {TAG_NAME: item.show, TAG_ACTIVE: dict_data_saved[TAG_ACTIVE], TAG_LANGUAGE: lang_selected,
+                       TAG_QUALITY_NOT_ALLOWED: list_quality}
+        dict_series[tvshow] = dict_filter
 
-            message = "FILTRO GUARDADO"
-
-        else:
-            logger.info("borrado")
-            lang_selected = item.list_idiomas[dict_data_saved[TAG_LANGUAGE]]
-            dict_series.pop(item.show.strip().lower(), None)
-
-            message = "FILTRO ELIMINADO"
+        message = "FILTRO GUARDADO"
 
         fname, json_data = update_json_data(dict_series, item.from_channel)
         message = save_file(json_data, fname, message)
 
-        heading = "{0} [{1}]".format(string.capwords(item.show), lang_selected)
+        heading = "{0} [{1}]".format(item.show.strip(), lang_selected)
         platformtools.dialog_notification(heading, message)
 
 
+        # if dict_data_saved["checkbox_deleted"] != 1:
+        #     logger.info("Se actualiza los datos")
+        #
+        #     list_quality = []
+        #     for id, value in dict_data_saved.items():
+        #         if id in item.list_calidad and value:
+        #                 list_quality.append(id.lower())
+        #
+        #     lang_selected = item.list_idiomas[dict_data_saved[TAG_LANGUAGE]]
+        #     dict_filter = {TAG_NAME: item.show, TAG_ACTIVE: dict_data_saved[TAG_ACTIVE], TAG_LANGUAGE: lang_selected,
+        #                    TAG_QUALITY_NOT_ALLOWED: list_quality}
+        #     dict_series[tvshow] = dict_filter
+        #
+        #     message = "FILTRO GUARDADO"
+        #
+        # else:
+        #     logger.info("borrado")
+        #     lang_selected = item.list_idiomas[dict_data_saved[TAG_LANGUAGE]]
+        #     dict_series.pop(tvshow, None)
+        #
+        #     message = "FILTRO ELIMINADO"
+        #
+        # fname, json_data = update_json_data(dict_series, item.from_channel)
+        # message = save_file(json_data, fname, message)
+        #
+        # heading = "{0} [{1}]".format(item.show.strip(), lang_selected)
+        # platformtools.dialog_notification(heading, message)
 
-def update_json_data(dict_series, name_file):
+
+def update_json_data(dict_series, filename):
     """
     actualiza el json_data de un fichero con el diccionario pasado
 
-    @param dict_series: diccionario con las series
-    @type dict_series: dict
-    @type name_file: string
-    @param name_file: nombre del fichero para guardar
-    :return:
+    :param dict_series: diccionario con las series
+    :type dict_series: dict
+    :param filename: nombre del fichero para guardar
+    :type filename: str
+    :return: fname, json_data
+    :rtype: str, dict
     """
+    logger.info("[filtertools.py] update_json_data")
     if not os.path.exists(os.path.join(config.get_data_path(), "settings_channels")):
         os.mkdir(os.path.join(config.get_data_path(), "settings_channels"))
-    fname = os.path.join(config.get_data_path(), "settings_channels", name_file + "_data.json")
+    fname = os.path.join(config.get_data_path(), "settings_channels", filename + "_data.json")
     data = read_file(fname)
     dict_data = jsontools.load_json(data)
     # es un dict
     if dict_data:
-        if TAG_TVSHOWS in dict_data:
+        if TAG_TVSHOW_FILTER in dict_data:
             logger.info("   existe el key SERIES")
-            dict_data[TAG_TVSHOWS] = dict_series
+            dict_data[TAG_TVSHOW_FILTER] = dict_series
         else:
             logger.info("   NO existe el key SERIES")
-            new_dict = {TAG_TVSHOWS: dict_series}
+            new_dict = {TAG_TVSHOW_FILTER: dict_series}
             dict_data.update(new_dict)
     else:
         logger.info("   NO es un dict")
-        dict_data = {TAG_TVSHOWS: dict_series}
+        dict_data = {TAG_TVSHOW_FILTER: dict_series}
     json_data = jsontools.dump_json(dict_data)
     return fname, json_data
 
@@ -454,14 +513,15 @@ def update_json_data(dict_series, name_file):
 def save_filter(item):
     """
     salva el filtro a través del menú contextual
-    @param item: item
-    @type item: item
+
+    :param item: item
+    :type item: item
     """
     logger.info("[filtertools.py] save_filter")
 
     dict_series = get_filtered_tvshows(item.from_channel)
 
-    name = item.show.strip().lower()
+    name = library.title_to_filename(item.show.lower().strip())
     logger.info("[filtertools.py] config_filter name {0}".format(name))
 
     open_tag_idioma = (0, item.title.find("[")+1)[item.title.find("[") >= 0]
@@ -477,9 +537,9 @@ def save_filter(item):
     # if idioma != "":
     #     filter_idioma = [key for key, value in dict_idiomas.iteritems() if value == idioma][0]
 
-    list_calidad = list([])
+    list_calidad = list()
 
-    dict_filter = {TAG_QUALITY_NOT_ALLOWED: list_calidad, TAG_LANGUAGE: idioma}
+    dict_filter = {TAG_NAME: item.show, TAG_ACTIVE: True, TAG_LANGUAGE: idioma, TAG_QUALITY_NOT_ALLOWED: list_calidad}
     dict_series[name] = dict_filter
 
     # filter_list = item.extra.split("##")
@@ -493,23 +553,24 @@ def save_filter(item):
     message = "FILTRO GUARDADO"
     message = save_file(json_data, fname, message)
 
-    heading = "{0} [1]".format(string.capwords(item.show.strip()), idioma)
+    heading = "{0} [1]".format(item.show.strip(), idioma)
     platformtools.dialog_notification(heading, message)
 
 
 def del_filter(item):
     """
     elimina el filtro a través del menú contextual
-    @param item: item
-    @type item: item
+
+    :param item: item
+    :type item: item
     """
     logger.info("[filtertools.py] del_filter")
 
     dict_series = get_filtered_tvshows(item.from_channel)
-    dict_series.pop(item.show.strip().lower(), None)
+    dict_series.pop(library.title_to_filename(item.show.lower().strip()), None)
 
     fname, json_data = update_json_data(dict_series, item.from_channel)
     message = save_file(json_data, fname, "FILTRO Borrado")
 
-    heading = "{0}".format(string.capwords(item.show.strip()))
+    heading = "{0}".format(item.show.strip())
     platformtools.dialog_notification(heading, message)
