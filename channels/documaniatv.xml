@@ -6,66 +6,21 @@
 	<active>true</active>
 	<adult>false</adult>
 	<language>es</language>
-	<include_in_global_search>disabled</include_in_global_search>
-	
+
 	<fanart></fanart>
-	<thumbnail>http://media.tvalacarta.info/pelisalacarta/squares/documaniatv.png</thumbnail>
+	<thumbnail>http://i.imgur.com/qMR9sg9.png</thumbnail>
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/documaniatv.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>10</version>
+	<version>8</version>
+	<date>22/03/2016</date>
+	<changes>Reparada busqueda</changes>
 
-	<changes>
-		<change> 
-			<date>5/05/16</date>
-			<autor>super_berny</autor>
-			<description>Adaptar a Buscador global y Novedades Documentales</description>
-		</change>
-		<change> 
-			<date>4/05/2016</date>
-			<autor>cmos</autor>
-			<description>Añadida cuenta de usuario y reparacion por cambios en la web</description>
-		</change>
-		<change> 
-			<date>22/03/2016</date>
-			<autor></autor>
-			<description>Reparada busqueda</description>
-		</change>
-	</changes>	
-		
 	<categories>
 		<category>documentary</category>
 	</categories>
-	
+
 	<settings>
-		<id>documaniatvuser</id>
-		<type>text</type>
-		<label>@30014</label>
-		<enabled>true</enabled>
-		<visible>true</visible>
-	</settings>
-	<settings>
-		<id>documaniatvpassword</id>
-		<type>text</type>
-		<label>@30015</label>
-		<hidden>true</hidden>
-		<enabled>!eq(-1,'')</enabled>
-		<visible>true</visible>
-	</settings>
-	<settings>
-		<id>include_in_global_search</id>
-		<type>bool</type>
-		<label>Incluir en busqueda global</label>
-		<default>true</default>
-		<enabled>true</enabled>
-		<visible>true</visible>
-	</settings>
-	<settings>
-		<id>include_in_newest_documentales</id>
-		<type>bool</type>
-		<label>Incluir en Novedades - Documentales</label>
-		<default>true</default>
-		<enabled>true</enabled>
-		<visible>true</visible>
+		<include_in_global_search>false</include_in_global_search>
 	</settings>
 </channel>
