@@ -88,17 +88,17 @@ def play_video(item):
     pass
 
 
-def show_channel_settings(list_controls=None, dict_values=None, caption="", callback=None, item=None):
+def show_channel_settings(list_controls=None, dict_values=None, caption="", callback=None, item=None,
+                          custom_button=None):
     """
     Muestra un cuadro de configuracion personalizado para cada canal y guarda los datos al cerrarlo.
     
     Parametros: ver descripcion en xbmc_config_menu.SettingsWindow
     """
     from xbmc_config_menu import SettingsWindow
-    return SettingsWindow("ChannelSettings.xml", config.get_runtime_path()).Start(list_controls=list_controls,
-                                                                                  dict_values=dict_values,
-                                                                                  title=caption, callback=callback,
-                                                                                  item=item)
+    return SettingsWindow("ChannelSettings.xml", config.get_runtime_path())\
+        .start(list_controls=list_controls, dict_values=dict_values, title=caption, callback=callback, item=item,
+                 custom_button=custom_button)
 
 
 def show_video_info(data, caption="", callback=None):
