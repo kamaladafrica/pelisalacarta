@@ -50,12 +50,28 @@ def videos(item):
     itemlist = []
 
     data = scrapertools.get_match(data,'<div class="boxC videoList clearfix">(.*?)<div id="footer">')
+    
+    #Patron #1
     patron = '<div class="video"><a href="([^"]+)" class="hRotator">'+"<img src='([^']+)' class='thumb'"+' alt="([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedthumbnail,scrapedtitle in matches:
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")            
         itemlist.append( Item(channel=item.channel, action="detail" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, folder=True, viewmode="movie"))
 		
+		#Patron #2
+    patron = '<a href="([^"]+)"  data-click="[^"]+" class="hRotator"><img src=\'([^\']+)\' class=\'thumb\' alt="([^"]+)"/>'
+    matches = re.compile(patron,re.DOTALL).findall(data)
+    for scrapedurl,scrapedthumbnail,scrapedtitle in matches:
+        if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")            
+        itemlist.append( Item(channel=item.channel, action="detail" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, folder=True, viewmode="movie"))
+
+
+    #Paginador
+    patron = "<a href='([^']+)' class='last colR'><div class='icon iconPagerNextHover'></div>Próximo</a>"
+    matches = re.compile(patron,re.DOTALL).findall(data)  
+    if len(matches) >0:
+      itemlist.append( Item(channel=item.channel, action="videos", title="Página Siguiente" , url=matches[0] , thumbnail="" , folder=True) )
+
     return itemlist
 
 # SECCION ENCARGADA DE VOLCAR EL LISTADO DE CATEGORIAS CON EL LINK CORRESPONDIENTE A CADA PAGINA

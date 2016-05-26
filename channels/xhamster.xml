@@ -14,7 +14,7 @@
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
 	<version>6</version>
 	<date>16/05/2016</date>
-	<changes>Limpeza de codigo</changes>
+	<changes>Arreglado novedades, añadida paginacion</changes>
 
 	<categories>
 		<category>adult</category>
