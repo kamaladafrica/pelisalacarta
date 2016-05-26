@@ -217,12 +217,19 @@ def agruparXcontenido(list_result_canal, categoria):
         if (categoria == 'series' or categoria == 'anime') and i.contentEpisodeNumber:
             if not i.contentSeason:
                 i.contentSeason = '1'
-            i.title += " - %sx%s" % (i.contentSeason, "{:0>2d}".format(int(i.contentEpisodeNumber)))
+
+            try:
+                i.title += " - %sx%s" % (i.contentSeason, "{:0>2d}".format(int(i.contentEpisodeNumber)))
+            except:
+                i.title += i.contentTitle
 
         # Eliminar tildes y otros caracteres especiales para la key
         import unicodedata
-        newKey = i.title.lower().strip().decode("UTF-8")
-        newKey = ''.join((c for c in unicodedata.normalize('NFD', newKey) if unicodedata.category(c) != 'Mn'))
+        try:
+            newKey = i.title.lower().strip().decode("UTF-8")
+            newKey = ''.join((c for c in unicodedata.normalize('NFD', newKey) if unicodedata.category(c) != 'Mn'))
+        except:
+            newKey = i.title
 
         if newKey in dict_contenidos:
             # Si el contenido ya estaba en el diccionario añadirlo a la lista de opciones...
