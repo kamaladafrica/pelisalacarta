@@ -420,8 +420,13 @@ def get_episodios(item):
     # Agrupar enlaces por episodios  temXcap
     temXcap_dict={}
     for link in lista_links:
-        title_id = link['id']
-        id= str(link['season']) + "x" + str(link['episode']).zfill(2)
+        title_id = link['title_id']
+        try:
+            season = str(int(link['season']))
+            episode = str(int(link['episode'])).zfill(2)
+        except:
+            continue
+        id= season + "x" + episode
         if temXcap_dict.has_key(id):
             l= temXcap_dict[id]
             l.append(link)
