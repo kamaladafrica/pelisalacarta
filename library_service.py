@@ -118,5 +118,8 @@ def main():
         message = template.format(type(ex).__name__, ex.args)
         logger.info(message)
 
+        if p_dialog:
+            p_dialog.close()
+
 if __name__ == "__main__":
     main()
