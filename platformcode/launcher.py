@@ -13,7 +13,6 @@ import urllib2
 from core import channeltools
 from core import config
 from core import logger
-from core import scrapertools
 from core.item import Item
 from platformcode import library
 from platformcode import xbmctools
@@ -178,7 +177,7 @@ def run():
                     getattr(channel, item.action)(params, item.url, item.category)
             else:
                 logger.info("pelisalacarta.platformcode.launcher multiplatform channel")
-
+                #logger.debug(item.tostring('\n'))
                 if item.action == "play":
                     logger.info("pelisalacarta.platformcode.launcher play")
                     # logger.debug(str(item.infoLabels))
@@ -241,10 +240,8 @@ def run():
 
                 else:
                     if item.action != "findvideos":
-
                       logger.info("pelisalacarta.platformcode.launcher executing channel '"+item.action+"' method")
                       itemlist = getattr(channel, item.action)(item)
-                   
                     else:
 
                         # Intenta ejecutar una posible funcion "findvideos" del canal
@@ -298,7 +295,7 @@ def run():
         ventana_error = xbmcgui.Dialog()
         # Agarra los errores surgidos localmente enviados por las librerias internas
         if hasattr(e, 'reason'):
-            logger.info("Razon del error, codigo: %d , Razon: %s" %(e.reason[0],e.reason[1]))
+            logger.info("Razon del error, codigo: {0}, Razon: {1}".format(e.reason[0], e.reason[1]))
             texto = config.get_localized_string(30050) # "No se puede conectar con el sitio web"
             ok = ventana_error.ok ("plugin", texto)
         # Agarra los errores con codigo de respuesta del servidor externo solicitado
@@ -389,6 +386,7 @@ def filtered_servers(itemlist, server_white_list, server_black_list):
 
     return new_list
 
+
 def play_from_library(item, channel, server_white_list, server_black_list):
     logger.info("pelisalacarta.platformcode.launcher play_from_library")
 
@@ -441,13 +439,21 @@ def add_pelicula_to_library(item):
     logger.info("pelisalacarta.platformcode.launcher add_pelicula_to_library")
 
     new_item = item.clone(action="play_from_library", category="Cine")
-    library.savelibrary(new_item)
+    insertados, sobreescritos, fallidos = library.save_library_movie(new_item)
+    itemlist = []
+
+    if fallidos == 0:
+        itemlist.append(Item(title="La pelicula se ha añadido a la biblioteca", channel=item.channel))
+    else:
+        itemlist.append(Item(title="ERROR, la pelicula NO se ha añadido a la biblioteca",  channel=item.channel))
+
+    xbmctools.renderItems(itemlist, item)
+
+    # library.update()
 
 
 def add_serie_to_library(item, channel):
     logger.info("pelisalacarta.platformcode.launcher add_serie_to_library, show=#"+item.show+"#")
-
-    import xbmcgui
 
     # Esta marca es porque el item tiene algo más aparte en el atributo "extra"
     action = item.extra
@@ -458,55 +464,28 @@ def add_serie_to_library(item, channel):
     # Obtiene el listado desde el que se llamó
     itemlist = getattr(channel, action)(item)
 
-    # TODO arreglar progress dialog
-    # Progreso
-    p_dialog = xbmcgui.DialogProgress()
-    ret = p_dialog.create('pelisalacarta', 'Añadiendo episodios...')
-    p_dialog.update(0, 'Añadiendo episodio...')
-    totalepisodes = len(itemlist)
+    insertados, sobreescritos, fallidos = library.save_library_tvshow(item, itemlist)
 
-    logger.info("[launcher.py] Total Episodios:"+str(totalepisodes))
-    i = 0
-    errores = 0
-    nuevos = 0
-    for item in itemlist:
-        logger.info("title:: {}".format(item.title))
-        i += 1
-        p_dialog.update(i*100/totalepisodes, 'Añadiendo episodio...', item.title)
-        logger.info("pelisalacarta.platformcode.launcher add_serie_to_library, title="+item.title)
-        if p_dialog.iscanceled():
-            return
+    if fallidos > -1 and (insertados + sobreescritos) > 0:
+        # Guardar el registro series.json actualizado
+        library.save_tvshow_in_file(item)
 
-        try:
-            # Añade todos menos el que dice "Añadir esta serie..." o "Descargar esta serie..."
-            if item.action != "add_serie_to_library" and item.action != "download_all_episodes":
-
-                new_item = item.clone(action="play_from_library", category="Series")
-                res = library.savelibrary(new_item)
-                if res >= 0:
-                    nuevos += res
-                else:
-                    errores += 1
-
-        except IOError:
-            import sys
-            for line in sys.exc_info():
-                logger.error("%s" % line)
-            logger.info("pelisalacarta.platformcode.launcherError al grabar el archivo "+item.title)
-            errores += 1
-
-    p_dialog.close()
-
-    # Actualizacion de la biblioteca
     itemlist = []
-    if errores > 0:
-        itemlist.append(Item(title="ERROR, la serie NO se ha añadido a la biblioteca o lo ha hecho incompleta",
+    if fallidos == -1:
+        itemlist.append(Item(title="ERROR, la serie NO se ha añadido a la biblioteca",
                              channel=item.channel))
-        logger.info("[launcher.py] No se pudo añadir "+str(errores)+" episodios")
+        logger.error("La serie {0} no se ha podido añadir a la biblioteca".format(item.show))
+        xbmctools.renderItems(itemlist, item)
+        return -1
+    elif fallidos > 0:
+        itemlist.append(Item(title="ERROR, la serie NO se ha añadido completa a la biblioteca",
+                             channel=item.channel))
+        logger.error("No se han podido añadir {0} episodios de la serie {1} a la biblioteca".format(fallidos,
+                                                                                                    item.show))
     else:
         itemlist.append(Item(title="La serie se ha añadido a la biblioteca", channel=item.channel))
-        logger.info("[launcher.py] Ningún error al añadir "+str(errores)+" episodios")
+        logger.info("[launcher.py] Se han añadido {0} episodios de la serie {1} a la biblioteca".format(insertados,
+                                                                                                        item.show))
 
     xbmctools.renderItems(itemlist, item)
-
-    library.save_tvshow_in_file(item)
+    # library.update() # TODO evitar bucle

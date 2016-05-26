@@ -155,7 +155,7 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
     import xbmcgui,xbmc
     
     logger.info("[xbmctools.py] play_video")
-    logger.info(item.tostring())
+    #logger.info(item.tostring('\n'))
 
     try:
         item.server = item.server.lower()
@@ -450,12 +450,16 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
         titulo = item.fulltitle
         if titulo == "":
             titulo = item.title
-
-        new_item = item.clone(title=titulo, action="play_from_library", category="Cine")
-        res = library.savelibrary(new_item)
+        #library.savelibrary(titulo,item.url,item.thumbnail,item.server,item.plot,canal=item.channel,category=item.category,Serie=item.show)
+        # TODO ¿SOLO peliculas?
+        #logger.debug(item.tostring('\n'))
+        new_item = item.clone(title=titulo, action="play_from_library", category="Cine",
+                              fulltitle=item.fulltitle, channel=item.channel)
+        #logger.debug(new_item.tostring('\n'))
+        insertados, sobreescritos, fallidos = library.savelibrary_movie(new_item)
 
         advertencia = xbmcgui.Dialog()
-        if res == 1:
+        if fallidos == 0:
             advertencia.ok(config.get_localized_string(30131), titulo,
                            config.get_localized_string(30135))  # 'se ha añadido a la biblioteca'
         return
@@ -513,7 +517,8 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
 
     # Lanza el reproductor
         # Lanza el reproductor
-    if strmfile:           # and item.server != "torrent": #Si es un fichero strm no hace falta el play
+
+    if strmfile and not item.from_biblioteca: #Si es un fichero strm no hace falta el play
         logger.info("b6")
         import sys
         xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, xlistitem)
@@ -760,8 +765,8 @@ def getLibraryInfo (mediaurl):
         ('listitem.playcount', 'i'),        #(2) - number of times this item has been played
 #        ('listitem.overlay', 'i'),          #(2) - range is 0..8.  See GUIListItem.h for values
         ('listitem.overlay', 's'),          #JUR - listitem devuelve un string, pero addinfo espera un int. Ver traducción más abajo
-        ('listitem.cast', 's'),             # (Michal C. Hall) - List concatenated into a string
-        ('listitem.castandrole', 's'),      #(Michael C. Hall|Dexter) - List concatenated into a string
+        #('listitem.cast', 's'),             # (Michal C. Hall) - List concatenated into a string
+        #('listitem.castandrole', 's'),      #(Michael C. Hall|Dexter) - List concatenated into a string
         ('listitem.director', 's'),         #(Dagur Kari)
         ('listitem.mpaa', 's'),             #(PG-13)
         ('listitem.plot', 's'),             #(Long Description)
@@ -919,8 +924,8 @@ def renderItems(itemlist, parentitem, isPlayable='false'):
                 viewmode = item.viewmode
 
         # Cierra el directorio
-        if not parentitem.channel in ["channelselector",""]:
-          xbmcplugin.setContent(pluginhandle,"Movies")
+        # if not parentitem.channel in ["channelselector",""]:
+        # xbmcplugin.setContent(pluginhandle,"Movies")
         xbmcplugin.setPluginCategory( handle=pluginhandle, category=parentitem.category )
         xbmcplugin.addSortMethod( handle=pluginhandle, sortMethod=xbmcplugin.SORT_METHOD_NONE )
 

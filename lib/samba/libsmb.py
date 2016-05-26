@@ -5,9 +5,20 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 # ------------------------------------------------------------
 import os
+import sys
 
 from core import config
 from core import logger
+
+try:
+    import xbmc
+    librerias = xbmc.translatePath(os.path.join(config.get_runtime_path(), 'lib', 'samba'))
+except ImportError:
+    xbmc = None
+    librerias = os.path.join(config.get_runtime_path(), 'lib', 'samba')
+
+if librerias not in sys.path:
+    sys.path.append(librerias)
 
 
 def parse_url(url):
@@ -161,7 +172,7 @@ def get_attributes(file_or_folder, url):
         return None
 
 
-def store_File(_file, data, url):
+def store_file(_file, data, url):
     logger.info("[lib.samba.py] write_file")
 
     server_name, share_name, path, user, password = parse_url(url)
@@ -171,7 +182,8 @@ def store_File(_file, data, url):
     try:
         import xbmc
         localfilename = xbmc.translatePath("special://temp")
-    except:
+    except ImportError:
+        xbmc = None
         localfilename = config.get_data_path()
     logger.info("localfilename="+localfilename)
 
@@ -214,7 +226,8 @@ def get_file_handle_for_reading(_file, url):
     try:
         import xbmc
         localfilename = xbmc.translatePath("special://temp")
-    except:
+    except ImportError:
+        xbmc = None
         localfilename = config.get_data_path()
     logger.info("[lib.samba.py] localfilename=" + localfilename)
 
