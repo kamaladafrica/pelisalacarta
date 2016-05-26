@@ -16,6 +16,11 @@
 
 	<changes>
 		<change> 
+			<date>26/05/16</date>
+			<autor>super_berny</autor>
+			<description>Corregir bug al añadir serie a la biblioteca desde el listado de episodios</description>
+		</change>
+		<change> 
 			<date>29/04/16</date>
 			<autor>super_berny</autor>
 			<description>Adaptar a Buscador global y Novedades Peliculas, Infantiles y Series</description>
