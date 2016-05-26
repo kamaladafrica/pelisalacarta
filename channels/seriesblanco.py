@@ -28,8 +28,13 @@ HOST = "http://seriesblanco.com/"
 IDIOMAS = {'es': 'Español', 'en': 'Inglés', 'la': 'Latino', 'vo': 'VO', 'vos': 'VOS', 'vosi': 'VOSI', 'otro': 'OVOS'}
 list_idiomas = [v for v in IDIOMAS.values()]
 CALIDADES = ['SD', 'HDiTunes', 'Micro-HD-720p', 'Micro-HD-1080p', '1080p', '720p']
-FILTER = True  # (False, True)[channel_xml["filter"] == "1"]  # True # Se obtiene como string del xml
-CONTEXT = ("", "menu filtro")[FILTER]
+
+'''
+configuración para mostrar la opción de filtro, actualmente sólo se permite en xbmc, se cambiará cuando
+'platformtools.show_channel_settings' esté disponible para las distintas plataformas
+'''
+OPCION_FILTRO = config.is_xbmc()
+CONTEXT = ("", "menu filtro")[OPCION_FILTRO]
 DEBUG = config.get_setting("debug")
 
 
@@ -50,8 +55,10 @@ def mainlist(item):
     itemlist.append(Item(channel=__channel__, title="Todas las Series", action="series",
                          url=urlparse.urljoin(HOST, "lista_series/"), thumbnail=thumb_series))
     itemlist.append(Item(channel=__channel__, title="Buscar...", action="search", url=HOST, thumbnail=thumb_buscar))
-    itemlist.append(Item(channel=__channel__, title="[COLOR yellow]Configurar filtro para series...[/COLOR]",
-                         action="open_filtertools"))
+
+    if OPCION_FILTRO:
+        itemlist.append(Item(channel=__channel__, title="[COLOR yellow]Configurar filtro para series...[/COLOR]",
+                             action="open_filtertools"))
 
     return itemlist
 
@@ -204,8 +211,8 @@ def episodios(item):
                                                         "' parece no estar disponible en la web. Iténtalo más tarde.",
                              url=item.url, action="series"))
 
-    if len(itemlist) > 0:
-        itemlist = filtertools.get_filtered_links(itemlist)
+    if len(itemlist) > 0 and OPCION_FILTRO:
+        itemlist = filtertools.get_filtered_links(itemlist, __channel__)
 
     # Opción "Añadir esta serie a la biblioteca de XBMC"
     if config.get_library_support() and len(itemlist) > 0:
@@ -243,8 +250,10 @@ def parseVideos(item, typeStr, data):
                                  quality=vFields.get("quality"), list_idiomas=list_idiomas, list_calidad=CALIDADES,
                                  context=CONTEXT+"|guardar filtro"))
 
+        if len(itemlist) > 0 and OPCION_FILTRO:
+            itemlist = filtertools.get_filtered_links(itemlist, __channel__)
+
         if len(itemlist) > 0:
-            itemlist = filtertools.get_filtered_links(itemlist)
             return itemlist
 
     return []
