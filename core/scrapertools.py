@@ -1,15 +1,12 @@
-﻿#------------------------------------------------------------
-# -*- coding: utf-8 -*-
-#------------------------------------------------------------
-# Download Tools
-# Based on the code from VideoMonkey XBMC Plugin
-#------------------------------------------------------------
+﻿# -*- coding: utf-8 -*-
+# ------------------------------------------------------------
 # pelisalacarta 4
 # Copyright 2015 tvalacarta@gmail.com
+# http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #
 # Distributed under the terms of GNU General Public License v3 (GPLv3)
 # http://www.gnu.org/licenses/gpl-3.0.html
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # This file is part of pelisalacarta 4.
 #
 # pelisalacarta 4 is free software: you can redistribute it and/or modify
@@ -24,7 +21,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with pelisalacarta 4.  If not, see <http://www.gnu.org/licenses/>.
-#------------------------------------------------------------
+# --------------------------------------------------------------------------------
+# Scraper tools for reading and processing web elements
+# --------------------------------------------------------------------------------
 
 import os
 import re

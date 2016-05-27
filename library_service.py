@@ -2,6 +2,7 @@
 # ------------------------------------------------------------
 # pelisalacarta 4
 # Copyright 2015 tvalacarta@gmail.com
+# http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #
 # Distributed under the terms of GNU General Public License v3 (GPLv3)
 # http://www.gnu.org/licenses/gpl-3.0.html
