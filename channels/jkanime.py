@@ -5,15 +5,14 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import re
-import sys
-import urlparse
+import urlparse,urllib2,urllib,re
+import os, sys
 
-from core import config
 from core import logger
+from core import config
 from core import scrapertools
-from core import servertools
 from core.item import Item
+from servers import servertools
 
 DEBUG = config.get_setting("debug")
 
@@ -31,11 +30,36 @@ def mainlist(item):
     logger.info("pelisalacarta.channels.jkanime mainlist")
 
     itemlist = []
+    itemlist.append( Item(channel=__channel__, action="ultimos_capitulos" , title="Últimos Capitulos"           , url="http://jkanime.net/" ))
     itemlist.append( Item(channel=__channel__, action="ultimos" , title="Últimos"           , url="http://jkanime.net/" ))
     itemlist.append( Item(channel=__channel__, action="letras"  , title="Listado Alfabetico", url="http://jkanime.net/" ))
     itemlist.append( Item(channel=__channel__, action="generos" , title="Listado por Genero", url="http://jkanime.net/" ))
     itemlist.append( Item(channel=__channel__, action="search"  , title="Buscar" ))
   
+    return itemlist
+
+def ultimos_capitulos(item):
+    logger.info("pelisalacarta.channels.jkanime ultimos capitulos")
+    itemlist = []
+    data = scrapertools.cache_page(item.url)
+    data = scrapertools.get_match(data,'<ul class="ratedul">.+?</ul>')
+    
+    data = data.replace('\t', '')
+    data = data.replace('\n','')
+    data = data.replace('/thumbnail/','/image/')
+    
+    patron = '<img src="(http://cdn.jkanime.net/assets/images/animes/.+?)" .+?href="(.+?)">(.+?)<.+?span>(.+?)<'
+    matches = re.compile(patron,re.DOTALL).findall(data)    
+
+    for scrapedthumb,scrapedurl,scrapedtitle, scrapedepisode in matches:
+        title = scrapedtitle.strip() + scrapedepisode
+        url = urlparse.urljoin(item.url,scrapedurl)
+        thumbnail = scrapedthumb
+        plot = ""
+        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+
+        itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot))        
+
     return itemlist
 
 def search(item,texto):
@@ -230,47 +254,6 @@ def episodios(item):
             itemlist.append( Item(channel=__channel__, action="findvideos" , title="Serie por estrenar" , url="", thumbnail=scrapedthumbnail, fanart=scrapedthumbnail, plot=scrapedplot, server="directo", folder=False))
         except:
             pass
-
-    return itemlist
-
-def findvideos(item):
-    logger.info("pelisalacarta.channels.jkanime episodios")
-
-    # Descarga la pagina
-    data = scrapertools.cache_page(item.url)
-    logger.info("pelisalacarta.channels.jkanime data="+data)
-
-    itemlist = servertools.find_video_items(data=data)
-    for videoitem in itemlist:
-        videoitem.channel=__channel__
-        videoitem.folder=False
-
-    #180upload: sp1.e=hh7pmxk553kj
-    code = scrapertools.find_single_match(data,"sp1.e=([a-z0-9]+)")
-    if code!="":
-        mediaurl = "http://180upload.com/"+code
-        itemlist.append( Item(channel=__channel__, action="play" , title="Ver en 180upload" , url=mediaurl, thumbnail=item.thumbnail, fanart=item.thumbnail, plot=item.plot, server="one80upload", folder=False))
-    
-    #upafile: spu.e=idyoybh552bf
-    code = scrapertools.find_single_match(data,"spu.e=([a-z0-9]+)")
-    if code!="":
-        mediaurl = "http://upafile.com/"+code
-        itemlist.append( Item(channel=__channel__, action="play" , title="Ver en upafile" , url=mediaurl, thumbnail=item.thumbnail, fanart=item.thumbnail, plot=item.plot, server="upafile", folder=False))
-
-    mediaurl = scrapertools.find_single_match(data,'flashvars\="file\=([^\&]+)\&')
-    if mediaurl!="":
-        itemlist.append( Item(channel=__channel__, action="play" , title="Ver en jkanime" , url=mediaurl, thumbnail=item.thumbnail, fanart=item.thumbnail, plot=item.plot, server="directo", folder=False, extra=item.url))
-    
-    mediaurl = scrapertools.find_single_match(data,"url\: '(https://jkanime.net/stream/jkget/[^']+)'")
-    if mediaurl!="":
-        itemlist.append( Item(channel=__channel__, action="play" , title="Enlace encontrado en jkanime" , url=mediaurl, thumbnail=item.thumbnail, fanart=item.thumbnail, plot=item.plot, server="directo", folder=False, extra=item.url))
-
-    patron = 'src=(https:\/\/jkanime.net\/jk.php\?u=stream\/jkmedia\/[^"]+) '
-    matches = re.compile(patron,re.DOTALL).findall(data)
-    for mediaurl in matches:
-        if mediaurl!="":
-            mediaurl = mediaurl.replace("jk.php?u=stream", "stream")
-            itemlist.append( Item(channel=__channel__, action="play" , title="Enlace encontrado en jkanime" , url=mediaurl, thumbnail=item.thumbnail, fanart=item.thumbnail, plot=item.plot, server="directo", folder=False, extra=item.url))
 
     return itemlist
 
