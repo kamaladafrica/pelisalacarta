@@ -25,23 +25,13 @@ __channel__ = "seriesflv"
 __language__ = "ES"
 __creationdate__ = "20160425"
 
-headers = [
+CHANNEL_HOST = 'http://www.seriesflv.net'
+CHANNEL_HEADERS = [
     ['User-Agent', 'Mozilla/5.0 (Windows NT 6.1; rv:38.0) Gecko/20100101 Firefox/38.0'],
     ['Accept-Encoding', 'gzip, deflate'],
-    ['Host', 'www.seriesflv.net'],
-    ['Referer', 'http://www.seriesflv.net'],
+    ['Referer', CHANNEL_HOST],
     ['Connection', 'keep-alive']
 ]
-
-def anti_clodflare():
-    try:
-        resp_headers = scrapertools.get_headers_from_response( "http://www.seriesflv.net/", headers=headers )
-        resp_headers = dict( resp_headers )
-    except urllib2.HTTPError, e: 
-        resp_headers = e.headers
-    if 'refresh' in resp_headers:
-        time.sleep( int( resp_headers['refresh'][:1] ) )
-        scrapertools.get_headers_from_response( "http://www.seriesflv.net/" + resp_headers['refresh'][7:], headers=headers )
 
 def isGeneric():
     return True
@@ -49,15 +39,13 @@ def isGeneric():
 def mainlist(item):
     logger.info("pelisalacarta.channels.seriesflv mainlist")
 
-
     itemlist = []
-
     itemlist.append( Item(channel=__channel__, action="menuepisodios" , title="Últimos episodios..." , url="" ))
     itemlist.append( Item(channel=__channel__, action="series"        , title="Todas las series"     , url="http://www.seriesflv.net/ajax/lista.php", extra="grupo_no=0&type=series&order=titulo" ))
     itemlist.append( Item(channel=__channel__, action="series"        , title="Series más vistas"    , url="http://www.seriesflv.net/ajax/lista.php", extra="grupo_no=0&type=series&order=hits" ))
     itemlist.append( Item(channel=__channel__, action="series"        , title="Telenovelas"          , url="http://www.seriesflv.net/ajax/lista.php", extra="grupo_no=0&type=generos&order=novelas" ))
     itemlist.append( Item(channel=__channel__, action="search"        , title="Buscar..."            , url="http://www.seriesflv.net/api/search/?q=" ))
-       
+
     return itemlist
 
 def menuepisodios(item):
@@ -70,8 +58,9 @@ def menuepisodios(item):
     itemlist.append( Item(channel=__channel__, action="ultimos_episodios"  , title="Original"     , url="en" ))
     return itemlist
 
-
 def newest(categoria):
+    logger.info("pelisalacarta.channels.seriesflv menuepisodios")
+
     itemlist = []
     item = Item()
     try:
@@ -90,15 +79,11 @@ def newest(categoria):
 
     return itemlist
 
-
 def ultimos_episodios(item):
     logger.info("pelisalacarta.channels.seriesflv ultimos_episodios")
     itemlist = []
 
-    anti_clodflare()
-
-    # Descarga la pagina
-    data = scrapertools.cache_page("http://www.seriesflv.net/",headers=headers)
+    data = scrapertools.anti_cloudflare("http://www.seriesflv.net/",headers=CHANNEL_HEADERS,host=CHANNEL_HOST)
     #logger.info("data="+data)
 
     # Extrae los episodios
@@ -158,11 +143,9 @@ def search(item,texto):
 def buscar(item):
     logger.info("pelisalacarta.channels.seriesflv buscar")
 
-    anti_clodflare()
-
     # Descarga la pagina
     post = item.extra
-    data = scrapertools.cache_page(item.url , headers=headers , post=post)
+    data = scrapertools.anti_cloudflare(item.url , headers=CHANNEL_HEADERS , host=CHANNEL_HOST , post=post)
     #logger.info("data="+data)
 
     # Extrae las entradas (carpetas)
@@ -205,11 +188,9 @@ def buscar(item):
 def series(item):
     logger.info("pelisalacarta.channels.seriesflv series")
 
-    anti_clodflare()
-
     # Descarga la pagina
     post = item.extra
-    data = scrapertools.cache_page(item.url , headers=headers , post=post)
+    data = scrapertools.anti_cloudflare(item.url , headers=CHANNEL_HEADERS , host=CHANNEL_HOST , post=post)
     #logger.info("data="+data)
 
     # Extrae las entradas (carpetas)
@@ -270,10 +251,8 @@ def episodios(item):
     logger.info("pelisalacarta.channels.seriesflv episodios")
     itemlist = []
 
-    anti_clodflare()
-
     # Descarga la pagina
-    data = scrapertools.cache_page(item.url,headers=headers)
+    data = scrapertools.anti_cloudflare( item.url , headers=CHANNEL_HEADERS , host=CHANNEL_HOST )
     #logger.info("data="+data)
 
     # Extrae los episodios
@@ -331,10 +310,8 @@ def episodios(item):
 def findvideos(item):
     logger.info("pelisalacarta.channels.seriesflv findvideos")
 
-    anti_clodflare()
-
     # Descarga la pagina
-    data = scrapertools.cache_page(item.url,headers=headers)
+    data = scrapertools.anti_cloudflare(item.url , headers=CHANNEL_HEADERS , host=CHANNEL_HOST)
     data = scrapertools.find_single_match(data,'<div id="enlaces">(.*?)<div id="comentarios">')
     #logger.info("data="+data)
 
@@ -397,9 +374,7 @@ def findvideos(item):
 def play(item):
     logger.info("pelisalacarta.channels.seriesflv play url="+item.url)
 
-    anti_clodflare()
-
-    data = scrapertools.cache_page(item.url,headers=headers)
+    data = scrapertools.anti_cloudflare(item.url , headers=CHANNEL_HEADERS , host=CHANNEL_HOST )
 
     itemlist = servertools.find_video_items(data=data)
 
