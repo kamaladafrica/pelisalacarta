@@ -48,6 +48,9 @@ CACHE_ACTIVA = "0"  # Automatica
 CACHE_SIEMPRE = "1" # Cachear todo
 CACHE_NUNCA = "2"   # No cachear nada
 
+DEFAULT_USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:46.0) Gecko/20100101 Firefox/46.0'
+DEFAULT_HEADERS = [['User-Agent', DEFAULT_USER_AGENT]]
+
 CACHE_PATH = config.get_setting("cache.dir")
 COOKIES_PATH = os.path.join(config.get_data_path(), "cookies")
 if not os.path.exists(COOKIES_PATH):
@@ -57,10 +60,10 @@ DEFAULT_TIMEOUT = 20
 
 DEBUG = False
 
-def cache_page(url,post=None,headers=[['User-Agent', 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; es-ES; rv:1.9.2.12) Gecko/20101026 Firefox/3.6.12']],modo_cache=CACHE_ACTIVA, timeout=DEFAULT_TIMEOUT):
+def cache_page(url,post=None,headers=DEFAULT_HEADERS,modo_cache=CACHE_ACTIVA, timeout=DEFAULT_TIMEOUT):
     return cachePage(url,post,headers,modo_cache,timeout=timeout)
 
-def cachePage(url,post=None,headers=[['User-Agent', 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; es-ES; rv:1.9.2.12) Gecko/20101026 Firefox/3.6.12']],modoCache=CACHE_ACTIVA, timeout=DEFAULT_TIMEOUT):
+def cachePage(url,post=None,headers=DEFAULT_HEADERS,modoCache=CACHE_ACTIVA, timeout=DEFAULT_TIMEOUT):
     logger.info("pelisalacarta.core.scrapertools cachePage url="+url)
 
     # Cache desactivada
@@ -291,13 +294,13 @@ def cachePagePost(url,post):
     logger.info("Descargando " + url)
     inicio = time.clock()
     req = urllib2.Request(url,post)
-    req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
+    req.add_header('User-Agent', DEFAULT_USER_AGENT)
 
     try:
         response = urllib2.urlopen(req)
     except:
         req = urllib2.Request(url.replace(" ","%20"),post)
-        req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
+        req.add_header('User-Agent', DEFAULT_USER_AGENT)
         response = urllib2.urlopen(req)
     data=response.read()
     response.close()
@@ -324,7 +327,7 @@ class NoRedirectHandler(urllib2.HTTPRedirectHandler):
     http_error_303 = http_error_302
     http_error_307 = http_error_302
 
-def downloadpage(url,post=None,headers=[['User-Agent', 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; es-ES; rv:1.9.2.12) Gecko/20101026 Firefox/3.6.12']],follow_redirects=True, timeout=DEFAULT_TIMEOUT, header_to_get=None):
+def downloadpage(url,post=None,headers=DEFAULT_HEADERS,follow_redirects=True, timeout=DEFAULT_TIMEOUT, header_to_get=None):
     logger.info("pelisalacarta.core.scrapertools downloadpage")
     logger.info("pelisalacarta.core.scrapertools url="+url)
 
@@ -631,10 +634,10 @@ def downloadpagewithcookies(url):
     # an example url that sets a cookie,
     # try different urls here and see the cookie collection you can make !
 
-    #txheaders =  {'User-Agent':'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
+    #txheaders =  {'User-Agent':DEFAULT_USER_AGENT,
     #              'Referer':'http://www.megavideo.com/?s=signup'}
     txheaders =  {
-    'User-Agent':'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
+    'User-Agent':DEFAULT_USER_AGENT,
     'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
     'Host':'www.meristation.com',
     'Accept-Language':'es-es,es;q=0.8,en-us;q=0.5,en;q=0.3',
@@ -657,13 +660,13 @@ def downloadpageWithoutCookies(url):
     logger.info("pelisalacarta.core.scrapertools Descargando " + url)
     inicio = time.clock()
     req = urllib2.Request(url)
-    req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 6.0; es-ES; rv:1.9.0.14) Gecko/2009082707 Firefox/3.0.14')
+    req.add_header('User-Agent', DEFAULT_USER_AGENT)
     req.add_header('X-Requested-With','XMLHttpRequest')
     try:
         response = urllib2.urlopen(req)
     except:
         req = urllib2.Request(url.replace(" ","%20"))
-        req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 6.0; es-ES; rv:1.9.0.14) Gecko/2009082707 Firefox/3.0.14')
+        req.add_header('User-Agent', DEFAULT_USER_AGENT)
 
         response = urllib2.urlopen(req)
     data=response.read()
@@ -752,14 +755,14 @@ def downloadpageGzip(url):
     # an example url that sets a cookie,
     # try different urls here and see the cookie collection you can make !
 
-    #txheaders =  {'User-Agent':'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
+    #txheaders =  {'User-Agent':DEFAULT_USER_AGENT,
     #              'Referer':'http://www.megavideo.com/?s=signup'}
 
     parsedurl = urlparse.urlparse(url)
     logger.info("parsedurl="+str(parsedurl))
 
     txheaders =  {
-    'User-Agent':'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
+    'User-Agent':DEFAULT_USER_AGENT,
     'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
     'Accept-Language':'es-es,es;q=0.8,en-us;q=0.5,en;q=0.3',
     'Accept-Charset':'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
@@ -918,7 +921,7 @@ def htmlclean(cadena):
     cadena = cadena.replace("</u>","")
     cadena = cadena.replace("<li>","")
     cadena = cadena.replace("</li>","")
-    cadena = cadena.replace("<tbody>","")
+    cadena = cadena.replace("<turl>","")
     cadena = cadena.replace("</tbody>","")
     cadena = cadena.replace("<tr>","")
     cadena = cadena.replace("</tr>","")
@@ -1097,7 +1100,7 @@ def getRandom(str):
 def getLocationHeaderFromResponse(url):
     return get_header_from_response(url,header_to_get="location")
 
-def get_header_from_response(url,header_to_get="",post=None,headers=[['User-Agent', 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; es-ES; rv:1.9.2.12) Gecko/20101026 Firefox/3.6.12']]):
+def get_header_from_response(url,header_to_get="",post=None,headers=DEFAULT_HEADERS):
     header_to_get = header_to_get.lower()
     logger.info("pelisalacarta.core.scrapertools get_header_from_response url="+url+", header_to_get="+header_to_get)
 
@@ -1187,7 +1190,7 @@ def get_header_from_response(url,header_to_get="",post=None,headers=[['User-Agen
 
     return location_header
 
-def get_headers_from_response(url,post=None,headers=[['User-Agent', 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; es-ES; rv:1.9.2.12) Gecko/20101026 Firefox/3.6.12']]):
+def get_headers_from_response(url,post=None,headers=DEFAULT_HEADERS):
     return_headers = []
     logger.info("pelisalacarta.core.scrapertools get_headers_from_response url="+url)
 
@@ -1363,7 +1366,7 @@ def read_body_and_headers(url, post=None, headers=[], follow_redirects=False, ti
         logger.info("read_body_and_headers post="+post)
 
     if len(headers)==0:
-        headers.append(["User-Agent","Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:18.0) Gecko/20100101 Firefox/18.0"])
+        headers.append(["User-Agent",DEFAULT_USER_AGENT])
 
     # Start cookie lib
     #ficherocookies = os.path.join( config.get_data_path(), 'cookies.dat' )
@@ -1528,3 +1531,53 @@ def read_body_and_headers(url, post=None, headers=[], follow_redirects=False, ti
     logger.info("read_body_and_headers body="+data)
 
     return data,returnheaders
+
+'''
+def anti_cloudflare(url, host="", headers=DEFAULT_HEADERS, post=None):
+    logger.info("anti_cloudflare url="+url+", host="+host+", headers="+repr(headers))
+
+    if host=="":
+        host = "http://"+get_domain_from_url(url)+"/"
+        logger.info("anti_cloudflare host="+host)
+
+    try:
+        resp_headers = get_headers_from_response(url, headers=headers)
+        resp_headers = dict(resp_headers)
+    except urllib2.HTTPError, e:
+        resp_headers = e.headers
+
+    if 'refresh' in resp_headers:
+        time.sleep(int(resp_headers['refresh'][:1]))
+        get_headers_from_response(host + '/' + resp_headers['refresh'][7:], headers=headers)
+
+    return cache_page(url, headers=headers, post=post)
+'''
+
+def anti_cloudflare(url, host="", headers=DEFAULT_HEADERS, post=None, location=False):
+    logger.info("anti_cloudflare url="+url+", host="+host+", headers="+repr(headers)+", post="+repr(post)+", location="+repr(location))
+
+    if host=="":
+        host = "http://"+get_domain_from_url(url)+"/"
+        logger.info("anti_cloudflare host="+host)
+
+    respuesta = ""
+    try:
+        resp_headers = get_headers_from_response(url, headers=headers)
+        resp_headers = dict(resp_headers)
+        if resp_headers.has_key('location'): 
+            respuesta = resp_headers['location']
+    except urllib2.HTTPError, e:
+        resp_headers = e.headers
+
+    if 'refresh' in resp_headers:
+        time.sleep(int(resp_headers['refresh'][:1]))
+
+        resp = get_headers_from_response(host + '/' + resp_headers['refresh'][7:], headers=headers)
+        resp_headers = dict(resp_headers)
+        if resp_headers.has_key('islocation'): 
+            respuesta = resp_headers['islocation']
+
+    if not location:
+        return cache_page(url, headers=headers, post=post)
+    else:
+        return respuesta

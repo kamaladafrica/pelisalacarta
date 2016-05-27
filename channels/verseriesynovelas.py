@@ -22,12 +22,12 @@ __language__ = "ES"
 
 DEBUG = config.get_setting("debug")
 
-host = "http://www.verseriesynovelas.tv"
+CHANNEL_HOST = "http://www.verseriesynovelas.tv"
 
-headers = [
+CHANNEL_HEADERS = [
     ["User-Agent","Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:22.0) Gecko/20100101 Firefox/22.0"],
     ["Accept-Encoding","gzip, deflate"],
-    ["Referer",host]
+    ["Referer",CHANNEL_HOST]
     ]
 
 def isGeneric():
@@ -47,7 +47,7 @@ def indices(item):
     logger.info("pelisalacarta.channels.verseriesynovelas indices")
 
     itemlist = []
-    data = anti_cloudflare(item.url)
+    data = scrapertools.anti_cloudflare(item.url,host=CHANNEL_HOST,headers=CHANNEL_HEADERS)
     data = data.replace("\n","").replace("\t","")
 
     if item.title == "Series [Categorías]":
@@ -79,7 +79,7 @@ def search(item,texto):
 def busqueda(item):
     logger.info("pelisalacarta.channels.verseriesynovelas busqueda")
     itemlist = []
-    data = anti_cloudflare(item.url)
+    data = scrapertools.anti_cloudflare(item.url,host=CHANNEL_HOST,headers=CHANNEL_HEADERS)
     data = data.replace("\n","").replace("\t","")
 
     bloque = scrapertools.find_single_match(data, '<ul class="list-paginacion">(.*?)</section>')
@@ -104,7 +104,7 @@ def busqueda(item):
 def novedades(item):
     logger.info("pelisalacarta.channels.verseriesynovelas novedades")
     itemlist = []
-    data = anti_cloudflare(item.url)
+    data = scrapertools.anti_cloudflare(item.url,host=CHANNEL_HOST,headers=CHANNEL_HEADERS)
     data = data.replace("\n","").replace("\t","")
 
     bloque = scrapertools.find_single_match(data, '<section class="list-galeria">(.*?)</section>')
@@ -142,7 +142,7 @@ def novedades(item):
 def ultimas(item):
     logger.info("pelisalacarta.channels.verseriesynovelas ultimas")
     itemlist = []
-    data = anti_cloudflare(item.url)
+    data = scrapertools.anti_cloudflare(item.url,host=CHANNEL_HOST,headers=CHANNEL_HEADERS)
     data = data.replace("\n","").replace("\t","")
 
     bloque = scrapertools.find_single_match(data, '<ul class="list-paginacion">(.*?)</section>')
@@ -177,7 +177,7 @@ def episodios(item):
     logger.info("pelisalacarta.channels.verseriesynovelas episodios")
     itemlist = []
 
-    data = anti_cloudflare(item.url)
+    data = scrapertools.anti_cloudflare(item.url,host=CHANNEL_HOST,headers=CHANNEL_HEADERS)
     data = data.replace("\n","").replace("\t","")
     if item.show == "":
         try:
@@ -229,7 +229,7 @@ def findvideos(item):
     logger.info("pelisalacarta.channels.verseriesynovelas findvideos")
     itemlist = []
     if item.title.startswith("http"): item.url = item.title.split('%')[0]
-    data = anti_cloudflare(item.url)
+    data = scrapertools.anti_cloudflare(item.url,host=CHANNEL_HOST,headers=CHANNEL_HEADERS)
     data = data.replace("\n","").replace("\t","")
 
     patron = '<tr><td data-th="Idioma">(.*?)</div>'
@@ -265,10 +265,10 @@ def findvideos(item):
 def play(item):
     logger.info("pelisalacarta.channels.verseriesynovelas play")
     itemlist = []
-    data = anti_cloudflare(item.url)
-    if "Redireccionando" in data: data = anti_cloudflare(item.url)
+    data = scrapertools.anti_cloudflare(item.url,host=CHANNEL_HOST,headers=CHANNEL_HEADERS)
+    if "Redireccionando" in data: data = scrapertools.anti_cloudflare(item.url,host=CHANNEL_HOST,headers=CHANNEL_HEADERS)
     enlace = scrapertools.find_single_match(data, 'class="btn" href="([^"]+)"')
-    location = anti_cloudflare(enlace, location=True)
+    location = scrapertools.anti_cloudflare(enlace, location=True,host=CHANNEL_HOST,headers=CHANNEL_HEADERS)
     enlaces = servertools.findvideos(data=location)
     if len(enlaces)> 0:
         titulo = "Enlace encontrado en "+enlaces[0][0]
@@ -325,25 +325,3 @@ def infoepi(otmdb, episode, sinopsis=""):
         return plot, fanart, thumbnail
     except:
         pass
-
-def anti_cloudflare(url, location=False):
-    # global headers
-    respuesta = ""
-    try:
-        resp_headers = scrapertools.get_headers_from_response(url, headers=headers)
-        resp_headers = dict(resp_headers)
-        if resp_headers.has_key('location'): respuesta = resp_headers['location']
-    except urllib2.HTTPError, e:
-        resp_headers = e.headers
-
-    if 'refresh' in resp_headers:
-        time.sleep(int(resp_headers['refresh'][:1]))
-
-        resp = scrapertools.get_headers_from_response(host + '/' + resp_headers['refresh'][7:], headers=headers)
-        resp_headers = dict(resp_headers)
-        if resp_headers.has_key('islocation'): respuesta = resp_headers['islocation']
-
-    if not location:
-        return scrapertools.cache_page(url, headers=headers)
-    else:
-        return respuesta

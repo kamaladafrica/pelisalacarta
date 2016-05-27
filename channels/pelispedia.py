@@ -22,14 +22,14 @@ __type__ = "generic"
 __title__ = "PelisPedia"
 __language__ = "ES"
 
-HOST = "http://pelispedia.tv/"
+CHANNEL_HOST = "http://pelispedia.tv/"
 DEBUG = config.get_setting("debug")
 fanart_host = "http://i.imgur.com/9QbyJrf.jpg"
 
-headers = [
+CHANNEL_DEFAULT_HEADERS = [
     ["User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:22.0) Gecko/20100101 Firefox/22.0"],
     ["Accept-Encoding", "gzip, deflate"],
-    ["Referer", HOST]
+    ["Referer", CHANNEL_HOST]
 ]
 
 
@@ -42,17 +42,17 @@ def mainlist(item):
 
     itemlist = list()
     itemlist.append(Item(channel=__channel__, action="listado", title="[B]Películas[/B]",
-                         url=urlparse.urljoin(HOST, "movies/all/"), fanart=fanart_host, extra="movies"))
+                         url=urlparse.urljoin(CHANNEL_HOST, "movies/all/"), fanart=fanart_host, extra="movies"))
     itemlist.append(Item(channel=__channel__, action="listado_alfabetico", title="     Por orden alfabético",
-                         url=urlparse.urljoin(HOST, "movies/all/"), extra="movies", fanart=fanart_host))
+                         url=urlparse.urljoin(CHANNEL_HOST, "movies/all/"), extra="movies", fanart=fanart_host))
     itemlist.append(Item(channel=__channel__, action="listado_genero", title="     Por género",
-                         url=urlparse.urljoin(HOST, "movies/all/"), extra="movies", fanart=fanart_host))
+                         url=urlparse.urljoin(CHANNEL_HOST, "movies/all/"), extra="movies", fanart=fanart_host))
     itemlist.append(Item(channel=__channel__, action="listado_anio", title="     Por año",
-                         url=urlparse.urljoin(HOST, "movies/all/"), extra="movies", fanart=fanart_host))
+                         url=urlparse.urljoin(CHANNEL_HOST, "movies/all/"), extra="movies", fanart=fanart_host))
     itemlist.append(Item(channel=__channel__, action="search", title="     Buscar...",
-                         url=urlparse.urljoin(HOST, "buscar/?s="), extra="movies", fanart=fanart_host))
+                         url=urlparse.urljoin(CHANNEL_HOST, "buscar/?s="), extra="movies", fanart=fanart_host))
     itemlist.append(Item(channel=__channel__, action="listado", title="[B]Series[/B]",
-                         url=urlparse.urljoin(HOST, "series/all/"), extra="serie", fanart=fanart_host))
+                         url=urlparse.urljoin(CHANNEL_HOST, "series/all/"), extra="serie", fanart=fanart_host))
     itemlist.append(Item(channel=__channel__, action="listado_alfabetico", title="     Por orden alfabético",
                          extra="serie", fanart=fanart_host))
     itemlist.append(Item(channel=__channel__, action="listado_genero", title="     Por género", extra="serie",
@@ -60,7 +60,7 @@ def mainlist(item):
     itemlist.append(Item(channel=__channel__, action="listado_anio", title="     Por año", extra="serie",
                          fanart=fanart_host))
     itemlist.append(Item(channel=__channel__, action="search", title="     Buscar...",
-                         url=urlparse.urljoin(HOST, "series/buscar/?s="), extra="serie", fanart=fanart_host))
+                         url=urlparse.urljoin(CHANNEL_HOST, "series/buscar/?s="), extra="serie", fanart=fanart_host))
 
     return itemlist
 
@@ -86,7 +86,7 @@ def listado_alfabetico(item):
             else:
                 cadena += letra+"/"
 
-        itemlist.append(Item(channel=__channel__, action="listado", title=letra, url=urlparse.urljoin(HOST, cadena),
+        itemlist.append(Item(channel=__channel__, action="listado", title=letra, url=urlparse.urljoin(CHANNEL_HOST, cadena),
                              extra=item.extra))
 
     return itemlist
@@ -97,7 +97,7 @@ def listado_genero(item):
 
     itemlist = []
 
-    data = anti_cloudflare(HOST + "buscar/?s=")
+    data = scrapertools.anti_cloudflare( CHANNEL_HOST+"buscar/?s=" , host=CHANNEL_HOST , headers=CHANNEL_DEFAULT_HEADERS )
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
 
     patron = '<select id="genres">.*?</select>'
@@ -115,7 +115,7 @@ def listado_genero(item):
         else:
             cadena += key+"/"
 
-        itemlist.append(Item(channel=__channel__, action="listado", title=value, url=urlparse.urljoin(HOST, cadena),
+        itemlist.append(Item(channel=__channel__, action="listado", title=value, url=urlparse.urljoin(CHANNEL_HOST, cadena),
                              extra=item.extra))
 
     return itemlist
@@ -126,7 +126,7 @@ def listado_anio(item):
 
     itemlist = []
 
-    data = anti_cloudflare(HOST + "buscar/?s=")
+    data = scrapertools.anti_cloudflare( CHANNEL_HOST+"buscar/?s=" , host=CHANNEL_HOST , headers=CHANNEL_DEFAULT_HEADERS )
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
 
     patron = '<select id="year">.*?</select>'
@@ -144,7 +144,7 @@ def listado_anio(item):
         else:
             cadena += value+"/"
 
-        itemlist.append(Item(channel=__channel__, action="listado", title=value, url=urlparse.urljoin(HOST, cadena),
+        itemlist.append(Item(channel=__channel__, action="listado", title=value, url=urlparse.urljoin(CHANNEL_HOST, cadena),
                              extra=item.extra))
 
     return itemlist
@@ -174,7 +174,7 @@ def listado(item):
     if item.extra == 'serie':
         action = "episodios"
 
-    data = anti_cloudflare(item.url)
+    data = scrapertools.anti_cloudflare(item.url , host=CHANNEL_HOST , headers=CHANNEL_DEFAULT_HEADERS )
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
     # logger.info("data -- {}".format(data))
 
@@ -185,7 +185,7 @@ def listado(item):
     for scrapedurl, scrapedtitle, scrapedthumbnail, scrapedyear, scrapedplot in matches:
         title = "{title} ({year})".format(title=scrapertools.unescape(scrapedtitle.strip()), year=scrapedyear)
         plot = scrapertools.entityunescape(scrapedplot)
-        itemlist.append(Item(channel=__channel__, title=title, url=urlparse.urljoin(HOST, scrapedurl), action=action,
+        itemlist.append(Item(channel=__channel__, title=title, url=urlparse.urljoin(CHANNEL_HOST, scrapedurl), action=action,
                              thumbnail=scrapedthumbnail, plot=plot, context="",
                              show=scrapertools.unescape(scrapedtitle.strip()), extra=item.extra))
 
@@ -242,7 +242,7 @@ def episodios(item):
     itemlist = []
 
     # Descarga la página
-    data = anti_cloudflare(item.url)
+    data = scrapertools.anti_cloudflare(item.url , host=CHANNEL_HOST , headers=CHANNEL_DEFAULT_HEADERS )
 
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
 
@@ -286,12 +286,12 @@ def findvideos(item):
     itemlist = []
 
     # Descarga la página
-    data = anti_cloudflare(item.url)
+    data = scrapertools.anti_cloudflare(item.url , host=CHANNEL_HOST , headers=CHANNEL_DEFAULT_HEADERS )
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
 
     patron = '<iframe src=".+?id=(\d+)'
     key = scrapertools.find_single_match(data, patron)
-    data = anti_cloudflare(HOST + 'api/iframes.php?id={0}&update1.1'.format(key))
+    data = scrapertools.anti_cloudflare( CHANNEL_HOST+'api/iframes.php?id={0}&update1.1'.format(key) , host=CHANNEL_HOST , headers=CHANNEL_DEFAULT_HEADERS )
 
     # Descarta la opción descarga que es de publicidad
     patron = '<a href="(?!http://go.ad2up.com)([^"]+)".+?><img src="/api/img/([^.]+)'
@@ -300,7 +300,7 @@ def findvideos(item):
     for scrapedurl, scrapedtitle in matches:
         # En algunos vídeos hay opción flash "vip" con varias calidades
         if "api/vip.php" in scrapedurl:
-            data_vip = anti_cloudflare(scrapedurl)
+            data_vip = scrapertools.anti_cloudflare(scrapedurl , host=CHANNEL_HOST , headers=CHANNEL_DEFAULT_HEADERS )
             patron = '<a href="([^"]+)".+?><img src="/api/img/([^.]+).*?<span class="text">([^<]+)<'
             matches_vip = re.compile(patron, re.DOTALL).findall(data_vip)
             for url, titlevip, calidad in matches_vip:
@@ -331,12 +331,12 @@ def play(item):
         if len(key) > 2:
             thumbnail = key[2]
         if key[1] != "":
-            subtitle = "{host}/sub/{sub}.srt".format(host=HOST, sub=key[1])
+            subtitle = "{host}/sub/{sub}.srt".format(host=CHANNEL_HOST, sub=key[1])
         if "Player_Html5" in item.url:
             url = "http://www.pelispedia.tv/Pe_Player_Html5/index.php?id="+urllib.quote(key[0])
         else:
             url = "http://www.pelispedia.tv/Pe_flv_flsh/index.php?id="+urllib.quote(key[0])
-        data = anti_cloudflare(url)
+        data = scrapertools.anti_cloudflare(url , host=CHANNEL_HOST , headers=CHANNEL_DEFAULT_HEADERS )
         # data = scrapertools.cache_page(url, post=post)
         media_urls = scrapertools.find_multiple_matches(data, '(?:link|url)":"([^"]+)"')
         # Si hay varias urls se añade la última que es la de mayor calidad
@@ -353,7 +353,7 @@ def play(item):
         if len(key) > 1:
             thumbnail = key[1]
 
-        data = anti_cloudflare(item.url)
+        data = scrapertools.anti_cloudflare(item.url , host=CHANNEL_HOST , headers=CHANNEL_DEFAULT_HEADERS )
 
         media_url = scrapertools.find_single_match(data, '"file":"([^"]+)"').replace("\\", "")
         sub = scrapertools.find_single_match(data, 'file:\s"([^"]+)".+?label:\s"Spanish"')
@@ -368,18 +368,3 @@ def play(item):
 
     return itemlist
 
-
-def anti_cloudflare(url, post=None):
-    # global headers
-
-    try:
-        resp_headers = scrapertools.get_headers_from_response(url, headers=headers)
-        resp_headers = dict(resp_headers)
-    except urllib2.HTTPError, e:
-        resp_headers = e.headers
-
-    if 'refresh' in resp_headers:
-        time.sleep(int(resp_headers['refresh'][:1]))
-        scrapertools.get_headers_from_response(HOST + '/' + resp_headers['refresh'][7:], headers=headers)
-
-    return scrapertools.cache_page(url, post=post, headers=headers)

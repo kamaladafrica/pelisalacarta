@@ -25,12 +25,12 @@ __title__ = "Animeflv"
 __channel__ = "animeflv"
 __language__ = "ES"
 
-host = "http://animeflv.net/"
+CHANNEL_HOST = "http://animeflv.net/"
 
-headers = [
+CHANNEL_DEFAULT_HEADERS = [
     ["User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:22.0) Gecko/20100101 Firefox/22.0"],
     ["Accept-Encoding", "gzip, deflate"],
-    ["Referer", host]
+    ["Referer", CHANNEL_HOST]
 ]
 
 '''
@@ -75,15 +75,15 @@ def mainlist(item):
     logger.info("pelisalacarta.channels.animeflv mainlist")
 
     itemlist = list([])
-    itemlist.append(Item(channel=__channel__, action="novedades_episodios", title="Últimos episodios", url=host))
+    itemlist.append(Item(channel=__channel__, action="novedades_episodios", title="Últimos episodios", url=CHANNEL_HOST))
     itemlist.append(Item(channel=__channel__, action="menuseries", title="Series",
-                         url=urlparse.urljoin(host, "animes/?orden=nombre&mostrar=series")))
+                         url=urlparse.urljoin(CHANNEL_HOST, "animes/?orden=nombre&mostrar=series")))
     itemlist.append(Item(channel=__channel__, action="menuovas", title="OVAS",
-                         url=urlparse.urljoin(host, "animes/?orden=nombre&mostrar=ovas")))
+                         url=urlparse.urljoin(CHANNEL_HOST, "animes/?orden=nombre&mostrar=ovas")))
     itemlist.append(Item(channel=__channel__, action="menupeliculas", title="Películas",
-                         url=urlparse.urljoin(host, "animes/?orden=nombre&mostrar=peliculas")))
+                         url=urlparse.urljoin(CHANNEL_HOST, "animes/?orden=nombre&mostrar=peliculas")))
     itemlist.append(Item(channel=__channel__, action="search", title="Buscar",
-                         url=urlparse.urljoin(host, "animes/?buscar=")))
+                         url=urlparse.urljoin(CHANNEL_HOST, "animes/?buscar=")))
 
     return itemlist
 
@@ -93,11 +93,11 @@ def menuseries(item):
 
     itemlist = list()
     itemlist.append(Item(channel=__channel__, action="letras", title="Por orden alfabético",
-                         url=urlparse.urljoin(host, "animes/?orden=nombre&mostrar=series")))
+                         url=urlparse.urljoin(CHANNEL_HOST, "animes/?orden=nombre&mostrar=series")))
     itemlist.append(Item(channel=__channel__, action="generos", title="Por géneros",
-                         url=urlparse.urljoin(host, "animes/?orden=nombre&mostrar=series")))
+                         url=urlparse.urljoin(CHANNEL_HOST, "animes/?orden=nombre&mostrar=series")))
     itemlist.append(Item(channel=__channel__, action="series", title="En emisión",
-                         url=urlparse.urljoin(host, "animes/en-emision/?orden=nombre&mostrar=series")))
+                         url=urlparse.urljoin(CHANNEL_HOST, "animes/en-emision/?orden=nombre&mostrar=series")))
 
     return itemlist
 
@@ -107,11 +107,11 @@ def menuovas(item):
 
     itemlist = list()
     itemlist.append(Item(channel=__channel__, action="letras", title="Por orden alfabético",
-                         url=urlparse.urljoin(host, "animes/?orden=nombre&mostrar=ovas")))
+                         url=urlparse.urljoin(CHANNEL_HOST, "animes/?orden=nombre&mostrar=ovas")))
     itemlist.append(Item(channel=__channel__, action="generos", title="Por géneros",
-                         url=urlparse.urljoin(host, "animes/?orden=nombre&mostrar=ovas")))
+                         url=urlparse.urljoin(CHANNEL_HOST, "animes/?orden=nombre&mostrar=ovas")))
     itemlist.append(Item(channel=__channel__, action="series", title="En emisión",
-                         url=urlparse.urljoin(host, "animes/en-emision/?orden=nombre&mostrar=ovas")))
+                         url=urlparse.urljoin(CHANNEL_HOST, "animes/en-emision/?orden=nombre&mostrar=ovas")))
 
     return itemlist
 
@@ -121,11 +121,11 @@ def menupeliculas(item):
 
     itemlist = list()
     itemlist.append(Item(channel=__channel__, action="letras", title="Por orden alfabético",
-                         url=urlparse.urljoin(host, "animes/?orden=nombre&mostrar=peliculas")))
+                         url=urlparse.urljoin(CHANNEL_HOST, "animes/?orden=nombre&mostrar=peliculas")))
     itemlist.append(Item(channel=__channel__, action="generos", title="Por géneros",
-                         url=urlparse.urljoin(host, "animes/?orden=nombre&mostrar=peliculas")))
+                         url=urlparse.urljoin(CHANNEL_HOST, "animes/?orden=nombre&mostrar=peliculas")))
     itemlist.append(Item(channel=__channel__, action="series", title="En emisión",
-                         url=urlparse.urljoin(host, "animes/en-emision/?orden=nombre&mostrar=peliculas")))
+                         url=urlparse.urljoin(CHANNEL_HOST, "animes/en-emision/?orden=nombre&mostrar=peliculas")))
 
     return itemlist
 
@@ -135,7 +135,7 @@ def letras(item):
 
     itemlist = []
 
-    data = anti_cloudflare(item.url)
+    data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
 
     data = scrapertools.get_match(data, '<div class="alfabeto_box"(.*?)</div>')
     patron = '<a href="([^"]+)[^>]+>([^<]+)</a>'
@@ -159,7 +159,7 @@ def generos(item):
     logger.info("pelisalacarta.channels.animeflv generos")
 
     itemlist = []
-    data = anti_cloudflare(item.url)
+    data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
 
     data = scrapertools.get_match(data, '<div class="generos_box"(.*?)</div>')
     patron = '<a href="([^"]+)[^>]+>([^<]+)</a>'
@@ -182,7 +182,7 @@ def generos(item):
 def search(item, texto):
     logger.info("pelisalacarta.channels.animeflv search")
     if item.url == "":
-        item.url = urlparse.urljoin(host, "animes/?buscar=")
+        item.url = urlparse.urljoin(CHANNEL_HOST, "animes/?buscar=")
     texto = texto.replace(" ", "+")
     item.url = "{0}{1}".format(item.url, texto)
     try:
@@ -214,7 +214,7 @@ def newest(categoria):
 def novedades_episodios(item):
     logger.info("pelisalacarta.channels.animeflv novedades")
 
-    data = anti_cloudflare(item.url)
+    data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
 
     '''
     <div class="not">
@@ -263,7 +263,7 @@ def novedades_episodios(item):
 def series(item):
     logger.info("pelisalacarta.channels.animeflv series")
 
-    data = anti_cloudflare(item.url)
+    data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
 
     '''
     <div class="aboxy_lista">
@@ -332,7 +332,7 @@ def episodios(item):
     logger.info("pelisalacarta.channels.animeflv episodios")
     itemlist = []
 
-    data = anti_cloudflare(item.url)
+    data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
 
     '''
     <div class="tit">Listado de episodios <span class="fecha_pr">Fecha Pr&oacute;ximo: 2013-06-11</span></div>
@@ -405,7 +405,7 @@ def episodios(item):
 def findvideos(item):
     logger.info("pelisalacarta.channels.animeflv findvideos")
 
-    data = anti_cloudflare(item.url)
+    data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
 
     data = scrapertools.get_match(data, "var videos \= (.*?)$")
     # logger.info("data={0}".format(data))
@@ -450,23 +450,6 @@ def test():
             break
 
     return bien
-
-
-def anti_cloudflare(url):
-    # global headers
-
-    try:
-        resp_headers = scrapertools.get_headers_from_response(url, headers=headers)
-        resp_headers = dict(resp_headers)
-    except urllib2.HTTPError, e:
-        resp_headers = e.headers
-
-    if 'refresh' in resp_headers:
-        time.sleep(int(resp_headers['refresh'][:1]))
-        scrapertools.get_headers_from_response(host + '/' + resp_headers['refresh'][7:], headers=headers)
-
-    return scrapertools.cache_page(url, headers=headers)
-
 
 def numbered_for_tratk(show, season, episode):
     """
