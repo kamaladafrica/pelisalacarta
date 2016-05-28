@@ -260,8 +260,8 @@ def play_(item):
 
     import xbmc
     if  not xbmc.getCondVisibility('System.HasAddon(script.cnubis)'):
-        dialog_ok("Addon no encontrado", "               Se necesita el addon Cnubis para continuar", 
-                  line3="                 Descárguelo en https://cnubis.com/kodi-pelisalacarta.html" )
+        dialog_ok("Addon no encontrado", "Para ver vídeos alojados en cnubis necesitas tener su instalado su add-on",
+                  line3="Descárgalo en https://cnubis.com/kodi-pelisalacarta.html" )
         return itemlist
         
     # Descarga la pagina
