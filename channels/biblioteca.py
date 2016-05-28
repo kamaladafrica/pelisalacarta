@@ -19,10 +19,8 @@ from platformcode import library
 __channel__ = "biblioteca"
 DEBUG = True
 
-
 def isGeneric():
     return True
-
 
 def mainlist(item):
     logger.info("pelisalacarta.channels.biblioteca mainlist")
@@ -146,7 +144,7 @@ def get_temporadas(item):
         # ...si ya estamos dentro del canal...
         # ...obtenemos las temporadas del listado de strm
 
-        logger.info("apilar {}".format(config.get_setting("no_pile_on_seasons")))
+        #logger.info("apilar {}".format(config.get_setting("no_pile_on_seasons")))
 
         if config.get_setting("no_pile_on_seasons") == "Siempre":
             return get_capitulos(item)
@@ -242,6 +240,8 @@ def fichero_series(item):
     logger.info("leer el archivo: {0}".format(tvshow_file))
 
     dict_data = jsontools.load_json(library.read_file(tvshow_file))
+    if dict_data=="":
+        return []
 
     itemlist.append(Item(channel=item.channel, action="limpiar_fichero",
                          title="[COLOR yellow]Eliminar entradas de series huerfanas[/COLOR]", dict_fichero=dict_data))
