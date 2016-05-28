@@ -56,7 +56,7 @@ def mainlist(params,url,category):
             titulo = video[1]
             url        = video[0]
             thumbnail  = video[2]
-            xbmctools.addnewvideo( "trailertools" , "youtubeplay" , category , "Directo" ,  titulo , url , thumbnail , "Ver Video" )
+            xbmctools.add_new_video( "trailertools" , "youtubeplay" , category , "Directo" ,  titulo , url , thumbnail , "Ver Video" )
             
     xbmcplugin.setPluginCategory( handle=int( sys.argv[ 1 ] ), category=category )
     xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_NONE )
@@ -85,7 +85,7 @@ def buscartrailer(params,url,category):
             url        = video[0]
             thumbnail  = video[2]
             duracion = video[3]
-            xbmctools.addnewvideo( "trailertools" , "youtubeplay" , category , "youtube" ,  titulo , url , thumbnail , "Ver Video","",duracion )
+            xbmctools.add_new_video( "trailertools" , "youtubeplay" , category , "youtube" ,  titulo , url , thumbnail , "Ver Video","",duracion )
     
     xbmctools.addnewfolderextra( CHANNELNAME , "buscartrailer" , category , config.get_localized_string(30111)+" "+videotitle , url , os.path.join(IMAGES_PATH, 'trailertools.png'), "" ) #"Insatisfecho?, busca otra vez : "        
     # Propiedades

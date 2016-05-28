@@ -44,40 +44,40 @@ except:
 
 DEBUG = True
 
-def addnewfolderextra(item, totalItems=0):
+def add_new_folder(item, totalItems=0):
+    logger.info('pelisalacarta.platformcode.xbmctools add_new_folder item='+item.tostring())
 
     if item.fulltitle=="":
         item.fulltitle=item.title
-    
+
     contextCommands = []
     ok = False
     
     try:
         item.context = urllib.unquote_plus(item.context)
     except:
-        item.context=""
+        item.context = ""
     
     if "|" in item.context:
         item.context = item.context.split("|")
-    
-    if DEBUG:
-        logger.info('[xbmctools.py] addnewfolderextra(' + item.tostring() +')')
-        logger.info(item.tostring())
 
     listitem = xbmcgui.ListItem( item.title, iconImage="DefaultFolder.png", thumbnailImage=item.thumbnail )
 
     if item.action !="":
         set_infoLabels(listitem,item) # Modificacion introducida por super_berny para añadir infoLabels al ListItem
+    
     if item.fanart!="":
         listitem.setProperty('fanart_image',item.fanart) 
         xbmcplugin.setPluginFanart(pluginhandle, item.fanart)
 
     try:
-        item.title = item.title.encode ("utf-8") #This only aplies to unicode strings. The rest stay as they are.
+        item.title = item.title.encode("utf-8") #This only aplies to unicode strings. The rest stay as they are.
     except:
         pass
     
     itemurl = '%s?%s' % ( sys.argv[ 0 ] , item.tourl())
+    logger.info("pelisalacarta.platformcode.xbmctools add_new_folder itemurl="+itemurl)
+
     #if item.show != "": #Añadimos opción contextual para Añadir la serie completa a la biblioteca
     #    addSerieCommand = "XBMC.RunPlugin(%s?%s)" % ( sys.argv[ 0 ] , item.clone(action="addlist2Library").tourl())
     #    contextCommands.append(("Añadir Serie a Biblioteca",addSerieCommand))
@@ -121,25 +121,27 @@ def addnewfolderextra(item, totalItems=0):
             ok = xbmcplugin.addDirectoryItem( handle = pluginhandle, url = itemurl , listitem=listitem, isFolder=True, totalItems=item.totalItems)
     return ok
 
-def addnewvideo(item, IsPlayable='false', totalItems = 0):
+def add_new_video(item, IsPlayable='false', totalItems = 0):
+    logger.info('pelisalacarta.platformcode.xbmctools add_new_video item='+item.tostring())
+
     # TODO: Posible error en trailertools.py
     contextCommands = []
     ok = False
+
     try:
         item.context = urllib.unquote_plus(item.context)
     except:
         item.context=""
+
     if "|" in item.context:
         item.context = item.context.split("|")
-    if DEBUG:
-        logger.info('[xbmctools.py] addnewvideo')
-        logger.info(item.tostring())  
 
     icon_image = os.path.join( config.get_runtime_path() , "resources" , "images" , "servers" , item.server+".png" )
     if not os.path.exists(icon_image):
         icon_image = "DefaultVideo.png"
 
     listitem = xbmcgui.ListItem( item.title, iconImage="DefaultVideo.png", thumbnailImage=item.thumbnail )
+
     if item.action !="":
         set_infoLabels(listitem,item) # Modificacion introducida por super_berny para añadir infoLabels al ListItem
    
@@ -151,11 +153,12 @@ def addnewvideo(item, IsPlayable='false', totalItems = 0):
     if item.isPlayable == 'true': #Esta opcion es para poder utilizar el xbmcplugin.setResolvedUrl()
         listitem.setProperty('IsPlayable', 'true')
 
-
     if len (contextCommands) > 0:
         listitem.addContextMenuItems ( contextCommands, replaceItems=False)
+    
     if item.action == "":
-            listitem.addContextMenuItems ( list(), replaceItems=True)
+        listitem.addContextMenuItems ( list(), replaceItems=True)
+    
     try:
         item.title = item.title.encode ("utf-8")     #This only aplies to unicode strings. The rest stay as they are.
         item.plot  = item.plot.encode ("utf-8")
@@ -163,7 +166,8 @@ def addnewvideo(item, IsPlayable='false', totalItems = 0):
         pass
 
     itemurl = '%s?%s' % ( sys.argv[ 0 ] , item.tourl())
-                    
+    logger.info("pelisalacarta.platformcode.xbmctools add_new_video itemurl="+itemurl)
+
     if item.totalItems == 0:
         ok = xbmcplugin.addDirectoryItem( handle = pluginhandle, url=itemurl, listitem=listitem, isFolder=False)
     else:
@@ -174,7 +178,7 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
     from core import servertools
     import xbmcgui,xbmc
     
-    logger.info("[xbmctools.py] play_video")
+    logger.info("pelisalacarta.platformcode.xbmctools play_video")
     #logger.info(item.tostring('\n'))
 
     try:
@@ -491,7 +495,7 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
         return
 
     # Si no hay mediaurl es porque el vídeo no está :)
-    logger.info("[xbmctools.py] mediaurl="+mediaurl)
+    logger.info("pelisalacarta.platformcode.xbmctools mediaurl="+mediaurl)
     if mediaurl=="":
         if server == "unknown":
             alertUnsopportedServer()
@@ -671,19 +675,19 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
 
             # Reproduce
             playersettings = config.get_setting('player_type')
-            logger.info("[xbmctools.py] playersettings="+playersettings)
+            logger.info("pelisalacarta.platformcode.xbmctools playersettings="+playersettings)
 
             if config.get_system_platform()=="xbox":
                 player_type = xbmc.PLAYER_CORE_AUTO
                 if playersettings == "0":
                     player_type = xbmc.PLAYER_CORE_AUTO
-                    logger.info("[xbmctools.py] PLAYER_CORE_AUTO")
+                    logger.info("pelisalacarta.platformcode.xbmctools PLAYER_CORE_AUTO")
                 elif playersettings == "1":
                     player_type = xbmc.PLAYER_CORE_MPLAYER
-                    logger.info("[xbmctools.py] PLAYER_CORE_MPLAYER")
+                    logger.info("pelisalacarta.platformcode.xbmctools PLAYER_CORE_MPLAYER")
                 elif playersettings == "2":
                     player_type = xbmc.PLAYER_CORE_DVDPLAYER
-                    logger.info("[xbmctools.py] PLAYER_CORE_DVDPLAYER")
+                    logger.info("pelisalacarta.platformcode.xbmctools PLAYER_CORE_DVDPLAYER")
 
                 xbmcPlayer = xbmc.Player( player_type )
             else:
@@ -694,7 +698,7 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
             if item.channel=="cuevana" and item.subtitle!="":
                 logger.info("subtitulo="+subtitle)
                 if item.subtitle!="" and (opciones[seleccion].startswith("Ver") or opciones[seleccion].startswith("Watch")):
-                    logger.info("[xbmctools.py] Con subtitulos")
+                    logger.info("pelisalacarta.platformcode.xbmctools Con subtitulos")
                     setSubtitles()
 
         elif config.get_setting("player_mode")=="1":
@@ -742,7 +746,7 @@ def getLibraryInfo (mediaurl):
     '''Obtiene información de la Biblioteca si existe (ficheros strm) o de los parámetros
     '''
     if DEBUG:
-        logger.info('[xbmctools.py] playlist OBTENCIÓN DE DATOS DE BIBLIOTECA')
+        logger.info('pelisalacarta.platformcode.xbmctools playlist OBTENCIÓN DE DATOS DE BIBLIOTECA')
 
     # Información básica
     label = xbmc.getInfoLabel( 'listitem.label' )
@@ -867,7 +871,7 @@ def alertanomegauploadlow(server):
 def playstrm(params,url,category):
     '''Play para videos en ficheros strm
     '''
-    logger.info("[xbmctools.py] playstrm url="+url)
+    logger.info("pelisalacarta.platformcode.xbmctools playstrm url="+url)
 
     title = unicode( xbmc.getInfoLabel( "ListItem.Title" ), "utf-8" )
     thumbnail = urllib.unquote_plus( params.get("thumbnail") )
@@ -888,6 +892,7 @@ def playstrm(params,url,category):
     play_video("Biblioteca pelisalacarta",server,url,category,title,thumbnail,plot,strmfile=True,Serie=serie,subtitle=subtitle)
 
 def renderItems(itemlist, parentitem, isPlayable='false'):
+    logger.info("pelisalacarta.platformcode.xbmctools renderItems")
 
     viewmode = "list"
 
@@ -920,12 +925,12 @@ def renderItems(itemlist, parentitem, isPlayable='false'):
                 item.title= '[I]%s[/I]' %(item.title)
 
             if item.folder:
-                addnewfolderextra(item, totalItems = len(itemlist))
+                add_new_folder(item, totalItems = len(itemlist))
             else:
                 if config.get_setting("player_mode")=="1": # SetResolvedUrl debe ser siempre "isPlayable = true"
                     item.isPlayable = 'true'
                 
-                addnewvideo( item, IsPlayable=item.isPlayable, totalItems = len(itemlist))
+                add_new_video( item, IsPlayable=item.isPlayable, totalItems = len(itemlist))
 
             if item.viewmode!="list":
                 viewmode = item.viewmode
@@ -954,11 +959,11 @@ def renderItems(itemlist, parentitem, isPlayable='false'):
     xbmcplugin.endOfDirectory( handle=pluginhandle, succeeded=True )
 
 def wait2second():
-    logger.info("[xbmctools.py] wait2second")
+    logger.info("pelisalacarta.platformcode.xbmctools wait2second")
     import time
     contador = 0
     while xbmc.Player().isPlayingVideo()==False:
-        logger.info("[xbmctools.py] setSubtitles: Waiting 2 seconds for video to start before setting subtitles")
+        logger.info("pelisalacarta.platformcode.xbmctools setSubtitles: Waiting 2 seconds for video to start before setting subtitles")
         time.sleep(2)
         contador = contador + 1
 
@@ -966,11 +971,11 @@ def wait2second():
             break
 
 def setSubtitles():
-    logger.info("[xbmctools.py] setSubtitles")
+    logger.info("pelisalacarta.platformcode.xbmctools setSubtitles")
     import time
     contador = 0
     while xbmc.Player().isPlayingVideo()==False:
-        logger.info("[xbmctools.py] setSubtitles: Waiting 2 seconds for video to start before setting subtitles")
+        logger.info("pelisalacarta.platformcode.xbmctools setSubtitles: Waiting 2 seconds for video to start before setting subtitles")
         time.sleep(2)
         contador = contador + 1
 
@@ -978,11 +983,11 @@ def setSubtitles():
             break
 
     subtitlefile = os.path.join( config.get_data_path(), 'subtitulo.srt' )
-    logger.info("[xbmctools.py] setting subtitle file %s" % subtitlefile)
+    logger.info("pelisalacarta.platformcode.xbmctools setting subtitle file %s" % subtitlefile)
     xbmc.Player().setSubtitles(subtitlefile)
 
 def trailer(item):
-    logger.info("[xbmctools.py] trailer")
+    logger.info("pelisalacarta.platformcode.xbmctools trailer")
     config.set_setting("subtitulo", "false")
     import sys
     xbmc.executebuiltin("XBMC.RunPlugin(%s?channel=%s&action=%s&category=%s&title=%s&url=%s&thumbnail=%s&plot=%s&server=%s)" % ( sys.argv[ 0 ] , "trailertools" , "buscartrailer" , urllib.quote_plus( item.category ) , urllib.quote_plus( item.fulltitle ) , urllib.quote_plus( item.url ) , urllib.quote_plus( item.thumbnail ) , urllib.quote_plus( "" ) ))
@@ -1014,10 +1019,14 @@ def set_infoLabels(listitem,item):
         try:
             import ast
             infodict=ast.literal_eval(item.plot)['infoLabels']
-            if not infodict.has_key('title'): infodict['title'] = item.title
+
+            if not infodict.has_key('title'): 
+                infodict['title'] = item.title
+
             listitem.setInfo( "video", infodict)
         except:
             pass
+
     elif len(item.infoLabels) >0:
         # Nuevo modelo para pasar la informacion al listitem (ver tmdb.set_InfoLabels() )
         # item.infoLabels es un dicionario con los pares de clave/valor descritos en:

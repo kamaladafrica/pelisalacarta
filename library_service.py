@@ -114,10 +114,8 @@ def main():
             logger.info("No actualiza la biblioteca, está desactivado en la configuración de pelisalacarta")
 
     except Exception as ex:
-        logger.info("pelisalacarta.library_service No hay series para actualizar")
-        template = "An exception of type {0} occured. Arguments:\n{1!r}"
-        message = template.format(type(ex).__name__, ex.args)
-        logger.info(message)
+        import traceback
+        logger.info(traceback.format_exc())
 
         if p_dialog:
             p_dialog.close()

@@ -34,7 +34,7 @@ from core import scrapertools
 
 # Funciónn genérica para encontrar ídeos en una página
 def find_video_items(item=None, data=None, channel=""):
-    logger.info("[servertools.py] find_video_items")
+    logger.info("pelisalacarta.core.servertools find_video_items")
 
     # Descarga la página
     if data is None:
@@ -55,44 +55,45 @@ def find_video_items(item=None, data=None, channel=""):
         scrapedurl = video[1]
         server = video[2]
         if get_server_parameters(server)["thumbnail"]:
-          thumbnail = get_server_parameters(server)["thumbnail"]
+            thumbnail = get_server_parameters(server)["thumbnail"]
         else:
-          thumbnail = "http://media.tvalacarta.info/servers/server_"+server+".png"
+            thumbnail = "http://media.tvalacarta.info/servers/server_"+server+".png"
+        
         itemlist.append( Item(channel=item.channel, title=scrapedtitle , action="play" , server=server, url=scrapedurl, thumbnail=thumbnail, show=item.show , plot=item.plot , parentContent=item, folder=False) )
 
     return itemlist
 
 def guess_server_thumbnail(title):
-    logger.info("[servertools.py] guess_server_thumbnail title="+title)
+    logger.info("pelisalacarta.core.servertools guess_server_thumbnail title="+title)
 
     lowcase_title = title.lower()
 
     if "netu" in lowcase_title:
-        logger.info("[servertools.py] guess_server_thumbnail caso especial netutv")
+        logger.info("pelisalacarta.core.servertools guess_server_thumbnail caso especial netutv")
         return "http://media.tvalacarta.info/servers/server_netutv.png"
 
     if "ul.to" in lowcase_title:
-        logger.info("[servertools.py] guess_server_thumbnail caso especial ul.to")
+        logger.info("pelisalacarta.core.servertools guess_server_thumbnail caso especial ul.to")
         return "http://media.tvalacarta.info/servers/server_uploadedto.png"
 
     if "waaw" in lowcase_title:
-        logger.info("[servertools.py] guess_server_thumbnail caso especial waaw")
+        logger.info("pelisalacarta.core.servertools guess_server_thumbnail caso especial waaw")
         return "http://media.tvalacarta.info/servers/server_waaw.png"
 
     if "streamin" in lowcase_title:
-        logger.info("[servertools.py] guess_server_thumbnail caso especial streamin")
+        logger.info("pelisalacarta.core.servertools guess_server_thumbnail caso especial streamin")
         return "http://media.tvalacarta.info/servers/server_streaminto.png"
 
     servers = get_servers_list()
     for serverid in servers:
         if serverid in lowcase_title:
-            logger.info("[servertools.py] guess_server_thumbnail encontrado "+serverid)
+            logger.info("pelisalacarta.core.servertools guess_server_thumbnail encontrado "+serverid)
             return "http://media.tvalacarta.info/servers/server_"+serverid+".png"
 
     return ""
 
 def findvideosbyserver(data, serverid):
-    logger.info("[servertools.py] findvideosbyserver")
+    logger.info("pelisalacarta.core.servertools findvideosbyserver")
     encontrados = set()
     devuelve = []
     try:
@@ -110,7 +111,7 @@ def findvideosbyserver(data, serverid):
     return devuelve
 
 def findvideos(data):
-    logger.info("[servertools.py] findvideos") # en #"+data+"#")
+    logger.info("pelisalacarta.core.servertools findvideos") # en #"+data+"#")
     encontrados = set()
     devuelve = []
 
@@ -160,7 +161,7 @@ def get_server_from_url(url):
     return devuelve
 
 def resolve_video_urls_for_playing(server,url,video_password="",muestra_dialogo=False):
-    logger.info("[servertools.py] resolve_video_urls_for_playing, server="+server+", url="+url)
+    logger.info("pelisalacarta.core.servertools resolve_video_urls_for_playing, server="+server+", url="+url)
     video_urls = []
     torrent = False
 
@@ -168,7 +169,7 @@ def resolve_video_urls_for_playing(server,url,video_password="",muestra_dialogo=
 
     # Si el vídeo es "directo", no hay que buscar más
     if server=="directo" or server=="local":
-        logger.info("[servertools.py] server=directo, la url es la buena")
+        logger.info("pelisalacarta.core.servertools server=directo, la url es la buena")
 
         try:
             import urlparse
@@ -197,34 +198,34 @@ def resolve_video_urls_for_playing(server,url,video_password="",muestra_dialogo=
             if server_parameters["free"]:
               opciones.append("free")
             opciones.extend([premium for premium in server_parameters["premium"] if config.get_setting(premium+"premium")=="true"])
-            logger.info("[servertools.py] opciones disponibles para " + server + ": " + str(len(opciones)) + " "+str(opciones))
+            logger.info("pelisalacarta.core.servertools opciones disponibles para " + server + ": " + str(len(opciones)) + " "+str(opciones))
 
             # Sustituye el código por otro "Plex compatible"
             #exec "from servers import "+server+" as server_connector"
             servers_module = __import__("servers."+server)
             server_connector = getattr(servers_module,server)
 
-            logger.info("[servertools.py] servidor de "+server+" importado")
+            logger.info("pelisalacarta.core.servertools servidor de "+server+" importado")
 
             # Si tiene una función para ver si el vídeo existe, lo comprueba ahora
             if hasattr(server_connector, 'test_video_exists'):
-                logger.info("[servertools.py] invocando a "+server+".test_video_exists")
+                logger.info("pelisalacarta.core.servertools invocando a "+server+".test_video_exists")
                 puedes,motivo = server_connector.test_video_exists( page_url=url )
 
                 # Si la funcion dice que no existe, fin
                 if not puedes:
-                    logger.info("[servertools.py] test_video_exists dice que el video no existe")
+                    logger.info("pelisalacarta.core.servertools test_video_exists dice que el video no existe")
                     if muestra_dialogo: progreso.close()
                     return video_urls,puedes,motivo
                 else:
-                    logger.info("[servertools.py] test_video_exists dice que el video SI existe")
+                    logger.info("pelisalacarta.core.servertools test_video_exists dice que el video SI existe")
 
             # Obtiene enlaces free
             if server_parameters["free"]=="true":
                 if muestra_dialogo:
                   progreso.update((100 / len(opciones)) * opciones.index("free")  , "Conectando con "+server)
 
-                logger.info("[servertools.py] invocando a "+server+".get_video_url")
+                logger.info("pelisalacarta.core.servertools invocando a "+server+".get_video_url")
                 video_urls = server_connector.get_video_url( page_url=url , video_password=video_password )
 
                 # Si no se encuentran vídeos en modo free, es porque el vídeo no existe
@@ -290,7 +291,7 @@ def get_server_parameters(server):
       return {}
 
 def get_servers_list():
-  logger.info("[servertools.py] get_servers_list")
+  logger.info("pelisalacarta.core.servertools get_servers_list")
   ServersPath = os.path.join(config.get_runtime_path(),"servers")
   ServerList={}
   for server in os.listdir(ServersPath):
