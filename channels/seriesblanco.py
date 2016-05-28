@@ -247,7 +247,7 @@ def parseVideos(item, typeStr, data):
                         vFields.get("uploader"), vFields.get("date"))
             itemlist.append(Item(channel=__channel__, title=title, url=urlparse.urljoin(HOST, vFields.get("link")),
                                  action="play", show=item.show, language=IDIOMAS.get(vFields.get("language"), "OVOS"),
-                                 quality=vFields.get("quality"), list_idiomas=list_idiomas, list_calidad=CALIDADES,
+                                 quality=quality, list_idiomas=list_idiomas, list_calidad=CALIDADES,
                                  context=CONTEXT+"|guardar filtro"))
 
         if len(itemlist) > 0 and OPCION_FILTRO:
