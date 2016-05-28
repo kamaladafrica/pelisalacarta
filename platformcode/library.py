@@ -183,7 +183,6 @@ def library_in_kodi():
     else:
         return False
 
-
 def elimina_tildes(s):
     """
     elimina las tildes de la cadena
@@ -193,11 +192,36 @@ def elimina_tildes(s):
     @return:  cadena sin tildes.
     """
     logger.info("[library.py] elimina_tildes")
-    import unicodedata
-    if not isinstance(s, unicode):
-        s = s.decode("UTF-8")
-    return ''.join((c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn'))
+    # import unicodedata
+    # if not isinstance(s, unicode):
+    #     s = s.decode("UTF-8")
+    # return ''.join((c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn'))
+    s = s.replace("Á", "a")
+    s = s.replace("É", "e")
+    s = s.replace("Í", "i")
+    s = s.replace("Ó", "o")
+    s = s.replace("Ú", "u")
+    s = s.replace("á", "a")
+    s = s.replace("é", "e")
+    s = s.replace("í", "i")
+    s = s.replace("ó", "o")
+    s = s.replace("ú", "u")
+    s = s.replace("À", "a")
+    s = s.replace("È", "e")
+    s = s.replace("Ì", "i")
+    s = s.replace("Ò", "o")
+    s = s.replace("Ù", "u")
+    s = s.replace("à", "a")
+    s = s.replace("è", "e")
+    s = s.replace("ì", "i")
+    s = s.replace("ò", "o")
+    s = s.replace("ù", "u")
+    s = s.replace("ç", "c")
+    s = s.replace("Ç", "C")
+    s = s.replace("Ñ", "n")
+    s = s.replace("ñ", "n")
 
+    return s
 
 def title_to_filename(title):
     """
