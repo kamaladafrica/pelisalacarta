@@ -23,4 +23,12 @@
 	<settings>
 		<include_in_global_search>false</include_in_global_search>
 	</settings>
+	<settings>
+		<id>include_in_newest_documentales</id>
+		<type>bool</type>
+		<label>Incluir en Novedades - Documentales</label>
+		<default>true</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
 </channel>
