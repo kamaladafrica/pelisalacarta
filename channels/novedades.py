@@ -169,7 +169,7 @@ def noAgrupar(list_result_canal, categoria):
 
         if 'contentCalidad' in i:  i.title += ' (%s)' % i.contentCalidad
         if i.language: i.title += ' [%s]' % i.language
-        i. title += " (En %s)" %i.channel.capitalize()
+        i. title += " (%s)" %i.channel
 
         itemlist.append(i.clone())
 
@@ -196,7 +196,7 @@ def agruparXcanal(list_result_canal, categoria):
 
     # Añadimos el contenido encontrado en la lista list_result
     for c in sorted(dict_canales):
-        itemlist.append(Item(channel=__channel__, title=c.capitalize()+':'))
+        itemlist.append(Item(channel=__channel__, title=c+':'))
         for i in dict_canales[c]:
             if 'contentCalidad' in i:  i.title += ' (%s)' % i.contentCalidad
             if i.language: i.title += ' [%s]' % i.language
@@ -244,8 +244,8 @@ def agruparXcontenido(list_result_canal, categoria):
             # Eliminar de la lista de nombres de canales los q esten duplicados
             canales_no_duplicados = []
             for i in v:
-                if not i.channel.capitalize() in canales_no_duplicados:
-                    canales_no_duplicados.append(i.channel.capitalize())
+                if not i.channel in canales_no_duplicados:
+                    canales_no_duplicados.append(i.channel)
 
             if len(canales_no_duplicados) > 1:
                 canales = ', '.join([i for i in canales_no_duplicados[:-1]])
@@ -272,7 +272,7 @@ def ver_canales(item):
         logger.debug(newItem.tostring())
         if 'contentCalidad' in newItem:  newItem.title += ' (%s)' % newItem.contentCalidad
         if newItem.language: newItem.title += ' [%s]' % newItem.language
-        newItem.title += ' (%s)' % newItem.channel.capitalize()
+        newItem.title += ' (%s)' % newItem.channel
         itemlist.append(newItem.clone())
 
     return itemlist
