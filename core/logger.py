@@ -39,6 +39,7 @@ def info(texto):
         try:
             xbmc.log(texto)
         except:
+            # FIXME: ¿Esto de que falle al poner un log no se puede resolver con un encode("ascii",errors="ignore") ?
             validchars = " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!#$%&'()-@[]^_`{}~."
             stripped = ''.join(c for c in texto if c in validchars)
             xbmc.log("(stripped) "+stripped)
