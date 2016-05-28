@@ -32,6 +32,7 @@ import urllib2
 
 from core import channeltools
 from core import config
+from core import downloadtools
 from core import logger
 from core import scrapertools
 from core.item import Item
@@ -242,9 +243,8 @@ def run():
                 elif item.action == "add_serie_to_library":
                     add_serie_to_library(item, channel)
 
-                elif item.action=="download_all_episodes":
-                    import downloadtools
-                    downloadtools.download_all_episodes(item,channel)
+                elif item.action == "download_all_episodes":
+                    downloadtools.download_all_episodes(item, channel)
 
                 elif item.action=="search":
                     logger.info("pelisalacarta.platformcode.launcher search")
