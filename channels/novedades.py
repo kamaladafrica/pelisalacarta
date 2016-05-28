@@ -160,17 +160,10 @@ def noAgrupar(list_result_canal, categoria):
     itemlist = []
 
     for i in list_result_canal:
-        # Formatear titulo
-        i.title = i.contentTitle
-        if (categoria == 'series' or categoria == 'anime') and i.contentEpisodeNumber:
-            if not i.contentSeason:
-                i.contentSeason = '1'
-            i.title += " - %sx%s" % (i.contentSeason, "{:0>2d}".format(int(i.contentEpisodeNumber)))
-
-        if 'contentCalidad' in i:  i.title += ' (%s)' % i.contentCalidad
-        if i.language: i.title += ' [%s]' % i.language
-        i. title += " (%s)" %i.channel
-
+        i.title = re.compile("\[COLO.*?\]",re.DOTALL).sub("",i.title)
+        i.title = re.compile("\[/COLO.*?\]",re.DOTALL).sub("",i.title)
+        i.title = re.compile("\[B\]",re.DOTALL).sub("",i.title)
+        i.title = re.compile("\[/B\]",re.DOTALL).sub("",i.title)
         itemlist.append(i.clone())
 
     return sorted(itemlist, key=lambda i:  i.title.lower())
@@ -189,7 +182,11 @@ def agruparXcanal(list_result_canal, categoria):
         if (categoria == 'series' or categoria == 'anime') and i.contentEpisodeNumber:
             if not i.contentSeason:
                 i.contentSeason = '1'
-            i.title += " - %sx%s" % (i.contentSeason, "{:0>2d}".format(int(i.contentEpisodeNumber)))
+
+            try:
+                i.title += " - %sx%s" % (i.contentSeason, "{:0>2d}".format(int(i.contentEpisodeNumber)))
+            except:
+                pass
 
         # Añadimos el contenido a listado de cada canal
         dict_canales[i.channel].append(i)
@@ -221,7 +218,7 @@ def agruparXcontenido(list_result_canal, categoria):
             try:
                 i.title += " - %sx%s" % (i.contentSeason, "{:0>2d}".format(int(i.contentEpisodeNumber)))
             except:
-                i.title += i.contentTitle
+                pass
 
         # Eliminar tildes y otros caracteres especiales para la key
         import unicodedata
