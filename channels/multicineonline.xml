@@ -11,9 +11,9 @@
     <bannermenu></bannermenu>
     
     <update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-    <version>1</version>
-    <date>24/02/2016</date>
-    <changes>Antiguo Sinluces Cambio de nombre a Multicineonline</changes>
+    <version>2</version>
+    <date>28/05/2016</date>
+    <changes>Añadido proxy para cloudflare.Mejoras canal</changes>
     
     <categories>
         <category>movie</category>
