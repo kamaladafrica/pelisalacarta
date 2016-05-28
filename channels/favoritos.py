@@ -31,9 +31,9 @@ import urllib
 
 from lib.samba import libsmb as samba
 
-import config
-import logger
-from item import Item
+from core import config
+from core import logger
+from core.item import Item
 
 CHANNELNAME = "favoritos"
 DEBUG = True

@@ -29,12 +29,13 @@ import sys
 
 from core import config
 from core import downloadtools
-from core import favoritos
 from core import logger
 from core import servertools
 from core.item import Item
 from lib.samba import libsmb as samba
 from platformcode import library
+
+import favoritos
 
 CHANNELNAME = "descargas"
 DEBUG = True

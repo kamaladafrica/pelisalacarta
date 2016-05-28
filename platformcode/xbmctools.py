@@ -385,7 +385,7 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
         return
 
     elif opciones[seleccion]==config.get_localized_string(30154): #"Quitar de favoritos"
-        from core import favoritos
+        from channels import favoritos
         # En "extra" está el nombre del fichero en favoritos
         favoritos.deletebookmark(urllib.unquote_plus( item.extra ))
 
@@ -396,7 +396,7 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
         return
 
     elif opciones[seleccion]==config.get_localized_string(30159): #"Borrar descarga definitivamente"
-        from core import descargas
+        from channels import descargas
         descargas.delete_error_bookmark(urllib.unquote_plus( item.extra ))
 
         advertencia = xbmcgui.Dialog()
@@ -405,7 +405,7 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
         return
 
     elif opciones[seleccion]==config.get_localized_string(30160): #"Pasar de nuevo a lista de descargas":
-        from core import descargas
+        from channels import descargas
         descargas.mover_descarga_error_a_pendiente(urllib.unquote_plus( item.extra ))
 
         advertencia = xbmcgui.Dialog()
@@ -413,7 +413,7 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
         return
 
     elif opciones[seleccion]==config.get_localized_string(30155): #"Añadir a favoritos":
-        from core import favoritos
+        from channels import favoritos
         from core import downloadtools
 
         download_title = item.fulltitle
@@ -435,7 +435,7 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
         return
 
     elif opciones[seleccion]==config.get_localized_string(30156): #"Quitar de lista de descargas":
-        from core import descargas
+        from channels import descargas
         # La categoría es el nombre del fichero en la lista de descargas
         descargas.deletebookmark((urllib.unquote_plus( item.extra )))
 
@@ -446,7 +446,7 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
         return
 
     elif opciones[seleccion]==config.get_localized_string(30157): #"Añadir a lista de descargas":
-        from core import descargas
+        from channels import descargas
         from core import downloadtools
 
         download_title = item.fulltitle
