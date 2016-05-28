@@ -26,11 +26,12 @@ DEBUG = config.get_setting("debug")
 HEADER = [
     ["Host","www.yaske.cc"],
     ["Connection","keep-alive"],
-    ["Accept","text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"],
-    ["User-Agent","Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.120 Safari/537.36"],
+    ["Accept","text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"],
+    ["User-Agent","Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:46.0) Gecko/20100101 Firefox/46.0"],
     ["Referer","http://www.yaske.cc/"],
-    ["Accept-Encoding","gzip,deflate,sdch"],
-    ["Accept-Language","es-ES,es;q=0.8"],
+    ["Accept-Encoding","gzip,deflate"],
+    ["Accept-Language","es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3"],
+    ["Cache-Control","max-age=0"]
 ]
 
 def isGeneric():
