@@ -1020,9 +1020,10 @@ def set_infoLabels(listitem,item):
             import ast
             infodict=ast.literal_eval(item.plot)['infoLabels']
 
-            if not infodict.has_key('title'): 
-                infodict['title'] = item.title
-
+            #if not infodict.has_key('title'): 
+            #    infodict['title'] = item.title
+            infodict['title'] = item.title
+            
             listitem.setInfo( "video", infodict)
         except:
             pass
@@ -1031,6 +1032,7 @@ def set_infoLabels(listitem,item):
         # Nuevo modelo para pasar la informacion al listitem (ver tmdb.set_InfoLabels() )
         # item.infoLabels es un dicionario con los pares de clave/valor descritos en:
         # http://mirrors.xbmc.org/docs/python-docs/14.x-helix/xbmcgui.html#ListItem-setInfo
+        item.infoLabels['title'] = item.title
         listitem.setInfo( "video", item.infoLabels)
 
     elif item.plot !='':
