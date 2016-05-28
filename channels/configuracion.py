@@ -28,9 +28,7 @@
 from core import config
 from core import logger
 
-logger.info("[configuracion.py] init")
-
-def mainlist(params,url,category):
-    logger.info("[configuracion.py] mainlist")
+def mainlist(item):
+    logger.info("pelisalacarta.channels.configuracion mainlist")
     
     config.open_settings( )
