@@ -340,11 +340,10 @@ def run():
         
         if canal:
             xbmcgui.Dialog().ok(
-                "Se ha producido un error en el canal " + canal,
-                "Esto puede ser causado por varias razones: \n"
-                " - El servidor no está disponible, o no esta respondiendo.\n"
-                " - Cambios en el diseño de la web.\n"
-                "Comprueba el log para ver mas detalles del error.")
+                "Error inesperado en el canal " + canal,
+                "Esto suele pasar cuando hay un fallo de conexión, cuando la web del canal "
+                "ha cambiado su estructura, o simplemente "
+                "porque hay algo mal en pelisalacarta.\nPara saber más detalles, consulta el log.")
         else:
             xbmcgui.Dialog().ok(
                 "Se ha producido un error en pelisalacarta",
