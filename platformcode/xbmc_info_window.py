@@ -31,7 +31,7 @@ import xbmcgui
 
 from core.tmdb import Tmdb
 from core.item import Item
-
+from core import logger
 
 class InfoWindow(xbmcgui.WindowXMLDialog):
     otmdb = None
@@ -366,6 +366,7 @@ class InfoWindow(xbmcgui.WindowXMLDialog):
 
 
     def onClick(self, id):
+        logger.info("pelisalacarta.platformcode.xbmc_info_window onClick id="+repr(id))
         #Boton Cancelar y [X]
         if id == 10003 or id == 10027:
             self.close()
@@ -407,31 +408,44 @@ class InfoWindow(xbmcgui.WindowXMLDialog):
 
 
     def onAction(self, action):
+        logger.info("pelisalacarta.platformcode.xbmc_info_window onxAction action="+repr(action.getId()))
+
         if self.from_tmdb:
             #Accion 1: Flecha izquierda
-            if action == 1:
+            if action.getId() == 1:
                 if self.result.get("type","movie") == "tv": # episodio -1
                     if self.result.get("title") and self.result.get("season") and self.result.get("episode") and int(self.result.get("episode")) > 1:
                         self.get_tmdb_tv_data(self.result.get("title"), season=self.result.get("season"), episode=int(self.result.get("episode"))-1)
                         self.onInit()
 
             #Accion 2: Flecha derecha (episodio +1)
-            if action == 2:
+            if action.getId() == 2:
                 if self.result.get("type","movie") == "tv":
                     if self.result.get("title") and self.result.get("season") and self.result.get("episode") and int(self.result.get("episode")) < int(self.result.get("episodes")):
                         self.get_tmdb_tv_data(self.result.get("title"), season=self.result.get("season"), episode=int(self.result.get("episode"))+1)
                         self.onInit()
 
             #Accion 3: Flecha arriba (temporada +1)
-            if action == 3:
+            if action.getId() == 3:
                 if self.result.get("type","movie") == "tv":
                     if self.result.get("title") and self.result.get("season") and self.result.get("episode") and int(self.result.get("season")) < int(self.result.get("seasons")):
                         self.get_tmdb_tv_data(self.result.get("title"), season=int(self.result.get("season"))+1, episode=self.result.get("episode"))
                         self.onInit()
 
             #Accion 4: Flecha abajo (temporada -1)
-            if action == 4:
+            if action.getId() == 4:
                 if self.result.get("type","movie") == "tv":
                     if self.result.get("title") and self.result.get("season") and self.result.get("episode") and int(self.result.get("season")) >1 :
                         self.get_tmdb_tv_data(self.result.get("title"), season=int(self.result.get("season"))-1, episode=self.result.get("episode"))
                         self.onInit()
+
+            # Pulsa OK, simula click en boton aceptar
+            if action.getId() == 107:
+                self.onClick(10028)
+
+        # Pulsa ESC, simula click en boton cancelar
+        logger.info("action.getId()="+str(action.getId())+", 10="+str(10)+", equal="+repr(action.getId()==10))
+        if action.getId() == 10:
+            self.onClick(10027)
+
+        logger.info("done!")
