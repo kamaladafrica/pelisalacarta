@@ -35,6 +35,7 @@ import xbmcplugin
 from core import config
 from core import logger
 from platformcode import library
+from channel import descargas
 
 # Esto permite su ejecución en modo emulado
 try:
@@ -189,12 +190,6 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
     if item.server=="":
         item.server="directo"
 
-    try:
-        from core import descargas
-        download_enable=True
-    except:
-        download_enable=False
-
     view = False
     # Abre el diálogo de selección
     opciones = []
@@ -216,9 +211,8 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
         if item.server=="local":
             opciones.append(config.get_localized_string(30164))
         else:
-            if download_enable:
-                opcion = config.get_localized_string(30153)
-                opciones.append(opcion) # "Descargar"
+            opcion = config.get_localized_string(30153)
+            opciones.append(opcion) # "Descargar"
     
             if item.channel=="favoritos": 
                 opciones.append(config.get_localized_string(30154)) # "Quitar de favoritos"
@@ -228,16 +222,15 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
             if not strmfile:
                 opciones.append(config.get_localized_string(30161)) # "Añadir a Biblioteca"
         
-            if download_enable:
-                if item.channel!="descargas":
-                    opciones.append(config.get_localized_string(30157)) # "Añadir a lista de descargas"
+            if item.channel!="descargas":
+                opciones.append(config.get_localized_string(30157)) # "Añadir a lista de descargas"
+            else:
+                if item.category=="errores":
+                    opciones.append(config.get_localized_string(30159)) # "Borrar descarga definitivamente"
+                    opciones.append(config.get_localized_string(30160)) # "Pasar de nuevo a lista de descargas"
                 else:
-                    if item.category=="errores":
-                        opciones.append(config.get_localized_string(30159)) # "Borrar descarga definitivamente"
-                        opciones.append(config.get_localized_string(30160)) # "Pasar de nuevo a lista de descargas"
-                    else:
-                        opciones.append(config.get_localized_string(30156)) # "Quitar de lista de descargas"
-    
+                    opciones.append(config.get_localized_string(30156)) # "Quitar de lista de descargas"
+
             if config.get_setting("jdownloader_enabled")=="true":
                 opciones.append(config.get_localized_string(30158)) # "Enviar a JDownloader"
             if config.get_setting("pyload_enabled")=="true":
