@@ -22,7 +22,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pelisalacarta 4.  If not, see <http://www.gnu.org/licenses/>.
 # --------------------------------------------------------------------------------
-# json_tools -Parsea un string en JSON probando varios módulos
+# json_tools - JSON load and parse functions with library detection
 # --------------------------------------------------------------------------------
 
 import traceback
