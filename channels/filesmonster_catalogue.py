@@ -235,7 +235,7 @@ def lista_buscar(item):
     
  
     texto=item.url
-    
+    texto=texto.replace("%20", "+")
     # Descarga la pagina  con (plot es la pagina)
     pagina=item.plot
 
@@ -300,7 +300,7 @@ def lista_buscar(item):
  
  # Descarga la pagina  con (plot es la pagina)
     texto=item.url
-    texto=texto.replace("+", " ")
+    texto=texto.replace("+", "%20")
     pagina=item.plot
 
     url="http://unusualporn.net/search/"+texto+"/page/"+pagina
@@ -354,7 +354,7 @@ def lista_buscar(item):
         imagen = ""
         scrapedplot = match[0]   
         scrapedplot=strip_tags(scrapedplot)
-        itemlist.append( Item(channel=__channel__, action="detail_2", title=scrapedtitle+" [en unusual.net]" , url=scrapedurl , thumbnail=scrapedthumbnail , plot=url , folder=True) )
+        itemlist.append( Item(channel=__channel__, action="detail_2", title=scrapedtitle+" [en unusualporn.net]" , url=scrapedurl , thumbnail=scrapedthumbnail , plot=url , folder=True) )
      
  
  
@@ -389,6 +389,8 @@ def search(item,texto):
     
     if (item.plot!=''): pagina=item.plot
     if (item.plot==""):pagina="1"
+    texto=texto.replace("%20", "+")
+    
     url="http://filesmonster.filesdl.net/posts/search?q="+texto+"&page="+pagina
     data1= scrapertools.downloadpageGzip(url)
     
@@ -457,6 +459,8 @@ def search(item,texto):
     
     if (item.plot!=''): pagina=item.plot
     if (item.plot==""):pagina="1"
+    texto=texto.replace("+", "%20")
+    
     url="http://unusualporn.net/search/"+texto+"/page/"+pagina
     data1= scrapertools.downloadpageGzip(url)
     
@@ -508,7 +512,7 @@ def search(item,texto):
         imagen = ""
         scrapedplot = match[0]   
         scrapedplot=strip_tags(scrapedplot)
-        itemlist.append( Item(channel=__channel__, action="detail_2", title=scrapedtitle+" [en unusual.net]" , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=__channel__, action="detail_2", title=scrapedtitle+" [en unusualporn.net]" , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
     
 
 	
