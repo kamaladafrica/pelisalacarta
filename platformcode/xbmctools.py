@@ -35,7 +35,7 @@ import xbmcplugin
 from core import config
 from core import logger
 from platformcode import library
-from channel import descargas
+from channels import descargas
 
 # Esto permite su ejecución en modo emulado
 try:
