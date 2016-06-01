@@ -680,8 +680,8 @@ def save_tvshow_in_file(serie):
     matches = re.compile(patron, re.DOTALL).findall(serie.show)
 
     if matches:
-        serie.infoLabels['title'] = matches[0]
-        serie.infoLabels['year'] = matches[1]
+        serie.infoLabels['title'] = matches[0][0]
+        serie.infoLabels['year'] = matches[0][1]
 
     if 'title' not in serie.infoLabels:
         serie.infoLabels['title'] = serie.show
@@ -953,8 +953,8 @@ def convert_xml_to_json():
                             matches = re.compile(patron, re.DOTALL).findall(tvshow)
 
                             if matches:
-                                serie.infoLabels['title'] = matches[0]
-                                serie.infoLabels['year'] = matches[1]
+                                serie.infoLabels['title'] = matches[0][0]
+                                serie.infoLabels['year'] = matches[0][1]
                             else:
                                 serie.infoLabels['title'] = tvshow
 
