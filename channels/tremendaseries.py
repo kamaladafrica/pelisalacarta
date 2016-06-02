@@ -82,10 +82,10 @@ def listadoSeries(item):
     nItemxPage = 28 if __modo_grafico__ else 100 # o los que haya en la pagina
     
     data0 = re.sub(r"\n|\r|\t|\s{2}|(<!--.*?-->)","",scrapertools.cache_page(item.url))
-    patron = '<div class="cont_portadas"(.*?)</div></div>'   
+    patron = '<div class="nuevos_caps"(.*?)</div></div>'
     data = scrapertools.find_single_match(data0,patron)   
 
-    patron  = '<div class="portada"><a href="([^"]+).*?' #url
+    patron  = '<div class="portadas_home">.*?href="([^"]+).*?' #url
     patron += 'title="([^"]+).*?' #titulo 
     patron += 'src=series([^&]+).*?' #thumbnail 
     matches = scrapertools.find_multiple_matches(data,patron)
@@ -99,9 +99,9 @@ def listadoSeries(item):
     for scrapedurl,scrapedtitle,scrapedthumbnail in matches:
         thumbnail = 'http://tremendaseries.com/screen' + scrapedthumbnail
         newItem = Item(channel=__channel__,action="listadoTemporadas", title=scrapedtitle.strip(),url=scrapedurl, thumbnail=thumbnail,
-                      text_color= color1, folder=True, fanart=fanart, show= scrapedtitle)                           
+                      text_color= color1, folder=True, fanart=fanart, show= scrapedtitle)
         itemlist.append (newItem)
-                      
+    logger.debug(str(len(itemlist)))
     # Obtenemos los datos basicos de todas las series mediante multihilos
     tmdb.set_infoLabels(itemlist, __modo_grafico__)
  
