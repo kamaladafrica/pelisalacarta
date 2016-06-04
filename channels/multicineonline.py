@@ -33,6 +33,7 @@ Tmdb_key ="2e2160006592024ba87ccdf78c28f49f"
 def isGeneric():
     return True
 
+
 def mainlist(item):
     logger.info("pelisalacarta.multicineonline mainlist")
     itemlist = []
@@ -65,7 +66,7 @@ def search(item,texto):
     else:
         item.url = "http://www.multicineonline.com/?s=%s" % (texto)
     try:
-        return scraper(item)
+        return buscador(item)
     # Se captura la excepciÛn, para no interrumpir al buscador global si un canal falla
     except:
         import sys
@@ -73,19 +74,17 @@ def search(item,texto):
             logger.error( "%s" % line )
         return []
 
-'''def buscador(item):
+def buscador(item):
     logger.info("pelisalacarta.sinluces buscador")
     itemlist = []
     
     
     
     # Descarga la página
-    data = scrapertools.cache_page(item.url)
+    data = dhe(scrapertools.cachePage(item.url))
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-    patron  = '<divclass="movie tooltip".*?<div class="imagen"> <img src="([^"]+)" '
-    patron += 'alt="(.*?)\((.*?)\)".*?'
-    patron += '<a href="([^"]+)"'
-    patron += '<span class="icon-grade"></span>([^<]+)</div>'
+    
+    patron = '<divclass="movie tooltip"title="<div class="tooltip-title">(.*?)\((.*?)\).*?src=".*?(www.multicine[^"]+)".*?<a href=".*?(www.multicine[^"]+)".*?<span class="icon-grade"></span>(.*?)</div>'
 
     matches = re.compile(patron,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
@@ -93,22 +92,34 @@ def search(item,texto):
         itemlist.append( Item(channel=__channel__, title="[COLOR gold][B]No hay resultados...[/B][/COLOR]", thumbnail ="http://s6.postimg.org/55zljwr4h/sinnoisethumb.png", fanart ="http://s6.postimg.org/avfu47xap/sinnoisefan.jpg",folder=False) )
 
 
-    for scrapedthumbnail, scrapedtitle,scrapedyear, scrapedurl, scrapedrate in matches:
-    
-    
-        scrapedtitle = scrapedtitle.replace(scrapedtitle,"[COLOR white]"+scrapedtitle+"[/COLOR]")
+    for  scrapedtitle,scrapedyear,scrapedthumbnail, scrapedurl, scrapedrate in matches:
+         title_fan = scrapedtitle.strip()
+         title_fan = re.sub(r'/.*','',title_fan)
+         scrapedrate=scrapedrate.strip()
+         if "N/A" in scrapedrate:
+             scrapedrate = "Sin puntuación"
+         scrapedrate = scrapedrate.replace(scrapedrate,"[COLOR blue][B]("+scrapedrate+")[/B][/COLOR]")
+         scrapedtitle = scrapedtitle + scrapedrate
+         scrapedtitle = scrapedtitle.replace(scrapedtitle,"[COLOR white]"+scrapedtitle+"[/COLOR]")
+         trailer = title_fan + " " + scrapedyear + " trailer"
+         trailer = urllib.quote(trailer)
         
-        
-        itemlist.append( Item(channel=__channel__, action="fanart", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail ,  viewmode="movie", extra=scrapedtitle, fanart="http://s30.postimg.org/4gugdsygx/sinlucesfan.jpg", folder=True) )
+         extra = title_fan+"|"+scrapedyear+"|"+trailer
+         itemlist.append( Item(channel=__channel__, action="fanart", title=scrapedtitle , url="http://"+scrapedurl , thumbnail="http://"+scrapedthumbnail ,  viewmode="movie", extra=extra, fanart="http://s30.postimg.org/4gugdsygx/sinlucesfan.jpg", folder=True) )
 
-    return itemlist'''
+    return itemlist
 def peliculas(item,paginacion=True):
     logger.info("pelisalacarta.multicineonline peliculas")
     itemlist = []
    
     title ="Listado"
     title = title.replace(title,"[COLOR skyblue]"+title+"[/COLOR]")
-    itemlist.append( Item(channel=__channel__, title=title      , action="scraper", url=item.url, fanart="http://s6.postimg.org/mxrtns8lt/sinlucesfan2.jpg", thumbnail="http://s23.postimg.org/p1a2tyejv/sinlestthu.jpg"))
+    
+    if "HD" in item.title :
+       thumbnail = "https://cdn2.iconfinder.com/data/icons/windows-8-metro-style/512/hdtv.png"
+    else :
+       thumbnail ="http://www.buenostips.com/wp-content/uploads/2009/10/palomitas.png"
+    itemlist.append( Item(channel=__channel__, title=title      , action="scraper", url=item.url, fanart="http://s6.postimg.org/mxrtns8lt/sinlucesfan2.jpg", thumbnail=thumbnail))
     title ="Buscar"
     title = title.replace(title,"[COLOR skyblue]"+title+"[/COLOR]")
     itemlist.append( Item(channel=__channel__, title=title      , action="search", url=item.url,extra= "search", fanart="http://s22.postimg.org/3tz2v05ap/sinlbufan.jpg", thumbnail="http://s30.postimg.org/jhmn0u4jl/sinlbusthub.jpg"))
@@ -118,12 +129,12 @@ def scraper(item,paginacion=True):
     itemlist = []
    
     # Descarga la página
-    data = dhe( scrapertools.cachePage(item.url) )
+    data =scrapertools.cachePage(item.url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
     
-    patron = '<divclass="movie tooltip".*?title="(.*?)".*?<div class="imagen"> <img src="([^"]+)" '
+    patron = '<div class="movie tooltip".*?title="(.*?)".*?<div class="imagen"> <img src=".*?(www.multicine[^"]+)" '
     patron += 'alt="(.*?)\((.*?)\)".*?'
-    patron += '<a href="([^"]+)".*?'
+    patron += '<a href=".*?(www.multicine[^"]+)".*?'
     patron += '<span class="icon-grade"></span>([^<]+)</div>'
     
     
@@ -134,8 +145,13 @@ def scraper(item,paginacion=True):
     
     
     for scrapedidioma, scrapedthumbnail, scrapedtitle, scrapedyear, scrapedurl, scrapedrate in matches:
+        
         title_fan = scrapedtitle.strip()
         title_fan = re.sub(r'/.*','',title_fan)
+        title_fan = re.sub ("&#8211;.*","",title_fan)
+        title_fan = dhe(title_fan)
+        
+        scrapedtitle = dhe(scrapedtitle)
         scrapedrate=scrapedrate.strip()
         if "N/A" in scrapedrate:
            scrapedrate = "Sin puntuación"
@@ -152,7 +168,7 @@ def scraper(item,paginacion=True):
         trailer = urllib.quote(trailer)
 
         extra = title_fan+"|"+scrapedyear+"|"+trailer
-        itemlist.append( Item(channel=__channel__, action="fanart", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , extra= extra, viewmode="movie",  fanart="http://s6.postimg.org/mxrtns8lt/sinlucesfan2.jpg") )
+        itemlist.append( Item(channel=__channel__, action="fanart", title=scrapedtitle , url="http://"+scrapedurl , thumbnail="http://"+scrapedthumbnail , extra= extra, viewmode="movie",  fanart="http://s6.postimg.org/mxrtns8lt/sinlucesfan2.jpg") )
         
         
     
@@ -185,11 +201,12 @@ def fanart(item):
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
     year = item.extra.split("|")[1]
     title = item.extra.split("|")[0]
+    title = re.sub(r"-.*?","",title)
     trailer = item.extra.split("|")[2]
     title_info = title
     item.title  = title
     item.title = item.title.replace(item.title,"[COLOR deepskyblue][B]"+item.title+"[/B][/COLOR]")
-    title= re.sub(r"3D|SBS|-|\(.*?\)","",title)
+    title= re.sub(r"3D|SBS|\(.*?\)","",title)
     title= title.replace('Ver','')
     title= title.replace('Online','')
     title= title.replace('Gratis','')
@@ -479,7 +496,7 @@ def trailer(item):
 def info(item):
     logger.info("pelisalacarta.multicineonline trailer")
     url=item.url
-    data = scrapertools.cachePage(url)
+    data = dhe(scrapertools.cachePage(url))
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
     
     title= item.plot
@@ -487,7 +504,7 @@ def info(item):
     title = title.title()
     title = title.replace(title,"[COLOR aqua][B]"+title+"[/B][/COLOR]")
     try:
-        plot = scrapertools.get_match(data,'<h2>Sinopsis.*?<p>([^<]+).*?</p>')
+        plot = scrapertools.get_match(data,'<h2>S.*?nopsis.*?<p>([^<]+).*?</p>')
         plot = plot.replace(plot,"[COLOR white][B]"+plot+"[/B][/COLOR]")
    
         plot = plot.replace("</span>","[CR]")
@@ -508,13 +525,18 @@ def info(item):
         info =""
         quit = "Pulsa"+" [COLOR orangered][B]INTRO [/B][/COLOR]"+ "para quitar"
     try:
-        scrapedinfo = scrapertools.get_match(data,'<b class="icon-bullhorn">(.*?)>Sinopsis</a>')
-        scrapedinfo = re.sub(r'</b> <a href="http.*?director.*?" rel="tag">','Director: ',scrapedinfo)
-        scrapedinfo = re.sub(r'<a href=.*?actor.*?" rel="tag">','Reparto: ',scrapedinfo)
+        scrapedinfo = scrapertools.get_match(data,'<b class="icon-bullhorn">(.*?)</div> <div class="xmll"><p class="tsll xcsd"><b class="icon-info-circle">')
+        
+        scrapedinfo = re.sub(r'</b>.*?<a href="http.*?director.*?" rel="tag">','Director: ',scrapedinfo)
+        scrapedinfo = re.sub(r'<b class="icon-star"></b>','  -Reparto: ',scrapedinfo)
         scrapedinfo = re.sub(r'</a>, Reparto:',',',scrapedinfo)
-        scrapedinfo = re.sub(r'<b class="icon-check"></b>','Año: ',scrapedinfo)
-        scrapedinfo = re.sub(r'<b class="icon-trophy">','Premios: ',scrapedinfo)
+        scrapedinfo = re.sub(r'</a> </p></div> <div class="xmll"><p class="xcsd"><b class="icon-check"></b> ','  -Año: ',scrapedinfo)
+        scrapedinfo = re.sub(r'</p></div> <div class="xmll"><p class="xcsd"><b class="icon-trophy"></b>','  -Premios: ',scrapedinfo)
         scrapedinfo = re.sub(r'</a></p></div><div class="xmll"><p class="xcsd">|<b class="icon-star">|</b>|</p></div><div class="xmll"><p class="xcsd">|</p></div><div class="xmll"><p class="tsll xcsd"><b class="icon-info-circle"></b> <a href="#dato-2"','-',scrapedinfo)
+        scrapedinfo = re.sub(r'</a></p></div> <div class="xmll"><p class="xcsd">|--|<a href="http://www.multicineonline.com/actor/.*?/" rel="tag">|</a>|<a href="http://www.multicineonline.com/director/.*?/" rel="tag">','',scrapedinfo)
+        scrapedinfo= scrapedinfo.replace("</p>","-")
+        
+        
         
         infoformat = re.compile('(.*?:).*?-',re.DOTALL).findall(scrapedinfo)
         
@@ -524,8 +546,8 @@ def info(item):
         
         
         info = scrapedinfo
-        info = info.replace("---","")
-        info = info.replace("-"," ")
+        info= info.replace("-","")
+
     except:
         info = "[COLOR skyblue][B]Sin informacion adicional...[/B][/COLOR]"
     foto = item.show
@@ -533,7 +555,7 @@ def info(item):
     quit = "Pulsa"+" [COLOR blue][B]INTRO [/B][/COLOR]"+ "para quitar"
     ventana2 = TextBox1(title=title, plot=plot, info=info, thumbnail=photo, fanart=foto, quit= quit)
     ventana2.doModal()
-
+ACTION_GESTURE_SWIPE_LEFT = 511
 ACTION_SELECT_ITEM = 7
 class TextBox1( xbmcgui.WindowDialog ):
         """ Create a skinned textbox window """
@@ -577,7 +599,7 @@ class TextBox1( xbmcgui.WindowDialog ):
             self.show()
         
         def onAction(self, action):
-            if action == ACTION_SELECT_ITEM:
+            if action == ACTION_SELECT_ITEM or action == ACTION_GESTURE_SWIPE_LEFT:
                 self.close()
 
 def test():
