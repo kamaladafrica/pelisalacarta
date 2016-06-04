@@ -154,7 +154,7 @@ def series(item):
         patron = "^(?:Capitulos de: )(.*?)$"
         match = re.compile(patron, re.DOTALL).findall(scrapedtitle)
         title = scrapertools.decodeHtmlentities(match[0])
-        itemlist.append(Item(channel=__channel__, title=title, url=urlparse.urljoin(HOST, scrapedurl),
+        itemlist.append(Item(channel=__channel__, title=title, url=urlparse.urljoin(HOST, scrapedurl.replace("..", "")),
                              action="episodios", show=item.show, thumbnail=scrapedthumb, plot=""))
 
     return itemlist
@@ -177,7 +177,8 @@ def episodios(item):
     patron = '<div id="T1".*?'
     patron += "<img src='([^']+)'"
     matches = re.compile(patron, re.DOTALL).findall(data)
-    thumbnail = matches[0]
+    if len(matches) > 0:
+        thumbnail = matches[0]
 
     patron = "<a href='([^']+)'>(.*?)</a><idioma>(.*?)</idioma>"
     matches = re.compile(patron, re.DOTALL).findall(data)

@@ -6,8 +6,8 @@
             "serie", 
             "vos"
         ], 
-        "changes": "Arreglado la sección findVideos de seriesblanco", 
-        "date": "28/03/2016", 
+        "changes": "Cambio de dominio", 
+        "date": "05/04/2016", 
         "fanart": "", 
         "id": "seriesblanco", 
         "include_in_global_search": false, 
@@ -15,7 +15,7 @@
         "name": "Seriesblanco", 
         "thumbnail": "", 
         "update_url": "", 
-        "version": "10.0"
+        "version": "11.0"
     }, 
     "settings": {}
 }

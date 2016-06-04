@@ -24,11 +24,11 @@ FREE_SERVERS.extend(['vidbux','bitvidsx','vimeo','vk','watchfreeinhd','youtube']
 FREE_SERVERS.extend(['jumbofiles','nowvideo','streamcloud', 'dailymotion', 'vidbull'])
 FREE_SERVERS.extend(['nosvideo','videopremium','flashx','upafile', 'zippyshare'])
 FREE_SERVERS.extend(['fileflyer','tunepk','powvideo','mega','videomega','vidspot','netutv','rutube'])
-FREE_SERVERS.extend(['videozed','documentary', 'firedrive','videott','gamovideo'])
+FREE_SERVERS.extend(['videozed','documentary', 'firedrive','videott','gamovideo','cloudy','vidag'])
 FREE_SERVERS.extend(['torrent','video4you','mailru','streaminto','backin','akstream', 'speedvideo', 'junkyvideo', 'rapidvideo', 'realvid', 'cloudzilla', 'fakingstv'])
 FREE_SERVERS.extend(['cumlouder','v4y','streamable','videostoring','youwatch'])
 FREE_SERVERS.extend(['vodlocker','thevideome','rocvideo','vidxtreme','vidtome','vidzi','letwatch','sendvid','vkpass','okru','cnubis','yourupload','mp4upload','turbovideos','vimpleru','spruto','openload','idowatch','xvideos'])
-FREE_SERVERS.extend(['videowood','thevideos','uptobox','lolabits','streame','vidgg','allvid','vodbeast','clicknupload','streamplay'])
+FREE_SERVERS.extend(['videowood','thevideos','uptobox','streame','vidgg','allvid','vodbeast','clicknupload','streamplay','playwire','pcloud'])
 
 # Servidores no soportados, pero se ponen como free porque necesitas tener el patrón para poder informar
 FREE_SERVERS.extend(['cloudsix'])
@@ -39,7 +39,7 @@ PREMIUM_SERVERS = ['uploadedto','nowvideo','onefichier','filesmonster']
 # Lista de TODOS los servidores soportados por Filenium
 #FILENIUM_SERVERS = jsontools.load_json(urllib2.urlopen('http://filenium.com/domainsxbmc'))
 FILENIUM_SERVERS = []
-FILENIUM_SERVERS.extend(["nitroflare","lolabits","1fichier","mega","allmyvideos","cliphunter","dailymotion","divxstage","facebook","filefactory","filepost","filesmonster","firedrive","gigasize","keep2share","keep2share","letitbit","mediafire","metacafe","mitele","moevideos","netload","nowvideo","oboom","played","pornhub","rapidgator","shareflare","streamcloud","turbobit","uploadable","uploaded","uploaded","userporn","videoweed","vidspot","vimeo","vk","xenubox","youngpornvideos","youtube","zippyshare","lix","safelinking","linkto","2shared","4shared","hugefiles","nowdownload","tusfiles","uploading","uptobox"]);
+FILENIUM_SERVERS.extend(["nitroflare","1fichier","mega","allmyvideos","cliphunter","dailymotion","divxstage","facebook","filefactory","filepost","filesmonster","firedrive","gigasize","keep2share","keep2share","letitbit","mediafire","metacafe","mitele","moevideos","netload","nowvideo","oboom","played","pornhub","rapidgator","shareflare","streamcloud","turbobit","uploadable","uploaded","uploaded","userporn","videoweed","vidspot","vimeo","vk","xenubox","youngpornvideos","youtube","zippyshare","lix","safelinking","linkto","2shared","4shared","hugefiles","nowdownload","tusfiles","uploading","uptobox"]);
 
 # Lista de TODOS los servidores soportados por Real-Debrid
 REALDEBRID_SERVERS = ['one80upload','tenupload','onefichier','onehostclick','twoshared','fourfastfile','fourshared','abc','asfile','badongo','bitshare','cbscom','crocko','cwtv','dailymotion','dateito',

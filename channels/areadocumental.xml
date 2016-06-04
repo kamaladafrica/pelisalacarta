@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<channel>
+	<id>areadocumental</id>
+	<name>Area-Documental</name>
+	<language>es</language>
+	<update_url></update_url>
+	<active>true</active>
+	<include_in_global_search>true</include_in_global_search>
+	<version>1</version>
+	<adult>false</adult>
+	<date>15/04/2016</date>
+	<changes>Primera version</changes>
+	<fanart></fanart>
+	<thumbnail>http://i.imgur.com/Kxuf5ZS.png?1</thumbnail>
+	<categories>
+		<category>documentary</category>
+	</categories>
+</channel>

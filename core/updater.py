@@ -326,7 +326,7 @@ def download_channel(channel_name):
     # Descarga el canal
     updated_channel_data = scrapertools.cachePage( remote_channel_url )
     try:
-        outfile = open(local_channel_path,"w")
+        outfile = open(local_channel_path,"wb")
         outfile.write(updated_channel_data)
         outfile.flush()
         outfile.close()

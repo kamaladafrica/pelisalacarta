@@ -358,7 +358,7 @@ def episodios(item):
     logger.info("pelisalacarta.channels.tvvip episodios")
     itemlist = []
     # Redirección para actualización de biblioteca
-    if item.category != "tvvip":
+    if item.category != "":
         itemlist = series_library(item)
         return itemlist
 
@@ -480,7 +480,7 @@ def findvideos(item):
         url_default = "http://"+transcoder+".tv-vip.com/transcoder/"+id+"/default/"+id+head
         title = "Ver vídeo en  ["+data["videoResolution"].replace('1920x1080','HD-1080p')+"] "+data["sizeHuman"]
         if not url_default in urls: itemlist.insert(0, Item(channel=__channel__, action='play', server='directo', title=title , url=url_default , thumbnail=item.thumbnail, fanart=item.fanart, fulltitle=item.fulltitle, plot=item.plot, folder=False) )
-    if len(itemlist) > 0 and item.category == "tvvip":
+    if len(itemlist) > 0 and item.category == "":
         if config.get_library_support():
             itemlist.append( Item(channel=__channel__, title="[COLOR green]Añadir enlaces a la biblioteca[/COLOR]", url=item.url, action="add_pelicula_to_library", fulltitle=item.fulltitle))
  
