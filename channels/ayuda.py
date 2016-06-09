@@ -9,6 +9,8 @@ from channels import youtube_channel
 from core import config
 from core import logger
 from core.item import Item
+import xbmc, os
+from platformcode import platformtools
 
 CHANNELNAME = "ayuda"
 
@@ -26,7 +28,7 @@ def mainlist(item):
         itemlist.append(Item(channel=CHANNELNAME, action="force_creation_advancedsettings",
                              title="Crear fichero advancedsettings.xml optimizado"))
         cuantos += cuantos
-        
+
     if config.is_xbmc():
         itemlist.append(Item(channel=CHANNELNAME, action="updatebiblio",
                              title="Buscar nuevos episodios y actualizar biblioteca"))
@@ -55,19 +57,18 @@ def tutoriales(item):
 def force_creation_advancedsettings(item):
 
     # Ruta del advancedsettings
-    import xbmc,os
-    from platformcode import platformtools
+
     advancedsettings = xbmc.translatePath("special://userdata/advancedsettings.xml")
 
     # Copia el advancedsettings.xml desde el directorio resources al userdata
     fichero = open(os.path.join(config.get_runtime_path(), "resources", "advancedsettings.xml"))
     texto = fichero.read()
     fichero.close()
-    
+
     fichero = open(advancedsettings, "w")
     fichero.write(texto)
     fichero.close()
-                
+
     platformtools.dialog_ok("plugin", "Se ha creado un fichero advancedsettings.xml","con la configuración óptima para el streaming.")
 
     return []
@@ -75,7 +76,9 @@ def force_creation_advancedsettings(item):
 
 def updatebiblio(item):
     logger.info("pelisalacarta.channels.ayuda updatebiblio")
+    platformtools.dialog_notification("plugin", "Actualizando biblioteca...")
     import library_service
     library_service.main()
 
+    # FIXME Bucle de actualizaciones!!!
     return []
