@@ -148,7 +148,7 @@ def peliculas(item):
         matches = scrapertools.find_multiple_matches(match, patron)
 
         for scrapedurl, scrapedtitle, scrapedthumbnail, idiomas, calidad in matches:
-            title = scrapedtitle + "    ["
+            title = scrapedtitle + "  ["
             if '<div class="esp">' in idiomas:
                 title += "ESP/"
             if '<div class="lat">' in idiomas:
@@ -163,7 +163,7 @@ def peliculas(item):
                 title = title[:-1]
             if "span" in calidad:
                 calidad = scrapertools.find_single_match(calidad, '<span[^>]+>([^<]+)<')
-                title += "   (" + calidad.strip() + ")"
+                title += " (" + calidad.strip() + ")"
 
         if DEBUG:
             logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, scrapedurl, scrapedthumbnail))
