@@ -39,6 +39,14 @@
 		<visible>true</visible>
 	</settings>
 	<settings>
+		<id>include_in_newest_documentales</id>
+		<type>bool</type>
+		<label>Incluir en Novedades - Documentales</label>
+		<default>true</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
+	<settings>
 		<id>modo_grafico</id>
 		<type>bool</type>
 		<label>Buscar información extra</label>
@@ -80,5 +88,16 @@
 		<lvalues>Solo Descarga</lvalues>
 		<lvalues>Solo Online</lvalues>
 		<lvalues>No filtrar</lvalues>
+	</settings>
+	<settings>
+		<id>viewmode</id>
+		<type>list</type>
+		<label>Elegir vista por defecto (Confluence)...</label>
+		<default>2</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+		<lvalues>Sinopsis</lvalues>
+		<lvalues>Miniatura</lvalues>
+		<lvalues>Lista</lvalues>
 	</settings>
 </channel>

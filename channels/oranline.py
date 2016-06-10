@@ -41,6 +41,8 @@ host = "http://www.oranline.com/"
 parameters = channeltools.get_channel_parameters(__channel__)
 fanart = parameters['fanart']
 thumbnail_host = parameters['thumbnail']
+viewmode_options = {0: 'movie_with_plot', 1: 'movie', 2: 'list'}
+viewmode = viewmode_options[config.get_setting('viewmode', __channel__)]
 
 
 def isGeneric():
@@ -53,7 +55,7 @@ def mainlist(item):
     itemlist = []
 
     itemlist.append(Item(channel=__channel__, title="Películas", text_color=color2, fanart=fanart, folder=False,
-                         thumbnail=thumbnail_host, text_blod=True))
+                         thumbnail=thumbnail_host, text_blod=True, viewmode=viewmode))
     itemlist.append(Item(channel=__channel__, action="peliculas", title="      Novedades",
                          text_color=color1, fanart=fanart, url=urlparse.urljoin(host, "ultimas-peliculas-online/"),
                          thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/Directors%20Chair.png"))
@@ -114,6 +116,13 @@ def newest(categoria):
             if itemlist[-1].action == "peliculas":
                 itemlist.pop()
 
+        if categoria == 'documentales':
+            item.url = urlparse.urljoin(host, "category/documental/")
+            itemlist = peliculas(item)
+
+            if itemlist[-1].action == "peliculas":
+                itemlist.pop()
+
     # Se captura la excepción, para no interrumpir al canal novedades si un canal falla
     except:
         import sys
@@ -165,10 +174,13 @@ def peliculas(item):
 
         new_item = Item(channel=__channel__, action="findvideos", title=title, url=scrapedurl,
                         thumbnail=scrapedthumbnail, fulltitle=scrapedtitle, infoLabels={'filtro': filtro_list},
-                        contentTitle=scrapedtitle, context="0", text_color=color1)
+                        contentTitle=scrapedtitle, context="0", text_color=color1, viewmode=viewmode)
         itemlist.append(new_item)
 
-    tmdb.set_infoLabels(itemlist, __modo_grafico__)
+    try:
+        tmdb.set_infoLabels(itemlist, __modo_grafico__)
+    except:
+        pass
 
     next_page = scrapertools.find_single_match(data, '<a href="([^"]+)"\s+><span [^>]+>&raquo;</span>')
     if next_page != "":
@@ -182,8 +194,8 @@ def generos(item):
     logger.info("pelisalacarta.channels.oranline generos")
     itemlist = []
 
-    genres = {'Deporte':'3/Sports%20Film.jpg', 'Película de la televisión':'3/Tv%20Movie.jpg',
-             'Estrenos de cine':'0/New%20Releases.png', 'Estrenos dvd y hd':'0/HDDVD%20Bluray.png'}
+    genres = {'Deporte': '3/Sports%20Film.jpg', 'Película de la televisión': '3/Tv%20Movie.jpg',
+              'Estrenos de cine': '0/New%20Releases.png', 'Estrenos dvd y hd': '0/HDDVD%20Bluray.png'}
     # Descarga la página
     data = scrapertools.downloadpage(item.url)
 
@@ -197,16 +209,19 @@ def generos(item):
         title = scrapedtitle + " (" + cuantas + ")"
         name_thumb = scrapertools.slugify(scrapedtitle)
         if scrapedtitle == "Foreign" or scrapedtitle == "Suspense" or scrapedtitle == "Thriller":
-            thumbnail = "https://raw.githubusercontent.com/master-1970/resources/master/images/genres/2/%s.jpg" % name_thumb.capitalize()
+            thumbnail = "https://raw.githubusercontent.com/master-1970/resources/master/images/genres/2/%s.jpg" \
+                        % name_thumb.capitalize()
         elif scrapedtitle in genres:
-            thumbnail = "https://raw.githubusercontent.com/master-1970/resources/master/images/genres/%s" % genres[scrapedtitle]
+            thumbnail = "https://raw.githubusercontent.com/master-1970/resources/master/images/genres/%s" \
+                        % genres[scrapedtitle]
         else:
-            thumbnail = "https://raw.githubusercontent.com/master-1970/resources/master/images/genres/1/%s.jpg" % name_thumb.replace("-", "%20")
+            thumbnail = "https://raw.githubusercontent.com/master-1970/resources/master/images/genres/1/%s.jpg" \
+                        % name_thumb.replace("-", "%20")
 
         if DEBUG:
             logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, scrapedurl, thumbnail))
         itemlist.append(Item(channel=__channel__, action="peliculas", title=title, url=scrapedurl, thumbnail=thumbnail,
-                             folder=True, text_color=color2, fanart=fanart))
+                             folder=True, text_color=color2, fanart=fanart, viewmode=viewmode))
     return itemlist
 
 
@@ -224,31 +239,37 @@ def findvideos(item):
 
     data = scrapertools.downloadpage(item.url)
     year = scrapertools.find_single_match(data, 'Año de lanzamiento.*?href.*?>(\d+)</a>')
-    item.infoLabels['filtro'] = ""
-    item.infoLabels['year'] = int(year)
+
+    if year != "":
+        item.infoLabels['filtro'] = ""
+        item.infoLabels['year'] = int(year)
+
     item.infoLabels['title'] = item.fulltitle
     # Ampliamos datos en tmdb
-    tmdb.set_infoLabels(item, __modo_grafico__)
-    
+    try:
+        tmdb.set_infoLabels(item, __modo_grafico__)
+    except:
+        pass
+
     if item.infoLabels['plot'] == "":
         plot = scrapertools.find_single_match(data, '<h2>Sinopsis</h2>.*?>(.*?)</p>')
         item.infoLabels['plot'] = plot
 
     if filtro_enlaces != 0:
         itemlist.append(item.clone(channel=__channel__, action="",
-                                   title="Enlaces Online", text_color=color1, text_blod=True,
+                                   title="Enlaces Online", text_color=color1, text_blod=True, viewmode="list",
                                    folder=False))
         itemlist.extend(bloque_enlaces(data, filtro_idioma, dict_idiomas, "online", item))
     if filtro_enlaces != 1:
-        itemlist.append(item.clone(channel=__channel__, action="",
-                                   title="Enlaces Descarga", text_color=color1, text_blod=True,
-                                   folder=False))
+        itemlist.append(item.clone(channel=__channel__, action="", title="Enlaces Descarga", text_color=color1,
+                                   text_blod=True, viewmode="list", folder=False))
         itemlist.extend(bloque_enlaces(data, filtro_idioma, dict_idiomas, "descarga", item))
 
     # Opción "Añadir esta película a la biblioteca de XBMC"
     if config.get_library_support() and item.category != "Cine":
-        itemlist.append(item.clone(title="Añadir película a la biblioteca", text_color="gold", action="add_pelicula_to_library"))
-                                   
+        itemlist.append(item.clone(title="Añadir enlaces a la biblioteca", text_color="gold", viewmode="list",
+                                   action="add_pelicula_to_library"))
+
     return itemlist
 
 
@@ -276,12 +297,12 @@ def bloque_enlaces(data, filtro_idioma, dict_idiomas, type, item):
                 title = "Mirror en " + server + " (" + language + ") (Calidad " + calidad.strip() + ")"
                 if filtro_idioma == 4 or item.filtro:
                     list.append(item.clone(title=title, action="play", server=server, text_color=color2,
-                                               url=scrapedurl, idioma=language))
+                                           url=scrapedurl, idioma=language, viewmode="list"))
                 else:
                     idioma = dict_idiomas[language]
                     if idioma == filtro_idioma:
-                        list.append(item.clone(title=title, text_color=color2,
-                                                   action="play", url=scrapedurl, server=server))
+                        list.append(item.clone(title=title, text_color=color2, action="play", url=scrapedurl,
+                                               server=server, viewmode="list"))
                     else:
                         if language not in filtrados: filtrados.append(language)
             except:
@@ -292,10 +313,11 @@ def bloque_enlaces(data, filtro_idioma, dict_idiomas, type, item):
             title = "Mostrar enlaces filtrados en %s" % ", ".join(filtrados)
             list.append(
                     item.clone(title=title, action="findvideos", url=item.url, text_color=color3,
-                               filtro=True, folder=True))
+                               filtro=True, viewmode="list", folder=True))
 
     if len(list) == 0:
-        list.append(item.clone(title="No hay enlaces disponibles", action="", text_color=color3, folder=False))
+        list.append(item.clone(title="No hay enlaces disponibles", action="", text_color=color3, viewmode="list",
+                               folder=False))
 
     return list
 
