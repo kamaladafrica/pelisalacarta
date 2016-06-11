@@ -36,7 +36,6 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     header_down = "|User-Agent="+headers['User-Agent']+"|"
 
     from aadecode import decode as aadecode
-    urls_check = []
     if "videocontainer" not in data:
         url = page_url.replace("/embed/","/f/")
         data = scrapertools.downloadpageWithoutCookies(url)
@@ -49,20 +48,16 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
         video_urls.append([ extension + " [Openload]", videourl+header_down+extension])
     else:
         text_encode = scrapertools.find_multiple_matches(data,'<script type="text/javascript">(ﾟωﾟ.*?)</script>')
-        # Se descodifican todos los script para dar con el correcto
-        for text in text_encode:
-            text_decode = aadecode(text)
-            if "#videooverlay" not in text_decode:
-                videourl = scrapertools.get_match(text_decode, "(http.*?true)")
-                urls_check.append(videourl)
-
-        # Se busca la url que no se repite
-        index = [i for i, url in enumerate(urls_check) if urls_check.count(url) == 1][0]
-        videourl = urls_check[index]
+        # Buscamos la variable que nos indica el script correcto
+        subtract = scrapertools.find_single_match(data, 'welikekodi_ya_rly = ([^;]+)')
+        index = eval(subtract)
+        text_decode = aadecode(text_encode[index])
+        videourl = scrapertools.get_match(text_decode, "(http.*?true)")
+     
         videourl = scrapertools.get_header_from_response(videourl, header_to_get="location")
         videourl = videourl.replace("https://","http://").replace("?mime=true","")
         extension = videourl[-4:]
-        video_urls.append([ extension + " [Openload]", videourl+header_down+extension, 0, subtitle])
+        video_urls.append([extension + " [Openload] ", videourl+header_down+extension, 0, subtitle])
 
     for video_url in video_urls:
         logger.info("pelisalacarta.servers.openload %s - %s" % (video_url[0],video_url[1]))
