@@ -292,7 +292,7 @@ def findvideos(item):
 def bloque_enlaces(data, filtro_idioma, dict_idiomas, type, item):
     logger.info("pelisalacarta.channels.cinetux bloque_enlaces")
 
-    list = []
+    lista_enlaces = []
 
     matches = []
     if type == "online":
@@ -330,12 +330,12 @@ def bloque_enlaces(data, filtro_idioma, dict_idiomas, type, item):
             title = "Mirror en " + server + " (" + language + ") (Calidad " + match[3].strip() + ")"
 
         if filtro_idioma == 3 or item.filtro:
-            list.append(item.clone(title=title, action="play", server=server, text_color=color2, url=scrapedurl,
+            lista_enlaces.append(item.clone(title=title, action="play", server=server, text_color=color2, url=scrapedurl,
                                    idioma=language, viewmode="list"))
         else:
             idioma = dict_idiomas[language]
             if idioma == filtro_idioma:
-                list.append(item.clone(title=title, text_color=color2, action="play",  url=scrapedurl, server=server,
+                lista_enlaces.append(item.clone(title=title, text_color=color2, action="play",  url=scrapedurl, server=server,
                                        viewmode="list"))
             else:
                 if language not in filtrados: filtrados.append(language)
@@ -343,10 +343,10 @@ def bloque_enlaces(data, filtro_idioma, dict_idiomas, type, item):
     if filtro_idioma != 3:
         if len(filtrados) > 0:
             title = "Mostrar enlaces filtrados en %s" % ", ".join(filtrados)
-            list.append(item.clone(title=title, action="findvideos", url=item.url, text_color=color3, filtro=True,
+            lista_enlaces.append(item.clone(title=title, action="findvideos", url=item.url, text_color=color3, filtro=True,
                                    viewmode="list", folder=True))
 
-    return list
+    return lista_enlaces
 
 
 def play(item):
