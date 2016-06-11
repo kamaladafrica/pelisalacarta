@@ -6,10 +6,10 @@
 	<update_url></update_url>
 	<active>true</active>
 	<include_in_global_search>true</include_in_global_search>
-	<version>2</version>
+	<version>3</version>
 	<adult>false</adult>
-	<date>19/03/2016</date>
-	<changes>Reparado porque la web ahora utiliza cloudflare. Se adapta el canal para la biblioteca.</changes>
+	<date>11/06/2016</date>
+	<changes>fix en la busqeuda</changes>
 	<fanart></fanart>
 	<thumbnail>http://i.imgur.com/ZhQknRE.png</thumbnail>
 	<bannermenu>http://i.imgur.com/9QbipUn.png</bannermenu>
