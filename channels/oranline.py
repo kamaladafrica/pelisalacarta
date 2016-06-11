@@ -283,7 +283,7 @@ def findvideos(item):
 def bloque_enlaces(data, filtro_idioma, dict_idiomas, type, item):
     logger.info("pelisalacarta.channels.oranline bloque_enlaces")
 
-    list = []
+    lista_enlaces = []
     bloque = scrapertools.find_single_match(data, '<div id="' + type + '">(.*?)</table>')
     patron = 'tr>[^<]+<td>.*?href="([^"]+)".*?<span>([^<]+)</span>' \
              '.*?<td>([^<]+)</td>.*?<td>([^<]+)</td>'
@@ -303,12 +303,12 @@ def bloque_enlaces(data, filtro_idioma, dict_idiomas, type, item):
                 servers_module = __import__("servers." + server)
                 title = "Mirror en " + server + " (" + language + ") (Calidad " + calidad.strip() + ")"
                 if filtro_idioma == 4 or item.filtro:
-                    list.append(item.clone(title=title, action="play", server=server, text_color=color2,
+                    lista_enlaces.append(item.clone(title=title, action="play", server=server, text_color=color2,
                                            url=scrapedurl, idioma=language, viewmode="list"))
                 else:
                     idioma = dict_idiomas[language]
                     if idioma == filtro_idioma:
-                        list.append(item.clone(title=title, text_color=color2, action="play",
+                        lista_enlaces.append(item.clone(title=title, text_color=color2, action="play",
                                     url=scrapedurl, server=server, viewmode="list"))
                     else:
                         if language not in filtrados: filtrados.append(language)
@@ -318,10 +318,10 @@ def bloque_enlaces(data, filtro_idioma, dict_idiomas, type, item):
     if filtro_idioma != 4:
         if len(filtrados) > 0:
             title = "Mostrar enlaces filtrados en %s" % ", ".join(filtrados)
-            list.append(item.clone(title=title, action="findvideos", url=item.url, text_color=color3,
+            lista_enlaces.append(item.clone(title=title, action="findvideos", url=item.url, text_color=color3,
                                    filtro=True, viewmode="list", folder=True))
 
-    return list
+    return lista_enlaces
 
 
 def play(item):
