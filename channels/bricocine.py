@@ -153,7 +153,7 @@ def search(item, texto):
         return []
 
 
-def peliculas(item, texto):
+def peliculas(item, texto=""):
     logger.info("pelisalacarta.bricocine peliculas")
     itemlist = []
 
@@ -242,6 +242,7 @@ def peliculas(item, texto):
                              fanart="http://s6.postimg.org/uie8tu1jl/briconoisefan.jpg", folder=False))
 
     for tag, scrapedurl, scrapedthumbnail, scrapedcreatedate, scrapedtitle in matches:
+        # fix para el buscador para que no muestre entradas con texto que no es correcto
         if texto.lower() not in scrapedtitle.lower():
             continue
 
