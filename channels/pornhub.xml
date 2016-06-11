@@ -6,19 +6,26 @@
 	<active>true</active>
 	<adult>true</adult>
 	<language>es</language>
-	<include_in_global_search>disabled</include_in_global_search>
 	
-	<fanart></fanart>
+	<fanart>http://i.imgur.com/PwFvoss.jpg</fanart>
 	<thumbnail>http://s22.postimg.org/5lzcocfqp/pornhub_logo.jpg</thumbnail>
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/pornhub.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>2</version>
-	<date>09/11/15</date>
-	<changes>Update por cambios en la web</changes>
+	<version>3</version>
+	<date>16/05/2016</date>
+	<changes>Añadido buscador, corregidos enlaces y mejora del codigo</changes>
 
 	<categories>
 		<category>adult</category>
 		<category>movie</category>
 	</categories>
+  <settings>
+		<id>include_in_global_search</id>
+		<type>bool</type>
+		<label>Incluir en busqueda global</label>
+		<default>true</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
 </channel>

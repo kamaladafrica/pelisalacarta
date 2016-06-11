@@ -13,13 +13,6 @@ from core import logger
 from core import scrapertools
 from core.item import Item
 
-__channel__ = "xhamster"
-__category__ = "X"
-__type__ = "generic"
-__title__ = "xHamster"
-__language__ = "ES"
-__adult__ = "true"
-
 DEBUG = config.get_setting("debug")
 
 def isGeneric():
@@ -28,10 +21,10 @@ def isGeneric():
 def mainlist(item):
     logger.info("pelisalacarta.channels.xhamster mainlist")
     itemlist = []
-    itemlist.append( Item(channel=__channel__, action="videos"      , title="Útimos vídeos" , url="http://es.xhamster.com/"))
-    itemlist.append( Item(channel=__channel__, action="categorias"    , title="Categorías"))
-    itemlist.append( Item(channel=__channel__, action="votados"    , title="Más votados"))
-    itemlist.append( Item(channel=__channel__, action="search"    , title="Buscar", url="http://xhamster.com/search.php?q=%s&qcat=video"))
+    itemlist.append( Item(channel=item.channel, action="videos"      , title="Útimos vídeos" , url="http://es.xhamster.com/"))
+    itemlist.append( Item(channel=item.channel, action="categorias"    , title="Categorías"))
+    itemlist.append( Item(channel=item.channel, action="votados"    , title="Más votados"))
+    itemlist.append( Item(channel=item.channel, action="search"    , title="Buscar", url="http://xhamster.com/search.php?q=%s&qcat=video"))
     return itemlist
 
 # REALMENTE PASA LA DIRECCION DE BUSQUEDA
@@ -57,12 +50,28 @@ def videos(item):
     itemlist = []
 
     data = scrapertools.get_match(data,'<div class="boxC videoList clearfix">(.*?)<div id="footer">')
+    
+    #Patron #1
     patron = '<div class="video"><a href="([^"]+)" class="hRotator">'+"<img src='([^']+)' class='thumb'"+' alt="([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedthumbnail,scrapedtitle in matches:
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")            
-        itemlist.append( Item(channel=__channel__, action="detail" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, folder=True, viewmode="movie"))
+        itemlist.append( Item(channel=item.channel, action="detail" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, folder=True, viewmode="movie"))
 		
+		#Patron #2
+    patron = '<a href="([^"]+)"  data-click="[^"]+" class="hRotator"><img src=\'([^\']+)\' class=\'thumb\' alt="([^"]+)"/>'
+    matches = re.compile(patron,re.DOTALL).findall(data)
+    for scrapedurl,scrapedthumbnail,scrapedtitle in matches:
+        if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")            
+        itemlist.append( Item(channel=item.channel, action="detail" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, folder=True, viewmode="movie"))
+
+
+    #Paginador
+    patron = "<a href='([^']+)' class='last colR'><div class='icon iconPagerNextHover'></div>Próximo</a>"
+    matches = re.compile(patron,re.DOTALL).findall(data)  
+    if len(matches) >0:
+      itemlist.append( Item(channel=item.channel, action="videos", title="Página Siguiente" , url=matches[0] , thumbnail="" , folder=True) )
+
     return itemlist
 
 # SECCION ENCARGADA DE VOLCAR EL LISTADO DE CATEGORIAS CON EL LINK CORRESPONDIENTE A CADA PAGINA
@@ -71,19 +80,19 @@ def categorias(item):
     logger.info("pelisalacarta.channels.xhamster categorias")
     itemlist = []
 
-    itemlist.append( Item(channel=__channel__, action="lista" , title="Heterosexual", url="http://es.xhamster.com/channels.php"))
-    itemlist.append( Item(channel=__channel__, action="lista" , title="Transexuales"  , url="http://es.xhamster.com/channels.php"))
-    itemlist.append( Item(channel=__channel__, action="lista" , title="Gays"  , url="http://es.xhamster.com/channels.php"))
+    itemlist.append( Item(channel=item.channel, action="lista" , title="Heterosexual", url="http://es.xhamster.com/channels.php"))
+    itemlist.append( Item(channel=item.channel, action="lista" , title="Transexuales"  , url="http://es.xhamster.com/channels.php"))
+    itemlist.append( Item(channel=item.channel, action="lista" , title="Gays"  , url="http://es.xhamster.com/channels.php"))
     return itemlist
 
 def votados(item):
     logger.info("pelisalacarta.channels.xhamster categorias")
     itemlist = []
 
-    itemlist.append( Item(channel=__channel__, action="videos" , title="Día", url="http://es.xhamster.com/rankings/daily-top-videos.html"))
-    itemlist.append( Item(channel=__channel__, action="videos" , title="Semana"  , url="http://es.xhamster.com/rankings/weekly-top-videos.html"))
-    itemlist.append( Item(channel=__channel__, action="videos" , title="Mes"  , url="http://es.xhamster.com/rankings/monthly-top-videos.html"))
-    itemlist.append( Item(channel=__channel__, action="videos" , title="De siempre"  , url="http://es.xhamster.com/rankings/alltime-top-videos.html"))
+    itemlist.append( Item(channel=item.channel, action="videos" , title="Día", url="http://es.xhamster.com/rankings/daily-top-videos.html"))
+    itemlist.append( Item(channel=item.channel, action="videos" , title="Semana"  , url="http://es.xhamster.com/rankings/weekly-top-videos.html"))
+    itemlist.append( Item(channel=item.channel, action="videos" , title="Mes"  , url="http://es.xhamster.com/rankings/monthly-top-videos.html"))
+    itemlist.append( Item(channel=item.channel, action="videos" , title="De siempre"  , url="http://es.xhamster.com/rankings/alltime-top-videos.html"))
     return itemlist
 
 def lista(item):
@@ -106,7 +115,7 @@ def lista(item):
     logger.info(data)
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl, scrapedtitle in matches:
-        itemlist.append( Item(channel=__channel__, action="videos", title=scrapedtitle, url=scrapedurl, folder=True) )
+        itemlist.append( Item(channel=item.channel, action="videos", title=scrapedtitle, url=scrapedurl, folder=True) )
     
     sorted_itemlist = sorted(itemlist, key=lambda Item: Item.title)
     return sorted_itemlist
@@ -124,7 +133,7 @@ def detail(item):
     for url in matches:
         url = url.replace("\\", "")
         logger.debug("url="+url)
-        itemlist.append( Item(channel=__channel__, action="play" , title=item.title + " 240p", fulltitle=item.fulltitle , url=url, thumbnail=item.thumbnail, server="directo", folder=False))
+        itemlist.append( Item(channel=item.channel, action="play" , title=item.title + " 240p", fulltitle=item.fulltitle , url=url, thumbnail=item.thumbnail, server="directo", folder=False))
 		
     patron = 'sources:.*?"480p":"([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
@@ -132,7 +141,7 @@ def detail(item):
 		for url in matches:
 			url = url.replace("\\", "")
 			logger.debug("url="+url)
-			itemlist.append( Item(channel=__channel__, action="play" , title=item.title + " 480p", fulltitle=item.fulltitle , url=url, thumbnail=item.thumbnail, server="directo", folder=False))
+			itemlist.append( Item(channel=item.channel, action="play" , title=item.title + " 480p", fulltitle=item.fulltitle , url=url, thumbnail=item.thumbnail, server="directo", folder=False))
 
     patron = 'sources:.*?"720p":"([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
@@ -140,7 +149,7 @@ def detail(item):
 		for url in matches:
 			url = url.replace("\\", "")
 			logger.debug("url="+url)
-			itemlist.append( Item(channel=__channel__, action="play" , title=item.title + " 720p", fulltitle=item.fulltitle , url=url, thumbnail=item.thumbnail, server="directo", folder=False))
+			itemlist.append( Item(channel=item.channel, action="play" , title=item.title + " 720p", fulltitle=item.fulltitle , url=url, thumbnail=item.thumbnail, server="directo", folder=False))
     return itemlist
 
 

@@ -3,42 +3,58 @@
 # pelisalacarta - XBMC Plugin
 # Canal para beeg.com
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-# Por aampudia
 #------------------------------------------------------------
-
-#Propiedades del Canal:
-__active__ = True
-__adult__ = True
-__category__ = "X,F"
-__changes__ = "Canal Corregido: Utilizando API"
-__channel__ = "beeg"
-__creationdate__ = ""
-__date__ = "06/10/2015"
-__language__ = "ES"
-__thumbnail__ = ""
-__title__ = "Beeg"
-__type__ = "generic"
-__version__ = 3
 
 import re
 import sys
-
-from core import config
+import urllib
 from core import logger
+from core import config
 from core import scrapertools
 from core.item import Item
 
 DEBUG = config.get_setting("debug")
+
+url_api = ""
+beeg_salt = ""
+
+def get_api_url():
+  global url_api
+  global beeg_salt
+  data = scrapertools.downloadpage("http://beeg.com")
+  version = re.compile('<script src="//static.beeg.com/cpl/([\d]+).js"').findall(data)[0]
+  js_url  = "http:" + re.compile('<script src="(//static.beeg.com/cpl/[\d]+.js)"').findall(data)[0]
+  url_api = "https://api2.beeg.com/api/v6/"+ version
+  data = scrapertools.downloadpage(js_url)
+  beeg_salt = re.compile('beeg_salt="([^"]+)"').findall(data)[0]
+
+  
+def decode(key):
+  a = beeg_salt
+  e = unicode(urllib.unquote(key), "utf8")
+  t = len(a)
+  o =""
+  for n in range(len(e)):
+    r= ord(e[n:n+1])
+    i =  n % t
+    s = ord(a[i:i+1]) % 21
+    o += chr(r-s)
+  
+  n=[o[(x -3) if x >=3 else 0:x] for x in range(len(o),0,-3)]
+  return "".join(n)
+
+get_api_url()
 
 def isGeneric():
     return True
 
 def mainlist(item):
     logger.info("[beeg.py] mainlist")
+    get_api_url()
     itemlist = []
-    itemlist.append( Item(channel=__channel__, action="videos"            , title="Útimos videos"       , url="http://beeg.com/api/v5/index/main/0/pc"))
-    itemlist.append( Item(channel=__channel__, action="listcategorias"    , title="Listado categorias"  , url="http://beeg.com/api/v5/index/main/0/pc"))
-    itemlist.append( Item(channel=__channel__, action="search"            , title="Buscar"              , url="http://beeg.com/api/v5/index/search/0/pc?query=%s" ))
+    itemlist.append( Item(channel=item.channel, action="videos"            , title="Útimos videos"       , url=url_api + "/index/main/0/pc"))
+    itemlist.append( Item(channel=item.channel, action="listcategorias"    , title="Listado categorias"  , url=url_api + "/index/main/0/pc"))
+    itemlist.append( Item(channel=item.channel, action="search"            , title="Buscar"              , url=url_api + "/index/search/0/pc?query=%s" ))
     return itemlist
 
 def videos(item):
@@ -51,15 +67,15 @@ def videos(item):
     
     for Video in JSONData["videos"]:
       thumbnail = "http://img.beeg.com/236x177/" + Video["id"].encode("utf8") +  ".jpg"
-      url = "https://api.beeg.com/api/v5/video/" + Video["id"].encode("utf8")
+      url = url_api + "/video/" + Video["id"].encode("utf8")
       title = Video["title"].encode("utf8")
-      itemlist.append( Item(channel=__channel__, action="play" , title=title , url=url, thumbnail=thumbnail, plot="", show="", viewmode="movie", folder=True))
+      itemlist.append( Item(channel=item.channel, action="play" , title=title , url=url, thumbnail=thumbnail, plot="", show="", viewmode="movie", folder=True))
       
     #Paginador
-    Actual = int(scrapertools.get_match(item.url,'http://beeg.com/api/v5/index/[^/]+/([0-9]+)/pc'))
+    Actual = int(scrapertools.get_match(item.url,url_api + '/index/[^/]+/([0-9]+)/pc'))
     if JSONData["pages"]-1 > Actual:
       scrapedurl = item.url.replace("/"+str(Actual)+"/", "/"+str(Actual+1)+"/")
-      itemlist.append( Item(channel=__channel__, action="videos", title="Página Siguiente" , url=scrapedurl , thumbnail="" , folder=True) )
+      itemlist.append( Item(channel=item.channel, action="videos", title="Página Siguiente" , url=scrapedurl , thumbnail="" , folder=True) )
 
 
     
@@ -74,10 +90,10 @@ def listcategorias(item):
     
     
     for Tag in JSONData["tags"]["popular"]:
-      url = "http://beeg.com/api/v5/index/tag/0/pc?tag=" + Tag.encode("utf8")
+      url = url_api + "/index/tag/0/pc?tag=" + Tag.encode("utf8")
       title = Tag.encode("utf8")
       title = title[:1].upper() + title[1:]
-      itemlist.append( Item(channel=__channel__, action="videos" , title=title , url=url, folder=True))
+      itemlist.append( Item(channel=item.channel, action="videos" , title=title , url=url, folder=True))
 
     return itemlist
   
@@ -94,12 +110,13 @@ def search(item,texto):
         for line in sys.exc_info():
             logger.error( "%s" % line )
         return []
-
+        
 def play(item):
     logger.info("[beeg.py] findvideos")
     itemlist = []
     import json
-    data = scrapertools.cache_page(item.url)  
+    data = scrapertools.downloadpage(item.url)  
+
     JSONData = json.loads(data)
     for key in JSONData:
       videourl = re.compile("([0-9]+p)",re.DOTALL).findall(key)
@@ -108,9 +125,12 @@ def play(item):
         if not JSONData[videourl] == None:
           url = JSONData[videourl].encode("utf8")
           url = url.replace("{DATA_MARKERS}","data=pc.ES")
-          if not url.startswith("http:"): url = "http:" + url
+          viedokey = re.compile("key=(.*?)%2Cend=",re.DOTALL).findall(url)[0]
+          
+          url = url.replace(viedokey,decode(viedokey))
+          if not url.startswith("https:"): url = "https:" + url
           title = videourl.encode("utf8")
-          itemlist.append( Item(channel=__channel__, action="play" , fulltitle=title, title=item.title , url=url, thumbnail=item.thumbnail, server="directo", folder=False))
+          itemlist.append( Item(channel=item.channel, action="play" , fulltitle=item.title, title=title , url=url, thumbnail=item.thumbnail, server="directo", folder=False))
       
     itemlist.sort(key=lambda item: item.fulltitle.lower(), reverse=True)
     return itemlist
