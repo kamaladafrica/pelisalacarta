@@ -138,35 +138,36 @@ def mainlist(item):
     return itemlist
 
 
-def search(item,texto):
+def search(item, texto):
     logger.info("pelisalacarta.bricocine search")
-    texto = texto.replace(" ","+")
-    item.url = "http://www.bricocine.com/index.php/?s=%s" % (texto)
-    print"BUUUSQUEDA"
-    print item.url
-    print item.extra
+    texto = texto.replace(" ", "+")
+    item.url = "http://www.bricocine.com/index.php/?s=%s" % texto
+
     try:
-        return peliculas(item)
-    # Se captura la excepciÛn, para no interrumpir al buscador global si un canal falla
+        return peliculas(item, texto.replace("+", " "))
+    # Se captura la excepción, para no interrumpir al buscador global si un canal falla
     except:
         import sys
         for line in sys.exc_info():
-            logger.error( "%s" % line )
+            logger.error("%s" % line)
         return []
 
-def peliculas(item):
+
+def peliculas(item, texto):
     logger.info("pelisalacarta.bricocine peliculas")
     itemlist = []
-    ###Borra customkeys
+
+    # Borra customkeys
     import xbmc
     if xbmc.Player().isPlaying():
        xbmc.executebuiltin('xbmc.PlayMedia(Stop)')
-    
+
     TESTPYDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "test.py")
     KEYMAPDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "customkey.xml")
     REMOTEDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "remote.xml")
     APPCOMMANDDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "customapp.xml")
     TRAILERDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "trailer.txt")
+
     try:
         os.remove(KEYMAPDESTFILE)
         print "Custom Keyboard.xml borrado"
@@ -188,11 +189,43 @@ def peliculas(item):
         print "No hay Trailer.txt"
 
     # Descarga la página
-    data = get_page( item.url )
-    data = re.sub(r"amp;","",data)
+    data = get_page(item.url)
+    data = re.sub(r"amp;", "", data)
     '''
-   <div class="post-10888 post type-post status-publish format-standard hentry category-the-leftovers tag-ciencia-ficcion tag-drama tag-fantasia tag-misterio"><div class="entry"> <a href="http://www.bricocine.com/10888/leftovers-temporada-1/"> <img src="http://www.bricocine.com/wp-content/plugins/wp_movies/files/thumb_185_the_leftovers_.jpg" alt="The Leftovers " /> </a></div><div class="entry-meta"><div class="clearfix"><div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating" class="rating"  title="Puntos IMDB: 7.4"><div class="rating-stars imdb-rating"><div class="stars" style="width:74%"></div></div><div itemprop="ratingValue" class="rating-number"> 7.4</div></div><div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating" class="rating"  title="Puntos Bricocine: 6.2"><div class="rating-stars brico-rating"><div class="stars" style="width:62%"></div></div><div itemprop="ratingValue" class="rating-number"> 6.2</div></div> <span class="vcard author none"> Publicado por <a class="fn" href="" rel="author" target="_blank"></a> </span> <span class="date updated none">2014-10-07T23:36:17+00:00</span></div></div><h2 class="title2 entry-title"> <a href="http://www.bricocine.com/10888/leftovers-temporada-1/"> The Leftovers  &#8211; Temporada 1 </a></h2></div> </article> <article class="hentry item-entry"><div class="post-10088 post type-post status-publish format-standard hentry category-the-last-ship tag-accion tag-ciencia-ficcion tag-drama tag-the tag-thriller"><div class="entry"> <a href="http://www.bricocine.com/10088/last-ship-temporada-1/"> <img src="http://www.bricocine.com/wp-content/plugins/wp_movies/files/thumb_185_the_last_ship_.jpg" alt="The Last Ship " /> </a></div><div class="entry-meta"><div class="clearfix"><div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating" class="rating"  title="Puntos IMDB: 7.4"><div class="rating-stars imdb-rating"><div class="stars" style="width:74%"></div></div><div itemprop="ratingValue" class="rating-number"> 7.4</div></div><div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating" class="rating"  title="Puntos Bricocine: 7.0"><div class="rating-stars brico-rating"><div class="stars" style="width:70%"></div></div><div itemprop="ratingValue" class="rating-number"> 7.0</div></div> <span class="vcard author none"> Publicado por <a class="fn" href="" rel="author" target="_blank"></a> </span> <span class="date updated none">2014-10-07T23:32:25+00:00</span></div></div><h2 class="title2 entry-title"> <a href="http://www.bricocine.com/10088/last-ship-temporada-1/"> The Last Ship &#8211; Temporada 1 </a></h2></div> </article> <article class="hentry item-entry">
-
+    <div class="post-10888 post type-post status-publish format-standard hentry category-the-leftovers
+        tag-ciencia-ficcion tag-drama tag-fantasia tag-misterio">
+        <div class="entry">
+            <a href="http://www.bricocine.com/10888/leftovers-temporada-1/">
+                <img src="http://www.bricocine.com/wp-content/plugins/wp_movies/files/thumb_185_the_leftovers_.jpg"
+                    alt="The Leftovers " />
+            </a>
+        </div>
+        <div class="entry-meta">
+            <div class="clearfix">
+                <div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating" class="rating"
+                    title="Puntos IMDB: 7.4">
+                    <div class="rating-stars imdb-rating">
+                        <div class="stars" style="width:74%"></div>
+                    </div>
+                    <div itemprop="ratingValue" class="rating-number"> 7.4</div>
+                </div>
+                <div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating" class="rating"
+                    title="Puntos Bricocine: 6.2">
+                    <div class="rating-stars brico-rating">
+                        <div class="stars" style="width:62%"></div>
+                    </div>
+                    <div itemprop="ratingValue" class="rating-number"> 6.2</div>
+                </div>
+                <span class="vcard author none"> Publicado por
+                    <a class="fn" href="" rel="author" target="_blank"></a>
+                </span>
+                <span class="date updated none">2014-10-07T23:36:17+00:00</span>
+            </div>
+        </div>
+        <h2 class="title2 entry-title">
+            <a href="http://www.bricocine.com/10888/leftovers-temporada-1/"> The Leftovers  &#8211; Temporada 1 </a>
+        </h2>
+    </div>
     '''
     patron = 'format-standard hentry category(.*?)">.*?'
     patron += '<div class="entry"> '
@@ -201,87 +234,95 @@ def peliculas(item):
     patron += 'class="rating-number">([^<]+)</div></div>.*?'
     patron += '<h2 class="title2 entry-title">.*?"> ([^<]+).*?</a>'
     
-    matches = re.compile(patron,re.DOTALL).findall(data)
+    matches = re.compile(patron, re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
-    if len(matches)==0 :
-        itemlist.append( Item(channel=__channel__, title="[COLOR gold][B]No hay resultados...[/B][/COLOR]", thumbnail ="http://s6.postimg.org/fay99h9ox/briconoisethumb.png", fanart ="http://s6.postimg.org/uie8tu1jl/briconoisefan.jpg",folder=False) )
+    if len(matches) == 0:
+        itemlist.append(Item(channel=__channel__, title="[COLOR gold][B]No hay resultados...[/B][/COLOR]",
+                             thumbnail="http://s6.postimg.org/fay99h9ox/briconoisethumb.png",
+                             fanart="http://s6.postimg.org/uie8tu1jl/briconoisefan.jpg", folder=False))
 
     for tag, scrapedurl, scrapedthumbnail, scrapedcreatedate, scrapedtitle in matches:
+        if texto.lower() not in scrapedtitle.lower():
+            continue
+
         if scrapedthumbnail == "":
-            scrapedthumbnail ="http://s6.postimg.org/aseij0y4x/briconoimage.png"
-        title= scrapedtitle
-        print "tus huevos"
-        print tag
-        #Separa entre series y peliculas
-        if not item.extra== "Series" and not "index" in item.url:
-           title= re.sub(r"\(.*?\) |\[.*?\] |&#.*?;","",title)
-           try:
-              scrapedyear = scrapertools.get_match(scrapedurl,'.*?www.bricocine.com/.*?/.*?(\d\d\d\d)')
-           except:
-              scrapedyear = ""
-           title_fan = title.strip()
-        if item.extra== "Series" and not "index" in item.url:
-            title= re.sub(r"&#.*?;|Temporada.*?\d+ | Todas las Temporadas |\[.*?\]|\([0-9].*?\)|¡|!","",title)
+            scrapedthumbnail = "http://s6.postimg.org/aseij0y4x/briconoimage.png"
+        title = scrapedtitle
+        # Separa entre series y peliculas
+        if not item.extra == "Series" and "index" not in item.url:
+            title = re.sub(r"\(.*?\) |\[.*?\] |&#.*?;", "", title)
+
+            try:
+                scrapedyear = scrapertools.get_match(scrapedurl, '.*?www.bricocine.com/.*?/.*?(\d\d\d\d)')
+            except:
+                scrapedyear = ""
+            title_fan = title.strip()
+
+        if item.extra == "Series" and "index" not in item.url:
+            title = re.sub(r"&#.*?;|Temporada.*?\d+ | Todas las Temporadas |\[.*?\]|\([0-9].*?\)|¡|!", "", title)
             title_fan = title.strip()
             scrapedyear = ""
-        #Diferencia si viene de la búsqueda
+        # Diferencia si viene de la búsqueda
         if "index" in item.url:
-             #Se usa tag en busqueda para diferenciar series no bien tipificadas
-             if not "3d" in tag and not "dvdrip" in tag and not "bluray-rip" in tag and not "hd-microhd" in tag and not "bdrip" in tag and not "estrenos" in tag and not "latino" in tag and not "hannibal" in tag:
-                title= re.sub(r"\n|\r|\t|\s{2}|&nbsp;|&#.*?;|\(.*?\)|\d\d\d\d","",title)
-                title_fan =re.sub(r"\n|\r|\t|\s{2}|&nbsp;|&#.*?;|Temporada.*?\d+| Todas Las Temp.*?das","",title)
-                title= title.replace("Temporada","[COLOR green]Temporada[/COLOR]")
-                title = title.replace	(title,"[COLOR white]"+title+"[/COLOR]")
+            # Se usa tag en busqueda para diferenciar series no bien tipificadas
+            if ("3d" not in tag and not "dvdrip" in tag and not "bluray-rip" in tag and not "hd-microhd" in tag and
+                    not "bdrip" in tag and not "estrenos" in tag and not "latino" in tag and not "hannibal" in tag):
+                title = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|&#.*?;|\(.*?\)|\d\d\d\d","",title)
+                title_fan = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|&#.*?;|Temporada.*?\d+| Todas Las Temp.*?das", "", title)
+                title = title.replace("Temporada", "[COLOR green]Temporada[/COLOR]")
+                title = title.replace(title, "[COLOR white]"+title+"[/COLOR]")
                 
                 import xbmc
-                #Crea el archivo search.txt.Regula el buen funcionaiento de la música y volver atras en la busqueda
-                SEARCHDESTFILE= os.path.join(xbmc.translatePath('special://userdata/keymaps'), "search.txt")
-                urllib.urlretrieve ("https://raw.githubusercontent.com/neno1978/script.palc.forcerefresh/master/search.txt", SEARCHDESTFILE )
-                item.extra= "Series"
-                scrapedyear= ""
-             else:
-                 
-                 title = scrapedtitle
-                 title= re.sub(r"\(.*?\)|\[.*?\]|&#.*?;|","",scrapedtitle)
-                 title = title.strip()
-                 try:
-                     scrapedyear = scrapertools.get_match(scrapedurl,'.*?www.bricocine.com/.*?/.*?(\d\d\d\d)')
-                 
-                 except:
-                     scrapedyear = ""
-                 print scrapedyear
-                 print item.extra
-                 print "pero quillooooo"
-                 print title
-                 print item.extra
-                 print scrapedcreatedate
-                 title_fan = title.strip()
-                 if item.extra == "Series":
-                    item.extra ="peliculas"
-                 print item.extra
-                 #Crea el archivo search.txt.Regula el buen funcionaiento de la música y volver atras en la busqueda
-                 import xbmc
-                 SEARCHDESTFILE= os.path.join(xbmc.translatePath('special://userdata/keymaps'), "search.txt")
-                 urllib.urlretrieve ("https://raw.githubusercontent.com/neno1978/script.palc.forcerefresh/master/search.txt", SEARCHDESTFILE )
-        scrapedcreatedate = scrapedcreatedate.replace(scrapedcreatedate,"[COLOR sandybrown][B]"+scrapedcreatedate+"[/B][/COLOR]")
-        title = title.replace(title,"[COLOR white]"+title+"[/COLOR]")
-        title = title +"(Puntuación:" + scrapedcreatedate + ")"
-        show = title_fan+"|"+scrapedyear    
-        itemlist.append( Item(channel=__channel__, title=title, url=scrapedurl, action="fanart", thumbnail=scrapedthumbnail, fanart="http://s15.postimg.org/id6ec47vf/bricocinefondo.jpg",show= show,extra=item.extra,  folder=True) )
+                # Crea el archivo search.txt.Regula el buen funcionaiento de la música y volver atras en la busqueda
+                SEARCHDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "search.txt")
+                urllib.urlretrieve(
+                    "https://raw.githubusercontent.com/neno1978/script.palc.forcerefresh/master/search.txt",
+                    SEARCHDESTFILE)
+                item.extra = "Series"
+                scrapedyear = ""
 
-    
-    ## Paginación
-    #<span class='current'>1</span><a href='http://www.bricocine.com/c/hd-microhd/page/2/'
+            else:
+                title = re.sub(r"\(.*?\)|\[.*?\]|&#.*?;|", "", scrapedtitle)
+                title = title.strip()
+                try:
+                    scrapedyear = scrapertools.get_match(scrapedurl, '.*?www.bricocine.com/.*?/.*?(\d\d\d\d)')
+                except:
+                    scrapedyear = ""
+
+                title_fan = title.strip()
+                if item.extra == "Series":
+                    item.extra = "peliculas"
+                # print item.extra
+                # Crea el archivo search.txt.Regula el buen funcionaiento de la música y volver atras en la busqueda
+                import xbmc
+                SEARCHDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "search.txt")
+                urllib.urlretrieve(
+                    "https://raw.githubusercontent.com/neno1978/script.palc.forcerefresh/master/search.txt",
+                    SEARCHDESTFILE)
+
+        scrapedcreatedate = scrapedcreatedate.replace(scrapedcreatedate,
+                                                      "[COLOR sandybrown][B]"+scrapedcreatedate+"[/B][/COLOR]")
+        title = title.replace(title, "[COLOR white]"+title+"[/COLOR]")
+        title = title + "(Puntuación:" + scrapedcreatedate + ")"
+        show = title_fan+"|"+scrapedyear    
+        itemlist.append(Item(channel=__channel__, title=title, url=scrapedurl, action="fanart",
+                             thumbnail=scrapedthumbnail, fanart="http://s15.postimg.org/id6ec47vf/bricocinefondo.jpg",
+                             show=show, extra=item.extra, folder=True))
+
+    # Paginación
+    # <span class='current'>1</span><a href='http://www.bricocine.com/c/hd-microhd/page/2/'
     
     # Si falla no muestra ">> Página siguiente"
     try:
-        next_page = scrapertools.get_match(data,"<span class='current'>\d+</span><a href='([^']+)'")
-        title= "[COLOR red]Pagina siguiente>>[/COLOR]"
-        itemlist.append( Item(channel=__channel__, title=title, url=next_page, action="peliculas", fanart="http://s15.postimg.org/id6ec47vf/bricocinefondo.jpg",extra= item.extra, thumbnail="http://s7.postimg.org/w2e0nr7hn/pdksiguiente.jpg", folder=True) )
-    except: pass
+        next_page = scrapertools.get_match(data, "<span class='current'>\d+</span><a href='([^']+)'")
+        title = "[COLOR red]Pagina siguiente>>[/COLOR]"
+        itemlist.append(Item(channel=__channel__, title=title, url=next_page, action="peliculas",
+                             fanart="http://s15.postimg.org/id6ec47vf/bricocinefondo.jpg", extra=item.extra,
+                             thumbnail="http://s7.postimg.org/w2e0nr7hn/pdksiguiente.jpg", folder=True))
+    except:
+        pass
     
     return itemlist
-
 
 
 def fanart(item):
