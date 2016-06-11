@@ -178,6 +178,7 @@ def get_capitulos(item):
     logger.info("pelisalacarta.channels.biblioteca get_capitulos")
     itemlist = []
     logger.debug(item.tostring('\n'))
+    
     # Obtenemos los archivos de los capitulos
     if not samba.usingsamba(item.path):
         raiz, carpetas_series, ficheros = os.walk(item.path).next()
