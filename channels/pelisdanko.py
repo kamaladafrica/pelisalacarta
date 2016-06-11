@@ -301,9 +301,8 @@ def findvideos(item):
 
     # Parametros para redireccion donde muestra los enlaces
     data_slug = scrapertools.find_single_match(data, '<div id="ad" data-id="[^"]+" data-slug="([^"]+)"')
-    data_id, id_pelicula = scrapertools.find_single_match(data,
-                                                          '<tr class="rip hover" data-id="([^"]+)" data-slug="([^"]+)"')
-    url = "http://pelisdanko.com/%s/%s/%s/%s" % (prefix, data_id, id_pelicula, data_slug)
+    data_id = scrapertools.find_single_match(data, '<tr class="rip hover" data-id="([^"]+)"')
+    url = "http://pelisdanko.com/%s/%s/%s/%s" % (prefix, data_id, item.id_enlaces, data_slug)
     data = scrapertools.downloadpage(url, post="")
 
     from core import servertools
