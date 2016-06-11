@@ -59,71 +59,86 @@ def bbcode_kodi2html(text):
     
     return text
 
-def search(item,texto):
+
+def search(item, texto):
     logger.info("pelisalacarta.palasaka search")
     itemlist = []
     
     try:
-        texto = texto.replace(" ","+")
-        item.url = item.url+"/buscar?searchword=%s&ordering=&searchphrase=all&limit=\d+"
+        texto = texto.replace(" ", "+")
+        item.url += "/buscar?searchword=%s&ordering=&searchphrase=all&limit=\d+"
         item.url = item.url % texto
-        itemlist.extend(buscador(item))
+        itemlist.extend(buscador(item, texto.replace("+", " ")))
         
         return itemlist
     
     except:
         for line in sys.exc_info():
-            logger.error( "%s" % line )
+            logger.error("%s" % line)
         return []
 
-def buscador(item):
+
+def buscador(item, texto):
     logger.info("pelisalacarta.zentorrents buscador")
     itemlist = []
     # Descarga la página
     data = scrapertools.cache_page(item.url)
-    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-    #data = scrapertools.get_match(data,'</form>(<table class="contentpaneopen">.*?</table>)')
+    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
     if "highlight" in data:
-        searchword = scrapertools.get_match(data,'<span class="highlight">([^<]+)</span>')
-        data = re.sub(r'<span class="highlight">[^<]+</span>',searchword,data)
-    #<fieldset><div class="resultimage"><a title="Carmina Y Amén" href="/peliculas/15188-carmina-y-amen"><img alt="Carmina Y Amén" class="thumbnailresult" src="http://zentorrents.palasaka.net/images/articles/15/15188t.jpg"/></a></div><div class="resulttitle"><a class="contentpagetitle" href="/peliculas/15188-carmina-y-amen">Carmina Y Amén</a><br /><span class="small">(Descargas/Películas)</span></div><div class="resultinfo">Carmina y Aménarranca con la muerte súbita del marido de la protagonista, que convence a su hija (María León) de no dar parte de la defunción hasta pasados dos días para poder cobrar la paga doble que...</div></fieldset>
+        searchword = scrapertools.get_match(data, '<span class="highlight">([^<]+)</span>')
+        data = re.sub(r'<span class="highlight">[^<]+</span>', searchword, data)
+    '''
+    <div class="moditemfdb">
+        <a title="La hora decisiva [1080p]" href="/peliculas/51842-la-hora-decisiva-1080p">
+            <img alt="La hora decisiva [1080p]" class="thumbnailresult"
+                src="http://www.zentorrents.com/images/articles/51/51842t.jpg">
+        </a>
+        <div class="info">
+            <div class="title">
+                <a class="" href="/peliculas/51842-la-hora-decisiva-1080p">La hora decisiva [1080p]</a>
+            </div>
+            <p>Descargas/Películas			</p>
+        </div>
+        <div style="clear:both;"></div>
+    </div>
+    '''
 
     patron = '<div class="moditemfdb">'       # Empezamos el patrón por aquí para que no se cuele nada raro
-    patron+= '<a title="([^"]+)" '                       # scrapedtitulo
-    patron+= 'href="([^"]+)".*?'                         # scrapedurl
-    patron+= 'src="([^"]+)".*?'                          # scrapedthumbnail
-    patron+= '<p>([^<]+)</p>'
-    
-    
-    matches = re.compile(patron,re.DOTALL).findall(data)
+    patron += '<a title="([^"]+)" '                       # scrapedtitulo
+    patron += 'href="([^"]+)".*?'                         # scrapedurl
+    patron += 'src="([^"]+)".*?'                          # scrapedthumbnail
+    patron += '<p>([^<]+)</p>'
+
+    matches = re.compile(patron, re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
-    if len(matches)==0 :
-        itemlist.append( Item(channel=__channel__, title="[COLOR gold][B]Sin resultados...[/B][/COLOR]", thumbnail ="http://s6.postimg.org/55zljwr4h/sinnoisethumb.png", fanart ="http://s6.postimg.org/avfu47xap/sinnoisefan.jpg",folder=False) )
+    if len(matches) == 0:
+        itemlist.append(Item(channel=__channel__, title="[COLOR gold][B]Sin resultados...[/B][/COLOR]",
+                             thumbnail="http://s6.postimg.org/55zljwr4h/sinnoisethumb.png",
+                             fanart="http://s6.postimg.org/avfu47xap/sinnoisefan.jpg", folder=False))
 
     for scrapedtitulo, scrapedurl, scrapedthumbnail, scrapedplot in matches:
-        trailer = scrapedtitulo + " " + "trailer"
-        if "series" in scrapedurl:
-            trailer = scrapedtitulo + " " + "series" + "trailer"
-        else:
+        # evitamos falsos positivos en los enlaces, ya que el buscador de la web muestra de todo,
+        # tiene que ser una descarga y que el texto a buscar esté en el titulo
+        if "Descargas/" in scrapedplot and texto.lower() in scrapedtitulo.lower():
             trailer = scrapedtitulo + " " + "trailer"
-        
-        trailer= re.sub(r"\[.*?\]|- .*?x\d+","",trailer)
-        trailer = urllib.quote(trailer)
-        scrapedtitulo= scrapedtitulo.replace(scrapedtitulo,bbcode_kodi2html("[COLOR white]"+scrapedtitulo+"[/COLOR]"))
-        torrent_tag=bbcode_kodi2html("[COLOR pink] (Torrent)[/COLOR]")
-        scrapedtitulo = scrapedtitulo + torrent_tag
-        scrapedurl = "http://zentorrents.com" + scrapedurl
-        
-        
-        itemlist.append( Item(channel=__channel__, title=scrapedtitulo, url=scrapedurl, action="fanart", thumbnail=scrapedthumbnail, fulltitle=scrapedtitulo, plot=trailer, fanart="http://s6.postimg.org/4j8vdzy6p/zenwallbasic.jpg", folder=True) )
+            if "series" in scrapedurl:
+                trailer = scrapedtitulo + " " + "series" + "trailer"
+            else:
+                trailer = scrapedtitulo + " " + "trailer"
 
+            trailer = re.sub(r"\[.*?\]|- .*?x\d+", "", trailer)
+            trailer = urllib.quote(trailer)
+            scrapedtitulo = scrapedtitulo.replace(scrapedtitulo, bbcode_kodi2html("[COLOR white]"+scrapedtitulo +
+                                                                                  "[/COLOR]"))
+            torrent_tag = bbcode_kodi2html("[COLOR pink] (Torrent)[/COLOR]")
+            scrapedtitulo = scrapedtitulo + torrent_tag
+            scrapedurl = "http://zentorrents.com" + scrapedurl
 
-
-
+            itemlist.append(Item(channel=__channel__, title=scrapedtitulo, url=scrapedurl, action="fanart",
+                                 thumbnail=scrapedthumbnail, fulltitle=scrapedtitulo, plot=trailer,
+                                 fanart="http://s6.postimg.org/4j8vdzy6p/zenwallbasic.jpg", folder=True))
 
     return itemlist
-
-
 
 
 def peliculas(item):
