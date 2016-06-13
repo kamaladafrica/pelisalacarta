@@ -13,13 +13,6 @@ from core import logger
 from core import scrapertools
 from core.item import Item
 
-__channel__ = "pornoactricesx"
-__category__ = "F"
-__type__ = "generic"
-__title__ = "pornoactricesx"
-__language__ = "ES"
-__adult__ = "true"
-
 DEBUG = config.get_setting("debug")
 
 def isGeneric():
@@ -28,9 +21,9 @@ def isGeneric():
 def mainlist(item):
     logger.info("[pornoactricesx.py] mainlist")
     itemlist = []
-    itemlist.append( Item(channel=__channel__, action="videos"          , title="Útimos videos"     , url="http://www.pornoactricesx.com/"))
-    itemlist.append( Item(channel=__channel__, action="listactrices"    , title="Listado Actrices"  , url="http://www.pornoactricesx.com/todas-las-actrices"))
-    itemlist.append( Item(channel=__channel__, action="search"          , title="Buscar"            , url="http://www.pornoactricesx.com/search/content/"))
+    itemlist.append( Item(channel=item.channel, action="videos"          , title="Útimos videos"     , url="http://www.pornoactricesx.com/"))
+    itemlist.append( Item(channel=item.channel, action="listactrices"    , title="Listado Actrices"  , url="http://www.pornoactricesx.com/todas-las-actrices"))
+    itemlist.append( Item(channel=item.channel, action="search"          , title="Buscar"            , url="http://www.pornoactricesx.com/search/content/"))
 
     return itemlist
 
@@ -67,7 +60,7 @@ def videos(item):
           scrapedplot = ""
           # Depuracion
           if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")            
-          itemlist.append( Item(channel=__channel__, action='play', title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot) )
+          itemlist.append( Item(channel=item.channel, action='play', title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot) )
           
       #Patron 2 para busquedas
       patron='<div class="field field-name-title field-type-ds field-label-hidden view-mode-search_result">'
@@ -82,7 +75,7 @@ def videos(item):
           scrapedplot = ""
           # Depuracion
           if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")            
-          itemlist.append( Item(channel=__channel__, action='play', title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot) )
+          itemlist.append( Item(channel=item.channel, action='play', title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot) )
       patron = '<a title="Ir a la página siguiente" href="([^<]+)">siguiente ›</a>'
       matches = re.compile(patron,re.DOTALL).findall(data)
       if len(matches) >0:
@@ -96,7 +89,7 @@ def videos(item):
     matches = re.compile(patron,re.DOTALL).findall(data)  
     if len(matches) >0:
       scrapedurl = "http://www.pornoactricesx.com"+matches[0]
-      itemlist.append( Item(channel=__channel__, action="videos", title="Página Siguiente" , url=scrapedurl , thumbnail="" , folder=True) )
+      itemlist.append( Item(channel=item.channel, action="videos", title="Página Siguiente" , url=scrapedurl , thumbnail="" , folder=True) )
       
     return itemlist
 
@@ -111,7 +104,7 @@ def play(item):
     itemlist.extend(servertools.find_video_items(data=data))
     for videoitem in itemlist:
         videoitem.thumbnail = item.thumbnail
-        videoitem.channel=__channel__
+        videoitem.channel=item.channel
         videoitem.action="play"
         videoitem.folder=False
         videoitem.title = item.title
@@ -128,14 +121,14 @@ def listactrices(item):
     matches = re.compile(patron,re.DOTALL).findall(data)
     for url, actriz, thumbnail in matches:
       url="http://www.pornoactricesx.com"+url
-      itemlist.append( Item(channel=__channel__, action="videos" , title=actriz, url=url, thumbnail=thumbnail))
+      itemlist.append( Item(channel=item.channel, action="videos" , title=actriz, url=url, thumbnail=thumbnail))
     
     #Paginador
     patron = '<a title="Ir a la página siguiente" href="([^"]+)">siguiente ›'
     matches = re.compile(patron,re.DOTALL).findall(data)
     if len(matches) >0:
       url="http://www.pornoactricesx.com"+matches[0]
-      itemlist.append( Item(channel=__channel__, action="listactrices" , title="Página Siguiente", url=url))
+      itemlist.append( Item(channel=item.channel, action="listactrices" , title="Página Siguiente", url=url))
 
     return itemlist
     

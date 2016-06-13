@@ -6,18 +6,26 @@
 	<active>true</active>
 	<adult>true</adult>
 	<language>es</language>
-	<include_in_global_search>disabled</include_in_global_search>
 	
 	<fanart></fanart>
 	<thumbnail>http://i.imgur.com/ywMHwat.png</thumbnail>
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/pelisxporno.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>1</version>
-	<date>11/12/2015</date>
-	<changes>Primera versi�n</changes>
+	<version>2</version>
+	<date>07/01/2016</date>
+	<changes>Añadido buscador, Modificada paginación (daba error cuando no havia mas paginas), eliminada la funcion detail, (innecesaria, se usa findvideos)</changes>
 
 	<categories>
 		<category>adult</category>
 	</categories>
+	
+	<settings>
+		<id>include_in_global_search</id>
+		<type>bool</type>
+		<label>Incluir en busqueda global</label>
+		<default>false</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
 </channel>

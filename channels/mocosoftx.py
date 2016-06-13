@@ -15,13 +15,6 @@ from core.item import Item
 from platformcode import platformtools
 from core import servertools
 
-__channel__ = "mocosoftx"
-__category__ = "F"
-__type__ = "generic"
-__title__ = "MocosoftX"
-__language__ = "ES"
-__adult__ = "true"
-
 DEBUG = config.get_setting("debug")
 
 MAIN_HEADERS = []
@@ -86,14 +79,14 @@ def mainlist(item):
     itemlist = []
 
     if config.get_setting("mocosoftxuser","mocosoftx")=="":
-        itemlist.append( Item( channel=__channel__ , title="Habilita tu cuenta en la configuración..." , action="settingCanal" , url="") )
+        itemlist.append( Item( channel=item.channel , title="Habilita tu cuenta en la configuración..." , action="settingCanal" , url="") )
     else:
         if login():
             item.url = "http://mocosoftx.com/foro/forum/"
             itemlist = foro(item)
-            itemlist.append( Item(channel=__channel__, action="settingCanal"    , title="Configuración..."     , url="" ))
+            itemlist.append( Item(channel=item.channel, action="settingCanal"    , title="Configuración..."     , url="" ))
         else:
-            itemlist.append( Item( channel=__channel__ , title="Cuenta incorrecta, revisa la configuración..." , action="" , url="" , folder=False ) )
+            itemlist.append( Item( channel=item.channel , title="Cuenta incorrecta, revisa la configuración..." , action="" , url="" , folder=False ) )
 
     return itemlist
 
@@ -120,7 +113,7 @@ def foro(item):
             url = scrapertools.get_match(url,"(.*?)\?PHPSESSID=")
         thumbnail = ""
         plot = ""
-        itemlist.append( Item( channel=__channel__ , title=title , action="foro" , url=url , plot=plot, thumbnail=thumbnail, folder=True ) )
+        itemlist.append( Item( channel=item.channel , title=title , action="foro" , url=url , plot=plot, thumbnail=thumbnail, folder=True ) )
 
     # Extrae los hilos individuales
     patron = '<td class="icon2 windowbgb">[^<]+'
@@ -138,7 +131,7 @@ def foro(item):
             url = scrapertools.get_match(url,"(.*?)\?PHPSESSID=")
         thumbnail = scrapedthumbnail
         plot = ""
-        itemlist.append( Item( channel=__channel__ , title=title , action="findvideos" , url=url , plot=plot, thumbnail=thumbnail, folder=True ) )
+        itemlist.append( Item( channel=item.channel , title=title , action="findvideos" , url=url , plot=plot, thumbnail=thumbnail, folder=True ) )
 
     # Extrae la marca de siguiente página
     #<a class="navPages" href="http://mocosoftx.com/foro/peliculas-xxx-online-(completas)/20/?PHPSESSID=rpejdrj1trngh0sjdp08ds0ef7">2</a>
@@ -153,7 +146,7 @@ def foro(item):
             scrapedurl = scrapertools.get_match(scrapedurl,"(.*?)\?PHPSESSID=")
         scrapedthumbnail = ""
         scrapedplot = ""
-        itemlist.append( Item( channel=__channel__ , title=scrapedtitle , action="foro" , url=scrapedurl , plot=scrapedplot, thumbnail=scrapedthumbnail, folder=True ) )
+        itemlist.append( Item( channel=item.channel , title=scrapedtitle , action="foro" , url=scrapedurl , plot=scrapedplot, thumbnail=scrapedthumbnail, folder=True ) )
 
     return itemlist
 
@@ -176,7 +169,7 @@ def findvideos(item):
     itemlist = servertools.find_video_items(data=data)
 
     for videoitem in itemlist:
-        videoitem.channel = __channel__
+        videoitem.channel = item.channel
         videoitem.plot = plot
         videoitem.thumbnail = thumbnail
         videoitem.fulltitle = item.title
