@@ -15,6 +15,7 @@ from core import jsontools
 from core import logger
 from core import scrapertools
 
+DEBUG = config.get_setting("debug")
 
 headers = {'User-Agent' : 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:47.0) Gecko/20100101 Firefox/47.0',
            'Accept' : 'application/json, text/javascript, */*; q=0.01',
@@ -57,7 +58,11 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
     if matchjs != "":
         while not re.search(r'var tokenBearer', matchjs, re.DOTALL):
             matchjs = unpack(matchjs)
-        token_auth = scrapertools.find_single_match(matchjs, "tokenBearer='([^']+)'")
+            if DEBUG: logger.info("Script token:\n" + matchjs)
+        matches = scrapertools.find_multiple_matches(matchjs, "tokenBearer(?:=|\+=)'([^']+)'")
+        token_auth = ""
+        for token in matches:
+            token_auth += token
     
     headers.pop('Cookie', None)
     headers['Authorization'] = "Bearer %s" % token_auth
