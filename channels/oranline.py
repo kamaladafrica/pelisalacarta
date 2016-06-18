@@ -256,19 +256,26 @@ def findvideos(item):
         item.infoLabels['plot'] = plot
 
     if filtro_enlaces != 0:
-        itemlist.append(item.clone(channel=__channel__, action="",
-                                   title="Enlaces Online", text_color=color1, text_blod=True, viewmode="list",
-                                   folder=False))
-        itemlist.extend(bloque_enlaces(data, filtro_idioma, dict_idiomas, "online", item))
+        list_enlaces = bloque_enlaces(data, filtro_idioma, dict_idiomas, "online", item)
+        if list_enlaces:
+            itemlist.append(item.clone(channel=__channel__, action="", title="Enlaces Online",
+                                       text_color=color1, text_blod=True, viewmode="list", folder=False))
+            itemlist.extend(list_enlaces)
     if filtro_enlaces != 1:
-        itemlist.append(item.clone(channel=__channel__, action="", title="Enlaces Descarga", text_color=color1,
-                                   text_blod=True, viewmode="list", folder=False))
-        itemlist.extend(bloque_enlaces(data, filtro_idioma, dict_idiomas, "descarga", item))
+        list_enlaces = bloque_enlaces(data, filtro_idioma, dict_idiomas, "descarga", item)
+        if list_enlaces:
+            itemlist.append(item.clone(channel=__channel__, action="", title="Enlaces Descarga",
+                                       text_color=color1, text_blod=True, viewmode="list", folder=False))
+            itemlist.extend(list_enlaces)
 
     # Opción "Añadir esta película a la biblioteca de XBMC"
-    if config.get_library_support() and item.category != "Cine":
+    if config.get_library_support() and item.category != "Cine" and itemlist:
         itemlist.append(item.clone(title="Añadir enlaces a la biblioteca", text_color="gold", viewmode="list",
-                                   action="add_pelicula_to_library"))
+                                   filtro=True, action="add_pelicula_to_library"))
+    
+    if not itemlist:
+        itemlist.append(item.clone(title="No hay enlaces disponibles", action="", text_color=color3,
+                                   viewmode="list", folder=False))
 
     return itemlist
 
@@ -276,7 +283,7 @@ def findvideos(item):
 def bloque_enlaces(data, filtro_idioma, dict_idiomas, type, item):
     logger.info("pelisalacarta.channels.oranline bloque_enlaces")
 
-    list = []
+    lista_enlaces = []
     bloque = scrapertools.find_single_match(data, '<div id="' + type + '">(.*?)</table>')
     patron = 'tr>[^<]+<td>.*?href="([^"]+)".*?<span>([^<]+)</span>' \
              '.*?<td>([^<]+)</td>.*?<td>([^<]+)</td>'
@@ -296,13 +303,13 @@ def bloque_enlaces(data, filtro_idioma, dict_idiomas, type, item):
                 servers_module = __import__("servers." + server)
                 title = "Mirror en " + server + " (" + language + ") (Calidad " + calidad.strip() + ")"
                 if filtro_idioma == 4 or item.filtro:
-                    list.append(item.clone(title=title, action="play", server=server, text_color=color2,
+                    lista_enlaces.append(item.clone(title=title, action="play", server=server, text_color=color2,
                                            url=scrapedurl, idioma=language, viewmode="list"))
                 else:
                     idioma = dict_idiomas[language]
                     if idioma == filtro_idioma:
-                        list.append(item.clone(title=title, text_color=color2, action="play", url=scrapedurl,
-                                               server=server, viewmode="list"))
+                        lista_enlaces.append(item.clone(title=title, text_color=color2, action="play",
+                                    url=scrapedurl, server=server, viewmode="list"))
                     else:
                         if language not in filtrados: filtrados.append(language)
             except:
@@ -311,15 +318,10 @@ def bloque_enlaces(data, filtro_idioma, dict_idiomas, type, item):
     if filtro_idioma != 4:
         if len(filtrados) > 0:
             title = "Mostrar enlaces filtrados en %s" % ", ".join(filtrados)
-            list.append(
-                    item.clone(title=title, action="findvideos", url=item.url, text_color=color3,
-                               filtro=True, viewmode="list", folder=True))
+            lista_enlaces.append(item.clone(title=title, action="findvideos", url=item.url, text_color=color3,
+                                   filtro=True, viewmode="list", folder=True))
 
-    if len(list) == 0:
-        list.append(item.clone(title="No hay enlaces disponibles", action="", text_color=color3, viewmode="list",
-                               folder=False))
-
-    return list
+    return lista_enlaces
 
 
 def play(item):
