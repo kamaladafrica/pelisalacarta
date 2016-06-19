@@ -63,24 +63,27 @@ def indices(item):
 
     return itemlist
 
-def search(item,texto):
+
+def search(item, texto):
     logger.info("pelisalacarta.channels.verseriesynovelas search")
     item.url = "http://www.verseriesynovelas.tv/archivos/h1/?s=" + texto
-    if item.title == "Buscar...": return ultimas(item)
+    if item.title == "Buscar...":
+        return ultimas(item, texto)
     else:
         try:
-            return busqueda(item)
+            return busqueda(item, texto)
         except:
             import sys
             for line in sys.exc_info():
-                logger.error( "%s" % line )
+                logger.error("%s" % line)
             return []
 
-def busqueda(item):
+
+def busqueda(item, texto=""):
     logger.info("pelisalacarta.channels.verseriesynovelas busqueda")
     itemlist = []
-    data = scrapertools.anti_cloudflare(item.url,host=CHANNEL_HOST,headers=CHANNEL_HEADERS)
-    data = data.replace("\n","").replace("\t","")
+    data = scrapertools.anti_cloudflare(item.url, host=CHANNEL_HOST, headers=CHANNEL_HEADERS)
+    data = data.replace("\n", "").replace("\t", "")
 
     bloque = scrapertools.find_single_match(data, '<ul class="list-paginacion">(.*?)</section>')
     patron = '<li><a href=(.*?)</li>'
@@ -89,14 +92,21 @@ def busqueda(item):
         patron = '([^"]+)".*?<img class="fade" src="([^"]+)".*?<h2>(.*?)</h2>'
         matches = scrapertools.find_multiple_matches(match, patron)
         for scrapedurl, scrapedthumbnail, scrapedtitle in matches:
-            scrapedtitle = scrapertools.decodeHtmlentities(scrapedtitle).replace(" online","")
-            if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-            itemlist.append( Item(channel=__channel__, action='episodios', title= scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail, fanart=item.fanart, fulltitle=scrapedtitle, folder=True) )
-    #Paginación
+            # fix para el buscador para que no muestre entradas con texto que no es correcto
+            if texto.lower() not in scrapedtitle.lower():
+                continue
+
+            scrapedtitle = scrapertools.decodeHtmlentities(scrapedtitle).replace(" online", "")
+            if DEBUG:
+                logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
+            itemlist.append(Item(channel=__channel__, action='episodios', title=scrapedtitle, url=scrapedurl,
+                                 thumbnail=scrapedthumbnail, fanart=item.fanart, fulltitle=scrapedtitle, folder=True))
+    # Paginación
     patron = '<a class="nextpostslink".*?href="([^"]+)">'
     match = scrapertools.find_single_match(data, patron)
     if len(match) > 0:
-        itemlist.append( Item(channel=__channel__, action='busqueda', title= ">>Siguiente Página" , url=match , fanart=item.fanart, folder=True) )
+        itemlist.append(Item(channel=__channel__, action='busqueda', title=">>Siguiente Página", url=match,
+                             fanart=item.fanart, folder=True))
 
     return itemlist
 
@@ -139,11 +149,12 @@ def novedades(item):
 
     return itemlist
 
-def ultimas(item):
+
+def ultimas(item, texto=""):
     logger.info("pelisalacarta.channels.verseriesynovelas ultimas")
     itemlist = []
-    data = scrapertools.anti_cloudflare(item.url,host=CHANNEL_HOST,headers=CHANNEL_HEADERS)
-    data = data.replace("\n","").replace("\t","")
+    data = scrapertools.anti_cloudflare(item.url, host=CHANNEL_HOST, headers=CHANNEL_HEADERS)
+    data = data.replace("\n", "").replace("\t", "")
 
     bloque = scrapertools.find_single_match(data, '<ul class="list-paginacion">(.*?)</section>')
     patron = '<li><a href=(.*?)</li>'
@@ -152,26 +163,37 @@ def ultimas(item):
         patron = '([^"]+)".*?<img class="fade" src="([^"]+)".*?<h2>(.*?)</h2>'
         matches = scrapertools.find_multiple_matches(match, patron)
         for scrapedurl, scrapedthumbnail, scrapedtitle in matches:
-            scrapedtitle = scrapertools.decodeHtmlentities(scrapedtitle).replace(" online","")
-            titleinfo = re.sub(r'(?i)((primera|segunda|tercera|cuarta|quinta|sexta) [Tt]emporada)', "Temporada", scrapedtitle)
+            # fix para el buscador para que no muestre entradas con texto que no es correcto
+            if texto.lower() not in scrapedtitle.lower():
+                continue
+
+            scrapedtitle = scrapertools.decodeHtmlentities(scrapedtitle).replace(" online", "")
+            titleinfo = re.sub(r'(?i)((primera|segunda|tercera|cuarta|quinta|sexta) [Tt]emporada)', "Temporada",
+                               scrapedtitle)
             titleinfo = titleinfo.split('Temporada')[0].strip()
             try:
                 sinopsis, fanart, thumbnail = info(titleinfo)
-                if thumbnail == "": thumbnail = scrapedthumbnail
+                if thumbnail == "":
+                    thumbnail = scrapedthumbnail
             except:
                 sinopsis = ""
                 fanart = item.fanart
                 thumbnail = scrapedthumbnail
                 pass
-            if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+thumbnail+"]")
-            itemlist.append( Item(channel=__channel__, action='episodios', title= scrapedtitle , url=scrapedurl , thumbnail=thumbnail, fanart=fanart, fulltitle=titleinfo, plot=str(sinopsis), contentTitle=titleinfo, context="2", folder=True) )
-    #Paginación
+            if DEBUG:
+                logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+thumbnail+"]")
+            itemlist.append(Item(channel=__channel__, action='episodios', title=scrapedtitle, url=scrapedurl,
+                                 thumbnail=thumbnail, fanart=fanart, fulltitle=titleinfo, plot=str(sinopsis),
+                                 contentTitle=titleinfo, context="2", folder=True))
+    # Paginación
     patron = '<a class="nextpostslink".*?href="([^"]+)">'
     match = scrapertools.find_single_match(data, patron)
     if len(match) > 0:
-        itemlist.append( Item(channel=__channel__, action='ultimas', title= ">>Siguiente Página" , url=match , fanart=item.fanart, folder=True) )
+        itemlist.append(Item(channel=__channel__, action='ultimas', title=">>Siguiente Página", url=match,
+                             fanart=item.fanart, folder=True))
 
     return itemlist
+
 
 def episodios(item):
     logger.info("pelisalacarta.channels.verseriesynovelas episodios")

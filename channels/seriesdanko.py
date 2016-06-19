@@ -270,7 +270,7 @@ def play(item):
     data = scrapertools.cache_page(item.url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
 
-    patron = '<div id="url2"><a href="([^"]+)">.+?</a></div>'
+    patron = '<div id="url2".*?><a href="([^"]+)">.+?</a></div>'
     url = scrapertools.find_single_match(data, patron)
 
     itemlist = servertools.find_video_items(data=url)
