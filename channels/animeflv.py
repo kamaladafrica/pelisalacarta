@@ -358,7 +358,15 @@ def episodios(item):
         url = urlparse.urljoin(item.url, scrapedurl)
         thumbnail = item.thumbnail
         plot = item.plot
-
+        
+        chapterName = ""
+        try:
+			chapterName = (scrapertools.get_match(title,": (.+)"))
+        except IndexError:
+            pass
+        except ValueError:
+            pass
+            
         # TODO crear funcion que pasandole el titulo y buscando en un array de series establezca el valor el nombre
         # y temporada / capitulo para que funcione con trak.tv
 
@@ -389,7 +397,7 @@ def episodios(item):
         if DEBUG:
             logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
 
-        itemlist.append(Item(channel=__channel__, action="findvideos", title=title, url=url,
+        itemlist.append(Item(channel=__channel__, action="findvideos", title=title + ": " + chapterName, url=url,
                              thumbnail=thumbnail, plot=plot, show=item.show, fulltitle="{0} {1}"
                              .format(item.show, title), fanart=thumbnail, viewmode="movies_with_plot", folder=True))
 
@@ -406,12 +414,26 @@ def findvideos(item):
     logger.info("pelisalacarta.channels.animeflv findvideos")
 
     data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
+    
+    if 'infoLabels' in item:
+        del item.infoLabels
+        
+    url_anterior =  scrapertools.get_match(data, '<a href="(/ver/[^"]+)"[^.]+prev.png')
+    title_anterior = url_anterior.replace("/ver/",'')
+    title_anterior = title_anterior.replace('-',' ')
+    title_anterior = title_anterior.replace('.html','')
+
+    
+    url_siguiente = scrapertools.get_match(data, '<a href="(/ver/[^"]+)"[^.]+next.png')
+    title_siguiente = url_siguiente.replace("/ver/",'')
+    title_siguiente = title_siguiente.replace('-',' ')
+    title_siguiente = title_siguiente.replace('.html','')
 
     data = scrapertools.get_match(data, "var videos \= (.*?)$")
     # logger.info("data={0}".format(data))
 
     itemlist = []
-
+    
     data = data.replace("\\\\", "")
     data = data.replace("\\/", "/")
     logger.info("data={0}".format(data))
@@ -421,6 +443,9 @@ def findvideos(item):
     for videoitem in itemlist:
         videoitem.channel = __channel__
         videoitem.folder = False
+    
+    itemlist.append(Item(channel=__channel__, action="findvideos", title="Anterior: " + title_anterior, url=CHANNEL_HOST + url_anterior, thumbnail=item.thumbnail, plot=item.plot, show=item.show, fanart=item.thumbnail, folder=True))
+    itemlist.append(Item(channel=__channel__, action="findvideos", title="Siguiente: " + title_siguiente, url=CHANNEL_HOST + url_siguiente, thumbnail=item.thumbnail, plot=item.plot, show=item.show, fanart=item.thumbnail, folder=True))
 
     return itemlist
 
