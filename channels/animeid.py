@@ -280,17 +280,8 @@ def findvideos(item):
     data = scrapertools.cache_page(item.url)
     itemlist=[]
     
-    if "« Capítulo anterior" in data:
-        url_anterior = scrapertools.get_match(data, '<li class="b"><a href="([^"]+)">« Capítulo anterior')
-        title_anterior = url_anterior.replace("/ver/", '')
-        title_anterior = title_anterior.replace('-', ' ')
-        hay_anterior = 1
-    
-    if "Siguiente capítulo »</" in data:
-        url_siguiente = scrapertools.get_match(data, '<li class="b"><a href="([^"]+)">Siguiente capítulo »')
-        title_siguiente = url_siguiente.replace("/ver/", '')
-        title_siguiente = title_siguiente.replace('-', ' ')
-        hay_siguiente = 1
+    url_anterior = scrapertools.find_single_match(data, '<li class="b"><a href="([^"]+)">« Capítulo anterior')
+    url_siguiente = scrapertools.find_single_match(data, '<li class="b"><a href="([^"]+)">Siguiente capítulo »')
         
     if 'infoLabels' in item:
 		del item.infoLabels
@@ -320,11 +311,17 @@ def findvideos(item):
         videoitem.folder=False
         videoitem.title = "["+videoitem.server+"]"
         
-    if hay_anterior > 0:
-		itemlist.append(Item(channel = __channel__, action = "findvideos", title = "Anterior " + title_anterior, url = CHANNEL_HOST + url_anterior, thumbnail = item.thumbnail, plot = item.plot, show = item.show, fanart = item.thumbnail, folder = True))
-    if hay_siguiente > 0:
-		itemlist.append(Item(channel = __channel__, action = "findvideos", title = "Siguiente " + title_siguiente, url = CHANNEL_HOST + url_siguiente, thumbnail = item.thumbnail, plot = item.plot, show = item.show, fanart = item.thumbnail, folder = True))
+    if url_anterior:
+        title_anterior = url_anterior.replace("/ver/", '').replace('-', ' ').replace('.html', '')
+        itemlist.append(Item(channel=__channel__, action="findvideos", title="Anterior: " + title_anterior,
+                        url=CHANNEL_HOST + url_anterior, thumbnail=item.thumbnail, plot=item.plot, show=item.show,
+                        fanart=item.thumbnail, folder=True))
 
+    if url_siguiente:
+        title_siguiente = url_siguiente.replace("/ver/", '').replace('-', ' ').replace('.html', '')
+        itemlist.append(Item(channel=__channel__, action="findvideos", title="Siguiente: " + title_siguiente,
+                        url=CHANNEL_HOST + url_siguiente, thumbnail=item.thumbnail, plot=item.plot, show=item.show,
+                        fanart=item.thumbnail, folder=True))
     return itemlist
 
 # Verificación automática de canales: Esta función debe devolver "True" si todo está ok en el canal.
