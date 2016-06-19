@@ -11,11 +11,12 @@ import urlparse
 from channelselector import get_thumbnail_path
 from core import channeltools
 from core import config
-from core import filtertools
 from core import logger
 from core import scrapertools
 from core import servertools
 from core.item import Item
+
+import filtertools
 
 __channel__ = "seriesblanco"
 __category__ = "F"
@@ -38,8 +39,8 @@ CONTEXT = ("", "menu filtro")[OPCION_FILTRO]
 DEBUG = config.get_setting("debug")
 
 
-def isGeneric():
-    return True
+# def isGeneric():
+#     return True
 
 
 def mainlist(item):
