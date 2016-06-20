@@ -46,14 +46,13 @@ def main():
         library.make_dir(directorio)
 
     library.check_tvshow_xml()
-    nombre_fichero_config_canal = library.join_path(config.get_data_path(), library.TVSHOW_FILE)
 
     try:
 
         if config.get_setting("updatelibrary") == "true":
 
-            data = library.read_file(nombre_fichero_config_canal)
-            dict_data = jsontools.load_json(data)
+            data, dict_data = lib_data()
+
             heading = 'Actualizando biblioteca....'
             p_dialog = platformtools.dialog_progress_bg('pelisalacarta', heading)
             p_dialog.update(0, '')
@@ -119,6 +118,32 @@ def main():
 
         if p_dialog:
             p_dialog.close()
+
+
+def lib_data():
+    '''
+    Recoge la info de la libreria. Es un trozo de main que se ha extraido
+    para poder usarse tambien en la funcion que utiliza el canal ayuda.py
+    '''
+    nombre_fichero_config_canal = library.join_path(config.get_data_path(), library.TVSHOW_FILE)
+    data = library.read_file(nombre_fichero_config_canal)
+    dict_data = jsontools.load_json(data)
+    return (data, dict_data)
+
+
+def update_ayuda():
+    '''
+    Se trata de una funcion que tiene como objetivo evitar el loop infinito
+    al hacer la llamada desde ayuda.py
+    '''
+    if platformtools.dialog_yesno("Actulizar biblioteca", "Desea actualizar los enlaces y la biblioteca?") == 1:
+        main()
+        platformtools.dialog_ok("Actualizar biblioteca", "Proceso completado")
+        # TODO: Mejorarlo
+
+    else:
+        platformtools.dialog_notification("Plugin", "Proceso abortado")
+
 
 if __name__ == "__main__":
     main()
