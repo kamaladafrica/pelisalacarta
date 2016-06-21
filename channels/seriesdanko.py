@@ -13,7 +13,7 @@ from core import scrapertools
 from core import servertools
 from core.item import Item
 
-import filtertools
+from core import filtertools
 
 __channel__ = "seriesdanko"
 __category__ = "S"

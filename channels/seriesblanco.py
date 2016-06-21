@@ -16,7 +16,7 @@ from core import scrapertools
 from core import servertools
 from core.item import Item
 
-import filtertools
+from channels import filtertools
 
 __channel__ = "seriesblanco"
 __category__ = "F"
