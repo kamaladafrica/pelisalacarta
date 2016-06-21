@@ -190,11 +190,13 @@ def parse_mixed_results(item,data):
             url = urlparse.urljoin(item.url,scrapedurl)
             itemlist.append( Item(channel=__channel__, action="episodios" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=fulltitle, show=title, fanart=fanart, viewmode="movie"))
 
-    if len(itemlist) in [30, 60] and "offset/" in item.url:
-        old_offset = scrapertools.find_single_match(item.url,"offset/(\d+)/")
-        new_offset = int(old_offset)+len(itemlist)
-        url = item.url.replace("offset/"+old_offset,"offset/"+str(new_offset))
-        itemlist.append( Item(channel=__channel__, action="lista" , title=">> Página siguiente" , extra=item.extra, url=url))
+
+    next_page = scrapertools.find_single_match(data, '<div class="loadingBar" data-url="([^"]+)"')
+    if next_page != "":
+        url = urlparse.urljoin("http://www.pordede.com", next_page)
+        itemlist.append(
+                Item(channel=__channel__, action="lista", title=">> Página siguiente", extra=item.extra, url=url))
+
 
     try:
         import xbmcplugin
