@@ -7,21 +7,25 @@
 	<adult>false</adult>
 	<language>es</language>
 	<include_in_global_search>disabled</include_in_global_search>
-	
+
 	<fanart></fanart>
 	<thumbnail>http://media.tvalacarta.info/pelisalacarta/squares/ayuda.png</thumbnail>
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/ayuda.png</bannermenu>
-	
+
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>1</version>
-	<date>28/08/2015</date>
-	<changes>First pelisalacarta 4 release</changes>
+	<version>2</version>
+	<date>22/06/2016</date>
+	<changes>
+		v.2:
+			- Fixed: No more infinite bucle when clicking on "update tv show episodes and local library".
+			- Optimized: advancedsettings.xml modification system now makes a backup before modifiing if and then adds in the existing avnacedsettings.xml the optimised settings for streaming, instead of replacing the overal file.
+		v.1:- First pelisalacarta 4 release</changes>
 
 	<categories>
 		<category>movie</category>
 	</categories>
 
 
-		
+
 
 </channel>
