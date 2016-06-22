@@ -219,6 +219,7 @@ def enlaces(item):
         try:
             from core import tmdb
             item.infoLabels['year'] = int(year)
+            item.infoLabels['title'] = item.contentTitle
             # Obtenemos los datos basicos de todas las peliculas mediante multihilos
             tmdb.set_infoLabels_item(item, __modo_grafico__)
         except:
