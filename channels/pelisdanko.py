@@ -315,9 +315,8 @@ def findvideos(item):
         else:
             titulo = item.fulltitle
         title = "[COLOR green]%s[/COLOR]    |    [COLOR darkorange][%s][/COLOR]" % (titulo, video_item.server)
-        itemlist.append(Item(channel=__channel__, title=bbcode_kodi2html(title), url=video_item.url,
-                             server=video_item.server, action="play", thumbnail=item.thumbnail, fanart=item.fanart,
-                             plot=item.plot, fulltitle=item.fulltitle, folder=False))
+        itemlist.append(item.clone(title=bbcode_kodi2html(title), url=video_item.url,
+                             server=video_item.server, action="play", text_color="", folder=False))
 
     # Opción "Añadir esta película a la biblioteca de XBMC"
     if config.get_library_support() and len(itemlist) > 0 and item.category != "Cine":
