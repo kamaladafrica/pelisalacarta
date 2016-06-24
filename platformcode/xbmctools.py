@@ -485,7 +485,7 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
     elif opciones[seleccion]==config.get_localized_string(30162): #"Buscar Trailer":
         config.set_setting("subtitulo", "false")
         import sys
-        xbmc.executebuiltin("Container.Update(%s?%s)" % ( sys.argv[ 0 ] , item.clone(channel="trailertools", action="buscartrailer").tourl()))
+        xbmc.executebuiltin("XBMC.RunPlugin(%s?%s)" % ( sys.argv[ 0 ] , item.clone(channel="trailertools", action="buscartrailer", contextual=True).tourl()))
         return
 
     # Si no hay mediaurl es porque el vídeo no está :)
