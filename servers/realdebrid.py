@@ -6,122 +6,150 @@
 #------------------------------------------------------------
 
 import re
-import requests
 import time
 import urllib
 
+from core import channeltools
 from core import config
 from core import jsontools
 from core import logger
 from core import scrapertools
+from platformcode import platformtools
 
 DEBUG = config.get_setting("debug")
 
-headers = {'User-Agent' : 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:47.0) Gecko/20100101 Firefox/47.0',
-           'Accept' : 'application/json, text/javascript, */*; q=0.01',
-           'Accept-Language' : 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
-           'Accept-Encoding' : 'gzip, deflate, br',
-           'Connection' : 'keep-alive',
-           'Referer' : 'https://real-debrid.com/',
-           'Cookie' : 'cookie_accept=y; https=1; lang=es;',
-           'X-Requested-With' : 'XMLHttpRequest'}
+headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:47.0) Gecko/20100101 Firefox/47.0'}
+
 
 # Returns an array of possible video url's from the page_url
-def get_video_url( page_url , premium = False , user="" , password="", video_password="" ):
-    logger.info("pelisalacarta.servers.realdebrid get_video_url( page_url='%s' , user='%s' , password='%s', video_password=%s)"
-                % (page_url , user , "**************************"[0:len(password)] , video_password))
+def get_video_url(page_url, premium=False, video_password=""):
+    logger.info("pelisalacarta.servers.realdebrid get_video_url( page_url='%s' , video_password=%s)"
+                % (page_url, video_password))
     
-    # Hace el login y consigue la cookie
-    params = urllib.urlencode([('user', user), ('pass', password), ('pin_challenge', ''),
-                               ('pin_answer', 'PIN: 0000'), ('time', int(time.time())) ])
-    login_url = 'https://real-debrid.com/ajax/login.php?%s' % params
-    
-    data = requests.get(login_url, headers=headers).text
-    data = jsontools.load_json(data)
-    if 'error' in data and data['error'] == 0:
-        logger.info("pelisalacarta.servers.realdebrid Se ha logueado correctamente")
-        cookie_auth = data['cookie']
-    else:
-        error_message = data['message'].decode('utf-8','ignore')
-        if error_message != "":
-            server_error = "REAL-DEBRID: " + error_message
-        else:
-            server_error = "REAL-DEBRID: Ha ocurrido un error con tu login"
+    # Se comprueba si existe un token guardado y sino se ejecuta el proceso de autentificación
+    token_auth = channeltools.get_channel_setting("realdebrid_token", "realdebrid")
+    if token_auth is None or token_auth == "":
+        token_auth = authentication()
+        if token_auth == "":
+            return ["REAL-DEBRID: No se ha completado el proceso de autentificación", ""]
 
-        return server_error
-    
-    headers['Cookie'] = headers['Cookie'] + cookie_auth 
-    data = scrapertools.downloadpage("https://real-debrid.com/downloader", headers=headers.items())
-    
-    # Se busca el script que contiene el token para la api
-    matchjs = scrapertools.find_single_match(data, '<script type="text/javascript">(eval\(function\(r,e,a,l.*?)</script>')
-    if matchjs != "":
-        while not re.search(r'var tokenBearer', matchjs, re.DOTALL):
-            matchjs = unpack(matchjs)
-            if DEBUG: logger.info("Script token:\n" + matchjs)
-        matches = scrapertools.find_multiple_matches(matchjs, "tokenBearer(?:=|\+=)'([^']+)'")
-        token_auth = ""
-        for token in matches:
-            token_auth += token
-    
-    headers.pop('Cookie', None)
-    headers['Authorization'] = "Bearer %s" % token_auth
-    post = {'link' : page_url, 'password' : video_password}
-    url = 'https://api.real-debrid.com/rest/1.0/unrestrict/link'
-    data = requests.post(url, data=post, headers=headers).text
+    post_link = urllib.urlencode([("link", page_url), ("password", video_password)])
+    headers["Authorization"] = "Bearer %s" % token_auth
+    url = "https://api.real-debrid.com/rest/1.0/unrestrict/link"
+    data = scrapertools.downloadpage(url, post=post_link, headers=headers.items())
     data = jsontools.load_json(data)
+    
+    # Si el token es erróneo o ha caducado, se solicita uno nuevo
+    if "error" in data and data["error"] == "bad_token":
+        debrid_id = channeltools.get_channel_setting("realdebrid_id", "realdebrid")
+        secret = channeltools.get_channel_setting("realdebrid_secret", "realdebrid")
+        refresh = channeltools.get_channel_setting("realdebrid_refresh", "realdebrid")
 
-    itemlist = []
-    if 'download' in data:
-        return data['download'].encode('utf-8')
+        post_token = urllib.urlencode({"client_id": debrid_id, "client_secret": secret, "code": refresh,
+                                       "grant_type": "http://oauth.net/grant_type/device/1.0"})
+        renew_token = scrapertools.downloadpage("https://api.real-debrid.com/oauth/v2/token", post=post_token,
+                                                headers=headers.items())
+        renew_token = jsontools.load_json(renew_token)
+        if not "error" in renew_token:
+            token_auth = renew_token["access_token"]
+            channeltools.set_channel_setting("realdebrid_token", token_auth, "realdebrid")
+            headers["Authorization"] = "Bearer %s" % token_auth
+            data = scrapertools.downloadpage(url, post=post_link, headers=headers.items())
+            data = jsontools.load_json(data)
+
+    if "download" in data:
+        return get_enlaces(data)
     else:
-        if 'error' in data:
-            msg = data['error'].decode('utf-8','ignore')
+        if "error" in data:
+            msg = data["error"].decode("utf-8","ignore")
             msg = msg.replace("hoster_unavailable", "Servidor no disponible") \
-                     .replace("unavailable_file", "Archivo no disponible")
-            server_error = "REAL-DEBRID: " + msg
-            return server_error
+                     .replace("unavailable_file", "Archivo no disponible") \
+                     .replace("hoster_not_free", "Servidor no gratuito") \
+                     .replace("bad_token", "Error en el token")
+            return ["REAL-DEBRID: " + msg, ""]
         else:
-            return "REAL-DEBRID: No se ha generado ningún enlace"
+            return ["REAL-DEBRID: No se ha generado ningún enlace", ""]
 
 
-def unpack(texto):
-    patron = "bearer.join\(''\)\;\}\('(.*)','(.*)','(.*)','(.*)'"
-    r, e, a, l = re.search(patron, texto, re.DOTALL).groups()
-    x = 0
-    y = 0
-    z = 0
-    t = ""
-    token = ""
-    while True:
-        if x < 5:
-            token += r[x]
-        elif x < len(r):
-            t += r[x]
-        x += 1
-        if y < 5:
-            token += e[y]
-        elif y < len(e):
-            t += e[y]
-        y += 1
-        if z < 5:
-            token += a[z]
-        elif z < len(a):
-            t += a[z]
-        z += 1
+def get_enlaces(data):
+    itemlist = []
+    if "alternative" in data:
+        for link in data["alternative"]:
+            video_url = link["download"].encode("utf-8")
+            title = video_url.rsplit(".", 1)[1]
+            if "quality" in link:
+                title += " (" + link["quality"] + ") [realdebrid]"
+            itemlist.append([title, video_url])
+    else:
+        video_url = data["download"].encode("utf-8")
+        title = video_url.rsplit(".", 1)[1] + " [realdebrid]"
+        itemlist.append([title, video_url])
+
+    return itemlist
+
+
+def authentication():
+    logger.info("pelisalacarta.servers.realdebrid authentication")
+    try:
+        client_id = "YTWNFBIJEEBP6"
         
-        if (len(r) + len(e) + len(a) + len(l)) == (len(t) + len(token) + len(l)):
-            break
+        # Se solicita url y código de verificación para conceder permiso a la app
+        url = "http://api.real-debrid.com/oauth/v2/device/code?client_id=%s&new_credentials=yes" % (client_id)
+        data = scrapertools.downloadpage(url, headers=headers.items())
+        data = jsontools.load_json(data)
+        verify_url = data["verification_url"]
+        user_code = data["user_code"]
+        device_code = data["device_code"]
+        intervalo = data["interval"]
+        
+        
+        dialog_auth = platformtools.dialog_progress("Autentificación. No cierres esta ventana!!",
+                                                    "1. Entra en la siguiente url: %s" % verify_url,
+                                                    "2. Ingresa este código en la página y presiona Allow:  %s" % user_code,
+                                                    "3. Espera a que se cierre esta ventana")
+        
+        # Generalmente cada 5 segundos se intenta comprobar si el usuario ha introducido el código
+        while True:
+            time.sleep(intervalo)
+            try:
+                if dialog_auth.iscanceled():
+                    return ""
 
-    y = 0
-    bearer = ""
-    for i in range(0, len(t), 2):
-        c = -1
-        if ord(token[y]) % 2:
-            c = 1
-        bearer += chr(int(t[i:i+2], 32) - c)
-        y += 1
-        if y >= len(token):
-            y= 0
+                url = "https://api.real-debrid.com/oauth/v2/device/credentials?client_id=%s&code=%s" \
+                      % (client_id, device_code)
+                data = scrapertools.downloadpage(url, headers=headers.items())
+                data = jsontools.load_json(data)
+                if "client_secret" in data:
+                    # Código introducido, salimos del bucle
+                    break
+            except:
+                pass
 
-    return bearer
+        try:
+            dialog_auth.close()
+        except:
+            pass
+        
+        debrid_id = data["client_id"]
+        secret = data["client_secret"] 
+
+        # Se solicita el token de acceso y el de actualización para cuando el primero caduque
+        post = urllib.urlencode({"client_id": debrid_id, "client_secret": secret, "code": device_code,
+                                 "grant_type": "http://oauth.net/grant_type/device/1.0"})
+        data = scrapertools.downloadpage("https://api.real-debrid.com/oauth/v2/token", post=post,
+                                         headers=headers.items())
+        data = jsontools.load_json(data)
+
+        token = data["access_token"]
+        refresh = data["refresh_token"]
+
+        channeltools.set_channel_setting("realdebrid_id", debrid_id, "realdebrid")
+        channeltools.set_channel_setting("realdebrid_secret", secret, "realdebrid")
+        channeltools.set_channel_setting("realdebrid_token", token, "realdebrid")
+        channeltools.set_channel_setting("realdebrid_refresh", refresh, "realdebrid")
+        
+        return token
+    except:
+        import traceback
+        logger.error(traceback.format_exc())
+        return ""
