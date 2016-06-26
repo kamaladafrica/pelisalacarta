@@ -48,12 +48,12 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
         video_urls.append([extension + " [Openload]", videourl+header_down+extension])
     else:
         text_encode = scrapertools.find_multiple_matches(data,'<script[^>]+>(ﾟωﾟ.*?)</script>')
-        decodeindex = decode(text_encode[0])
+        decodeindex = aadecode(text_encode[0])
         subtract = scrapertools.find_single_match(decodeindex, 'welikekodi.*?(\([^;]+\))')
         index = int(eval(subtract))
         
         # Buscamos la variable que nos indica el script correcto
-        text_decode = decode(text_encode[index])
+        text_decode = aadecode(text_encode[index])
 
         videourl = scrapertools.find_single_match(text_decode, "(http.*?true)").replace("https://","http://")
         extension = "." + scrapertools.find_single_match(text_decode, "video/(\w+)")
