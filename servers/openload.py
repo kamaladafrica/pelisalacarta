@@ -7,6 +7,7 @@
 
 import re
 
+from core import config
 from core import logger
 from core import scrapertools
 
