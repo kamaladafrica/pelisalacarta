@@ -9,10 +9,11 @@ import urlparse
 
 from core import config
 from core import logger
-from core import filtertools
 from core import scrapertools
 from core import servertools
 from core.item import Item
+
+from channels import filtertools
 
 __channel__ = "seriesdanko"
 __category__ = "S"
