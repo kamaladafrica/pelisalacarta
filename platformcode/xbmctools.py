@@ -105,7 +105,8 @@ def add_new_folder(item, totalItems=0):
     if "4" in item.context:
         searchSubtitleCommand = "XBMC.RunPlugin(%s?%s)" % ( sys.argv[ 0 ] , item.clone(channel="subtitletools", action="searchSubtitle").tourl())
     if "5" in item.context:
-        trailerCommand = "XBMC.Container.Update(%s?%s)" % ( sys.argv[ 0 ] , item.clone(channel="trailertools", action="buscartrailer").tourl())
+        trailerCommand = "XBMC.RunPlugin(%s?%s)" % ( sys.argv[ 0 ] , item.clone(channel="trailertools", action="buscartrailer", contextual=True).tourl())
+        contextCommands.append(("Buscar Trailer", trailerCommand))
     if config.get_platform()=="boxee":
         #logger.info("Modo boxee")
         ok = xbmcplugin.addDirectoryItem( handle = pluginhandle, url = itemurl , listitem=listitem, isFolder=True)
@@ -484,7 +485,7 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
     elif opciones[seleccion]==config.get_localized_string(30162): #"Buscar Trailer":
         config.set_setting("subtitulo", "false")
         import sys
-        xbmc.executebuiltin("Container.Update(%s?%s)" % ( sys.argv[ 0 ] , item.clone(channel="trailertools", action="buscartrailer").tourl()))
+        xbmc.executebuiltin("XBMC.RunPlugin(%s?%s)" % ( sys.argv[ 0 ] , item.clone(channel="trailertools", action="buscartrailer", contextual=True).tourl()))
         return
 
     # Si no hay mediaurl es porque el vídeo no está :)
