@@ -31,8 +31,6 @@ MAIN_HEADERS.append( ["Host","megahd.me"] )
 MAIN_HEADERS.append( ["Referer","http://megahd.me/index.php"] )
 MAIN_HEADERS.append( ["User-Agent","Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.101 Safari/537.36"] )
 
-def isGeneric():
-    return True
 
 def login():
     logger.info("channels.megahd login")
