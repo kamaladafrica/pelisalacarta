@@ -14,9 +14,6 @@ from core.item import Item
 CHANNELNAME = "pordescargadirecta"
 DEBUG = True
 
-def isGeneric():
-    return True
-
 
 def mainlist(item):
     logger.info("[pordescargadirecta.py] mainlist")
