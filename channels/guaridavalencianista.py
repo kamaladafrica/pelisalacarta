@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para guaridavalencianista
@@ -21,8 +21,6 @@ __language__ = "ES"
 
 DEBUG = config.get_setting("debug")
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("[guaridavalencianista.py] mainlist")
@@ -39,7 +37,7 @@ def DocuSeries(item):
     logger.info("[guaridavalencianista.py] DocuSeries")
     itemlist=[]
     
-    # Descarga la p·gina
+    # Descarga la p√°gina
     data = scrapertools.cache_page(item.url)
 
     # Extrae las entradas (carpetas)
@@ -60,7 +58,7 @@ def DocuSeries(item):
 def DocuTag(item):
     logger.info("[guaridavalencianista.py] DocuTag")
     itemlist=[]
-    # Descarga la p·gina
+    # Descarga la p√°gina
     data = scrapertools.cache_page(item.url)
     #~ patronvideos  =    "<a dir='ltr' href='([^']+)'>([^<]+)</a>[^<]+<span class='label-count' dir='ltr'>(.+?)</span>"
     patronvideos  =    "<li[^<]+<a dir='ltr' href='([^']+)'>([^<]+)</a[^<]+<span dir='ltr'>[^0-9]+([0-9]+)[^<]+</span[^<]+</li[^<]+"
@@ -85,7 +83,7 @@ def DocuARCHIVO(item):
     logger.info("[guaridavalencianista.py] DocuSeries")
     itemlist=[]
 
-    # Descarga la p·gina
+    # Descarga la p√°gina
     data = scrapertools.cache_page(item.url)
     patronvideos = "<a class='post-count-link' href='([^']+)'>([^<]+)</a>[^<]+"
     patronvideos +=    "<span class='post-count' dir='ltr'>(.+?)</span>"
@@ -109,7 +107,7 @@ def listvideos(item):
     scrapedthumbnail = ""
     scrapedplot = ""
 
-    # Descarga la p·gina
+    # Descarga la p√°gina
     data = scrapertools.cache_page(item.url)
     patronvideos  = "<h3 class='post-title entry-title'[^<]+"
     patronvideos += "<a href='([^']+)'>([^<]+)</a>.*?"
@@ -140,13 +138,13 @@ def listvideos(item):
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
         itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
 
-    # Extrae la marca de siguiente p·gina
+    # Extrae la marca de siguiente p√°gina
     patronvideos = "<a class='blog-pager-older-link' href='([^']+)'"
     matches = re.compile(patronvideos,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
 
     if len(matches)>0:
-        scrapedtitle = "P·gina siguiente"
+        scrapedtitle = "P√°gina siguiente"
         scrapedurl = urlparse.urljoin(item.url,matches[0])
         scrapedthumbnail = ""
         scrapedplot = ""
@@ -177,14 +175,14 @@ def findvideos(item):
 
     return itemlist
 
-# VerificaciÛn autom·tica de canales: Esta funciÛn debe devolver "True" si todo est· ok en el canal.
+# Verificaci√≥n autom√°tica de canales: Esta funci√≥n debe devolver "True" si todo est√° ok en el canal.
 def test():
     bien = True
     
     # mainlist
     mainlist_items = mainlist(Item())
     
-    # Da por bueno el canal si alguno de los vÌdeos de "Novedades" devuelve mirrors
+    # Da por bueno el canal si alguno de los v√≠deos de "Novedades" devuelve mirrors
     documentales_items = listvideos(mainlist_items[0])
     
     bien = False
