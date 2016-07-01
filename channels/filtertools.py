@@ -61,11 +61,6 @@ __channel__ = "filtertools"
 DEBUG = config.get_setting("debug")
 
 
-# hay que ponerlo sino da fallo en el launcher.py
-def isGeneric():
-    return True
-
-
 def get_filtered_links(list_item, channel):
     """
     Devuelve una lista de enlaces filtrados.
