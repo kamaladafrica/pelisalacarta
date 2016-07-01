@@ -31,10 +31,6 @@ headers = [['User-Agent','Mozilla/5.0 (Windows NT 10.0; WOW64; rv:45.0) Gecko/20
           ['Referer',host]]
 
 
-def isGeneric():
-    return True
-
-
 def openconfig(item):
     if config.get_library_support():
         config.open_settings()
