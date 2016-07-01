@@ -67,10 +67,6 @@ animeflv_data.json
 '''
 
 
-def isGeneric():
-    return True
-
-
 def mainlist(item):
     logger.info("pelisalacarta.channels.animeflv mainlist")
 
