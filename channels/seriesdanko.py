@@ -35,10 +35,6 @@ CONTEXT = ("", "menu filtro")[OPCION_FILTRO]
 DEBUG = config.get_setting("debug")
 
 
-def isGeneric():
-    return True
-
-
 def mainlist(item):
     logger.info("pelisalacarta.seriesdanko mainlist")
 
