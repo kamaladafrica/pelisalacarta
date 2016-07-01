@@ -48,10 +48,6 @@ else:
     keyboard = False
 
 
-def isGeneric():
-    return True
-
-
 def buscartrailer(item):
     logger.info("pelisalacarta.channels.trailertools buscartrailer")
 
