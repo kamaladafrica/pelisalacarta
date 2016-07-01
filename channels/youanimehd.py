@@ -23,8 +23,6 @@ __channel__ = "youanimehd"
 __language__ = "ES"
 __creationdate__ = "130202"
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("pelisalacarta.channels.youanimehd mainlist")
