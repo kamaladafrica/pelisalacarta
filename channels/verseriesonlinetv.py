@@ -66,8 +66,6 @@ def browser(url):
     response = rsp.content
     return response'''
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("pelisalacarta.bricocine mainlist")
