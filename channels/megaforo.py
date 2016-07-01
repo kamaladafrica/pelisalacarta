@@ -33,9 +33,6 @@ MAIN_HEADERS.append( ["Referer","http://mega-foro.com/"] )
 MAIN_HEADERS.append( ["User-Agent","Mozilla/5.0 (Windows NT 6.2; rv:23.0) Gecko/20100101 Firefox/23.0"] )
 
 
-def isGeneric():
-    return True
-
 def login():
     logger.info("[megaforo.py] login")
     # Calcula el hash del password
