@@ -30,10 +30,10 @@ def mainlist(item):
     logger.info("pelisalacarta.channels.animeid mainlist")
     
     itemlist = []
-    itemlist.append( Item(channel=__channel__, action="novedades_series"    , title="Últimas series"     , url="http://www.animeid.moe/" ))
-    itemlist.append( Item(channel=__channel__, action="novedades_episodios" , title="Últimos episodios"  , url="http://www.animeid.moe/" ))
-    itemlist.append( Item(channel=__channel__, action="generos"             , title="Listado por genero" , url="http://www.animeid.moe/" ))
-    itemlist.append( Item(channel=__channel__, action="letras"              , title="Listado alfabetico" , url="http://www.animeid.moe/" ))
+    itemlist.append( Item(channel=__channel__, action="novedades_series"    , title="Últimas series"     , url="http://www.animeid.tv/" ))
+    itemlist.append( Item(channel=__channel__, action="novedades_episodios" , title="Últimos episodios"  , url="http://www.animeid.tv/" ))
+    itemlist.append( Item(channel=__channel__, action="generos"             , title="Listado por genero" , url="http://www.animeid.tv/" ))
+    itemlist.append( Item(channel=__channel__, action="letras"              , title="Listado alfabetico" , url="http://www.animeid.tv/" ))
     itemlist.append( Item(channel=__channel__, action="search"              , title="Buscar..." ))
 
     return itemlist
@@ -58,13 +58,13 @@ def search(item,texto):
     itemlist = []
 
     if item.url=="":
-        item.url="http://www.animeid.moe/ajax/search?q="
+        item.url="http://www.animeid.tv/ajax/search?q="
     texto = texto.replace(" ","+")
     item.url = item.url+texto
     try:
         headers = []
         headers.append(["User-Agent","Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:19.0) Gecko/20100101 Firefox/19.0"])
-        headers.append(["Referer","http://www.animeid.moe/"])
+        headers.append(["Referer","http://www.animeid.tv/"])
         headers.append(["X-Requested-With","XMLHttpRequest"])
         data = scrapertools.cache_page(item.url, headers=headers)
         data = data.replace("\\","")
@@ -295,7 +295,7 @@ def findvideos(item):
     #http%3A%2F%2Fwww.animeid.moe%2Fstream%2F41TLmCj7_3q4BQLnfsban7%2F1440956023.mp4
     #http://www.animeid.moe/stream/41TLmCj7_3q4BQLnfsban7/1440956023.mp4
     #http://www.animeid.tv/stream/oiW0uG7yqBrg5TVM5Cm34n/1385370686.mp4
-    patron  = '(http://www.animeid.moe/stream/[^/]+/\d+.[a-z0-9]+)'
+    patron  = '(http://www.animeid.tv/stream/[^/]+/\d+.[a-z0-9]+)'
     matches = re.compile(patron,re.DOTALL).findall(data)
     encontrados = set()
     for url in matches:
