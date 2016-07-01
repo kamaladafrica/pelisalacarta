@@ -314,28 +314,3 @@ def findvideos(item):
                         url=CHANNEL_HOST + url_siguiente, thumbnail=item.thumbnail, plot=item.plot, show=item.show,
                         fanart=item.thumbnail, folder=True))
     return itemlist
-
-# Verificación automática de canales: Esta función debe devolver "True" si todo está ok en el canal.
-def test():
-    bien = True
-    
-    # mainlist
-    mainlist_items = mainlist(Item())
-
-    # Comprueba que todas las opciones tengan algo (excepto el buscador)
-    for mainlist_item in mainlist_items:
-        if mainlist_item.action!="search":
-            exec "itemlist = "+mainlist_item.action+"(mainlist_item)"
-            if len(itemlist)==0:
-                return False
-
-    # Da por bueno el canal si alguno de los vídeos de las series en "Destacados" devuelve mirrors
-    episodios_items = novedades_episodios(mainlist_items[0])
-    bien = False
-    for episodio_item in episodios_items:
-        mirrors = findvideos(episodio_item)
-        if len(mirrors)>0:
-            bien = True
-            break
-    
-    return bien

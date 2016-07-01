@@ -108,20 +108,3 @@ def play(item):
         videoitem.channel = item.channel
     
     return itemlist
-
-
-# Verificación automática de canales: Esta función debe devolver "True" si todo está ok en el canal.
-def test():
-    # mainlist
-    mainlist_items = mainlist(Item())
-    
-    # Da por bueno el canal si alguno de los vídeos de "Ultimos videos" devuelve mirrors
-    ultimos_items = ultimo(mainlist_items[0])
-    
-    bien = False
-    for ultimo_item in ultimos_items:
-        play_items = detail(ultimo_item)
-        if len(play_items)>0:
-            return True
-    
-    return False

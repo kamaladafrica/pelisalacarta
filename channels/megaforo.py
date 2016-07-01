@@ -155,16 +155,3 @@ def findvideos(item):
      videoitem.plot = item.plot
      videoitem.title = "["+videoitem.server+videoitem.title + " " + item.title
     return itemlist  
-
-
-def test():
-    # Navega hasta la lista de películas
-    mainlist_items = mainlist(Item())
-    menupeliculas_items = menupeliculas(mainlist_items[0])
-    peliculas_items = peliculas(menupeliculas_items[0])
-    # Si encuentra algún enlace, lo da por bueno
-    for pelicula_item in peliculas_items:
-        itemlist = findbitly_link(pelicula_item)
-        if not itemlist is None and len(itemlist)>=0:
-            return True
-    return False

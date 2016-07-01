@@ -198,31 +198,3 @@ def play(item):
         videoitem.title = "["+videoitem.server+"]"
 
     return itemlist
-
-# Verificación automática de canales: Esta función debe devolver "True" si todo está ok en el canal.
-def test():
-    bien = True
-    
-    # mainlist
-    mainlist_items = mainlist(Item())
-    
-    # Comprueba que todas las opciones tengan algo (excepto el buscador)
-    for mainlist_item in mainlist_items:
-        if mainlist_item.action!="search":
-            exec "itemlist = "+mainlist_item.action+"(mainlist_item)"
-            if len(itemlist)==0:
-                return false
-    
-    # Comprueba si alguno de las series de "Novedades" devuelve mirrors
-    portada_items = completo(mainlist_items[0])
-    
-    bien = False
-    for portada_item in portada_items:
-        episodios_items = serie(portada_item)
-        if len(episodios_items)>0:
-            video_item = play(episodios_items[0])
-            if len(video_item)>0:
-                bien = True
-                break
-    
-    return bien

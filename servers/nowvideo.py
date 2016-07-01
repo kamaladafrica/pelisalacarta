@@ -233,9 +233,3 @@ def find_videos(data):
     
 
     return devuelve
-
-def test():
-
-    video_urls = get_video_url("http://www.nowvideo.eu/video/xuntu4pfq0qye")
-
-    return len(video_urls)>0

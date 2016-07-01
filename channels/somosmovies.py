@@ -294,22 +294,3 @@ def play(item):
             videoitem.folder=False
 
     return itemlist
-
-# Verificación automática de canales: Esta función debe devolver "True" si todo está ok en el canal.
-def test():
-    bien = True
-
-    # mainlist
-    mainlist_items = mainlist(Item())
-    peliculas_items = listado(mainlist_items[0])
-    if len(peliculas_items)==0:
-        print "No salen películas"
-        return False
-    
-    for pelicula_item in peliculas_items:
-        mirrors = findvideos(pelicula_item)
-        if len(mirrors)>0:
-            return True
-
-    print "No hay ningún vídeo en la sección de películas"
-    return False

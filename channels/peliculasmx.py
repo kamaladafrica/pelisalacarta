@@ -181,16 +181,3 @@ def search(item,texto):
             itemlist.append( Item(channel=item.channel, action="listacapitulos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
 
     return itemlist'''
-
-
-# Verificación automática de canales: Esta función debe devolver "True" si está ok el canal.
-def test():
-    mainlist_items = mainlist(Item())
-    novedades_items = peliculas(mainlist_items[0])
-
-    for novedades_item in novedades_items:
-        mirrors = findvideos( item=novedades_item )
-        if len(mirrors)>0:
-            return True
-
-    return False

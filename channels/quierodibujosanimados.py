@@ -110,24 +110,3 @@ def episodios(item):
         itemlist.append( Item(channel=item.channel, action="episodios", title=">> Página siguiente" , url=urlparse.urljoin(item.url,next_page_url) , folder=True, fanart="http://pelisalacarta.mimediacenter.info/fanart/quierodibujosanimados.jpg") )
 
     return itemlist
-
-# Verificación automática de canales: Esta función debe devolver "True" si todo está ok en el canal.
-def test():
-    bien = True
-    
-    from core import servertools
-
-    # mainlist
-    serie_itemlist = mainlist(Item())
-    
-    # Comprueba que todas las opciones tengan algo (excepto el buscador)
-    for serie_item in serie_itemlist:
-        episodio_itemlist = episodios(serie_item)
-
-        for episodio_item in episodio_itemlist:
-            mirrors = servertools.find_video_items(item=episodio_item)
-
-            if len(mirrors)>0:
-                return True
-
-    return False

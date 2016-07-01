@@ -164,22 +164,3 @@ def findvideos(item):
         itemlist.append( Item(channel=item.channel, action="play", server=server, title=videotitle , url=url , thumbnail=item.thumbnail , plot=item.plot , fulltitle = item.title , folder=False) )
 
     return itemlist
-
-# Verificación automática de canales: Esta función debe devolver "True" si todo está ok en el canal.
-def test():
-    bien = True
-    
-    # mainlist
-    mainlist_items = mainlist(Item())
-    
-    # Da por bueno el canal si alguno de los vídeos de "Novedades" devuelve mirrors
-    documentales_items = listvideos(mainlist_items[0])
-    
-    bien = False
-    for documental_item in documentales_items:
-        mirrors = findvideos(documental_item)
-        if len(mirrors)>0:
-            bien = True
-            break
-    
-    return bien

@@ -132,15 +132,3 @@ def play(item):
       
     itemlist.sort(key=lambda item: item.fulltitle.lower(), reverse=True)
     return itemlist
-
-# Verificación automática de canales: Esta función debe devolver "True" si está ok el canal.
-def test():
-    # mainlist
-    mainlist_items = mainlist(Item())
-    videos_items = videos(mainlist_items[0])
-    play_items = play(videos_items[0])
-
-    if len(play_items)==0:
-        return False
-
-    return True

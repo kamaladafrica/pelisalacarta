@@ -63,9 +63,3 @@ def find_videos(text):
 
 
     return devuelve
-
-def test():
-
-    video_urls = get_video_url("http://www.junkyvideo.com/embed/sy6wen17")
-
-    return len(video_urls)>0

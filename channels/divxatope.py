@@ -302,25 +302,3 @@ def extract_url(item):
         videoitem.channel = item.channel
 
     return itemlist    
-
-# Verificaci?n autom?tica de canales: Esta funci?n debe devolver "True" si todo est? ok en el canal.
-def test():
-    bien = True
-    
-    # mainlist
-    mainlist_items = mainlist(Item())
-    
-    # Da por bueno el canal si alguno de los v?deos de "Novedades" devuelve mirrors
-    for mainlist_item in mainlist_items:
-        if "DVDRip Castellano" in mainlist_item.title:
-            peliculas_items = lista(mainlist_item)
-            break
-    
-    bien = False
-    for pelicula_item in peliculas_items:
-        mirrors = findvideos(pelicula_item)
-        if len(mirrors)>0:
-            bien = True
-            break
-
-    return bien

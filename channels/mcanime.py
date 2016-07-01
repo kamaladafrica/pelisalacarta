@@ -475,21 +475,3 @@ def forumdetail(item):
             video.action = "play"
 
     return itemlist
-
-
-# Verificación automática de canales: Esta función debe devolver "True" si está ok el canal.
-def test():
-    from core import servertools
-    
-    # mainlist
-    mainlist_items = mainlist(Item())
-    # Da por bueno el canal si alguno de los vídeos de "Novedades" devuelve mirrors
-    novedades_items = home(mainlist_items[0])
-    bien = False
-    for novedad_item in novedades_items:
-        mirrors = servertools.find_video_items( item=novedad_item )
-        if len(mirrors)>0:
-            bien = True
-            break
-
-    return bien

@@ -65,16 +65,3 @@ def find_videos(data):
             logger.info("  url duplicada=" + url)
 
     return devuelve
-
-
-def test():
-    video_urls = get_video_url("http://www.dailymotion.com/video/xrva9o")
-    if len(video_urls) == 0:
-        return false
-
-    # FLV (No soportado)
-    # video_urls = get_video_url("http://www.dailymotion.com/video/xnu7n")
-    # if len(video_urls)==0:
-    #    return false;
-
-    return True

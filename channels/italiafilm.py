@@ -105,19 +105,3 @@ def peliculas(item):
         pass
 
     return itemlist
-
-# Verificación automática de canales: Esta función debe devolver "True" si está ok el canal.
-def test():
-    from core import servertools
-    # mainlist
-    mainlist_items = mainlist(Item())
-    # Da por bueno el canal si alguno de los vídeos de "Novedades" devuelve mirrors
-    peliculas_items = peliculas(mainlist_items[0])
-    bien = False
-    for pelicula_item in peliculas_items:
-        mirrors = servertools.find_video_items( item=pelicula_item )
-        if len(mirrors)>0:
-            bien = True
-            break
-
-    return bien

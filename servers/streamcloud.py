@@ -122,8 +122,3 @@ if __name__ == "__main__":
             premium=False
         
         print get_video_url(video_url,premium,login,password)
-
-def test():
-    video_urls = get_video_url("http://streamcloud.eu/132qd8f6gaj2")
-
-    return len(video_urls)>0

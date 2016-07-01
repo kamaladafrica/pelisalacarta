@@ -91,20 +91,3 @@ def play(item):
         itemlist.append( Item(channel=item.channel, action="play" , title=item.title , url=url, thumbnail=item.thumbnail, plot=item.plot, server="directo", folder=False))
 
     return itemlist
-
-
-# Verificación automática de canales: Esta función debe devolver "True" si está ok el canal.
-def test():
-    # mainlist
-    mainlist_items = mainlist(Item())
-    if len(mainlist_items)==0:
-        print "ecartelera: Lista de canales vacía"
-        return False
-    
-    # Da por bueno el canal si alguno de los vídeos de "Novedades" devuelve mirrors
-    video_items = play(mainlist_items[0])
-    if len(mainlist_items)==0:
-        print "ecartelera: No devuelve videos"
-        return False
-
-    return True

@@ -337,26 +337,6 @@ def playlist(item):
     return itemlist    
     
     
-# Verificación automática de canales: Esta función debe devolver "True" si está ok el canal.
-def test():
-    try:
-        from servers import servertools
-    except:
-        from core import servertools
-    # mainlist
-    mainlist_items = mainlist(Item())
-    # Da por bueno el canal si alguno de los vídeos de "Novedades" devuelve mirrors
-    items = novedades(mainlist_items[0])
-    bien = False
-    for singleitem in items:
-        mirrors = servertools.find_video_items( item=singleitem )
-        if len(mirrors)>0:
-            bien = True
-            break
-
-    return bien
-
-
 def dialog_notification(heading, message, icon=0, time=5000, sound=True):
     import xbmcgui
     dialog = xbmcgui.Dialog()

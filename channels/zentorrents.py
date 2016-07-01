@@ -832,8 +832,6 @@ class TextBox1( xbmcgui.WindowDialog ):
             if action == ACTION_SELECT_ITEM:
                self.close()
 
-def test():
-    return True
 
 def info_capitulos(item):
     logger.info("pelisalacarta.bricocine trailer")
@@ -922,7 +920,3 @@ class TextBox2( xbmcgui.WindowDialog ):
         def onAction(self, action):
             if action == ACTION_SELECT_ITEM:
                self.close()
-def test():
-    return True
-    
-        

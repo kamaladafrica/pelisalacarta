@@ -242,24 +242,3 @@ def findvideos(item):
             videoitem.title = item.title
         
     return itemlist
-
-# Verificación automática de canales: Esta función debe devolver "True" si está ok el canal.
-def test():
-    # mainlist
-    mainlist_items = mainlist(Item())
-    
-    # Da por bueno el canal si alguno de los vídeos de "Novedades" devuelve mirrors
-    menupeliculas_items = menupeliculas(mainlist_items[0])
-    peliculas_items = peliculas(menupeliculas_items[0])
-    bien = False
-    for pelicula_item in peliculas_items:
-        lista_enlaces = enlaces(item=pelicula_item)
-        for un_enlace in lista_enlaces:
-            mirrors = findvideos(item=un_enlace)
-            if len(mirrors)>0:
-                bien = True
-                break
-        if bien:
-            break
-
-    return bien

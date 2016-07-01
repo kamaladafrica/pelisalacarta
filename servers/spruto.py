@@ -58,8 +58,3 @@ def find_videos(data):
             logger.info("  url duplicada=" + url)
 
     return devuelve
-
-
-def test():
-    video_urls = get_video_url("http://www.spruto.tv/iframe_embed.php?video_id=138274")
-    return len(video_urls) > 0

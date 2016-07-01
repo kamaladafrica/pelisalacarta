@@ -202,15 +202,3 @@ def findvideos(item):
         logger.info("No encontrado enlace PUTLOCKER")
 
     return itemlist
-
-# Verificación automática de canales: Esta función debe devolver "True" si está ok el canal.
-def test():
-    mainlist_items = mainlist(Item())
-    peliculas_items = peliculas(mainlist_items[0])
-
-    for pelicula_item in peliculas_items:
-        mirrors = findvideos( item=pelicula_item )
-        if len(mirrors)>0:
-            return True
-
-    return False

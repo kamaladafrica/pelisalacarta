@@ -128,7 +128,3 @@ def play(item):
         itemlist.append( item )
 
     return itemlist
-
-# Verificación automática de canales: Esta función debe devolver "True" si todo está ok en el canal.
-def test():
-    return True

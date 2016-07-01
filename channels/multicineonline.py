@@ -572,9 +572,3 @@ class TextBox1( xbmcgui.WindowDialog ):
         def onAction(self, action):
             if action == ACTION_SELECT_ITEM:
                 self.close()
-
-def test():
-    return True
-
-
-

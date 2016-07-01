@@ -220,12 +220,3 @@ def ver(item):
     itemlist.append( Item(channel=item.channel, action="descargabg",title="descargar", url=item.url , thumbnail=item.thumbnail ,plot=item.plot, viewmode="movie_with_plot") )
 
     return itemlist
-
-
-
-# Verificación automática de canales: Esta función debe devolver "True" si todo está ok en el canal.
-def test():
-    bien = True
-
-  
-    return bien

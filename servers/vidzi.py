@@ -72,9 +72,3 @@ def find_videos(data):
         else:
             logger.info("  url duplicada="+url)
     return devuelve
-
-def test():
-
-    video_urls = get_video_url("http://vidzi.tv/embed-b44xh3bd3fjd.html")
-
-    return len(video_urls)>0

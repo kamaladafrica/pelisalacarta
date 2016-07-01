@@ -108,7 +108,3 @@ def find_videos(data):
             logger.info("  url duplicada="+url)
 
     return devuelve
-
-def test():
-    video_urls = get_video_url("http://www.bitvid.sx/file/51eb2f5707c36")
-    return len(video_urls)>0

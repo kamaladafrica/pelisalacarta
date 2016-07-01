@@ -270,17 +270,3 @@ def listalfabetico(item):
     itemlist.append( Item(channel=item.channel, action="peliculas" , title="Z"  , url="http://www.peliculasyonkis.sx/search/listado-Z"))
 
     return itemlist
-
-# Verificación automática de canales: Esta función debe devolver "True" si está ok el canal.
-def test():
-    # mainlist
-    mainlist_items = mainlist(Item())
-    # Da por bueno el canal si alguno de los vídeos de "Novedades" devuelve mirrors
-    episode_items = lastepisodes(mainlist_items[0])
-    bien = False
-    for episode_item in episode_items:
-        mediaurls = findvideos( episode_item )
-        if len(mediaurls)>0:
-            return True
-
-    return False

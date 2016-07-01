@@ -247,32 +247,3 @@ def episodios(item):
             pass
 
     return itemlist
-
-# Verificación automática de canales: Esta función debe devolver "True" si todo está ok en el canal.
-def test():
-    bien = True
-    
-    # mainlist
-    mainlist_items = mainlist(Item())
-    
-    # Comprueba que todas las opciones tengan algo (excepto el buscador)
-    for mainlist_item in mainlist_items:
-        if mainlist_item.action!="search":
-            exec "itemlist = "+mainlist_item.action+"(mainlist_item)"
-            if len(itemlist)==0:
-                return false
-    
-    # Comprueba si alguno de los vídeos de "Novedades" devuelve mirrors
-    series_items = ultimos(mainlist_items[0])
-    
-    for serie_item in series_items:
-        episodios_items = episodios(serie_item)
-
-        bien = False
-        for episodio_item in episodios_items:
-            mirrors = findvideos(item=episodio_item)
-            if len(mirrors)>0:
-                bien = True
-                break
-        
-    return bien

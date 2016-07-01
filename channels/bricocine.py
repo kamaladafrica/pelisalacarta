@@ -1983,10 +1983,6 @@ class TextBox1( xbmcgui.WindowDialog ):
                   pass
                self.close()
 
-def test():
-    return True
-        
-
 
 def info_capitulos(item):
 
@@ -2115,8 +2111,6 @@ class TextBox2( xbmcgui.WindowDialog ):
                except:
                    xbmc.executebuiltin('Action(reloadkeymaps)')
                self.close()
-def test():
-    return True
 
 
 def translate(to_translate, to_langage="auto", langage="auto"):

@@ -586,12 +586,3 @@ class TextBox1( xbmcgui.WindowDialog ):
         def onAction(self, action):
             if action == ACTION_SELECT_ITEM or action == ACTION_GESTURE_SWIPE_LEFT:
                self.close()
-
-def test():
-    return True
-
-
-
-
-
-

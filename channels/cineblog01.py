@@ -210,35 +210,3 @@ def listserie(item):
         pass
 
     return itemlist
-
-# Verificaci�n autom�tica de canales: Esta funci�n debe devolver "True" si todo est� ok en el canal.
-def test():
-    bien = True
-    
-    # mainlist
-    mainlist_items = mainlist(Item())
-    
-    # Comprueba que todas las opciones por categorias tengan algo (excepto los buscadores)
-    for mainlist_item in mainlist_items:
-        if mainlist_item.action.startswith("menu"):
-            exec "itemlist = "+mainlist_item.action+"(mainlist_item)"
-            
-            # Lee la primera categor�a s�lo
-            exec "itemlist2 ="+itemlist[0].action+"(itemlist[0])"
-            if len(itemlist2)==0:
-                return false
-
-    # Comprueba si alguno de los v�deos de "Novedades" devuelve mirrors
-    for mainlist_item in mainlist_items:
-        if mainlist_item.action=="peliculas" or mainlist_item.action=="listserie":
-            exec "itemlist = "+mainlist_item.action+"(mainlist_item)"
-    
-            bien = False
-            for episodio_item in itemlist:
-                from core import servertools
-                mirrors = servertools.find_video_items(item=episodio_item)
-                if len(mirrors)>0:
-                    bien = True
-                    break
-
-    return bien

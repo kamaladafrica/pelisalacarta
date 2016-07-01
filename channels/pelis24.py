@@ -182,21 +182,3 @@ def idiomas(item):
         itemlist.append( Item(channel=item.channel, action="peliculas", title=title , url=url , folder=True) )
 
     return itemlist
-    
-    
-# Verificacion automatica de canales: Esta funcion debe devolver "True" si esta ok el canal.
-def test():
-    from core import servertools
-    
-    # mainlist
-    mainlist_items = mainlist(Item())
-    # Da por bueno el canal si alguno de los videos de "Novedades" devuelve mirrors
-    novedades_items = peliculas(mainlist_items[0])
-    bien = False
-    for novedades_item in novedades_items:
-        mirrors = servertools.find_video_items( item=novedades_item )
-        if len(mirrors)>0:
-            bien = True
-            break
-
-    return bien

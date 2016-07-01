@@ -432,33 +432,6 @@ def findvideos(item):
     return itemlist
 
 
-# Verificación automática de canales: Esta función debe devolver "True" si todo está ok en el canal.
-def test():
-    bien = True
-
-    # mainlist
-    mainlist_items = mainlist(Item())
-
-    # Comprueba que todas las opciones tengan algo (excepto el buscador)
-    for mainlist_item in mainlist_items:
-        if mainlist_item.action != "search":
-            exec("itemlist = "+mainlist_item.action+"(mainlist_item)")
-            if len(itemlist) == 0:
-                return False
-
-    # Comprueba si alguno de los vídeos de "Novedades" devuelve mirrors
-    episodios_items = novedades(mainlist_items[0])
-
-    bien = False
-    for episodio_item in episodios_items:
-        mirrors = findvideos(episodio_item)
-        if len(mirrors) > 0:
-            bien = True
-            break
-
-    return bien
-
-
 def numbered_for_tratk(show, season, episode):
     """
     Devuelve la temporada y episodio convertido para que se marque correctamente en tratk.tv

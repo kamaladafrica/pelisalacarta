@@ -182,20 +182,3 @@ def peliculas(item):
         itemlist.append( Item(channel=item.channel, action="peliculas", title="Next Page >>" , url=scrapedurl , folder=True) )
 
     return itemlist
-
-# Verificaci�n autom�tica de canales: Esta funci�n debe devolver "True" si est� ok el canal.
-def test():
-    from core import servertools
-    
-    # mainlist
-    mainlist_items = mainlist(Item())
-    # Da por bueno el canal si alguno de los v�deos de "Novedades" devuelve mirrors
-    novedades_items = peliculas(mainlist_items[0])
-    bien = False
-    for novedades_item in novedades_items:
-        mirrors = servertools.find_video_items( item=novedades_item )
-        if len(mirrors)>0:
-            bien = True
-            break
-
-    return bien
