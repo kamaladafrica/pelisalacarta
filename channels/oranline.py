@@ -45,10 +45,6 @@ viewmode_options = {0: 'movie_with_plot', 1: 'movie', 2: 'list'}
 viewmode = viewmode_options[config.get_setting('viewmode', __channel__)]
 
 
-def isGeneric():
-    return True
-
-
 def mainlist(item):
     logger.info("pelisalacarta.channels.oranline mainlist")
 
