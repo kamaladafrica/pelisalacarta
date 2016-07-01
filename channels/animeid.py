@@ -23,8 +23,6 @@ __language__ = "ES"
 
 CHANNEL_HOST = "http://animeid.tv/"
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("pelisalacarta.channels.animeid mainlist")
