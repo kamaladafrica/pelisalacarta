@@ -12,11 +12,6 @@ from core import scrapertools
 from core import servertools
 from core.item import Item
 
-__channel__ = "allpeliculas"
-__category__ = "A"
-__type__ = "generic"
-__title__ = "Allpeliculas"
-__language__ = "ES"
 
 DEBUG = config.get_setting("debug")
 IDIOMAS = {"Castellano":"CAST","Latino":"LAT","Subtitulado":"VOSE","Ingles":"VO"}
@@ -25,11 +20,11 @@ IDIOMAS = {"Castellano":"CAST","Latino":"LAT","Subtitulado":"VOSE","Ingles":"VO"
 def mainlist(item):
     logger.info("pelisalacarta.channels.allpeliculas mainlist")
     itemlist = []
-    itemlist.append(Item(channel=__channel__, title="Películas" , action="lista", url="http://allpeliculas.co/Movies/fullView/1/0/&ajax=1", thumbnail= "http://i.imgur.com/aWCDWtn.png", fanart="http://i.imgur.com/c3HS8kj.png"))
-    itemlist.append(Item(channel=__channel__, title="Series"      , action="lista", url="http://allpeliculas.co/Movies/fullView/1/86/?ajax=1&withoutFilter=1", thumbnail= "http://i.imgur.com/aWCDWtn.png", fanart="http://i.imgur.com/9loVksV.png", extra="tv"))
-    itemlist.append(Item(channel=__channel__, title="Géneros"      , action="subindice", thumbnail= "http://i.imgur.com/aWCDWtn.png", fanart="http://i.imgur.com/ymazCWq.jpg"))
-    itemlist.append(Item(channel=__channel__, title="Índices"      , action="indices", thumbnail= "http://i.imgur.com/aWCDWtn.png", fanart="http://i.imgur.com/c3HS8kj.png"))
-    itemlist.append(Item(channel=__channel__, title="Buscar..."      , action="search", thumbnail= "http://i.imgur.com/aWCDWtn.png"))
+    itemlist.append(Item(channel=item.channel, title="Películas" , action="lista", url="http://allpeliculas.co/Movies/fullView/1/0/&ajax=1", thumbnail= "http://i.imgur.com/aWCDWtn.png", fanart="http://i.imgur.com/c3HS8kj.png"))
+    itemlist.append(Item(channel=item.channel, title="Series"      , action="lista", url="http://allpeliculas.co/Movies/fullView/1/86/?ajax=1&withoutFilter=1", thumbnail= "http://i.imgur.com/aWCDWtn.png", fanart="http://i.imgur.com/9loVksV.png", extra="tv"))
+    itemlist.append(Item(channel=item.channel, title="Géneros"      , action="subindice", thumbnail= "http://i.imgur.com/aWCDWtn.png", fanart="http://i.imgur.com/ymazCWq.jpg"))
+    itemlist.append(Item(channel=item.channel, title="Índices"      , action="indices", thumbnail= "http://i.imgur.com/aWCDWtn.png", fanart="http://i.imgur.com/c3HS8kj.png"))
+    itemlist.append(Item(channel=item.channel, title="Buscar..."      , action="search", thumbnail= "http://i.imgur.com/aWCDWtn.png"))
     return itemlist
 
 def search(item, texto):
@@ -38,7 +33,7 @@ def search(item, texto):
     try:
         itemlist = busqueda(item)
         if item.title == "Buscar..." and len(itemlist) == 0:
-            itemlist.append(Item(channel=__channel__, title="[COLOR sandybrown][B]Búsqueda sin resultado[/B][/COLOR]" , thumbnail= "http://i.imgur.com/aWCDWtn.png"))
+            itemlist.append(Item(channel=item.channel, title="[COLOR sandybrown][B]Búsqueda sin resultado[/B][/COLOR]" , thumbnail= "http://i.imgur.com/aWCDWtn.png"))
         return itemlist
     except:
         import sys
@@ -72,9 +67,9 @@ def busqueda(item):
         infolabels['rating'] = vote
         plot['infoLabels'] = infolabels
         if "Series" not in genre:
-            itemlist.append(Item(channel=__channel__, action="findvideos", title=titulo , fulltitle = title, url=url , thumbnail=thumb , plot=str(plot), fanart= item.fanart, context = "0", contentTitle=title, folder=True) )
+            itemlist.append(Item(channel=item.channel, action="findvideos", title=titulo , fulltitle = title, url=url , thumbnail=thumb , plot=str(plot), fanart= item.fanart, context = "0", contentTitle=title, folder=True) )
         else:
-            itemlist.append(Item(channel=__channel__, action="temporadas", title=titulo , fulltitle = title, url=url , thumbnail=thumb , plot=str(plot), fanart= item.fanart, context = "2", contentTitle=title, folder=True) )
+            itemlist.append(Item(channel=item.channel, action="temporadas", title=titulo , fulltitle = title, url=url , thumbnail=thumb , plot=str(plot), fanart= item.fanart, context = "2", contentTitle=title, folder=True) )
 
     #Paginacion
     patron = 'class="pagination-active".*?href="([^"]+)">(.*?)</a>'
@@ -82,18 +77,18 @@ def busqueda(item):
     if len(matches) > 0:
         url = matches[0]+"&ajax=1"
         url = url.replace("#","")
-        itemlist.append(Item(channel=__channel__, action="busqueda", title="Página "+matches[1] , url=url , folder=True) )
+        itemlist.append(Item(channel=item.channel, action="busqueda", title="Página "+matches[1] , url=url , folder=True) )
 
     return itemlist
 
 def indices(item):
     logger.info("pelisalacarta.channels.allpeliculas indices")
     itemlist = []
-    itemlist.append(Item(channel=__channel__, title="Alfabético"      , action="subindice", thumbnail=item.thumbnail , fanart=item.fanart))
-    itemlist.append(Item(channel=__channel__, title="Por idioma"      , action="subindice", thumbnail=item.thumbnail , fanart=item.fanart))
-    itemlist.append(Item(channel=__channel__, title="Por valoración"      , action="lista", url="http://allpeliculas.co/Movies/fullView/1/0/rating:imdb|date:1900-2016|alphabet:all|?ajax=1&withoutFilter=1", thumbnail=item.thumbnail , fanart=item.fanart))
-    itemlist.append(Item(channel=__channel__, title="Por año"      , action="subindice", thumbnail=item.thumbnail , fanart=item.fanart))
-    itemlist.append(Item(channel=__channel__, title="Por calidad"      , action="subindice", thumbnail=item.thumbnail , fanart=item.fanart))
+    itemlist.append(Item(channel=item.channel, title="Alfabético"      , action="subindice", thumbnail=item.thumbnail , fanart=item.fanart))
+    itemlist.append(Item(channel=item.channel, title="Por idioma"      , action="subindice", thumbnail=item.thumbnail , fanart=item.fanart))
+    itemlist.append(Item(channel=item.channel, title="Por valoración"      , action="lista", url="http://allpeliculas.co/Movies/fullView/1/0/rating:imdb|date:1900-2016|alphabet:all|?ajax=1&withoutFilter=1", thumbnail=item.thumbnail , fanart=item.fanart))
+    itemlist.append(Item(channel=item.channel, title="Por año"      , action="subindice", thumbnail=item.thumbnail , fanart=item.fanart))
+    itemlist.append(Item(channel=item.channel, title="Por calidad"      , action="subindice", thumbnail=item.thumbnail , fanart=item.fanart))
     return itemlist
 
 def lista(item):
@@ -134,9 +129,9 @@ def lista(item):
         infolabels['rating'] = vote
         plot['infoLabels'] = infolabels
         if (item.extra != "tv") | ("Series" not in genre):
-            itemlist.append(Item(channel=__channel__, action="findvideos", title=titulo , fulltitle = title, url=url , thumbnail=thumb , plot=str(plot), fanart= item.fanart, context = "0", contentTitle=title, folder=True) )
+            itemlist.append(Item(channel=item.channel, action="findvideos", title=titulo , fulltitle = title, url=url , thumbnail=thumb , plot=str(plot), fanart= item.fanart, context = "0", contentTitle=title, folder=True) )
         else:
-            itemlist.append(Item(channel=__channel__, action="temporadas", title=titulo , fulltitle = title, url=url , thumbnail=thumb , plot=str(plot), fanart= item.fanart, context = "2", contentTitle=title, folder=True) )
+            itemlist.append(Item(channel=item.channel, action="temporadas", title=titulo , fulltitle = title, url=url , thumbnail=thumb , plot=str(plot), fanart= item.fanart, context = "2", contentTitle=title, folder=True) )
 
     #Paginacion
     patron = 'class="pagination-active".*?href="([^"]+)">(.*?)</a>'
@@ -145,9 +140,9 @@ def lista(item):
         url = matches[0]+"&ajax=1"
         url = url.replace("#","")
         if item.extra != "tv":
-            itemlist.append(Item(channel=__channel__, action="lista", title="Página "+matches[1] , url=url , folder=True) )
+            itemlist.append(Item(channel=item.channel, action="lista", title="Página "+matches[1] , url=url , folder=True) )
         else:
-            itemlist.append(Item(channel=__channel__, action="lista", title="Página "+matches[1] , url=url , extra="tv", folder=True) )
+            itemlist.append(Item(channel=item.channel, action="lista", title="Página "+matches[1] , url=url , extra="tv", folder=True) )
 
     return itemlist
 
@@ -159,30 +154,30 @@ def subindice(item):
     if item.title == "Géneros":
         for key, value in indice_genero.items():
             url = url_base.replace("/0/","/"+key+"/")
-            itemlist.append(Item(channel=__channel__, action="lista", title=value , url=url, thumbnail=item.thumbnail ,fanart= item.fanart, folder=True) )
+            itemlist.append(Item(channel=item.channel, action="lista", title=value , url=url, thumbnail=item.thumbnail ,fanart= item.fanart, folder=True) )
             itemlist.sort(key=lambda item: item.title)
 
     elif item.title == "Alfabético":
         for i in range(len(indice_alfa)):
             url = url_base.replace(":all", ":"+indice_alfa[i])
-            itemlist.append(Item(channel=__channel__, action="lista", title=indice_alfa[i] , url=url, thumbnail=item.thumbnail ,fanart= item.fanart, folder=True) )
+            itemlist.append(Item(channel=item.channel, action="lista", title=indice_alfa[i] , url=url, thumbnail=item.thumbnail ,fanart= item.fanart, folder=True) )
 
     elif item.title == "Por idioma":
         for key, value in indice_idioma.items():
             url = url_base.replace("2016|","2016|language:"+key)
-            itemlist.append(Item(channel=__channel__, action="lista", title=value , url=url, thumbnail=item.thumbnail ,fanart= item.fanart, folder=True) )
+            itemlist.append(Item(channel=item.channel, action="lista", title=value , url=url, thumbnail=item.thumbnail ,fanart= item.fanart, folder=True) )
             itemlist.sort(key=lambda item: item.title)
 
     elif item.title == "Por año":
         for i in range(len(indice_year)):
             year = indice_year[i]
             url = url_base.replace("1900-2016",year+"-"+year)
-            itemlist.append(Item(channel=__channel__, action="lista", title=year , url=url, thumbnail=item.thumbnail ,fanart= item.fanart, folder=True) )
+            itemlist.append(Item(channel=item.channel, action="lista", title=year , url=url, thumbnail=item.thumbnail ,fanart= item.fanart, folder=True) )
 
     elif item.title == "Por calidad":
         for key, value in indice_calidad.items():
             url = "http://allpeliculas.co/Search/advancedSearch?searchType=movie&movieName=&movieDirector=&movieGenre=&movieActor=&movieYear=&language=&movieTypeId="+key+"&ajax=1"
-            itemlist.append(Item(channel=__channel__, action="busqueda", title=value , url=url, thumbnail=item.thumbnail ,fanart= item.fanart, folder=True) )
+            itemlist.append(Item(channel=item.channel, action="busqueda", title=value , url=url, thumbnail=item.thumbnail ,fanart= item.fanart, folder=True) )
             itemlist.sort(key=lambda item: item.title)
 
     return itemlist
@@ -211,7 +206,7 @@ def findvideos(item):
              idioma = IDIOMAS.get(idiomas_videos.get(language))
              titulo = "Enlace encontrado en [COLOR green][B]"+enlaces[0][0]+"[/B][/COLOR] [COLOR sandybrown]["+idioma+"][/COLOR] ["+calidad_videos.get(calidad)+"]"
              servidor = enlaces[0][2]
-             itemlist.append(Item(channel=__channel__, action="play", server=servidor, title=titulo , url=enlaces[0][1] , fulltitle = item.fulltitle, thumbnail=item.thumbnail , fanart=fanart, plot=str(sinopsis) , extra=idioma, folder=False) )
+             itemlist.append(Item(channel=item.channel, action="play", server=servidor, title=titulo , url=enlaces[0][1] , fulltitle = item.fulltitle, thumbnail=item.thumbnail , fanart=fanart, plot=str(sinopsis) , extra=idioma, folder=False) )
 
     #Enlace Descarga
     patron = '<span class="movie-downloadlink-list" id_movies_types="([^"]+)".*?id_lang="([^"]+)".*?online-link="([^"]+)"'
@@ -226,12 +221,12 @@ def findvideos(item):
             if mostrar_server:
                 idioma = IDIOMAS.get(idiomas_videos.get(language))
                 titulo = "Enlace encontrado en [COLOR blue][B]"+enlaces[0][0]+"[/B][/COLOR] [COLOR sandybrown]["+idioma+"][/COLOR] ["+calidad_videos.get(calidad)+"]"
-                itemlist.append(Item(channel=__channel__, action="play", server=servidor, title=titulo , url=enlaces[0][1] , fulltitle = item.fulltitle, thumbnail=item.thumbnail , fanart=fanart, plot=str(sinopsis) , extra=idioma, folder=False) )
+                itemlist.append(Item(channel=item.channel, action="play", server=servidor, title=titulo , url=enlaces[0][1] , fulltitle = item.fulltitle, thumbnail=item.thumbnail , fanart=fanart, plot=str(sinopsis) , extra=idioma, folder=False) )
 
     itemlist.sort(key=lambda item:(item.extra, item.server))
     if len(itemlist) > 0 and item.category == "" or item.category == "Buscador":
         if config.get_library_support():
-            itemlist.append( Item(channel=__channel__, title="[COLOR green]Añadir enlaces a la biblioteca[/COLOR]", url=item.url, action="add_pelicula_to_library", fulltitle=item.fulltitle, show=item.fulltitle))
+            itemlist.append( Item(channel=item.channel, title="[COLOR green]Añadir enlaces a la biblioteca[/COLOR]", url=item.url, action="add_pelicula_to_library", fulltitle=item.fulltitle, show=item.fulltitle))
     return itemlist
 
 def temporadas(item):
@@ -248,7 +243,7 @@ def temporadas(item):
     matches = scrapertools.find_multiple_matches(data, patron)
     matches = list(set(matches))
     for scrapedtitle in matches:
-        itemlist.append(Item(channel=__channel__, action="findvideostv", title="Temporada "+scrapedtitle , fulltitle = item.fulltitle, url=item.url , thumbnail=item.thumbnail , fanart=fanart, plot=str(sinopsis), context = "2", contentTitle=item.fulltitle, folder=True) )
+        itemlist.append(Item(channel=item.channel, action="findvideostv", title="Temporada "+scrapedtitle , fulltitle = item.fulltitle, url=item.url , thumbnail=item.thumbnail , fanart=fanart, plot=str(sinopsis), context = "2", contentTitle=item.fulltitle, folder=True) )
 
     itemlist.sort(key=lambda item: item.title)
     return itemlist
@@ -283,7 +278,7 @@ def findvideostv(item):
                  item.plot, thumbnail = infoepi(otmdb, season, episode)
              except:
                  pass
-             itemlist.append(Item(channel=__channel__, action="play", server=servidor, title=titulo, url=enlaces[0][1], fulltitle = item.fulltitle, thumbnail=thumbnail, fanart=item.fanart, plot=str(item.plot), extra=episode, folder=False))
+             itemlist.append(Item(channel=item.channel, action="play", server=servidor, title=titulo, url=enlaces[0][1], fulltitle = item.fulltitle, thumbnail=thumbnail, fanart=item.fanart, plot=str(item.plot), extra=episode, folder=False))
 
     #Enlace Descarga
     patron = '<span class="movie-downloadlink-list" id_movies_types="([^"]+)".*?episode="([^"]+)" season="'+season+'" id_lang="([^"]+)".*?online-link="([^"]+)"'
@@ -303,7 +298,7 @@ def findvideostv(item):
                     item.plot, thumbnail = infoepi(otmdb, season, episode)
                 except:
                     pass
-                itemlist.append(Item(channel=__channel__, action="play", server=servidor, title=titulo , url=enlaces[0][1] , fulltitle = item.fulltitle, thumbnail=thumbnail , fanart=item.fanart, plot=str(item.plot) , extra=episode, folder=False) )
+                itemlist.append(Item(channel=item.channel, action="play", server=servidor, title=titulo , url=enlaces[0][1] , fulltitle = item.fulltitle, thumbnail=thumbnail , fanart=item.fanart, plot=str(item.plot) , extra=episode, folder=False) )
 
     itemlist.sort(key=lambda item:(int(item.extra), item.title))
     return itemlist

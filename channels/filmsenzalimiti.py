@@ -12,12 +12,6 @@ from core import logger
 from core import scrapertools
 from core.item import Item
 
-__channel__ = "filmsenzalimiti"
-__category__ = "F"
-__type__ = "generic"
-__title__ = "Film Senza Limiti (IT)"
-__language__ = "IT"
-__creationdate__ = "20120605"
 
 DEBUG = config.get_setting("debug")
 
@@ -26,12 +20,12 @@ def mainlist(item):
     logger.info("[filmsenzalimiti.py] mainlist")
     
     itemlist = []
-    itemlist.append( Item(channel=__channel__, title="Film Del Cinema", action="novedades" , url="http://www.filmsenzalimiti.net/genere/film"))
-    itemlist.append( Item(channel=__channel__, title="Film Dvdrip"    , action="novedades", url="http://www.filmsenzalimiti.net/genere/dvd-rip"))
-    itemlist.append( Item(channel=__channel__, title="Film Sub Ita"   , action="novedades", url="http://www.filmsenzalimiti.net/genere/subita"))
-    itemlist.append( Item(channel=__channel__, title="Serie TV"       , action="novedades", url="http://www.filmsenzalimiti.net/genere/serie-tv"))
-    itemlist.append( Item(channel=__channel__, title="Film per genere", action="categorias", url="http://www.filmsenzalimiti.net/"))
-    itemlist.append( Item(channel=__channel__, action="search"     , title="Cerca" ))
+    itemlist.append( Item(channel=item.channel, title="Film Del Cinema", action="novedades" , url="http://www.filmsenzalimiti.net/genere/film"))
+    itemlist.append( Item(channel=item.channel, title="Film Dvdrip"    , action="novedades", url="http://www.filmsenzalimiti.net/genere/dvd-rip"))
+    itemlist.append( Item(channel=item.channel, title="Film Sub Ita"   , action="novedades", url="http://www.filmsenzalimiti.net/genere/subita"))
+    itemlist.append( Item(channel=item.channel, title="Serie TV"       , action="novedades", url="http://www.filmsenzalimiti.net/genere/serie-tv"))
+    itemlist.append( Item(channel=item.channel, title="Film per genere", action="categorias", url="http://www.filmsenzalimiti.net/"))
+    itemlist.append( Item(channel=item.channel, action="search"     , title="Cerca" ))
     return itemlist
 
 def categorias(item):
@@ -49,7 +43,7 @@ def categorias(item):
         scrapedthumbnail = ""
         scrapedplot = ""
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="novedades", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="novedades", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
 
     return itemlist
 
@@ -88,12 +82,12 @@ def novedades(item):
         scrapedplot = ""
         scrapedtitle = scrapertools.get_filename_from_url(scrapedurl).replace("-"," ").replace("/","").replace(".html","").capitalize().strip()
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="findvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
 
     # Siguiente
     try:
         pagina_siguiente = scrapertools.get_match(data,'class="nextpostslink" rel="next" href="([^"]+)"')
-        itemlist.append( Item(channel=__channel__, action="novedades", title=">> Avanti" , url=pagina_siguiente , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="novedades", title=">> Avanti" , url=pagina_siguiente , folder=True) )
     except:
         pass
 

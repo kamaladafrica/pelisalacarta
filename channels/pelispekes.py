@@ -12,11 +12,6 @@ from core import scrapertools
 from core import servertools
 from core.item import Item
 
-__channel__ = "pelispekes"
-__category__ = "F"
-__type__ = "generic"
-__title__ = "Pelis Pekes"
-__language__ = "ES"
 
 DEBUG = config.get_setting("debug")
 

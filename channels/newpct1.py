@@ -16,23 +16,14 @@ from core.item import Item
 
 DEBUG = config.get_setting("debug")
 
-__category__ = "A"
-__type__ = "generic"
-__title__ = "Newpct1"
-__channel__ = "newpct1"
-__adult__ = "false"
-__thumbnail__ = "http://s3.postimg.org/c7oceldcz/logof.jpg"
-__language__ = "ES"
-__creationdate__ = "20141102"
-
 
 def mainlist(item):
     logger.info("[newpct1.py] mainlist")
     
     itemlist = []
-    itemlist.append( Item(channel=__channel__, action="submenu", title="Películas", url="http://www.newpct1.com/", extra="peliculas") )
-    itemlist.append( Item(channel=__channel__, action="submenu", title="Series", url="http://www.newpct1.com/", extra="series") )
-    itemlist.append( Item(channel=__channel__, action="search", title="Buscar") )
+    itemlist.append( Item(channel=item.channel, action="submenu", title="Películas", url="http://www.newpct1.com/", extra="peliculas") )
+    itemlist.append( Item(channel=item.channel, action="submenu", title="Series", url="http://www.newpct1.com/", extra="series") )
+    itemlist.append( Item(channel=item.channel, action="search", title="Buscar") )
     
     return itemlist
 
@@ -67,8 +58,8 @@ def submenu(item):
         title = scrapedtitle.strip()
         url = scrapedurl
 
-        itemlist.append( Item(channel=__channel__, action="listado" ,title=title, url=url, extra="pelilist") )
-        itemlist.append( Item(channel=__channel__, action="alfabeto" ,title=title+" [A-Z]", url=url, extra="pelilist") )
+        itemlist.append( Item(channel=item.channel, action="listado" ,title=title, url=url, extra="pelilist") )
+        itemlist.append( Item(channel=item.channel, action="alfabeto" ,title=title+" [A-Z]", url=url, extra="pelilist") )
     
     return itemlist
 
@@ -89,7 +80,7 @@ def alfabeto(item):
         title = scrapedtitle.upper()
         url = scrapedurl
 
-        itemlist.append( Item(channel=__channel__, action="completo" ,title=title, url=url, extra=item.extra) )
+        itemlist.append( Item(channel=item.channel, action="completo" ,title=title, url=url, extra=item.extra) )
 
     return itemlist
 
@@ -153,7 +144,7 @@ def listado(item):
         if item.extra!="buscar-list":
             title = title + ' ' + calidad
             
-        itemlist.append( Item(channel=__channel__, action=action, title=title, url=url, thumbnail=thumbnail, extra=extra, show=show ) )
+        itemlist.append( Item(channel=item.channel, action=action, title=title, url=url, thumbnail=thumbnail, extra=extra, show=show ) )
 
     if "pagination" in data:
         patron = '<ul class="pagination">(.*?)</ul>'
@@ -161,7 +152,7 @@ def listado(item):
         
         if "Next" in paginacion:
             url_next_page  = scrapertools.get_match(paginacion,'<a href="([^>]+)>Next</a>')[:-1].replace(" ","%20")
-            itemlist.append( Item(channel=__channel__, action="listado" , title=">> Página siguiente" , url=url_next_page, extra=item.extra))            
+            itemlist.append( Item(channel=item.channel, action="listado" , title=">> Página siguiente" , url=url_next_page, extra=item.extra))            
     #logger.info("[newpct1.py] listado items:" + str(len(itemlist)))
     return itemlist
 
@@ -320,7 +311,7 @@ def get_episodios(item):
                 title = item.title + " ("+ temp + 'x' + cap + ")"
             
             #logger.info("[newpct1.py] get_episodios: fanart= " +item.fanart)
-            itemlist.append( Item(channel=__channel__, action="findvideos", title=title, url=url, thumbnail=item.thumbnail, show=item.show, fanart=item.fanart) )
+            itemlist.append( Item(channel=item.channel, action="findvideos", title=title, url=url, thumbnail=item.thumbnail, show=item.show, fanart=item.fanart) )
         except:
             logger.info("[newpct1.py] ERROR al añadir un episodio")
     if "pagination" in data:
@@ -331,7 +322,7 @@ def get_episodios(item):
             url_next_page  = scrapertools.get_match(paginacion,'<a href="([^>]+)>Next</a>')[:-1]
             url_next_page= url_next_page.replace(" ","%20")
             #logger.info("[newpct1.py] get_episodios: url_next_page= " + url_next_page)
-            itemlist.append( Item(channel=__channel__, action="get_episodios" , title=">> Página siguiente" , url=url_next_page))
+            itemlist.append( Item(channel=item.channel, action="get_episodios" , title=">> Página siguiente" , url=url_next_page))
 
     return itemlist
 
@@ -371,7 +362,7 @@ def findvideos(item):
     # escraped torrent
     url = scrapertools.find_single_match(data,patron)
     if url!="":
-        itemlist.append( Item(channel=__channel__, action="play", server="torrent", title=title+" [torrent]", fulltitle=title, url=url , thumbnail=caratula, plot=item.plot, folder=False) )
+        itemlist.append( Item(channel=item.channel, action="play", server="torrent", title=title+" [torrent]", fulltitle=title, url=url , thumbnail=caratula, plot=item.plot, folder=False) )
 
     # escraped ver vídeos, descargar vídeos un link, múltiples liks
     data = data.replace("'",'"')
@@ -408,7 +399,7 @@ def findvideos(item):
                 devuelve= server_module.find_videos(enlace)
                 if devuelve:
                     enlace=devuelve[0][1]
-                    itemlist.append( Item(fanart=item.fanart, channel=__channel__, action="play", server=servidor, title=titulo , fulltitle = item.title, url=enlace , thumbnail=logo , plot=item.plot, folder=False) )
+                    itemlist.append( Item(fanart=item.fanart, channel=item.channel, action="play", server=servidor, title=titulo , fulltitle = item.title, url=enlace , thumbnail=logo , plot=item.plot, folder=False) )
             except:
                 pass
         
@@ -429,7 +420,7 @@ def findvideos(item):
                     devuelve= server_module.find_videos(enlace)
                     if devuelve:
                         enlace=devuelve[0][1]
-                        itemlist.append( Item(fanart=item.fanart, channel=__channel__, action="play", server=servidor, title=parte_titulo , fulltitle = item.title, url=enlace , thumbnail=logo , plot=item.plot, folder=False) )
+                        itemlist.append( Item(fanart=item.fanart, channel=item.channel, action="play", server=servidor, title=parte_titulo , fulltitle = item.title, url=enlace , thumbnail=logo , plot=item.plot, folder=False) )
                 except:
                     pass
     return itemlist

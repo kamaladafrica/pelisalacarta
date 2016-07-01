@@ -13,11 +13,6 @@ from core import logger
 from core import scrapertools
 from core.item import Item
 
-__channel__ = "filmpertutti"
-__category__ = "F"
-__type__ = "generic"
-__title__ = "filmpertutti"
-__language__ = "IT"
 
 DEBUG = config.get_setting("debug")
 
@@ -25,12 +20,12 @@ DEBUG = config.get_setting("debug")
 def mainlist(item):
     logger.info("pelisalacarta.filmpertutti mainlist")
     itemlist = []
-    itemlist.append( Item(channel=__channel__, title="Ultimi film inseriti", action="peliculas", url="http://www.filmpertutti.co/category/film/"))
-    itemlist.append( Item(channel=__channel__, title="Categorie film", action="categorias", url="http://www.filmpertutti.co"))
-    itemlist.append( Item(channel=__channel__, title="Serie TV" , action="peliculas", url="http://www.filmpertutti.co/category/serie-tv/"))
-    itemlist.append( Item(channel=__channel__, title="Anime Cartoon Italiani", action="peliculas", url="http://www.filmpertutti.co/category/anime-cartoon-italiani/"))
-    itemlist.append( Item(channel=__channel__, title="Anime Cartoon Sub-ITA", action="peliculas", url="http://www.filmpertutti.co/category/anime-cartoon-sub-ita/"))
-    itemlist.append( Item(channel=__channel__, title="Cerca...", action="search"))
+    itemlist.append( Item(channel=item.channel, title="Ultimi film inseriti", action="peliculas", url="http://www.filmpertutti.co/category/film/"))
+    itemlist.append( Item(channel=item.channel, title="Categorie film", action="categorias", url="http://www.filmpertutti.co"))
+    itemlist.append( Item(channel=item.channel, title="Serie TV" , action="peliculas", url="http://www.filmpertutti.co/category/serie-tv/"))
+    itemlist.append( Item(channel=item.channel, title="Anime Cartoon Italiani", action="peliculas", url="http://www.filmpertutti.co/category/anime-cartoon-italiani/"))
+    itemlist.append( Item(channel=item.channel, title="Anime Cartoon Sub-ITA", action="peliculas", url="http://www.filmpertutti.co/category/anime-cartoon-sub-ita/"))
+    itemlist.append( Item(channel=item.channel, title="Cerca...", action="search"))
     return itemlist
 
 def categorias(item):
@@ -48,7 +43,7 @@ def categorias(item):
         scrapedplot = ""
         scrapedthumbnail = ""
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="peliculas", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="peliculas", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
 
     return itemlist
 
@@ -99,13 +94,13 @@ def peliculas(item):
         if title.startswith("Link to "):
             title = title[8:]
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="findvideos", title=title , url=url , thumbnail=thumbnail , plot=plot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="findvideos", title=title , url=url , thumbnail=thumbnail , plot=plot , folder=True) )
 
     # Extrae el paginador
     next_page_url = scrapertools.find_single_match(data,'<a href="([^"]+)" >Avanti</a>')
     if next_page_url!="":
         next_page_url = urlparse.urljoin(item.url,next_page_url)
-        itemlist.append( Item(channel=__channel__, action="peliculas", title="Next Page >>" , url=next_page_url , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="peliculas", title="Next Page >>" , url=next_page_url , folder=True) )
 
     return itemlist
 

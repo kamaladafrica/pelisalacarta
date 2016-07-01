@@ -13,11 +13,6 @@ from core import logger
 from core import scrapertools
 from core.item import Item
 
-__channel__ = "serietvsubita"
-__category__ = "F,S,D"
-__type__ = "generic"
-__title__ = "serietvsubita"
-__language__ = "ES"
 
 DEBUG = config.get_setting("debug")
 
@@ -26,9 +21,9 @@ def mainlist(item):
     logger.info("pelisalacarta.channels.serietvsubita mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, action="episodios" , title="Novità" , url="http://serietvsubita.net/", folder=True))
-    itemlist.append( Item(channel=__channel__, action="series"    , title="Serie" , url="http://serietvsubita.net/", folder=True))
-    itemlist.append( Item(channel=__channel__, action="search"    , title="Search...", folder=True))
+    itemlist.append( Item(channel=item.channel, action="episodios" , title="Novità" , url="http://serietvsubita.net/", folder=True))
+    itemlist.append( Item(channel=item.channel, action="series"    , title="Serie" , url="http://serietvsubita.net/", folder=True))
+    itemlist.append( Item(channel=item.channel, action="search"    , title="Search...", folder=True))
     return itemlist
 
 def search(item,texto):
@@ -66,7 +61,7 @@ def series(item):
         plot = ""
 
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="episodios", title=title , fulltitle = title, url=url , thumbnail=thumbnail , plot=plot , folder=True, show=title))
+        itemlist.append( Item(channel=item.channel, action="episodios", title=title , fulltitle = title, url=url , thumbnail=thumbnail , plot=plot , folder=True, show=title))
 
     return itemlist
 
@@ -98,6 +93,6 @@ def episodios(item):
         plot = ""
 
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="findvideos", title=title , fulltitle = title, url=url , thumbnail=thumbnail , plot=plot , show=item.show, folder=True))
+        itemlist.append( Item(channel=item.channel, action="findvideos", title=title , fulltitle = title, url=url , thumbnail=thumbnail , plot=plot , show=item.show, folder=True))
 
     return itemlist

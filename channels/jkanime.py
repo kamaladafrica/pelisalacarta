@@ -5,33 +5,27 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import urlparse,urllib2,urllib,re
-import os, sys
+import re
+import sys
+import urlparse
 
-from core import logger
 from core import config
+from core import logger
 from core import scrapertools
 from core.item import Item
 
 DEBUG = config.get_setting("debug")
-
-__category__ = "A"
-__type__ = "generic"
-__title__ = "JKanime"
-__channel__ = "jkanime"
-__language__ = "ES"
-__creationdate__ = "20121015"
 
 
 def mainlist(item):
     logger.info("pelisalacarta.channels.jkanime mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, action="ultimos_capitulos" , title="Últimos Capitulos"           , url="http://jkanime.net/" ))
-    itemlist.append( Item(channel=__channel__, action="ultimos" , title="Últimos"           , url="http://jkanime.net/" ))
-    itemlist.append( Item(channel=__channel__, action="letras"  , title="Listado Alfabetico", url="http://jkanime.net/" ))
-    itemlist.append( Item(channel=__channel__, action="generos" , title="Listado por Genero", url="http://jkanime.net/" ))
-    itemlist.append( Item(channel=__channel__, action="search"  , title="Buscar" ))
+    itemlist.append( Item(channel=item.channel, action="ultimos_capitulos" , title="Últimos Capitulos"           , url="http://jkanime.net/" ))
+    itemlist.append( Item(channel=item.channel, action="ultimos" , title="Últimos"           , url="http://jkanime.net/" ))
+    itemlist.append( Item(channel=item.channel, action="letras"  , title="Listado Alfabetico", url="http://jkanime.net/" ))
+    itemlist.append( Item(channel=item.channel, action="generos" , title="Listado por Genero", url="http://jkanime.net/" ))
+    itemlist.append( Item(channel=item.channel, action="search"  , title="Buscar" ))
   
     return itemlist
 
@@ -55,7 +49,7 @@ def ultimos_capitulos(item):
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
-        itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot))        
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot))        
 
     return itemlist
 
@@ -90,7 +84,7 @@ def ultimos(item):
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
-        itemlist.append( Item(channel=__channel__, action="episodios" , title=title , url=url, thumbnail=thumbnail, plot=plot))        
+        itemlist.append( Item(channel=item.channel, action="episodios" , title=title , url=url, thumbnail=thumbnail, plot=plot))        
 
     return itemlist
 
@@ -111,7 +105,7 @@ def generos(item):
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
-        itemlist.append( Item(channel=__channel__, action="series" , title=title , url=url, thumbnail=thumbnail, plot=plot))        
+        itemlist.append( Item(channel=item.channel, action="series" , title=title , url=url, thumbnail=thumbnail, plot=plot))        
 
     return itemlist
 
@@ -132,7 +126,7 @@ def letras(item):
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
-        itemlist.append( Item(channel=__channel__, action="series" , title=title , url=url, thumbnail=thumbnail, plot=plot))        
+        itemlist.append( Item(channel=item.channel, action="series" , title=title , url=url, thumbnail=thumbnail, plot=plot))        
 
     return itemlist
 
@@ -181,7 +175,7 @@ def series(item):
         plot = scrapertools.htmlclean(scrapedplot)
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
-        itemlist.append( Item(channel=__channel__, action="episodios" , title=title , url=url, thumbnail=thumbnail, fanart=thumbnail, plot=plot, extra=extra, viewmode="movie_with_plot"))        
+        itemlist.append( Item(channel=item.channel, action="episodios" , title=title , url=url, thumbnail=thumbnail, fanart=thumbnail, plot=plot, extra=extra, viewmode="movie_with_plot"))        
 
     try:
         siguiente = scrapertools.get_match(data,'<a class="listsiguiente" href="([^"]+)" >Resultados Siguientes')
@@ -190,7 +184,7 @@ def series(item):
         scrapedthumbnail = ""
         scrapedplot = ""
 
-        itemlist.append( Item(channel=__channel__, action="series", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="series", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
     except:
         pass
     return itemlist
@@ -243,12 +237,12 @@ def episodios(item):
             plot = scrapedplot
             if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
-            itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , url=url, thumbnail=thumbnail, fanart=thumbnail, plot=plot))        
+            itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, fanart=thumbnail, plot=plot))        
 
     if len(itemlist)==0:
         try:
             porestrenar = scrapertools.get_match(data,'<div[^<]+<span class="labl">Estad[^<]+</span[^<]+<span[^>]+>Por estrenar</span>')
-            itemlist.append( Item(channel=__channel__, action="findvideos" , title="Serie por estrenar" , url="", thumbnail=scrapedthumbnail, fanart=scrapedthumbnail, plot=scrapedplot, server="directo", folder=False))
+            itemlist.append( Item(channel=item.channel, action="findvideos" , title="Serie por estrenar" , url="", thumbnail=scrapedthumbnail, fanart=scrapedthumbnail, plot=scrapedplot, server="directo", folder=False))
         except:
             pass
 

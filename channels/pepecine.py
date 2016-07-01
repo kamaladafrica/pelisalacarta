@@ -17,47 +17,38 @@ from core import scrapertools
 from core import servertools
 from core.item import Item
 
-__adult__ = "false"
-__category__ = "F,S"
-__type__ = "generic"
-__title__ = "Pepecine"
-__channel__ = "pepecine"
-__language__ = "ES"
-__creationdate__ = "20151025"
-__thumbnail__ ="https://d12.usercdn.com/i/02278/nwm6todp6yyk.png"
 __url_base__ = "http://pepecine.com"
-
-fanart_host= "https://d12.usercdn.com/i/02278/u875vjx9c0xs.png"
+fanart_host = "https://d12.usercdn.com/i/02278/u875vjx9c0xs.png"
 
 
 def mainlist(item):
     logger.info("[pepecine.py] mainlist")
 
     itemlist = []
-    itemlist.append( myItem(channel=__channel__, action="listado", title="[COLOR 0xFFEB7600][B]Películas[/B][/COLOR]", 
+    itemlist.append( myItem(channel=item.channel, action="listado", title="[COLOR 0xFFEB7600][B]Películas[/B][/COLOR]", 
                             url=urlparse.urljoin(__url_base__,"plugins/last_update_links.php?type=movie&offset=0&limit=30"), 
                             extra="movie", fanart=fanart_host, thumbnail="https://d5.usercdn.com/dl/i/02360/swdcjg65xzj0.png"))
-    itemlist.append( myItem(channel=__channel__, action="sub_filtrar", title="     [COLOR 0xFFEB7600]Filtrar películas por género[/COLOR]", 
+    itemlist.append( myItem(channel=item.channel, action="sub_filtrar", title="     [COLOR 0xFFEB7600]Filtrar películas por género[/COLOR]", 
                             url=urlparse.urljoin(__url_base__,"plugins/last_update_links.php?type=movie&offset=0&limit=30"), 
                             extra="movie", fanart=fanart_host, thumbnail="https://d5.usercdn.com/dl/i/02360/k0x1sqi7d0sb.png"))
-    itemlist.append( myItem(channel=__channel__, action="search", title="     [COLOR 0xFFEB7600]Buscar películas por título[/COLOR]", 
+    itemlist.append( myItem(channel=item.channel, action="search", title="     [COLOR 0xFFEB7600]Buscar películas por título[/COLOR]", 
                             url=urlparse.urljoin(__url_base__,"plugins/last_update_links.php?type=movie&offset=0&limit=30"), 
                             extra="movie", fanart=fanart_host, thumbnail="https://d5.usercdn.com/dl/i/02360/196ccvz5nkfq.png"))
     
-    itemlist.append( myItem(channel=__channel__, action="listado", title="[COLOR 0xFFEB7600][B]Series[/B][/COLOR]", 
+    itemlist.append( myItem(channel=item.channel, action="listado", title="[COLOR 0xFFEB7600][B]Series[/B][/COLOR]", 
                             url=urlparse.urljoin(__url_base__,"plugins/last_update_links.php?type=series&offset=0&limit=30"), 
                             extra="series", fanart=fanart_host, thumbnail="https://d5.usercdn.com/dl/i/02360/a99fzwbqdaen.png"))
-    itemlist.append( myItem(channel=__channel__, action="sub_filtrar", title="     [COLOR 0xFFEB7600]Filtrar series por género[/COLOR]", 
+    itemlist.append( myItem(channel=item.channel, action="sub_filtrar", title="     [COLOR 0xFFEB7600]Filtrar series por género[/COLOR]", 
                             url=urlparse.urljoin(__url_base__,"plugins/last_update_links.php?type=series&offset=0&limit=30"), 
                             extra="series", fanart=fanart_host, thumbnail="https://d5.usercdn.com/dl/i/02360/evnj5mxsvh0h.png"))
-    itemlist.append( myItem(channel=__channel__, action="search", title="     [COLOR 0xFFEB7600]Buscar series por título[/COLOR]", 
+    itemlist.append( myItem(channel=item.channel, action="search", title="     [COLOR 0xFFEB7600]Buscar series por título[/COLOR]", 
                             url=urlparse.urljoin(__url_base__,"plugins/last_update_links.php?type=series&offset=0&limit=30"), 
                             extra="series", fanart=fanart_host, thumbnail="https://d5.usercdn.com/dl/i/02360/him4zov0aa37.png"))
-    itemlist.append( myItem(channel=__channel__, action="listado", title="     [COLOR 0xFFEB7600]Ultimos capítulos actualizados[/COLOR]",
+    itemlist.append( myItem(channel=item.channel, action="listado", title="     [COLOR 0xFFEB7600]Ultimos capítulos actualizados[/COLOR]",
                             url=urlparse.urljoin(__url_base__,"plugins/combined_json.php?&offset=0&limit=30&type=series"), 
                             extra="series_novedades", fanart=fanart_host, thumbnail="https://d5.usercdn.com/dl/i/02360/a99fzwbqdaen.png"))
     
-    #itemlist.append( myItem( channel=__channel__, action="test", title="Test", url="http://pepecine.com/series-online/8763-breaking-bad/seasons/1/episodes/7", extra="series", fanart=fanart_host ) )
+    #itemlist.append( myItem( channel=item.channel, action="test", title="Test", url="http://pepecine.com/series-online/8763-breaking-bad/seasons/1/episodes/7", extra="series", fanart=fanart_host ) )
     return itemlist
  
 def sub_filtrar(item):
@@ -88,7 +79,7 @@ def sub_filtrar(item):
 
     for g, t in zip(generos,thumbnail):
         url=item.url + "&genre=" + g
-        itemlist.append( myItem(channel=__channel__, action="listado",title='[COLOR 0xFFEB7600]' + g.capitalize() + '[/COLOR]',url=url,extra=item.extra,thumbnail=t,fanart=fanart_host) )
+        itemlist.append( myItem(channel=item.channel, action="listado",title='[COLOR 0xFFEB7600]' + g.capitalize() + '[/COLOR]',url=url,extra=item.extra,thumbnail=t,fanart=fanart_host) )
    
     return itemlist 
 
@@ -202,7 +193,7 @@ def listado(item):
         if infoLabels: 
             plot['infoLabels']=infoLabels
 
-        newItem = myItem(channel=__channel__, action=action, title=title, url=url, extra=item.extra,
+        newItem = myItem(channel=item.channel, action=action, title=title, url=url, extra=item.extra,
                          fanart=fanart, plot=str(plot), thumbnail=thumbnail, viewmode="movie_with_plot",
                          language=idioma)
         newItem.year=i['year']
@@ -216,7 +207,7 @@ def listado(item):
     # Paginacion
     if int(data_dict["total_results"]) == int(limit):
         url=item.url.replace('offset='+offset,'offset='+ str(int(offset)+ int(limit)))
-        itemlist.append( myItem( channel=__channel__, action="listado", title="[COLOR 0xFF994D00]>> [/COLOR] [COLOR 0xFFFFCE9C]Pagina siguiente[/COLOR][COLOR 0xFF994D00]  >>[/COLOR]", url=url, extra=item.extra, fanart=fanart_host) )
+        itemlist.append( myItem( channel=item.channel, action="listado", title="[COLOR 0xFF994D00]>> [/COLOR] [COLOR 0xFFFFCE9C]Pagina siguiente[/COLOR][COLOR 0xFF994D00]  >>[/COLOR]", url=url, extra=item.extra, fanart=fanart_host) )
     
     return itemlist      
               
@@ -330,11 +321,11 @@ def get_temporadas(item):
                         item.plot = str(plot)
                     title=item.title + ' [COLOR 0xFFFFCE9C]' + season["title"].lower().replace('season','temporada').capitalize() + '[/COLOR]'
                     
-                    itemlist.append( myItem( channel=__channel__, action="get_episodios", title=title, url=str(url), extra=item.extra, fanart=item.fanart, plot=item.plot, thumbnail=item.thumbnail, viewmode="movie_with_plot") )
+                    itemlist.append( myItem( channel=item.channel, action="get_episodios", title=title, url=str(url), extra=item.extra, fanart=item.fanart, plot=item.plot, thumbnail=item.thumbnail, viewmode="movie_with_plot") )
             
             if config.get_library_support() and itemlist:
                 url= urlparse.urljoin(__url_base__,"series-online/" + str(data_dict['id']))
-                itemlist.append( myItem(channel=__channel__, title="[COLOR 0xFFe5ffcc]Añadir esta serie a la biblioteca[/COLOR]", url=url, action="add_serie_to_library", extra='episodios###serie_add', show= data_dict["title"], thumbnail = 'https://d5.usercdn.com/dl/i/02360/a99fzwbqdaen.png'))
+                itemlist.append( myItem(channel=item.channel, title="[COLOR 0xFFe5ffcc]Añadir esta serie a la biblioteca[/COLOR]", url=url, action="add_serie_to_library", extra='episodios###serie_add', show= data_dict["title"], thumbnail = 'https://d5.usercdn.com/dl/i/02360/a99fzwbqdaen.png'))
 
     return itemlist      
 
@@ -449,12 +440,12 @@ def get_episodios(item):
         if infoLabels.has_key("plot"):
             plot['infoLabels']= infoLabels
             item.plot = str(plot)
-        itemlist.append( myItem( channel=__channel__, action="findvideos", title=title, url=str(episodio[1]), extra=item.extra, show=infoLabels['tvshowtitle'], fanart=item.fanart, plot=item.plot, thumbnail=item.thumbnail, viewmode="movie_with_plot") )
+        itemlist.append( myItem( channel=item.channel, action="findvideos", title=title, url=str(episodio[1]), extra=item.extra, show=infoLabels['tvshowtitle'], fanart=item.fanart, plot=item.plot, thumbnail=item.thumbnail, viewmode="movie_with_plot") )
     
     if config.get_library_support() and itemlist:
         url= urlparse.urljoin(__url_base__,"series-online/" + str(title_id))
         #url= urlparse.urljoin(__url_base__,"series-online/" + (str(infoLabels['title_id']) +"-"+ infoLabels['titleraw']))
-        itemlist.append( myItem(channel=__channel__, title="[COLOR 0xFFe5ffcc]Añadir esta serie a la biblioteca[/COLOR]", url=url, action="add_serie_to_library", extra='episodios###serie_add', show= infoLabels['tvshowtitle'], thumbnail = 'https://d5.usercdn.com/dl/i/02360/a99fzwbqdaen.png'))
+        itemlist.append( myItem(channel=item.channel, title="[COLOR 0xFFe5ffcc]Añadir esta serie a la biblioteca[/COLOR]", url=url, action="add_serie_to_library", extra='episodios###serie_add', show= infoLabels['tvshowtitle'], thumbnail = 'https://d5.usercdn.com/dl/i/02360/a99fzwbqdaen.png'))
 
     
     return itemlist
@@ -475,7 +466,7 @@ def findvideos(item):
             servidor=video["servidor"]
             url=video["url"]
             title= "[COLOR 0xFF994D00]Ver en " + servidor.capitalize() + "[/COLOR]" + calidad + ' [COLOR 0xFFFFE6CC](' + idioma + ')[/COLOR]'
-            itemlist.append( myItem(channel=__channel__, action="play", viewmode="list", server=servidor, title=title, thumbnail=item.thumbnail, fanart= item.fanart, plot= item.plot, url=url, folder=False) )
+            itemlist.append( myItem(channel=item.channel, action="play", viewmode="list", server=servidor, title=title, thumbnail=item.thumbnail, fanart= item.fanart, plot= item.plot, url=url, folder=False) )
             
     return itemlist
     

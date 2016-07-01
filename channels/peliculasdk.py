@@ -7,7 +7,6 @@
 import re
 import sys
 import urllib
-import urlparse
 
 from core import config
 from core import logger
@@ -20,14 +19,8 @@ try:
     import xbmcgui
 except: pass
 
-__channel__ = "peliculasdk"
-__category__ = "F,S,D"
-__type__ = "generic"
-__title__ = "PeliculasDK"
-__language__ = "ES"
 
 DEBUG = config.get_setting("debug")
-
 host = "http://www.peliculasdk.com/"
 Tmdb_key ="2e2160006592024ba87ccdf78c28f49f"
 
@@ -53,19 +46,19 @@ def mainlist(item):
     itemlist = []
     title ="Estrenos"
     title = title.replace(title,bbcode_kodi2html("[COLOR orange]"+title+"[/COLOR]"))
-    itemlist.append( Item(channel=__channel__, title=title      , action="peliculas", url="http://www.peliculasdk.com/ver/estrenos", fanart="http://s24.postimg.org/z6ulldcph/pdkesfan.jpg", thumbnail="http://s16.postimg.org/st4x601d1/pdkesth.jpg"))
+    itemlist.append( Item(channel=item.channel, title=title      , action="peliculas", url="http://www.peliculasdk.com/ver/estrenos", fanart="http://s24.postimg.org/z6ulldcph/pdkesfan.jpg", thumbnail="http://s16.postimg.org/st4x601d1/pdkesth.jpg"))
     title ="PelisHd"
     title = title.replace(title,bbcode_kodi2html("[COLOR orange]"+title+"[/COLOR]"))
-    itemlist.append( Item(channel=__channel__, title=title     , action="peliculas", url="http://www.peliculasdk.com/calidad/HD-720/", fanart="http://s18.postimg.org/wzqonq3w9/pdkhdfan.jpg", thumbnail="http://s8.postimg.org/nn5669ln9/pdkhdthu.jpg"))
+    itemlist.append( Item(channel=item.channel, title=title     , action="peliculas", url="http://www.peliculasdk.com/calidad/HD-720/", fanart="http://s18.postimg.org/wzqonq3w9/pdkhdfan.jpg", thumbnail="http://s8.postimg.org/nn5669ln9/pdkhdthu.jpg"))
     title ="Pelis HD-Rip"
     title = title.replace(title,bbcode_kodi2html("[COLOR orange]"+title+"[/COLOR]"))
-    itemlist.append( Item(channel=__channel__, title=title      , action="peliculas", url="http://www.peliculasdk.com/calidad/HD-320", fanart="http://s7.postimg.org/3pmnrnu7f/pdkripfan.jpg", thumbnail="http://s12.postimg.org/r7re8fie5/pdkhdripthub.jpg"))
+    itemlist.append( Item(channel=item.channel, title=title      , action="peliculas", url="http://www.peliculasdk.com/calidad/HD-320", fanart="http://s7.postimg.org/3pmnrnu7f/pdkripfan.jpg", thumbnail="http://s12.postimg.org/r7re8fie5/pdkhdripthub.jpg"))
     title ="Pelis Audio español"
     title = title.replace(title,bbcode_kodi2html("[COLOR orange]"+title+"[/COLOR]"))
-    itemlist.append( Item(channel=__channel__, title=title     , action="peliculas", url="http://www.peliculasdk.com/idioma/Espanol/", fanart="http://s11.postimg.org/65t7bxlzn/pdkespfan.jpg", thumbnail="http://s13.postimg.org/sh1034ign/pdkhsphtub.jpg"))
+    itemlist.append( Item(channel=item.channel, title=title     , action="peliculas", url="http://www.peliculasdk.com/idioma/Espanol/", fanart="http://s11.postimg.org/65t7bxlzn/pdkespfan.jpg", thumbnail="http://s13.postimg.org/sh1034ign/pdkhsphtub.jpg"))
     title ="Buscar..."
     title = title.replace(title,bbcode_kodi2html("[COLOR orange]"+title+"[/COLOR]"))
-    itemlist.append( Item(channel=__channel__, title=title      , action="search", url="http://www.peliculasdk.com/calidad/HD-720/", fanart="http://s14.postimg.org/ceqajaw2p/pdkbusfan.jpg", thumbnail="http://s13.postimg.org/o85gsftyv/pdkbusthub.jpg"))
+    itemlist.append( Item(channel=item.channel, title=title      , action="search", url="http://www.peliculasdk.com/calidad/HD-720/", fanart="http://s14.postimg.org/ceqajaw2p/pdkbusfan.jpg", thumbnail="http://s13.postimg.org/o85gsftyv/pdkbusthub.jpg"))
     
 
     return itemlist
@@ -106,7 +99,7 @@ def buscador(item):
     matches = re.compile(patron,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
     if len(matches)==0 :
-        itemlist.append( Item(channel=__channel__, title=bbcode_kodi2html("[COLOR gold][B]Sin resultados...[/B][/COLOR]"), thumbnail ="http://s6.postimg.org/t8gfes7rl/pdknoisethumb.png", fanart ="http://s6.postimg.org/oy1rj72oh/pdknoisefan.jpg",folder=False) )
+        itemlist.append( Item(channel=item.channel, title=bbcode_kodi2html("[COLOR gold][B]Sin resultados...[/B][/COLOR]"), thumbnail ="http://s6.postimg.org/t8gfes7rl/pdknoisethumb.png", fanart ="http://s6.postimg.org/oy1rj72oh/pdknoisefan.jpg",folder=False) )
 
     for scrapedthumbnail,scrapedurl, scrapedtitle,  scrapedlenguaje, scrapedgenero, scrapedcalidad in matches:
         scrapedcalidad = re.sub(r"<a href.*?>|</a>|</span>","",scrapedcalidad).strip()
@@ -127,14 +120,14 @@ def buscador(item):
            trailer = urllib.quote(trailer)
            scrapedtitle = scrapedtitle + "-(Idioma: " + scrapedlenguaje + ")" + "-(Calidad: " + scrapedcalidad +")"
            scrapedtitle = scrapedtitle.replace(scrapedtitle,bbcode_kodi2html("[COLOR white]"+scrapedtitle+"[/COLOR]"))
-           itemlist.append( Item(channel=__channel__, title =scrapedtitle , url=scrapedurl, action="fanart", thumbnail=scrapedthumbnail,plot = trailer, fanart="http://s18.postimg.org/h9kb22mnt/pdkfanart.jpg", folder=True) )
+           itemlist.append( Item(channel=item.channel, title =scrapedtitle , url=scrapedurl, action="fanart", thumbnail=scrapedthumbnail,plot = trailer, fanart="http://s18.postimg.org/h9kb22mnt/pdkfanart.jpg", folder=True) )
     try:
         next_page = scrapertools.get_match(data,'<span class="current">.*?<a href="(.*?)".*?>Siguiente &raquo;</a></div>')
 
 
         title ="siguiente>>"
         title = title.replace(title,bbcode_kodi2html("[COLOR red]"+title+"[/COLOR]"))
-        itemlist.append( Item(channel=__channel__, action="buscador", title=title , url=next_page , thumbnail="http://s6.postimg.org/uej03x4r5/bricoflecha.png", fanart="http://s18.postimg.org/h9kb22mnt/pdkfanart.jpg",  folder=True) )
+        itemlist.append( Item(channel=item.channel, action="buscador", title=title , url=next_page , thumbnail="http://s6.postimg.org/uej03x4r5/bricoflecha.png", fanart="http://s18.postimg.org/h9kb22mnt/pdkfanart.jpg",  folder=True) )
     except: pass
 
     return itemlist
@@ -188,14 +181,14 @@ def peliculas(item):
            scrapedtitle = scrapedtitle + "-(Idioma: " + scrapedlenguaje + ")" + "-(Calidad: " + scrapedcalidad +")"
            scrapedtitle = scrapedtitle.replace(scrapedtitle,bbcode_kodi2html("[COLOR white]"+scrapedtitle+"[/COLOR]"))
            
-           itemlist.append( Item(channel=__channel__, title =scrapedtitle , url=scrapedurl, action="fanart", thumbnail=scrapedthumbnail,plot = trailer, fanart="http://s18.postimg.org/h9kb22mnt/pdkfanart.jpg", folder=True) )
+           itemlist.append( Item(channel=item.channel, title =scrapedtitle , url=scrapedurl, action="fanart", thumbnail=scrapedthumbnail,plot = trailer, fanart="http://s18.postimg.org/h9kb22mnt/pdkfanart.jpg", folder=True) )
     ## Paginación
     
     next_page = scrapertools.get_match(data,'<span class="current">.*?<a href="(.*?)".*?>Siguiente &raquo;</a></div>')
     
     title ="siguiente>>"
     title = title.replace(title,bbcode_kodi2html("[COLOR red]"+title+"[/COLOR]"))
-    itemlist.append( Item(channel=__channel__, action="peliculas", title=title , url=next_page , thumbnail="http://s6.postimg.org/uej03x4r5/bricoflecha.png", fanart="http://s18.postimg.org/h9kb22mnt/pdkfanart.jpg",  folder=True) )
+    itemlist.append( Item(channel=item.channel, action="peliculas", title=title , url=next_page , thumbnail="http://s6.postimg.org/uej03x4r5/bricoflecha.png", fanart="http://s18.postimg.org/h9kb22mnt/pdkfanart.jpg",  folder=True) )
     
 
     return itemlist
@@ -230,7 +223,7 @@ def fanart(item):
         fanart_info = item.thumbnail
         fanart_trailer = item.thumbnail
         category= item.thumbnail
-        itemlist.append( Item(channel=__channel__, title=item.title, url=item.url, action="findvideos", thumbnail=item.thumbnail, fanart=item.thumbnail ,extra=extra, show=show, category= category, folder=True) )
+        itemlist.append( Item(channel=item.channel, title=item.title, url=item.url, action="findvideos", thumbnail=item.thumbnail, fanart=item.thumbnail ,extra=extra, show=show, category= category, folder=True) )
     else:
         for id, fan in matches:
             try:
@@ -279,7 +272,7 @@ def fanart(item):
                extra=  posterdb
                show = fanart_2
                category = item.extra
-               itemlist.append( Item(channel=__channel__, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=posterdb, fanart=item.extra,  extra=extra, show=show, category= category, folder=True) )
+               itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=posterdb, fanart=item.extra,  extra=extra, show=show, category= category, folder=True) )
         for logo in matches:
             if '"hdmovieclearart"' in data:
                 clear=scrapertools.get_match(data,'"hdmovieclearart":.*?"url": "([^"]+)"')
@@ -290,7 +283,7 @@ def fanart(item):
                         category= disc
                      else:
                          category= clear
-                     itemlist.append( Item(channel=__channel__, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=item.extra, extra=extra,show=show, category= category, folder=True) )
+                     itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=item.extra, extra=extra,show=show, category= category, folder=True) )
                 else:
                     extra= clear
                     show=fanart_2
@@ -298,7 +291,7 @@ def fanart(item):
                        category = disc
                     else:
                         category = clear
-                    itemlist.append( Item(channel=__channel__, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=item.extra, extra=extra,show=show, category= category, folder=True) )
+                    itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=item.extra, extra=extra,show=show, category= category, folder=True) )
                 
             if '"moviebackground"' in data:
                 
@@ -318,7 +311,7 @@ def fanart(item):
                         category= disc
                     else:
                         category= logo
-                    itemlist.append( Item(channel=__channel__, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=item.extra, extra=extra,show=show, category= category,  folder=True) )
+                    itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=item.extra, extra=extra,show=show, category= category,  folder=True) )
 
             if not '"hdmovieclearart"' in data and not '"moviebackground"' in data:
                     extra= logo
@@ -327,7 +320,7 @@ def fanart(item):
                         category= disc
                     else:
                          category= item.extra
-                    itemlist.append( Item(channel=__channel__, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=item.extra,category= category, extra=extra,show=show ,  folder=True) )
+                    itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=item.extra,category= category, extra=extra,show=show ,  folder=True) )
 
     title ="Info"
    
@@ -344,7 +337,7 @@ def fanart(item):
     
 
     title = title.replace(title,bbcode_kodi2html("[COLOR skyblue]"+title+"[/COLOR]"))
-    itemlist.append( Item(channel=__channel__, action="info" , title=title , url=item.url, thumbnail=posterdb, fanart=fanart_info, extra = extra, show = show,folder=False ))
+    itemlist.append( Item(channel=item.channel, action="info" , title=title , url=item.url, thumbnail=posterdb, fanart=fanart_info, extra = extra, show = show,folder=False ))
 
     title= bbcode_kodi2html("[COLOR crimson]Trailer[/COLOR]")
     
@@ -371,7 +364,7 @@ def fanart(item):
 
 
 
-    itemlist.append( Item(channel=__channel__, action="trailer", title=title , url=item.url , thumbnail=thumbnail , fulltitle = item.title , fanart=fanart_trailer, extra=extra, plot = item.plot,folder=True) )
+    itemlist.append( Item(channel=item.channel, action="trailer", title=title , url=item.url , thumbnail=thumbnail , fulltitle = item.title , fanart=fanart_trailer, extra=extra, plot = item.plot,folder=True) )
 
 
     return itemlist
@@ -445,7 +438,7 @@ def findvideos(item):
             servertitle = servertitle.replace("api.video.","")
             servertitle = servertitle.replace("hqq.tv","netu.tv")
             title = bbcode_kodi2html("[COLOR orange]Ver en --[/COLOR]") + servertitle
-            itemlist.append( Item(channel=__channel__, title =title , url=video_url, action="play", thumbnail=item.category, plot=scrapedplot, fanart=item.show ) )
+            itemlist.append( Item(channel=item.channel, title =title , url=video_url, action="play", thumbnail=item.category, plot=scrapedplot, fanart=item.show ) )
          
            
            
@@ -469,8 +462,8 @@ def play(item):
         url =item.url
         server = video[2]
         
-        #xbmctools.addnewvideo( __channel__ , "play" , category , server ,  , url , thumbnail , plot )
-        itemlist.append( Item(channel=__channel__, action="play", server=server, title="Trailer - " + videotitle  , url=url , thumbnail=item.thumbnail , plot=item.plot , fulltitle = item.title , fanart="http://s23.postimg.org/84vkeq863/movietrailers.jpg", folder=False) )
+        #xbmctools.addnewvideo( item.channel , "play" , category , server ,  , url , thumbnail , plot )
+        itemlist.append( Item(channel=item.channel, action="play", server=server, title="Trailer - " + videotitle  , url=url , thumbnail=item.thumbnail , plot=item.plot , fulltitle = item.title , fanart="http://s23.postimg.org/84vkeq863/movietrailers.jpg", folder=False) )
     
     
    
@@ -491,14 +484,14 @@ def trailer(item):
     matches = re.compile(patron,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
     if len(matches)==0 :
-        itemlist.append( Item(channel=__channel__, title=bbcode_kodi2html("[COLOR gold][B]No hay Trailer[/B][/COLOR]"), thumbnail ="http://s6.postimg.org/jp5jx97ip/bityoucancel.png", fanart ="http://s6.postimg.org/vfjhen0b5/bityounieve.jpg",folder=False) )
+        itemlist.append( Item(channel=item.channel, title=bbcode_kodi2html("[COLOR gold][B]No hay Trailer[/B][/COLOR]"), thumbnail ="http://s6.postimg.org/jp5jx97ip/bityoucancel.png", fanart ="http://s6.postimg.org/vfjhen0b5/bityounieve.jpg",folder=False) )
     
     for scrapedurl, scrapedtitle in matches:
         
         scrapedurl = "https://www.youtube.com/watch"+scrapedurl
         scrapedtitle = scrapertools.decodeHtmlentities( scrapedtitle )
         scrapedtitle=scrapedtitle.replace(scrapedtitle,bbcode_kodi2html("[COLOR khaki][B]"+scrapedtitle+"[/B][/COLOR]"))
-        itemlist.append( Item(channel=__channel__, title=scrapedtitle, url=scrapedurl, server="youtube", fanart="http://static1.squarespace.com/static/5502c970e4b0cec330247c32/t/5517212ee4b07ea6d281c891/1427579186693/Movie+Trailers+and+promos.JPG?format=1500w", thumbnail=item.extra, action="play", folder=False) )
+        itemlist.append( Item(channel=item.channel, title=scrapedtitle, url=scrapedurl, server="youtube", fanart="http://static1.squarespace.com/static/5502c970e4b0cec330247c32/t/5517212ee4b07ea6d281c891/1427579186693/Movie+Trailers+and+promos.JPG?format=1500w", thumbnail=item.extra, action="play", folder=False) )
     
     return itemlist
 

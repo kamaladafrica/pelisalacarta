@@ -13,11 +13,6 @@ from core import logger
 from core import scrapertools
 from core.item import Item
 
-__channel__ = "seriecanal"
-__category__ = "S,VOS"
-__type__ = "generic"
-__title__ = "Seriecanal"
-__language__ = "ES"
 
 DEBUG = config.get_setting("debug")
 URL_BASE = "http://www.seriecanal.com/"
@@ -27,10 +22,10 @@ def mainlist(item):
     logger.info("pelisalacarta.channels.seriecanal mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, action="series" , title="Últimos episodios" , url=URL_BASE , folder=True))
-    itemlist.append( Item(channel=__channel__, action="genero"    , title="Series por género" , folder=True))
-    itemlist.append( Item(channel=__channel__, action="alfabetico"    , title="Series por orden alfabético" , folder=True))
-    itemlist.append( Item(channel=__channel__, action="search"        , title="Buscar..."))
+    itemlist.append( Item(channel=item.channel, action="series" , title="Últimos episodios" , url=URL_BASE , folder=True))
+    itemlist.append( Item(channel=item.channel, action="genero"    , title="Series por género" , folder=True))
+    itemlist.append( Item(channel=item.channel, action="alfabetico"    , title="Series por orden alfabético" , folder=True))
+    itemlist.append( Item(channel=item.channel, action="search"        , title="Buscar..."))
     return itemlist
 
 def search(item,texto):
@@ -58,7 +53,7 @@ def genero(item):
     scrapertools.printMatches(matches)
     for scrapedurl, scrapedtitle in matches:
         url = urlparse.urljoin(URL_BASE, scrapedurl)
-        itemlist.append(Item(channel=__channel__, action="series", title=scrapedtitle , url=url, folder=True))
+        itemlist.append(Item(channel=item.channel, action="series", title=scrapedtitle , url=url, folder=True))
     return itemlist
 
 def alfabetico(item):
@@ -71,7 +66,7 @@ def alfabetico(item):
     scrapertools.printMatches(matches)
     for scrapedurl, scrapedtitle in matches:
         url = urlparse.urljoin(URL_BASE, scrapedurl)
-        itemlist.append(Item(channel=__channel__, action="series", title=scrapedtitle , url=url, folder=True))
+        itemlist.append(Item(channel=item.channel, action="series", title=scrapedtitle , url=url, folder=True))
     return itemlist
 	
 def series(item):
@@ -99,7 +94,7 @@ def series(item):
         url = urlparse.urljoin(URL_BASE,scrapedurl)
 
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="findvideos", title=title , fulltitle=scrapedtitle, url=url , thumbnail=scrapedthumbnail , plot=scrapedplot , extra = scrapedtemp.strip("Temporada "), folder=True))
+        itemlist.append( Item(channel=item.channel, action="findvideos", title=title , fulltitle=scrapedtitle, url=url , thumbnail=scrapedthumbnail , plot=scrapedplot , extra = scrapedtemp.strip("Temporada "), folder=True))
 
 	#Extra marca siguiente página
     patron_next = '<ul class="pagination pagination-lg">.*?title="Página Actual">.*?<li(.*?)><a href="([^"]+)">([^"]+)</a>'
@@ -108,7 +103,7 @@ def series(item):
         if match[0] == "":
             url = urlparse.urljoin(URL_BASE,match[1])
             title = "Página "+match[2]
-            itemlist.append( Item(channel=__channel__, action="series", title=title , url=url , folder=True) )
+            itemlist.append( Item(channel=item.channel, action="series", title=title , url=url , folder=True) )
 
     return itemlist
 
@@ -162,7 +157,7 @@ def findvideos(item):
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"]")
         if scrapedurl.find("magnet") != -1:
             if thumbnail_epi == "": thumbnail_epi = seriethumbnail
-            itemlist.append( Item(channel=__channel__, action="play" , title="[Torrent]" + scrapedtitle, url=scrapedurl, thumbnail=thumbnail_epi  , plot = str(plot), fanart= item.fanart, extra="torrent"))
+            itemlist.append( Item(channel=item.channel, action="play" , title="[Torrent]" + scrapedtitle, url=scrapedurl, thumbnail=thumbnail_epi  , plot = str(plot), fanart= item.fanart, extra="torrent"))
 
     #Busca en la seccion online
     data_online = scrapertools.get_match(data, '<th>Enlaces de Visionado Online</th>(.*?)</table>')
@@ -196,7 +191,7 @@ def findvideos(item):
 
             plot['infoLabels']=infoLabels
             if thumbnail_epi == "": thumbnail_epi = seriethumbnail
-            itemlist.append( Item(channel=__channel__, action="play" , extra=server, title=title, url=scrapedurl, thumbnail=thumbnail_epi , fanart=item.fanart, plot = str(plot)))				
+            itemlist.append( Item(channel=item.channel, action="play" , extra=server, title=title, url=scrapedurl, thumbnail=thumbnail_epi , fanart=item.fanart, plot = str(plot)))				
 
     data_temp = scrapertools.get_match(data, '<div class="panel panel-success">(.*?)</table>')
     data_temp = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data_temp)
@@ -210,7 +205,7 @@ def findvideos(item):
         for scrapedurl, scrapedtitle in matches:
             url = urlparse.urljoin(URL_BASE, scrapedurl)
             scrapedtitle = scrapedtitle.capitalize()
-            itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , fulltitle=item.fulltitle, url=url , thumbnail=seriethumbnail, extra=scrapedtitle.strip("Temporada "), fanart=item.fanart, plot=item.plot, folder=True))
+            itemlist.append( Item(channel=item.channel, action="findvideos", title=scrapedtitle , fulltitle=item.fulltitle, url=url , thumbnail=seriethumbnail, extra=scrapedtitle.strip("Temporada "), fanart=item.fanart, plot=item.plot, folder=True))
 
     return itemlist
 
@@ -219,11 +214,11 @@ def play(item):
     itemlist = []
     videolist = []
     if item.extra == "torrent":
-        itemlist.append( Item(channel=__channel__, action="play" , server="torrent", title=item.title, url=item.url))
+        itemlist.append( Item(channel=item.channel, action="play" , server="torrent", title=item.title, url=item.url))
     else:
         #Extrae url de enlace bit.ly
         if item.url.startswith("http://bit.ly/"):
             item.url = scrapertools.getLocationHeaderFromResponse(item.url)
-        itemlist.append( Item(channel=__channel__, action="play" , server=item.extra, title=item.title, url=item.url))
+        itemlist.append( Item(channel=item.channel, action="play" , server=item.extra, title=item.title, url=item.url))
 
     return itemlist

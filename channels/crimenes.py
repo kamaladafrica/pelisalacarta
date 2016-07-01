@@ -11,11 +11,6 @@ from core import servertools
 from core.item import Item
 from core import servertools
 
-__channel__ = "crimenes"
-__category__ = "D"
-__type__ = "generic"
-__title__ = "Crimenes"
-__language__ = "ES"
 
 DEBUG = config.get_setting("debug")
 
@@ -40,7 +35,7 @@ def listav(item):
         url = urlparse.urljoin(item.url,scrapedurl)               
         thumbnail=urlparse.urljoin(item.thumbnail,scrapedthumbnail)
         xbmc.log("$ "+scrapedurl+" "+scrapedtitle+" "+scrapedthumbnail)   
-        itemlist.append( Item(channel=__channel__, action="play", title=scrapedtitle, fulltitle=scrapedtitle , url=url, thumbnail=thumbnail,fanart=thumbnail) )    
+        itemlist.append( Item(channel=item.channel, action="play", title=scrapedtitle, fulltitle=scrapedtitle , url=url, thumbnail=thumbnail,fanart=thumbnail) )    
     
     
     #Paginacion 
@@ -53,7 +48,7 @@ def listav(item):
         for scrapedurl in matchesx:          
             url = urlparse.urljoin(item.url,'https://www.youtube.com'+scrapedurl)                        
         # solo me quedo con el ultimo enlace
-        itemlist.append( Item(channel=__channel__, action="listav", title="Siguiente pag >>", fulltitle="Siguiente Pag >>" , url=url, thumbnail=item.thumbnail,fanart=item.fanart) )     
+        itemlist.append( Item(channel=item.channel, action="listav", title="Siguiente pag >>", fulltitle="Siguiente Pag >>" , url=url, thumbnail=item.thumbnail,fanart=item.fanart) )     
    	   
     return itemlist
 
@@ -82,7 +77,7 @@ def busqueda(item):
             url = scrapedurl               
             thumbnail=scrapedthumbnail
             xbmc.log("$ "+scrapedurl+" "+scrapedtitle+" "+scrapedthumbnail)   
-            itemlist.append( Item(channel=__channel__, action="play", title=scrapedtitle, fulltitle=scrapedtitle , url=url, thumbnail=thumbnail,fanart=thumbnail) )    
+            itemlist.append( Item(channel=item.channel, action="play", title=scrapedtitle, fulltitle=scrapedtitle , url=url, thumbnail=thumbnail,fanart=thumbnail) )    
         
         
         #Paginacion 
@@ -96,14 +91,14 @@ def busqueda(item):
                 url = 'https://www.youtube.com'+scrapedurl                        
             # solo me quedo con el ultimo enlace
     
-            itemlist.append( Item(channel=__channel__, action="listav", title="Siguiente pag >>", fulltitle="Siguiente Pag >>" , url=url) )   
+            itemlist.append( Item(channel=item.channel, action="listav", title="Siguiente pag >>", fulltitle="Siguiente Pag >>" , url=url) )   
         return itemlist    
     else:
-        #xbmcgui.Dialog().ok(__channel__, "nada que buscar")
+        #xbmcgui.Dialog().ok(item.channel, "nada que buscar")
         #xbmc.executebuiltin("Action(up)")     
         xbmc.executebuiltin("Action(enter)")     
         
-        #itemlist.append( Item(channel=__channel__, action="listav", title="<< Volver", fulltitle="Volver" , url="history.back()") )    
+        #itemlist.append( Item(channel=item.channel, action="listav", title="<< Volver", fulltitle="Volver" , url="history.back()") )    
             
     
 
@@ -117,7 +112,7 @@ def mainlist(item):
     item.thumbnail=urlparse.urljoin(item.thumbnail,"https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcQ2PcyvcYIg6acvdUZrHGFFk_E3mXK9QSh-5TypP8Rk6zQ6S1yb2g")
     item.fanart=urlparse.urljoin(item.fanart,"https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcQ2PcyvcYIg6acvdUZrHGFFk_E3mXK9QSh-5TypP8Rk6zQ6S1yb2g")
     
-    itemlist.append( Item(channel=__channel__, action="listav", title=scrapedtitle, fulltitle=scrapedtitle , url=item.url, thumbnail=item.thumbnail, fanart=item.fanart) )    
+    itemlist.append( Item(channel=item.channel, action="listav", title=scrapedtitle, fulltitle=scrapedtitle , url=item.url, thumbnail=item.thumbnail, fanart=item.fanart) )    
     
     item.url='https://www.youtube.com/results?search_query=russian+dash+cam&sp=CAI%253D'
     scrapedtitle="[COLOR blue]Russian[/COLOR] [COLOR White]Dash[/COLOR] [COLOR red]Cam[/COLOR]"    
@@ -125,7 +120,7 @@ def mainlist(item):
     item.fanart=urlparse.urljoin(item.fanart,"https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRQLO-n-kO1ByY8lLhKxz0-cejJD1J7rLge_j0E0Gh9LJ2WtTbSnA")
     
     
-    itemlist.append( Item(channel=__channel__, action="listav", title=scrapedtitle, fulltitle=scrapedtitle , url=item.url, thumbnail=item.thumbnail, fanart=item.fanart) )    
+    itemlist.append( Item(channel=item.channel, action="listav", title=scrapedtitle, fulltitle=scrapedtitle , url=item.url, thumbnail=item.thumbnail, fanart=item.fanart) )    
     
     
     item.url='https://www.youtube.com/results?search_query=cuarto+milenio+programa+completo&sp=CAI%253D'
@@ -133,7 +128,7 @@ def mainlist(item):
     item.thumbnail=urlparse.urljoin(item.thumbnail,"http://cuatrostatic-a.akamaihd.net/cuarto-milenio/Cuarto-Milenio-analiza-fantasma-Granada_MDSVID20100924_0063_3.jpg")
     item.fanart=urlparse.urljoin(item.fanart,"http://cuatrostatic-a.akamaihd.net/cuarto-milenio/programas/temporada-07/t07xp32/fantasma-universidad_MDSVID20120420_0001_3.jpg")
     
-    itemlist.append( Item(channel=__channel__, action="listav", title=scrapedtitle, fulltitle=scrapedtitle , url=item.url, thumbnail=item.thumbnail, fanart=item.fanart) )    
+    itemlist.append( Item(channel=item.channel, action="listav", title=scrapedtitle, fulltitle=scrapedtitle , url=item.url, thumbnail=item.thumbnail, fanart=item.fanart) )    
     
     
     
@@ -142,14 +137,14 @@ def mainlist(item):
     item.thumbnail=urlparse.urljoin(item.thumbnail,"http://cuatrostatic-a.akamaihd.net/cuarto-milenio/Cuarto-Milenio-analiza-fantasma-Granada_MDSVID20100924_0063_3.jpg")
     item.fanart=urlparse.urljoin(item.fanart,"http://cuatrostatic-a.akamaihd.net/cuarto-milenio/programas/temporada-07/t07xp32/fantasma-universidad_MDSVID20120420_0001_3.jpg")
     
-    itemlist.append( Item(channel=__channel__, action="listav", title=scrapedtitle, fulltitle=scrapedtitle , url=item.url, thumbnail=item.thumbnail, fanart=item.fanart) )    
+    itemlist.append( Item(channel=item.channel, action="listav", title=scrapedtitle, fulltitle=scrapedtitle , url=item.url, thumbnail=item.thumbnail, fanart=item.fanart) )    
     
     
     scrapedtitle="[COLOR red]buscar ...[/COLOR]"    
     item.thumbnail=urlparse.urljoin(item.thumbnail,"http://cuatrostatic-a.akamaihd.net/cuarto-milenio/Cuarto-Milenio-analiza-fantasma-Granada_MDSVID20100924_0063_3.jpg")
     item.fanart=urlparse.urljoin(item.fanart,"http://cuatrostatic-a.akamaihd.net/cuarto-milenio/programas/temporada-07/t07xp32/fantasma-universidad_MDSVID20120420_0001_3.jpg")
     
-    itemlist.append( Item(channel=__channel__, action="busqueda", title=scrapedtitle, fulltitle=scrapedtitle , thumbnail=item.thumbnail, fanart=item.fanart) )    
+    itemlist.append( Item(channel=item.channel, action="busqueda", title=scrapedtitle, fulltitle=scrapedtitle , thumbnail=item.thumbnail, fanart=item.fanart) )    
    
 
 

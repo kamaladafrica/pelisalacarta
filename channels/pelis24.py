@@ -13,11 +13,6 @@ from core import logger
 from core import scrapertools
 from core.item import Item
 
-__channel__ = "pelis24"
-__category__ = "F,S"
-__type__ = "generic"
-__title__ = "Pelis24"
-__language__ = "ES"
 
 DEBUG = config.get_setting("debug")
 
@@ -26,12 +21,12 @@ def mainlist(item):
     logger.info("pelisalacarta.channels.pelis24 mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, title="Recientes"      , action="peliculas"    , url="http://www.pelis24.com/index.php?do=lastnews"))
-    itemlist.append( Item(channel=__channel__, title="Por A-Z"        , action="pelisaz"      , url="http://www.pelis24.com/"))
-    itemlist.append( Item(channel=__channel__, title="Por Categorias" , action="categorias"   , url="http://www.pelis24.com/"))
-    itemlist.append( Item(channel=__channel__, title="Por Calidades"  , action="calidades"    , url="http://www.pelis24.com/"))
-    itemlist.append( Item(channel=__channel__, title="Por Idiomas"    , action="idiomas"      , url="http://www.pelis24.com/"))
-    itemlist.append( Item(channel=__channel__, title="Buscar"         , action="search"       , url="http://www.pelis24.com/"))
+    itemlist.append( Item(channel=item.channel, title="Recientes"      , action="peliculas"    , url="http://www.pelis24.com/index.php?do=lastnews"))
+    itemlist.append( Item(channel=item.channel, title="Por A-Z"        , action="pelisaz"      , url="http://www.pelis24.com/"))
+    itemlist.append( Item(channel=item.channel, title="Por Categorias" , action="categorias"   , url="http://www.pelis24.com/"))
+    itemlist.append( Item(channel=item.channel, title="Por Calidades"  , action="calidades"    , url="http://www.pelis24.com/"))
+    itemlist.append( Item(channel=item.channel, title="Por Idiomas"    , action="idiomas"      , url="http://www.pelis24.com/"))
+    itemlist.append( Item(channel=item.channel, title="Buscar"         , action="search"       , url="http://www.pelis24.com/"))
     return itemlist
 
 
@@ -66,14 +61,14 @@ def buscar(item, texto=""):
       plot = re.sub('<[^>]+>',"",plot)
       
       if "table" in resultado:
-        itemlist.append(Item(title=title, channel=__channel__,action="episodios", url=url,plot=plot,folder=True))
+        itemlist.append(Item(title=title, channel=item.channel,action="episodios", url=url,plot=plot,folder=True))
       else:
-        itemlist.append(Item(title=title, channel=__channel__,action="findvideos", url=url,plot=plot,folder=True))
+        itemlist.append(Item(title=title, channel=item.channel,action="findvideos", url=url,plot=plot,folder=True))
     
     next_page = scrapertools.find_single_match(data,'<a name="nextlink" id="nextlink" onclick="javascript:list_submit\(([^"]+)\); return\(false\)" href="#"><span class="thide pnext">Siguiente</span></a>')
     logger.info(next_page)
     if next_page!="":
-        itemlist.append( Item(channel=__channel__, action="buscar", title=">> Pagina siguiente" , url=item.url,extra="do=search&subaction=search&search_start="+next_page+"&full_search=0&result_from="+str(((int(next_page)-1)*10)+1)+"&story=" +texto , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="buscar", title=">> Pagina siguiente" , url=item.url,extra="do=search&subaction=search&search_start="+next_page+"&full_search=0&result_from="+str(((int(next_page)-1)*10)+1)+"&story=" +texto , folder=True) )
     
    
     return itemlist
@@ -87,7 +82,7 @@ def pelisaz(item):
     resultados = re.compile(patron,re.DOTALL).findall(data)
     itemlist =[]
     for url, letra in resultados:
-      itemlist.append(Item(title=letra, channel=__channel__,action="peliculas", url=item.url+url,folder=True))
+      itemlist.append(Item(title=letra, channel=item.channel,action="peliculas", url=item.url+url,folder=True))
     return itemlist
 
 
@@ -109,7 +104,7 @@ def episodios(item):
         title = re.sub('<[^>]+>',"",title)
         title = title.replace("&nbsp;"," ")
 
-        itemlist.append(Item(title=title, channel=__channel__,action="findvideos", url=url,plot=item.plot, thumbnail=thumbnail, folder=True))
+        itemlist.append(Item(title=title, channel=item.channel,action="findvideos", url=url,plot=item.plot, thumbnail=thumbnail, folder=True))
 
     return itemlist
  
@@ -129,15 +124,15 @@ def peliculas(item):
         plot = scrapertools.find_single_match(bloque,'<span class="pop_desc">(.*?)</span>')
         
         if "serie" in url:
-          itemlist.append( Item(channel=__channel__, action="episodios", title=title , url=url , thumbnail=thumbnail , plot=plot , viewmode="movie_with_plot", folder=True) )        
+          itemlist.append( Item(channel=item.channel, action="episodios", title=title , url=url , thumbnail=thumbnail , plot=plot , viewmode="movie_with_plot", folder=True) )        
 
         else:
-          itemlist.append( Item(channel=__channel__, action="findvideos", title=title , url=url , thumbnail=thumbnail , plot=plot , viewmode="movie_with_plot", folder=True) )
+          itemlist.append( Item(channel=item.channel, action="findvideos", title=title , url=url , thumbnail=thumbnail , plot=plot , viewmode="movie_with_plot", folder=True) )
 
     # Extrae el paginador
     next_page = scrapertools.find_single_match(data,'<a href="([^"]+)"><span class="thide pnext">')
     if next_page!="":
-        itemlist.append( Item(channel=__channel__, action="peliculas", title=">> Pagina siguiente" , url=next_page , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="peliculas", title=">> Pagina siguiente" , url=next_page , folder=True) )
 
     return itemlist
 
@@ -156,7 +151,7 @@ def categorias(item):
         url =  HTMLParser.HTMLParser().unescape(urlparse.urljoin(item.url,scrapedurl).decode("utf8")).encode("utf8")
         title = scrapedtitle.strip()
         title = title[0].upper() +  title[1:].lower()
-        itemlist.append( Item(channel=__channel__, action="peliculas", title=title , url=url , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="peliculas", title=title , url=url , folder=True) )
 
     return itemlist
     
@@ -164,9 +159,9 @@ def categorias(item):
 def calidades(item):
     logger.info("pelisalacarta.channels.pelis24 calidades")
     itemlist = []
-    itemlist.append( Item(channel=__channel__, action="peliculas", title="HD 720p" , url="http://pelis24.com/hd/", thumbnail="http://pelis24.com/images/menu_03.png" , folder=True) )
-    itemlist.append( Item(channel=__channel__, action="peliculas", title="HQ 480p" , url="http://pelis24.com/peliculas480p/", thumbnail="http://pelis24.com/images/menu_04.png" , folder=True) )
-    itemlist.append( Item(channel=__channel__, action="peliculas", title="3D" , url="http://pelis24.com/pelicula-3d/", thumbnail="http://pelis24.com/images/menu_05.png" , folder=True) )
+    itemlist.append( Item(channel=item.channel, action="peliculas", title="HD 720p" , url="http://pelis24.com/hd/", thumbnail="http://pelis24.com/images/menu_03.png" , folder=True) )
+    itemlist.append( Item(channel=item.channel, action="peliculas", title="HQ 480p" , url="http://pelis24.com/peliculas480p/", thumbnail="http://pelis24.com/images/menu_04.png" , folder=True) )
+    itemlist.append( Item(channel=item.channel, action="peliculas", title="3D" , url="http://pelis24.com/pelicula-3d/", thumbnail="http://pelis24.com/images/menu_05.png" , folder=True) )
 
     return itemlist
    
@@ -184,7 +179,7 @@ def idiomas(item):
         url = urlparse.urljoin(item.url,scrapedurl)
         title = scrapedtitle.strip()
         title = title[0].upper() +  title[1:].lower()
-        itemlist.append( Item(channel=__channel__, action="peliculas", title=title , url=url , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="peliculas", title=title , url=url , folder=True) )
 
     return itemlist
     

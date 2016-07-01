@@ -33,12 +33,6 @@ from core.item import Item
 
 DEBUG = config.get_setting("debug")
 
-__category__ = "A"
-__type__ = "generic"
-__title__ = "mitube"
-__channel__ = "mitube"
-__language__ = "ES"
-__creationdate__ = "20111014"
 
 ANIMEFLV_REQUEST_HEADERS = []
 ANIMEFLV_REQUEST_HEADERS.append(["User-Agent","Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:22.0) Gecko/20100101 Firefox/22.0"])
@@ -53,7 +47,7 @@ def mainlist(item):
     logger.info("[mitube.py] mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, action="search"        , title="Buscar"              , url="https://www.googleapis.com/youtube/v3/search" ))
+    itemlist.append( Item(channel=item.channel, action="search"        , title="Buscar"              , url="https://www.googleapis.com/youtube/v3/search" ))
   
     return itemlist
 
@@ -196,8 +190,8 @@ def series(item):
         plot=""
        ## print "title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"], plot[="+plot+"]"
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"], plot[="+plot+"]")
-        ##itemlist.append( Item(channel=__channel__, action="play", server="youtube",title=title, url=url , thumbnail=thumbnail , fanart=thumbnail,  folder=False) )
-        itemlist.append( Item(channel=__channel__, action="ver",title=title+" "+plot, url=url , thumbnail=thumbnail ,plot=plot, viewmode="movie_with_plot") )
+        ##itemlist.append( Item(channel=item.channel, action="play", server="youtube",title=title, url=url , thumbnail=thumbnail , fanart=thumbnail,  folder=False) )
+        itemlist.append( Item(channel=item.channel, action="ver",title=title+" "+plot, url=url , thumbnail=thumbnail ,plot=plot, viewmode="movie_with_plot") )
      
     return itemlist
 
@@ -221,9 +215,9 @@ def ver(item):
     itemlist = []
     streams = video.streams
     for s in streams:
-	    itemlist.append( Item(channel=__channel__, action="play", server="directo", title=s.resolution+" "+s.extension, url=s.url , thumbnail=item.thumbnail , fanart=item.thumbnail,  folder=False))
-	   # para wiimc itemlist.append( Item(channel=__channel__, action="play_video", server="directo", title=s.resolution+" "+s.extension, url=s.url , thumbnail=item.thumbnail , fanart=item.thumbnail,  folder=False))
-    itemlist.append( Item(channel=__channel__, action="descargabg",title="descargar", url=item.url , thumbnail=item.thumbnail ,plot=item.plot, viewmode="movie_with_plot") )
+	    itemlist.append( Item(channel=item.channel, action="play", server="directo", title=s.resolution+" "+s.extension, url=s.url , thumbnail=item.thumbnail , fanart=item.thumbnail,  folder=False))
+	   # para wiimc itemlist.append( Item(channel=item.channel, action="play_video", server="directo", title=s.resolution+" "+s.extension, url=s.url , thumbnail=item.thumbnail , fanart=item.thumbnail,  folder=False))
+    itemlist.append( Item(channel=item.channel, action="descargabg",title="descargar", url=item.url , thumbnail=item.thumbnail ,plot=item.plot, viewmode="movie_with_plot") )
 
     return itemlist
 

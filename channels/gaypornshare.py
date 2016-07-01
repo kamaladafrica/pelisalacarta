@@ -13,14 +13,8 @@ from core import scrapertools
 from core import servertools
 from core.item import Item
 
-__channel__ = "gaypornshare"
-__category__ = "D"
-__type__ = "generic"
-__title__ = "gaypornshare"
-__language__ = "ES"
 
 DEBUG = config.get_setting("debug")
-
 IMAGES_PATH = os.path.join( config.get_runtime_path(), 'resources' , 'images' , 'gaypornshare' )
 
 def strip_tags(value):
@@ -31,8 +25,8 @@ def mainlist(item):
     logger.info("[gaypornshare.py] mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, action="lista"  , title="Todas las Películas" , url="http://gaypornshare.org/page/1/",thumbnail="http://t1.pixhost.org/thumbs/3282/12031567_a152063_xlb.jpg"))    
-    itemlist.append( Item(channel=__channel__, title="Buscar"     , action="search") )
+    itemlist.append( Item(channel=item.channel, action="lista"  , title="Todas las Películas" , url="http://gaypornshare.org/page/1/",thumbnail="http://t1.pixhost.org/thumbs/3282/12031567_a152063_xlb.jpg"))    
+    itemlist.append( Item(channel=item.channel, title="Buscar"     , action="search") )
     return itemlist
 
 
@@ -69,7 +63,7 @@ def lista(item):
         tipo = match[1]
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
         scrapedplot=strip_tags(scrapedplot)
-        itemlist.append( Item(channel=__channel__, action="detail", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="detail", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
  
  
   
@@ -90,8 +84,8 @@ def lista(item):
         imagen = ""
         scrapedplot = match2[0]  
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="lista", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
-    itemlist.append( Item(channel=__channel__, action="mainlist", title="<< volver al inicio",  folder=True) )
+        itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+    itemlist.append( Item(channel=item.channel, action="mainlist", title="<< volver al inicio",  folder=True) )
 
  
     return itemlist
@@ -127,7 +121,7 @@ def search(item,texto):
         tipo = match[1]
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
         scrapedplot=strip_tags(scrapedplot)
-        itemlist.append( Item(channel=__channel__, action="detail", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="detail", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
  
 
    
@@ -146,8 +140,8 @@ def search(item,texto):
         imagen = ""
         scrapedplot = match2[0]  
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="lista", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
-    itemlist.append( Item(channel=__channel__, action="mainlist", title="<< volver al inicio",  folder=True) )
+        itemlist.append( Item(channel=item.channel, action="lista", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+    itemlist.append( Item(channel=item.channel, action="mainlist", title="<< volver al inicio",  folder=True) )
  
 
     return itemlist
@@ -171,7 +165,7 @@ def detail(item):
     # Busca los enlaces a los videos de los servidores
     video_itemlist = servertools.find_video_items(data=data)
     for video_item in video_itemlist:
-        itemlist.append( Item(channel=__channel__ , action="play" , server=video_item.server, title=item.title+video_item.title, url=video_item.url, thumbnail=item.thumbnail, plot=item.plot, folder=False))
+        itemlist.append( Item(channel=item.channel , action="play" , server=video_item.server, title=item.title+video_item.title, url=video_item.url, thumbnail=item.thumbnail, plot=item.plot, folder=False))
 
     return itemlist
     

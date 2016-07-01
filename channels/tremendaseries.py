@@ -17,11 +17,6 @@ from core.item import Item
 from core import servertools
 
 __channel__ = "tremendaseries"
-__category__ = "F"
-__type__ = "generic"
-__title__ = "Tremenda Series"
-__language__ = "ES"
-__adult__ = "false"
 
 # Configuracion del canal
 try:

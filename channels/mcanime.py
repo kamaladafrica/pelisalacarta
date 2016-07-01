@@ -13,11 +13,6 @@ from core import scrapertools
 from core import servertools
 from core.item import Item
 
-__channel__ = "mcanime"
-__category__ = "A"
-__type__ = "generic"
-__title__ = "MCAnime"
-__language__ = "ES"
 
 DEBUG = config.get_setting("debug")
 
@@ -25,12 +20,12 @@ DEBUG = config.get_setting("debug")
 def mainlist(item):
     logger.info("[gnula.py] mainlist")
     itemlist = []
-    itemlist.append( Item(channel=__channel__, title="Novedades"                            , action="home"       ,url="http://www.mcanime.net/"))
-    itemlist.append( Item(channel=__channel__, title="Foro anime en línea"                  , action="forum"      ,url="http://www.mcanime.net/foro/viewforum.php?f=113"))
-    itemlist.append( Item(channel=__channel__, title="Descarga directa - Novedades"         , action="ddnovedades",url="http://www.mcanime.net/descarga_directa/anime"))
-    itemlist.append( Item(channel=__channel__, title="Descarga directa - Listado alfabético", action="ddalpha"    ,url="http://www.mcanime.net/descarga_directa/anime"))
-    itemlist.append( Item(channel=__channel__, title="Descarga directa - Categorías"        , action="ddcat"      ,url="http://www.mcanime.net/descarga_directa/anime"))
-    itemlist.append( Item(channel=__channel__, title="Enciclopedia - Estrenos"              , action="estrenos"   ,url="http://www.mcanime.net/enciclopedia/estrenos/anime"))
+    itemlist.append( Item(channel=item.channel, title="Novedades"                            , action="home"       ,url="http://www.mcanime.net/"))
+    itemlist.append( Item(channel=item.channel, title="Foro anime en línea"                  , action="forum"      ,url="http://www.mcanime.net/foro/viewforum.php?f=113"))
+    itemlist.append( Item(channel=item.channel, title="Descarga directa - Novedades"         , action="ddnovedades",url="http://www.mcanime.net/descarga_directa/anime"))
+    itemlist.append( Item(channel=item.channel, title="Descarga directa - Listado alfabético", action="ddalpha"    ,url="http://www.mcanime.net/descarga_directa/anime"))
+    itemlist.append( Item(channel=item.channel, title="Descarga directa - Categorías"        , action="ddcat"      ,url="http://www.mcanime.net/descarga_directa/anime"))
+    itemlist.append( Item(channel=item.channel, title="Enciclopedia - Estrenos"              , action="estrenos"   ,url="http://www.mcanime.net/enciclopedia/estrenos/anime"))
     return itemlist
 
 def estrenos(item):
@@ -83,7 +78,7 @@ def estrenos(item):
             scrapedurl = urlparse.urljoin(item.url,matches2[0][1])
 
         # AÒade al listado de XBMC
-        itemlist.append( Item(channel=__channel__, action='ddseriedetail', title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True ) )
+        itemlist.append( Item(channel=item.channel, action='ddseriedetail', title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True ) )
 
     return itemlist
 
@@ -115,7 +110,7 @@ def home(item):
             scrapedextra = match[8]
             scrapedtitle = scrapedtitle.replace("[CR]"," CR ")
             if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-            itemlist.append( Item(channel=__channel__, action='findvideos', title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , extra = scrapedextra , folder=True ) )
+            itemlist.append( Item(channel=item.channel, action='findvideos', title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , extra = scrapedextra , folder=True ) )
 
     # Extrae la marca de siguiente p·gina
     patronvideos = '<span class="next"><a href="([^"]+)">Anteriores</a>...</span>'
@@ -127,7 +122,7 @@ def home(item):
         scrapedurl = urlparse.urljoin(item.url,matches[0])
         scrapedthumbnail = ""
         scrapedplot = ""
-        itemlist.append( Item(channel=__channel__, action='home', title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True ) )
+        itemlist.append( Item(channel=item.channel, action='home', title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True ) )
 
     return itemlist
 
@@ -155,7 +150,7 @@ def ddnovedades(item):
         scrapedthumbnail = ""
         scrapedplot = ""
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action='ddpostdetail', title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True ) )
+        itemlist.append( Item(channel=item.channel, action='ddpostdetail', title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True ) )
 
     # Extrae la marca de siguiente p·gina
     patronvideos = '<span class="current">[^<]+</span><a href="([^"]+)">[^<]+</a>'
@@ -167,7 +162,7 @@ def ddnovedades(item):
         scrapedurl = urlparse.urljoin(item.url,matches[0])
         scrapedthumbnail = ""
         scrapedplot = ""
-        itemlist.append( Item(channel=__channel__, action='ddnovedades', title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True ) )
+        itemlist.append( Item(channel=item.channel, action='ddnovedades', title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True ) )
 
     return itemlist
 
@@ -190,7 +185,7 @@ def ddalpha(item):
         scrapedthumbnail = ""
         scrapedplot = ""
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action='ddlist', title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True ) )
+        itemlist.append( Item(channel=item.channel, action='ddlist', title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True ) )
 
     return itemlist
 
@@ -215,7 +210,7 @@ def ddcat(item):
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
 
         # AÒade al listado de XBMC
-        itemlist.append( Item(channel=__channel__, action='ddlist', title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True ) )
+        itemlist.append( Item(channel=item.channel, action='ddlist', title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True ) )
 
     return itemlist
 
@@ -240,7 +235,7 @@ def ddlist(item):
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
 
         # AÒade al listado de XBMC
-        itemlist.append( Item(channel=__channel__, action='ddseriedetail', title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True ) )
+        itemlist.append( Item(channel=item.channel, action='ddseriedetail', title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True ) )
 
     return itemlist
 
@@ -292,7 +287,7 @@ def ddseriedetail(item):
             if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
 
             # AÒade al listado de XBMC
-            itemlist.append( Item(channel=__channel__, action='ddpostdetail', title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True ) )
+            itemlist.append( Item(channel=item.channel, action='ddpostdetail', title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True ) )
     
     # Aportaciones de los usuarios
     patron  = '<h6 class="m">Por los Usuarios</h6>[^<]+'
@@ -318,7 +313,7 @@ def ddseriedetail(item):
             if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
 
             # AÒade al listado de XBMC
-            itemlist.append( Item(channel=__channel__, action='ddpostdetail', title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True ) )
+            itemlist.append( Item(channel=item.channel, action='ddpostdetail', title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True ) )
 
     return itemlist
 
@@ -353,7 +348,7 @@ def ddpostdetail(item):
     itemlist = servertools.find_video_items(data=data)
 
     for videoitem in itemlist:
-        videoitem.channel = __channel__
+        videoitem.channel = item.channel
         videoitem.action="play"
         videoitem.folder=False
         try:
@@ -396,7 +391,7 @@ def forum(item):
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
 
         # AÒade al listado de XBMC
-        itemlist.append( Item(channel=__channel__, action='forumdetail', title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True ) )
+        itemlist.append( Item(channel=item.channel, action='forumdetail', title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True ) )
 
     # Extrae la siguiente p·gina
     patronvideos  = '<a href="([^"]+)" class="next">(Siguiente &raquo;)</a>'
@@ -413,7 +408,7 @@ def forum(item):
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
         
         # AÒade al listado de XBMC
-        itemlist.append( Item(channel=__channel__, action='forum', title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True ) )
+        itemlist.append( Item(channel=item.channel, action='forum', title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True ) )
 
     return itemlist
 
@@ -432,7 +427,7 @@ def forumdetail(item):
     matches = re.compile(patronvideos,re.DOTALL).findall(data)
     for match in matches:
         logger.info("Encontrada pagina siguiente")
-        itemlist.append( Item(channel=__channel__, action='list', title=">> Página siguiente" , url=urlparse.urljoin(item.url,match).replace("&amp;","&") , folder=True ) )
+        itemlist.append( Item(channel=item.channel, action='list', title=">> Página siguiente" , url=urlparse.urljoin(item.url,match).replace("&amp;","&") , folder=True ) )
 
     # ------------------------------------------------------------------------------------
     # Busca los enlaces a los videos
@@ -475,7 +470,7 @@ def forumdetail(item):
 
     for video in itemlist:
         if video.folder==False:
-            video.channel = __channel__
+            video.channel = item.channel
             video.title = re.sub("<[^>]+>","",item.title)
             video.action = "play"
 

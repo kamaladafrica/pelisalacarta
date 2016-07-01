@@ -16,21 +16,16 @@ from core import tmdb
 
 from core.item import Item
 
-__channel__ = "oranline"
-__category__ = "F"
-__type__ = "generic"
-__title__ = "oranline"
-__language__ = "ES"
 
 # Configuracion del canal
 try:
-    __modo_grafico__ = config.get_setting('modo_grafico', __channel__)
-    __perfil__ = int(config.get_setting('perfil', __channel__))
+    __modo_grafico__ = config.get_setting('modo_grafico', "oranline")
+    __perfil__ = int(config.get_setting('perfil', "oranline"))
 except:
     __modo_grafico__ = True
     __perfil__ = 0
 
-# Fijar perfil de color            
+# Fijar perfil de color
 perfil = [['0xFFFFE6CC', '0xFFFFCE9C', '0xFF994D00'],
           ['0xFFA5F6AF', '0xFF5FDA6D', '0xFF11811E'],
           ['0xFF58D3F7', '0xFF2E64FE', '0xFF0404B4']]
@@ -38,11 +33,11 @@ color1, color2, color3 = perfil[__perfil__]
 
 DEBUG = config.get_setting("debug")
 host = "http://www.oranline.com/"
-parameters = channeltools.get_channel_parameters(__channel__)
+parameters = channeltools.get_channel_parameters("oranline")
 fanart = parameters['fanart']
 thumbnail_host = parameters['thumbnail']
 viewmode_options = {0: 'movie_with_plot', 1: 'movie', 2: 'list'}
-viewmode = viewmode_options[config.get_setting('viewmode', __channel__)]
+viewmode = viewmode_options[config.get_setting('viewmode', "oranline")]
 
 
 def mainlist(item):
@@ -50,33 +45,33 @@ def mainlist(item):
 
     itemlist = []
 
-    itemlist.append(Item(channel=__channel__, title="Películas", text_color=color2, fanart=fanart, folder=False,
+    itemlist.append(Item(channel=item.channel, title="Películas", text_color=color2, fanart=fanart, folder=False,
                          thumbnail=thumbnail_host, text_blod=True, viewmode=viewmode))
-    itemlist.append(Item(channel=__channel__, action="peliculas", title="      Novedades",
+    itemlist.append(Item(channel=item.channel, action="peliculas", title="      Novedades",
                          text_color=color1, fanart=fanart, url=urlparse.urljoin(host, "ultimas-peliculas-online/"),
                          thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/Directors%20Chair.png"))
 
-    itemlist.append(Item(channel=__channel__, action="peliculas", title="      Más vistas",
+    itemlist.append(Item(channel=item.channel, action="peliculas", title="      Más vistas",
                          text_color=color1, fanart=fanart, url=urlparse.urljoin(host, "mas-visto/"),
                          thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/Favorites.png"))
-    itemlist.append(Item(channel=__channel__, action="generos", title="      Filtradas por géneros",
+    itemlist.append(Item(channel=item.channel, action="generos", title="      Filtradas por géneros",
                          text_color=color1, fanart=fanart, url=host,
                          thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/Genre.png"))
     url = urlparse.urljoin(host, "category/documental/")
-    itemlist.append(Item(channel=__channel__, title="Documentales", text_blod=True,
+    itemlist.append(Item(channel=item.channel, title="Documentales", text_blod=True,
                          text_color=color2, fanart=fanart, thumbnail=thumbnail_host, folder=False))
-    itemlist.append(Item(channel=__channel__, action="peliculas", title="      Novedades",
+    itemlist.append(Item(channel=item.channel, action="peliculas", title="      Novedades",
                          text_color=color1, fanart=fanart, url=url,
                          thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/Documentaries.png"))
     url = urlparse.urljoin(host, "category/documental/?orderby=title&order=asc&gdsr_order=asc")
-    itemlist.append(Item(channel=__channel__, action="peliculas", title="      Por orden alfabético",
+    itemlist.append(Item(channel=item.channel, action="peliculas", title="      Por orden alfabético",
                          text_color=color1, fanart=fanart, url=url,
                          thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/A-Z.png"))
-    itemlist.append(Item(channel=__channel__, title="", fanart=fanart, folder=False, thumbnail=thumbnail_host))
-    itemlist.append(Item(channel=__channel__, action="search", title="Buscar...", text_color=color3, fanart=fanart,
+    itemlist.append(Item(channel=item.channel, title="", fanart=fanart, folder=False, thumbnail=thumbnail_host))
+    itemlist.append(Item(channel=item.channel, action="search", title="Buscar...", text_color=color3, fanart=fanart,
                          thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/channels/oranline/buscar.png"))
 
-    itemlist.append(Item(channel=__channel__, action="configuracion", title="Configurar canal...", text_color="gold",
+    itemlist.append(Item(channel=item.channel, action="configuracion", title="Configurar canal...", text_color="gold",
                          thumbnail=thumbnail_host, fanart=fanart, folder=False))
     return itemlist
 
@@ -168,7 +163,7 @@ def peliculas(item):
         filtro_list = {"poster_path": filtro_thumb}
         filtro_list = filtro_list.items()
 
-        new_item = Item(channel=__channel__, action="findvideos", title=title, url=scrapedurl,
+        new_item = Item(channel=item.channel, action="findvideos", title=title, url=scrapedurl,
                         thumbnail=scrapedthumbnail, fulltitle=scrapedtitle, infoLabels={'filtro': filtro_list},
                         contentTitle=scrapedtitle, context="0", text_color=color1, viewmode=viewmode)
         itemlist.append(new_item)
@@ -180,7 +175,7 @@ def peliculas(item):
 
     next_page = scrapertools.find_single_match(data, '<a href="([^"]+)"\s+><span [^>]+>&raquo;</span>')
     if next_page != "":
-        itemlist.append(Item(channel=__channel__, action="peliculas", title=">> Página siguiente",
+        itemlist.append(Item(channel=item.channel, action="peliculas", title=">> Página siguiente",
                              url=next_page.replace("&#038;", "&"), text_color=color3, folder=True))
 
     return itemlist
@@ -216,7 +211,7 @@ def generos(item):
 
         if DEBUG:
             logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, scrapedurl, thumbnail))
-        itemlist.append(Item(channel=__channel__, action="peliculas", title=title, url=scrapedurl, thumbnail=thumbnail,
+        itemlist.append(Item(channel=item.channel, action="peliculas", title=title, url=scrapedurl, thumbnail=thumbnail,
                              folder=True, text_color=color2, fanart=fanart, viewmode=viewmode))
     return itemlist
 
@@ -226,8 +221,8 @@ def findvideos(item):
     itemlist = []
 
     try:
-        filtro_idioma = config.get_setting("filterlanguages", __channel__)
-        filtro_enlaces = config.get_setting("filterlinks", __channel__)
+        filtro_idioma = config.get_setting("filterlanguages", item.channel)
+        filtro_enlaces = config.get_setting("filterlinks", item.channel)
     except:
         filtro_idioma = 4
         filtro_enlaces = 2
@@ -254,13 +249,13 @@ def findvideos(item):
     if filtro_enlaces != 0:
         list_enlaces = bloque_enlaces(data, filtro_idioma, dict_idiomas, "online", item)
         if list_enlaces:
-            itemlist.append(item.clone(channel=__channel__, action="", title="Enlaces Online",
+            itemlist.append(item.clone(channel=item.channel, action="", title="Enlaces Online",
                                        text_color=color1, text_blod=True, viewmode="list", folder=False))
             itemlist.extend(list_enlaces)
     if filtro_enlaces != 1:
         list_enlaces = bloque_enlaces(data, filtro_idioma, dict_idiomas, "descarga", item)
         if list_enlaces:
-            itemlist.append(item.clone(channel=__channel__, action="", title="Enlaces Descarga",
+            itemlist.append(item.clone(channel=item.channel, action="", title="Enlaces Descarga",
                                        text_color=color1, text_blod=True, viewmode="list", folder=False))
             itemlist.extend(list_enlaces)
 

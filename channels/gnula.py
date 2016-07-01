@@ -13,11 +13,6 @@ from core import scrapertools
 from core import servertools
 from core.item import Item
 
-__channel__ = "gnula"
-__category__ = "F"
-__type__ = "generic"
-__title__ = "Gnula"
-__language__ = "ES"
 
 DEBUG = config.get_setting("debug")
 
@@ -25,10 +20,10 @@ DEBUG = config.get_setting("debug")
 def mainlist(item):
     logger.info("pelisalacarta.channels.gnula mainlist")
     itemlist = []
-    itemlist.append( Item(channel=__channel__, title="Estrenos"      , action="peliculas"    , url="http://gnula.nu/peliculas-online/lista-de-peliculas-online-parte-1/"))
-    itemlist.append( Item(channel=__channel__, title="Generos"       , action="generos"   , url="http://gnula.nu/generos/lista-de-generos/"))
-    itemlist.append( Item(channel=__channel__, title="Recomendadas"  , action="peliculas"   , url="http://gnula.nu/peliculas-online/lista-de-peliculas-recomendadas/"))
-    #itemlist.append( Item(channel=__channel__, title="Portada"       , action="portada"    , url="http://gnula.nu/"))
+    itemlist.append( Item(channel=item.channel, title="Estrenos"      , action="peliculas"    , url="http://gnula.nu/peliculas-online/lista-de-peliculas-online-parte-1/"))
+    itemlist.append( Item(channel=item.channel, title="Generos"       , action="generos"   , url="http://gnula.nu/generos/lista-de-generos/"))
+    itemlist.append( Item(channel=item.channel, title="Recomendadas"  , action="peliculas"   , url="http://gnula.nu/peliculas-online/lista-de-peliculas-recomendadas/"))
+    #itemlist.append( Item(channel=item.channel, title="Portada"       , action="portada"    , url="http://gnula.nu/"))
     return itemlist
 
 def generos(item):
@@ -50,7 +45,7 @@ def generos(item):
         url = urlparse.urljoin(item.url,scrapedurl)
         thumbnail = ""
         if DEBUG: logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action='peliculas', title=title , url=url , thumbnail=thumbnail , plot=plot , extra=title) )
+        itemlist.append( Item(channel=item.channel, action='peliculas', title=title , url=url , thumbnail=thumbnail , plot=plot , extra=title) )
     
     itemlist = sorted(itemlist, key=lambda item: item.title)
 
@@ -83,7 +78,7 @@ def peliculas(item):
         url = urlparse.urljoin(item.url,scrapedurl)
         thumbnail = urlparse.urljoin(item.url,scrapedthumbnail)
         if DEBUG: logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action='findvideos', title=title , fulltitle=fulltitle , url=url , thumbnail=thumbnail , plot=plot , viewmode="movie", extra=title, hasContentDetails="true", contentTitle=contentTitle, contentThumbnail=thumbnail) )
+        itemlist.append( Item(channel=item.channel, action='findvideos', title=title , fulltitle=fulltitle , url=url , thumbnail=thumbnail , plot=plot , viewmode="movie", extra=title, hasContentDetails="true", contentTitle=contentTitle, contentThumbnail=thumbnail) )
 
     return itemlist
 

@@ -13,12 +13,6 @@ from core import logger
 from core import scrapertools
 from core.item import Item
 
-__channel__ = "vertelenovelas"
-__category__ = "S"
-__type__ = "generic"
-__title__ = "Ver Telenovelas"
-__language__ = "ES"
-__creationdate__ = "20121015"
 
 DEBUG = config.get_setting("debug")
 
@@ -28,8 +22,8 @@ def mainlist(item):
     
     itemlist = []
 
-    itemlist.append( Item(channel=__channel__, title="Catálogo" , action="series", url="http://www.vertelenovelas.cc/"))
-    itemlist.append( Item(channel=__channel__, title="Buscar"   , action="search"))
+    itemlist.append( Item(channel=item.channel, title="Catálogo" , action="series", url="http://www.vertelenovelas.cc/"))
+    itemlist.append( Item(channel=item.channel, title="Buscar"   , action="search"))
 
     return itemlist
 
@@ -70,11 +64,11 @@ def series(item):
         if thumbnail=="":
             thumbnail = scrapertools.find_single_match(match,'<img src="([^"]+)"')
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"]")
-        itemlist.append( Item(channel=__channel__, action="episodios", title=title , url=url , thumbnail=thumbnail, viewmode="movie") )
+        itemlist.append( Item(channel=item.channel, action="episodios", title=title , url=url , thumbnail=thumbnail, viewmode="movie") )
     
     next_page_url = scrapertools.find_single_match(data,'<a href="([^"]+)" class="next">')
     if next_page_url!="":
-        itemlist.append( Item(channel=__channel__, action="series", title=">> Pagina siguiente" , url=urlparse.urljoin(item.url,next_page_url) , thumbnail="" , plot="" , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="series", title=">> Pagina siguiente" , url=urlparse.urljoin(item.url,next_page_url) , thumbnail="" , plot="" , folder=True) )
 
     return itemlist
 
@@ -97,7 +91,7 @@ def episodios(item):
         url = urlparse.urljoin(item.url,scrapedurl)
 
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="findvideos", title=title , url=url , thumbnail=thumbnail , plot=plot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="findvideos", title=title , url=url , thumbnail=thumbnail , plot=plot , folder=True) )
     
     return itemlist
 
@@ -111,25 +105,25 @@ def findvideos(item):
     patron = '<embed type="application/x-shockwave-flash" src="http://vertelenovelas.net/player.swf".*?file=([^\&]+)&'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for match in matches:
-        itemlist.append( Item(channel=__channel__, action="play", server="directo", title=item.title , url=match , thumbnail=item.thumbnail , plot=item.plot , folder=False) )
+        itemlist.append( Item(channel=item.channel, action="play", server="directo", title=item.title , url=match , thumbnail=item.thumbnail , plot=item.plot , folder=False) )
 
     #<embed width="680" height="450" flashvars="file=mp4:p/459791/sp/45979100/serveFlavor/flavorId/0_0pacv7kr/forceproxy/true&amp;image=&amp;skin=&amp;abouttext=&amp;dock=false&amp;streamer=rtmp://rtmpakmi.kaltura.com/ondemand/&amp;
     patron = '<embed width="[^"]+" height="[^"]+" flashvars="file=([^\&]+)&.*?streamer=(rtmp[^\&]+)&'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for final,principio in matches:
-        itemlist.append( Item(channel=__channel__, action="play", server="directo", title=item.title , url=principio+final , thumbnail=item.thumbnail , plot=item.plot , folder=False) )
+        itemlist.append( Item(channel=item.channel, action="play", server="directo", title=item.title , url=principio+final , thumbnail=item.thumbnail , plot=item.plot , folder=False) )
 
     #file=mp4:/c/g1MjYyYjpCnH8dRolOZ2G7u1KsleMuDS/DOcJ-FxaFrRg4gtDIwOjkzOjBrO8N_l0&streamer=rtmp://cp96275.edgefcs.net/ondemand&
     patron = 'file=([^\&]+)&streamer=(rtmp[^\&]+)&'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for final,principio in matches:
-        itemlist.append( Item(channel=__channel__, action="play", server="directo", title=item.title , url=principio+"/"+final , thumbnail=item.thumbnail , plot=item.plot , folder=False) )
+        itemlist.append( Item(channel=item.channel, action="play", server="directo", title=item.title , url=principio+"/"+final , thumbnail=item.thumbnail , plot=item.plot , folder=False) )
 
 
     from core import servertools
     itemlist.extend(servertools.find_video_items(data=data))
     for videoitem in itemlist:
-        videoitem.channel=__channel__
+        videoitem.channel=item.channel
         videoitem.action="play"
         videoitem.folder=False
         videoitem.title = "["+videoitem.server+"]"

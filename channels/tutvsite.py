@@ -13,11 +13,6 @@ from core import logger
 from core import scrapertools
 from core.item import Item
 
-__channel__ = "tutvsite"
-__category__ = "G"
-__type__ = "generic"
-__title__ = "tu.tv"
-__language__ = "ES"
 
 DEBUG = config.get_setting("debug")
 
@@ -26,7 +21,7 @@ def mainlist(item):
     logger.info("[tutvsite.py] mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, action="search"     , title="Buscar"                           , url="http://www.tu.tv/buscar/?str=%s"))
+    itemlist.append( Item(channel=item.channel, action="search"     , title="Buscar"                           , url="http://www.tu.tv/buscar/?str=%s"))
 
     return itemlist
 
@@ -90,6 +85,6 @@ def list(item):
         scrapedplot = ""
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
 
-        itemlist.append( Item(channel=__channel__, action="findvideos" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot))
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot))
 
     return itemlist

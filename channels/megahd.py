@@ -13,15 +13,8 @@ from core import scrapertools
 from core.item import Item
 from platformcode import platformtools
 
-__channel__ = "megahd"
-__category__ = "F"
-__type__ = "generic"
-__title__ = "Megahd"
-__language__ = "ES"
-__adult__ = "true"
 
 DEBUG = config.get_setting("debug")
-
 MAIN_HEADERS = []
 MAIN_HEADERS.append( ["Accept","text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"] )
 MAIN_HEADERS.append( ["Accept-Encoding","gzip, deflate"] )
@@ -42,8 +35,8 @@ def login():
     logger.info("channels.megahd cur_session_id="+cur_session_id)
 
     # Calcula el hash del password
-    LOGIN = config.get_setting("megahduser",__channel__)
-    PASSWORD = config.get_setting("megahdpassword",__channel__)
+    LOGIN = config.get_setting("megahduser", "megahd")
+    PASSWORD = config.get_setting("megahdpassword", "megahd")
     logger.info("channels.megahd LOGIN="+LOGIN)
     logger.info("channels.megahd PASSWORD="+PASSWORD)
 
@@ -63,18 +56,18 @@ def mainlist(item):
     logger.info("channels.megahd mainlist")
     itemlist = []
 
-    if config.get_setting("megahduser",__channel__) == "":
-        itemlist.append( Item( channel=__channel__ , title="Habilita tu cuenta en la configuración..." , action="settingCanal" , url="" ) )
+    if config.get_setting("megahduser", "megahd") == "":
+        itemlist.append( Item( channel=item.channel , title="Habilita tu cuenta en la configuración..." , action="settingCanal" , url="" ) )
     else:
         if login():
-            itemlist.append( Item( channel=__channel__ , title="Películas" , action="foro" , url="http://megahd.me/peliculas/" , folder=True ) )
-            itemlist.append( Item( channel=__channel__ , title="Anime" , action="foro" , url="http://megahd.me/anime/" , folder=True ) )
-            itemlist.append( Item( channel=__channel__ , title="Series" , action="foro" , url="http://megahd.me/series/" , folder=True ) )
-            itemlist.append( Item( channel=__channel__ , title="Documentales y Deportes" , action="foro" , url="http://megahd.me/documentales/" , folder=True ) )
-            itemlist.append( Item( channel=__channel__ , title="Zona Infantil" , action="foro" , url="http://megahd.me/zona-infantil/" , folder=True ) )
-            itemlist.append( Item(channel=__channel__, action="settingCanal"    , title="Configuración..."     , url="" ))
+            itemlist.append( Item( channel=item.channel , title="Películas" , action="foro" , url="http://megahd.me/peliculas/" , folder=True ) )
+            itemlist.append( Item( channel=item.channel , title="Anime" , action="foro" , url="http://megahd.me/anime/" , folder=True ) )
+            itemlist.append( Item( channel=item.channel , title="Series" , action="foro" , url="http://megahd.me/series/" , folder=True ) )
+            itemlist.append( Item( channel=item.channel , title="Documentales y Deportes" , action="foro" , url="http://megahd.me/documentales/" , folder=True ) )
+            itemlist.append( Item( channel=item.channel , title="Zona Infantil" , action="foro" , url="http://megahd.me/zona-infantil/" , folder=True ) )
+            itemlist.append( Item(channel=item.channel, action="settingCanal"    , title="Configuración..."     , url="" ))
         else:
-            itemlist.append( Item( channel=__channel__ , title="Cuenta incorrecta, revisa la configuración..." , action="" , url="" , folder=False ) )
+            itemlist.append( Item( channel=item.channel , title="Cuenta incorrecta, revisa la configuración..." , action="" , url="" , folder=False ) )
     return itemlist
 
 def settingCanal(item):
@@ -101,7 +94,7 @@ def foro(item):
             thumbnail = ""
             plot = scrapedmsg
             # Añade al listado
-            itemlist.append( Item(channel=__channel__, action=action, title= title, url=url , thumbnail=thumbnail , plot=plot , folder=True) )
+            itemlist.append( Item(channel=item.channel, action=action, title= title, url=url , thumbnail=thumbnail , plot=plot , folder=True) )
 
     # EXTREA EL LINK DE LA SIGUIENTE PAGINA
     patron = '<div class="pagelinks">Páginas:.*?\[<strong>[^<]+</strong>\].*?<a class="navPages" href="(?!\#bot)([^"]+)">[^<]+</a>.*?</div>'
@@ -113,7 +106,7 @@ def foro(item):
             thumbnail = ""
             plot = ""
             # Añade al listado
-            itemlist.append( Item(channel=__channel__, action="foro", title=title , url=url , thumbnail=thumbnail , plot=plot , folder=True) )
+            itemlist.append( Item(channel=item.channel, action="foro", title=title , url=url , thumbnail=thumbnail , plot=plot , folder=True) )
     return itemlist
 
 
@@ -146,7 +139,7 @@ def findvideos(item):
     from core import servertools
     itemlist.extend(servertools.find_video_items(data=data))
     for videoitem in itemlist:
-     videoitem.channel=__channel__
+     videoitem.channel=item.channel
      videoitem.action="play"
      videoitem.folder=False
      videoitem.thumbnail=item.thumbnail
@@ -160,7 +153,7 @@ def findvideos(item):
     from core import servertools
     itemlist.extend(servertools.find_video_items(data=data))
     for videoitem in itemlist:
-     videoitem.channel=__channel__
+     videoitem.channel=item.channel
      videoitem.action="play"
      videoitem.folder=False
      videoitem.thumbnail=item.thumbnail

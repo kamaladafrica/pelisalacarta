@@ -14,13 +14,6 @@ from core import scrapertools
 from core import servertools
 from core.item import Item
 
-__channel__ = "teledocumentales"
-__category__ = "D"
-__type__ = "generic"
-__title__ = "Teledocumentales"
-__language__ = "ES"
-__creationdate__ = "20111019"
-
 
 DEBUG = config.get_setting("debug")
 
@@ -29,8 +22,8 @@ def mainlist(item):
     logger.info("[teledocumentales.py] mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, action="ultimo"        , title="Últimos Documentales"    , url="http://www.teledocumentales.com/"))
-    itemlist.append( Item(channel=__channel__, action="ListaCat"      , title="Listado por Genero"      , url="http://www.teledocumentales.com/"))
+    itemlist.append( Item(channel=item.channel, action="ultimo"        , title="Últimos Documentales"    , url="http://www.teledocumentales.com/"))
+    itemlist.append( Item(channel=item.channel, action="ListaCat"      , title="Listado por Genero"      , url="http://www.teledocumentales.com/"))
     
     return itemlist
 
@@ -112,7 +105,7 @@ def play(item):
     
     for videoitem in itemlist:
         videoitem.title = item.title
-        videoitem.channel = __channel__
+        videoitem.channel = item.channel
     
     return itemlist
 

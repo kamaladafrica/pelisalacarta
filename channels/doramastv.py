@@ -14,17 +14,7 @@ from core import scrapertools
 from core.item import Item
 
 DEBUG = config.get_setting("debug")
-
-__category__ = "S"
-__type__ = "generic"
-__title__ = "doramastv"
-__channel__ = "doramastv"
-__language__ = "ES"
-__creationdate__ = "20160216"
-
 host = "http://doramastv.com/"
-
-
 DEFAULT_HEADERS = []
 DEFAULT_HEADERS.append( ["User-Agent","Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; es-ES; rv:1.9.2.12) Gecko/20101026 Firefox/3.6.12"] )
 
@@ -33,11 +23,11 @@ def mainlist(item):
     logger.info("pelisalacarta.channels.doramatv mainlist")
 	
     itemlist = list([])
-    itemlist.append(Item(channel=__channel__, action="pagina_", title="En emision", url=urlparse.urljoin(host, "drama/emision")))
-    itemlist.append(Item(channel=__channel__, action="letras", title="Listado alfabetico", url=urlparse.urljoin(host, "lista-numeros")))
-    itemlist.append(Item(channel=__channel__, action="generos", title="Generos", url=urlparse.urljoin(host, "genero/accion")))
-    itemlist.append(Item(channel=__channel__, action="pagina_", title="Ultimos agregados", url=urlparse.urljoin(host, "dramas/ultimos")))
-    itemlist.append(Item(channel=__channel__, action="search", title="Buscar", url=urlparse.urljoin(host, "buscar/anime/ajax/?title=")))
+    itemlist.append(Item(channel=item.channel, action="pagina_", title="En emision", url=urlparse.urljoin(host, "drama/emision")))
+    itemlist.append(Item(channel=item.channel, action="letras", title="Listado alfabetico", url=urlparse.urljoin(host, "lista-numeros")))
+    itemlist.append(Item(channel=item.channel, action="generos", title="Generos", url=urlparse.urljoin(host, "genero/accion")))
+    itemlist.append(Item(channel=item.channel, action="pagina_", title="Ultimos agregados", url=urlparse.urljoin(host, "dramas/ultimos")))
+    itemlist.append(Item(channel=item.channel, action="search", title="Buscar", url=urlparse.urljoin(host, "buscar/anime/ajax/?title=")))
 
     return itemlist
 
@@ -59,7 +49,7 @@ def letras(item):
         if DEBUG:
             logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
 
-        itemlist.append(Item(channel=__channel__, action="pagina_", title=title, url=url, thumbnail=thumbnail, plot=plot))
+        itemlist.append(Item(channel=item.channel, action="pagina_", title=title, url=url, thumbnail=thumbnail, plot=plot))
 
     return itemlist
 	
@@ -78,7 +68,7 @@ def pagina_(item):
         url = urlparse.urljoin(item.url, scrapedurl)
         thumbnail = urlparse.urljoin(host, scrapedthumbnail)
         plot = scrapertools.decodeHtmlentities(scrapedplot)
-        itemlist.append( Item(channel=__channel__, action="episodios" , title=title , url=url, thumbnail=thumbnail, plot=plot, show=title))
+        itemlist.append( Item(channel=item.channel, action="episodios" , title=title , url=url, thumbnail=thumbnail, plot=plot, show=title))
 	
     patron = 'href="([^"]+)" class="next"'
     matches = re.compile(patron, re.DOTALL).findall(data)
@@ -88,7 +78,7 @@ def pagina_(item):
             scrapedtitle = "Pagina Siguiente >>"
             scrapedthumbnail = ""
             scrapedplot = ""
-            itemlist.append(Item(channel=__channel__, action="pagina_", title=scrapedtitle, url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot, folder=True))
+            itemlist.append(Item(channel=item.channel, action="pagina_", title=scrapedtitle, url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot, folder=True))
     return itemlist
 	
 def episodios(item):
@@ -108,7 +98,7 @@ def episodios(item):
         plot = ""
         url = urlparse.urljoin(item.url, scrapedurl)
         show = item.show
-        itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=show))		
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=show))		
     return itemlist
 	
 def findvideos(item):
@@ -136,7 +126,7 @@ def findvideos(item):
     from core import servertools
     itemlist.extend(servertools.find_video_items(data=data))
     for videoitem in itemlist:
-        videoitem.channel = __channel__
+        videoitem.channel = item.channel
         videoitem.folder = False
     return itemlist
 
@@ -159,7 +149,7 @@ def generos(item):
         if DEBUG:
             logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
 
-        itemlist.append(Item(channel=__channel__, action="pagina_", title=title, url=url, thumbnail=thumbnail, plot=plot))
+        itemlist.append(Item(channel=item.channel, action="pagina_", title=title, url=url, thumbnail=thumbnail, plot=plot))
 
     return itemlist
 	
@@ -178,5 +168,5 @@ def search(item, texto):
         title = scrapertools.unescape(scrapedtitle).strip()
         url = urlparse.urljoin(item.url, scrapedurl)
         thumbnail = urlparse.urljoin(host, scrapedthumbnail)
-        itemlist.append( Item(channel=__channel__, action="episodios" , title=title , url=url, thumbnail=thumbnail, plot="", show=title))
+        itemlist.append( Item(channel=item.channel, action="episodios" , title=title , url=url, thumbnail=thumbnail, plot="", show=title))
 	return itemlist

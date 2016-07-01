@@ -15,14 +15,8 @@ from core import scrapertools
 from core import servertools
 from core.item import Item
 
-__channel__ = "yaske"
-__category__ = "F"
-__type__ = "generic"
-__title__ = "yaske.net"
-__language__ = "ES"
 
 DEBUG = config.get_setting("debug")
-
 HEADER = [
     ["Host","www.yaske.cc"],
     ["Connection","keep-alive"],
@@ -39,12 +33,12 @@ def mainlist(item):
     logger.info("pelisalacarta.yaske mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, title="Novedades"          , action="peliculas",       url="http://www.yaske.cc/"))
-    itemlist.append( Item(channel=__channel__, title="Por año"            , action="menu_buscar_contenido",      url="http://www.yaske.cc/", extra="year"))
-    itemlist.append( Item(channel=__channel__, title="Por género"         , action="menu_buscar_contenido", url="http://www.yaske.cc/", extra="gender"))
-    itemlist.append( Item(channel=__channel__, title="Por calidad"        , action="menu_buscar_contenido",  url="http://www.yaske.cc/", extra="quality"))
-    itemlist.append( Item(channel=__channel__, title="Por idioma"         , action="menu_buscar_contenido",    url="http://www.yaske.cc/", extra="language"))
-    itemlist.append( Item(channel=__channel__, title="Buscar"             , action="search") )
+    itemlist.append( Item(channel=item.channel, title="Novedades"          , action="peliculas",       url="http://www.yaske.cc/"))
+    itemlist.append( Item(channel=item.channel, title="Por año"            , action="menu_buscar_contenido",      url="http://www.yaske.cc/", extra="year"))
+    itemlist.append( Item(channel=item.channel, title="Por género"         , action="menu_buscar_contenido", url="http://www.yaske.cc/", extra="gender"))
+    itemlist.append( Item(channel=item.channel, title="Por calidad"        , action="menu_buscar_contenido",  url="http://www.yaske.cc/", extra="quality"))
+    itemlist.append( Item(channel=item.channel, title="Por idioma"         , action="menu_buscar_contenido",    url="http://www.yaske.cc/", extra="language"))
+    itemlist.append( Item(channel=item.channel, title="Buscar"             , action="search") )
 
     return itemlist
 
@@ -135,7 +129,7 @@ def peliculas(item):
         thumbnail = scrapedthumbnail
         scrapedplot = ""
 
-        itemlist.append( Item(channel=__channel__, action="findvideos", title=title , url=url , thumbnail=thumbnail , plot=scrapedplot , fulltitle=scrapertools.htmlclean(scrapedtitle.strip()), viewmode="movie", folder=True, hasContentDetails="true", contentTitle=contentTitle, contentThumbnail=thumbnail) )
+        itemlist.append( Item(channel=item.channel, action="findvideos", title=title , url=url , thumbnail=thumbnail , plot=scrapedplot , fulltitle=scrapertools.htmlclean(scrapedtitle.strip()), viewmode="movie", folder=True, hasContentDetails="true", contentTitle=contentTitle, contentThumbnail=thumbnail) )
 
     # Extrae el paginador
     patronvideos  = "<a href='([^']+)'>\&raquo\;</a>"
@@ -143,7 +137,7 @@ def peliculas(item):
 
     if len(matches)>0:
         scrapedurl = urlparse.urljoin(item.url,matches[0])
-        itemlist.append( Item(channel=__channel__, action="peliculas", title=">> Página siguiente" , url=scrapedurl , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="peliculas", title=">> Página siguiente" , url=scrapedurl , folder=True) )
 
     return itemlist
 
@@ -168,7 +162,7 @@ def menu_buscar_contenido(item):
 
         url = "http://www.yaske.cc/es/peliculas/custom/?"+item.extra+"="+scrapedurl
 
-        itemlist.append( Item(channel=__channel__, action="peliculas", title=scrapedtitle , url=url , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="peliculas", title=scrapedtitle , url=url , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
 
     return sorted(itemlist, key=lambda i:  i.title.lower())
 
@@ -258,7 +252,7 @@ def findvideos(item):
 
             logger.info("server="+server+", scrapedurl="+scrapedurl)
             if scrapedurl.startswith("http"):
-                itemlist.append( Item(channel=__channel__, action="play", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , folder=False, parentContent=item) )
+                itemlist.append( Item(channel=item.channel, action="play", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , folder=False, parentContent=item) )
         except:
             import traceback
             logger.info("Excepcion: "+traceback.format_exc())

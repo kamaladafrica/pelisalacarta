@@ -4,7 +4,6 @@
 # Canal para filesmonster.com
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import os
 import re
 
 from core import config

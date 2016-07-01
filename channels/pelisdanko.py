@@ -13,13 +13,8 @@ from core import logger
 from core import scrapertools
 from core.item import Item
 
-__channel__ = "pelisdanko"
-__category__ = "D"
-__type__ = "generic"
-__title__ = "PelisDanko"
-__language__ = "ES"
 
-__modo_grafico__ = config.get_setting('modo_grafico', __channel__)
+__modo_grafico__ = config.get_setting('modo_grafico', 'pelisdanko')
 
 DEBUG = config.get_setting("debug")
 host = "http://pelisdanko.com"
@@ -31,18 +26,18 @@ def mainlist(item):
     logger.info("pelisalacarta.channels.pelisdanko mainlist")
 
     itemlist = []
-    itemlist.append(Item(channel=__channel__, action="novedades", title="Novedades", url=host + "/novedades",
+    itemlist.append(Item(channel=item.channel, action="novedades", title="Novedades", url=host + "/novedades",
                          thumbnail=thumb, fanart=art))
-    itemlist.append(Item(channel=__channel__, action="novedades", title="Estrenos", url=host + "/estrenos",
+    itemlist.append(Item(channel=item.channel, action="novedades", title="Estrenos", url=host + "/estrenos",
                          thumbnail=thumb, fanart=art))
-    itemlist.append(Item(channel=__channel__, action="novedades", title="Populares", url=host + "/populares",
+    itemlist.append(Item(channel=item.channel, action="novedades", title="Populares", url=host + "/populares",
                          thumbnail=thumb, fanart=art))
-    itemlist.append(Item(channel=__channel__, action="actualizadas", title="Películas actualizadas", url=host,
+    itemlist.append(Item(channel=item.channel, action="actualizadas", title="Películas actualizadas", url=host,
                          thumbnail=thumb, fanart=art))
-    itemlist.append(Item(channel=__channel__, action="indices", title="Índices", thumbnail=thumb, fanart=art))
-    itemlist.append(Item(channel=__channel__, action="search", title="Buscar...", thumbnail=thumb, fanart=art))
+    itemlist.append(Item(channel=item.channel, action="indices", title="Índices", thumbnail=thumb, fanart=art))
+    itemlist.append(Item(channel=item.channel, action="search", title="Buscar...", thumbnail=thumb, fanart=art))
 
-    itemlist.append(Item(channel=__channel__, action="configuracion", title="Configurar canal...", thumbnail=thumb, fanart=art,
+    itemlist.append(Item(channel=item.channel, action="configuracion", title="Configurar canal...", thumbnail=thumb, fanart=art,
                          text_color="gold", folder=False))
 
     return itemlist
@@ -110,7 +105,7 @@ def novedades(item):
             scrapedtitle = "[COLOR darkorange][B]" + scrapedtitle + "[/B][/COLOR]" + calidad + "[/COLOR]"
             if (DEBUG): logger.info(
                     "title=[" + scrapedtitle + "], url=[" + scrapedurl + "], thumbnail=[" + scrapedthumbnail + "]")
-            itemlist.append(Item(channel=__channel__, action="enlaces", title=bbcode_kodi2html(scrapedtitle),
+            itemlist.append(Item(channel=item.channel, action="enlaces", title=bbcode_kodi2html(scrapedtitle),
                                  url=scrapedurl, thumbnail=scrapedthumbnail, fanart=scrapedthumbnail,
                                  fulltitle=contentTitle, filtro=False, contentTitle=contentTitle, context="05",
                                  trailer=True, folder=True))
@@ -118,7 +113,7 @@ def novedades(item):
     # Busca enlaces de paginas siguientes...
     next_page_url = scrapertools.find_single_match(data, '<a href="([^"]+)" rel="next">')
     if len(next_page_url) > 0:
-        itemlist.append(item.clone(channel=__channel__, action="novedades", title=">> Página siguiente",
+        itemlist.append(item.clone(channel=item.channel, action="novedades", title=">> Página siguiente",
                                    url=next_page_url, folder=True))
 
     return itemlist
@@ -155,7 +150,7 @@ def actualizadas(item):
                                                                                                :-1] + ")[/COLOR]"
             if (DEBUG): logger.info(
                     "title=[" + scrapedtitle + "], url=[" + scrapedurl + "], thumbnail=[" + scrapedthumbnail + "]")
-            itemlist.append(Item(channel=__channel__, action="enlaces", title=bbcode_kodi2html(scrapedtitle),
+            itemlist.append(Item(channel=item.channel, action="enlaces", title=bbcode_kodi2html(scrapedtitle),
                                  url=scrapedurl, thumbnail=scrapedthumbnail, fanart=scrapedthumbnail,
                                  fulltitle=contentTitle, filtro=False, contentTitle=contentTitle, context="05",
                                  trailer=True, folder=True))
@@ -168,15 +163,15 @@ def indices(item):
     itemlist = []
 
     item.text_color = "orchid"
-    itemlist.append(item.clone(channel=__channel__, action="indice_list", title="Género",
+    itemlist.append(item.clone(channel=item.channel, action="indice_list", title="Género",
                                url=host, fulltitle="genero"))
-    itemlist.append(item.clone(channel=__channel__, action="indice_list", title="Alfabético",
+    itemlist.append(item.clone(channel=item.channel, action="indice_list", title="Alfabético",
                                url=host, fulltitle="letra"))
-    itemlist.append(item.clone(channel=__channel__, action="indice_list", title="Idioma",
+    itemlist.append(item.clone(channel=item.channel, action="indice_list", title="Idioma",
                                url=host, fulltitle="idioma"))
-    itemlist.append(item.clone(channel=__channel__, action="indice_list", title="Calidad",
+    itemlist.append(item.clone(channel=item.channel, action="indice_list", title="Calidad",
                                url=host, fulltitle="calidad"))
-    itemlist.append(item.clone(channel=__channel__, action="indice_list", title="Nacionalidad",
+    itemlist.append(item.clone(channel=item.channel, action="indice_list", title="Nacionalidad",
                                url=host, fulltitle="nacionalidad"))
 
     return itemlist
@@ -193,7 +188,7 @@ def indice_list(item):
     matches = scrapertools.find_multiple_matches(data, patron)
     for scrapedurl, scrapedtitle in matches:
         scrapedtitle = scrapedtitle.capitalize()
-        itemlist.append(item.clone(channel=__channel__, action="novedades", title=scrapedtitle,
+        itemlist.append(item.clone(channel=item.channel, action="novedades", title=scrapedtitle,
                                    url=scrapedurl, folder=True))
     return itemlist
 
@@ -221,7 +216,7 @@ def enlaces(item):
         except:
             pass
 
-    menu_trailer = config.get_setting('menu_trailer', __channel__)
+    menu_trailer = config.get_setting('menu_trailer', item.channel)
     if item.trailer and menu_trailer:
         trailer_id = scrapertools.find_single_match(data, 'data:\s*\{\s*id:\s*"([^"]+)"')
         data_trailer = scrapertools.downloadpage("http://pelisdanko.com/trailer", post="id=%s" % trailer_id)
@@ -234,17 +229,17 @@ def enlaces(item):
                                        text_color="magenta", folder=True))
             return itemlist
 
-    filtro_idioma = config.get_setting("filterlanguages", __channel__)
-    filtro_enlaces = config.get_setting("filterlinks", __channel__)
+    filtro_idioma = config.get_setting("filterlanguages", item.channel)
+    filtro_enlaces = config.get_setting("filterlinks", item.channel)
 
     dict_idiomas = {'CAST': 2, 'LAT': 1, 'VOSE': 0}
 
     if filtro_enlaces != 0:
-        itemlist.append(item.clone(channel=__channel__, action="", title="Enlaces Online",
+        itemlist.append(item.clone(channel=item.channel, action="", title="Enlaces Online",
                                    text_color="dodgerblue", text_bold=True, folder=False))
         itemlist = bloque_enlaces(data, filtro_idioma, dict_idiomas, itemlist, "ss", item)
     if filtro_enlaces != 1:
-        itemlist.append(item.clone(channel=__channel__, action="", title="Enlaces Descarga",
+        itemlist.append(item.clone(channel=item.channel, action="", title="Enlaces Descarga",
                                    text_color="dodgerblue", text_bold=True, folder=False))
         itemlist = bloque_enlaces(data, filtro_idioma, dict_idiomas, itemlist, "dd", item)
 
@@ -266,12 +261,12 @@ def bloque_enlaces(data, filtro_idioma, dict_idiomas, itemlist, type, item):
         scrapedtitle = "      [COLOR firebrick]Mostrar enlaces:   [/COLOR][COLOR goldenrod][" \
                        + flag + "/" + quality + "][/COLOR][COLOR khaki]  " + date + "[/COLOR]"
         if filtro_idioma == 3 or item.filtro:
-            itemlist.append(item.clone(channel=__channel__, title=bbcode_kodi2html(scrapedtitle), action="findvideos",
+            itemlist.append(item.clone(channel=item.channel, title=bbcode_kodi2html(scrapedtitle), action="findvideos",
                                        url=scrapedurl, id_enlaces=slug, folder=True))
         else:
             idioma = dict_idiomas[flag]
             if idioma == filtro_idioma:
-                itemlist.append(item.clone(channel=__channel__, title=bbcode_kodi2html(scrapedtitle),
+                itemlist.append(item.clone(channel=item.channel, title=bbcode_kodi2html(scrapedtitle),
                                            action="findvideos", url=scrapedurl, id_enlaces=slug, folder=True))
             else:
                 if flag not in filtrados: filtrados.append(flag)
@@ -280,7 +275,7 @@ def bloque_enlaces(data, filtro_idioma, dict_idiomas, itemlist, type, item):
         if len(filtrados) > 0:
             title = bbcode_kodi2html("[COLOR orangered]      Mostrar enlaces filtrados en %s[/COLOR]") % ", ".join(
                     filtrados)
-            itemlist.append(item.clone(channel=__channel__, title=title, action="enlaces", url=item.url, filtro=True,
+            itemlist.append(item.clone(channel=item.channel, title=title, action="enlaces", url=item.url, filtro=True,
                                        folder=True))
 
     return itemlist
@@ -316,7 +311,7 @@ def findvideos(item):
 
     # Opción "Añadir esta película a la biblioteca de XBMC"
     if config.get_library_support() and len(itemlist) > 0 and item.category != "Cine":
-        itemlist.append(item.clone(channel=__channel__, title="Añadir a la biblioteca de XBMC",
+        itemlist.append(item.clone(channel=item.channel, title="Añadir a la biblioteca de XBMC",
                                    text_color="green", action="add_pelicula_to_library"))
 
     return itemlist

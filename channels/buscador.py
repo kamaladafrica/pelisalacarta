@@ -16,8 +16,6 @@ from core import logger
 from core.item import Item
 from platformcode import platformtools
 
-__channel__ = "buscador"
-
 logger.info("pelisalacarta.channels.buscador init")
 
 DEBUG = True
@@ -27,25 +25,25 @@ def mainlist(item,preferred_thumbnail="squares"):
     logger.info("pelisalacarta.channels.buscador mainlist")
 
     itemlist = list()
-    itemlist.append(Item(channel=__channel__, action="search", title="Busqueda generica..."))
+    itemlist.append(Item(channel=item.channel, action="search", title="Busqueda generica..."))
 
 
-    itemlist.append(Item(channel=__channel__, action="search", title="Busqueda por categorias...", extra="categorias"))
-    itemlist.append(Item(channel=__channel__, action="opciones", title="Opciones"))
+    itemlist.append(Item(channel=item.channel, action="search", title="Busqueda por categorias...", extra="categorias"))
+    itemlist.append(Item(channel=item.channel, action="opciones", title="Opciones"))
 
     saved_searches_list = get_saved_searches()
 
     for saved_search_text in saved_searches_list:
-        itemlist.append(Item(channel=__channel__, action="do_search", title=' "'+saved_search_text+'"', extra=saved_search_text))
+        itemlist.append(Item(channel=item.channel, action="do_search", title=' "'+saved_search_text+'"', extra=saved_search_text))
 
     return itemlist
     
     
 def opciones(item):
     itemlist = []
-    itemlist.append(Item(channel=__channel__, action="clear_saved_searches", title="Borrar búsquedas guardadas"))
-    itemlist.append(Item(channel=__channel__, action="settingCanal", title="Canales incluidos..."))
-    itemlist.append(Item(channel=__channel__, action="settings", title="Ajustes buscador"))
+    itemlist.append(Item(channel=item.channel, action="clear_saved_searches", title="Borrar búsquedas guardadas"))
+    itemlist.append(Item(channel=item.channel, action="settingCanal", title="Canales incluidos..."))
+    itemlist.append(Item(channel=item.channel, action="settings", title="Ajustes buscador"))
     return itemlist
         
 def settings(item):

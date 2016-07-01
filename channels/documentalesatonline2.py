@@ -12,11 +12,6 @@ from core import logger
 from core import scrapertools
 from core.item import Item
 
-__channel__ = "documentalesatonline2"
-__category__ = "D"
-__type__ = "generic"
-__title__ = "La Guarida de bizzente"
-__language__ = "ES"
 
 DEBUG = config.get_setting("debug")
 
@@ -25,9 +20,9 @@ def mainlist(item):
     logger.info("[documentalesatonline2.py] mainlist")
     itemlist=[]
 
-    itemlist.append( Item(channel=__channel__, title="Novedades"  , action="novedades" , url="http://www.bizzentte.com/"))
-    itemlist.append( Item(channel=__channel__, title="Categorías" , action="categorias" , url="http://www.bizzentte.com/"))
-    itemlist.append( Item(channel=__channel__, title="Buscar"     , action="search"))
+    itemlist.append( Item(channel=item.channel, title="Novedades"  , action="novedades" , url="http://www.bizzentte.com/"))
+    itemlist.append( Item(channel=item.channel, title="Categorías" , action="categorias" , url="http://www.bizzentte.com/"))
+    itemlist.append( Item(channel=item.channel, title="Buscar"     , action="search"))
 
     return itemlist
 
@@ -63,7 +58,7 @@ def categorias(item):
     scrapertools.printMatches(matches)
 
     for match in matches:
-        itemlist.append( Item(channel=__channel__, action="novedades", title=match[1] , url=match[0] , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="novedades", title=match[1] , url=match[0] , folder=True) )
 
     return itemlist
 
@@ -113,7 +108,7 @@ def novedades(item):
         scrapedplot = match[2]
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
 
-        itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="findvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
 
     # Página siguiente
     patron  = '<a href="([^"]+)" >P..gina siguiente \&raquo\;</a>'
@@ -121,7 +116,7 @@ def novedades(item):
     if DEBUG: scrapertools.printMatches(matches)
 
     for match in matches:
-        itemlist.append( Item(channel=__channel__, action="novedades", title="!Página siguiente" , url=urlparse.urljoin(item.url,match) , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="novedades", title="!Página siguiente" , url=urlparse.urljoin(item.url,match) , folder=True) )
 
     return itemlist
 

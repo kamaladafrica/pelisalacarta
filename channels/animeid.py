@@ -14,13 +14,6 @@ from core import scrapertools
 from core.item import Item
 
 DEBUG = config.get_setting("debug")
-
-__category__ = "A"
-__type__ = "generic"
-__title__ = "Animeid"
-__channel__ = "animeid"
-__language__ = "ES"
-
 CHANNEL_HOST = "http://animeid.tv/"
 
 
@@ -28,11 +21,11 @@ def mainlist(item):
     logger.info("pelisalacarta.channels.animeid mainlist")
     
     itemlist = []
-    itemlist.append( Item(channel=__channel__, action="novedades_series"    , title="Últimas series"     , url="http://www.animeid.tv/" ))
-    itemlist.append( Item(channel=__channel__, action="novedades_episodios" , title="Últimos episodios"  , url="http://www.animeid.tv/" ))
-    itemlist.append( Item(channel=__channel__, action="generos"             , title="Listado por genero" , url="http://www.animeid.tv/" ))
-    itemlist.append( Item(channel=__channel__, action="letras"              , title="Listado alfabetico" , url="http://www.animeid.tv/" ))
-    itemlist.append( Item(channel=__channel__, action="search"              , title="Buscar..." ))
+    itemlist.append( Item(channel=item.channel, action="novedades_series"    , title="Últimas series"     , url="http://www.animeid.tv/" ))
+    itemlist.append( Item(channel=item.channel, action="novedades_episodios" , title="Últimos episodios"  , url="http://www.animeid.tv/" ))
+    itemlist.append( Item(channel=item.channel, action="generos"             , title="Listado por genero" , url="http://www.animeid.tv/" ))
+    itemlist.append( Item(channel=item.channel, action="letras"              , title="Listado alfabetico" , url="http://www.animeid.tv/" ))
+    itemlist.append( Item(channel=item.channel, action="search"              , title="Buscar..." ))
 
     return itemlist
 
@@ -78,7 +71,7 @@ def search(item,texto):
             plot = ""
             if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
-            itemlist.append( Item(channel=__channel__, action="episodios" , title=title , url=url, thumbnail=thumbnail, plot=plot, show=title))
+            itemlist.append( Item(channel=item.channel, action="episodios" , title=title , url=url, thumbnail=thumbnail, plot=plot, show=title))
 
         return itemlist
 
@@ -106,7 +99,7 @@ def novedades_series(item):
         scrapedplot = ""
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
 
-        itemlist.append( Item(channel=__channel__, action="episodios" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot, show=title))
+        itemlist.append( Item(channel=item.channel, action="episodios" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot, show=title))
 
     return itemlist
 
@@ -133,7 +126,7 @@ def novedades_episodios(item):
         episodio = scrapertools.get_match(scrapedtitle,'\s+#(\d+)$')
         contentTitle = scrapedtitle.replace('#'+ episodio, '')
 
-        itemlist.append( Item(channel=__channel__, action="findvideos" , title=scrapedtitle , url=scrapedurl,
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title=scrapedtitle , url=scrapedurl,
                               thumbnail=scrapedthumbnail, plot=scrapedplot, viewmode="movie_with_plot",
                               hasContentDetails="true", contentSeason=1, contentTitle=contentTitle,
                               contentEpisodeNumber=int(episodio)))
@@ -157,7 +150,7 @@ def generos(item):
         scrapedplot = ""
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
 
-        itemlist.append( Item(channel=__channel__, action="series" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot, show=title))
+        itemlist.append( Item(channel=item.channel, action="series" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot, show=title))
 
     return itemlist
 
@@ -178,7 +171,7 @@ def letras(item):
         scrapedplot = ""
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
 
-        itemlist.append( Item(channel=__channel__, action="series" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot, show=title))
+        itemlist.append( Item(channel=item.channel, action="series" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot, show=title))
 
     return itemlist
 
@@ -204,13 +197,13 @@ def series(item):
         scrapedplot = plot
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
 
-        itemlist.append( Item(channel=__channel__, action="episodios" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot, show=scrapedtitle, viewmode="movie_with_plot"))
+        itemlist.append( Item(channel=item.channel, action="episodios" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot, show=scrapedtitle, viewmode="movie_with_plot"))
 
     itemlist = sorted(itemlist, key=lambda item: item.title)
 
     try:
         page_url = scrapertools.get_match(data,'<li><a href="([^"]+)">&gt;</a></li>')
-        itemlist.append( Item(channel=__channel__, action="series" , title=">> Página siguiente" , url=urlparse.urljoin(item.url,page_url), thumbnail="", plot=""))
+        itemlist.append( Item(channel=item.channel, action="series" , title=">> Página siguiente" , url=urlparse.urljoin(item.url,page_url), thumbnail="", plot=""))
     except:
         pass
 
@@ -255,19 +248,19 @@ def episodios(item,final=True):
         #scrapedplot = ""
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
 
-        itemlist.append( Item(channel=__channel__, action="findvideos" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot, show=item.show, viewmode="movie_with_plot"))
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot, show=item.show, viewmode="movie_with_plot"))
 
     try:
         next_page = scrapertools.get_match(body,'<a href="([^"]+)">\&gt\;</a>')
         next_page = urlparse.urljoin(item.url,next_page)
-        item2 = Item(channel=__channel__, action="episodios" , title=item.title , url=next_page, thumbnail=item.thumbnail, plot=item.plot, show=item.show, viewmode="movie_with_plot")
+        item2 = Item(channel=item.channel, action="episodios" , title=item.title , url=next_page, thumbnail=item.thumbnail, plot=item.plot, show=item.show, viewmode="movie_with_plot")
         itemlist.extend( episodios(item2,final=False) )
     except:
         import traceback
         logger.info(traceback.format_exc())
 
     if final and config.get_library_support():
-        itemlist.append( Item(channel=__channel__, title="Añadir esta serie a la biblioteca de XBMC", url=item.url, action="add_serie_to_library", extra="episodios", show=item.show) )
+        itemlist.append( Item(channel=item.channel, title="Añadir esta serie a la biblioteca de XBMC", url=item.url, action="add_serie_to_library", extra="episodios", show=item.show) )
         itemlist.append( Item(channel=item.channel, title="Descargar todos los episodios de la serie", url=item.url, action="download_all_episodes", extra="episodios", show=item.show) )
 
     return itemlist
@@ -298,26 +291,26 @@ def findvideos(item):
     encontrados = set()
     for url in matches:
         if url not in encontrados:
-            itemlist.append( Item(channel=__channel__, action="play" , title="[directo]" , server="directo", url=url, thumbnail="", plot="", show=item.show, folder=False))
+            itemlist.append( Item(channel=item.channel, action="play" , title="[directo]" , server="directo", url=url, thumbnail="", plot="", show=item.show, folder=False))
             encontrados.add(url)
 
     from core import servertools
     itemlist.extend(servertools.find_video_items(data=data))
     for videoitem in itemlist:
-        videoitem.channel=__channel__
+        videoitem.channel=item.channel
         videoitem.action="play"
         videoitem.folder=False
         videoitem.title = "["+videoitem.server+"]"
         
     if url_anterior:
         title_anterior = url_anterior.replace("/ver/", '').replace('-', ' ').replace('.html', '')
-        itemlist.append(Item(channel=__channel__, action="findvideos", title="Anterior: " + title_anterior,
+        itemlist.append(Item(channel=item.channel, action="findvideos", title="Anterior: " + title_anterior,
                         url=CHANNEL_HOST + url_anterior, thumbnail=item.thumbnail, plot=item.plot, show=item.show,
                         fanart=item.thumbnail, folder=True))
 
     if url_siguiente:
         title_siguiente = url_siguiente.replace("/ver/", '').replace('-', ' ').replace('.html', '')
-        itemlist.append(Item(channel=__channel__, action="findvideos", title="Siguiente: " + title_siguiente,
+        itemlist.append(Item(channel=item.channel, action="findvideos", title="Siguiente: " + title_siguiente,
                         url=CHANNEL_HOST + url_siguiente, thumbnail=item.thumbnail, plot=item.plot, show=item.show,
                         fanart=item.thumbnail, folder=True))
     return itemlist

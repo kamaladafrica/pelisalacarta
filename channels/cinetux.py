@@ -14,14 +14,8 @@ from core import servertools
 from core import tmdb
 from core.item import Item
 
-__channel__ = "cinetux"
-__category__ = "F"
-__type__ = "generic"
-__title__ = "Cinetux"
-__language__ = "ES"
 
 CHANNEL_HOST = "http://www.cinetux.net/"
-
 CHANNEL_DEFAULT_HEADERS = [
     ["User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:22.0) Gecko/20100101 Firefox/22.0"],
     ["Accept-Encoding", "gzip, deflate"],
@@ -30,8 +24,8 @@ CHANNEL_DEFAULT_HEADERS = [
 
 # Configuracion del canal
 try:
-    __modo_grafico__ = config.get_setting('modo_grafico', __channel__)
-    __perfil__ = int(config.get_setting('perfil', __channel__))
+    __modo_grafico__ = config.get_setting('modo_grafico', 'cinetux')
+    __perfil__ = int(config.get_setting('perfil', 'cinetux'))
 except:
     __modo_grafico__ = True
     __perfil__ = 0
@@ -46,41 +40,41 @@ DEBUG = config.get_setting("debug")
 thumbnail_host = "http://media.tvalacarta.info/pelisalacarta/squares/cinetux.png"
 fanart = "http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg"
 viewmode_options = {0: 'movie_with_plot', 1: 'movie', 2: 'list'}
-viewmode = viewmode_options[config.get_setting('viewmode', __channel__)]
+viewmode = viewmode_options[config.get_setting('viewmode', 'cinetux')]
 
 
 def mainlist(item):
     logger.info("pelisalacarta.channels.cinetux mainlist")
 
     itemlist = []
-    itemlist.append(Item(channel=__channel__, title="Películas", text_color=color2, fanart=fanart, folder=False,
+    itemlist.append(Item(channel=item.channel, title="Películas", text_color=color2, fanart=fanart, folder=False,
                          thumbnail=thumbnail_host, text_blod=True))
-    itemlist.append(Item(channel=__channel__, action="peliculas", title="      Novedades", url=CHANNEL_HOST,
+    itemlist.append(Item(channel=item.channel, action="peliculas", title="      Novedades", url=CHANNEL_HOST,
                          thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/Directors%20Chair.png",
                          fanart=fanart, text_color=color1, viewmode=viewmode))
     itemlist.append(
-        Item(channel=__channel__, action="vistas", title="      Más vistas", url="http://www.cinetux.net/mas-vistos/",
+        Item(channel=item.channel, action="vistas", title="      Más vistas", url="http://www.cinetux.net/mas-vistos/",
              thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/Favorites.png",
              text_color=color1, fanart=fanart, viewmode=viewmode))
-    itemlist.append(Item(channel=__channel__, action="generos", title="      Por géneros", url=CHANNEL_HOST,
+    itemlist.append(Item(channel=item.channel, action="generos", title="      Por géneros", url=CHANNEL_HOST,
                          thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/Genre.png",
                          fanart=fanart, text_color=color1, viewmode=viewmode))
 
     url = urlparse.urljoin(CHANNEL_HOST, "genero/documental/")
-    itemlist.append(Item(channel=__channel__, title="Documentales", text_blod=True,
+    itemlist.append(Item(channel=item.channel, title="Documentales", text_blod=True,
                          text_color=color2, fanart=fanart, thumbnail=thumbnail_host, folder=False))
-    itemlist.append(Item(channel=__channel__, action="peliculas", title="      Novedades", text_color=color1,
+    itemlist.append(Item(channel=item.channel, action="peliculas", title="      Novedades", text_color=color1,
                          fanart=fanart, url=url,
                          thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/Documentaries.png"))
     url = urlparse.urljoin(CHANNEL_HOST, "genero/documental/?orderby=title&order=asc&gdsr_order=asc")
-    itemlist.append(Item(channel=__channel__, action="peliculas", title="      Por orden alfabético",
+    itemlist.append(Item(channel=item.channel, action="peliculas", title="      Por orden alfabético",
                          text_color=color1, fanart=fanart, url=url,
                          thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/A-Z.png"))
-    itemlist.append(Item(channel=__channel__, title="", fanart=fanart, folder=False, thumbnail=thumbnail_host))
-    itemlist.append(Item(channel=__channel__, action="search", title="Buscar...", text_color=color3, fanart=fanart,
+    itemlist.append(Item(channel=item.channel, title="", fanart=fanart, folder=False, thumbnail=thumbnail_host))
+    itemlist.append(Item(channel=item.channel, action="search", title="Buscar...", text_color=color3, fanart=fanart,
                          thumbnail=thumbnail_host))
     itemlist.append(
-        Item(channel=__channel__, action="configuracion", thumbnail=thumbnail_host, title="Configurar canal...",
+        Item(channel=item.channel, action="configuracion", thumbnail=thumbnail_host, title="Configurar canal...",
              text_color="gold", fanart=fanart, viewmode=viewmode, folder=False))
     return itemlist
 
@@ -155,7 +149,7 @@ def peliculas(item):
             year = ""
         if (DEBUG): logger.info(
             "title=[" + scrapedtitle + "], url=[" + scrapedurl + "], thumbnail=[" + scrapedthumbnail + "]")
-        new_item = Item(channel=__channel__, action="findvideos", title=scrapedtitle, fulltitle=fulltitle,
+        new_item = Item(channel=item.channel, action="findvideos", title=scrapedtitle, fulltitle=fulltitle,
                         url=scrapedurl, thumbnail=scrapedthumbnail,
                         fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg", infoLabels={},
                         contentTitle=fulltitle, context="0", text_color=color2, viewmode=viewmode, folder=True)
@@ -169,7 +163,7 @@ def peliculas(item):
     # Extrae el paginador
     next_page_link = scrapertools.find_single_match(data, '<a href="([^"]+)"\s+><span [^>]+>&raquo;</span>')
     if next_page_link != "":
-        itemlist.append(Item(channel=__channel__, action="peliculas", title=">> Página siguiente", extra="next_page",
+        itemlist.append(Item(channel=item.channel, action="peliculas", title=">> Página siguiente", extra="next_page",
                              url=next_page_link, fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg",
                              folder=True))
 
@@ -191,7 +185,7 @@ def vistas(item):
     for scrapedurl, scrapedthumbnail, scrapedtitle in matches:
         if (DEBUG): logger.info(
             "title=[" + scrapedtitle + "], url=[" + scrapedurl + "], thumbnail=[" + scrapedthumbnail + "]")
-        new_item = Item(channel=__channel__, action="findvideos", title=scrapedtitle, fulltitle=scrapedtitle,
+        new_item = Item(channel=item.channel, action="findvideos", title=scrapedtitle, fulltitle=scrapedtitle,
                         url=scrapedurl, thumbnail=scrapedthumbnail, 
                         fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg", infoLabels={},
                         contentTitle=scrapedtitle, context="0", text_color=color2, viewmode=viewmode, folder=True)
@@ -200,7 +194,7 @@ def vistas(item):
     # Extrae el paginador
     next_page_link = scrapertools.find_single_match(data, '<a href="([^"]+)"\s+><span [^>]+>&raquo;</span>')
     if next_page_link != "":
-        itemlist.append(Item(channel=__channel__, action="vistas", title=">> Página siguiente", extra="next_page",
+        itemlist.append(Item(channel=item.channel, action="vistas", title=">> Página siguiente", extra="next_page",
                              url=next_page_link, fanart="http://pelisalacarta.mimediacenter.info/fanart/cinetux.jpg",
                              folder=True))
 
@@ -226,7 +220,7 @@ def generos(item):
         if DEBUG:
             logger.info("title=[{0}], url=[{1}]".format(title, scrapedurl))
         itemlist.append(
-            Item(channel=__channel__, action="peliculas", title=title, url=scrapedurl, thumbnail=thumbnail_host,
+            Item(channel=item.channel, action="peliculas", title=title, url=scrapedurl, thumbnail=thumbnail_host,
                  folder=True))
     return itemlist
 
@@ -236,8 +230,8 @@ def findvideos(item):
     itemlist = []
 
     try:
-        filtro_idioma = config.get_setting("filterlanguages", __channel__)
-        filtro_enlaces = config.get_setting("filterlinks", __channel__)
+        filtro_idioma = config.get_setting("filterlanguages", item.channel)
+        filtro_enlaces = config.get_setting("filterlinks", item.channel)
     except:
         filtro_idioma = 3
         filtro_enlaces = 2
@@ -263,13 +257,13 @@ def findvideos(item):
     if filtro_enlaces != 0:
         list_enlaces = bloque_enlaces(data, filtro_idioma, dict_idiomas, "online", item)
         if list_enlaces:
-            itemlist.append(item.clone(channel=__channel__, action="", title="Enlaces Online",
+            itemlist.append(item.clone(channel=item.channel, action="", title="Enlaces Online",
                                        text_color=color1, text_blod=True, viewmode="list", folder=False))
             itemlist.extend(list_enlaces)
     if filtro_enlaces != 1:
         list_enlaces = bloque_enlaces(data, filtro_idioma, dict_idiomas, "descarga", item)
         if list_enlaces:
-            itemlist.append(item.clone(channel=__channel__, action="", title="Enlaces Descarga",
+            itemlist.append(item.clone(channel=item.channel, action="", title="Enlaces Descarga",
                                        text_color=color1, text_blod=True, viewmode="list", folder=False))
             itemlist.extend(list_enlaces)
 

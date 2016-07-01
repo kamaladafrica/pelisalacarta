@@ -15,25 +15,19 @@ from core import logger
 from core import scrapertools
 from core.item import Item
 
-DEBUG = config.get_setting("debug")
 
-__category__ = "A"
-__type__ = "generic"
-__title__ = "Newpct"
-__channel__ = "newpct"
-__language__ = "ES"
-__creationdate__ = "20130308"
+DEBUG = config.get_setting("debug")
 
 
 def mainlist(item):
     logger.info("[newpct.py] mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, action="submenu" , title="Películas"))
-    itemlist.append( Item(channel=__channel__, action="submenu" , title="Series"))
-    itemlist.append( Item(channel=__channel__, action="listado" , title="Anime"   , url="http://www.newpct.com/anime/" ))
-    itemlist.append( Item(channel=__channel__, action="listado" , title="Documentales"   , url="http://www.newpct.com/documentales/"))
-    itemlist.append( Item(channel=__channel__, action="search"    , title="Buscar" ))
+    itemlist.append( Item(channel=item.channel, action="submenu" , title="Películas"))
+    itemlist.append( Item(channel=item.channel, action="submenu" , title="Series"))
+    itemlist.append( Item(channel=item.channel, action="listado" , title="Anime"   , url="http://www.newpct.com/anime/" ))
+    itemlist.append( Item(channel=item.channel, action="listado" , title="Documentales"   , url="http://www.newpct.com/documentales/"))
+    itemlist.append( Item(channel=item.channel, action="search"    , title="Buscar" ))
   
     return itemlist
 
@@ -73,12 +67,12 @@ def buscador(item):
     
     for scrapedcreatedate, scrapedinfo, scrapedurl, scrapedtitle, scrapedthumbnail in matches:
         scrapedtitle = scrapedtitle + "(Tamaño:" + scrapedinfo + "--" + scrapedcreatedate+")"
-        itemlist.append( Item(channel=__channel__, title=scrapedtitle, url=scrapedurl, action="play", server="torrent", thumbnail=scrapedthumbnail, fulltitle=scrapedtitle, folder=True) )
+        itemlist.append( Item(channel=item.channel, title=scrapedtitle, url=scrapedurl, action="play", server="torrent", thumbnail=scrapedthumbnail, fulltitle=scrapedtitle, folder=True) )
     
     from core import servertools
     itemlist.extend(servertools.find_video_items(data=data))
     for videoitem in itemlist:
-        videoitem.channel=__channel__
+        videoitem.channel=item.channel
         videoitem.action="play"
         videoitem.folder=False
     
@@ -90,19 +84,19 @@ def submenu(item):
     itemlist=[]
     
     if item.title == "Películas":
-		itemlist.append( Item(channel=__channel__, action="listado" , title="Peliculas DVDRIP-BRRIP Castellano" , url="http://www.newpct.com/peliculas-castellano/peliculas-rip/"))
-		itemlist.append( Item(channel=__channel__, action="listado" , title="Peliculas Latino" , url="http://www.newpct.com/peliculas-latino/"))
-		itemlist.append( Item(channel=__channel__, action="listado" , title="Estrenos de Cine Castellano" , url="http://www.newpct.com/peliculas-castellano/estrenos-de-cine/"))
-		itemlist.append( Item(channel=__channel__, action="listado" , title="Peliculas Alta Definicion HD" , url="http://www.newpct.com/cine-alta-definicion-hd/"))
-		itemlist.append( Item(channel=__channel__, action="listado" , title="Peliculas en 3D HD" , url="http://www.newpct.com/peliculas-en-3d-hd/"))
-		itemlist.append( Item(channel=__channel__, action="listado" , title="Peliculas DVDFULL" , url="http://www.newpct.com/peliculas-castellano/peliculas-dvd/"))
-		itemlist.append( Item(channel=__channel__, action="listado" , title="Peliculas V.O.Subtituladas" , url="http://www.newpct.com/peliculas-vo/"))
+		itemlist.append( Item(channel=item.channel, action="listado" , title="Peliculas DVDRIP-BRRIP Castellano" , url="http://www.newpct.com/peliculas-castellano/peliculas-rip/"))
+		itemlist.append( Item(channel=item.channel, action="listado" , title="Peliculas Latino" , url="http://www.newpct.com/peliculas-latino/"))
+		itemlist.append( Item(channel=item.channel, action="listado" , title="Estrenos de Cine Castellano" , url="http://www.newpct.com/peliculas-castellano/estrenos-de-cine/"))
+		itemlist.append( Item(channel=item.channel, action="listado" , title="Peliculas Alta Definicion HD" , url="http://www.newpct.com/cine-alta-definicion-hd/"))
+		itemlist.append( Item(channel=item.channel, action="listado" , title="Peliculas en 3D HD" , url="http://www.newpct.com/peliculas-en-3d-hd/"))
+		itemlist.append( Item(channel=item.channel, action="listado" , title="Peliculas DVDFULL" , url="http://www.newpct.com/peliculas-castellano/peliculas-dvd/"))
+		itemlist.append( Item(channel=item.channel, action="listado" , title="Peliculas V.O.Subtituladas" , url="http://www.newpct.com/peliculas-vo/"))
     else:
-		itemlist.append( Item(channel=__channel__, action="listado" , title="HDTV Castellano" , url="http://www.newpct.com/series/", category="serie"))
-		itemlist.append( Item(channel=__channel__, action="listado" , title="Miniseries Castellano" , url="http://www.newpct.com/miniseries-es/"))
-		itemlist.append( Item(channel=__channel__, action="listado" , title="Series TV - V.O.S.E" , url="http://www.newpct.com/series-vo/", category="serie"))
-		itemlist.append( Item(channel=__channel__, action="listado" , title="Últimos Capítulos HD" , url="http://www.newpct.com/series-alta-definicion-hd/", category="serie"))
-		itemlist.append( Item(channel=__channel__, action="series" , title="Series HD [A-Z]" , url="http://www.newpct.com/index.php?l=torrentListByCategory&subcategory_s=1469&more=listar", category="serie"))
+		itemlist.append( Item(channel=item.channel, action="listado" , title="HDTV Castellano" , url="http://www.newpct.com/series/", category="serie"))
+		itemlist.append( Item(channel=item.channel, action="listado" , title="Miniseries Castellano" , url="http://www.newpct.com/miniseries-es/"))
+		itemlist.append( Item(channel=item.channel, action="listado" , title="Series TV - V.O.S.E" , url="http://www.newpct.com/series-vo/", category="serie"))
+		itemlist.append( Item(channel=item.channel, action="listado" , title="Últimos Capítulos HD" , url="http://www.newpct.com/series-alta-definicion-hd/", category="serie"))
+		itemlist.append( Item(channel=item.channel, action="series" , title="Series HD [A-Z]" , url="http://www.newpct.com/index.php?l=torrentListByCategory&subcategory_s=1469&more=listar", category="serie"))
     return itemlist
 
 def listado(item):
@@ -154,9 +148,9 @@ def listado(item):
 
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
         if item.category == "serie":
-            itemlist.append( Item(channel=__channel__, action="episodios" , title=title , url=url, thumbnail=thumbnail, plot=plot, viewmode="movie_with_plot"))
+            itemlist.append( Item(channel=item.channel, action="episodios" , title=title , url=url, thumbnail=thumbnail, plot=plot, viewmode="movie_with_plot"))
         else:
-            itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, viewmode="movie_with_plot"))
+            itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, viewmode="movie_with_plot"))
 
     # Página siguiente
     '''
@@ -256,9 +250,9 @@ def listado(item):
     url_next_page = base_url + "?" + urllib.urlencode( {"total": param_total, "type": param_type, "leter": param_leter, "sql": param_sql, "pag": param_pag, "tot": param_tot, "ban": param_ban, "cate": param_cate} )
     logger.info("url_next_page="+url_next_page)
     if item.category == "serie":
-        itemlist.append( Item(channel=__channel__, action="listado" , title=">> Página siguiente" , url=url_next_page, extra=bloque, category="serie"))
+        itemlist.append( Item(channel=item.channel, action="listado" , title=">> Página siguiente" , url=url_next_page, extra=bloque, category="serie"))
     else:
-        itemlist.append( Item(channel=__channel__, action="listado" , title=">> Página siguiente" , url=url_next_page, extra=bloque))
+        itemlist.append( Item(channel=item.channel, action="listado" , title=">> Página siguiente" , url=url_next_page, extra=bloque))
 
     return itemlist
 
@@ -275,7 +269,7 @@ def series(item):
     for id, scrapedtitle in matches:
         url_base = "http://www.newpct.com/include.inc/ajax.php/orderCategory.php?total=9&type=letter&leter=%s&sql=+%09%09SELECT++t.torrentID%2C++%09%09%09%09t.torrentCategoryID%2C++%09%09%09%09t.torrentCategoryIDR%2C++%09%09%09%09t.torrentImageID%2C++%09%09%09%09t.torrentName%2C++%09%09%09%09t.guid%2C++%09%09%09%09t.torrentShortName%2C+%09%09%09%09t.torrentLanguage%2C+%09%09%09%09t.torrentSize%2C+%09%09%09%09t.calidad+as+calidad_%2C+%09%09%09%09t.torrentDescription%2C+%09%09%09%09t.torrentViews%2C+%09%09%09%09t.rating%2C+%09%09%09%09t.n_votos%2C+%09%09%09%09t.vistas_hoy%2C+%09%09%09%09t.vistas_ayer%2C+%09%09%09%09t.vistas_semana%2C+%09%09%09%09t.vistas_mes%2C+%09%09%09%09t.imagen+FROM+torrentsFiles+as+t++%09%09LEFT+JOIN+torrentsCategories+as+tc+ON+(t.torrentCategoryID+%3D+tc.categoryID)++%09%09INNER+JOIN++%09%09(+%09%09%09SELECT+torrentID+%09%09%09FROM+torrentsFiles++%09%09%09WHERE++torrentCategoryIDR+%3D+1469+%09%09%09ORDER+BY+torrentID+DESC+%09%09)t1+ON+t1.torrentID+%3D+t.torrentID+WHERE+(t.torrentStatus+%3D+1+OR+t.torrentStatus+%3D+2)+AND+t.home_active+%3D+0++AND+tc.categoryIDR+%3D+1469+GROUP+BY+t.torrentCategoryID+ORDER+BY+t.torrentID+DESC+LIMIT+0%2C+50&pag=&tot=&ban=3&cate=1469"
         scrapedurl = url_base.replace("%s", id)
-        if id!="todo": itemlist.append( Item(channel=__channel__, action="listaseries" , title=scrapedtitle , url=scrapedurl, folder=True))
+        if id!="todo": itemlist.append( Item(channel=item.channel, action="listaseries" , title=scrapedtitle , url=scrapedurl, folder=True))
 
     return itemlist
 	
@@ -287,7 +281,7 @@ def listaseries(item):
     patron = "<li[^<]+<a href='([^']+)'>.*?<img src='([^']+)'.*?<h3>([^']+)<\/h3>"
     matches = re.compile(patron,re.DOTALL|re.M).findall(data)
     for scrapedurl, scrapedthumbnail, scrapedtitle in matches:
-        itemlist.append( Item(channel=__channel__, action="episodios" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, folder=True))
+        itemlist.append( Item(channel=item.channel, action="episodios" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, folder=True))
     return itemlist
 
 def episodios(item):
@@ -301,7 +295,7 @@ def episodios(item):
     for index in range(len(data)):
             matches = re.compile(patron,re.DOTALL|re.M).findall(data[index])
             for scrapedurl, scrapedtitle in matches:
-                itemlist.append( Item(channel=__channel__, action="findvideos" , title=scrapedtitle , url=scrapedurl, thumbnail=item.thumbnail, folder=True))
+                itemlist.append( Item(channel=item.channel, action="findvideos" , title=scrapedtitle , url=scrapedurl, thumbnail=item.thumbnail, folder=True))
 
     return itemlist
 	
@@ -315,12 +309,12 @@ def findvideos(item):
     #<span id='content-torrent'>                    <a href='http://tumejorjuego.com/descargar/index.php?link=descargar/torrent/58591/el-tour-de-los-muppets-bluray-screener-espanol-castellano-line-2014.html' rel='nofollow' id='58591' title='el-tour-de-los-muppets-bluray-screener-espanol-castellano-line-2014' class='external-url' target='_blank'>
     torrent_url = scrapertools.find_single_match(data,"<span id='content-torrent'[^<]+<a href='([^']+)'")
     if torrent_url!="":
-        itemlist.append( Item(channel=__channel__, action="play" , title="Torrent" , url=torrent_url, server="torrent"))
+        itemlist.append( Item(channel=item.channel, action="play" , title="Torrent" , url=torrent_url, server="torrent"))
 
     from core import servertools
     itemlist.extend(servertools.find_video_items(data=data))
     for videoitem in itemlist:
-        videoitem.channel=__channel__
+        videoitem.channel=item.channel
         videoitem.action="play"
         videoitem.folder=False
         videoitem.title = "["+videoitem.server+"]"

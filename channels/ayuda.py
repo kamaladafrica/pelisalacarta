@@ -10,8 +10,6 @@ from core import config
 from core import logger
 from core.item import Item
 
-CHANNELNAME = "ayuda"
-
 
 def mainlist(item):
     logger.info("pelisalacarta.channels.ayuda mainlist")
@@ -19,17 +17,17 @@ def mainlist(item):
 
     cuantos = 0
     if config.is_xbmc():
-        itemlist.append(Item(channel=CHANNELNAME, action="force_creation_advancedsettings",
+        itemlist.append(Item(channel=item.channel, action="force_creation_advancedsettings",
                              title="Crear fichero advancedsettings.xml optimizado"))
         cuantos += cuantos
         
     if config.is_xbmc():
-        itemlist.append(Item(channel=CHANNELNAME, action="updatebiblio",
+        itemlist.append(Item(channel=item.channel, action="updatebiblio",
                              title="Buscar nuevos episodios y actualizar biblioteca"))
         cuantos += cuantos
 
     if cuantos > 0:
-        itemlist.append(Item(channel=CHANNELNAME, action="tutoriales", title="Ver guías y tutoriales en vídeo"))
+        itemlist.append(Item(channel=item.channel, action="tutoriales", title="Ver guías y tutoriales en vídeo"))
     else:
         itemlist.extend(tutoriales(item))
 

@@ -20,14 +20,8 @@ try:
     import xbmcgui
 except: pass
 
-__channel__ = "multicineonline"
-__category__ = "F,S,D"
-__type__ = "generic"
-__title__ = "Multicineonlne"
-__language__ = "ES"
 
 DEBUG = config.get_setting("debug")
-
 host = "http://www.multicineonline.com"
 Tmdb_key ="2e2160006592024ba87ccdf78c28f49f"
 
@@ -37,26 +31,26 @@ def mainlist(item):
     itemlist = []
     title ="Estrenos"
     title = title.replace(title,"[COLOR skyblue]"+title+"[/COLOR]")
-    itemlist.append( Item(channel=__channel__, title=title      , action="peliculas", url="http://www.multicineonline.com/estrenos-de-cine/page/1/", fanart="http://s6.postimg.org/kpdn6g1ht/sinlestfan2.jpg", thumbnail="http://s23.postimg.org/p1a2tyejv/sinlestthu.jpg"))
-    
+    itemlist.append( Item(channel=item.channel, title=title      , action="peliculas", url="http://www.multicineonline.com/estrenos-de-cine/page/1/", fanart="http://s6.postimg.org/kpdn6g1ht/sinlestfan2.jpg", thumbnail="http://s23.postimg.org/p1a2tyejv/sinlestthu.jpg"))
+
     title ="HD"
     title = title.replace(title,"[COLOR skyblue]"+title+"[/COLOR]")
-    itemlist.append( Item(channel=__channel__, title=title      , action="peliculas", url="http://www.multicineonline.com/tag/hd/page/1/", fanart="http://s6.postimg.org/91jlbwccx/sinhdfan2.jpg", thumbnail="http://s12.postimg.org/d5w5ojuql/sinlhdth.jpg"))
-    
+    itemlist.append( Item(channel=item.channel, title=title      , action="peliculas", url="http://www.multicineonline.com/tag/hd/page/1/", fanart="http://s6.postimg.org/91jlbwccx/sinhdfan2.jpg", thumbnail="http://s12.postimg.org/d5w5ojuql/sinlhdth.jpg"))
+
     '''title ="Buscar"
     title = title.replace(title,"[COLOR skyblue]"+title+"[/COLOR]")
-    itemlist.append( Item(channel=__channel__, title=title      , action="search", url="", fanart="http://s22.postimg.org/3tz2v05ap/sinlbufan.jpg", thumbnail="http://s30.postimg.org/jhmn0u4jl/sinlbusthub.jpg"))'''
-    
-    
+    itemlist.append( Item(channel=item.channel, title=title      , action="search", url="", fanart="http://s22.postimg.org/3tz2v05ap/sinlbufan.jpg", thumbnail="http://s30.postimg.org/jhmn0u4jl/sinlbusthub.jpg"))'''
 
-    
-    
-    
+
+
+
+
+
     return itemlist
 def search(item,texto):
     logger.info("pelisalacarta.multicineonline search")
     texto = texto.replace(" ","+")
-    
+
     if "estrenos-de-cine" in item.url:
         item.url ="http://www.multicineonline.com/estrenos-de-cine/?s=%s" % (texto)
     elif "/tag/hd/" in item.url:
@@ -75,9 +69,9 @@ def search(item,texto):
 '''def buscador(item):
     logger.info("pelisalacarta.sinluces buscador")
     itemlist = []
-    
-    
-    
+
+
+
     # Descarga la página
     data = scrapertools.cache_page(item.url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
@@ -89,49 +83,49 @@ def search(item,texto):
     matches = re.compile(patron,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
     if len(matches)==0 and  not "Error 404" in data:
-        itemlist.append( Item(channel=__channel__, title="[COLOR gold][B]No hay resultados...[/B][/COLOR]", thumbnail ="http://s6.postimg.org/55zljwr4h/sinnoisethumb.png", fanart ="http://s6.postimg.org/avfu47xap/sinnoisefan.jpg",folder=False) )
+        itemlist.append( Item(channel=item.channel, title="[COLOR gold][B]No hay resultados...[/B][/COLOR]", thumbnail ="http://s6.postimg.org/55zljwr4h/sinnoisethumb.png", fanart ="http://s6.postimg.org/avfu47xap/sinnoisefan.jpg",folder=False) )
 
 
     for scrapedthumbnail, scrapedtitle,scrapedyear, scrapedurl, scrapedrate in matches:
-    
-    
+
+
         scrapedtitle = scrapedtitle.replace(scrapedtitle,"[COLOR white]"+scrapedtitle+"[/COLOR]")
-        
-        
-        itemlist.append( Item(channel=__channel__, action="fanart", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail ,  viewmode="movie", extra=scrapedtitle, fanart="http://s30.postimg.org/4gugdsygx/sinlucesfan.jpg", folder=True) )
+
+
+        itemlist.append( Item(channel=item.channel, action="fanart", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail ,  viewmode="movie", extra=scrapedtitle, fanart="http://s30.postimg.org/4gugdsygx/sinlucesfan.jpg", folder=True) )
 
     return itemlist'''
 def peliculas(item,paginacion=True):
     logger.info("pelisalacarta.multicineonline peliculas")
     itemlist = []
-   
+
     title ="Listado"
     title = title.replace(title,"[COLOR skyblue]"+title+"[/COLOR]")
-    itemlist.append( Item(channel=__channel__, title=title      , action="scraper", url=item.url, fanart="http://s6.postimg.org/mxrtns8lt/sinlucesfan2.jpg", thumbnail="http://s23.postimg.org/p1a2tyejv/sinlestthu.jpg"))
+    itemlist.append( Item(channel=item.channel, title=title      , action="scraper", url=item.url, fanart="http://s6.postimg.org/mxrtns8lt/sinlucesfan2.jpg", thumbnail="http://s23.postimg.org/p1a2tyejv/sinlestthu.jpg"))
     title ="Buscar"
     title = title.replace(title,"[COLOR skyblue]"+title+"[/COLOR]")
-    itemlist.append( Item(channel=__channel__, title=title      , action="search", url=item.url,extra= "search", fanart="http://s22.postimg.org/3tz2v05ap/sinlbufan.jpg", thumbnail="http://s30.postimg.org/jhmn0u4jl/sinlbusthub.jpg"))
+    itemlist.append( Item(channel=item.channel, title=title      , action="search", url=item.url,extra= "search", fanart="http://s22.postimg.org/3tz2v05ap/sinlbufan.jpg", thumbnail="http://s30.postimg.org/jhmn0u4jl/sinlbusthub.jpg"))
     return itemlist
 def scraper(item,paginacion=True):
     logger.info("pelisalacarta.sinluces peliculas")
     itemlist = []
-   
+
     # Descarga la página
     data = dhe( scrapertools.cachePage(item.url) )
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-    
+
     patron = '<divclass="movie tooltip".*?title="(.*?)".*?<div class="imagen"> <img src="([^"]+)" '
     patron += 'alt="(.*?)\((.*?)\)".*?'
     patron += '<a href="([^"]+)".*?'
     patron += '<span class="icon-grade"></span>([^<]+)</div>'
-    
-    
+
+
     matches = re.compile(patron,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
     if len(matches)==0 and  not "Error 404" in data:
-        itemlist.append( Item(channel=__channel__, title="[COLOR gold][B]No hay resultados...[/B][/COLOR]", thumbnail ="http://s6.postimg.org/55zljwr4h/sinnoisethumb.png", fanart ="http://s6.postimg.org/avfu47xap/sinnoisefan.jpg",folder=False) )
-    
-    
+        itemlist.append( Item(channel=item.channel, title="[COLOR gold][B]No hay resultados...[/B][/COLOR]", thumbnail ="http://s6.postimg.org/55zljwr4h/sinnoisethumb.png", fanart ="http://s6.postimg.org/avfu47xap/sinnoisefan.jpg",folder=False) )
+
+
     for scrapedidioma, scrapedthumbnail, scrapedtitle, scrapedyear, scrapedurl, scrapedrate in matches:
         title_fan = scrapedtitle.strip()
         title_fan = re.sub(r'/.*','',title_fan)
@@ -151,26 +145,26 @@ def scraper(item,paginacion=True):
         trailer = urllib.quote(trailer)
 
         extra = title_fan+"|"+scrapedyear+"|"+trailer
-        itemlist.append( Item(channel=__channel__, action="fanart", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , extra= extra, viewmode="movie",  fanart="http://s6.postimg.org/mxrtns8lt/sinlucesfan2.jpg") )
-        
-        
-    
+        itemlist.append( Item(channel=item.channel, action="fanart", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , extra= extra, viewmode="movie",  fanart="http://s6.postimg.org/mxrtns8lt/sinlucesfan2.jpg") )
+
+
+
 
     # Extrae el paginador
     ## Paginación
     try:
        if  "Error 404" in data:
-            itemlist.append( Item(channel=__channel__, title="[COLOR gold][B]No hay mas paginas...[/B][/COLOR]", thumbnail ="http://s6.postimg.org/55zljwr4h/sinnoisethumb.png", fanart ="http://s6.postimg.org/avfu47xap/sinnoisefan.jpg",folder=False) )
+            itemlist.append( Item(channel=item.channel, title="[COLOR gold][B]No hay mas paginas...[/B][/COLOR]", thumbnail ="http://s6.postimg.org/55zljwr4h/sinnoisethumb.png", fanart ="http://s6.postimg.org/avfu47xap/sinnoisefan.jpg",folder=False) )
        else:
            current_page_number = int(scrapertools.get_match(item.url,'page/(\d+)'))
            item.url = re.sub(r"page/\d+","page/{0}",item.url)
-            
+
            next_page_number = current_page_number +1
            next_page = item.url.format(next_page_number)
-                    
+
            title= "[COLOR skyblue]Pagina siguiente>>[/COLOR]"
            if  not "Error 404" in data:
-              itemlist.append( Item(channel=__channel__, title=title, url=next_page, fanart="http://s30.postimg.org/4gugdsygx/sinlucesfan.jpg", thumbnail="http://s16.postimg.org/lvzzttkol/pelisvkflecha.png", action="scraper", folder=True) )
+              itemlist.append( Item(channel=item.channel, title=title, url=next_page, fanart="http://s30.postimg.org/4gugdsygx/sinlucesfan.jpg", thumbnail="http://s16.postimg.org/lvzzttkol/pelisvkflecha.png", action="scraper", folder=True) )
     except:
          pass
 
@@ -205,7 +199,7 @@ def fanart(item):
         fanart_info = "http://s6.postimg.org/mxrtns8lt/sinlucesfan2.jpg"
         fanart_trailer = "http://s6.postimg.org/mxrtns8lt/sinlucesfan2.jpg"
         category= item.thumbnail
-        itemlist.append( Item(channel=__channel__, title=item.title, url=item.url, action="findvideos", thumbnail=item.thumbnail, fanart="http://s6.postimg.org/mxrtns8lt/sinlucesfan2.jpg" ,extra=extra, show=show, category= category, folder=True) )
+        itemlist.append( Item(channel=item.channel, title=item.title, url=item.url, action="findvideos", thumbnail=item.thumbnail, fanart="http://s6.postimg.org/mxrtns8lt/sinlucesfan2.jpg" ,extra=extra, show=show, category= category, folder=True) )
     else:
         for id, fan in matches:
             try:
@@ -218,10 +212,10 @@ def fanart(item):
             url ="http://api.themoviedb.org/3/movie/"+id+"/images?api_key="+Tmdb_key
             data = scrapertools.cachePage( url )
             data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-            
+
             patron = '"backdrops".*?"file_path":".*?",.*?"file_path":"(.*?)",.*?"file_path":"(.*?)",.*?"file_path":"(.*?)"'
             matches = re.compile(patron,re.DOTALL).findall(data)
-            
+
             if len(matches) == 0:
                 patron = '"backdrops".*?"file_path":"(.*?)",.*?"file_path":"(.*?)",.*?"file_path":"(.*?)"'
                 matches = re.compile(patron,re.DOTALL).findall(data)
@@ -233,9 +227,9 @@ def fanart(item):
                 fanart_info = "https://image.tmdb.org/t/p/original" + fanart_info
                 fanart_trailer = "https://image.tmdb.org/t/p/original" + fanart_trailer
                 fanart_2 = "https://image.tmdb.org/t/p/original" + fanart_2
-            
+
             #fanart_2 y arts
-            
+
             url ="http://webservice.fanart.tv/v3/movies/"+id+"?api_key=dffe90fba4d02c199ae7a9e71330c987"
             data = scrapertools.cachePage(url)
             data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
@@ -249,12 +243,12 @@ def fanart(item):
                 thumb = scrapertools.get_match(data,'"moviethumb":.*?"url": "([^"]+)"')
             if '"moviebanner"' in data:
                 banner= scrapertools.get_match(data,'"moviebanner":.*?"url": "([^"]+)"')
-            
+
             if len(matches)==0:
                 extra=  posterdb
                 show = fanart_2
                 category = item.extra
-                itemlist.append( Item(channel=__channel__, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=posterdb, fanart=item.extra,  extra=extra, show=show, category= category, folder=True) )
+                itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=posterdb, fanart=item.extra,  extra=extra, show=show, category= category, folder=True) )
         for logo in matches:
             if '"hdmovieclearart"' in data:
                  clear=scrapertools.get_match(data,'"hdmovieclearart":.*?"url": "([^"]+)"')
@@ -265,7 +259,7 @@ def fanart(item):
                           category= disc
                       else:
                           category= clear
-                      itemlist.append( Item(channel=__channel__, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=item.extra, extra=extra,show=show, category= category, folder=True) )
+                      itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=item.extra, extra=extra,show=show, category= category, folder=True) )
                  else:
                       extra= clear
                       show=fanart_2
@@ -273,10 +267,10 @@ def fanart(item):
                           category = disc
                       else:
                           category = clear
-                      itemlist.append( Item(channel=__channel__, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=item.extra, extra=extra,show=show, category= category, folder=True) )
+                      itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=item.extra, extra=extra,show=show, category= category, folder=True) )
 
             if '"moviebackground"' in data:
-    
+
                  if '"hdmovieclearart"' in data:
                       clear=scrapertools.get_match(data,'"hdmovieclearart":.*?"url": "([^"]+)"')
                       extra=clear
@@ -285,7 +279,7 @@ def fanart(item):
                           category= disc
                       else:
                          category= clear
-                
+
                  else:
                        extra=logo
                        show= fanart_2
@@ -293,8 +287,8 @@ def fanart(item):
                            category= disc
                        else:
                            category= logo
-                       itemlist.append( Item(channel=__channel__, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=item.extra, extra=extra,show=show, category= category,  folder=True) )
-    
+                       itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=item.extra, extra=extra,show=show, category= category,  folder=True) )
+
             if not '"hdmovieclearart"' in data and not '"moviebackground"' in data:
                      extra= logo
                      show=  fanart_2
@@ -302,10 +296,10 @@ def fanart(item):
                           category= disc
                      else:
                           category= item.extra
-                     itemlist.append( Item(channel=__channel__, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=fanart_info,category= category, extra=extra,show=show ,  folder=True) )
+                     itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=fanart_info,category= category, extra=extra,show=show ,  folder=True) )
 
     title ="[COLOR rosybrown]Info[/COLOR]"
-    
+
     if posterdb == item.thumbnail:
         if '"movieposter"' in data:
             thumbnail= poster
@@ -314,28 +308,28 @@ def fanart(item):
     else:
         thumbnail = posterdb
 
-    itemlist.append( Item(channel=__channel__, action="info" , title=title , url=item.url, thumbnail=posterdb,  fanart=fanart_info, extra = extra, show = show, plot = title_info +" "+"("+ year+")", folder=False ))
+    itemlist.append( Item(channel=item.channel, action="info" , title=title , url=item.url, thumbnail=posterdb,  fanart=fanart_info, extra = extra, show = show, plot = title_info +" "+"("+ year+")", folder=False ))
 
     title= "[COLOR royalblue]Trailer[/COLOR]"
-    
+
 
     if '"moviebanner"' in data:
         thumbnail = banner
     else:
         thumbnail = posterdb
-    
+
     if '"moviedisc"' in data:
         extra= disc
     else:
        if 'hdmovieclearart"' in data:
            extra = clear
-        
+
        else:
            extra = posterdb
 
 
 
-    itemlist.append( Item(channel=__channel__, action="trailer", title=title , url=item.url , thumbnail=thumbnail , fulltitle = item.title , fanart=fanart_trailer, extra=extra, show= trailer,folder=True) )
+    itemlist.append( Item(channel=item.channel, action="trailer", title=title , url=item.url , thumbnail=thumbnail , fulltitle = item.title , fanart=fanart_trailer, extra=extra, show= trailer,folder=True) )
 
     return itemlist
 
@@ -347,24 +341,24 @@ def fanart(item):
 def findvideos(item):
     logger.info("pelisalacarta.multicineonline findvideos")
     itemlist = []
-    
+
     # Descarga la pagina
     data = scrapertools.cache_page(item.url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-    
-    
-        
-       
+
+
+
+
     #extra enlaces
-    
-    
+
+
     patron= '<div class="play-c">(.*?)<div class="datos">'
-    
+
     matches = re.compile(patron,re.DOTALL).findall(data)
 
     if len(matches)==0:
-        itemlist.append( Item(channel=__channel__, title="[COLOR orange][B]Sin servidores para Pelisalacarta...[/B][/COLOR]", thumbnail ="http://s6.postimg.org/55zljwr4h/sinnoisethumb.png", fanart ="http://s6.postimg.org/avfu47xap/sinnoisefan.jpg",folder=False) )
-   
+        itemlist.append( Item(channel=item.channel, title="[COLOR orange][B]Sin servidores para Pelisalacarta...[/B][/COLOR]", thumbnail ="http://s6.postimg.org/55zljwr4h/sinnoisethumb.png", fanart ="http://s6.postimg.org/avfu47xap/sinnoisefan.jpg",folder=False) )
+
     for bloque_enlaces_idiomas in matches:
         patronenlaces= '<div id="play-(.*?)".*?src="([^"]+)"'
         matchesenlaces = re.compile(patronenlaces,re.DOTALL).findall(bloque_enlaces_idiomas)
@@ -378,7 +372,7 @@ def findvideos(item):
                    idiomas= re.sub(r"[0-9]","",idiomas)
                    listavideos = servertools.findvideos(url)
                    for video in listavideos:
-                    
+
                       #idiomas = idiomas.replace(idiomas,"[COLOR white]"+idiomas+"[/COLOR]")
                        videotitle = scrapertools.unescape(video[0]) #+"-"+idiomas
                        url = video[1]
@@ -388,7 +382,7 @@ def findvideos(item):
                        title= title_first + videotitle
                        if "sinopsis" in item.extra:
                           item.extra = item.thumbnail
-                       itemlist.append( Item(channel=__channel__, action="play", server=server, title=title , url=url , thumbnail=item.extra , fulltitle = item.title , fanart = item.show, folder=False) )
+                       itemlist.append( Item(channel=item.channel, action="play", server=server, title=title , url=url , thumbnail=item.extra , fulltitle = item.title , fanart = item.show, folder=False) )
 
 
         #otro patronenlaces
@@ -404,7 +398,7 @@ def findvideos(item):
                    idiomas= re.sub(r"[0-9]","",idiomas)
                    listavideos = servertools.findvideos(pepe)
                    for video in listavideos:
-                       
+
                        #idiomas = idiomas.replace(idiomas,"[COLOR white]"+idiomas+"[/COLOR]")
                        videotitle = scrapertools.unescape(video[0]) #+"-"+idiomas
                        url = video[1]
@@ -414,19 +408,19 @@ def findvideos(item):
                        title= title_first + videotitle
                        if "sinopsis" in item.extra:
                            item.extra = item.thumbnail
-                       itemlist.append( Item(channel=__channel__, action="play", server=server, title=title , url=url , thumbnail=item.extra , fulltitle = item.title , fanart = item.show, folder=False) )
-    
+                       itemlist.append( Item(channel=item.channel, action="play", server=server, title=title , url=url , thumbnail=item.extra , fulltitle = item.title , fanart = item.show, folder=False) )
+
 
         patron = '<em>opción \d+, ([^<]+)</em>.*?'
         # Datos que contienen los enlaces para sacarlos con servertools.findvideos
         patron+= '<div class="contenedor_tab">(.*?)<div style="clear:both;">'
         matches = re.compile(patron,re.DOTALL).findall(data)
-    
+
         for idioma, datosEnlaces in matches:
-        
+
             listavideos = servertools.findvideos(datosEnlaces)
-        
-        
+
+
             for video in listavideos:
                 videotitle = scrapertools.unescape(video[0])+"-"+idioma
                 url = video[1]
@@ -437,13 +431,13 @@ def findvideos(item):
                 idioma = idioma.replace(idioma,"[COLOR white]"+idioma+"[/COLOR]")
                 if "sinopsis" in item.extra:
                     item.extra = item.thumbnail
-                itemlist.append( Item(channel=__channel__, action="play", server=server, title=title , url=url , thumbnail=item.extra , fulltitle = item.title , fanart = item.show, folder=False) )
+                itemlist.append( Item(channel=item.channel, action="play", server=server, title=title , url=url , thumbnail=item.extra , fulltitle = item.title , fanart = item.show, folder=False) )
 
 
 
-            
-        
-            
+
+
+
 
 
 
@@ -452,26 +446,26 @@ def findvideos(item):
 def trailer(item):
     logger.info("pelisalacarta.multicineonline trailer")
     itemlist = []
-    
+
     youtube_trailer = "https://www.youtube.com/results?search_query=" + item.show + "español"
-    
-    
+
+
     data = scrapertools.cache_page(youtube_trailer)
-    
+
     patron = '<a href="/watch?(.*?)".*?'
     patron += 'title="([^"]+)"'
-    
+
     matches = re.compile(patron,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
     if len(matches)==0 :
-        itemlist.append( Item(channel=__channel__, title="[COLOR gold][B]No hay Trailer[/B][/COLOR]", thumbnail ="http://s6.postimg.org/jp5jx97ip/bityoucancel.png", fanart ="http://s6.postimg.org/vfjhen0b5/bityounieve.jpg",folder=False) )
-    
+        itemlist.append( Item(channel=item.channel, title="[COLOR gold][B]No hay Trailer[/B][/COLOR]", thumbnail ="http://s6.postimg.org/jp5jx97ip/bityoucancel.png", fanart ="http://s6.postimg.org/vfjhen0b5/bityounieve.jpg",folder=False) )
+
     for scrapedurl, scrapedtitle in matches:
-        
+
         scrapedurl = "https://www.youtube.com/watch"+scrapedurl
         scrapedtitle = scrapertools.decodeHtmlentities( scrapedtitle )
         scrapedtitle=scrapedtitle.replace(scrapedtitle,"[COLOR khaki][B]"+scrapedtitle+"[/B][/COLOR]")
-        itemlist.append( Item(channel=__channel__, title=scrapedtitle, url=scrapedurl, server="youtube", fanart="http://static1.squarespace.com/static/5502c970e4b0cec330247c32/t/5517212ee4b07ea6d281c891/1427579186693/Movie+Trailers+and+promos.JPG?format=1500w", thumbnail=item.extra, action="play", folder=False) )
+        itemlist.append( Item(channel=item.channel, title=scrapedtitle, url=scrapedurl, server="youtube", fanart="http://static1.squarespace.com/static/5502c970e4b0cec330247c32/t/5517212ee4b07ea6d281c891/1427579186693/Movie+Trailers+and+promos.JPG?format=1500w", thumbnail=item.extra, action="play", folder=False) )
     
     return itemlist
 

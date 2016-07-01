@@ -5,26 +5,19 @@
 # ------------------------------------------------------------
 
 import re
-import time
 import urllib
-import urllib2
 import urlparse
 
+from core import channeltools
 from core import config
 from core import logger
 from core import scrapertools
 from core import servertools
-from core import channeltools
 from core import tmdb
 from core.item import Item
 from platformcode import platformtools
 
 __channel__ = "pelispedia"
-__category__ = "F,S,VOS"
-__type__ = "generic"
-__title__ = "PelisPedia"
-__language__ = "ES"
-
 DEBUG = config.get_setting("debug")
 
 CHANNEL_HOST = "http://www.pelispedia.tv/"

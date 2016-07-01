@@ -17,12 +17,6 @@ from core import scrapertools
 from core.item import Item
 
 
-__channel__ = "documaniatv"
-__category__ = "D"
-__type__ = "generic"
-__title__ = "DocumaniaTV"
-__language__ = "ES"
-
 DEBUG = config.get_setting("debug")
 host = "http://www.documaniatv.com/"
 account = ( config.get_setting("documaniatvaccount") == "true" )
@@ -64,12 +58,12 @@ def mainlist(item):
     logger.info("pelisalacarta.channels.documaniatv mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, action="novedades"  , title="Novedades"      , url="http://www.documaniatv.com/newvideos.html", thumbnail="http://i.imgur.com/qMR9sg9.png"))
-    itemlist.append( Item(channel=__channel__, action="categorias" , title="Categorías y Canales" , url="http://www.documaniatv.com/browse.html", thumbnail="http://i.imgur.com/qMR9sg9.png"))
-    itemlist.append( Item(channel=__channel__, action="novedades"  , title="Top"      , url="http://www.documaniatv.com/topvideos.html", thumbnail="http://i.imgur.com/qMR9sg9.png"))
-    itemlist.append( Item(channel=__channel__, action="categorias" , title="Series Documentales" , url="http://www.documaniatv.com/top-series-documentales-html", thumbnail="http://i.imgur.com/qMR9sg9.png"))
-    itemlist.append( Item(channel=__channel__, action="viendo"     , title="Viendo ahora" , url="http://www.documaniatv.com", thumbnail="http://i.imgur.com/qMR9sg9.png"))
-    itemlist.append( Item(channel=__channel__, action="search"     , title="Buscar", thumbnail="http://i.imgur.com/qMR9sg9.png"))
+    itemlist.append( Item(channel=item.channel, action="novedades"  , title="Novedades"      , url="http://www.documaniatv.com/newvideos.html", thumbnail="http://i.imgur.com/qMR9sg9.png"))
+    itemlist.append( Item(channel=item.channel, action="categorias" , title="Categorías y Canales" , url="http://www.documaniatv.com/browse.html", thumbnail="http://i.imgur.com/qMR9sg9.png"))
+    itemlist.append( Item(channel=item.channel, action="novedades"  , title="Top"      , url="http://www.documaniatv.com/topvideos.html", thumbnail="http://i.imgur.com/qMR9sg9.png"))
+    itemlist.append( Item(channel=item.channel, action="categorias" , title="Series Documentales" , url="http://www.documaniatv.com/top-series-documentales-html", thumbnail="http://i.imgur.com/qMR9sg9.png"))
+    itemlist.append( Item(channel=item.channel, action="viendo"     , title="Viendo ahora" , url="http://www.documaniatv.com", thumbnail="http://i.imgur.com/qMR9sg9.png"))
+    itemlist.append( Item(channel=item.channel, action="search"     , title="Buscar", thumbnail="http://i.imgur.com/qMR9sg9.png"))
     
     folder = False
     action = "openconfig"
@@ -87,7 +81,7 @@ def mainlist(item):
         user = ""
 
     url = "http://www.documaniatv.com/user/%s" % user
-    itemlist.append( Item(channel=__channel__, title=title, action=action, url=url, folder=folder))
+    itemlist.append( Item(channel=item.channel, title=title, action=action, url=url, folder=folder))
     return itemlist
 
 
@@ -153,7 +147,7 @@ def novedades(item):
                 scrapedtitle += "   ["+duracion+"]"
                 scrapedthumbnail += "|"+headers[0][0]+"="+headers[0][1]
                 if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-                itemlist.append( Item(channel=__channel__, action=action, title=scrapedtitle , url=scrapedurl,
+                itemlist.append( Item(channel=item.channel, action=action, title=scrapedtitle , url=scrapedurl,
                                 thumbnail=scrapedthumbnail , fanart=scrapedthumbnail, plot=scrapedplot, fulltitle=scrapedtitle,
                                 contentTitle=contentTitle, folder=False) )
     else:
@@ -167,7 +161,7 @@ def novedades(item):
                 scrapedtitle += "   ["+duracion+"]"
                 scrapedthumbnail += "|"+headers[0][0]+"="+headers[0][1]
                 if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-                itemlist.append( Item(channel=__channel__, action=action, title=scrapedtitle , url=scrapedurl,
+                itemlist.append( Item(channel=item.channel, action=action, title=scrapedtitle , url=scrapedurl,
                                 thumbnail=scrapedthumbnail , fanart=scrapedthumbnail, plot=scrapedplot, id=video_id, fulltitle=scrapedtitle,
                                 contentTitle=contentTitle, folder=True) )
 
@@ -175,7 +169,7 @@ def novedades(item):
     try:
         next_page_url = scrapertools.get_match(data,'<a href="([^"]+)">&raquo;</a>')
         next_page_url = urlparse.urljoin(host,next_page_url)
-        itemlist.append( Item(channel=__channel__, action="novedades", title=">> Pagina siguiente" , url=next_page_url , thumbnail="" , plot="" , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="novedades", title=">> Pagina siguiente" , url=next_page_url , thumbnail="" , plot="" , folder=True) )
     except:
         logger.info("documaniatv.novedades Siguiente pagina no encontrada")
     
@@ -192,12 +186,12 @@ def categorias(item):
     matches = scrapertools.find_multiple_matches(data, patron)
     for scrapedurl, scrapedthumbnail, scrapedtitle in matches:
         scrapedthumbnail += "|"+headers[0][0]+"="+headers[0][1]
-        itemlist.append( Item(channel=__channel__, action="novedades", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , fanart=scrapedthumbnail, folder=True) )
+        itemlist.append( Item(channel=item.channel, action="novedades", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , fanart=scrapedthumbnail, folder=True) )
 
     # Busca enlaces de paginas siguientes...
     next_page_url = scrapertools.find_single_match(data,'<a href="([^"]+)"><i class="fa fa-arrow-right">')
     if next_page_url != "":
-        itemlist.append( Item(channel=__channel__, action="categorias", title=">> Pagina siguiente" , url=next_page_url , thumbnail="" , plot="" , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="categorias", title=">> Pagina siguiente" , url=next_page_url , thumbnail="" , plot="" , folder=True) )
         
     return itemlist
 
@@ -216,7 +210,7 @@ def viendo(item):
         scrapedtitle += "   ["+duracion+"]"
         scrapedthumbnail += "|"+headers[0][0]+"="+headers[0][1]
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="play_", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , fanart=scrapedthumbnail, fulltitle=scrapedtitle, folder=False) )
+        itemlist.append( Item(channel=item.channel, action="play_", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , fanart=scrapedthumbnail, fulltitle=scrapedtitle, folder=False) )
     
     return itemlist
 
@@ -231,7 +225,7 @@ def findvideos(item):
     data = jsontools.load_json(data)
     data = re.sub(r"\n|\r|\t", '', data['html'])
 
-    itemlist.append( Item(channel=__channel__, action="play_"  , title=">> Reproducir vídeo", url=item.url, thumbnail=item.thumbnail, fulltitle=item.fulltitle, folder=False))
+    itemlist.append( Item(channel=item.channel, action="play_"  , title=">> Reproducir vídeo", url=item.url, thumbnail=item.thumbnail, fulltitle=item.fulltitle, folder=False))
     if "kodi" in config.get_platform(): folder = False
     else: folder = True
     patron = '<li data-playlist-id="([^"]+)".*?onclick="playlist_(\w+)_item' \
@@ -241,11 +235,11 @@ def findvideos(item):
     for playlist_id, playlist_action, playlist_title, video_count in matches:
         scrapedtitle = playlist_action.replace('remove','Eliminar de ').replace('add','Añadir a ')
         scrapedtitle += playlist_title + "   ("+video_count+")"
-        itemlist.append( Item(channel=__channel__, action="acciones_playlist"  , title=scrapedtitle, id=item.id, list_id=playlist_id, url="http://www.documaniatv.com/ajax.php", folder=folder))
+        itemlist.append( Item(channel=item.channel, action="acciones_playlist"  , title=scrapedtitle, id=item.id, list_id=playlist_id, url="http://www.documaniatv.com/ajax.php", folder=folder))
 
     if "kodi" in config.get_platform():
-        itemlist.append( Item(channel=__channel__, action="acciones_playlist"  , title="Crear una nueva playlist y añadir el documental", id=item.id, url="http://www.documaniatv.com/ajax.php", folder=folder))
-    itemlist.append( Item(channel=__channel__, action="acciones_playlist"  , title="Me gusta", id=item.id, url="http://www.documaniatv.com/ajax.php", folder=folder))
+        itemlist.append( Item(channel=item.channel, action="acciones_playlist"  , title="Crear una nueva playlist y añadir el documental", id=item.id, url="http://www.documaniatv.com/ajax.php", folder=folder))
+    itemlist.append( Item(channel=item.channel, action="acciones_playlist"  , title="Me gusta", id=item.id, url="http://www.documaniatv.com/ajax.php", folder=folder))
 
     return itemlist
 
@@ -296,7 +290,7 @@ def usuario(item):
             scrapedthumbnail = ""
         else:
             scrapedthumbnail += "|"+headers[0][0]+"="+headers[0][1]
-        itemlist.append( Item(channel=__channel__, action="playlist", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , fanart=scrapedthumbnail, folder=True) )
+        itemlist.append( Item(channel=item.channel, action="playlist", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , fanart=scrapedthumbnail, folder=True) )
 
     return itemlist
 
@@ -324,7 +318,7 @@ def acciones_playlist(item):
         import xbmc
         xbmc.executebuiltin("Container.Refresh")
     except:
-        itemlist.append( Item(channel=__channel__, action=""  , title="Se ha añadido/eliminado correctamente", url="", folder=False))
+        itemlist.append( Item(channel=item.channel, action=""  , title="Se ha añadido/eliminado correctamente", url="", folder=False))
         return itemlist
 
 
@@ -338,7 +332,7 @@ def playlist(item):
     for scrapedthumbnail, scrapedurl, scrapedtitle  in matches:
         scrapedthumbnail += "|"+headers[0][0]+"="+headers[0][1]
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="play_", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , fanart=scrapedthumbnail, fulltitle=scrapedtitle, folder=False) )
+        itemlist.append( Item(channel=item.channel, action="play_", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , fanart=scrapedthumbnail, fulltitle=scrapedtitle, folder=False) )
     
     return itemlist    
     

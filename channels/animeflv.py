@@ -7,8 +7,6 @@
 import os
 import re
 import sys
-import time
-import urllib2
 import urlparse
 
 from core import config
@@ -18,15 +16,7 @@ from core import scrapertools
 from core.item import Item
 
 DEBUG = config.get_setting("debug")
-
-__category__ = "A"
-__type__ = "generic"
-__title__ = "Animeflv"
-__channel__ = "animeflv"
-__language__ = "ES"
-
 CHANNEL_HOST = "http://animeflv.net/"
-
 CHANNEL_DEFAULT_HEADERS = [
     ["User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:22.0) Gecko/20100101 Firefox/22.0"],
     ["Accept-Encoding", "gzip, deflate"],
@@ -71,14 +61,14 @@ def mainlist(item):
     logger.info("pelisalacarta.channels.animeflv mainlist")
 
     itemlist = list([])
-    itemlist.append(Item(channel=__channel__, action="novedades_episodios", title="Últimos episodios", url=CHANNEL_HOST))
-    itemlist.append(Item(channel=__channel__, action="menuseries", title="Series",
+    itemlist.append(Item(channel=item.channel, action="novedades_episodios", title="Últimos episodios", url=CHANNEL_HOST))
+    itemlist.append(Item(channel=item.channel, action="menuseries", title="Series",
                          url=urlparse.urljoin(CHANNEL_HOST, "animes/?orden=nombre&mostrar=series")))
-    itemlist.append(Item(channel=__channel__, action="menuovas", title="OVAS",
+    itemlist.append(Item(channel=item.channel, action="menuovas", title="OVAS",
                          url=urlparse.urljoin(CHANNEL_HOST, "animes/?orden=nombre&mostrar=ovas")))
-    itemlist.append(Item(channel=__channel__, action="menupeliculas", title="Películas",
+    itemlist.append(Item(channel=item.channel, action="menupeliculas", title="Películas",
                          url=urlparse.urljoin(CHANNEL_HOST, "animes/?orden=nombre&mostrar=peliculas")))
-    itemlist.append(Item(channel=__channel__, action="search", title="Buscar",
+    itemlist.append(Item(channel=item.channel, action="search", title="Buscar",
                          url=urlparse.urljoin(CHANNEL_HOST, "animes/?buscar=")))
 
     return itemlist
@@ -88,11 +78,11 @@ def menuseries(item):
     logger.info("pelisalacarta.channels.animeflv menuseries")
 
     itemlist = list()
-    itemlist.append(Item(channel=__channel__, action="letras", title="Por orden alfabético",
+    itemlist.append(Item(channel=item.channel, action="letras", title="Por orden alfabético",
                          url=urlparse.urljoin(CHANNEL_HOST, "animes/?orden=nombre&mostrar=series")))
-    itemlist.append(Item(channel=__channel__, action="generos", title="Por géneros",
+    itemlist.append(Item(channel=item.channel, action="generos", title="Por géneros",
                          url=urlparse.urljoin(CHANNEL_HOST, "animes/?orden=nombre&mostrar=series")))
-    itemlist.append(Item(channel=__channel__, action="series", title="En emisión",
+    itemlist.append(Item(channel=item.channel, action="series", title="En emisión",
                          url=urlparse.urljoin(CHANNEL_HOST, "animes/en-emision/?orden=nombre&mostrar=series")))
 
     return itemlist
@@ -102,11 +92,11 @@ def menuovas(item):
     logger.info("pelisalacarta.channels.animeflv menuovas")
 
     itemlist = list()
-    itemlist.append(Item(channel=__channel__, action="letras", title="Por orden alfabético",
+    itemlist.append(Item(channel=item.channel, action="letras", title="Por orden alfabético",
                          url=urlparse.urljoin(CHANNEL_HOST, "animes/?orden=nombre&mostrar=ovas")))
-    itemlist.append(Item(channel=__channel__, action="generos", title="Por géneros",
+    itemlist.append(Item(channel=item.channel, action="generos", title="Por géneros",
                          url=urlparse.urljoin(CHANNEL_HOST, "animes/?orden=nombre&mostrar=ovas")))
-    itemlist.append(Item(channel=__channel__, action="series", title="En emisión",
+    itemlist.append(Item(channel=item.channel, action="series", title="En emisión",
                          url=urlparse.urljoin(CHANNEL_HOST, "animes/en-emision/?orden=nombre&mostrar=ovas")))
 
     return itemlist
@@ -116,11 +106,11 @@ def menupeliculas(item):
     logger.info("pelisalacarta.channels.animeflv menupeliculas")
 
     itemlist = list()
-    itemlist.append(Item(channel=__channel__, action="letras", title="Por orden alfabético",
+    itemlist.append(Item(channel=item.channel, action="letras", title="Por orden alfabético",
                          url=urlparse.urljoin(CHANNEL_HOST, "animes/?orden=nombre&mostrar=peliculas")))
-    itemlist.append(Item(channel=__channel__, action="generos", title="Por géneros",
+    itemlist.append(Item(channel=item.channel, action="generos", title="Por géneros",
                          url=urlparse.urljoin(CHANNEL_HOST, "animes/?orden=nombre&mostrar=peliculas")))
-    itemlist.append(Item(channel=__channel__, action="series", title="En emisión",
+    itemlist.append(Item(channel=item.channel, action="series", title="En emisión",
                          url=urlparse.urljoin(CHANNEL_HOST, "animes/en-emision/?orden=nombre&mostrar=peliculas")))
 
     return itemlist
@@ -145,7 +135,7 @@ def letras(item):
         if DEBUG:
             logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
 
-        itemlist.append(Item(channel=__channel__, action="series", title=title, url=url, thumbnail=thumbnail,
+        itemlist.append(Item(channel=item.channel, action="series", title=title, url=url, thumbnail=thumbnail,
                              plot=plot))
 
     return itemlist
@@ -169,7 +159,7 @@ def generos(item):
         if DEBUG:
             logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
 
-        itemlist.append(Item(channel=__channel__, action="series", title=title, url=url, thumbnail=thumbnail,
+        itemlist.append(Item(channel=item.channel, action="series", title=title, url=url, thumbnail=thumbnail,
                              plot=plot))
 
     return itemlist
@@ -237,7 +227,7 @@ def novedades_episodios(item):
             logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(scrapedtitle, scrapedurl,
                                                                          scrapedthumbnail))
 
-        newItem = Item(channel=__channel__, action="findvideos", title=scrapedtitle, url=scrapedurl,
+        newItem = Item(channel=item.channel, action="findvideos", title=scrapedtitle, url=scrapedurl,
                        thumbnail=scrapedthumbnail, plot=scrapedplot, fulltitle=fulltitle, viewmode="movie")
 
         contentTitle = scrapertools.entityunescape(match[1])
@@ -305,7 +295,7 @@ def series(item):
         show = title
         if DEBUG:
             logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
-        itemlist.append(Item(channel=__channel__, action="episodios", title=title, url=url, thumbnail=thumbnail,
+        itemlist.append(Item(channel=item.channel, action="episodios", title=title, url=url, thumbnail=thumbnail,
                              plot=plot, show=show, fulltitle=fulltitle, fanart=thumbnail,
                              viewmode="movies_with_plot", folder=True))
 
@@ -318,7 +308,7 @@ def series(item):
             scrapedthumbnail = ""
             scrapedplot = ""
 
-            itemlist.append(Item(channel=__channel__, action="series", title=scrapedtitle, url=scrapedurl,
+            itemlist.append(Item(channel=item.channel, action="series", title=scrapedtitle, url=scrapedurl,
                                  thumbnail=scrapedthumbnail, plot=scrapedplot, folder=True))
 
     return itemlist
@@ -389,12 +379,12 @@ def episodios(item):
         if DEBUG:
             logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
 
-        itemlist.append(Item(channel=__channel__, action="findvideos", title=title, url=url,
+        itemlist.append(Item(channel=item.channel, action="findvideos", title=title, url=url,
                              thumbnail=thumbnail, plot=plot, show=item.show, fulltitle="{0} {1}"
                              .format(item.show, title), fanart=thumbnail, viewmode="movies_with_plot", folder=True))
 
     if config.get_library_support() and len(itemlist) > 0:
-        itemlist.append(Item(channel=__channel__, title="Añadir esta serie a la biblioteca de XBMC", url=item.url,
+        itemlist.append(Item(channel=item.channel, title="Añadir esta serie a la biblioteca de XBMC", url=item.url,
                              action="add_serie_to_library", extra="episodios", show=item.show))
         itemlist.append(Item(channel=item.channel, title="Descargar todos los episodios de la serie", url=item.url,
                              action="download_all_episodes", extra="episodios", show=item.show))
@@ -424,18 +414,18 @@ def findvideos(item):
     from core import servertools
     itemlist.extend(servertools.find_video_items(data=data))
     for videoitem in itemlist:
-        videoitem.channel = __channel__
+        videoitem.channel = item.channel
         videoitem.folder = False
 
     if url_anterior:
         title_anterior = url_anterior.replace("/ver/", '').replace('-', ' ').replace('.html', '')
-        itemlist.append(Item(channel=__channel__, action="findvideos", title="Anterior: " + title_anterior,
+        itemlist.append(Item(channel=item.channel, action="findvideos", title="Anterior: " + title_anterior,
                         url=CHANNEL_HOST + url_anterior, thumbnail=item.thumbnail, plot=item.plot, show=item.show,
                         fanart=item.thumbnail, folder=True))
 
     if url_siguiente:
         title_siguiente = url_siguiente.replace("/ver/", '').replace('-', ' ').replace('.html', '')
-        itemlist.append(Item(channel=__channel__, action="findvideos", title="Siguiente: " + title_siguiente,
+        itemlist.append(Item(channel=item.channel, action="findvideos", title="Siguiente: " + title_siguiente,
                         url=CHANNEL_HOST + url_siguiente, thumbnail=item.thumbnail, plot=item.plot, show=item.show,
                         fanart=item.thumbnail, folder=True))
 

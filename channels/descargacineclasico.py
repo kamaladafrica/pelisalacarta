@@ -17,11 +17,6 @@ from core.tmdb import Tmdb
 from core import servertools
 from servers import expurl
 
-__channel__ = "descargacineclasico"
-__category__ = "F"
-__type__ = "generic"
-__title__ = "descargacineclasico"
-__language__ = "ES"
 
 DEBUG = config.get_setting("debug")
 
@@ -39,9 +34,9 @@ def mainlist(item):
     thumb_buscar = get_thumbnail_path()+ "thumb_buscar.png"
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, title="Últimas agregadas"  , action="agregadas", url="http://www.descargacineclasico.net/"))
-    itemlist.append( Item(channel=__channel__, title="Listado por género" , action="porGenero", url="http://www.descargacineclasico.net/"))
-    itemlist.append( Item(channel=__channel__, title="Buscar" , action="search", url="http://www.descargacineclasico.net/", thumbnail=thumb_buscar) )
+    itemlist.append( Item(channel=item.channel, title="Últimas agregadas"  , action="agregadas", url="http://www.descargacineclasico.net/"))
+    itemlist.append( Item(channel=item.channel, title="Listado por género" , action="porGenero", url="http://www.descargacineclasico.net/"))
+    itemlist.append( Item(channel=item.channel, title="Buscar" , action="search", url="http://www.descargacineclasico.net/", thumbnail=thumb_buscar) )
 
     return itemlist
 
@@ -58,7 +53,7 @@ def porGenero(item):
     matches = re.compile(patron,re.DOTALL).findall(data[0])
     
     for url,genero in matches:
-        itemlist.append( Item(channel=__channel__ , action="agregadas" , title=genero,url=url))
+        itemlist.append( Item(channel=item.channel , action="agregadas" , title=genero,url=url))
     
    
     return itemlist    
@@ -123,7 +118,7 @@ def agregadas(item):
         url=urlparse.urljoin(item.url,url)
         thumbnail = urlparse.urljoin(url,thumbnail)
 
-        itemlist.append( Item(channel=__channel__, action="findvideos", title=title+" ", fulltitle=title , url=url , thumbnail=thumbnail, plot=plot, show=title, viewmode="movie_with_plot") )
+        itemlist.append( Item(channel=item.channel, action="findvideos", title=title+" ", fulltitle=title , url=url , thumbnail=thumbnail, plot=plot, show=title, viewmode="movie_with_plot") )
 
     # Paginación
     try:
@@ -132,7 +127,7 @@ def agregadas(item):
        
         patron_nextpage = r'<a class="nextpostslink" rel="next" href="([^"]+)'
         next_page = re.compile(patron_nextpage,re.DOTALL).findall(data)
-        itemlist.append( Item(channel=__channel__, action="agregadas", title="Página siguiente >>" , url=next_page[0]) )
+        itemlist.append( Item(channel=item.channel, action="agregadas", title="Página siguiente >>" , url=next_page[0]) )
     except: pass
 
     return itemlist
@@ -159,7 +154,7 @@ def findvideos(item):
     for scrapedidioma, scrapedcalidad, scrapedserver, scrapedurl in matches:
 
         title = titulo + "_" + scrapedidioma + "_"+ scrapedserver + "_" + scrapedcalidad
-        itemlist.append( Item(channel=__channel__, action="play", title=title, fulltitle=title, url=scrapedurl, thumbnail=item.thumbnail, plot=item.plot, show=item.show, fanart=item.fanart) )
+        itemlist.append( Item(channel=item.channel, action="play", title=title, fulltitle=title, url=scrapedurl, thumbnail=item.thumbnail, plot=item.plot, show=item.show, fanart=item.fanart) )
 
     return itemlist
 
@@ -178,6 +173,6 @@ def play(item):
         videoitem.title = item.title
         videoitem.fulltitle = item.fulltitle
         videoitem.thumbnail = item.thumbnail
-        videoitem.channel = __channel__
+        videoitem.channel = item.channel
 
     return itemlist    

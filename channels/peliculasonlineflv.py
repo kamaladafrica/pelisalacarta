@@ -13,11 +13,6 @@ from core import logger
 from core import scrapertools
 from core.item import Item
 
-__channel__ = "peliculasonlineflv"
-__category__ = "F,D"
-__type__ = "generic"
-__title__ = "Peliculas Online FLV"
-__language__ = "ES"
 
 DEBUG = config.get_setting("debug")
 
@@ -26,10 +21,10 @@ def mainlist(item):
     logger.info("[peliculasonlineflv.py] mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, title="Novedades",  action="peliculas", url="http://www.peliculasonlineflv.net"))
-    itemlist.append( Item(channel=__channel__, title="Por orden alfabético", action="letras", url="http://www.peliculasonlineflv.net"))
-    itemlist.append( Item(channel=__channel__, title="Por géneros", action="generos", url="http://www.peliculasonlineflv.net"))
-    itemlist.append( Item(channel=__channel__, title="Buscar...", action="search"))
+    itemlist.append( Item(channel=item.channel, title="Novedades",  action="peliculas", url="http://www.peliculasonlineflv.net"))
+    itemlist.append( Item(channel=item.channel, title="Por orden alfabético", action="letras", url="http://www.peliculasonlineflv.net"))
+    itemlist.append( Item(channel=item.channel, title="Por géneros", action="generos", url="http://www.peliculasonlineflv.net"))
+    itemlist.append( Item(channel=item.channel, title="Buscar...", action="search"))
     return itemlist
 
 def search(item,texto):
@@ -70,7 +65,7 @@ def letras(item):
         thumbnail = ""
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="peliculas", title=title , url=url , thumbnail=thumbnail , plot=plot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="peliculas", title=title , url=url , thumbnail=thumbnail , plot=plot , folder=True) )
 
     return itemlist
 
@@ -94,7 +89,7 @@ def generos(item):
         thumbnail = ""
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="peliculas", title=title , url=url , thumbnail=thumbnail , plot=plot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="peliculas", title=title , url=url , thumbnail=thumbnail , plot=plot , folder=True) )
 
     return itemlist
 
@@ -137,13 +132,13 @@ def peliculas(item):
         plot = scrapedplot
         thumbnail = scrapedthumbnail
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="findvideos", title=title , url=url , thumbnail=thumbnail , plot=plot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="findvideos", title=title , url=url , thumbnail=thumbnail , plot=plot , folder=True) )
 
     patron = '<span class="actual">[^<]+</span[^<]+<a href="([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
     if len(matches)>0:
         siguiente_url = urlparse.urljoin(item.url,"/"+matches[0])
-        itemlist.append( Item(channel=__channel__, action="peliculas", title=">> Página siguiente" , url=siguiente_url , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="peliculas", title=">> Página siguiente" , url=siguiente_url , folder=True) )
 
     return itemlist
 
@@ -157,7 +152,7 @@ def findvideos(item):
     from core import servertools
     itemlist.extend(servertools.find_video_items(data=data))
     for videoitem in itemlist:
-        videoitem.channel=__channel__
+        videoitem.channel=item.channel
         videoitem.action="play"
         videoitem.folder=False
         videoitem.title = "Ver en "+videoitem.server
@@ -167,42 +162,42 @@ def findvideos(item):
     try:
         vk_code = scrapertools.get_match(data,"vklat\=([a-zA-Z0-9]+)")
         vk_url = scrapertools.get_header_from_response("http://goo.gl/"+vk_code,header_to_get="location")
-        itemlist.append( Item( channel=__channel__ , action="play" , title="Ver en VK (Latino)" , server="vk" , url=vk_url , folder=False ) )
+        itemlist.append( Item( channel=item.channel , action="play" , title="Ver en VK (Latino)" , server="vk" , url=vk_url , folder=False ) )
     except:
         logger.info("No encontrado enlace VK")
 
     try:
         putlocker_code = scrapertools.get_match(data,"plat\=([A-Z0-9]+)")
         putlocker_url = "http://www.putlocker.com/embed/"+putlocker_code
-        itemlist.append( Item( channel=__channel__ , action="play" , title="Ver en Putlocker (Latino)" , server="putlocker" , url=putlocker_url , folder=False ) )
+        itemlist.append( Item( channel=item.channel , action="play" , title="Ver en Putlocker (Latino)" , server="putlocker" , url=putlocker_url , folder=False ) )
     except:
         logger.info("No encontrado enlace PUTLOCKER")
 
     try:
         vk_code = scrapertools.get_match(data,"vksub\=([a-zA-Z0-9]+)")
         vk_url = scrapertools.get_header_from_response("http://goo.gl/"+vk_code,header_to_get="location")
-        itemlist.append( Item( channel=__channel__ , action="play" , title="Ver en VK (Subtitulado)" , server="vk" , url=vk_url , folder=False ) )
+        itemlist.append( Item( channel=item.channel , action="play" , title="Ver en VK (Subtitulado)" , server="vk" , url=vk_url , folder=False ) )
     except:
         logger.info("No encontrado enlace VK")
 
     try:
         putlocker_code = scrapertools.get_match(data,"plsub\=([A-Z0-9]+)")
         putlocker_url = "http://www.putlocker.com/embed/"+putlocker_code
-        itemlist.append( Item( channel=__channel__ , action="play" , title="Ver en Putlocker (Subtitulado)" , server="putlocker" , url=putlocker_url , folder=False ) )
+        itemlist.append( Item( channel=item.channel , action="play" , title="Ver en Putlocker (Subtitulado)" , server="putlocker" , url=putlocker_url , folder=False ) )
     except:
         logger.info("No encontrado enlace PUTLOCKER")
 
     try:
         vk_code = scrapertools.get_match(data,"vk\=([a-zA-Z0-9]+)")
         vk_url = scrapertools.get_header_from_response("http://goo.gl/"+vk_code,header_to_get="location")
-        itemlist.append( Item( channel=__channel__ , action="play" , title="Ver en VK" , server="vk" , url=vk_url , folder=False ) )
+        itemlist.append( Item( channel=item.channel , action="play" , title="Ver en VK" , server="vk" , url=vk_url , folder=False ) )
     except:
         logger.info("No encontrado enlace VK")
 
     try:
         putlocker_code = scrapertools.get_match(data,"put\=([A-Z0-9]+)")
         putlocker_url = "http://www.putlocker.com/embed/"+putlocker_code
-        itemlist.append( Item( channel=__channel__ , action="play" , title="Ver en Putlocker" , server="putlocker" , url=putlocker_url , folder=False ) )
+        itemlist.append( Item( channel=item.channel , action="play" , title="Ver en Putlocker" , server="putlocker" , url=putlocker_url , folder=False ) )
     except:
         logger.info("No encontrado enlace PUTLOCKER")
 

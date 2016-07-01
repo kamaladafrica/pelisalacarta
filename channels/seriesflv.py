@@ -5,26 +5,17 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import urlparse,urllib2,urllib,re
-import os, sys
-import time
+import re
+import sys
+import urlparse
 
 from core import config
 from core import logger
 from core import scrapertools
-from core import jsontools
-from core.item import Item
 from core import servertools
+from core.item import Item
 
 DEBUG = config.get_setting("debug")
-
-__category__ = "S"
-__type__ = "generic"
-__title__ = "seriesflv"
-__channel__ = "seriesflv"
-__language__ = "ES"
-__creationdate__ = "20160425"
-
 CHANNEL_HOST = 'http://www.seriesflv.net'
 CHANNEL_HEADERS = [
     ['User-Agent', 'Mozilla/5.0 (Windows NT 6.1; rv:38.0) Gecko/20100101 Firefox/38.0'],
@@ -38,11 +29,11 @@ def mainlist(item):
     logger.info("pelisalacarta.channels.seriesflv mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, action="menuepisodios" , title="Últimos episodios..." , url="" ))
-    itemlist.append( Item(channel=__channel__, action="series"        , title="Todas las series"     , url="http://www.seriesflv.net/ajax/lista.php", extra="grupo_no=0&type=series&order=titulo" ))
-    itemlist.append( Item(channel=__channel__, action="series"        , title="Series más vistas"    , url="http://www.seriesflv.net/ajax/lista.php", extra="grupo_no=0&type=series&order=hits" ))
-    itemlist.append( Item(channel=__channel__, action="series"        , title="Telenovelas"          , url="http://www.seriesflv.net/ajax/lista.php", extra="grupo_no=0&type=generos&order=novelas" ))
-    itemlist.append( Item(channel=__channel__, action="search"        , title="Buscar..."            , url="http://www.seriesflv.net/api/search/?q=" ))
+    itemlist.append( Item(channel=item.channel, action="menuepisodios" , title="Últimos episodios..." , url="" ))
+    itemlist.append( Item(channel=item.channel, action="series"        , title="Todas las series"     , url="http://www.seriesflv.net/ajax/lista.php", extra="grupo_no=0&type=series&order=titulo" ))
+    itemlist.append( Item(channel=item.channel, action="series"        , title="Series más vistas"    , url="http://www.seriesflv.net/ajax/lista.php", extra="grupo_no=0&type=series&order=hits" ))
+    itemlist.append( Item(channel=item.channel, action="series"        , title="Telenovelas"          , url="http://www.seriesflv.net/ajax/lista.php", extra="grupo_no=0&type=generos&order=novelas" ))
+    itemlist.append( Item(channel=item.channel, action="search"        , title="Buscar..."            , url="http://www.seriesflv.net/api/search/?q=" ))
 
     return itemlist
 
@@ -50,10 +41,10 @@ def menuepisodios(item):
     logger.info("pelisalacarta.channels.seriesflv menuepisodios")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, action="ultimos_episodios"  , title="Subtitulados" , url="sub" ))
-    itemlist.append( Item(channel=__channel__, action="ultimos_episodios"  , title="Español"      , url="es" ))
-    itemlist.append( Item(channel=__channel__, action="ultimos_episodios"  , title="Latino"       , url="la" ))
-    itemlist.append( Item(channel=__channel__, action="ultimos_episodios"  , title="Original"     , url="en" ))
+    itemlist.append( Item(channel=item.channel, action="ultimos_episodios"  , title="Subtitulados" , url="sub" ))
+    itemlist.append( Item(channel=item.channel, action="ultimos_episodios"  , title="Español"      , url="es" ))
+    itemlist.append( Item(channel=item.channel, action="ultimos_episodios"  , title="Latino"       , url="la" ))
+    itemlist.append( Item(channel=item.channel, action="ultimos_episodios"  , title="Original"     , url="en" ))
     return itemlist
 
 def newest(categoria):
@@ -102,14 +93,14 @@ def ultimos_episodios(item):
     patron += '<div class="i-time">([^<]+)</div>'
 
     matches = re.compile(patron,re.DOTALL).findall(data)
-    
+
     for scrapedurl,episodio,serie,hace in matches:
         title = serie+" "+episodio+" ("+hace+")"
         thumbnail = ""
         plot = ""
         url = scrapedurl
         temporada, episodio = episodio.split('x')
-        itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , url=url, thumbnail=thumbnail,
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail,
                               plot=plot, fulltitle=title, contentTitle=serie, language=get_nombre_idioma(idioma),
                               contentSeason=int(temporada), contentEpisodeNumber=int(episodio)))
 
@@ -148,7 +139,7 @@ def buscar(item):
 
     # Extrae las entradas (carpetas)
     '''
-    <ul><div class="bg7 header color7">Resultados de <b>equipo a</b></div>      
+    <ul><div class="bg7 header color7">Resultados de <b>equipo a</b></div>
     <li><a class="on over" href="http://www.seriesflv.net/serie/el-equipo-a.html">
     <div class="left">
     <img src="http://http-s.ws/ysk/img/data/b5de7e0470eae36f8196d8fcbf897c17-size-90x120-a.jpg" />
@@ -170,7 +161,7 @@ def buscar(item):
 
     matches = re.compile(patron,re.DOTALL).findall(data)
     itemlist = []
-    
+
     for scrapedurl,scrapedthumbnail,scrapedtitle,numtemporadas in matches:
 
         title = scrapertools.htmlclean(scrapedtitle).strip()+" ("+numtemporadas+")"
@@ -178,7 +169,7 @@ def buscar(item):
         plot = ""
 
         url = urlparse.urljoin(item.url,scrapedurl)
-        itemlist.append( Item(channel=__channel__, action="episodios" , title=title , url=url, thumbnail=thumbnail, plot=plot, show=title))
+        itemlist.append( Item(channel=item.channel, action="episodios" , title=title , url=url, thumbnail=thumbnail, plot=plot, show=title))
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
     return itemlist
@@ -213,7 +204,7 @@ def series(item):
     patron += '<span>([^<]+)</span'
     matches = re.compile(patron,re.DOTALL).findall(data)
     itemlist = []
-    
+
     for scrapedurl,scrapedthumbnail,scrapedtitle,numtemporadas in matches:
 
         title = scrapertools.htmlclean(scrapedtitle).strip()+" ("+numtemporadas+" temporadas)"
@@ -221,14 +212,14 @@ def series(item):
         plot = ""
 
         url = urlparse.urljoin(item.url,scrapedurl)
-        itemlist.append( Item(channel=__channel__, action="episodios" , title=title , url=url, thumbnail=thumbnail, plot=plot, show=title))
+        itemlist.append( Item(channel=item.channel, action="episodios" , title=title , url=url, thumbnail=thumbnail, plot=plot, show=title))
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
     #grupo_no=0&type=series&order=titulo
     old_offset = scrapertools.find_single_match(item.extra,"grupo_no\=(\d+)")
     new_offset = str(int(old_offset)+1)
     newextra = item.extra.replace("grupo_no="+old_offset,"grupo_no="+new_offset)
-    itemlist.append( Item(channel=__channel__, action="series" , title=">> Página siguiente" , extra=newextra, url=item.url))
+    itemlist.append( Item(channel=item.channel, action="series" , title=">> Página siguiente" , extra=newextra, url=item.url))
 
     return itemlist
 
@@ -276,7 +267,7 @@ def episodios(item):
     patron  = '<tr[^<]+<td class="sape"><i class="glyphicon glyphicon-film"></i[^<]+'
     patron += '<a href="([^"]+)"[^>]+>([^<]+)</a>.*?<img(.*?)</td'
     matches = re.compile(patron,re.DOTALL).findall(data)
-    
+
     for scrapedurl,scrapedtitle,bloqueidiomas in matches:
         title = scrapedtitle+" ("
 
@@ -295,13 +286,13 @@ def episodios(item):
         show = re.sub(" \([^\)]+\)$","",item.show)
 
         ## Se a añadido el parámetro show
-        itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=show))
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=show))
 
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
     ## Opción "Añadir esta serie a la biblioteca de XBMC"
     if config.get_library_support() and len(itemlist)>0:
-        itemlist.append( Item(channel=__channel__, title="Añadir esta serie a la biblioteca de XBMC", url=item.url, action="add_serie_to_library", extra="episodios", show=show) )
+        itemlist.append( Item(channel=item.channel, title="Añadir esta serie a la biblioteca de XBMC", url=item.url, action="add_serie_to_library", extra="episodios", show=show) )
 
     return itemlist
 
@@ -313,7 +304,7 @@ def findvideos(item):
     data = scrapertools.find_single_match(data,'<div id="enlaces">(.*?)<div id="comentarios">')
     #logger.info("data="+data)
 
-    # Extrae las entradas (carpetas)  
+    # Extrae las entradas (carpetas)
     '''
               <tr>
           <td width="45"><img width="20" src="http://www.seriesflv.net/images/lang/es.png"></td>
@@ -355,7 +346,7 @@ def findvideos(item):
     patron += '<td[^>]+>([^<]+)</td>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     itemlist = []
-    
+
     for url_idioma,nombre_servidor,target_url,comentario in matches:
         codigo_idioma = scrapertools.find_single_match(url_idioma,'lang/([a-z]+).png')
         idioma = get_nombre_idioma(codigo_idioma)
@@ -365,7 +356,7 @@ def findvideos(item):
         thumbnail = ""
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="play" , title=title , url=url, thumbnail=thumbnail, plot=plot, folder=False))
+        itemlist.append( Item(channel=item.channel, action="play" , title=title , url=url, thumbnail=thumbnail, plot=plot, folder=False))
 
     return itemlist
 
@@ -380,6 +371,6 @@ def play(item):
         videoitem.title = item.title
         videoitem.fulltitle = item.fulltitle
         videoitem.thumbnail = item.thumbnail
-        videoitem.channel = __channel__
+        videoitem.channel = item.channel
 
     return itemlist    

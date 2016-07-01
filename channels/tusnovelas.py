@@ -12,12 +12,6 @@ from core import logger
 from core import scrapertools
 from core.item import Item
 
-__channel__ = "tusnovelas"
-__category__ = "S"
-__type__ = "generic"
-__title__ = "Tus novelas"
-__language__ = "ES"
-__creationdate__ = "20120703"
 
 DEBUG = config.get_setting("debug")
 
@@ -27,10 +21,10 @@ def mainlist(item):
     
     itemlist = []
 
-    itemlist.append( Item(channel=__channel__, action="series"              , title="Últimas telenovelas añadidas" , url="http://tusnovelas.com/lista-novelas/"))
-    itemlist.append( Item(channel=__channel__, action="series_top"          , title="Telenovelas TOP"              , url="http://tusnovelas.com/"))
-    itemlist.append( Item(channel=__channel__, action="series_emision"      , title="Telenovelas en Emisión"       , url="http://tusnovelas.com/"))
-    itemlist.append( Item(channel=__channel__, action="letras"              , title="Todas por orden alfabético"   , url="http://tusnovelas.com/"))
+    itemlist.append( Item(channel=item.channel, action="series"              , title="Últimas telenovelas añadidas" , url="http://tusnovelas.com/lista-novelas/"))
+    itemlist.append( Item(channel=item.channel, action="series_top"          , title="Telenovelas TOP"              , url="http://tusnovelas.com/"))
+    itemlist.append( Item(channel=item.channel, action="series_emision"      , title="Telenovelas en Emisión"       , url="http://tusnovelas.com/"))
+    itemlist.append( Item(channel=item.channel, action="letras"              , title="Todas por orden alfabético"   , url="http://tusnovelas.com/"))
 
     return itemlist
 
@@ -52,7 +46,7 @@ def series_top(item):
         title = scrapedtitle
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="episodios", title=title , url=url , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="episodios", title=title , url=url , folder=True) )
 
     return itemlist
 
@@ -74,7 +68,7 @@ def series_emision(item):
         title = scrapedtitle
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="episodios", title=title , url=url , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="episodios", title=title , url=url , folder=True) )
 
     return itemlist
 
@@ -96,7 +90,7 @@ def letras(item):
         title = scrapedtitle
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="series", title=title , url=url , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="series", title=title , url=url , folder=True) )
 
     return itemlist
 
@@ -140,11 +134,11 @@ def series(item):
         title = scrapedtitle
         plot = scrapertools.htmlclean(scrapedplot)
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="episodios", title=title , url=url , thumbnail=thumbnail ,fanart=thumbnail , plot=plot , viewmode="movie_with_plot" , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="episodios", title=title , url=url , thumbnail=thumbnail ,fanart=thumbnail , plot=plot , viewmode="movie_with_plot" , folder=True) )
     
     next_page_url = scrapertools.find_single_match(data,'<a href="([^"]+)">Siguiente</a>')
     if next_page_url!="":
-        itemlist.append( Item(channel=__channel__, action="series", title=">> Página siguiente" , url=next_page_url , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="series", title=">> Página siguiente" , url=next_page_url , folder=True) )
 
     return itemlist
 
@@ -164,7 +158,7 @@ def episodios(item):
         scrapedurl = urlparse.urljoin("http://tusnovelas.com/",url)
 
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="findvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
     
     return itemlist
 
@@ -176,19 +170,19 @@ def findvideos(item):
     patron = '<embed type="application/x-shockwave-flash" src="http://www.todoanimes.com/reproductor/player.swf".*?file=([^\&]+)&'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for match in matches:
-        itemlist.append( Item(channel=__channel__, action="play", server="directo", title=item.title , url=match , thumbnail=item.thumbnail , plot=item.plot , folder=False) )
+        itemlist.append( Item(channel=item.channel, action="play", server="directo", title=item.title , url=match , thumbnail=item.thumbnail , plot=item.plot , folder=False) )
 
     #<embed width="680" height="450" flashvars="file=mp4:p/459791/sp/45979100/serveFlavor/flavorId/0_0pacv7kr/forceproxy/true&amp;image=&amp;skin=&amp;abouttext=&amp;dock=false&amp;streamer=rtmp://rtmpakmi.kaltura.com/ondemand/&amp;
     patron = '<embed width="[^"]+" height="[^"]+" flashvars="file=([^\&]+)&.*?streamer=(rtmp[^\&]+)&'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for final,principio in matches:
-        itemlist.append( Item(channel=__channel__, action="play", server="directo", title=item.title , url=principio+final , thumbnail=item.thumbnail , plot=item.plot , folder=False) )
+        itemlist.append( Item(channel=item.channel, action="play", server="directo", title=item.title , url=principio+final , thumbnail=item.thumbnail , plot=item.plot , folder=False) )
 
 
     from core import servertools
     itemlist.extend(servertools.find_video_items(data=data))
     for videoitem in itemlist:
-        videoitem.channel=__channel__
+        videoitem.channel=item.channel
         videoitem.action="play"
         videoitem.folder=False
         videoitem.title = "["+videoitem.server+"]"

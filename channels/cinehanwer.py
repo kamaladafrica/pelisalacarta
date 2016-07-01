@@ -18,23 +18,16 @@ from core.item import Item
 
 DEBUG = config.get_setting("debug")
 
-__category__ = "A"
-__type__ = "generic"
-__title__ = "cinehanwer"
-__channel__ = "cinehanwer"
-__language__ = "ES"
-__creationdate__ = "20140615"
-
 
 def mainlist(item):
     logger.info("pelisalacarta.channels.cinehanwer mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, action="peliculas" , title="Estrenos"            , url="http://cinehanwer.us/estrenos/" ))
-    itemlist.append( Item(channel=__channel__, action="peliculas" , title="Novedades"            , url="http://cinehanwer.us" ))
-    itemlist.append( Item(channel=__channel__, action="calidades" , title="Por calidad"          , url="http://cinehanwer.us/estrenos/" ))
-    itemlist.append( Item(channel=__channel__, action="generos" , title="Por género"          , url="http://cinehanwer.us/estrenos/" ))
-    itemlist.append( Item(channel=__channel__, action="search"  , title="Buscar..."            , url="http://cinehanwer.us/estrenos/" ))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Estrenos"            , url="http://cinehanwer.us/estrenos/" ))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Novedades"            , url="http://cinehanwer.us" ))
+    itemlist.append( Item(channel=item.channel, action="calidades" , title="Por calidad"          , url="http://cinehanwer.us/estrenos/" ))
+    itemlist.append( Item(channel=item.channel, action="generos" , title="Por género"          , url="http://cinehanwer.us/estrenos/" ))
+    itemlist.append( Item(channel=item.channel, action="search"  , title="Buscar..."            , url="http://cinehanwer.us/estrenos/" ))
     
       
     return itemlist
@@ -43,9 +36,9 @@ def series(item):
     logger.info("pelisalacarta.channels.cinehanwer series")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, action="series_new"  , title="Novedades Series"            , url="http://series.cinehanwer.us" ))
-    itemlist.append( Item(channel=__channel__, action="series_list"  , title="Listado Series"            , url="http://series.cinehanwer.us/series/" ))
-    itemlist.append( Item(channel=__channel__, action="search"  , title="Buscar..."            , url="http://series.cinehanwer.us" ))
+    itemlist.append( Item(channel=item.channel, action="series_new"  , title="Novedades Series"            , url="http://series.cinehanwer.us" ))
+    itemlist.append( Item(channel=item.channel, action="series_list"  , title="Listado Series"            , url="http://series.cinehanwer.us/series/" ))
+    itemlist.append( Item(channel=item.channel, action="search"  , title="Buscar..."            , url="http://series.cinehanwer.us" ))
   
     return itemlist
 
@@ -68,7 +61,7 @@ def calidades(item):
         plot = ""
         url = urlparse.urljoin(item.url,scrapedurl)
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title))
+        itemlist.append( Item(channel=item.channel, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title))
 
     return itemlist
 
@@ -91,7 +84,7 @@ def generos(item):
         plot = ""
         url = urlparse.urljoin(item.url,scrapedurl)
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title))
+        itemlist.append( Item(channel=item.channel, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title))
 
     return itemlist
 '''
@@ -189,11 +182,11 @@ def buscar(item):
             referer = urlparse.urljoin(item.url,scrapedurl)
             url = referer.replace("/peli/","/links/view/slug/")+"/what/peli"
             if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-            itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
+            itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
         else:
             referer = item.url
             url = urlparse.urljoin(item.url,scrapedurl)
-            itemlist.append( Item(channel=__channel__, action="episodios" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
+            itemlist.append( Item(channel=item.channel, action="episodios" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
 
     return itemlist
 
@@ -221,7 +214,7 @@ def series_buscar(item):
         url = scrapertools.htmlclean(entries["permalink"])
         plot = ""
    
-        itemlist.append( Item(channel=__channel__, action="findvideos_series" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
+        itemlist.append( Item(channel=item.channel, action="findvideos_series" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
  
     return itemlist    
     
@@ -255,13 +248,13 @@ def peliculas(item):
         plot = re.compile("\s+",re.DOTALL).sub(" ",plot)
         url = urlparse.urljoin(item.url,scrapedurl)
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
 
     #</b></span></a></li[^<]+<li><a href="?page=2">
     next_page = scrapertools.find_single_match(data,'</b></span></a></li[^<]+<li><a href="([^"]+)">')
     if next_page!="":
-    #    itemlist.append( Item(channel=__channel__, action="peliculas" , title=">> Página siguiente" , url=item.url+next_page, folder=True))
-        itemlist.append( Item(channel=__channel__, action="peliculas" , title=">> Página siguiente" , url=urlparse.urljoin(item.url,next_page), folder=True))
+    #    itemlist.append( Item(channel=item.channel, action="peliculas" , title=">> Página siguiente" , url=item.url+next_page, folder=True))
+        itemlist.append( Item(channel=item.channel, action="peliculas" , title=">> Página siguiente" , url=urlparse.urljoin(item.url,next_page), folder=True))
       
     return itemlist
     
@@ -287,7 +280,7 @@ def series_new(item):
         plot = ""
         url = urlparse.urljoin(item.url,scrapedurl)
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="findvideos_series" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
+        itemlist.append( Item(channel=item.channel, action="findvideos_series" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
       
     return itemlist
     
@@ -313,8 +306,8 @@ def series_list(item):
         plot = ""
         url = "http://series.cinehanwer.us/wp-content/themes/bueno/ajax/seriesajaxresp_get.php?serie="+scrapedurl+"&status=0"
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="series_seasons"  , title=title ,  url=url, thumbnail=thumbnail, plot=plot, fulltitle=title))
-        #itemlist.append( Item(channel=__channel__, action="findvideos_series" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
+        itemlist.append( Item(channel=item.channel, action="series_seasons"  , title=title ,  url=url, thumbnail=thumbnail, plot=plot, fulltitle=title))
+        #itemlist.append( Item(channel=item.channel, action="findvideos_series" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
       
     return itemlist
     
@@ -340,8 +333,8 @@ def series_seasons(item):
         plot = ""
         url = "http://series.cinehanwer.us/wp-content/themes/bueno/ajax/seriesajaxresp_get.php?serie="+scrapedurl+"&status=1"
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="series_chapters"  , title=title ,  url=url, thumbnail=thumbnail, plot=plot, fulltitle=title))
-        #itemlist.append( Item(channel=__channel__, action="findvideos_series" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
+        itemlist.append( Item(channel=item.channel, action="series_chapters"  , title=title ,  url=url, thumbnail=thumbnail, plot=plot, fulltitle=title))
+        #itemlist.append( Item(channel=item.channel, action="findvideos_series" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
       
     return itemlist
     
@@ -367,8 +360,8 @@ def series_chapters(item):
         plot = ""
         url = "http://series.cinehanwer.us/wp-content/themes/bueno/ajax/seriesajaxresp_get.php?id="+scrapedurl+"&status=2"
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="findvideos_series"  , title=title ,  url=url, thumbnail=thumbnail, plot=plot, fulltitle=title))
-        #itemlist.append( Item(channel=__channel__, action="findvideos_series" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
+        itemlist.append( Item(channel=item.channel, action="findvideos_series"  , title=title ,  url=url, thumbnail=thumbnail, plot=plot, fulltitle=title))
+        #itemlist.append( Item(channel=item.channel, action="findvideos_series" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
       
     return itemlist
 
@@ -404,7 +397,7 @@ def findvideos(item):
         thumbnail = ""
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="play" , title=title , url=url, thumbnail=thumbnail, plot=plot, folder=False))
+        itemlist.append( Item(channel=item.channel, action="play" , title=title , url=url, thumbnail=thumbnail, plot=plot, folder=False))
 
     return itemlist
 
@@ -427,7 +420,7 @@ def findvideos_series(item):
         thumbnail = ""
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"]")
-        itemlist.append( Item(channel=__channel__, action="play" , title=title , url=url, thumbnail=thumbnail, plot=plot, folder=False))
+        itemlist.append( Item(channel=item.channel, action="play" , title=title , url=url, thumbnail=thumbnail, plot=plot, folder=False))
         
     # Extrae las entradas (links)
     patron  = '<iframe src="([^"<]+)'
@@ -440,7 +433,7 @@ def findvideos_series(item):
         thumbnail = ""
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"]")
-        itemlist.append( Item(channel=__channel__, action="play" , title=title , url=url, thumbnail=thumbnail, plot=plot, folder=False))
+        itemlist.append( Item(channel=item.channel, action="play" , title=title , url=url, thumbnail=thumbnail, plot=plot, folder=False))
     
     return itemlist
     
@@ -454,6 +447,6 @@ def play(item):
         videoitem.title = item.title
         videoitem.fulltitle = item.fulltitle
         videoitem.thumbnail = item.thumbnail
-        videoitem.channel = __channel__
+        videoitem.channel = item.channel
 
     return itemlist
