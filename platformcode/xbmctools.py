@@ -43,7 +43,7 @@ try:
 except:
     pluginhandle = ""
 
-DEBUG = True
+DEBUG = config.get_setting("debug")
 
 def add_new_folder(item, totalItems=0):
     logger.info('pelisalacarta.platformcode.xbmctools add_new_folder item='+item.tostring())

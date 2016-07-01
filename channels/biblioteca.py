@@ -16,7 +16,7 @@ from core.item import Item
 from samba import libsmb as samba
 from platformcode import library
 
-DEBUG = True
+DEBUG = config.get_setting("debug")
 
 
 def mainlist(item):

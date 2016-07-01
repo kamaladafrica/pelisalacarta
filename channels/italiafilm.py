@@ -12,7 +12,7 @@ from core import logger
 from core import scrapertools
 from core.item import Item
 
-DEBUG = True #config.get_setting("debug")
+DEBUG = config.get_setting("debug")
 EVIDENCE = "   "
 
 

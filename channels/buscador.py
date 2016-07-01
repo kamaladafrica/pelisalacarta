@@ -18,7 +18,7 @@ from platformcode import platformtools
 
 logger.info("pelisalacarta.channels.buscador init")
 
-DEBUG = True
+DEBUG = config.get_setting("debug")
 
 
 def mainlist(item,preferred_thumbnail="squares"):

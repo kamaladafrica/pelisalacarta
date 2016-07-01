@@ -33,7 +33,7 @@ from core import config
 from core import logger
 from core.item import Item
 
-DEBUG = True
+DEBUG = config.get_setting("debug")
 CHANNELNAME = "channelselector"
 
 

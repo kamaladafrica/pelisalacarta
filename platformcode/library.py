@@ -62,7 +62,7 @@ xbmc_port = int(config.get_setting("xbmc_port"))
 # parameter. For POSTs, we add the payload as JSON the the HTTP request body
 xbmc_json_rpc_url = "http://{host}:{port}/jsonrpc".format(host=xbmc_host, port=xbmc_port)
 
-DEBUG = True
+DEBUG = config.get_setting("debug")
 
 
 def path_exists(path):

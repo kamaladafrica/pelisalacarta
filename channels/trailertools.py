@@ -37,7 +37,7 @@ from core import servertools
 from platformcode import platformtools
 
 
-DEBUG = True
+DEBUG = config.get_setting("debug")
 # Para habilitar o no la opción de búsqueda manual
 if config.is_xbmc() or config.get_platform() == "mediaserver":
     keyboard = True

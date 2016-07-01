@@ -11,7 +11,7 @@ from core import scrapertools
 from core import servertools
 from core.item import Item
 
-DEBUG = True
+DEBUG = config.get_setting("debug")
 
 
 def mainlist(item):

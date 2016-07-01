@@ -38,7 +38,7 @@ from platformcode import library
 import favoritos
 
 CHANNELNAME = "descargas"
-DEBUG = True
+DEBUG = config.get_setting("debug")
 
 DOWNLOAD_LIST_PATH = config.get_setting("downloadlistpath")
 IMAGES_PATH = os.path.join(config.get_runtime_path(), 'resources', 'images')

@@ -36,7 +36,7 @@ from core import logger
 from core.item import Item
 
 CHANNELNAME = "favoritos"
-DEBUG = True
+DEBUG = config.get_setting("debug")
 BOOKMARK_PATH = config.get_setting("bookmarkpath")
 
 if not samba.usingsamba(BOOKMARK_PATH):

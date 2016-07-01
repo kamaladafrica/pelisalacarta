@@ -11,7 +11,7 @@ from core import logger
 from core import scrapertools
 from core.item import Item
 
-DEBUG = True
+DEBUG = config.get_setting("debug")
 CHANNELNAME = "youtube_channel"
 YOUTUBE_V3_API_KEY = "AIzaSyCjsmBT0JZy1RT-PLwB-Zkfba87sa2inyI"
 
