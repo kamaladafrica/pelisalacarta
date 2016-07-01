@@ -15,8 +15,6 @@ DEBUG = True
 CHANNELNAME = "youtube_channel"
 YOUTUBE_V3_API_KEY = "AIzaSyCjsmBT0JZy1RT-PLwB-Zkfba87sa2inyI"
 
-def isGeneric():
-    return True
 
 def youtube_api_call(method,parameters):
     logger.info("youtube_api_call method="+method+", parameters="+repr(parameters))
