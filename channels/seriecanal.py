@@ -23,9 +23,6 @@ DEBUG = config.get_setting("debug")
 URL_BASE = "http://www.seriecanal.com/"
 
 
-def isGeneric():
-    return True
-
 def mainlist(item):
     logger.info("pelisalacarta.channels.seriecanal mainlist")
 
