@@ -37,10 +37,6 @@ header_string = "|User-Agent=Mozilla/5.0 (Windows NT 10.0; WOW64; rv:46.0) Gecko
                 "&Referer=http://tv-vip.com&Cookie="
 
 
-def isGeneric():
-    return True
-
-
 def mainlist(item):
     logger.info("pelisalacarta.channels.tvvip mainlist")
     itemlist = []
