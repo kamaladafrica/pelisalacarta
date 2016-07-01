@@ -23,10 +23,6 @@ logger.info("pelisalacarta.channels.buscador init")
 DEBUG = True
 
 
-def isGeneric():
-    return True
-
-
 def mainlist(item,preferred_thumbnail="squares"):
     logger.info("pelisalacarta.channels.buscador mainlist")
 
