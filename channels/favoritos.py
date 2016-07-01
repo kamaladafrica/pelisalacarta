@@ -22,7 +22,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pelisalacarta 4.  If not, see <http://www.gnu.org/licenses/>.
 # --------------------------------------------------------------------------------
-# Lista de vÌdeos favoritos
+# Lista de v√≠deos favoritos
 # ------------------------------------------------------------
 
 import os
@@ -49,10 +49,6 @@ if not samba.usingsamba(BOOKMARK_PATH):
 logger.info("[favoritos.py] path="+BOOKMARK_PATH)
 
 
-def isGeneric():
-    return True
-
-
 def mainlist(item):
     logger.info("[favoritos.py] mainlist")
     itemlist = []
@@ -63,7 +59,7 @@ def mainlist(item):
     else:
         ficheros = os.listdir(BOOKMARK_PATH)
     
-    # Ordena el listado por nombre de fichero (orden de incorporaciÛn)
+    # Ordena el listado por nombre de fichero (orden de incorporaci√≥n)
     ficheros.sort()
     
     # Rellena el listado
@@ -77,7 +73,7 @@ def mainlist(item):
 
             # Crea la entrada
             # En extra va el nombre del fichero para poder borrarlo
-            # <-- AÒado fulltitle con el titulo de la peli
+            # <-- A√±ado fulltitle con el titulo de la peli
             itemlist.append(Item(channel=canal, action="play", url=url, server=server, title=fulltitle,
                                  thumbnail=thumbnail, plot=plot, fanart=thumbnail,
                                  extra=os.path.join(BOOKMARK_PATH, fichero), fulltitle=fulltitle, folder=False))
@@ -126,7 +122,7 @@ def readbookmark(filename, readpath=BOOKMARK_PATH):
     except:
         plot = lines[4].strip()
 
-    # Campos fulltitle y canal aÒadidos
+    # Campos fulltitle y canal a√±adidos
     if len(lines) >= 6:
         try:
             fulltitle = urllib.unquote_plus(lines[5].strip())
@@ -166,9 +162,9 @@ def savebookmark(canal=CHANNELNAME, titulo="", url="", thumbnail="", server="", 
         ficheros = os.listdir(savepath)
     ficheros.sort()
     
-    # Averigua el ˙ltimo n˙mero
+    # Averigua el √∫ltimo n√∫mero
     if len(ficheros) > 0:
-        # XRJ: Linea problem·tica, sustituida por el bucle siguiente
+        # XRJ: Linea problem√°tica, sustituida por el bucle siguiente
         # filenumber = int( ficheros[len(ficheros)-1][0:-4] )+1
         filenumber = 1
         for fichero in ficheros:
