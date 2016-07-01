@@ -30,8 +30,6 @@ CHANNEL_HEADERS = [
     ["Referer",CHANNEL_HOST]
     ]
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("pelisalacarta.channels.verseriesynovelas mainlist")
