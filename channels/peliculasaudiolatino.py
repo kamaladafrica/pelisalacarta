@@ -24,8 +24,6 @@ __creationdate__ = "20111014"
 
 DEBUG = config.get_setting("debug")
     
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("channels.peliculasaudiolatino mainlist")
