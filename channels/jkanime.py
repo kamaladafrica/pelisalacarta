@@ -22,8 +22,6 @@ __channel__ = "jkanime"
 __language__ = "ES"
 __creationdate__ = "20121015"
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("pelisalacarta.channels.jkanime mainlist")
