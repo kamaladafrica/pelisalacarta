@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para italiafilm
@@ -21,8 +21,6 @@ __language__ = "IT"
 DEBUG = True #config.get_setting("debug")
 EVIDENCE = "   "
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("[gnula.py] mainlist")
@@ -65,7 +63,7 @@ def categorias(item):
 
     return itemlist
 
-# Al llamarse "search" la funciÛn, el launcher pide un texto a buscar y lo aÒade como par·metro
+# Al llamarse "search" la funci√≥n, el launcher pide un texto a buscar y lo a√±ade como par√°metro
 def search(item,texto):
     logger.info("[italiafilm.py] search "+texto)
     itemlist = []
@@ -75,7 +73,7 @@ def search(item,texto):
 
     try:
         return peliculas(item)
-    # Se captura la excepciÛn, para no interrumpir al buscador global si un canal falla
+    # Se captura la excepci√≥n, para no interrumpir al buscador global si un canal falla
     except:
         import sys
         for line in sys.exc_info():
@@ -102,7 +100,7 @@ def peliculas(item):
 
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
-        # AÒade al listado de XBMC
+        # A√±ade al listado de XBMC
         itemlist.append( Item(channel=__channel__, action='findvideos', title=title , url=url , thumbnail=thumbnail , fanart=thumbnail, plot=plot , viewmode="movie_with_plot", folder=True) )
 
     # Siguiente
@@ -114,12 +112,12 @@ def peliculas(item):
 
     return itemlist
 
-# VerificaciÛn autom·tica de canales: Esta funciÛn debe devolver "True" si est· ok el canal.
+# Verificaci√≥n autom√°tica de canales: Esta funci√≥n debe devolver "True" si est√° ok el canal.
 def test():
     from core import servertools
     # mainlist
     mainlist_items = mainlist(Item())
-    # Da por bueno el canal si alguno de los vÌdeos de "Novedades" devuelve mirrors
+    # Da por bueno el canal si alguno de los v√≠deos de "Novedades" devuelve mirrors
     peliculas_items = peliculas(mainlist_items[0])
     bien = False
     for pelicula_item in peliculas_items:
