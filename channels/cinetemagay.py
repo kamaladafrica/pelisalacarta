@@ -20,8 +20,6 @@ IMAGES_PATH = os.path.join( config.get_runtime_path(), 'resources' , 'images' , 
 def strip_tags(value):
     return re.sub(r'<[^>]*?>', '', value)
     
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("[cinetemagay.py] mainlist")

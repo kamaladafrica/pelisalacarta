@@ -27,10 +27,6 @@ thumb = "http://i.imgur.com/F2tBKkG.png"
 art = "http://pelisdanko.com/img/background.jpg"
 
 
-def isGeneric():
-    return True
-
-
 def mainlist(item):
     logger.info("pelisalacarta.channels.pelisdanko mainlist")
 

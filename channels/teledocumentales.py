@@ -1,8 +1,8 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para cine-adicto.com by Bandavi
-# Actualización Carles Carmona 15/08/2011
+# ActualizaciÃ³n Carles Carmona 15/08/2011
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 import re
@@ -24,14 +24,12 @@ __creationdate__ = "20111019"
 
 DEBUG = config.get_setting("debug")
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("[teledocumentales.py] mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, action="ultimo"        , title="Últimos Documentales"    , url="http://www.teledocumentales.com/"))
+    itemlist.append( Item(channel=__channel__, action="ultimo"        , title="Ãšltimos Documentales"    , url="http://www.teledocumentales.com/"))
     itemlist.append( Item(channel=__channel__, action="ListaCat"      , title="Listado por Genero"      , url="http://www.teledocumentales.com/"))
     
     return itemlist
@@ -59,7 +57,7 @@ def ultimo(item):
     # Extrae la marca de siguiente pagina
     try:
         next_page = scrapertools.get_match(data,'<a class="next" href="([^"]+)">')
-        itemlist.append( Item(channel=item.channel , action="ultimo" , title=">> Página siguiente" , url=urlparse.urljoin(item.url,next_page)))
+        itemlist.append( Item(channel=item.channel , action="ultimo" , title=">> PÃ¡gina siguiente" , url=urlparse.urljoin(item.url,next_page)))
     except:
         pass
 
@@ -119,12 +117,12 @@ def play(item):
     return itemlist
 
 
-# Verificación automática de canales: Esta función debe devolver "True" si todo está ok en el canal.
+# VerificaciÃ³n automÃ¡tica de canales: Esta funciÃ³n debe devolver "True" si todo estÃ¡ ok en el canal.
 def test():
     # mainlist
     mainlist_items = mainlist(Item())
     
-    # Da por bueno el canal si alguno de los vídeos de "Ultimos videos" devuelve mirrors
+    # Da por bueno el canal si alguno de los vÃ­deos de "Ultimos videos" devuelve mirrors
     ultimos_items = ultimo(mainlist_items[0])
     
     bien = False

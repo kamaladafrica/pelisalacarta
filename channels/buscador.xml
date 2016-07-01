@@ -13,10 +13,10 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/buscador.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>2</version>
-	<date>15/04/16</date>
+	<version>3</version>
+	<date>01/07/2016</date>
+	<changes>Eliminado código innecesario.</changes>
 	<changes>Multihilos y seleccion de canales(gracias a Divadr) </changes>
-	<changes>(28/08/2015)Arregla el fallo por canales inválidos. Muestra progreso e incluye el nombre del canal en el resultado (gracias a Raúl)</changes>
 
 	<categories>
 		<category>movie</category>

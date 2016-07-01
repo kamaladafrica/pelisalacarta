@@ -31,8 +31,6 @@ DEFAULT_HEADERS = []
 DEFAULT_HEADERS.append( ["User-Agent","Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; es-ES; rv:1.9.2.12) Gecko/20101026 Firefox/3.6.12"] )
 DEFAULT_HEADERS.append( ["Referer","http://www.pordede.com"] )
 
-def isGeneric():
-    return True
 
 def login():
     url = "http://www.pordede.com/site/login"

@@ -31,8 +31,7 @@ DEBUG = config.get_setting("debug")
 host = "http://www.peliculasdk.com/"
 Tmdb_key ="2e2160006592024ba87ccdf78c28f49f"
 
-def isGeneric():
-    return True
+
 def bbcode_kodi2html(text):
     
     if config.get_platform().startswith("plex") or config.get_platform().startswith("mediaserver"):

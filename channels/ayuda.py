@@ -13,10 +13,6 @@ from core.item import Item
 CHANNELNAME = "ayuda"
 
 
-def isGeneric():
-    return True
-
-
 def mainlist(item):
     logger.info("pelisalacarta.channels.ayuda mainlist")
     itemlist = []

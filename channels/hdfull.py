@@ -27,8 +27,6 @@ host = "http://hdfull.tv"
 
 account = ( config.get_setting('hdfulluser',__channel__) != "" )
 
-def isGeneric():
-    return True
 
 def settingCanal(item):
     return platformtools.show_channel_settings()

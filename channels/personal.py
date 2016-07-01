@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
-# Canal para jkanime
+# Canal para personal
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
@@ -21,8 +21,6 @@ __channel__ = "personal"
 __language__ = "ES"
 __creationdate__ = "20121022"
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     return personal_channel(item)

@@ -21,8 +21,6 @@ __language__ = "ES"
 DEBUG = config.get_setting("debug")
 IDIOMAS = {"Castellano":"CAST","Latino":"LAT","Subtitulado":"VOSE","Ingles":"VO"}
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("pelisalacarta.channels.allpeliculas mainlist")

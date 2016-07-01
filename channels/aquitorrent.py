@@ -54,10 +54,6 @@ def browser(url):
     return response
 
 
-
-def isGeneric():
-    return True
-
 def mainlist(item):
     logger.info("pelisalacarta.aquitorrent mainlist")
 

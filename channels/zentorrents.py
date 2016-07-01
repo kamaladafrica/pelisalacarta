@@ -28,8 +28,6 @@ __language__ = "ES"
 DEBUG = config.get_setting("debug")
 host = "http://www.zentorrents.com/"
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("pelisalacarta.zentorrents mainlist")

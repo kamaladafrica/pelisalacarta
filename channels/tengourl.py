@@ -18,8 +18,6 @@ __language__ = ""
 
 DEBUG = config.get_setting("debug")
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("[tengourl.py] mainlist")

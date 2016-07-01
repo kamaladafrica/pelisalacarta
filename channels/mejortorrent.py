@@ -29,10 +29,6 @@ host = "http://www.mejortorrent.com"
 DEBUG = config.get_setting("debug")
 
 
-
-def isGeneric():
-    return True
-
 def mainlist(item):
     logger.info("pelisalacarta.mejortorrent mainlist")
 

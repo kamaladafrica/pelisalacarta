@@ -33,8 +33,6 @@ CHANNEL_HEADERS = [
     ['Connection', 'keep-alive']
 ]
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("pelisalacarta.channels.seriesflv mainlist")

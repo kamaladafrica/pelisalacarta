@@ -22,8 +22,6 @@ __creationdate__ = "20121015"
 
 DEBUG = config.get_setting("debug")
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("pelisalacarta.channels.vertelenovelas mainlist")

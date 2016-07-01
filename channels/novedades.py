@@ -26,8 +26,6 @@ THUMBNAILS = {'0': 'posters', '1': 'banners', '2': 'squares'}
 
 list_newest =[]
 
-def isGeneric():
-    return True
 
 '''
 Actualmente he actualizado estos canales

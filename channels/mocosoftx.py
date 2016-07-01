@@ -25,14 +25,11 @@ MAIN_HEADERS.append( ["Accept-Language","es-es,es;q=0.8,en-us;q=0.5,en;q=0.3"] )
 MAIN_HEADERS.append( ["Accept-Charset","ISO-8859-1,utf-8;q=0.7,*;q=0.7"] )
 MAIN_HEADERS.append( ["Connection","keep-alive"] )
 
+
 # Login:
 # <form action="http://mocosoftx.com/foro/login2/" method="post" accept-charset="ISO-8859-1" onsubmit="hashLoginPassword(this, '3e468fdsab5d9');" >
 # pst: user=blablabla&passwrd=&cookielength=-1&hash_passwrd=78e88DSe408508d22f
 # doForm.hash_passwrd.value = hex_sha1(hex_sha1(doForm.user.value.php_to8bit().php_strtolower() + doForm.passwrd.value.php_to8bit()) + cur_session_id);
-
-def isGeneric():
-    return True
-
 def login():
     # Averigua el id de sesión
     data = scrapertools.cache_page("http://mocosoftx.com/foro/login/")

@@ -23,10 +23,6 @@ api_serie = host + "/seapi"
 api_temp = host + "/sapi"
 
 
-def isGeneric():
-    return True
-
-
 def mainlist(item):
     logger.info("pelisalacarta.pelismagnet mainlist")
 

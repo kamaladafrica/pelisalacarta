@@ -43,10 +43,7 @@ parameters= channeltools.get_channel_parameters(__channel__)
 fanart= parameters['fanart']
 thumbnail_host= parameters['thumbnail']
 
-def isGeneric():
-    return True
-   
-   
+
 def mainlist(item):
     logger.info("pelisalacarta.channels.tremendaseries mainlist")
     

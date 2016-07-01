@@ -6,10 +6,10 @@
 	<update_url></update_url>
 	<active>true</active>
 	<include_in_global_search>true</include_in_global_search>
-	<version>1</version>
+	<version>2</version>
 	<adult>false</adult>
-	<date>15/04/2016</date>
-	<changes>Primera version</changes>
+	<date>01/07/2016</date>
+	<changes>Eliminado código innecesario.</changes>
 	<fanart></fanart>
 	<thumbnail>http://i.imgur.com/Kxuf5ZS.png?1</thumbnail>
 	<categories>

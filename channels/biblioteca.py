@@ -19,8 +19,6 @@ from platformcode import library
 __channel__ = "biblioteca"
 DEBUG = True
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("pelisalacarta.channels.biblioteca mainlist")

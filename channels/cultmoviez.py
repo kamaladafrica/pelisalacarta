@@ -30,8 +30,6 @@ host = "http://www.cultmoviez.info/"
 wp_plugin = "/wp-content/plugins/seriesnav/seriesajaxresp.php"
 fanart="http://robalo.esy.es/img/cultmoviez-poster.png"
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("pelisalacarta.cultmoviez mainlist")

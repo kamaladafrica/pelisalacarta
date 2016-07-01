@@ -34,8 +34,6 @@ HEADER = [
     ["Cache-Control","max-age=0"]
 ]
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("pelisalacarta.yaske mainlist")
