@@ -31,8 +31,6 @@ DEBUG = config.get_setting("debug")
 host = "http://www.multicineonline.com"
 Tmdb_key ="2e2160006592024ba87ccdf78c28f49f"
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("pelisalacarta.multicineonline mainlist")
