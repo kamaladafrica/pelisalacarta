@@ -12,18 +12,18 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/yaske.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>10</version>
+	<version>11</version>
 
 	<changes>
+		<change>
+			<date>01/07/16</date>
+			<autor>SeiTaN</autor>
+			<description>Eliminado código innecesario.</description>
+		</change>
 		<change> 
 			<date>29/04/16</date>
 			<autor>super_berny</autor>
 			<description>Adaptar a Novedades Peliculas e Infantiles</description>
-		</change>
-		<change> 
-			<date>31/10/2014</date>
-			<autor></autor>
-			<description>Actualizado por cambios en la web</description>
 		</change>
 	</changes>
 		
