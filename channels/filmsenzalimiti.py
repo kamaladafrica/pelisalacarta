@@ -21,8 +21,6 @@ __creationdate__ = "20120605"
 
 DEBUG = config.get_setting("debug")
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("[filmsenzalimiti.py] mainlist")
