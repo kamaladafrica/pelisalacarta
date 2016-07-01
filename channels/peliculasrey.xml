@@ -12,9 +12,9 @@
     <bannermenu></bannermenu>
 
     <update_url></update_url>
-    <version>1</version>
-    <date>28/03/2016</date>
-    <changes>First release</changes>
+    <version>2</version>
+    <date>01/07/2016</date>
+	<changes>Eliminado código innecesario.</changes>
 
     <categories>
         <category>movie</category>
