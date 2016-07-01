@@ -17,8 +17,6 @@ DEBUG = config.get_setting("debug")
 def strip_tags(value):
     return re.sub(r'<[^>]*?>', '', value)
     
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("[filesmonster_catalogue.py] mainlist")
