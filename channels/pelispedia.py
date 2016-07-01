@@ -53,10 +53,6 @@ fanart_host= parameters['fanart']
 thumbnail_host= parameters['thumbnail']
 
 
-def isGeneric():
-    return True
-
-
 def mainlist(item):
     logger.info("pelisalacarta.channels.pelispedia mainlist")
 
