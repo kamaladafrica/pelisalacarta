@@ -45,8 +45,6 @@ def decode(key):
 
 get_api_url()
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("[beeg.py] mainlist")
