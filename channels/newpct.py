@@ -24,8 +24,6 @@ __channel__ = "newpct"
 __language__ = "ES"
 __creationdate__ = "20130308"
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("[newpct.py] mainlist")
