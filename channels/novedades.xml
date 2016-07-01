@@ -12,18 +12,18 @@
 	<thumbnail></thumbnail>
 	
 	<update_url></update_url>
-	<version>1</version>
+	<version>2</version>
 	
 	<changes>
+		<change>
+			<date>01/07/16</date>
+			<autor>SeiTaN</autor>
+			<description>Eliminado código innecesario.</description>
+		</change>
 		<change> 
 			<date>29/04/16</date>
 			<autor>super_berny</autor>
 			<description>Posibilidad de incluir otros canales, mediante configuracion</description>
-		</change>
-		<change> 
-			<date></date>
-			<autor>jesus</autor>
-			<description>Version inicial</description>
 		</change>
 	</changes>
 	
