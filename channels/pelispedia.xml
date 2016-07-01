@@ -12,18 +12,18 @@
 	<bannermenu></bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>2</version>
+	<version>3</version>
 
 	<changes>
+		<change>
+			<date>01/07/16</date>
+			<autor>SeiTaN</autor>
+			<description>Eliminado código innecesario.</description>
+		</change>
 		<change>
 			<date>06/06/16</date>
 			<autor>super_berny</autor>
 			<description>Añadida info extra de tmdb. Añadido el canal en la busqueda de novedades</description>
-		</change>
-		<change>
-			<date>12/04/2016</date>
-			<autor>SeiTan</autor>
-			<description>Version inicial</description>
 		</change>
 	</changes>
 
