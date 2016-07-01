@@ -14,8 +14,6 @@ from core.item import Item
 
 DEBUG = config.get_setting("debug")
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("[tubehentai.py] mainlist")
