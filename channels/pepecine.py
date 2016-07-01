@@ -30,9 +30,6 @@ __url_base__ = "http://pepecine.com"
 fanart_host= "https://d12.usercdn.com/i/02278/u875vjx9c0xs.png"
 
 
-def isGeneric():
-    return True
-
 def mainlist(item):
     logger.info("[pepecine.py] mainlist")
 
