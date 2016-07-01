@@ -32,8 +32,6 @@ def agrupa_datos(data):
     data = re.sub(r'>\s<','><',data)
     return data
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("[pelisadicto.py] mainlist")
