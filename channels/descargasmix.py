@@ -23,8 +23,6 @@ DEBUG = config.get_setting("debug")
 
 DEFAULT_HEADERS = [["User-Agent","Magic Browser"]]
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("pelisalacarta.channels.descargasmix mainlist")
