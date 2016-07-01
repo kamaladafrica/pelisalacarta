@@ -25,9 +25,7 @@ __thumbnail__ = "http://s3.postimg.org/c7oceldcz/logof.jpg"
 __language__ = "ES"
 __creationdate__ = "20141102"
 
-def isGeneric():
-    return True
-  
+
 def mainlist(item):
     logger.info("[newpct1.py] mainlist")
     
