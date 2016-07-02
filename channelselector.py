@@ -77,10 +77,6 @@ def getmainlist(preferred_thumb=""):
     return itemlist
 
 
-def mainlist(params,url,category):
-    logger.info("channelselector.mainlist")
-    return getmainlist()
-
 def getchanneltypes(preferred_thumb=""):
     logger.info("channelselector getchanneltypes")
 
@@ -148,20 +144,6 @@ def getchanneltypes(preferred_thumb=""):
 
     return itemlist
 
-
-def channeltypes(params,url,category):
-    logger.info("channelselector.mainlist channeltypes")
-
-    lista = getchanneltypes()
-	#Se devuelve el itemlist para que xbmctools se encarge de mostrarlo
-    return lista
-
-def listchannels(params,url,category):
-    logger.info("channelselector.listchannels")
-
-    lista = filterchannels(category)
-	#Se devuelve el itemlist para que xbmctools se encarge de mostrarlo
-    return lista
 
 def filterchannels(category,preferred_thumb=""):
     logger.info("channelselector.filterchannels")

@@ -80,7 +80,7 @@ def run():
         # Action for main menu in channelselector
         if ( item.action=="selectchannel" ):
             import channelselector
-            itemlist = channelselector.mainlist(params, item.url, item.category)
+            itemlist = channelselector.getmainlist()
 
             # Check for updates only on first screen
             if config.get_setting("updatecheck2") == "true":
@@ -119,14 +119,14 @@ def run():
         # Action for channel types on channelselector: movies, series, etc.
         elif (item.action=="channeltypes"):
             import channelselector
-            itemlist = channelselector.channeltypes(params,item.url,item.category)
+            itemlist = channelselector.getchanneltypes()
 
             xbmctools.renderItems(itemlist, item)
 
         # Action for channel listing on channelselector
         elif (item.action=="listchannels"):
             import channelselector
-            itemlist = channelselector.listchannels(params,item.url,item.category)
+            itemlist = channelselector.filterchannels(item.category)
 
             xbmctools.renderItems(itemlist, item)
 
