@@ -34,7 +34,6 @@ from core import logger
 from core.item import Item
 
 DEBUG = config.get_setting("debug")
-CHANNELNAME = "channelselector"
 
 
 def getmainlist(preferred_thumb=""):
