@@ -55,12 +55,10 @@ def run():
     # Extract item from sys.argv
     if sys.argv[2]:
         item = Item().fromurl(sys.argv[2])
-        params = ""
 
     # If no item, this is mainlist
     else:
         item = Item(action="selectchannel")
-        params = ""
 
     logger.info(item.tostring())
 
