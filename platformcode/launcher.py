@@ -80,7 +80,7 @@ def run():
         # Action for main menu in channelselector
         if ( item.action=="selectchannel" ):
             import channelselector
-            itemlist = channelselector.mainlist(params, item.url, item.category)
+            itemlist = channelselector.mainlist()
 
             # Check for updates only on first screen
             if config.get_setting("updatecheck2") == "true":

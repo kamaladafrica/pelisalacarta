@@ -37,8 +37,8 @@ DEBUG = config.get_setting("debug")
 CHANNELNAME = "channelselector"
 
 
-def getmainlist(preferred_thumb=""):
-    logger.info("channelselector.getmainlist")
+def mainlist(preferred_thumb=""):
+    logger.info("channelselector.mainlist")
     itemlist = list()
 
     # Añade los canales que forman el menú principal
@@ -76,10 +76,6 @@ def getmainlist(preferred_thumb=""):
                          viewmode="movie"))
     return itemlist
 
-
-def mainlist(params,url,category):
-    logger.info("channelselector.mainlist")
-    return getmainlist()
 
 def getchanneltypes(preferred_thumb=""):
     logger.info("channelselector getchanneltypes")
@@ -239,6 +235,7 @@ def filterchannels(category,preferred_thumb=""):
         channelslist.insert( 0 , Item( title="Tengo una URL"  ,action="mainlist", channel="tengourl" , thumbnail=channel_parameters["thumbnail"], type="generic" ,viewmode="movie" ))
 
     return channelslist
+
 
 def get_thumbnail_path(preferred_thumb=""):
 
