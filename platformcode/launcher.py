@@ -119,14 +119,14 @@ def run():
         # Action for channel types on channelselector: movies, series, etc.
         elif (item.action=="channeltypes"):
             import channelselector
-            itemlist = channelselector.channeltypes(params,item.url,item.category)
+            itemlist = channelselector.channeltypes()
 
             xbmctools.renderItems(itemlist, item)
 
         # Action for channel listing on channelselector
         elif (item.action=="listchannels"):
             import channelselector
-            itemlist = channelselector.listchannels(params,item.url,item.category)
+            itemlist = channelselector.listchannels(item.category)
 
             xbmctools.renderItems(itemlist, item)
 

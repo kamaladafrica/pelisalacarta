@@ -34,7 +34,6 @@ from core import logger
 from core.item import Item
 
 DEBUG = config.get_setting("debug")
-CHANNELNAME = "channelselector"
 
 
 def mainlist(preferred_thumb=""):
@@ -77,8 +76,8 @@ def mainlist(preferred_thumb=""):
     return itemlist
 
 
-def getchanneltypes(preferred_thumb=""):
-    logger.info("channelselector getchanneltypes")
+def channeltypes(preferred_thumb=""):
+    logger.info("channelselector channeltypes")
 
     # Lista de categorias
     valid_types = ["movie", "serie", "anime", "documentary", "vos", "torrent", "latino", "adult"]
@@ -89,18 +88,18 @@ def getchanneltypes(preferred_thumb=""):
 
     # Lee la lista de canales
     channel_path = os.path.join(config.get_runtime_path(), "channels", '*.xml')
-    logger.info("channelselector.getchanneltypes channel_path="+channel_path)
+    logger.info("channelselector.channeltypes channel_path="+channel_path)
 
     channel_files = glob.glob(channel_path)
 
     channel_language = config.get_setting("channel_language")
-    logger.info("channelselector.getchanneltypes channel_language="+channel_language)
+    logger.info("channelselector.channeltypes channel_language="+channel_language)
 
     # Construye la lista de tipos
     channel_types = []
 
     for index, channel in enumerate(channel_files):
-        logger.info("channelselector.getchanneltypes channel="+channel)
+        logger.info("channelselector.channeltypes channel="+channel)
         if channel.endswith(".xml"):
             try:
                 channel_parameters = channeltools.get_channel_parameters(channel[:-4])
@@ -123,9 +122,9 @@ def getchanneltypes(preferred_thumb=""):
             except:
                 logger.info("Se ha producido un error al leer los datos del canal " + channel + traceback.format_exc())
 
-    logger.info("channelselector.getchanneltypes Encontrados:")
+    logger.info("channelselector.channeltypes Encontrados:")
     for channel_type in channel_types:
-        logger.info("channelselector.getchanneltypes channel_type="+channel_type)
+        logger.info("channelselector.channeltypes channel_type="+channel_type)
 
     # Ahora construye el itemlist ordenadamente
     itemlist = list()
@@ -133,9 +132,9 @@ def getchanneltypes(preferred_thumb=""):
     itemlist.append(Item(title=config.get_localized_string(30121), channel="channelselector", action="listchannels",
                          category="all", thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),
                                                                     "thumb_canales_todos.png"), viewmode="movie"))
-    logger.info("channelselector.getchanneltypes Ordenados:")
+    logger.info("channelselector.channeltypes Ordenados:")
     for channel_type in valid_types:
-        logger.info("channelselector.getchanneltypes channel_type="+channel_type)
+        logger.info("channelselector.channeltypes channel_type="+channel_type)
         if channel_type in channel_types:
             title = dict_cat_lang.get(channel_type, channel_type)
             itemlist.append(Item(title=title, channel="channelselector", action="listchannels", category=channel_type,
@@ -145,21 +144,14 @@ def getchanneltypes(preferred_thumb=""):
     return itemlist
 
 
-def channeltypes(params,url,category):
-    logger.info("channelselector.mainlist channeltypes")
-
-    lista = getchanneltypes()
-	#Se devuelve el itemlist para que xbmctools se encarge de mostrarlo
-    return lista
-
-def listchannels(params,url,category):
+def listchannels(category):
     logger.info("channelselector.listchannels")
 
     lista = filterchannels(category)
-	#Se devuelve el itemlist para que xbmctools se encarge de mostrarlo
     return lista
 
-def filterchannels(category,preferred_thumb=""):
+
+def filterchannels(category, preferred_thumb=""):
     logger.info("channelselector.filterchannels")
 
     channelslist =[]
