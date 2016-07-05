@@ -193,6 +193,7 @@ def set_infoLabels_item(item, seekTmdb=False, idioma_busqueda='es', lock=None):
                         item.infoLabels['plot'] = episodio['episodio_sinopsis']
                     if episodio['episodio_imagen']:
                         item.infoLabels['poster_path'] = episodio['episodio_imagen']
+                        item.thumbnail = item.infoLabels['poster_path']
 
             else:
                 # Tenemos numero de temporada valido pero no numero de episodio...
@@ -206,6 +207,7 @@ def set_infoLabels_item(item, seekTmdb=False, idioma_busqueda='es', lock=None):
                         item.infoLabels['plot'] = temporada['overview']
                     if temporada['poster_path']:
                         item.infoLabels['poster_path'] = 'http://image.tmdb.org/t/p/original' + temporada['poster_path']
+                        item.thumbnail = item.infoLabels['poster_path']
 
             return len(item.infoLabels)
 
