@@ -121,10 +121,10 @@ def main():
 
 
 def lib_data():
-    '''
+    """
     Recoge la info de la libreria. Es un trozo de main que se ha extraido
     para poder usarse tambien en la funcion que utiliza el canal ayuda.py
-    '''
+    """
     nombre_fichero_config_canal = library.join_path(config.get_data_path(), library.TVSHOW_FILE)
     data = library.read_file(nombre_fichero_config_canal)
     dict_data = jsontools.load_json(data)
@@ -132,11 +132,12 @@ def lib_data():
 
 
 def update_ayuda():
-    '''
+    """
     Se trata de una funcion que tiene como objetivo evitar el loop infinito
     al hacer la llamada desde ayuda.py
-    '''
-    if platformtools.dialog_yesno("Actulizar biblioteca", "Desea actualizar los enlaces y la biblioteca?") == 1:
+    """
+    if platformtools.dialog_yesno("Actulizar biblioteca",
+                                  "Desea actualizar los enlaces y la biblioteca?") == 1:
         main()
         platformtools.dialog_ok("Actualizar biblioteca", "Proceso completado")
         # TODO: Mejorarlo

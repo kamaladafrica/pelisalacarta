@@ -18,7 +18,7 @@
 	<changes>
 		v.2:
 			- Fixed: No more infinite bucle when clicking on "update tv show episodes and local library".
-			- Optimized: advancedsettings.xml modification system now makes a backup before modifiing if and then adds in the existing avnacedsettings.xml the optimised settings for streaming, instead of replacing the overal file.
+			- Fixed: The "advancedsettings.xml" file optimization method now makes a backup before modifying it and, instead of replacing the file, it modifies the file and substitutes the optimised settings for streaming, everything in the existing "advancedsettings.xml" file.
 		v.1:- First pelisalacarta 4 release</changes>
 
 	<categories>
