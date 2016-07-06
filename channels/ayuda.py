@@ -14,12 +14,6 @@ from core import logger
 from core.item import Item
 from platformcode import platformtools
 
-CHANNELNAME = "ayuda"
-
-
-def isGeneric():
-    return True
-
 
 def mainlist(item):
     logger.info("pelisalacarta.channels.ayuda mainlist")
@@ -28,31 +22,31 @@ def mainlist(item):
     cuantos = 0
 
     if config.is_xbmc():
-        itemlist.append(Item(channel=CHANNELNAME, action="updatebiblio",
+        itemlist.append(Item(channel=item.channel, action="updatebiblio",
                              title="Buscar nuevos episodios y actualizar biblioteca", folder=False))
         cuantos += cuantos
 
-    itemlist.append(Item(channel=CHANNELNAME, action="", title="",
+    itemlist.append(Item(channel=item.channel, action="", title="",
                          folder=False))
 
     if config.is_xbmc():
         # Al poner folder=False el log muestra: "WARNING: Attempt to use invalid handle -1"
-        itemlist.append(Item(channel=CHANNELNAME,
+        itemlist.append(Item(channel=item.channel,
                              action="force_creation_advancedsettings",
                              title="Crear fichero advancedsettings.xml optimizado", folder=True))
         cuantos += cuantos
 
     if config.is_xbmc():
-        itemlist.append(Item(channel=CHANNELNAME,
+        itemlist.append(Item(channel=item.channel,
                              action="recover_advancedsettings",
                              title="Restaurar advancedsettings.xml del backup", folder=False))
         cuantos += cuantos
 
-    itemlist.append(Item(channel=CHANNELNAME, action="", title="",
+    itemlist.append(Item(channel=item.channel, action="", title="",
                          folder=False))
 
     if cuantos > 0:
-        itemlist.append(Item(channel=CHANNELNAME,
+        itemlist.append(Item(channel=item.channel,
                              action="tutoriales", title="Ver guías y tutoriales en vídeo"))
     else:
         itemlist.extend(tutoriales(item))
@@ -256,9 +250,10 @@ def recover_advancedsettings(item):
             if platformtools.dialog_yesno("pelisalacarta",
                                           "No hay ningun backup disponible."
                                           "Deseas crearlo?") == 1:
-                with open(fichero_backup, "w") as f_backup:
-                    for line in f_origen:
-                        f_backup.write(line)
+                with open(advancedsettings_kodi) as f_origen:
+                    with open(fichero_backup, "w") as f_backup:
+                        for line in f_origen:
+                            f_backup.write(line)
                 platformtools.dialog_notification("pelisalacarta", "Backup hecho!")
                 logger.info("pelisalacarta.channels.ayuda Backup terminado!")
             else:
