@@ -1243,11 +1243,11 @@ def get_headers_from_response(url,post=None,headers=DEFAULT_HEADERS):
         logger.info("pelisalacarta.core.scrapertools petición POST")
 
     # Array de cabeceras
-    logger.info("pelisalacarta.core.scrapertools ---------------------------")
+    if DEBUG_LEVEL: logger.info("pelisalacarta.core.scrapertools ---------------------------")
     for header in headers:
-        logger.info("pelisalacarta.core.scrapertools header=%s" % str(header[0]))
+        if DEBUG_LEVEL: logger.info("pelisalacarta.core.scrapertools header=%s" % str(header[0]))
         txheaders[header[0]]=header[1]
-    logger.info("pelisalacarta.core.scrapertools ---------------------------")
+    if DEBUG_LEVEL: logger.info("pelisalacarta.core.scrapertools ---------------------------")
 
     # Construye el request
     req = Request(url, post, txheaders)
@@ -1259,14 +1259,14 @@ def get_headers_from_response(url,post=None,headers=DEFAULT_HEADERS):
     # Lee los datos y cierra
     #data=handle.read()
     info = handle.info()
-    logger.info("pelisalacarta.core.scrapertools Respuesta")
-    logger.info("pelisalacarta.core.scrapertools ---------------------------")
+    if DEBUG_LEVEL: logger.info("pelisalacarta.core.scrapertools Respuesta")
+    if DEBUG_LEVEL: logger.info("pelisalacarta.core.scrapertools ---------------------------")
     location_header=""
     for header in info:
-        logger.info("pelisalacarta.core.scrapertools "+header+"="+info[header])
+        if DEBUG_LEVEL: logger.info("pelisalacarta.core.scrapertools "+header+"="+info[header])
         return_headers.append( [header,info[header]] )
     handle.close()
-    logger.info("pelisalacarta.core.scrapertools ---------------------------")
+    if DEBUG_LEVEL: logger.info("pelisalacarta.core.scrapertools ---------------------------")
 
     # Tiempo transcurrido
     fin = time.clock()

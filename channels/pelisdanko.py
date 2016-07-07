@@ -63,6 +63,8 @@ def search(item, texto):
 
 
 def newest(categoria):
+    logger.info("pelisalacarta.channels.pelisdanko newest")
+
     itemlist = []
     item = Item()
     try:

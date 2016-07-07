@@ -42,15 +42,9 @@ BOOKMARK_PATH = config.get_setting("bookmarkpath")
 if not samba.usingsamba(BOOKMARK_PATH):
     if BOOKMARK_PATH == "":
         BOOKMARK_PATH = os.path.join(config.get_data_path(), "bookmarks")
-    if not os.path.exists(BOOKMARK_PATH):
-        logger.debug("[favoritos.py] Path de bookmarks no existe, se crea: "+BOOKMARK_PATH)
-        os.mkdir(BOOKMARK_PATH)
-
-logger.info("[favoritos.py] path="+BOOKMARK_PATH)
-
 
 def mainlist(item):
-    logger.info("[favoritos.py] mainlist")
+    logger.info("pelisalacarta.channels.favoritos mainlist")
     itemlist = []
 
     # Crea un listado con las entradas de favoritos
@@ -85,7 +79,7 @@ def mainlist(item):
 
 
 def readbookmark(filename, readpath=BOOKMARK_PATH):
-    logger.info("[favoritos.py] readbookmark")
+    logger.info("pelisalacarta.channels.favoritos readbookmark")
 
     if samba.usingsamba(readpath):
         bookmarkfile = samba.get_file_handle_for_reading(filename, readpath)
@@ -93,7 +87,7 @@ def readbookmark(filename, readpath=BOOKMARK_PATH):
         filepath = os.path.join(readpath, filename)
 
         # Lee el fichero de configuracion
-        logger.info("[favoritos.py] filepath="+filepath)
+        logger.info("pelisalacarta.channels.favoritos filepath="+filepath)
         bookmarkfile = open(filepath)
     lines = bookmarkfile.readlines()
 
@@ -146,7 +140,7 @@ def readbookmark(filename, readpath=BOOKMARK_PATH):
 
 def savebookmark(canal=CHANNELNAME, titulo="", url="", thumbnail="", server="", plot="", fulltitle="",
                  savepath=BOOKMARK_PATH):
-    logger.info("[favoritos.py] savebookmark(path="+savepath+")")
+    logger.info("pelisalacarta.channels.favoritos savebookmark(path="+savepath+")")
 
     # Crea el directorio de favoritos si no existe
     if not samba.usingsamba(savepath):
@@ -168,7 +162,7 @@ def savebookmark(canal=CHANNELNAME, titulo="", url="", thumbnail="", server="", 
         # filenumber = int( ficheros[len(ficheros)-1][0:-4] )+1
         filenumber = 1
         for fichero in ficheros:
-            logger.info("[favoritos.py] fichero="+fichero)
+            logger.info("pelisalacarta.channels.favoritos fichero="+fichero)
             try:
                 tmpfilenumber = int(fichero[0:8])+1
                 if tmpfilenumber > filenumber:
@@ -191,7 +185,7 @@ def savebookmark(canal=CHANNELNAME, titulo="", url="", thumbnail="", server="", 
     # Genera el nombre de fichero
     from core import scrapertools
     filename = '%08d-%s.txt' % (filenumber, scrapertools.slugify(fulltitle))
-    logger.info("[favoritos.py] savebookmark filename="+filename)
+    logger.info("pelisalacarta.channels.favoritos savebookmark filename="+filename)
 
     # Graba el fichero
     if not samba.usingsamba(savepath):
@@ -205,7 +199,7 @@ def savebookmark(canal=CHANNELNAME, titulo="", url="", thumbnail="", server="", 
 
 
 def deletebookmark(fullfilename, deletepath=BOOKMARK_PATH):
-    logger.info("[favoritos.py] deletebookmark(fullfilename="+fullfilename+",deletepath="+deletepath+")")
+    logger.info("pelisalacarta.channels.favoritos deletebookmark(fullfilename="+fullfilename+",deletepath="+deletepath+")")
 
     if not samba.usingsamba(deletepath):
         os.remove(os.path.join(urllib.unquote_plus(deletepath), urllib.unquote_plus(fullfilename)))
@@ -213,6 +207,6 @@ def deletebookmark(fullfilename, deletepath=BOOKMARK_PATH):
         fullfilename = fullfilename.replace("\\", "/")
         partes = fullfilename.split("/")
         filename = partes[len(partes)-1]
-        logger.info("[favoritos.py] filename="+filename)
-        logger.info("[favoritos.py] deletepath="+deletepath)
+        logger.info("pelisalacarta.channels.favoritos filename="+filename)
+        logger.info("pelisalacarta.channels.favoritos deletepath="+deletepath)
         samba.delete_files(filename, deletepath)
