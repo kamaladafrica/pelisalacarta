@@ -4,7 +4,7 @@
     <name>peliculasrey</name>
 
     <active>true</active>
-    <adult>false</version>
+    <adult>false</adult>
     <language>es</language>
 
     <fanart></fanart>

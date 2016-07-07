@@ -106,7 +106,7 @@ def episodios(item):
             itemlist.append( Item(channel=item.channel, title=title, url=urlparse.urljoin(host,url), action="findvideos", thumbnail=item.thumbnail, show=item.show) )
 
     ## Opción "Añadir esta serie a la biblioteca de XBMC"
-    if config.add_serie_to_library() and len(itemlist)>0:
+    if config.get_library_support() and len(itemlist)>0:
         itemlist.append( Item(channel=item.channel, title="Añadir esta serie a la biblioteca de XBMC", url=item.url, action="add_serie_to_library", extra="episodios", show=item.show) )
 
     return itemlist
