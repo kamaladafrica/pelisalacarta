@@ -53,7 +53,7 @@ def categorias(item):
         scrapedplot = ""
         scrapedthumbnail = ""
         if DEBUG: logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=item.channel, action='peliculas', title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action='peliculas', title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True, viewmode="movie_with_plot") )
 
     return itemlist
 
@@ -100,7 +100,7 @@ def peliculas(item):
     # Siguiente
     try:
         pagina_siguiente = scrapertools.get_match(data,'<a class="next page-numbers" href="([^"]+)"')
-        itemlist.append( Item(channel=item.channel, action="peliculas", title=">> Pagina seguente" , url=pagina_siguiente , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="peliculas", title=">> Pagina seguente" , url=pagina_siguiente , folder=True, viewmode="movie_with_plot") )
     except:
         pass
 

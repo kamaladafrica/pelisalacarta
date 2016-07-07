@@ -22,11 +22,11 @@ def mainlist(item):
 
     itemlist = []
     itemlist.append( Item(channel=item.channel, action="destacadas" , title="Destacadas", url="http://www.zpeliculas.com", fanart="http://www.zpeliculas.com/templates/mytopV2/images/background.png"))
-    itemlist.append( Item(channel=item.channel, action="peliculas"  , title="Últimas peliculas", url="http://www.zpeliculas.com/", fanart="http://www.zpeliculas.com/templates/mytopV2/images/background.png"))
-    itemlist.append( Item(channel=item.channel, action="sugeridas"  , title="Películas sugeridas", url="http://www.zpeliculas.com", fanart="http://www.zpeliculas.com/templates/mytopV2/images/background.png"))
+    itemlist.append( Item(channel=item.channel, action="peliculas"  , title="Últimas peliculas", url="http://www.zpeliculas.com/", fanart="http://www.zpeliculas.com/templates/mytopV2/images/background.png", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="sugeridas"  , title="Películas sugeridas", url="http://www.zpeliculas.com", fanart="http://www.zpeliculas.com/templates/mytopV2/images/background.png", viewmode="movie"))
     itemlist.append( Item(channel=item.channel, action="generos"    , title="Por género", url="http://www.zpeliculas.com", fanart="http://www.zpeliculas.com/templates/mytopV2/images/background.png"))
     itemlist.append( Item(channel=item.channel, action="alfabetico" , title="Listado alfabético", fanart="http://www.zpeliculas.com/templates/mytopV2/images/background.png"))
-    itemlist.append( Item(channel=item.channel, action="search"     , title="Buscador", url="http://www.zpeliculas.com", fanart="http://www.zpeliculas.com/templates/mytopV2/images/background.png"))
+    itemlist.append( Item(channel=item.channel, action="search"     , title="Buscador", url="http://www.zpeliculas.com", fanart="http://www.zpeliculas.com/templates/mytopV2/images/background.png", viewmode="movie"))
 
     return itemlist
 
@@ -34,42 +34,42 @@ def alfabetico(item):
     logger.info("pelisalacarta.channels.zpeliculas alfabetico")
 
     itemlist = []
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="A", url="http://www.zpeliculas.com/cat/a"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="B", url="http://www.zpeliculas.com/cat/b"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="C", url="http://www.zpeliculas.com/cat/c"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="D", url="http://www.zpeliculas.com/cat/d"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="E", url="http://www.zpeliculas.com/cat/e"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="F", url="http://www.zpeliculas.com/cat/f"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="G", url="http://www.zpeliculas.com/cat/g"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="H", url="http://www.zpeliculas.com/cat/h"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="I", url="http://www.zpeliculas.com/cat/i"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="J", url="http://www.zpeliculas.com/cat/j"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="K", url="http://www.zpeliculas.com/cat/k"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="L", url="http://www.zpeliculas.com/cat/l"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="M", url="http://www.zpeliculas.com/cat/m"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="N", url="http://www.zpeliculas.com/cat/n"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="O", url="http://www.zpeliculas.com/cat/o"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="P", url="http://www.zpeliculas.com/cat/p"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Q", url="http://www.zpeliculas.com/cat/q"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="R", url="http://www.zpeliculas.com/cat/r"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="S", url="http://www.zpeliculas.com/cat/s"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="T", url="http://www.zpeliculas.com/cat/t"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="U", url="http://www.zpeliculas.com/cat/u"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="V", url="http://www.zpeliculas.com/cat/v"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="W", url="http://www.zpeliculas.com/cat/w"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="X", url="http://www.zpeliculas.com/cat/x"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Y", url="http://www.zpeliculas.com/cat/y"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Z", url="http://www.zpeliculas.com/cat/z"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="0", url="http://www.zpeliculas.com/cat/0"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="1", url="http://www.zpeliculas.com/cat/1"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="2", url="http://www.zpeliculas.com/cat/2"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="3", url="http://www.zpeliculas.com/cat/3"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="4", url="http://www.zpeliculas.com/cat/4"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="5", url="http://www.zpeliculas.com/cat/5"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="6", url="http://www.zpeliculas.com/cat/6"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="7", url="http://www.zpeliculas.com/cat/7"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="8", url="http://www.zpeliculas.com/cat/8"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="9", url="http://www.zpeliculas.com/cat/9"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="A", url="http://www.zpeliculas.com/cat/a", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="B", url="http://www.zpeliculas.com/cat/b", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="C", url="http://www.zpeliculas.com/cat/c", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="D", url="http://www.zpeliculas.com/cat/d", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="E", url="http://www.zpeliculas.com/cat/e", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="F", url="http://www.zpeliculas.com/cat/f", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="G", url="http://www.zpeliculas.com/cat/g", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="H", url="http://www.zpeliculas.com/cat/h", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="I", url="http://www.zpeliculas.com/cat/i", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="J", url="http://www.zpeliculas.com/cat/j", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="K", url="http://www.zpeliculas.com/cat/k", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="L", url="http://www.zpeliculas.com/cat/l", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="M", url="http://www.zpeliculas.com/cat/m", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="N", url="http://www.zpeliculas.com/cat/n", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="O", url="http://www.zpeliculas.com/cat/o", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="P", url="http://www.zpeliculas.com/cat/p", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Q", url="http://www.zpeliculas.com/cat/q", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="R", url="http://www.zpeliculas.com/cat/r", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="S", url="http://www.zpeliculas.com/cat/s", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="T", url="http://www.zpeliculas.com/cat/t", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="U", url="http://www.zpeliculas.com/cat/u", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="V", url="http://www.zpeliculas.com/cat/v", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="W", url="http://www.zpeliculas.com/cat/w", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="X", url="http://www.zpeliculas.com/cat/x", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Y", url="http://www.zpeliculas.com/cat/y", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Z", url="http://www.zpeliculas.com/cat/z", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="0", url="http://www.zpeliculas.com/cat/0", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="1", url="http://www.zpeliculas.com/cat/1", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="2", url="http://www.zpeliculas.com/cat/2", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="3", url="http://www.zpeliculas.com/cat/3", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="4", url="http://www.zpeliculas.com/cat/4", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="5", url="http://www.zpeliculas.com/cat/5", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="6", url="http://www.zpeliculas.com/cat/6", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="7", url="http://www.zpeliculas.com/cat/7", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="8", url="http://www.zpeliculas.com/cat/8", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="9", url="http://www.zpeliculas.com/cat/9", viewmode="movie"))
 
     return itemlist
     
@@ -78,24 +78,24 @@ def generos(item):
     logger.info("pelisalacarta.channels.zpeliculas generos")
 
     itemlist = []
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Acción", url="http://www.zpeliculas.com/peliculas/p-accion/"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Animación", url="http://www.zpeliculas.com/peliculas/p-animacion/"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Aventura", url="http://www.zpeliculas.com/peliculas/p-aventura/"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Biografía", url="http://www.zpeliculas.com/peliculas/p-biografia/"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Bélico", url="http://www.zpeliculas.com/peliculas/p-belico/"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Ciencia Ficción", url="http://www.zpeliculas.com/peliculas/p-cienciaficcion/"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Comedia", url="http://www.zpeliculas.com/peliculas/p-comedia/"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Crimen", url="http://www.zpeliculas.com/peliculas/p-crimen/"))  
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Drama", url="http://www.zpeliculas.com/peliculas/p-drama/"))	
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Fantasía", url="http://www.zpeliculas.com/peliculas/p-fantasia/"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Histórico", url="http://www.zpeliculas.com/peliculas/p-historico/"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Intriga", url="http://www.zpeliculas.com/peliculas/p-intriga/"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Musical", url="http://www.zpeliculas.com/peliculas/p-musical/"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Romántica", url="http://www.zpeliculas.com/peliculas/p-romantica/"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Terror", url="http://www.zpeliculas.com/peliculas/p-terror/"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Thriller", url="http://www.zpeliculas.com/peliculas/p-thriller/"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Western", url="http://www.zpeliculas.com/peliculas/p-western/"))
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Otros", url="http://www.zpeliculas.com/peliculas/p-otros/"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Acción", url="http://www.zpeliculas.com/peliculas/p-accion/", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Animación", url="http://www.zpeliculas.com/peliculas/p-animacion/", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Aventura", url="http://www.zpeliculas.com/peliculas/p-aventura/", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Biografía", url="http://www.zpeliculas.com/peliculas/p-biografia/", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Bélico", url="http://www.zpeliculas.com/peliculas/p-belico/", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Ciencia Ficción", url="http://www.zpeliculas.com/peliculas/p-cienciaficcion/", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Comedia", url="http://www.zpeliculas.com/peliculas/p-comedia/", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Crimen", url="http://www.zpeliculas.com/peliculas/p-crimen/", viewmode="movie"))  
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Drama", url="http://www.zpeliculas.com/peliculas/p-drama/", viewmode="movie"))	
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Fantasía", url="http://www.zpeliculas.com/peliculas/p-fantasia/", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Histórico", url="http://www.zpeliculas.com/peliculas/p-historico/", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Intriga", url="http://www.zpeliculas.com/peliculas/p-intriga/", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Musical", url="http://www.zpeliculas.com/peliculas/p-musical/", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Romántica", url="http://www.zpeliculas.com/peliculas/p-romantica/", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Terror", url="http://www.zpeliculas.com/peliculas/p-terror/", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Thriller", url="http://www.zpeliculas.com/peliculas/p-thriller/", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Western", url="http://www.zpeliculas.com/peliculas/p-western/", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Otros", url="http://www.zpeliculas.com/peliculas/p-otros/", viewmode="movie"))
     return itemlist
 
 def search(item,texto):
@@ -120,7 +120,7 @@ def search(item,texto):
             thumbnail = scrapedthumbnail
             plot = ""
             if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-            itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, show=title, viewmode="movie", fanart=thumbnail, hasContentDetails="true", contentTitle=title, contentThumbnail=thumbnail))
+            itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, show=title, fanart=thumbnail, hasContentDetails="true", contentTitle=title, contentThumbnail=thumbnail))
 
         return itemlist
     # Se captura la excepción, para no interrumpir al buscador global si un canal falla
@@ -209,7 +209,7 @@ def peliculas(item):
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
         
-        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, hasContentDetails="true", contentTitle=contentTitle, contentThumbnail=thumbnail, viewmode="movie", fanart=thumbnail))
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, hasContentDetails="true", contentTitle=contentTitle, contentThumbnail=thumbnail, fanart=thumbnail))
 
     next_page = scrapertools.find_single_match(body,'<a href="([^"]+)">Siguiente')
     if next_page!="":
@@ -249,7 +249,7 @@ def destacadas(item):
         plot = unicode( plot, "iso-8859-1" , errors="replace" ).encode("utf-8")
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
         
-        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, show=title, viewmode="movie", fanart=thumbnail, hasContentDetails="true", contentTitle=title, contentThumbnail=thumbnail))
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, show=title, fanart=thumbnail, hasContentDetails="true", contentTitle=title, contentThumbnail=thumbnail))
         
     return itemlist
 
@@ -280,7 +280,7 @@ def sugeridas(item):
         plot = unicode( plot, "iso-8859-1" , errors="replace" ).encode("utf-8")
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
         
-        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, show=title, viewmode="movie", fanart=thumbnail, hasContentDetails="true", contentTitle=title, contentThumbnail=thumbnail))
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, show=title, fanart=thumbnail, hasContentDetails="true", contentTitle=title, contentThumbnail=thumbnail))
         
     return itemlist
 

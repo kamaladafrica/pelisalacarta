@@ -21,7 +21,7 @@ def mainlist(item):
     
     itemlist = []
 
-    itemlist.append( Item(channel=item.channel, action="series"              , title="Últimas telenovelas añadidas" , url="http://tusnovelas.com/lista-novelas/"))
+    itemlist.append( Item(channel=item.channel, action="series"              , title="Últimas telenovelas añadidas" , url="http://tusnovelas.com/lista-novelas/", viewmode="movie_with_plot"))
     itemlist.append( Item(channel=item.channel, action="series_top"          , title="Telenovelas TOP"              , url="http://tusnovelas.com/"))
     itemlist.append( Item(channel=item.channel, action="series_emision"      , title="Telenovelas en Emisión"       , url="http://tusnovelas.com/"))
     itemlist.append( Item(channel=item.channel, action="letras"              , title="Todas por orden alfabético"   , url="http://tusnovelas.com/"))
@@ -90,7 +90,7 @@ def letras(item):
         title = scrapedtitle
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=item.channel, action="series", title=title , url=url , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="series", title=title , url=url , folder=True, viewmode="movie_with_plot") )
 
     return itemlist
 
@@ -134,11 +134,11 @@ def series(item):
         title = scrapedtitle
         plot = scrapertools.htmlclean(scrapedplot)
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=item.channel, action="episodios", title=title , url=url , thumbnail=thumbnail ,fanart=thumbnail , plot=plot , viewmode="movie_with_plot" , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="episodios", title=title , url=url , thumbnail=thumbnail ,fanart=thumbnail , plot=plot  , folder=True) )
     
     next_page_url = scrapertools.find_single_match(data,'<a href="([^"]+)">Siguiente</a>')
     if next_page_url!="":
-        itemlist.append( Item(channel=item.channel, action="series", title=">> Página siguiente" , url=next_page_url , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="series", title=">> Página siguiente" , url=next_page_url , folder=True, viewmode="movie_with_plot") )
 
     return itemlist
 

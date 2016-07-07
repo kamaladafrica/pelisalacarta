@@ -27,7 +27,7 @@ def mainlist(item):
 
     itemlist = []
     itemlist.append( Item(channel=item.channel, action="menuseries"    , title="Series"            , url="" ))
-    itemlist.append( Item(channel=item.channel, action="peliculas"     , title="Películas"         , url="http://vserie.com/peliculas" ))
+    itemlist.append( Item(channel=item.channel, action="peliculas"     , title="Películas"         , url="http://vserie.com/peliculas" , viewmode="movie"))
     itemlist.append( Item(channel=item.channel, action="search"        , title="Buscar..."         , url="http://vserie.com/search" ))
       
     return itemlist
@@ -36,8 +36,8 @@ def menuseries(item):
     logger.info("pelisalacarta.channels.vseries menuseries")
 
     itemlist = []
-    itemlist.append( Item(channel=item.channel, action="novedades" , title="Últimos episodios" , url="http://vserie.com/series" ))
-    itemlist.append( Item(channel=item.channel, action="series"    , title="Todas"             , url="http://vserie.com/series" ))
+    itemlist.append( Item(channel=item.channel, action="novedades" , title="Últimos episodios" , url="http://vserie.com/series" , viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="series"    , title="Todas"             , url="http://vserie.com/series" , viewmode="movie"))
 
     return itemlist
 
@@ -112,7 +112,7 @@ def novedades(item):
         thumbnail = urlparse.urljoin(item.url,scrapedthumbnail)
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, show=title, viewmode="movie"))
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, show=title))
 
     return itemlist
 
@@ -152,14 +152,14 @@ def series(item,data=""):
         thumbnail = urlparse.urljoin(item.url,scrapedthumbnail)
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=item.channel, action="episodios" , title=title , url=url, thumbnail=thumbnail, plot=plot, show=title, viewmode="movie"))
+        itemlist.append( Item(channel=item.channel, action="episodios" , title=title , url=url, thumbnail=thumbnail, plot=plot, show=title))
 
     if not "/paginador/" in item.url:
-        itemlist.append( Item(channel=item.channel, action="series" , title=">> Página siguiente" , url="http://vserie.com/api/paginador/", extra="tipo=series&last=39"))
+        itemlist.append( Item(channel=item.channel, action="series" , title=">> Página siguiente" , url="http://vserie.com/api/paginador/", extra="tipo=series&last=39", viewmode="movie"))
     else:
         actual = scrapertools.find_single_match(item.extra,"last\=(\d+)")
         siguiente = str(int(actual)+35)
-        itemlist.append( Item(channel=item.channel, action="series" , title=">> Página siguiente" , url="http://vserie.com/api/paginador/", extra="tipo=series&last="+siguiente))
+        itemlist.append( Item(channel=item.channel, action="series" , title=">> Página siguiente" , url="http://vserie.com/api/paginador/", extra="tipo=series&last="+siguiente, viewmode="movie"))
 
     return itemlist
 
@@ -200,14 +200,14 @@ def peliculas(item,data=""):
         thumbnail = urlparse.urljoin(item.url,scrapedthumbnail)
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, show=title, viewmode="movie"))
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, show=title))
 
     if not "/paginador/" in item.url:
-        itemlist.append( Item(channel=item.channel, action="peliculas" , title=">> Página siguiente" , url="http://vserie.com/api/paginador/", extra="tipo=peliculas&last=40"))
+        itemlist.append( Item(channel=item.channel, action="peliculas" , title=">> Página siguiente" , url="http://vserie.com/api/paginador/", extra="tipo=peliculas&last=40", viewmode="movie"))
     else:
         actual = scrapertools.find_single_match(item.extra,"last\=(\d+)")
         siguiente = str(int(actual)+35)
-        itemlist.append( Item(channel=item.channel, action="peliculas" , title=">> Página siguiente" , url="http://vserie.com/api/paginador/", extra="tipo=peliculas&last="+siguiente))
+        itemlist.append( Item(channel=item.channel, action="peliculas" , title=">> Página siguiente" , url="http://vserie.com/api/paginador/", extra="tipo=peliculas&last="+siguiente, viewmode="movie"))
 
     return itemlist
 

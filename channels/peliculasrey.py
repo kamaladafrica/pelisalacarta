@@ -50,7 +50,7 @@ def PorFecha(item):
         plot = ""
         url = urlparse.urljoin(item.url,scrapedurl)
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=item.channel, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title))
+        itemlist.append( Item(channel=item.channel, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
 
     return itemlist
 
@@ -73,7 +73,7 @@ def Idiomas(item):
         plot = ""
         url = urlparse.urljoin(item.url,scrapedurl)
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=item.channel, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title))
+        itemlist.append( Item(channel=item.channel, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
 
     return itemlist
 
@@ -96,7 +96,7 @@ def calidades(item):
         plot = ""
         url = urlparse.urljoin(item.url,scrapedurl)
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=item.channel, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title))
+        itemlist.append( Item(channel=item.channel, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
 
     return itemlist
 
@@ -119,7 +119,7 @@ def generos(item):
         plot = ""
         url = urlparse.urljoin(item.url,scrapedurl)
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=item.channel, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title))
+        itemlist.append( Item(channel=item.channel, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
 
     return itemlist
 
@@ -158,12 +158,12 @@ def peliculas(item):
     
     for scrapedthumbnail,scrapedtitle,scrapedurl in matches:
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=item.channel, action="findvideos" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot="", fulltitle=scrapedtitle, viewmode="movie"))
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot="", fulltitle=scrapedtitle))
 
     next_page = scrapertools.find_single_match(data,'rel="next" href="([^"]+)')
     if next_page!="":
-    #    itemlist.append( Item(channel=item.channel, action="peliculas" , title=">> Página siguiente" , url=item.url+next_page, folder=True))
-        itemlist.append( Item(channel=item.channel, action="peliculas" , title=">> Página siguiente" , url=next_page, folder=True))
+    #    itemlist.append( Item(channel=item.channel, action="peliculas" , title=">> Página siguiente" , url=item.url+next_page, folder=True, viewmode="movie"))
+        itemlist.append( Item(channel=item.channel, action="peliculas" , title=">> Página siguiente" , url=next_page, folder=True, viewmode="movie"))
       
     return itemlist
 

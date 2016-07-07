@@ -92,7 +92,7 @@ def search(item,texto):
         scrapedtitle = scrapedtitle.replace(scrapedtitle,"[COLOR white]"+scrapedtitle+"[/COLOR]")
 
 
-        itemlist.append( Item(channel=item.channel, action="fanart", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail ,  viewmode="movie", extra=scrapedtitle, fanart="http://s30.postimg.org/4gugdsygx/sinlucesfan.jpg", folder=True) )
+        itemlist.append( Item(channel=item.channel, action="fanart", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , extra=scrapedtitle, fanart="http://s30.postimg.org/4gugdsygx/sinlucesfan.jpg", folder=True) )
 
     return itemlist'''
 def peliculas(item,paginacion=True):
@@ -101,7 +101,7 @@ def peliculas(item,paginacion=True):
 
     title ="Listado"
     title = title.replace(title,"[COLOR skyblue]"+title+"[/COLOR]")
-    itemlist.append( Item(channel=item.channel, title=title      , action="scraper", url=item.url, fanart="http://s6.postimg.org/mxrtns8lt/sinlucesfan2.jpg", thumbnail="http://s23.postimg.org/p1a2tyejv/sinlestthu.jpg"))
+    itemlist.append( Item(channel=item.channel, title=title      , action="scraper", url=item.url, fanart="http://s6.postimg.org/mxrtns8lt/sinlucesfan2.jpg", thumbnail="http://s23.postimg.org/p1a2tyejv/sinlestthu.jpg", viewmode="movie"))
     title ="Buscar"
     title = title.replace(title,"[COLOR skyblue]"+title+"[/COLOR]")
     itemlist.append( Item(channel=item.channel, title=title      , action="search", url=item.url,extra= "search", fanart="http://s22.postimg.org/3tz2v05ap/sinlbufan.jpg", thumbnail="http://s30.postimg.org/jhmn0u4jl/sinlbusthub.jpg"))
@@ -145,7 +145,7 @@ def scraper(item,paginacion=True):
         trailer = urllib.quote(trailer)
 
         extra = title_fan+"|"+scrapedyear+"|"+trailer
-        itemlist.append( Item(channel=item.channel, action="fanart", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , extra= extra, viewmode="movie",  fanart="http://s6.postimg.org/mxrtns8lt/sinlucesfan2.jpg") )
+        itemlist.append( Item(channel=item.channel, action="fanart", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , extra= extra,  fanart="http://s6.postimg.org/mxrtns8lt/sinlucesfan2.jpg") )
 
 
 
@@ -164,7 +164,7 @@ def scraper(item,paginacion=True):
 
            title= "[COLOR skyblue]Pagina siguiente>>[/COLOR]"
            if  not "Error 404" in data:
-              itemlist.append( Item(channel=item.channel, title=title, url=next_page, fanart="http://s30.postimg.org/4gugdsygx/sinlucesfan.jpg", thumbnail="http://s16.postimg.org/lvzzttkol/pelisvkflecha.png", action="scraper", folder=True) )
+              itemlist.append( Item(channel=item.channel, title=title, url=next_page, fanart="http://s30.postimg.org/4gugdsygx/sinlucesfan.jpg", thumbnail="http://s16.postimg.org/lvzzttkol/pelisvkflecha.png", action="scraper", folder=True, viewmode="movie") )
     except:
          pass
 

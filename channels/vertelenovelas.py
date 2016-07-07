@@ -22,7 +22,7 @@ def mainlist(item):
     
     itemlist = []
 
-    itemlist.append( Item(channel=item.channel, title="Catálogo" , action="series", url="http://www.vertelenovelas.cc/"))
+    itemlist.append( Item(channel=item.channel, title="Catálogo" , action="series", url="http://www.vertelenovelas.cc/", viewmode="movie"))
     itemlist.append( Item(channel=item.channel, title="Buscar"   , action="search"))
 
     return itemlist
@@ -64,11 +64,11 @@ def series(item):
         if thumbnail=="":
             thumbnail = scrapertools.find_single_match(match,'<img src="([^"]+)"')
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"]")
-        itemlist.append( Item(channel=item.channel, action="episodios", title=title , url=url , thumbnail=thumbnail, viewmode="movie") )
+        itemlist.append( Item(channel=item.channel, action="episodios", title=title , url=url , thumbnail=thumbnail) )
     
     next_page_url = scrapertools.find_single_match(data,'<a href="([^"]+)" class="next">')
     if next_page_url!="":
-        itemlist.append( Item(channel=item.channel, action="series", title=">> Pagina siguiente" , url=urlparse.urljoin(item.url,next_page_url) , thumbnail="" , plot="" , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="series", title=">> Pagina siguiente" , url=urlparse.urljoin(item.url,next_page_url, viewmode="movie") , thumbnail="" , plot="" , folder=True) )
 
     return itemlist
 

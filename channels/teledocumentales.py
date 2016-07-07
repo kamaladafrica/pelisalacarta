@@ -22,7 +22,7 @@ def mainlist(item):
     logger.info("[teledocumentales.py] mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=item.channel, action="ultimo"        , title="Últimos Documentales"    , url="http://www.teledocumentales.com/"))
+    itemlist.append( Item(channel=item.channel, action="ultimo"        , title="Últimos Documentales"    , url="http://www.teledocumentales.com/", viewmode="movie_with_plot"))
     itemlist.append( Item(channel=item.channel, action="ListaCat"      , title="Listado por Genero"      , url="http://www.teledocumentales.com/"))
     
     return itemlist
@@ -45,12 +45,12 @@ def ultimo(item):
         scrapedurl = scrapertools.get_match(match,'<a href="([^"]+)"')
         scrapedthumbnail = scrapertools.get_match(match,'<img src="([^"]+)" alt="[^"]+"')
         scrapedplot = scrapertools.get_match(match,'<div class="excerpt">([^<]+)</div>')
-        itemlist.append( Item(channel=item.channel , action="play"  , title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail, plot=scrapedplot , fanart=scrapedthumbnail, viewmode="movie_with_plot"))
+        itemlist.append( Item(channel=item.channel , action="play"  , title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail, plot=scrapedplot , fanart=scrapedthumbnail))
 
     # Extrae la marca de siguiente pagina
     try:
         next_page = scrapertools.get_match(data,'<a class="next" href="([^"]+)">')
-        itemlist.append( Item(channel=item.channel , action="ultimo" , title=">> Página siguiente" , url=urlparse.urljoin(item.url,next_page)))
+        itemlist.append( Item(channel=item.channel , action="ultimo" , title=">> Página siguiente" , url=urlparse.urljoin(item.url,next_page, viewmode="movie_with_plot")))
     except:
         pass
 
@@ -87,7 +87,7 @@ def ListaCat(item):
             scrapedthumbnail = match2[0].replace(" ","%20")
             scrapedplot = ""
             
-            itemlist.append( Item(channel=item.channel , action="ultimo"  , title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail, plot=scrapedplot , fanart=scrapedthumbnail ))
+            itemlist.append( Item(channel=item.channel , action="ultimo"  , title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail, plot=scrapedplot , fanart=scrapedthumbnail , viewmode="movie_with_plot"))
 
     return itemlist
 

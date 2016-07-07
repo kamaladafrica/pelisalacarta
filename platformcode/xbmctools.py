@@ -928,7 +928,7 @@ def renderItems(itemlist, parentitem, isPlayable='false'):
 
             if item.viewmode!="list":
                 viewmode = item.viewmode
-
+        viewmode = parentitem.viewmode
         # Cierra el directorio
         # if not parentitem.channel in ["channelselector",""]:
         # xbmcplugin.setContent(pluginhandle,"Movies")

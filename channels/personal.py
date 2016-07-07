@@ -69,13 +69,13 @@ def personal_channel(item):
             if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
             if scrapedurltype=="":
-                itemlist.append( Item(channel=item.channel, action="play" , title=title , fulltitle=title, url=url, thumbnail=thumbnail, fanart=fanart, plot=plot, viewmode="movie_with_plot", folder=False))
+                itemlist.append( Item(channel=item.channel, action="play" , title=title , fulltitle=title, url=url, thumbnail=thumbnail, fanart=fanart, plot=plot, folder=False))
             else:
                 itemlist.append( Item(channel=item.channel, action="personal_channel" , title=title , fulltitle=title, url=url, thumbnail=thumbnail, fanart=fanart, plot=plot, viewmode="movie_with_plot", folder=True))
         
             contador = contador + 1
             if contador > maximo:
-                itemlist.append( Item(channel=item.channel, action="personal_channel" , title=">> Página siguiente" , extra=str(pagina_actual+1), folder=True))
+                itemlist.append( Item(channel=item.channel, action="personal_channel" , title=">> Página siguiente" , extra=str(pagina_actual+1, viewmode="movie_with_plot"), folder=True))
                 break
 
         # Si no está en la página que debe mostrar, simplemente deja pasar el contador
@@ -101,7 +101,7 @@ def personal_channel(item):
                 plot = scrapedplot
                 if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
         
-                itemlist.append( Item(channel=item.channel, action="play" , title=title , fulltitle=title, url=url, thumbnail=thumbnail, fanart=fanart, plot=plot, viewmode="movie_with_plot", folder=False))
+                itemlist.append( Item(channel=item.channel, action="play" , title=title , fulltitle=title, url=url, thumbnail=thumbnail, fanart=fanart, plot=plot, folder=False))
 
     if len(itemlist)==0:
         

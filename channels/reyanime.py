@@ -28,11 +28,11 @@ def mainlist(item):
     logger.info("pelisalacarta.channels.reyanime mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=item.channel, action="series"       , title="En emisión"           , url="http://reyanime.com/anime/emision" ))
+    itemlist.append( Item(channel=item.channel, action="series"       , title="En emisión"           , url="http://reyanime.com/anime/emision" , viewmode="movie_with_plot"))
     itemlist.append( Item(channel=item.channel, action="letras"       , title="Por orden alfabético" , url="http://reyanime.com/lista-numeros" ))
     itemlist.append( Item(channel=item.channel, action="generos"      , title="Por géneros"          , url="http://reyanime.com/genero/accion" ))
-    itemlist.append( Item(channel=item.channel, action="series"       , title="Últimos agregados"    , url="http://reyanime.com/anime/ultimos/" ))
-    itemlist.append( Item(channel=item.channel, action="series"       , title="Proximamente"         , url="http://reyanime.com/anime/proximamente/" ))
+    itemlist.append( Item(channel=item.channel, action="series"       , title="Últimos agregados"    , url="http://reyanime.com/anime/ultimos/" , viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, action="series"       , title="Proximamente"         , url="http://reyanime.com/anime/proximamente/" , viewmode="movie_with_plot"))
   
     return itemlist
 
@@ -52,14 +52,14 @@ def letras(item):
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
-        itemlist.append( Item(channel=item.channel, action="series" , title=title , url=url, thumbnail=thumbnail, plot=plot))
+        itemlist.append( Item(channel=item.channel, action="series" , title=title , url=url, thumbnail=thumbnail, plot=plot, viewmode="movie_with_plot"))
     return itemlist
 
 def generos(item):
     logger.info("pelisalacarta.channels.reyanime generos")
 
     itemlist = []
-    itemlist.append( Item(channel=item.channel, action="series" , title="acción" , url="http://reyanime.com/genero/accion"))
+    itemlist.append( Item(channel=item.channel, action="series" , title="acción" , url="http://reyanime.com/genero/accion", viewmode="movie_with_plot"))
 
     data = scrapertools.cache_page(item.url)
     data = scrapertools.get_match(data,'<div class="lista-hoja-genero-2"(.*?)</div>')
@@ -74,7 +74,7 @@ def generos(item):
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
-        itemlist.append( Item(channel=item.channel, action="series" , title=title , url=url, thumbnail=thumbnail, plot=plot))
+        itemlist.append( Item(channel=item.channel, action="series" , title=title , url=url, thumbnail=thumbnail, plot=plot, viewmode="movie_with_plot"))
     return itemlist
 
 def series(item):
@@ -143,11 +143,11 @@ def series(item):
         plot = scrapertools.htmlclean(scrapedplot).strip()
         show = title
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=item.channel, action="episodios", title=title , url=url , thumbnail=thumbnail , plot=plot , show=show, fulltitle=title, fanart=thumbnail, viewmode="movie_with_plot", folder=True) )
+        itemlist.append( Item(channel=item.channel, action="episodios", title=title , url=url , thumbnail=thumbnail , plot=plot , show=show, fulltitle=title, fanart=thumbnail, viewmode="movies_with_plot", folder=True) )
 
     next_page = scrapertools.find_single_match(data,'<a href="([^"]+)" class="next">siguiente >>')
     if next_page!="":
-        itemlist.append( Item(channel=item.channel, action="series", title=">> Página siguiente" , url=urlparse.urljoin(item.url,next_page) , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="series", title=">> Página siguiente" , url=urlparse.urljoin(item.url,next_page, viewmode="movie_with_plot") , folder=True) )
 
     return itemlist
 
@@ -177,7 +177,7 @@ def episodios(item):
         thumbnail = item.thumbnail
         plot = item.plot
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=item.channel, action="findvideos", title=title , url=url , thumbnail=thumbnail , plot=plot , show=item.show, fulltitle=item.show+" "+title, fanart=thumbnail, viewmode="movies_with_plot", folder=True) )
+        itemlist.append( Item(channel=item.channel, action="findvideos", title=title , url=url , thumbnail=thumbnail , plot=plot , show=item.show, fulltitle=item.show+" "+title, fanart=thumbnail, folder=True) )
 
     if config.get_library_support():
         itemlist.append( Item(channel=item.channel, title="Añadir esta serie a la biblioteca de XBMC", url=item.url, action="add_serie_to_library", extra="episodios", show=item.show) )

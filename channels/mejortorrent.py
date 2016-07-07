@@ -110,7 +110,7 @@ def buscador(item):
         url = urlparse.urljoin(item.url,scrapedurl)
         logger.debug("title=["+title+"], url=["+url+"]")
 
-        itemlist.append( Item(channel=item.channel, action="episodios", title=title , url=url , folder=True, extra="series") )
+        itemlist.append( Item(channel=item.channel, action="episodios", title=title , url=url , folder=True, extra="series", viewmode="movie_with_plot") )
 
     #busca pelis
     patron  = "<a href='(/peli-descargar-torrent-[^']+)'[^>]+>(.*?)</a>"
@@ -141,7 +141,7 @@ def buscador(item):
         url = urlparse.urljoin(item.url,scrapedurl)
         logger.debug("title=["+title+"], url=["+url+"]")
 
-        itemlist.append( Item(channel=item.channel, action="episodios", title=title , url=url , folder=True, extra="docu") )
+        itemlist.append( Item(channel=item.channel, action="episodios", title=title , url=url , folder=True, extra="docu", viewmode="movie_with_plot") )
 
     if len(itemlist) == 0:
         itemlist.append( Item(channel=item.channel, action="mainlist", title="No se han encontrado nada con ese término" ) )
@@ -333,7 +333,7 @@ def episodios(item):
 
         logger.debug("title=["+title+"], url=["+url+"], item=["+str(item)+"]")
 
-        itemlist.append( Item(channel=item.channel, action="play", title=title , url=url , thumbnail=item.thumbnail , plot=item.plot, fanart=item.fanart, viewmode="movie_with_plot", extra=post, folder=False) )
+        itemlist.append( Item(channel=item.channel, action="play", title=title , url=url , thumbnail=item.thumbnail , plot=item.plot, fanart=item.fanart, extra=post, folder=False) )
 
     return itemlist
 
@@ -371,7 +371,7 @@ def show_movie_info(item):
 
         logger.debug("link="+link)
 
-        itemlist.append( Item(channel=item.channel, action="play", server="torrent", title=item.title, url=link, thumbnail=item.thumbnail , plot=item.plot, fanart=item.fanart, folder=False, viewmode="movie_with_plot") )
+        itemlist.append( Item(channel=item.channel, action="play", server="torrent", title=item.title, url=link, thumbnail=item.thumbnail , plot=item.plot, fanart=item.fanart, folder=False) )
 
     return itemlist
 

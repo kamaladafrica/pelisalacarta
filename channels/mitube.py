@@ -217,6 +217,6 @@ def ver(item):
     for s in streams:
 	    itemlist.append( Item(channel=item.channel, action="play", server="directo", title=s.resolution+" "+s.extension, url=s.url , thumbnail=item.thumbnail , fanart=item.thumbnail,  folder=False))
 	   # para wiimc itemlist.append( Item(channel=item.channel, action="play_video", server="directo", title=s.resolution+" "+s.extension, url=s.url , thumbnail=item.thumbnail , fanart=item.thumbnail,  folder=False))
-    itemlist.append( Item(channel=item.channel, action="descargabg",title="descargar", url=item.url , thumbnail=item.thumbnail ,plot=item.plot, viewmode="movie_with_plot") )
+    itemlist.append( Item(channel=item.channel, action="descargabg",title="descargar", url=item.url , thumbnail=item.thumbnail ,plot=item.plot) )
 
     return itemlist

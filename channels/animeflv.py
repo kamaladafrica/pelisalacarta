@@ -61,7 +61,7 @@ def mainlist(item):
     logger.info("pelisalacarta.channels.animeflv mainlist")
 
     itemlist = list([])
-    itemlist.append(Item(channel=item.channel, action="novedades_episodios", title="Últimos episodios", url=CHANNEL_HOST))
+    itemlist.append(Item(channel=item.channel, action="novedades_episodios", title="Últimos episodios", url=CHANNEL_HOST, viewmode="movie"))
     itemlist.append(Item(channel=item.channel, action="menuseries", title="Series",
                          url=urlparse.urljoin(CHANNEL_HOST, "animes/?orden=nombre&mostrar=series")))
     itemlist.append(Item(channel=item.channel, action="menuovas", title="OVAS",
@@ -83,7 +83,7 @@ def menuseries(item):
     itemlist.append(Item(channel=item.channel, action="generos", title="Por géneros",
                          url=urlparse.urljoin(CHANNEL_HOST, "animes/?orden=nombre&mostrar=series")))
     itemlist.append(Item(channel=item.channel, action="series", title="En emisión",
-                         url=urlparse.urljoin(CHANNEL_HOST, "animes/en-emision/?orden=nombre&mostrar=series")))
+                         url=urlparse.urljoin(CHANNEL_HOST, "animes/en-emision/?orden=nombre&mostrar=series", viewmode="movies_with_plot")))
 
     return itemlist
 
@@ -97,7 +97,7 @@ def menuovas(item):
     itemlist.append(Item(channel=item.channel, action="generos", title="Por géneros",
                          url=urlparse.urljoin(CHANNEL_HOST, "animes/?orden=nombre&mostrar=ovas")))
     itemlist.append(Item(channel=item.channel, action="series", title="En emisión",
-                         url=urlparse.urljoin(CHANNEL_HOST, "animes/en-emision/?orden=nombre&mostrar=ovas")))
+                         url=urlparse.urljoin(CHANNEL_HOST, "animes/en-emision/?orden=nombre&mostrar=ovas", viewmode="movies_with_plot")))
 
     return itemlist
 
@@ -111,7 +111,7 @@ def menupeliculas(item):
     itemlist.append(Item(channel=item.channel, action="generos", title="Por géneros",
                          url=urlparse.urljoin(CHANNEL_HOST, "animes/?orden=nombre&mostrar=peliculas")))
     itemlist.append(Item(channel=item.channel, action="series", title="En emisión",
-                         url=urlparse.urljoin(CHANNEL_HOST, "animes/en-emision/?orden=nombre&mostrar=peliculas")))
+                         url=urlparse.urljoin(CHANNEL_HOST, "animes/en-emision/?orden=nombre&mostrar=peliculas", viewmode="movies_with_plot")))
 
     return itemlist
 
@@ -136,7 +136,7 @@ def letras(item):
             logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
 
         itemlist.append(Item(channel=item.channel, action="series", title=title, url=url, thumbnail=thumbnail,
-                             plot=plot))
+                             plot=plot, viewmode="movies_with_plot"))
 
     return itemlist
 
@@ -160,7 +160,7 @@ def generos(item):
             logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
 
         itemlist.append(Item(channel=item.channel, action="series", title=title, url=url, thumbnail=thumbnail,
-                             plot=plot))
+                             plot=plot, viewmode="movies_with_plot"))
 
     return itemlist
 
@@ -228,7 +228,7 @@ def novedades_episodios(item):
                                                                          scrapedthumbnail))
 
         newItem = Item(channel=item.channel, action="findvideos", title=scrapedtitle, url=scrapedurl,
-                       thumbnail=scrapedthumbnail, plot=scrapedplot, fulltitle=fulltitle, viewmode="movie")
+                       thumbnail=scrapedthumbnail, plot=scrapedplot, fulltitle=fulltitle)
 
         contentTitle = scrapertools.entityunescape(match[1])
         if contentTitle:
@@ -296,8 +296,7 @@ def series(item):
         if DEBUG:
             logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
         itemlist.append(Item(channel=item.channel, action="episodios", title=title, url=url, thumbnail=thumbnail,
-                             plot=plot, show=show, fulltitle=fulltitle, fanart=thumbnail,
-                             viewmode="movies_with_plot", folder=True))
+                             plot=plot, show=show, fulltitle=fulltitle, fanart=thumbnail, folder=True))
 
     patron = '<a href="([^"]+)">\&raquo\;</a>'
     matches = re.compile(patron, re.DOTALL).findall(data)
@@ -309,7 +308,7 @@ def series(item):
             scrapedplot = ""
 
             itemlist.append(Item(channel=item.channel, action="series", title=scrapedtitle, url=scrapedurl,
-                                 thumbnail=scrapedthumbnail, plot=scrapedplot, folder=True))
+                                 thumbnail=scrapedthumbnail, plot=scrapedplot, folder=True, viewmode="movies_with_plot"))
 
     return itemlist
 

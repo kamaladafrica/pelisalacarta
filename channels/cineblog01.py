@@ -24,13 +24,13 @@ def mainlist(item):
 	
 
     # Main options
-    itemlist.append( Item(channel=item.channel, action="peliculas"  , title="Film - Novita'" , url=sito))
+    itemlist.append( Item(channel=item.channel, action="peliculas"  , title="Film - Novita'" , url=sito, viewmode="movie_with_plot"))
     itemlist.append( Item(channel=item.channel, action="menugeneros", title="Film - Per genere" , url=sito))
     itemlist.append( Item(channel=item.channel, action="menuanyos"  , title="Film - Per anno" , url=sito))
     itemlist.append( Item(channel=item.channel, action="search"     , title="Film - Cerca" ))
-    itemlist.append( Item(channel=item.channel, action="peliculas"  , title="Serie Tv" , url=sito+"/serietv/" ))
+    itemlist.append( Item(channel=item.channel, action="peliculas"  , title="Serie Tv" , url=sito+"/serietv/" , viewmode="movie_with_plot"))
     itemlist.append( Item(channel=item.channel, action="search", title="Serie Tv - Cerca" , extra="serie"))
-    itemlist.append( Item(channel=item.channel, action="peliculas"  , title="Anime" , url="http://www.cineblog01.cc/anime/" ))
+    itemlist.append( Item(channel=item.channel, action="peliculas"  , title="Anime" , url="http://www.cineblog01.cc/anime/" , viewmode="movie_with_plot"))
 
     return itemlist
 
@@ -55,7 +55,7 @@ def menugeneros(item):
         scrapedthumbnail = ""
         scrapedplot = ""
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=item.channel, action="peliculas" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot))
+        itemlist.append( Item(channel=item.channel, action="peliculas" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot, viewmode="movie_with_plot"))
 
     return itemlist
 
@@ -80,7 +80,7 @@ def menuanyos(item):
         scrapedthumbnail = ""
         scrapedplot = ""
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=item.channel, action="peliculas" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot))
+        itemlist.append( Item(channel=item.channel, action="peliculas" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot, viewmode="movie_with_plot"))
 
     return itemlist
 
@@ -173,7 +173,7 @@ def peliculas(item):
     # Next page mark
     next_page_url = scrapertools.find_single_match(data,'<li><a href="([^"]+)">></a></li>')
     if next_page_url!="":
-        itemlist.append( Item(channel=item.channel, action="peliculas" , title=">> Next page" , url=next_page_url))
+        itemlist.append( Item(channel=item.channel, action="peliculas" , title=">> Next page" , url=next_page_url, viewmode="movie_with_plot"))
 
     return itemlist
 

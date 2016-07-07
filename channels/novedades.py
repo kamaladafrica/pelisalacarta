@@ -49,27 +49,23 @@ def mainlist(item):
     thumbnail_base = "http://media.tvalacarta.info/pelisalacarta/squares/"
 
     thumbnail = (thumbnail_base if list_canales['peliculas'] else thumbnail_base + '/disabled') + "/thumb_canales_peliculas.png"
-    itemlist.append( Item(channel=item.channel, action="novedades", extra="peliculas", title="Películas",
-                          viewmode="movie", thumbnail=thumbnail))
+    itemlist.append( Item(channel=item.channel, action="novedades", extra="peliculas", title="Películas", thumbnail=thumbnail))
 
     thumbnail = (thumbnail_base if list_canales['infantiles'] else thumbnail_base + '/disabled')+ "/thumb_canales_infantiles.png"
-    itemlist.append( Item(channel=item.channel, action="novedades", extra="infantiles", title="Para niños",
-                          viewmode="movie", thumbnail=thumbnail ))
+    itemlist.append( Item(channel=item.channel, action="novedades", extra="infantiles", title="Para niños", thumbnail=thumbnail ))
 
     thumbnail = (thumbnail_base if list_canales['series'] else thumbnail_base + '/disabled') + "/thumb_canales_series.png"
-    itemlist.append( Item(channel=item.channel, action="novedades", extra="series", title="Episodios de series",
-                          viewmode="movie", thumbnail=thumbnail))
+    itemlist.append( Item(channel=item.channel, action="novedades", extra="series", title="Episodios de series", thumbnail=thumbnail))
 
     thumbnail = (thumbnail_base if list_canales['anime'] else thumbnail_base + '/disabled') + "/thumb_canales_anime.png"
-    itemlist.append( Item(channel=item.channel, action="novedades", extra="anime", title="Episodios de anime",
-                          viewmode="movie", thumbnail=thumbnail))
+    itemlist.append( Item(channel=item.channel, action="novedades", extra="anime", title="Episodios de anime", thumbnail=thumbnail))
 
     thumbnail = (thumbnail_base if list_canales['documentales'] else thumbnail_base + '/disabled') + "/thumb_canales_documentales.png"
-    itemlist.append( Item(channel=item.channel, action="novedades", extra="documentales", title="Documentales",
-                          viewmode="movie", thumbnail=thumbnail))
+    itemlist.append( Item(channel=item.channel, action="novedades", extra="documentales", title="Documentales", thumbnail=thumbnail))
 
     #itemlist.append(Item(channel=item.channel, action="menu_opciones", title="Opciones", viewmode="list",
     #                     thumbnail=thumbnail_base + "/thumb_configuracion.png"))
+
     return itemlist
 
 def get_list_canales():
@@ -208,7 +204,7 @@ def agruparXcanal(list_result_canal, categoria):
 
     # Añadimos el contenido encontrado en la lista list_result
     for c in sorted(dict_canales):
-        itemlist.append(Item(channel=item.channel, title=c+':'))
+        itemlist.append(Item(channel="novedades", title=c+':'))
         for i in dict_canales[c]:
             if 'contentCalidad' in i:  i.title += ' (%s)' % i.contentCalidad
             if i.language: i.title += ' [%s]' % i.language
@@ -265,7 +261,7 @@ def agruparXcontenido(list_result_canal, categoria):
             else:
                 title += " (En %s)" % (', '.join([i for i in canales_no_duplicados]))
 
-            newItem = v[0].clone(channel=item.channel, title=title, action="ver_canales",
+            newItem = v[0].clone(channel="novedades", title=title, action="ver_canales",
                                  sub_list=[i.tourl() for i in v])
         else:
             newItem = v[0].clone(title=title)

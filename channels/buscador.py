@@ -174,7 +174,7 @@ def channel_search(search_results, channel_parameters,tecleado):
     ListaCanales = []
     try:
       exec "from channels import " + channel_parameters["channel"] + " as module"
-      mainlist = module.mainlist(Item())
+      mainlist = module.mainlist(Item(channel=channel_parameters["channel"]))
       search_items = [item for item in mainlist if item.action=="search"]
       
       for item in search_items:

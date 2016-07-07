@@ -21,7 +21,7 @@ def mainlist(item):
     logger.info("pelisalacarta.channels.elsenordelanillo mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Novedades" , url="http://www.xn--elseordelanillo-1qb.com/pelisdelanillo/" ))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Novedades" , url="http://www.xn--elseordelanillo-1qb.com/pelisdelanillo/" , viewmode="movie"))
     itemlist.append( Item(channel=item.channel, action="generos" , title="Por género"  , url="http://www.xn--elseordelanillo-1qb.com/pelisdelanillo/" ))
     itemlist.append( Item(channel=item.channel, action="letras" , title="Por letra"    , url="http://www.xn--elseordelanillo-1qb.com/pelisdelanillo/" ))
     itemlist.append( Item(channel=item.channel, action="anyos" , title="Por año"    , url="http://www.xn--elseordelanillo-1qb.com/pelisdelanillo/" ))
@@ -48,7 +48,7 @@ def anyos(item):
         plot = ""
         url = urlparse.urljoin(item.url,scrapedurl)
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=item.channel, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title))
+        itemlist.append( Item(channel=item.channel, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
 
     return itemlist
 
@@ -73,7 +73,7 @@ def letras(item):
         plot = ""
         url = urlparse.urljoin(item.url,scrapedurl)
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=item.channel, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title))
+        itemlist.append( Item(channel=item.channel, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
 
     return itemlist
 
@@ -96,7 +96,7 @@ def generos(item):
         plot = ""
         url = urlparse.urljoin(item.url,scrapedurl)
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=item.channel, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title))
+        itemlist.append( Item(channel=item.channel, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
 
     return itemlist
 
@@ -164,12 +164,12 @@ def peliculas(item):
         plot = ""
         url = urlparse.urljoin(item.url,scrapedurl)
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title))
 
     #</b></span></a></li[^<]+<li><a href="?page=2">
     next_page = scrapertools.find_single_match(data,'</b></span></a></li[^<]+<li><a target="_top" href="([^"]+)">')
     if next_page!="":
-        itemlist.append( Item(channel=item.channel, action="peliculas" , title=">> Página siguiente" , url=item.url+next_page, folder=True))
+        itemlist.append( Item(channel=item.channel, action="peliculas" , title=">> Página siguiente" , url=item.url+next_page, folder=True, viewmode="movie"))
 
     return itemlist
 

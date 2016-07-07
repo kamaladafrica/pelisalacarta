@@ -22,12 +22,12 @@ def mainlist(item):
     logger.info("pelisalacarta.channels.youanimehd mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=item.channel, action="completo"  , title="Portada"                        , url="http://youanimehd.com/" ))
+    itemlist.append( Item(channel=item.channel, action="completo"  , title="Portada"                        , url="http://youanimehd.com/" , viewmode="movie_with_plot"))
     itemlist.append( Item(channel=item.channel, action="letras"    , title="Listado Alfabetico"             , url="http://youanimehd.com/" ))
-    itemlist.append( Item(channel=item.channel, action="completo"  , title="Listado Completo de Animes"     , url="http://youanimehd.com/videos" ))
-    itemlist.append( Item(channel=item.channel, action="completo"  , title="Listado Completo de Peliculas"  , url="http://youanimehd.com/tags/pelicula" ))
-    itemlist.append( Item(channel=item.channel, action="completo"  , title="Listado Completo de Dibujos"  , url="http://youanimehd.com/tags/cartoon" ))
-    itemlist.append( Item(channel=item.channel, action="completo"  , title="Listado Completo de Doramas"    , url="http://youanimehd.com/tags/dorama" ))
+    itemlist.append( Item(channel=item.channel, action="completo"  , title="Listado Completo de Animes"     , url="http://youanimehd.com/videos" , viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, action="completo"  , title="Listado Completo de Peliculas"  , url="http://youanimehd.com/tags/pelicula" , viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, action="completo"  , title="Listado Completo de Dibujos"  , url="http://youanimehd.com/tags/cartoon" , viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, action="completo"  , title="Listado Completo de Doramas"    , url="http://youanimehd.com/tags/dorama" , viewmode="movie_with_plot"))
     #itemlist.append( Item(channel=item.channel, action="search"  , title="Buscar"                            , url="http://youanimehd.com/buscar/" ))
   
     return itemlist
@@ -68,7 +68,7 @@ def completo(item):
 
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
 
-        itemlist.append( Item(channel=item.channel, action="serie" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot, show=scrapedtitle, fulltitle=fulltitle, viewmode="movie_with_plot"))
+        itemlist.append( Item(channel=item.channel, action="serie" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot, show=scrapedtitle, fulltitle=fulltitle))
 
     patronvideos = '<a href="([^"]+)" title="([^"]+)"><img src="([^"]+)" alt="[^"]+"[^<]+</a[^<]+</div[^<]+<div class="videoTitle"[^<]+<a[^>]+>([^<]+)</a>'
     matches = re.compile(patronvideos,re.DOTALL).findall(data)    
@@ -81,7 +81,7 @@ def completo(item):
         scrapedplot = plot
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
 
-        itemlist.append( Item(channel=item.channel, action="serie" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot, show=scrapedtitle, fulltitle=fulltitle, viewmode="movie_with_plot"))
+        itemlist.append( Item(channel=item.channel, action="serie" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot, show=scrapedtitle, fulltitle=fulltitle))
 
     patron = '<li><a href="([^"]+)">Next</a></li>'
     matches = re.compile(patron,re.DOTALL).findall(data)
@@ -92,40 +92,40 @@ def completo(item):
             scrapedthumbnail = ""
             scrapedplot = ""
 
-        itemlist.append( Item(channel=item.channel, action="completo", title=scrapedtitle , url=scrapedurl) )        
+        itemlist.append( Item(channel=item.channel, action="completo", title=scrapedtitle , url=scrapedurl, viewmode="movie_with_plot") )        
 
     return itemlist
 
 def letras(item):
     logger.info("pelisalacarta.channels.youanimehd letras")
     itemlist = []
-    itemlist.append( Item(channel=item.channel, action="completo" , title="0-9", url="http://youanimehd.com/tags/0-9"))
-    itemlist.append( Item(channel=item.channel, action="completo" , title="A"  , url="http://youanimehd.com/tags/a"))
-    itemlist.append( Item(channel=item.channel, action="completo" , title="B"  , url="http://youanimehd.com/tags/b"))
-    itemlist.append( Item(channel=item.channel, action="completo" , title="C"  , url="http://youanimehd.com/tags/c"))
-    itemlist.append( Item(channel=item.channel, action="completo" , title="D"  , url="http://youanimehd.com/tags/d"))
-    itemlist.append( Item(channel=item.channel, action="completo" , title="E"  , url="http://youanimehd.com/tags/e"))
-    itemlist.append( Item(channel=item.channel, action="completo" , title="F"  , url="http://youanimehd.com/tags/f"))
-    itemlist.append( Item(channel=item.channel, action="completo" , title="G"  , url="http://youanimehd.com/tags/g"))
-    itemlist.append( Item(channel=item.channel, action="completo" , title="H"  , url="http://youanimehd.com/tags/h"))
-    itemlist.append( Item(channel=item.channel, action="completo" , title="I"  , url="http://youanimehd.com/tags/i"))
-    itemlist.append( Item(channel=item.channel, action="completo" , title="J"  , url="http://youanimehd.com/tags/j"))
-    itemlist.append( Item(channel=item.channel, action="completo" , title="K"  , url="http://youanimehd.com/tags/k"))
-    itemlist.append( Item(channel=item.channel, action="completo" , title="L"  , url="http://youanimehd.com/tags/l"))
-    itemlist.append( Item(channel=item.channel, action="completo" , title="M"  , url="http://youanimehd.com/tags/m"))
-    itemlist.append( Item(channel=item.channel, action="completo" , title="N"  , url="http://youanimehd.com/tags/n"))
-    itemlist.append( Item(channel=item.channel, action="completo" , title="O"  , url="http://youanimehd.com/tags/o"))
-    itemlist.append( Item(channel=item.channel, action="completo" , title="P"  , url="http://youanimehd.com/tags/p"))
-    itemlist.append( Item(channel=item.channel, action="completo" , title="Q"  , url="http://youanimehd.com/tags/q"))
-    itemlist.append( Item(channel=item.channel, action="completo" , title="R"  , url="http://youanimehd.com/tags/r"))
-    itemlist.append( Item(channel=item.channel, action="completo" , title="S"  , url="http://youanimehd.com/tags/s"))
-    itemlist.append( Item(channel=item.channel, action="completo" , title="T"  , url="http://youanimehd.com/tags/t"))
-    itemlist.append( Item(channel=item.channel, action="completo" , title="U"  , url="http://youanimehd.com/tags/u"))
-    itemlist.append( Item(channel=item.channel, action="completo" , title="V"  , url="http://youanimehd.com/tags/v"))
-    itemlist.append( Item(channel=item.channel, action="completo" , title="W"  , url="http://youanimehd.com/tags/w"))
-    itemlist.append( Item(channel=item.channel, action="completo" , title="X"  , url="http://youanimehd.com/tags/x"))
-    itemlist.append( Item(channel=item.channel, action="completo" , title="Y"  , url="http://youanimehd.com/tags/y"))
-    itemlist.append( Item(channel=item.channel, action="completo" , title="Z"  , url="http://youanimehd.com/tags/z"))
+    itemlist.append( Item(channel=item.channel, action="completo" , title="0-9", url="http://youanimehd.com/tags/0-9", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, action="completo" , title="A"  , url="http://youanimehd.com/tags/a", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, action="completo" , title="B"  , url="http://youanimehd.com/tags/b", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, action="completo" , title="C"  , url="http://youanimehd.com/tags/c", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, action="completo" , title="D"  , url="http://youanimehd.com/tags/d", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, action="completo" , title="E"  , url="http://youanimehd.com/tags/e", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, action="completo" , title="F"  , url="http://youanimehd.com/tags/f", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, action="completo" , title="G"  , url="http://youanimehd.com/tags/g", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, action="completo" , title="H"  , url="http://youanimehd.com/tags/h", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, action="completo" , title="I"  , url="http://youanimehd.com/tags/i", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, action="completo" , title="J"  , url="http://youanimehd.com/tags/j", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, action="completo" , title="K"  , url="http://youanimehd.com/tags/k", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, action="completo" , title="L"  , url="http://youanimehd.com/tags/l", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, action="completo" , title="M"  , url="http://youanimehd.com/tags/m", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, action="completo" , title="N"  , url="http://youanimehd.com/tags/n", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, action="completo" , title="O"  , url="http://youanimehd.com/tags/o", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, action="completo" , title="P"  , url="http://youanimehd.com/tags/p", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, action="completo" , title="Q"  , url="http://youanimehd.com/tags/q", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, action="completo" , title="R"  , url="http://youanimehd.com/tags/r", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, action="completo" , title="S"  , url="http://youanimehd.com/tags/s", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, action="completo" , title="T"  , url="http://youanimehd.com/tags/t", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, action="completo" , title="U"  , url="http://youanimehd.com/tags/u", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, action="completo" , title="V"  , url="http://youanimehd.com/tags/v", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, action="completo" , title="W"  , url="http://youanimehd.com/tags/w", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, action="completo" , title="X"  , url="http://youanimehd.com/tags/x", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, action="completo" , title="Y"  , url="http://youanimehd.com/tags/y", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, action="completo" , title="Z"  , url="http://youanimehd.com/tags/z", viewmode="movie_with_plot"))
 
     return itemlist
 

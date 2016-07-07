@@ -105,7 +105,7 @@ def generos(item):
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
-        itemlist.append( Item(channel=item.channel, action="series" , title=title , url=url, thumbnail=thumbnail, plot=plot))        
+        itemlist.append( Item(channel=item.channel, action="series" , title=title , url=url, thumbnail=thumbnail, plot=plot, viewmode="movie_with_plot"))        
 
     return itemlist
 
@@ -126,7 +126,7 @@ def letras(item):
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
-        itemlist.append( Item(channel=item.channel, action="series" , title=title , url=url, thumbnail=thumbnail, plot=plot))        
+        itemlist.append( Item(channel=item.channel, action="series" , title=title , url=url, thumbnail=thumbnail, plot=plot, viewmode="movie_with_plot"))        
 
     return itemlist
 
@@ -175,7 +175,7 @@ def series(item):
         plot = scrapertools.htmlclean(scrapedplot)
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
-        itemlist.append( Item(channel=item.channel, action="episodios" , title=title , url=url, thumbnail=thumbnail, fanart=thumbnail, plot=plot, extra=extra, viewmode="movie_with_plot"))        
+        itemlist.append( Item(channel=item.channel, action="episodios" , title=title , url=url, thumbnail=thumbnail, fanart=thumbnail, plot=plot, extra=extra))        
 
     try:
         siguiente = scrapertools.get_match(data,'<a class="listsiguiente" href="([^"]+)" >Resultados Siguientes')
@@ -184,7 +184,7 @@ def series(item):
         scrapedthumbnail = ""
         scrapedplot = ""
 
-        itemlist.append( Item(channel=item.channel, action="series", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="series", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True, viewmode="movie_with_plot") )
     except:
         pass
     return itemlist

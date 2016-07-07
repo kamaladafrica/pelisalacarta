@@ -22,8 +22,8 @@ def mainlist(item):
     logger.info("[peliscity.py] mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=item.channel, title="Últimas agregadas"  , action="agregadas", url="http://peliscity.com"))
-    itemlist.append( Item(channel=item.channel, title="Peliculas HD"  , action="agregadas", url="http://peliscity.com/calidad/hd-real-720"))
+    itemlist.append( Item(channel=item.channel, title="Últimas agregadas"  , action="agregadas", url="http://peliscity.com", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, title="Peliculas HD"  , action="agregadas", url="http://peliscity.com/calidad/hd-real-720", viewmode="movie_with_plot"))
     itemlist.append( Item(channel=item.channel, title="Listado por género" , action="porGenero", url="http://peliscity.com"))
     itemlist.append( Item(channel=item.channel, title="Buscar" , action="search", url="http://peliscity.com/?s=") )
     itemlist.append( Item(channel=item.channel, title="Idioma" , action="porIdioma", url="http://peliscity.com/") )
@@ -33,9 +33,9 @@ def mainlist(item):
 def porIdioma(item):
     
     itemlist = []
-    itemlist.append( Item(channel=item.channel, title="Castellano"  , action="agregadas", url="http://www.peliscity.com/idioma/espanol-castellano/"))
-    itemlist.append( Item(channel=item.channel, title="VOS"  , action="agregadas", url="http://www.peliscity.com/idioma/subtitulada/"))
-    itemlist.append( Item(channel=item.channel, title="Latino"  , action="agregadas", url="http://www.peliscity.com/idioma/espanol-latino/"))
+    itemlist.append( Item(channel=item.channel, title="Castellano"  , action="agregadas", url="http://www.peliscity.com/idioma/espanol-castellano/", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, title="VOS"  , action="agregadas", url="http://www.peliscity.com/idioma/subtitulada/", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, title="Latino"  , action="agregadas", url="http://www.peliscity.com/idioma/espanol-latino/", viewmode="movie_with_plot"))
     
     return itemlist
 
@@ -51,7 +51,7 @@ def porGenero(item):
     matches = re.compile(patron,re.DOTALL).findall(data)
     
     for urlgen, genero in matches:
-         itemlist.append( Item(channel=item.channel, action="agregadas" , title = genero, url=urlgen , folder = True) )
+         itemlist.append( Item(channel=item.channel, action="agregadas" , title = genero, url=urlgen , folder = True, viewmode="movie_with_plot") )
 
     return itemlist	
 
@@ -87,7 +87,7 @@ def agregadas(item):
     for thumbnail,url, title, sinopsis in matches:
         url=urlparse.urljoin(item.url,url)
         thumbnail = urlparse.urljoin(url,thumbnail)
-        itemlist.append( Item(channel=item.channel, action="findvideos", title=title+" ", fulltitle=title , url=url , thumbnail=thumbnail , show=title, plot= sinopsis, viewmode="movie_with_plot") )
+        itemlist.append( Item(channel=item.channel, action="findvideos", title=title+" ", fulltitle=title , url=url , thumbnail=thumbnail , show=title, plot= sinopsis) )
 
     # Paginación
     try:
@@ -95,7 +95,7 @@ def agregadas(item):
     
         next_page = re.compile(patron,re.DOTALL).findall(data)
    
-        itemlist.append( Item(channel=item.channel, action="agregadas", title="Página siguiente >>" , url=next_page[0]) )
+        itemlist.append( Item(channel=item.channel, action="agregadas", title="Página siguiente >>" , url=next_page[0], viewmode="movie_with_plot") )
     except: pass
 
     return itemlist
@@ -113,7 +113,7 @@ def listaBuscar(item):
     matches = re.compile(patron,re.DOTALL).findall(data)
     
     for url, thumbnail, title, sinopsis in matches:
-        itemlist.append( Item(channel=item.channel, action="findvideos", title=title+" ", fulltitle=title , url=url , thumbnail=thumbnail , show=title, plot= sinopsis, viewmode="movie_with_plot") )
+        itemlist.append( Item(channel=item.channel, action="findvideos", title=title+" ", fulltitle=title , url=url , thumbnail=thumbnail , show=title, plot= sinopsis) )
 
     
     return itemlist

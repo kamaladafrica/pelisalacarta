@@ -25,8 +25,8 @@ def mainlist(item):
     itemlist = []
     itemlist.append( Item(channel=item.channel, action="submenu" , title="Películas"))
     itemlist.append( Item(channel=item.channel, action="submenu" , title="Series"))
-    itemlist.append( Item(channel=item.channel, action="listado" , title="Anime"   , url="http://www.newpct.com/anime/" ))
-    itemlist.append( Item(channel=item.channel, action="listado" , title="Documentales"   , url="http://www.newpct.com/documentales/"))
+    itemlist.append( Item(channel=item.channel, action="listado" , title="Anime"   , url="http://www.newpct.com/anime/" , viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, action="listado" , title="Documentales"   , url="http://www.newpct.com/documentales/", viewmode="movie_with_plot"))
     itemlist.append( Item(channel=item.channel, action="search"    , title="Buscar" ))
   
     return itemlist
@@ -84,18 +84,18 @@ def submenu(item):
     itemlist=[]
     
     if item.title == "Películas":
-		itemlist.append( Item(channel=item.channel, action="listado" , title="Peliculas DVDRIP-BRRIP Castellano" , url="http://www.newpct.com/peliculas-castellano/peliculas-rip/"))
-		itemlist.append( Item(channel=item.channel, action="listado" , title="Peliculas Latino" , url="http://www.newpct.com/peliculas-latino/"))
-		itemlist.append( Item(channel=item.channel, action="listado" , title="Estrenos de Cine Castellano" , url="http://www.newpct.com/peliculas-castellano/estrenos-de-cine/"))
-		itemlist.append( Item(channel=item.channel, action="listado" , title="Peliculas Alta Definicion HD" , url="http://www.newpct.com/cine-alta-definicion-hd/"))
-		itemlist.append( Item(channel=item.channel, action="listado" , title="Peliculas en 3D HD" , url="http://www.newpct.com/peliculas-en-3d-hd/"))
-		itemlist.append( Item(channel=item.channel, action="listado" , title="Peliculas DVDFULL" , url="http://www.newpct.com/peliculas-castellano/peliculas-dvd/"))
-		itemlist.append( Item(channel=item.channel, action="listado" , title="Peliculas V.O.Subtituladas" , url="http://www.newpct.com/peliculas-vo/"))
+		itemlist.append( Item(channel=item.channel, action="listado" , title="Peliculas DVDRIP-BRRIP Castellano" , url="http://www.newpct.com/peliculas-castellano/peliculas-rip/", viewmode="movie_with_plot"))
+		itemlist.append( Item(channel=item.channel, action="listado" , title="Peliculas Latino" , url="http://www.newpct.com/peliculas-latino/", viewmode="movie_with_plot"))
+		itemlist.append( Item(channel=item.channel, action="listado" , title="Estrenos de Cine Castellano" , url="http://www.newpct.com/peliculas-castellano/estrenos-de-cine/", viewmode="movie_with_plot"))
+		itemlist.append( Item(channel=item.channel, action="listado" , title="Peliculas Alta Definicion HD" , url="http://www.newpct.com/cine-alta-definicion-hd/", viewmode="movie_with_plot"))
+		itemlist.append( Item(channel=item.channel, action="listado" , title="Peliculas en 3D HD" , url="http://www.newpct.com/peliculas-en-3d-hd/", viewmode="movie_with_plot"))
+		itemlist.append( Item(channel=item.channel, action="listado" , title="Peliculas DVDFULL" , url="http://www.newpct.com/peliculas-castellano/peliculas-dvd/", viewmode="movie_with_plot"))
+		itemlist.append( Item(channel=item.channel, action="listado" , title="Peliculas V.O.Subtituladas" , url="http://www.newpct.com/peliculas-vo/", viewmode="movie_with_plot"))
     else:
-		itemlist.append( Item(channel=item.channel, action="listado" , title="HDTV Castellano" , url="http://www.newpct.com/series/", category="serie"))
-		itemlist.append( Item(channel=item.channel, action="listado" , title="Miniseries Castellano" , url="http://www.newpct.com/miniseries-es/"))
-		itemlist.append( Item(channel=item.channel, action="listado" , title="Series TV - V.O.S.E" , url="http://www.newpct.com/series-vo/", category="serie"))
-		itemlist.append( Item(channel=item.channel, action="listado" , title="Últimos Capítulos HD" , url="http://www.newpct.com/series-alta-definicion-hd/", category="serie"))
+		itemlist.append( Item(channel=item.channel, action="listado" , title="HDTV Castellano" , url="http://www.newpct.com/series/", category="serie", viewmode="movie_with_plot"))
+		itemlist.append( Item(channel=item.channel, action="listado" , title="Miniseries Castellano" , url="http://www.newpct.com/miniseries-es/", viewmode="movie_with_plot"))
+		itemlist.append( Item(channel=item.channel, action="listado" , title="Series TV - V.O.S.E" , url="http://www.newpct.com/series-vo/", category="serie", viewmode="movie_with_plot"))
+		itemlist.append( Item(channel=item.channel, action="listado" , title="Últimos Capítulos HD" , url="http://www.newpct.com/series-alta-definicion-hd/", category="serie", viewmode="movie_with_plot"))
 		itemlist.append( Item(channel=item.channel, action="series" , title="Series HD [A-Z]" , url="http://www.newpct.com/index.php?l=torrentListByCategory&subcategory_s=1469&more=listar", category="serie"))
     return itemlist
 
@@ -148,9 +148,9 @@ def listado(item):
 
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
         if item.category == "serie":
-            itemlist.append( Item(channel=item.channel, action="episodios" , title=title , url=url, thumbnail=thumbnail, plot=plot, viewmode="movie_with_plot"))
+            itemlist.append( Item(channel=item.channel, action="episodios" , title=title , url=url, thumbnail=thumbnail, plot=plot))
         else:
-            itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, viewmode="movie_with_plot"))
+            itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot))
 
     # Página siguiente
     '''
@@ -250,9 +250,9 @@ def listado(item):
     url_next_page = base_url + "?" + urllib.urlencode( {"total": param_total, "type": param_type, "leter": param_leter, "sql": param_sql, "pag": param_pag, "tot": param_tot, "ban": param_ban, "cate": param_cate} )
     logger.info("url_next_page="+url_next_page)
     if item.category == "serie":
-        itemlist.append( Item(channel=item.channel, action="listado" , title=">> Página siguiente" , url=url_next_page, extra=bloque, category="serie"))
+        itemlist.append( Item(channel=item.channel, action="listado" , title=">> Página siguiente" , url=url_next_page, extra=bloque, category="serie", viewmode="movie_with_plot"))
     else:
-        itemlist.append( Item(channel=item.channel, action="listado" , title=">> Página siguiente" , url=url_next_page, extra=bloque))
+        itemlist.append( Item(channel=item.channel, action="listado" , title=">> Página siguiente" , url=url_next_page, extra=bloque, viewmode="movie_with_plot"))
 
     return itemlist
 

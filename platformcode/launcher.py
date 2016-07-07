@@ -58,7 +58,7 @@ def run():
 
     # If no item, this is mainlist
     else:
-        item = Item(action="selectchannel")
+        item = Item(action="selectchannel", viewmode="movie")
 
     logger.info("pelisalacarta.platformcode.launcher "+item.tostring())
 

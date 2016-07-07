@@ -126,7 +126,7 @@ def mostviewed(item):
 
         # Depuracion
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")            
-        itemlist.append( Item(channel=item.channel, action="episodios" , title=scrapedtitle, fulltitle=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot, viewmode="movie", show=scrapedtitle,fanart="http://pelisalacarta.mimediacenter.info/fanart/seriesyonkis.jpg"))
+        itemlist.append( Item(channel=item.channel, action="episodios" , title=scrapedtitle, fulltitle=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot, show=scrapedtitle,fanart="http://pelisalacarta.mimediacenter.info/fanart/seriesyonkis.jpg"))
 
     return itemlist
 
@@ -257,7 +257,7 @@ def addChapters(item):
         for flag in flags:
             title = title + " ("+flag+")"
 
-        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title, fulltitle=item.fulltitle+" "+title, url=url, thumbnail=item.thumbnail, plot=item.plot, show = item.show, context="4", viewmode="movie_with_plot", folder=True,fanart="http://pelisalacarta.mimediacenter.info/fanart/seriesyonkis.jpg"))
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title, fulltitle=item.fulltitle+" "+title, url=url, thumbnail=item.thumbnail, plot=item.plot, show = item.show, context="4", folder=True,fanart="http://pelisalacarta.mimediacenter.info/fanart/seriesyonkis.jpg"))
 
     return itemlist
 

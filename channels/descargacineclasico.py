@@ -34,7 +34,7 @@ def mainlist(item):
     thumb_buscar = get_thumbnail_path()+ "thumb_buscar.png"
 
     itemlist = []
-    itemlist.append( Item(channel=item.channel, title="Últimas agregadas"  , action="agregadas", url="http://www.descargacineclasico.net/"))
+    itemlist.append( Item(channel=item.channel, title="Últimas agregadas"  , action="agregadas", url="http://www.descargacineclasico.net/", viewmode="movie_with_plot"))
     itemlist.append( Item(channel=item.channel, title="Listado por género" , action="porGenero", url="http://www.descargacineclasico.net/"))
     itemlist.append( Item(channel=item.channel, title="Buscar" , action="search", url="http://www.descargacineclasico.net/", thumbnail=thumb_buscar) )
 
@@ -53,7 +53,7 @@ def porGenero(item):
     matches = re.compile(patron,re.DOTALL).findall(data[0])
     
     for url,genero in matches:
-        itemlist.append( Item(channel=item.channel , action="agregadas" , title=genero,url=url))
+        itemlist.append( Item(channel=item.channel , action="agregadas" , title=genero,url=url, viewmode="movie_with_plot"))
     
    
     return itemlist    
@@ -118,7 +118,7 @@ def agregadas(item):
         url=urlparse.urljoin(item.url,url)
         thumbnail = urlparse.urljoin(url,thumbnail)
 
-        itemlist.append( Item(channel=item.channel, action="findvideos", title=title+" ", fulltitle=title , url=url , thumbnail=thumbnail, plot=plot, show=title, viewmode="movie_with_plot") )
+        itemlist.append( Item(channel=item.channel, action="findvideos", title=title+" ", fulltitle=title , url=url , thumbnail=thumbnail, plot=plot, show=title) )
 
     # Paginación
     try:
@@ -127,7 +127,7 @@ def agregadas(item):
        
         patron_nextpage = r'<a class="nextpostslink" rel="next" href="([^"]+)'
         next_page = re.compile(patron_nextpage,re.DOTALL).findall(data)
-        itemlist.append( Item(channel=item.channel, action="agregadas", title="Página siguiente >>" , url=next_page[0]) )
+        itemlist.append( Item(channel=item.channel, action="agregadas", title="Página siguiente >>" , url=next_page[0], viewmode="movie_with_plot") )
     except: pass
 
     return itemlist

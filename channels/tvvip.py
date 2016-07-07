@@ -44,7 +44,7 @@ def mainlist(item):
                          fanart="http://tv-vip.com/json/playlist/peliculas/background.jpg" + head, viewmode="movie"))
     itemlist.append(Item(channel=item.channel, title="Series", action="submenu",
                          thumbnail="http://tv-vip.com/json/playlist/series/poster.jpg" + head,
-                         fanart="http://tv-vip.com/json/playlist/series/background.jpg" + head))
+                         fanart="http://tv-vip.com/json/playlist/series/background.jpg" + head, viewmode="movie"))
     itemlist.append(Item(channel=item.channel, title="Versión Original", action="entradasconlistas",
                          url="http://tv-vip.com/json/playlist/version-original/index.json",
                          thumbnail="http://tv-vip.com/json/playlist/version-original/thumbnail.jpg" + head,
@@ -166,8 +166,7 @@ def submenu(item):
         itemlist.append(Item(channel=item.channel, title="Nuevos Capítulos", action="episodios",
                              url="http://tv-vip.com/json/playlist/nuevos-capitulos/index.json",
                              thumbnail="http://tv-vip.com/json/playlist/nuevos-capitulos/background.jpg" + head,
-                             fanart="http://tv-vip.com/json/playlist/nuevos-capitulos/background.jpg" + head,
-                             viewmode="movie"))
+                             fanart="http://tv-vip.com/json/playlist/nuevos-capitulos/background.jpg" + head))
         itemlist.append(Item(channel=item.channel, title="Más Vistas", action="series",
                              url="http://tv-vip.com/json/playlist/top-series/index.json",
                              thumbnail="http://tv-vip.com/json/playlist/top-series/thumbnail.jpg" + head,
@@ -183,12 +182,11 @@ def submenu(item):
         itemlist.append(Item(channel=item.channel, title="Novedades", action="entradas",
                              url="http://tv-vip.com/json/playlist/000-novedades/index.json",
                              thumbnail="http://tv-vip.com/json/playlist/ultimas-peliculas/thumbnail.jpg" + head,
-                             fanart="http://tv-vip.com/json/playlist/ultimas-peliculas/background.jpg" + head,
-                             viewmode="movie"))
+                             fanart="http://tv-vip.com/json/playlist/ultimas-peliculas/background.jpg" + head, viewmode="movie_with_plot"))
         itemlist.append(Item(channel=item.channel, title="Más vistas", action="entradas",
                              url="http://tv-vip.com/json/playlist/peliculas-mas-vistas/index.json",
                              thumbnail="http://tv-vip.com/json/playlist/peliculas-mas-vistas/thumbnail.jpg" + head,
-                             fanart="http://tv-vip.com/json/playlist/peliculas-mas-vistas/background.jpg" + head))
+                             fanart="http://tv-vip.com/json/playlist/peliculas-mas-vistas/background.jpg" + head, viewmode="movie_with_plot"))
         itemlist.append(Item(channel=item.channel, title="Categorías", action="cat",
                              url="http://tv-vip.com/json/playlist/peliculas/index.json",
                              thumbnail=item.thumbnail, fanart=item.fanart))
@@ -282,7 +280,7 @@ def entradas(item):
 
         itemlist.append(Item(channel=item.channel, action="findvideos", server="", title=title, url=url,
                              thumbnail=thumbnail, fanart=fanart, fulltitle=fulltitle, infoLabels=infolabels,
-                             contentTitle=fulltitle, context=context, viewmode="movie_with_plot", show=data['name']))
+                             contentTitle=fulltitle, context=context, show=data['name']))
 
     return itemlist
 
@@ -567,7 +565,7 @@ def episodios(item):
             title = fulltitle = child.capitalize().replace('_', ' ')
             itemlist.append(item.clone(action="findvideos", server="", title=title, url=url, thumbnail=thumbnail,
                                        fanart=item.fanart, fulltitle=fulltitle, contentTitle=item.fulltitle,
-                                       context="2", viewmode="movie", show=item.fulltitle, folder=True))
+                                       context="2", show=item.fulltitle, folder=True))
 
     # Opción de añadir a la biblioteca en casos de series de una única temporada
     if len(itemlist) > 0 and not "---" in item.title and item.title != "Nuevos Capítulos":

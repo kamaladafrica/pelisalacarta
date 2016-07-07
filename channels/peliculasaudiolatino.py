@@ -23,9 +23,9 @@ def mainlist(item):
     logger.info("channels.peliculasaudiolatino mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=item.channel, title="Recién agregadas", action="peliculas", url="http://peliculasaudiolatino.com/ultimas-agregadas.html"))
-    itemlist.append( Item(channel=item.channel, title="Recién actualizadas", action="peliculas", url="http://peliculasaudiolatino.com/recien-actualizadas.html"))
-    itemlist.append( Item(channel=item.channel, title="Las más vistas", action="peliculas", url="http://peliculasaudiolatino.com/las-mas-vistas.html"))
+    itemlist.append( Item(channel=item.channel, title="Recién agregadas", action="peliculas", url="http://peliculasaudiolatino.com/ultimas-agregadas.html", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, title="Recién actualizadas", action="peliculas", url="http://peliculasaudiolatino.com/recien-actualizadas.html", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, title="Las más vistas", action="peliculas", url="http://peliculasaudiolatino.com/las-mas-vistas.html", viewmode="movie"))
     
     itemlist.append( Item(channel=item.channel, title="Listado por géneros" , action="generos", url="http://peliculasaudiolatino.com"))
     itemlist.append( Item(channel=item.channel, title="Listado por años" , action="anyos", url="http://peliculasaudiolatino.com"))
@@ -54,12 +54,12 @@ def peliculas(item):
         plot = ""
 
         # Añade al listado
-        itemlist.append( Item(channel=item.channel, action="findvideos", title=title , fulltitle=title, url=url , thumbnail=thumbnail , plot=plot , viewmode="movie", folder=True) )
+        itemlist.append( Item(channel=item.channel, action="findvideos", title=title , fulltitle=title, url=url , thumbnail=thumbnail , plot=plot , folder=True) )
 
     # Extrae la marca de siguiente página
     next_page = scrapertools.find_single_match(data,'<a href="([^"]+)"><span class="icon-chevron-right">')
     if next_page!="":
-        itemlist.append( Item(channel=item.channel, action="peliculas", title=">> Página siguiente" , url=urlparse.urljoin(item.url,next_page).replace("/../../","/"), folder=True) )
+        itemlist.append( Item(channel=item.channel, action="peliculas", title=">> Página siguiente" , url=urlparse.urljoin(item.url,next_page, viewmode="movie").replace("/../../","/"), folder=True) )
 
     return itemlist
 
@@ -85,7 +85,7 @@ def generos(item):
         scrapedplot = ""
         logger.info(scrapedtitle)
 
-        itemlist.append( Item(channel=item.channel, action="peliculas", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="peliculas", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True, viewmode="movie") )
 
     itemlist = sorted(itemlist, key=lambda Item: Item.title)    
     return itemlist
@@ -113,7 +113,7 @@ def anyos(item):
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
-        itemlist.append( Item(channel=item.channel, action="peliculas", title=title , url=url , thumbnail=thumbnail , plot=plot, folder=True) )
+        itemlist.append( Item(channel=item.channel, action="peliculas", title=title , url=url , thumbnail=thumbnail , plot=plot, folder=True, viewmode="movie") )
 
     return itemlist
 

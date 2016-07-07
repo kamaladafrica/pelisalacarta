@@ -52,7 +52,7 @@ def mainlist(item):
         scrapedplot = match[4]
 
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=item.channel, action="play" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot, server="directo", viewmode="movie_with_plot", folder=False))
+        itemlist.append( Item(channel=item.channel, action="play" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot, server="directo", folder=False))
 
     # ------------------------------------------------------
     # Extrae la página siguiente
@@ -69,7 +69,7 @@ def mainlist(item):
         scrapeddescription = ""
 
         # Añade al listado de XBMC
-        itemlist.append( Item(channel=item.channel, action="mainlist" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot, server="directo", folder=True))
+        itemlist.append( Item(channel=item.channel, action="mainlist" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot, server="directo", folder=True, viewmode="movie_with_plot"))
 
     return itemlist
 

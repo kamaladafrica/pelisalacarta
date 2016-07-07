@@ -57,7 +57,7 @@ def menuseries(item):
     itemlist.append( Item(channel=item.channel, action="peliculas" , title="Novedades"            , url="http://www.pordede.com/series/loadmedia/offset/0/showlist/hot" ))
     itemlist.append( Item(channel=item.channel, action="generos"   , title="Por géneros"          , url="http://www.pordede.com/series" ))
     itemlist.append( Item(channel=item.channel, action="peliculas" , title="Siguiendo"            , url="http://www.pordede.com/series/following" ))
-    itemlist.append( Item(channel=item.channel, action="siguientes" , title="Siguientes Capítulos" , url="http://www.pordede.com/index2.php" ))
+    itemlist.append( Item(channel=item.channel, action="siguientes" , title="Siguientes Capítulos" , url="http://www.pordede.com/index2.php" , viewmode="movie"))
     itemlist.append( Item(channel=item.channel, action="peliculas" , title="Favoritas"            , url="http://www.pordede.com/series/favorite" ))
     itemlist.append( Item(channel=item.channel, action="peliculas" , title="Pendientes"           , url="http://www.pordede.com/series/pending" ))
     itemlist.append( Item(channel=item.channel, action="peliculas" , title="Terminadas"           , url="http://www.pordede.com/series/seen" ))
@@ -174,11 +174,11 @@ def parse_mixed_results(item,data):
             referer = urlparse.urljoin(item.url,scrapedurl)
             url = referer.replace("/{0}/".format(sectionStr),"/links/view/slug/")+"/what/{0}".format(sectionStr)
             if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-            itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=fulltitle, fanart=fanart, viewmode="movie"))
+            itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=fulltitle, fanart=fanart))
         else:
             referer = item.url
             url = urlparse.urljoin(item.url,scrapedurl)
-            itemlist.append( Item(channel=item.channel, action="episodios" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=fulltitle, show=title, fanart=fanart, viewmode="movie"))
+            itemlist.append( Item(channel=item.channel, action="episodios" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=fulltitle, show=title, fanart=fanart))
 
 
     next_page = scrapertools.find_single_match(data, '<div class="loadingBar" data-url="([^"]+)"')
@@ -239,8 +239,8 @@ def siguientes(item):
 
         referer = urlparse.urljoin(item.url,scrapedurl)
         url = referer
-        #itemlist.append( Item(channel=item.channel, action="episodios" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=title, viewmode="movie"))
-        itemlist.append( Item(channel=item.channel, action="episodio" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=title, fanart=fanart, viewmode="movie", extra=session+"|"+episode))
+        #itemlist.append( Item(channel=item.channel, action="episodios" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=title))
+        itemlist.append( Item(channel=item.channel, action="episodio" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=title, fanart=fanart, extra=session+"|"+episode))
 
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
