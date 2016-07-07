@@ -26,8 +26,12 @@
 import time
 import traceback
 import urllib2
+import re
 
+from core import jsontools
 from core import logger
+from core import scrapertools
+
 # -----------------------------------------------------------------------------------------------------------
 # Conjunto de funciones relacionadas con las infoLabels.
 #   version 1.0:
@@ -140,80 +144,12 @@ def set_infoLabels_item(item, seekTmdb=False, idioma_busqueda='es', lock=None):
         return -1 * len(item.infoLabels)
 
     def __leer_datos(otmdb_global):
-        infoLabels = item.infoLabels if 'infoLabels' in item else {}
-        for k, v in otmdb_global.result.items():
-            if v == '':
-                continue
-            elif k == 'overview':
-                infoLabels['plot'] = otmdb_global.get_sinopsis()
-            elif k == 'runtime':
-                infoLabels['duration'] = v
-            elif k == 'release_date':
-                infoLabels['year'] = int(v[:4])
-            elif k == 'first_air_date':
-                infoLabels['year'] = int(v[:4])
-                infoLabels['aired'] = v
-                infoLabels['premiered'] = v
-            elif k == 'original_title':
-                infoLabels['originaltitle'] = v
-            elif k == 'vote_average':
-                infoLabels['rating'] = float(v)
-            elif k == 'vote_count':
-                infoLabels['votes'] = v
-            elif k == 'poster_path':
-                item.thumbnail = 'http://image.tmdb.org/t/p/original' + v
-            elif k == 'backdrop_path':
-                item.fanart = 'http://image.tmdb.org/t/p/original' + v
-            elif k == 'id':
-                infoLabels['tmdb_id'] = v
-            elif k == 'imdb_id':
-                infoLabels['imdb_id'] = v
-                infoLabels['IMDBNumber'] = v
-                infoLabels['code'] = v
-            elif k == 'genres':
-                infoLabels['genre'] = otmdb_global.get_generos()
-            elif k == 'name':
-                infoLabels['title'] = v
-            elif k == 'production_companies':
-                infoLabels['studio'] = ", ".join(i['name'] for i in v)
-            elif k == 'production_countries' or k == 'origin_country':
-                if 'country' not in infoLabels:
-                    infoLabels['country'] = ", ".join(i if type(i) == str else i['name'] for i in v)
-                else:
-                    infoLabels['country'] = ", " + ", ".join(i if type(i) == str else i['name'] for i in v)
-            elif k == 'credits_cast':
-                infoLabels['castandrole'] = []
-                for c in sorted(v, key=lambda c: c.get("order")):
-                    infoLabels['castandrole'].append((c['name'], c['character']))
-            elif k == 'credits_crew':
-                l_director = []
-                l_writer = []
-                for crew in v:
-                    if crew['job'].lower() == 'director':
-                        l_director.append(crew['name'])
-                    elif crew['job'].lower() in ('screenplay', 'writer'):
-                        l_writer.append(crew['name'])
-                if l_director:
-                    infoLabels['director'] = ", ".join(l_director)
-                if l_writer:
-                    if 'writer' not in infoLabels:
-                        infoLabels['writer'] = ", ".join(l_writer)
-                    else:
-                        infoLabels['writer'] += "," + (",".join(l_writer))
-            elif k == 'created_by':
-                l_writer = []
-                for cr in v:
-                    l_writer.append(cr['name'])
-                if 'writer' not in infoLabels:
-                    infoLabels['writer'] = ",".join(l_writer)
-                else:
-                    infoLabels['writer'] += "," + (",".join(l_writer))
-            elif type(v) == str:
-                infoLabels[k] = v
-                # logger.debug(k +'= '+ v)
-
-        item.infoLabels = infoLabels
-
+        item.infoLabels = otmdb_global.get_infoLabels(item.infoLabels)
+        logger.debug(infoLabels_tostring(item))
+        if 'thumbnail' in item.infoLabels:
+            item.thumbnail = item.infoLabels['thumbnail']
+        if 'fanart' in item.infoLabels:
+            item.fanart = item.infoLabels['fanart']
 
     if seekTmdb:
         if not 'infoLabels' in item: item.infoLabels = {}
@@ -257,6 +193,7 @@ def set_infoLabels_item(item, seekTmdb=False, idioma_busqueda='es', lock=None):
                         item.infoLabels['plot'] = episodio['episodio_sinopsis']
                     if episodio['episodio_imagen']:
                         item.infoLabels['poster_path'] = episodio['episodio_imagen']
+                        item.thumbnail = item.infoLabels['poster_path']
 
             else:
                 # Tenemos numero de temporada valido pero no numero de episodio...
@@ -270,6 +207,7 @@ def set_infoLabels_item(item, seekTmdb=False, idioma_busqueda='es', lock=None):
                         item.infoLabels['plot'] = temporada['overview']
                     if temporada['poster_path']:
                         item.infoLabels['poster_path'] = 'http://image.tmdb.org/t/p/original' + temporada['poster_path']
+                        item.thumbnail = item.infoLabels['poster_path']
 
             return len(item.infoLabels)
 
@@ -322,12 +260,14 @@ def set_infoLabels_item(item, seekTmdb=False, idioma_busqueda='es', lock=None):
                         # Busqueda de serie por titulo y filtrando sus resultados si es necesario
                         otmdb_global = Tmdb(texto_buscado=item.infoLabels['tvshowtitle'], tipo=tipo,
                                             idioma_busqueda=idioma_busqueda, filtro=item.infoLabels.get('filtro', {}),
-                                            year=str(item.infoLabels.get('year','')))
+                                            year=str(item.infoLabels.get('year', '')))
                     else:
                         # Busqueda de pelicula por titulo...
                         if item.infoLabels['year'] or 'filtro' in item.infoLabels:
                             # ...y año o filtro
-                            otmdb_global = Tmdb(texto_buscado=item.infoLabels['title'], tipo=tipo,
+                            titulo_buscado = item.fulltitle if item.fulltitle != '' else \
+                                (item.contentTitle if item.contentTitle != '' else item.infoLabels['title'])
+                            otmdb_global = Tmdb(texto_buscado=titulo_buscado, tipo=tipo,
                                                 idioma_busqueda=idioma_busqueda,
                                                 filtro=item.infoLabels.get('filtro', {}),
                                                 year=str(item.infoLabels.get('year', '')))
@@ -541,7 +481,7 @@ class Tmdb(object):
 
         response_dic = {}
         try:
-            response_dic = self.__get_json(url)
+            response_dic = jsontools.load_json(scrapertools.downloadpage(url))
             self.total_results = response_dic["total_results"]
             self.total_pages = response_dic["total_pages"]
         except:
@@ -593,7 +533,7 @@ class Tmdb(object):
             buscando = source.capitalize() + ": " + self.busqueda["id"]
 
         logger.debug("Buscando %s:\n%s" % (buscando, url))
-        resultado = self.__get_json(url)
+        resultado = jsontools.load_json(scrapertools.downloadpage(url))
 
         if source != "tmdb":
             if self.busqueda["tipo"] == "movie":
@@ -614,25 +554,6 @@ class Tmdb(object):
 
         else:  # No hay resultados de la busqueda
             logger.debug("La busqueda de %s no dio resultados." % buscando)
-
-    @staticmethod
-    def __get_json(url):
-        try:
-            headers = {'Accept': 'application/json'}
-            request = urllib2.Request(url, headers=headers)
-            response_body = urllib2.urlopen(request).read()
-        except:
-            logger.error("Fallo la busqueda\n %s" % traceback.format_exc())
-            return None
-
-        try:
-            from core import jsontools
-            return jsontools.load_json(response_body)
-        except ImportError:
-            jsontools = None
-            logger.error("Fallo json\n %s" % traceback.format_exc())
-            # se hace el truco para que no te diga que no se usa la variable y como tiene "None" no hay problema
-            return jsontools
 
 
     def __inicializar(self):
@@ -707,7 +628,7 @@ class Tmdb(object):
                 Tmdb.dic_generos[self.busqueda["idioma"]][self.busqueda["tipo"]] = {}
             url = ('http://api.themoviedb.org/3/genre/%s/list?api_key=f7f51775877e0bb6703520952b3c7840&language=%s'
                    % (self.busqueda["tipo"], self.busqueda["idioma"]))
-            lista_generos = self.__get_json(url)["genres"]
+            lista_generos = jsontools.load_json(scrapertools.downloadpage(url))["genres"]
             for i in lista_generos:
                 Tmdb.dic_generos[self.busqueda["idioma"]][self.busqueda["tipo"]][str(i["id"])] = i["name"]
 
@@ -869,7 +790,7 @@ class Tmdb(object):
                     self.busqueda["idioma"] = self.result['original_language']
                 url = ('http://api.themoviedb.org/3/%s/%s?api_key=f7f51775877e0bb6703520952b3c7840&language=%s' %
                        (self.busqueda["tipo"], self.busqueda["id"], self.busqueda["idioma"]))
-                resultado = self.__get_json(url)
+                resultado = jsontools.load_json(scrapertools.downloadpage(url))
                 if resultado:
                     if 'overview' in resultado:
                         self.result['overview'] = resultado['overview']
@@ -940,8 +861,8 @@ class Tmdb(object):
         @rtype: list, str
         """
         ret = []
-        if size not in("w45", "w92", "w154", "w185", "w300", "w342", "w500", "w600", "h632", "w780", "w1280",
-                       "original"):
+        if size not in ("w45", "w92", "w154", "w185", "w300", "w342", "w500", "w600", "h632", "w780", "w1280",
+                        "original"):
             size = "original"
 
         if self.result["backdrop_path"] is None or self.result["backdrop_path"] == "":
@@ -1020,7 +941,7 @@ class Tmdb(object):
                 # 'person' No soportado
                 return None
 
-            fanarttv = self.__get_json(url)
+            fanarttv = jsontools.load_json(scrapertools.downloadpage(url))
             if fanarttv is None:  # Si el item buscado no esta en Fanart.tv devolvemos una lista vacia
                 return []
 
@@ -1142,7 +1063,7 @@ class Tmdb(object):
             buscando = "id_Tmdb: " + str(self.result["id"]) + " temporada: " + str(numtemporada)
             logger.info("[Tmdb.py] Buscando " + buscando)
 
-            self.temporada[numtemporada] = self.__get_json(url)
+            self.temporada[numtemporada] = jsontools.load_json(scrapertools.downloadpage(url))
 
             if "status_code" in self.temporada[numtemporada]:
                 # Se ha producido un error
@@ -1151,3 +1072,125 @@ class Tmdb(object):
                 return {}
 
         return self.temporada[numtemporada]
+
+    def get_videos(self):
+        """
+        :return: Devuelve una lista ordenada (idioma/resolucion/tipo) de objetos Dict en la que cada uno de
+        sus elementos corresponde con un trailer, teaser o clip de youtube.
+        :rtype: list of Dict
+        """
+        ret = []
+        if self.result['id']:
+            if not self.result['videos']:
+                # Primera búsqueda de videos en el idioma de busqueda
+                url = "http://api.themoviedb.org/3/%s/%s/videos?api_key=f7f51775877e0bb6703520952b3c7840&language=%s" \
+                      % (self.busqueda['tipo'], self.result['id'], self.busqueda["idioma"])
+                dict_videos = jsontools.load_json(scrapertools.downloadpage(url))
+                if dict_videos['results']:
+                    dict_videos['results'] = sorted(dict_videos['results'], key=lambda x: (x['type'], x['size']))
+                    self.result["videos"] = dict_videos['results']
+
+            # Si el idioma de busqueda no es ingles, hacer una segunda búsqueda de videos en inglés
+            if self.busqueda["idioma"] != 'en':
+                url = "http://api.themoviedb.org/3/%s/%s/videos?api_key=f7f51775877e0bb6703520952b3c7840" \
+                      % (self.busqueda['tipo'], self.result['id'])
+                dict_videos = jsontools.load_json(scrapertools.downloadpage(url))
+                if dict_videos['results']:
+                    dict_videos['results'] = sorted(dict_videos['results'], key=lambda x: (x['type'], x['size']))
+                    self.result["videos"].extend(dict_videos['results'])
+
+            # Si las busqueda han obtenido resultados devolver un listado de objetos
+            for i in self.result['videos']:
+                if i['site'] == "YouTube":
+                    ret.append({'name': i['name'],
+                                'url': "https://www.youtube.com/watch?v=%s" % i['key'],
+                                'size': str(i['size']),
+                                'type': i['type'],
+                                'language': i['iso_639_1']})
+
+        return ret
+
+    def get_infoLabels(self, infoLabels=None):
+        """
+        :param infoLabels: Informacion extra de la pelicula, serie, temporada o capitulo.
+        :type infoLabels: Dict
+        :return: Devuelve la informacion extra obtenida del objeto actual. Si se paso el parametro infoLables, el valor
+        devuelto sera el leido como parametro debidamente actualizado.
+        :rtype: Dict
+        """
+        ret_infoLabels = infoLabels if infoLabels else {}
+        for k, v in self.result.items():
+            if v == '':
+                continue
+            elif type(v) == str:
+                v = re.sub(r"\n|\r|\t", "", v)
+
+            if k == 'overview':
+                ret_infoLabels['plot'] = otmdb_global.get_sinopsis()
+            elif k == 'runtime':
+                ret_infoLabels['duration'] = v
+            elif k == 'release_date':
+                ret_infoLabels['year'] = int(v[:4])
+            elif k == 'first_air_date':
+                ret_infoLabels['year'] = int(v[:4])
+                ret_infoLabels['aired'] = v
+                ret_infoLabels['premiered'] = v
+            elif k == 'original_title':
+                ret_infoLabels['originaltitle'] = v
+            elif k == 'vote_average':
+                ret_infoLabels['rating'] = float(v)
+            elif k == 'vote_count':
+                ret_infoLabels['votes'] = v
+            elif k == 'poster_path':
+                ret_infoLabels['thumbnail'] = 'http://image.tmdb.org/t/p/original' + v
+            elif k == 'backdrop_path':
+                ret_infoLabels['fanart'] = 'http://image.tmdb.org/t/p/original' + v
+            elif k == 'id':
+                ret_infoLabels['tmdb_id'] = v
+            elif k == 'imdb_id':
+                ret_infoLabels['imdb_id'] = v
+                ret_infoLabels['IMDBNumber'] = v
+                ret_infoLabels['code'] = v
+            elif k == 'genres':
+                ret_infoLabels['genre'] = otmdb_global.get_generos()
+            elif k == 'name':
+                ret_infoLabels['title'] = v
+            elif k == 'production_companies':
+                ret_infoLabels['studio'] = ", ".join(i['name'] for i in v)
+            elif k == 'production_countries' or k == 'origin_country':
+                if 'country' not in ret_infoLabels:
+                    ret_infoLabels['country'] = ", ".join(i if type(i) == str else i['name'] for i in v)
+                else:
+                    ret_infoLabels['country'] = ", " + ", ".join(i if type(i) == str else i['name'] for i in v)
+            elif k == 'credits_cast':
+                ret_infoLabels['castandrole'] = []
+                for c in sorted(v, key=lambda c: c.get("order")):
+                    ret_infoLabels['castandrole'].append((c['name'], c['character']))
+            elif k == 'credits_crew':
+                l_director = []
+                l_writer = []
+                for crew in v:
+                    if crew['job'].lower() == 'director':
+                        l_director.append(crew['name'])
+                    elif crew['job'].lower() in ('screenplay', 'writer'):
+                        l_writer.append(crew['name'])
+                if l_director:
+                    ret_infoLabels['director'] = ", ".join(l_director)
+                if l_writer:
+                    if 'writer' not in ret_infoLabels:
+                        ret_infoLabels['writer'] = ", ".join(l_writer)
+                    else:
+                        ret_infoLabels['writer'] += "," + (",".join(l_writer))
+            elif k == 'created_by':
+                l_writer = []
+                for cr in v:
+                    l_writer.append(cr['name'])
+                if 'writer' not in ret_infoLabels:
+                    ret_infoLabels['writer'] = ",".join(l_writer)
+                else:
+                    ret_infoLabels['writer'] += "," + (",".join(l_writer))
+            elif type(v) == str:
+                ret_infoLabels[k] = v
+                # logger.debug(k +'= '+ v)
+
+        return ret_infoLabels
