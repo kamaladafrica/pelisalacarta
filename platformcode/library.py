@@ -1043,3 +1043,55 @@ def create_nfo_file(video_id, path, type_video):
         nfo_file = path + ".nfo"
 
     save_file(data, nfo_file)
+
+def add_pelicula_to_library(item):
+    logger.info("pelisalacarta.platformcode.library add_pelicula_to_library")
+
+    new_item = item.clone(action="play_from_library", category="Cine")
+    insertados, sobreescritos, fallidos = library.save_library_movie(new_item)
+    itemlist = []
+
+    if fallidos == 0:
+        itemlist.append(Item(title="La pelicula se ha añadido a la biblioteca", channel=item.channel))
+    else:
+        itemlist.append(Item(title="ERROR, la pelicula NO se ha añadido a la biblioteca",  channel=item.channel))
+
+    xbmctools.renderItems(itemlist, item)
+
+    # library.update()
+
+
+def add_serie_to_library(item, channel):
+    logger.info("pelisalacarta.platformcode.library add_serie_to_library, show=#"+item.show+"#")
+
+    # Esta marca es porque el item tiene algo más aparte en el atributo "extra"
+    action = item.extra
+    if "###" in item.extra:
+        action = item.extra.split("###")[0]
+        item.extra = item.extra.split("###")[1]
+
+    # Obtiene el listado desde el que se llamó
+    itemlist = getattr(channel, action)(item)
+
+    insertados, sobreescritos, fallidos = library.save_library_tvshow(item, itemlist)
+
+    if fallidos > -1 and (insertados + sobreescritos) > 0:
+        # Guardar el registro series.json actualizado
+        library.save_tvshow_in_file(item)
+
+    itemlist = []
+    if fallidos == -1:
+        itemlist.append(Item(title="ERROR, la serie NO se ha añadido a la biblioteca",channel=item.channel))
+        logger.error("pelisalacarta.platformcode.library La serie {0} no se ha podido añadir a la biblioteca".format(item.show))
+        xbmctools.renderItems(itemlist, item)
+        return -1
+    elif fallidos > 0:
+        itemlist.append(Item(title="ERROR, la serie NO se ha añadido completa a la biblioteca",
+                             channel=item.channel))
+        logger.error("pelisalacarta.platformcode.library No se han podido añadir {0} episodios de la serie {1} a la biblioteca".format(fallidos,item.show))
+    else:
+        itemlist.append(Item(title="La serie se ha añadido a la biblioteca", channel=item.channel))
+        logger.info("pelisalacarta.platformcode.library  Se han añadido {0} episodios de la serie {1} a la biblioteca".format(insertados,item.show))
+
+    xbmctools.renderItems(itemlist, item)
+    # library.update() # TODO evitar bucle
