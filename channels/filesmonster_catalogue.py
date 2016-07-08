@@ -41,7 +41,7 @@ def unusualporn(item):
 
     itemlist = []
     itemlist.append( Item(channel=item.channel, action="videos_2", title="Últimos vídeos", url="http://unusualporn.net/", thumbnail="http://photosex.biz/imager/w_400/h_500/e48337cd95bbb6c2c372ffa6e71441ac.jpg"))    
-    itemlist.append( Item(channel=item.channel, action="categorias", title="Categorías", url="http://unusualporn.net/", thumbnail="http://photosex.biz/imager/w_400/h_500/e48337cd95bbb6c2c372ffa6e71441ac.jpg"))   
+    itemlist.append( Item(channel=item.channel, action="categorias_2", title="Categorías", url="http://unusualporn.net/", thumbnail="http://photosex.biz/imager/w_400/h_500/e48337cd95bbb6c2c372ffa6e71441ac.jpg"))   
     itemlist.append( Item(channel=item.channel, action="search", title="Buscar en unusualporn"               , url="http://unusualporn.net/search/%s"))  
     return itemlist
 
