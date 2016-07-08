@@ -592,9 +592,9 @@ def trailer(item):
 
 def file_cine_library(item,url_targets):
     import os
-    from platformcode import library
+    from core import filetools
     librarypath = os.path.join(config.get_library_path(),"CINE")
-    archivo = library.title_to_filename(item.show.strip())
+    archivo = filetools.title_to_filename(item.show.strip())
     strmfile = archivo+".strm"
     strmfilepath = os.path.join(librarypath,strmfile)
 
@@ -608,7 +608,7 @@ def file_cine_library(item,url_targets):
 def add_file_cine_library(item):
     from platformcode import library, xbmctools
     new_item = item.clone(title=item.show, action="play_from_library")
-    library.savelibrary(new_item)
+    library.save_library_movie(new_item)
     itemlist = []
     itemlist.append(Item(title='El vídeo '+item.show+' se ha añadido a la biblioteca'))
     xbmctools.renderItems(itemlist, "", "", "")

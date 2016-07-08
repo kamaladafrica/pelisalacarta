@@ -37,7 +37,9 @@ from core import logger
 from core import scrapertools
 from core.item import Item
 from platformcode import library
+from platformcode import platformtools
 from platformcode import xbmctools
+
 
 def start():
     """ Primera funcion que se ejecuta al entrar en el plugin.
@@ -172,17 +174,6 @@ def run():
             if item.action == "play":
                 logger.info("pelisalacarta.platformcode.launcher play")
 
-                # Mark as watched item on Library channel
-                id_video = 0
-                category = ''
-                if 'infoLabels' in item:
-                    if 'episodeid' in item.infoLabels and item.infoLabels['episodeid']:
-                        category = 'Series'
-                        id_video = item.infoLabels['episodeid']
-                    elif 'movieid' in item.infoLabels and item.infoLabels['movieid']:
-                        category = 'Movies'
-                        id_video = item.infoLabels['movieid']
-
                 # First checks if channel has a "play" function
                 if hasattr(channel, 'play'):
                     logger.info("pelisalacarta.platformcode.launcher executing channel 'play' method")
@@ -192,9 +183,7 @@ def run():
                     if len(itemlist) > 0:
                         item = itemlist[0]
                         xbmctools.play_video(item)
-                        if id_video != 0:
-                            library.mark_as_watched(category, id_video)
-                    
+
                     # If not, shows user an error message
                     else:
                         import xbmcgui
@@ -205,8 +194,6 @@ def run():
                 else:
                     logger.info("pelisalacarta.platformcode.launcher executing core 'play' method")
                     xbmctools.play_video(item)
-                    if id_video != 0:
-                        library.mark_as_watched(category, id_video)
 
             # Special action for findvideos, where the plugin looks for known urls
             elif item.action == "findvideos":
@@ -411,8 +398,6 @@ def filtered_servers(itemlist, server_white_list, server_black_list):
 def play_from_library(item, channel, server_white_list, server_black_list):
     logger.info("pelisalacarta.platformcode.launcher play_from_library")
 
-    category = item.category
-
     logger.info("pelisalacarta.platformcode.launcher play_from_library item.server=#"+item.server+"#")
     # Ejecuta find_videos, del canal o común
     try:
@@ -453,4 +438,3 @@ def play_from_library(item, channel, server_white_list, server_black_list):
     logger.info("pelisalacarta.platformcode.launcher play_from_library Elegido %s (sub %s)" % (item.title, item.subtitle))
 
     xbmctools.play_video(item, strmfile=True)
-    library.mark_as_watched(category, 0)

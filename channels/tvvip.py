@@ -643,7 +643,7 @@ def series_library(item):
     try:
         from platformcode import library
         library.save_library_tvshow(item, lista_episodios)
-        library.save_tvshow_in_file(item)
+        library.save_tvshow_json(item)
         error = False
     except:
         error = True

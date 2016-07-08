@@ -29,27 +29,19 @@ import errno
 import math
 import os
 import re
-import string
 import sys
 import urllib
-from socket import gaierror
+import urllib2
 
 import xbmc
+
 from core import config
+from core import filetools
 from core import jsontools
 from core import logger
 from core import scrapertools
 from core.item import Item
 from platformcode import platformtools
-
-try:
-    from samba import libsmb as samba
-except ImportError:
-    librerias = xbmc.translatePath(os.path.join(config.get_runtime_path(), 'lib'))
-    sys.path.append(librerias)
-    from samba import libsmb as samba
-
-import urllib2
 
 modo_cliente = int(config.get_setting("library_mode"))
 # Host name where XBMC is running, leave as localhost if on this PC
@@ -64,85 +56,23 @@ xbmc_json_rpc_url = "http://{host}:{port}/jsonrpc".format(host=xbmc_host, port=x
 
 DEBUG = config.get_setting("debug")
 
-
-def path_exists(path):
-    """
-    comprueba si la ruta existe, samba necesita la raíz para conectar y la carpeta
-    @type path: str
-    @param path: la ruta del fichero
-    @rtype:   str
-    @return:  devuelve si existe la ruta.
-    """
-    if not samba.usingsamba(path):
-        return os.path.exists(path)
-    else:
-        try:
-            path_samba, folder_samba = path.rsplit('/', 1)
-            return samba.folder_exists(folder_samba, path_samba)
-        except gaierror:
-            logger.info("pelisalacarta.platformcode.library path_exists: No es posible conectar con la ruta")
-            platformtools.dialog_notification("No es posible conectar con la ruta", path)
-            return True
-
-
-def make_dir(path):
-    """
-    crea un directorio, samba necesita la raíz para conectar y la carpeta
-    @type path: str
-    @param path: la ruta del fichero
-    """
-    logger.info("pelisalacarta.platformcode.library make_dir")
-    if not samba.usingsamba(path):
-        try:
-            os.mkdir(path)
-        except OSError:
-            logger.info("pelisalacarta.platformcode.library make_dir: Error al crear la ruta")
-            platformtools.dialog_notification("Error al crear la ruta", path)
-    else:
-        try:
-            path_samba, folder_samba = path.rsplit('/', 1)
-            samba.create_directory(folder_samba, path_samba)
-        except gaierror:
-            logger.info("pelisalacarta.platformcode.library make_dir: Error al crear la ruta")
-            platformtools.dialog_notification("Error al crear la ruta", path)
-
-
-def join_path(path, *name):
-    """
-    une la ruta, el name puede ser carpeta o archivo
-    @type path: str
-    @param path: la ruta del fichero
-    @type name: str
-    @param name: nombre del fichero
-    @rtype:   str
-    @return:  devuelve si existe la ruta.
-    """
-    if not samba.usingsamba(path):
-        path = xbmc.translatePath(os.path.join(path, *name))
-    else:
-        path = path + "/" + name
-
-    return path
-
-
 LIBRARY_PATH = config.get_library_path()
-if not samba.usingsamba(LIBRARY_PATH):
-    if not path_exists(LIBRARY_PATH):
-        logger.info("pelisalacarta.platformcode.library Library path doesn't exist:" + LIBRARY_PATH)
-        config.verify_directories_created()
+if not filetools.exists(LIBRARY_PATH):
+    logger.info("pelisalacarta.platformcode.library Library path doesn't exist:" + LIBRARY_PATH)
+    config.verify_directories_created()
 
 # TODO permitir cambiar las rutas y nombres en settings para 'cine' y 'series'
 FOLDER_MOVIES = "CINE"  # config.get_localized_string(30072)
-MOVIES_PATH = join_path(LIBRARY_PATH, FOLDER_MOVIES)
-if not path_exists(MOVIES_PATH):
+MOVIES_PATH = filetools.join(LIBRARY_PATH, FOLDER_MOVIES)
+if not filetools.exists(MOVIES_PATH):
     logger.info("pelisalacarta.platformcode.library Movies path doesn't exist:" + MOVIES_PATH)
-    make_dir(MOVIES_PATH)
+    filetools.exists(MOVIES_PATH)
 
 FOLDER_TVSHOWS = "SERIES"  # config.get_localized_string(30073)
-TVSHOWS_PATH = join_path(LIBRARY_PATH, FOLDER_TVSHOWS)
-if not path_exists(TVSHOWS_PATH):
+TVSHOWS_PATH = filetools.join(LIBRARY_PATH, FOLDER_TVSHOWS)
+if not filetools.exists(TVSHOWS_PATH):
     logger.info("pelisalacarta.platformcode.library Tvshows path doesn't exist:" + TVSHOWS_PATH)
-    make_dir(TVSHOWS_PATH)
+    filetools.mkdir(TVSHOWS_PATH)
 
 TVSHOW_FILE = "series.json"
 TVSHOW_FILE_OLD = "series.xml"
@@ -183,59 +113,6 @@ def library_in_kodi():
     else:
         return False
 
-def elimina_tildes(s):
-    """
-    elimina las tildes de la cadena
-    @type s: str
-    @param s: cadena.
-    @rtype:   str
-    @return:  cadena sin tildes.
-    """
-    logger.info("pelisalacarta.platformcode.library elimina_tildes")
-    # import unicodedata
-    # if not isinstance(s, unicode):
-    #     s = s.decode("UTF-8")
-    # return ''.join((c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn'))
-    s = s.replace("Á", "a")
-    s = s.replace("É", "e")
-    s = s.replace("Í", "i")
-    s = s.replace("Ó", "o")
-    s = s.replace("Ú", "u")
-    s = s.replace("á", "a")
-    s = s.replace("é", "e")
-    s = s.replace("í", "i")
-    s = s.replace("ó", "o")
-    s = s.replace("ú", "u")
-    s = s.replace("À", "a")
-    s = s.replace("È", "e")
-    s = s.replace("Ì", "i")
-    s = s.replace("Ò", "o")
-    s = s.replace("Ù", "u")
-    s = s.replace("à", "a")
-    s = s.replace("è", "e")
-    s = s.replace("ì", "i")
-    s = s.replace("ò", "o")
-    s = s.replace("ù", "u")
-    s = s.replace("ç", "c")
-    s = s.replace("Ç", "C")
-    s = s.replace("Ñ", "n")
-    s = s.replace("ñ", "n")
-
-    return s
-
-def title_to_filename(title):
-    """
-    devuelve un titulo con caracteres válidos para crear un fichero
-    @type title: str
-    @param title: title.
-    @rtype:   str
-    @return:  cadena correcta sin tildes.
-    """
-    logger.info("pelisalacarta.platformcode.library title_to_filename")
-    safechars = string.letters + string.digits + " -_.[]()"
-    folder_name = filter(lambda c: c in safechars, elimina_tildes(title))
-    return str(folder_name)
-
 
 def save_library_movie(item):
     """
@@ -260,15 +137,15 @@ def save_library_movie(item):
 
     # progress dialog
     p_dialog = platformtools.dialog_progress('pelisalacarta', 'Añadiendo película...')
-    filename = title_to_filename("{0} [{1}].strm".format(item.fulltitle.strip().lower(),
-                                                         item.channel))
+    filename = filetools.title_to_filename("{0} [{1}].strm".format(item.fulltitle.strip().lower(),
+                                                                   item.channel))
     logger.debug(filename)
-    fullfilename = join_path(MOVIES_PATH, filename)
+    fullfilename = filetools.join(MOVIES_PATH, filename)
     addon_name = sys.argv[0].strip()
     if not addon_name:
         addon_name = "plugin://plugin.video.pelisalacarta/"
 
-    if path_exists(fullfilename):
+    if filetools.exists(fullfilename):
         logger.info("pelisalacarta.platformcode.library savelibrary el fichero existe. Se sobreescribe")
         sobreescritos += 1
     else:
@@ -277,7 +154,7 @@ def save_library_movie(item):
     p_dialog.update(100, 'Añadiendo película...', item.fulltitle)
     p_dialog.close()
 
-    if save_file('{addon}?{url}'.format(addon=addon_name, url=item.tourl()), fullfilename):
+    if filetools.write(fullfilename, '{addon}?{url}'.format(addon=addon_name, url=item.tourl())):
         item = get_video_id_from_scraper(item, config.get_setting("scrap_ask_name") == "true", "movie")
         if 'id_Tmdb' in item.infoLabels:
             create_nfo_file(item.infoLabels['id_Tmdb'], fullfilename[:-5], "cine")
@@ -305,12 +182,12 @@ def save_library_tvshow(serie, episodelist):
     if serie.show == "":  # TODO ¿otras opciones?
         return 0, 0, -1  # Salimos sin guardar: La serie no tiene el titulo fijado
 
-    path = join_path(TVSHOWS_PATH, "{0} [{1}]".format(title_to_filename(serie.show.strip().lower()),
-                                                      serie.channel).lower())
-    if not path_exists(path):
+    path = filetools.join(TVSHOWS_PATH, "{0} [{1}]".format(filetools.title_to_filename(serie.show.strip().lower()),
+                                                           serie.channel).lower())
+    if not filetools.exists(path):
         logger.info("pelisalacarta.platformcode.library savelibrary Creando directorio serie:" + path)
         try:
-            make_dir(path)
+            filetools.mkdir(path)
         except OSError as exception:
             if exception.errno != errno.EEXIST:
                 raise
@@ -321,6 +198,7 @@ def save_library_tvshow(serie, episodelist):
     return insertados, sobreescritos, fallidos
 
 
+# TODO esto se borra
 def get_dict_series():
     """
     devuelve un diccionario con las series obtenidas de 'series.json'
@@ -328,16 +206,16 @@ def get_dict_series():
     @return:  diccionario con las series.
     """
     logger.info("pelisalacarta.platformcode.library get_dict_series")
-    fname = join_path(config.get_data_path(), TVSHOW_FILE)
-    dict_series = jsontools.load_json(read_file(fname))
+    fname = filetools.join(config.get_data_path(), TVSHOW_FILE)
+    dict_series = jsontools.load_json(filetools.read(fname))
 
-    if dict_series=="":
+    if dict_series == "":
         dict_series = {}
 
     return dict_series
 
 
-def get_video_id_from_scraper(serie, ask=False, video_type="tv"):
+def get_video_id_from_scraper(serie, ask=False, scraper="tmdb", video_type="tv"):
     """
     Hace una busqueda con el scraper seleccionado *tmdb por defecto* por el nombre (y año si esta presente) y presenta
     una 'ventana' para seleccionar uno.
@@ -346,6 +224,8 @@ def get_video_id_from_scraper(serie, ask=False, video_type="tv"):
     @param serie: video para obtener identificar
     @type ask: bool
     @param ask: muestra la ventana de información para seleccionar el titulo correcto de la serie/pelicula.
+    @type scraper: str
+    @param scraper: scraper para obtener la información de la serie // de momento sólo es tmdb
     @type video_type: str
     @param video_type: tipo de video para buscar, 'tv' o 'movie'
     @rtype serie: item
@@ -418,13 +298,13 @@ def save_library_episodes(path, episodelist):
 
         nuevo = False
         filename = "{0}.strm".format(scrapertools.get_season_and_episode(e.title.lower()))
-        fullfilename = join_path(path, filename)
+        fullfilename = filetools.join(path, filename)
         # logger.debug(fullfilename)
 
-        if not path_exists(fullfilename):
+        if not filetools.exists(fullfilename):
             nuevo = True
 
-        if save_file('{addon}?{url}'.format(addon=addon_name, url=e.tourl()), fullfilename):
+        if filetools.write(fullfilename, '{addon}?{url}'.format(addon=addon_name, url=e.tourl())):
             if nuevo:
                 insertados += 1
             else:
@@ -441,81 +321,122 @@ def save_library_episodes(path, episodelist):
     return insertados, sobreescritos, fallidos
 
 
-def read_file(fname):
+def set_info_labels(itemlist, path):
     """
-    pythonic way to read from file
-
-    @type  fname: str
-    @param fname: filename.
-
-    @rtype:   str
-    @return:  data from filename.
-    """
-    logger.info("pelisalacarta.platformcode.library read_file")
-    data = ""
-
-    if not samba.usingsamba(fname):
-        if os.path.isfile(fname):
-            try:
-                with open(fname, "r") as f:
-                    for line in f:
-                        data += line
-            except EnvironmentError:
-                logger.info("ERROR al leer el archivo: {0}".format(fname))
-    else:
-        path, filename = fname.rsplit('/', 1)
-        if samba.file_exists(filename, path):
-            try:
-                from samba.smb.smb_structs import OperationFailure
-                with samba.get_file_handle_for_reading(filename, path) as f:
-                    for line in f:
-                        data += line
-            except OperationFailure:
-                logger.info("ERROR al leer el archivo: {0}".format(filename))
-
-    # logger.info("pelisalacarta.platformcode.library read_file-data {0}".format(data))
-    return data
-
-
-def save_file(data, fname):
-    """
-    pythonic way to write a file
-
-    @type  fname: str
-    @param fname: filename.
-    @type  data: str
-    @param data: data to save.
-
-    @rtype:   bool
+    guarda los datos (thumbnail, fanart, plot, actores, etc) a mostrar del fichero tvshow.json
+    @type itemlist: list
+    @param itemlist: item
+    @type path: str
+    @param path:
+    @rtype:   infoLabels
     @return:  result of saving.
     """
-    logger.info("pelisalacarta.platformcode.library save_file")
-    logger.info("default encoding: {0}".format(sys.getdefaultencoding()))
-    if not samba.usingsamba(fname):
-        try:
-            with open(fname, "w") as f:
-                try:
-                    f.write(data)
-                except UnicodeEncodeError:
-                    logger.info("Error al realizar el encode, se usa uft8")
-                    f.write(data.encode('utf-8'))
-        except EnvironmentError:
-            logger.info("pelisalacarta.platformcode.library save_file - Error al guardar el archivo: {0}".format(fname))
-            return False
-    else:
-        try:
-            from samba.smb.smb_structs import OperationFailure
-            path, filename = fname.rsplit('/', 1)
-            try:
-                samba.store_file(filename, data, path)
-            except UnicodeEncodeError:
-                logger.info("Error al realizar el encode, se usa uft8")
-                samba.store_file(filename, data.encode('utf-8'), path)
-        except OperationFailure:
-            logger.info("pelisalacarta.platformcode.library save_file - Error al guardar el archivo: {0}".format(fname))
-            return False
+    logger.info("pelisalacarta.platformcode.library set_info_labels")
+    path = filetools.join(path, "tvshow.json")
+    dict_data = jsontools.load_json(filetools.read(path))
+    for i in itemlist:
 
-    return True
+        i.title = dict_data['title']
+
+
+    # payload = dict()
+    # result = list()
+    #
+    # if tipo == 'Movies':
+    #     payload = {"jsonrpc": "2.0",
+    #                "method": "VideoLibrary.GetMovies",
+    #                "params": {"properties": ["title", "year", "rating", "trailer", "tagline", "plot", "plotoutline",
+    #                                          "originaltitle", "lastplayed", "playcount", "writer", "mpaa", "cast",
+    #                                          "imdbnumber", "runtime", "set", "top250", "votes", "fanart", "tag",
+    #                                          "thumbnail", "file", "director", "country", "studio", "genre",
+    #                                          "sorttitle", "setid", "dateadded"
+    #                                          ]},
+    #                "id": "libMovies"}
+    #
+    # elif tipo == 'TVShows':
+    #     payload = {"jsonrpc": "2.0",
+    #                "method": "VideoLibrary.GetTVShows",
+    #                "params": {"properties": ["title", "genre", "year", "rating", "plot", "studio", "mpaa", "cast",
+    #                                          "playcount", "episode", "imdbnumber", "premiered", "votes", "lastplayed",
+    #                                          "fanart", "thumbnail", "file", "originaltitle", "sorttitle",
+    #                                          "episodeguide", "season", "watchedepisodes", "dateadded", "tag"
+    #                                          ]},
+    #                "id": "libTvShows"}
+    #
+    # elif tipo == 'Episodes' and 'tvshowid' in itemlist[0].infoLabels and itemlist[0].infoLabels['tvshowid']:
+    #     tvshowid = itemlist[0].infoLabels['tvshowid']
+    #     payload = {"jsonrpc": "2.0",
+    #                "method": "VideoLibrary.GetEpisodes",
+    #                "params": {"tvshowid": tvshowid,
+    #                           "properties": ["title", "plot", "votes", "rating", "writer", "firstaired", "playcount",
+    #                                          "runtime", "director", "productioncode", "season", "episode",
+    #                                          "originaltitle",
+    #                                          "showtitle", "cast", "lastplayed", "fanart", "thumbnail",
+    #                                          "file", "dateadded", "tvshowid"
+    #                                          ]},
+    #                "id": 1}
+    #
+    # data = get_data(payload)
+    # logger.debug("JSON-RPC: {0}".format(data))
+    #
+    # if 'error' in data:
+    #     logger.error("JSON-RPC: {0}".format(data))
+    #
+    # elif 'movies' in data['result']:
+    #     result = data['result']['movies']
+    #
+    # elif 'tvshows' in data['result']:
+    #     result = data['result']['tvshows']
+    #
+    # elif 'episodes' in data['result']:
+    #     result = data['result']['episodes']
+    #
+    # if result:
+    #     for i in itemlist:
+    #         for r in result:
+    #             r_filename_aux = r['file'][:-1] if r['file'].endswith(os.sep) or r['file'].endswith('/') else r['file']
+    #             r_filename = os.path.basename(r_filename_aux)
+    #             # logger.debug(os.path.basename(i.path) + '\n' + r_filename)
+    #             i_filename = os.path.basename(i.path)
+    #             if i_filename == r_filename:
+    #                 infoLabels = r
+    #
+    #                 # Obtener imagenes y asignarlas al item
+    #                 if 'thumbnail' in infoLabels:
+    #                     infoLabels['thumbnail'] = urllib.unquote_plus(infoLabels['thumbnail']).replace('image://', '')
+    #                     i.thumbnail = infoLabels['thumbnail'][:-1] if infoLabels['thumbnail'].endswith('/') else \
+    #                         infoLabels['thumbnail']
+    #                 if 'fanart' in infoLabels:
+    #                     infoLabels['fanart'] = urllib.unquote_plus(infoLabels['fanart']).replace('image://', '')
+    #                     i.fanart = infoLabels['fanart'][:-1] if infoLabels['fanart'].endswith('/') else infoLabels[
+    #                         'fanart']
+    #
+    #                 # Adaptar algunos campos al formato infoLables
+    #                 if 'cast' in infoLabels:
+    #                     l_castandrole = list()
+    #                     for c in sorted(infoLabels['cast'], key=lambda _c: _c["order"]):
+    #                         l_castandrole.append((c['name'], c['role']))
+    #                     infoLabels.pop('cast')
+    #                     infoLabels['castandrole'] = l_castandrole
+    #                 if 'genre' in infoLabels:
+    #                     infoLabels['genre'] = ', '.join(infoLabels['genre'])
+    #                 if 'writer' in infoLabels:
+    #                     infoLabels['writer'] = ', '.join(infoLabels['writer'])
+    #                 if 'director' in infoLabels:
+    #                     infoLabels['director'] = ', '.join(infoLabels['director'])
+    #                 if 'country' in infoLabels:
+    #                     infoLabels['country'] = ', '.join(infoLabels['country'])
+    #                 if 'studio' in infoLabels:
+    #                     infoLabels['studio'] = ', '.join(infoLabels['studio'])
+    #                 if 'runtime' in infoLabels:
+    #                     infoLabels['duration'] = infoLabels.pop('runtime')
+    #
+    #                 # Fijar el titulo si existe y añadir infoLabels al item
+    #                 if 'label' in infoLabels:
+    #                     i.title = infoLabels['label']
+    #                 i.infoLabels = infoLabels
+    #                 result.remove(r)
+    #                 break
 
 
 def set_infoLabels_from_library(itemlist, tipo):
@@ -629,49 +550,17 @@ def set_infoLabels_from_library(itemlist, tipo):
                     break
 
 
-def clean_up_file(item):
+def save_tvshow_json(serie):
     """
-    borra los elementos del fichero "series" que no existen como carpetas en la libreria de "SERIES"
-    @type item: item
-    @param item: elemento
-    @rtype:   list
-    @return:  vacío para navegue.
-    """
-    logger.info("pelisalacarta.platformcode.library clean_up_file")
-
-    path = TVSHOWS_PATH
-
-    dict_data = item.dict_fichero
-    
-    # Obtenemos las carpetas de las series
-    raiz, carpetas_series, files = os.walk(path).next()
-    
-    for tvshow_id in dict_data.keys():
-        for channel in dict_data[tvshow_id]["channels"].keys():
-            carpeta = "{0} [{1}]".format(title_to_filename(dict_data[tvshow_id]["channels"][channel]["tvshow"].lower()),
-                                         channel)
-            if carpeta not in carpetas_series:
-                dict_data[tvshow_id]["channels"].pop(channel, None)
-                if not dict_data[tvshow_id]["channels"]:
-                    dict_data.pop(tvshow_id, None)
-    
-    json_data = jsontools.dump_json(dict_data)
-    save_file(json_data, join_path(config.get_data_path(), TVSHOW_FILE))
-
-    return []
-
-
-def save_tvshow_in_file(serie):
-    """
-    Guarda los datos de la serie dentro del fichero 'series.json'
+    Guarda los datos de la serie dentro del fichero 'tvshow.json'
     @type serie: item
-    @param serie: elemento
+    @param serie: datos de la serie
     """
-    logger.info("pelisalacarta.platformcode.library save_tvshow_in_file")
-    fname = join_path(config.get_data_path(), TVSHOW_FILE)
-    # TODO soporte samba
-    if not os.path.isfile(fname):
-        convert_xml_to_json()
+    logger.info("pelisalacarta.platformcode.library save_tvshow_json")
+    fname = filetools.join(config.get_data_path(), TVSHOW_FILE)
+
+    if not filetools.isfile(fname):
+        upgrade_library()
 
     if 'infoLabels' not in serie:
         serie.infoLabels = {}
@@ -686,43 +575,50 @@ def save_tvshow_in_file(serie):
     if 'title' not in serie.infoLabels:
         serie.infoLabels['title'] = serie.show
 
+    # TODO de momento es el unico, cuando haya más se podrá configurar
+    scraper = "tmdb"
+
     # Abrir ventana de seleccion de serie
-    serie = get_video_id_from_scraper(serie, config.get_setting("scrap_ask_name") == "true")
+    serie = get_video_id_from_scraper(serie, config.get_setting("scrap_ask_name") == "true", scraper=scraper)
+
+    scrape_id = ""
+    if scraper == "tmdb":
+        scrape_id = "id_Tmdb"
 
     create_nfo = False
-    if 'id_Tmdb' in serie.infoLabels:
-        tvshow_id = serie.infoLabels['id_Tmdb']
+    if scrape_id in serie.infoLabels:
+        tvshow_id = serie.infoLabels[scrape_id]
         create_nfo = True
     else:
         tvshow_id = "t_{0}_[{1}]".format(serie.show.strip().replace(" ", "_"), serie.channel)
 
     # Cargar el registro series.json
-    fname = join_path(config.get_data_path(), TVSHOW_FILE)
-    dict_series = jsontools.load_json(read_file(fname))
-    if not dict_series:
-        dict_series = {}
+    path = filetools.join(TVSHOWS_PATH, "{0} [{1}]".format(filetools.title_to_filename(serie.show.strip().lower()),
+                                                           serie.channel).lower())
 
-    path = join_path(TVSHOWS_PATH, "{0} [{1}]".format(title_to_filename(serie.show.strip().lower()),
-                                                      serie.channel).lower())
+    fname = filetools.join(path, "tvshow.json")
+    dict_data = jsontools.load_json(filetools.read(fname))
+    
+    if not dict_data:
+        dict_data = {}
 
-    if path_exists(path):
+    if filetools.exists(path):
         if create_nfo:
             create_nfo_file(tvshow_id, path, "serie")
 
-    # Si la serie no existe en el registro ...
-    if tvshow_id not in dict_series:
-        # ... añadir la serie al registro
-        dict_series[tvshow_id] = {"name": serie.infoLabels['title'], "channels": {}}
+    dict_data["active"] = True
+    dict_scraper = {"name": scraper, "id": tvshow_id}
+    dict_data["scraper"] = dict_scraper
+    dict_data["title"] = serie.infoLabels['title']
 
-    # Si no hay datos del canal en el registro para esta serie...
-    if serie.channel not in dict_series[tvshow_id]["channels"]:
-        # ... añadir canal al registro de la serie
-        dict_channel = {"tvshow": serie.show.strip(), "url": serie.url, "path": path}
-        dict_series[tvshow_id]["channels"][serie.channel] = dict_channel
+    # ... añadir canal al registro de la serie
+    dict_data["channel"] = serie.channel
+    dict_data["show"] = serie.show.strip()
+    dict_data["url"] = serie.url
+    dict_data["path"] = path
 
-    logger.info("dict_series {0}".format(dict_series))
-    json_data = jsontools.dump_json(dict_series)
-    save_file(json_data, fname)
+    json_data = jsontools.dump_json(dict_data)
+    filetools.write(filetools.join(path, "tvshow.json"), json_data)
 
 
 def mark_as_watched(category, video_id=0):
@@ -907,37 +803,36 @@ def get_data(payload):
 
 def check_tvshow_xml():
     logger.info("pelisalacarta.platformcode.library check_tvshow_xml")
-    fname = join_path(config.get_data_path(), TVSHOW_FILE_OLD)
+    fname = filetools.join(config.get_data_path(), TVSHOW_FILE_OLD)
     flag = True
-    # todo soporte samba
-    if not os.path.exists(fname):
+
+    if not filetools.exists(fname):
         flag = False
     else:
-        data = read_file(fname)
+        data = filetools.read(fname)
         if data == "":
             flag = False
 
     if flag:
-        convert_xml_to_json()
+        upgrade_library()
 
 
-def convert_xml_to_json():
-    logger.info("pelisalacarta.platformcode.library convert_xml_to_json")
+def upgrade_library():
+    logger.info("pelisalacarta.platformcode.library upgrade_library")
     platformtools.dialog_ok("Biblioteca: Se va a actualizar al nuevo formato",
                             "Seleccione el nombre correcto de cada serie, si no está seguro pulse 'Cancelar'.",
                             "Hay nuevas opciones en 'Biblioteca' y en la 'configuración' del addon.")
 
     # TODO soporte samba
     os.rename(TVSHOWS_PATH, os.path.join(config.get_library_path(), "SERIES_OLD"))
-    if not path_exists(TVSHOWS_PATH):
+    if not filetools.exists(TVSHOWS_PATH):
 
-        make_dir(TVSHOWS_PATH)
-        if path_exists(TVSHOWS_PATH):
-            fname = join_path(config.get_data_path(), TVSHOW_FILE_OLD)
-            dict_data = {}
+        filetools.mkdir(TVSHOWS_PATH)
+        if filetools.exists(TVSHOWS_PATH):
+            fname = filetools.join(config.get_data_path(), TVSHOW_FILE_OLD)
 
             # TODO compatible con samba
-            if path_exists(fname):
+            if filetools.exists(fname):
                 try:
                     with open(fname, "r") as f:
                         for line in f:
@@ -960,21 +855,28 @@ def convert_xml_to_json():
 
                             create_nfo = False
 
-                            # Abrir ventana de seleccion para identificar la serie
-                            serie = get_video_id_from_scraper(serie, True)
+                            # TODO de momento es el unico, cuando haya más se podrá configurar
+                            scraper = "tmdb"
 
-                            if 'id_Tmdb' in serie.infoLabels:
-                                tvshow_id = serie.infoLabels['id_Tmdb']
+                            # Abrir ventana de seleccion para identificar la serie
+                            serie = get_video_id_from_scraper(serie, True, scraper=scraper)
+
+                            if scraper == "tmdb":
+                                scrape_id = "id_Tmdb"
+
+                            if scrape_id in serie.infoLabels:
+                                tvshow_id = serie.infoLabels[scrape_id]
                                 create_nfo = True
                             else:
                                 tvshow_id = "t_{0}_[{1}]".format(tvshow.strip().replace(" ", "_"), channel)
 
-                            path = join_path(TVSHOWS_PATH, title_to_filename("{0} [{1}]".format(
+                            path = filetools.join(TVSHOWS_PATH, filetools.title_to_filename("{0} [{1}]".format(
                                 tvshow.strip().lower(), channel)))
 
-                            logger.info("pelisalacarta.platformcode.library savelibrary Creando directorio serie:" + path)
+                            logger.info("pelisalacarta.platformcode.library upgrade_library Creando directorio serie:" +
+                                        path)
                             try:
-                                make_dir(path)
+                                filetools.mkdir(path)
                                 if create_nfo:
                                     create_nfo_file(tvshow_id, path, "serie")
 
@@ -982,26 +884,26 @@ def convert_xml_to_json():
                                 if exception.errno != errno.EEXIST:
                                     raise
 
-                            # Si la serie no existe en el registro ...
-                            if tvshow_id not in dict_data:
-                                # ... añadir la serie al registro
-                                dict_data[tvshow_id] = {"name": serie.infoLabels['title'], "channels": {}}
+                            dict_data = dict()
+                            dict_data["active"] = True
+                            dict_scraper = {"name": scraper, "id": tvshow_id}
+                            dict_data["scraper"] = dict_scraper
+                            dict_data["title"] = serie.infoLabels['title']
 
-                            # Si no hay datos del canal en el registro para esta serie...
-                            if channel not in dict_data[tvshow_id]["channels"]:
-                                # ... añadir canal al registro de la serie
-                                dict_channel = {"tvshow": tvshow.strip(), "url": url, "path": path}
-                                dict_data[tvshow_id]["channels"][channel] = dict_channel
+                            # ... añadir canal al registro de la serie
+                            dict_data["channel"] = channel
+                            dict_data["show"] = tvshow
+                            dict_data["url"] = url
+                            dict_data["path"] = path
+
+                            json_data = jsontools.dump_json(dict_data)
+                            filetools.write(filetools.join(path, "tvshow.json"), json_data)
 
                 except EnvironmentError:
                     logger.info("ERROR al leer el archivo: {0}".format(fname))
                 else:
-                    # todo soporte samba
-                    os.rename(join_path(config.get_data_path(), TVSHOW_FILE_OLD),
-                              join_path(config.get_data_path(), "series_old.xml"))
-
-                    json_data = jsontools.dump_json(dict_data)
-                    save_file(json_data, join_path(config.get_data_path(), TVSHOW_FILE))
+                    filetools.rename(filetools.join(config.get_data_path(), TVSHOW_FILE_OLD),
+                                     filetools.join(config.get_data_path(), "series_old.xml"))
 
         else:
             logger.info("ERROR, no se ha podido crear la nueva carpeta de SERIES")
@@ -1037,64 +939,61 @@ def create_nfo_file(video_id, path, type_video):
 
     if type_video == "serie":
         data = "https://www.themoviedb.org/tv/{0}".format(video_id)
-        nfo_file = join_path(path, "tvshow.nfo")
+        nfo_file = filetools.join(path, "tvshow.nfo")
     else:
         data = "https://www.themoviedb.org/movie/{0}".format(video_id)
         nfo_file = path + ".nfo"
 
-    save_file(data, nfo_file)
+    filetools.write(nfo_file, data)
+
+
+
 
 def add_pelicula_to_library(item):
-    logger.info("pelisalacarta.platformcode.library add_pelicula_to_library")
+    logger.info("pelisalacarta.platformcode.launcher add_pelicula_to_library")
 
     new_item = item.clone(action="play_from_library", category="Cine")
     insertados, sobreescritos, fallidos = save_library_movie(new_item)
     itemlist = []
 
     if fallidos == 0:
-        itemlist.append(Item(title="La pelicula se ha añadido a la biblioteca", channel=item.channel))
+        platformtools.dialog_ok("Biblioteca", "La pelicula se ha añadido a la biblioteca")
     else:
-        itemlist.append(Item(title="ERROR, la pelicula NO se ha añadido a la biblioteca",  channel=item.channel))
+        platformtools.dialog_ok("Biblioteca", "ERROR, la pelicula NO se ha añadido a la biblioteca")
 
-    from platformcode import xbmctools
     xbmctools.renderItems(itemlist, item)
 
-    # update()
+    # library.update()
 
 
 def add_serie_to_library(item, channel):
-    logger.info("pelisalacarta.platformcode.library add_serie_to_library, show=#"+item.show+"#")
+    logger.info("pelisalacarta.platformcode.launcher add_serie_to_library, show=#"+item.show+"#")
 
     # Esta marca es porque el item tiene algo más aparte en el atributo "extra"
-    action = item.extra
+    item.action = item.extra
     if "###" in item.extra:
-        action = item.extra.split("###")[0]
+        item.action = item.extra.split("###")[0]
         item.extra = item.extra.split("###")[1]
 
     # Obtiene el listado desde el que se llamó
-    itemlist = getattr(channel, action)(item)
+    itemlist = getattr(channel, item.action)(item)
 
     insertados, sobreescritos, fallidos = save_library_tvshow(item, itemlist)
 
     if fallidos > -1 and (insertados + sobreescritos) > 0:
-        # Guardar el registro series.json actualizado
-        save_tvshow_in_file(item)
+        # Guardar el registro tvshow.json
+        save_tvshow_json(item)
 
-    itemlist = []
     if fallidos == -1:
-        itemlist.append(Item(title="ERROR, la serie NO se ha añadido a la biblioteca",channel=item.channel))
-        logger.error("pelisalacarta.platformcode.library La serie {0} no se ha podido añadir a la biblioteca".format(item.show))
-        from platformcode import xbmctools
-        xbmctools.renderItems(itemlist, item)
-        return -1
-    elif fallidos > 0:
-        itemlist.append(Item(title="ERROR, la serie NO se ha añadido completa a la biblioteca",
-                             channel=item.channel))
-        logger.error("pelisalacarta.platformcode.library No se han podido añadir {0} episodios de la serie {1} a la biblioteca".format(fallidos,item.show))
-    else:
-        itemlist.append(Item(title="La serie se ha añadido a la biblioteca", channel=item.channel))
-        logger.info("pelisalacarta.platformcode.library  Se han añadido {0} episodios de la serie {1} a la biblioteca".format(insertados,item.show))
+        platformtools.dialog_ok("Biblioteca", "ERROR, la serie NO se ha añadido a la biblioteca")
+        logger.error("La serie {0} no se ha podido añadir a la biblioteca".format(item.show))
 
-    from platformcode import xbmctools
-    xbmctools.renderItems(itemlist, item)
-    # update() # TODO evitar bucle
+    elif fallidos > 0:
+        platformtools.dialog_ok("Biblioteca", "ERROR, la serie NO se ha añadido completa a la biblioteca")
+        logger.error("No se han podido añadir {0} episodios de la serie {1} a la biblioteca".format(fallidos,
+                                                                                                    item.show))
+    else:
+        platformtools.dialog_ok("Biblioteca", "La serie se ha añadido a la biblioteca")
+        logger.info("[launcher.py] Se han añadido {0} episodios de la serie {1} a la biblioteca".format(insertados,
+                                                                                                        item.show))
+    # library.update() # TODO evitar bucle

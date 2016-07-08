@@ -27,22 +27,21 @@
 import os
 import sys
 
+import favoritos
 from core import config
 from core import downloadtools
+from core import filetools
 from core import logger
 from core import servertools
 from core.item import Item
 from lib.samba import libsmb as samba
-from platformcode import library
-
-import favoritos
 
 CHANNELNAME = "descargas"
 DEBUG = config.get_setting("debug")
 
 DOWNLOAD_LIST_PATH = config.get_setting("downloadlistpath")
-IMAGES_PATH = os.path.join(config.get_runtime_path(), 'resources', 'images')
-ERROR_PATH = library.join_path(DOWNLOAD_LIST_PATH, 'error')
+IMAGES_PATH = filetools.join(config.get_runtime_path(), 'resources', 'images')
+ERROR_PATH = filetools.join(DOWNLOAD_LIST_PATH, 'error')
 usingsamba = samba.usingsamba(DOWNLOAD_LIST_PATH)
 
 
