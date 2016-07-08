@@ -24,8 +24,8 @@ def mainlist(item):
     logger.info("pelisalacarta.channels.biblioteca mainlist")
 
     itemlist = list()
-    itemlist.append(Item(channel=item.channel, action="peliculas", title="Películas", thumbnail=THUMB_MOVIES))
-    itemlist.append(Item(channel=item.channel, action="series", title="Series", thumbnail=THUMB_TVSHOWS))
+    itemlist.append(Item(channel=item.channel, action="peliculas", title="Películas"))  #, thumbnail=THUMB_MOVIES))
+    itemlist.append(Item(channel=item.channel, action="series", title="Series"))  #, thumbnail=THUMB_TVSHOWS))
 
     # itemlist.append(Item(channel=item.channel, title="", thumbnail=None, folder=False))
     # TODO en el caso de que no se puedan usar menus contextuales para configurar datos sobre series o peliculas
