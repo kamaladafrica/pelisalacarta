@@ -156,7 +156,7 @@ def detail(item):
 
     for url in matches:
         title = "Archivo %d: %s [filesmonster]" %(len(itemlist)+1, item.fulltitle)
-        itemlist.append( Item(channel=item.channel , action="play" ,  server="filesmonster", title=item.url, fulltitle= item.fulltitle ,url=url, thumbnail=item.thumbnail, folder=False))
+        itemlist.append( Item(channel=item.channel , action="play" ,  server="filesmonster", title=title, fulltitle= item.fulltitle ,url=url, thumbnail=item.thumbnail, folder=False))
 
 
 
