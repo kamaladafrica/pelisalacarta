@@ -6,13 +6,15 @@
 # contribuci?n de jurrabi
 # ----------------------------------------------------------------------
 import os
-import xbmc
 
 from channels import youtube_channel
 from core import config
 from core import logger
 from core.item import Item
 from platformcode import platformtools
+
+if config.is_xbmc():
+    import xbmc
 
 
 def mainlist(item):

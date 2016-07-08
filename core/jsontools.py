@@ -133,7 +133,6 @@ def load_json(data):
 
                 try:
                     logger.info("pelisalacarta.core.jsontools.load_json Probando JSON de Plex")
-                    # FIXME No existe lo siguiente
                     json_data = JSON.ObjectFromString(data, encoding="utf-8")
                     logger.info("pelisalacarta.core.jsontools.load_json -> "+repr(json_data))
                     return json_data
@@ -178,7 +177,6 @@ def dump_json(data):
 
                 try:
                     logger.info("pelisalacarta.core.jsontools.dump_json Probando JSON de Plex")
-                    # FIXME No existe lo siguiente
                     json_data = JSON.StringFromObject(data)  #, encoding="utf-8")
                     logger.info("pelisalacarta.core.jsontools.dump_json -> "+repr(json_data))
                     return json_data
