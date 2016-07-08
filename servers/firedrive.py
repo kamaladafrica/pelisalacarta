@@ -172,9 +172,3 @@ def find_videos(text):
             logger.info("  url duplicada="+url)    
     
     return devuelve
-
-def test():
-
-    video_urls = get_video_url("http://www.firedrive.com/embed/C31F4FD09113E884")
-
-    return len(video_urls)>0

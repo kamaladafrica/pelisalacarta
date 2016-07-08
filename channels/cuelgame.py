@@ -12,29 +12,21 @@ from core import logger
 from core import scrapertools
 from core.item import Item
 
-__channel__ = "cuelgame"
-__category__ = "F"
-__type__ = "generic"
-__title__ = "Cuélgame"
-__language__ = "ES"
 
 DEBUG = config.get_setting("debug")
 
-
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("pelisalacarta.cuelgame mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, title="Cine" , action="finvideos", url="http://cuelgame.net/?category=4" ,thumbnail="http://img5a.flixcart.com/image/poster/q/t/d/vintage-camera-collage-sr148-medium-400x400-imadkbnrnbpggqyz.jpeg", fanart="http://bancofotos.net/photos/20141013141322374126063.jpg"))
-    itemlist.append( Item(channel=__channel__, title="Series" , action="finvideos", url="http://cuelgame.net/?category=8" ,thumbnail="http://bancofotos.net/photos/20141013141323462138745.jpg", fanart="http://bancofotos.net/photos/20141013141323334136022.jpg"))
-    itemlist.append( Item(channel=__channel__, title="TV" , action="finvideos", url="http://cuelgame.net/?category=67" ,thumbnail="http://naldzgraphics.net/wp-content/uploads/2008/08/353.png", fanart="http://bancofotos.net/photos/20141014141326115192067.jpg"))
-    itemlist.append( Item(channel=__channel__, title="Documentales" , action="finvideos", url="http://cuelgame.net/?category=68" ,thumbnail="http://bancofotos.net/photos/20141014141326328313144.jpg", fanart="http://bancofotos.net/photos/20141014141326361136841.jpg"))
-    itemlist.append( Item(channel=__channel__, title="Música" , action="finvideos", url="http://cuelgame.net/?category=13" ,thumbnail="http://flikie.s3.amazonaws.com/ImageStorage/12/122b5e1d240544d1bc46f55109292611.jpg", fanart="http://bancofotos.net/photos/20141014141327205127084.jpg"))
+    itemlist.append( Item(channel=item.channel, title="Cine" , action="finvideos", url="http://cuelgame.net/?category=4" ,thumbnail="http://img5a.flixcart.com/image/poster/q/t/d/vintage-camera-collage-sr148-medium-400x400-imadkbnrnbpggqyz.jpeg", fanart="http://bancofotos.net/photos/20141013141322374126063.jpg"))
+    itemlist.append( Item(channel=item.channel, title="Series" , action="finvideos", url="http://cuelgame.net/?category=8" ,thumbnail="http://bancofotos.net/photos/20141013141323462138745.jpg", fanart="http://bancofotos.net/photos/20141013141323334136022.jpg"))
+    itemlist.append( Item(channel=item.channel, title="TV" , action="finvideos", url="http://cuelgame.net/?category=67" ,thumbnail="http://naldzgraphics.net/wp-content/uploads/2008/08/353.png", fanart="http://bancofotos.net/photos/20141014141326115192067.jpg"))
+    itemlist.append( Item(channel=item.channel, title="Documentales" , action="finvideos", url="http://cuelgame.net/?category=68" ,thumbnail="http://bancofotos.net/photos/20141014141326328313144.jpg", fanart="http://bancofotos.net/photos/20141014141326361136841.jpg"))
+    itemlist.append( Item(channel=item.channel, title="Música" , action="finvideos", url="http://cuelgame.net/?category=13" ,thumbnail="http://flikie.s3.amazonaws.com/ImageStorage/12/122b5e1d240544d1bc46f55109292611.jpg", fanart="http://bancofotos.net/photos/20141014141327205127084.jpg"))
 
-    itemlist.append( Item(channel=__channel__, title="Buscar"   , action="search", url="", thumbnail="http://images2.alphacoders.com/846/84682.jpg", fanart="http://bancofotos.net/photos/20141014141326763609735.jpg"))
+    itemlist.append( Item(channel=item.channel, title="Buscar"   , action="search", url="", thumbnail="http://images2.alphacoders.com/846/84682.jpg", fanart="http://bancofotos.net/photos/20141014141326763609735.jpg"))
     
     
 
@@ -89,7 +81,7 @@ def finvideos(item):
 
         
     
-        itemlist.append( Item(channel=__channel__, title=scrapedtitle, url=scrapedurl, action="play", server="torrent", thumbnail=scrapedthumbnail, plot=scrapedplot, folder=False) )
+        itemlist.append( Item(channel=item.channel, title=scrapedtitle, url=scrapedurl, action="play", server="torrent", thumbnail=scrapedthumbnail, plot=scrapedplot, folder=False) )
 
     
     # Extrae el paginador
@@ -103,7 +95,7 @@ def finvideos(item):
        # corrige "&" para la paginación
        next_page = matches[0].replace("amp;","")
        scrapedurl = urlparse.urljoin(item.url, next_page)
-       itemlist.append( Item(channel=__channel__, action="finvideos", title="Página siguiente >>" , url=scrapedurl , folder=True) )
+       itemlist.append( Item(channel=item.channel, action="finvideos", title="Página siguiente >>" , url=scrapedurl , folder=True) )
 
 
 

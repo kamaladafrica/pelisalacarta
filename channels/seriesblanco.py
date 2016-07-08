@@ -11,19 +11,15 @@ import urlparse
 from channelselector import get_thumbnail_path
 from core import channeltools
 from core import config
-from core import filtertools
 from core import logger
 from core import scrapertools
 from core import servertools
 from core.item import Item
 
-__channel__ = "seriesblanco"
-__category__ = "F"
-__type__ = "generic"
-__title__ = "Series Blanco"
-__language__ = "ES"
+from channels import filtertools
 
-channel_xml = channeltools.get_channel_parameters(__channel__)
+
+channel_xml = channeltools.get_channel_parameters("seriesblanco")
 HOST = "http://seriesblanco.com/"
 IDIOMAS = {'es': 'Español', 'en': 'Inglés', 'la': 'Latino', 'vo': 'VO', 'vos': 'VOS', 'vosi': 'VOSI', 'otro': 'OVOS'}
 list_idiomas = [v for v in IDIOMAS.values()]
@@ -38,10 +34,6 @@ CONTEXT = ("", "menu filtro")[OPCION_FILTRO]
 DEBUG = config.get_setting("debug")
 
 
-def isGeneric():
-    return True
-
-
 def mainlist(item):
     logger.info("pelisalacarta.seriesblanco mainlist")
 
@@ -50,14 +42,14 @@ def mainlist(item):
     thumb_buscar = get_thumbnail("thumb_buscar.png")
 
     itemlist = list([])
-    itemlist.append(Item(channel=__channel__, title="Series Listado Alfabetico", action="series_listado_alfabetico",
+    itemlist.append(Item(channel=item.channel, title="Series Listado Alfabetico", action="series_listado_alfabetico",
                          thumbnail=thumb_series_az))
-    itemlist.append(Item(channel=__channel__, title="Todas las Series", action="series",
+    itemlist.append(Item(channel=item.channel, title="Todas las Series", action="series",
                          url=urlparse.urljoin(HOST, "lista_series/"), thumbnail=thumb_series))
-    itemlist.append(Item(channel=__channel__, title="Buscar...", action="search", url=HOST, thumbnail=thumb_buscar))
+    itemlist.append(Item(channel=item.channel, title="Buscar...", action="search", url=HOST, thumbnail=thumb_buscar))
 
     if OPCION_FILTRO:
-        itemlist.append(Item(channel=__channel__, title="[COLOR yellow]Configurar filtro para series...[/COLOR]",
+        itemlist.append(Item(channel=item.channel, title="[COLOR yellow]Configurar filtro para series...[/COLOR]",
                              action="open_filtertools"))
 
     return itemlist
@@ -65,7 +57,7 @@ def mainlist(item):
 
 def open_filtertools(item):
 
-    return filtertools.mainlist_filter(channel=__channel__, list_idiomas=list_idiomas, list_calidad=CALIDADES)
+    return filtertools.mainlist_filter(channel=item.channel, list_idiomas=list_idiomas, list_calidad=CALIDADES)
 
 
 def series_listado_alfabetico(item):
@@ -75,7 +67,7 @@ def series_listado_alfabetico(item):
 
     for letra in ['0', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S',
                   'T', 'U', 'V', 'W', 'X', 'Y', 'Z']:
-        itemlist.append(Item(channel=__channel__, action="series_por_letra", title=letra,
+        itemlist.append(Item(channel=item.channel, action="series_por_letra", title=letra,
                              url=urlparse.urljoin(HOST, "series/{0}/buscar_letra.html".format(letra.upper()))))
 
     return itemlist
@@ -118,7 +110,7 @@ def search(item, texto):
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     for scrapedthumb, scrapedurl, scrapedtitle in matches:
-        itemlist.append(Item(channel=__channel__, title=scrapedtitle.strip(), url=urlparse.urljoin(HOST, scrapedurl),
+        itemlist.append(Item(channel=item.channel, title=scrapedtitle.strip(), url=urlparse.urljoin(HOST, scrapedurl),
                              action="episodios", show=scrapedtitle.strip(), thumbnail=scrapedthumb,
                              list_idiomas=list_idiomas, list_calidad=CALIDADES, context=CONTEXT))
 
@@ -150,7 +142,7 @@ def series(item):
     thumbnail = channel_xml.get("thumbnail", "")
 
     for scrapedurl, scrapedtitle in matches:
-        itemlist.append(Item(channel=__channel__, title=scrapedtitle.strip(), url=urlparse.urljoin(HOST, scrapedurl),
+        itemlist.append(Item(channel=item.channel, title=scrapedtitle.strip(), url=urlparse.urljoin(HOST, scrapedurl),
                              action="episodios", show=scrapedtitle.strip(), thumbnail=thumbnail,
                              list_idiomas=list_idiomas, list_calidad=CALIDADES, context=CONTEXT))
 
@@ -202,21 +194,21 @@ def episodios(item):
         for i in scrapedidioma.split("|"):
             idioma += " [" + IDIOMAS.get(i, "OVOS") + "]"
         title = item.show + " - " + scrapedtitle + idioma
-        itemlist.append(Item(channel=__channel__, title=title, url=urlparse.urljoin(HOST, scrapedurl),
+        itemlist.append(Item(channel=item.channel, title=title, url=urlparse.urljoin(HOST, scrapedurl),
                              action="findvideos", show=item.show, thumbnail=thumbnail, plot=plot, language=idioma,
                              list_idiomas=list_idiomas, list_calidad=CALIDADES, context=CONTEXT))
 
     if len(itemlist) == 0 and "<title>404 Not Found</title>" in data:
-        itemlist.append(Item(channel=__channel__, title="la url '" + item.url +
+        itemlist.append(Item(channel=item.channel, title="la url '" + item.url +
                                                         "' parece no estar disponible en la web. Iténtalo más tarde.",
                              url=item.url, action="series"))
 
     if len(itemlist) > 0 and OPCION_FILTRO:
-        itemlist = filtertools.get_filtered_links(itemlist, __channel__)
+        itemlist = filtertools.get_filtered_links(itemlist, item.channel)
 
     # Opción "Añadir esta serie a la biblioteca de XBMC"
     if config.get_library_support() and len(itemlist) > 0:
-        itemlist.append(Item(channel=__channel__, title="Añadir esta serie a la biblioteca de XBMC", url=item.url,
+        itemlist.append(Item(channel=item.channel, title="Añadir esta serie a la biblioteca de XBMC", url=item.url,
                              action="add_serie_to_library", extra="episodios", show=item.show))
 
     return itemlist
@@ -245,13 +237,13 @@ def parseVideos(item, typeStr, data):
             title = "{0} en {1} [{2}] [{3}] ({4}: {5})"\
                 .format(typeStr, vFields.get("server"), IDIOMAS.get(vFields.get("language"), "OVOS"), quality,
                         vFields.get("uploader"), vFields.get("date"))
-            itemlist.append(Item(channel=__channel__, title=title, url=urlparse.urljoin(HOST, vFields.get("link")),
+            itemlist.append(Item(channel=item.channel, title=title, url=urlparse.urljoin(HOST, vFields.get("link")),
                                  action="play", show=item.show, language=IDIOMAS.get(vFields.get("language"), "OVOS"),
                                  quality=quality, list_idiomas=list_idiomas, list_calidad=CALIDADES,
                                  context=CONTEXT+"|guardar filtro"))
 
         if len(itemlist) > 0 and OPCION_FILTRO:
-            itemlist = filtertools.get_filtered_links(itemlist, __channel__)
+            itemlist = filtertools.get_filtered_links(itemlist, item.channel)
 
         if len(itemlist) > 0:
             return itemlist
@@ -297,7 +289,7 @@ def play(item):
 
     for videoitem in itemlist:
         videoitem.title = item.title
-        videoitem.channel = __channel__
+        videoitem.channel = item.channel
 
     return itemlist
 

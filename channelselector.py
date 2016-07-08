@@ -33,8 +33,7 @@ from core import config
 from core import logger
 from core.item import Item
 
-DEBUG = True
-CHANNELNAME = "channelselector"
+DEBUG = config.get_setting("debug")
 
 
 def getmainlist(preferred_thumb=""):
@@ -52,11 +51,12 @@ def getmainlist(preferred_thumb=""):
                          thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),
                                                     "thumb_canales.png"),
                          viewmode="movie"))
+
     itemlist.append(Item(title=config.get_localized_string(30103),
                          channel="buscador", action="mainlist",
                          thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),
                                                     "thumb_buscar.png"),
-                         viewmode="movie"))
+                         viewmode="list"))
     itemlist.append(Item(title=config.get_localized_string(30102),
                          channel="favoritos", action="mainlist",
                          thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),
@@ -79,24 +79,21 @@ def getmainlist(preferred_thumb=""):
                              channel="configuracion", action="mainlist",
                              thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),
                                                         "thumb_configuracion.png"),
-                             folder=False, viewmode="movie"))
+                             folder=False, viewmode="list"))
     else:
         itemlist.append(Item(title=config.get_localized_string(30100),
                              channel="configuracion", action="mainlist",
                              thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),
                                                         "thumb_configuracion.png"),
-                             folder=False, viewmode="movie"))
+                             folder=False, viewmode="list"))
         # Se ha insertado "folder=False" para que no se habra una ventana tras salir de la configuracion
+
 
     itemlist.append(Item(title=config.get_localized_string(30104), channel="ayuda", action="mainlist",
                          thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb), "thumb_ayuda.png"),
-                         viewmode="movie"))
+                         viewmode="list"))
     return itemlist
 
-
-def mainlist(params,url,category):
-    logger.info("channelselector.mainlist")
-    return getmainlist()
 
 def getchanneltypes(preferred_thumb=""):
     logger.info("channelselector getchanneltypes")
@@ -166,20 +163,6 @@ def getchanneltypes(preferred_thumb=""):
     return itemlist
 
 
-def channeltypes(params,url,category):
-    logger.info("channelselector.mainlist channeltypes")
-
-    lista = getchanneltypes()
-	#Se devuelve el itemlist para que xbmctools se encarge de mostrarlo
-    return lista
-
-def listchannels(params,url,category):
-    logger.info("channelselector.listchannels")
-
-    lista = filterchannels(category)
-	#Se devuelve el itemlist para que xbmctools se encarge de mostrarlo
-    return lista
-
 def filterchannels(category,preferred_thumb=""):
     logger.info("channelselector.filterchannels")
 
@@ -215,7 +198,7 @@ def filterchannels(category,preferred_thumb=""):
                     continue
 
                 # Se salta el canal para adultos si el modo adultos está desactivado
-                if channel_parameters["adult"] == "true" and config.get_setting("adult_mode") != "true": 
+                if channel_parameters["adult"] == "true" and config.get_setting("adult_mode") != "true":
                     continue
 
                 # Se salta el canal si está en un idioma filtrado
@@ -227,40 +210,40 @@ def filterchannels(category,preferred_thumb=""):
                     continue
 
                 # Si ha llegado hasta aquí, lo añade
-                channelslist.append(Item(title=channel_parameters["title"], channel=channel_parameters["channel"], action="mainlist", thumbnail=channel_parameters["thumbnail"] , fanart=channel_parameters["fanart"], category=", ".join(channel_parameters["categories"])[:-2], language=channel_parameters["language"], type=channel_parameters["type"], viewmode="movie" ))
-            
+                channelslist.append(Item(title=channel_parameters["title"], channel=channel_parameters["channel"], action="mainlist", thumbnail=channel_parameters["thumbnail"] , fanart=channel_parameters["fanart"], category=", ".join(channel_parameters["categories"])[:-2], language=channel_parameters["language"], viewmode="list" ))
+
             except:
                 logger.info("Se ha producido un error al leer los datos del canal " + channel)
                 import traceback
                 logger.info(traceback.format_exc())
-           
+
     channelslist.sort(key=lambda item: item.title.lower().strip())
 
     if category=="all":
         if config.get_setting("personalchannel5")=="true":
-            channelslist.insert( 0 , Item( title=config.get_setting("personalchannelname5") ,action="mainlist", channel="personal5" ,thumbnail=config.get_setting("personalchannellogo5") , type="generic" ,viewmode="movie" ))
+            channelslist.insert( 0 , Item( title=config.get_setting("personalchannelname5") ,action="mainlist", channel="personal5" ,thumbnail=config.get_setting("personalchannellogo5") , type="generic" ,viewmode="list" ))
         if config.get_setting("personalchannel4")=="true":
-            channelslist.insert( 0 , Item( title=config.get_setting("personalchannelname4") ,action="mainlist", channel="personal4" ,thumbnail=config.get_setting("personalchannellogo4") , type="generic" ,viewmode="movie" ))
+            channelslist.insert( 0 , Item( title=config.get_setting("personalchannelname4") ,action="mainlist", channel="personal4" ,thumbnail=config.get_setting("personalchannellogo4") , type="generic" ,viewmode="list" ))
         if config.get_setting("personalchannel3")=="true":
-            channelslist.insert( 0 , Item( title=config.get_setting("personalchannelname3") ,action="mainlist", channel="personal3" ,thumbnail=config.get_setting("personalchannellogo3") , type="generic" ,viewmode="movie" ))
+            channelslist.insert( 0 , Item( title=config.get_setting("personalchannelname3") ,action="mainlist", channel="personal3" ,thumbnail=config.get_setting("personalchannellogo3") , type="generic" ,viewmode="list" ))
         if config.get_setting("personalchannel2")=="true":
-            channelslist.insert( 0 , Item( title=config.get_setting("personalchannelname2") ,action="mainlist", channel="personal2" ,thumbnail=config.get_setting("personalchannellogo2") , type="generic" ,viewmode="movie" ))
+            channelslist.insert( 0 , Item( title=config.get_setting("personalchannelname2") ,action="mainlist", channel="personal2" ,thumbnail=config.get_setting("personalchannellogo2") , type="generic" ,viewmode="list" ))
         if config.get_setting("personalchannel")=="true":
-            channelslist.insert( 0 , Item( title=config.get_setting("personalchannelname")  ,action="mainlist", channel="personal"  ,thumbnail=config.get_setting("personalchannellogo") , type="generic" ,viewmode="movie" ))
+            channelslist.insert( 0 , Item( title=config.get_setting("personalchannelname")  ,action="mainlist", channel="personal"  ,thumbnail=config.get_setting("personalchannellogo") , type="generic" ,viewmode="list" ))
 
         channel_parameters = channeltools.get_channel_parameters("tengourl")
         # Si prefiere el bannermenu y el canal lo tiene, cambia ahora de idea
         if preferred_thumb=="bannermenu" and "bannermenu" in channel_parameters:
             channel_parameters["thumbnail"] = channel_parameters["bannermenu"]
 
-        channelslist.insert( 0 , Item( title="Tengo una URL"  ,action="mainlist", channel="tengourl" , thumbnail=channel_parameters["thumbnail"], type="generic" ,viewmode="movie" ))
+        channelslist.insert( 0 , Item( title="Tengo una URL"  ,action="mainlist", channel="tengourl" , thumbnail=channel_parameters["thumbnail"], type="generic" ,viewmode="list" ))
 
     return channelslist
 
 def get_thumbnail_path(preferred_thumb=""):
 
     WEB_PATH = ""
-    
+
     if preferred_thumb=="":
         thumbnail_type = config.get_setting("thumbnail_type")
         if thumbnail_type=="":

@@ -17,11 +17,6 @@ from core.item import Item
 from core import servertools
 
 __channel__ = "tremendaseries"
-__category__ = "F"
-__type__ = "generic"
-__title__ = "Tremenda Series"
-__language__ = "ES"
-__adult__ = "false"
 
 # Configuracion del canal
 try:
@@ -43,10 +38,7 @@ parameters= channeltools.get_channel_parameters(__channel__)
 fanart= parameters['fanart']
 thumbnail_host= parameters['thumbnail']
 
-def isGeneric():
-    return True
-   
-   
+
 def mainlist(item):
     logger.info("pelisalacarta.channels.tremendaseries mainlist")
     

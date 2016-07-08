@@ -13,17 +13,17 @@
 	<bannermenu>https://raw.githubusercontent.com/master-1970/resources/master/images/bannermenu/tremendaseries.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>2</version>
+	<version>3</version>
 	<changes>
+		<change>
+			<date>01/07/16</date>
+			<autor>SeiTaN</autor>
+			<description>Eliminado código innecesario.</description>
+		</change>
 		<change>
 			<date>01/06/16</date>
 			<autor>super_berny</autor>
 			<description>Desactivar por cambios en la web</description>
-		</change>
-		<change>
-			<date>27/03/2016</date>
-			<autor>super_berny</autor>
-			<description>Version inicial</description>
 		</change>
 	</changes>
 

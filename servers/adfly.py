@@ -45,15 +45,3 @@ def get_long_url( short_url ):
                 break
 
     return location
-
-def test():
-    
-    location = get_long_url("http://85093635.linkbucks.com/")
-    ok = ("freakshare.com" in location)
-    #if ok:
-    #    location = get_long_url("http://adf.ly/Fp6BF")
-    #    ok = "http://vk.com/" in location
-
-    print "Funciona:",ok
-
-    return ok

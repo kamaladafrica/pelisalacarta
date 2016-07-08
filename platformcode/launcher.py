@@ -55,14 +55,12 @@ def run():
     # Extract item from sys.argv
     if sys.argv[2]:
         item = Item().fromurl(sys.argv[2])
-        params = ""
 
     # If no item, this is mainlist
     else:
-        item = Item(action="selectchannel")
-        params = ""
+        item = Item(action="selectchannel", viewmode="movie")
 
-    logger.info(item.tostring())
+    logger.info("pelisalacarta.platformcode.launcher "+item.tostring())
 
     # Set server filters
     server_white_list = []
@@ -74,13 +72,13 @@ def run():
 
         # If item has no action, stops here
         if item.action == "":
-            logger.info("Item sin accion")
+            logger.info("pelisalacarta.platformcode.launcher Item sin accion")
             return
 
         # Action for main menu in channelselector
         if ( item.action=="selectchannel" ):
             import channelselector
-            itemlist = channelselector.mainlist(params, item.url, item.category)
+            itemlist = channelselector.getmainlist()
 
             # Check for updates only on first screen
             if config.get_setting("updatecheck2") == "true":
@@ -100,7 +98,7 @@ def run():
                     import xbmcgui
                     advertencia = xbmcgui.Dialog()
                     advertencia.ok("No se puede conectar","No ha sido posible comprobar","si hay actualizaciones")
-                    logger.info("channelselector.mainlist Fallo al verificar la actualización")
+                    logger.info("cpelisalacarta.platformcode.launcher Fallo al verificar la actualización")
 
             else:
                 logger.info("pelisalacarta.platformcode.launcher Check for plugin updates disabled")
@@ -119,14 +117,14 @@ def run():
         # Action for channel types on channelselector: movies, series, etc.
         elif (item.action=="channeltypes"):
             import channelselector
-            itemlist = channelselector.channeltypes(params,item.url,item.category)
+            itemlist = channelselector.getchanneltypes()
 
             xbmctools.renderItems(itemlist, item)
 
         # Action for channel listing on channelselector
         elif (item.action=="listchannels"):
             import channelselector
-            itemlist = channelselector.listchannels(params,item.url,item.category)
+            itemlist = channelselector.filterchannels(item.category)
 
             xbmctools.renderItems(itemlist, item)
 
@@ -264,11 +262,11 @@ def run():
 
             # Special action for adding a movie to the library
             elif item.action == "add_pelicula_to_library":
-                add_pelicula_to_library(item)
+                library.add_pelicula_to_library(item)
 
             # Special action for adding a serie to the library
             elif item.action == "add_serie_to_library":
-                add_serie_to_library(item, channel)
+                library.add_serie_to_library(item, channel)
 
             # Special action for downloading all episodes from a serie
             elif item.action == "download_all_episodes":
@@ -313,27 +311,27 @@ def run():
 
     except urllib2.URLError,e:
         import traceback
-        logger.error(traceback.format_exc())
+        logger.error("pelisalacarta.platformcode.launcher "+traceback.format_exc())
 
         import xbmcgui
         ventana_error = xbmcgui.Dialog()
 
         # Grab inner and third party errors
         if hasattr(e, 'reason'):
-            logger.info("Razon del error, codigo: {0}, Razon: {1}".format(e.reason[0], e.reason[1]))
+            logger.info("pelisalacarta.platformcode.launcher Razon del error, codigo: {0}, Razon: {1}".format(e.reason[0], e.reason[1]))
             texto = config.get_localized_string(30050) # "No se puede conectar con el sitio web"
             ok = ventana_error.ok ("plugin", texto)
         
         # Grab server response errors
         elif hasattr(e,'code'):
-            logger.info("codigo de error HTTP : %d" %e.code)
+            logger.info("pelisalacarta.platformcode.launcher codigo de error HTTP : %d" %e.code)
             texto = (config.get_localized_string(30051) % e.code) # "El sitio web no funciona correctamente (error http %d)"
             ok = ventana_error.ok ("plugin", texto)
     
     except:
         import traceback
         import xbmcgui
-        logger.error(traceback.format_exc())
+        logger.error("pelisalacarta.platformcode.launcher "+traceback.format_exc())
         
         patron = 'File "'+os.path.join(config.get_runtime_path(),"channels","").replace("\\","\\\\")+'([^.]+)\.py"'
         canal = scrapertools.find_single_match(traceback.format_exc(),patron)
@@ -374,11 +372,11 @@ def filtered_servers(itemlist, server_white_list, server_black_list):
     white_counter = 0
     black_counter = 0
 
-    logger.info("pelisalacarta.platformcode.launcher.filtered_servers whiteList %s" % server_white_list)
-    logger.info("pelisalacarta.platformcode.launcher.filtered_servers blackList %s" % server_black_list)
+    logger.info("pelisalacarta.platformcode.launcher filtered_servers whiteList %s" % server_white_list)
+    logger.info("pelisalacarta.platformcode.launcher filtered_servers blackList %s" % server_black_list)
 
     if len(server_white_list) > 0:
-        logger.info("pelisalacarta.platformcode.launcher.filtered_servers whiteList")
+        logger.info("pelisalacarta.platformcode.launcher filtered_servers whiteList")
         for item in itemlist:
             logger.info("item.title " + item.title)
             if any(server in item.title for server in server_white_list):
@@ -390,7 +388,7 @@ def filtered_servers(itemlist, server_white_list, server_black_list):
                 logger.info("not found")
 
     if len(server_black_list) > 0:
-        logger.info("pelisalacarta.platformcode.launcher.filtered_servers blackList")
+        logger.info("pelisalacarta.platformcode.launcher filtered_servers blackList")
         for item in itemlist:
             logger.info("item.title " + item.title)
             if any(server in item.title for server in server_black_list):
@@ -401,8 +399,8 @@ def filtered_servers(itemlist, server_white_list, server_black_list):
                 new_list.append(item)
                 logger.info("not found")
 
-    logger.info("pelisalacarta.platformcode.launcher.filtered_servers whiteList server %s has #%d rows" % (server_white_list, white_counter))
-    logger.info("pelisalacarta.platformcode.launcher.filtered_servers blackList server %s has #%d rows" % (server_black_list, black_counter))
+    logger.info("pelisalacarta.platformcode.launcher filtered_servers whiteList server %s has #%d rows" % (server_white_list, white_counter))
+    logger.info("pelisalacarta.platformcode.launcher filtered_servers blackList server %s has #%d rows" % (server_black_list, black_counter))
 
     if len(new_list) == 0:
         new_list = itemlist
@@ -456,59 +454,3 @@ def play_from_library(item, channel, server_white_list, server_black_list):
 
     xbmctools.play_video(item, strmfile=True)
     library.mark_as_watched(category, 0)
-
-
-def add_pelicula_to_library(item):
-    logger.info("pelisalacarta.platformcode.launcher add_pelicula_to_library")
-
-    new_item = item.clone(action="play_from_library", category="Cine")
-    insertados, sobreescritos, fallidos = library.save_library_movie(new_item)
-    itemlist = []
-
-    if fallidos == 0:
-        itemlist.append(Item(title="La pelicula se ha añadido a la biblioteca", channel=item.channel))
-    else:
-        itemlist.append(Item(title="ERROR, la pelicula NO se ha añadido a la biblioteca",  channel=item.channel))
-
-    xbmctools.renderItems(itemlist, item)
-
-    # library.update()
-
-
-def add_serie_to_library(item, channel):
-    logger.info("pelisalacarta.platformcode.launcher add_serie_to_library, show=#"+item.show+"#")
-
-    # Esta marca es porque el item tiene algo más aparte en el atributo "extra"
-    action = item.extra
-    if "###" in item.extra:
-        action = item.extra.split("###")[0]
-        item.extra = item.extra.split("###")[1]
-
-    # Obtiene el listado desde el que se llamó
-    itemlist = getattr(channel, action)(item)
-
-    insertados, sobreescritos, fallidos = library.save_library_tvshow(item, itemlist)
-
-    if fallidos > -1 and (insertados + sobreescritos) > 0:
-        # Guardar el registro series.json actualizado
-        library.save_tvshow_in_file(item)
-
-    itemlist = []
-    if fallidos == -1:
-        itemlist.append(Item(title="ERROR, la serie NO se ha añadido a la biblioteca",
-                             channel=item.channel))
-        logger.error("La serie {0} no se ha podido añadir a la biblioteca".format(item.show))
-        xbmctools.renderItems(itemlist, item)
-        return -1
-    elif fallidos > 0:
-        itemlist.append(Item(title="ERROR, la serie NO se ha añadido completa a la biblioteca",
-                             channel=item.channel))
-        logger.error("No se han podido añadir {0} episodios de la serie {1} a la biblioteca".format(fallidos,
-                                                                                                    item.show))
-    else:
-        itemlist.append(Item(title="La serie se ha añadido a la biblioteca", channel=item.channel))
-        logger.info("[launcher.py] Se han añadido {0} episodios de la serie {1} a la biblioteca".format(insertados,
-                                                                                                        item.show))
-
-    xbmctools.renderItems(itemlist, item)
-    # library.update() # TODO evitar bucle

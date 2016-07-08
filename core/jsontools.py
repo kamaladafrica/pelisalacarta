@@ -189,6 +189,7 @@ def dump_json(data):
 
     
 def xmlTojson(path_xml):
+
     '''Lee un fichero xml y retorna un diccionario json
     
     Parametros:
@@ -210,7 +211,7 @@ def xmlTojson(path_xml):
             ret = Xml2Json(data).result
     except:
         import traceback
-        logger.info("pelisalacarta.core.jsontools xmlTojson ERROR al leer el fichero y/o crear el json")
+        logger.info("pelisalacarta.core.jsontools xmlTojson ERROR al leer el fichero y/o crear el json de "+path_xml)
         logger.info("pelisalacarta.core.jsontools "+traceback.format_exc())
         
     return ret    

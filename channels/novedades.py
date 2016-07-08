@@ -1,43 +1,45 @@
 ﻿# -*- coding: utf-8 -*-
-#------------------------------------------------------------
-# pelisalacarta - XBMC Plugin
-# Canal para novedades
+# ------------------------------------------------------------
+# pelisalacarta 4
+# Copyright 2015 tvalacarta@gmail.com
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
+#
+# Distributed under the terms of GNU General Public License v3 (GPLv3)
+# http://www.gnu.org/licenses/gpl-3.0.html
+# ------------------------------------------------------------
+# This file is part of pelisalacarta 4.
+#
+# pelisalacarta 4 is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# pelisalacarta 4 is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with pelisalacarta 4.  If not, see <http://www.gnu.org/licenses/>.
+# ------------------------------------------------------------
+# Channel for recent videos on several channels
 #------------------------------------------------------------
-import urlparse, urllib2, urllib, re, os, glob
 
+import glob
+import os
+import re
 from threading import Thread
-from core import logger
-from core import config
-from core import scrapertools
-from core import channeltools
-from core.item import Item
-from core import servertools
-from platformcode import platformtools
 
-__channel__ = "novedades"
-__category__ = "F"
-__type__ = "generic"
-__title__ = "Novedades"
-__language__ = "ES"
+from core import channeltools
+from core import config
+from core import logger
+from core.item import Item
+from platformcode import platformtools
 
 DEBUG = config.get_setting("debug")
 THUMBNAILS = {'0': 'posters', '1': 'banners', '2': 'squares'}
 
 list_newest =[]
-
-def isGeneric():
-    return True
-
-'''
-Actualmente he actualizado estos canales
-peliculas: pepecine, zpeliculas, divxatope, yaske
-infantiles: pepecine, zpeliculas, yaske
-series: pepecine, divxatope, seriesflv
-anime: animeflv, animeid
-documentales: documaniatv
-'''
-
 
 def mainlist(item):
     logger.info("pelisalacarta.channels.novedades mainlist")
@@ -47,30 +49,28 @@ def mainlist(item):
     thumbnail_base = "http://media.tvalacarta.info/pelisalacarta/squares/"
 
     thumbnail = (thumbnail_base if list_canales['peliculas'] else thumbnail_base + '/disabled') + "/thumb_canales_peliculas.png"
-    itemlist.append( Item(channel=__channel__, action="novedades", extra="peliculas", title="Películas",
-                          viewmode="movie", thumbnail=thumbnail))
+    itemlist.append( Item(channel=item.channel, action="novedades", extra="peliculas", title="Películas", thumbnail=thumbnail))
 
     thumbnail = (thumbnail_base if list_canales['infantiles'] else thumbnail_base + '/disabled')+ "/thumb_canales_infantiles.png"
-    itemlist.append( Item(channel=__channel__, action="novedades", extra="infantiles", title="Para niños",
-                          viewmode="movie", thumbnail=thumbnail ))
+    itemlist.append( Item(channel=item.channel, action="novedades", extra="infantiles", title="Para niños", thumbnail=thumbnail ))
 
     thumbnail = (thumbnail_base if list_canales['series'] else thumbnail_base + '/disabled') + "/thumb_canales_series.png"
-    itemlist.append( Item(channel=__channel__, action="novedades", extra="series", title="Episodios de series",
-                          viewmode="movie", thumbnail=thumbnail))
+    itemlist.append( Item(channel=item.channel, action="novedades", extra="series", title="Episodios de series", thumbnail=thumbnail))
 
     thumbnail = (thumbnail_base if list_canales['anime'] else thumbnail_base + '/disabled') + "/thumb_canales_anime.png"
-    itemlist.append( Item(channel=__channel__, action="novedades", extra="anime", title="Episodios de anime",
-                          viewmode="movie", thumbnail=thumbnail))
+    itemlist.append( Item(channel=item.channel, action="novedades", extra="anime", title="Episodios de anime", thumbnail=thumbnail))
 
     thumbnail = (thumbnail_base if list_canales['documentales'] else thumbnail_base + '/disabled') + "/thumb_canales_documentales.png"
-    itemlist.append( Item(channel=__channel__, action="novedades", extra="documentales", title="Documentales",
-                          viewmode="movie", thumbnail=thumbnail))
+    itemlist.append( Item(channel=item.channel, action="novedades", extra="documentales", title="Documentales", thumbnail=thumbnail))
 
-    itemlist.append(Item(channel=__channel__, action="menu_opciones", title="Opciones", viewmode="list",
-                         thumbnail=thumbnail_base + "/thumb_configuracion.png"))
+    #itemlist.append(Item(channel=item.channel, action="menu_opciones", title="Opciones", viewmode="list",
+    #                     thumbnail=thumbnail_base + "/thumb_configuracion.png"))
+
     return itemlist
 
 def get_list_canales():
+    logger.info("pelisalacarta.channels.novedades get_list_canales")
+
     list_canales = {'peliculas': [], 'infantiles': [], 'series': [], 'anime': [], 'documentales': []}
 
     # Rellenar listas de canales disponibles
@@ -107,15 +107,20 @@ def get_list_canales():
 
 
 def novedades(item):
-    logger.info("pelisalacarta.channels.novedades extra= %s" %item.extra)
+    logger.info("pelisalacarta.channels.novedades item="+item.tostring())
 
     global list_newest
     l_hilo = []
 
     multithread = config.get_setting("multithread", "novedades")
+    logger.info("pelisalacarta.channels.novedades multithread="+str(multithread))
+
     list_canales = get_list_canales()
 
     for channel_name in list_canales[item.extra]:
+        logger.info("pelisalacarta.channels.novedades")
+        logger.info("pelisalacarta.channels.novedades obteniendo novedades de channel_name="+channel_name)
+
         # Modo Multi Thread
         if multithread:
             t = Thread(target=get_newest, args=[channel_name, item.extra])
@@ -125,7 +130,6 @@ def novedades(item):
         # Modo single Thread
         else:
             get_newest(channel_name, item.extra)
-
 
     # Modo Multi Thread: esperar q todos los hilos terminen
     if multithread:
@@ -141,14 +145,20 @@ def novedades(item):
 
 
 def get_newest(channel_name, categoria):
+    logger.info("pelisalacarta.channels.novedades get_newest channel_name="+channel_name+", categoria="+categoria)
+
     global list_newest
-    # try:
+
     # Solicitamos las novedades de la categoria (item.extra) buscada en el canal channel
     # Si no existen novedades para esa categoria en el canal devuelve una lista vacia
     modulo = __import__('channels.%s' % channel_name, fromlist=["channels.%s" % channel_name])
     list_result = modulo.newest(categoria)
     logger.info("pelisalacarta.channels.novedades.get_newest canal= %s %d resultados" %(channel_name, len(list_result)))
-    list_newest.extend(list_result)
+
+    for item in list_result:
+        logger.info("pelisalacarta.channels.novedades.get_newest   item="+item.tostring())
+        item.channel = channel_name
+        list_newest.append(item)
 
     '''except:
         logger.error("No se pueden recuperar novedades de: "+ channel_name)
@@ -164,6 +174,7 @@ def noAgrupar(list_result_canal, categoria):
         i.title = re.compile("\[/COLO.*?\]",re.DOTALL).sub("",i.title)
         i.title = re.compile("\[B\]",re.DOTALL).sub("",i.title)
         i.title = re.compile("\[/B\]",re.DOTALL).sub("",i.title)
+        i.title = i.title + " ["+i.channel+"]"
         itemlist.append(i.clone())
 
     return sorted(itemlist, key=lambda i:  i.title.lower())
@@ -193,7 +204,7 @@ def agruparXcanal(list_result_canal, categoria):
 
     # Añadimos el contenido encontrado en la lista list_result
     for c in sorted(dict_canales):
-        itemlist.append(Item(channel=__channel__, title=c+':'))
+        itemlist.append(Item(channel="novedades", title=c+':'))
         for i in dict_canales[c]:
             if 'contentCalidad' in i:  i.title += ' (%s)' % i.contentCalidad
             if i.language: i.title += ' [%s]' % i.language
@@ -250,7 +261,7 @@ def agruparXcontenido(list_result_canal, categoria):
             else:
                 title += " (En %s)" % (', '.join([i for i in canales_no_duplicados]))
 
-            newItem = v[0].clone(channel=__channel__, title=title, action="ver_canales",
+            newItem = v[0].clone(channel="novedades", title=title, action="ver_canales",
                                  sub_list=[i.tourl() for i in v])
         else:
             newItem = v[0].clone(title=title)
@@ -282,19 +293,19 @@ def menu_opciones(item):
     preferred_thumbnail = THUMBNAILS[thumbnail_type]
 
     itemlist = []
-    itemlist.append(Item(channel=__channel__, title="Canales incluidos en:",
+    itemlist.append(Item(channel=item.channel, title="Canales incluidos en:",
                          thumbnail="http://media.tvalacarta.info/pelisalacarta/" + preferred_thumbnail + "/thumb_configuracion.png"))
-    itemlist.append(Item(channel=__channel__, action="settingCanal", extra="peliculas", title="    - Películas ",
+    itemlist.append(Item(channel=item.channel, action="settingCanal", extra="peliculas", title="    - Películas ",
                          thumbnail="http://media.tvalacarta.info/pelisalacarta/" + preferred_thumbnail + "/thumb_canales_peliculas.png"))
-    itemlist.append(Item(channel=__channel__, action="settingCanal", extra="infantiles", title="    - Para niños",
+    itemlist.append(Item(channel=item.channel, action="settingCanal", extra="infantiles", title="    - Para niños",
                          thumbnail="http://media.tvalacarta.info/pelisalacarta/" + preferred_thumbnail + "/thumb_canales_infantiles.png"))
-    itemlist.append(Item(channel=__channel__, action="settingCanal", extra="series", title="    - Episodios de series",
+    itemlist.append(Item(channel=item.channel, action="settingCanal", extra="series", title="    - Episodios de series",
                          thumbnail="http://media.tvalacarta.info/pelisalacarta/" + preferred_thumbnail + "/thumb_canales_series.png"))
-    itemlist.append(Item(channel=__channel__, action="settingCanal", extra="anime", title="    - Episodios de anime",
+    itemlist.append(Item(channel=item.channel, action="settingCanal", extra="anime", title="    - Episodios de anime",
                          thumbnail="http://media.tvalacarta.info/pelisalacarta/" + preferred_thumbnail + "/thumb_canales_anime.png"))
-    itemlist.append(Item(channel=__channel__, action="settingCanal", extra="documentales", title="    - Documentales",
+    itemlist.append(Item(channel=item.channel, action="settingCanal", extra="documentales", title="    - Documentales",
                          thumbnail="http://media.tvalacarta.info/pelisalacarta/" + preferred_thumbnail + "/thumb_canales_documentales.png"))
-    itemlist.append(Item(channel=__channel__, action="settings", title="Ajustes Canal Novedades",
+    itemlist.append(Item(channel=item.channel, action="settings", title="Otros ajustes",
                          thumbnail="http://media.tvalacarta.info/pelisalacarta/"+preferred_thumbnail+"/thumb_configuracion.png"))
     return itemlist
 

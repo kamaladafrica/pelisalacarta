@@ -12,23 +12,18 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/pepecine.png</bannermenu>
 	
 	<update_url></update_url>
-	<version>3</version>
+	<version>4</version>
 
 	<changes>
+		<change>
+			<date>01/07/16</date>
+			<autor>SeiTaN</autor>
+			<description>Eliminado código innecesario.</description>
+		</change>
 		<change> 
 			<date>26/05/16</date>
 			<autor>super_berny</autor>
 			<description>Corregir bug al añadir serie a la biblioteca desde el listado de episodios</description>
-		</change>
-		<change> 
-			<date>29/04/16</date>
-			<autor>super_berny</autor>
-			<description>Adaptar a Buscador global y Novedades Peliculas, Infantiles y Series</description>
-		</change>
-		<change> 
-			<date>14/01/16</date>
-			<autor>super_berny</autor>
-			<description>Corregido el idioma en la seccion Ultimos capitulos</description>
 		</change>
 	</changes>
 

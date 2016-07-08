@@ -34,7 +34,6 @@ import logger
 import scrapertools
 import jsontools
 
-
 def is_adult(channel_name):
     logger.info("pelisalacarta.core.channeltools is_adult channel_name="+channel_name)
 
@@ -44,12 +43,12 @@ def is_adult(channel_name):
 
 
 def get_channel_parameters(channel_name):
-    logger.info("pelisalacarta.core.channeltools get_channel_parameters channel_name="+channel_name)
+    #logger.info("pelisalacarta.core.channeltools get_channel_parameters channel_name="+channel_name)
 
     channel_xml = os.path.join(config.get_runtime_path(), 'channels', channel_name+".xml")
 
     if os.path.exists(channel_xml):
-        logger.info("pelisalacarta.core.channeltools get_channel_parameters "+channel_name+".xml found")
+        #logger.info("pelisalacarta.core.channeltools get_channel_parameters "+channel_name+".xml found")
 
         infile = open(channel_xml, "rb")
         data = infile.read()
@@ -67,7 +66,6 @@ def get_channel_parameters(channel_name):
         channel_parameters["fanart"] = scrapertools.find_single_match(data, "<fanart>([^<]*)</fanart>")
         channel_parameters["include_in_global_search"] = scrapertools.find_single_match(
             data, "<include_in_global_search>([^<]*)</include_in_global_search>")
-        channel_parameters["type"] = "generic"
 
         category_list = []
         matches = scrapertools.find_multiple_matches(data, "<category>([^<]*)</category>")
@@ -76,7 +74,7 @@ def get_channel_parameters(channel_name):
 
         channel_parameters["categories"] = category_list
 
-        logger.info("pelisalacarta.core.channeltools get_channel_parameters channel_parameters="+repr(channel_parameters) )
+        logger.info("pelisalacarta.core.channeltools get_channel_parameters "+channel_name+" -> "+repr(channel_parameters) )
 
     else:
         logger.info("pelisalacarta.core.channeltools get_channel_parameters "+channel_name+".xml NOT found")
@@ -87,13 +85,13 @@ def get_channel_parameters(channel_name):
     return channel_parameters
 
 def get_channel_json(channel_name):
-    logger.info("pelisalacarta.core.channeltools get_channel_json channel_name="+channel_name)
+    #logger.info("pelisalacarta.core.channeltools get_channel_json channel_name="+channel_name)
     channel_xml =os.path.join(config.get_runtime_path() , 'channels' , channel_name + ".xml")
     channel_json = jsontools.xmlTojson(channel_xml)
     return channel_json['channel']
     
 def get_channel_controls_settings(channel_name):    
-    logger.info("pelisalacarta.core.channeltools get_channel_controls_settings channel_name="+channel_name)
+    #logger.info("pelisalacarta.core.channeltools get_channel_controls_settings channel_name="+channel_name)
     dict_settings= {}
     list_controls=[]
     

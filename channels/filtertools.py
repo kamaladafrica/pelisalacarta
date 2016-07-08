@@ -61,11 +61,6 @@ __channel__ = "filtertools"
 DEBUG = config.get_setting("debug")
 
 
-# hay que ponerlo sino da fallo en el launcher.py
-def isGeneric():
-    return True
-
-
 def get_filtered_links(list_item, channel):
     """
     Devuelve una lista de enlaces filtrados.
@@ -301,7 +296,7 @@ def mainlist_filter(channel, list_idiomas, list_calidad):
     :rtype: list[Item]
     """
     logger.info("[filtertools.py] mainlist_filter")
-    itemlist = list([])
+    itemlist = []
     dict_series = get_filtered_tvshows(channel)
 
     idx = 0
@@ -465,35 +460,6 @@ def guardar_valores(item, dict_data_saved):
 
         heading = "{0} [{1}]".format(item.show.strip(), lang_selected)
         platformtools.dialog_notification(heading, message)
-
-
-        # if dict_data_saved["checkbox_deleted"] != 1:
-        #     logger.info("Se actualiza los datos")
-        #
-        #     list_quality = []
-        #     for id, value in dict_data_saved.items():
-        #         if id in item.list_calidad and value:
-        #                 list_quality.append(id.lower())
-        #
-        #     lang_selected = item.list_idiomas[dict_data_saved[TAG_LANGUAGE]]
-        #     dict_filter = {TAG_NAME: item.show, TAG_ACTIVE: dict_data_saved[TAG_ACTIVE], TAG_LANGUAGE: lang_selected,
-        #                    TAG_QUALITY_NOT_ALLOWED: list_quality}
-        #     dict_series[tvshow] = dict_filter
-        #
-        #     message = "FILTRO GUARDADO"
-        #
-        # else:
-        #     logger.info("borrado")
-        #     lang_selected = item.list_idiomas[dict_data_saved[TAG_LANGUAGE]]
-        #     dict_series.pop(tvshow, None)
-        #
-        #     message = "FILTRO ELIMINADO"
-        #
-        # fname, json_data = update_json_data(dict_series, item.from_channel)
-        # message = save_file(json_data, fname, message)
-        #
-        # heading = "{0} [{1}]".format(item.show.strip(), lang_selected)
-        # platformtools.dialog_notification(heading, message)
 
 
 def update_json_data(dict_series, filename):

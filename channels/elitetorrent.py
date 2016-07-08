@@ -12,30 +12,23 @@ from core import logger
 from core import scrapertools
 from core.item import Item
 
-__channel__ = "elitetorrent"
-__category__ = "F,S,D"
-__type__ = "generic"
-__title__ = "Elite Torrent"
-__language__ = "ES"
 
 DEBUG = config.get_setting("debug")
 BASE_URL = 'http://www.elitetorrent.net'
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("[elitetorrent.py] mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, title="Docus y TV"     , action="peliculas", url="http://www.elitetorrent.net/categoria/6/docus-y-tv/modo:mini"))
-    itemlist.append( Item(channel=__channel__, title="Estrenos"       , action="peliculas", url="http://www.elitetorrent.net/categoria/1/estrenos/modo:mini"))
-    itemlist.append( Item(channel=__channel__, title="Películas"      , action="peliculas", url="http://www.elitetorrent.net/categoria/2/peliculas/modo:mini"))
-    itemlist.append( Item(channel=__channel__, title="Peliculas HDRip", action="peliculas", url="http://www.elitetorrent.net/categoria/13/peliculas-hdrip/modo:mini"))
-    itemlist.append( Item(channel=__channel__, title="Peliculas MicroHD", action="peliculas", url="http://www.elitetorrent.net/categoria/17/peliculas-microhd/modo:mini"))
-    itemlist.append( Item(channel=__channel__, title="Peliculas VOSE" , action="peliculas", url="http://www.elitetorrent.net/categoria/14/peliculas-vose/modo:mini"))
-    itemlist.append( Item(channel=__channel__, title="Series"         , action="peliculas", url="http://www.elitetorrent.net/categoria/4/series/modo:mini"))
-    itemlist.append( Item(channel=__channel__, title="Series VOSE"    , action="peliculas", url="http://www.elitetorrent.net/categoria/16/series-vose/modo:mini"))
+    itemlist.append( Item(channel=item.channel, title="Docus y TV"     , action="peliculas", url="http://www.elitetorrent.net/categoria/6/docus-y-tv/modo:mini", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, title="Estrenos"       , action="peliculas", url="http://www.elitetorrent.net/categoria/1/estrenos/modo:mini", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, title="Películas"      , action="peliculas", url="http://www.elitetorrent.net/categoria/2/peliculas/modo:mini", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, title="Peliculas HDRip", action="peliculas", url="http://www.elitetorrent.net/categoria/13/peliculas-hdrip/modo:mini", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, title="Peliculas MicroHD", action="peliculas", url="http://www.elitetorrent.net/categoria/17/peliculas-microhd/modo:mini", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, title="Peliculas VOSE" , action="peliculas", url="http://www.elitetorrent.net/categoria/14/peliculas-vose/modo:mini", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, title="Series"         , action="peliculas", url="http://www.elitetorrent.net/categoria/4/series/modo:mini", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, title="Series VOSE"    , action="peliculas", url="http://www.elitetorrent.net/categoria/16/series-vose/modo:mini", viewmode="movie_with_plot"))
 
     return itemlist
 
@@ -67,7 +60,7 @@ def peliculas(item):
         thumbnail = urlparse.urljoin(BASE_URL, scrapedthumbnail)
         plot = re.sub('<[^<]+?>', '', scrapedplot)
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="play", title=title , url=url , thumbnail=thumbnail , plot=plot , folder=False, viewmode="movie_with_plot") )
+        itemlist.append( Item(channel=item.channel, action="play", title=title , url=url , thumbnail=thumbnail , plot=plot , folder=False) )
 
     # Extrae el paginador
     patronvideos  = '<a href="([^"]+)" class="pagina pag_sig">Siguiente \&raquo\;</a>'
@@ -76,7 +69,7 @@ def peliculas(item):
 
     if len(matches)>0:
         scrapedurl = urlparse.urljoin(item.url,matches[0])
-        itemlist.append( Item(channel=__channel__, action="peliculas", title="Página siguiente >>" , url=scrapedurl , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="peliculas", title="Página siguiente >>" , url=scrapedurl , folder=True, viewmode="movie_with_plot") )
 
     return itemlist
 
@@ -91,6 +84,6 @@ def play(item):
     link = urlparse.urljoin(item.url,link)
     logger.info("link="+link)
 
-    itemlist.append( Item(channel=__channel__, action="play", server="torrent", title=item.title , url=link , thumbnail=item.thumbnail , plot=item.plot , folder=False) )
+    itemlist.append( Item(channel=item.channel, action="play", server="torrent", title=item.title , url=link , thumbnail=item.thumbnail , plot=item.plot , folder=False) )
 
     return itemlist

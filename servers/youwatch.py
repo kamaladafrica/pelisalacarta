@@ -57,9 +57,3 @@ def find_videos(data):
             logger.info("  url duplicada=" + url)
 
     return devuelve
-
-
-def test():
-    video_urls = get_video_url("http://youwatch.org/crbt4sja1jvo")
-
-    return len(video_urls) > 0

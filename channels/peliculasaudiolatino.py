@@ -15,30 +15,22 @@ from core import scrapertools
 from core import servertools
 from core.item import Item
 
-__channel__ = "peliculasaudiolatino"
-__category__ = "F"
-__type__ = "generic"
-__title__ = "Peliculasaudiolatino"
-__language__ = "ES"
-__creationdate__ = "20111014"
 
 DEBUG = config.get_setting("debug")
     
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("channels.peliculasaudiolatino mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, title="Recién agregadas", action="peliculas", url="http://peliculasaudiolatino.com/ultimas-agregadas.html"))
-    itemlist.append( Item(channel=__channel__, title="Recién actualizadas", action="peliculas", url="http://peliculasaudiolatino.com/recien-actualizadas.html"))
-    itemlist.append( Item(channel=__channel__, title="Las más vistas", action="peliculas", url="http://peliculasaudiolatino.com/las-mas-vistas.html"))
+    itemlist.append( Item(channel=item.channel, title="Recién agregadas", action="peliculas", url="http://peliculasaudiolatino.com/ultimas-agregadas.html", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, title="Recién actualizadas", action="peliculas", url="http://peliculasaudiolatino.com/recien-actualizadas.html", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, title="Las más vistas", action="peliculas", url="http://peliculasaudiolatino.com/las-mas-vistas.html", viewmode="movie"))
     
-    itemlist.append( Item(channel=__channel__, title="Listado por géneros" , action="generos", url="http://peliculasaudiolatino.com"))
-    itemlist.append( Item(channel=__channel__, title="Listado por años" , action="anyos", url="http://peliculasaudiolatino.com"))
+    itemlist.append( Item(channel=item.channel, title="Listado por géneros" , action="generos", url="http://peliculasaudiolatino.com"))
+    itemlist.append( Item(channel=item.channel, title="Listado por años" , action="anyos", url="http://peliculasaudiolatino.com"))
     
-    itemlist.append( Item(channel=__channel__, title="Buscar..." , action="search") )
+    itemlist.append( Item(channel=item.channel, title="Buscar..." , action="search") )
     return itemlist
 
 def peliculas(item):
@@ -62,12 +54,12 @@ def peliculas(item):
         plot = ""
 
         # Añade al listado
-        itemlist.append( Item(channel=__channel__, action="findvideos", title=title , fulltitle=title, url=url , thumbnail=thumbnail , plot=plot , viewmode="movie", folder=True) )
+        itemlist.append( Item(channel=item.channel, action="findvideos", title=title , fulltitle=title, url=url , thumbnail=thumbnail , plot=plot , folder=True) )
 
     # Extrae la marca de siguiente página
     next_page = scrapertools.find_single_match(data,'<a href="([^"]+)"><span class="icon-chevron-right">')
     if next_page!="":
-        itemlist.append( Item(channel=__channel__, action="peliculas", title=">> Página siguiente" , url=urlparse.urljoin(item.url,next_page).replace("/../../","/"), folder=True) )
+        itemlist.append( Item(channel=item.channel, action="peliculas", title=">> Página siguiente" , url=urlparse.urljoin(item.url,next_page, viewmode="movie").replace("/../../","/"), folder=True) )
 
     return itemlist
 
@@ -93,7 +85,7 @@ def generos(item):
         scrapedplot = ""
         logger.info(scrapedtitle)
 
-        itemlist.append( Item(channel=__channel__, action="peliculas", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="peliculas", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True, viewmode="movie") )
 
     itemlist = sorted(itemlist, key=lambda Item: Item.title)    
     return itemlist
@@ -121,7 +113,7 @@ def anyos(item):
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
-        itemlist.append( Item(channel=__channel__, action="peliculas", title=title , url=url , thumbnail=thumbnail , plot=plot, folder=True) )
+        itemlist.append( Item(channel=item.channel, action="peliculas", title=title , url=url , thumbnail=thumbnail , plot=plot, folder=True, viewmode="movie") )
 
     return itemlist
 
@@ -184,7 +176,7 @@ def findvideos(item):
         url = scrapedurl
         idioma = img_idioma_to_img_name(imgidioma)
         title = "Ver en "+servidor+" ["+idioma+"]["+calidad+"]"
-        itemlist.append( Item(channel=__channel__, action="play", title=title , fulltitle=item.fulltitle, url=url , thumbnail=scrapedthumbnail , folder=False) )
+        itemlist.append( Item(channel=item.channel, action="play", title=title , fulltitle=item.fulltitle, url=url , thumbnail=scrapedthumbnail , folder=False) )
 
     return itemlist
 
@@ -253,21 +245,6 @@ def play(item):
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+videourl+"]")
 
         # Añade al listado de XBMC
-        itemlist.append( Item(channel=__channel__, action="play", title=scrapedtitle , fulltitle=item.fulltitle, url=videourl , server=server , folder=False) )
+        itemlist.append( Item(channel=item.channel, action="play", title=scrapedtitle , fulltitle=item.fulltitle, url=videourl , server=server , folder=False) )
     
     return itemlist
-
-# Verificación automática de canales: Esta función debe devolver "True" si está ok el canal.
-def test():
-    # mainlist
-    mainlist_items = mainlist(Item())
-    # Da por bueno el canal si alguno de los vídeos de "Novedades" devuelve mirrors
-    novedades_items = peliculas(mainlist_items[0])
-    bien = False
-    for novedades_item in novedades_items:
-        mirrors = findvideos( item=novedades_item )
-        if len(mirrors)>0:
-            bien = True
-            break
-
-    return bien

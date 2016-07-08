@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para guaridavalencianista
@@ -13,25 +13,18 @@ from core import scrapertools
 from core import servertools
 from core.item import Item
 
-__channel__ = "guaridavalencianista"
-__category__ = "D"
-__type__ = "generic"
-__title__ = "guaridavalencianista"
-__language__ = "ES"
 
 DEBUG = config.get_setting("debug")
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("[guaridavalencianista.py] mainlist")
     itemlist=[]
     
-    itemlist.append( Item(channel=__channel__, title="Novedades"  , action="listvideos" , url="http://guaridavalencia.blogspot.com.es"))
-    #itemlist.append( Item(channel=__channel__, title="Documentales - Series Disponibles"  , action="DocuSeries" , url="http://guaridavalencia.blogspot.com/"))
-    itemlist.append( Item(channel=__channel__, title="Categorias"  , action="DocuTag" , url="http://guaridavalencia.blogspot.com.es"))
-    itemlist.append( Item(channel=__channel__, title="Partidos de liga (Temporada 2014/2015)"  , action="listvideos" , url="http://guaridavalencia.blogspot.com.es/search/label/PARTIDOS%20DEL%20VCF%20%28TEMPORADA%202014-15%29"))
+    itemlist.append( Item(channel=item.channel, title="Novedades"  , action="listvideos" , url="http://guaridavalencia.blogspot.com.es"))
+    #itemlist.append( Item(channel=item.channel, title="Documentales - Series Disponibles"  , action="DocuSeries" , url="http://guaridavalencia.blogspot.com/"))
+    itemlist.append( Item(channel=item.channel, title="Categorias"  , action="DocuTag" , url="http://guaridavalencia.blogspot.com.es"))
+    itemlist.append( Item(channel=item.channel, title="Partidos de liga (Temporada 2014/2015)"  , action="listvideos" , url="http://guaridavalencia.blogspot.com.es/search/label/PARTIDOS%20DEL%20VCF%20%28TEMPORADA%202014-15%29"))
 
     return itemlist
 
@@ -39,7 +32,7 @@ def DocuSeries(item):
     logger.info("[guaridavalencianista.py] DocuSeries")
     itemlist=[]
     
-    # Descarga la p·gina
+    # Descarga la p√°gina
     data = scrapertools.cache_page(item.url)
 
     # Extrae las entradas (carpetas)
@@ -53,14 +46,14 @@ def DocuSeries(item):
         scrapedthumbnail = ""
         scrapedplot = ""
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="listvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="listvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
 
     return itemlist
 
 def DocuTag(item):
     logger.info("[guaridavalencianista.py] DocuTag")
     itemlist=[]
-    # Descarga la p·gina
+    # Descarga la p√°gina
     data = scrapertools.cache_page(item.url)
     #~ patronvideos  =    "<a dir='ltr' href='([^']+)'>([^<]+)</a>[^<]+<span class='label-count' dir='ltr'>(.+?)</span>"
     patronvideos  =    "<li[^<]+<a dir='ltr' href='([^']+)'>([^<]+)</a[^<]+<span dir='ltr'>[^0-9]+([0-9]+)[^<]+</span[^<]+</li[^<]+"
@@ -77,7 +70,7 @@ def DocuTag(item):
         scrapedthumbnail = ""
         scrapedplot = ""
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="listvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="listvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
 
     return itemlist
 
@@ -85,7 +78,7 @@ def DocuARCHIVO(item):
     logger.info("[guaridavalencianista.py] DocuSeries")
     itemlist=[]
 
-    # Descarga la p·gina
+    # Descarga la p√°gina
     data = scrapertools.cache_page(item.url)
     patronvideos = "<a class='post-count-link' href='([^']+)'>([^<]+)</a>[^<]+"
     patronvideos +=    "<span class='post-count' dir='ltr'>(.+?)</span>"
@@ -98,7 +91,7 @@ def DocuARCHIVO(item):
         scrapedthumbnail = ""
         scrapedplot = ""
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="listvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="listvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
 
     return itemlist
     
@@ -109,7 +102,7 @@ def listvideos(item):
     scrapedthumbnail = ""
     scrapedplot = ""
 
-    # Descarga la p·gina
+    # Descarga la p√°gina
     data = scrapertools.cache_page(item.url)
     patronvideos  = "<h3 class='post-title entry-title'[^<]+"
     patronvideos += "<a href='([^']+)'>([^<]+)</a>.*?"
@@ -138,19 +131,19 @@ def listvideos(item):
         scrapedplot = re.sub("<[^>]+>"," ",scrapedplot)
         scrapedplot = scrapertools.unescape(scrapedplot)
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="findvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
 
-    # Extrae la marca de siguiente p·gina
+    # Extrae la marca de siguiente p√°gina
     patronvideos = "<a class='blog-pager-older-link' href='([^']+)'"
     matches = re.compile(patronvideos,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
 
     if len(matches)>0:
-        scrapedtitle = "P·gina siguiente"
+        scrapedtitle = "P√°gina siguiente"
         scrapedurl = urlparse.urljoin(item.url,matches[0])
         scrapedthumbnail = ""
         scrapedplot = ""
-        itemlist.append( Item(channel=__channel__, action="listvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="listvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
 
     return itemlist
 
@@ -176,22 +169,3 @@ def findvideos(item):
         itemlist.append( Item(channel=item.channel, title=scrapedtitle , action="play" , server=server, url=scrapedurl, thumbnail=item.thumbnail, show=item.show , plot=item.plot , folder=False) )
 
     return itemlist
-
-# VerificaciÛn autom·tica de canales: Esta funciÛn debe devolver "True" si todo est· ok en el canal.
-def test():
-    bien = True
-    
-    # mainlist
-    mainlist_items = mainlist(Item())
-    
-    # Da por bueno el canal si alguno de los vÌdeos de "Novedades" devuelve mirrors
-    documentales_items = listvideos(mainlist_items[0])
-    
-    bien = False
-    for documental_item in documentales_items:
-        mirrors = findvideos(documental_item)
-        if len(mirrors)>0:
-            bien = True
-            break
-    
-    return bien

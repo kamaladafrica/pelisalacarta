@@ -19,29 +19,20 @@ from core.item import Item
 
 DEBUG = config.get_setting("debug")
 
-__category__ = "F,A,D,VOS"
-__type__ = "generic"
-__title__ = "Cultmoviez"
-__channel__ = "cultmoviez"
-__language__ = "ES"
-__creationdate__ = "20141102"
-
 host = "http://www.cultmoviez.info/"
 wp_plugin = "/wp-content/plugins/seriesnav/seriesajaxresp.php"
 fanart="http://robalo.esy.es/img/cultmoviez-poster.png"
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("pelisalacarta.cultmoviez mainlist")
 
     itemlist = []
-    itemlist.append( Item( channel=__channel__, action="submenu", title="Películas", fanart=fanart, thumbnail="http://i.imgur.com/lRuY0Ia.jpg?1" ) )
-    itemlist.append( Item( channel=__channel__, action="series", title="Series", url=urlparse.urljoin(host,"/archivos/series"), fanart=fanart, thumbnail="http://i.imgur.com/lRuY0Ia.jpg?1") )
-    itemlist.append( Item( channel=__channel__, action="commonlists", title="Documentales y Cortos", url=urlparse.urljoin(host,"/archivos/documentales"), fanart=fanart, thumbnail="http://i.imgur.com/lRuY0Ia.jpg?1") )
-    itemlist.append( Item( channel=__channel__, action="commonlists", title="Música [Conciertos]", url=urlparse.urljoin(host,"/archivos/especiales"), fanart=fanart, thumbnail="http://i.imgur.com/lRuY0Ia.jpg?1") )
-    itemlist.append( Item(channel=__channel__, action="search", title="Buscar...", url=urlparse.urljoin(host,"/?s=%s&cat=1"), fanart=fanart, thumbnail="http://i.imgur.com/lRuY0Ia.jpg?1") )
+    itemlist.append( Item( channel=item.channel, action="submenu", title="Películas", fanart=fanart, thumbnail="http://i.imgur.com/lRuY0Ia.jpg?1" ) )
+    itemlist.append( Item( channel=item.channel, action="series", title="Series", url=urlparse.urljoin(host,"/archivos/series"), fanart=fanart, thumbnail="http://i.imgur.com/lRuY0Ia.jpg?1") )
+    itemlist.append( Item( channel=item.channel, action="commonlists", title="Documentales y Cortos", url=urlparse.urljoin(host,"/archivos/documentales"), fanart=fanart, thumbnail="http://i.imgur.com/lRuY0Ia.jpg?1") )
+    itemlist.append( Item( channel=item.channel, action="commonlists", title="Música [Conciertos]", url=urlparse.urljoin(host,"/archivos/especiales"), fanart=fanart, thumbnail="http://i.imgur.com/lRuY0Ia.jpg?1") )
+    itemlist.append( Item(channel=item.channel, action="search", title="Buscar...", url=urlparse.urljoin(host,"/?s=%s&cat=1"), fanart=fanart, thumbnail="http://i.imgur.com/lRuY0Ia.jpg?1") )
 
     return itemlist
 
@@ -49,10 +40,10 @@ def submenu(item):
     logger.info("pelisalacarta.cultmoviez submenu")
 
     itemlist = []
-    itemlist.append( Item( channel=__channel__, action="commonlists", title="Últimas Agregadas", url=urlparse.urljoin(host,"/archivos/peliculas"), fanart=fanart, thumbnail="http://i.imgur.com/lRuY0Ia.jpg?1") )
-    itemlist.append( Item( channel=__channel__, action="commonlists", title="Últimos Estrenos", url=urlparse.urljoin(host,"/archivos/estrenos" ), fanart=fanart, thumbnail="http://i.imgur.com/lRuY0Ia.jpg?1") )
-    itemlist.append( Item( channel=__channel__, action="indices", title="Géneros", url=urlparse.urljoin(host,"/archivos/peliculas" ), fanart=fanart, thumbnail="http://i.imgur.com/lRuY0Ia.jpg?1") )
-    itemlist.append( Item( channel=__channel__, action="indices", title="Por Año", url=urlparse.urljoin(host,"/archivos/peliculas" ), fanart=fanart, thumbnail="http://i.imgur.com/lRuY0Ia.jpg?1") )
+    itemlist.append( Item( channel=item.channel, action="commonlists", title="Últimas Agregadas", url=urlparse.urljoin(host,"/archivos/peliculas"), fanart=fanart, thumbnail="http://i.imgur.com/lRuY0Ia.jpg?1") )
+    itemlist.append( Item( channel=item.channel, action="commonlists", title="Últimos Estrenos", url=urlparse.urljoin(host,"/archivos/estrenos" ), fanart=fanart, thumbnail="http://i.imgur.com/lRuY0Ia.jpg?1") )
+    itemlist.append( Item( channel=item.channel, action="indices", title="Géneros", url=urlparse.urljoin(host,"/archivos/peliculas" ), fanart=fanart, thumbnail="http://i.imgur.com/lRuY0Ia.jpg?1") )
+    itemlist.append( Item( channel=item.channel, action="indices", title="Por Año", url=urlparse.urljoin(host,"/archivos/peliculas" ), fanart=fanart, thumbnail="http://i.imgur.com/lRuY0Ia.jpg?1") )
 
     return itemlist
 
@@ -66,13 +57,13 @@ def indices(item):
         matches = scrapertools.find_multiple_matches(bloque, '<li><a href="(/archivos/peliculas/\?genero=[^"]+)".*?>(.*?)</a></li>')
         for url, title in matches:
             url = urlparse.urljoin(host, url)
-            itemlist.append(Item( channel=__channel__, action="commonlists", title=title, url=url, fanart=fanart ) )
+            itemlist.append(Item( channel=item.channel, action="commonlists", title=title, url=url, fanart=fanart ) )
         itemlist.sort(key=lambda item: item.title)
     else:
         matches = scrapertools.find_multiple_matches(bloque, '<li><a href="(/archivos/peliculas/\?fecha-de-estreno=[^"]+)".*?>(.*?)</a></li>')
         for url, title in matches:
             url = urlparse.urljoin(host, url)
-            itemlist.append(Item( channel=__channel__, action="commonlists", title=title, url=url, fanart=fanart ) )
+            itemlist.append(Item( channel=item.channel, action="commonlists", title=title, url=url, fanart=fanart ) )
 
     return itemlist
 
@@ -107,14 +98,14 @@ def busqueda(item):
         url = scrapertools.get_match(match,'<a class="aimg" href="([^"]+)"')
         if 'hd_thumb.png' in match: title += " [HD]"
         thumbnail = scrapertools.get_match(match,'<img src="([^"]+)"')
-        itemlist.append( Item(channel=__channel__, action="findvideos" ,title=html2symbol(title), url=urlparse.urljoin(host,url), thumbnail=thumbnail, fanart=fanart, fulltitle=title.split('(')[0], context="0" ) )
+        itemlist.append( Item(channel=item.channel, action="findvideos" ,title=html2symbol(title), url=urlparse.urljoin(host,url), thumbnail=thumbnail, fanart=fanart, fulltitle=title.split('(')[0], context="0" ) )
 
     ## paginación
     # <a class="nextpostslink" href="http://www.cultmoviez.info/archivos/peliculas/page/2" rel="next">»</a>
     patron = 'rel="next" href="([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
     if len(matches) > 0:
-        itemlist.append( Item(channel=__channel__, action="busqueda" ,title=">> Página siguiente ("+matches[0].rsplit('/',1)[1]+")", url=matches[0], thumbnail="", fanart=item.fanart ) )
+        itemlist.append( Item(channel=item.channel, action="busqueda" ,title=">> Página siguiente ("+matches[0].rsplit('/',1)[1]+")", url=matches[0], thumbnail="", fanart=item.fanart ) )
 
     return itemlist
 
@@ -145,14 +136,14 @@ def commonlists(item):
             pass
         if 'hd_thumb.png' in match: title += " [HD]"
         if thumbnail == "" : thumbnail = scrapertools.get_match(match,'<img src="([^"]+)"')
-        itemlist.append( Item(channel=__channel__, action="findvideos" ,title=html2symbol(title), url=urlparse.urljoin(host,url), thumbnail=thumbnail, fanart=fanart, plot=str(sinopsis), fulltitle=title.split('(')[0], contentTitle=title.split('(')[0], context="0" ) )
+        itemlist.append( Item(channel=item.channel, action="findvideos" ,title=html2symbol(title), url=urlparse.urljoin(host,url), thumbnail=thumbnail, fanart=fanart, plot=str(sinopsis), fulltitle=title.split('(')[0], contentTitle=title.split('(')[0], context="0" ) )
 
     ## paginación
     # <a class="nextpostslink" href="http://www.cultmoviez.info/archivos/peliculas/page/2" rel="next">»</a>
     patron = 'rel="next" href="([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
     if len(matches) > 0:
-        itemlist.append( Item(channel=__channel__, action="commonlists" ,title=">> Página siguiente ("+matches[0].rsplit('/',1)[1]+")", url=matches[0], thumbnail="", fanart=item.fanart ) )
+        itemlist.append( Item(channel=item.channel, action="commonlists" ,title=">> Página siguiente ("+matches[0].rsplit('/',1)[1]+")", url=matches[0], thumbnail="", fanart=item.fanart ) )
 
     return itemlist
 
@@ -196,7 +187,7 @@ def series(item):
         for temporada_id, temporada in matches:
             extra+= temporada+","+serie_id+"|"
 
-        itemlist.append( Item(channel=__channel__, action="episodios" ,title=html2symbol(scrapedtitle), url="",  extra=extra[:-2], thumbnail=thumbnail, fanart=fanart, plot= sinopsis, fulltitle=scrapedtitle, contentTitle=scrapedtitle, context="2", Folder=True ) )
+        itemlist.append( Item(channel=item.channel, action="episodios" ,title=html2symbol(scrapedtitle), url="",  extra=extra[:-2], thumbnail=thumbnail, fanart=fanart, plot= sinopsis, fulltitle=scrapedtitle, contentTitle=scrapedtitle, context="2", Folder=True ) )
 
     return itemlist
 
@@ -227,9 +218,9 @@ def episodios(item):
             for episodio_id, episodio in matches:
                 title = episodio.replace(".","x")
                 extra = urllib.quote_plus(episodio)+"|"+ episodio_id
-                itemlist.append( Item(channel=__channel__, action="findvideos" ,title=html2symbol(title), url="", extra=extra, thumbnail=item.thumbnail, fanart=fanart ) )
+                itemlist.append( Item(channel=item.channel, action="findvideos" ,title=html2symbol(title), url="", extra=extra, thumbnail=item.thumbnail, fanart=fanart ) )
         else:
-            itemlist.append( Item(channel=__channel__, title="Aún no se han añadido episodios", thumbnail=item.thumbnail, fanart=fanart, folder=False ) )
+            itemlist.append( Item(channel=item.channel, title="Aún no se han añadido episodios", thumbnail=item.thumbnail, fanart=fanart, folder=False ) )
         ## fixe: Por lo visto ha cambiado al poco tiempo de la creación de la función
         break
 
@@ -299,7 +290,7 @@ def findvideos(item):
                     data = scrapertools.cache_page("http://www.cultmoviez.info/playercult/pk/pk/plugins/player_p2.php", post=post)
                     if data == "": continue
                 title = item.title + " [" + server + "]"
-                itemlist.append( Item(channel=__channel__, title =title, url=video_link, action="play", thumbnail=item.thumbnail, fanart=item.fanart, plot=item.plot, extra=id ) )
+                itemlist.append( Item(channel=item.channel, title =title, url=video_link, action="play", thumbnail=item.thumbnail, fanart=item.fanart, plot=item.plot, extra=id ) )
             except:
                 pass
 
@@ -318,14 +309,14 @@ def play(item):
         data = scrapertools.cache_page("http://www.cultmoviez.info/playercult/pk/pk/plugins/player_p2.php", post=post)
         videourl = scrapertools.find_multiple_matches(data, '"url":"([^"]+)"')
         if len(videourl)>0:
-            itemlist.append(Item(channel=__channel__, title=item.title, url=videourl[len(videourl)-1], server="directo", action="play", subtitle=url_subtitle))
+            itemlist.append(Item(channel=item.channel, title=item.title, url=videourl[len(videourl)-1], server="directo", action="play", subtitle=url_subtitle))
         return itemlist
     else:
         itemlist = servertools.find_video_items(data=item.url)
 
         for videoitem in itemlist:
             videoitem.title = item.title
-            videoitem.channel = __channel__
+            videoitem.channel = item.channel
             videoitem.subtitle = url_subtitle
 
     return itemlist

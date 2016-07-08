@@ -15,13 +15,11 @@ from core.item import Item
 
 DEBUG = config.get_setting("debug")
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("pelisalacarta.channels.xhamster mainlist")
     itemlist = []
-    itemlist.append( Item(channel=item.channel, action="videos"      , title="Útimos vídeos" , url="http://es.xhamster.com/"))
+    itemlist.append( Item(channel=item.channel, action="videos"      , title="Útimos vídeos" , url="http://es.xhamster.com/", viewmode="movie"))
     itemlist.append( Item(channel=item.channel, action="categorias"    , title="Categorías"))
     itemlist.append( Item(channel=item.channel, action="votados"    , title="Más votados"))
     itemlist.append( Item(channel=item.channel, action="search"    , title="Buscar", url="http://xhamster.com/search.php?q=%s&qcat=video"))
@@ -56,21 +54,21 @@ def videos(item):
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedthumbnail,scrapedtitle in matches:
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")            
-        itemlist.append( Item(channel=item.channel, action="detail" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, folder=True, viewmode="movie"))
+        itemlist.append( Item(channel=item.channel, action="detail" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, folder=True))
 		
 		#Patron #2
     patron = '<a href="([^"]+)"  data-click="[^"]+" class="hRotator"><img src=\'([^\']+)\' class=\'thumb\' alt="([^"]+)"/>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedthumbnail,scrapedtitle in matches:
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")            
-        itemlist.append( Item(channel=item.channel, action="detail" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, folder=True, viewmode="movie"))
+        itemlist.append( Item(channel=item.channel, action="detail" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, folder=True))
 
 
     #Paginador
     patron = "<a href='([^']+)' class='last colR'><div class='icon iconPagerNextHover'></div>Próximo</a>"
     matches = re.compile(patron,re.DOTALL).findall(data)  
     if len(matches) >0:
-      itemlist.append( Item(channel=item.channel, action="videos", title="Página Siguiente" , url=matches[0] , thumbnail="" , folder=True) )
+      itemlist.append( Item(channel=item.channel, action="videos", title="Página Siguiente" , url=matches[0] , thumbnail="" , folder=True, viewmode="movie") )
 
     return itemlist
 
@@ -89,10 +87,10 @@ def votados(item):
     logger.info("pelisalacarta.channels.xhamster categorias")
     itemlist = []
 
-    itemlist.append( Item(channel=item.channel, action="videos" , title="Día", url="http://es.xhamster.com/rankings/daily-top-videos.html"))
-    itemlist.append( Item(channel=item.channel, action="videos" , title="Semana"  , url="http://es.xhamster.com/rankings/weekly-top-videos.html"))
-    itemlist.append( Item(channel=item.channel, action="videos" , title="Mes"  , url="http://es.xhamster.com/rankings/monthly-top-videos.html"))
-    itemlist.append( Item(channel=item.channel, action="videos" , title="De siempre"  , url="http://es.xhamster.com/rankings/alltime-top-videos.html"))
+    itemlist.append( Item(channel=item.channel, action="videos" , title="Día", url="http://es.xhamster.com/rankings/daily-top-videos.html", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="videos" , title="Semana"  , url="http://es.xhamster.com/rankings/weekly-top-videos.html", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="videos" , title="Mes"  , url="http://es.xhamster.com/rankings/monthly-top-videos.html", viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="videos" , title="De siempre"  , url="http://es.xhamster.com/rankings/alltime-top-videos.html", viewmode="movie"))
     return itemlist
 
 def lista(item):
@@ -115,7 +113,7 @@ def lista(item):
     logger.info(data)
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl, scrapedtitle in matches:
-        itemlist.append( Item(channel=item.channel, action="videos", title=scrapedtitle, url=scrapedurl, folder=True) )
+        itemlist.append( Item(channel=item.channel, action="videos", title=scrapedtitle, url=scrapedurl, folder=True, viewmode="movie") )
     
     sorted_itemlist = sorted(itemlist, key=lambda Item: Item.title)
     return sorted_itemlist
@@ -151,21 +149,3 @@ def detail(item):
 			logger.debug("url="+url)
 			itemlist.append( Item(channel=item.channel, action="play" , title=item.title + " 720p", fulltitle=item.fulltitle , url=url, thumbnail=item.thumbnail, server="directo", folder=False))
     return itemlist
-
-
-# Verificación automática de canales: Esta función debe devolver "True" si todo está ok en el canal.
-def test():
-    bien = True
-
-    # mainlist
-    mainlist_itemlist = mainlist(Item())
-    video_itemlist = videos(mainlist_itemlist[0])
-    
-    # Si algún video es reproducible, el canal funciona
-    for video_item in video_itemlist:
-        play_itemlist = play(video_item)
-
-        if len(play_itemlist)>0:
-            return True
-
-    return False

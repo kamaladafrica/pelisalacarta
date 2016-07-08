@@ -7,6 +7,7 @@
 
 import re
 
+from core import config
 from core import logger
 from core import scrapertools
 
@@ -39,25 +40,28 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     if "videocontainer" not in data:
         url = page_url.replace("/embed/","/f/")
         data = scrapertools.downloadpageWithoutCookies(url)
-        text_encode = scrapertools.get_match(data,"Click to start Download.*?<script[^>]+>(.*?)</script")
+        text_encode = scrapertools.find_single_match(data,"Click to start Download.*?<script[^>]+>(.*?)</script")
         text_decode = aadecode(text_encode)
-
-        videourl = scrapertools.find_single_match(text_decode, '(http.*?)\}')
-        videourl = videourl.replace("https://","http://")
-        extension = videourl[-4:]
-        video_urls.append([ extension + " [Openload]", videourl+header_down+extension])
+        
+        videourl = scrapertools.find_single_match(text_decode, '(http.*?)\}').replace("https://","http://")
+        extension = scrapertools.find_single_match(data, '<meta name="description" content="([^"]+)"')
+        extension = "." + extension.rsplit(".", 1)[1]
+        video_urls.append([extension + " [Openload]", videourl+header_down+extension])
     else:
-        text_encode = scrapertools.find_multiple_matches(data,'<script type="text/javascript">(ﾟωﾟ.*?)</script>')
+        text_encode = scrapertools.find_multiple_matches(data,'<script[^>]+>(ﾟωﾟ.*?)</script>')
+        decodeindex = aadecode(text_encode[0])
+        subtract = scrapertools.find_single_match(decodeindex, 'welikekodi.*?(\([^;]+\))')
+        index = int(eval(subtract))
+        
         # Buscamos la variable que nos indica el script correcto
-        subtract = scrapertools.find_single_match(data, 'welikekodi_ya_rly = ([^;]+)')
-        index = eval(subtract)
         text_decode = aadecode(text_encode[index])
-        videourl = scrapertools.get_match(text_decode, "(http.*?true)")
-     
-        videourl = scrapertools.get_header_from_response(videourl, header_to_get="location")
-        videourl = videourl.replace("https://","http://").replace("?mime=true","")
-        extension = videourl[-4:]
-        video_urls.append([extension + " [Openload] ", videourl+header_down+extension, 0, subtitle])
+
+        videourl = scrapertools.find_single_match(text_decode, "(http.*?true)").replace("https://","http://")
+        extension = "." + scrapertools.find_single_match(text_decode, "video/(\w+)")
+        if config.get_platform() != "plex":
+            video_urls.append([extension + " [Openload] ", videourl+header_down+extension, 0, subtitle])
+        else:
+            video_urls.append([extension + " [Openload] ", videourl, 0, subtitle])
 
     for video_url in video_urls:
         logger.info("pelisalacarta.servers.openload %s - %s" % (video_url[0],video_url[1]))

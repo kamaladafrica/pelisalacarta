@@ -13,22 +13,12 @@ from core import logger
 from core import scrapertools
 from core import servertools
 from core import tmdb
-
 from core.item import Item
 
-__channel__ = "oranline"
-__category__ = "F"
-__type__ = "generic"
-__title__ = "oranline"
-__language__ = "ES"
 
 # Configuracion del canal
-try:
-    __modo_grafico__ = config.get_setting('modo_grafico', __channel__)
-    __perfil__ = int(config.get_setting('perfil', __channel__))
-except:
-    __modo_grafico__ = True
-    __perfil__ = 0
+__modo_grafico__ = config.get_setting('modo_grafico', "oranline")
+__perfil__ = int(config.get_setting('perfil', "oranline"))
 
 # Fijar perfil de color            
 perfil = [['0xFFFFE6CC', '0xFFFFCE9C', '0xFF994D00'],
@@ -38,56 +28,57 @@ color1, color2, color3 = perfil[__perfil__]
 
 DEBUG = config.get_setting("debug")
 host = "http://www.oranline.com/"
-parameters = channeltools.get_channel_parameters(__channel__)
+parameters = channeltools.get_channel_parameters("oranline")
 fanart = parameters['fanart']
 thumbnail_host = parameters['thumbnail']
 viewmode_options = {0: 'movie_with_plot', 1: 'movie', 2: 'list'}
-viewmode = viewmode_options[config.get_setting('viewmode', __channel__)]
-
-
-def isGeneric():
-    return True
+viewmode = viewmode_options[config.get_setting('viewmode', "oranline")]
 
 
 def mainlist(item):
     logger.info("pelisalacarta.channels.oranline mainlist")
 
     itemlist = []
+    item.viewmode = viewmode
 
-    itemlist.append(Item(channel=__channel__, title="Películas", text_color=color2, fanart=fanart, folder=False,
-                         thumbnail=thumbnail_host, text_blod=True, viewmode=viewmode))
-    itemlist.append(Item(channel=__channel__, action="peliculas", title="      Novedades",
-                         text_color=color1, fanart=fanart, url=urlparse.urljoin(host, "ultimas-peliculas-online/"),
-                         thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/Directors%20Chair.png"))
+    itemlist.append(item.clone(title="Películas", text_color=color2, fanart=fanart, action="",
+                               thumbnail=thumbnail_host, text_blod=True))
+    itemlist.append(item.clone(action="peliculas", title="      Novedades", text_color=color1,
+                               fanart=fanart, url=urlparse.urljoin(host, "ultimas-peliculas-online/"),
+                               thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/Directors%20Chair.png"))
 
-    itemlist.append(Item(channel=__channel__, action="peliculas", title="      Más vistas",
-                         text_color=color1, fanart=fanart, url=urlparse.urljoin(host, "mas-visto/"),
-                         thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/Favorites.png"))
-    itemlist.append(Item(channel=__channel__, action="generos", title="      Filtradas por géneros",
-                         text_color=color1, fanart=fanart, url=host,
-                         thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/Genre.png"))
+    itemlist.append(item.clone(action="peliculas", title="      Más vistas", text_color=color1,
+                               fanart=fanart, url=urlparse.urljoin(host, "mas-visto/"),
+                               thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/Favorites.png"))
+    itemlist.append(item.clone(action="generos", title="      Filtradas por géneros", text_color=color1,
+                               fanart=fanart, url=host,
+                               thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/Genre.png"))
+
     url = urlparse.urljoin(host, "category/documental/")
-    itemlist.append(Item(channel=__channel__, title="Documentales", text_blod=True,
-                         text_color=color2, fanart=fanart, thumbnail=thumbnail_host, folder=False))
-    itemlist.append(Item(channel=__channel__, action="peliculas", title="      Novedades",
-                         text_color=color1, fanart=fanart, url=url,
-                         thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/Documentaries.png"))
+    itemlist.append(item.clone(title="Documentales", text_blod=True, text_color=color2, action="",
+                               fanart=fanart, thumbnail=thumbnail_host))
+    itemlist.append(item.clone(action="peliculas", title="      Novedades", text_color=color1,
+                               fanart=fanart, url=url,
+                               thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/Documentaries.png"))
     url = urlparse.urljoin(host, "category/documental/?orderby=title&order=asc&gdsr_order=asc")
-    itemlist.append(Item(channel=__channel__, action="peliculas", title="      Por orden alfabético",
-                         text_color=color1, fanart=fanart, url=url,
-                         thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/A-Z.png"))
-    itemlist.append(Item(channel=__channel__, title="", fanart=fanart, folder=False, thumbnail=thumbnail_host))
-    itemlist.append(Item(channel=__channel__, action="search", title="Buscar...", text_color=color3, fanart=fanart,
-                         thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/channels/oranline/buscar.png"))
+    itemlist.append(item.clone(action="peliculas", title="      Por orden alfabético", text_color=color1,
+                               fanart=fanart, url=url,
+                               thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/A-Z.png"))
+    itemlist.append(item.clone(title="", fanart=fanart, action="", thumbnail=thumbnail_host))
+    itemlist.append(item.clone(action="search", title="Buscar...", text_color=color3, fanart=fanart,
+                               thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/channels/oranline/buscar.png"))
 
-    itemlist.append(Item(channel=__channel__, action="configuracion", title="Configurar canal...", text_color="gold",
-                         thumbnail=thumbnail_host, fanart=fanart, folder=False))
+    itemlist.append(item.clone(action="configuracion", title="Configurar canal...", text_color="gold",
+                               thumbnail=thumbnail_host, fanart=fanart, folder=False))
     return itemlist
 
 
 def configuracion(item):
     from platformcode import platformtools
     platformtools.show_channel_settings()
+    if config.is_xbmc():
+        import xbmc
+        xbmc.executebuiltin("Container.Refresh")
 
 
 def search(item, texto):
@@ -172,9 +163,9 @@ def peliculas(item):
         filtro_list = {"poster_path": filtro_thumb}
         filtro_list = filtro_list.items()
 
-        new_item = Item(channel=__channel__, action="findvideos", title=title, url=scrapedurl,
-                        thumbnail=scrapedthumbnail, fulltitle=scrapedtitle, infoLabels={'filtro': filtro_list},
-                        contentTitle=scrapedtitle, context="0", text_color=color1, viewmode=viewmode)
+        new_item = item.clone(action="findvideos", title=title, url=scrapedurl, thumbnail=scrapedthumbnail,
+                              fulltitle=scrapedtitle, infoLabels={'filtro': filtro_list},
+                              contentTitle=scrapedtitle, context="05", text_color=color1, viewmode="list")
         itemlist.append(new_item)
 
     try:
@@ -184,8 +175,8 @@ def peliculas(item):
 
     next_page = scrapertools.find_single_match(data, '<a href="([^"]+)"\s+><span [^>]+>&raquo;</span>')
     if next_page != "":
-        itemlist.append(Item(channel=__channel__, action="peliculas", title=">> Página siguiente",
-                             url=next_page.replace("&#038;", "&"), text_color=color3, folder=True))
+        itemlist.append(item.clone(action="peliculas", title=">> Página siguiente",
+                                   url=next_page.replace("&#038;", "&"), text_color=color3))
 
     return itemlist
 
@@ -220,8 +211,9 @@ def generos(item):
 
         if DEBUG:
             logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, scrapedurl, thumbnail))
-        itemlist.append(Item(channel=__channel__, action="peliculas", title=title, url=scrapedurl, thumbnail=thumbnail,
-                             folder=True, text_color=color2, fanart=fanart, viewmode=viewmode))
+        itemlist.append(item.clone(action="peliculas", title=title, url=scrapedurl, thumbnail=thumbnail,
+                                   text_color=color2, fanart=fanart))
+
     return itemlist
 
 
@@ -230,8 +222,8 @@ def findvideos(item):
     itemlist = []
 
     try:
-        filtro_idioma = config.get_setting("filterlanguages", __channel__)
-        filtro_enlaces = config.get_setting("filterlinks", __channel__)
+        filtro_idioma = config.get_setting("filterlanguages", item.channel)
+        filtro_enlaces = config.get_setting("filterlinks", item.channel)
     except:
         filtro_idioma = 4
         filtro_enlaces = 2
@@ -258,24 +250,26 @@ def findvideos(item):
     if filtro_enlaces != 0:
         list_enlaces = bloque_enlaces(data, filtro_idioma, dict_idiomas, "online", item)
         if list_enlaces:
-            itemlist.append(item.clone(channel=__channel__, action="", title="Enlaces Online",
-                                       text_color=color1, text_blod=True, viewmode="list", folder=False))
+            itemlist.append(item.clone(action="", title="Enlaces Online", text_color=color1,
+                                       text_blod=True))
             itemlist.extend(list_enlaces)
     if filtro_enlaces != 1:
         list_enlaces = bloque_enlaces(data, filtro_idioma, dict_idiomas, "descarga", item)
         if list_enlaces:
-            itemlist.append(item.clone(channel=__channel__, action="", title="Enlaces Descarga",
-                                       text_color=color1, text_blod=True, viewmode="list", folder=False))
+            itemlist.append(item.clone(action="", title="Enlaces Descarga", text_color=color1,
+                                       text_blod=True))
             itemlist.extend(list_enlaces)
 
     # Opción "Añadir esta película a la biblioteca de XBMC"
-    if config.get_library_support() and item.category != "Cine" and itemlist:
-        itemlist.append(item.clone(title="Añadir enlaces a la biblioteca", text_color="gold", viewmode="list",
-                                   filtro=True, action="add_pelicula_to_library"))
+    if item.category != "Cine" and itemlist:
+        itemlist.append(item.clone(channel="trailertools", title="Buscar Tráiler", action="buscartrailer", context="",
+                                   text_color="magenta"))
+        if config.get_library_support():
+            itemlist.append(item.clone(title="Añadir enlaces a la biblioteca", text_color="gold",
+                                       filtro=True, action="add_pelicula_to_library", context=""))
     
     if not itemlist:
-        itemlist.append(item.clone(title="No hay enlaces disponibles", action="", text_color=color3,
-                                   viewmode="list", folder=False))
+        itemlist.append(item.clone(title="No hay enlaces disponibles", action="", text_color=color3))
 
     return itemlist
 
@@ -285,7 +279,7 @@ def bloque_enlaces(data, filtro_idioma, dict_idiomas, type, item):
 
     lista_enlaces = []
     bloque = scrapertools.find_single_match(data, '<div id="' + type + '">(.*?)</table>')
-    patron = 'tr>[^<]+<td>.*?href="([^"]+)".*?<span>([^<]+)</span>' \
+    patron = 'tr>[^<]*<td>.*?href="([^"]+)".*?<span>([^<]+)</span>' \
              '.*?<td>([^<]+)</td>.*?<td>([^<]+)</td>'
     matches = scrapertools.find_multiple_matches(bloque, patron)
     filtrados = []
@@ -304,12 +298,12 @@ def bloque_enlaces(data, filtro_idioma, dict_idiomas, type, item):
                 title = "Mirror en " + server + " (" + language + ") (Calidad " + calidad.strip() + ")"
                 if filtro_idioma == 4 or item.filtro:
                     lista_enlaces.append(item.clone(title=title, action="play", server=server, text_color=color2,
-                                           url=scrapedurl, idioma=language, viewmode="list"))
+                                                    url=scrapedurl, idioma=language))
                 else:
                     idioma = dict_idiomas[language]
                     if idioma == filtro_idioma:
                         lista_enlaces.append(item.clone(title=title, text_color=color2, action="play",
-                                    url=scrapedurl, server=server, viewmode="list"))
+                                                        url=scrapedurl, server=server))
                     else:
                         if language not in filtrados: filtrados.append(language)
             except:
@@ -319,7 +313,7 @@ def bloque_enlaces(data, filtro_idioma, dict_idiomas, type, item):
         if len(filtrados) > 0:
             title = "Mostrar enlaces filtrados en %s" % ", ".join(filtrados)
             lista_enlaces.append(item.clone(title=title, action="findvideos", url=item.url, text_color=color3,
-                                   filtro=True, viewmode="list", folder=True))
+                                            filtro=True))
 
     return lista_enlaces
 

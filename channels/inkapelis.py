@@ -12,25 +12,18 @@ from core import scrapertools
 from core import servertools
 from core.item import Item
 
-__channel__ = "inkapelis"
-__category__ = "F,L,VOS"
-__type__ = "generic"
-__title__ = "Inkapelis"
-__language__ = "ES"
 
 DEBUG = config.get_setting("debug")
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("pelisalacarta.channels.inkapelis mainlist")
     itemlist = []
-    itemlist.append( Item(channel=__channel__, title="Novedades"      , action="lista"    , url="http://www.inkapelis.com/", extra = "Novedades"))
-    itemlist.append( Item(channel=__channel__, title="Estrenos"       , action="lista"   , url="http://www.inkapelis.com/genero/estrenos/"))
-    itemlist.append( Item(channel=__channel__, title="Géneros"  , action="generos"   , url="http://www.inkapelis.com/"))
-    itemlist.append( Item(channel=__channel__, title="Buscar..."  , action="search"   , url="http://www.inkapelis.com/?s="))
-    itemlist.append( Item(channel=__channel__, title="Búsqueda por actor"  , action="search"   , url="http://www.inkapelis.com/actor/"))
+    itemlist.append( Item(channel=item.channel, title="Novedades"      , action="lista"    , url="http://www.inkapelis.com/", extra = "Novedades"))
+    itemlist.append( Item(channel=item.channel, title="Estrenos"       , action="lista"   , url="http://www.inkapelis.com/genero/estrenos/"))
+    itemlist.append( Item(channel=item.channel, title="Géneros"  , action="generos"   , url="http://www.inkapelis.com/"))
+    itemlist.append( Item(channel=item.channel, title="Buscar..."  , action="search"   , url="http://www.inkapelis.com/?s="))
+    itemlist.append( Item(channel=item.channel, title="Búsqueda por actor"  , action="search"   , url="http://www.inkapelis.com/actor/"))
     return itemlist
 
 
@@ -58,10 +51,10 @@ def generos(item):
     for scrapedurl, scrapedtitle in matches:
         if scrapedtitle == "Eroticas +18 ":
             if config.get_setting("enableadultmode") == "false": continue
-            itemlist.append( Item(channel=__channel__, action='eroticas', title=scrapedtitle , url=scrapedurl , thumbnail="" , folder=True) )
+            itemlist.append( Item(channel=item.channel, action='eroticas', title=scrapedtitle , url=scrapedurl , thumbnail="" , folder=True) )
         elif (scrapedtitle != "Estrenos ") and (scrapedtitle!= "Próximos Estrenos "):
             if DEBUG: logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"]")
-            itemlist.append( Item(channel=__channel__, action='lista', title=scrapedtitle , url=scrapedurl , thumbnail="" , folder=True) )
+            itemlist.append( Item(channel=item.channel, action='lista', title=scrapedtitle , url=scrapedurl , thumbnail="" , folder=True) )
 
     return itemlist
 
@@ -83,9 +76,9 @@ def lista(item):
             if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+thumbnail+"]")
             try:
                 plot, fanart = info(scrapedtitle, scrapedthumbnail)
-                itemlist.append( Item(channel=__channel__, action='findvideos', title=scrapedtitle , url=scrapedurl , thumbnail=thumbnail , plot=str(plot), fanart=fanart, folder=True) )
+                itemlist.append( Item(channel=item.channel, action='findvideos', title=scrapedtitle , url=scrapedurl , thumbnail=thumbnail , plot=str(plot), fanart=fanart, folder=True) )
             except:
-                itemlist.append( Item(channel=__channel__, action='findvideos', title=scrapedtitle , url=scrapedurl , thumbnail=thumbnail , plot="",  folder=True) )
+                itemlist.append( Item(channel=item.channel, action='findvideos', title=scrapedtitle , url=scrapedurl , thumbnail=thumbnail , plot="",  folder=True) )
 		
         # Extrae la marca de la siguiente página
         if len(itemlist) > 0:
@@ -95,7 +88,7 @@ def lista(item):
                 url = scrapedurl 
                 title = "Página " + scrapedtitle
                 if DEBUG: logger.info("title=["+title+"], url=["+url+"]")
-                itemlist.append( Item(channel=__channel__, action='lista', title= title , url=url , thumbnail="", extra = "Buscar", folder=True) )
+                itemlist.append( Item(channel=item.channel, action='lista', title= title , url=url , thumbnail="", extra = "Buscar", folder=True) )
 
 
     else:
@@ -122,11 +115,11 @@ def lista(item):
                 if DEBUG: logger.info("title=["+title+"], url=["+url+"], thumbnail=["+scrapedthumbnail+"]")
                 try:
                     plot, fanart = info(scrapedtitle, scrapedthumbnail)
-                    itemlist.append( Item(channel=__channel__, action='findvideos', title=title , url=url , thumbnail=thumbnail , plot=str(plot), fanart=fanart, folder=True) )
+                    itemlist.append( Item(channel=item.channel, action='findvideos', title=title , url=url , thumbnail=thumbnail , plot=str(plot), fanart=fanart, folder=True) )
                 except:
-                    itemlist.append( Item(channel=__channel__, action='findvideos', title=title , url=url , thumbnail=thumbnail , plot="", folder=True) )
+                    itemlist.append( Item(channel=item.channel, action='findvideos', title=title , url=url , thumbnail=thumbnail , plot="", folder=True) )
 	    
-        itemlist.append( Item(channel=__channel__, action='lista2', title= "Siguiente" , url=urlitem, extra=extra, folder=True) )
+        itemlist.append( Item(channel=item.channel, action='lista2', title= "Siguiente" , url=urlitem, extra=extra, folder=True) )
 
     return itemlist
 
@@ -157,9 +150,9 @@ def lista2(item):
             if DEBUG: logger.info("title=["+title+"], url=["+url+"], thumbnail=["+scrapedthumbnail+"]")
             try:
                 plot, fanart = info(scrapedtitle, scrapedthumbnail)
-                itemlist.append( Item(channel=__channel__, action='findvideos', title=title , url=url , thumbnail=thumbnail , plot=str(plot), fanart=fanart, folder=True) )
+                itemlist.append( Item(channel=item.channel, action='findvideos', title=title , url=url , thumbnail=thumbnail , plot=str(plot), fanart=fanart, folder=True) )
             except:
-                itemlist.append( Item(channel=__channel__, action='findvideos', title=title , url=url , thumbnail=thumbnail , plot="", folder=True) )
+                itemlist.append( Item(channel=item.channel, action='findvideos', title=title , url=url , thumbnail=thumbnail , plot="", folder=True) )
 	    
 
     # Extrae la marca de la siguiente página
@@ -168,7 +161,7 @@ def lista2(item):
     for scrapedpage in matches:
         url = "http://www.inkapelis.com/page/"+scrapedpage
         if DEBUG: logger.info("url=["+url+"]")
-        itemlist.append( Item(channel=__channel__, action='lista', title= "Siguiente" , url=url , extra=extra, folder=True) )
+        itemlist.append( Item(channel=item.channel, action='lista', title= "Siguiente" , url=url , extra=extra, folder=True) )
 
     return itemlist
 
@@ -190,7 +183,7 @@ def eroticas(item):
         title = scrapedtitle + " -"+calidad+ " " + idioma
         thumbnail = scrapedthumbnail.replace("w185","original")
         if DEBUG: logger.info("title=["+title+"], url=["+url+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action='findvideos_ero', title=title , url=url , thumbnail=thumbnail, folder=True) )
+        itemlist.append( Item(channel=item.channel, action='findvideos_ero', title=title , url=url , thumbnail=thumbnail, folder=True) )
 
     # Extrae la marca de la siguiente página
     patron ='<span class="current">.*?<\/span><a href="http://www.inkapelis.com/page/(\d+)/'
@@ -198,7 +191,7 @@ def eroticas(item):
     for scrapedpage in matches:
         url = "http://www.inkapelis.com/page/"+scrapedpage
         if DEBUG: logger.info("url=["+url+"]")
-        itemlist.append( Item(channel=__channel__, action='lista', title= "Siguiente" , url=url , extra=extra, folder=True) )
+        itemlist.append( Item(channel=item.channel, action='lista', title= "Siguiente" , url=url , extra=extra, folder=True) )
 	    
     return itemlist
 
@@ -230,14 +223,14 @@ def findvideos(item):
         servidor = server
         if servidor == "Embed" : servidor = "Nowvideo"
         title = servidor + " - " + idioma + " - " + calidad
-        itemlist.append( Item(channel=__channel__, action="play", title= title  , url=url , thumbnail=item.thumbnail, fanart=item.fanart, plot= item.plot, folder=True) )
+        itemlist.append( Item(channel=item.channel, action="play", title= title  , url=url , thumbnail=item.thumbnail, fanart=item.fanart, plot= item.plot, folder=True) )
 
     patronembed = 'id="(embed[0-9])".*?<div class="calishow">(.*?)<(.*?)<div class="clear">'
     matches = re.compile(patronembed,re.DOTALL).findall(data)
     for title, calidad, url in matches:
         title = scrapertools.find_single_match(url,"(?:http://|https://|//)(.*?)(?:embed.|videoembed|)/")
         title = title.capitalize() + " - "+calidad
-        itemlist.append( Item(channel=__channel__, action="play", title= title  , url=url , thumbnail=item.thumbnail, fanart=item.fanart, plot= item.plot, folder=True) )
+        itemlist.append( Item(channel=item.channel, action="play", title= title  , url=url , thumbnail=item.thumbnail, fanart=item.fanart, plot= item.plot, folder=True) )
 
     return itemlist
 
@@ -255,14 +248,14 @@ def findvideos_ero(item):
         servidor = server
         if servidor == "Embed" : servidor = "Nowvideo"
         title = servidor + " - " + idioma + " - " + calidad
-        itemlist.append( Item(channel=__channel__, action="play", title= title  , url=url , thumbnail=item.thumbnail, fanart=item.fanart, plot= item.plot, folder=True) )
+        itemlist.append( Item(channel=item.channel, action="play", title= title  , url=url , thumbnail=item.thumbnail, fanart=item.fanart, plot= item.plot, folder=True) )
 
     patronembed = 'id="(embed[0-9])".*?<div class="calishow">(.*?)<(.*?)<div class="clear">'
     matches = re.compile(patronembed,re.DOTALL).findall(data)
     for title, calidad, url in matches:
         title = scrapertools.find_single_match(url,"(?:http://|https://|//)(.*?)(?:embed.|videoembed|)/")
         title = title.capitalize() + " - "+calidad
-        itemlist.append( Item(channel=__channel__, action="play", title= title  , url=url , thumbnail=item.thumbnail, fanart=item.fanart, plot= item.plot, folder=True) )
+        itemlist.append( Item(channel=item.channel, action="play", title= title  , url=url , thumbnail=item.thumbnail, fanart=item.fanart, plot= item.plot, folder=True) )
 
     return itemlist
 	

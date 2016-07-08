@@ -16,19 +16,16 @@ from core.item import Item
 from samba import libsmb as samba
 from platformcode import library
 
-__channel__ = "biblioteca"
-DEBUG = True
+DEBUG = config.get_setting("debug")
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("pelisalacarta.channels.biblioteca mainlist")
 
     itemlist = list()
-    itemlist.append(Item(channel=__channel__, action="peliculas", title="Películas"))
-    itemlist.append(Item(channel=__channel__, action="series", title="Series"))
-    itemlist.append(Item(channel=__channel__, action="fichero_series", title="Fichero de series"))
+    itemlist.append(Item(channel=item.channel, action="peliculas", title="Películas"))
+    itemlist.append(Item(channel=item.channel, action="series", title="Series"))
+    itemlist.append(Item(channel=item.channel, action="fichero_series", title="Fichero de series"))
 
     return itemlist
 

@@ -12,23 +12,16 @@ from core import logger
 from core import scrapertools
 from core.item import Item
 
-__channel__ = "somosmovies"
-__category__ = "F,S,D,A"
-__type__ = "generic"
-__title__ = "Somosmovies"
-__language__ = "ES"
 
 DEBUG = config.get_setting("debug")
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("[somosmovies.py] mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, title="Películas"    , action="menupeliculas"))
-    itemlist.append( Item(channel=__channel__, title="Series"       , action="peliculas", url="http://www.somosmovies.com/search/label/Series?updated-max=&max-results=18"))
+    itemlist.append( Item(channel=item.channel, title="Películas"    , action="menupeliculas"))
+    itemlist.append( Item(channel=item.channel, title="Series"       , action="peliculas", url="http://www.somosmovies.com/search/label/Series?updated-max=&max-results=18"))
     
     return itemlist
 
@@ -36,10 +29,10 @@ def menupeliculas(item):
     logger.info("[somosmovies.py] menupeliculas")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, title="Novedades"    , action="peliculas", url="http://www.somosmovies.com"))
-    itemlist.append( Item(channel=__channel__, title="Género"       , action="generos", url="http://www.somosmovies.com/"))
-    itemlist.append( Item(channel=__channel__, title="Año"          , action="anyos", url="http://www.somosmovies.com/"))
-    itemlist.append( Item(channel=__channel__, title="País"         , action="paises", url="http://www.somosmovies.com/"))
+    itemlist.append( Item(channel=item.channel, title="Novedades"    , action="peliculas", url="http://www.somosmovies.com"))
+    itemlist.append( Item(channel=item.channel, title="Género"       , action="generos", url="http://www.somosmovies.com/"))
+    itemlist.append( Item(channel=item.channel, title="Año"          , action="anyos", url="http://www.somosmovies.com/"))
+    itemlist.append( Item(channel=item.channel, title="País"         , action="paises", url="http://www.somosmovies.com/"))
     
     return itemlist
 
@@ -93,7 +86,7 @@ def peliculas(item):
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
 
         # Añade a XBMC
-        itemlist.append( Item(channel=__channel__, action="enlaces", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="enlaces", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
 
     # Extrae el paginador
     #<a CLASS='blog-pager-older-link' href='http://www.somosmovies.com/search?updated-max=2012-08-22T23:10:00-05:00&amp;max-results=16' id='Blog1_blog-pager-older-link' title='Siguiente Película'>Siguiente &#187;</a>
@@ -105,7 +98,7 @@ def peliculas(item):
         #http://www.somosmovies.com/search/label/Peliculas?updated-max=2010-12-20T08%3A27%3A00-06%3A00&max-results=12
         scrapedurl = urlparse.urljoin(item.url,matches[0])
         scrapedurl = scrapedurl.replace("%3A",":")
-        itemlist.append( Item(channel=__channel__, action="peliculas", title=">> Página siguiente" , url=scrapedurl , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="peliculas", title=">> Página siguiente" , url=scrapedurl , folder=True) )
 
     return itemlist
 
@@ -126,7 +119,7 @@ def anyos(item):
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
-        itemlist.append( Item(channel=__channel__, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot))
+        itemlist.append( Item(channel=item.channel, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot))
     return itemlist
 
 def generos(item):
@@ -146,7 +139,7 @@ def generos(item):
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
-        itemlist.append( Item(channel=__channel__, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot))
+        itemlist.append( Item(channel=item.channel, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot))
     return itemlist
 
 def paises(item):
@@ -166,7 +159,7 @@ def paises(item):
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
-        itemlist.append( Item(channel=__channel__, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot))
+        itemlist.append( Item(channel=item.channel, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot))
     return itemlist
 
 def enlaces(item):
@@ -244,7 +237,7 @@ def enlaces(item):
     patron = '<div class="dos"[^<]+<b>([^<]+)</b>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for title in matches:
-        itemlist.append( Item(channel=__channel__, action="findvideos" , title="Enlaces "+title.strip() , url=item.url, extra=title, thumbnail=item.thumbnail, plot=item.plot, folder=True))
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title="Enlaces "+title.strip() , url=item.url, extra=title, thumbnail=item.thumbnail, plot=item.plot, folder=True))
 
     return itemlist
 
@@ -264,7 +257,7 @@ def findvideos(item):
     patron = '<a href="([^"]+)"[^>]+>([^<]+)</a>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for url,title in matches:
-        itemlist.append( Item(channel=__channel__, action="play" , title=title , url=url, thumbnail=item.thumbnail, plot=item.plot, server="", folder=False))
+        itemlist.append( Item(channel=item.channel, action="play" , title=title , url=url, thumbnail=item.thumbnail, plot=item.plot, server="", folder=False))
 
     return itemlist
 
@@ -297,26 +290,7 @@ def play(item):
         from core import servertools
         itemlist=servertools.find_video_items(data=item.url)
         for videoitem in itemlist:
-            videoitem.channel=__channel__
+            videoitem.channel=item.channel
             videoitem.folder=False
 
     return itemlist
-
-# Verificación automática de canales: Esta función debe devolver "True" si todo está ok en el canal.
-def test():
-    bien = True
-
-    # mainlist
-    mainlist_items = mainlist(Item())
-    peliculas_items = listado(mainlist_items[0])
-    if len(peliculas_items)==0:
-        print "No salen películas"
-        return False
-    
-    for pelicula_item in peliculas_items:
-        mirrors = findvideos(pelicula_item)
-        if len(mirrors)>0:
-            return True
-
-    print "No hay ningún vídeo en la sección de películas"
-    return False

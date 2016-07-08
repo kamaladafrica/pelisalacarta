@@ -14,15 +14,8 @@ from core import scrapertools
 from core.item import Item
 from platformcode import platformtools
 
-__channel__ = "megaforo"
-__category__ = "F"
-__type__ = "generic"
-__title__ = "Mega-foro"
-__language__ = "ES"
-__adult__ = "true"
 
 DEBUG = config.get_setting("debug")
-
 MAIN_HEADERS = []
 MAIN_HEADERS.append( ["Accept","text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"] )
 MAIN_HEADERS.append( ["Accept-Encoding","gzip, deflate"] )
@@ -33,14 +26,11 @@ MAIN_HEADERS.append( ["Referer","http://mega-foro.com/"] )
 MAIN_HEADERS.append( ["User-Agent","Mozilla/5.0 (Windows NT 6.2; rv:23.0) Gecko/20100101 Firefox/23.0"] )
 
 
-def isGeneric():
-    return True
-
 def login():
     logger.info("[megaforo.py] login")
     # Calcula el hash del password
-    LOGIN = config.get_setting("megaforouser",__channel__)
-    PASSWORD = config.get_setting("megaforopassword",__channel__)
+    LOGIN = config.get_setting("megaforouser", "megaforo")
+    PASSWORD = config.get_setting("megaforopassword", "megaforo")
     logger.info("LOGIN="+LOGIN)
     logger.info("PASSWORD="+PASSWORD)
     # Hace el submit del login
@@ -53,20 +43,20 @@ def login():
 def mainlist(item):
     logger.info("[megaforo.py] mainlist")
     itemlist = []
-    if config.get_setting("megaforouser",__channel__) == "":
-        itemlist.append( Item( channel=__channel__ , title="Habilita tu cuenta en la configuración..." , action="settingCanal" , url="") )
+    if config.get_setting("megaforouser","megaforo") == "":
+        itemlist.append( Item( channel=item.channel , title="Habilita tu cuenta en la configuración..." , action="settingCanal" , url="") )
     else:
         if login():
-            itemlist.append( Item( channel=__channel__ , title="Series" , action="foro" , url="http://mega-foro.com/series-de-tv/" , folder=True ) )
-            itemlist.append( Item( channel=__channel__ , title="Películas" , action="foro" , url="http://mega-foro.com/peliculas/" , folder=True ) )
-            itemlist.append( Item( channel=__channel__ , title="Infantil" , action="foro" , url="http://mega-foro.com/para-los-peques!/" , folder=True ) )
-            itemlist.append( Item( channel=__channel__ , title="Cortos y Documentales" , action="foro" , url="http://mega-foro.com/cortos-y-documentales/" , folder=True ) )
-            itemlist.append( Item( channel=__channel__ , title="Contenido Online" , action="foro" , url="http://mega-foro.com/online/" , folder=True ) )
-            itemlist.append( Item( channel=__channel__ , title="Anime & Manga" , action="foro" , url="http://mega-foro.com/anime-manga/" , folder=True ) )
-            itemlist.append( Item( channel=__channel__ , title="Música" , action="foro" , url="http://mega-foro.com/musica/" , folder=True ) )
-            itemlist.append( Item(channel=__channel__, action="settingCanal"    , title="Configuración..."     , url="" ))
+            itemlist.append( Item( channel=item.channel , title="Series" , action="foro" , url="http://mega-foro.com/series-de-tv/" , folder=True ) )
+            itemlist.append( Item( channel=item.channel , title="Películas" , action="foro" , url="http://mega-foro.com/peliculas/" , folder=True ) )
+            itemlist.append( Item( channel=item.channel , title="Infantil" , action="foro" , url="http://mega-foro.com/para-los-peques!/" , folder=True ) )
+            itemlist.append( Item( channel=item.channel , title="Cortos y Documentales" , action="foro" , url="http://mega-foro.com/cortos-y-documentales/" , folder=True ) )
+            itemlist.append( Item( channel=item.channel , title="Contenido Online" , action="foro" , url="http://mega-foro.com/online/" , folder=True ) )
+            itemlist.append( Item( channel=item.channel , title="Anime & Manga" , action="foro" , url="http://mega-foro.com/anime-manga/" , folder=True ) )
+            itemlist.append( Item( channel=item.channel , title="Música" , action="foro" , url="http://mega-foro.com/musica/" , folder=True ) )
+            itemlist.append( Item(channel=item.channel, action="settingCanal"    , title="Configuración..."     , url="" ))
         else:
-            itemlist.append( Item( channel=__channel__ , title="Cuenta incorrecta, revisa la configuración..." , action="" , url="" , folder=False ) )
+            itemlist.append( Item( channel=item.channel , title="Cuenta incorrecta, revisa la configuración..." , action="" , url="" , folder=False ) )
     return itemlist
 
 def settingCanal(item):
@@ -95,7 +85,7 @@ def foro(item):
             plot = scrapedmsg
             # Añade al listado
             if not 'Listado' in title:
-               itemlist.append( Item(channel=__channel__, action=action, title=title, url=url , thumbnail=thumbnail , plot=plot , folder=True) )
+               itemlist.append( Item(channel=item.channel, action=action, title=title, url=url , thumbnail=thumbnail , plot=plot , folder=True) )
 
     # EXTREA EL LINK DE LA SIGUIENTE PAGINA
     patron = 'div class="pagelinks floatleft.*?<strong>[^<]+</strong>\] <a class="navPages" href="(?!\#bot)([^"]+)">'
@@ -107,7 +97,7 @@ def foro(item):
             thumbnail = ""
             plot = ""
             # Añade al listado
-            itemlist.append( Item(channel=__channel__, action="foro", title=title , url=url , thumbnail=thumbnail , plot=plot , folder=True) )
+            itemlist.append( Item(channel=item.channel, action="foro", title=title , url=url , thumbnail=thumbnail , plot=plot , folder=True) )
     return itemlist
 
 
@@ -139,7 +129,7 @@ def findvideos(item):
     from core import servertools
     itemlist.extend(servertools.find_video_items(data=data))
     for videoitem in itemlist:
-     videoitem.channel=__channel__
+     videoitem.channel=item.channel
      videoitem.action="play"
      videoitem.folder=False
      videoitem.thumbnail=item.thumbnail
@@ -158,23 +148,10 @@ def findvideos(item):
     from core import servertools
     itemlist.extend(servertools.find_video_items(data=data))
     for videoitem in itemlist:
-     videoitem.channel=__channel__
+     videoitem.channel=item.channel
      videoitem.action="play"
      videoitem.folder=False
      videoitem.thumbnail=item.thumbnail
      videoitem.plot = item.plot
      videoitem.title = "["+videoitem.server+videoitem.title + " " + item.title
     return itemlist  
-
-
-def test():
-    # Navega hasta la lista de películas
-    mainlist_items = mainlist(Item())
-    menupeliculas_items = menupeliculas(mainlist_items[0])
-    peliculas_items = peliculas(menupeliculas_items[0])
-    # Si encuentra algún enlace, lo da por bueno
-    for pelicula_item in peliculas_items:
-        itemlist = findbitly_link(pelicula_item)
-        if not itemlist is None and len(itemlist)>=0:
-            return True
-    return False

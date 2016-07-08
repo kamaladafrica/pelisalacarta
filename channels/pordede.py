@@ -19,24 +19,14 @@ from platformcode import platformtools
 from core import servertools
 
 DEBUG = config.get_setting("debug")
-
-__category__ = "A"
-__type__ = "generic"
-__title__ = "Pordede"
-__channel__ = "pordede"
-__language__ = "ES"
-__creationdate__ = "20140615"
-
 DEFAULT_HEADERS = []
 DEFAULT_HEADERS.append( ["User-Agent","Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; es-ES; rv:1.9.2.12) Gecko/20101026 Firefox/3.6.12"] )
 DEFAULT_HEADERS.append( ["Referer","http://www.pordede.com"] )
 
-def isGeneric():
-    return True
 
 def login():
     url = "http://www.pordede.com/site/login"
-    post = "LoginForm[username]="+config.get_setting("pordedeuser",__channel__)+"&LoginForm[password]="+config.get_setting("pordedepassword",__channel__)
+    post = "LoginForm[username]="+config.get_setting("pordedeuser", "pordede")+"&LoginForm[password]="+config.get_setting("pordedepassword", "pordede")
     headers = DEFAULT_HEADERS[:]
     data = scrapertools.cache_page(url,headers=headers,post=post)
 
@@ -45,16 +35,16 @@ def mainlist(item):
 
     itemlist = []
 
-    if config.get_setting("pordedeuser",__channel__) == "":
-        itemlist.append( Item( channel=__channel__ , title="Habilita tu cuenta en la configuración..." , action="settingCanal" , url="") )
+    if config.get_setting("pordedeuser", "pordede") == "":
+        itemlist.append( Item( channel=item.channel , title="Habilita tu cuenta en la configuración..." , action="settingCanal" , url="") )
     else:
         login()
-        itemlist.append( Item(channel=__channel__, action="menuseries"    , title="Series"                   , url="" ))
-        itemlist.append( Item(channel=__channel__, action="menupeliculas" , title="Películas y documentales" , url="" ))
-        itemlist.append( Item(channel=__channel__, action="listas_sigues" , title="Listas que sigues"        , url="http://www.pordede.com/lists/following" ))
-        itemlist.append( Item(channel=__channel__, action="tus_listas"    , title="Tus listas"               , url="http://www.pordede.com/lists/yours" ))
-        itemlist.append( Item(channel=__channel__, action="listas_sigues" , title="Top listas"               , url="http://www.pordede.com/lists" ))
-        itemlist.append( Item(channel=__channel__, action="settingCanal"    , title="Configuración..."     , url="" ))
+        itemlist.append( Item(channel=item.channel, action="menuseries"    , title="Series"                   , url="" ))
+        itemlist.append( Item(channel=item.channel, action="menupeliculas" , title="Películas y documentales" , url="" ))
+        itemlist.append( Item(channel=item.channel, action="listas_sigues" , title="Listas que sigues"        , url="http://www.pordede.com/lists/following" ))
+        itemlist.append( Item(channel=item.channel, action="tus_listas"    , title="Tus listas"               , url="http://www.pordede.com/lists/yours" ))
+        itemlist.append( Item(channel=item.channel, action="listas_sigues" , title="Top listas"               , url="http://www.pordede.com/lists" ))
+        itemlist.append( Item(channel=item.channel, action="settingCanal"    , title="Configuración..."     , url="" ))
     return itemlist
 
 def settingCanal(item):
@@ -64,15 +54,15 @@ def menuseries(item):
     logger.info("pelisalacarta.channels.pordede menuseries")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, action="peliculas" , title="Novedades"            , url="http://www.pordede.com/series/loadmedia/offset/0/showlist/hot" ))
-    itemlist.append( Item(channel=__channel__, action="generos"   , title="Por géneros"          , url="http://www.pordede.com/series" ))
-    itemlist.append( Item(channel=__channel__, action="peliculas" , title="Siguiendo"            , url="http://www.pordede.com/series/following" ))
-    itemlist.append( Item(channel=__channel__, action="siguientes" , title="Siguientes Capítulos" , url="http://www.pordede.com/index2.php" ))
-    itemlist.append( Item(channel=__channel__, action="peliculas" , title="Favoritas"            , url="http://www.pordede.com/series/favorite" ))
-    itemlist.append( Item(channel=__channel__, action="peliculas" , title="Pendientes"           , url="http://www.pordede.com/series/pending" ))
-    itemlist.append( Item(channel=__channel__, action="peliculas" , title="Terminadas"           , url="http://www.pordede.com/series/seen" ))
-    itemlist.append( Item(channel=__channel__, action="peliculas" , title="Recomendadas"         , url="http://www.pordede.com/series/recommended" ))
-    itemlist.append( Item(channel=__channel__, action="search"    , title="Buscar..."            , url="http://www.pordede.com/series" ))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Novedades"            , url="http://www.pordede.com/series/loadmedia/offset/0/showlist/hot" ))
+    itemlist.append( Item(channel=item.channel, action="generos"   , title="Por géneros"          , url="http://www.pordede.com/series" ))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Siguiendo"            , url="http://www.pordede.com/series/following" ))
+    itemlist.append( Item(channel=item.channel, action="siguientes" , title="Siguientes Capítulos" , url="http://www.pordede.com/index2.php" , viewmode="movie"))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Favoritas"            , url="http://www.pordede.com/series/favorite" ))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Pendientes"           , url="http://www.pordede.com/series/pending" ))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Terminadas"           , url="http://www.pordede.com/series/seen" ))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Recomendadas"         , url="http://www.pordede.com/series/recommended" ))
+    itemlist.append( Item(channel=item.channel, action="search"    , title="Buscar..."            , url="http://www.pordede.com/series" ))
 
     return itemlist
 
@@ -80,13 +70,13 @@ def menupeliculas(item):
     logger.info("pelisalacarta.channels.pordede menupeliculas")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, action="peliculas" , title="Novedades"            , url="http://www.pordede.com/pelis/loadmedia/offset/0/showlist/hot" ))
-    itemlist.append( Item(channel=__channel__, action="generos" , title="Por géneros"            , url="http://www.pordede.com/pelis" ))
-    itemlist.append( Item(channel=__channel__, action="peliculas" , title="Favoritas"            , url="http://www.pordede.com/pelis/favorite" ))
-    itemlist.append( Item(channel=__channel__, action="peliculas" , title="Pendientes"           , url="http://www.pordede.com/pelis/pending" ))
-    itemlist.append( Item(channel=__channel__, action="peliculas" , title="Vistas"               , url="http://www.pordede.com/pelis/seen" ))
-    itemlist.append( Item(channel=__channel__, action="peliculas" , title="Recomendadas"         , url="http://www.pordede.com/pelis/recommended" ))
-    itemlist.append( Item(channel=__channel__, action="search"  , title="Buscar..."              , url="http://www.pordede.com/pelis" ))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Novedades"            , url="http://www.pordede.com/pelis/loadmedia/offset/0/showlist/hot" ))
+    itemlist.append( Item(channel=item.channel, action="generos" , title="Por géneros"            , url="http://www.pordede.com/pelis" ))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Favoritas"            , url="http://www.pordede.com/pelis/favorite" ))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Pendientes"           , url="http://www.pordede.com/pelis/pending" ))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Vistas"               , url="http://www.pordede.com/pelis/seen" ))
+    itemlist.append( Item(channel=item.channel, action="peliculas" , title="Recomendadas"         , url="http://www.pordede.com/pelis/recommended" ))
+    itemlist.append( Item(channel=item.channel, action="search"  , title="Buscar..."              , url="http://www.pordede.com/pelis" ))
 
     return itemlist
 
@@ -115,7 +105,7 @@ def generos(item):
         else:
             url = "http://www.pordede.com/series/loadmedia/offset/0/genre/"+textid.replace(" ","%20")+"/showlist/all"
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title))
+        itemlist.append( Item(channel=item.channel, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title))
 
     return itemlist
 
@@ -184,17 +174,19 @@ def parse_mixed_results(item,data):
             referer = urlparse.urljoin(item.url,scrapedurl)
             url = referer.replace("/{0}/".format(sectionStr),"/links/view/slug/")+"/what/{0}".format(sectionStr)
             if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-            itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=fulltitle, fanart=fanart, viewmode="movie"))
+            itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=fulltitle, fanart=fanart))
         else:
             referer = item.url
             url = urlparse.urljoin(item.url,scrapedurl)
-            itemlist.append( Item(channel=__channel__, action="episodios" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=fulltitle, show=title, fanart=fanart, viewmode="movie"))
+            itemlist.append( Item(channel=item.channel, action="episodios" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=fulltitle, show=title, fanart=fanart))
 
-    if len(itemlist) in [30, 60] and "offset/" in item.url:
-        old_offset = scrapertools.find_single_match(item.url,"offset/(\d+)/")
-        new_offset = int(old_offset)+len(itemlist)
-        url = item.url.replace("offset/"+old_offset,"offset/"+str(new_offset))
-        itemlist.append( Item(channel=__channel__, action="lista" , title=">> Página siguiente" , extra=item.extra, url=url))
+
+    next_page = scrapertools.find_single_match(data, '<div class="loadingBar" data-url="([^"]+)"')
+    if next_page != "":
+        url = urlparse.urljoin("http://www.pordede.com", next_page)
+        itemlist.append(
+                Item(channel=item.channel, action="lista", title=">> Página siguiente", extra=item.extra, url=url))
+
 
     try:
         import xbmcplugin
@@ -247,8 +239,8 @@ def siguientes(item):
 
         referer = urlparse.urljoin(item.url,scrapedurl)
         url = referer
-        #itemlist.append( Item(channel=__channel__, action="episodios" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=title, viewmode="movie"))
-        itemlist.append( Item(channel=__channel__, action="episodio" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=title, fanart=fanart, viewmode="movie", extra=session+"|"+episode))
+        #itemlist.append( Item(channel=item.channel, action="episodios" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=title))
+        itemlist.append( Item(channel=item.channel, action="episodio" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=title, fanart=fanart, extra=session+"|"+episode))
 
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
@@ -287,7 +279,7 @@ def episodio(item):
             #http://www.pordede.com/links/viewepisode/id/475011?popup=1
             epid = scrapertools.find_single_match(scrapedurl,"id/(\d+)")
             url = "http://www.pordede.com/links/viewepisode/id/"+epid
-            itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, fanart=item.fanart, show=item.show))
+            itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, fanart=item.fanart, show=item.show))
             if (DEBUG): logger.info("Abrimos title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
     itemlist2 = []
@@ -344,7 +336,7 @@ def episodios(item):
             #http://www.pordede.com/links/viewepisode/id/475011?popup=1
             epid = scrapertools.find_single_match(scrapedurl,"id/(\d+)")
             url = "http://www.pordede.com/links/viewepisode/id/"+epid
-            itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, fanart= fanart, show=item.show))
+            itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, fanart= fanart, show=item.show))
 
             if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
@@ -383,13 +375,13 @@ def parse_listas(item, patron):
         title = scrapertools.htmlclean(scrapedtitle + ' (' + scrapedfichas + ' fichas, por ' + scrapeduser + ')')
         url = urlparse.urljoin(item.url,scrapedurl) + "/offset/0/loadmedia"
         thumbnail = ""
-        itemlist.append( Item(channel=__channel__, action="lista" , title=title , url=url))
+        itemlist.append( Item(channel=item.channel, action="lista" , title=title , url=url))
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
     nextpage = scrapertools.find_single_match(data,'data-url="(/lists/loadlists/offset/[^"]+)"')
     if nextpage != '':
         url = urlparse.urljoin(item.url,nextpage)
-        itemlist.append( Item(channel=__channel__, action="listas_sigues" , title=">> Página siguiente" , extra=item.extra, url=url))
+        itemlist.append( Item(channel=item.channel, action="listas_sigues" , title=">> Página siguiente" , extra=item.extra, url=url))
 
     try:
         import xbmcplugin
@@ -463,11 +455,11 @@ def findvideos(item, verTodos=False):
     itemlist = []
 
     if (config.get_platform().startswith("xbmc") or config.get_platform().startswith("kodi")) and "/what/peli" in item.url:
-        itemlist.append( Item(channel=__channel__, action="infosinopsis" , title="INFO / SINOPSIS" , url=item.url, thumbnail=item.thumbnail, fanart=item.fanart,  folder=False ))
+        itemlist.append( Item(channel=item.channel, action="infosinopsis" , title="INFO / SINOPSIS" , url=item.url, thumbnail=item.thumbnail, fanart=item.fanart,  folder=False ))
 
     itemsort = []
-    sortlinks = config.get_setting("pordedesortlinks",__channel__) # 0:no, 1:valoracion, 2:idioma, 3:calidad, 4:idioma+calidad, 5:idioma+valoracion, 6:idioma+calidad+valoracion
-    showlinks = config.get_setting("pordedeshowlinks",__channel__) # 0:todos, 1:ver online, 2:descargar
+    sortlinks = config.get_setting("pordedesortlinks",item.channel) # 0:no, 1:valoracion, 2:idioma, 3:calidad, 4:idioma+calidad, 5:idioma+valoracion, 6:idioma+calidad+valoracion
+    showlinks = config.get_setting("pordedeshowlinks",item.channel) # 0:todos, 1:ver online, 2:descargar
 
     for match in matches:
         if (DEBUG): logger.info("match="+match)
@@ -529,19 +521,19 @@ def findvideos(item, verTodos=False):
                 orden = (valora_idioma(idioma_0, idioma_1) * 100000) + (valora_calidad(calidad_video, calidad_audio) * 1000) + valoracion
             itemsort.append({'action': "play", 'title': title, 'url':url, 'thumbnail':thumbnail, 'fanart':item.fanart, 'plot':plot, 'extra':sesion+"|"+item.url, 'fulltitle':item.fulltitle, 'orden1': (jdown == ''), 'orden2':orden})
         else:
-            itemlist.append( Item(channel=__channel__, action="play" , title=title , url=url, thumbnail=thumbnail, fanart= item.fanart, plot=plot, extra=sesion+"|"+item.url, fulltitle=item.fulltitle))
+            itemlist.append( Item(channel=item.channel, action="play" , title=title , url=url, thumbnail=thumbnail, fanart= item.fanart, plot=plot, extra=sesion+"|"+item.url, fulltitle=item.fulltitle))
 
     if sortlinks > 0:
-        numberlinks = config.get_setting("pordedenumberlinks",__channel__) # 0:todos, > 0:n*5 (5,10,15,20,...)
+        numberlinks = config.get_setting("pordedenumberlinks",item.channel) # 0:todos, > 0:n*5 (5,10,15,20,...)
         numberlinks = int(numberlinks) if numberlinks != '' and numberlinks !="No" else 0
         if numberlinks == 0:
             verTodos = True
         itemsort = sorted(itemsort, key=lambda k: (k['orden1'], k['orden2']), reverse=True)
         for i, subitem in enumerate(itemsort):
             if verTodos == False and i >= numberlinks:
-                itemlist.append(Item(channel=__channel__, action='findallvideos' , title='Ver todos los enlaces', url=item.url, extra=item.extra ))
+                itemlist.append(Item(channel=item.channel, action='findallvideos' , title='Ver todos los enlaces', url=item.url, extra=item.extra ))
                 break
-            itemlist.append( Item(channel=__channel__, action=subitem['action'] , title=subitem['title'] , url=subitem['url'] , thumbnail=subitem['thumbnail'] , fanart= subitem['fanart'], plot=subitem['plot'] , extra=subitem['extra'] , fulltitle=subitem['fulltitle'] ))
+            itemlist.append( Item(channel=item.channel, action=subitem['action'] , title=subitem['title'] , url=subitem['url'] , thumbnail=subitem['thumbnail'] , fanart= subitem['fanart'], plot=subitem['plot'] , extra=subitem['extra'] , fulltitle=subitem['fulltitle'] ))
 
     return itemlist
 
@@ -584,7 +576,7 @@ def play(item):
         videoitem.title = item.title
         videoitem.fulltitle = item.fulltitle
         videoitem.thumbnail = item.thumbnail
-        videoitem.channel = __channel__
+        videoitem.channel = item.channel
 
     return itemlist
 

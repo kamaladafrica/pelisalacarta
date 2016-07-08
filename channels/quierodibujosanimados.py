@@ -15,21 +15,12 @@ from core.item import Item
 
 DEBUG = config.get_setting("debug")
 
-__category__ = "A"
-__type__ = "generic"
-__title__ = "Quiero dibujos animados"
-__channel__ = "quierodibujosanimados"
-__language__ = "ES"
-__creationdate__ = "20121112"
-
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("pelisalacarta.channels.quierodibujosanimados mainlist")
 
-    #itemlist.append( Item(channel=__channel__ , action="novedades"  , title="Novedades" , url="http://www.quierodibujosanimados.com/"))
-    return series( Item(channel=__channel__ , action="series"     , title="Series"    , url="http://www.quierodibujosanimados.com/"))
+    #itemlist.append( Item(channel=item.channel , action="novedades"  , title="Novedades" , url="http://www.quierodibujosanimados.com/"))
+    return series( Item(channel=item.channel , action="series"     , title="Series"    , url="http://www.quierodibujosanimados.com/"))
 
 def series(item):
     logger.info("pelisalacarta.channels.quierodibujosanimados series")
@@ -49,11 +40,11 @@ def series(item):
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
-        itemlist.append( Item(channel=__channel__, action="episodios" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart="http://pelisalacarta.mimediacenter.info/fanart/quierodibujosanimados.jpg"))        
+        itemlist.append( Item(channel=item.channel, action="episodios" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart="http://pelisalacarta.mimediacenter.info/fanart/quierodibujosanimados.jpg"))        
 
     next_page_url = scrapertools.find_single_match(data,'</span[^<]+<a href="([^"]+)">')
     if next_page_url!="":
-        itemlist.append( Item(channel=__channel__, action="episodios", title=">> Página siguiente" , url=urlparse.urljoin(item.url,next_page_url) , folder=True, fanart="http://pelisalacarta.mimediacenter.info/fanart/quierodibujosanimados.jpg") )
+        itemlist.append( Item(channel=item.channel, action="episodios", title=">> Página siguiente" , url=urlparse.urljoin(item.url,next_page_url) , folder=True, fanart="http://pelisalacarta.mimediacenter.info/fanart/quierodibujosanimados.jpg") )
 
     return itemlist
 
@@ -112,31 +103,10 @@ def episodios(item):
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
-        itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart="http://pelisalacarta.mimediacenter.info/fanart/quierodibujosanimados.jpg"))
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart="http://pelisalacarta.mimediacenter.info/fanart/quierodibujosanimados.jpg"))
 
     next_page_url = scrapertools.find_single_match(data,'</span[^<]+<a href="([^"]+)">')
     if next_page_url!="":
-        itemlist.append( Item(channel=__channel__, action="episodios", title=">> Página siguiente" , url=urlparse.urljoin(item.url,next_page_url) , folder=True, fanart="http://pelisalacarta.mimediacenter.info/fanart/quierodibujosanimados.jpg") )
+        itemlist.append( Item(channel=item.channel, action="episodios", title=">> Página siguiente" , url=urlparse.urljoin(item.url,next_page_url) , folder=True, fanart="http://pelisalacarta.mimediacenter.info/fanart/quierodibujosanimados.jpg") )
 
     return itemlist
-
-# Verificación automática de canales: Esta función debe devolver "True" si todo está ok en el canal.
-def test():
-    bien = True
-    
-    from core import servertools
-
-    # mainlist
-    serie_itemlist = mainlist(Item())
-    
-    # Comprueba que todas las opciones tengan algo (excepto el buscador)
-    for serie_item in serie_itemlist:
-        episodio_itemlist = episodios(serie_item)
-
-        for episodio_item in episodio_itemlist:
-            mirrors = servertools.find_video_items(item=episodio_item)
-
-            if len(mirrors)>0:
-                return True
-
-    return False

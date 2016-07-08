@@ -51,8 +51,3 @@ def find_videos(text):
             logger.info("  url duplicada="+url)        
 
     return devuelve
-
-def test():
-
-    video_urls = get_video_url("http://cnubis.com/plugins/mediaplayer/site/_embed1.php?u=9mk&w=640&h=320")
-    return len(video_urls)>0

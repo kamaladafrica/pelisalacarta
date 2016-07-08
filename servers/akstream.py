@@ -117,8 +117,3 @@ def find_videos(text):
     
 
     return devuelve
-
-def test():
-    video_urls = get_video_url("http://akstream.net/v/8513acv2alss")
-
-    return len(video_urls)>0

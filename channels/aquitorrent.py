@@ -14,11 +14,6 @@ from core import logger
 from core import scrapertools
 from core.item import Item
 
-__channel__ = "aquitorrent"
-__category__ = "F"
-__type__ = "generic"
-__title__ = "Aquitorrent"
-__language__ = "ES"
 
 host = "http://www.aquitorrent.com/"
 
@@ -54,25 +49,21 @@ def browser(url):
     return response
 
 
-
-def isGeneric():
-    return True
-
 def mainlist(item):
     logger.info("pelisalacarta.aquitorrent mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, title="Peliculas"      , action="peliculas", url="http://www.aquitorrent.com/torr.asp?pagina=1&tipo=PELICULAS", thumbnail="http://imgc.allpostersimages.com/images/P-473-488-90/37/3710/L3YAF00Z/posters/conrad-knutsen-cinema.jpg", fanart="http://s6.postimg.org/m8dipognl/aquitorrentfanart2.jpg"))
-    itemlist.append( Item(channel=__channel__, action="peliculas", title="Series", url="http://www.aquitorrent.com/torr.asp?pagina=1&tipo=SERIES", thumbnail="http://s6.postimg.org/nbxn1n1ap/aquitserielogo.jpg", fanart="http://s6.postimg.org/x6os7v58x/aquitorretseries.jpg"))
-    itemlist.append( Item(channel=__channel__, action="peliculas", title="Películas HD", url="http://www.aquitorrent.com/torr.asp?pagina=1&tipo=Peliculas%20HD", thumbnail="http://s6.postimg.org/4uymx2vyp/aquithdlogo.jpg", fanart="http://s6.postimg.org/umxqri72p/aquitphd3.jpg"))
-    itemlist.append( Item(channel=__channel__, action="peliculas", title="Películas 3D", url="http://www.aquitorrent.com/torr.asp?pagina=1&tipo=PELICULAS%203D", thumbnail="http://s6.postimg.org/53rm99jdd/aquit3dlogo.jpg", fanart="http://s6.postimg.org/9i03l3txt/aquit3d.jpg"))
-    itemlist.append( Item(channel=__channel__, action="peliculas", title="Películas V.O.S.", url="http://www.aquitorrent.com/torr.asp?pagina=1&tipo=PELICULAS%20V.O.S.", thumbnail="http://s6.postimg.org/fofbx2s0h/aquitvostub2.jpg", fanart="http://s6.postimg.org/wss1m0aj5/aquitvos.jpg"))
-    itemlist.append( Item(channel=__channel__, action="peliculas", title="Docus y TV", url="http://www.aquitorrent.com/torr.asp?pagina=1&tipo=Docus%20y%20TV",  thumbnail="http://s6.postimg.org/5mnir1w0h/tv_docaquit.jpg", fanart="http://s6.postimg.org/5lrd2uyc1/aquitdoctv3_an.jpg"))
-    itemlist.append( Item(channel=__channel__, action="peliculas", title="Clásicos Disney", url="http://www.aquitorrent.com/torr.asp?pagina=1&tipo=CLASICOS%20DISNEY", thumbnail="http://s6.postimg.org/87xosbas1/Walt_Disney.jpg", fanart="http://s6.postimg.org/5m0jucd3l/aquitwalt.jpg"))
-    itemlist.append( Item(channel=__channel__, action="peliculas", title="F1 2014", url="http://www.aquitorrent.com/torr.asp?pagina=1&tipo=F1%202014", thumbnail="http://s6.postimg.org/42vyxvrrl/aquitf1tub.png", fanart="http://s6.postimg.org/sbqhvuhjl/aquitf1f.jpg"))
-    itemlist.append( Item(channel=__channel__, action="peliculas", title="MotoGP 2014", url="http://www.aquitorrent.com/torr.asp?pagina=1&tipo=MotoGP%202014", thumbnail="http://s6.postimg.org/flquwhyz5/aquit_Moto_GP_Logo.jpg", fanart="http://s6.postimg.org/sv06iuyc1/aquitmgpf2.jpg"))
-    itemlist.append( Item(channel=__channel__, action="peliculas", title="Mundial 2014", url="http://www.aquitorrent.com/torr.asp?pagina=1&tipo=Mundial%202014", thumbnail="http://s6.postimg.org/sgyuj9e8h/aquitmundial_TUB.png", fanart="http://s6.postimg.org/7vk2rcwnl/aquitmundiall.jpg"))
-    itemlist.append( Item(channel=__channel__, action="search", title="Buscar...", url="", thumbnail="http://s6.postimg.org/gninw2o9d/searchaquittub.jpg", fanart="http://s6.postimg.org/b4kpslglt/searchaquit.jpg"))
+    itemlist.append( Item(channel=item.channel, title="Peliculas"      , action="peliculas", url="http://www.aquitorrent.com/torr.asp?pagina=1&tipo=PELICULAS", thumbnail="http://imgc.allpostersimages.com/images/P-473-488-90/37/3710/L3YAF00Z/posters/conrad-knutsen-cinema.jpg", fanart="http://s6.postimg.org/m8dipognl/aquitorrentfanart2.jpg"))
+    itemlist.append( Item(channel=item.channel, action="peliculas", title="Series", url="http://www.aquitorrent.com/torr.asp?pagina=1&tipo=SERIES", thumbnail="http://s6.postimg.org/nbxn1n1ap/aquitserielogo.jpg", fanart="http://s6.postimg.org/x6os7v58x/aquitorretseries.jpg"))
+    itemlist.append( Item(channel=item.channel, action="peliculas", title="Películas HD", url="http://www.aquitorrent.com/torr.asp?pagina=1&tipo=Peliculas%20HD", thumbnail="http://s6.postimg.org/4uymx2vyp/aquithdlogo.jpg", fanart="http://s6.postimg.org/umxqri72p/aquitphd3.jpg"))
+    itemlist.append( Item(channel=item.channel, action="peliculas", title="Películas 3D", url="http://www.aquitorrent.com/torr.asp?pagina=1&tipo=PELICULAS%203D", thumbnail="http://s6.postimg.org/53rm99jdd/aquit3dlogo.jpg", fanart="http://s6.postimg.org/9i03l3txt/aquit3d.jpg"))
+    itemlist.append( Item(channel=item.channel, action="peliculas", title="Películas V.O.S.", url="http://www.aquitorrent.com/torr.asp?pagina=1&tipo=PELICULAS%20V.O.S.", thumbnail="http://s6.postimg.org/fofbx2s0h/aquitvostub2.jpg", fanart="http://s6.postimg.org/wss1m0aj5/aquitvos.jpg"))
+    itemlist.append( Item(channel=item.channel, action="peliculas", title="Docus y TV", url="http://www.aquitorrent.com/torr.asp?pagina=1&tipo=Docus%20y%20TV",  thumbnail="http://s6.postimg.org/5mnir1w0h/tv_docaquit.jpg", fanart="http://s6.postimg.org/5lrd2uyc1/aquitdoctv3_an.jpg"))
+    itemlist.append( Item(channel=item.channel, action="peliculas", title="Clásicos Disney", url="http://www.aquitorrent.com/torr.asp?pagina=1&tipo=CLASICOS%20DISNEY", thumbnail="http://s6.postimg.org/87xosbas1/Walt_Disney.jpg", fanart="http://s6.postimg.org/5m0jucd3l/aquitwalt.jpg"))
+    itemlist.append( Item(channel=item.channel, action="peliculas", title="F1 2014", url="http://www.aquitorrent.com/torr.asp?pagina=1&tipo=F1%202014", thumbnail="http://s6.postimg.org/42vyxvrrl/aquitf1tub.png", fanart="http://s6.postimg.org/sbqhvuhjl/aquitf1f.jpg"))
+    itemlist.append( Item(channel=item.channel, action="peliculas", title="MotoGP 2014", url="http://www.aquitorrent.com/torr.asp?pagina=1&tipo=MotoGP%202014", thumbnail="http://s6.postimg.org/flquwhyz5/aquit_Moto_GP_Logo.jpg", fanart="http://s6.postimg.org/sv06iuyc1/aquitmgpf2.jpg"))
+    itemlist.append( Item(channel=item.channel, action="peliculas", title="Mundial 2014", url="http://www.aquitorrent.com/torr.asp?pagina=1&tipo=Mundial%202014", thumbnail="http://s6.postimg.org/sgyuj9e8h/aquitmundial_TUB.png", fanart="http://s6.postimg.org/7vk2rcwnl/aquitmundiall.jpg"))
+    itemlist.append( Item(channel=item.channel, action="search", title="Buscar...", url="", thumbnail="http://s6.postimg.org/gninw2o9d/searchaquittub.jpg", fanart="http://s6.postimg.org/b4kpslglt/searchaquit.jpg"))
     
     
 
@@ -118,7 +109,7 @@ def buscador(item):
     matches = re.compile(patron,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
     if len(matches)==0 :
-        itemlist.append( Item(channel=__channel__, title="[COLOR gold][B]No hay resultados...[/B][/COLOR]", thumbnail ="http://s6.postimg.org/t48ttay4x/aquitnoisethumb.png", fanart ="http://s6.postimg.org/4wjnb0ksx/aquitonoisefan.jpg",folder=False) )
+        itemlist.append( Item(channel=item.channel, title="[COLOR gold][B]No hay resultados...[/B][/COLOR]", thumbnail ="http://s6.postimg.org/t48ttay4x/aquitnoisethumb.png", fanart ="http://s6.postimg.org/4wjnb0ksx/aquitonoisefan.jpg",folder=False) )
     
     
     for scrapedurl, scrapedtitle, scrapedthumbnail, scrapedinfo in matches:
@@ -141,7 +132,7 @@ def buscador(item):
         else:
             action = "fanart"
         extra = title_fan
-        itemlist.append( Item(channel=__channel__, title =scrapedtitle , url= urlparse.urljoin(host, scrapedurl), action=action, fanart="http://s9.postimg.org/lmwhrdl7z/aquitfanart.jpg", extra=extra,thumbnail=scrapedthumbnail) )
+        itemlist.append( Item(channel=item.channel, title =scrapedtitle , url= urlparse.urljoin(host, scrapedurl), action=action, fanart="http://s9.postimg.org/lmwhrdl7z/aquitfanart.jpg", extra=extra,thumbnail=scrapedthumbnail) )
 
     return itemlist
 
@@ -168,7 +159,7 @@ def peliculas(item):
     matches = re.compile(patron,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
     if len(matches)==0 :
-        itemlist.append( Item(channel=__channel__, title="[COLOR gold][B]No hay resultados...[/B][/COLOR]", thumbnail ="http://s6.postimg.org/t48ttay4x/aquitnoisethumb.png", fanart ="http://s6.postimg.org/4wjnb0ksx/aquitonoisefan.jpg",folder=False) )
+        itemlist.append( Item(channel=item.channel, title="[COLOR gold][B]No hay resultados...[/B][/COLOR]", thumbnail ="http://s6.postimg.org/t48ttay4x/aquitnoisethumb.png", fanart ="http://s6.postimg.org/4wjnb0ksx/aquitonoisefan.jpg",folder=False) )
     
    
     for scrapedurl, scrapedthumbnail, scrapedtitle,scrapedinfoserie, scrapedinfo in matches:
@@ -192,7 +183,7 @@ def peliculas(item):
             action = "fanart"
 
         extra = title_fan
-        itemlist.append( Item(channel=__channel__, title =scrapedtitle , url=urlparse.urljoin(host, scrapedurl), action=action, fanart="http://s9.postimg.org/lmwhrdl7z/aquitfanart.jpg", extra = extra, thumbnail=scrapedthumbnail) )
+        itemlist.append( Item(channel=item.channel, title =scrapedtitle , url=urlparse.urljoin(host, scrapedurl), action=action, fanart="http://s9.postimg.org/lmwhrdl7z/aquitfanart.jpg", extra = extra, thumbnail=scrapedthumbnail) )
 
     ## Paginación
     pagina = int(scrapertools.get_match(item.url,"pagina=(\d+)"))+1
@@ -200,7 +191,7 @@ def peliculas(item):
     next_page = re.sub(r"pagina=\d+", pagina, item.url)
     title= "[COLOR green]Pagina siguiente>>[/COLOR]"
     if pagina in data:
-        itemlist.append( Item(channel=__channel__, title=title, url=next_page, fanart="http://s9.postimg.org/lmwhrdl7z/aquitfanart.jpg", thumbnail="http://s6.postimg.org/4hpbrb13l/texflecha2.png",
+        itemlist.append( Item(channel=item.channel, title=title, url=next_page, fanart="http://s9.postimg.org/lmwhrdl7z/aquitfanart.jpg", thumbnail="http://s6.postimg.org/4hpbrb13l/texflecha2.png",
             action="peliculas", folder=True) )
 
 
@@ -305,7 +296,7 @@ def fanart(item):
             fanart_info = item.fanart
             fanart= item.fanart
             fanart_2 = item.fanart
-            itemlist.append( Item(channel=__channel__, title =item.title, url=item.url, action="findvideos", thumbnail=posterdb, fanart=fanart ,extra= fanart_2, folder=True) )
+            itemlist.append( Item(channel=item.channel, title =item.title, url=item.url, action="findvideos", thumbnail=posterdb, fanart=fanart ,extra= fanart_2, folder=True) )
         for fan in matches:
     
             fanart="https://image.tmdb.org/t/p/original" + fan
@@ -342,7 +333,7 @@ def fanart(item):
                         fanart_info = photo_imdb
                     except:
                         fanart_info = fanart_2
-            itemlist.append( Item(channel=__channel__, title =item.title, url=item.url, action="findvideos", thumbnail=posterdb, fanart=fanart_1 ,extra= fanart_2, folder=True) )
+            itemlist.append( Item(channel=item.channel, title =item.title, url=item.url, action="findvideos", thumbnail=posterdb, fanart=fanart_1 ,extra= fanart_2, folder=True) )
 
 
 
@@ -403,7 +394,7 @@ def fanart(item):
                         fanart_trailer = "http://s6.postimg.org/6ucl96lsh/bityouthnofan.jpg"
                         category= ""
                         show = title+"|"+year+"|"+"http://s6.postimg.org/mh3umjzkh/bityouthnofanventanuco.jpg"
-                        itemlist.append( Item(channel=__channel__, title=item.title, url=item.url, action="finvideos", thumbnail=item.thumbnail, fanart="http://s6.postimg.org/6ucl96lsh/bityouthnofan.jpg" ,extra=extra, category= category,  show=show ,plot=plot, folder=True) )
+                        itemlist.append( Item(channel=item.channel, title=item.title, url=item.url, action="finvideos", thumbnail=item.thumbnail, fanart="http://s6.postimg.org/6ucl96lsh/bityouthnofan.jpg" ,extra=extra, category= category,  show=show ,plot=plot, folder=True) )
         
             else:
                 title= title.replace(" ","%20")
@@ -423,7 +414,7 @@ def fanart(item):
                     fanart_info = "http://s6.postimg.org/6ucl96lsh/bityouthnofan.jpg"
                     fanart_trailer = "http://s6.postimg.org/6ucl96lsh/bityouthnofan.jpg"
                     category= ""
-                    itemlist.append( Item(channel=__channel__, title=item.title, url=item.url, action="findvideos", thumbnail=item.thumbnail, fanart="http://s6.postimg.org/6ucl96lsh/bityouthnofan.jpg" ,extra=extra, category= category,  show=show ,plot= plot, folder=True) )
+                    itemlist.append( Item(channel=item.channel, title=item.title, url=item.url, action="findvideos", thumbnail=item.thumbnail, fanart="http://s6.postimg.org/6ucl96lsh/bityouthnofan.jpg" ,extra=extra, category= category,  show=show ,plot= plot, folder=True) )
         #fanart
         for  id, info in matches:
             
@@ -448,7 +439,7 @@ def fanart(item):
                 show = title+"|"+year+"|"+"http://s6.postimg.org/mh3umjzkh/bityouthnofanventanuco.jpg"
                 fanart_info = "http://s6.postimg.org/6ucl96lsh/bityouthnofan.jpg"
                 fanart_trailer = "http://s6.postimg.org/6ucl96lsh/bityouthnofan.jpg"
-                itemlist.append( Item(channel=__channel__, title=item.title, url=item.url, action="findvideos", thumbnail=postertvdb, fanart="http://s6.postimg.org/6ucl96lsh/bityouthnofan.jpg"  ,category = category, extra=extra, show=show,folder=True) )
+                itemlist.append( Item(channel=item.channel, title=item.title, url=item.url, action="findvideos", thumbnail=postertvdb, fanart="http://s6.postimg.org/6ucl96lsh/bityouthnofan.jpg"  ,category = category, extra=extra, show=show,folder=True) )
                                                         
             for fan in matches:
                 fanart="http://thetvdb.com/banners/" + fan
@@ -461,13 +452,13 @@ def fanart(item):
                    fanart_2 = fanart_1
                    show = title+"|"+year+"|"+fanart_1
                    extra=postertvdb
-                   itemlist.append( Item(channel=__channel__, title=item.title, url=item.url, action="findvideos", thumbnail=postertvdb, fanart=fanart_1  ,category = category, extra=extra, show=show,folder=True) )
+                   itemlist.append( Item(channel=item.channel, title=item.title, url=item.url, action="findvideos", thumbnail=postertvdb, fanart=fanart_1  ,category = category, extra=extra, show=show,folder=True) )
                 for fanart_info, fanart_trailer, fanart_2 in matches:
                     fanart_info = "http://thetvdb.com/banners/" + fanart_info
                     fanart_trailer = "http://thetvdb.com/banners/" + fanart_trailer
                     fanart_2 = "http://thetvdb.com/banners/" + fanart_2
                 
-                    itemlist.append( Item(channel=__channel__, title =item.title, url=item.url, action="findvideos", thumbnail=postertvdb, fanart=fanart_1 , extra= fanart_2,folder=True) )
+                    itemlist.append( Item(channel=item.channel, title =item.title, url=item.url, action="findvideos", thumbnail=postertvdb, fanart=fanart_1 , extra= fanart_2,folder=True) )
     title ="Info"
     title = title.replace(title,"[COLOR skyblue][B]"+title+"[/B][/COLOR]")
     if "Series" in item.url:
@@ -475,7 +466,7 @@ def fanart(item):
     else:
         thumbnail = posterdb
 
-    itemlist.append( Item(channel=__channel__, action="info" , title=title , url=item.url, thumbnail=thumbnail, fanart=fanart_info , folder=False ))
+    itemlist.append( Item(channel=item.channel, action="info" , title=title , url=item.url, thumbnail=thumbnail, fanart=fanart_info , folder=False ))
 
     return itemlist
 
@@ -495,7 +486,7 @@ def findvideos(item):
             # Arregla la url y extrae el torrent
             scrapedtorrent = unzip(fix_url(scrapedzip))
             
-            itemlist.append( Item(channel=__channel__, title =item.title+"[COLOR red][B] [magnet][/B][/COLOR]" , url=scrapedtorrent,  action="play", server="torrent", thumbnail=item.thumbnail, fanart=item.extra , folder=False) )
+            itemlist.append( Item(channel=item.channel, title =item.title+"[COLOR red][B] [magnet][/B][/COLOR]" , url=scrapedtorrent,  action="play", server="torrent", thumbnail=item.thumbnail, fanart=item.extra , folder=False) )
 
 
     #Vamos con el normal
@@ -514,7 +505,7 @@ def findvideos(item):
             fanart = item.extra
         title_tag="[COLOR yellow][B]Ver--[/B][/COLOR]"
         item.title=item.title.strip()
-        itemlist.append( Item(channel=__channel__, title =title_tag+item.title+"[COLOR red][B] [magnet][/B][/COLOR]" , url=scrapedmagnet,  action="play", server="torrent", thumbnail=item.thumbnail, fanart=fanart , folder=False) )
+        itemlist.append( Item(channel=item.channel, title =title_tag+item.title+"[COLOR red][B] [magnet][/B][/COLOR]" , url=scrapedmagnet,  action="play", server="torrent", thumbnail=item.thumbnail, fanart=fanart , folder=False) )
     
     #nueva variacion
     if len(itemlist) == 0:
@@ -524,7 +515,7 @@ def findvideos(item):
        matches = re.compile(patron,re.DOTALL).findall(data)
     
        for scrapedtitle, scrapedtorrent in matches:
-           itemlist.append( Item(channel=__channel__, title =scrapedtitle+"[COLOR green][B] [magnet][/B][/COLOR]", url=scrapedtorrent, action="play", server="torrent", thumbnail=item.thumbnail, fanart=item.extra , folder=False) )
+           itemlist.append( Item(channel=item.channel, title =scrapedtitle+"[COLOR green][B] [magnet][/B][/COLOR]", url=scrapedtorrent, action="play", server="torrent", thumbnail=item.thumbnail, fanart=item.extra , folder=False) )
 
 
     

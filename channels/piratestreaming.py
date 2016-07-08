@@ -14,23 +14,16 @@ from core import logger
 from core import scrapertools
 from core.item import Item
 
-__channel__ = "piratestreaming"
-__category__ = "F"
-__type__ = "generic"
-__title__ = "piratestreaming"
-__language__ = "IT"
 
 DEBUG = config.get_setting("debug")
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("[piratestreaming.py] mainlist")
     itemlist = []
-    itemlist.append( Item(channel=__channel__, title="Novità"     , action="peliculas", url="http://www.piratestreaming.co/film-aggiornamenti.php"))
-    itemlist.append( Item(channel=__channel__, title="Per genere" , action="categorias", url="http://www.piratestreaming.co/"))
-    itemlist.append( Item(channel=__channel__, title="Cerca", action="search"))
+    itemlist.append( Item(channel=item.channel, title="Novità"     , action="peliculas", url="http://www.piratestreaming.co/film-aggiornamenti.php"))
+    itemlist.append( Item(channel=item.channel, title="Per genere" , action="categorias", url="http://www.piratestreaming.co/"))
+    itemlist.append( Item(channel=item.channel, title="Cerca", action="search"))
     return itemlist
     
 def search(item,texto):
@@ -91,7 +84,7 @@ def categorias(item):
         scrapedplot = ""
         scrapedthumbnail = ""
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="peliculas", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="peliculas", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
 
     return itemlist
 
@@ -144,7 +137,7 @@ def peliculas(item):
         except:
             scrapedplot= "Trama non disponibile"
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="findvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
 
     '''
     <div class="featuredItem"> <a href=http://www.piratestreaming.co/film/supercondriaco-ridere-fa-bene-alla-salute.html class="featuredImg img" rel="featured"><img src=http://imagerip.net/images/2014/06/19/Supercondriaco.jpg alt="featured item" style="width: 80.8px; height: 109.6px;" /></a>
@@ -177,7 +170,7 @@ def peliculas(item):
         except:
             scrapedplot= "Trama non disponibile"
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], plot=["+scrapedplot+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="findvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
 
     # Extrae el paginador
     patronvideos  = '<td align="center">[^<]+</td>[^<]+<td align="center">\s*<a href="([^"]+)">[^<]+</a>'
@@ -186,23 +179,6 @@ def peliculas(item):
 
     if len(matches)>0:
         scrapedurl = urlparse.urljoin(item.url,matches[0])
-        itemlist.append( Item(channel=__channel__, action="peliculas", title="Next Page >>" , url=scrapedurl , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="peliculas", title="Next Page >>" , url=scrapedurl , folder=True) )
 
     return itemlist
-
-# Verificaci�n autom�tica de canales: Esta funci�n debe devolver "True" si est� ok el canal.
-def test():
-    from core import servertools
-    
-    # mainlist
-    mainlist_items = mainlist(Item())
-    # Da por bueno el canal si alguno de los v�deos de "Novedades" devuelve mirrors
-    novedades_items = peliculas(mainlist_items[0])
-    bien = False
-    for novedades_item in novedades_items:
-        mirrors = servertools.find_video_items( item=novedades_item )
-        if len(mirrors)>0:
-            bien = True
-            break
-
-    return bien

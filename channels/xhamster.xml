@@ -12,9 +12,9 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/xhamster.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>6</version>
-	<date>16/05/2016</date>
-	<changes>Arreglado novedades, añadida paginacion</changes>
+	<version>7</version>
+	<date>01/07/2016</date>
+	<changes>Eliminado código innecesario.</changes>
 
 	<categories>
 		<category>adult</category>

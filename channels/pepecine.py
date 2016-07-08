@@ -17,50 +17,45 @@ from core import scrapertools
 from core import servertools
 from core.item import Item
 
-__adult__ = "false"
-__category__ = "F,S"
-__type__ = "generic"
-__title__ = "Pepecine"
-__channel__ = "pepecine"
-__language__ = "ES"
-__creationdate__ = "20151025"
-__thumbnail__ ="https://d12.usercdn.com/i/02278/nwm6todp6yyk.png"
 __url_base__ = "http://pepecine.com"
+fanart_host = "https://d12.usercdn.com/i/02278/u875vjx9c0xs.png"
 
-fanart_host= "https://d12.usercdn.com/i/02278/u875vjx9c0xs.png"
-
-
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("[pepecine.py] mainlist")
 
     itemlist = []
-    itemlist.append( myItem(channel=__channel__, action="listado", title="[COLOR 0xFFEB7600][B]Películas[/B][/COLOR]", 
-                            url=urlparse.urljoin(__url_base__,"plugins/last_update_links.php?type=movie&offset=0&limit=30"), 
-                            extra="movie", fanart=fanart_host, thumbnail="https://d5.usercdn.com/dl/i/02360/swdcjg65xzj0.png"))
-    itemlist.append( myItem(channel=__channel__, action="sub_filtrar", title="     [COLOR 0xFFEB7600]Filtrar películas por género[/COLOR]", 
-                            url=urlparse.urljoin(__url_base__,"plugins/last_update_links.php?type=movie&offset=0&limit=30"), 
-                            extra="movie", fanart=fanart_host, thumbnail="https://d5.usercdn.com/dl/i/02360/k0x1sqi7d0sb.png"))
-    itemlist.append( myItem(channel=__channel__, action="search", title="     [COLOR 0xFFEB7600]Buscar películas por título[/COLOR]", 
-                            url=urlparse.urljoin(__url_base__,"plugins/last_update_links.php?type=movie&offset=0&limit=30"), 
-                            extra="movie", fanart=fanart_host, thumbnail="https://d5.usercdn.com/dl/i/02360/196ccvz5nkfq.png"))
+    itemlist.append( Item(channel=item.channel, action="listado", title="Películas",
+                          text_color="0xFFEB7600", text_blod=True, extra="movie", fanart=fanart_host,
+                          url=urlparse.urljoin(__url_base__,"plugins/last_update_links.php?type=movie&offset=0&limit=30"),
+                          thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/channels/pepecine/movies.png"))
+    itemlist.append( Item(channel=item.channel, action="sub_filtrar", title="     Filtrar películas por género",
+                          text_color="0xFFEB7600", extra="movie", fanart=fanart_host,
+                          url=urlparse.urljoin(__url_base__,"plugins/last_update_links.php?type=movie&offset=0&limit=30"),
+                          thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/channels/pepecine/movies_filtrar.png"))
+    itemlist.append( Item(channel=item.channel, action="search", title="     Buscar películas por título",
+                          text_color="0xFFEB7600", extra="movie", fanart=fanart_host,
+                          url=urlparse.urljoin(__url_base__,"plugins/last_update_links.php?type=movie&offset=0&limit=30"),
+                          thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/channels/pepecine/movies_buscar.png"))
     
-    itemlist.append( myItem(channel=__channel__, action="listado", title="[COLOR 0xFFEB7600][B]Series[/B][/COLOR]", 
-                            url=urlparse.urljoin(__url_base__,"plugins/last_update_links.php?type=series&offset=0&limit=30"), 
-                            extra="series", fanart=fanart_host, thumbnail="https://d5.usercdn.com/dl/i/02360/a99fzwbqdaen.png"))
-    itemlist.append( myItem(channel=__channel__, action="sub_filtrar", title="     [COLOR 0xFFEB7600]Filtrar series por género[/COLOR]", 
-                            url=urlparse.urljoin(__url_base__,"plugins/last_update_links.php?type=series&offset=0&limit=30"), 
-                            extra="series", fanart=fanart_host, thumbnail="https://d5.usercdn.com/dl/i/02360/evnj5mxsvh0h.png"))
-    itemlist.append( myItem(channel=__channel__, action="search", title="     [COLOR 0xFFEB7600]Buscar series por título[/COLOR]", 
-                            url=urlparse.urljoin(__url_base__,"plugins/last_update_links.php?type=series&offset=0&limit=30"), 
-                            extra="series", fanart=fanart_host, thumbnail="https://d5.usercdn.com/dl/i/02360/him4zov0aa37.png"))
-    itemlist.append( myItem(channel=__channel__, action="listado", title="     [COLOR 0xFFEB7600]Ultimos capítulos actualizados[/COLOR]",
-                            url=urlparse.urljoin(__url_base__,"plugins/combined_json.php?&offset=0&limit=30&type=series"), 
-                            extra="series_novedades", fanart=fanart_host, thumbnail="https://d5.usercdn.com/dl/i/02360/a99fzwbqdaen.png"))
+    itemlist.append( Item(channel=item.channel, action="listado", title="Series",
+                          text_color="0xFFEB7600", text_blod=True, extra="series", fanart=fanart_host,
+                          url=urlparse.urljoin(__url_base__,"plugins/last_update_links.php?type=series&offset=0&limit=30"),
+                          thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/channels/pepecine/tv.png"))
+    itemlist.append( Item(channel=item.channel, action="sub_filtrar", title="     Filtrar series por género",
+                          text_color="0xFFEB7600", extra="series", fanart=fanart_host,
+                          url=urlparse.urljoin(__url_base__,"plugins/last_update_links.php?type=series&offset=0&limit=30"),
+                          thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/channels/pepecine/tv_filtrar.png"))
+    itemlist.append( Item(channel=item.channel, action="search", title="     Buscar series por título",
+                          text_color="0xFFEB7600", extra="series", fanart=fanart_host,
+                          url=urlparse.urljoin(__url_base__,"plugins/last_update_links.php?type=series&offset=0&limit=30"),
+                          thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/channels/pepecine/tv_buscar.png"))
+    itemlist.append( Item(channel=item.channel, action="listado", title="     Ultimos capítulos actualizados",
+                          text_color="0xFFEB7600", extra="series_novedades", fanart=fanart_host,
+                          url=urlparse.urljoin(__url_base__,"plugins/combined_json.php?&offset=0&limit=30&type=series"),
+                          thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/channels/pepecine/tv.png"))
     
-    #itemlist.append( myItem( channel=__channel__, action="test", title="Test", url="http://pepecine.com/series-online/8763-breaking-bad/seasons/1/episodes/7", extra="series", fanart=fanart_host ) )
+    #itemlist.append( Item( channel=item.channel, action="test", title="Test", url="http://pepecine.com/series-online/8763-breaking-bad/seasons/1/episodes/7", extra="series", fanart=fanart_host ) )
     return itemlist
  
 def sub_filtrar(item):
@@ -91,7 +86,8 @@ def sub_filtrar(item):
 
     for g, t in zip(generos,thumbnail):
         url=item.url + "&genre=" + g
-        itemlist.append( myItem(channel=__channel__, action="listado",title='[COLOR 0xFFEB7600]' + g.capitalize() + '[/COLOR]',url=url,extra=item.extra,thumbnail=t,fanart=fanart_host) )
+        itemlist.append( Item(channel=item.channel, action="listado", text_color="0xFFEB7600",
+                              title= g.capitalize(),url=url,extra=item.extra,thumbnail=t,fanart=fanart_host) )
    
     return itemlist 
 
@@ -154,16 +150,15 @@ def listado(item):
        
     for i in data_dict["result"]:
         infoLabels={}
-        plot={}
         idioma =''
         
         if item.extra=="movie":
             action="get_movie"
-            title='[COLOR 0xFFFFE6CC]'  + i["title"] + '[/COLOR] [COLOR 0xFFFFCE9C](' + i['year'] + ')[/COLOR]'
+            title= i["title"] + ' (' + i['year'] + ')'
             url= urlparse.urljoin(__url_base__,"peliculas-online/" + str(i["id"])) #+"-"+i["title"]).lower().replace(" ","-")))
         elif item.extra=="series": 
             action="get_temporadas"
-            title='[COLOR 0xFFFFE6CC]'  + i["title"] + '[/COLOR]'
+            title= i["title"]
             infoLabels['tvshowtitle']= i["title"]
             url= urlparse.urljoin(__url_base__,"series-online/" + str(i["id"])) #+"-"+i["title"]).lower().replace(" ","-")))
         else: #item.extra=="series_novedades": 
@@ -174,7 +169,7 @@ def listado(item):
             infoLabels['tvshowtitle']= i["title"]
             flag= scrapertools.find_single_match(i["label"],'(\s*\<img src=.*\>)')
             idioma=i["label"].replace(flag,"")
-            title='[COLOR 0xFF994D00]'  + i["title"] + '[/COLOR] [COLOR 0xFFFFCE9C]'  + item.extra + '[/COLOR] [COLOR 0xFFFFE6CC](' + idioma + ')[/COLOR]'
+            title=i["title"] + ' '  + item.extra + ' (' + idioma + ')'
             url= urlparse.urljoin(__url_base__,"series-online/" + str(i["id"])) #+"-"+i["title"]).lower().replace(" ","-"))) 
         
         if i.has_key("poster") and i["poster"]: 
@@ -201,13 +196,11 @@ def listado(item):
             infoLabels['rating']=i['imdb_rating']
         elif i['tmdb_rating']:
             infoLabels['rating']=i['tmdb_rating']
-        
-        if infoLabels: 
-            plot['infoLabels']=infoLabels
 
-        newItem = myItem(channel=__channel__, action=action, title=title, url=url, extra=item.extra,
-                         fanart=fanart, plot=str(plot), thumbnail=thumbnail, viewmode="movie_with_plot",
-                         language=idioma)
+
+        newItem = Item(channel=item.channel, action=action, title=title, url=url, extra=item.extra,
+                         fanart=fanart, thumbnail=thumbnail, viewmode="movie_with_plot",
+                         language=idioma, text_color="0xFFFFCE9C", infoLabels=infoLabels)
         newItem.year=i['year']
         newItem.contentTitle=i['title']
         if 'season' in infoLabels and infoLabels['season']:
@@ -219,15 +212,16 @@ def listado(item):
     # Paginacion
     if int(data_dict["total_results"]) == int(limit):
         url=item.url.replace('offset='+offset,'offset='+ str(int(offset)+ int(limit)))
-        itemlist.append( myItem( channel=__channel__, action="listado", title="[COLOR 0xFF994D00]>> [/COLOR] [COLOR 0xFFFFCE9C]Pagina siguiente[/COLOR][COLOR 0xFF994D00]  >>[/COLOR]", url=url, extra=item.extra, fanart=fanart_host) )
+        itemlist.append( Item( channel=item.channel, action="listado", text_color="0xFF994D00",
+                               title=">> Pagina siguiente >>", thumbnail=item.thumbnail,
+                               url=url, extra=item.extra, fanart=fanart_host) )
     
     return itemlist      
               
 def get_movie(item):
     logger.info("[pepecine.py] get_movie")
     itemlist = []
-    plot={}
-       
+
     data = re.sub(r"\n|\r|\t|\s{2}|(<!--.*?-->)","",scrapertools.cache_page(item.url))
     patron ='vars.title =(.*?)};'
     try:
@@ -235,7 +229,7 @@ def get_movie(item):
     except:
         return itemlist # Devolvemos lista vacia
     
-    infoLabels=get_infoLabels(item)
+    infoLabels=item.infoLabels
     if data_dict.has_key("actor"):
         cast=[]
         rol=[]
@@ -257,9 +251,8 @@ def get_movie(item):
             director_list.append(director['name'])    
         infoLabels['director'] = ", ".join(director_list )
     
-    
-    plot['infoLabels']= infoLabels
-    item.plot = str(plot)
+
+    item.infoLabels= infoLabels
     item.url=str(data_dict["link"])
     
     return findvideos (item)
@@ -267,7 +260,6 @@ def get_movie(item):
 def get_temporadas(item):
     logger.info("[pepecine.py] get_temporadas")
     itemlist = []
-    plot = {}
     infoLabels = {}
     
     data = re.sub(r"\n|\r|\t|\s{2}|(<!--.*?-->)","",scrapertools.cache_page(item.url))
@@ -283,11 +275,10 @@ def get_temporadas(item):
         infoLabels['titleraw'] = data_dict["title"]
         infoLabels['tvshowtitle'] = data_dict["title"]
         infoLabels['title_id'] = data_dict['id']
-        plot['infoLabels']= infoLabels
-        item.plot = str(plot)
+        item.infoLabels = infoLabels
         itemlist= get_episodios(item)
     else:
-        infoLabels=get_infoLabels(item)
+        infoLabels = item.infoLabels
         if data_dict.has_key("actor"):
             cast=[]
             rol=[]
@@ -313,9 +304,7 @@ def get_temporadas(item):
             # Si solo hay una temporada ...
             item.extra=str(data_dict['tmdb_id'])
             item.url=str(data_dict["link"])
-            if infoLabels.has_key("plot"):
-                plot['infoLabels']= infoLabels
-                item.plot = str(plot)
+            item.infoLabels = infoLabels
             itemlist= get_episodios(item)
         else: #... o si hay mas de una temporada y queremos el listado por temporada...
             item.extra=str(data_dict['tmdb_id'])
@@ -327,17 +316,22 @@ def get_temporadas(item):
                     if season['number']: infoLabels['season']=season['number']
                     if season["poster"]: item.thumbnail=re.compile("/w\d{3}/").sub("/w500/",season["poster"])
                     if season["release_date"]: infoLabels['premiered']= season['release_date']
+
+                    item.infoLabels = infoLabels
+                    title=item.title + ' ' + season["title"].lower().replace('season','temporada').capitalize()
                     
-                    if infoLabels.has_key("plot"):
-                        plot['infoLabels']= infoLabels
-                        item.plot = str(plot)
-                    title=item.title + ' [COLOR 0xFFFFCE9C]' + season["title"].lower().replace('season','temporada').capitalize() + '[/COLOR]'
-                    
-                    itemlist.append( myItem( channel=__channel__, action="get_episodios", title=title, url=str(url), extra=item.extra, fanart=item.fanart, plot=item.plot, thumbnail=item.thumbnail, viewmode="movie_with_plot") )
+                    itemlist.append( Item( channel=item.channel, action="get_episodios", title=title, url=str(url),
+                                           extra=item.extra, fanart=item.fanart, text_color="0xFFFFCE9C",
+                                           thumbnail=item.thumbnail, viewmode="movie_with_plot",
+                                           infoLabels=item.infoLabels) )
             
             if config.get_library_support() and itemlist:
                 url= urlparse.urljoin(__url_base__,"series-online/" + str(data_dict['id']))
-                itemlist.append( myItem(channel=__channel__, title="[COLOR 0xFFe5ffcc]Añadir esta serie a la biblioteca[/COLOR]", url=url, action="add_serie_to_library", extra='episodios###serie_add', show= data_dict["title"], thumbnail = 'https://d5.usercdn.com/dl/i/02360/a99fzwbqdaen.png'))
+                itemlist.append( Item(channel=item.channel,
+                                      title="Añadir esta serie a la biblioteca", url=url,
+                                      action="add_serie_to_library", extra='episodios###serie_add',
+                                      show= data_dict["title"], text_color="0xFFe5ffcc",
+                                      thumbnail = 'https://d5.usercdn.com/dl/i/02360/a99fzwbqdaen.png'))
 
     return itemlist      
 
@@ -358,8 +352,8 @@ def get_only_episodio(item):
         oTmdb= Tmdb(id_Tmdb= data_dict['tmdb_id'],tipo="tv")
     except:
         pass
-    
-    infoLabels=get_infoLabels(item)
+
+    infoLabels = item.infoLabels
     cast=[]
     rol=[]
     for actor in data_dict["actor"]:
@@ -396,9 +390,8 @@ def get_only_episodio(item):
             return False
         return True if temporada_link== int(infoLabels['season'])  and capitulo_link == int(infoLabels['episode']) else False    
     item.url= str(filter(cap, data_dict["link"])) #filtramos enlaces por capitulo
-    
-    plot['infoLabels']= infoLabels
-    item.plot = str(plot)
+
+    item.infoLabels = infoLabels
     item.extra=str(data_dict['tmdb_id'])
     
     return findvideos(item)
@@ -413,8 +406,8 @@ def get_episodios(item):
         oTmdb= Tmdb(id_Tmdb= item.extra,tipo="tv")
     except:
         pass
-    
-    infoLabels=get_infoLabels(item)
+
+    infoLabels = item.infoLabels
 
     lista_links=ast.literal_eval(item.url) 
     # Agrupar enlaces por episodios  temXcap
@@ -438,26 +431,29 @@ def get_episodios(item):
     temXcap_list=temXcap_dict.items()
     temXcap_list.sort(key=lambda x: (int(x[0].split("x")[0]),int(x[0].split("x")[1])))
     for episodio in temXcap_list:
-        title= '[COLOR 0xFF994D00]' + infoLabels['titleraw'] + '[/COLOR] [COLOR 0xFFFFCE9C](' + episodio[0] + ')[/COLOR]'
+        title= infoLabels['titleraw'] + ' (' + episodio[0] + ')'
         infoLabels['season'], infoLabels['episode']=  episodio[0].split('x')
         try:
             # añadimos sinopsis e imagenes para cada capitulo
             datos_tmdb=oTmdb.get_episodio(temporada= infoLabels['season'],capitulo= infoLabels['episode'])
             if datos_tmdb["episodio_sinopsis"] !="": infoLabels['plot']= datos_tmdb["episodio_sinopsis"]
             if datos_tmdb["episodio_imagen"] !="": item.thumbnail= datos_tmdb["episodio_imagen"]
-            if datos_tmdb["episodio_titulo"] !="": title = title + " [COLOR 0xFFFFE6CC]" + datos_tmdb["episodio_titulo"].replace('\t','') + "[/COLOR]"
+            if datos_tmdb["episodio_titulo"] !="": title = title + " " + datos_tmdb["episodio_titulo"].replace('\t','')
         except:
                 pass
-        
-        if infoLabels.has_key("plot"):
-            plot['infoLabels']= infoLabels
-            item.plot = str(plot)
-        itemlist.append( myItem( channel=__channel__, action="findvideos", title=title, url=str(episodio[1]), extra=item.extra, show=infoLabels['tvshowtitle'], fanart=item.fanart, plot=item.plot, thumbnail=item.thumbnail, viewmode="movie_with_plot") )
+
+        itemlist.append( Item( channel=item.channel, action="findvideos", title=title, url=str(episodio[1]),
+                               extra=item.extra, show=infoLabels['tvshowtitle'], fanart=item.fanart,
+                               infoLabels = infoLabels,
+                               thumbnail=item.thumbnail, viewmode="movie_with_plot", text_color="0xFFFFCE9C") )
     
     if config.get_library_support() and itemlist:
         url= urlparse.urljoin(__url_base__,"series-online/" + str(title_id))
         #url= urlparse.urljoin(__url_base__,"series-online/" + (str(infoLabels['title_id']) +"-"+ infoLabels['titleraw']))
-        itemlist.append( myItem(channel=__channel__, title="[COLOR 0xFFe5ffcc]Añadir esta serie a la biblioteca[/COLOR]", url=url, action="add_serie_to_library", extra='episodios###serie_add', show= infoLabels['tvshowtitle'], thumbnail = 'https://d5.usercdn.com/dl/i/02360/a99fzwbqdaen.png'))
+        itemlist.append( Item(channel=item.channel, title="Añadir esta serie a la biblioteca", url=url,
+                              text_color="0xFFe5ffcc", action="add_serie_to_library", extra='episodios###serie_add',
+                              show= infoLabels['tvshowtitle'],
+                              thumbnail = 'https://d5.usercdn.com/dl/i/02360/a99fzwbqdaen.png'))
 
     
     return itemlist
@@ -471,14 +467,16 @@ def findvideos(item):
         url= link["url"]
         flag= scrapertools.find_single_match(link["label"],'(\s*\<img src=.*\>)')
         idioma=link["label"].replace(flag,"")
-        calidad=(' [COLOR 0xFFFFCE9C][' +link["quality"]+ '][/COLOR]') if link["quality"] !="?" else ""
+        calidad=(' [' +link["quality"]+ ']') if link["quality"] !="?" else ""
         video= find_videos(link["url"])
     
         if video["servidor"]!="":
             servidor=video["servidor"]
             url=video["url"]
-            title= "[COLOR 0xFF994D00]Ver en " + servidor.capitalize() + "[/COLOR]" + calidad + ' [COLOR 0xFFFFE6CC](' + idioma + ')[/COLOR]'
-            itemlist.append( myItem(channel=__channel__, action="play", viewmode="list", server=servidor, title=title, thumbnail=item.thumbnail, fanart= item.fanart, plot= item.plot, url=url, folder=False) )
+            title= "Ver en " + servidor.capitalize() + calidad + ' (' + idioma + ')'
+            itemlist.append( Item(channel=item.channel, action="play", viewmode="list", server=servidor, title=title,
+                                  text_color="0xFF994D00",thumbnail=item.thumbnail, fanart= item.fanart,
+                                  plot= item.plot, url=url, folder=False) )
             
     return itemlist
     
@@ -520,129 +518,5 @@ def find_videos(url):
     
 def episodios(item):
     # Necesario para las actualizaciones automaticas
-    return get_temporadas(myItem(url=item.url, show=item.show, extra= "serie_add"))
- 
-def get_infoLabels(item):
-    try:
-        return ast.literal_eval(item.plot)['infoLabels']
-    except:
-        ret={} 
-        if item.title:
-            ret["title"]=item.title
-            ret["titleraw"]=item.title
-            ret["tvshowtitle"]=item.title
-        return ret
-    
+    return get_temporadas(Item(url=item.url, show=item.show, extra= "serie_add"))
 
- 
-    
-class myItem(Item):
-##########################################################################################
-# Hereda de Item y añade:
-#   - Formato para el titulo en las versiones xbmc, plex y html. En realidad deberia ser el launcher
-#     de cada plataforma el que formateara las etiquetas segun su sistema.
-#   - El parametro 'plot' incluye las infoLabels en el caso de que la plataforma sea XBMC/KODI o solo 
-#     la sinopsis en caso contrario. En realidad deberia ser xbmctools o equivalente quien se encargara de interpretarlo.
-##########################################################################################
-
-    def __init__(self, channel="", title="", url="", page="", thumbnail="", plot="", duration="", fanart="", action="", server="directo", extra="", show="", category = "" , language = "" , subtitle="" , folder=True, context = "",totalItems = 0, overlay = None, type="", password="", fulltitle="", viewmode="list" ):
-        Item.__init__(self, channel=channel, title=self.format_text(title), url=url, page=page, thumbnail=thumbnail,
-                  plot=self.format_plot(plot), duration=duration, fanart=fanart, action=action, server=server, extra=extra,
-                  show=show, category =category , language =language , subtitle=subtitle , folder=folder,
-                  context = context,totalItems = totalItems, overlay = overlay, type=type, password=password,
-                  fulltitle=fulltitle, viewmode=viewmode )
-        
-
-    def set_title(self,title):
-        self.title=format_text(title)
-        
-    #Devuelve el ítem en un string con todos los campos, para ver en el log
-    def tostring(self):
-      devuelve=""
-      for property, value in vars(self).iteritems():
-        if not devuelve:
-          devuelve = property + "=["+str(value)+"]"
-        else:
-          devuelve = devuelve + " ," + property + "=["+str(value)+"]"
-
-      return devuelve
-        
-    def format_text(self,text):
-        '''
-        [B]bold[/B] - bold text.
-        [I]italics[/I] - italic text.
-        [CR] - carriage return (line break).
-        [COLOR red]red text[/COLOR] - colored text. http://www.w3schools.com/tags/ref_colornames.asp
-        [COLOR 0xAARRGGBB]color text[/COLOR] colored text. http://www.w3schools.com/tags/ref_colorpicker.asp
-        
-        No implementados aun:
-        [UPPERCASE]force text uppercase[/UPPERCASE] - force text to uppercase.
-        [LOWERCASE]Force Text Lowercase[/LOWERCASE] - force text to lowercase.
-        [CAPITALIZE]Force first letter to uppercase[/CAPITALIZE] - makes the first letter of a sentence a capital letter (Isengard only).
-        '''
-        
-        bbcode= (('[B]','<b>'),
-                 ('[/B]','</b>'),
-                 ('[I]','<i>'),
-                 ('[/I]','</i>'),
-                 ('[/COLOR]','</span>'),
-                 ('[UPPERCASE]',''),
-                 ('[/UPPERCASE]',''),
-                 ('[LOWERCASE]',''),
-                 ('[/LOWERCASE]',''),
-                 ('[CAPITALIZE]',''),
-                 ('[/CAPITALIZE]',''),
-                 ('[CR]','<br>'))
-        
-        if not text or config.is_xbmc():
-            return text
-        elif config.get_platform().startswith("plex") or config.get_platform().startswith("mediaserver"):
-            # Plex o html: adaptar bbcode (basado de la funcion bbcode_kodi2html de robalo) 
-            
-            # COLOR
-            color_orig= ('yellow', 'white')
-            color_sust= ('gold', 'auto')
-            colores = re.findall(r'\[COLOR\s([^\]]+)\]',text)
-            for color in colores:
-                tag_orig = '\[COLOR\s' + color + '\]'
-                if color.startswith('0x'):
-                    color= "#" + color[4:]
-                elif color in color_orig:
-                    color= color_sust[color_orig.index(color)]
-                text = re.sub(tag_orig, '<span style="color:' + color + '">', text)
-            # Otros TAGs
-            for b in bbcode:
-                text = text.replace(b[0],b[1])
-        else:
-            # Plataforma desconocida: eliminar bbcode
-            text = re.sub(r'\[COLOR\s([^\]]+)\]','', text)
-            for b in bbcode:
-                text = text.replace(b[0],'')
-            
-        return text           
-    
-    def format_plot(self,plot):
-        ret= plot
-        
-        if not plot:
-            return ""
-        elif config.is_xbmc():
-            try:
-                # Comprobamos si existe la funcion xbmctools.set_infoLabels()
-                from platformcode import xbmctools
-                if hasattr(xbmctools, "set_infoLabels"):
-                    return ret
-            except:
-                pass
-                
-        # Si no es xbmc o si no existe xbmctools.set_infoLabels():
-        #       intentamos recuperar la sinopsis del infoLabels
-        try:
-            if plot.startswith("{'infoLabels'"):
-                infoLabels=ast.literal_eval(plot)['infoLabels']
-                ret= infoLabels['plot']
-        except:
-            pass
-
-        return ret
-        

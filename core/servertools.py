@@ -239,8 +239,16 @@ def resolve_video_urls_for_playing(server,url,video_password="",muestra_dialogo=
                 if muestra_dialogo:
                   progreso.update((100 / len(opciones)) * opciones.index(premium)  , "Conectando con "+premium)
                 exec "from servers import "+premium+" as premium_conector"
-                video_urls.extend(premium_conector.get_video_url( page_url=url , premium=True , user=config.get_setting(premium+"user") , password=config.get_setting(premium+"password"), video_password=video_password ))
-
+                if premium == "realdebrid":
+                    if config.is_xbmc() or config.get_platform() == "mediaserver":
+                        debrid_urls = [premium_conector.get_video_url( page_url=url , premium=True , video_password=video_password )]
+                        if not "REAL-DEBRID:" in debrid_urls[0][0]:
+                            video_urls.extend(debrid_urls)
+                        else:
+                            if len(video_urls) == 0:
+                                return video_urls, False, debrid_urls[0][0]
+                else:
+                    video_urls.extend(premium_conector.get_video_url( page_url=url , premium=True , user=config.get_setting(premium+"user") , password=config.get_setting(premium+"password"), video_password=video_password ))
 
             if muestra_dialogo:
                 progreso.update( 100 , "Proceso finalizado")

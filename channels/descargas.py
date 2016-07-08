@@ -22,7 +22,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pelisalacarta 4.  If not, see <http://www.gnu.org/licenses/>.
 # ------------------------------------------------------------
-# Lista de vídeos descargados
+# Lista de vÃ­deos descargados
 # ------------------------------------------------------------
 import os
 import sys
@@ -38,16 +38,12 @@ from platformcode import library
 import favoritos
 
 CHANNELNAME = "descargas"
-DEBUG = True
+DEBUG = config.get_setting("debug")
 
 DOWNLOAD_LIST_PATH = config.get_setting("downloadlistpath")
 IMAGES_PATH = os.path.join(config.get_runtime_path(), 'resources', 'images')
 ERROR_PATH = library.join_path(DOWNLOAD_LIST_PATH, 'error')
 usingsamba = samba.usingsamba(DOWNLOAD_LIST_PATH)
-
-
-def isGeneric():
-    return True
 
 
 def mainlist(item):
@@ -62,7 +58,7 @@ def mainlist(item):
     itemlist.append(Item(channel="descargas", action="pendientes", title="Descargas pendientes"))
     itemlist.append(Item(channel="descargas", action="errores", title="Descargas con error"))
 
-    # Añade al listado de XBMC
+    # AÃ±ade al listado de XBMC
     try:
         ficheros = os.listdir(downloadpath)
         for fichero in ficheros:
@@ -92,7 +88,7 @@ def pendientes(item):
     else:
         ficheros = os.listdir(DOWNLOAD_LIST_PATH)
 
-    # Ordena el listado por orden de incorporación
+    # Ordena el listado por orden de incorporaciÃ³n
     ficheros.sort()
     
     # Crea un listado con las entradas de la lista de descargas
@@ -108,7 +104,7 @@ def pendientes(item):
                         ", fulltitle="+fulltitle+", plot="+plot)
 
             # Crea la entrada
-            # En la categoría va el nombre del fichero para poder borrarlo
+            # En la categorÃ­a va el nombre del fichero para poder borrarlo
             itemlist.append(Item(channel=canal, action="play", url=url, server=server, title=titulo,
                                  fulltitle=fulltitle, thumbnail=thumbnail, plot=plot, fanart=thumbnail,
                                  extra=os.path.join(DOWNLOAD_LIST_PATH, fichero), folder=False))
@@ -135,7 +131,7 @@ def errores(item):
     else:
         ficheros = os.listdir(ERROR_PATH)
 
-    # Ordena el listado por orden de incorporación
+    # Ordena el listado por orden de incorporaciÃ³n
     ficheros.sort()
     
     # Crea un listado con las entradas de la lista de descargas
@@ -148,7 +144,7 @@ def errores(item):
                 canal = "descargas"
 
             # Crea la entrada
-            # En la categoría va el nombre del fichero para poder borrarlo
+            # En la categorÃ­a va el nombre del fichero para poder borrarlo
             itemlist.append(Item(channel=canal, action="play", url=url, server=server, title=titulo,
                                  fulltitle=fulltitle, thumbnail=thumbnail, plot=plot, fanart=thumbnail,
                                  category="errores", extra=os.path.join(ERROR_PATH, fichero), folder=False))
@@ -182,17 +178,17 @@ def downloadall(item):
         logger.info("[descargas.py] fichero="+fichero)
 
         if fichero != "error" and fichero != ".DS_Store":
-            # Descarga el vídeo
+            # Descarga el vÃ­deo
             try:
                 # Lee el bookmark
                 canal, titulo, thumbnail, plot, server, url, fulltitle = \
                     favoritos.readbookmark(fichero, DOWNLOAD_LIST_PATH)
                 logger.info("[descargas.py] url="+url)
 
-                # Averigua la URL del vídeo
+                # Averigua la URL del vÃ­deo
                 video_urls, puedes, motivo = servertools.resolve_video_urls_for_playing(server, url, "", False)
 
-                # La última es la de mayor calidad, lo mejor para la descarga
+                # La Ãºltima es la de mayor calidad, lo mejor para la descarga
                 mediaurl = video_urls[len(video_urls)-1][1]
                 logger.info("[descargas.py] mediaurl="+mediaurl)
 
@@ -298,9 +294,9 @@ def delete_error_bookmark(fullfilename, deletepath=ERROR_PATH):
 
 
 def mover_descarga_error_a_pendiente(fullfilename):
-    # La categoría es el nombre del fichero en favoritos, así que lee el fichero
+    # La categorÃ­a es el nombre del fichero en favoritos, asÃ­ que lee el fichero
     canal, titulo, thumbnail, plot, server, url, fulltitle = favoritos.readbookmark(fullfilename, "")
-    # Lo añade a la lista de descargas
+    # Lo aÃ±ade a la lista de descargas
     savebookmark(canal, titulo, url, thumbnail, server, plot, fulltitle)
     # Y lo borra de la lista de errores
     os.remove(fullfilename)

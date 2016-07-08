@@ -96,9 +96,3 @@ def find_videos(data):
             logger.info("  url duplicada=" + url)
 
     return devuelve
-
-
-def test():
-    video_urls = get_video_url("http://streamin.to/embed-olnmqfuh1bml.html")
-
-    return len(video_urls) > 0

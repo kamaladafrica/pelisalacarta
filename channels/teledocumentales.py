@@ -1,8 +1,8 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para cine-adicto.com by Bandavi
-# Actualización Carles Carmona 15/08/2011
+# ActualizaciÃ³n Carles Carmona 15/08/2011
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 import re
@@ -14,25 +14,16 @@ from core import scrapertools
 from core import servertools
 from core.item import Item
 
-__channel__ = "teledocumentales"
-__category__ = "D"
-__type__ = "generic"
-__title__ = "Teledocumentales"
-__language__ = "ES"
-__creationdate__ = "20111019"
-
 
 DEBUG = config.get_setting("debug")
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("[teledocumentales.py] mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, action="ultimo"        , title="Últimos Documentales"    , url="http://www.teledocumentales.com/"))
-    itemlist.append( Item(channel=__channel__, action="ListaCat"      , title="Listado por Genero"      , url="http://www.teledocumentales.com/"))
+    itemlist.append( Item(channel=item.channel, action="ultimo"        , title="Ãšltimos Documentales"    , url="http://www.teledocumentales.com/", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, action="ListaCat"      , title="Listado por Genero"      , url="http://www.teledocumentales.com/"))
     
     return itemlist
 
@@ -54,12 +45,12 @@ def ultimo(item):
         scrapedurl = scrapertools.get_match(match,'<a href="([^"]+)"')
         scrapedthumbnail = scrapertools.get_match(match,'<img src="([^"]+)" alt="[^"]+"')
         scrapedplot = scrapertools.get_match(match,'<div class="excerpt">([^<]+)</div>')
-        itemlist.append( Item(channel=item.channel , action="play"  , title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail, plot=scrapedplot , fanart=scrapedthumbnail, viewmode="movie_with_plot"))
+        itemlist.append( Item(channel=item.channel , action="play"  , title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail, plot=scrapedplot , fanart=scrapedthumbnail))
 
     # Extrae la marca de siguiente pagina
     try:
         next_page = scrapertools.get_match(data,'<a class="next" href="([^"]+)">')
-        itemlist.append( Item(channel=item.channel , action="ultimo" , title=">> Página siguiente" , url=urlparse.urljoin(item.url,next_page)))
+        itemlist.append( Item(channel=item.channel , action="ultimo" , title=">> PÃ¡gina siguiente" , url=urlparse.urljoin(item.url,next_page, viewmode="movie_with_plot")))
     except:
         pass
 
@@ -96,7 +87,7 @@ def ListaCat(item):
             scrapedthumbnail = match2[0].replace(" ","%20")
             scrapedplot = ""
             
-            itemlist.append( Item(channel=item.channel , action="ultimo"  , title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail, plot=scrapedplot , fanart=scrapedthumbnail ))
+            itemlist.append( Item(channel=item.channel , action="ultimo"  , title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail, plot=scrapedplot , fanart=scrapedthumbnail , viewmode="movie_with_plot"))
 
     return itemlist
 
@@ -114,23 +105,6 @@ def play(item):
     
     for videoitem in itemlist:
         videoitem.title = item.title
-        videoitem.channel = __channel__
+        videoitem.channel = item.channel
     
     return itemlist
-
-
-# Verificación automática de canales: Esta función debe devolver "True" si todo está ok en el canal.
-def test():
-    # mainlist
-    mainlist_items = mainlist(Item())
-    
-    # Da por bueno el canal si alguno de los vídeos de "Ultimos videos" devuelve mirrors
-    ultimos_items = ultimo(mainlist_items[0])
-    
-    bien = False
-    for ultimo_item in ultimos_items:
-        play_items = detail(ultimo_item)
-        if len(play_items)>0:
-            return True
-    
-    return False

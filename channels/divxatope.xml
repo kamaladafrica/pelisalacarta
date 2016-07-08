@@ -12,18 +12,18 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/divxatope.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>6</version>
+	<version>7</version>
 
 	<changes>
+		<change>
+			<date>01/07/16</date>
+			<autor>SeiTaN</autor>
+			<description>Eliminado código innecesario.</description>
+		</change>
 		<change> 
 			<date>29/04/16</date>
 			<autor>super_berny</autor>
 			<description>Adaptar a Buscador global y Novedades Peliculas y Series</description>
-		</change>
-		<change> 
-			<date>31/12/2015</date>
-			<autor></autor>
-			<description>Corregida expresion regular para los torrents</description>
 		</change>
 	</changes>
 

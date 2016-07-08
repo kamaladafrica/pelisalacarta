@@ -11,7 +11,7 @@ from core import config
 from core import logger
 from core import scrapertools
 
-DEBUG = True
+DEBUG = config.get_setting("debug")
 CHANNELNAME = "xmltoplaylist"
 PLAYLIST_XML_FILENAME_TEMP = "video_playlist.xml.temp.pls"
 FULL_FILENAME_PATH_XML = os.path.join( config.get_setting("downloadpath"), PLAYLIST_XML_FILENAME_TEMP )

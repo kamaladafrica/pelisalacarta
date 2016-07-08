@@ -13,14 +13,13 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/ayuda.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>2</version>
-	<date>22/06/2016</date>
+	<version>3</version>
+	<date>08/07/2016</date>
 	<changes>
-		v.2:
-			- Fixed: No more infinite bucle when clicking on "update tv show episodes and local library".
-			- Fixed: The "advancedsettings.xml" file optimization method now makes a backup before modifying it and, instead of replacing the file, it modifies the file and substitutes the optimised settings for streaming, everything in the existing "advancedsettings.xml" file.
-		v.1:- First pelisalacarta 4 release</changes>
-
+		v.3: - Fixed: No more infinite bucle when clicking on "update tv show episodes and local library".
+			 - Fixed: The "advancedsettings.xml" file optimization method now makes a backup before modifying it and, instead of replacing the file, it modifies the file and substitutes the optimised settings for streaming, everything in the existing "advancedsettings.xml" file.
+		v.2: Eliminado código innecesario. (22/06/2016)
+		v.1: First pelisalacarta 4 release</changes>
 	<categories>
 		<category>movie</category>
 	</categories>

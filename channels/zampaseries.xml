@@ -6,10 +6,10 @@
 	<update_url></update_url>
 	<active>false</active>
 	<include_in_global_search>false</include_in_global_search>
-	<version>0</version>
+	<version>1</version>
 	<adult>false</adult>
-	<date></date>
-	<changes></changes>
+	<date>01/07/2016</date>
+	<changes>Eliminado código innecesario.</changes>
 
 	<fanart></fanart>
 	<thumbnail>http://media.tvalacarta.info/pelisalacarta/squares/pelispekes.png</thumbnail>

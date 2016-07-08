@@ -103,7 +103,7 @@ def cachePage(url,post=None,headers=DEFAULT_HEADERS,modoCache=CACHE_ACTIVA, time
 
         # Si no hay ninguno, descarga
         if cachedFile == "":
-            logger.debug("[scrapertools.py] No está en cache")
+            logger.info("pelisalacarta.core.scrapertools No está en cache")
 
             # Lo descarga
             data = downloadpage(url,post,headers)
@@ -132,7 +132,7 @@ def cachePage(url,post=None,headers=DEFAULT_HEADERS,modoCache=CACHE_ACTIVA, time
 
         # Si no hay ninguno, descarga
         if cachedFile == "":
-            logger.debug("[scrapertools.py] No está en cache")
+            logger.info("pelisalacarta.core.scrapertools No está en cache")
 
             # Lo descarga
             data = downloadpage(url,post,headers)
@@ -158,7 +158,7 @@ def cachePage(url,post=None,headers=DEFAULT_HEADERS,modoCache=CACHE_ACTIVA, time
             # Si ha cambiado
             if updated:
                 # Borra el viejo
-                logger.debug("[scrapertools.py] Borrando "+cachedFile)
+                logger.info("pelisalacarta.core.scrapertools Borrando "+cachedFile)
                 os.remove(cachedFile)
 
                 # Graba en cache el nuevo
@@ -184,17 +184,17 @@ def getCacheFileNames(url):
     # Obtiene el ID de la cache (md5 de la URL)
     cacheId = get_md5(url)
 
-    logger.debug("[scrapertools.py] cacheId="+cacheId)
+    logger.info("pelisalacarta.core.scrapertools cacheId="+cacheId)
 
     # Timestamp actual
     nowtimestamp = time.strftime("%Y%m%d%H%M%S", time.localtime())
-    logger.debug("[scrapertools.py] nowtimestamp="+nowtimestamp)
+    logger.info("pelisalacarta.core.scrapertools nowtimestamp="+nowtimestamp)
 
     # Nombre del fichero
     # La cache se almacena en una estructura CACHE + URL
     ruta = os.path.join( siteCachePath , cacheId[:2] , cacheId[2:] )
     newFile = os.path.join( ruta , nowtimestamp + ".cache" )
-    logger.debug("[scrapertools.py] newFile="+newFile)
+    logger.info("pelisalacarta.core.scrapertools newFile="+newFile)
     if not os.path.exists(ruta):
         os.makedirs( ruta )
 
@@ -206,18 +206,18 @@ def getCacheFileNames(url):
 # Busca ese fichero en la cache
 def getCachedFile(siteCachePath,cacheId):
     mascara = os.path.join(siteCachePath,cacheId[:2],cacheId[2:],"*.cache")
-    logger.debug("[scrapertools.py] mascara="+mascara)
+    logger.info("pelisalacarta.core.scrapertools mascara="+mascara)
     import glob
     ficheros = glob.glob( mascara )
-    logger.debug("[scrapertools.py] Hay %d ficheros con ese id" % len(ficheros))
+    logger.info("pelisalacarta.core.scrapertools Hay %d ficheros con ese id" % len(ficheros))
 
     cachedFile = ""
 
     # Si hay más de uno, los borra (serán pruebas de programación) y descarga de nuevo
     if len(ficheros)>1:
-        logger.debug("[scrapertools.py] Cache inválida")
+        logger.info("pelisalacarta.core.scrapertools Cache inválida")
         for fichero in ficheros:
-            logger.debug("[scrapertools.py] Borrando "+fichero)
+            logger.info("pelisalacarta.core.scrapertools Borrando "+fichero)
             os.remove(fichero)
 
         cachedFile = ""
@@ -231,13 +231,13 @@ def getCachedFile(siteCachePath,cacheId):
 def getSiteCachePath(url):
     # Obtiene el dominio principal de la URL
     dominio = urlparse.urlparse(url)[1]
-    logger.debug("[scrapertools.py] dominio="+dominio)
+    logger.info("pelisalacarta.core.scrapertools dominio="+dominio)
     nombres = dominio.split(".")
     if len(nombres)>1:
         dominio = nombres[len(nombres)-2]+"."+nombres[len(nombres)-1]
     else:
         dominio = nombres[0]
-    logger.debug("[scrapertools.py] dominio="+dominio)
+    logger.info("pelisalacarta.core.scrapertools dominio="+dominio)
 
     # Crea un directorio en la cache para direcciones de ese dominio
     siteCachePath = os.path.join( CACHE_PATH , dominio )
@@ -253,7 +253,7 @@ def getSiteCachePath(url):
         except:
             logger.error("[scrapertools.py] Error al crear directorio "+siteCachePath)
 
-    logger.debug("[scrapertools.py] siteCachePath="+siteCachePath)
+    logger.info("pelisalacarta.core.scrapertools siteCachePath="+siteCachePath)
 
     return siteCachePath
 
@@ -1243,11 +1243,11 @@ def get_headers_from_response(url,post=None,headers=DEFAULT_HEADERS):
         logger.info("pelisalacarta.core.scrapertools petición POST")
 
     # Array de cabeceras
-    logger.info("pelisalacarta.core.scrapertools ---------------------------")
+    if DEBUG_LEVEL: logger.info("pelisalacarta.core.scrapertools ---------------------------")
     for header in headers:
-        logger.info("pelisalacarta.core.scrapertools header=%s" % str(header[0]))
+        if DEBUG_LEVEL: logger.info("pelisalacarta.core.scrapertools header=%s" % str(header[0]))
         txheaders[header[0]]=header[1]
-    logger.info("pelisalacarta.core.scrapertools ---------------------------")
+    if DEBUG_LEVEL: logger.info("pelisalacarta.core.scrapertools ---------------------------")
 
     # Construye el request
     req = Request(url, post, txheaders)
@@ -1259,14 +1259,14 @@ def get_headers_from_response(url,post=None,headers=DEFAULT_HEADERS):
     # Lee los datos y cierra
     #data=handle.read()
     info = handle.info()
-    logger.info("pelisalacarta.core.scrapertools Respuesta")
-    logger.info("pelisalacarta.core.scrapertools ---------------------------")
+    if DEBUG_LEVEL: logger.info("pelisalacarta.core.scrapertools Respuesta")
+    if DEBUG_LEVEL: logger.info("pelisalacarta.core.scrapertools ---------------------------")
     location_header=""
     for header in info:
-        logger.info("pelisalacarta.core.scrapertools "+header+"="+info[header])
+        if DEBUG_LEVEL: logger.info("pelisalacarta.core.scrapertools "+header+"="+info[header])
         return_headers.append( [header,info[header]] )
     handle.close()
-    logger.info("pelisalacarta.core.scrapertools ---------------------------")
+    if DEBUG_LEVEL: logger.info("pelisalacarta.core.scrapertools ---------------------------")
 
     # Tiempo transcurrido
     fin = time.clock()
@@ -1553,20 +1553,34 @@ def anti_cloudflare(url, host="", headers=DEFAULT_HEADERS, post=None):
 '''
 
 def anti_cloudflare(url, host="", headers=DEFAULT_HEADERS, post=None, location=False):
-    logger.info("anti_cloudflare url="+url+", host="+host+", headers="+repr(headers)+", post="+repr(post)+", location="+repr(location))
+    logger.info("pelisalacarta.core.scrapertools anti_cloudflare url="+url+", host="+host+", headers="+repr(headers)+", post="+repr(post)+", location="+repr(location))
 
     if host=="":
         host = "http://"+get_domain_from_url(url)+"/"
-        logger.info("anti_cloudflare host="+host)
+        logger.info("pelisalacarta.core.scrapertools anti_cloudflare host="+host)
 
     respuesta = ""
+
     try:
         resp_headers = get_headers_from_response(url, headers=headers)
+        logger.info("pelisalacarta.core.scrapertools resp_headers="+repr(resp_headers))
+
         resp_headers = dict(resp_headers)
+        logger.info("pelisalacarta.core.scrapertools resp_headers="+repr(resp_headers))
+
         if resp_headers.has_key('location'): 
             respuesta = resp_headers['location']
+
     except urllib2.HTTPError, e:
+        import traceback
+        logger.info("pelisalacarta.core.scrapertools "+traceback.format_exc())
+
         resp_headers = e.headers
+        logger.info("pelisalacarta.core.scrapertools error capturado, resp_headers="+repr(resp_headers))
+
+        resp_headers = dict(resp_headers)
+        logger.info("pelisalacarta.core.scrapertools error capturado, resp_headers="+repr(resp_headers))
+
 
     if 'refresh' in resp_headers:
         time.sleep(int(resp_headers['refresh'][:1]))

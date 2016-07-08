@@ -15,8 +15,6 @@ from core.item import Item
 
 DEBUG = config.get_setting("debug")
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("[tupornotv.py] mainlist")
@@ -233,19 +231,3 @@ def play(item):
     itemlist.append( Item(channel=item.channel, action="play", title=item.title , url=url , thumbnail=item.thumbnail , plot=item.plot, server="Directo", folder=False) )
 
     return itemlist
-
-# Verificación automática de canales: Esta función debe devolver "True" si todo está ok en el canal.
-def test():
-    bien = True
-
-    # mainlist
-    mainlist_items = mainlist(Item())
-    videos_items = novedades(mainlist_items[0])
-    
-    for video_item in videos_items:
-        mirrors = play(video_item)
-        if len(mirrors)>0:
-            return True
-
-    print "No hay ningún vídeo en la sección de novedades"
-    return False

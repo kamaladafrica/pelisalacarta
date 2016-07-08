@@ -45,14 +45,12 @@ def decode(key):
 
 get_api_url()
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("[beeg.py] mainlist")
     get_api_url()
     itemlist = []
-    itemlist.append( Item(channel=item.channel, action="videos"            , title="Útimos videos"       , url=url_api + "/index/main/0/pc"))
+    itemlist.append( Item(channel=item.channel, action="videos"            , title="Útimos videos"       , url=url_api + "/index/main/0/pc", viewmode="movie"))
     itemlist.append( Item(channel=item.channel, action="listcategorias"    , title="Listado categorias"  , url=url_api + "/index/main/0/pc"))
     itemlist.append( Item(channel=item.channel, action="search"            , title="Buscar"              , url=url_api + "/index/search/0/pc?query=%s" ))
     return itemlist
@@ -69,13 +67,13 @@ def videos(item):
       thumbnail = "http://img.beeg.com/236x177/" + Video["id"].encode("utf8") +  ".jpg"
       url = url_api + "/video/" + Video["id"].encode("utf8")
       title = Video["title"].encode("utf8")
-      itemlist.append( Item(channel=item.channel, action="play" , title=title , url=url, thumbnail=thumbnail, plot="", show="", viewmode="movie", folder=True))
+      itemlist.append( Item(channel=item.channel, action="play" , title=title , url=url, thumbnail=thumbnail, plot="", show="", folder=True))
       
     #Paginador
     Actual = int(scrapertools.get_match(item.url,url_api + '/index/[^/]+/([0-9]+)/pc'))
     if JSONData["pages"]-1 > Actual:
       scrapedurl = item.url.replace("/"+str(Actual)+"/", "/"+str(Actual+1)+"/")
-      itemlist.append( Item(channel=item.channel, action="videos", title="Página Siguiente" , url=scrapedurl , thumbnail="" , folder=True) )
+      itemlist.append( Item(channel=item.channel, action="videos", title="Página Siguiente" , url=scrapedurl , thumbnail="" , folder=True, viewmode="movie") )
 
 
     
@@ -93,7 +91,7 @@ def listcategorias(item):
       url = url_api + "/index/tag/0/pc?tag=" + Tag.encode("utf8")
       title = Tag.encode("utf8")
       title = title[:1].upper() + title[1:]
-      itemlist.append( Item(channel=item.channel, action="videos" , title=title , url=url, folder=True))
+      itemlist.append( Item(channel=item.channel, action="videos" , title=title , url=url, folder=True, viewmode="movie"))
 
     return itemlist
   
@@ -134,15 +132,3 @@ def play(item):
       
     itemlist.sort(key=lambda item: item.fulltitle.lower(), reverse=True)
     return itemlist
-
-# Verificación automática de canales: Esta función debe devolver "True" si está ok el canal.
-def test():
-    # mainlist
-    mainlist_items = mainlist(Item())
-    videos_items = videos(mainlist_items[0])
-    play_items = play(videos_items[0])
-
-    if len(play_items)==0:
-        return False
-
-    return True

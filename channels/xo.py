@@ -12,17 +12,9 @@ from core import logger
 from core import scrapertools
 from core.item import Item
 
-__channel__ = "xo"
-__category__ = "F,S"
-__type__ = "generic"
-__title__ = "XO"
-__language__ = "RO"
-__creationdate__ = "20131223"
 
 DEBUG = config.get_setting("debug")
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("pelisalacarta.channels.xo mainlist")
@@ -56,10 +48,10 @@ def novedades(item):
         scrapedplot = ""
         #if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
         if (DEBUG): logger.info("url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"], title=["+scrapedtitle+"]")
-        itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , url=urlparse.urljoin(item.url,scrapedurl) , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="findvideos", title=scrapedtitle , url=urlparse.urljoin(item.url,scrapedurl) , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
     
 
     next_page = scrapertools.find_single_match(data,'<a href="([^"]+)">\&gt\;</a>')	
     if next_page!="":
-       itemlist.append( Item(channel=__channel__, action="novedades", title=">> Página urmatoare" , url=urlparse.urljoin(item.url,next_page) , folder=True) )
+       itemlist.append( Item(channel=item.channel, action="novedades", title=">> Página urmatoare" , url=urlparse.urljoin(item.url,next_page) , folder=True) )
     return itemlist

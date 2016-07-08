@@ -14,8 +14,6 @@ from core.item import Item
 
 DEBUG = config.get_setting("debug")
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("[tubehentai.py] mainlist")
@@ -91,18 +89,3 @@ def play(item):
     itemlist.append( Item(channel=item.channel, title="" , url=url , server=server, folder=False) )
 
     return itemlist
-
-# Verificación automática de canales: Esta función debe devolver "True" si todo está ok en el canal.
-def test():
-    bien = True
-
-    # mainlist
-    videos_items = mainlist(Item())
-    
-    for video_item in videos_items:
-        mirrors = play(video_item)
-        if len(mirrors)>0:
-            return True
-
-    print "No hay ningún vídeo en la sección de novedades"
-    return False

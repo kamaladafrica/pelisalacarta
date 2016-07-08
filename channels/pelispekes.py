@@ -12,16 +12,9 @@ from core import scrapertools
 from core import servertools
 from core.item import Item
 
-__channel__ = "pelispekes"
-__category__ = "F"
-__type__ = "generic"
-__title__ = "Pelis Pekes"
-__language__ = "ES"
 
 DEBUG = config.get_setting("debug")
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("[pelispekes.py] mainlist")
@@ -64,12 +57,12 @@ def mainlist(item):
         thumbnail = scrapedthumbnail
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=item.channel , action="findvideos"   , title=title , url=url , thumbnail=thumbnail, fanart=thumbnail, plot=plot , viewmode="movie", hasContentDetails="true", contentTitle=title, contentThumbnail=thumbnail))
+        itemlist.append( Item(channel=item.channel , action="findvideos"   , title=title , url=url , thumbnail=thumbnail, fanart=thumbnail, plot=plot , hasContentDetails="true", contentTitle=title, contentThumbnail=thumbnail))
 
     # Extrae la pagina siguiente
     next_page_url = scrapertools.find_single_match(data,'<a href="([^"]+)"><i class="glyphicon glyphicon-chevron-right')
     if next_page_url!="":
-        itemlist.append( Item(channel=item.channel , action="mainlist"   , title=">> Página siguiente" , url=next_page_url ))
+        itemlist.append( Item(channel=item.channel , action="mainlist"   , title=">> Página siguiente" , url=next_page_url , viewmode="movie"))
 
     return itemlist
 
@@ -92,20 +85,3 @@ def findvideos(item):
     logger.info("pelisalacarta.channels.zpeliculas findvideos plot="+item.plot)
 
     return servertools.find_video_items(item=item,data=data)
-
-# Verificación automática de canales: Esta función debe devolver "True" si está ok el canal.
-def test():
-    from core import servertools
-    
-    # mainlist
-    mainlist_items = mainlist(Item())
-    # Da por bueno el canal si alguno de los vídeos de "Novedades" devuelve mirrors
-    novedades_items = novedades(mainlist_items[0])
-    bien = False
-    for novedades_item in novedades_items:
-        mirrors = servertools.find_video_items( item=novedades_item )
-        if len(mirrors)>0:
-            bien = True
-            break
-
-    return bien

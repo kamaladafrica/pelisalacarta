@@ -15,8 +15,6 @@ from core.item import Item
 
 DEBUG = config.get_setting("debug")
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("[pornoactricesx.py] mainlist")
@@ -131,20 +129,3 @@ def listactrices(item):
       itemlist.append( Item(channel=item.channel, action="listactrices" , title="Página Siguiente", url=url))
 
     return itemlist
-    
-# Verificación automática de canales: Esta función debe devolver "True" si todo está ok en el canal.
-def test():
-    bien = True
-
-    # mainlist
-    mainlist_itemlist = mainlist(Item())
-    video_itemlist = videos(mainlist_itemlist[0])
-    
-    # Si algún video es reproducible, el canal funciona
-    for video_item in video_itemlist:
-        play_itemlist = play(video_item)
-
-        if len(play_itemlist)>0:
-            return True
-
-    return False

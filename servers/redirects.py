@@ -114,8 +114,3 @@ def find_videos(data):
             logger.info("  url duplicada="+url)
 
     return devuelve
-
-
-def test():
-    video_urls = get_video_url("https://animeflv.net/embed_izanagi.php?key=z5WRoFecibyFo7-rjVbGcMGSu7KkzZ2biQ")
-    return len(video_urls)>0

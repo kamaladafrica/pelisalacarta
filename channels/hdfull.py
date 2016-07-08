@@ -17,18 +17,10 @@ from core.item import Item
 from platformcode import platformtools
 from core import servertools
 
-__channel__ = "hdfull"
-__category__ = "F,S,D"
-__type__ = "generic"
-__title__ = "HDFull"
-__language__ = "ES"
 
 host = "http://hdfull.tv"
+account = ( config.get_setting('hdfulluser', 'hdfull') != "" )
 
-account = ( config.get_setting('hdfulluser',__channel__) != "" )
-
-def isGeneric():
-    return True
 
 def settingCanal(item):
     return platformtools.show_channel_settings()
@@ -41,7 +33,7 @@ def login():
     patron = "<input type='hidden' name='__csrf_magic' value=\"([^\"]+)\" />"
     sid = scrapertools.find_single_match(data, patron)
 
-    post = urllib.urlencode({'__csrf_magic':sid})+"&username="+config.get_setting('hdfulluser',__channel__)+"&password="+config.get_setting('hdfullpassword',__channel__)+"&action=login"
+    post = urllib.urlencode({'__csrf_magic':sid})+"&username="+config.get_setting('hdfulluser', 'hdfull')+"&password="+config.get_setting('hdfullpassword', 'hdfull')+"&action=login"
 
     data = scrapertools.cache_page(host,post=post)
 
@@ -50,14 +42,14 @@ def mainlist(item):
 
     itemlist = []
 
-    itemlist.append( Item( channel=__channel__, action="menupeliculas", title="Películas", url=host, folder=True ) )
-    itemlist.append( Item( channel=__channel__, action="menuseries", title="Series", url=host, folder=True ) )
-    itemlist.append( Item( channel=__channel__, action="search", title="Buscar..." ) )
+    itemlist.append( Item( channel=item.channel, action="menupeliculas", title="Películas", url=host, folder=True ) )
+    itemlist.append( Item( channel=item.channel, action="menuseries", title="Series", url=host, folder=True ) )
+    itemlist.append( Item( channel=item.channel, action="search", title="Buscar..." ) )
     if not account:
-        itemlist.append( Item( channel=__channel__ , title=bbcode_kodi2html("[COLOR orange][B]Habilita tu cuenta para activar los items de usuario...[/B][/COLOR]"), action="settingCanal", url="" ) )
+        itemlist.append( Item( channel=item.channel , title=bbcode_kodi2html("[COLOR orange][B]Habilita tu cuenta para activar los items de usuario...[/B][/COLOR]"), action="settingCanal", url="" ) )
     else:
         login()
-        itemlist.append( Item(channel=__channel__, action="settingCanal"    , title="Configuración..."     , url="" ))
+        itemlist.append( Item(channel=item.channel, action="settingCanal"    , title="Configuración..."     , url="" ))
 
     return itemlist
 
@@ -67,14 +59,14 @@ def menupeliculas(item):
     itemlist = []
 
     if account:
-        itemlist.append( Item( channel=__channel__, action="items_usuario", title=bbcode_kodi2html("[COLOR orange][B]Favoritos[/B][/COLOR]"), url=host+"/a/my?target=movies&action=favorite&start=-28&limit=28", folder=True ) )
+        itemlist.append( Item( channel=item.channel, action="items_usuario", title=bbcode_kodi2html("[COLOR orange][B]Favoritos[/B][/COLOR]"), url=host+"/a/my?target=movies&action=favorite&start=-28&limit=28", folder=True ) )
 
-    itemlist.append( Item( channel=__channel__, action="fichas", title="ABC", url=host+"/peliculas/abc", folder=True ) )
-    itemlist.append( Item( channel=__channel__, action="fichas", title="Últimas películas" , url=host+"/peliculas", folder=True ) )
-    itemlist.append( Item( channel=__channel__, action="fichas", title="Películas Estreno", url=host+"/peliculas-estreno", folder=True ) )
-    itemlist.append( Item( channel=__channel__, action="fichas", title="Películas Actualizadas", url=host+"/peliculas-actualizadas", folder=True ) )
-    itemlist.append( Item( channel=__channel__, action="fichas", title="Rating IMDB", url=host+"/peliculas/imdb_rating", folder=True ) )
-    itemlist.append( Item( channel=__channel__, action="generos", title="Películas por Género", url=host, folder=True))
+    itemlist.append( Item( channel=item.channel, action="fichas", title="ABC", url=host+"/peliculas/abc", folder=True ) )
+    itemlist.append( Item( channel=item.channel, action="fichas", title="Últimas películas" , url=host+"/peliculas", folder=True ) )
+    itemlist.append( Item( channel=item.channel, action="fichas", title="Películas Estreno", url=host+"/peliculas-estreno", folder=True ) )
+    itemlist.append( Item( channel=item.channel, action="fichas", title="Películas Actualizadas", url=host+"/peliculas-actualizadas", folder=True ) )
+    itemlist.append( Item( channel=item.channel, action="fichas", title="Rating IMDB", url=host+"/peliculas/imdb_rating", folder=True ) )
+    itemlist.append( Item( channel=item.channel, action="generos", title="Películas por Género", url=host, folder=True))
 
     return itemlist
 
@@ -84,18 +76,18 @@ def menuseries(item):
     itemlist = []
 
     if account:
-        itemlist.append( Item( channel=__channel__, action="items_usuario", title=bbcode_kodi2html("[COLOR orange][B]Siguiendo[/B][/COLOR]"), url=host+"/a/my?target=shows&action=following&start=-28&limit=28", folder=True ) )
-        itemlist.append( Item( channel=__channel__, action="items_usuario", title=bbcode_kodi2html("[COLOR orange][B]Para Ver[/B][/COLOR]"), url=host+"/a/my?target=shows&action=watch&start=-28&limit=28", folder=True ) )
+        itemlist.append( Item( channel=item.channel, action="items_usuario", title=bbcode_kodi2html("[COLOR orange][B]Siguiendo[/B][/COLOR]"), url=host+"/a/my?target=shows&action=following&start=-28&limit=28", folder=True ) )
+        itemlist.append( Item( channel=item.channel, action="items_usuario", title=bbcode_kodi2html("[COLOR orange][B]Para Ver[/B][/COLOR]"), url=host+"/a/my?target=shows&action=watch&start=-28&limit=28", folder=True ) )
 
-    itemlist.append( Item( channel=__channel__, action="series_abc", title="A-Z", folder=True ) )
+    itemlist.append( Item( channel=item.channel, action="series_abc", title="A-Z", folder=True ) )
 
-    itemlist.append( Item(channel=__channel__, action="novedades_episodios", title="Últimos Emitidos", url=host+"/a/episodes?action=latest&start=-24&limit=24&elang=ALL", folder=True ) )
-    itemlist.append( Item(channel=__channel__, action="novedades_episodios", title="Episodios Estreno", url=host+"/a/episodes?action=premiere&start=-24&limit=24&elang=ALL", folder=True ) )
-    itemlist.append( Item(channel=__channel__, action="novedades_episodios", title="Episodios Actualizados", url=host+"/a/episodes?action=updated&start=-24&limit=24&elang=ALL", folder=True ) )
-    itemlist.append( Item(channel=__channel__, action="fichas", title="Últimas series", url=host+"/series", folder=True ) )
-    itemlist.append( Item(channel=__channel__, action="fichas", title="Rating IMDB", url=host+"/series/imdb_rating", folder=True ) )
-    itemlist.append( Item(channel=__channel__, action="generos_series", title="Series por Género", url=host, folder=True ) )
-    itemlist.append( Item( channel=__channel__, action="listado_series", title="Listado de todas las series", url=host+"/series/list", folder=True ) )
+    itemlist.append( Item(channel=item.channel, action="novedades_episodios", title="Últimos Emitidos", url=host+"/a/episodes?action=latest&start=-24&limit=24&elang=ALL", folder=True ) )
+    itemlist.append( Item(channel=item.channel, action="novedades_episodios", title="Episodios Estreno", url=host+"/a/episodes?action=premiere&start=-24&limit=24&elang=ALL", folder=True ) )
+    itemlist.append( Item(channel=item.channel, action="novedades_episodios", title="Episodios Actualizados", url=host+"/a/episodes?action=updated&start=-24&limit=24&elang=ALL", folder=True ) )
+    itemlist.append( Item(channel=item.channel, action="fichas", title="Últimas series", url=host+"/series", folder=True ) )
+    itemlist.append( Item(channel=item.channel, action="fichas", title="Rating IMDB", url=host+"/series/imdb_rating", folder=True ) )
+    itemlist.append( Item(channel=item.channel, action="generos_series", title="Series por Género", url=host, folder=True ) )
+    itemlist.append( Item( channel=item.channel, action="listado_series", title="Listado de todas las series", url=host+"/series/list", folder=True ) )
 
     return itemlist
 
@@ -191,10 +183,10 @@ def items_usuario(item):
         #try: title = title.encode('utf-8')
         #except: pass
 
-        itemlist.append( Item( channel=__channel__, action=action, title=title, fulltitle=title, url=url, thumbnail=thumbnail, show=show, folder=True ) )
+        itemlist.append( Item( channel=item.channel, action=action, title=title, fulltitle=title, url=url, thumbnail=thumbnail, show=show, folder=True ) )
 
     if len(itemlist) == int(limit):
-        itemlist.append( Item( channel=__channel__, action="items_usuario", title=">> Página siguiente", url=next_page, folder=True ) )
+        itemlist.append( Item( channel=item.channel, action="items_usuario", title=">> Página siguiente", url=next_page, folder=True ) )
 
     return itemlist
 
@@ -210,7 +202,7 @@ def listado_series(item):
 
     for scrapedurl,scrapedtitle in matches:
         url = scrapedurl + "###0;1"
-        itemlist.append( Item( channel=__channel__, action="episodios", title=scrapedtitle, fulltitle=scrapedtitle, url=url, show=scrapedtitle ) )
+        itemlist.append( Item( channel=item.channel, action="episodios", title=scrapedtitle, fulltitle=scrapedtitle, url=url, show=scrapedtitle ) )
 
     return itemlist
 
@@ -229,7 +221,7 @@ def fichas(item):
         if len(s_p) == 1:
             data = s_p[0]
             if 'Lo sentimos</h3>' in s_p[0]:
-                return [ Item( channel=__channel__, title=bbcode_kodi2html("[COLOR gold][B]HDFull:[/B][/COLOR] [COLOR blue]"+texto.replace('%20',' ')+"[/COLOR] sin resultados") ) ]
+                return [ Item( channel=item.channel, title=bbcode_kodi2html("[COLOR gold][B]HDFull:[/B][/COLOR] [COLOR blue]"+texto.replace('%20',' ')+"[/COLOR] sin resultados") ) ]
         else:
             data = s_p[0]+s_p[1]
     else:
@@ -284,12 +276,12 @@ def fichas(item):
             tag_type = scrapertools.get_match(url,'l.tv/([^/]+)/')
             title+= bbcode_kodi2html(" - [COLOR blue]" + tag_type.capitalize() + "[/COLOR]")
 
-        itemlist.append( Item( channel=__channel__, action=action, title=title, url=url, fulltitle=title, thumbnail=thumbnail, show=show, folder=True ) )
+        itemlist.append( Item( channel=item.channel, action=action, title=title, url=url, fulltitle=title, thumbnail=thumbnail, show=show, folder=True ) )
 
     ## Paginación
     next_page_url = scrapertools.find_single_match(data,'<a href="([^"]+)">.raquo;</a>')
     if next_page_url!="":
-        itemlist.append( Item( channel=__channel__, action="fichas", title=">> Página siguiente", url=urlparse.urljoin(item.url,next_page_url), folder=True ) )
+        itemlist.append( Item( channel=item.channel, action="fichas", title=">> Página siguiente", url=urlparse.urljoin(item.url,next_page_url), folder=True ) )
 
     return itemlist
 
@@ -320,15 +312,15 @@ def episodios(item):
     if str != "" and account and item.category != "Series" and "XBMC" not in item.title:
         if config.get_library_support():
             title = bbcode_kodi2html(" ( [COLOR gray][B]" + item.show + "[/B][/COLOR] )")
-            itemlist.append( Item( channel=__channel__, action="episodios", title=title, fulltitle=title, url=url_targets, thumbnail=item.thumbnail, show=item.show, folder=False ) )
+            itemlist.append( Item( channel=item.channel, action="episodios", title=title, fulltitle=title, url=url_targets, thumbnail=item.thumbnail, show=item.show, folder=False ) )
         title = str.replace('green','red').replace('Siguiendo','Abandonar')
-        itemlist.append( Item( channel=__channel__, action="set_status", title=title, fulltitle=title, url=url_targets, thumbnail=item.thumbnail, show=item.show, folder=True ) )
+        itemlist.append( Item( channel=item.channel, action="set_status", title=title, fulltitle=title, url=url_targets, thumbnail=item.thumbnail, show=item.show, folder=True ) )
     elif account and item.category != "Series" and "XBMC" not in item.title:
         if config.get_library_support():
             title = bbcode_kodi2html(" ( [COLOR gray][B]" + item.show + "[/B][/COLOR] )")
-            itemlist.append( Item( channel=__channel__, action="episodios", title=title, fulltitle=title, url=url_targets, thumbnail=item.thumbnail, show=item.show, folder=False ) )
+            itemlist.append( Item( channel=item.channel, action="episodios", title=title, fulltitle=title, url=url_targets, thumbnail=item.thumbnail, show=item.show, folder=False ) )
         title = bbcode_kodi2html(" ( [COLOR orange][B]Seguir[/B][/COLOR] )")
-        itemlist.append( Item( channel=__channel__, action="set_status", title=title, fulltitle=title, url=url_targets, thumbnail=item.thumbnail, show=item.show, folder=True ) )
+        itemlist.append( Item( channel=item.channel, action="set_status", title=title, fulltitle=title, url=url_targets, thumbnail=item.thumbnail, show=item.show, folder=True ) )
 
     patron  = "<li><a href='([^']+)'>[^<]+</a></li>"
 
@@ -384,7 +376,7 @@ def episodios(item):
 
             url = urlparse.urljoin( scrapedurl, 'temporada-' + temporada +'/episodio-' + episodio ) + "###" + episode['id'] + ";3"
 
-            itemlist.append( Item( channel=__channel__, action="findvideos", title=title, fulltitle=title, url=url, thumbnail=thumbnail, show=item.show, folder=True ) )
+            itemlist.append( Item( channel=item.channel, action="findvideos", title=title, fulltitle=title, url=url, thumbnail=thumbnail, show=item.show, folder=True ) )
 
     if config.get_library_support() and len(itemlist)>0:
         itemlist.append( Item( channel=item.channel, title="Añadir esta serie a la biblioteca de XBMC", url=url_targets, action="add_serie_to_library", extra="episodios", show=item.show ) )
@@ -453,10 +445,10 @@ def novedades_episodios(item):
 
         url = urlparse.urljoin( host, '/serie/'+ episode['permalink'] +'/temporada-' + temporada +'/episodio-' + episodio ) + "###" + episode['id'] + ";3"
 
-        itemlist.append( Item( channel=__channel__, action="findvideos", title=title, fulltitle=title, url=url, thumbnail=thumbnail, folder=True ) )
+        itemlist.append( Item( channel=item.channel, action="findvideos", title=title, fulltitle=title, url=url, thumbnail=thumbnail, folder=True ) )
 
     if len(itemlist) == 24:
-        itemlist.append( Item( channel=__channel__, action="novedades_episodios", title=">> Página siguiente", url=next_page, folder=True ) )
+        itemlist.append( Item( channel=item.channel, action="novedades_episodios", title=">> Página siguiente", url=next_page, folder=True ) )
 
     return itemlist
 
@@ -477,7 +469,7 @@ def generos(item):
         thumbnail = ""
         plot = ""
 
-        itemlist.append( Item( channel=__channel__, action="fichas", title=title, url=url, folder=True ) )
+        itemlist.append( Item( channel=item.channel, action="fichas", title=title, url=url, folder=True ) )
 
     return itemlist
 
@@ -498,7 +490,7 @@ def generos_series(item):
         thumbnail = ""
         plot = ""
 
-        itemlist.append( Item( channel=__channel__, action="fichas", title=title, url=url, folder=True ) )
+        itemlist.append( Item( channel=item.channel, action="fichas", title=title, url=url, folder=True ) )
 
     return itemlist
 
@@ -524,13 +516,13 @@ def findvideos(item):
             title = bbcode_kodi2html(" ( [COLOR red][B]Quitar de Favoritos[/B][/COLOR] )")
         if config.get_library_support():
             title_label = bbcode_kodi2html(" ( [COLOR gray][B]" + item.show + "[/B][/COLOR] )")
-            itemlist.append( Item( channel=__channel__, action="findvideos", title=title_label, fulltitle=title_label, url=url_targets, thumbnail=item.thumbnail, show=item.show, folder=False ) )
+            itemlist.append( Item( channel=item.channel, action="findvideos", title=title_label, fulltitle=title_label, url=url_targets, thumbnail=item.thumbnail, show=item.show, folder=False ) )
 
             title_label = bbcode_kodi2html(" ( [COLOR green][B]Tráiler[/B][/COLOR] )")
 
-            itemlist.append( Item( channel=__channel__, action="trailer", title=title_label, fulltitle=title_label, url=url_targets, thumbnail=item.thumbnail, show=item.show ) )
+            itemlist.append( Item( channel=item.channel, action="trailer", title=title_label, fulltitle=title_label, url=url_targets, thumbnail=item.thumbnail, show=item.show ) )
 
-        itemlist.append( Item( channel=__channel__, action="set_status", title=title, fulltitle=title, url=url_targets, thumbnail=item.thumbnail, show=item.show, folder=True ) )
+        itemlist.append( Item( channel=item.channel, action="set_status", title=title, fulltitle=title, url=url_targets, thumbnail=item.thumbnail, show=item.show, folder=True ) )
 
     data = agrupa_datos( scrapertools.cache_page(item.url) )
 
@@ -569,7 +561,7 @@ def findvideos(item):
 
                 url+= "###" + id + ";" + type
 
-                itemlist.append( Item( channel=__channel__, action="play", title=title, fulltitle=title, url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, show=item.show, folder=True ) )
+                itemlist.append( Item( channel=item.channel, action="play", title=title, fulltitle=title, url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, show=item.show, folder=True ) )
             except:
                 pass
 
@@ -638,7 +630,7 @@ def play(item):
         #videoitem.title = "Enlace encontrado en "+videoitem.server+" ("+scrapertools.get_filename_from_url(videoitem.url)+")"
         videoitem.fulltitle = item.fulltitle
         videoitem.thumbnail = item.thumbnail
-        videoitem.channel = __channel__
+        videoitem.channel = item.channel
         post = "target_id=%s&target_type=%s&target_status=1" % (id, type)
         data = scrapertools.cache_page(host+"/a/status",post=post)
 
@@ -709,7 +701,7 @@ def set_status(item):
 
     title = bbcode_kodi2html("[COLOR green][B]OK[/B][/COLOR]")
 
-    return [ Item( channel=__channel__, action="episodios", title=title, fulltitle=title, url=item.url, thumbnail=item.thumbnail, show=item.show, folder=False ) ]
+    return [ Item( channel=item.channel, action="episodios", title=title, fulltitle=title, url=item.url, thumbnail=item.thumbnail, show=item.show, folder=False ) ]
 
 def get_status(status,type,id):
 

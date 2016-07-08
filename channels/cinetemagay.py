@@ -20,8 +20,6 @@ IMAGES_PATH = os.path.join( config.get_runtime_path(), 'resources' , 'images' , 
 def strip_tags(value):
     return re.sub(r'<[^>]*?>', '', value)
     
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("[cinetemagay.py] mainlist")
@@ -120,21 +118,3 @@ def detail(item):
         itemlist.append( Item(channel=item.channel , action="play" , server=video_item.server, title=item.title+"  "+video_item.title,url=video_item.url, thumbnail=item.thumbnail, plot=video_item.url, folder=False))
 
     return itemlist
-
-
-# VerificaciÃ³n automÃ¡tica de canales: Esta funciÃ³n debe devolver "True" si estÃ¡ ok el canal.
-def test():
-    from core import servertools
-    
-    # mainlist
-    mainlist_items = mainlist(Item())
-    # Da por bueno el canal si alguno de los vÃ­deos de "Novedades" devuelve mirrors
-    onesite_items = lista(mainlist_items[0])
-    bien = False
-    for onesite_item in onesite_items:
-        mirrors = servertools.find_video_items( item=onesite_item )
-        if len(mirrors)>0:
-            bien = True
-            break
-
-    return bien
