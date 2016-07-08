@@ -21,9 +21,8 @@ def mainlist(item):
     logger.info("[filesmonster_catalogue.py] mainlist")
 
     itemlist = []
+    itemlist.append( Item(channel=item.channel, action="unusualporn" , title="Canal unusualporn.net"         , thumbnail="http://filesmonster.biz/img/logo.png"))    
     itemlist.append( Item(channel=item.channel, action="filesmonster", title="Canal filesmonster.filesdl.net", thumbnail="http://filesmonster.biz/img/logo.png"))    
-    itemlist.append( Item(channel=item.channel, action="unusualporn" , title="Canal unusualporn.net"         , thumbnail="http://filesmonster.biz/img/logo.png"))        
-    itemlist.append( Item(channel=item.channel, action="search", title="Búsqueda global"               , url="http://filesmonster.filesdl.net/posts/search?q=%s"))
     return itemlist
 
 
@@ -32,7 +31,8 @@ def filesmonster(item):
 
     itemlist = []
     itemlist.append( Item(channel=item.channel, action="videos"    , title="Ultimos vídeos" , thumbnail="http://photosex.biz/imager/w_400/h_400/9f869c6cb63e12f61b58ffac2da822c9.jpg", url="http://filesmonster.filesdl.net"))         
-    itemlist.append( Item(channel=item.channel, action="categorias", title="Categorias"               , thumbnail="http://photosex.biz/imager/w_400/h_500/e48337cd95bbb6c2c372ffa6e71441ac.jpg", url="http://filesmonster.filesdl.net"))    
+    itemlist.append( Item(channel=item.channel, action="categorias", title="Categorias"               , thumbnail="http://photosex.biz/imager/w_400/h_500/e48337cd95bbb6c2c372ffa6e71441ac.jpg", url="http://filesmonster.filesdl.net"))   
+    itemlist.append( Item(channel=item.channel, action="search", title="Buscar en filesmonster.fliesdl.net"               , url="http://filesmonster.filesdl.net/posts/search?q=%s")) 
     return itemlist
 
 
@@ -41,7 +41,8 @@ def unusualporn(item):
 
     itemlist = []
     itemlist.append( Item(channel=item.channel, action="videos_2", title="Últimos vídeos", url="http://unusualporn.net/", thumbnail="http://photosex.biz/imager/w_400/h_500/e48337cd95bbb6c2c372ffa6e71441ac.jpg"))    
-    itemlist.append( Item(channel=item.channel, action="categorias", title="Categorías", url="http://unusualporn.net/", thumbnail="http://photosex.biz/imager/w_400/h_500/e48337cd95bbb6c2c372ffa6e71441ac.jpg"))    
+    itemlist.append( Item(channel=item.channel, action="categorias", title="Categorías", url="http://unusualporn.net/", thumbnail="http://photosex.biz/imager/w_400/h_500/e48337cd95bbb6c2c372ffa6e71441ac.jpg"))   
+    itemlist.append( Item(channel=item.channel, action="search", title="Buscar en unusualporn"               , url="http://unusualporn.net/search/%s"))  
     return itemlist
 
 def categorias(item):
@@ -77,18 +78,26 @@ def categorias_2(item):
 
     return itemlist
     
+    
+    
 def search(item,texto):
     logger.info("[filesmonster_catalogue.py] search:" + texto)
+    original=item.url
     item.url = item.url % texto
     try:
-        return videos(item)
+        if original=='http://filesmonster.filesdl.net/posts/search?q=%s':
+        	return videos(item)
+        if original=='http://unusualporn.net/search/%s':
+        	return videos_2(item)
     # Se captura la excepción, para no interrumpir al buscador global si un canal falla
     except:
         import sys
         for line in sys.exc_info():
             logger.error( "%s" % line )
         return []
-        
+
+
+
 
 def videos(item):
     logger.info("[filesmonster_catalogue.py] list")
@@ -108,7 +117,7 @@ def videos(item):
 
     #Enlace para la siguiente pagina  
     if url:
-      itemlist.append( Item(channel=item.channel, action="videos", title=">> Pagina Siguiente", url=url) )
+      itemlist.append( Item(channel=item.channel, action="videos", title=">> Página Siguiente", url=url) )
 
     return itemlist
 
@@ -130,7 +139,7 @@ def videos_2(item):
 
     #Enlace para la siguiente pagina  
     if url:
-      itemlist.append( Item(channel=item.channel, action="videos_2", title=">> Pagina Siguiente", url=url) )
+      itemlist.append( Item(channel=item.channel, action="videos_2", title=">> Página Siguiente", url=url) )
 
     return itemlist
     
