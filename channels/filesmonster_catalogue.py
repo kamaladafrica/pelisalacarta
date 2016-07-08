@@ -133,7 +133,7 @@ def videos_2(item):
       matches = re.compile(patronvideos,re.DOTALL).findall(data)
 
       for url, title, thumbnail in matches:
-          itemlist.append( Item(channel=item.channel, action="detail", title=title, fulltitle = title , url=url, thumbnail=thumbnail)) 
+          itemlist.append( Item(channel=item.channel, action="detail_2", title=title, fulltitle = title , url=url, thumbnail=thumbnail)) 
 
       url =  scrapertools.find_single_match(data, '<link rel="next" href="([^"]+)" />').replace("&amp;","&")
 
@@ -144,6 +144,8 @@ def videos_2(item):
     return itemlist
     
 
+
+
 def detail(item):
     logger.info("[filesmonster_catalogue.py] detail")
     itemlist = []
@@ -153,6 +155,39 @@ def detail(item):
     matches = re.compile(patronvideos,re.DOTALL).findall(data)
 
     for url in matches:
+        title = "Archivo %d: %s [filesmonster]" %(len(itemlist)+1, item.fulltitle)
+        itemlist.append( Item(channel=item.channel , action="play" ,  server="filesmonster", title=item.url, fulltitle= item.fulltitle ,url=url, thumbnail=item.thumbnail, folder=False))
+
+
+
+    patronvideos  = '["|\'](http\://filesmonster.com/folders.php\?[^"\']+)["|\']'
+    matches = re.compile(patronvideos,re.DOTALL).findall(data)
+    for url in matches: 
+      if not url == item.url:
+        logger.info(url)
+        logger.info(item.url)
+        title = "Carpeta %d: %s [filesmonster]" %(len(itemlist)+1, item.fulltitle)
+        itemlist.append( Item(channel=item.channel , action="detail" ,  title=title, fulltitle= item.fulltitle ,url=url, thumbnail=item.thumbnail, folder=True))
+
+
+    return itemlist
+
+
+
+
+def detail_2(item):
+    logger.info("[filesmonster_catalogue.py] detail")
+    itemlist = []
+
+	 # descarga la pagina
+    data=scrapertools.downloadpageGzip(item.url)
+    data=data.split('<span class="filesmonsterdlbutton">Download from Filesmonster</span>')
+    data=data[0]
+    # descubre la url
+    patronvideos  = 'href="http://filesmonster.com/download.php(.*?)".(.*?)'
+    matches = re.compile(patronvideos,re.DOTALL).findall(data)    
+    for match2 in matches:
+    	url ="http://filesmonster.com/download.php"+match2[0] 
         title = "Archivo %d: %s [filesmonster]" %(len(itemlist)+1, item.fulltitle)
         itemlist.append( Item(channel=item.channel , action="play" ,  server="filesmonster", title=title, fulltitle= item.fulltitle ,url=url, thumbnail=item.thumbnail, folder=False))
 
