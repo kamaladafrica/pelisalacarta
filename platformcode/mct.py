@@ -63,7 +63,7 @@ def play(url, xlistitem, is_view=None, subtitle=""):
         data = url_get(url)
         # -- El nombre del torrent será el que contiene en los --
         # -- datos.                                             -
-        re_name = library.title_to_folder_name( urllib.unquote( scrapertools.get_match(data,':name\d+:(.*?)\d+:') ) )
+        re_name = library.title_to_filename( urllib.unquote( scrapertools.get_match(data,':name\d+:(.*?)\d+:') ) )
         #torrent_file = os.path.join(save_path_torrents, re_name+'.torrent')
         torrent_file = os.path.join(save_path_torrents, unicode(re_name, "'utf-8'", errors="replace")+'.torrent')
 
