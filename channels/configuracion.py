@@ -22,7 +22,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pelisalacarta 4.  If not, see <http://www.gnu.org/licenses/>.
 # ------------------------------------------------------------
-# Configuración
+# Configuraci?
 #------------------------------------------------------------
 
 from core import config
@@ -37,7 +37,10 @@ def mainlist(item):
 
 	itemlist = []
 	itemlist.append( Item(channel=CHANNELNAME, title="Preferencias", action="settings", folder=False) )
-	itemlist.append( Item(channel="novedades", title="Ajustes del canal 'Novedades'", action="menu_opciones", folder=True) )
+	itemlist.append( Item(channel=CHANNELNAME, title="", action="", folder=False) )
+	itemlist.append( Item(channel="novedades", title="Ajustes de la secciÃ³n 'Novedades'", action="menu_opciones", folder=True) )
+	itemlist.append( Item(channel="buscador", title="Ajustes del buscador global", action="opciones", folder=True) )
+	itemlist.append( Item(channel=CHANNELNAME, title="", action="", folder=False) )
 	itemlist.append( Item(channel=CHANNELNAME, title="Comprobar actualizaciones", action="check_for_updates", folder=False) )
 
 	return itemlist

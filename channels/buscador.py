@@ -29,7 +29,7 @@ def mainlist(item,preferred_thumbnail="squares"):
 
 
     itemlist.append(Item(channel=item.channel, action="search", title="Busqueda por categorias...", extra="categorias"))
-    itemlist.append(Item(channel=item.channel, action="opciones", title="Opciones"))
+    #itemlist.append(Item(channel=item.channel, action="opciones", title="Opciones"))
 
     saved_searches_list = get_saved_searches()
 
@@ -41,9 +41,9 @@ def mainlist(item,preferred_thumbnail="squares"):
     
 def opciones(item):
     itemlist = []
+    itemlist.append(Item(channel=item.channel, action="settingCanal", title="Elegir canales incluidos en la búsqueda"))
     itemlist.append(Item(channel=item.channel, action="clear_saved_searches", title="Borrar búsquedas guardadas"))
-    itemlist.append(Item(channel=item.channel, action="settingCanal", title="Canales incluidos..."))
-    itemlist.append(Item(channel=item.channel, action="settings", title="Ajustes buscador"))
+    itemlist.append(Item(channel=item.channel, action="settings", title="Otros ajustes"))
     return itemlist
         
 def settings(item):
