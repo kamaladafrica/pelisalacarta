@@ -85,7 +85,7 @@ def getmainlist(preferred_thumb=""):
                              channel="configuracion", action="mainlist",
                              thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),
                                                         "thumb_configuracion.png"),
-                             folder=False, viewmode="list"))
+                             viewmode="list"))
         # Se ha insertado "folder=False" para que no se habra una ventana tras salir de la configuracion
 
 

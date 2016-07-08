@@ -37,10 +37,34 @@ from platformcode import library
 
 import favoritos
 
+if config.is_xbmc():
+    import xbmc
+
 CHANNELNAME = "descargas"
 DEBUG = config.get_setting("debug")
 
-DOWNLOAD_LIST_PATH = config.get_setting("downloadlistpath")
+if config.is_xbmc():
+    if config.get_setting("downloadlistpath").startswith("special://"):
+        DOWNLOAD_LIST_PATH = xbmc.translatePath(config.get_setting("downloadlistpath"))
+        logger.info("channels.descargas DOWNLOAD_LIST_PATH convertido=" +
+                    DOWNLOAD_LIST_PATH)
+    else:
+        DOWNLOAD_LIST_PATH = config.get_setting("downloadlistpath")
+        logger.info("channels.descargas DOWNLOAD_LIST_PATH=" +
+                    DOWNLOAD_LIST_PATH)
+    # Lee la ruta de descargas
+    if config.get_setting("downloadpath").startswith("special://"):
+        downloadpath = xbmc.translatePath(config.get_setting("downloadpath"))
+        logger.info("channels.descargas downloadpath convertido=" + downloadpath)
+    else:
+        downloadpath = config.get_setting("downloadpath")
+        logger.info("channels.descargas downloadpath=" + downloadpath)
+else:
+    DOWNLOAD_LIST_PATH = config.get_setting("downloadlistpath")
+    logger.info("channels.descargas DOWNLOAD_LIST_PATH (no Kodi)=" + DOWNLOAD_LIST_PATH)
+    downloadpath = config.get_setting("downloadpath")
+    logger.info("channels.descargas downloadpath (no Kodi)=" + downloadpath)
+
 IMAGES_PATH = os.path.join(config.get_runtime_path(), 'resources', 'images')
 ERROR_PATH = library.join_path(DOWNLOAD_LIST_PATH, 'error')
 usingsamba = samba.usingsamba(DOWNLOAD_LIST_PATH)
@@ -90,7 +114,7 @@ def pendientes(item):
 
     # Ordena el listado por orden de incorporación
     ficheros.sort()
-    
+
     # Crea un listado con las entradas de la lista de descargas
     for fichero in ficheros:
         logger.info("fichero="+fichero)
@@ -133,7 +157,7 @@ def errores(item):
 
     # Ordena el listado por orden de incorporación
     ficheros.sort()
-    
+
     # Crea un listado con las entradas de la lista de descargas
     for fichero in ficheros:
         logger.info("[descargas.py] fichero="+fichero)
@@ -171,7 +195,7 @@ def downloadall(item):
 
     # La ordena
     ficheros.sort()
-    
+
     # Crea un listado con las entradas de favoritos
     for fichero in ficheros:
         # El primer video de la lista
@@ -224,7 +248,7 @@ def downloadall(item):
                 outfile.flush()
                 outfile.close()
                 logger.info("[descargas.py] Creado fichero NFO")
-                
+
                 # Descarga el thumbnail
                 if thumbnail != "":
                     logger.info("[descargas.py] thumbnail="+thumbnail)
@@ -238,7 +262,7 @@ def downloadall(item):
                         logger.info("[descargas.py] error al descargar thumbnail")
                         for line in sys.exc_info():
                             logger.error("%s" % line)
-                
+
                 # Descarga el video
                 dev = downloadtools.downloadbest(video_urls, fulltitle)
                 if dev == -1:
