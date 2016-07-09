@@ -26,7 +26,6 @@
 # ------------------------------------------------------------
 
 import os
-import sys
 
 from core import config
 from core import filetools
