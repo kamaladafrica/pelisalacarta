@@ -195,7 +195,7 @@ def resolve_video_urls_for_playing(server,url,video_password="",muestra_dialogo=
 
             #Cuenta las opciones disponibles, para calcular el porcentaje
             opciones = []
-            if server_parameters["free"]:
+            if server_parameters["free"] == "true":
               opciones.append("free")
             opciones.extend([premium for premium in server_parameters["premium"] if config.get_setting(premium+"premium")=="true"])
             logger.info("pelisalacarta.core.servertools opciones disponibles para " + server + ": " + str(len(opciones)) + " "+str(opciones))
@@ -278,11 +278,25 @@ def resolve_video_urls_for_playing(server,url,video_password="",muestra_dialogo=
 
     return video_urls,True,""
 
-def is_server_enabled (server):
+def is_server_enabled(server):
     try:
-      return get_server_parameters(server)["active"]
+        server_parameters = get_server_parameters(server)
+        if server_parameters["active"] == "true":
+            if not config.get_setting("hidepremium")=="true":
+                return True
+            else:
+                if server_parameters["free"] == "true":
+                    return True
+                if [premium for premium in server_parameters["premium"] if config.get_setting(premium+"premium")=="true"]:
+                    return True
+                else:
+                    return False
+        else:
+            return False
     except:
-      return False
+        import traceback
+        logger.info(traceback.format_exc())
+        return False
 
 def get_server_parameters(server):
     server=scrapertools.find_single_match(server,'([^\.]+)')
@@ -304,23 +318,10 @@ def get_servers_list():
   ServerList={}
   for server in os.listdir(ServersPath):
     if server.endswith(".xml"):
-      try:
-        server_parameters =  get_server_parameters(server)
+        if is_server_enabled(server):
+            server_parameters = get_server_parameters(server)
+            ServerList[server_parameters["id"]] = server_parameters
 
-        #Si no esta activo, lo saltamos.
-        if not server_parameters["active"]=="true": continue
-
-        #Ocultar servidores premium sin cuenta
-        if config.get_setting("hidepremium")=="true" and not server_parameters["free"]:
-          for premium in server_parameters["premium"]:
-            if not config.get_setting(premium+"premium")=="true": continue
-
-        JSONServer = {}
-        ServerList[server_parameters["id"]] = server_parameters
-      except:
-        logger.info("Error al cargar el servidor: " + server)
-        import traceback
-        logger.info(traceback.format_exc())
   return ServerList
 
 def xml2dict(file = None, xmldata = None):
