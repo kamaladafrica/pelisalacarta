@@ -350,6 +350,8 @@ def config_filter(item):
         custom_method = "borrar_filtro"
         active = dict_series.get(library.title_to_filename(item.show.lower().strip()), {}).get(TAG_ACTIVE, False)
 
+    list_controls = []
+
     if allow_option:
         active_control = {
             "id": "active",
