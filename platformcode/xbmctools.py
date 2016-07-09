@@ -567,7 +567,8 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
 
         #Plugins externos
         if seleccion > 1:
-            xbmc.executebuiltin("XBMC.RunPlugin(" + torrent_options[seleccion][1] % (urllib.quote(item.url)) + ")")
+            mediaurl = urllib.quote_plus(item.url)
+            xbmc.executebuiltin( "PlayMedia(" + torrent_options[seleccion][1] % mediaurl +")" )
 
         if seleccion ==1:
             from platformcode import mct
