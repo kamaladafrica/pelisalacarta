@@ -6,10 +6,10 @@
 	<update_url></update_url>
 	<active>true</active>
 
-	<version>4</version>
+	<version>5</version>
 	<adult>false</adult>
-	<date>01/07/2016</date>
-	<changes>Eliminado código innecesario.</changes>
+	<date>08/07/2016</date>
+	<changes>Correcciones y adaptacion a la nueva version</changes>
 	<fanart></fanart>
 	<thumbnail>http://i.imgur.com/gNHVlI4.png</thumbnail>
 	<bannermenu>http://i.imgur.com/wyRk5AG.png</bannermenu>

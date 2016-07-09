@@ -10,282 +10,239 @@ from core import config
 from core import logger
 from core import scrapertools
 from core import servertools
+from core import tmdb
 from core.item import Item
 
 
+__modo_grafico__ = config.get_setting("modo_grafico", "inkapelis")
+__perfil__ = int(config.get_setting("perfil", "inkapelis"))
+
+# Fijar perfil de color
+perfil = [['0xFFFFE6CC', '0xFFFFCE9C', '0xFF994D00'],
+          ['0xFFA5F6AF', '0xFF5FDA6D', '0xFF11811E'],
+          ['0xFF58D3F7', '0xFF2E9AFE', '0xFF2E64FE']]
+color1, color2, color3 = perfil[__perfil__]
+
 DEBUG = config.get_setting("debug")
+thumb_channel = "http://i.imgur.com/I7MxHZI.png"
 
 
 def mainlist(item):
     logger.info("pelisalacarta.channels.inkapelis mainlist")
     itemlist = []
-    itemlist.append( Item(channel=item.channel, title="Novedades"      , action="lista"    , url="http://www.inkapelis.com/", extra = "Novedades"))
-    itemlist.append( Item(channel=item.channel, title="Estrenos"       , action="lista"   , url="http://www.inkapelis.com/genero/estrenos/"))
-    itemlist.append( Item(channel=item.channel, title="Géneros"  , action="generos"   , url="http://www.inkapelis.com/"))
-    itemlist.append( Item(channel=item.channel, title="Buscar..."  , action="search"   , url="http://www.inkapelis.com/?s="))
-    itemlist.append( Item(channel=item.channel, title="Búsqueda por actor"  , action="search"   , url="http://www.inkapelis.com/actor/"))
+
+    itemlist.append(item.clone(title="Novedades", action="entradas", url="http://www.inkapelis.com/",
+                               extra="Novedades", text_color=color1))
+    itemlist.append(item.clone(title="Estrenos", action="entradas", url="http://www.inkapelis.com/genero/estrenos/",
+                               text_color=color1))
+    itemlist.append(item.clone(title="Géneros", action="generos", url="http://www.inkapelis.com/", text_color=color1))
+    itemlist.append(item.clone(title="Buscar...", action="search", text_color=color1))
+    itemlist.append(item.clone(action="", title=""))
+    itemlist.append(item.clone(action="configuracion", title="Configurar canal...", text_color="gold", folder=False))
     return itemlist
 
 
-def search(item,texto):
+def configuracion(item):
+    from platformcode import platformtools
+    platformtools.show_channel_settings()
+    if config.is_xbmc():
+        import xbmc
+        xbmc.executebuiltin("Container.Refresh")
+
+
+def newest(categoria):
+    logger.info("pelisalacarta.channels.inkapelis newest")
+    itemlist = []
+    item = Item()
+    try:
+        if categoria == "peliculas":
+            item.url = "http://www.inkapelis.com/"
+            item.extra = "Novedades"
+            itemlist = entradas(item)
+
+            if itemlist[-1].action == "entradas":
+                itemlist.pop()
+
+    # Se captura la excepción, para no interrumpir al canal novedades si un canal falla
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error("{0}".format(line))
+        return []
+
+    return itemlist
+
+
+def search(item, texto):
     logger.info("pelisalacarta.inkapelis search")
     itemlist = []
     item.extra = "Buscar"
-    if item.title == "Búsqueda por actor": texto = texto.replace("+","-")
-    item.url = item.url + texto
+    item.url = "http://www.inkapelis.com/?s=%s" % texto
+
     try:
-        itemlist = lista(item)
+        return entradas(item)
+    # Se captura la excepción, para no interrumpir al buscador global si un canal falla
     except:
-	    pass
-    return itemlist
+        import sys
+        for line in sys.exc_info():
+            logger.error("%s" % line)
+        return []
 
 
 def generos(item):
     logger.info("pelisalacarta.channels.inkapelis generos")
     itemlist = []
 
-    data = scrapertools.cachePage(item.url)
-    patron = '<li class="cat-item cat-item-.*?><a href="([^"]+)".*?>(.*?)<b>'
-    matches = re.compile(patron,re.DOTALL).findall(data)
+    item.text_color = color1
+    data = scrapertools.downloadpage(item.url)
+    matches = scrapertools.find_multiple_matches(data, '<li class="cat-item cat-item-.*?><a href="([^"]+)".*?>(.*?)<b>')
 
     for scrapedurl, scrapedtitle in matches:
-        if scrapedtitle == "Eroticas +18 ":
-            if config.get_setting("enableadultmode") == "false": continue
-            itemlist.append( Item(channel=item.channel, action='eroticas', title=scrapedtitle , url=scrapedurl , thumbnail="" , folder=True) )
-        elif (scrapedtitle != "Estrenos ") and (scrapedtitle!= "Próximos Estrenos "):
-            if DEBUG: logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"]")
-            itemlist.append( Item(channel=item.channel, action='lista', title=scrapedtitle , url=scrapedurl , thumbnail="" , folder=True) )
+        if scrapedtitle == "Eroticas +18 " and config.get_setting("enableadultmode"):
+            itemlist.append(item.clone(action="eroticas", title=scrapedtitle, url=scrapedurl))
+        elif (scrapedtitle != "Estrenos ") and (scrapedtitle != "Próximos Estrenos "):
+            itemlist.append(item.clone(action="entradas", title=scrapedtitle, url=scrapedurl))
 
     return itemlist
 
-def lista(item):
-    logger.info("pelisalacarta.channels.inkapelis lista")
-    urlitem = item.url
-    extra = item.extra
+
+def entradas(item):
+    logger.info("pelisalacarta.channels.inkapelis entradas")
+
     itemlist = []
+    item.text_color = color2
     # Descarga la página
-    data = scrapertools.cachePage(item.url)
-	
-	#IF en caso de busqueda
+    data = scrapertools.downloadpage(item.url)
+
+    #IF en caso de busqueda
     if item.extra == "Buscar":
         # Extrae las entradas
-        patron ='<div class="col-xs-2">.*?<a href="([^"]+)" title="([^"]+)"> <img src="([^"]+)"'
-        matches = re.compile(patron,re.DOTALL).findall(data)
+        patron = '<div class="col-xs-2">.*?<a href="([^"]+)" title="([^"]+)"> <img src="([^"]+)"'
+        matches = scrapertools.find_multiple_matches(data, patron)
         for scrapedurl, scrapedtitle, scrapedthumbnail in matches:
-            thumbnail = scrapedthumbnail.replace("w185","original")
+            thumbnail = scrapedthumbnail.replace("w185", "original")
             if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+thumbnail+"]")
-            try:
-                plot, fanart = info(scrapedtitle, scrapedthumbnail)
-                itemlist.append( Item(channel=item.channel, action='findvideos', title=scrapedtitle , url=scrapedurl , thumbnail=thumbnail , plot=str(plot), fanart=fanart, folder=True) )
-            except:
-                itemlist.append( Item(channel=item.channel, action='findvideos', title=scrapedtitle , url=scrapedurl , thumbnail=thumbnail , plot="",  folder=True) )
-		
-        # Extrae la marca de la siguiente página
-        if len(itemlist) > 0:
-            patron ='<span class="current">.*?<\/span><a href="([^"]+)".*? title="([^"]+)">'
-            matches = re.compile(patron,re.DOTALL).findall(data)
-            for scrapedurl, scrapedtitle in matches:
-                url = scrapedurl 
-                title = "Página " + scrapedtitle
-                if DEBUG: logger.info("title=["+title+"], url=["+url+"]")
-                itemlist.append( Item(channel=item.channel, action='lista', title= title , url=url , thumbnail="", extra = "Buscar", folder=True) )
-
+            itemlist.append(item.clone(action="findvideos", title=scrapedtitle, url=scrapedurl, thumbnail=thumbnail,
+                                       contentTitle=scrapedtitle, fulltitle=scrapedtitle, context="05"))
 
     else:
-        # Extrae las entradas y lista la mitad
-
+        # Extrae las entradas
         if item.extra == "Novedades":
-            data2 = data.split("<h3>Últimas Películas Agregadas</h3>", 1)
-            entradas = re.compile('<div class="col-mt-5 postsh">(.*?)</div></div></div>',re.DOTALL|re.M).findall(data2[1])
+            data2 = data.split("<h3>Últimas Películas Agregadas</h3>", 1)[1]
+            entradas = scrapertools.find_multiple_matches(data2, '<div class="col-mt-5 postsh">(.*?)</div></div></div>')
         else:
-            entradas = re.compile('<div class="col-mt-5 postsh">(.*?)</div></div></div>',re.DOTALL|re.M).findall(data)
+            entradas = scrapertools.find_multiple_matches(data, '<div class="col-mt-5 postsh">(.*?)</div></div></div>')
         
-        patron = '<div class="poster-media-card([^"]+)">.*?<a href="([^"]+)" title="([^"]+)">'
-        patron += '.*?<div class="idiomes"><div class="(.*?)">.*?'
-        patron += '<img.*?src="([^"]+)".*?<span class="under-title">(.*?)</span>'
-        for match in entradas[0:(len(entradas)/2)]:
-            matches = re.compile(patron,re.DOTALL).findall(match)
+        patron = '<div class="poster-media-card([^"]+)">.*?<a href="([^"]+)" title="([^"]+)">' \
+                 '.*?<div class="idiomes"><div class="(.*?)">.*?' \
+                 '<img.*?src="([^"]+)".*?<span class="under-title">(.*?)</span>'
+        for match in entradas:
+            matches = scrapertools.find_multiple_matches(match, patron)
             for calidad, url, scrapedtitle, idioma, scrapedthumbnail, category in matches:
-			    #Salto entradas adultos
-                if category == "Eroticas +18": continue
-                title = scrapedtitle + " -"+calidad+ " "
-                if 'class="proximamente"' in match: title += "Próximamente " 
-                title += idioma
-                thumbnail = scrapedthumbnail.replace("w185","original")
+                #Salto entradas adultos
+                if category == "Eroticas +18":
+                    continue
+                scrapedtitle = scrapedtitle.replace("Ver Pelicula ", "")
+                title = scrapedtitle + "  [" + idioma + "] [" + calidad + "]"
+                if 'class="proximamente"' in match:
+                    title += " Próximamente "
+                thumbnail = scrapedthumbnail.replace("w185", "original")
                 if DEBUG: logger.info("title=["+title+"], url=["+url+"], thumbnail=["+scrapedthumbnail+"]")
-                try:
-                    plot, fanart = info(scrapedtitle, scrapedthumbnail)
-                    itemlist.append( Item(channel=item.channel, action='findvideos', title=title , url=url , thumbnail=thumbnail , plot=str(plot), fanart=fanart, folder=True) )
-                except:
-                    itemlist.append( Item(channel=item.channel, action='findvideos', title=title , url=url , thumbnail=thumbnail , plot="", folder=True) )
-	    
-        itemlist.append( Item(channel=item.channel, action='lista2', title= "Siguiente" , url=urlitem, extra=extra, folder=True) )
-
-    return itemlist
-
-def lista2(item):
-    logger.info("pelisalacarta.channels.inkapelis lista2")
-    itemlist = []
-    extra = item.extra
-    data = scrapertools.cachePage(item.url)
-    # Extrae la mitad restante
-    if item.extra == "Novedades":
-        data2 = data.split("<h3>Últimas Películas Agregadas</h3>", 1)
-        entradas = re.compile('<div class="col-mt-5 postsh">(.*?)</div></div></div>',re.DOTALL|re.M).findall(data2[1])
-    else:
-        entradas = re.compile('<div class="col-mt-5 postsh">(.*?)</div></div></div>',re.DOTALL|re.M).findall(data)
-       
-    patron = '<div class="poster-media-card([^"]+)">.*?<a href="([^"]+)" title="([^"]+)">'
-    patron += '.*?<div class="idiomes"><div class="(.*?)">.*?'
-    patron += '<img.*?src="([^"]+)".*?<span class="under-title">(.*?)</span>'
-    for match in entradas[(len(entradas)/2):]:
-        matches = re.compile(patron,re.DOTALL).findall(match)
-        for calidad, url, scrapedtitle, idioma, scrapedthumbnail, category in matches:
-			#Salto entradas adultos
-            if category == "Eroticas +18": continue
-            title = scrapedtitle + " -"+calidad+ " "
-            if 'class="proximamente"' in match: title += "Próximamente " 
-            title += idioma
-            thumbnail = scrapedthumbnail.replace("w185","original")
-            if DEBUG: logger.info("title=["+title+"], url=["+url+"], thumbnail=["+scrapedthumbnail+"]")
-            try:
-                plot, fanart = info(scrapedtitle, scrapedthumbnail)
-                itemlist.append( Item(channel=item.channel, action='findvideos', title=title , url=url , thumbnail=thumbnail , plot=str(plot), fanart=fanart, folder=True) )
-            except:
-                itemlist.append( Item(channel=item.channel, action='findvideos', title=title , url=url , thumbnail=thumbnail , plot="", folder=True) )
-	    
+                itemlist.append(item.clone(action="findvideos", title=title, url=url, contentTitle=scrapedtitle,
+                                           fulltitle=scrapedtitle, thumbnail=thumbnail, context="05"))
 
     # Extrae la marca de la siguiente página
-    patron ='<span class="current">.*?<\/span><a href="http://www.inkapelis.com/page/(\d+)/'
-    matches = re.compile(patron,re.DOTALL).findall(data)
-    for scrapedpage in matches:
-        url = "http://www.inkapelis.com/page/"+scrapedpage
-        if DEBUG: logger.info("url=["+url+"]")
-        itemlist.append( Item(channel=item.channel, action='lista', title= "Siguiente" , url=url , extra=extra, folder=True) )
+    next_page = scrapertools.find_single_match(data, '<span class="current">.*?<\/span><a href="([^"]+)"')
+    if next_page != "":
+        itemlist.append(item.clone(action="entradas", title="Siguiente", url=next_page, text_color=color3))
 
     return itemlist
+
 
 def eroticas(item):
     logger.info("pelisalacarta.channels.inkapelis eroticas")
-    urlitem = item.url
-    extra = item.extra
+
     itemlist = []
     # Descarga la página
-    data = scrapertools.cachePage(item.url)
-	
-    # Extrae las entradas y lista la mitad
-    entradas = re.compile('<div class="col-mt-5 postsh">(.*?)</div></div></div>',re.DOTALL|re.M).findall(data)
-    patron = '<div class="poster-media-card([^"]+)">.*?<a href="([^"]+)" title="([^"]+)">'
-    patron += '.*?<div class="idiomes"><div class="(.*?)">.*?'
-    patron += '<img.*?src="([^"]+)"'
-    matches = re.compile(patron,re.DOTALL).findall(data)
-    for calidad, url, scrapedtitle, idioma, scrapedthumbnail in matches:
-        title = scrapedtitle + " -"+calidad+ " " + idioma
-        thumbnail = scrapedthumbnail.replace("w185","original")
-        if DEBUG: logger.info("title=["+title+"], url=["+url+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=item.channel, action='findvideos_ero', title=title , url=url , thumbnail=thumbnail, folder=True) )
+    data = scrapertools.downloadpage(item.url)
+
+    # Extrae las entradas
+    entradas = scrapertools.find_multiple_matches(data, '<div class="col-mt-5 postsh">(.*?)</div></div></div>')
+    patron = '<div class="poster-media-card([^"]+)">.*?<a href="([^"]+)" title="([^"]+)">' \
+             '.*?<div class="idiomes"><div class="(.*?)">.*?' \
+             '<img.*?src="([^"]+)"'
+    for match in entradas:
+        matches = scrapertools.find_multiple_matches(match, patron)
+        for calidad, url, scrapedtitle, idioma, scrapedthumbnail in matches:
+            title = scrapedtitle + "  [" + idioma + "] [" + calidad + "]"
+            thumbnail = scrapedthumbnail.replace("w185", "original")
+            if DEBUG: logger.info("title=["+title+"], url=["+url+"], thumbnail=["+scrapedthumbnail+"]")
+            itemlist.append(item.clone(action="findvideos", title=title, url=url, thumbnail=thumbnail,
+                                       extra="eroticas"))
 
     # Extrae la marca de la siguiente página
-    patron ='<span class="current">.*?<\/span><a href="http://www.inkapelis.com/page/(\d+)/'
-    matches = re.compile(patron,re.DOTALL).findall(data)
-    for scrapedpage in matches:
-        url = "http://www.inkapelis.com/page/"+scrapedpage
-        if DEBUG: logger.info("url=["+url+"]")
-        itemlist.append( Item(channel=item.channel, action='lista', title= "Siguiente" , url=url , extra=extra, folder=True) )
-	    
+    next_page = scrapertools.find_single_match(data, '<span class="current">.*?<\/span><a href="([^"]+)"')
+    if next_page != "":
+        itemlist.append(item.clone(action="entradas", title="Siguiente", url=next_page))
+
     return itemlist
+    
 
 def findvideos(item):
     logger.info("pelisalacarta.inkapelis findvideos")
-    
     itemlist = []
+    item.text_color = color2
+    
     # Descarga la pagina
-    data = scrapertools.cachePage(item.url)
-	#Saca la sinopsis, el trailer y el fanart y los incluye si no los tenía
+    data = scrapertools.downloadpage(item.url)
     sinopsis = scrapertools.find_single_match(data, '<h2>Sinopsis</h2>.*?>(.*?)</p>')
-    sinopsis = scrapertools.htmlclean(sinopsis)
-    key = scrapertools.find_single_match(data, 'id="trailerpro">.*?src="//www.youtube.com/embed/(.*?)"')
-    trailer = None
-    if key != "": trailer = "plugin://plugin.video.youtube/?action=play_video&videoid="+key
-    if item.plot.find("'plot': ''"):
-        item.plot = item.plot.replace("'plot': ''", "'plot': '"+sinopsis+"'")
-    if item.plot == "":
-        item.plot = "{'infoLabels': {'plot': "+sinopsis+"}}"
-    if trailer: item.plot = item.plot.replace("}}",",'trailer': '"+trailer+"'}}")
-    fanart = scrapertools.find_single_match(data, '<div class="episode-selector-element">.*?src="([^"]+)"')
-    if not item.fanart.startswith("http://image.tmdb.org"): item.fanart = fanart
+    item.infoLabels["plot"] = scrapertools.htmlclean(sinopsis)
+    # Busca en tmdb si no se ha hecho antes
+    if item.extra != "eroticas":
+        year = scrapertools.find_single_match(data, 'Año de lanzamiento.*?"ab">(\d+)')
+        if year != "":
+            try:
+                item.infoLabels['year'] = year
+                # Obtenemos los datos basicos de todas las peliculas mediante multihilos
+                tmdb.set_infoLabels(item, __modo_grafico__)
+            except:
+                pass
+        trailer_url = scrapertools.find_single_match(data, 'id="trailerpro">.*?src="([^"]+)"')
+        item.infoLabels["trailer"] = "www.youtube.com/watch?v=TqqF3-qgJw4"
 
-    #Busca los enlaces
-    patronlinks = '<td><a href="([^"]+)".*?title="([^"]+)".*?<td>([^"]+)<\/td><td>([^"]+)<\/td>'
-    matches = re.compile(patronlinks,re.DOTALL).findall(data)
+    patron = '<td><a href="([^"]+)".*?title="([^"]+)".*?<td>([^"]+)<\/td><td>([^"]+)<\/td>'
+    matches = scrapertools.find_multiple_matches(data, patron)
     
     for url, server, idioma, calidad in matches:
-        servidor = server
-        if servidor == "Embed" : servidor = "Nowvideo"
-        title = servidor + " - " + idioma + " - " + calidad
-        itemlist.append( Item(channel=item.channel, action="play", title= title  , url=url , thumbnail=item.thumbnail, fanart=item.fanart, plot= item.plot, folder=True) )
+        if server == "Embed":
+            server = "Nowvideo"
+        if server == "Ul":
+            server = "Uploaded"
+        title = server + "  [" + idioma + "] [" + calidad + "]"
+        itemlist.append(item.clone(action="play", title=title, url=url))
 
-    patronembed = 'id="(embed[0-9])".*?<div class="calishow">(.*?)<(.*?)<div class="clear">'
-    matches = re.compile(patronembed,re.DOTALL).findall(data)
+    patron = 'id="(embed[0-9])".*?<div class="calishow">(.*?)<(.*?)<div class="clear">'
+    matches = scrapertools.find_multiple_matches(data, patron)
     for title, calidad, url in matches:
-        title = scrapertools.find_single_match(url,"(?:http://|https://|//)(.*?)(?:embed.|videoembed|)/")
-        title = title.capitalize() + " - "+calidad
-        itemlist.append( Item(channel=item.channel, action="play", title= title  , url=url , thumbnail=item.thumbnail, fanart=item.fanart, plot= item.plot, folder=True) )
+        title = scrapertools.find_single_match(url, "(?:http://|https://|//)(.*?)(?:embed.|videoembed|)/")
+        title = title.capitalize() + "  [" + calidad + "]"
+        itemlist.append(item.clone(action="play", title=title, url=url))
+
+    if itemlist:
+        if not config.get_setting('menu_trailer', item.channel):
+            itemlist.append(item.clone(channel="trailertools", action="buscartrailer", title="Buscar Tráiler",
+                                       text_color="magenta", context=""))
+        if item.category != "Cine":
+            if config.get_library_support():
+                itemlist.append(Item(channel=item.channel, title="Añadir película a la biblioteca",
+                                     action="add_pelicula_to_library", url=item.url, fulltitle=item.fulltitle,
+                                     infoLabels={'title': item.fulltitle}, text_color="green"))
 
     return itemlist
 
-def findvideos_ero(item):
-    logger.info("pelisalacarta.inkapelis findvideos_ero")
-    
-    itemlist = []
-    # Descarga la pagina
-    data = scrapertools.cachePage(item.url)
-    #Busca los enlaces
-    patronlinks = '<td><a href="([^"]+)".*?title="([^"]+)".*?<td>([^"]+)<\/td><td>([^"]+)<\/td>'
-    matches = re.compile(patronlinks,re.DOTALL).findall(data)
-    
-    for url, server, idioma, calidad in matches:
-        servidor = server
-        if servidor == "Embed" : servidor = "Nowvideo"
-        title = servidor + " - " + idioma + " - " + calidad
-        itemlist.append( Item(channel=item.channel, action="play", title= title  , url=url , thumbnail=item.thumbnail, fanart=item.fanart, plot= item.plot, folder=True) )
 
-    patronembed = 'id="(embed[0-9])".*?<div class="calishow">(.*?)<(.*?)<div class="clear">'
-    matches = re.compile(patronembed,re.DOTALL).findall(data)
-    for title, calidad, url in matches:
-        title = scrapertools.find_single_match(url,"(?:http://|https://|//)(.*?)(?:embed.|videoembed|)/")
-        title = title.capitalize() + " - "+calidad
-        itemlist.append( Item(channel=item.channel, action="play", title= title  , url=url , thumbnail=item.thumbnail, fanart=item.fanart, plot= item.plot, folder=True) )
-
-    return itemlist
-	
 def play(item):
     logger.info("pelisalacarta.inkapelis play")
     itemlist = servertools.find_video_items(data=item.url)
-    return itemlist
 
-def info(title, thumbnail):
-    logger.info("pelisalacarta.inkapelis info")
-    infoLabels={}
-    plot={}
-    try:
-        from core.tmdb import Tmdb
-        oTmdb= Tmdb(texto_buscado=title, tipo= "movie")
-        count = 0
-        if oTmdb.total_results > 0:
-            #Mientras el thumbnail no coincida con el del resultado de la búsqueda, pasa al siguiente resultado
-            while oTmdb.get_poster(size="w185") != thumbnail:
-                count += 1
-                oTmdb.load_resultado(index_resultado=count)
-                if count == oTmdb.total_results : break
-            infoLabels['code'] = oTmdb.get_id()
-            infoLabels['plot'] = oTmdb.get_sinopsis()
-            infoLabels['title'] = oTmdb.result["title"]
-            infoLabels['year']= oTmdb.result["release_date"][:4]
-            infoLabels['genre'] = ", ".join(oTmdb.result["genres"])
-            infoLabels['rating'] = float(oTmdb.result["vote_average"])
-            fanart=oTmdb.get_backdrop()
-            plot['infoLabels']=infoLabels
-            return plot, fanart
-    except:
-        pass	
+    return itemlist
