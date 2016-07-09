@@ -823,15 +823,13 @@ def upgrade_library():
                             "Seleccione el nombre correcto de cada serie, si no está seguro pulse 'Cancelar'.",
                             "Hay nuevas opciones en 'Biblioteca' y en la 'configuración' del addon.")
 
-    # TODO soporte samba
-    os.rename(TVSHOWS_PATH, os.path.join(config.get_library_path(), "SERIES_OLD"))
+    filetools.rename(TVSHOWS_PATH, os.path.join(config.get_library_path(), "SERIES_OLD"))
     if not filetools.exists(TVSHOWS_PATH):
 
         filetools.mkdir(TVSHOWS_PATH)
         if filetools.exists(TVSHOWS_PATH):
             fname = filetools.join(config.get_data_path(), TVSHOW_FILE_OLD)
 
-            # TODO compatible con samba
             if filetools.exists(fname):
                 try:
                     with open(fname, "r") as f:
@@ -947,21 +945,16 @@ def create_nfo_file(video_id, path, type_video):
     filetools.write(nfo_file, data)
 
 
-
-
 def add_pelicula_to_library(item):
     logger.info("pelisalacarta.platformcode.launcher add_pelicula_to_library")
 
     new_item = item.clone(action="play_from_library", category="Cine")
     insertados, sobreescritos, fallidos = save_library_movie(new_item)
-    itemlist = []
 
     if fallidos == 0:
         platformtools.dialog_ok("Biblioteca", "La pelicula se ha añadido a la biblioteca")
     else:
         platformtools.dialog_ok("Biblioteca", "ERROR, la pelicula NO se ha añadido a la biblioteca")
-
-    xbmctools.renderItems(itemlist, item)
 
     # library.update()
 
