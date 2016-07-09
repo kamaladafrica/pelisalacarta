@@ -43,11 +43,13 @@ from core.item import Item
 from platformcode import platformtools
 
 try:
-    from samba import libsmb as samba
+    from customsamba import libsmb as samba
+
+# FIXME: Entiendo que esto se podrá quitar...
 except ImportError:
     librerias = xbmc.translatePath(os.path.join(config.get_runtime_path(), 'lib'))
     sys.path.append(librerias)
-    from lib.samba import libsmb as samba
+    from lib.customamba import libsmb as samba
 
 import urllib2
 
