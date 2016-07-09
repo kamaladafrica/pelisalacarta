@@ -405,17 +405,12 @@ class InfoWindow(xbmcgui.WindowXMLDialog):
                         self.return_value = getattr(cb_channel, self.callback)(None)
 
     def onAction(self, action):
-        logger.info("pelisalacarta.platformcode.xbmc_info_window onAction action="+repr(action.getId()))
+        # logger.info("pelisalacarta.platformcode.xbmc_info_window onAction action="+repr(action.getId()))
 
         # Accion 1: Flecha izquierda
         if action == 1:
             # Obtenemos el foco
             focus = self.getFocusId()
-
-            if focus in [10025, 10026, 10027, 10028]:
-                logger.info("estoy dentro")
-            else:
-                logger.info("no son los botones :(")
 
             # botón Aceptar
             if focus == 10028:
