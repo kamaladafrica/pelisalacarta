@@ -5,37 +5,28 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import urlparse,urllib2,urllib,re
-import os, sys
+import re
+import sys
+import urlparse
 
-from core import logger
 from core import config
+from core import logger
 from core import scrapertools
-from core import jsontools
+from core import servertools
 from core.item import Item
-from servers import servertools
 
 DEBUG = config.get_setting("debug")
 
-__category__ = "A"
-__type__ = "generic"
-__title__ = "peliculasrey"
-__channel__ = "peliculasrey"
-__language__ = "ES"
-__creationdate__ = "20160415"
-
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("pelisalacarta.channels.peliculasrey mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, action="PorFecha" , title="Año de Lanzamiento", url="http://www.peliculasrey.com" ))
-    itemlist.append( Item(channel=__channel__, action="Idiomas" , title="Idiomas"            , url="http://www.peliculasrey.com" ))
-    itemlist.append( Item(channel=__channel__, action="calidades" , title="Por calidad"          , url="http://www.peliculasrey.com" ))
-    itemlist.append( Item(channel=__channel__, action="generos" , title="Por género"          , url="http://www.peliculasrey.com" ))
-    itemlist.append( Item(channel=__channel__, action="search"  , title="Buscar..."            , url="http://www.peliculasrey.com" ))
+    itemlist.append( Item(channel=item.channel, action="PorFecha" , title="Año de Lanzamiento", url="http://www.peliculasrey.com" ))
+    itemlist.append( Item(channel=item.channel, action="Idiomas" , title="Idiomas"            , url="http://www.peliculasrey.com" ))
+    itemlist.append( Item(channel=item.channel, action="calidades" , title="Por calidad"          , url="http://www.peliculasrey.com" ))
+    itemlist.append( Item(channel=item.channel, action="generos" , title="Por género"          , url="http://www.peliculasrey.com" ))
+    itemlist.append( Item(channel=item.channel, action="search"  , title="Buscar..."            , url="http://www.peliculasrey.com" ))
     
       
     return itemlist
@@ -59,7 +50,7 @@ def PorFecha(item):
         plot = ""
         url = urlparse.urljoin(item.url,scrapedurl)
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title))
+        itemlist.append( Item(channel=item.channel, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
 
     return itemlist
 
@@ -82,7 +73,7 @@ def Idiomas(item):
         plot = ""
         url = urlparse.urljoin(item.url,scrapedurl)
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title))
+        itemlist.append( Item(channel=item.channel, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
 
     return itemlist
 
@@ -105,7 +96,7 @@ def calidades(item):
         plot = ""
         url = urlparse.urljoin(item.url,scrapedurl)
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title))
+        itemlist.append( Item(channel=item.channel, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
 
     return itemlist
 
@@ -128,7 +119,7 @@ def generos(item):
         plot = ""
         url = urlparse.urljoin(item.url,scrapedurl)
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title))
+        itemlist.append( Item(channel=item.channel, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, viewmode="movie"))
 
     return itemlist
 
@@ -167,12 +158,12 @@ def peliculas(item):
     
     for scrapedthumbnail,scrapedtitle,scrapedurl in matches:
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="findvideos" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot="", fulltitle=scrapedtitle, viewmode="movie"))
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot="", fulltitle=scrapedtitle))
 
     next_page = scrapertools.find_single_match(data,'rel="next" href="([^"]+)')
     if next_page!="":
-    #    itemlist.append( Item(channel=__channel__, action="peliculas" , title=">> Página siguiente" , url=item.url+next_page, folder=True))
-        itemlist.append( Item(channel=__channel__, action="peliculas" , title=">> Página siguiente" , url=next_page, folder=True))
+    #    itemlist.append( Item(channel=item.channel, action="peliculas" , title=">> Página siguiente" , url=item.url+next_page, folder=True, viewmode="movie"))
+        itemlist.append( Item(channel=item.channel, action="peliculas" , title=">> Página siguiente" , url=next_page, folder=True, viewmode="movie"))
       
     return itemlist
 
@@ -199,7 +190,7 @@ def findvideos(item):
         thumbnail = ""
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="play" , title=title , url=url, thumbnail=thumbnail, plot=plot, folder=False))
+        itemlist.append( Item(channel=item.channel, action="play" , title=title , url=url, thumbnail=thumbnail, plot=plot, folder=False))
 
     return itemlist
 
@@ -213,6 +204,6 @@ def play(item):
         videoitem.title = item.title
         videoitem.fulltitle = item.fulltitle
         videoitem.thumbnail = item.thumbnail
-        videoitem.channel = __channel__
+        videoitem.channel = item.channel
 
     return itemlist

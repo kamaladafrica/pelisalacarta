@@ -12,9 +12,9 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/cinetux.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>3</version>
-	<date>16/02/2015</date>
-	<changes>Añadida la funcion Buscar</changes>
+	<version>5</version>
+	<date>01/07/2016</date>
+	<changes>Eliminado código innecesario.</changes>
 
 	<categories>
 		<category>latino</category>
@@ -22,6 +22,80 @@
 	</categories>
 
 	<settings>
-		<include_in_global_search>false</include_in_global_search>
+		<id>include_in_global_search</id>
+		<type>bool</type>
+		<label>Incluir en busqueda global</label>
+		<default>true</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<id>include_in_newest_peliculas</id>
+		<type>bool</type>
+		<label>Incluir en Novedades - Películas</label>
+		<default>true</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<id>include_in_newest_documentales</id>
+		<type>bool</type>
+		<label>Incluir en Novedades - Documentales</label>
+		<default>true</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<id>modo_grafico</id>
+		<type>bool</type>
+		<label>Buscar información extra</label>
+		<default>true</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<id>perfil</id>
+		<type>list</type>
+		<label>Perfil de color</label>
+		<default>0</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+		<lvalues>Perfil 3</lvalues>
+		<lvalues>Perfil 2</lvalues>
+		<lvalues>Perfil 1</lvalues>
+	</settings>
+	<settings>
+		<id>filterlanguages</id>
+		<type>list</type>
+		<label>Mostrar enlaces en idioma...</label>
+		<default>3</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+		<lvalues>VOSE</lvalues>
+		<lvalues>Latino</lvalues>
+		<lvalues>Español</lvalues>
+		<lvalues>No filtrar</lvalues>
+	</settings>
+	<settings>
+		<id>filterlinks</id>
+		<type>list</type>
+		<label>Mostrar enlaces de tipo...</label>
+		<default>2</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+		<lvalues>Solo Descarga</lvalues>
+		<lvalues>Solo Online</lvalues>
+		<lvalues>No filtrar</lvalues>
+	</settings>
+	<settings>
+		<id>viewmode</id>
+		<type>list</type>
+		<label>Elegir vista por defecto (Confluence)...</label>
+		<default>2</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+		<lvalues>Sinopsis</lvalues>
+		<lvalues>Miniatura</lvalues>
+		<lvalues>Lista</lvalues>
 	</settings>
 </channel>

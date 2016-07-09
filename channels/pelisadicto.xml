@@ -41,9 +41,9 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/pelisadicto.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>4</version>
-	<date>18/02/2015</date>
-	<changes>Eliminado del patrn calidad de las fichas.</changes>
+	<version>5</version>
+	<date>01/07/2016</date>
+	<changes>Eliminado código innecesario.</changes>
 
 	<categories>
 		<category>movie</category>
@@ -51,7 +51,12 @@
 	</categories>
 
 	<settings>
-		<include_in_global_search>false</include_in_global_search>
+		<id>include_in_global_search</id>
+		<type>bool</type>
+		<label>Incluir en busqueda global</label>
+		<default>false</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
 	</settings>
 </channel>
 >>>>>>> origin/master

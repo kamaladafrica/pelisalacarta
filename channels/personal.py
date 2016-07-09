@@ -1,30 +1,19 @@
 # -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
-# Canal para jkanime
+# Canal para personal
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import urlparse,urllib2,urllib,re
-import os, sys
+import re
 
-from core import logger
 from core import config
+from core import logger
 from core import scrapertools
 from core.item import Item
-from servers import servertools
 
 DEBUG = config.get_setting("debug")
 
-__category__ = "A"
-__type__ = "generic"
-__title__ = "Personal"
-__channel__ = "personal"
-__language__ = "ES"
-__creationdate__ = "20121022"
-
-def isGeneric():
-    return True
 
 def mainlist(item):
     return personal_channel(item)
@@ -80,13 +69,13 @@ def personal_channel(item):
             if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
             if scrapedurltype=="":
-                itemlist.append( Item(channel=__channel__, action="play" , title=title , fulltitle=title, url=url, thumbnail=thumbnail, fanart=fanart, plot=plot, viewmode="movie_with_plot", folder=False))
+                itemlist.append( Item(channel=item.channel, action="play" , title=title , fulltitle=title, url=url, thumbnail=thumbnail, fanart=fanart, plot=plot, folder=False))
             else:
-                itemlist.append( Item(channel=__channel__, action="personal_channel" , title=title , fulltitle=title, url=url, thumbnail=thumbnail, fanart=fanart, plot=plot, viewmode="movie_with_plot", folder=True))
+                itemlist.append( Item(channel=item.channel, action="personal_channel" , title=title , fulltitle=title, url=url, thumbnail=thumbnail, fanart=fanart, plot=plot, viewmode="movie_with_plot", folder=True))
         
             contador = contador + 1
             if contador > maximo:
-                itemlist.append( Item(channel=__channel__, action="personal_channel" , title=">> Página siguiente" , extra=str(pagina_actual+1), folder=True))
+                itemlist.append( Item(channel=item.channel, action="personal_channel" , title=">> Página siguiente" , extra=str(pagina_actual+1, viewmode="movie_with_plot"), folder=True))
                 break
 
         # Si no está en la página que debe mostrar, simplemente deja pasar el contador
@@ -112,7 +101,7 @@ def personal_channel(item):
                 plot = scrapedplot
                 if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
         
-                itemlist.append( Item(channel=__channel__, action="play" , title=title , fulltitle=title, url=url, thumbnail=thumbnail, fanart=fanart, plot=plot, viewmode="movie_with_plot", folder=False))
+                itemlist.append( Item(channel=item.channel, action="play" , title=title , fulltitle=title, url=url, thumbnail=thumbnail, fanart=fanart, plot=plot, folder=False))
 
     if len(itemlist)==0:
         
@@ -125,10 +114,10 @@ def play(item):
     logger.info("[personal.py] play")
     itemlist = []
 
-    from servers import servertools
+    from core import servertools
     itemlist=servertools.find_video_items(data=item.url)
     for videoitem in itemlist:
-        videoitem.channel=__channel__
+        videoitem.channel=item.channel
         videoitem.folder=False
         videoitem.title=item.title
         videoitem.fulltitle=item.title
@@ -139,7 +128,3 @@ def play(item):
         itemlist.append( item )
 
     return itemlist
-
-# Verificación automática de canales: Esta función debe devolver "True" si todo está ok en el canal.
-def test():
-    return True

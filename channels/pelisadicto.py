@@ -4,33 +4,27 @@
 # Canal para cuevana
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os, sys
+import re
+import sys
+import urlparse
 
-from core import logger
 from core import config
+from core import logger
 from core import scrapertools
+from core import servertools
 from core.item import Item
-from servers import servertools
 
-__channel__ = "pelisadicto"
-__category__ = "F"
-__type__ = "generic"
-__title__ = "Pelisadicto"
-__language__ = "ES"
 
 DEBUG = config.get_setting("debug")
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("[pelisadicto.py] mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, title="Últimas agregadas"  , action="agregadas", url="http://pelisadicto.com"))
-    itemlist.append( Item(channel=__channel__, title="Listado por género" , action="porGenero", url="http://pelisadicto.com"))
-    itemlist.append( Item(channel=__channel__, title="Buscar" , action="search", url="http://pelisadicto.com") )
+    itemlist.append( Item(channel=item.channel, title="Últimas agregadas"  , action="agregadas", url="http://pelisadicto.com", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, title="Listado por género" , action="porGenero", url="http://pelisadicto.com"))
+    itemlist.append( Item(channel=item.channel, title="Buscar" , action="search", url="http://pelisadicto.com") )
     
     return itemlist
 
@@ -38,30 +32,30 @@ def porGenero(item):
     logger.info("[pelisadicto.py] porGenero")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__ , action="agregadas" , title="Acción",url="http://pelisadicto.com/genero/Acción/1"))
-    itemlist.append( Item(channel=__channel__ , action="agregadas" , title="Adulto",url="http://pelisadicto.com/genero/Adulto/1"))
-    itemlist.append( Item(channel=__channel__ , action="agregadas" , title="Animación",url="http://pelisadicto.com/genero/Animación/1"))
-    itemlist.append( Item(channel=__channel__ , action="agregadas" , title="Aventura",url="http://pelisadicto.com/genero/Aventura/1"))
-    itemlist.append( Item(channel=__channel__ , action="agregadas" , title="Biográfico",url="http://pelisadicto.com/genero/Biográfico/1"))
-    itemlist.append( Item(channel=__channel__ , action="agregadas" , title="Ciencia Ficción",url="http://pelisadicto.com/genero/Ciencia Ficción/1"))
-    itemlist.append( Item(channel=__channel__ , action="agregadas" , title="Cine Negro",url="http://pelisadicto.com/genero/Cine Negro/1"))
-    itemlist.append( Item(channel=__channel__ , action="agregadas" , title="Comedia",url="http://pelisadicto.com/genero/Comedia/1"))
-    itemlist.append( Item(channel=__channel__ , action="agregadas" , title="Corto",url="http://pelisadicto.com/genero/Corto/1"))
-    itemlist.append( Item(channel=__channel__ , action="agregadas" , title="Crimen",url="http://pelisadicto.com/genero/Crimen/1"))
-    itemlist.append( Item(channel=__channel__ , action="agregadas" , title="Deporte",url="http://pelisadicto.com/genero/Deporte/1"))
-    itemlist.append( Item(channel=__channel__ , action="agregadas" , title="Documental",url="http://pelisadicto.com/genero/Documental/1"))
-    itemlist.append( Item(channel=__channel__ , action="agregadas" , title="Drama",url="http://pelisadicto.com/genero/Drama/1"))
-    itemlist.append( Item(channel=__channel__ , action="agregadas" , title="Familiar",url="http://pelisadicto.com/genero/Familiar/1"))
-    itemlist.append( Item(channel=__channel__ , action="agregadas" , title="Fantasía",url="http://pelisadicto.com/genero/Fantasía/1"))
-    itemlist.append( Item(channel=__channel__ , action="agregadas" , title="Guerra",url="http://pelisadicto.com/genero/Guerra/1"))
-    itemlist.append( Item(channel=__channel__ , action="agregadas" , title="Historia",url="http://pelisadicto.com/genero/Historia/1"))
-    itemlist.append( Item(channel=__channel__ , action="agregadas" , title="Misterio",url="http://pelisadicto.com/genero/Misterio/1"))
-    itemlist.append( Item(channel=__channel__ , action="agregadas" , title="Música",url="http://pelisadicto.com/genero/Música/1"))
-    itemlist.append( Item(channel=__channel__ , action="agregadas" , title="Musical",url="http://pelisadicto.com/genero/Musical/1"))
-    itemlist.append( Item(channel=__channel__ , action="agregadas" , title="Romance",url="http://pelisadicto.com/genero/Romance/1"))
-    itemlist.append( Item(channel=__channel__ , action="agregadas" , title="Terror",url="http://pelisadicto.com/genero/Terror/1"))
-    itemlist.append( Item(channel=__channel__ , action="agregadas" , title="Thriller",url="http://pelisadicto.com/genero/Thriller/1"))
-    itemlist.append( Item(channel=__channel__ , action="agregadas" , title="Western",url="http://pelisadicto.com/genero/Western/1"))
+    itemlist.append( Item(channel=item.channel , action="agregadas" , title="Acción",url="http://pelisadicto.com/genero/Acción/1", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel , action="agregadas" , title="Adulto",url="http://pelisadicto.com/genero/Adulto/1", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel , action="agregadas" , title="Animación",url="http://pelisadicto.com/genero/Animación/1", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel , action="agregadas" , title="Aventura",url="http://pelisadicto.com/genero/Aventura/1", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel , action="agregadas" , title="Biográfico",url="http://pelisadicto.com/genero/Biográfico/1", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel , action="agregadas" , title="Ciencia Ficción",url="http://pelisadicto.com/genero/Ciencia Ficción/1", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel , action="agregadas" , title="Cine Negro",url="http://pelisadicto.com/genero/Cine Negro/1", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel , action="agregadas" , title="Comedia",url="http://pelisadicto.com/genero/Comedia/1", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel , action="agregadas" , title="Corto",url="http://pelisadicto.com/genero/Corto/1", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel , action="agregadas" , title="Crimen",url="http://pelisadicto.com/genero/Crimen/1", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel , action="agregadas" , title="Deporte",url="http://pelisadicto.com/genero/Deporte/1", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel , action="agregadas" , title="Documental",url="http://pelisadicto.com/genero/Documental/1", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel , action="agregadas" , title="Drama",url="http://pelisadicto.com/genero/Drama/1", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel , action="agregadas" , title="Familiar",url="http://pelisadicto.com/genero/Familiar/1", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel , action="agregadas" , title="Fantasía",url="http://pelisadicto.com/genero/Fantasía/1", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel , action="agregadas" , title="Guerra",url="http://pelisadicto.com/genero/Guerra/1", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel , action="agregadas" , title="Historia",url="http://pelisadicto.com/genero/Historia/1", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel , action="agregadas" , title="Misterio",url="http://pelisadicto.com/genero/Misterio/1", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel , action="agregadas" , title="Música",url="http://pelisadicto.com/genero/Música/1", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel , action="agregadas" , title="Musical",url="http://pelisadicto.com/genero/Musical/1", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel , action="agregadas" , title="Romance",url="http://pelisadicto.com/genero/Romance/1", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel , action="agregadas" , title="Terror",url="http://pelisadicto.com/genero/Terror/1", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel , action="agregadas" , title="Thriller",url="http://pelisadicto.com/genero/Thriller/1", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel , action="agregadas" , title="Western",url="http://pelisadicto.com/genero/Western/1", viewmode="movie_with_plot"))
 
     return itemlist	
 
@@ -118,7 +112,7 @@ def agregadas(item):
         url=urlparse.urljoin(item.url,url)
         thumbnail = urlparse.urljoin(url,thumbnail)
 
-        itemlist.append( Item(channel=__channel__, action="findvideos", title=title+" ", fulltitle=title , url=url , thumbnail=thumbnail , show=title, viewmode="movie_with_plot") )
+        itemlist.append( Item(channel=item.channel, action="findvideos", title=title+" ", fulltitle=title , url=url , thumbnail=thumbnail , show=title) )
 
     # Paginación
     try:
@@ -129,7 +123,7 @@ def agregadas(item):
         item.url = re.sub(r"\d+$","%s",item.url)
         next_page_number = current_page_number + 1
         next_page = item.url % (next_page_number)
-        itemlist.append( Item(channel=__channel__, action="agregadas", title="Página siguiente >>" , url=next_page) )
+        itemlist.append( Item(channel=item.channel, action="agregadas", title="Página siguiente >>" , url=next_page, viewmode="movie_with_plot") )
     except: pass
 
     return itemlist
@@ -161,7 +155,7 @@ def findvideos(item):
         if "/img/3.png" in scrapedidioma: idioma="Subtitulado"
         title = item.title + " ["+scrapedcalidad+"][" + idioma + "][" + scrapedserver + "]"
 
-        itemlist.append( Item(channel=__channel__, action="play", title=title, fulltitle=title , url=scrapedurl , thumbnail="" , plot=plot , show = item.show) )
+        itemlist.append( Item(channel=item.channel, action="play", title=title, fulltitle=title , url=scrapedurl , thumbnail="" , plot=plot , show = item.show) )
     return itemlist	
 
 def play(item):
@@ -173,6 +167,6 @@ def play(item):
         videoitem.title = item.title
         videoitem.fulltitle = item.fulltitle
         videoitem.thumbnail = item.thumbnail
-        videoitem.channel = __channel__
+        videoitem.channel = item.channel
 
     return itemlist    

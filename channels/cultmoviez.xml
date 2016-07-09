@@ -6,10 +6,10 @@
 	<update_url></update_url>
 	<active>true</active>
 	<include_in_global_search>true</include_in_global_search>
-	<version>2</version>
+	<version>3</version>
 	<adult>false</adult>
-	<date>02/03/2016</date>
-	<changes>Revision a partir del canal creado por robalo</changes>
+	<date>01/07/2016</date>
+	<changes>Eliminado código innecesario.</changes>
 	<fanart></fanart>
 	<thumbnail>http://i.imgur.com/lRuY0Ia.jpg?1</thumbnail>
 	<bannermenu>http://i.imgur.com/inTH5Rc.png</bannermenu>
@@ -19,4 +19,4 @@
 		<category>documentary</category>
 		<category>vos</category>
 	</categories>
-</version>
+</channel>

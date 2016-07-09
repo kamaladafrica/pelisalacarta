@@ -1,35 +1,26 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para italiafilm
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os,sys
- 
+import re
+import sys
+import urlparse
+
 from core import logger
-from core import config
 from core import scrapertools
 from core.item import Item
-from servers import servertools
 
-__channel__ = "italiafilm"
-__category__ = "F,S,A"
-__type__ = "generic"
-__title__ = "Italia film (IT)"
-__language__ = "IT"
-
-DEBUG = True #config.get_setting("debug")
+DEBUG = config.get_setting("debug")
 EVIDENCE = "   "
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("[gnula.py] mainlist")
     itemlist = []
-    itemlist.append( Item(channel=__channel__, title="Categorie" , action="categorias", url="http://www.italia-film.org/film-in-streaming/"))
-    itemlist.append( Item(channel=__channel__, title="Cerca Film", action="search"))
+    itemlist.append( Item(channel=item.channel, title="Categorie" , action="categorias", url="http://www.italia-film.org/film-in-streaming/"))
+    itemlist.append( Item(channel=item.channel, title="Cerca Film", action="search"))
     return itemlist
 
 def categorias(item):
@@ -62,7 +53,7 @@ def categorias(item):
         scrapedplot = ""
         scrapedthumbnail = ""
         if DEBUG: logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action='peliculas', title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action='peliculas', title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True, viewmode="movie_with_plot") )
 
     return itemlist
 
@@ -104,29 +95,13 @@ def peliculas(item):
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
         # Añade al listado de XBMC
-        itemlist.append( Item(channel=__channel__, action='findvideos', title=title , url=url , thumbnail=thumbnail , fanart=thumbnail, plot=plot , viewmode="movie_with_plot", folder=True) )
+        itemlist.append( Item(channel=item.channel, action='findvideos', title=title , url=url , thumbnail=thumbnail , fanart=thumbnail, plot=plot , viewmode="movie_with_plot", folder=True) )
 
     # Siguiente
     try:
         pagina_siguiente = scrapertools.get_match(data,'<a class="next page-numbers" href="([^"]+)"')
-        itemlist.append( Item(channel=__channel__, action="peliculas", title=">> Pagina seguente" , url=pagina_siguiente , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="peliculas", title=">> Pagina seguente" , url=pagina_siguiente , folder=True, viewmode="movie_with_plot") )
     except:
         pass
 
     return itemlist
-
-# Verificación automática de canales: Esta función debe devolver "True" si está ok el canal.
-def test():
-    from servers import servertools
-    # mainlist
-    mainlist_items = mainlist(Item())
-    # Da por bueno el canal si alguno de los vídeos de "Novedades" devuelve mirrors
-    peliculas_items = peliculas(mainlist_items[0])
-    bien = False
-    for pelicula_item in peliculas_items:
-        mirrors = servertools.find_video_items( item=pelicula_item )
-        if len(mirrors)>0:
-            bien = True
-            break
-
-    return bien

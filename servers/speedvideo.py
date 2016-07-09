@@ -6,11 +6,11 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import re, base64
-
-from core import scrapertools
+import re
+import base64
 from core import logger
-from core import config
+from core import scrapertools
+
 
 def test_video_exists( page_url ):
     logger.info("pelisalacarta.servers.speedvideo test_video_exists(page_url='%s')" % page_url)
@@ -102,9 +102,3 @@ def find_videos(text):
 					
     
     return devuelve
-
-def test():
-
-    video_urls = get_video_url("http://www.firedrive.com/embed/E89565C3A0C6183E")
-
-    return len(video_urls)>0

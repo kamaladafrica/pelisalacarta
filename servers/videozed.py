@@ -5,12 +5,11 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import urlparse,urllib2,urllib,re
-import os
+import re
 
-from core import scrapertools
 from core import logger
-from core import config
+from core import scrapertools
+
 
 def test_video_exists( page_url ):
     logger.info("[videozed.py] test_video_exists(page_url='%s')" % page_url)
@@ -86,8 +85,3 @@ def find_videos(text):
             logger.info("  url duplicada="+url)
 
     return devuelve
-
-def test():
-    video_urls = get_video_url("http://videozed.net/t9pxgc69j56f")
-
-    return len(video_urls)>0

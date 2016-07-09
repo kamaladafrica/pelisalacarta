@@ -4,31 +4,38 @@
 # Canal para tubehentai
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os
-import sys
+import re
+import urlparse
 
-from core import scrapertools
 from core import config
 from core import logger
+from core import scrapertools
 from core.item import Item
-from servers import servertools
-
-__channel__ = "tubehentai"
-__category__ = "A"
-__type__ = "generic"
-__title__ = "tubehentai"
-__language__ = "ES"
 
 DEBUG = config.get_setting("debug")
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("[tubehentai.py] mainlist")
-    return novedades(Item(channel=__channel__, title="Novedades" , action="novedades" , url="http://tubehentai.com/" ))
+    itemlist = []
+    itemlist.append(Item(channel=item.channel, title="Novedades" , action="novedades" , url="http://tubehentai.com/" ))
+    itemlist.append(Item(channel=item.channel, title="Buscar" , action="search" , url="http://tubehentai.com/search/%s/page1.html" ))
+    
+    return itemlist
 
+def search(item,texto):
+    logger.info("[tubehentai.py] search")
+ 
+    item.url = item.url % texto
+    try:
+        return novedades(item)
+    # Se captura la excepciÛn, para no interrumpir al buscador global si un canal falla
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error( "%s" % line )
+        return []
+        
 def novedades(item):
     logger.info("[tubehentai.py] getnovedades")
 
@@ -49,7 +56,7 @@ def novedades(item):
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
 
         # Añade al listado de XBMC
-        itemlist.append( Item(channel=__channel__, action="play", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=False) )
+        itemlist.append( Item(channel=item.channel, action="play", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=False) )
 
     # ------------------------------------------------------
     # Extrae el paginador
@@ -62,7 +69,7 @@ def novedades(item):
     if len(matches)>0:
         scrapedurl = urlparse.urljoin(item.url,"/" + matches[0])
         logger.info("[tubehentai.py] " + scrapedurl)
-        itemlist.append( Item(channel=__channel__, action="novedades", title=">> Página siguiente" , url=scrapedurl) )
+        itemlist.append( Item(channel=item.channel, action="novedades", title=">> Página siguiente" , url=scrapedurl) )
 
     return itemlist
 
@@ -79,21 +86,6 @@ def play(item):
     #url = url+"?start=0"
     logger.info("url="+url)
     server="Directo"
-    itemlist.append( Item(channel=__channel__, title="" , url=url , server=server, folder=False) )
+    itemlist.append( Item(channel=item.channel, title="" , url=url , server=server, folder=False) )
 
     return itemlist
-
-# Verificación automática de canales: Esta función debe devolver "True" si todo está ok en el canal.
-def test():
-    bien = True
-
-    # mainlist
-    videos_items = mainlist(Item())
-    
-    for video_item in videos_items:
-        mirrors = play(video_item)
-        if len(mirrors)>0:
-            return True
-
-    print "No hay ningún vídeo en la sección de novedades"
-    return False

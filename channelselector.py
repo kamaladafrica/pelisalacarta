@@ -1,70 +1,80 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
-# pelisalacarta - XBMC Plugin
+# ------------------------------------------------------------
+# pelisalacarta 4
+# Copyright 2015 tvalacarta@gmail.com
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
-import urlparse
-import os
-import sys
-import traceback
-import glob
+#
+# Distributed under the terms of GNU General Public License v3 (GPLv3)
+# http://www.gnu.org/licenses/gpl-3.0.html
+# ------------------------------------------------------------
+# This file is part of pelisalacarta 4.
+#
+# pelisalacarta 4 is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# pelisalacarta 4 is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with pelisalacarta 4.  If not, see <http://www.gnu.org/licenses/>.
+# ------------------------------------------------------------
 
+import glob
+import os
+import traceback
+import urlparse
+
+from core import channeltools
 from core import config
 from core import logger
 from core.item import Item
-from core import channeltools
 
-DEBUG = True
-CHANNELNAME = "channelselector"
+DEBUG = config.get_setting("debug")
+
 
 def getmainlist(preferred_thumb=""):
     logger.info("channelselector.getmainlist")
-    itemlist = []
+    itemlist = list()
 
     # Añade los canales que forman el menú principal
-    itemlist.append( Item(title=config.get_localized_string(30130) , channel="novedades" , action="mainlist", thumbnail = urlparse.urljoin(get_thumbnail_path(preferred_thumb),"thumb_novedades.png"),viewmode="movie") )
-    itemlist.append( Item(title=config.get_localized_string(30118) , channel="channelselector" , action="channeltypes", thumbnail = urlparse.urljoin(get_thumbnail_path(preferred_thumb),"thumb_canales.png"),viewmode="movie") )
-    itemlist.append( Item(title=config.get_localized_string(30103) , channel="buscador" , action="mainlist" , thumbnail = urlparse.urljoin(get_thumbnail_path(preferred_thumb),"thumb_buscar.png"),viewmode="movie") )
-    itemlist.append( Item(title=config.get_localized_string(30102) , channel="favoritos" , action="mainlist" , thumbnail = urlparse.urljoin(get_thumbnail_path(preferred_thumb),"thumb_favoritos.png"),viewmode="movie") )
-    itemlist.append( Item(title=config.get_localized_string(30131) , channel="wiideoteca" , action="mainlist", thumbnail = urlparse.urljoin(get_thumbnail_path(preferred_thumb),"thumb_biblioteca.png"),viewmode="movie") )
-    itemlist.append( Item(title=config.get_localized_string(30101) , channel="descargas" , action="mainlist", thumbnail = urlparse.urljoin(get_thumbnail_path(preferred_thumb),"thumb_descargas.png"),viewmode="movie") )
+    itemlist.append(Item(title=config.get_localized_string(30130), channel="novedades", action="mainlist",
+                         thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb), "thumb_novedades.png"),
+                         viewmode="movie"))
+    itemlist.append(Item(title=config.get_localized_string(30118), channel="channelselector", action="channeltypes",
+                         thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb), "thumb_canales.png"),
+                         viewmode="movie"))
+    itemlist.append(Item(title=config.get_localized_string(30103), channel="buscador", action="mainlist",
+                         thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb), "thumb_buscar.png"),
+                         viewmode="list"))
+    itemlist.append(Item(title=config.get_localized_string(30102), channel="favoritos", action="mainlist",
+                         thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb), "thumb_favoritos.png"),
+                         viewmode="movie"))
+    if config.get_library_support():
+        itemlist.append(Item(title=config.get_localized_string(30131), channel="biblioteca", action="mainlist",
+                             thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb), "thumb_biblioteca.png"),
+                             viewmode="movie"))
+    itemlist.append(Item(title=config.get_localized_string(30101), channel="descargas", action="mainlist",
+                         thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb), "thumb_descargas.png"),
+                         viewmode="movie"))
 
     if "xbmceden" in config.get_platform():
-        itemlist.append( Item(title=config.get_localized_string(30100) , channel="configuracion" , action="mainlist", thumbnail = urlparse.urljoin(get_thumbnail_path(preferred_thumb),"thumb_configuracion.png"), folder=False,viewmode="movie") )
+        itemlist.append(Item(title=config.get_localized_string(30100), channel="configuracion", action="mainlist",
+                             thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb), "thumb_configuracion.png"),
+                             folder=False, viewmode="list"))
     else:
-        itemlist.append( Item(title=config.get_localized_string(30100) , channel="configuracion" , action="mainlist", thumbnail = urlparse.urljoin(get_thumbnail_path(preferred_thumb),"thumb_configuracion.png"),viewmode="movie") )
+        itemlist.append(Item(title=config.get_localized_string(30100), channel="configuracion", action="mainlist",
+                             thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb), "thumb_configuracion.png"),
+                             viewmode="list"))
 
-    itemlist.append( Item(title=config.get_localized_string(30104) , channel="ayuda" , action="mainlist", thumbnail = urlparse.urljoin(get_thumbnail_path(preferred_thumb),"thumb_ayuda.png"),viewmode="movie") )
+    itemlist.append(Item(title=config.get_localized_string(30104), channel="ayuda", action="mainlist",
+                         thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb), "thumb_ayuda.png"),
+                         viewmode="list"))
     return itemlist
 
-# TODO: (3.1) Pasar el código específico de XBMC al laucher
-def mainlist(params,url,category):
-    logger.info("channelselector.mainlist")
-
-    # Verifica actualizaciones solo en el primer nivel
-    if config.get_platform()!="boxee":
-
-        try:
-            from core import updater
-        except ImportError:
-            logger.info("channelselector.mainlist No disponible modulo actualizaciones")
-        else:
-            if config.get_setting("updatecheck2") == "true":
-                logger.info("channelselector.mainlist Verificar actualizaciones activado")
-                try:
-                    updater.checkforupdates()
-                except:
-                    import xbmcgui
-                    dialog = xbmcgui.Dialog()
-                    dialog.ok("No se puede conectar","No ha sido posible comprobar","si hay actualizaciones")
-                    logger.info("channelselector.mainlist Fallo al verificar la actualización")
-                    pass
-            else:
-                logger.info("channelselector.mainlist Verificar actualizaciones desactivado")
-
-    itemlist = getmainlist()
-	#Se devuelve el itemlist para que xbmctools se encarge de mostrarlo
-    return itemlist
 
 def getchanneltypes(preferred_thumb=""):
     logger.info("channelselector getchanneltypes")
@@ -134,20 +144,6 @@ def getchanneltypes(preferred_thumb=""):
     return itemlist
 
 
-def channeltypes(params,url,category):
-    logger.info("channelselector.mainlist channeltypes")
-
-    lista = getchanneltypes()
-	#Se devuelve el itemlist para que xbmctools se encarge de mostrarlo
-    return lista
-
-def listchannels(params,url,category):
-    logger.info("channelselector.listchannels")
-
-    lista = filterchannels(category)
-	#Se devuelve el itemlist para que xbmctools se encarge de mostrarlo
-    return lista
-
 def filterchannels(category,preferred_thumb=""):
     logger.info("channelselector.filterchannels")
 
@@ -195,7 +191,7 @@ def filterchannels(category,preferred_thumb=""):
                     continue
 
                 # Si ha llegado hasta aquí, lo añade
-                channelslist.append(Item(title=channel_parameters["title"], channel=channel_parameters["channel"], action="mainlist", thumbnail=channel_parameters["thumbnail"] , fanart=channel_parameters["fanart"], category=", ".join(channel_parameters["categories"])[:-2], language=channel_parameters["language"], type=channel_parameters["type"], viewmode="movie" ))
+                channelslist.append(Item(title=channel_parameters["title"], channel=channel_parameters["channel"], action="mainlist", thumbnail=channel_parameters["thumbnail"] , fanart=channel_parameters["fanart"], category=", ".join(channel_parameters["categories"])[:-2], language=channel_parameters["language"], viewmode="list" ))
             
             except:
                 logger.info("Se ha producido un error al leer los datos del canal " + channel)
@@ -206,22 +202,22 @@ def filterchannels(category,preferred_thumb=""):
 
     if category=="all":
         if config.get_setting("personalchannel5")=="true":
-            channelslist.insert( 0 , Item( title=config.get_setting("personalchannelname5") ,action="mainlist", channel="personal5" ,thumbnail=config.get_setting("personalchannellogo5") , type="generic" ,viewmode="movie" ))
+            channelslist.insert( 0 , Item( title=config.get_setting("personalchannelname5") ,action="mainlist", channel="personal5" ,thumbnail=config.get_setting("personalchannellogo5") , type="generic" ,viewmode="list" ))
         if config.get_setting("personalchannel4")=="true":
-            channelslist.insert( 0 , Item( title=config.get_setting("personalchannelname4") ,action="mainlist", channel="personal4" ,thumbnail=config.get_setting("personalchannellogo4") , type="generic" ,viewmode="movie" ))
+            channelslist.insert( 0 , Item( title=config.get_setting("personalchannelname4") ,action="mainlist", channel="personal4" ,thumbnail=config.get_setting("personalchannellogo4") , type="generic" ,viewmode="list" ))
         if config.get_setting("personalchannel3")=="true":
-            channelslist.insert( 0 , Item( title=config.get_setting("personalchannelname3") ,action="mainlist", channel="personal3" ,thumbnail=config.get_setting("personalchannellogo3") , type="generic" ,viewmode="movie" ))
+            channelslist.insert( 0 , Item( title=config.get_setting("personalchannelname3") ,action="mainlist", channel="personal3" ,thumbnail=config.get_setting("personalchannellogo3") , type="generic" ,viewmode="list" ))
         if config.get_setting("personalchannel2")=="true":
-            channelslist.insert( 0 , Item( title=config.get_setting("personalchannelname2") ,action="mainlist", channel="personal2" ,thumbnail=config.get_setting("personalchannellogo2") , type="generic" ,viewmode="movie" ))
+            channelslist.insert( 0 , Item( title=config.get_setting("personalchannelname2") ,action="mainlist", channel="personal2" ,thumbnail=config.get_setting("personalchannellogo2") , type="generic" ,viewmode="list" ))
         if config.get_setting("personalchannel")=="true":
-            channelslist.insert( 0 , Item( title=config.get_setting("personalchannelname")  ,action="mainlist", channel="personal"  ,thumbnail=config.get_setting("personalchannellogo") , type="generic" ,viewmode="movie" ))
+            channelslist.insert( 0 , Item( title=config.get_setting("personalchannelname")  ,action="mainlist", channel="personal"  ,thumbnail=config.get_setting("personalchannellogo") , type="generic" ,viewmode="list" ))
 
         channel_parameters = channeltools.get_channel_parameters("tengourl")
         # Si prefiere el bannermenu y el canal lo tiene, cambia ahora de idea
         if preferred_thumb=="bannermenu" and "bannermenu" in channel_parameters:
             channel_parameters["thumbnail"] = channel_parameters["bannermenu"]
 
-        channelslist.insert( 0 , Item( title="Tengo una URL"  ,action="mainlist", channel="tengourl" , thumbnail=channel_parameters["thumbnail"], type="generic" ,viewmode="movie" ))
+        channelslist.insert( 0 , Item( title="Tengo una URL"  ,action="mainlist", channel="tengourl" , thumbnail=channel_parameters["thumbnail"], type="generic" ,viewmode="list" ))
 
     return channelslist
 

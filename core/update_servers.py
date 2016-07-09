@@ -1,18 +1,36 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
-# pelisalacarta - XBMC Plugin
-# update_servers.py
+# ------------------------------------------------------------
+# pelisalacarta 4
+# Copyright 2015 tvalacarta@gmail.com
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os
-import sys
+#
+# Distributed under the terms of GNU General Public License v3 (GPLv3)
+# http://www.gnu.org/licenses/gpl-3.0.html
+# ------------------------------------------------------------
+# This file is part of pelisalacarta 4.
+#
+# pelisalacarta 4 is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# pelisalacarta 4 is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with pelisalacarta 4.  If not, see <http://www.gnu.org/licenses/>.
+# --------------------------------------------------------------------------------
+# update_servers.py
+# --------------------------------------------------------------------------------
 
-from core import scrapertools
+import os
+import urlparse
+
 from core import config
-from core import logger
-from core.item import Item
-from servers import servertools
+from core import scrapertools
+from core import servertools
 
 DEBUG = config.get_setting("debug")
 
@@ -31,9 +49,8 @@ def update_servers():
 def update_servers_files( update_servers_list ):
 
     # ----------------------------
-    import xbmcgui
-    progress = xbmcgui.DialogProgressBG()
-    progress.create( "Update servers list" )
+    from platformcode import platformtools
+    progress = platformtools.dialog_progress_bg( "Update servers list" )
     # ----------------------------
 
     for index, server in enumerate( update_servers_list ):
@@ -79,9 +96,8 @@ def read_remote_servers_list( local_servers ):
             servers.append( server_id )
 
     # ----------------------------
-    import xbmcgui
-    progress = xbmcgui.DialogProgressBG()
-    progress.create( "Remote servers list" )
+    from platformcode import platformtools
+    progress = platformtools.dialog_progress_bg( "Remote servers list" )
     # ----------------------------
 
     remote_servers = []
@@ -130,9 +146,8 @@ def read_local_servers_list():
             servers.append( server_id )
 
     # ----------------------------
-    import xbmcgui
-    progress = xbmcgui.DialogProgressBG()
-    progress.create( "Local servers list" )
+    from platformcode import platformtools
+    progress = platformtools.dialog_progress_bg( "Local servers list" )
     # ----------------------------
 
     local_servers = []

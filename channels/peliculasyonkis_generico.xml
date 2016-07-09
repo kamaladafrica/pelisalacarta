@@ -6,10 +6,10 @@
 	<update_url></update_url>
 	<active>false</active>
 	<include_in_global_search>false</include_in_global_search>
-	<version>10</version>
+	<version>11</version>
 	<adult>false</adult>
-	<date>02/01/2013</date>
-	<changes>Arreglado el buscador. Como tienen el mismo código, usa el buscador de seriesyonkis, así solo se ha de mantener uno</changes>
+	<date>01/07/2016</date>
+	<changes>Eliminado código innecesario.</changes>
 	<fanart></fanart>
 	<thumbnail></thumbnail>
 	<categories>

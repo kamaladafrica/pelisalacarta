@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 # ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
@@ -8,38 +8,48 @@ import re
 import urlparse
 
 from core import config
-from core.item import Item
 from core import logger
 from core import scrapertools
-from servers import servertools
+from core import servertools
+from core.item import Item
 
-__channel__ = "seriesdanko"
-__category__ = "S"
-__type__ = "generic"
-__title__ = "Seriesdanko"
-__language__ = "ES"
+from channels import filtertools
+
 
 HOST = 'http://seriesdanko.com/'
-DEBUG = config.get_setting("debug")
-
 IDIOMAS = {'es': 'Español', 'la': 'Latino', 'vos': 'VOS', 'vo': 'VO'}
+list_idiomas = [v for v in IDIOMAS.values()]
+CALIDADES = ['SD', 'MicroHD', 'HD/MKV']
 
-
-def isGeneric():
-    return True
+'''
+configuración para mostrar la opción de filtro, actualmente sólo se permite en xbmc, se cambiará cuando
+'platformtools.show_channel_settings' esté disponible para las distintas plataformas
+'''
+OPCION_FILTRO = config.is_xbmc()
+CONTEXT = ("", "menu filtro")[OPCION_FILTRO]
+DEBUG = config.get_setting("debug")
 
 
 def mainlist(item):
     logger.info("pelisalacarta.seriesdanko mainlist")
 
     itemlist = list()
-    itemlist.append(Item(channel=__channel__, title="Novedades", action="novedades", url=HOST))
-    itemlist.append(Item(channel=__channel__, title="Más vistas", action="mas_vistas", url=HOST))
-    itemlist.append(Item(channel=__channel__, title="Listado Alfabético", action="listado_alfabetico", url=HOST))
-    itemlist.append(Item(channel=__channel__, title="Todas las series", action="listado_completo", url=HOST))
-    itemlist.append(Item(channel=__channel__, title="Buscar...", action="search", url=HOST))
+    itemlist.append(Item(channel=item.channel, title="Novedades", action="novedades", url=HOST))
+    itemlist.append(Item(channel=item.channel, title="Más vistas", action="mas_vistas", url=HOST))
+    itemlist.append(Item(channel=item.channel, title="Listado Alfabético", action="listado_alfabetico", url=HOST))
+    itemlist.append(Item(channel=item.channel, title="Todas las series", action="listado_completo", url=HOST))
+    itemlist.append(Item(channel=item.channel, title="Buscar...", action="search", url=HOST))
+
+    if OPCION_FILTRO:
+        itemlist.append(Item(channel=item.channel, title="[COLOR yellow]Configurar filtro para series...[/COLOR]",
+                             action="open_filtertools"))
 
     return itemlist
+
+
+def open_filtertools(item):
+
+    return filtertools.mainlist_filter(channel=item.channel, list_idiomas=list_idiomas, list_calidad=CALIDADES)
 
 
 def novedades(item):
@@ -60,7 +70,7 @@ def novedades(item):
         # match = re.compile(patron, re.DOTALL).findall(scrapedtitle)
         title = scrapertools.decodeHtmlentities(scrapedtitle)
 
-        itemlist.append(Item(channel=__channel__, title=title, url=urlparse.urljoin(HOST, scrapedurl),
+        itemlist.append(Item(channel=item.channel, title=title, url=urlparse.urljoin(HOST, scrapedurl),
                         action="episodios", thumbnail=scrapedthumb))
 
     return itemlist
@@ -98,7 +108,7 @@ def series_seccion(data):
     patron = "<a href='([^']+)'.*?>(.*?)</a>"
     matches = re.compile(patron, re.DOTALL).findall(data)
     for scrapedurl, scrapedtitle in matches:
-        itemlist.append(Item(channel=__channel__, action="episodios", title=scrapedtitle, show=scrapedtitle,
+        itemlist.append(Item(channel=item.channel, action="episodios", title=scrapedtitle, show=scrapedtitle,
                              url=urlparse.urljoin(HOST, scrapedurl)))
 
     return itemlist
@@ -111,7 +121,7 @@ def listado_alfabetico(item):
 
     for letra in ['0', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S',
                   'T', 'U', 'V', 'W', 'X', 'Y', 'Z']:
-        itemlist.append(Item(channel=__channel__, action="series_por_letra", title=letra,
+        itemlist.append(Item(channel=item.channel, action="series_por_letra", title=letra,
                              url=urlparse.urljoin(HOST, "series.php?id={letra}".format(letra=letra))))
 
     return itemlist
@@ -154,8 +164,9 @@ def series(item):
         patron = "^(?:Capitulos de: )(.*?)$"
         match = re.compile(patron, re.DOTALL).findall(scrapedtitle)
         title = scrapertools.decodeHtmlentities(match[0])
-        itemlist.append(Item(channel=__channel__, title=title, url=urlparse.urljoin(HOST, scrapedurl.replace("..", "")),
-                             action="episodios", show=item.show, thumbnail=scrapedthumb, plot=""))
+        itemlist.append(Item(channel=item.channel, title=title, url=urlparse.urljoin(HOST, scrapedurl.replace("..", "")),
+                             action="episodios", show=title.strip(), thumbnail=scrapedthumb, plot="",
+                             list_idiomas=list_idiomas, list_calidad=CALIDADES, context=CONTEXT))
 
     return itemlist
 
@@ -189,12 +200,16 @@ def episodios(item):
             idioma += " [" + IDIOMAS.get(i, "OVOS") + "]"
         title = scrapedtitle + idioma
 
-        itemlist.append(Item(channel=__channel__, title=title, url=urlparse.urljoin(HOST, scrapedurl),
-                             action="findvideos", show=item.show, thumbnail=thumbnail, plot="", language=idioma))
+        itemlist.append(Item(channel=item.channel, title=title, url=urlparse.urljoin(HOST, scrapedurl),
+                             action="findvideos", show=item.show, thumbnail=thumbnail, plot="", language=idioma,
+                             list_idiomas=list_idiomas, list_calidad=CALIDADES, context=CONTEXT))
+
+    if len(itemlist) > 0 and OPCION_FILTRO:
+            itemlist = filtertools.get_filtered_links(itemlist, item.channel)
 
     # Opción "Añadir esta serie a la biblioteca de XBMC"
     if config.get_library_support() and len(itemlist) > 0:
-        itemlist.append(Item(channel=__channel__, title="Añadir esta serie a la biblioteca de XBMC", url=item.url,
+        itemlist.append(Item(channel=item.channel, title="Añadir esta serie a la biblioteca de XBMC", url=item.url,
                              action="add_serie_to_library", extra="episodios", show=item.show))
 
     return itemlist
@@ -231,8 +246,12 @@ def parse_videos(item, tipo, data):
             format(tipo=tipo, server=server, idioma=IDIOMAS.get(language, "OVOS"), quality=quality, uploader=uploader,
                    fecha=date)
 
-        itemlist.append(Item(channel=__channel__, title=title, url=urlparse.urljoin(HOST, link), action="play",
-                             show=item.show, language=IDIOMAS.get(language, "OVOS"), quality=quality))
+        itemlist.append(Item(channel=item.channel, title=title, url=urlparse.urljoin(HOST, link), action="play",
+                             show=item.show, language=IDIOMAS.get(language, "OVOS"), quality=quality,
+                             list_idiomas=list_idiomas, list_calidad=CALIDADES, context=CONTEXT+"|guardar filtro"))
+
+    if len(itemlist) > 0 and OPCION_FILTRO:
+        itemlist = filtertools.get_filtered_links(itemlist, item.channel)
 
     return itemlist
 
@@ -242,15 +261,14 @@ def play(item):
 
     data = scrapertools.cache_page(item.url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
-    #logger.info("data -- {}".format(data))
 
-    patron = '<div id="url2"><a href="([^"]+)">.+?</a></div>'
+    patron = '<div id="url2".*?><a href="([^"]+)">.+?</a></div>'
     url = scrapertools.find_single_match(data, patron)
 
     itemlist = servertools.find_video_items(data=url)
 
     for videoitem in itemlist:
         videoitem.title = item.title
-        videoitem.channel = __channel__
+        videoitem.channel = item.channel
 
     return itemlist

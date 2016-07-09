@@ -4,9 +4,11 @@
 # Conector para xvideos
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
+import re
+
 from core import logger
 from core import scrapertools
+
 
 def get_video_url(page_url, video_password):
     video_urls = []

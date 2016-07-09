@@ -4,66 +4,88 @@
 # Canal para oranline
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 # ------------------------------------------------------------
-import urlparse
-import re
 import sys
+import urlparse
 
-from core import logger
+from core import channeltools
 from core import config
+from core import logger
 from core import scrapertools
+from core import servertools
+from core import tmdb
 from core.item import Item
-from servers import servertools
 
-__channel__ = "oranline"
-__category__ = "F"
-__type__ = "generic"
-__title__ = "oranline"
-__language__ = "ES"
+
+# Configuracion del canal
+__modo_grafico__ = config.get_setting('modo_grafico', "oranline")
+__perfil__ = int(config.get_setting('perfil', "oranline"))
+
+# Fijar perfil de color            
+perfil = [['0xFFFFE6CC', '0xFFFFCE9C', '0xFF994D00'],
+          ['0xFFA5F6AF', '0xFF5FDA6D', '0xFF11811E'],
+          ['0xFF58D3F7', '0xFF2E64FE', '0xFF0404B4']]
+color1, color2, color3 = perfil[__perfil__]
 
 DEBUG = config.get_setting("debug")
-
 host = "http://www.oranline.com/"
-b_idioma = {'1.png': 'ES', '2.png': 'LAT', '3.png': 'VOS', '4.png': 'VO', 's.png': 'ESP', 'l.png': 'LAT', 'i.png':
-            'ING', 'v.png': 'VOSE'}
-
-def isGeneric():
-    return True
+parameters = channeltools.get_channel_parameters("oranline")
+fanart = parameters['fanart']
+thumbnail_host = parameters['thumbnail']
+viewmode_options = {0: 'movie_with_plot', 1: 'movie', 2: 'list'}
+viewmode = viewmode_options[config.get_setting('viewmode', "oranline")]
 
 
 def mainlist(item):
     logger.info("pelisalacarta.channels.oranline mainlist")
 
-    itemlist = list([])
-    itemlist.append(Item(channel=__channel__, action="menupeliculas", title="Peliculas", url=host))
-    itemlist.append(Item(channel=__channel__, action="peliculas", title="Documentales",
-                         url=urlparse.urljoin(host, "Pel%C3%ADculas/documentales/")))
-    itemlist.append(Item(channel=__channel__, action="search", title="Buscar..."))
+    itemlist = []
+    item.viewmode = viewmode
 
+    itemlist.append(item.clone(title="Películas", text_color=color2, fanart=fanart, action="",
+                               thumbnail=thumbnail_host, text_blod=True))
+    itemlist.append(item.clone(action="peliculas", title="      Novedades", text_color=color1,
+                               fanart=fanart, url=urlparse.urljoin(host, "ultimas-peliculas-online/"),
+                               thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/Directors%20Chair.png"))
+
+    itemlist.append(item.clone(action="peliculas", title="      Más vistas", text_color=color1,
+                               fanart=fanart, url=urlparse.urljoin(host, "mas-visto/"),
+                               thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/Favorites.png"))
+    itemlist.append(item.clone(action="generos", title="      Filtradas por géneros", text_color=color1,
+                               fanart=fanart, url=host,
+                               thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/Genre.png"))
+
+    url = urlparse.urljoin(host, "category/documental/")
+    itemlist.append(item.clone(title="Documentales", text_blod=True, text_color=color2, action="",
+                               fanart=fanart, thumbnail=thumbnail_host))
+    itemlist.append(item.clone(action="peliculas", title="      Novedades", text_color=color1,
+                               fanart=fanart, url=url,
+                               thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/Documentaries.png"))
+    url = urlparse.urljoin(host, "category/documental/?orderby=title&order=asc&gdsr_order=asc")
+    itemlist.append(item.clone(action="peliculas", title="      Por orden alfabético", text_color=color1,
+                               fanart=fanart, url=url,
+                               thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/A-Z.png"))
+    itemlist.append(item.clone(title="", fanart=fanart, action="", thumbnail=thumbnail_host))
+    itemlist.append(item.clone(action="search", title="Buscar...", text_color=color3, fanart=fanart,
+                               thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/channels/oranline/buscar.png"))
+
+    itemlist.append(item.clone(action="configuracion", title="Configurar canal...", text_color="gold",
+                               thumbnail=thumbnail_host, fanart=fanart, folder=False))
     return itemlist
 
 
-def menupeliculas(item):
-    logger.info("pelisalacarta.channels.oranline menupeliculas")
-
-    itemlist = list([])
-    itemlist.append(Item(channel=__channel__, action="peliculas", title="Novedades",
-                         url=urlparse.urljoin(host, "Pel%C3%ADculas/peliculas/")))
-    itemlist.append(Item(channel=__channel__, action="letras", title="Todas por orden alfabético",
-                         url=urlparse.urljoin(host, "Pel%C3%ADculas/peliculas/")))
-    itemlist.append(Item(channel=__channel__, action="generos", title="Últimas por géneros",
-                         url=urlparse.urljoin(host, "Pel%C3%ADculas/peliculas/")))
-    itemlist.append(Item(channel=__channel__, action="idiomas", title="Últimas por idioma",
-                         url=urlparse.urljoin(host, "Pel%C3%ADculas/peliculas/")))
-
-    return itemlist
+def configuracion(item):
+    from platformcode import platformtools
+    platformtools.show_channel_settings()
+    if config.is_xbmc():
+        import xbmc
+        xbmc.executebuiltin("Container.Refresh")
 
 
 def search(item, texto):
     logger.info("pelisalacarta.channels.oranline search")
-    if item.url == "":
-        item.url = "http://www.oranline.com/?s="
+    item.url = "http://www.oranline.com/?s="
     texto = texto.replace(" ", "+")
-    item.url = item.url+texto
+    item.url = item.url + texto
     try:
         return peliculas(item)
     # Se captura la excepción, para no interrumpir al buscador global si un canal falla
@@ -74,134 +96,87 @@ def search(item, texto):
         return []
 
 
+def newest(categoria):
+    itemlist = []
+    item = Item()
+    try:
+        if categoria == 'peliculas':
+            item.url = urlparse.urljoin(host, "ultimas-peliculas-online/")
+            itemlist = peliculas(item)
+
+            if itemlist[-1].action == "peliculas":
+                itemlist.pop()
+
+        if categoria == 'documentales':
+            item.url = urlparse.urljoin(host, "category/documental/")
+            itemlist = peliculas(item)
+
+            if itemlist[-1].action == "peliculas":
+                itemlist.pop()
+
+    # Se captura la excepción, para no interrumpir al canal novedades si un canal falla
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error("{0}".format(line))
+        return []
+
+    return itemlist
+
+
 def peliculas(item):
     logger.info("pelisalacarta.channels.oranline peliculas")
     itemlist = []
 
     # Descarga la página
-    data = get_main_page(item.url)
+    data = scrapertools.downloadpage(item.url)
 
     # Extrae las entradas (carpetas)
-    '''
-    <div class="review-box review-box-compact" style="width: 140px;">
-        <!--Begin Image1-->
-        <div class="post-thumbnail">
-            <a href="http://www.oranline.com/pelicula/metro-manila-2013-ver-online-y-descargar-gratis/"
-                title="Metro Manila (2013) Ver Online Y Descargar Gratis">
-                <img src="http://www.oranline.com/wp-content/uploads/2013/10/metro-manila-140x210.jpg"
-                    alt="Metro Manila (2013) Ver Online Y Descargar Gratis" />
-            </a>
-            <div id="mejor_calidad">
-                <a href="http://www.oranline.com/pelicula/metro-manila-2013-ver-online-y-descargar-gratis/"
-                    title="Metro Manila (2013) Ver Online Y Descargar Gratis">
-                    <img id="espanol" src="http://www.oranline.com/wp-content/themes/reviewit/images/HD-R_calidad.png"
-                        class="idiomas" alt="Metro Manila (2013) Ver Online Y Descargar Gratis" />
-                </a>
-                <span>HD-R</span>
-            </div>
-        </div>
-        <!--End Image-->
-        <div class="review-box-text">
-            <h2>
-                <a href="http://www.oranline.com/pelicula/metro-manila-2013-ver-online-y-descargar-gratis/"
-                title="Metro Manila (2013) Ver Online Y Descargar Gratis">Metro Manila (2013) Ver Online...</a>
-            </h2>
-            <p>Sinopsis Buscando un futuro mejor, Óscar Ramírez y su familia dejan los campos de arroz del norte ...</p>
-        </div>
-        <div id="campos_idiomas">
-            <img id="espanol" src="http://www.oranline.com/wp-content/themes/reviewit/images/s.png" class="idiomas"
-                alt="" />
-            <img id="latino" src="http://www.oranline.com/wp-content/themes/reviewit/images/lx.png" class="idiomas"
-                alt="" />
-            <img id="ingles" src="http://www.oranline.com/wp-content/themes/reviewit/images/ix.png" class="idiomas"
-                alt="" />
-            <img id="vose" src="http://www.oranline.com/wp-content/themes/reviewit/images/vx.png" class="idiomas"
-                alt="" />
-        </div>
-    </div>
-    <div class="clear"></div>
-    '''
-    patron = '<div class="review-box.*?'
-    patron += '<a href="([^"]+)" title="([^"]+)"[^<]+'
-    patron += '<img src="([^"]+)"[^<]+'
-    patron += '</a[^<]+'
-    patron += '<div id="mejor_calidad"[^<]+'
-    patron += '<a[^<]+<img[^<]+'
-    patron += '</a[^<]+'
-    patron += '<span>([^<]+)</span></div[^<]+'
-    patron += '</div[^<]+'
-    patron += '<![^<]+'
-    patron += '<div class="review-box-text"[^<]+'
-    patron += '<h2[^<]+<a[^<]+</a></h2[^<]+'
-    patron += '<p>([^<]+)</p[^<]+'
-    patron += '</div[^<]+'
-    patron += '<div id="campos_idiomas">(.*?)</div>'
+    bloque = scrapertools.find_multiple_matches(data, '<li class="item">(.*?)</li>')
+    for match in bloque:
+        patron = 'href="([^"]+)".*?title="([^"]+)".*?src="([^"]+)".*?' \
+                 'div class="idiomas">(.*?)<div class="calidad">(.*?)</div>'
+        matches = scrapertools.find_multiple_matches(match, patron)
 
-    matches = re.compile(patron, re.DOTALL).findall(data)
-    scrapertools.printMatches(matches)
+        for scrapedurl, scrapedtitle, scrapedthumbnail, idiomas, calidad in matches:
+            title = scrapedtitle + "  ["
+            if '<div class="esp">' in idiomas:
+                title += "ESP/"
+            if '<div class="lat">' in idiomas:
+                title += "LAT/"
+            if '<div class="ing">' in idiomas:
+                title += "ING/"
+            if '<div class="vos">' in idiomas:
+                title += "VOS/"
+            if title[-1:] != "[":
+                title = title[:-1] + "]"
+            else:
+                title = title[:-1]
+            if "span" in calidad:
+                calidad = scrapertools.find_single_match(calidad, '<span[^>]+>([^<]+)<')
+                title += " (" + calidad.strip() + ")"
 
-    for scrapedurl, scrapedtitle, scrapedthumbnail, calidad, scrapedplot, scrapedidiomas in matches:
-        scrapedtitle = scrapedtitle.replace("Ver Online Y Descargar Gratis", "").strip()
-        scrapedtitle = scrapedtitle.replace("Ver Online Y Descargar gratis", "").strip()
-        scrapedtitle = scrapedtitle.replace("Ver Online Y Descargar", "").strip()
-        scrapedtitle = scrapertools.entityunescape(scrapedtitle)
-
-        _idiomas_ = ""
-
-        for key, value in b_idioma.iteritems():
-            if key in scrapedidiomas:
-                _idiomas_ += value + ", "
-        if _idiomas_ != "":
-            _idiomas_ = _idiomas_[:-2]
-
-        title = "{0} ({1}) ({2})".format(scrapedtitle, calidad, _idiomas_)
-
-        url = urlparse.urljoin(item.url, scrapedurl)
-        thumbnail = urlparse.urljoin(item.url, scrapedthumbnail)
-        plot = scrapedplot.strip()
         if DEBUG:
-            logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
-        itemlist.append(Item(channel=__channel__, action="findvideos", title=title, url=url, thumbnail=thumbnail,
-                             plot=plot, viewmode="movies_with_plot", folder=True))
+            logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, scrapedurl, scrapedthumbnail))
+
+        filtro_thumb = scrapedthumbnail.replace("http://image.tmdb.org/t/p/w185", "")
+        filtro_list = {"poster_path": filtro_thumb}
+        filtro_list = filtro_list.items()
+
+        new_item = item.clone(action="findvideos", title=title, url=scrapedurl, thumbnail=scrapedthumbnail,
+                              fulltitle=scrapedtitle, infoLabels={'filtro': filtro_list},
+                              contentTitle=scrapedtitle, context="05", text_color=color1, viewmode="list")
+        itemlist.append(new_item)
 
     try:
-        next_page = scrapertools.get_match(data, "<a href='([^']+)'>\&rsaquo\;</a>")
-        itemlist.append(Item(channel=__channel__, action="peliculas", title=">> Página siguiente",
-                             url=urlparse.urljoin(item.url, next_page), folder=True))
+        tmdb.set_infoLabels(itemlist, __modo_grafico__)
     except:
-        try:
-            next_page = scrapertools.get_match(data, "<span class='current'>\d+</span><a href='([^']+)'")
-            itemlist.append(Item(channel=__channel__, action="peliculas", title=">> Página siguiente",
-                                 url=urlparse.urljoin(item.url, next_page), folder=True))
-        except:
-            pass
         pass
 
-    return itemlist
-
-
-def letras(item):
-    logger.info("pelisalacarta.channels.oranline letras")
-    itemlist = []
-
-    # Descarga la página
-    data = get_main_page(item.url)
-    data = scrapertools.get_match(data, '<div id="alphaList" align="center">(.*?)</div>')
-
-    # Extrae las entradas
-    patron = '<a href="([^"]+)">([^<]+)</a>'
-    matches = re.compile(patron, re.DOTALL).findall(data)
-    scrapertools.printMatches(matches)
-
-    for scrapedurl, scrapedtitle in matches:
-        title = scrapedtitle.strip()
-        url = urlparse.urljoin(item.url, scrapedurl)
-        thumbnail = ""
-        plot = ""
-        if DEBUG:
-            logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
-        itemlist.append(Item(channel=__channel__, action="peliculas", title=title, url=url, thumbnail=thumbnail,
-                             plot=plot, folder=True))
+    next_page = scrapertools.find_single_match(data, '<a href="([^"]+)"\s+><span [^>]+>&raquo;</span>')
+    if next_page != "":
+        itemlist.append(item.clone(action="peliculas", title=">> Página siguiente",
+                                   url=next_page.replace("&#038;", "&"), text_color=color3))
 
     return itemlist
 
@@ -210,172 +185,143 @@ def generos(item):
     logger.info("pelisalacarta.channels.oranline generos")
     itemlist = []
 
+    genres = {'Deporte': '3/Sports%20Film.jpg', 'Película de la televisión': '3/Tv%20Movie.jpg',
+              'Estrenos de cine': '0/New%20Releases.png', 'Estrenos dvd y hd': '0/HDDVD%20Bluray.png'}
     # Descarga la página
-    data = get_main_page(item.url)
-    # <li class="cat-item cat-item-23831"><a href="http://www.oranline.com/Películas/3d-hou/"
-    # title="Ver todas las entradas archivadas en 3D-HOU">3D-HOU</a> (5)
-    data = scrapertools.get_match(data, '<li class="cat-item cat-item-\d+"><a href="http://www.oranline.com/Pel.*?s'
-                                        '/generos/"[^<]+</a>(.*?)</ul>')
+    data = scrapertools.downloadpage(item.url)
 
+    bloque = scrapertools.find_single_match(data, '<div class="sub_title">Géneros</div>(.*?)</ul>')
     # Extrae las entradas
-    patron = '<li class="cat-item cat-item-\d+"><a href="([^"]+)"[^>]+>([^<]+)</a>\s+\((\d+)\)'
-    matches = re.compile(patron, re.DOTALL).findall(data)
-    scrapertools.printMatches(matches)
+    patron = '<li><a href="([^"]+)".*?<i>(.*?)</i>.*?<b>(.*?)</b>'
+    matches = scrapertools.find_multiple_matches(bloque, patron)
 
     for scrapedurl, scrapedtitle, cuantas in matches:
-        title = scrapedtitle.strip()+" ("+cuantas+")"
-        url = urlparse.urljoin(item.url, scrapedurl)
-        thumbnail = ""
-        plot = ""
+        scrapedtitle = scrapedtitle.strip().capitalize()
+        title = scrapedtitle + " (" + cuantas + ")"
+        name_thumb = scrapertools.slugify(scrapedtitle)
+        if scrapedtitle == "Foreign" or scrapedtitle == "Suspense" or scrapedtitle == "Thriller":
+            thumbnail = "https://raw.githubusercontent.com/master-1970/resources/master/images/genres/2/%s.jpg" \
+                        % name_thumb.capitalize()
+        elif scrapedtitle in genres:
+            thumbnail = "https://raw.githubusercontent.com/master-1970/resources/master/images/genres/%s" \
+                        % genres[scrapedtitle]
+        else:
+            thumbnail = "https://raw.githubusercontent.com/master-1970/resources/master/images/genres/1/%s.jpg" \
+                        % name_thumb.replace("-", "%20")
+
         if DEBUG:
-            logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
-        itemlist.append(Item(channel=__channel__, action="peliculas", title=title, url=url, thumbnail=thumbnail,
-                             plot=plot, folder=True))
+            logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, scrapedurl, thumbnail))
+        itemlist.append(item.clone(action="peliculas", title=title, url=scrapedurl, thumbnail=thumbnail,
+                                   text_color=color2, fanart=fanart))
 
     return itemlist
 
-def idiomas(item):
-    logger.info("pelisalacarta.channels.oranline idiomas")
-    itemlist = []
-
-    '''
-    div class="widget">
-        <h3>&Uacute;ltimos estrenos</h3>
-        <ul>
-            <li class="cat-item cat-item-84"><a href="http://www.oranline.com/Películas/castellano/"
-                title="Ver todas las entradas archivadas en Castellano">Castellano</a> (585)
-            </li>
-            <li class="cat-item cat-item-85"><a href="http://www.oranline.com/Películas/latino/"
-                title="Ver todas las entradas archivadas en Latino">Latino</a> (623)
-            </li>
-            <li class="cat-item cat-item-86"><a href="http://www.oranline.com/Películas/version-original/"
-                title="Ver todas las entradas archivadas en Versión Original">Versión Original</a> (27)
-            </li>
-            <li class="cat-item cat-item-87"><a href="http://www.oranline.com/Películas/vos/"
-                title="Ver todas las entradas archivadas en VOS">VOS</a> (1471)
-            </li>
-    '''
-    # Descarga la página
-    data = get_main_page(item.url)
-    data = scrapertools.get_match(data, '<div class="widget"><h3>&Uacute;ltimos estrenos</h3>(.*?)</ul>')
-
-    # Extrae las entradas
-    patron = '<li class="cat-item cat-item-\d+"><a href="([^"]+)"[^>]+>([^<]+)</a>\s+\((\d+)\)'
-    matches = re.compile(patron, re.DOTALL).findall(data)
-    scrapertools.printMatches(matches)
-
-    for scrapedurl, scrapedtitle, cuantas in matches:
-        title = scrapedtitle.strip()+" ("+cuantas+")"
-        url = urlparse.urljoin(item.url, scrapedurl)
-        thumbnail = ""
-        plot = ""
-        if DEBUG:
-            logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
-        itemlist.append(Item(channel=__channel__, action="peliculas", title=title, url=url, thumbnail=thumbnail,
-                             plot=plot, folder=True))
-
-    return itemlist
-
-def get_main_page(url):
-    logger.info("pelisalacarta.channels.oranline get_main_page")
-
-    headers = list([])
-    headers.append(["User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:20.0) Gecko/20100101 Firefox/20.0"])
-    headers.append(["Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"])
-    headers.append(["Accept-Language", "es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3"])
-    headers.append(["Accept-Encoding", "gzip, deflate"])
-
-    # Descarga la página
-    data = scrapertools.cachePage(url, headers=headers)
-    # logger.info("pelisalacarta.channels.oranline data="+data)
-
-    return data
 
 def findvideos(item):
     logger.info("pelisalacarta.channels.oranline findvideos")
     itemlist = []
 
-    data = scrapertools.cache_page(item.url)
-    '''
-    <p>
-    <span><img width="29" src="http://www.oranline.com/wp-content/themes/reviewit/images/1.png"></span>      
-    <span>HD-Rip </span>
-    <span><img src="http://www.oranline.com/wp-content/themes/reviewit/images/calidad4.png"></span>
-    <span>ashley</span>
-    <span><a href="#" title="HDRip - 1,63 Gb - CASTELLANO" class="tooltip"><img src="http://www.oranline.com/wp-content/themes/reviewit/images/informacion.png" width="20"></img></a> <a onclick='reportar("reportarpelicula","375879")'><img  src='http://www.oranline.com/wp-content/themes/reviewit/images/tool.png' title="reportar enlace"></img></a></span>
-    <span>
-    <a href="/wp-content/themes/reviewit/enlace.php?id=375879" rel="get:id=10" rev="abcwin[700,580]"><img style="width:103px" src="http://www.oranline.com/wp-content/themes/reviewit/servidores/uploaded.jpg"></img></a></span></p>
-    '''
-    '''
-    <p>
-    <span><img src="http://www.oranline.com/wp-content/themes/reviewit/images/1.png" width="25"></span>      
-    <span>HD-1080 </span>
-    <span><img src="http://www.oranline.com/wp-content/themes/reviewit/images/calidad5.png"></span>
-    <span>Anonymous_xxx</span> 
-    <span><a onclick='reportar("reportarpelicula","505001")'><img  src='http://www.oranline.com/wp-content/themes/reviewit/images/tool.png' title="reportar enlace"></img></a></span>
-    <span>
-    <a href="/wp-content/themes/reviewit/enlace.php?id=505001" rel="get:id=10" rev="abcwin[700,580]"><img style="width:103px" src="http://www.oranline.com/wp-content/themes/reviewit/servidores/powvideo.jpg"></img></a></span></p>
-    '''
-    patron  = '<p[^<]+'
-    patron += '<span[^<]+<img.*?src="([^"]+)[^<]+</span[^<]+'
-    patron += '<span>([^<]+)</span.*?'
-    patron += 'href="([^"]+)"[^<]+<img style="[^"]+" src="([^"]+)"'
-    matches2 = re.compile(patron, re.DOTALL).findall(data)
-    scrapertools.printMatches(matches2)
+    try:
+        filtro_idioma = config.get_setting("filterlanguages", item.channel)
+        filtro_enlaces = config.get_setting("filterlinks", item.channel)
+    except:
+        filtro_idioma = 4
+        filtro_enlaces = 2
+    dict_idiomas = {'Español': 3, 'Latino': 2, 'VOSE': 1, 'Inglés': 0}
 
-    for img_idioma, calidad, scrapedurl, img_servidor in matches2:
+    data = scrapertools.downloadpage(item.url)
+    year = scrapertools.find_single_match(data, 'Año de lanzamiento.*?href.*?>(\d+)</a>')
 
-        idioma = scrapertools.get_filename_from_url(img_idioma)
+    if year != "":
+        item.infoLabels['filtro'] = ""
+        item.infoLabels['year'] = int(year)
 
-        if idioma in b_idioma.keys():
-            idioma = b_idioma[idioma]
+    item.infoLabels['title'] = item.fulltitle
+    # Ampliamos datos en tmdb
+    try:
+        tmdb.set_infoLabels(item, __modo_grafico__)
+    except:
+        pass
 
-        servidor = scrapertools.get_filename_from_url(img_servidor)[:-4]
+    if item.infoLabels['plot'] == "":
+        plot = scrapertools.find_single_match(data, '<h2>Sinopsis</h2>.*?>(.*?)</p>')
+        item.infoLabels['plot'] = plot
 
-        title = "Mirror en "+servidor+" ("+idioma+") (Calidad "+calidad.strip()+")"
-        url = urlparse.urljoin(item.url, scrapedurl)
-        thumbnail = ""
-        plot = ""
-        if DEBUG: logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
-        itemlist.append(Item(channel=__channel__, action="play", title=title, url=url, thumbnail=thumbnail, plot=plot, folder=True))
+    if filtro_enlaces != 0:
+        list_enlaces = bloque_enlaces(data, filtro_idioma, dict_idiomas, "online", item)
+        if list_enlaces:
+            itemlist.append(item.clone(action="", title="Enlaces Online", text_color=color1,
+                                       text_blod=True))
+            itemlist.extend(list_enlaces)
+    if filtro_enlaces != 1:
+        list_enlaces = bloque_enlaces(data, filtro_idioma, dict_idiomas, "descarga", item)
+        if list_enlaces:
+            itemlist.append(item.clone(action="", title="Enlaces Descarga", text_color=color1,
+                                       text_blod=True))
+            itemlist.extend(list_enlaces)
+
+    # Opción "Añadir esta película a la biblioteca de XBMC"
+    if item.category != "Cine" and itemlist:
+        itemlist.append(item.clone(channel="trailertools", title="Buscar Tráiler", action="buscartrailer", context="",
+                                   text_color="magenta"))
+        if config.get_library_support():
+            itemlist.append(item.clone(title="Añadir enlaces a la biblioteca", text_color="gold",
+                                       filtro=True, action="add_pelicula_to_library", context=""))
+    
+    if not itemlist:
+        itemlist.append(item.clone(title="No hay enlaces disponibles", action="", text_color=color3))
 
     return itemlist
 
 
+def bloque_enlaces(data, filtro_idioma, dict_idiomas, type, item):
+    logger.info("pelisalacarta.channels.oranline bloque_enlaces")
+
+    lista_enlaces = []
+    bloque = scrapertools.find_single_match(data, '<div id="' + type + '">(.*?)</table>')
+    patron = 'tr>[^<]*<td>.*?href="([^"]+)".*?<span>([^<]+)</span>' \
+             '.*?<td>([^<]+)</td>.*?<td>([^<]+)</td>'
+    matches = scrapertools.find_multiple_matches(bloque, patron)
+    filtrados = []
+    for scrapedurl, server, language, calidad in matches:
+        language = language.strip()
+        server = server.lower()
+        if server == "ul": server = "uploadedto"
+        if server == "streamin": server = "streaminto"
+        if server == "waaw": server = "netutv"
+        mostrar_server = True
+        if config.get_setting("hidepremium") == "true":
+            mostrar_server = servertools.is_server_enabled(server)
+        if mostrar_server:
+            try:
+                servers_module = __import__("servers." + server)
+                title = "Mirror en " + server + " (" + language + ") (Calidad " + calidad.strip() + ")"
+                if filtro_idioma == 4 or item.filtro:
+                    lista_enlaces.append(item.clone(title=title, action="play", server=server, text_color=color2,
+                                                    url=scrapedurl, idioma=language))
+                else:
+                    idioma = dict_idiomas[language]
+                    if idioma == filtro_idioma:
+                        lista_enlaces.append(item.clone(title=title, text_color=color2, action="play",
+                                                        url=scrapedurl, server=server))
+                    else:
+                        if language not in filtrados: filtrados.append(language)
+            except:
+                pass
+
+    if filtro_idioma != 4:
+        if len(filtrados) > 0:
+            title = "Mostrar enlaces filtrados en %s" % ", ".join(filtrados)
+            lista_enlaces.append(item.clone(title=title, action="findvideos", url=item.url, text_color=color3,
+                                            filtro=True))
+
+    return lista_enlaces
+
+
 def play(item):
     logger.info("pelisalacarta.channels.oranline play")
+    itemlist = []
+    enlace = servertools.findvideosbyserver(item.url, item.server)
+    itemlist.append(item.clone(url=enlace[0][1]))
 
-    data2 = scrapertools.cache_page(item.url)
-    logger.info("pelisalacarta.channels.oranline data2="+data2)
-
-    itemlist = servertools.find_video_items(data=data2)
-    
-    return itemlist    
-
-
-# Verificación automática de canales: Esta función debe devolver "True" si está ok el canal.
-def test():
-    from servers import servertools
-    
-    # mainlist es "peliculas | documentales"
-    mainlist_items = mainlist(Item())
-
-    # peliculas es "novedades | alfabetco | generos | idiomas"
-    peliculas_items = peliculas(mainlist_items[0])
-
-    # novedades es la lista de pelis
-    novedades_items = novedades(peliculas_items[0])
-    bien = False
-    for novedad_item in novedades_items:
-        # mirrors es una lista de alternativas
-        mirrors_items = mirrors(novedad_item)
-
-        for mirror_item in mirrors_items:
-            # videos con "play"
-            videos = findvideos(mirror_item)
-            for video in videos:
-                enlaces = play(video)
-                if len(enlaces) > 0:
-                    return True
-
-    return False
+    return itemlist

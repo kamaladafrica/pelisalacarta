@@ -198,9 +198,9 @@ def checkforupdates(plugin_mode=True):
     '''
 def update(params):
     # Descarga el ZIP
-    logger.info("pelisalacarta.core.updater update")
-    remotefilename = REMOTE_FILE+params.get("version")+".zip"
-    localfilename = LOCAL_FILE+params.get("version")+".zip"
+    logger.info("pelisalacarta.core.updater update params="+params.tostring())
+    remotefilename = REMOTE_FILE+params.version+".zip"
+    localfilename = LOCAL_FILE+params.version+".zip"
     logger.info("pelisalacarta.core.updater remotefilename=%s" % remotefilename)
     logger.info("pelisalacarta.core.updater localfilename=%s" % localfilename)
     logger.info("pelisalacarta.core.updater descarga fichero...")
@@ -326,7 +326,7 @@ def download_channel(channel_name):
     # Descarga el canal
     updated_channel_data = scrapertools.cachePage( remote_channel_url )
     try:
-        outfile = open(local_channel_path,"wb")
+        outfile = open(local_channel_path,"w")
         outfile.write(updated_channel_data)
         outfile.flush()
         outfile.close()

@@ -7,8 +7,8 @@
 # ------------------------------------------------------------
 
 import re
-from core import scrapertools
 from core import logger
+from core import scrapertools
 
 
 def test_video_exists(page_url):
@@ -32,7 +32,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     from aadecode import decode as aadecode
     text_decode = aadecode(text_encode)
 
-    # URL del vÃ­deo
+    # URL del vídeo
     patron = "'([^']+)'"
     media_url = scrapertools.find_single_match(text_decode, patron)
 
@@ -41,7 +41,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     return video_urls
 
 
-# Encuentra vÃ­deos del servidor en el texto pasado
+# Encuentra vídeos del servidor en el texto pasado
 def find_videos(data):
     encontrados = set()
     devuelve = []

@@ -5,30 +5,23 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import urlparse,urllib2,urllib,re
-import os, sys
-from channelselector import get_thumbnail_path
+import os
+import re
+import sys
+import urllib
+import urlparse
 
-from core import logger
+from channelselector import get_thumbnail_path
 from core import config
+from core import logger
 from core import scrapertools
 from core.item import Item
 from core.tmdb import Tmdb
 
-__category__ = "A"
-__type__ = "generic"
-__title__ = "Mejor Torrent"
-__channel__ = "mejortorrent"
-__language__ = "ES"
 
 host = "http://www.mejortorrent.com"
-
 DEBUG = config.get_setting("debug")
 
-
-
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("pelisalacarta.mejortorrent mainlist")
@@ -43,13 +36,13 @@ def mainlist(item):
     thumb_docus = get_thumbnail("thumb_canales_documentales.png")
     thumb_buscar = get_thumbnail("thumb_buscar.png")
 
-    itemlist.append( Item(channel=__channel__, title="Peliculas" , action="getlist", url="http://www.mejortorrent.com/torrents-de-peliculas.html", thumbnail=thumb_pelis ))
-    itemlist.append( Item(channel=__channel__, title="Peliculas HD" , action="getlist", url="http://www.mejortorrent.com/torrents-de-peliculas-hd-alta-definicion.html", thumbnail=thumb_pelis_hd ))
-    itemlist.append( Item(channel=__channel__, title="Series" , action="getlist", url="http://www.mejortorrent.com/torrents-de-series.html", thumbnail=thumb_series ))
-    itemlist.append( Item(channel=__channel__, title="Series HD" , action="getlist"           , url="http://www.mejortorrent.com/torrents-de-series-hd-alta-definicion.html", thumbnail=thumb_series_hd ))
-    itemlist.append( Item(channel=__channel__, title="Series Listado Alfabetico" , action="listalfabetico"           , url="http://www.mejortorrent.com/torrents-de-series.html", thumbnail=thumb_series_az ))
-    itemlist.append( Item(channel=__channel__, title="Documentales" , action="getlist"           , url="http://www.mejortorrent.com/torrents-de-documentales.html", thumbnail=thumb_docus ))
-    itemlist.append( Item(channel=__channel__, title="Buscar..." , action="search", thumbnail=thumb_buscar ))
+    itemlist.append( Item(channel=item.channel, title="Peliculas" , action="getlist", url="http://www.mejortorrent.com/torrents-de-peliculas.html", thumbnail=thumb_pelis ))
+    itemlist.append( Item(channel=item.channel, title="Peliculas HD" , action="getlist", url="http://www.mejortorrent.com/torrents-de-peliculas-hd-alta-definicion.html", thumbnail=thumb_pelis_hd ))
+    itemlist.append( Item(channel=item.channel, title="Series" , action="getlist", url="http://www.mejortorrent.com/torrents-de-series.html", thumbnail=thumb_series ))
+    itemlist.append( Item(channel=item.channel, title="Series HD" , action="getlist"           , url="http://www.mejortorrent.com/torrents-de-series-hd-alta-definicion.html", thumbnail=thumb_series_hd ))
+    itemlist.append( Item(channel=item.channel, title="Series Listado Alfabetico" , action="listalfabetico"           , url="http://www.mejortorrent.com/torrents-de-series.html", thumbnail=thumb_series_az ))
+    itemlist.append( Item(channel=item.channel, title="Documentales" , action="getlist"           , url="http://www.mejortorrent.com/torrents-de-documentales.html", thumbnail=thumb_docus ))
+    itemlist.append( Item(channel=item.channel, title="Buscar..." , action="search", thumbnail=thumb_buscar ))
 
     return itemlist
 
@@ -59,9 +52,9 @@ def listalfabetico(item):
     itemlist = []
 
     for letra in ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']:
-        itemlist.append( Item(channel=__channel__, action="getlist" , title=letra, url="http://www.mejortorrent.com/series-letra-" + letra.lower() + ".html"))
+        itemlist.append( Item(channel=item.channel, action="getlist" , title=letra, url="http://www.mejortorrent.com/series-letra-" + letra.lower() + ".html"))
 
-    itemlist.append( Item(channel=__channel__, action="getlist" , title="Todas",url="http://www.mejortorrent.com/series-letra..html"))
+    itemlist.append( Item(channel=item.channel, action="getlist" , title="Todas",url="http://www.mejortorrent.com/series-letra..html"))
 
     return itemlist
 
@@ -117,7 +110,7 @@ def buscador(item):
         url = urlparse.urljoin(item.url,scrapedurl)
         logger.debug("title=["+title+"], url=["+url+"]")
 
-        itemlist.append( Item(channel=__channel__, action="episodios", title=title , url=url , folder=True, extra="series") )
+        itemlist.append( Item(channel=item.channel, action="episodios", title=title , url=url , folder=True, extra="series", viewmode="movie_with_plot") )
 
     #busca pelis
     patron  = "<a href='(/peli-descargar-torrent-[^']+)'[^>]+>(.*?)</a>"
@@ -131,7 +124,7 @@ def buscador(item):
         url = urlparse.urljoin(item.url,scrapedurl)
         logger.debug("title=["+title+"], url=["+url+"]")
 
-        itemlist.append( Item(channel=__channel__, action="play", title=title , url=url , folder=False, extra="") )
+        itemlist.append( Item(channel=item.channel, action="play", title=title , url=url , folder=False, extra="") )
 
 
     #busca docu
@@ -148,10 +141,10 @@ def buscador(item):
         url = urlparse.urljoin(item.url,scrapedurl)
         logger.debug("title=["+title+"], url=["+url+"]")
 
-        itemlist.append( Item(channel=__channel__, action="episodios", title=title , url=url , folder=True, extra="docu") )
+        itemlist.append( Item(channel=item.channel, action="episodios", title=title , url=url , folder=True, extra="docu", viewmode="movie_with_plot") )
 
     if len(itemlist) == 0:
-        itemlist.append( Item(channel=__channel__, action="mainlist", title="No se han encontrado nada con ese término" ) )
+        itemlist.append( Item(channel=item.channel, action="mainlist", title="No se han encontrado nada con ese término" ) )
 
 
     return itemlist
@@ -219,7 +212,7 @@ def getlist(item):
         thumbnail = urlparse.urljoin(item.url, urllib.quote(scrapedthumbnail))
         plot = ""
         logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action=action, title=title , url=url , thumbnail=thumbnail , plot=plot , folder=folder, extra=extra) )
+        itemlist.append( Item(channel=item.channel, action=action, title=title , url=url , thumbnail=thumbnail , plot=plot , folder=folder, extra=extra) )
 
     matches = re.compile(patron_title,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
@@ -242,7 +235,7 @@ def getlist(item):
         cnt += 1
 
     if len(itemlist) == 0:
-        itemlist.append( Item(channel=__channel__, action="mainlist", title="No se ha podido cargar el listado" ) )
+        itemlist.append( Item(channel=item.channel, action="mainlist", title="No se ha podido cargar el listado" ) )
     else:
         # Extrae el paginador
         patronvideos  = "<a href='([^']+)' class='paginar'> Siguiente >>"
@@ -251,7 +244,7 @@ def getlist(item):
 
         if len(matches)>0:
             scrapedurl = urlparse.urljoin(item.url,matches[0])
-            itemlist.append( Item(channel=__channel__, action="getlist", title="Pagina siguiente >>" , url=scrapedurl , folder=True) )
+            itemlist.append( Item(channel=item.channel, action="getlist", title="Pagina siguiente >>" , url=scrapedurl , folder=True) )
 
     return itemlist
 
@@ -340,7 +333,7 @@ def episodios(item):
 
         logger.debug("title=["+title+"], url=["+url+"], item=["+str(item)+"]")
 
-        itemlist.append( Item(channel=__channel__, action="play", title=title , url=url , thumbnail=item.thumbnail , plot=item.plot, fanart=item.fanart, viewmode="movie_with_plot", extra=post, folder=False) )
+        itemlist.append( Item(channel=item.channel, action="play", title=title , url=url , thumbnail=item.thumbnail , plot=item.plot, fanart=item.fanart, extra=post, folder=False) )
 
     return itemlist
 
@@ -378,7 +371,7 @@ def show_movie_info(item):
 
         logger.debug("link="+link)
 
-        itemlist.append( Item(channel=__channel__, action="play", server="torrent", title=item.title, url=link, thumbnail=item.thumbnail , plot=item.plot, fanart=item.fanart, folder=False, viewmode="movie_with_plot") )
+        itemlist.append( Item(channel=item.channel, action="play", server="torrent", title=item.title, url=link, thumbnail=item.thumbnail , plot=item.plot, fanart=item.fanart, folder=False) )
 
     return itemlist
 
@@ -388,7 +381,7 @@ def play(item):
     itemlist = []
 
     if item.extra=="":
-        itemlist.append( Item(channel=__channel__, action="play", server="torrent", title=item.title , url=item.url, thumbnail=item.thumbnail , plot=item.plot, fanart=item.fanart, folder=False) )
+        itemlist.append( Item(channel=item.channel, action="play", server="torrent", title=item.title , url=item.url, thumbnail=item.thumbnail , plot=item.plot, fanart=item.fanart, folder=False) )
 
     else:
         data = scrapertools.cache_page(item.url, post=item.extra)
@@ -411,7 +404,7 @@ def play(item):
 
         logger.info("link="+link)
 
-        itemlist.append( Item(channel=__channel__, action="play", server="torrent", title=item.title , url=link , thumbnail=item.thumbnail , plot=item.plot , folder=False) )
+        itemlist.append( Item(channel=item.channel, action="play", server="torrent", title=item.title , url=link , thumbnail=item.thumbnail , plot=item.plot , folder=False) )
 
 
     return itemlist

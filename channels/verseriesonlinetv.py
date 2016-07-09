@@ -1,26 +1,23 @@
-    # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os, sys
-
-from core import logger
-from core import config
-from core import scrapertools
-from core.item import Item
-from servers import servertools
-from core.scrapertools import decodeHtmlentities as dhe
+import os
+import re
+import sys
+import urllib
+import urllib2
 
 import xbmcgui
 
+from core import config
+from core import logger
+from core import scrapertools
+from core import servertools
+from core.item import Item
+from core.scrapertools import decodeHtmlentities as dhe
 
-__channel__ = "verseriesonlinetv"
-__category__ = "F"
-__type__ = "generic"
-__title__ = "Vereriesonlinetv"
-__language__ = "ES"
 
 DEBUG = config.get_setting("debug")
 def browser(url):
@@ -64,14 +61,12 @@ def browser(url):
     response = rsp.content
     return response'''
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("pelisalacarta.bricocine mainlist")
 
     itemlist = []
-    import xbmc, time
+    import xbmc
     ###Para musica(si hay) y borra customkeys
     if xbmc.Player().isPlaying():
        xbmc.executebuiltin('xbmc.PlayMedia(Stop)')
@@ -93,8 +88,8 @@ def mainlist(item):
         xbmc.executebuiltin('Action(reloadkeymaps)')
         print "No hay customs"
     
-    itemlist.append( Item(channel=__channel__, title="[COLOR chartreuse][B]Series[/B][/COLOR]"         , action="scraper", url="http://www.verseriesonline.tv/series", thumbnail="http://s6.postimg.org/6hpa9tzgx/verseriesthumb.png", fanart="http://s6.postimg.org/71zpys3bl/verseriesfan2.jpg"))
-    import xbmc, time
+    itemlist.append( Item(channel=item.channel, title="[COLOR chartreuse][B]Series[/B][/COLOR]"         , action="scraper", url="http://www.verseriesonline.tv/series", thumbnail="http://s6.postimg.org/6hpa9tzgx/verseriesthumb.png", fanart="http://s6.postimg.org/71zpys3bl/verseriesfan2.jpg"))
+    import xbmc
     if xbmc.Player().isPlaying():
        xbmc.executebuiltin('xbmc.PlayMedia(Stop)')
     TESTPYDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "test.py")
@@ -127,7 +122,7 @@ def mainlist(item):
         print "Custom Trailer.txt borrado"
     except:
         print "No hay Trailer.txt"
-    itemlist.append( Item(channel=__channel__, title="[COLOR chartreuse][B]Buscar[/B][/COLOR]"         , action="search", url="", thumbnail="http://s6.postimg.org/5gp1kpihd/verseriesbuscthumb.png", fanart="http://s6.postimg.org/7vgx54yq9/verseriesbuscfan.jpg", extra = "search"))
+    itemlist.append( Item(channel=item.channel, title="[COLOR chartreuse][B]Buscar[/B][/COLOR]"         , action="search", url="", thumbnail="http://s6.postimg.org/5gp1kpihd/verseriesbuscthumb.png", fanart="http://s6.postimg.org/7vgx54yq9/verseriesbuscfan.jpg", extra = "search"))
     
 
     return itemlist
@@ -207,12 +202,6 @@ def scraper(item):
 
     # Descarga la página
     data = dhe( scrapertools.cachePage(item.url) )
-    if item.extra== "search":
-       if "<h2>No se ha encontrado</h2>" in data:
-          import xbmc, time
-          xbmc.executebuiltin( "XBMC.Action(back)" )
-          xbmc.sleep(100)
-          xbmc.executebuiltin('Notification([COLOR coral][B]Busqueda[/B][/COLOR], [COLOR green][B]'+'sin resultados'.upper()+'[/B][/COLOR],4000,"http://s6.postimg.org/j1bopgpu5/verserienobusqicon.png")')
 
     patron = '<li class="item">.*?<a class="poster" href="([^"]+)".*?<img src="([^"]+)" alt="([^<]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
@@ -234,7 +223,7 @@ def scraper(item):
         show = title_fan+"|"+year+"|"+trailer
                                        
         scrapedtitle = scrapedtitle.replace(scrapedtitle,"[COLOR springgreen]"+scrapedtitle+"[/COLOR]")
-        itemlist.append( Item(channel=__channel__, title=scrapedtitle, url=scrapedurl, action= "fanart" , thumbnail=scrapedthumbnail, fanart="http://s6.postimg.org/8pyvdfh75/verseriesfan.jpg", show= show, plot= title_fan, folder=True) )
+        itemlist.append( Item(channel=item.channel, title=scrapedtitle, url=scrapedurl, action= "fanart" , thumbnail=scrapedthumbnail, fanart="http://s6.postimg.org/8pyvdfh75/verseriesfan.jpg", show= show, plot= title_fan, folder=True) )
 
     
     ## Paginación
@@ -246,7 +235,7 @@ def scraper(item):
         next_page = scrapertools.get_match(data,"<span class='current'>\d+</span><a class=\"page larger\" href=\"([^\"]+)\"")
         
         title= "[COLOR floralwhite]Pagina siguiente>>[/COLOR]"
-        itemlist.append( Item(channel=__channel__, title=title, url=next_page, action="scraper", fanart="http://s6.postimg.org/8pyvdfh75/verseriesfan.jpg", thumbnail="http://virtualmarketingpro.com/app/webroot/img/vmp/arrows/Green%20Arrow%20(26).png", folder=True) )
+        itemlist.append( Item(channel=item.channel, title=title, url=next_page, action="scraper", fanart="http://s6.postimg.org/8pyvdfh75/verseriesfan.jpg", thumbnail="http://virtualmarketingpro.com/app/webroot/img/vmp/arrows/Green%20Arrow%20(26).png", folder=True) )
     except: pass
 
 
@@ -306,7 +295,7 @@ def fanart(item):
         
     title_tunes= (translate(title,"en"))
     ###Prepara customkeys
-    import xbmc,time
+    import xbmc
     if not xbmc.Player().isPlaying() and not os.path.exists ( TRAILERDESTFILE ):
             
         TESTPYDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "test.py")
@@ -441,7 +430,7 @@ def fanart(item):
                     fanart_trailer = "http://s6.postimg.org/qcbsfbvm9/verseriesnofan2.jpg"
                     category= ""
                     show = title+"|"+year+"|"+"http://s6.postimg.org/xyor47sgh/verseriesnofan7.jpg"+"|"+trailer
-                    itemlist.append( Item(channel=__channel__, title=item.title, url=item.url, action="temporadas", thumbnail=item.thumbnail, fanart="http://s6.postimg.org/qcbsfbvm9/verseriesnofan2.jpg" ,extra=extra, category= category,  show=show ,plot=plot, folder=True) )
+                    itemlist.append( Item(channel=item.channel, title=item.title, url=item.url, action="temporadas", thumbnail=item.thumbnail, fanart="http://s6.postimg.org/qcbsfbvm9/verseriesnofan2.jpg" ,extra=extra, category= category,  show=show ,plot=plot, folder=True) )
         
        else:
             title= title.replace(" ","%20")
@@ -458,7 +447,7 @@ def fanart(item):
                 fanart_info = "http://s6.postimg.org/qcbsfbvm9/verseriesnofan2.jpg"
                 fanart_trailer = "http://s6.postimg.org/qcbsfbvm9/verseriesnofan2.jpg"
                 category= ""
-                itemlist.append( Item(channel=__channel__, title=item.title, url=item.url, action="temporadas", thumbnail=item.thumbnail, fanart="http://s6.postimg.org/qcbsfbvm9/verseriesnofan2.jpg" ,extra=extra, category= category,  show=show ,plot= plot, folder=True) )
+                itemlist.append( Item(channel=item.channel, title=item.title, url=item.url, action="temporadas", thumbnail=item.thumbnail, fanart="http://s6.postimg.org/qcbsfbvm9/verseriesnofan2.jpg" ,extra=extra, category= category,  show=show ,plot= plot, folder=True) )
 
     #fanarts
         
@@ -489,7 +478,7 @@ def fanart(item):
             show = title+"|"+year+"|"+"http://s6.postimg.org/xyor47sgh/verseriesnofan7.jpg"
             fanart_info = "http://s6.postimg.org/qcbsfbvm9/verseriesnofan2.jpg"
             fanart_trailer = "http://s6.postimg.org/qcbsfbvm9/verseriesnofan2.jpg"
-            itemlist.append( Item(channel=__channel__, title=item.title, url=item.url, action="temporadas", thumbnail=postertvdb, fanart="http://s6.postimg.org/qcbsfbvm9/verseriesnofan2.jpg"  ,category = category, extra=extra, show=show,folder=True) )
+            itemlist.append( Item(channel=item.channel, title=item.title, url=item.url, action="temporadas", thumbnail=postertvdb, fanart="http://s6.postimg.org/qcbsfbvm9/verseriesnofan2.jpg"  ,category = category, extra=extra, show=show,folder=True) )
 
         for fan in matches:
             fanart="http://thetvdb.com/banners/" + fan
@@ -502,7 +491,7 @@ def fanart(item):
                 fanart_2 = fanart_1
                 show = title+"|"+year+"|"+fanart_1
                 extra=postertvdb
-                itemlist.append( Item(channel=__channel__, title=item.title, url=item.url, action="temporadas", thumbnail=postertvdb, fanart=item.extra  ,category = category, extra=extra, show=show,folder=True) )
+                itemlist.append( Item(channel=item.channel, title=item.title, url=item.url, action="temporadas", thumbnail=postertvdb, fanart=item.extra  ,category = category, extra=extra, show=show,folder=True) )
             for fanart_info, fanart_trailer, fanart_2 in matches:
                 fanart_info = "http://thetvdb.com/banners/" + fanart_info
                 fanart_trailer = "http://thetvdb.com/banners/" + fanart_trailer
@@ -540,7 +529,7 @@ def fanart(item):
                             thumbnail = hdtvlogo
                             extra= thumbnail
                             show = title+"|"+year+"|"+fanart_2+"|"+trailer
-                        itemlist.append( Item(channel=__channel__, title = item.title , action="temporadas", url=item.url, server="torrent", thumbnail=thumbnail , fanart=fanart_1, category=category, extra=extra, show=show, folder=True) )
+                        itemlist.append( Item(channel=item.channel, title = item.title , action="temporadas", url=item.url, server="torrent", thumbnail=thumbnail , fanart=fanart_1, category=category, extra=extra, show=show, folder=True) )
                         
                         
                     else:
@@ -553,11 +542,11 @@ def fanart(item):
                             extra= thumbnail
                             show = title+"|"+year+"|"+fanart_2+"|"+trailer
                             
-                        itemlist.append( Item(channel=__channel__, title = item.title , action="temporadas", url=item.url, thumbnail=thumbnail , fanart=fanart_1, extra=extra, show=show,  category= category, folder=True) )
+                        itemlist.append( Item(channel=item.channel, title = item.title , action="temporadas", url=item.url, thumbnail=thumbnail , fanart=fanart_1, extra=extra, show=show,  category= category, folder=True) )
                 else:
                     extra=  "http://s6.postimg.org/nwekf82xd/verseriesinopsis5.png"
                     show = title+"|"+year+"|"+fanart_2+"|"+trailer
-                    itemlist.append( Item(channel=__channel__, title = item.title , action="temporadas", url=item.url, server="torrent", thumbnail=item.thumbnail , fanart=fanart_1, extra=extra, show=show, category = category, folder=True) )
+                    itemlist.append( Item(channel=item.channel, title = item.title , action="temporadas", url=item.url, server="torrent", thumbnail=item.thumbnail , fanart=fanart_1, extra=extra, show=show, category = category, folder=True) )
                                                 
             for logo in matches:
                 if '"hdtvlogo"' in data:
@@ -573,11 +562,11 @@ def fanart(item):
                         
                         extra=clear
                         show = title+"|"+year+"|"+fanart_2+"|"+trailer
-                        itemlist.append( Item(channel=__channel__, title = item.title , action="temporadas", url=item.url, server="torrent", thumbnail=thumbnail , fanart=fanart_1, extra=extra,show=show, category= category, folder=True) )
+                        itemlist.append( Item(channel=item.channel, title = item.title , action="temporadas", url=item.url, server="torrent", thumbnail=thumbnail , fanart=fanart_1, extra=extra,show=show, category= category, folder=True) )
                     else:
                         extra= clear
                         show = title+"|"+year+"|"+fanart_2+"|"+trailer
-                        itemlist.append( Item(channel=__channel__, title = item.title , action="temporadas", url=item.url, server="torrent", thumbnail=thumbnail , fanart=fanart_1, extra=extra,show=show, category= category, folder=True) )
+                        itemlist.append( Item(channel=item.channel, title = item.title , action="temporadas", url=item.url, server="torrent", thumbnail=thumbnail , fanart=fanart_1, extra=extra,show=show, category= category, folder=True) )
                                                                                                                         
                 if "showbackground" in data:
                     
@@ -588,7 +577,7 @@ def fanart(item):
                     else:
                         extra=logo
                         show = title+"|"+year+"|"+fanart_2+"|"+trailer
-                        itemlist.append( Item(channel=__channel__, title = item.title , action="temporadas", url=item.url, server="torrent", thumbnail=thumbnail , fanart=fanart_1, extra=extra,show=show,  category = category, folder=True) )
+                        itemlist.append( Item(channel=item.channel, title = item.title , action="temporadas", url=item.url, server="torrent", thumbnail=thumbnail , fanart=fanart_1, extra=extra,show=show,  category = category, folder=True) )
                                                                                                                                                             
                 if not '"clearart"' in data and not '"showbackground"' in data:
                         if '"hdclearart"' in data:
@@ -597,7 +586,7 @@ def fanart(item):
                         else:
                             extra= thumbnail
                             show = title+"|"+year+"|"+fanart_2+"|"+trailer
-                        itemlist.append( Item(channel=__channel__, title = item.title , action="temporadas", url=item.url, server="torrent", thumbnail=thumbnail , fanart=fanart_1, extra=extra,show=show , category = category, folder=True) )
+                        itemlist.append( Item(channel=item.channel, title = item.title , action="temporadas", url=item.url, server="torrent", thumbnail=thumbnail , fanart=fanart_1, extra=extra,show=show , category = category, folder=True) )
     
     ####Info item. Se añade item.show.split("|")[0] and item.extra != "Series" para salvar el error de cuando una serie no está perfectamente tipificada como tal en Bricocine
     title ="Info"
@@ -615,7 +604,7 @@ def fanart(item):
         category = show.split("|")[2]
 
 
-    itemlist.append( Item(channel=__channel__, action="info" , title=title , url=item.url, thumbnail=thumbnail, fanart=fanart_info, show= show, extra= extra, category= category,plot =plot, folder=False ))
+    itemlist.append( Item(channel=item.channel, action="info" , title=title , url=item.url, thumbnail=thumbnail, fanart=fanart_info, show= show, extra= extra, category= category,plot =plot, folder=False ))
     ####Trailer item
     title= "[COLOR greenyellow]Trailer[/COLOR]"
     
@@ -630,14 +619,14 @@ def fanart(item):
     else:
         extra = item.thumbnail
 
-    itemlist.append( Item(channel=__channel__, action="trailer", title=title , url=item.url , thumbnail=thumbnail , fulltitle = item.title , fanart=fanart_trailer, extra=extra, show=trailer, folder=True) )
+    itemlist.append( Item(channel=item.channel, action="trailer", title=title , url=item.url , thumbnail=thumbnail , fulltitle = item.title , fanart=fanart_trailer, extra=extra, show=trailer, folder=True) )
     return itemlist
 def temporadas(item):
     logger.info("pelisalacarta.verseriesonlinetv temporadas")
     
     itemlist = []
     ###Ubicacion Customkey
-    import xbmc, time
+    import xbmc
     SEARCHDESTFILE= os.path.join(xbmc.translatePath('special://userdata/keymaps'), "search.txt")
     TESTPYDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "test.py")
     KEYMAPDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "customkey.xml")
@@ -658,7 +647,7 @@ def temporadas(item):
     data = dhe( scrapertools.cachePage(item.url) )
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
     ###Borra Customkey cuando no hay música
-    import xbmc, time
+    import xbmc
     if not xbmc.Player().isPlaying():
         TESTPYDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "test.py")
         KEYMAPDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "customkey.xml")
@@ -689,7 +678,7 @@ def temporadas(item):
         patron = '<h3 class="three fourths col-xs-12 pad0">.*?href="([^"]+)" title="([^<]+)"'
         matches = re.compile(patron,re.DOTALL).findall(data)
     if len(matches)==0 :
-       itemlist.append( Item(channel=__channel__, title="[COLOR gold][B]No hay resultados...[/B][/COLOR]", thumbnail ="http://s6.postimg.org/fay99h9ox/briconoisethumb.png", fanart ="http://pic.raise5.com/user_pictures/user-1423992581-237429.jpg",folder=False) )
+       itemlist.append( Item(channel=item.channel, title="[COLOR gold][B]No hay resultados...[/B][/COLOR]", thumbnail ="http://s6.postimg.org/fay99h9ox/briconoisethumb.png", fanart ="http://pic.raise5.com/user_pictures/user-1423992581-237429.jpg",folder=False) )
     for scrapedurl, scrapedtitle in matches:
         ###Busqueda poster temporada tmdb
         scrapedtitle = scrapedtitle.replace(scrapedtitle,"[COLOR springgreen]"+scrapedtitle+"[/COLOR]")
@@ -768,7 +757,7 @@ def temporadas(item):
         else:
             fanart = item.show.split("|")[2]
 
-        itemlist.append( Item(channel=__channel__, title=scrapedtitle, action="capitulos", url=scrapedurl, thumbnail =thumbnail, fanart =fanart,show = show, extra= item.extra,category = item.category, folder=True) )
+        itemlist.append( Item(channel=item.channel, title=scrapedtitle, action="capitulos", url=scrapedurl, thumbnail =thumbnail, fanart =fanart,show = show, extra= item.extra,category = item.category, folder=True) )
 
     return itemlist
 
@@ -776,7 +765,7 @@ def capitulos(item):
     logger.info("pelisalacarta.verseriesonlinetv capitulos")
     itemlist = []
     ###Borra Customkey si no hay música
-    import xbmc, time
+    import xbmc
     xbmc.executebuiltin('Action(reloadkeymaps)')
     TESTPYDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "test.py")
     if not xbmc.Player().isPlaying() and os.path.exists ( TESTPYDESTFILE ):
@@ -803,17 +792,17 @@ def capitulos(item):
     patron = '<div class="item_episodio col-xs-3 ">.*?href="([^"]+)" title="([^<]+)".*?<img src="([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
     if len(matches)==0 :
-        itemlist.append( Item(channel=__channel__, title="[COLOR coral][B]"+"no hay capítulos...".upper()+"[/B][/COLOR]", thumbnail ="http://s6.postimg.org/wa269heq9/verseriesnohaythumb.png", fanart ="http://s6.postimg.org/4nzeosvdd/verseriesnothingfan.jpg",folder=False) )
+        itemlist.append( Item(channel=item.channel, title="[COLOR coral][B]"+"no hay capítulos...".upper()+"[/B][/COLOR]", thumbnail ="http://s6.postimg.org/wa269heq9/verseriesnohaythumb.png", fanart ="http://s6.postimg.org/4nzeosvdd/verseriesnothingfan.jpg",folder=False) )
     for scrapedurl, scrapedtitle, scrapedthumbnail in matches:
         scrapedtitle = re.sub(r"(.*?Temporada \d+)","",scrapedtitle).strip()
         capitulo = re.sub(r"Capitulo","",scrapedtitle).strip()
         scrapedtitle = scrapedtitle.replace(scrapedtitle,"[COLOR limegreen]"+scrapedtitle+"[/COLOR]")
         extra =item.extra+"|"+capitulo
         
-        itemlist.append( Item(channel=__channel__, title = scrapedtitle , action="findvideos", url=scrapedurl,  thumbnail=scrapedthumbnail, fanart=item.show.split("|")[0], show = item.show, extra= extra,category= item.category,folder=True) )
+        itemlist.append( Item(channel=item.channel, title = scrapedtitle , action="findvideos", url=scrapedurl,  thumbnail=scrapedthumbnail, fanart=item.show.split("|")[0], show = item.show, extra= extra,category= item.category,folder=True) )
         title ="Info"
         title = title.replace(title,"[COLOR darkseagreen]"+title+"[/COLOR]")
-        itemlist.append( Item(channel=__channel__, action="info_capitulos" , title=title , url=item.url, thumbnail=scrapedthumbnail, fanart=item.show.split("|")[0], extra = extra, show = item.show, category = item.category, folder=False ))
+        itemlist.append( Item(channel=item.channel, action="info_capitulos" , title=title , url=item.url, thumbnail=scrapedthumbnail, fanart=item.show.split("|")[0], extra = extra, show = item.show, category = item.category, folder=False ))
         
 
 
@@ -822,7 +811,7 @@ def findvideos(item):
     logger.info("pelisalacarta.verseriesonlinetv findvideos")
     itemlist = []
     ###Borra Customkey si no hay música
-    import xbmc, time
+    import xbmc
     xbmc.executebuiltin('Action(reloadkeymaps)')
     TESTPYDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "test.py")
     if not xbmc.Player().isPlaying() and os.path.exists ( TESTPYDESTFILE ):
@@ -864,7 +853,7 @@ def findvideos(item):
         scrapedcalidad=scrapedcalidad.replace(scrapedcalidad,"[COLOR floralwhite][B]"+scrapedcalidad+"[/B][/COLOR]")
         
         title = scrapedserver + scrapedidioma+scrapedcalidad
-        itemlist.append( Item(channel=__channel__, title = title , action="play", url=scrapedurl,  thumbnail=icon_server, fanart=item.show.split("|")[1], extra = item.thumbnail, folder=True) )
+        itemlist.append( Item(channel=item.channel, title = title , action="play", url=scrapedurl,  thumbnail=icon_server, fanart=item.show.split("|")[1], extra = item.thumbnail, folder=True) )
     
 
     
@@ -880,7 +869,7 @@ def play(item):
         videoitem.title = item.title
         videoitem.thumbnail = item.extra
         videoitem.extra = item.extra
-        videoitem.channel = __channel__
+        videoitem.channel = item.channel
 
     return itemlist
 
@@ -908,14 +897,14 @@ def trailer(item):
     matches = re.compile(patron,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
     if len(matches)==0 :
-        itemlist.append( Item(channel=__channel__, title="[COLOR salmon][B]No hay Trailer[/B][/COLOR]", thumbnail ="http://s6.postimg.org/jp5jx97ip/bityoucancel.png", fanart ="http://s6.postimg.org/k2gzbpd5d/Movie_Trailer_poster.jpg",folder=False) )
+        itemlist.append( Item(channel=item.channel, title="[COLOR salmon][B]No hay Trailer[/B][/COLOR]", thumbnail ="http://s6.postimg.org/jp5jx97ip/bityoucancel.png", fanart ="http://s6.postimg.org/k2gzbpd5d/Movie_Trailer_poster.jpg",folder=False) )
     
     for scrapedurl, scrapedtitle in matches:
         
         scrapedurl = "https://www.youtube.com/watch"+scrapedurl
         scrapedtitle = scrapertools.decodeHtmlentities( scrapedtitle )
         scrapedtitle=scrapedtitle.replace(scrapedtitle,"[COLOR lightsalmon][B]"+scrapedtitle+"[/B][/COLOR]")
-        itemlist.append( Item(channel=__channel__, title=scrapedtitle, url=scrapedurl, server="youtube", fanart="http://s6.postimg.org/k2gzbpd5d/Movie_Trailer_poster.jpg", thumbnail=item.extra, action="play", folder=False) )
+        itemlist.append( Item(channel=item.channel, title=scrapedtitle, url=scrapedurl, server="youtube", fanart="http://s6.postimg.org/k2gzbpd5d/Movie_Trailer_poster.jpg", thumbnail=item.extra, action="play", folder=False) )
     return itemlist
 
 def info(item):
@@ -1058,10 +1047,6 @@ class TextBox1( xbmcgui.WindowDialog ):
                   pass
                self.close()
 
-def test():
-    return True
-        
-
 
 def info_capitulos(item):
 
@@ -1185,8 +1170,6 @@ class TextBox2( xbmcgui.WindowDialog ):
                except:
                    xbmc.executebuiltin('Action(reloadkeymaps)')
                self.close()
-def test():
-    return True
 
 
 def translate(to_translate, to_langage="auto", langage="auto"):

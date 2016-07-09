@@ -4,26 +4,17 @@
 # Canal para robinfilm
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os, sys
+import re
+import urlparse
 
-from core import logger
 from core import config
+from core import logger
 from core import scrapertools
 from core.item import Item
-from servers import servertools
 
-__channel__ = "robinfilm"
-__category__ = "F"
-__type__ = "generic"
-__title__ = "Robinfilm (IT)"
-__language__ = "IT"
-__creationdate__ = "20110516"
 
 DEBUG = config.get_setting("debug")
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("[robinfilm.py] mainlist")
@@ -82,7 +73,7 @@ def novedades(item):
         scrapedplot = ""
         scrapedthumbnail = scrapedthumbnail.replace("s72-c","s320-c")
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="findvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
 
     #<a class='blog-pager-older-link' href='http://robinfilm-new.blogspot.com.es/search?updated-max=2012-03-15T10:44:00-07:00&amp;max-results=12' id='Blog1_blog-pager-older-link' title='Messages plus anciens'>Messages plus anciens</a>
     #<a class='blog-pager-older-link' href='http://www.robinfilm.com/search?updated-max=2011-10-13T18%3A12%3A00%2B02%3A00&max-results=21' id='Blog1_blog-pager-older-link' title='Post più vecchi'>Post più vecchi</a>
@@ -96,21 +87,6 @@ def novedades(item):
         scrapedurl = urlparse.urljoin(item.url,match)
         scrapedthumbnail = match[2]
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="novedades", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="novedades", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
 
     return itemlist
-
-# Verificación automática de canales: Esta función debe devolver "True" si está ok el canal.
-def test():
-    from servers import servertools
-    # mainlist
-    peliculas_items = mainlist(Item())
-    # Da por bueno el canal si alguno de los vídeos de "Novedades" devuelve mirrors
-    bien = False
-    for pelicula_item in peliculas_items:
-        mirrors = servertools.find_video_items( item=pelicula_item )
-        if len(mirrors)>0:
-            bien = True
-            break
-
-    return bien

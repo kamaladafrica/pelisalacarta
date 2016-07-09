@@ -5,13 +5,10 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import re, urlparse, urllib, urllib2
-import os
+import re
 
-from core import scrapertools
 from core import logger
-from core import config
-from core import unwise
+from core import scrapertools
 
 
 # Returns an array of possible video url's from the page_url
@@ -111,7 +108,3 @@ def find_videos(data):
             logger.info("  url duplicada="+url)
 
     return devuelve
-
-def test():
-    video_urls = get_video_url("http://www.bitvid.sx/file/51eb2f5707c36")
-    return len(video_urls)>0

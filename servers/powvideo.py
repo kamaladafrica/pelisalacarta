@@ -7,7 +7,6 @@
 
 import re
 
-from core import config
 from core import jsunpack
 from core import logger
 from core import scrapertools
@@ -82,9 +81,3 @@ def find_videos(data):
             logger.info("  url duplicada="+url)
             
     return devuelve
-
-
-def test():
-    video_urls = get_video_url("http://powvideo.net/auoxxtvyquoy")
-
-    return len(video_urls)>0

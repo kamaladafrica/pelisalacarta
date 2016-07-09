@@ -12,9 +12,20 @@
 	<bannermenu></bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>1</version>
-	<date>12/04/2016</date>
-	<changes>arreglo play html5</changes>
+	<version>3</version>
+
+	<changes>
+		<change>
+			<date>01/07/16</date>
+			<autor>SeiTaN</autor>
+			<description>Eliminado código innecesario.</description>
+		</change>
+		<change>
+			<date>06/06/16</date>
+			<autor>super_berny</autor>
+			<description>Añadida info extra de tmdb. Añadido el canal en la busqueda de novedades</description>
+		</change>
+	</changes>
 
 	<categories>
 		<category>movie</category>
@@ -23,6 +34,41 @@
 	</categories>
 
 	<settings>
-		<include_in_global_search>true</include_in_global_search>
+		<include_in_global_search>disabled</include_in_global_search>
+	</settings>
+	<settings>
+		<id>modo_grafico</id>
+		<type>bool</type>
+		<label>Buscar información extra</label>
+		<default>true</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<id>perfil</id>
+		<type>list</type>
+		<label>Perfil de color</label>
+		<default>0</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+		<lvalues>Perfil 1</lvalues>
+		<lvalues>Perfil 2</lvalues>
+		<lvalues>Perfil 3</lvalues>
+	</settings>
+	<settings>
+		<id>orden_episodios</id>
+		<type>bool</type>
+		<label>Mostrar los episodios de las series en orden descendente</label>
+		<default>false</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<id>include_in_newest_peliculas</id>
+		<type>bool</type>
+		<label>Incluir en Novedades - Peliculas</label>
+		<default>true</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
 	</settings>
 </channel>

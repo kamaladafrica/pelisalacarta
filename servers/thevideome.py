@@ -5,13 +5,11 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import urlparse,urllib2,urllib,re
-import os
+import re
 
-from core import scrapertools
 from core import logger
-from core import config
-from core import jsunpack
+from core import scrapertools
+
 
 def test_video_exists( page_url ):
     logger.info("pelisalacarta.servers.thevideome test_video_exists(page_url='%s')" % page_url)
@@ -65,9 +63,3 @@ def find_videos(data):
         else:
             logger.info("  url duplicada="+url)
     return devuelve
-
-def test():
-
-    video_urls = get_video_url("http://thevideo.me/embed-dwjga2jngh0n.html")
-
-    return len(video_urls)>0

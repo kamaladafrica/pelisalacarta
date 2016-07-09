@@ -6,15 +6,16 @@
 	<active>true</active>
 	<adult>false</adult>
 	<language>es</language>
-
+	<include_in_global_search>false</include_in_global_search>
+		
 	<fanart></fanart>
 	<thumbnail>http://media.tvalacarta.info/pelisalacarta/squares/elitetorrent.png</thumbnail>
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/elitetorrent.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>0</version>
-	<date></date>
-	<changes></changes>
+	<version>1</version>
+	<date>01/07/2016</date>
+	<changes>Eliminado código innecesario.</changes>
 
 	<categories>
 		<category>torrent</category>
@@ -23,8 +24,4 @@
 		<category>documentary</category>
 		<category>vos</category>
 	</categories>
-
-	<settings>
-		<include_in_global_search>false</include_in_global_search>
-	</settings>
 </channel>

@@ -12,14 +12,19 @@
     
     <update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
     <version>2</version>
-    <date>28/05/2016</date>
-    <changes>Añadido proxy para cloudflare.Mejoras canal</changes>
+    <date>01/07/2016</date>
+    <changes>Eliminado código innecesario.</changes>
     
     <categories>
         <category>movie</category>
     </categories>
     
     <settings>
-        <include_in_global_search>True</include_in_global_search>
-    </settings>
+		<id>include_in_global_search</id>
+		<type>bool</type>
+		<label>Incluir en busqueda global</label>
+		<default>false</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
 </channel>

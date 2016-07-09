@@ -8,13 +8,10 @@
 # Unwise and main algorithm taken from Eldorado url resolver
 # https://github.com/Eldorados/script.module.urlresolver/blob/master/lib/urlresolver/plugins/nowvideo.py
 
-import urlparse,urllib2,urllib,re
-import os
+import re
 
-from core import scrapertools
 from core import logger
-from core import config
-from core import unwise
+from core import scrapertools
 
 USER_AGENT="Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:20.0) Gecko/20100101 Firefox/20.0"
 
@@ -236,9 +233,3 @@ def find_videos(data):
     
 
     return devuelve
-
-def test():
-
-    video_urls = get_video_url("http://www.nowvideo.eu/video/xuntu4pfq0qye")
-
-    return len(video_urls)>0

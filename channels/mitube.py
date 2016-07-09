@@ -5,8 +5,13 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import urlparse,urllib2,urllib,re
-import os, sys,json,time
+import json
+import os
+import re
+import sys
+import time
+import urllib2
+
 from lib import pafy
 
 if sys.version_info[:2] >= (3, 0):
@@ -25,16 +30,9 @@ from core import logger
 from core import config
 from core import scrapertools
 from core.item import Item
-from servers import servertools
 
 DEBUG = config.get_setting("debug")
 
-__category__ = "A"
-__type__ = "generic"
-__title__ = "mitube"
-__channel__ = "mitube"
-__language__ = "ES"
-__creationdate__ = "20111014"
 
 ANIMEFLV_REQUEST_HEADERS = []
 ANIMEFLV_REQUEST_HEADERS.append(["User-Agent","Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:22.0) Gecko/20100101 Firefox/22.0"])
@@ -44,14 +42,12 @@ ANIMEFLV_REQUEST_HEADERS.append(["Connection","keep-alive"])
 ANIMEFLV_REQUEST_HEADERS.append(["Accept","text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"])
 ANIMEFLV_REQUEST_HEADERS.append(["Accept-Language","es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3"])
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("[mitube.py] mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, action="search"        , title="Buscar"              , url="https://www.googleapis.com/youtube/v3/search" ))
+    itemlist.append( Item(channel=item.channel, action="search"        , title="Buscar"              , url="https://www.googleapis.com/youtube/v3/search" ))
   
     return itemlist
 
@@ -194,8 +190,8 @@ def series(item):
         plot=""
        ## print "title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"], plot[="+plot+"]"
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"], plot[="+plot+"]")
-        ##itemlist.append( Item(channel=__channel__, action="play", server="youtube",title=title, url=url , thumbnail=thumbnail , fanart=thumbnail,  folder=False) )
-        itemlist.append( Item(channel=__channel__, action="ver",title=title+" "+plot, url=url , thumbnail=thumbnail ,plot=plot, viewmode="movie_with_plot") )
+        ##itemlist.append( Item(channel=item.channel, action="play", server="youtube",title=title, url=url , thumbnail=thumbnail , fanart=thumbnail,  folder=False) )
+        itemlist.append( Item(channel=item.channel, action="ver",title=title+" "+plot, url=url , thumbnail=thumbnail ,plot=plot, viewmode="movie_with_plot") )
      
     return itemlist
 
@@ -219,17 +215,8 @@ def ver(item):
     itemlist = []
     streams = video.streams
     for s in streams:
-	    itemlist.append( Item(channel=__channel__, action="play", server="directo", title=s.resolution+" "+s.extension, url=s.url , thumbnail=item.thumbnail , fanart=item.thumbnail,  folder=False))
-	   # para wiimc itemlist.append( Item(channel=__channel__, action="play_video", server="directo", title=s.resolution+" "+s.extension, url=s.url , thumbnail=item.thumbnail , fanart=item.thumbnail,  folder=False))
-    itemlist.append( Item(channel=__channel__, action="descargabg",title="descargar", url=item.url , thumbnail=item.thumbnail ,plot=item.plot, viewmode="movie_with_plot") )
+	    itemlist.append( Item(channel=item.channel, action="play", server="directo", title=s.resolution+" "+s.extension, url=s.url , thumbnail=item.thumbnail , fanart=item.thumbnail,  folder=False))
+	   # para wiimc itemlist.append( Item(channel=item.channel, action="play_video", server="directo", title=s.resolution+" "+s.extension, url=s.url , thumbnail=item.thumbnail , fanart=item.thumbnail,  folder=False))
+    itemlist.append( Item(channel=item.channel, action="descargabg",title="descargar", url=item.url , thumbnail=item.thumbnail ,plot=item.plot) )
 
     return itemlist
-
-
-
-# Verificación automática de canales: Esta función debe devolver "True" si todo está ok en el canal.
-def test():
-    bien = True
-
-  
-    return bien

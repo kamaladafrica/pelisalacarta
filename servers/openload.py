@@ -6,12 +6,13 @@
 # ------------------------------------------------------------
 
 import re
-from core import scrapertools
-from core import logger
 
-           
-headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:22.0) Gecko/20100101 Firefox/22.0',
-       'Accept-Encoding': 'none'}
+from core import config
+from core import logger
+from core import scrapertools
+
+
+headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0'}
 
 
 def test_video_exists(page_url):
@@ -24,39 +25,43 @@ def test_video_exists(page_url):
 
     return True, ""
 
+
 def get_video_url(page_url, premium=False, user="", password="", video_password=""):
     logger.info("pelisalacarta.servers.openload url=" + page_url)
     video_urls = []
 
-    video = True
     data = scrapertools.downloadpageWithoutCookies(page_url)
-
-    if "videocontainer" not in data:
-        video = False
-        url = page_url.replace("/embed/","/f/")
-        data = scrapertools.downloadpageWithoutCookies(url)
-        text_encode = scrapertools.get_match(data,"Click to start Download.*?<script[^>]+>(.*?)</script")
-
-    else:
-        text_encode = scrapertools.get_match(data,"<video[^<]+<script[^>]+>(.*?)</script>")
-
-    from aadecode import decode as aadecode
-    text_decode = aadecode(text_encode)
 
     subtitle = scrapertools.find_single_match(data, '<track kind="captions" src="([^"]+)" srclang="es"')
     #Header para la descarga
     header_down = "|User-Agent="+headers['User-Agent']+"|"
-    if video == True:
-        videourl = scrapertools.get_match(text_decode, "(http.*?true)")
-        videourl = scrapertools.get_header_from_response(videourl,header_to_get="location")
-        videourl = videourl.replace("https://","http://").replace("?mime=true","")
-        extension = videourl[-4:]
-        video_urls.append([ extension + " [Openload]", videourl+header_down+extension, 0, subtitle])
+
+    from aadecode import decode as aadecode
+    if "videocontainer" not in data:
+        url = page_url.replace("/embed/","/f/")
+        data = scrapertools.downloadpageWithoutCookies(url)
+        text_encode = scrapertools.find_single_match(data,"Click to start Download.*?<script[^>]+>(.*?)</script")
+        text_decode = aadecode(text_encode)
+        
+        videourl = scrapertools.find_single_match(text_decode, '(http.*?)\}').replace("https://","http://")
+        extension = scrapertools.find_single_match(data, '<meta name="description" content="([^"]+)"')
+        extension = "." + extension.rsplit(".", 1)[1]
+        video_urls.append([extension + " [Openload]", videourl+header_down+extension])
     else:
-        videourl = scrapertools.find_single_match(text_decode, '"href",(?:\s|)\'([^\']+)\'')
-        videourl = videourl.replace("https://","http://")
-        extension = videourl[-4:]
-        video_urls.append([ extension + " [Openload]", videourl+header_down+extension])
+        text_encode = scrapertools.find_multiple_matches(data,'<script[^>]+>(ﾟωﾟ.*?)</script>')
+        decodeindex = aadecode(text_encode[0])
+        subtract = scrapertools.find_single_match(decodeindex, 'welikekodi.*?(\([^;]+\))')
+        index = int(eval(subtract))
+        
+        # Buscamos la variable que nos indica el script correcto
+        text_decode = aadecode(text_encode[index])
+
+        videourl = scrapertools.find_single_match(text_decode, "(http.*?true)").replace("https://","http://")
+        extension = "." + scrapertools.find_single_match(text_decode, "video/(\w+)")
+        if config.get_platform() != "plex":
+            video_urls.append([extension + " [Openload] ", videourl+header_down+extension, 0, subtitle])
+        else:
+            video_urls.append([extension + " [Openload] ", videourl, 0, subtitle])
 
     for video_url in video_urls:
         logger.info("pelisalacarta.servers.openload %s - %s" % (video_url[0],video_url[1]))

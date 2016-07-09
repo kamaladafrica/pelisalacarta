@@ -7,8 +7,8 @@
 
 
 import urlparse
-from lib import unshortenit
 
+from lib import unshortenit
 
 SERVICES_SHORT = ["adf.ly","sh.st","bit.ly","ul.to"]
 
@@ -27,11 +27,3 @@ def Es_Corto(url):
     server = urlparse.urlsplit(url).netloc
     Corto = (server in SERVICES_SHORT)
     return Corto        
-
-def test():
-    
-    location = expand_url("http://sh.st/saBL8")
-    ok = ("meuvideos.com" in location)
-    print "Funciona:",ok
-
-    return ok

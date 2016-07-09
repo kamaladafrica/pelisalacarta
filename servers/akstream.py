@@ -6,12 +6,10 @@
 # by be4t5
 #------------------------------------------------------------
 
-import urlparse,urllib2,urllib,re
-import os
+import re
 
-from core import scrapertools
 from core import logger
-from core import config
+from core import scrapertools
 from lib import mechanize
 
 def get_video_url( page_url , premium = False , user="" , password="", video_password="" ):
@@ -119,8 +117,3 @@ def find_videos(text):
     
 
     return devuelve
-
-def test():
-    video_urls = get_video_url("http://akstream.net/v/8513acv2alss")
-
-    return len(video_urls)>0

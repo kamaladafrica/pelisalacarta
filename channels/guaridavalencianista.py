@@ -1,39 +1,30 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para guaridavalencianista
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os
-import sys
+import re
+import urlparse
 
-from core import scrapertools
 from core import config
 from core import logger
+from core import scrapertools
+from core import servertools
 from core.item import Item
-from servers import servertools
-#from pelisalacarta import buscador
 
-__channel__ = "guaridavalencianista"
-__category__ = "D"
-__type__ = "generic"
-__title__ = "guaridavalencianista"
-__language__ = "ES"
 
 DEBUG = config.get_setting("debug")
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("[guaridavalencianista.py] mainlist")
     itemlist=[]
     
-    itemlist.append( Item(channel=__channel__, title="Novedades"  , action="listvideos" , url="http://guaridavalencia.blogspot.com.es"))
-    #itemlist.append( Item(channel=__channel__, title="Documentales - Series Disponibles"  , action="DocuSeries" , url="http://guaridavalencia.blogspot.com/"))
-    itemlist.append( Item(channel=__channel__, title="Categorias"  , action="DocuTag" , url="http://guaridavalencia.blogspot.com.es"))
-    itemlist.append( Item(channel=__channel__, title="Partidos de liga (Temporada 2014/2015)"  , action="listvideos" , url="http://guaridavalencia.blogspot.com.es/search/label/PARTIDOS%20DEL%20VCF%20%28TEMPORADA%202014-15%29"))
+    itemlist.append( Item(channel=item.channel, title="Novedades"  , action="listvideos" , url="http://guaridavalencia.blogspot.com.es"))
+    #itemlist.append( Item(channel=item.channel, title="Documentales - Series Disponibles"  , action="DocuSeries" , url="http://guaridavalencia.blogspot.com/"))
+    itemlist.append( Item(channel=item.channel, title="Categorias"  , action="DocuTag" , url="http://guaridavalencia.blogspot.com.es"))
+    itemlist.append( Item(channel=item.channel, title="Partidos de liga (Temporada 2014/2015)"  , action="listvideos" , url="http://guaridavalencia.blogspot.com.es/search/label/PARTIDOS%20DEL%20VCF%20%28TEMPORADA%202014-15%29"))
 
     return itemlist
 
@@ -55,7 +46,7 @@ def DocuSeries(item):
         scrapedthumbnail = ""
         scrapedplot = ""
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="listvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="listvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
 
     return itemlist
 
@@ -79,7 +70,7 @@ def DocuTag(item):
         scrapedthumbnail = ""
         scrapedplot = ""
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="listvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="listvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
 
     return itemlist
 
@@ -100,7 +91,7 @@ def DocuARCHIVO(item):
         scrapedthumbnail = ""
         scrapedplot = ""
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="listvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="listvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
 
     return itemlist
     
@@ -140,7 +131,7 @@ def listvideos(item):
         scrapedplot = re.sub("<[^>]+>"," ",scrapedplot)
         scrapedplot = scrapertools.unescape(scrapedplot)
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="findvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
 
     # Extrae la marca de siguiente página
     patronvideos = "<a class='blog-pager-older-link' href='([^']+)'"
@@ -152,7 +143,7 @@ def listvideos(item):
         scrapedurl = urlparse.urljoin(item.url,matches[0])
         scrapedthumbnail = ""
         scrapedplot = ""
-        itemlist.append( Item(channel=__channel__, action="listvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="listvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
 
     return itemlist
 
@@ -178,22 +169,3 @@ def findvideos(item):
         itemlist.append( Item(channel=item.channel, title=scrapedtitle , action="play" , server=server, url=scrapedurl, thumbnail=item.thumbnail, show=item.show , plot=item.plot , folder=False) )
 
     return itemlist
-
-# Verificación automática de canales: Esta función debe devolver "True" si todo está ok en el canal.
-def test():
-    bien = True
-    
-    # mainlist
-    mainlist_items = mainlist(Item())
-    
-    # Da por bueno el canal si alguno de los vídeos de "Novedades" devuelve mirrors
-    documentales_items = listvideos(mainlist_items[0])
-    
-    bien = False
-    for documental_item in documentales_items:
-        mirrors = findvideos(documental_item)
-        if len(mirrors)>0:
-            bien = True
-            break
-    
-    return bien

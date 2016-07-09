@@ -6,17 +6,11 @@
 # ------------------------------------------------------------
 import re
 
+from core import jsontools
 from core import logger
 from core import scrapertools
 from core.item import Item
 
-from core import jsontools
-
-__channel__ = "pelismagnet"
-__category__ = "F,S,D"
-__type__ = "generic"
-__title__ = "Pelis Magnet"
-__language__ = "ES"
 
 host = 'http://pelismag.net'
 api = host + '/api'
@@ -24,34 +18,30 @@ api_serie = host + "/seapi"
 api_temp = host + "/sapi"
 
 
-def isGeneric():
-    return True
-
-
 def mainlist(item):
     logger.info("pelisalacarta.pelismagnet mainlist")
 
     itemlist = list()
-    itemlist.append(Item(channel=__channel__, action="pelis", title="[B]Peliculas[/B]",
+    itemlist.append(Item(channel=item.channel, action="pelis", title="[B]Peliculas[/B]",
                          url=api + "?sort_by=''&page=0"))
-    itemlist.append(Item(channel=__channel__, action="pelis", title="     Estrenos",
+    itemlist.append(Item(channel=item.channel, action="pelis", title="     Estrenos",
                          url=api + "?sort_by=date_added&page=0"))
-    itemlist.append(Item(channel=__channel__, action="pelis", title="     + Populares", url=api + "?page=0"))
-    itemlist.append(Item(channel=__channel__, action="pelis", title="     + Valoradas",
+    itemlist.append(Item(channel=item.channel, action="pelis", title="     + Populares", url=api + "?page=0"))
+    itemlist.append(Item(channel=item.channel, action="pelis", title="     + Valoradas",
                          url=api + "?sort_by=rating&page=0"))
-    itemlist.append(Item(channel=__channel__, action="menu_ord", title="     Ordenado por...",
+    itemlist.append(Item(channel=item.channel, action="menu_ord", title="     Ordenado por...",
                          url=api))
-    itemlist.append(Item(channel=__channel__, action="search", title="     Buscar...", url=api + "?keywords=%s&page=0"))
-    itemlist.append(Item(channel=__channel__, action="series", title="[B]Series[/B]",
+    itemlist.append(Item(channel=item.channel, action="search", title="     Buscar...", url=api + "?keywords=%s&page=0"))
+    itemlist.append(Item(channel=item.channel, action="series", title="[B]Series[/B]",
                          url=api_serie + "?sort_by=''&page=0"))
-    itemlist.append(Item(channel=__channel__, action="series", title="     Recientes",
+    itemlist.append(Item(channel=item.channel, action="series", title="     Recientes",
                          url=api_serie + "?sort_by=date_added&page=0"))
-    itemlist.append(Item(channel=__channel__, action="series", title="     + Populares", url=api_serie + "?page=0"))
-    itemlist.append(Item(channel=__channel__, action="series", title="     + Valoradas",
+    itemlist.append(Item(channel=item.channel, action="series", title="     + Populares", url=api_serie + "?page=0"))
+    itemlist.append(Item(channel=item.channel, action="series", title="     + Valoradas",
                          url=api_serie + "?sort_by=rating&page=0"))
-    itemlist.append(Item(channel=__channel__, action="menu_ord", title="     Ordenado por...",
+    itemlist.append(Item(channel=item.channel, action="menu_ord", title="     Ordenado por...",
                          url=api_serie))
-    itemlist.append(Item(channel=__channel__, action="search", title="     Buscar...",
+    itemlist.append(Item(channel=item.channel, action="search", title="     Buscar...",
                          url=api_serie + "?keywords=%s&page=0"))
     return itemlist
 
@@ -60,9 +50,9 @@ def menu_ord(item):
     logger.info("pelisalacarta.pelismagnet menu_ord")
 
     itemlist = list()
-    itemlist.append(Item(channel=__channel__, action="menu_alf", title="Alfabético",
+    itemlist.append(Item(channel=item.channel, action="menu_alf", title="Alfabético",
                          url=item.url))
-    itemlist.append(Item(channel=__channel__, action="menu_genero", title="Género",
+    itemlist.append(Item(channel=item.channel, action="menu_genero", title="Género",
                          url=item.url))
 
     return itemlist
@@ -75,7 +65,7 @@ def menu_alf(item):
 
     for letra in ['[0-9]', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
                   'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']:
-        itemlist.append(Item(channel=__channel__, action="series", title=letra,
+        itemlist.append(Item(channel=item.channel, action="series", title=letra,
                              url=item.url+"?keywords=^"+letra+"&page=0"))
 
     return itemlist
@@ -94,7 +84,7 @@ def menu_genero(item):
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     for genero, nombre in matches:
-        itemlist.append(Item(channel=__channel__, action="series", title=nombre,
+        itemlist.append(Item(channel=item.channel, action="series", title=nombre,
                              url=item.url+"?genre="+genero+"&page=0"))
 
     return itemlist
@@ -128,12 +118,12 @@ def series(item):
         if plot is None:
             plot = ""
 
-        itemlist.append(Item(channel=__channel__, action="episodios", title=title, url=url, server="torrent",
+        itemlist.append(Item(channel=item.channel, action="episodios", title=title, url=url, server="torrent",
                              thumbnail=thumbnail, fanart=fanart, show=title, plot=plot, folder=True))
 
     if len(itemlist) == 50:
         url = re.sub(r'page=(\d+)', r'page=' + str(int(re.search('\d+', item.url).group()) + 1), item.url)
-        itemlist.append(Item(channel=__channel__, action="series", title=">> Página siguiente", url=url))
+        itemlist.append(Item(channel=item.channel, action="series", title=">> Página siguiente", url=url))
 
     return itemlist
 
@@ -149,7 +139,7 @@ def episodios(item):
 
         titulo = "{temporada} ({total} Episodios)".format(temporada=i.get("nomtemporada", ""),
                                                           total=len(i.get("capituls", "0")))
-        itemlist.append(Item(channel=__channel__, action="episodios", title=titulo, url=item.url,
+        itemlist.append(Item(channel=item.channel, action="episodios", title=titulo, url=item.url,
                              server="torrent", fanart=item.fanart, thumbnail=item.thumbnail, plot=data.get("info", ""),
                              folder=False))
 
@@ -172,13 +162,13 @@ def episodios(item):
             if j.get("links", {}).get("magnet", ""):
                 url = j.get("links", {}).get("magnet", "")
             else:
-                return [Item(channel=__channel__, title='No hay enlace magnet disponible para este capitulo')]
+                return [Item(channel=item.channel, title='No hay enlace magnet disponible para este capitulo')]
 
             plot = i.get("overviewcapitul", "")
             if plot is None:
                 plot = ""
 
-            itemlist.append(Item(channel=__channel__, action="play", title=title, url=url, server="torrent",
+            itemlist.append(Item(channel=item.channel, action="play", title=title, url=url, server="torrent",
                                  fanart=item.fanart, thumbnail=item.thumbnail, plot=plot, folder=False))
 
     return itemlist
@@ -207,7 +197,7 @@ def pelis(item):
             calidad = "[{calidad}]".format(calidad=i.get("magnets", {}).get("M720", {}).get("quality", ""))
 
         if not url:
-            return [Item(channel=__channel__, title='No hay enlace magnet disponible para esta pelicula')]
+            return [Item(channel=item.channel, title='No hay enlace magnet disponible para esta pelicula')]
 
         title = "{nombre} {calidad}{val}".format(nombre=i.get("nom", ""), val=valoracion, calidad=calidad)
 
@@ -222,21 +212,27 @@ def pelis(item):
         if plot is None:
             plot = ""
 
-        itemlist.append(Item(channel=__channel__, action="play", title=title, url=url, server="torrent",
+        itemlist.append(Item(channel=item.channel, action="play", title=title, url=url, server="torrent",
                              thumbnail=thumbnail, plot=plot, fanart=fanart, folder=False))
 
     if len(itemlist) == 50:
         url = re.sub(r'page=(\d+)', r'page=' + str(int(re.search('\d+', item.url).group()) + 1), item.url)
-        itemlist.append(Item(channel=__channel__, action="pelis", title=">> Página siguiente", url=url))
+        itemlist.append(Item(channel=item.channel, action="pelis", title=">> Página siguiente", url=url))
 
     return itemlist
 
 
 def search(item, texto):
     logger.info("pelisalacarta.pelismagnet search")
-
-    item.url = item.url % texto.replace(' ', '%20')
-    if "/seapi" in item.url:
-        return series(item)
-    else:
-        return pelis(item)
+    try:
+        item.url = item.url % texto.replace(' ', '%20')
+        if "/seapi" in item.url:
+            return series(item)
+        else:
+            return pelis(item)
+    # Se captura la excepción, para no interrumpir al buscador global si un canal falla
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error( "%s" % line )
+        return []

@@ -4,39 +4,29 @@
 # Canal para tupornotv
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os
+import re
 import sys
-from servers import servertools
+import urlparse
+
 from core import config
-from core.item import Item
 from core import logger
-
 from core import scrapertools
-
-__channel__ = "tupornotv"
-__category__ = "F"
-__type__ = "generic"
-__title__ = "tuporno.tv"
-__language__ = "ES"
-__adult__ = "true"
+from core.item import Item
 
 DEBUG = config.get_setting("debug")
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("[tupornotv.py] mainlist")
     
     itemlist = []
-    itemlist.append( Item( channel=__channel__ , title="Pendientes de Votación" , action="novedades" , url="http://tuporno.tv/pendientes") )
-    itemlist.append( Item( channel=__channel__ , title="Populares" , action="masVistos" , url="http://tuporno.tv/" , folder=True ) )
-    itemlist.append( Item( channel=__channel__ , title="Categorias" , action="categorias" , url="http://tuporno.tv/categorias/" , folder=True ) )
-    itemlist.append( Item( channel=__channel__ , title="Videos Recientes" , action="novedades" , url="http://tuporno.tv/videosRecientes/" , folder=True ) )
-    itemlist.append( Item( channel=__channel__ , title="Top Videos (mas votados)" , action="masVotados" , url="http://tuporno.tv/topVideos/" , folder=True ) )
-    itemlist.append( Item( channel=__channel__ , title="Nube de Tags" , action="categorias" , url="http://tuporno.tv/tags/" , folder=True ) )
-    itemlist.append( Item( channel=__channel__ , title="Buscar" , action="search") )
+    itemlist.append( Item( channel=item.channel , title="Pendientes de Votación" , action="novedades" , url="http://tuporno.tv/pendientes") )
+    itemlist.append( Item( channel=item.channel , title="Populares" , action="masVistos" , url="http://tuporno.tv/" , folder=True ) )
+    itemlist.append( Item( channel=item.channel , title="Categorias" , action="categorias" , url="http://tuporno.tv/categorias/" , folder=True ) )
+    itemlist.append( Item( channel=item.channel , title="Videos Recientes" , action="novedades" , url="http://tuporno.tv/videosRecientes/" , folder=True ) )
+    itemlist.append( Item( channel=item.channel , title="Top Videos (mas votados)" , action="masVotados" , url="http://tuporno.tv/topVideos/" , folder=True ) )
+    itemlist.append( Item( channel=item.channel , title="Nube de Tags" , action="categorias" , url="http://tuporno.tv/tags/" , folder=True ) )
+    itemlist.append( Item( channel=item.channel , title="Buscar" , action="search") )
     
     return itemlist
 
@@ -95,7 +85,7 @@ def novedades(item):
         #trozos = scrapedurl.split("/")
         #id = trozos[len(trozos)-1]
         #videos = "http://149.12.64.129/videoscodiH264/"+id[0:1]+"/"+id[1:2]+"/"+id+".flv"
-        itemlist.append( Item(channel=__channel__, action="play", title=scrapedtitle+" ["+duracion+"]" , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot, server="Directo", folder=False) )
+        itemlist.append( Item(channel=item.channel, action="play", title=scrapedtitle+" ["+duracion+"]" , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot, server="Directo", folder=False) )
 
     # ------------------------------------------------------
     # Extrae el paginador
@@ -105,7 +95,7 @@ def novedades(item):
     siguiente = re.compile(patronsiguiente,re.DOTALL).findall(data)
     if len(siguiente)>0:
         scrapedurl = urlparse.urljoin(url,siguiente[0])
-        itemlist.append( Item(channel=__channel__, action="novedades", title="!Next page" , url=scrapedurl , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="novedades", title="!Next page" , url=scrapedurl , folder=True) )
 
     return itemlist
 
@@ -113,11 +103,11 @@ def masVistos(item):
     logger.info("[tupornotv.py] masVistos")
     
     itemlist = []
-    itemlist.append( Item( channel=__channel__ , title="Hoy" , action="novedades" , url="http://tuporno.tv/hoy" , folder=True ) )
-    itemlist.append( Item( channel=__channel__ , title="Recientes" , action="novedades" , url="http://tuporno.tv/recientes" , folder=True ) )
-    itemlist.append( Item( channel=__channel__ , title="Semana" , action="novedades" , url="http://tuporno.tv/semana" , folder=True ) )
-    itemlist.append( Item( channel=__channel__ , title="Mes" , action="novedades" , url="http://tuporno.tv/mes" , folder=True ) )
-    itemlist.append( Item( channel=__channel__ , title="Año" , action="novedades" , url="http://tuporno.tv/ano" , folder=True ) )
+    itemlist.append( Item( channel=item.channel , title="Hoy" , action="novedades" , url="http://tuporno.tv/hoy" , folder=True ) )
+    itemlist.append( Item( channel=item.channel , title="Recientes" , action="novedades" , url="http://tuporno.tv/recientes" , folder=True ) )
+    itemlist.append( Item( channel=item.channel , title="Semana" , action="novedades" , url="http://tuporno.tv/semana" , folder=True ) )
+    itemlist.append( Item( channel=item.channel , title="Mes" , action="novedades" , url="http://tuporno.tv/mes" , folder=True ) )
+    itemlist.append( Item( channel=item.channel , title="Año" , action="novedades" , url="http://tuporno.tv/ano" , folder=True ) )
     return itemlist
 
 def categorias(item):
@@ -157,26 +147,32 @@ def categorias(item):
         logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
     
         # Añade al listado de XBMC
-        itemlist.append( Item(channel=__channel__, action="novedades", title=scrapedtitle.capitalize() , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="novedades", title=scrapedtitle.capitalize() , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
     return itemlist
 
 def masVotados(item):
     logger.info("[tupornotv.py] masVotados")
     
     itemlist = []
-    itemlist.append( Item( channel=__channel__ , title="Hoy" , action="novedades" , url="http://tuporno.tv/topVideos/todas/hoy" , folder=True ) )
-    itemlist.append( Item( channel=__channel__ , title="Recientes" , action="novedades" , url="http://tuporno.tv/topVideos/todas/recientes" , folder=True ) )
-    itemlist.append( Item( channel=__channel__ , title="Semana" , action="novedades" , url="http://tuporno.tv/topVideos/todas/semana" , folder=True ) )
-    itemlist.append( Item( channel=__channel__ , title="Mes" , action="novedades" , url="http://tuporno.tv/topVideos/todas/mes" , folder=True ) )
-    itemlist.append( Item( channel=__channel__ , title="Año" , action="novedades" , url="http://tuporno.tv/topVideos/todas/ano" , folder=True ) )
+    itemlist.append( Item( channel=item.channel , title="Hoy" , action="novedades" , url="http://tuporno.tv/topVideos/todas/hoy" , folder=True ) )
+    itemlist.append( Item( channel=item.channel , title="Recientes" , action="novedades" , url="http://tuporno.tv/topVideos/todas/recientes" , folder=True ) )
+    itemlist.append( Item( channel=item.channel , title="Semana" , action="novedades" , url="http://tuporno.tv/topVideos/todas/semana" , folder=True ) )
+    itemlist.append( Item( channel=item.channel , title="Mes" , action="novedades" , url="http://tuporno.tv/topVideos/todas/mes" , folder=True ) )
+    itemlist.append( Item( channel=item.channel , title="Año" , action="novedades" , url="http://tuporno.tv/topVideos/todas/ano" , folder=True ) )
     return itemlist
 
 def search(item):
     logger.info("[tupornotv.py] search")
     tecleado = item.extra.replace(" ", "+")
     item.url = "http://tuporno.tv/buscador/?str=" + tecleado
-    itemlist = getsearch(item)
-    return itemlist
+    try:
+        return getsearch(item)
+    # Se captura la excepción, para no interrumpir al buscador global si un canal falla
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error( "%s" % line )
+        return []
    
 def getsearch(item):
     logger.info("[tupornotv.py] getsearch")
@@ -195,7 +191,7 @@ def getsearch(item):
             scrapedplot = ""
             duracion = match[4]
 
-            itemlist.append( Item(channel=__channel__, action="play", title=scrapedtitle+" ["+duracion+"]" , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot, server="Directo", folder=False) )
+            itemlist.append( Item(channel=item.channel, action="play", title=scrapedtitle+" ["+duracion+"]" , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot, server="Directo", folder=False) )
     
         '''<a href="/buscador/?str=busqueda&desde=HV_PAGINA_SIGUIENTE" class="enlace_si">Siguiente </a>'''
         patronsiguiente = '<a href="([^"]+)" class="enlace_si">Siguiente </a>'
@@ -207,7 +203,7 @@ def getsearch(item):
     
             if len(ultpagina)==0:
                 scrapedurl = urlparse.urljoin(item.url,siguiente[0])
-                itemlist.append( Item(channel=__channel__, action="getsearch", title="!Next page" , url=scrapedurl , folder=True) )
+                itemlist.append( Item(channel=item.channel, action="getsearch", title="!Next page" , url=scrapedurl , folder=True) )
     return itemlist
 
 def play(item):
@@ -232,22 +228,6 @@ def play(item):
     url = base64.decodestring(kpt)
     logger.info("url="+url)
 
-    itemlist.append( Item(channel=__channel__, action="play", title=item.title , url=url , thumbnail=item.thumbnail , plot=item.plot, server="Directo", folder=False) )
+    itemlist.append( Item(channel=item.channel, action="play", title=item.title , url=url , thumbnail=item.thumbnail , plot=item.plot, server="Directo", folder=False) )
 
     return itemlist
-
-# Verificación automática de canales: Esta función debe devolver "True" si todo está ok en el canal.
-def test():
-    bien = True
-
-    # mainlist
-    mainlist_items = mainlist(Item())
-    videos_items = novedades(mainlist_items[0])
-    
-    for video_item in videos_items:
-        mirrors = play(video_item)
-        if len(mirrors)>0:
-            return True
-
-    print "No hay ningún vídeo en la sección de novedades"
-    return False

@@ -5,36 +5,52 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import urlparse,urllib2,urllib,re
-import os, sys
+import re
+import sys
+import urlparse
 
-from core import logger
 from core import config
+from core import logger
 from core import scrapertools
 from core.item import Item
-from servers import servertools
 
 DEBUG = config.get_setting("debug")
 
-__category__ = "A"
-__type__ = "generic"
-__title__ = "JKanime"
-__channel__ = "jkanime"
-__language__ = "ES"
-__creationdate__ = "20121015"
-
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("pelisalacarta.channels.jkanime mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, action="ultimos" , title="Últimos"           , url="http://jkanime.net/" ))
-    itemlist.append( Item(channel=__channel__, action="letras"  , title="Listado Alfabetico", url="http://jkanime.net/" ))
-    itemlist.append( Item(channel=__channel__, action="generos" , title="Listado por Genero", url="http://jkanime.net/" ))
-    itemlist.append( Item(channel=__channel__, action="search"  , title="Buscar" ))
+    itemlist.append( Item(channel=item.channel, action="ultimos_capitulos" , title="Últimos Capitulos"           , url="http://jkanime.net/" ))
+    itemlist.append( Item(channel=item.channel, action="ultimos" , title="Últimos"           , url="http://jkanime.net/" ))
+    itemlist.append( Item(channel=item.channel, action="letras"  , title="Listado Alfabetico", url="http://jkanime.net/" ))
+    itemlist.append( Item(channel=item.channel, action="generos" , title="Listado por Genero", url="http://jkanime.net/" ))
+    itemlist.append( Item(channel=item.channel, action="search"  , title="Buscar" ))
   
+    return itemlist
+
+def ultimos_capitulos(item):
+    logger.info("pelisalacarta.channels.jkanime ultimos capitulos")
+    itemlist = []
+    data = scrapertools.cache_page(item.url)
+    data = scrapertools.get_match(data,'<ul class="ratedul">.+?</ul>')
+    
+    data = data.replace('\t', '')
+    data = data.replace('\n','')
+    data = data.replace('/thumbnail/','/image/')
+    
+    patron = '<img src="(http://cdn.jkanime.net/assets/images/animes/.+?)" .+?href="(.+?)">(.+?)<.+?span>(.+?)<'
+    matches = re.compile(patron,re.DOTALL).findall(data)    
+
+    for scrapedthumb,scrapedurl,scrapedtitle, scrapedepisode in matches:
+        title = scrapedtitle.strip() + scrapedepisode
+        url = urlparse.urljoin(item.url,scrapedurl)
+        thumbnail = scrapedthumb
+        plot = ""
+        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot))        
+
     return itemlist
 
 def search(item,texto):
@@ -68,7 +84,7 @@ def ultimos(item):
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
-        itemlist.append( Item(channel=__channel__, action="episodios" , title=title , url=url, thumbnail=thumbnail, plot=plot))        
+        itemlist.append( Item(channel=item.channel, action="episodios" , title=title , url=url, thumbnail=thumbnail, plot=plot))        
 
     return itemlist
 
@@ -89,7 +105,7 @@ def generos(item):
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
-        itemlist.append( Item(channel=__channel__, action="series" , title=title , url=url, thumbnail=thumbnail, plot=plot))        
+        itemlist.append( Item(channel=item.channel, action="series" , title=title , url=url, thumbnail=thumbnail, plot=plot, viewmode="movie_with_plot"))        
 
     return itemlist
 
@@ -110,7 +126,7 @@ def letras(item):
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
-        itemlist.append( Item(channel=__channel__, action="series" , title=title , url=url, thumbnail=thumbnail, plot=plot))        
+        itemlist.append( Item(channel=item.channel, action="series" , title=title , url=url, thumbnail=thumbnail, plot=plot, viewmode="movie_with_plot"))        
 
     return itemlist
 
@@ -159,7 +175,7 @@ def series(item):
         plot = scrapertools.htmlclean(scrapedplot)
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
-        itemlist.append( Item(channel=__channel__, action="episodios" , title=title , url=url, thumbnail=thumbnail, fanart=thumbnail, plot=plot, extra=extra, viewmode="movie_with_plot"))        
+        itemlist.append( Item(channel=item.channel, action="episodios" , title=title , url=url, thumbnail=thumbnail, fanart=thumbnail, plot=plot, extra=extra))        
 
     try:
         siguiente = scrapertools.get_match(data,'<a class="listsiguiente" href="([^"]+)" >Resultados Siguientes')
@@ -168,7 +184,7 @@ def series(item):
         scrapedthumbnail = ""
         scrapedplot = ""
 
-        itemlist.append( Item(channel=__channel__, action="series", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="series", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True, viewmode="movie_with_plot") )
     except:
         pass
     return itemlist
@@ -221,83 +237,13 @@ def episodios(item):
             plot = scrapedplot
             if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
-            itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , url=url, thumbnail=thumbnail, fanart=thumbnail, plot=plot))        
+            itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, fanart=thumbnail, plot=plot))        
 
     if len(itemlist)==0:
         try:
             porestrenar = scrapertools.get_match(data,'<div[^<]+<span class="labl">Estad[^<]+</span[^<]+<span[^>]+>Por estrenar</span>')
-            itemlist.append( Item(channel=__channel__, action="findvideos" , title="Serie por estrenar" , url="", thumbnail=scrapedthumbnail, fanart=scrapedthumbnail, plot=scrapedplot, server="directo", folder=False))
+            itemlist.append( Item(channel=item.channel, action="findvideos" , title="Serie por estrenar" , url="", thumbnail=scrapedthumbnail, fanart=scrapedthumbnail, plot=scrapedplot, server="directo", folder=False))
         except:
             pass
 
     return itemlist
-
-def findvideos(item):
-    logger.info("pelisalacarta.channels.jkanime episodios")
-
-    # Descarga la pagina
-    data = scrapertools.cache_page(item.url)
-    logger.info("pelisalacarta.channels.jkanime data="+data)
-
-    itemlist = servertools.find_video_items(data=data)
-    for videoitem in itemlist:
-        videoitem.channel=__channel__
-        videoitem.folder=False
-
-    #180upload: sp1.e=hh7pmxk553kj
-    code = scrapertools.find_single_match(data,"sp1.e=([a-z0-9]+)")
-    if code!="":
-        mediaurl = "http://180upload.com/"+code
-        itemlist.append( Item(channel=__channel__, action="play" , title="Ver en 180upload" , url=mediaurl, thumbnail=item.thumbnail, fanart=item.thumbnail, plot=item.plot, server="one80upload", folder=False))
-    
-    #upafile: spu.e=idyoybh552bf
-    code = scrapertools.find_single_match(data,"spu.e=([a-z0-9]+)")
-    if code!="":
-        mediaurl = "http://upafile.com/"+code
-        itemlist.append( Item(channel=__channel__, action="play" , title="Ver en upafile" , url=mediaurl, thumbnail=item.thumbnail, fanart=item.thumbnail, plot=item.plot, server="upafile", folder=False))
-
-    mediaurl = scrapertools.find_single_match(data,'flashvars\="file\=([^\&]+)\&')
-    if mediaurl!="":
-        itemlist.append( Item(channel=__channel__, action="play" , title="Ver en jkanime" , url=mediaurl, thumbnail=item.thumbnail, fanart=item.thumbnail, plot=item.plot, server="directo", folder=False, extra=item.url))
-    
-    mediaurl = scrapertools.find_single_match(data,"url\: '(https://jkanime.net/stream/jkget/[^']+)'")
-    if mediaurl!="":
-        itemlist.append( Item(channel=__channel__, action="play" , title="Enlace encontrado en jkanime" , url=mediaurl, thumbnail=item.thumbnail, fanart=item.thumbnail, plot=item.plot, server="directo", folder=False, extra=item.url))
-
-    patron = 'src=(https:\/\/jkanime.net\/jk.php\?u=stream\/jkmedia\/[^"]+) '
-    matches = re.compile(patron,re.DOTALL).findall(data)
-    for mediaurl in matches:
-        if mediaurl!="":
-            mediaurl = mediaurl.replace("jk.php?u=stream", "stream")
-            itemlist.append( Item(channel=__channel__, action="play" , title="Enlace encontrado en jkanime" , url=mediaurl, thumbnail=item.thumbnail, fanart=item.thumbnail, plot=item.plot, server="directo", folder=False, extra=item.url))
-
-    return itemlist
-
-# Verificación automática de canales: Esta función debe devolver "True" si todo está ok en el canal.
-def test():
-    bien = True
-    
-    # mainlist
-    mainlist_items = mainlist(Item())
-    
-    # Comprueba que todas las opciones tengan algo (excepto el buscador)
-    for mainlist_item in mainlist_items:
-        if mainlist_item.action!="search":
-            exec "itemlist = "+mainlist_item.action+"(mainlist_item)"
-            if len(itemlist)==0:
-                return false
-    
-    # Comprueba si alguno de los vídeos de "Novedades" devuelve mirrors
-    series_items = ultimos(mainlist_items[0])
-    
-    for serie_item in series_items:
-        episodios_items = episodios(serie_item)
-
-        bien = False
-        for episodio_item in episodios_items:
-            mirrors = findvideos(item=episodio_item)
-            if len(mirrors)>0:
-                bien = True
-                break
-        
-    return bien

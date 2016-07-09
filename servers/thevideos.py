@@ -7,9 +7,9 @@
 
 import re
 
-from core import scrapertools
-from core import logger
 from core import jsunpack
+from core import logger
+from core import scrapertools
 
 def get_video_url( page_url , premium = False , user="" , password="", video_password="" ):
     logger.info("pelisalacarta.servers.thevideos url="+page_url)
@@ -57,9 +57,3 @@ def find_videos(data):
             logger.info("  url duplicada="+url)
 
     return devuelve
-
-def test():
-
-    video_urls = get_video_url("http://thevideos.tv/embed-fxp1ffutzw2y.html")
-
-    return len(video_urls)>0

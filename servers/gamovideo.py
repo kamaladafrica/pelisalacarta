@@ -7,10 +7,9 @@
 
 import re
 
-from core import scrapertools
-from core import logger
-from core import config
 from core import jsunpack
+from core import logger
+from core import scrapertools
 
 headers = [["User-Agent","Mozilla/5.0 (Windows NT 10.0; WOW64; rv:45.0) Gecko/20100101 Firefox/45.0"]]
 
@@ -72,8 +71,3 @@ def find_videos(data):
             logger.info("  url duplicada="+url)
            
     return devuelve
-
-def test():
-    video_urls = get_video_url("http://gamovideo.com/91zidptmfqnr")
-
-    return len(video_urls)>0
