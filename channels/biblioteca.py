@@ -13,7 +13,7 @@ from core import jsontools
 from core import logger
 from core import scrapertools
 from core.item import Item
-from samba import libsmb as samba
+from sambatools import libsmb as samba
 from platformcode import library
 
 DEBUG = config.get_setting("debug")
