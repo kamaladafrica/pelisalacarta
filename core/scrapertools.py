@@ -342,7 +342,7 @@ def downloadpage(url,post=None,headers=DEFAULT_HEADERS,follow_redirects=True, ti
     #  Inicializa la librería de las cookies
     #ficherocookies = os.path.join( config.get_data_path(), 'cookies.dat' )
 
-    dominio = urlparse.urlparse(url)[1]
+    dominio = urlparse.urlparse(url)[1].replace("www.", "")
     ficherocookies = os.path.join(COOKIES_PATH, dominio + ".dat" )
     logger.info("pelisalacarta.core.scrapertools ficherocookies="+ficherocookies)
 
@@ -564,7 +564,7 @@ def downloadpagewithcookies(url):
     #  Inicializa la librería de las cookies
     #ficherocookies = os.path.join( config.get_data_path(), 'cookies.dat' )
 
-    dominio = urlparse.urlparse(url)[1]
+    dominio = urlparse.urlparse(url)[1].replace("www.", "")
     ficherocookies = os.path.join(COOKIES_PATH, dominio + ".dat" )
     logger.info("pelisalacarta.core.scrapertools Cookiefile="+ficherocookies)
 
@@ -680,7 +680,7 @@ def downloadpageGzip(url):
     #  Inicializa la librería de las cookies
     #ficherocookies = os.path.join( config.get_data_path(), 'cookies.dat' )
 
-    dominio = urlparse.urlparse(url)[1]
+    dominio = urlparse.urlparse(url)[1].replace("www.", "")
     ficherocookies = os.path.join(COOKIES_PATH, dominio + ".dat" )
     logger.info("Cookiefile="+ficherocookies)
     inicio = time.clock()
@@ -1111,7 +1111,7 @@ def get_header_from_response(url,header_to_get="",post=None,headers=DEFAULT_HEAD
     #  Inicializa la librería de las cookies
     #ficherocookies = os.path.join( config.get_data_path(), 'cookies.dat' )
 
-    dominio = urlparse.urlparse(url)[1]
+    dominio = urlparse.urlparse(url)[1].replace("www.", "")
     ficherocookies = os.path.join(COOKIES_PATH, dominio + ".dat" )
     logger.info("pelisalacarta.core.scrapertools ficherocookies="+ficherocookies)
 
@@ -1201,7 +1201,7 @@ def get_headers_from_response(url,post=None,headers=DEFAULT_HEADERS):
     #  Inicializa la librería de las cookies
     #ficherocookies = os.path.join( config.get_data_path(), 'cookies.dat' )
 
-    dominio = urlparse.urlparse(url)[1]
+    dominio = urlparse.urlparse(url)[1].replace("www.", "")
     ficherocookies = os.path.join(COOKIES_PATH, dominio + ".dat" )
     logger.info("pelisalacarta.core.scrapertools ficherocookies="+ficherocookies)
 
@@ -1370,7 +1370,7 @@ def read_body_and_headers(url, post=None, headers=[], follow_redirects=False, ti
     # Start cookie lib
     #ficherocookies = os.path.join( config.get_data_path(), 'cookies.dat' )
 
-    dominio = urlparse.urlparse(url)[1]
+    dominio = urlparse.urlparse(url)[1].replace("www.", "")
     ficherocookies = os.path.join(COOKIES_PATH, dominio + ".dat" )
     logger.info("read_body_and_headers cookies_file="+ficherocookies)
 
