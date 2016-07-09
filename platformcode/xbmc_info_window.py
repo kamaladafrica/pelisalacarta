@@ -385,26 +385,21 @@ class InfoWindow(xbmcgui.WindowXMLDialog):
             self.get_tmdb_data(self.listData[self.indexList])
             self.onInit()
 
-
-        #Boton Aceptar, Cancelar y [X]
+        # Boton Aceptar, Cancelar y [X]
         if id == 10028 or id == 10003 or id == 10027:
             self.close()
+
             if self.callback:
-                # TODO mejorar las importaciones
+                cb_channel = None
                 try:
-                    exec "from channels import " + self.channel + " as cb_channel"
+                    cb_channel = __import__('channels.%s' % self.channel, fromlist=["channels.%s" % self.channel])
                 except:
-                    try:
-                        exec "from core import " + self.channel + " as cb_channel"
-                    except:
-                        #try:
-                        exec "from platformcode import " + self.channel + " as cb_channel"
-                        '''except:
-                          logger.error('Imposible importar %s' % self.channel)'''
-                if id == 10028: #Boton Aceptar
-                    exec "self.return_value =  cb_channel." + self.callback + "(self.result)"
-                else: #Boton Cancelar y [X]
-                    exec "self.return_value =  cb_channel." + self.callback + "(None)"
+                    logger.error('Imposible importar %s' % self.channel)
+
+                if id == 10028:  # Boton Aceptar
+                    self.return_value = getattr(cb_channel, self.callback)(self.item, self.values)
+                else:  # Boton Cancelar y [X]
+                    self.return_value = getattr(cb_channel, self.callback)()
 
 
     def onAction(self, action):
