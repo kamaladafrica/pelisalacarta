@@ -392,16 +392,10 @@ class InfoWindow(xbmcgui.WindowXMLDialog):
             if self.callback:
                 cb_channel = None
                 try:
-                    cb_channel = __import__('channels.%s' % self.channel, fromlist=["channels.%s" % self.channel])
+                    cb_channel = __import__('platformcode.%s' % self.channel,
+                                            fromlist=["platformcode.%s" % self.channel])
                 except ImportError:
-                    try:
-                        cb_channel = __import__('core.%s' % self.channel, fromlist=["core.%s" % self.channel])
-                    except ImportError:
-                        try:
-                            cb_channel = __import__('platformcode.%s' % self.channel,
-                                                    fromlist=["platformcode.%s" % self.channel])
-                        except ImportError:
-                            logger.error('Imposible importar %s' % self.channel)
+                    logger.error('Imposible importar %s' % self.channel)
 
                 if id == 10028:  # Boton Aceptar
                     if cb_channel:
