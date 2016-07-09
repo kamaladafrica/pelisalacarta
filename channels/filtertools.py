@@ -350,7 +350,8 @@ def config_filter(item):
         custom_method = "borrar_filtro"
         active = dict_series.get(library.title_to_filename(item.show.lower().strip()), {}).get(TAG_ACTIVE, False)
 
-    list_controls = [{
+    if allow_option:
+        active_control = {
             "id": "active",
             "type": "bool",
             "label": "¿Activar/Desactivar filtro?",
@@ -358,18 +359,20 @@ def config_filter(item):
             "default": active,
             "enabled": allow_option,
             "visible": allow_option,
-        },
-        {
-            "id": "language",
-            "type": "list",
-            "label": "Idioma",
-            "color": "0xFFee66CC",
-            "default": item.list_idiomas.index(lang_selected),
-            "enabled": True,
-            "visible": True,
-            "lvalues": item.list_idiomas
         }
-    ]
+        list_controls.append(active_control)
+
+    language_option = {
+        "id": "language",
+        "type": "list",
+        "label": "Idioma",
+        "color": "0xFFee66CC",
+        "default": item.list_idiomas.index(lang_selected),
+        "enabled": True,
+        "visible": True,
+        "lvalues": item.list_idiomas
+    }
+    list_controls.append(language_option)
 
     if item.list_calidad:
         list_controls_calidad = [
@@ -449,8 +452,8 @@ def guardar_valores(item, dict_data_saved):
                     list_quality.append(_id.lower())
 
         lang_selected = item.list_idiomas[dict_data_saved[TAG_LANGUAGE]]
-        dict_filter = {TAG_NAME: item.show, TAG_ACTIVE: dict_data_saved[TAG_ACTIVE], TAG_LANGUAGE: lang_selected,
-                       TAG_QUALITY_NOT_ALLOWED: list_quality}
+        dict_filter = {TAG_NAME: item.show, TAG_ACTIVE: dict_data_saved.get(TAG_ACTIVE, True),
+                       TAG_LANGUAGE: lang_selected, TAG_QUALITY_NOT_ALLOWED: list_quality}
         dict_series[tvshow] = dict_filter
 
         message = "FILTRO GUARDADO"
