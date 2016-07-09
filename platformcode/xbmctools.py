@@ -554,7 +554,7 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
         if xbmc.getCondVisibility('System.HasAddon("plugin.video.stream")'):
             torrent_options.append(["Plugin externo: stream","plugin://plugin.video.stream/play/%s"])
         if xbmc.getCondVisibility('System.HasAddon("plugin.video.torrenter")'):
-            torrent_options.append(["Plugin externo: torrenter","plugin://plugin.video.torrenter/?action=playSTRM&item.url=%s"])
+            torrent_options.append(["Plugin externo: torrenter","plugin://plugin.video.torrenter/?action=playSTRM&url=%s"])
         if xbmc.getCondVisibility('System.HasAddon("plugin.video.torrentin")'):
             torrent_options.append(["Plugin externo: torrentin","plugin://plugin.video.torrentin/?uri=%s&image="])
 
