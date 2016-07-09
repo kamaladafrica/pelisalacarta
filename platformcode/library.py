@@ -823,7 +823,9 @@ def upgrade_library():
                             "Seleccione el nombre correcto de cada serie, si no está seguro pulse 'Cancelar'.",
                             "Hay nuevas opciones en 'Biblioteca' y en la 'configuración' del addon.")
 
-    filetools.rename(TVSHOWS_PATH, os.path.join(config.get_library_path(), "SERIES_OLD"))
+    if filetools.exists(TVSHOWS_PATH):
+        filetools.rename(TVSHOWS_PATH, os.path.join(config.get_library_path(), "SERIES_OLD"))
+
     if not filetools.exists(TVSHOWS_PATH):
 
         filetools.mkdir(TVSHOWS_PATH)
