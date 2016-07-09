@@ -22,7 +22,7 @@ DEBUG = config.get_setting("debug")
 
 CHANNEL_HOST = "http://www.pelispedia.tv/"
 CHANNEL_DEFAULT_HEADERS = [
-    ["User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:33.0) Gecko/20100101 Firefox/33.0"],
+    ["User-Agent", "Mozilla/5.0"],
     ["Accept-Encoding", "gzip, deflate"],
     ["Referer", CHANNEL_HOST]
 ]

@@ -11,11 +11,13 @@ from core import jsunpack
 from core import logger
 from core import scrapertools
 
+
 def test_video_exists( page_url ):
     logger.info("pelisalacarta.servers.idowatch test_video_exists(page_url='%s')" % page_url)
     data = scrapertools.cache_page( page_url )
     if "File Not Found" in data: return False, "[Idowatch] El archivo no existe o ha sido borrado"
     return True,""
+
 
 def get_video_url( page_url , premium = False , user="" , password="", video_password="" ):
     logger.info("pelisalacarta.servers.idowatch get_video_url(page_url='%s')" % page_url)
@@ -36,13 +38,14 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
 
     return video_urls
 
+
 # Encuentra vídeos del servidor en el texto pasado
 def find_videos(data):
     encontrados = set()
     devuelve = []
 
     # http://idowatch.net/m5k9s1g7il01.html
-    patronvideos  = 'idowatch.net/([a-z0-9]+)'
+    patronvideos  = 'idowatch.net/(?:embed-|)([a-z0-9]+)'
     logger.info("pelisalacarta.servers.idowatch find_videos #"+patronvideos+"#")
     matches = re.compile(patronvideos,re.DOTALL).findall(data)
 

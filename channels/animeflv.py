@@ -334,7 +334,7 @@ def episodios(item):
     </ul>
     '''
 
-    data = scrapertools.get_match(data, '<div class="tit">Listado de episodios.*?</div>(.*?)</ul>')
+    data = scrapertools.find_single_match(data, '<div class="tit">Listado de episodios.*?</div>(.*?)</ul>')
     patron = '<li><a href="([^"]+)">([^<]+)</a></li>'
     matches = re.compile(patron, re.DOTALL).findall(data)
 

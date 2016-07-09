@@ -517,7 +517,7 @@ def episodios(item):
     logger.info("pelisalacarta.channels.tvvip episodios")
     itemlist = []
     # Redirección para actualización de biblioteca
-    if item.category == "Series":
+    if item.category == "":
         itemlist = series_library(item)
         return itemlist
 
@@ -685,11 +685,11 @@ def findvideos(item):
             else:
                 itemlist.append(item.clone(action="play", server="directo", title=bbcode_kodi2html(title), url=url,
                                            contentTitle=item.fulltitle, viewmode="list", extra=id, folder=False))
-    if len(itemlist) > 0 and item.category != "Cine" and item.category != "Series":
+    if len(itemlist) > 0 and item.category != "Cine" and item.category != "":
         if config.get_library_support():
-            itemlist.append(item.clone(channel=item.channel, title="Añadir enlaces a la biblioteca", text_color="green",
-                                       contentTitle=item.fulltitle, viewmode="list", url=item.url,
-                                       action="add_pelicula_to_library", fulltitle=item.fulltitle))
+            itemlist.append(Item(channel=item.channel, title="Añadir enlaces a la biblioteca", text_color="green",
+                                       contentTitle=item.fulltitle, url=item.url, action="add_pelicula_to_library",
+                                       infoLabels={'title':item.fulltitle}, fulltitle=item.fulltitle))
 
     return itemlist
 

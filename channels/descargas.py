@@ -27,14 +27,16 @@
 import os
 import sys
 
-import favoritos
 from core import config
 from core import downloadtools
 from core import filetools
 from core import logger
 from core import servertools
 from core.item import Item
-from lib.samba import libsmb as samba
+
+from lib.sambatools import libsmb as samba
+
+import favoritos
 
 CHANNELNAME = "descargas"
 DEBUG = config.get_setting("debug")
