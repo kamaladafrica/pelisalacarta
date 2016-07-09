@@ -47,7 +47,7 @@ try:
 except ImportError:
     librerias = xbmc.translatePath(os.path.join(config.get_runtime_path(), 'lib'))
     sys.path.append(librerias)
-    from samba import libsmb as samba
+    from lib.samba import libsmb as samba
 
 import urllib2
 
