@@ -241,7 +241,7 @@ def resolve_video_urls_for_playing(server,url,video_password="",muestra_dialogo=
                 exec "from servers import "+premium+" as premium_conector"
                 if premium == "realdebrid":
                     if config.is_xbmc() or config.get_platform() == "mediaserver":
-                        debrid_urls = [premium_conector.get_video_url( page_url=url , premium=True , video_password=video_password )]
+                        debrid_urls = premium_conector.get_video_url( page_url=url , premium=True , video_password=video_password )
                         if not "REAL-DEBRID:" in debrid_urls[0][0]:
                             video_urls.extend(debrid_urls)
                         else:

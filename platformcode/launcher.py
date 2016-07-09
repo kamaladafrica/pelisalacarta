@@ -230,7 +230,8 @@ def run():
                 if 'infoLabels' in item:
                     
                     # All but title
-                    item.infoLabels.pop('title')
+                    if 'title' in item.infoLabels:
+                        item.infoLabels.pop('title')
                     new_itemlist = itemlist[:]
                     itemlist = []
                     

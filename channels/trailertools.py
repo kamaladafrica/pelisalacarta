@@ -88,10 +88,9 @@ def buscartrailer(item):
             url = item.infoLabels['trailer']
             if "youtube" in url:
                 url = url.replace("embed/", "watch?v=")
-            server = servertools.get_server_from_url(url)
+            titulo, url, server = servertools.findvideos(url)[0]
             title = "Trailer por defecto  [" + server + "]"
             itemlist.append(item.clone(title=title, url=url, server=server, action="play"))
-
         if item.show != "" or ("tvshowtitle" in item.infoLabels and item.infoLabels['tvshowtitle'] != ""):
             type = "tv"
         else:
@@ -156,38 +155,19 @@ def manual_search(item):
 def tmdb_trailers(item, type="movie"):
     logger.info("pelisalacarta.channels.trailertools tmdb_trailers")
 
-    def extractvideo_tmdb(item, dict_videos):
-        itemlist = []
-        for result in dict_videos['results']:
-            title = result['name'] + " [" + str(result['size'])+"p] (" + result['iso_639_1'].replace("en", "ING")\
-                                                                                            .replace("es", "ESP")+")"
-            if result['site'] == "YouTube":
-                url_video = "https://www.youtube.com/watch?v=%s" % result['key']
-                title += "  [tmdb/youtube]"
-                itemlist.append(item.clone(action="play", title=title, url=url_video, server="youtube"))
-        
-        return itemlist
-
+    from core.tmdb import Tmdb
     itemlist = []
-    id = ""
+    tmdb_search = None
     if "tmdb_id" in item.infoLabels and item.infoLabels['tmdb_id'] != "":
-        id = item.infoLabels['tmdb_id']
+        tmdb_search = Tmdb(id_Tmdb=item.infoLabels['tmdb_id'], tipo=type, idioma_busqueda='es')
     elif "year" in item.infoLabels and item.infoLabels['year'] != "":
-        from core.tmdb import Tmdb
         tmdb_search = Tmdb(texto_buscado=item.contentTitle, tipo=type, year=item.infoLabels['year'])
-        id = tmdb_search.get_id()
-    
-    if id != "":
-        # Primera búsqueda en idioma español
-        url = "http://api.themoviedb.org/3/%s/%s/videos?api_key=f7f51775877e0bb6703520952b3c7840&language=es" % (type, id)
-        dict_videos = jsontools.load_json(scrapertools.downloadpage(url))
-        if dict_videos['results']:
-            itemlist.extend(extractvideo_tmdb(item, dict_videos))
-        # Segunda búsqueda en inglés
-        url = "http://api.themoviedb.org/3/%s/%s/videos?api_key=f7f51775877e0bb6703520952b3c7840" % (type, id)
-        dict_videos = jsontools.load_json(scrapertools.downloadpage(url))
-        if dict_videos['results']:
-            itemlist.extend(extractvideo_tmdb(item, dict_videos))
+
+    if tmdb_search:
+        for result in tmdb_search.get_videos():
+            title = result['name'] + " [" + result['size'] + "p] (" + result['language'].replace("en", "ING")\
+                    .replace("es", "ESP")+")  [tmdb/youtube]"
+            itemlist.append(item.clone(action="play", title=title, url=result['url'], server="youtube"))
     
     return itemlist
 
