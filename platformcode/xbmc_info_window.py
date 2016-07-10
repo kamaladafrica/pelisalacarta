@@ -397,9 +397,6 @@ class InfoWindow(xbmcgui.WindowXMLDialog):
                     logger.error('Imposible importar %s' % self.channel)
 
                 if id == 10028:  # Boton Aceptar
-                    logger.info("boton acpetar")
-                    logger.info("boton acpetar cb_channel is {}".format(repr(cb_channel)))
-                    logger.info("boton acpetar self.item is {}".format(repr(self.item)))
                     if cb_channel:
                         self.return_value = getattr(cb_channel, self.callback)(self.item, self.listData[self.indexList])
                 else:  # Boton Cancelar y [X]

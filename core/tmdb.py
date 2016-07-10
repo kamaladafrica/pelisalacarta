@@ -112,7 +112,6 @@ def find_and_set_infoLabels_tmdb(item, ask_video=True):
             results = otmdb_global.get_list_resultados()
 
             if ask_video and len(results) > 1:
-                logger.info("voy a preguntar con: {}".format(item.tostring()))
                 platformtools.show_video_info(results,
                                               caption="[{0}]: Selecciona la {1} correcta".
                                               format(title, "serie" if video_type == "tv" else "pelicula"),
