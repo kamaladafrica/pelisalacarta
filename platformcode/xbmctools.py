@@ -468,13 +468,12 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
         titulo = item.fulltitle
         if titulo == "":
             titulo = item.title
-        #library.savelibrary(titulo,item.url,item.thumbnail,item.server,item.plot,canal=item.channel,category=item.category,Serie=item.show)
-        # TODO ¿SOLO peliculas?
-        #logger.debug(item.tostring('\n'))
+
+        # logger.debug(item.tostring('\n'))
         new_item = item.clone(title=titulo, action="play_from_library", category="Cine",
                               fulltitle=item.fulltitle, channel=item.channel)
-        #logger.debug(new_item.tostring('\n'))
-        insertados, sobreescritos, fallidos = library.savelibrary_movie(new_item)
+        # logger.debug(new_item.tostring('\n'))
+        insertados, sobreescritos, fallidos = library.save_library_movie(new_item)
 
         advertencia = xbmcgui.Dialog()
         if fallidos == 0:
@@ -524,7 +523,7 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
 
         xlistitem.setInfo( "video", { "Title": play_title, "Plot" : play_plot , "Studio" : item.channel , "Genre" : item.category } )
 
-        #set_infoLabels(listitem,plot) # Modificacion introducida por super_berny para añadir infoLabels al ListItem
+        set_infoLabels(xlistitem, item)  # Modificacion introducida por super_berny para añadir infoLabels al ListItem
 
     # Lanza el reproductor
         # Lanza el reproductor
@@ -565,14 +564,14 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
         else:
             seleccion = 0
 
-        #Plugins externos
+        # Plugins externos
         if seleccion > 1:
             mediaurl = urllib.quote_plus(item.url)
-            xbmc.executebuiltin( "PlayMedia(" + torrent_options[seleccion][1] % mediaurl +")" )
+            xbmc.executebuiltin("PlayMedia(" + torrent_options[seleccion][1] % mediaurl + ")")
 
-        if seleccion ==1:
+        if seleccion == 1:
             from platformcode import mct
-            mct.play( mediaurl, xbmcgui.ListItem("", iconImage=item.thumbnail, thumbnailImage=item.thumbnail), subtitle=item.subtitle )
+            mct.play(mediaurl, xlistitem, subtitle=item.subtitle)
 
         #Reproductor propio (libtorrent)
         if seleccion == 0:
@@ -688,7 +687,7 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
             else:
                 xbmcPlayer = xbmc.Player()
 
-            xbmcPlayer.play(playlist)
+            xbmcPlayer.play(playlist, xlistitem)
 
             if item.channel=="cuevana" and item.subtitle!="":
                 logger.info("subtitulo="+subtitle)
@@ -1023,14 +1022,14 @@ def set_infoLabels(listitem,item):
         except:
             pass
 
-    elif len(item.infoLabels) >0:
+    elif len(item.infoLabels) > 0:
         # Nuevo modelo para pasar la informacion al listitem (ver tmdb.set_InfoLabels() )
         # item.infoLabels es un dicionario con los pares de clave/valor descritos en:
         # http://mirrors.xbmc.org/docs/python-docs/14.x-helix/xbmcgui.html#ListItem-setInfo
-        item.infoLabels['title'] = item.title
-        listitem.setInfo( "video", item.infoLabels)
+        it = item.clone()
+        it.infoLabels['title'] = it.title
+        listitem.setInfo("video", it.infoLabels)
 
-    elif item.plot !='':
+    elif item.plot != '':
         # Retrocompatibilidad con canales q no utilizan infoLabels de ningun tipo
-        listitem.setInfo( "video", { "Title" : item.title, "Plot" : item.plot, "Studio" : item.channel.capitalize() } )
-
+        listitem.setInfo("video", {"Title": item.title, "Plot": item.plot, "Studio": item.channel.capitalize()})
