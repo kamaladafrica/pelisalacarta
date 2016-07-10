@@ -27,38 +27,106 @@
 
 import imp
 import math
+import re
 
 from core import config
 from core import filetools
+from core import jsontools
 from core import logger
 from core.item import Item
 from platformcode import library
 from platformcode import platformtools
 
 
+def create_tvshows_from_json():
+    logger.info("pelisalacarta.platformcode.library convert_xml_to_json")
+    fname = filetools.join(config.get_data_path(), library.TVSHOW_FILE)
+
+    if filetools.exists(fname):
+        platformtools.dialog_ok("Biblioteca: Se va a actualizar al nuevo formato",
+                                "Seleccione el nombre correcto de cada serie, si no está seguro pulse 'Cancelar'.",
+                                "Hay nuevas opciones en 'Biblioteca' y en la 'configuración' del addon.")
+        try:
+            data = jsontools.loads(filetools.read(fname))
+            for tvshow in data:
+                for channel in data[tvshow]["channels"]:
+
+                    serie = Item(contentSerieName=data[tvshow]["channels"][channel]["tvshow"],
+                                 url=data[tvshow]["channels"][channel]["url"], channel=channel, action="episodios",
+                                 title=data[tvshow]["name"])
+                    if not tvshow.startswith("t_"):
+                        serie.infoLabels["tmdb_id"] = tvshow
+                    library.save_library_tvshow(serie, list())
+
+            filetools.rename(fname, "series.json.old")
+
+        except EnvironmentError:
+            logger.info("ERROR al leer el archivo: {0}".format(fname))
+
+
+def create_tvshows_from_xml():
+    logger.info("pelisalacarta.platformcode.library convert_xml_to_json")
+
+    fname = filetools.join(config.get_data_path(), library.TVSHOW_FILE_OLD)
+    if filetools.exists(fname):
+        platformtools.dialog_ok("Biblioteca: Se va a actualizar al nuevo formato",
+                                "Seleccione el nombre correcto de cada serie, si no está seguro pulse 'Cancelar'.",
+                                "Hay nuevas opciones en 'Biblioteca' y en la 'configuración' del addon.")
+
+        filetools.rename(library.TVSHOWS_PATH,  "SERIES_OLD")
+
+        if not filetools.exists(library.TVSHOWS_PATH):
+            filetools.mkdir(library.TVSHOWS_PATH)
+
+            if filetools.exists(library.TVSHOWS_PATH):
+                try:
+                    data = filetools.read(fname)
+                    for line in data.splitlines():
+                        aux = line.rstrip('\n').split(",")
+                        tvshow = aux[0].strip()
+                        url = aux[1].strip()
+                        channel = aux[2].strip()
+
+                        serie = Item(contentSerieName=tvshow, url=url, channel=channel, action="episodios",
+                                     title=tvshow)
+
+                        patron = "^(.+)[\s]\((\d{4})\)$"
+                        matches = re.compile(patron, re.DOTALL).findall(serie.contentSerieName)
+
+                        if matches:
+                            serie.infoLabels['title'] = matches[0][0]
+                            serie.infoLabels['year'] = matches[0][1]
+                        else:
+                            serie.infoLabels['title'] = tvshow
+
+                        library.save_library_tvshow(serie, list())
+
+                    filetools.rename(fname, "series.xml.old")
+                except EnvironmentError:
+                    logger.info("ERROR al leer el archivo: {0}".format(fname))
+
+            else:
+                logger.info("ERROR, no se ha podido crear la nueva carpeta de SERIES")
+        else:
+            logger.info("ERROR, no se ha podido renombrar la antigua carpeta de SERIES")
+
+
 def main():
     logger.info("pelisalacarta.library_service Actualizando series...")
-    logger.info("library path ="+library.TVSHOWS_PATH)
-
-    if not filetools.exists(library.TVSHOWS_PATH):
-        filetools.mkdir(library.TVSHOWS_PATH)
-
-    library.check_tvshow_xml()
-
     p_dialog = None
 
     try:
 
         if config.get_setting("updatelibrary") == "true":
-
+            heading = 'Actualizando biblioteca....'
+            p_dialog = platformtools.dialog_progress_bg('pelisalacarta', heading)
+            p_dialog.update(0, '')
             show_list = []
-            # TODO cambiar por filetools
+            path = ""
+
             for path, folders, files in filetools.walk(library.TVSHOWS_PATH):
                 show_list.extend([filetools.join(path, f) for f in files if f == "tvshow.json"])
-            logger.info("hola holita")
-            heading = "Actualizando biblioteca...."
-            p_dialog = platformtools.dialog_progress_bg("pelisalacarta", heading)
-            p_dialog.update(0, '')
+
             # fix float porque la division se hace mal en python 2.x
             t = float(100) / len(show_list)
 
@@ -66,8 +134,9 @@ def main():
 
                 serie = Item().fromjson(filetools.read(tvshow_file))
 
-                logger.info("pelisalacarta.library_service serie: " + serie.show)
-                logger.info("pelisalacarta.library_service url: " + serie.url)
+                logger.info("pelisalacarta.library_service serie="+serie.contentSerieName)
+                logger.info("pelisalacarta.library_service Actualizando "+path)
+                logger.info("pelisalacarta.library_service url " + serie.url)
                 p_dialog.update(int(math.ceil(i * t)), heading, serie.show)
 
                 # si la serie esta activa se actualiza
@@ -82,7 +151,7 @@ def main():
                         itemlist = obj.episodios(serie)
 
                         try:
-                            library.save_library_tvshow(serie, itemlist)
+                            library.save_library_episodes(serie, itemlist, serie, True)
                         except Exception as ex:
                             logger.info("pelisalacarta.library_service Error al guardar los capitulos de la serie")
                             template = "An exception of type {0} occured. Arguments:\n{1!r}"
@@ -113,4 +182,7 @@ def main():
             p_dialog.close()
 
 if __name__ == "__main__":
+
+    create_tvshows_from_xml()
+    create_tvshows_from_json()
     main()
