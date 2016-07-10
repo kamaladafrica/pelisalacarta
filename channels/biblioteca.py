@@ -152,7 +152,7 @@ def series(item):
 
                 itemlist.append(tvshow)
 
-    library.set_infoLabels_from_library(itemlist, tipo='TVShows')
+    library.set_infolabels_from_library(itemlist, tipo='TVShows')
 
     # Agrupamos las series por canales
     join_itemlist = []
@@ -266,7 +266,7 @@ def get_episodios(item):
 
             itemlist.append(epi)
 
-    library.set_infoLabels_from_library(itemlist, tipo="Episodes")
+    library.set_infolabels_from_library(itemlist, tipo="Episodes")
     return sorted(itemlist, key=get_sort_temp_epi)
 
 
