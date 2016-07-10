@@ -18,6 +18,7 @@ from platformcode import platformtools
 
 try:
     from lib.sambatools import libsmb as samba
+
 except ImportError:
     try:
         import xbmc
@@ -28,6 +29,8 @@ except ImportError:
 
     sys.path.append(librerias)
     from sambatools import libsmb as samba
+
+from sambatools.smb.smb_structs import OperationFailure
 
 
 # TODO revisar con los caracteres validos dentro de title_to_filename()
@@ -108,9 +111,7 @@ def read(path):
     path = encode(path)
     data = ""
     if path.lower().startswith("smb://"):
-        from samba.smb.smb_structs import OperationFailure
         try:
-
             with samba.get_file_handle_for_reading(os.path.basename(path), os.path.dirname(path)).read() as f:
                 for line in f:
                     data += line
@@ -140,9 +141,7 @@ def write(path, data):
     """
     path = encode(path)
     if path.lower().startswith("smb://"):
-        from samba.smb.smb_structs import OperationFailure
         try:
-
             samba.store_file(os.path.basename(path), data, os.path.dirname(path))
         except OperationFailure:
             logger.info("filetools.py write: Error al guardar el archivo: {0}".format(path))
@@ -428,7 +427,7 @@ def elimina_tildes(s):
     # s = s.replace("Ñ", "n")
     # s = s.replace("ñ", "n")
 
-    return s
+    # return s
 
 
 def title_to_filename(title):
