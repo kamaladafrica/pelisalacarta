@@ -474,7 +474,7 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
         new_item = item.clone(title=titulo, action="play_from_library", category="Cine",
                               fulltitle=item.fulltitle, channel=item.channel)
         #logger.debug(new_item.tostring('\n'))
-        insertados, sobreescritos, fallidos = library.savelibrary_movie(new_item)
+        insertados, sobreescritos, fallidos = library.save_library_movie(new_item)
 
         advertencia = xbmcgui.Dialog()
         if fallidos == 0:
