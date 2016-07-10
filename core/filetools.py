@@ -17,7 +17,7 @@ from core import logger
 from platformcode import platformtools
 
 try:
-    from lib.samba import libsmb as samba
+    from lib.sambatools import libsmb as samba
 except ImportError:
     try:
         import xbmc
@@ -27,7 +27,7 @@ except ImportError:
         librerias = os.path.join(config.get_runtime_path(), 'lib')
 
     sys.path.append(librerias)
-    from samba import libsmb as samba
+    from sambatools import libsmb as samba
 
 
 # TODO revisar con los caracteres validos dentro de title_to_filename()
