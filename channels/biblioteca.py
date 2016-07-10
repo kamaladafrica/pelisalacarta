@@ -80,8 +80,8 @@ def peliculas(item):
     for item in itemlist:
         encontrado = False
         for unique in join_itemlist:
-            if "id_Tmdb" in item.infoLabels and "id_Tmdb" in unique.infoLabels:
-                if item.infoLabels["id_Tmdb"] == unique.infoLabels["id_Tmdb"]:
+            if "tmdb_id" in item.infoLabels and "tmdb_id" in unique.infoLabels:
+                if item.infoLabels["tmdb_id"] == unique.infoLabels["tmdb_id"]:
                     encontrado = True
                     if "list_channels" not in unique:
                         unique.list_channels = [{"path": unique.path, "channel": unique.contentChannel}]
@@ -152,15 +152,15 @@ def series(item):
 
                 itemlist.append(tvshow)
 
-    # library.set_infoLabels_from_library(itemlist, tipo='TVShows')
+    library.set_infoLabels_from_library(itemlist, tipo='TVShows')
 
     # Agrupamos las series por canales
     join_itemlist = []
     for item in itemlist:
         encontrado = False
         for unique in join_itemlist:
-            if "id_Tmdb" in item.infoLabels and "id_Tmdb" in unique.infoLabels:
-                if item.infoLabels["id_Tmdb"] == unique.infoLabels["id_Tmdb"]:
+            if "tmdb_id" in item.infoLabels and "tmdb_id" in unique.infoLabels:
+                if item.infoLabels["tmdb_id"] == unique.infoLabels["tmdb_id"]:
                     encontrado = True
                 if "list_channels" not in unique:
                     unique.list_channels = [{"path": unique.path, "channel": unique.contentChannel}]
@@ -266,7 +266,7 @@ def get_episodios(item):
 
             itemlist.append(epi)
 
-    # library.set_infoLabels_from_library(itemlist, tipo="Episodes")
+    library.set_infoLabels_from_library(itemlist, tipo="Episodes")
     return sorted(itemlist, key=get_sort_temp_epi)
 
 
@@ -313,7 +313,7 @@ def play(item):
     else:
         itemlist = [item.clone(url=item.path, server="local")]
 
-    # library.mark_as_watched(item)
+    library.mark_as_watched(item)
 
     for v in itemlist:
         v.infoLabels = item.infoLabels

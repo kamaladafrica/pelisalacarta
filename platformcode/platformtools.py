@@ -119,10 +119,10 @@ def show_channel_settings(list_controls=None, dict_values=None, caption="", call
     from xbmc_config_menu import SettingsWindow
     return SettingsWindow("ChannelSettings.xml", config.get_runtime_path())\
         .start(list_controls=list_controls, dict_values=dict_values, title=caption, callback=callback, item=item,
-                 custom_button=custom_button)
+               custom_button=custom_button)
 
 
-def show_video_info(data, caption="", callback=None):
+def show_video_info(data, caption="", callback=None, item=None):
     """
     Muestra una ventana con la info del vídeo. Opcionalmente se puede indicar el titulo de la ventana mendiante
     el argumento 'caption'.
@@ -188,4 +188,5 @@ def show_video_info(data, caption="", callback=None):
     """
 
     from xbmc_info_window import InfoWindow
-    return InfoWindow("InfoWindow.xml", config.get_runtime_path()).Start(data, caption=caption, callback=callback)
+    return InfoWindow("InfoWindow.xml", config.get_runtime_path()).Start(data, caption=caption, callback=callback,
+                                                                         item=item)
