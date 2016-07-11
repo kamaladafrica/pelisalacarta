@@ -38,34 +38,8 @@ from platformcode import library
 from platformcode import platformtools
 
 
-def create_tvshows_from_json():
-    logger.info("pelisalacarta.platformcode.library convert_xml_to_json")
-    fname = filetools.join(config.get_data_path(), library.TVSHOW_FILE)
-
-    if filetools.exists(fname):
-        platformtools.dialog_ok("Biblioteca: Se va a actualizar al nuevo formato",
-                                "Seleccione el nombre correcto de cada serie, si no está seguro pulse 'Cancelar'.",
-                                "Hay nuevas opciones en 'Biblioteca' y en la 'configuración' del addon.")
-        try:
-            data = jsontools.loads(filetools.read(fname))
-            for tvshow in data:
-                for channel in data[tvshow]["channels"]:
-
-                    serie = Item(contentSerieName=data[tvshow]["channels"][channel]["tvshow"],
-                                 url=data[tvshow]["channels"][channel]["url"], channel=channel, action="episodios",
-                                 title=data[tvshow]["name"])
-                    if not tvshow.startswith("t_"):
-                        serie.infoLabels["tmdb_id"] = tvshow
-                    library.save_library_tvshow(serie, list())
-
-            filetools.rename(fname, "series.json.old")
-
-        except EnvironmentError:
-            logger.info("ERROR al leer el archivo: {0}".format(fname))
-
-
 def create_tvshows_from_xml():
-    logger.info("pelisalacarta.platformcode.library convert_xml_to_json")
+    logger.info("pelisalacarta.platformcode.library create_tvshows_from_xml")
 
     fname = filetools.join(config.get_data_path(), library.TVSHOW_FILE_OLD)
     if filetools.exists(fname):
@@ -88,7 +62,7 @@ def create_tvshows_from_xml():
                         channel = aux[2].strip()
 
                         serie = Item(contentSerieName=tvshow, url=url, channel=channel, action="episodios",
-                                     title=tvshow)
+                                     title=tvshow, active=True)
 
                         patron = "^(.+)[\s]\((\d{4})\)$"
                         matches = re.compile(patron, re.DOTALL).findall(serie.contentSerieName)
@@ -109,6 +83,32 @@ def create_tvshows_from_xml():
                 logger.info("ERROR, no se ha podido crear la nueva carpeta de SERIES")
         else:
             logger.info("ERROR, no se ha podido renombrar la antigua carpeta de SERIES")
+
+
+def create_tvshows_from_json():
+    logger.info("pelisalacarta.platformcode.library create_tvshows_from_json")
+    fname = filetools.join(config.get_data_path(), library.TVSHOW_FILE)
+
+    if filetools.exists(fname):
+        # platformtools.dialog_ok("Biblioteca: Se va a actualizar al nuevo formato",
+        #                         "Seleccione el nombre correcto de cada serie, si no está seguro pulse 'Cancelar'.",
+        #                         "Hay nuevas opciones en 'Biblioteca' y en la 'configuración' del addon.")
+        try:
+            data = jsontools.loads(filetools.read(fname))
+            for tvshow in data:
+                for channel in data[tvshow]["channels"]:
+
+                    serie = Item(contentSerieName=data[tvshow]["channels"][channel]["tvshow"],
+                                 url=data[tvshow]["channels"][channel]["url"], channel=channel, action="episodios",
+                                 title=data[tvshow]["name"], active=True)
+                    if not tvshow.startswith("t_"):
+                        serie.infoLabels["tmdb_id"] = tvshow
+                    library.save_library_tvshow(serie, list())
+
+            filetools.rename(fname, "series.json.old")
+
+        except EnvironmentError:
+            logger.info("ERROR al leer el archivo: {0}".format(fname))
 
 
 def main():
@@ -137,7 +137,7 @@ def main():
                 logger.info("pelisalacarta.library_service serie="+serie.contentSerieName)
                 logger.info("pelisalacarta.library_service Actualizando "+path)
                 logger.info("pelisalacarta.library_service url " + serie.url)
-                p_dialog.update(int(math.ceil(i * t)), heading, serie.show)
+                p_dialog.update(int(math.ceil((i+1) * t)), heading, serie.show)
 
                 # si la serie esta activa se actualiza
                 if serie.active:
@@ -151,7 +151,7 @@ def main():
                         itemlist = obj.episodios(serie)
 
                         try:
-                            library.save_library_episodes(serie, itemlist, serie, True)
+                            library.save_library_episodes(path, itemlist, serie, True)
                         except Exception as ex:
                             logger.info("pelisalacarta.library_service Error al guardar los capitulos de la serie")
                             template = "An exception of type {0} occured. Arguments:\n{1!r}"
@@ -184,5 +184,5 @@ def main():
 if __name__ == "__main__":
 
     create_tvshows_from_xml()
-    create_tvshows_from_json()
+    # create_tvshows_from_json()
     main()
