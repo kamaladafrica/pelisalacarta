@@ -116,17 +116,15 @@ def find_and_set_infoLabels_tmdb(item, ask_video=True):
                                               caption="[{0}]: Selecciona la {1} correcta".
                                               format(title, "serie" if video_type == "tv" else "pelicula"),
                                               callback='cb_select_from_tmdb', item=item)
-
             else:
-                if len(results) > 0:
+                # TODO fix, si no encuentra resultado se devuelve un resultado vacio
+                if len(results) > 0 and results[0]['id'] != "":
                     cb_select_from_tmdb(item, results[0])
                 else:  # No hay resultados
                     cb_select_from_tmdb(item, {})
-
                     # Pregunta el titulo
                     it = platformtools.dialog_input(title, "Escribe la {0} correcta".
                                                     format("serie" if video_type == "tv" else "pelicula"))
-
                     if it is not None:
                         title = it
 
