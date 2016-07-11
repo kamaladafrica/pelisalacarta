@@ -287,7 +287,7 @@ def save_library_episodes(path, episodelist, serie, silent=False):
 
     for i, e in enumerate(episodelist):
         if not silent:
-            p_dialog.update(int(math.ceil(i * t)), 'Añadiendo episodio...', e.title)
+            p_dialog.update(int(math.ceil((i+1) * t)), 'Añadiendo episodio...', e.title)
 
         # Añade todos menos el que dice "Añadir esta serie..." o "Descargar esta serie..."
         if e.action == "add_serie_to_library" or e.action == "download_all_episodes":
@@ -301,7 +301,6 @@ def save_library_episodes(path, episodelist, serie, silent=False):
         fullfilename = filetools.join(path, filename)
 
         nuevo = not filetools.exists(fullfilename)
-
         if e.infoLabels.get("tmdb_id"):
             tmdb.find_and_set_infoLabels_tmdb(e, config.get_setting("scrap_ask_name") == "true")
 
