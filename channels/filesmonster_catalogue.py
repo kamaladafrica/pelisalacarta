@@ -22,6 +22,7 @@ def mainlist(item):
 
     itemlist = []
     itemlist.append( Item(channel=item.channel, action="unusualporn" , title="Canal unusualporn.net"         , thumbnail="http://filesmonster.biz/img/logo.png"))    
+    itemlist.append( Item(channel=item.channel, action="files_monster" , title="Canal files-monster.org"         , thumbnail="http://files-monster.org/template/static/images/logo.jpg"))  
     itemlist.append( Item(channel=item.channel, action="filesmonster", title="Canal filesmonster.filesdl.net", thumbnail="http://filesmonster.biz/img/logo.png"))    
     return itemlist
 
@@ -36,6 +37,7 @@ def filesmonster(item):
     return itemlist
 
 
+
 def unusualporn(item):
     logger.info("[filesmonster_catalogue.py] unusualporn")
 
@@ -44,6 +46,21 @@ def unusualporn(item):
     itemlist.append( Item(channel=item.channel, action="categorias_2", title="Categorías", url="http://unusualporn.net/", thumbnail="http://photosex.biz/imager/w_400/h_500/e48337cd95bbb6c2c372ffa6e71441ac.jpg"))   
     itemlist.append( Item(channel=item.channel, action="search", title="Buscar en unusualporn"               , url="http://unusualporn.net/search/%s"))  
     return itemlist
+
+
+def files_monster(item):
+    logger.info("[filesmonster_catalogue.py] unusualporn")
+
+    itemlist = []
+    itemlist.append( Item(channel=item.channel, action="videos_3", title="Últimos vídeos", url="http://www.files-monster.org/", thumbnail="http://photosex.biz/imager/w_400/h_500/e48337cd95bbb6c2c372ffa6e71441ac.jpg"))    
+    itemlist.append( Item(channel=item.channel, action="categorias_3", title="Categorías", url="http://www.files-monster.org/", thumbnail="http://photosex.biz/imager/w_400/h_500/e48337cd95bbb6c2c372ffa6e71441ac.jpg"))   
+    itemlist.append( Item(channel=item.channel, action="search", title="Buscar en files-monster.org"               , url="http://files-monster.org/search?search=%s"))  
+    return itemlist
+
+
+
+
+
 
 def categorias(item):
     logger.info("[filesmonster_catalogue.py] categorias")
@@ -79,6 +96,22 @@ def categorias_2(item):
     return itemlist
     
     
+def categorias_3(item):
+    logger.info("[filesmonster_catalogue.py] categorias")
+    itemlist = [] 
+
+    data = scrapertools.downloadpage(item.url)
+  
+    patronvideos ='<li><a href="([^"]+)">([^<]+)</a></li>'
+    
+    matches = re.compile(patronvideos,re.DOTALL).findall(data)
+
+    for url, title in matches:
+      itemlist.append( Item(channel=item.channel, action="videos_3", title=title ,  url=url)) 
+
+    return itemlist
+    
+    
     
 def search(item,texto):
     logger.info("[filesmonster_catalogue.py] search:" + texto)
@@ -89,6 +122,8 @@ def search(item,texto):
         	return videos(item)
         if original=='http://unusualporn.net/search/%s':
         	return videos_2(item)
+        if original=='http://files-monster.org/search?search=%s':
+        	return videos_3(item)
     # Se captura la excepción, para no interrumpir al buscador global si un canal falla
     except:
         import sys
@@ -125,7 +160,7 @@ def videos(item):
 def videos_2(item):
     logger.info("[filesmonster_catalogue.py] list")
     itemlist = []
-    
+    url_limpia=item.url.split("?")[0]
     url = item.url
     while url and len(itemlist) < 25:
       data= scrapertools.downloadpage(url)
@@ -143,7 +178,32 @@ def videos_2(item):
 
     return itemlist
     
+    
+    
+def videos_3(item):
+    logger.info("[filesmonster_catalogue.py] list")
+    itemlist = []
+    
+    url = item.url
+    url_limpia=item.url.split("?")[0]
+    while url and len(itemlist) < 25:
+      data= scrapertools.downloadpage(url)
+      patronvideos='<a href="([^"]+)">.*?<img src="([^"]+)" border="0" title=".*?([^"]+).*?" height="70" />'
+      matches = re.compile(patronvideos,re.DOTALL).findall(data)
 
+      for url, thumbnail, title in matches:
+          itemlist.append( Item(channel=item.channel, action="detail_2", title=title, fulltitle = title , url=url, thumbnail=thumbnail)) 
+
+      url =  scrapertools.find_single_match(data, '<a style="text-decoration:none;" href="([^"]+)">&rarr;</a>').replace("&amp;","&")
+
+    #Enlace para la siguiente pagina  
+    if url:
+      itemlist.append( Item(channel=item.channel, action="videos_3", title=">> Página Siguiente",  url=url_limpia+url) )
+
+    return itemlist
+    
+    
+    
 
 
 def detail(item):
