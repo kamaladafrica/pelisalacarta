@@ -30,6 +30,9 @@ def login():
 
     user = config.get_setting("documaniatvuser", "documaniatv")
     password = config.get_setting("documaniatvpassword", "documaniatv")
+    if user == "" or password == "":
+        return True, ""
+
     data = scrapertools.cachePage(host, headers=headers)
     if "http://www.documaniatv.com/user/"+user in data:
         return False, user
