@@ -128,7 +128,7 @@ def save_library_movie(item):
     @rtype fallidos: int
     @return:  el número de elementos fallidos o -1 si ha fallado todo
     """
-    logger.info("pelisalacarta.platformcode.library savelibrary_movie")
+    logger.info("pelisalacarta.platformcode.library save_library_movie")
     insertados = 0
     sobreescritos = 0
     fallidos = 0
@@ -202,7 +202,7 @@ def save_library_tvshow(item, episodelist):
     @rtype fallidos: int
     @return:  el número de episodios fallidos o -1 si ha fallado toda la serie
     """
-    logger.info("pelisalacarta.platformcode.library savelibrary_tvshow")
+    logger.info("pelisalacarta.platformcode.library save_library_tvshow")
 
     # Itentamos obtener el titulo correcto:
     # 1. contentSerieName: Este deveria ser el sitio correcto
@@ -226,7 +226,7 @@ def save_library_tvshow(item, episodelist):
     path = filetools.join(TVSHOWS_PATH, "{0} [{1}]".format(filetools.title_to_filename(
         item.contentSerieName.strip().lower()), item.channel).lower())
     if not filetools.exists(path):
-        logger.info("pelisalacarta.platformcode.library savelibrary Creando directorio serie:" + path)
+        logger.info("pelisalacarta.platformcode.library save_library_tvshow Creando directorio serie:" + path)
         try:
             filetools.mkdir(path)
         except OSError as exception:
@@ -262,7 +262,7 @@ def save_library_episodes(path, episodelist, serie, silent=False):
     @rtype fallidos: int
     @return:  el número de episodios fallidos
     """
-    logger.info("pelisalacarta.platformcode.library savelibrary_episodes")
+    logger.info("pelisalacarta.platformcode.library save_library_episodes")
 
     # No hay lista de episodios, no hay nada que guardar
     if not len(episodelist):
