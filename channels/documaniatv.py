@@ -19,27 +19,17 @@ from core.item import Item
 
 DEBUG = config.get_setting("debug")
 host = "http://www.documaniatv.com/"
-account = ( config.get_setting("documaniatvaccount") == "true" )
+account = config.get_setting("documaniatvaccount", "documaniatv")
 
-headers = [['User-Agent','Mozilla/5.0 (Windows NT 10.0; WOW64; rv:45.0) Gecko/20100101 Firefox/45.0'],
-          ['Referer',host]]
-
-
-def openconfig(item):
-    if config.get_library_support():
-        config.open_settings()
-
-    if "kodi" in config.get_platform():
-        import xbmc
-        xbmc.executebuiltin("Container.Refresh")        
-    return []
+headers = [['User-Agent', 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:45.0) Gecko/20100101 Firefox/45.0'],
+          ['Referer', host]]
 
 
 def login():
     logger.info("pelisalacarta.channels.documaniatv login")
 
-    user = config.get_setting('documaniatvuser')
-    password = config.get_setting('documaniatvpassword')
+    user = config.get_setting("documaniatvuser", "documaniatv")
+    password = config.get_setting("documaniatvpassword", "documaniatv")
     data = scrapertools.cachePage(host, headers=headers)
     if "http://www.documaniatv.com/user/"+user in data:
         return False, user
@@ -58,15 +48,17 @@ def mainlist(item):
     logger.info("pelisalacarta.channels.documaniatv mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=item.channel, action="novedades"  , title="Novedades"      , url="http://www.documaniatv.com/newvideos.html", thumbnail="http://i.imgur.com/qMR9sg9.png"))
-    itemlist.append( Item(channel=item.channel, action="categorias" , title="Categorías y Canales" , url="http://www.documaniatv.com/browse.html", thumbnail="http://i.imgur.com/qMR9sg9.png"))
-    itemlist.append( Item(channel=item.channel, action="novedades"  , title="Top"      , url="http://www.documaniatv.com/topvideos.html", thumbnail="http://i.imgur.com/qMR9sg9.png"))
-    itemlist.append( Item(channel=item.channel, action="categorias" , title="Series Documentales" , url="http://www.documaniatv.com/top-series-documentales-html", thumbnail="http://i.imgur.com/qMR9sg9.png"))
-    itemlist.append( Item(channel=item.channel, action="viendo"     , title="Viendo ahora" , url="http://www.documaniatv.com", thumbnail="http://i.imgur.com/qMR9sg9.png"))
-    itemlist.append( Item(channel=item.channel, action="search"     , title="Buscar", thumbnail="http://i.imgur.com/qMR9sg9.png"))
+    itemlist.append(item.clone(action="novedades", title="Novedades", url="http://www.documaniatv.com/newvideos.html"))
+    itemlist.append(item.clone(action="categorias", title="Categorías y Canales", url="http://www.documaniatv.com/browse.html"))
+    itemlist.append(item.clone(action="novedades", title="Top", url="http://www.documaniatv.com/topvideos.html"))
+    itemlist.append(item.clone(action="categorias", title="Series Documentales",
+                               url="http://www.documaniatv.com/top-series-documentales-html"))
+    itemlist.append(item.clone(action="viendo", title="Viendo ahora", url="http://www.documaniatv.com"))
+    itemlist.append(item.clone(action="", title=""))
+    itemlist.append(item.clone(action="search", title="Buscar"))
     
     folder = False
-    action = "openconfig"
+    action = ""
     if account:
         error, user = login()
         if error:
@@ -81,8 +73,18 @@ def mainlist(item):
         user = ""
 
     url = "http://www.documaniatv.com/user/%s" % user
-    itemlist.append( Item(channel=item.channel, title=title, action=action, url=url, folder=folder))
+    itemlist.append(item.clone(title=title, action=action, url=url, folder=folder))
+    itemlist.append(item.clone(title="Configurar canal...", text_color="gold", action="configuracion",
+                    folder=False))
     return itemlist
+
+
+def configuracion(item):
+    from platformcode import platformtools
+    platformtools.show_channel_settings()
+    if config.is_xbmc():
+        import xbmc
+        xbmc.executebuiltin("Container.Refresh")
 
 
 def newest(categoria):
@@ -91,7 +93,7 @@ def newest(categoria):
     try:
         if categoria == 'documentales':
             item.url = "http://www.documaniatv.com/newvideos.html"
-            itemlist= novedades(item)
+            itemlist = novedades(item)
 
             if itemlist[-1].action == "novedades":
                 itemlist.pop()
@@ -106,11 +108,11 @@ def newest(categoria):
     return itemlist
 
 
-def search(item,texto):
+def search(item, texto):
     logger.info("pelisalacarta.channels.documaniatv search")
     data = scrapertools.cachePage(host, headers=headers)
     item.url = scrapertools.find_single_match(data, 'form action="([^"]+)"') + "?keywords=%s&video-id="
-    texto = texto.replace(" ","+")
+    texto = texto.replace(" ", "+")
     item.url = item.url % texto
     try:
         return novedades(item)
@@ -136,40 +138,44 @@ def novedades(item):
         scrapedplot = scrapertools.htmlclean(scrapedplot)
     bloque = scrapertools.find_multiple_matches(data, '<li class="col-xs-[\d] col-sm-[\d] col-md-[\d]">(.*?)</li>') 
  
-    if "Registrarse" in data:
-        action = "play_"
+    if "Registrarse" in data or not account:
         for match in bloque:
             patron = '<span class="pm-label-duration">(.*?)</span>.*?<a href="([^"]+)"' \
                      '.*?title="([^"]+)".*?data-echo="([^"]+)"'
             matches = scrapertools.find_multiple_matches(match, patron)
             for duracion, scrapedurl, scrapedtitle, scrapedthumbnail in matches:
-                contentTitle = scrapedtitle
+                contentTitle = scrapedtitle[:]
                 scrapedtitle += "   ["+duracion+"]"
-                scrapedthumbnail += "|"+headers[0][0]+"="+headers[0][1]
+                if not scrapedthumbnail.startswith("data:image"):
+                    scrapedthumbnail += "|"+headers[0][0]+"="+headers[0][1]
+                else:
+                    scrapedthumbnail = item.thumbnail
                 if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-                itemlist.append( Item(channel=item.channel, action=action, title=scrapedtitle , url=scrapedurl,
-                                thumbnail=scrapedthumbnail , fanart=scrapedthumbnail, plot=scrapedplot, fulltitle=scrapedtitle,
-                                contentTitle=contentTitle, folder=False) )
+                itemlist.append(item.clone(action="play_", title=scrapedtitle , url=scrapedurl,
+                                           thumbnail=scrapedthumbnail , fanart=scrapedthumbnail, plot=scrapedplot,
+                                           fulltitle=scrapedtitle, contentTitle=contentTitle, folder=False))
     else:
-        action = "findvideos"
         for match in bloque:
             patron = '<span class="pm-label-duration">(.*?)</span>.*?onclick="watch_later_add\(([\d]+)\)' \
                      '.*?<a href="([^"]+)".*?title="([^"]+)".*?data-echo="([^"]+)"'
             matches = scrapertools.find_multiple_matches(match, patron)
             for duracion, video_id, scrapedurl, scrapedtitle, scrapedthumbnail in matches:
-                contentTitle = scrapedtitle
+                contentTitle = scrapedtitle[:]
                 scrapedtitle += "   ["+duracion+"]"
-                scrapedthumbnail += "|"+headers[0][0]+"="+headers[0][1]
+                if not scrapedthumbnail.startswith("data:image"):
+                    scrapedthumbnail += "|"+headers[0][0]+"="+headers[0][1]
+                else:
+                    scrapedthumbnail = item.thumbnail
                 if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-                itemlist.append( Item(channel=item.channel, action=action, title=scrapedtitle , url=scrapedurl,
-                                thumbnail=scrapedthumbnail , fanart=scrapedthumbnail, plot=scrapedplot, id=video_id, fulltitle=scrapedtitle,
-                                contentTitle=contentTitle, folder=True) )
+                itemlist.append(item.clone(action="findvideos", title=scrapedtitle , url=scrapedurl,
+                                           thumbnail=scrapedthumbnail , fanart=scrapedthumbnail, plot=scrapedplot, id=video_id,
+                                           fulltitle=scrapedtitle, contentTitle=contentTitle))
 
     # Busca enlaces de paginas siguientes...
     try:
         next_page_url = scrapertools.get_match(data,'<a href="([^"]+)">&raquo;</a>')
-        next_page_url = urlparse.urljoin(host,next_page_url)
-        itemlist.append( Item(channel=item.channel, action="novedades", title=">> Pagina siguiente" , url=next_page_url , thumbnail="" , plot="" , folder=True) )
+        next_page_url = urlparse.urljoin(host, next_page_url)
+        itemlist.append(item.clone(action="novedades", title=">> Página siguiente", url=next_page_url))
     except:
         logger.info("documaniatv.novedades Siguiente pagina no encontrada")
     
@@ -185,13 +191,17 @@ def categorias(item):
              '.*?<img src="([^"]+)".*?<h3>(?:<a.*?><span.*?>|)(.*?)<'
     matches = scrapertools.find_multiple_matches(data, patron)
     for scrapedurl, scrapedthumbnail, scrapedtitle in matches:
-        scrapedthumbnail += "|"+headers[0][0]+"="+headers[0][1]
-        itemlist.append( Item(channel=item.channel, action="novedades", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , fanart=scrapedthumbnail, folder=True) )
+        if not scrapedthumbnail.startswith("data:image"):
+            scrapedthumbnail += "|"+headers[0][0]+"="+headers[0][1]
+        else:
+            scrapedthumbnail = item.thumbnail
+        itemlist.append(item.clone(action="novedades", title=scrapedtitle, url=scrapedurl, thumbnail=scrapedthumbnail,
+                                   fanart=scrapedthumbnail))
 
     # Busca enlaces de paginas siguientes...
     next_page_url = scrapertools.find_single_match(data,'<a href="([^"]+)"><i class="fa fa-arrow-right">')
     if next_page_url != "":
-        itemlist.append( Item(channel=item.channel, action="categorias", title=">> Pagina siguiente" , url=next_page_url , thumbnail="" , plot="" , folder=True) )
+        itemlist.append(item.clone(action="categorias", title=">> Página siguiente", url=next_page_url))
         
     return itemlist
 
@@ -208,9 +218,13 @@ def viendo(item):
     matches = scrapertools.find_multiple_matches(bloque, patron)
     for duracion, scrapedurl, scrapedtitle, scrapedthumbnail in matches:
         scrapedtitle += "   ["+duracion+"]"
-        scrapedthumbnail += "|"+headers[0][0]+"="+headers[0][1]
+        if not scrapedthumbnail.startswith("data:image"):
+            scrapedthumbnail += "|"+headers[0][0]+"="+headers[0][1]
+        else:
+            scrapedthumbnail = item.thumbnail
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=item.channel, action="play_", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , fanart=scrapedthumbnail, fulltitle=scrapedtitle, folder=False) )
+        itemlist.append(item.clone(action="play_", title=scrapedtitle, url=scrapedurl, thumbnail=scrapedthumbnail,
+                                   fanart=scrapedthumbnail, fulltitle=scrapedtitle))
     
     return itemlist
 
@@ -225,7 +239,7 @@ def findvideos(item):
     data = jsontools.load_json(data)
     data = re.sub(r"\n|\r|\t", '', data['html'])
 
-    itemlist.append( Item(channel=item.channel, action="play_"  , title=">> Reproducir vídeo", url=item.url, thumbnail=item.thumbnail, fulltitle=item.fulltitle, folder=False))
+    itemlist.append(item.clone(action="play_", title=">> Reproducir vídeo", folder=False))
     if "kodi" in config.get_platform(): folder = False
     else: folder = True
     patron = '<li data-playlist-id="([^"]+)".*?onclick="playlist_(\w+)_item' \
@@ -235,11 +249,14 @@ def findvideos(item):
     for playlist_id, playlist_action, playlist_title, video_count in matches:
         scrapedtitle = playlist_action.replace('remove','Eliminar de ').replace('add','Añadir a ')
         scrapedtitle += playlist_title + "   ("+video_count+")"
-        itemlist.append( Item(channel=item.channel, action="acciones_playlist"  , title=scrapedtitle, id=item.id, list_id=playlist_id, url="http://www.documaniatv.com/ajax.php", folder=folder))
+        itemlist.append(item.clone(action="acciones_playlist", title=scrapedtitle, list_id=playlist_id,
+                                   url="http://www.documaniatv.com/ajax.php", folder=folder))
 
     if "kodi" in config.get_platform():
-        itemlist.append( Item(channel=item.channel, action="acciones_playlist"  , title="Crear una nueva playlist y añadir el documental", id=item.id, url="http://www.documaniatv.com/ajax.php", folder=folder))
-    itemlist.append( Item(channel=item.channel, action="acciones_playlist"  , title="Me gusta", id=item.id, url="http://www.documaniatv.com/ajax.php", folder=folder))
+        itemlist.append(item.clone(action="acciones_playlist", title="Crear una nueva playlist y añadir el documental",
+                                   id=item.id, url="http://www.documaniatv.com/ajax.php", folder=folder))
+    itemlist.append(item.clone(action="acciones_playlist", title="Me gusta", url="http://www.documaniatv.com/ajax.php",
+                               folder=folder))
 
     return itemlist
 
@@ -250,8 +267,9 @@ def play_(item):
 
     import xbmc
     if  not xbmc.getCondVisibility('System.HasAddon(script.cnubis)'):
-        dialog_ok("Addon no encontrado", "Para ver vídeos alojados en cnubis necesitas tener su instalado su add-on",
-                  line3="Descárgalo en https://cnubis.com/kodi-pelisalacarta.html" )
+        from platformcode import platformtools
+        platformtools.dialog_ok("Addon no encontrado", "Para ver vídeos alojados en cnubis necesitas tener su instalado su add-on",
+                                line3="Descárgalo en http://cnubis.com/kodi-pelisalacarta.html" )
         return itemlist
         
     # Descarga la pagina
@@ -290,7 +308,8 @@ def usuario(item):
             scrapedthumbnail = ""
         else:
             scrapedthumbnail += "|"+headers[0][0]+"="+headers[0][1]
-        itemlist.append( Item(channel=item.channel, action="playlist", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , fanart=scrapedthumbnail, folder=True) )
+        itemlist.append(item.clone(action="playlist", title=scrapedtitle, url=scrapedurl,
+                                   thumbnail=scrapedthumbnail, fanart=scrapedthumbnail))
 
     return itemlist
 
@@ -299,10 +318,13 @@ def acciones_playlist(item):
     logger.info("pelisalacarta.channels.documaniatv acciones_playlist")
     itemlist = []
     if item.title == "Crear una nueva playlist y añadir el documental":
-        texto = dialog_input(heading="Introduce el título de la nueva playlist")
-        if texto != "":
+        from platformcode import platformtools
+        texto = platformtools.dialog_input(heading="Introduce el título de la nueva playlist")
+        if texto is not None:
             post= "p=playlists&do=create-playlist&title=%s&visibility=1&video-id=%s&ui=video-watch" % (texto, item.id)
             data = scrapertools.cachePage(item.url, headers=headers, post=post)
+        else:
+            return
 
     elif item.title != "Me gusta":
         if "Eliminar" in item.title: action = "remove-from-playlist"
@@ -314,11 +336,12 @@ def acciones_playlist(item):
         data = scrapertools.cachePage(item.url, headers=headers)
 
     try:
-        dialog_notification(item.title, "Se ha añadido/eliminado correctamente")
         import xbmc
+        from platformcode import platformtools
+        platformtools.dialog_notification(item.title, "Se ha añadido/eliminado correctamente")
         xbmc.executebuiltin("Container.Refresh")
     except:
-        itemlist.append( Item(channel=item.channel, action=""  , title="Se ha añadido/eliminado correctamente", url="", folder=False))
+        itemlist.append(item.clone(action="", title="Se ha añadido/eliminado correctamente"))
         return itemlist
 
 
@@ -332,28 +355,7 @@ def playlist(item):
     for scrapedthumbnail, scrapedurl, scrapedtitle  in matches:
         scrapedthumbnail += "|"+headers[0][0]+"="+headers[0][1]
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=item.channel, action="play_", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , fanart=scrapedthumbnail, fulltitle=scrapedtitle, folder=False) )
+        itemlist.append(item.clone(action="play_", title=scrapedtitle, url=scrapedurl, thumbnail=scrapedthumbnail,
+                                   fanart=scrapedthumbnail, fulltitle=scrapedtitle, folder=False))
     
     return itemlist    
-    
-    
-def dialog_notification(heading, message, icon=0, time=5000, sound=True):
-    import xbmcgui
-    dialog = xbmcgui.Dialog()
-    l_icono=(xbmcgui.NOTIFICATION_INFO , xbmcgui.NOTIFICATION_WARNING, xbmcgui.NOTIFICATION_ERROR)
-    dialog.notification (heading, message, l_icono[icon], time, sound)
-
-
-def dialog_input(default="", heading="", hidden=False):
-    import xbmc
-    keyboard = xbmc.Keyboard(default, heading, hidden)
-    keyboard.doModal()
-    if (keyboard.isConfirmed()):
-        return keyboard.getText()
-    else:
-        return ""
-
-def dialog_ok(heading, line1="", line2="", line3=""):
-    import xbmcgui
-    dialog = xbmcgui.Dialog()
-    return dialog.ok(heading, line1, line2, line3)
