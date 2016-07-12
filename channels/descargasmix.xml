@@ -8,8 +8,8 @@
 		
 	<version>4</version>
 	<adult>false</adult>
-	<date>01/07/2016</date>
-	<changes>Eliminado código innecesario.</changes>
+	<date>08/07/2016</date>
+	<changes>Adaptado el canal a las nuevas funciones</changes>
 	<fanart></fanart>
 	<thumbnail>http://i.imgur.com/tBTqIlV.jpg?1</thumbnail>
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/descargasmix.png</bannermenu>
@@ -22,13 +22,26 @@
 		<category>anime</category>
 		<category>serie</category>
 	</categories>
-	
 	<settings>
-		<id>include_in_global_search</id>
+		<include_in_global_search>false</include_in_global_search>
+	</settings>
+	<settings>
+		<id>modo_grafico</id>
 		<type>bool</type>
-		<label>Incluir en busqueda global</label>
-		<default>false</default>
+		<label>Buscar información extra</label>
+ 		<default>true</default>
+ 		<enabled>true</enabled>
+ 		<visible>true</visible>
+ 	</settings>
+	<settings>
+		<id>perfil</id>
+		<type>list</type>
+		<label>Perfil de color</label>
+		<default>2</default>
 		<enabled>true</enabled>
 		<visible>true</visible>
+		<lvalues>Perfil 3</lvalues>
+		<lvalues>Perfil 2</lvalues>
+		<lvalues>Perfil 1</lvalues>
 	</settings>
 </channel>

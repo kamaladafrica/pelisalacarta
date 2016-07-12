@@ -32,7 +32,7 @@ from core import downloadtools
 from core import logger
 from core import servertools
 from core.item import Item
-from lib.samba import libsmb as samba
+from lib.sambatools import libsmb as samba
 from platformcode import library
 
 import favoritos

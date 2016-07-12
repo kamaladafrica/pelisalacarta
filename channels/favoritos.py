@@ -29,7 +29,7 @@ import os
 import sys
 import urllib
 
-from lib.samba import libsmb as samba
+from lib.sambatools import libsmb as samba
 
 from core import config
 from core import logger

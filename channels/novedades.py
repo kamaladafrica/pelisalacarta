@@ -41,12 +41,12 @@ THUMBNAILS = {'0': 'posters', '1': 'banners', '2': 'squares'}
 
 list_newest =[]
 
-def mainlist(item):
+def mainlist(item,thumbnail_type="squares"):
     logger.info("pelisalacarta.channels.novedades mainlist")
 
     itemlist = []
     list_canales = get_list_canales()
-    thumbnail_base = "http://media.tvalacarta.info/pelisalacarta/squares/"
+    thumbnail_base = "http://media.tvalacarta.info/pelisalacarta/"+thumbnail_type+"/"
 
     thumbnail = (thumbnail_base if list_canales['peliculas']
                  else thumbnail_base + '/disabled') + "/thumb_canales_peliculas.png"

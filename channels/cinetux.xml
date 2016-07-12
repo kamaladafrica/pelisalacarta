@@ -12,9 +12,9 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/cinetux.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>5</version>
-	<date>01/07/2016</date>
-	<changes>Eliminado código innecesario.</changes>
+	<version>6</version>
+	<date>08/07/2016</date>
+	<changes>Correciones y adaptaciones a la nueva version</changes>
 
 	<categories>
 		<category>latino</category>

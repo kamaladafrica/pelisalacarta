@@ -31,7 +31,7 @@ def get_video_url(page_url, premium=False, video_password=""):
     if token_auth is None or token_auth == "":
         token_auth = authentication()
         if token_auth == "":
-            return ["REAL-DEBRID: No se ha completado el proceso de autentificación", ""]
+            return [["REAL-DEBRID: No se ha completado el proceso de autentificación", ""]]
 
     post_link = urllib.urlencode([("link", page_url), ("password", video_password)])
     headers["Authorization"] = "Bearer %s" % token_auth
@@ -66,9 +66,9 @@ def get_video_url(page_url, premium=False, video_password=""):
                      .replace("unavailable_file", "Archivo no disponible") \
                      .replace("hoster_not_free", "Servidor no gratuito") \
                      .replace("bad_token", "Error en el token")
-            return ["REAL-DEBRID: " + msg, ""]
+            return [["REAL-DEBRID: " + msg, ""]]
         else:
-            return ["REAL-DEBRID: No se ha generado ningún enlace", ""]
+            return [["REAL-DEBRID: No se ha generado ningún enlace", ""]]
 
 
 def get_enlaces(data):
