@@ -45,7 +45,7 @@
 		<label>Usuario</label>
 		<color>0xFFd50b0b</color>
 		<default></default>
-		<enabled>true</enabled>
+		<enabled>eq(-1,true)</enabled>
 		<visible>true</visible>
 	</settings>
 	<settings>
@@ -54,7 +54,7 @@
 		<label>Contraseña</label>
 		<color>0xFFd50b0b</color>
 		<default></default>
-		<enabled>true</enabled>
+		<enabled>!eq(-1,)+eq(-2,true)</enabled>
 		<visible>true</visible>
 		<hidden>True</hidden>
 	</settings>
