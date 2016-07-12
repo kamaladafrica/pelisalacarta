@@ -39,7 +39,7 @@ from platformcode import platformtools
 
 
 def create_tvshows_from_xml():
-    logger.info("pelisalacarta.platformcode.library create_tvshows_from_xml")
+    logger.info("pelisalacarta.platformcode.library_service create_tvshows_from_xml")
 
     fname = filetools.join(config.get_data_path(), library.TVSHOW_FILE_OLD)
     if filetools.exists(fname):
@@ -86,7 +86,7 @@ def create_tvshows_from_xml():
 
 
 def create_tvshows_from_json():
-    logger.info("pelisalacarta.platformcode.library create_tvshows_from_json")
+    logger.info("pelisalacarta.platformcode.library_service create_tvshows_from_json")
     fname = filetools.join(config.get_data_path(), library.TVSHOW_FILE)
 
     if filetools.exists(fname):
@@ -180,6 +180,7 @@ def main():
 
         if p_dialog:
             p_dialog.close()
+
 
 if __name__ == "__main__":
 
