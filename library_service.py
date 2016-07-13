@@ -27,7 +27,6 @@
 
 import imp
 import math
-import os
 import re
 
 from core import config
@@ -132,8 +131,7 @@ def main():
 
             for i, tvshow_file in enumerate(show_list):
                 serie = Item().fromjson(filetools.read(tvshow_file))
-                # TODO comprobar en samba
-                path = os.path.dirname(tvshow_file)
+                path = filetools.dirname(tvshow_file)
 
                 logger.info("pelisalacarta.library_service serie="+serie.contentSerieName)
                 logger.info("pelisalacarta.library_service Actualizando "+ path)
@@ -186,5 +184,5 @@ def main():
 if __name__ == "__main__":
 
     create_tvshows_from_xml()
-    # create_tvshows_from_json()
+    create_tvshows_from_json()
     main()

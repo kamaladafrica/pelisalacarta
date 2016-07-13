@@ -383,6 +383,20 @@ def listdir(path):
         return decode(os.listdir(path))
 
 
+def dirname(path):
+    """
+    Devuelve el directorio de una ruta
+    @param path: ruta
+    @type path: str
+    @return: directorio de la ruta
+    @rtype: str
+    """
+    # TODO pendiente parte samba
+    _dir = os.path.dirname(path)
+
+    return _dir
+
+
 def elimina_tildes(s):
     """
     elimina las tildes de la cadena
