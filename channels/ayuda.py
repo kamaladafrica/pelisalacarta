@@ -260,14 +260,3 @@ def recover_advancedsettings(item):
         logger.info("pelisalacarta.channels.ayuda Optimizacion de adavancedsettings.xml cancelada!")
 
     return []
-
-
-def updatebiblio(item):
-    logger.info("pelisalacarta.channels.ayuda updatebiblio")
-
-    import library_service
-    library_service.update_ayuda()
-
-    # platformtools.dialog_notification(" ", "Actualizando biblioteca...")
-
-    return []
