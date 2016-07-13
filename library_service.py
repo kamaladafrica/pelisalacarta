@@ -90,9 +90,8 @@ def create_tvshows_from_json():
     fname = filetools.join(config.get_data_path(), library.TVSHOW_FILE)
 
     if filetools.exists(fname):
-        # platformtools.dialog_ok("Biblioteca: Se va a actualizar al nuevo formato",
-        #                         "Seleccione el nombre correcto de cada serie, si no está seguro pulse 'Cancelar'.",
-        #                         "Hay nuevas opciones en 'Biblioteca' y en la 'configuración' del addon.")
+        platformtools.dialog_ok("Biblioteca: Actualizando formato")
+
         try:
             data = jsontools.loads(filetools.read(fname))
             for tvshow in data:
