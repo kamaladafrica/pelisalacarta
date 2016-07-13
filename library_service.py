@@ -27,6 +27,7 @@
 
 import imp
 import math
+import os
 import re
 
 from core import config
@@ -122,7 +123,6 @@ def main():
             p_dialog = platformtools.dialog_progress_bg('pelisalacarta', heading)
             p_dialog.update(0, '')
             show_list = []
-            path = ""
 
             for path, folders, files in filetools.walk(library.TVSHOWS_PATH):
                 show_list.extend([filetools.join(path, f) for f in files if f == "tvshow.json"])
@@ -131,11 +131,12 @@ def main():
             t = float(100) / len(show_list)
 
             for i, tvshow_file in enumerate(show_list):
-
                 serie = Item().fromjson(filetools.read(tvshow_file))
+                # TODO comprobar en samba
+                path = os.path.dirname(tvshow_file)
 
                 logger.info("pelisalacarta.library_service serie="+serie.contentSerieName)
-                logger.info("pelisalacarta.library_service Actualizando "+path)
+                logger.info("pelisalacarta.library_service Actualizando "+ path)
                 logger.info("pelisalacarta.library_service url " + serie.url)
                 p_dialog.update(int(math.ceil((i+1) * t)), heading, serie.show)
 
