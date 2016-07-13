@@ -131,15 +131,15 @@ def lib_data():
     return (data, dict_data)
 
 
-def update_ayuda():
+def update_from_conf():
     """
     Se trata de una funcion que tiene como objetivo evitar el loop infinito
     al hacer la llamada desde ayuda.py
     """
-    if platformtools.dialog_yesno("Actulizar biblioteca",
-                                  "Desea actualizar los enlaces y la biblioteca?") == 1:
+    if platformtools.dialog_yesno("pelisalacarta",
+                                  "Seguro que desea actualizar los enlaces y la biblioteca?") == 1:
         main()
-        platformtools.dialog_ok("Actualizar biblioteca", "Proceso completado")
+        platformtools.dialog_ok("pelisalacarta", "Proceso completado")
         # TODO: Mejorarlo
 
     else:

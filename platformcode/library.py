@@ -944,8 +944,8 @@ def convert_xml_to_json():
 
     else:
         platformtools.dialog_ok("Biblioteca: Se va a actualizar al nuevo formato",
-                            "Seleccione el nombre correcto de cada serie, si no está seguro pulse 'Cancelar'.",
-                            "Hay nuevas opciones en 'Biblioteca' y en la 'configuración' del addon.")
+                                "Seleccione el nombre correcto de cada serie, si no está seguro pulse 'Cancelar'.",
+                                "Hay nuevas opciones en 'Biblioteca' y en la 'configuración' del addon.")
 
     # TODO soporte samba
     os.rename(TVSHOWS_PATH, os.path.join(config.get_library_path(), "SERIES_OLD"))

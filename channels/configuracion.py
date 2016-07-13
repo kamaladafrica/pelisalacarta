@@ -42,6 +42,10 @@ def mainlist(item):
     itemlist.append(Item(channel="novedades", title="Ajustes de la sección 'Novedades'", action="menu_opciones", folder=True))
     itemlist.append(Item(channel="buscador", title="Ajustes del buscador global", action="opciones", folder=True))
     itemlist.append(Item(channel=CHANNELNAME, title="", action="", folder=False))
+    if config.is_xbmc():
+        itemlist.append(Item(channel=item.channel, action="updatebiblio",
+                             title="Buscar nuevos episodios y actualizar biblioteca", folder=False))
+        itemlist.append(Item(channel=item.channel, action="", title="", folder=False))
     itemlist.append(Item(channel=CHANNELNAME, title="Comprobar actualizaciones", action="check_for_updates", folder=False))
 
     return itemlist
@@ -54,3 +58,14 @@ def check_for_updates(item):
 
 def settings(item):
     config.open_settings()
+
+
+def updatebiblio(item):
+    logger.info("pelisalacarta.channels.ayuda updatebiblio")
+
+    import library_service
+    library_service.update_from_conf()
+
+    # platformtools.dialog_notification(" ", "Actualizando biblioteca...")
+
+    #return []

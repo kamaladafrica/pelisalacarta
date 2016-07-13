@@ -42,27 +42,27 @@ if config.is_xbmc():
 
 CHANNELNAME = "descargas"
 DEBUG = config.get_setting("debug")
+DOWNLOAD_LIST_PATH = config.get_setting("downloadlistpath")
+downloadpath = config.get_setting("downloadpath")
 
 if config.is_xbmc():
-    if config.get_setting("downloadlistpath").startswith("special://"):
+    if DOWNLOAD_LIST_PATH.startswith("special://"):
         DOWNLOAD_LIST_PATH = xbmc.translatePath(config.get_setting("downloadlistpath"))
-        logger.info("channels.descargas DOWNLOAD_LIST_PATH convertido=" +
+        logger.info("channels.descargas DOWNLOAD_LIST_PATH convertido= " +
                     DOWNLOAD_LIST_PATH)
     else:
         DOWNLOAD_LIST_PATH = config.get_setting("downloadlistpath")
-        logger.info("channels.descargas DOWNLOAD_LIST_PATH=" +
+        logger.info("channels.descargas DOWNLOAD_LIST_PATH= " +
                     DOWNLOAD_LIST_PATH)
     # Lee la ruta de descargas
-    if config.get_setting("downloadpath").startswith("special://"):
+    if downloadpath.startswith("special://"):
         downloadpath = xbmc.translatePath(config.get_setting("downloadpath"))
-        logger.info("channels.descargas downloadpath convertido=" + downloadpath)
+        logger.info("channels.descargas downloadpath convertido= " + downloadpath)
     else:
         downloadpath = config.get_setting("downloadpath")
-        logger.info("channels.descargas downloadpath=" + downloadpath)
+        logger.info("channels.descargas downloadpath= " + downloadpath)
 else:
-    DOWNLOAD_LIST_PATH = config.get_setting("downloadlistpath")
     logger.info("channels.descargas DOWNLOAD_LIST_PATH (no Kodi)=" + DOWNLOAD_LIST_PATH)
-    downloadpath = config.get_setting("downloadpath")
     logger.info("channels.descargas downloadpath (no Kodi)=" + downloadpath)
 
 IMAGES_PATH = os.path.join(config.get_runtime_path(), 'resources', 'images')

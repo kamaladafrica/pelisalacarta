@@ -23,16 +23,17 @@ def mainlist(item):
 
     cuantos = 0
 
-    if config.is_xbmc():
-        itemlist.append(Item(channel=item.channel, action="updatebiblio",
-                             title="Buscar nuevos episodios y actualizar biblioteca", folder=False))
-        cuantos += cuantos
+    if cuantos > 0:
+        itemlist.append(Item(channel=item.channel,
+                             action="tutoriales", title="Ver guías y tutoriales en vídeo"))
+    else:
+        itemlist.extend(tutoriales(item))
 
     itemlist.append(Item(channel=item.channel, action="", title="",
                          folder=False))
 
     if config.is_xbmc():
-        # Al poner folder=False el log muestra: "WARNING: Attempt to use invalid handle -1"
+        #FIXME Al poner folder=False el log muestra: "WARNING: Attempt to use invalid handle -1"
         itemlist.append(Item(channel=item.channel,
                              action="force_creation_advancedsettings",
                              title="Crear fichero advancedsettings.xml optimizado", folder=True))
@@ -43,15 +44,6 @@ def mainlist(item):
                              action="recover_advancedsettings",
                              title="Restaurar advancedsettings.xml del backup", folder=False))
         cuantos += cuantos
-
-    itemlist.append(Item(channel=item.channel, action="", title="",
-                         folder=False))
-
-    if cuantos > 0:
-        itemlist.append(Item(channel=item.channel,
-                             action="tutoriales", title="Ver guías y tutoriales en vídeo"))
-    else:
-        itemlist.extend(tutoriales(item))
 
     return itemlist
 

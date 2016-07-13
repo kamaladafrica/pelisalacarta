@@ -62,55 +62,55 @@ def get_system_platform():
 def open_settings():
     __settings__.openSettings()
 
-  
+
 def get_setting(name, channel=""):
     """Retorna el valor de configuracion del parametro solicitado.
 
     Devuelve el valor del parametro 'name' en la configuracion global o en la configuracion propia del canal 'channel'.
-    
+
     Si se especifica el nombre del canal busca en la ruta \addon_data\plugin.video.pelisalacarta\settings_channels el archivo channel_data.json
-    y lee el valor del parametro 'name'. Si el archivo channel_data.json no existe busca en la carpeta channels el archivo 
+    y lee el valor del parametro 'name'. Si el archivo channel_data.json no existe busca en la carpeta channels el archivo
     channel.xml y crea un archivo channel_data.json antes de retornar el valor solicitado.
     Si el parametro 'name' no existe en channel_data.json lo busca en la configuracion global y si ahi tampoco existe devuelve un str vacio.
-    
+
     Parametros:
     name -- nombre del parametro
     channel [opcional] -- nombre del canal
-      
+
     Retorna:
     value -- El valor del parametro 'name'
-    
-    """   
+
+    """
     if channel:
       from core import channeltools
       value = channeltools.get_channel_setting(name, channel)
       if not value is None:
         return value
 
-    # Devolvemos el valor del parametro global 'name'        
-    return __settings__.getSetting( name ) 
+    # Devolvemos el valor del parametro global 'name'
+    return __settings__.getSetting( name )
 
 def set_setting(name,value, channel=""):
     """Fija el valor de configuracion del parametro indicado.
 
     Establece 'value' como el valor del parametro 'name' en la configuracion global o en la configuracion propia del canal 'channel'.
     Devuelve el valor cambiado o None si la asignacion no se ha podido completar.
-    
+
     Si se especifica el nombre del canal busca en la ruta \addon_data\plugin.video.pelisalacarta\settings_channels el archivo channel_data.json
-    y establece el parametro 'name' al valor indicado por 'value'. Si el archivo channel_data.json no existe busca en la carpeta channels el archivo 
+    y establece el parametro 'name' al valor indicado por 'value'. Si el archivo channel_data.json no existe busca en la carpeta channels el archivo
     channel.xml y crea un archivo channel_data.json antes de modificar el parametro 'name'.
     Si el parametro 'name' no existe lo añade, con su valor, al archivo correspondiente.
-    
-    
+
+
     Parametros:
     name -- nombre del parametro
     value -- valor del parametro
     channel [opcional] -- nombre del canal
-    
+
     Retorna:
     'value' en caso de que se haya podido fijar el valor y None en caso contrario
-        
-    """ 
+
+    """
     if channel:
       from core import channeltools
       return channeltools.set_channel_setting(name,value, channel)
@@ -120,10 +120,10 @@ def set_setting(name,value, channel=""):
       except:
           logger.info("[config.py] ERROR al fijar el parametro global {0}= {1}".format(name, value))
           return None
-              
+
       return value
 
-    
+
 def get_localized_string(code):
     dev = __language__(code)
 
@@ -131,7 +131,7 @@ def get_localized_string(code):
         dev = dev.encode("utf-8")
     except:
         pass
-    
+
     return dev
 
 def get_library_path():
@@ -155,22 +155,24 @@ def get_runtime_path():
 
 def get_data_path():
     dev = xbmc.translatePath( __settings__.getAddonInfo('Profile') )
-    
+
     # Parche para XBMC4XBOX
     if not os.path.exists(dev):
         os.makedirs(dev)
-    
+
     return dev
+
 
 def get_cookie_data():
     import os
-    ficherocookies = os.path.join( get_data_path(), 'cookies.dat' )
+    ficherocookies = os.path.join(get_data_path(), 'cookies.dat')
 
-    cookiedatafile = open(ficherocookies,'r')
+    cookiedatafile = open(ficherocookies, 'r')
     cookiedata = cookiedatafile.read()
-    cookiedatafile.close();
+    cookiedatafile.close()
 
     return cookiedata
+
 
 # Test if all the required directories are created
 def verify_directories_created():
@@ -179,21 +181,33 @@ def verify_directories_created():
 
     # Force download path if empty
     download_path = get_setting("downloadpath")
-    if download_path=="":
-        download_path = os.path.join( get_data_path() , "downloads")
-        set_setting("downloadpath" , download_path)
+    if download_path == "":
+        if is_xbmc():
+            download_path_special = "special://profile/addon_data/plugin.video."+PLUGIN_NAME+"/downloads"
+            set_setting("downloadpath", download_path_special)
+        else:
+            download_path = os.path.join(get_data_path(), "downloads")
+            set_setting("downloadpath", download_path)
 
     # Force download list path if empty
     download_list_path = get_setting("downloadlistpath")
-    if download_list_path=="":
-        download_list_path = os.path.join( get_data_path() , "downloads" , "list")
-        set_setting("downloadlistpath" , download_list_path)
+    if download_list_path == "":
+        if is_xbmc():
+            download_list_path_special = "special://profile/addon_data/plugin.video."+PLUGIN_NAME+"/downloads/list"
+            set_setting("downloadlistpath", download_list_path_special)
+        else:
+            download_list_path = os.path.join(get_data_path(), "downloads", "list")
+            set_setting("downloadlistpath", download_list_path)
 
     # Force bookmark path if empty
     bookmark_path = get_setting("bookmarkpath")
-    if bookmark_path=="":
-        bookmark_path = os.path.join( get_data_path() , "bookmarks")
-        set_setting("bookmarkpath" , bookmark_path)
+    if bookmark_path == "":
+        if is_xbmc():
+            bookmark_path_special = "special://profile/addon_data/plugin.video."+PLUGIN_NAME+"/downloads/list"
+            set_setting("bookmarkpath", bookmark_path_special)
+        else:
+            bookmark_path = os.path.join(get_data_path(), "bookmarks")
+            set_setting("bookmarkpath", bookmark_path)
 
     # Create data_path if not exists
     if not os.path.exists(get_data_path()):
@@ -242,9 +256,9 @@ def verify_directories_created():
         try:
             os.mkdir(settings_path)
         except:
-            pass  
+            pass
 
-    
+
     # Checks that a directory "xbmc" is not present on platformcode
     old_xbmc_directory = os.path.join( get_runtime_path() , "platformcode" , "xbmc" )
     if os.path.exists( old_xbmc_directory ):
