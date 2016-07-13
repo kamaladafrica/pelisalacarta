@@ -66,6 +66,4 @@ def updatebiblio(item):
     import library_service
     library_service.update_from_conf()
 
-    # platformtools.dialog_notification(" ", "Actualizando biblioteca...")
 
-    #return []
