@@ -266,6 +266,8 @@ def save_library_episodes(path, episodelist, serie, silent=False):
 
     # No hay lista de episodios, no hay nada que guardar
     if not len(episodelist):
+        logger.info("pelisalacarta.platformcode.library save_library_episodes No hay lista de episodios, "
+                    "salimos sin crear strm")
         return 0, 0, 0
 
     insertados = 0
