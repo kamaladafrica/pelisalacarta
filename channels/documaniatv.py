@@ -268,17 +268,27 @@ def play_(item):
     logger.info("pelisalacarta.channels.documaniatv play_")
     itemlist = []
 
-    import xbmc
-    if  not xbmc.getCondVisibility('System.HasAddon(script.cnubis)'):
-        from platformcode import platformtools
-        platformtools.dialog_ok("Addon no encontrado", "Para ver vídeos alojados en cnubis necesitas tener su instalado su add-on",
-                                line3="Descárgalo en http://cnubis.com/kodi-pelisalacarta.html" )
-        return itemlist
+    try:
+        import xbmc
+        if  not xbmc.getCondVisibility('System.HasAddon(script.cnubis)'):
+            from platformcode import platformtools
+            platformtools.dialog_ok("Addon no encontrado", "Para ver vídeos alojados en cnubis necesitas tener su instalado su add-on",
+                                    line3="Descárgalo en http://cnubis.com/kodi-pelisalacarta.html" )
+            return itemlist
+    except:
+        pass
         
     # Descarga la pagina
     data = scrapertools.cachePage(item.url, headers=headers)
     # Busca enlace directo
     video_url = scrapertools.find_single_match(data, 'class="embedded-video"[^<]+<iframe.*?src="([^"]+)"')        
+    if config.get_platform() == "plex" or config.get_platform() == "mediaserver":
+        code = scrapertools.find_single_match(video_url, 'u=([A-z0-9]+)')
+        url = "http://cnubis.com/plugins/mediaplayer/embeder/_embedkodi.php?u=%s" % code
+        data = scrapertools.downloadpage(url, headers=headers)
+        video_url = scrapertools.find_single_match(data, 'file\s*:\s*"([^"]+)"')
+        itemlist.append(item.clone(action="play", url=video_url, server="directo"))
+        return itemlist
 
     cnubis_script = xbmc.translatePath("special://home/addons/script.cnubis/default.py")
     xbmc.executebuiltin("XBMC.RunScript(%s, url=%s&referer=%s&title=%s)" 
