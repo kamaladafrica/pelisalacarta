@@ -16,7 +16,7 @@ from core.item import Item
 
 
 __modo_grafico__ = config.get_setting("modo_grafico", "descargasmix")
-__perfil__ = int(config.get_setting('perfil', "descargasmix"))
+__perfil__ = int(config.get_setting("perfil", "descargasmix"))
 
 # Fijar perfil de color            
 perfil = [['0xFFFFE6CC', '0xFFFFCE9C', '0xFF994D00'],
@@ -34,13 +34,13 @@ def mainlist(item):
     item.text_color = color1
     
     itemlist.append(item.clone(title="Películas", action="lista", fanart="http://i.imgur.com/c3HS8kj.png"))
-    itemlist.append(item.clone(title="Series", action="entradas", url="http://descargasmix.net/series/",
+    itemlist.append(item.clone(title="Series", action="entradas", url="http://desmix.net/series/",
                                fanart="http://i.imgur.com/9loVksV.png"))
-    itemlist.append(item.clone(title="Documentales", action="entradas", url="http://descargasmix.net/documentales/",
+    itemlist.append(item.clone(title="Documentales", action="entradas", url="http://desmix.net/documentales/",
                                fanart="http://i.imgur.com/Q7fsFI6.png"))
-    itemlist.append(item.clone(title="Anime", action="entradas", url="http://descargasmix.net/anime/",
+    itemlist.append(item.clone(title="Anime", action="entradas", url="http://desmix.net/anime/",
                                fanart="http://i.imgur.com/whhzo8f.png"))
-    itemlist.append(item.clone(title="Deportes", action="entradas", url="http://descargasmix.net/deportes/",
+    itemlist.append(item.clone(title="Deportes", action="entradas", url="http://desmix.net/deportes/",
                                fanart="http://i.imgur.com/ggFFR8o.png"))
     itemlist.append(item.clone(title="", action=""))
     itemlist.append(item.clone(title="Buscar...", action="search"))
@@ -60,7 +60,7 @@ def configuracion(item):
 def search(item, texto):
     logger.info("pelisalacarta.channels.descargasmix search")
     try:
-        item.url= "http://descargasmix.net/?s=" + texto
+        item.url= "http://desmix.net/?s=" + texto
         return busqueda(item)
     # Se captura la excepción, para no interrumpir al buscador global si un canal falla
     except:
@@ -102,15 +102,15 @@ def lista(item):
     logger.info("pelisalacarta.channels.descargasmix lista")
     itemlist = []
 
-    itemlist.append(item.clone(title="Novedades", action="entradas", url="http://descargasmix.net/peliculas"))
-    itemlist.append(item.clone(title="Estrenos", action="entradas", url="http://descargasmix.net/peliculas/estrenos"))
-    itemlist.append(item.clone(title="Dvdrip", action="entradas", url="http://descargasmix.net/peliculas/dvdrip"))
-    itemlist.append(item.clone(title="HD (720p/1080p)", action="entradas", url="http://descargasmix.net/peliculas/hd"))
-    itemlist.append(item.clone(title="HDRIP", action="entradas", url="http://descargasmix.net/peliculas/hdrip"))
+    itemlist.append(item.clone(title="Novedades", action="entradas", url="http://desmix.net/peliculas"))
+    itemlist.append(item.clone(title="Estrenos", action="entradas", url="http://desmix.net/peliculas/estrenos"))
+    itemlist.append(item.clone(title="Dvdrip", action="entradas", url="http://desmix.net/peliculas/dvdrip"))
+    itemlist.append(item.clone(title="HD (720p/1080p)", action="entradas", url="http://desmix.net/peliculas/hd"))
+    itemlist.append(item.clone(title="HDRIP", action="entradas", url="http://desmix.net/peliculas/hdrip"))
     itemlist.append(item.clone(title="Latino", action="entradas",
-                               url="http://descargasmix.net/peliculas/latino-peliculas"))
-    itemlist.append(item.clone(title="VOSE", action="entradas", url="http://descargasmix.net/peliculas/subtituladas"))
-    itemlist.append(item.clone(title="3D", action="entradas", url="http://descargasmix.net/peliculas/3d"))
+                               url="http://desmix.net/peliculas/latino-peliculas"))
+    itemlist.append(item.clone(title="VOSE", action="entradas", url="http://desmix.net/peliculas/subtituladas"))
+    itemlist.append(item.clone(title="3D", action="entradas", url="http://desmix.net/peliculas/3d"))
 
     return itemlist
 
@@ -180,8 +180,9 @@ def episodios(item):
     data = scrapertools.downloadpage(item.url)
     patron = '(<ul class="menu" id="seasons-list">.*?<div class="section-box related-posts">)'
     bloque = scrapertools.find_single_match(data, patron)
-    matches = scrapertools.find_multiple_matches(bloque, '<strong>(.*?)</strong>')
+    matches = scrapertools.find_multiple_matches(bloque, '<div class="cap">(.*?)</div>')
     for scrapedtitle in matches:
+        scrapedtitle = scrapedtitle.strip()
         item.infoLabels['season'] = scrapedtitle.split("x")[0]
         item.infoLabels['episode'] = scrapedtitle.split("x")[1]
         title = item.fulltitle+" "+scrapedtitle.strip()
@@ -221,7 +222,7 @@ def epienlaces(item):
     #Bloque de enlaces
     delimitador = item.extra.strip()
     delimitador = re.sub(r'(?i)(\[(?:/|)Color.*?\])', '', delimitador)
-    patron = delimitador+'\s*</strong>(.*?)(?:</strong>|</li>)'
+    patron = '<div class="cap">'+delimitador+'(.*?)(?:<div class="polo"|</li>)'
     bloque = scrapertools.find_single_match(data, patron)
      
     patron = '<div class="episode-server">.*?href="([^"]+)"' \
@@ -252,7 +253,7 @@ def epienlaces(item):
                     else:
                         enlaces = servertools.findvideos(data=scrapedurl)
                         if len(enlaces) > 0:
-                            titulo = "    " + enlaces[0][0] + "  [" + scrapedcalidad + "]"
+                            titulo = "    " + enlaces[0][2].capitalize() + "  [" + scrapedcalidad + "]"
                             itemlist.append(item.clone(action="play", server=enlaces[0][2], title=titulo,
                                                        url=enlaces[0][1]))
                 except:
@@ -299,7 +300,7 @@ def findvideos(item):
             enlace = dm(code)
             enlaces = servertools.findvideos(data=enlace)
             if len(enlaces) > 0:
-                title = "Ver vídeo en " + enlaces[0][0]
+                title = "Ver vídeo en " + enlaces[0][2]
                 itemlist.append(item.clone(action="play", server=enlaces[0][2], title=title, url=enlaces[0][1]))
 
     #Patron descarga
