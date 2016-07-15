@@ -132,24 +132,31 @@ def peliculas(item):
 
                 itemlist.append(movie)
 
-    # library.set_infoLabels_from_library(itemlist, tipo='Movies')
+    library.set_infoLabels_from_library(itemlist, tipo='Movies')
 
-    # Agrupamos las series por canales
+    # Agrupamos las peliculas por canales
     join_itemlist = []
-    for item in itemlist:
+
+    for i in range(len(itemlist)):
         encontrado = False
-        for unique in join_itemlist:
-            if "tmdb_id" in item.infoLabels and "tmdb_id" in unique.infoLabels:
-                if item.infoLabels["tmdb_id"] == unique.infoLabels["tmdb_id"]:
+        for j in range(i + 1, len(itemlist)):
+            if "tmdb_id" in itemlist[i].infoLabels and "tmdb_id" in itemlist[j].infoLabels:
+                if itemlist[i].infoLabels["tmdb_id"] == itemlist[j].infoLabels["tmdb_id"]:
                     encontrado = True
-                    if "list_channels" not in unique:
-                        unique.list_channels = [{"path": unique.path, "channel": unique.contentChannel}]
-                    unique.list_channels.append({"path": item.path, "channel": item.contentChannel})
-                    unique.action = "get_canales_movies"
-                    unique.text_color = "orange"
+
+                    if "list_channels" not in itemlist[i]:
+                        list_channels = []
+                        dict_first_channel = {"path": itemlist[i].path, "channel": itemlist[i].contentChannel}
+                        list_channels.append(dict_first_channel.copy())
+                        itemlist[j].list_channels = list_channels
+
+                    dict_other_channel = {"path": itemlist[j].path, "channel": itemlist[j].contentChannel}
+                    itemlist[j].list_channels.append(dict_other_channel.copy())
+                    itemlist[j].action = "get_canales_movies"
+                    itemlist[j].text_color = "orange"
 
         if not encontrado:
-            join_itemlist.append(item)
+            join_itemlist.append(itemlist[i])
 
     return sorted(join_itemlist, key=lambda it: it.title.lower())
 
@@ -236,6 +243,7 @@ def series(item):
 
         if not encontrado:
             join_itemlist.append(itemlist[i])
+
     return sorted(join_itemlist, key=lambda it: it.title.lower())
 
 
