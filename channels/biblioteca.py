@@ -36,6 +36,64 @@ def mainlist(item):
     return itemlist
 
 
+# def settings(item):
+#     itemlist = list()
+#     itemlist.append(Item(channel=item.channel, action="peliculas", title="Películas"))  #, thumbnail=THUMB_MOVIES))
+#     itemlist.append(Item(channel=item.channel, action="settings_series", title="Series"))  #, thumbnail=THUMB_TVSHOWS))
+#
+#     return itemlist
+#
+#
+# def settings_series(item):
+#     logger.info("pelisalacarta.channels.biblioteca settings_series")
+#     strm_path = library.TVSHOWS_PATH
+#
+#     itemlist = []
+#
+#     # Obtenemos todos los strm de la biblioteca de SERIES recursivamente
+#     for raiz, subcarpetas, ficheros in filetools.walk(strm_path):
+#         for f in ficheros:
+#             if f == "tvshow.json":
+#                 i = filetools.join(raiz, f)
+#
+#                 tvshow = Item().fromjson(filetools.read(i))
+#                 logger.debug(tvshow.tostring())
+#                 tvshow.contentChannel = tvshow.channel
+#                 tvshow.path = os.path.dirname(i)
+#                 tvshow.title = os.path.basename(os.path.dirname(i))
+#                 tvshow.channel = "biblioteca"
+#                 tvshow.action = "conf_series"
+#                 tvshow.text_color = ""
+#
+#                 itemlist.append(tvshow)
+#
+#     # library.set_infolabels_from_library(itemlist, tipo='TVShows')
+#
+#     return sorted(itemlist, key=lambda it: it.title.lower())
+#
+#
+# def conf_series(item):
+#     logger.info("pelisalacarta.channels.biblioteca settings_series")
+#
+#     itemlist = []
+#     title = "Activar la actualización de episodios" if not item.active else "Desactivar la actualización de episodios"
+#
+#     itemlist.append(Item(channel=item.channel, action="activar_desactivar", title=title))
+#
+#     return itemlist
+#
+#
+# def activar_desactivar(item):
+#     logger.info("pelisalacarta.channels.biblioteca activar_desactivar")
+#
+#     logger.info("item .active antes es: {}".format(item.active))
+#
+#     item.active = not item.active
+#     logger.info("item .active despues es: {}".format(item.active))
+#
+#     return []
+
+
 def peliculas(item):
     logger.info("pelisalacarta.channels.biblioteca peliculas")
     strm_path = library.MOVIES_PATH
@@ -47,6 +105,7 @@ def peliculas(item):
         for f in ficheros:
             if f.endswith(".strm"):
                 i = filetools.join(raiz, f)
+
                 movie = Item().fromurl(filetools.read(i))
                 movie.contentChannel = movie.channel
                 movie.path = i
@@ -136,7 +195,7 @@ def series(item):
 
                 itemlist.append(tvshow)
 
-    # Obtenemos todos los videos de la biblioteca de CINE recursivamente
+    # Obtenemos todos los videos de la biblioteca de SERIES recursivamente
     for raiz, subcarpetas, ficheros in filetools.walk(download_path):
         for f in ficheros:
             if f == "tvshow.json":
@@ -156,26 +215,33 @@ def series(item):
 
     # Agrupamos las series por canales
     join_itemlist = []
-    for item in itemlist:
+
+    for i in range(len(itemlist)):
         encontrado = False
-        for unique in join_itemlist:
-            if "tmdb_id" in item.infoLabels and "tmdb_id" in unique.infoLabels:
-                if item.infoLabels["tmdb_id"] == unique.infoLabels["tmdb_id"]:
+        for j in range(i + 1, len(itemlist)):
+            if "tmdb_id" in itemlist[i].infoLabels and "tmdb_id" in itemlist[j].infoLabels:
+                if itemlist[i].infoLabels["tmdb_id"] == itemlist[j].infoLabels["tmdb_id"]:
                     encontrado = True
-                if "list_channels" not in unique:
-                    unique.list_channels = [{"path": unique.path, "channel": unique.contentChannel}]
-                unique.list_channels.append({"path": item.path, "channel": item.contentChannel})
-                unique.action = "get_canales_tvshow"
-                unique.text_color = "orange"
+
+                    if "list_channels" not in itemlist[i]:
+                        list_channels = []
+                        dict_first_channel = {"path": itemlist[i].path, "channel": itemlist[i].contentChannel}
+                        list_channels.append(dict_first_channel.copy())
+                        itemlist[j].list_channels = list_channels
+
+                    dict_other_channel = {"path": itemlist[j].path, "channel": itemlist[j].contentChannel}
+                    itemlist[j].list_channels.append(dict_other_channel.copy())
+                    itemlist[j].action = "get_canales_tvshow"
+                    itemlist[j].text_color = "orange"
 
         if not encontrado:
-            join_itemlist.append(item)
-
+            join_itemlist.append(itemlist[i])
     return sorted(join_itemlist, key=lambda it: it.title.lower())
 
 
 def get_canales_tvshow(item):
     logger.info("pelisalacarta.channels.biblioteca get_canales_tvshow")
+    logger.debug(item.tostring())
     itemlist = []
 
     # Recorremos el listado de canales
@@ -207,6 +273,8 @@ def get_temporadas(item):
     else:
         # Creamos un item por cada temporada
         for season, title in dict_temp.items():
+            # fix para que se filtren bien los contenido, ya que sino se hereda el campo
+            item.infoLabels['season'] = ""
             new_item = item.clone(action="get_episodios", title=title, contentTitle=title, contentSeason=season,
                                   contentEpisodeNumber="", filtrar_season=True, text_color="")
             itemlist.append(new_item)
@@ -214,6 +282,7 @@ def get_temporadas(item):
 
         if len(itemlist) > 1:
             itemlist = sorted(itemlist, key=lambda it: int(it.contentSeason))
+
         if config.get_setting("show_all_seasons") == "true":
             new_item = item.clone(action="get_episodios", title="*Todas las temporadas", text_color="")
             itemlist.insert(0, new_item)
@@ -245,6 +314,8 @@ def get_episodios(item):
             epi.action = "findvideos"
             epi.contentEpisodeNumber = episode
             epi.contentSeason = season
+            # fix sobreescribe el color del texto si viene pasado en el strm
+            epi.text_color = ""
 
             itemlist.append(epi)
 
