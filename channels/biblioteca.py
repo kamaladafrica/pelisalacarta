@@ -155,6 +155,10 @@ def peliculas(item):
                     itemlist[j].action = "get_canales_movies"
                     itemlist[j].text_color = "orange"
 
+        # TODO pendiente de probar
+        if "contentTitle" in itemlist[i] and itemlist[i].contentTitle != "":
+            itemlist[i].title = itemlist[i].contentTitle
+
         if not encontrado:
             join_itemlist.append(itemlist[i])
 
@@ -240,6 +244,9 @@ def series(item):
                     itemlist[j].list_channels.append(dict_other_channel.copy())
                     itemlist[j].action = "get_canales_tvshow"
                     itemlist[j].text_color = "orange"
+
+        if "contentTitle" in itemlist[i] and itemlist[i].contentTitle != "":
+            itemlist[i].title = itemlist[i].contentTitle
 
         if not encontrado:
             join_itemlist.append(itemlist[i])
