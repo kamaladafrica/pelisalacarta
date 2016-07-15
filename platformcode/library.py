@@ -120,7 +120,7 @@ def join_path(path, *name):
     if not samba.usingsamba(path):
         path = xbmc.translatePath(os.path.join(path, *name))
     else:
-        path = os.path.join(path, "/", *name)
+        path = path + "/" + name[0]
 
     return path
 
