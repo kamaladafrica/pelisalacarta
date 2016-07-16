@@ -91,26 +91,8 @@ def is_compatible():
 
     """
     logger.info("pelisalacarta.platformcode.library is_compatible")
-    if config.get_platform() in LIST_PLATFORM_COMPATIBLE and library_in_kodi():
-        return True
-    else:
-        return False
-
-
-def library_in_kodi():
-    """
-    comprueba si la libreria de pelisalacarta está configurada en xbmc/Kodi
-    @rtype:   bool
-    @return:  si está configurada la libreria en xbmc/Kodi.
-    """
-    logger.info("pelisalacarta.platformcode.library library_in_kodi")
-    # TODO arreglar
-    return True
-
-    path = xbmc.translatePath(os.path.join("special://profile/", "sources.xml"))
-    data = filetools.read(path)
-
-    if config.get_library_path() in data:
+    # Si hemos dicho que nos busque la información de Kodi, damos por supuesto que está configurada su biblioteca
+    if config.get_platform() in LIST_PLATFORM_COMPATIBLE and config.get_setting("get_metadata_from_kodi") == "true":
         return True
     else:
         return False
@@ -183,6 +165,9 @@ def save_library_movie(item):
     if filetools.write(fullfilename, '{addon}?{url}'.format(addon=addon_name, url=item.tourl())):
         if 'tmdb_id' in item.infoLabels:
             create_nfo_file(item.infoLabels['tmdb_id'], fullfilename[:-5], "cine")
+        else:
+            if filetools.exists(fullfilename[:-5] + ".nfo"):
+                filetools.remove(fullfilename[:-5] + ".nfo")
         return insertados, sobreescritos, fallidos
     else:
         return 0, 0, 1
@@ -220,7 +205,7 @@ def save_library_tvshow(item, episodelist):
     if not item.contentSerieName or not item.channel:
         return 0, 0, -1  # Salimos sin guardar
 
-    # TODO configurar para segun el scraper se llamara a uno u otro
+    # TODO configurar para segun el scraper se llame a uno u otro
     tmdb.find_and_set_infoLabels_tmdb(item, config.get_setting("scrap_ask_name") == "true")
 
     path = filetools.join(TVSHOWS_PATH, "{0} [{1}]".format(filetools.title_to_filename(
@@ -237,6 +222,9 @@ def save_library_tvshow(item, episodelist):
 
     if 'tmdb_id' in item.infoLabels:
         create_nfo_file(item.infoLabels['tmdb_id'], path, "serie")
+    else:
+        if filetools.exists(filetools.join(path, "tvshow.nfo")):
+            filetools.remove(filetools.join(path, "tvshow.nfo"))
 
     # Guardar los episodios
     insertados, sobreescritos, fallidos = save_library_episodes(path, episodelist, item)
@@ -390,105 +378,106 @@ def set_infolabels_from_library(itemlist, tipo):
             else:
                 item.title = item.fulltitle
 
-    # Metodo2: De la bilioteca de kodi
-    payload = dict()
-    result = list()
+    if config.get_setting("get_metadata_from_kodi") == "true":
+        # Metodo2: De la bilioteca de kodi
+        payload = dict()
+        result = list()
 
-    if tipo == 'Movies':
-        payload = {"jsonrpc": "2.0",
-                   "method": "VideoLibrary.GetMovies",
-                   "params": {"properties": ["title", "year", "rating", "trailer", "tagline", "plot", "plotoutline",
-                                             "originaltitle", "lastplayed", "playcount", "writer", "mpaa", "cast",
-                                             "imdbnumber", "runtime", "set", "top250", "votes", "fanart", "tag",
-                                             "thumbnail", "file", "director", "country", "studio", "genre",
-                                             "sorttitle", "setid", "dateadded"
-                                             ]},
-                   "id": "libMovies"}
+        if tipo == 'Movies':
+            payload = {"jsonrpc": "2.0",
+                       "method": "VideoLibrary.GetMovies",
+                       "params": {"properties": ["title", "year", "rating", "trailer", "tagline", "plot", "plotoutline",
+                                                 "originaltitle", "lastplayed", "playcount", "writer", "mpaa", "cast",
+                                                 "imdbnumber", "runtime", "set", "top250", "votes", "fanart", "tag",
+                                                 "thumbnail", "file", "director", "country", "studio", "genre",
+                                                 "sorttitle", "setid", "dateadded"
+                                                 ]},
+                       "id": "libMovies"}
 
-    elif tipo == 'TVShows':
-        payload = {"jsonrpc": "2.0",
-                   "method": "VideoLibrary.GetTVShows",
-                   "params": {"properties": ["title", "genre", "year", "rating", "plot", "studio", "mpaa", "cast",
-                                             "playcount", "episode", "imdbnumber", "premiered", "votes", "lastplayed",
-                                             "fanart", "thumbnail", "file", "originaltitle", "sorttitle",
-                                             "episodeguide", "season", "watchedepisodes", "dateadded", "tag"
-                                             ]},
-                   "id": "libTvShows"}
+        elif tipo == 'TVShows':
+            payload = {"jsonrpc": "2.0",
+                       "method": "VideoLibrary.GetTVShows",
+                       "params": {"properties": ["title", "genre", "year", "rating", "plot", "studio", "mpaa", "cast",
+                                                 "playcount", "episode", "imdbnumber", "premiered", "votes",
+                                                 "lastplayed", "fanart", "thumbnail", "file", "originaltitle",
+                                                 "sorttitle", "episodeguide", "season", "watchedepisodes", "dateadded",
+                                                 "tag"]},
+                       "id": "libTvShows"}
 
-    elif tipo == 'Episodes' and 'tvshowid' in itemlist[0].infoLabels and itemlist[0].infoLabels['tvshowid']:
-        tvshowid = itemlist[0].infoLabels['tvshowid']
-        payload = {"jsonrpc": "2.0",
-                   "method": "VideoLibrary.GetEpisodes",
-                   "params": {"tvshowid": tvshowid,
-                              "properties": ["title", "plot", "votes", "rating", "writer", "firstaired", "playcount",
-                                             "runtime", "director", "productioncode", "season", "episode",
-                                             "originaltitle",
-                                             "showtitle", "cast", "lastplayed", "fanart", "thumbnail",
-                                             "file", "dateadded", "tvshowid"
-                                             ]},
-                   "id": 1}
+        elif tipo == 'Episodes' and 'tvshowid' in itemlist[0].infoLabels and itemlist[0].infoLabels['tvshowid']:
+            tvshowid = itemlist[0].infoLabels['tvshowid']
+            payload = {"jsonrpc": "2.0",
+                       "method": "VideoLibrary.GetEpisodes",
+                       "params": {"tvshowid": tvshowid,
+                                  "properties": ["title", "plot", "votes", "rating", "writer", "firstaired",
+                                                 "playcount", "runtime", "director", "productioncode", "season",
+                                                 "episode", "originaltitle", "showtitle", "cast", "lastplayed",
+                                                 "fanart", "thumbnail", "file", "dateadded", "tvshowid"]},
+                       "id": 1}
 
-    data = get_data(payload)
-    logger.debug("JSON-RPC: {0}".format(data))
+        data = get_data(payload)
+        logger.debug("JSON-RPC: {0}".format(data))
 
-    if 'error' in data:
-        logger.error("JSON-RPC: {0}".format(data))
+        if 'error' in data:
+            logger.error("JSON-RPC: {0}".format(data))
 
-    elif 'movies' in data['result']:
-        result = data['result']['movies']
+        elif 'movies' in data['result']:
+            result = data['result']['movies']
 
-    elif 'tvshows' in data['result']:
-        result = data['result']['tvshows']
+        elif 'tvshows' in data['result']:
+            result = data['result']['tvshows']
 
-    elif 'episodes' in data['result']:
-        result = data['result']['episodes']
+        elif 'episodes' in data['result']:
+            result = data['result']['episodes']
 
-    if result:
-        for i in itemlist:
-            for r in result:
-                r_filename_aux = r['file'][:-1] if r['file'].endswith(os.sep) or r['file'].endswith('/') else r['file']
-                r_filename = os.path.basename(r_filename_aux)
-                # logger.debug(os.path.basename(i.path) + '\n' + r_filename)
-                i_filename = os.path.basename(i.path)
-                if i_filename == r_filename:
-                    infolabels = r
+        if result:
+            for i in itemlist:
+                for r in result:
+                    r_filename_aux = r['file'][:-1] if r['file'].endswith(os.sep) or r['file'].endswith('/') else \
+                        r['file']
+                    r_filename = os.path.basename(r_filename_aux)
+                    # logger.debug(os.path.basename(i.path) + '\n' + r_filename)
+                    i_filename = os.path.basename(i.path)
+                    if i_filename == r_filename:
+                        infolabels = r
 
-                    # Obtener imagenes y asignarlas al item
-                    if 'thumbnail' in infolabels:
-                        infolabels['thumbnail'] = urllib.unquote_plus(infolabels['thumbnail']).replace('image://', '')
-                        i.thumbnail = infolabels['thumbnail'][:-1] if infolabels['thumbnail'].endswith('/') else \
-                            infolabels['thumbnail']
-                    if 'fanart' in infolabels:
-                        infolabels['fanart'] = urllib.unquote_plus(infolabels['fanart']).replace('image://', '')
-                        i.fanart = infolabels['fanart'][:-1] if infolabels['fanart'].endswith('/') else infolabels[
-                            'fanart']
+                        # Obtener imagenes y asignarlas al item
+                        if 'thumbnail' in infolabels:
+                            infolabels['thumbnail'] = urllib.unquote_plus(infolabels['thumbnail']).replace('image://',
+                                                                                                           '')
+                            i.thumbnail = infolabels['thumbnail'][:-1] if infolabels['thumbnail'].endswith('/') else \
+                                infolabels['thumbnail']
+                        if 'fanart' in infolabels:
+                            infolabels['fanart'] = urllib.unquote_plus(infolabels['fanart']).replace('image://', '')
+                            i.fanart = infolabels['fanart'][:-1] if infolabels['fanart'].endswith('/') else infolabels[
+                                'fanart']
 
-                    # Adaptar algunos campos al formato infoLables
-                    if 'cast' in infolabels:
-                        l_castandrole = list()
-                        for c in sorted(infolabels['cast'], key=lambda _c: _c["order"]):
-                            l_castandrole.append((c['name'], c['role']))
-                        infolabels.pop('cast')
-                        infolabels['castandrole'] = l_castandrole
-                    if 'genre' in infolabels:
-                        infolabels['genre'] = ', '.join(infolabels['genre'])
-                    if 'writer' in infolabels:
-                        infolabels['writer'] = ', '.join(infolabels['writer'])
-                    if 'director' in infolabels:
-                        infolabels['director'] = ', '.join(infolabels['director'])
-                    if 'country' in infolabels:
-                        infolabels['country'] = ', '.join(infolabels['country'])
-                    if 'studio' in infolabels:
-                        infolabels['studio'] = ', '.join(infolabels['studio'])
-                    if 'runtime' in infolabels:
-                        infolabels['duration'] = infolabels.pop('runtime')
+                        # Adaptar algunos campos al formato infoLables
+                        if 'cast' in infolabels:
+                            l_castandrole = list()
+                            for c in sorted(infolabels['cast'], key=lambda _c: _c["order"]):
+                                l_castandrole.append((c['name'], c['role']))
+                            infolabels.pop('cast')
+                            infolabels['castandrole'] = l_castandrole
+                        if 'genre' in infolabels:
+                            infolabels['genre'] = ', '.join(infolabels['genre'])
+                        if 'writer' in infolabels:
+                            infolabels['writer'] = ', '.join(infolabels['writer'])
+                        if 'director' in infolabels:
+                            infolabels['director'] = ', '.join(infolabels['director'])
+                        if 'country' in infolabels:
+                            infolabels['country'] = ', '.join(infolabels['country'])
+                        if 'studio' in infolabels:
+                            infolabels['studio'] = ', '.join(infolabels['studio'])
+                        if 'runtime' in infolabels:
+                            infolabels['duration'] = infolabels.pop('runtime')
 
-                    # Fijar el titulo si existe y añadir infoLabels al item
-                    if 'label' in infolabels:
-                        i.title = infolabels['label']
-                    i.infoLabels = infolabels
-                    result.remove(r)
-                    break
+                        # Fijar el titulo si existe y añadir infoLabels al item
+                        if 'label' in infolabels:
+                            i.title = infolabels['label']
+                        i.infoLabels = infolabels
+                        result.remove(r)
+                        break
 
 
 def mark_as_watched(item):
