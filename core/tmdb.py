@@ -86,7 +86,12 @@ otmdb_global = None
 
 
 def cb_select_from_tmdb(item, tmdb_result):
-    item.tmdb_result = tmdb_result
+    if tmdb_result is None:
+        logger.debug("he pulsado 'cancelar' en la ventana de info de la serie/pelicula")
+        dict_dummie = {"id": ""}
+        item.tmdb_result = dict_dummie
+    else:
+        item.tmdb_result = tmdb_result
 
 
 def find_and_set_infoLabels_tmdb(item, ask_video=True):
@@ -117,18 +122,18 @@ def find_and_set_infoLabels_tmdb(item, ask_video=True):
                                               format(title, "serie" if video_type == "tv" else "pelicula"),
                                               callback='cb_select_from_tmdb', item=item)
             else:
-                # TODO fix, si no encuentra resultado se devuelve un resultado vacio
-                if len(results) > 0 and results[0]['id'] != "":
+                if len(results) > 0 and results[0]["id"] != "":
                     cb_select_from_tmdb(item, results[0])
                 else:  # No hay resultados
                     cb_select_from_tmdb(item, {})
                     # Pregunta el titulo
-                    it = platformtools.dialog_input(title, "Escribe la {0} correcta".
+                    it = platformtools.dialog_input(title, "No se ha encontrado la {0}, introduzca el nombre correcto".
                                                     format("serie" if video_type == "tv" else "pelicula"))
                     if it is not None:
                         title = it
 
                     else:  # Cancelar
+                        cb_select_from_tmdb(item, results[0])
                         break
 
     else:
