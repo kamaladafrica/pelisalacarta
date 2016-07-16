@@ -363,6 +363,7 @@ def set_infolabels_from_library(itemlist, tipo):
                 if filetools.exists(data_file):
                     infolabels = Item().fromurl(filetools.read(data_file)).infoLabels
                     item.infoLabels = infolabels
+            # TODO debería existir el else?
             else:
                 data_file = os.path.splitext(item.path)[0] + ".json"
                 if filetools.exists(data_file):
