@@ -93,7 +93,8 @@ def decode(path):
 
     else:
         if not type(path) == unicode:
-            path = path.decode(sys.getfilesystemencoding())
+            _ENCODING = sys.getfilesystemencoding() or locale.getdefaultlocale()[1] or 'utf-8'
+            path = path.decode(_ENCODING)
         path = path.encode("utf8")
     return path
 
