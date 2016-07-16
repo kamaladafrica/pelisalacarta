@@ -132,7 +132,7 @@ def peliculas(item):
 
                 itemlist.append(movie)
 
-    library.set_infoLabels_from_library(itemlist, tipo='Movies')
+    library.set_infolabels_from_library(itemlist, tipo='Movies')
 
     # Agrupamos las peliculas por canales
     join_itemlist = []
@@ -331,7 +331,7 @@ def get_episodios(item):
             epi.contentSeason = season
             # fix sobreescribe el color del texto si viene pasado en el strm
             epi.text_color = ""
-
+            
             itemlist.append(epi)
 
         # videos
@@ -367,6 +367,7 @@ def get_sort_temp_epi(item):
 
 def findvideos(item):
     logger.info("pelisalacarta.channels.biblioteca findvideos")
+    canal = item.contentChannel
 
     channel = __import__('channels.%s' % item.contentChannel, fromlist=["channels.%s" % item.contentChannel])
     if hasattr(channel, "findvideos"):
@@ -378,10 +379,9 @@ def findvideos(item):
     for v in itemlist:
         if v.action == "play":
             v.infoLabels = item.infoLabels
-            v.contentChannel = v.channel
             v.contentTitle = item.contentTitle
+            v.contentChannel = canal
             v.channel = "biblioteca"
-            v.contentChannel = item.contentChannel
             v.path = item.path
 
     return itemlist
