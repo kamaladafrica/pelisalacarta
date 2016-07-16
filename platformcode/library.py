@@ -466,7 +466,7 @@ def read_file(fname):
         path, filename = fname.rsplit('/', 1)
         if samba.file_exists(filename, path):
             try:
-                from samba.smb.smb_structs import OperationFailure
+                from sambatools.smb.smb_structs import OperationFailure
                 with samba.get_file_handle_for_reading(filename, path) as f:
                     for line in f:
                         data += line
@@ -504,7 +504,7 @@ def save_file(data, fname):
             return False
     else:
         try:
-            from samba.smb.smb_structs import OperationFailure
+            from sambatools.smb.smb_structs import OperationFailure
             path, filename = fname.rsplit('/', 1)
             try:
                 samba.store_file(filename, data, path)
