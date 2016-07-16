@@ -84,13 +84,19 @@ def create_tvshows_from_xml():
         else:
             logger.info("ERROR, no se ha podido renombrar la antigua carpeta de SERIES")
 
+        return True
 
-def create_tvshows_from_json():
+    return False
+
+
+def create_tvshows_from_json(_actualizado):
     logger.info("pelisalacarta.platformcode.library_service create_tvshows_from_json")
     fname = filetools.join(config.get_data_path(), library.TVSHOW_FILE)
 
     if filetools.exists(fname):
-        platformtools.dialog_ok("Biblioteca: Actualizando formato")
+        if not _actualizado:
+            platformtools.dialog_ok("Biblioteca: Actualizando formato",
+                                    "Espere por favor mientras se completa el proceso")
 
         try:
             data = jsontools.loads(filetools.read(fname))
@@ -133,7 +139,7 @@ def main():
                 path = filetools.dirname(tvshow_file)
 
                 logger.info("pelisalacarta.library_service serie="+serie.contentSerieName)
-                logger.info("pelisalacarta.library_service Actualizando "+ path)
+                logger.info("pelisalacarta.library_service Actualizando " + path)
                 logger.info("pelisalacarta.library_service url " + serie.url)
                 p_dialog.update(int(math.ceil((i+1) * t)), heading, serie.show)
 
@@ -182,6 +188,6 @@ def main():
 
 if __name__ == "__main__":
 
-    create_tvshows_from_xml()
-    create_tvshows_from_json()
+    actualizado = create_tvshows_from_xml()
+    create_tvshows_from_json(actualizado)
     main()
