@@ -373,10 +373,22 @@ def set_infolabels_from_library(itemlist, tipo):
             item.thumbnail = item.contentThumbnail
 
             if item.contentTitle:
-                item.title = "{0}x{1} - {2}".format(item.contentSeason, item.contentEpisodeNumber,
-                                                    item.contentTitle.strip())
+                if len(str(item.contentEpisodeNumber)) == 1:
+                    item.title = "{0}x0{1}".format(item.contentSeason, item.contentEpisodeNumber)
+                else:
+                    item.title = "{0}x{1}".format(item.contentSeason, item.contentEpisodeNumber)
+
+                item.title = "{0} - {1}".format(item.title, item.contentTitle.strip())
             else:
-                item.title = item.fulltitle
+                if "fulltitle" in item:
+                    item.title = item.fulltitle
+                else:
+                    if len(str(item.contentEpisodeNumber)) == 1:
+                        item.title = "{0}x0{1}".format(item.contentSeason, item.contentEpisodeNumber)
+                    else:
+                        item.title = "{0}x{1}".format(item.contentSeason, item.contentEpisodeNumber)
+
+                    item.title = "{0} - {1}".format(item.title, "Episodio {0}".format(item.contentEpisodeNumber))
 
     if config.get_setting("get_metadata_from_kodi") == "true":
         # Metodo2: De la bilioteca de kodi
