@@ -84,16 +84,15 @@ def decode(path):
     @rtype: str
     @return: ruta codificado en UTF-8
     """
+    _ENCODING = sys.getfilesystemencoding() or locale.getdefaultlocale()[1] or 'utf-8'
 
     if type(path) == list:
         for x in range(len(path)):
             if not type(path[x]) == unicode:
-                path[x] = path[x].decode(sys.getfilesystemencoding())
+                path[x] = path[x].decode(_ENCODING)
             path[x] = path[x].encode("utf8")
-
     else:
         if not type(path) == unicode:
-            _ENCODING = sys.getfilesystemencoding() or locale.getdefaultlocale()[1] or 'utf-8'
             path = path.decode(_ENCODING)
         path = path.encode("utf8")
     return path
