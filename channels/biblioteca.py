@@ -371,7 +371,8 @@ def findvideos(item):
 
     channel = __import__('channels.%s' % item.contentChannel, fromlist=["channels.%s" % item.contentChannel])
     if hasattr(channel, "findvideos"):
-        itemlist = getattr(channel, "findvideos")(item)
+        new_item = item.clone(channel=item.contentChannel)
+        itemlist = getattr(channel, "findvideos")(new_item)
     else:
         from core import servertools
         itemlist = servertools.find_video_items(item)
