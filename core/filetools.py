@@ -154,8 +154,13 @@ def write(path, data):
         try:
             with open(path, "wb") as f:
                 f.write(data)
-        except EnvironmentError:
-            logger.info("filetools.py write: Error al guardar el archivo: {0}".format(path))
+        # except EnvironmentError:
+        except Exception as ex:
+            logger.info("filetools.write: Error al guardar el archivo: ")
+            template = "An exception of type {0} occured. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            logger.info(message)
+            # logger.info("filetools.py write: Error al guardar el archivo: {0}".format(path))
             return False
         else:
             return True
@@ -472,9 +477,9 @@ def remove_tags(title):
     @return: cadena sin tags
     """
     logger.info("filetools.py remove_tags")
-    
-    title_without_tags = scrapertools.find_single_match(title, '\[COLOR .+?\](.+)\[\/COLOR\]')
-    
+
+    title_without_tags = scrapertools.find_single_match(title, '\[color .+?\](.+)\[\/color\]')
+
     if title_without_tags:
         return title_without_tags
     else:
