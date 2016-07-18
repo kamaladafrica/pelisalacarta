@@ -453,6 +453,28 @@ def title_to_filename(title):
     @return:  cadena correcta sin tildes.
     """
     logger.info("filetools.py title_to_filename")
+    logger.debug("title: " + title)
+    
+    title = remove_tags(title)
+    
     safechars = string.letters + string.digits + " -_.[]()"
     folder_name = filter(lambda c: c in safechars, elimina_tildes(title))
     return str(folder_name)
+
+
+def remove_tags(title):
+    """
+    devuelve el titulo sin tags como color
+    @type title: str
+    @param title: title
+    @rtype: str
+    @return: cadena sin tags
+    """
+    logger.info("filetools.py remove_tags")
+    
+    title_without_tags = scrapertools.find_single_match(title, '\[COLOR .+?\](.+)\[\/COLOR\]')
+    
+    if title_without_tags:
+        return title_without_tags
+    else:
+        return title
