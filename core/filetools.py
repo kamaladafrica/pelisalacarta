@@ -14,6 +14,7 @@ from socket import gaierror
 
 from core import config
 from core import logger
+from core import scrapertools
 from platformcode import platformtools
 
 try:
