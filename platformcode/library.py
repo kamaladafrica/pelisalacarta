@@ -66,7 +66,7 @@ FOLDER_MOVIES = "CINE"  # config.get_localized_string(30072)
 MOVIES_PATH = filetools.join(LIBRARY_PATH, FOLDER_MOVIES)
 if not filetools.exists(MOVIES_PATH):
     logger.info("pelisalacarta.platformcode.library Movies path doesn't exist:" + MOVIES_PATH)
-    filetools.exists(MOVIES_PATH)
+    filetools.mkdir(MOVIES_PATH)
 
 FOLDER_TVSHOWS = "SERIES"  # config.get_localized_string(30073)
 TVSHOWS_PATH = filetools.join(LIBRARY_PATH, FOLDER_TVSHOWS)
@@ -814,4 +814,4 @@ def add_serie_to_library(item, channel):
         platformtools.dialog_ok("Biblioteca", "La serie se ha añadido a la biblioteca")
         logger.info("[launcher.py] Se han añadido {0} episodios de la serie {1} a la biblioteca".format(insertados,
                                                                                                         item.show))
-    # library.update() # TODO evitar bucle
+    # update()  # TODO evitar bucle
