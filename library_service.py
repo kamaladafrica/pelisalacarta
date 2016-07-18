@@ -141,7 +141,10 @@ def main():
                 logger.info("pelisalacarta.library_service serie="+serie.contentSerieName)
                 logger.info("pelisalacarta.library_service Actualizando " + path)
                 logger.info("pelisalacarta.library_service url " + serie.url)
-                p_dialog.update(int(math.ceil((i+1) * t)), heading, serie.show)
+                show_name = serie.contentTitle
+                if show_name == "":
+                    show_name = serie.show
+                p_dialog.update(int(math.ceil((i+1) * t)), heading, show_name)
 
                 # si la serie esta activa se actualiza
                 if serie.active:
