@@ -12,8 +12,7 @@ from core import jsunpack
 from core import scrapertools
 
 
-headers = [['User-Agent',
-            'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.14) Gecko/20080404 Firefox/2.0.0.14']]
+headers = [['User-Agent', 'Mozilla/5.0']]
 
 
 def test_video_exists(page_url):
@@ -32,6 +31,12 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
 
     # Lo pide una vez
     data = scrapertools.cache_page(page_url, headers=headers)
+    # Si salta aviso, se carga la pagina de comprobacion y luego la inicial
+    if "You try to access this video with Kodi" in data:
+        url_reload = scrapertools.find_single_match(data, 'try to reload the page.*?href="([^"]+)"')
+        data = scrapertools.cache_page(url_reload, headers=headers)
+        data = scrapertools.cache_page(page_url, headers=headers)
+
     match = scrapertools.find_single_match(data, "<script type='text/javascript'>(.*?)</script>")
 
     if match.startswith("eval"):
