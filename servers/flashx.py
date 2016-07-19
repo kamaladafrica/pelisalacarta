@@ -65,7 +65,7 @@ def find_videos(data):
 
     for match in matches:
         titulo = "[flashx]"
-        url = "http://www.flashx.tv/playit-%s.html" % match
+        url = "http://www.flashx.tv/playvid-%s.html" % match
         if url not in encontrados:
             logger.info("  url=" + url)
             devuelve.append([titulo, url, 'flashx'])
