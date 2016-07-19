@@ -294,6 +294,8 @@ def entradasconlistas(item):
     data = jsontools.load_json(data)
     head = header_string + get_cookie_value()
     # Si hay alguna lista
+    contentSerie = False
+    contentList = False
     if data['playListChilds']:
         itemlist.append(Item(channel=item.channel, title="**LISTAS**", action="", text_color="red", text_blod=True,
                              folder=False))
@@ -301,6 +303,12 @@ def entradasconlistas(item):
             infolabels = {}
 
             infolabels['plot'] = "Contiene:\n" + "\n".join(child['playListChilds']) + "\n".join(child['repoChilds'])
+            if child['seasonNumber'] and not contentList and re.search(r'(?i)temporada', child['id']):
+                infolabels['season'] = child['seasonNumber']
+                contentSerie = True
+            else:
+                contentSerie = False
+                contentList = True
             title = child['id'].replace('-', ' ').capitalize() + " ([COLOR gold]" + str(child['number']) + "[/COLOR])"
             url = "http://tv-vip.com/json/playlist/%s/index.json" % child["id"]
             thumbnail = "http://tv-vip.com/json/playlist/%s/thumbnail.jpg" % child["id"]
@@ -313,8 +321,9 @@ def entradasconlistas(item):
             fanart += head
             itemlist.append(Item(channel=item.channel, action="entradasconlistas", title=bbcode_kodi2html(title),
                                  url=url, thumbnail=thumbnail, fanart=fanart, fulltitle=child['id'],
-                                 infoLabels=infolabels, viewmode="movie_with_plot", folder=True))
-
+                                 infoLabels=infolabels, viewmode="movie_with_plot"))
+    else:
+        contentList = True
     if data["sortedRepoChilds"] and len(itemlist) > 0:
         itemlist.append(Item(channel=item.channel, title="**VÍDEOS**", action="", text_color="blue", text_blod=True,
                              folder=False))
@@ -364,10 +373,15 @@ def entradasconlistas(item):
                              contentTitle=fulltitle, context="0", viewmode="movie_with_plot", folder=True))
 
     # Se añade item para añadir la lista de vídeos a la biblioteca
-    if data['sortedRepoChilds'] and len(itemlist) > 0:
+    if data['sortedRepoChilds'] and len(itemlist) > 0 and contentList:
         if config.get_library_support():
             itemlist.append(Item(channel=item.channel, text_color="green", title="Añadir esta lista a la biblioteca",
                                  url=item.url, action="listas"))
+    elif contentSerie:
+        if config.get_library_support():
+            itemlist.append(Item(channel=item.channel, title="Añadir esta serie a la biblioteca", url=item.url,
+                                 action="series_library", fulltitle=data['name'], show=data['name'],
+                                 text_color="green"))
 
     return itemlist
 
@@ -737,14 +751,6 @@ def listas(item):
     for child in data["sortedRepoChilds"]:
         infolabels = {}
 
-        infolabels['plot'] = child['description']
-        infolabels['year'] = data['year']
-        if child['tags']: infolabels['genre'] = ', '.join([x.strip() for x in child['tags']])
-        infolabels['rating'] = child['rate'].replace(',', '.')
-        infolabels['votes'] = child['rateCount']
-        infolabels['duration'] = child['duration']
-        if child['cast']: infolabels['cast'] = child['cast'].split(",")
-        infolabels['director'] = child['director']
         # Fanart
         if child['hashBackground']:
             fanart = "http://tv-vip.com/json/repo/%s/background.jpg" % child["id"]
@@ -767,7 +773,7 @@ def listas(item):
         infolabels['title'] = title
         try:
             from platformcode import library
-            new_item = item.clone(action="findvideos", title=title, url=url, fulltitle=title, fanart=fanart,
+            new_item = item.clone(action="play_from_library", title=title, url=url, fulltitle=title, fanart=fanart,
                                   thumbnail=thumbnail, infoLabels=infolabels, category="Cine")
             library.save_library_movie(new_item)
             error = False
