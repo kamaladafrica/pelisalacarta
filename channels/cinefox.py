@@ -230,7 +230,7 @@ def filtro(item):
         return filtrado(item, valores_guardados)
 
     list_controls.append({'id': 'espacio', 'label': '', 'enabled': False,
-                          'type': 'text', 'default': '', 'visible': True})
+                          'type': 'label', 'default': '', 'visible': True})
     list_controls.append({'id': 'save', 'label': 'Establecer como filtro por defecto', 'enabled': True,
                           'type': 'bool', 'default': False, 'visible': True})
     list_controls.append({'id': 'filtro_per', 'label': 'Guardar filtro en acceso directo...', 'enabled': True,
