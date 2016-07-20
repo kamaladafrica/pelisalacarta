@@ -168,6 +168,12 @@ def save_library_movie(item):
         else:
             if filetools.exists(fullfilename[:-5] + ".nfo"):
                 filetools.remove(fullfilename[:-5] + ".nfo")
+
+        # actualizamos la biblioteca de Kodi con la pelicula
+        # TODO arreglar el porque hay que poner la ruta special
+        ruta = "special://home/userdata/addon_data/plugin.video.pelisalacarta/library/CINE/"
+        update(ruta)
+
         return insertados, sobreescritos, fallidos
     else:
         return 0, 0, 1
@@ -310,6 +316,14 @@ def save_library_episodes(path, episodelist, serie, silent=False):
 
     if not silent:
         p_dialog.close()
+
+    # si se han añadido episodios los actualizamos en la biblioteca de Kodi con la serie
+    if fallidos >= 0:
+        # TODO arreglar el porque hay que poner la ruta special
+        ruta = "special://home/userdata/addon_data/plugin.video.pelisalacarta/library/SERIES/" + \
+               "{0} [{1}]".format(filetools.title_to_filename(serie.contentSerieName.strip().lower()),
+                                  serie.channel).lower() + "/"
+        update(ruta)
 
     logger.debug("insertados= {0}, sobreescritos={1}, fallidos={2}".format(insertados, sobreescritos, fallidos))
     return insertados, sobreescritos, fallidos
@@ -733,14 +747,20 @@ def get_data(payload):
     return data
 
 
-def update():
+def update(_path):
     """
     actualiza la libreria
+
+    @type path: str
+    @param path: ruta que hay que actualizar en la libreria
     """
     logger.info("pelisalacarta.platformcode.library update")
     # Se comenta la llamada normal para reutilizar 'payload' dependiendo del modo cliente
     # xbmc.executebuiltin('UpdateLibrary(video)')
-    payload = {"jsonrpc": "2.0", "method": "VideoLibrary.Scan", "id": 1}
+    if _path:
+        payload = {"jsonrpc": "2.0", "method": "VideoLibrary.Scan", "params": {"directory": _path}, "id": 1}
+    else:
+        payload = {"jsonrpc": "2.0", "method": "VideoLibrary.Scan", "id": 1}
     data = get_data(payload)
     logger.info("pelisalacarta.platformcode.library update data:{0}".format(data))
 
@@ -792,8 +812,6 @@ def add_pelicula_to_library(item):
     else:
         platformtools.dialog_ok("Biblioteca", "ERROR, la pelicula NO se ha añadido a la biblioteca")
 
-    # library.update()
-
 
 def add_serie_to_library(item, channel):
     logger.info("pelisalacarta.platformcode.launcher add_serie_to_library, show=#"+item.show+"#")
@@ -826,4 +844,3 @@ def add_serie_to_library(item, channel):
         platformtools.dialog_ok("Biblioteca", "La serie se ha añadido a la biblioteca")
         logger.info("[launcher.py] Se han añadido {0} episodios de la serie {1} a la biblioteca".format(insertados,
                                                                                                         item.show))
-    # update()  # TODO evitar bucle

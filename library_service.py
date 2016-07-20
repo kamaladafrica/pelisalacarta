@@ -177,8 +177,7 @@ def main():
                         logger.info(message)
 
             p_dialog.close()
-            # TODO pendiente de arreglar
-            # library.update()
+
 
         else:
             logger.info("No actualiza la biblioteca, está desactivado en la configuración de pelisalacarta")
