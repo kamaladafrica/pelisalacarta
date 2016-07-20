@@ -623,6 +623,10 @@ def play(item):
         type = item.url.split("###")[1].split(";")[1]
         item.url = item.url.split("###")[0]
 
+    if "aHR0c" in item.url:
+        import base64
+        item.url = base64.decodestring(item.url.split("/")[-1])
+
     itemlist = servertools.find_video_items(data=item.url)
 
     for videoitem in itemlist:

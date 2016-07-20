@@ -34,6 +34,7 @@ header_string = "|User-Agent=Mozilla/5.0 (Windows NT 10.0; WOW64; rv:46.0) Gecko
 
 def mainlist(item):
     logger.info("pelisalacarta.channels.tvvip mainlist")
+    item.viewmode = "movie"
     itemlist = []
 
     data = scrapertools.anti_cloudflare("http://tv-vip.com/json/playlist/home/index.json", host=host, headers=headers)
@@ -48,19 +49,19 @@ def mainlist(item):
     itemlist.append(Item(channel=item.channel, title="Versión Original", action="entradasconlistas",
                          url="http://tv-vip.com/json/playlist/version-original/index.json",
                          thumbnail="http://tv-vip.com/json/playlist/version-original/thumbnail.jpg" + head,
-                         fanart="http://tv-vip.com/json/playlist/version-original/background.jpg" + head))
+                         fanart="http://tv-vip.com/json/playlist/version-original/background.jpg" + head, viewmode="movie_with_plot"))
     itemlist.append(Item(channel=item.channel, title="Documentales", action="entradasconlistas",
                          url="http://tv-vip.com/json/playlist/documentales/index.json",
                          thumbnail="http://tv-vip.com/json/playlist/documentales/thumbnail.jpg" + head,
-                         fanart="http://tv-vip.com/json/playlist/documentales/background.jpg" + head))
+                         fanart="http://tv-vip.com/json/playlist/documentales/background.jpg" + head, viewmode="movie_with_plot"))
     itemlist.append(Item(channel=item.channel, title="Películas Infantiles", action="entradasconlistas",
                          url="http://tv-vip.com/json/playlist/peliculas-infantiles/index.json",
                          thumbnail="http://tv-vip.com/json/playlist/peliculas-infantiles/thumbnail.jpg" + head,
-                         fanart="http://tv-vip.com/json/playlist/peliculas-infantiles/background.jpg" + head))
+                         fanart="http://tv-vip.com/json/playlist/peliculas-infantiles/background.jpg" + head, viewmode="movie_with_plot"))
     itemlist.append(Item(channel=item.channel, title="Series Infantiles", action="entradasconlistas",
                          url="http://tv-vip.com/json/playlist/series-infantiles/index.json",
                          thumbnail="http://tv-vip.com/json/playlist/series-infantiles/thumbnail.jpg" + head,
-                         fanart="http://tv-vip.com/json/playlist/series-infantiles/background.jpg" + head))
+                         fanart="http://tv-vip.com/json/playlist/series-infantiles/background.jpg" + head, viewmode="movie_with_plot"))
     itemlist.append(Item(channel=item.channel, title="Buscar...", action="search",
                          thumbnail="http://i.imgur.com/gNHVlI4.png", fanart="http://i.imgur.com/9loVksV.png"))
 
@@ -166,18 +167,18 @@ def submenu(item):
         itemlist.append(Item(channel=item.channel, title="Nuevos Capítulos", action="episodios",
                              url="http://tv-vip.com/json/playlist/nuevos-capitulos/index.json",
                              thumbnail="http://tv-vip.com/json/playlist/nuevos-capitulos/background.jpg" + head,
-                             fanart="http://tv-vip.com/json/playlist/nuevos-capitulos/background.jpg" + head))
+                             fanart="http://tv-vip.com/json/playlist/nuevos-capitulos/background.jpg" + head, viewmode="movie"))
         itemlist.append(Item(channel=item.channel, title="Más Vistas", action="series",
                              url="http://tv-vip.com/json/playlist/top-series/index.json",
                              thumbnail="http://tv-vip.com/json/playlist/top-series/thumbnail.jpg" + head,
                              fanart="http://tv-vip.com/json/playlist/top-series/background.jpg" + head,
-                             contentTitle="Series"))
+                             contentTitle="Series", viewmode="movie_with_plot"))
         itemlist.append(Item(channel=item.channel, title="Últimas Series", action="series",
-                             url="http://tv-vip.com/json/playlist/novedades/index.json",
-                             thumbnail=item.thumbnail, fanart=item.fanart, contentTitle="Series"))
+                             url="http://tv-vip.com/json/playlist/series/index.json",
+                             thumbnail=item.thumbnail, fanart=item.fanart, contentTitle="Series", viewmode="movie_with_plot"))
         itemlist.append(Item(channel=item.channel, title="Lista de Series A-Z", action="series",
                              url="http://tv-vip.com/json/playlist/series/index.json", thumbnail=item.thumbnail,
-                             fanart=item.fanart, contentTitle="Series"))
+                             fanart=item.fanart, contentTitle="Series", viewmode="movie_with_plot"))
     else:
         itemlist.append(Item(channel=item.channel, title="Novedades", action="entradas",
                              url="http://tv-vip.com/json/playlist/000-novedades/index.json",
@@ -193,7 +194,7 @@ def submenu(item):
         itemlist.append(Item(channel=item.channel, title="Películas 3D", action="entradasconlistas",
                              url="http://tv-vip.com/json/playlist/3D/index.json",
                              thumbnail="http://tv-vip.com/json/playlist/3D/thumbnail.jpg" + head,
-                             fanart="http://tv-vip.com/json/playlist/3D/background.jpg" + head))
+                             fanart="http://tv-vip.com/json/playlist/3D/background.jpg" + head, viewmode="movie_with_plot"))
     return itemlist
 
 
@@ -293,6 +294,8 @@ def entradasconlistas(item):
     data = jsontools.load_json(data)
     head = header_string + get_cookie_value()
     # Si hay alguna lista
+    contentSerie = False
+    contentList = False
     if data['playListChilds']:
         itemlist.append(Item(channel=item.channel, title="**LISTAS**", action="", text_color="red", text_blod=True,
                              folder=False))
@@ -300,6 +303,12 @@ def entradasconlistas(item):
             infolabels = {}
 
             infolabels['plot'] = "Contiene:\n" + "\n".join(child['playListChilds']) + "\n".join(child['repoChilds'])
+            if child['seasonNumber'] and not contentList and re.search(r'(?i)temporada', child['id']):
+                infolabels['season'] = child['seasonNumber']
+                contentSerie = True
+            else:
+                contentSerie = False
+                contentList = True
             title = child['id'].replace('-', ' ').capitalize() + " ([COLOR gold]" + str(child['number']) + "[/COLOR])"
             url = "http://tv-vip.com/json/playlist/%s/index.json" % child["id"]
             thumbnail = "http://tv-vip.com/json/playlist/%s/thumbnail.jpg" % child["id"]
@@ -312,8 +321,9 @@ def entradasconlistas(item):
             fanart += head
             itemlist.append(Item(channel=item.channel, action="entradasconlistas", title=bbcode_kodi2html(title),
                                  url=url, thumbnail=thumbnail, fanart=fanart, fulltitle=child['id'],
-                                 infoLabels=infolabels, viewmode="movie_with_plot", folder=True))
-
+                                 infoLabels=infolabels, viewmode="movie_with_plot"))
+    else:
+        contentList = True
     if data["sortedRepoChilds"] and len(itemlist) > 0:
         itemlist.append(Item(channel=item.channel, title="**VÍDEOS**", action="", text_color="blue", text_blod=True,
                              folder=False))
@@ -363,10 +373,15 @@ def entradasconlistas(item):
                              contentTitle=fulltitle, context="0", viewmode="movie_with_plot", folder=True))
 
     # Se añade item para añadir la lista de vídeos a la biblioteca
-    if data['sortedRepoChilds'] and len(itemlist) > 0:
+    if data['sortedRepoChilds'] and len(itemlist) > 0 and contentList:
         if config.get_library_support():
             itemlist.append(Item(channel=item.channel, text_color="green", title="Añadir esta lista a la biblioteca",
                                  url=item.url, action="listas"))
+    elif contentSerie:
+        if config.get_library_support():
+            itemlist.append(Item(channel=item.channel, title="Añadir esta serie a la biblioteca", url=item.url,
+                                 action="series_library", fulltitle=data['name'], show=data['name'],
+                                 text_color="green"))
 
     return itemlist
 
@@ -517,7 +532,7 @@ def episodios(item):
     logger.info("pelisalacarta.channels.tvvip episodios")
     itemlist = []
     # Redirección para actualización de biblioteca
-    if item.category == "":
+    if item.category == "" or item.category == "Series":
         itemlist = series_library(item)
         return itemlist
 
@@ -643,11 +658,14 @@ def series_library(item):
     try:
         from platformcode import library
         library.save_library_tvshow(item, lista_episodios)
-        library.save_tvshow_in_file(item)
+        if "Añadir esta serie" in item.title:
+            library.save_tvshow_in_file(item)
         error = False
     except:
+        import traceback
+        logger.info(traceback.format_exc())
         error = True
-        pass
+
     if not error:
         itemlist.append(Item(channel=item.channel, title='Serie añadida correctamente a la biblioteca',
                              action="", folder=False))
@@ -685,7 +703,7 @@ def findvideos(item):
             else:
                 itemlist.append(item.clone(action="play", server="directo", title=bbcode_kodi2html(title), url=url,
                                            contentTitle=item.fulltitle, viewmode="list", extra=id, folder=False))
-    if len(itemlist) > 0 and item.category != "Cine" and item.category != "":
+    if len(itemlist) > 0 and item.category != "Cine" and item.category != "" and item.category != "Series":
         if config.get_library_support():
             itemlist.append(Item(channel=item.channel, title="Añadir enlaces a la biblioteca", text_color="green",
                                        contentTitle=item.fulltitle, url=item.url, action="add_pelicula_to_library",
@@ -733,14 +751,6 @@ def listas(item):
     for child in data["sortedRepoChilds"]:
         infolabels = {}
 
-        infolabels['plot'] = child['description']
-        infolabels['year'] = data['year']
-        if child['tags']: infolabels['genre'] = ', '.join([x.strip() for x in child['tags']])
-        infolabels['rating'] = child['rate'].replace(',', '.')
-        infolabels['votes'] = child['rateCount']
-        infolabels['duration'] = child['duration']
-        if child['cast']: infolabels['cast'] = child['cast'].split(",")
-        infolabels['director'] = child['director']
         # Fanart
         if child['hashBackground']:
             fanart = "http://tv-vip.com/json/repo/%s/background.jpg" % child["id"]
@@ -763,13 +773,14 @@ def listas(item):
         infolabels['title'] = title
         try:
             from platformcode import library
-            new_item = item.clone(title=title, url=url, fulltitle=title, fanart=fanart, thumbnail=thumbnail,
-                                  infoLabels=infolabels, category="Cine")
+            new_item = item.clone(action="play_from_library", title=title, url=url, fulltitle=title, fanart=fanart,
+                                  thumbnail=thumbnail, infoLabels=infolabels, category="Cine")
             library.save_library_movie(new_item)
             error = False
         except:
             error = True
-            pass
+            import traceback
+            logger.info(traceback.format_exc())
 
     if not error:
         itemlist.append(Item(channel=item.channel, title='Lista añadida correctamente a la biblioteca',
