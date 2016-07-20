@@ -669,8 +669,9 @@ def save_tvshow_in_file(serie):
     """
     logger.info("pelisalacarta.platformcode.library save_tvshow_in_file")
     fname = join_path(config.get_data_path(), TVSHOW_FILE)
+    fname2 = join_path(config.get_data_path(), TVSHOW_FILE_OLD)
     # TODO soporte samba
-    if not os.path.isfile(fname):
+    if not os.path.isfile(fname) and os.path.isfile(fname2):
         convert_xml_to_json()
 
     if 'infoLabels' not in serie:
