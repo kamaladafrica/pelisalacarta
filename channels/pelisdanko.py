@@ -232,11 +232,6 @@ def enlaces(item):
         itemlist.append(item.clone(channel="trailertools", action="buscartrailer", title="Buscar Tráiler",
                                    text_color="magenta"))
 
-    if config.get_library_support() and len(itemlist) > 0 and item.category != "Cine":
-        itemlist.append(Item(channel=item.channel, title="Añadir película a la biblioteca", url=item.url,
-                             infoLabels={'title': item.fulltitle}, action="add_pelicula_to_library",
-                             fulltitle=item.fulltitle, text_color="green", extra="enlaces"))
-
     return itemlist
 
 
@@ -257,7 +252,7 @@ def bloque_enlaces(data, filtro_idioma, dict_idiomas, itemlist, type, item):
                        + flag + "/" + quality + "][/COLOR][COLOR khaki]  " + date + "[/COLOR]"
         if filtro_idioma == 3 or item.filtro:
             itemlist.append(item.clone(title=bbcode_kodi2html(scrapedtitle), action="findvideos",
-                                       url=scrapedurl, id_enlaces=slug))
+                                       url=scrapedurl, id_enlaces=slug, calidad=quality))
         else:
             idioma = dict_idiomas[flag]
             if idioma == filtro_idioma:
@@ -278,8 +273,6 @@ def bloque_enlaces(data, filtro_idioma, dict_idiomas, itemlist, type, item):
 
 def findvideos(item):
     logger.info("pelisalacarta.channels.pelisdanko findvideos")
-    if item.extra == "enlaces":
-        return enlaces(item)
     itemlist = []
 
     if item.url[-2:] == "ss":
@@ -298,11 +291,7 @@ def findvideos(item):
     from core import servertools
     video_item_list = servertools.find_video_items(data=data)
     for video_item in video_item_list:
-        if item.fulltitle == "":
-            titulo = item.title
-        else:
-            titulo = item.fulltitle
-        title = "[COLOR green]%s[/COLOR]    |    [COLOR darkorange][%s][/COLOR]" % (titulo, video_item.server)
+        title = "[COLOR green]%s[/COLOR]    |    [COLOR darkorange][%s][/COLOR]" % (video_item.server, item.calidad)
         itemlist.append(item.clone(title=bbcode_kodi2html(title), url=video_item.url, action="play",
                                    server=video_item.server, text_color=""))
 
@@ -310,7 +299,7 @@ def findvideos(item):
     if config.get_library_support() and len(itemlist) > 0 and item.category != "Cine":
         itemlist.append(Item(channel=item.channel, title="Añadir película a la biblioteca", url=item.url,
                              infoLabels={'title': item.fulltitle}, action="add_pelicula_to_library",
-                             fulltitle=item.fulltitle, text_color="green"))
+                             fulltitle=item.fulltitle, text_color="green", id_enlaces=item.id_enlaces))
 
     return itemlist
 

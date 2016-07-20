@@ -22,8 +22,8 @@
 # You should have received a copy of the GNU General Public License
 # along with pelisalacarta 4.  If not, see <http://www.gnu.org/licenses/>.
 # ------------------------------------------------------------
-# Configuración
-#------------------------------------------------------------
+# Configuracion
+# ------------------------------------------------------------
 
 from core import config
 from core.item import Item
@@ -32,22 +32,38 @@ from core import logger
 DEBUG = True
 CHANNELNAME = "configuracion"
 
+
 def mainlist(item):
-	logger.info("tvalacarta.channels.configuracion mainlist")
+    logger.info("tvalacarta.channels.configuracion mainlist")
 
-	itemlist = []
-	itemlist.append( Item(channel=CHANNELNAME, title="Preferencias", action="settings", folder=False) )
-	itemlist.append( Item(channel=CHANNELNAME, title="", action="", folder=False) )
-	itemlist.append( Item(channel="novedades", title="Ajustes de la sección 'Novedades'", action="menu_opciones", folder=True) )
-	itemlist.append( Item(channel="buscador", title="Ajustes del buscador global", action="opciones", folder=True) )
-	itemlist.append( Item(channel=CHANNELNAME, title="", action="", folder=False) )
-	itemlist.append( Item(channel=CHANNELNAME, title="Comprobar actualizaciones", action="check_for_updates", folder=False) )
+    itemlist = []
+    itemlist.append(Item(channel=CHANNELNAME, title="Preferencias", action="settings", folder=False))
+    itemlist.append(Item(channel=CHANNELNAME, title="", action="", folder=False))
+    itemlist.append(Item(channel="novedades", title="Ajustes de la sección 'Novedades'", action="menu_opciones", folder=True))
+    itemlist.append(Item(channel="buscador", title="Ajustes del buscador global", action="opciones", folder=True))
+    itemlist.append(Item(channel=CHANNELNAME, title="", action="", folder=False))
+    if config.is_xbmc():
+        itemlist.append(Item(channel=item.channel, action="updatebiblio",
+                             title="Buscar nuevos episodios y actualizar biblioteca", folder=False))
+        itemlist.append(Item(channel=item.channel, action="", title="", folder=False))
+    itemlist.append(Item(channel=CHANNELNAME, title="Comprobar actualizaciones", action="check_for_updates", folder=False))
 
-	return itemlist
+    return itemlist
+
 
 def check_for_updates(item):
-	from core import updater
-	updater.checkforupdates(plugin_mode=False)
+    from core import updater
+    updater.checkforupdates(plugin_mode=False)
+
 
 def settings(item):
-    config.open_settings( )
+    config.open_settings()
+
+
+def updatebiblio(item):
+    logger.info("pelisalacarta.channels.ayuda updatebiblio")
+
+    import library_service
+    library_service.update_from_conf()
+
+

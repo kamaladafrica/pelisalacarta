@@ -36,7 +36,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     #Header para la descarga
     header_down = "|User-Agent="+headers['User-Agent']+"|"
 
-    from aadecode import decode as aadecode
+    from lib.aadecode import decode as aadecode
     if "videocontainer" not in data:
         url = page_url.replace("/embed/","/f/")
         data = scrapertools.downloadpageWithoutCookies(url)

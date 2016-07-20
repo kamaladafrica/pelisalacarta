@@ -12,9 +12,9 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/documaniatv.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>9</version>
-	<date>01/07/2016</date>
-	<changes>Eliminado código innecesario.</changes>
+	<version>11</version>
+	<date>11/07/2016</date>
+	<changes>Reparadas cuentas de usuario</changes>
 
 	<categories>
 		<category>documentary</category>
@@ -30,5 +30,32 @@
 		<default>true</default>
 		<enabled>true</enabled>
 		<visible>true</visible>
+	</settings>
+	<settings>
+		<id>documaniatvaccount</id>
+		<type>bool</type>
+		<label>Usar cuenta de documaniatv</label>
+		<default>true</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<id>documaniatvuser</id>
+		<type>text</type>
+		<label>Usuario</label>
+		<color>0xFFd50b0b</color>
+		<default></default>
+		<enabled>eq(-1,true)</enabled>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<id>documaniatvpassword</id>
+		<type>text</type>
+		<label>Contraseña</label>
+		<color>0xFFd50b0b</color>
+		<default></default>
+		<enabled>!eq(-1,)+eq(-2,true)</enabled>
+		<visible>true</visible>
+		<hidden>True</hidden>
 	</settings>
 </channel>

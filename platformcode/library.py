@@ -120,7 +120,7 @@ def join_path(path, *name):
     if not samba.usingsamba(path):
         path = xbmc.translatePath(os.path.join(path, *name))
     else:
-        path = path + "/" + name
+        path = path + "/" + name[0]
 
     return path
 
@@ -466,7 +466,7 @@ def read_file(fname):
         path, filename = fname.rsplit('/', 1)
         if samba.file_exists(filename, path):
             try:
-                from samba.smb.smb_structs import OperationFailure
+                from sambatools.smb.smb_structs import OperationFailure
                 with samba.get_file_handle_for_reading(filename, path) as f:
                     for line in f:
                         data += line
@@ -504,7 +504,7 @@ def save_file(data, fname):
             return False
     else:
         try:
-            from samba.smb.smb_structs import OperationFailure
+            from sambatools.smb.smb_structs import OperationFailure
             path, filename = fname.rsplit('/', 1)
             try:
                 samba.store_file(filename, data, path)
@@ -642,10 +642,10 @@ def clean_up_file(item):
     path = TVSHOWS_PATH
 
     dict_data = item.dict_fichero
-    
+
     # Obtenemos las carpetas de las series
     raiz, carpetas_series, files = os.walk(path).next()
-    
+
     for tvshow_id in dict_data.keys():
         for channel in dict_data[tvshow_id]["channels"].keys():
             carpeta = "{0} [{1}]".format(title_to_filename(dict_data[tvshow_id]["channels"][channel]["tvshow"].lower()),
@@ -654,7 +654,7 @@ def clean_up_file(item):
                 dict_data[tvshow_id]["channels"].pop(channel, None)
                 if not dict_data[tvshow_id]["channels"]:
                     dict_data.pop(tvshow_id, None)
-    
+
     json_data = jsontools.dump_json(dict_data)
     save_file(json_data, join_path(config.get_data_path(), TVSHOW_FILE))
 
@@ -924,9 +924,29 @@ def check_tvshow_xml():
 
 def convert_xml_to_json():
     logger.info("pelisalacarta.platformcode.library convert_xml_to_json")
-    platformtools.dialog_ok("Biblioteca: Se va a actualizar al nuevo formato",
-                            "Seleccione el nombre correcto de cada serie, si no está seguro pulse 'Cancelar'.",
-                            "Hay nuevas opciones en 'Biblioteca' y en la 'configuración' del addon.")
+
+    ruta_seriesold = os.path.join(config.get_library_path(), "SERIES_OLD")
+
+    # Si ocurre un error durante la conversion y se crean las carpetas "SERIES"
+    # y "SERIES_OLD", al reiniciar kodi os.rename dara un error, probablemente
+    # sera "OSError: (66, 'Directory not empty')"
+    if path_exists(ruta_seriesold):
+        platformtools.dialog_notification("Actualizar biblioteca",
+                                          "Actualizando desde XML")
+        import shutil
+        shutil.rmtree(ruta_seriesold)
+        if not path_exists(ruta_seriesold):
+            logger.info("pelisalacarta.platformcode.library eliminado: " + ruta_seriesold)
+        else:
+            logger.info("ERROR. No se ha podido eliminar: " + ruta_seriesold)
+            platformtools.dialog_notification("ERROR",
+                                              "No se actualizara la biblioteca")
+            return False
+
+    else:
+        platformtools.dialog_ok("Biblioteca: Se va a actualizar al nuevo formato",
+                                "Seleccione el nombre correcto de cada serie, si no está seguro pulse 'Cancelar'.",
+                                "Hay nuevas opciones en 'Biblioteca' y en la 'configuración' del addon.")
 
     # TODO soporte samba
     os.rename(TVSHOWS_PATH, os.path.join(config.get_library_path(), "SERIES_OLD"))
@@ -1008,6 +1028,9 @@ def convert_xml_to_json():
             logger.info("ERROR, no se ha podido crear la nueva carpeta de SERIES")
     else:
         logger.info("ERROR, no se ha podido renombrar la antigua carpeta de SERIES")
+
+    # Por ultimo limpia la libreria, por que las rutas anteriores ya no existen
+    xbmc.executebuiltin("CleanLibrary(video)")
 
 
 def update():

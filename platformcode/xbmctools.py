@@ -178,7 +178,6 @@ def add_new_video(item, IsPlayable='false', totalItems = 0):
 
 def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescargas=False,strmfile=False):
     from core import servertools
-    import xbmcgui,xbmc
     
     logger.info("pelisalacarta.platformcode.xbmctools play_video")
     #logger.info(item.tostring('\n'))
@@ -246,7 +245,6 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
 
     # Si no puedes ver el vídeo te informa
     else:
-        import xbmcgui
         if item.server!="":
             advertencia = xbmcgui.Dialog()
             if "<br/>" in motivo:
@@ -270,7 +268,6 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
 
     # Si la accion por defecto es "Preguntar", pregunta
     if default_action=="0": # and server!="torrent":
-        import xbmcgui
         dia = xbmcgui.Dialog()
         seleccion = dia.select(config.get_localized_string(30163), opciones) # "Elige una opción"
         #dia.close()
@@ -301,7 +298,6 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
     if seleccion==-1:
         #Para evitar el error "Uno o más elementos fallaron" al cancelar la selección desde fichero strm
         listitem = xbmcgui.ListItem( item.title, iconImage="DefaultVideo.png", thumbnailImage=item.thumbnail)
-        import sys
         xbmcplugin.setResolvedUrl(int(sys.argv[ 1 ]),False,listitem)    # JUR Added
         #if config.get_setting("subtitulo") == "true":
         #    config.set_setting("subtitulo", "false")
@@ -332,7 +328,6 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
 
     elif opciones[seleccion]==config.get_localized_string(30164): # Borrar archivo en descargas
         # En "extra" está el nombre del fichero en favoritos
-        import os
         os.remove( item.url )
         xbmc.executebuiltin( "Container.Refresh" )
         return
@@ -356,7 +351,6 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
         if item.hasContentDetails=="true":
             download_title = item.contentTitle
 
-        import xbmc
         # El vídeo de más calidad es el último
         mediaurl = video_urls[len(video_urls)-1][1]
 
@@ -390,7 +384,6 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
         return
 
     elif opciones[seleccion]==config.get_localized_string(30159): #"Borrar descarga definitivamente"
-        from channels import descargas
         descargas.delete_error_bookmark(urllib.unquote_plus( item.extra ))
 
         advertencia = xbmcgui.Dialog()
@@ -399,7 +392,6 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
         return
 
     elif opciones[seleccion]==config.get_localized_string(30160): #"Pasar de nuevo a lista de descargas":
-        from channels import descargas
         descargas.mover_descarga_error_a_pendiente(urllib.unquote_plus( item.extra ))
 
         advertencia = xbmcgui.Dialog()
@@ -429,7 +421,6 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
         return
 
     elif opciones[seleccion]==config.get_localized_string(30156): #"Quitar de lista de descargas":
-        from channels import descargas
         # La categoría es el nombre del fichero en la lista de descargas
         descargas.deletebookmark((urllib.unquote_plus( item.extra )))
 
@@ -440,7 +431,6 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
         return
 
     elif opciones[seleccion]==config.get_localized_string(30157): #"Añadir a lista de descargas":
-        from channels import descargas
         from core import downloadtools
 
         download_title = item.fulltitle
@@ -484,7 +474,6 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
 
     elif opciones[seleccion]==config.get_localized_string(30162): #"Buscar Trailer":
         config.set_setting("subtitulo", "false")
-        import sys
         xbmc.executebuiltin("XBMC.RunPlugin(%s?%s)" % ( sys.argv[ 0 ] , item.clone(channel="trailertools", action="buscartrailer", contextual=True).tourl()))
         return
 
@@ -504,7 +493,6 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
             return
 
     # Obtención datos de la Biblioteca (solo strms que estén en la biblioteca)
-    import xbmcgui
     if strmfile:
         xlistitem = getLibraryInfo(mediaurl)
     else:
@@ -530,7 +518,6 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
         # Lanza el reproductor
 
     if strmfile and not item.from_biblioteca: #Si es un fichero strm no hace falta el play
-        import sys
         xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, xlistitem)
         if item.subtitle != "":
             xbmc.sleep(2000)
@@ -560,7 +547,6 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
 
 
         if len(torrent_options)>1:
-            import xbmcgui
             seleccion = xbmcgui.Dialog().select("Abrir torrent con...", [opcion[0] for opcion in torrent_options])
         else:
             seleccion = 0
@@ -577,7 +563,6 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
         #Reproductor propio (libtorrent)
         if seleccion == 0:
             import time
-            import os
             videourl = None
             played = False
   
@@ -710,7 +695,6 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
 
 def handle_wait(time_to_wait,title,text):
     logger.info ("[xbmctools.py] handle_wait(time_to_wait=%d)" % time_to_wait)
-    import xbmc,xbmcgui
     espera = xbmcgui.DialogProgress()
     ret = espera.create(' '+title)
 
@@ -984,13 +968,10 @@ def setSubtitles():
 def trailer(item):
     logger.info("pelisalacarta.platformcode.xbmctools trailer")
     config.set_setting("subtitulo", "false")
-    import sys
     xbmc.executebuiltin("XBMC.RunPlugin(%s?channel=%s&action=%s&category=%s&title=%s&url=%s&thumbnail=%s&plot=%s&server=%s)" % ( sys.argv[ 0 ] , "trailertools" , "buscartrailer" , urllib.quote_plus( item.category ) , urllib.quote_plus( item.fulltitle ) , urllib.quote_plus( item.url ) , urllib.quote_plus( item.thumbnail ) , urllib.quote_plus( "" ) ))
     return
 
 def alert_no_puedes_ver_video(server,url,motivo):
-    import xbmcgui
-
     if server!="":
         advertencia = xbmcgui.Dialog()
         if "<br/>" in motivo:
