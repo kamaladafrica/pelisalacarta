@@ -76,6 +76,10 @@ def create_tvshows_from_xml():
                         library.save_library_tvshow(serie, list())
 
                     filetools.rename(fname, "series.xml.old")
+
+                    # Por ultimo limpia la libreria, por que las rutas anteriores ya no existen
+                    library.clean()
+
                 except EnvironmentError:
                     logger.info("ERROR al leer el archivo: {0}".format(fname))
 

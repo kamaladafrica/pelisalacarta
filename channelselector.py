@@ -41,34 +41,53 @@ def getmainlist(preferred_thumb=""):
     itemlist = list()
 
     # Añade los canales que forman el menú principal
-    itemlist.append(Item(title=config.get_localized_string(30130), channel="novedades", action="mainlist",
-                         thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb), "thumb_novedades.png"),
+    itemlist.append(Item(title=config.get_localized_string(30130),
+                         channel="novedades", action="mainlist",
+                         thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),
+                                                    "thumb_novedades.png"),
                          viewmode="movie"))
-    itemlist.append(Item(title=config.get_localized_string(30118), channel="channelselector", action="channeltypes",
-                         thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb), "thumb_canales.png"),
+    itemlist.append(Item(title=config.get_localized_string(30118),
+                         channel="channelselector", action="channeltypes",
+                         thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),
+                                                    "thumb_canales.png"),
                          viewmode="movie"))
-    itemlist.append(Item(title=config.get_localized_string(30103), channel="buscador", action="mainlist",
-                         thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb), "thumb_buscar.png"),
+
+    itemlist.append(Item(title=config.get_localized_string(30103),
+                         channel="buscador", action="mainlist",
+                         thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),
+                                                    "thumb_buscar.png"),
                          viewmode="list"))
-    itemlist.append(Item(title=config.get_localized_string(30102), channel="favoritos", action="mainlist",
-                         thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb), "thumb_favoritos.png"),
+    itemlist.append(Item(title=config.get_localized_string(30102),
+                         channel="favoritos", action="mainlist",
+                         thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),
+                                                    "thumb_favoritos.png"),
                          viewmode="movie"))
     if config.get_library_support():
-        itemlist.append(Item(title=config.get_localized_string(30131), channel="biblioteca", action="mainlist",
-                             thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb), "thumb_biblioteca.png"),
+        itemlist.append(Item(title=config.get_localized_string(30131),
+                             channel="biblioteca", action="mainlist",
+                             thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),
+                                                        "thumb_biblioteca.png"),
                              viewmode="movie"))
-    itemlist.append(Item(title=config.get_localized_string(30101), channel="descargas", action="mainlist",
-                         thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb), "thumb_descargas.png"),
+    itemlist.append(Item(title=config.get_localized_string(30101), channel="descargas",
+                         action="mainlist",
+                         thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),
+                                                    "thumb_descargas.png"),
                          viewmode="movie"))
 
     if "xbmceden" in config.get_platform():
-        itemlist.append(Item(title=config.get_localized_string(30100), channel="configuracion", action="mainlist",
-                             thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb), "thumb_configuracion.png"),
+        itemlist.append(Item(title=config.get_localized_string(30100),
+                             channel="configuracion", action="mainlist",
+                             thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),
+                                                        "thumb_configuracion.png"),
                              folder=False, viewmode="list"))
     else:
-        itemlist.append(Item(title=config.get_localized_string(30100), channel="configuracion", action="mainlist",
-                             thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb), "thumb_configuracion.png"),
+        itemlist.append(Item(title=config.get_localized_string(30100),
+                             channel="configuracion", action="mainlist",
+                             thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),
+                                                        "thumb_configuracion.png"),
                              viewmode="list"))
+        # Se ha insertado "folder=False" para que no se habra una ventana tras salir de la configuracion
+
 
     itemlist.append(Item(title=config.get_localized_string(30104), channel="ayuda", action="mainlist",
                          thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb), "thumb_ayuda.png"),
@@ -179,7 +198,7 @@ def filterchannels(category,preferred_thumb=""):
                     continue
 
                 # Se salta el canal para adultos si el modo adultos está desactivado
-                if channel_parameters["adult"] == "true" and config.get_setting("adult_mode") != "true": 
+                if channel_parameters["adult"] == "true" and config.get_setting("adult_mode") != "true":
                     continue
 
                 # Se salta el canal si está en un idioma filtrado
@@ -192,12 +211,12 @@ def filterchannels(category,preferred_thumb=""):
 
                 # Si ha llegado hasta aquí, lo añade
                 channelslist.append(Item(title=channel_parameters["title"], channel=channel_parameters["channel"], action="mainlist", thumbnail=channel_parameters["thumbnail"] , fanart=channel_parameters["fanart"], category=", ".join(channel_parameters["categories"])[:-2], language=channel_parameters["language"], viewmode="list" ))
-            
+
             except:
                 logger.info("Se ha producido un error al leer los datos del canal " + channel)
                 import traceback
                 logger.info(traceback.format_exc())
-           
+
     channelslist.sort(key=lambda item: item.title.lower().strip())
 
     if category=="all":
@@ -224,7 +243,7 @@ def filterchannels(category,preferred_thumb=""):
 def get_thumbnail_path(preferred_thumb=""):
 
     WEB_PATH = ""
-    
+
     if preferred_thumb=="":
         thumbnail_type = config.get_setting("thumbnail_type")
         if thumbnail_type=="":

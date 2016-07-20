@@ -466,7 +466,7 @@ def play(item):
 
     itemlist = []
     # Para videos flash y html5
-    if "pelispedia.tv" in item.url:
+    if item.url.startswith("http://www.pelispedia.tv"):
         key = scrapertools.find_single_match(item.url, 'index.php\?id=([^&]+)&sub=([^&]+)&.+?imagen=([^&]+)')
         subtitle = ""
         thumbnail = ""
@@ -492,7 +492,7 @@ def play(item):
             itemlist.append(Item(channel=__channel__, title=item.title, url=url, server="directo", action="play",
                                  subtitle=subtitle, thumbnail=thumbnail))
 
-    elif "pelispedia.biz" in item.url:
+    elif item.url.startswith("http://www.pelispedia.biz"):
         logger.info("estoy en el otro html5")
         key = scrapertools.find_single_match(item.url, 'v=([^&]+).+?imagen=([^&]+)')
 

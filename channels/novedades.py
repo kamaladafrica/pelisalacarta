@@ -41,32 +41,43 @@ THUMBNAILS = {'0': 'posters', '1': 'banners', '2': 'squares'}
 
 list_newest =[]
 
-def mainlist(item):
+def mainlist(item,thumbnail_type="squares"):
     logger.info("pelisalacarta.channels.novedades mainlist")
 
     itemlist = []
     list_canales = get_list_canales()
-    thumbnail_base = "http://media.tvalacarta.info/pelisalacarta/squares/"
+    thumbnail_base = "http://media.tvalacarta.info/pelisalacarta/"+thumbnail_type+"/"
 
-    thumbnail = (thumbnail_base if list_canales['peliculas'] else thumbnail_base + '/disabled') + "/thumb_canales_peliculas.png"
-    itemlist.append( Item(channel=item.channel, action="novedades", extra="peliculas", title="Películas", thumbnail=thumbnail))
+    thumbnail = (thumbnail_base if list_canales['peliculas']
+                 else thumbnail_base + '/disabled') + "/thumb_canales_peliculas.png"
+    itemlist.append(Item(channel=item.channel, action="novedades", extra="peliculas",
+                         title="Películas", thumbnail=thumbnail, folder=False))
 
-    thumbnail = (thumbnail_base if list_canales['infantiles'] else thumbnail_base + '/disabled')+ "/thumb_canales_infantiles.png"
-    itemlist.append( Item(channel=item.channel, action="novedades", extra="infantiles", title="Para niños", thumbnail=thumbnail ))
+    thumbnail = (thumbnail_base if list_canales['infantiles']
+                 else thumbnail_base + '/disabled') + "/thumb_canales_infantiles.png"
+    itemlist.append(Item(channel=item.channel, action="novedades", extra="infantiles",
+                         title="Para niños", thumbnail=thumbnail, folder=False))
 
-    thumbnail = (thumbnail_base if list_canales['series'] else thumbnail_base + '/disabled') + "/thumb_canales_series.png"
-    itemlist.append( Item(channel=item.channel, action="novedades", extra="series", title="Episodios de series", thumbnail=thumbnail))
+    thumbnail = (thumbnail_base if list_canales['series']
+                 else thumbnail_base + '/disabled') + "/thumb_canales_series.png"
+    itemlist.append(Item(channel=item.channel, action="novedades", extra="series",
+                         title="Episodios de series", thumbnail=thumbnail, folder=False))
 
-    thumbnail = (thumbnail_base if list_canales['anime'] else thumbnail_base + '/disabled') + "/thumb_canales_anime.png"
-    itemlist.append( Item(channel=item.channel, action="novedades", extra="anime", title="Episodios de anime", thumbnail=thumbnail))
+    thumbnail = (thumbnail_base if list_canales['anime']
+                 else thumbnail_base + '/disabled') + "/thumb_canales_anime.png"
+    itemlist.append(Item(channel=item.channel, action="novedades", extra="anime",
+                         title="Episodios de anime", thumbnail=thumbnail, folder=False))
 
-    thumbnail = (thumbnail_base if list_canales['documentales'] else thumbnail_base + '/disabled') + "/thumb_canales_documentales.png"
-    itemlist.append( Item(channel=item.channel, action="novedades", extra="documentales", title="Documentales", thumbnail=thumbnail))
+    thumbnail = (thumbnail_base if list_canales['documentales']
+                 else thumbnail_base + '/disabled') + "/thumb_canales_documentales.png"
+    itemlist.append(Item(channel=item.channel, action="novedades", extra="documentales",
+                         title="Documentales", thumbnail=thumbnail, folder=False))
 
     #itemlist.append(Item(channel=item.channel, action="menu_opciones", title="Opciones", viewmode="list",
     #                     thumbnail=thumbnail_base + "/thumb_configuracion.png"))
 
     return itemlist
+
 
 def get_list_canales():
     logger.info("pelisalacarta.channels.novedades get_list_canales")
@@ -294,19 +305,26 @@ def menu_opciones(item):
 
     itemlist = []
     itemlist.append(Item(channel=item.channel, title="Canales incluidos en:",
-                         thumbnail="http://media.tvalacarta.info/pelisalacarta/" + preferred_thumbnail + "/thumb_configuracion.png"))
+                         thumbnail="http://media.tvalacarta.info/pelisalacarta/" + preferred_thumbnail + "/thumb_configuracion.png",
+                         folder=False))
     itemlist.append(Item(channel=item.channel, action="settingCanal", extra="peliculas", title="    - Películas ",
-                         thumbnail="http://media.tvalacarta.info/pelisalacarta/" + preferred_thumbnail + "/thumb_canales_peliculas.png"))
+                         thumbnail="http://media.tvalacarta.info/pelisalacarta/" + preferred_thumbnail + "/thumb_canales_peliculas.png",
+                         folder=False))
     itemlist.append(Item(channel=item.channel, action="settingCanal", extra="infantiles", title="    - Para niños",
-                         thumbnail="http://media.tvalacarta.info/pelisalacarta/" + preferred_thumbnail + "/thumb_canales_infantiles.png"))
+                         thumbnail="http://media.tvalacarta.info/pelisalacarta/" + preferred_thumbnail + "/thumb_canales_infantiles.png",
+                         folder=False))
     itemlist.append(Item(channel=item.channel, action="settingCanal", extra="series", title="    - Episodios de series",
-                         thumbnail="http://media.tvalacarta.info/pelisalacarta/" + preferred_thumbnail + "/thumb_canales_series.png"))
+                         thumbnail="http://media.tvalacarta.info/pelisalacarta/" + preferred_thumbnail + "/thumb_canales_series.png",
+                         folder=False))
     itemlist.append(Item(channel=item.channel, action="settingCanal", extra="anime", title="    - Episodios de anime",
-                         thumbnail="http://media.tvalacarta.info/pelisalacarta/" + preferred_thumbnail + "/thumb_canales_anime.png"))
+                         thumbnail="http://media.tvalacarta.info/pelisalacarta/" + preferred_thumbnail + "/thumb_canales_anime.png",
+                         folder=False))
     itemlist.append(Item(channel=item.channel, action="settingCanal", extra="documentales", title="    - Documentales",
-                         thumbnail="http://media.tvalacarta.info/pelisalacarta/" + preferred_thumbnail + "/thumb_canales_documentales.png"))
+                         thumbnail="http://media.tvalacarta.info/pelisalacarta/" + preferred_thumbnail + "/thumb_canales_documentales.png",
+                         folder=False))
     itemlist.append(Item(channel=item.channel, action="settings", title="Otros ajustes",
-                         thumbnail="http://media.tvalacarta.info/pelisalacarta/"+preferred_thumbnail+"/thumb_configuracion.png"))
+                         thumbnail="http://media.tvalacarta.info/pelisalacarta/"+preferred_thumbnail+"/thumb_configuracion.png",
+                         folder=False))
     return itemlist
 
 

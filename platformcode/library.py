@@ -745,6 +745,18 @@ def update():
     logger.info("pelisalacarta.platformcode.library update data:{0}".format(data))
 
 
+def clean():
+    """
+    limpia la libreria de elementos que no existen
+    """
+    logger.info("pelisalacarta.platformcode.library clean")
+    # Se comenta la llamada normal para reutilizar 'payload' dependiendo del modo cliente
+    # xbmc.executebuiltin("CleanLibrary(video)")
+    payload = {"jsonrpc": "2.0", "method": "VideoLibrary.Clean", "id": 1}
+    data = get_data(payload)
+    logger.info("pelisalacarta.platformcode.library clean data:{0}".format(data))
+
+
 def create_nfo_file(video_id, path, type_video):
     """
     crea el fichero nfo con la información para scrapear la pelicula o serie
