@@ -33,7 +33,7 @@ from core import logger
 from core import servertools
 from core.item import Item
 from lib.sambatools import libsmb as samba
-from platformcode import library
+from core import filetools
 
 import favoritos
 
@@ -70,8 +70,8 @@ else:
     # logger.info("channels.descargas downloadpath (no Kodi)=" + downloadpath)
     pass
 
-IMAGES_PATH = os.path.join(config.get_runtime_path(), 'resources', 'images')
-ERROR_PATH = library.join_path(DOWNLOAD_LIST_PATH, 'error')
+IMAGES_PATH = filetools.join(config.get_runtime_path(), 'resources', 'images')
+ERROR_PATH = filetools.join(DOWNLOAD_LIST_PATH, 'error')
 usingsamba = samba.usingsamba(DOWNLOAD_LIST_PATH)
 
 
