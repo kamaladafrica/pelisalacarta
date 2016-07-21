@@ -132,8 +132,8 @@ def busqueda(item):
     item.infoLabels = {}
 
     data = scrapertools.downloadpage(item.url)
-    bloque = scrapertools.find_multiple_matches(data,
-                                                '<div class="poster-media-card">(.*?)<li class="search-results-item')
+    patron = '<div class="poster-media-card">(.*?)(?:<li class="search-results-item media-item">|<footer>)'
+    bloque = scrapertools.find_multiple_matches(data, patron)
     for match in bloque:
         patron = 'href="([^"]+)" title="([^"]+)".*?src="([^"]+)".*?' \
                  '<p class="search-results-main-info">.*?del año (\d+).*?' \
@@ -159,7 +159,7 @@ def busqueda(item):
             title = scrapedtitle + title + " (" + year + ")"
             itemlist.append(item.clone(action=action, title=title, url=scrapedurl, thumbnail=scrapedthumbnail,
                                        contentTitle=scrapedtitle, fulltitle=scrapedtitle, context=context, plot=plot,
-                                       show=show))
+                                       show=show, text_color=color2))
 
     try:
         from core import tmdb
@@ -171,7 +171,7 @@ def busqueda(item):
     if next_page != "":
         next_page = urlparse.urljoin(host, next_page)
         itemlist.append(Item(channel=item.channel, action="busqueda", title=">> Siguiente", url=next_page,
-                             thumbnail=item.thumbnail))
+                             thumbnail=item.thumbnail, text_color=color3))
 
     return itemlist
 
@@ -251,7 +251,6 @@ def filtrado(item, values):
     if "save" in values and values["save"]:
         values_copy.pop("remove")
         values_copy.pop("filtro_per")
-        values_copy.pop("espacio")
         values_copy.pop("save")
         config.set_setting("filtro_defecto_" + item.extra, values_copy, item.channel)
 
@@ -265,7 +264,6 @@ def filtrado(item, values):
         index = item.extra + str(values["filtro_per"])
         values_copy.pop("filtro_per")
         values_copy.pop("save")
-        values_copy.pop("espacio")
         values_copy.pop("remove")
         config.set_setting("pers_" + index, values_copy, item.channel)
 
