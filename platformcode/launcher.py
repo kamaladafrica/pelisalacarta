@@ -401,9 +401,9 @@ def play_from_library(item, channel, server_white_list, server_black_list):
 
     logger.info("pelisalacarta.platformcode.launcher play_from_library item.server=#"+item.server+"#")
     # Ejecuta find_videos, del canal o común
-    try:
-        itemlist = getattr(channel, "findvideos")(item)
-    except AttributeError:
+    if hasattr(channel, 'findvideos'):
+        itemlist = getattr(channel, item.action)(item)
+    else:
         from core import servertools
         itemlist = servertools.find_video_items(item)
 
