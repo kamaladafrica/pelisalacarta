@@ -159,6 +159,8 @@ def save_library_movie(item):
     p_dialog.update(100, 'Añadiendo película...', item.contentTitle)
     p_dialog.close()
 
+    item.strm = True
+
     # Para depuración creamos un .json al lado del .strm, para poder visualizar que parametros se estan guardando
     filetools.write(fullfilename + ".json", item.tojson())
 
@@ -299,6 +301,8 @@ def save_library_episodes(path, episodelist, serie, silent=False):
         nuevo = not filetools.exists(fullfilename)
         if e.infoLabels.get("tmdb_id"):
             tmdb.find_and_set_infoLabels_tmdb(e, config.get_setting("scrap_ask_name") == "true")
+
+        e.strm = True
 
         # Para depuración creamos un .json al lado del .strm, para poder visualizar que parametros se estan guardando
         filetools.write(fullfilename + ".json", e.tojson())
@@ -802,9 +806,9 @@ def create_nfo_file(video_id, path, type_video):
 
 
 def add_pelicula_to_library(item):
-    logger.info("pelisalacarta.platformcode.launcher add_pelicula_to_library")
+    logger.info("pelisalacarta.platformcode.library add_pelicula_to_library")
 
-    new_item = item.clone(action="play_from_library", category="Cine")
+    new_item = item.clone(action="findvideos")
     insertados, sobreescritos, fallidos = save_library_movie(new_item)
 
     if fallidos == 0:
@@ -814,7 +818,7 @@ def add_pelicula_to_library(item):
 
 
 def add_serie_to_library(item, channel):
-    logger.info("pelisalacarta.platformcode.launcher add_serie_to_library, show=#"+item.show+"#")
+    logger.info("pelisalacarta.platformcode.library add_serie_to_library, show=#"+item.show+"#")
 
     # Esta marca es porque el item tiene algo más aparte en el atributo "extra"
     item.action = item.extra

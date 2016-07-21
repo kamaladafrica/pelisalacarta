@@ -198,6 +198,10 @@ def run():
             # Special action for findvideos, where the plugin looks for known urls
             elif item.action == "findvideos":
 
+                if item.strm:
+                    # Special action for playing a video from the library
+                    play_from_library(item, channel, server_white_list, server_black_list)
+
                 # First checks if channel has a "findvideos" function
                 if hasattr(channel, 'findvideos'):
                     itemlist = getattr(channel, item.action)(item)
@@ -215,13 +219,13 @@ def run():
 
                 # Copy infolabels from parent item
                 if 'infoLabels' in item:
-                    
+
                     # All but title
                     if 'title' in item.infoLabels:
                         item.infoLabels.pop('title')
                     new_itemlist = itemlist[:]
                     itemlist = []
-                    
+
                     for i in new_itemlist:
                         itemlist.append(i.clone(infoLabels=item.infoLabels))
 
@@ -243,10 +247,6 @@ def run():
                 # FIXME: Aquí deberíamos mostrar alguna explicación del tipo "No hay elementos, esto pasa por bla bla bla"
                 else:
                     xbmctools.renderItems([], item)
-
-            # Special action for playing a video from the library
-            elif item.action == "play_from_library":
-                play_from_library(item, channel, server_white_list, server_black_list)
 
             # Special action for adding a movie to the library
             elif item.action == "add_pelicula_to_library":

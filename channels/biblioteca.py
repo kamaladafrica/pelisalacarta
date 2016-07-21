@@ -113,6 +113,8 @@ def peliculas(item):
                 movie.channel = "biblioteca"
                 movie.action = "findvideos"
                 movie.text_color = "blue"
+                # fix para que no se ejecute el método de play para la biblioteca de Kodi
+                movie.strm = False
 
                 itemlist.append(movie)
 
@@ -331,6 +333,8 @@ def get_episodios(item):
             epi.contentSeason = season
             # fix sobreescribe el color del texto si viene pasado en el strm
             epi.text_color = ""
+            # fix para que no se ejecute el método de play para la biblioteca de Kodi
+            epi.strm = False
             
             itemlist.append(epi)
 
