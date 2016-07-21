@@ -206,16 +206,15 @@ def run():
                 if hasattr(channel, 'findvideos'):
                     itemlist = getattr(channel, item.action)(item)
 
-                    if config.get_setting('filter_servers') == 'true':
-                        itemlist = filtered_servers(itemlist, server_white_list, server_black_list)
-
                 # If not, uses the generic findvideos function
                 else:
-                    logger.info("pelisalacarta.platformcode.launcher no channel 'findvideos' method, executing core method")
+                    logger.info("pelisalacarta.platformcode.launcher no channel 'findvideos' method, "
+                                "executing core method")
                     from core import servertools
                     itemlist = servertools.find_video_items(item)
-                    if config.get_setting('filter_servers') == 'true':
-                        itemlist = filtered_servers(itemlist, server_white_list, server_black_list)
+
+                if config.get_setting('filter_servers') == 'true':
+                    itemlist = filtered_servers(itemlist, server_white_list, server_black_list)
 
                 # Copy infolabels from parent item
                 if 'infoLabels' in item:
@@ -354,6 +353,7 @@ def set_server_list():
 
     return server_white_list, server_black_list
 
+
 def filtered_servers(itemlist, server_white_list, server_black_list):
     logger.info("pelisalacarta.platformcode.launcher.filtered_servers")
     new_list = []
@@ -368,7 +368,6 @@ def filtered_servers(itemlist, server_white_list, server_black_list):
         for item in itemlist:
             logger.info("item.title " + item.title)
             if any(server in item.title for server in server_white_list):
-                # if item.title in server_white_list:
                 logger.info("found")
                 new_list.append(item)
                 white_counter += 1
@@ -380,15 +379,16 @@ def filtered_servers(itemlist, server_white_list, server_black_list):
         for item in itemlist:
             logger.info("item.title " + item.title)
             if any(server in item.title for server in server_black_list):
-                # if item.title in server_white_list:
                 logger.info("found")
                 black_counter += 1
             else:
                 new_list.append(item)
                 logger.info("not found")
 
-    logger.info("pelisalacarta.platformcode.launcher filtered_servers whiteList server %s has #%d rows" % (server_white_list, white_counter))
-    logger.info("pelisalacarta.platformcode.launcher filtered_servers blackList server %s has #%d rows" % (server_black_list, black_counter))
+    logger.info("pelisalacarta.platformcode.launcher filtered_servers whiteList server %s has #%d rows" %
+                (server_white_list, white_counter))
+    logger.info("pelisalacarta.platformcode.launcher filtered_servers blackList server %s has #%d rows" %
+                (server_black_list, black_counter))
 
     if len(new_list) == 0:
         new_list = itemlist
@@ -403,16 +403,12 @@ def play_from_library(item, channel, server_white_list, server_black_list):
     # Ejecuta find_videos, del canal o común
     try:
         itemlist = getattr(channel, "findvideos")(item)
-
-        if config.get_setting('filter_servers') == 'true':
-            itemlist = filtered_servers(itemlist, server_white_list, server_black_list)
-
-    except:
+    except AttributeError:
         from core import servertools
         itemlist = servertools.find_video_items(item)
 
-        if config.get_setting('filter_servers') == 'true':
-            itemlist = filtered_servers(itemlist, server_white_list, server_black_list)
+    if config.get_setting('filter_servers') == 'true':
+        itemlist = filtered_servers(itemlist, server_white_list, server_black_list)
 
     if len(itemlist) > 0:
         # El usuario elige el mirror
@@ -420,9 +416,7 @@ def play_from_library(item, channel, server_white_list, server_black_list):
         for item in itemlist:
             opciones.append(item.title)
 
-        import xbmcgui
-        dia = xbmcgui.Dialog()
-        seleccion = dia.select(config.get_localized_string(30163), opciones)
+        seleccion = platformtools.dialog_select(config.get_localized_string(30163), opciones)
         elegido = itemlist[seleccion]
 
         if seleccion == -1:
@@ -434,8 +428,9 @@ def play_from_library(item, channel, server_white_list, server_black_list):
     try:
         itemlist = channel.play(elegido)
         item = itemlist[0]
-    except:
+    except AttributeError:
         item = elegido
-    logger.info("pelisalacarta.platformcode.launcher play_from_library Elegido %s (sub %s)" % (item.title, item.subtitle))
+    logger.info("pelisalacarta.platformcode.launcher play_from_library Elegido %s (sub %s)" % (item.title,
+                                                                                               item.subtitle))
 
     xbmctools.play_video(item, strmfile=True)
