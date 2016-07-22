@@ -580,6 +580,10 @@ def mark_as_watched_on_kodi(item):
             category = 'Movies'
             video_id = item.infoLabels['movieid']
 
+    else:
+        if item.show:
+            category = 'Series'
+
     logger.info("se espera 5 segundos por si falla al reproducir el fichero")
     xbmc.sleep(5000)
 

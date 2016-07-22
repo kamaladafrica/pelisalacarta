@@ -434,3 +434,4 @@ def play_from_library(item, channel, server_white_list, server_black_list):
                                                                                                item.subtitle))
 
     xbmctools.play_video(item, strmfile=True)
+    library.mark_as_watched(item)
