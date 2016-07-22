@@ -265,7 +265,7 @@ def save_library_movie(item):
     logger.debug(filename)
     fullfilename = join_path(MOVIES_PATH, filename)
     addon_name = sys.argv[0].strip()
-    if not addon_name:
+    if not addon_name or addon_name.startswith("default.py"):
         addon_name = "plugin://plugin.video.pelisalacarta/"
 
     if path_exists(fullfilename):
