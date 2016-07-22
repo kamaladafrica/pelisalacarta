@@ -404,7 +404,7 @@ def save_library_episodes(path, episodelist):
     t = float(100) / len(episodelist)
 
     addon_name = sys.argv[0].strip()
-    if not addon_name:
+    if not addon_name or addon_name.startswith("default.py"):
         addon_name = "plugin://plugin.video.pelisalacarta/"
 
     for i, e in enumerate(episodelist):
