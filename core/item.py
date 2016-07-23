@@ -80,12 +80,16 @@ class Item(object):
         if not type(value) == dict or not name == "infoLabels":
             return
 
-        if value.get("title", "") <> "": self.contentTitle = value["title"]
-        if value.get("plot", "") <> "": self.contentPlot = value["plot"]
-        if value.get("tvshowtitle", "") <> "": self.contentSerieName = value["tvshowtitle"]
-        if value.get("mediatype", "") <> "": self.contentType = value["mediatype"]
-        if value.get("season", "") <> "": self.contentSeason = value["season"]
-        if value.get("episode", "") <> "": self.contentEpisodeNumber = value["episode"]
+        if value.get("title", "") <> "": super(Item, self).__setattr__("contentTitle", value["title"])
+        if value.get("plot", "") <> "": super(Item, self).__setattr__("contentPlot", value["plot"])
+        if value.get("overview", "") <> "": super(Item, self).__setattr__("contentPlot", value["overview"])
+        if value.get("tvshowtitle", "") <> "": super(Item, self).__setattr__("contentSerieName", value["tvshowtitle"])
+        if value.get("mediatype", "") <> "": super(Item, self).__setattr__("contentType", value["mediatype"])
+        if value.get("season", "") <> "": super(Item, self).__setattr__("contentSeason", value["season"])
+        if value.get("episode", "") <> "": super(Item, self).__setattr__("contentEpisodeNumber", value["episode"])
+        if value.get("thumbnail", "") <> "": super(Item, self).__setattr__("contentThumbnail", value["thumbnail"])
+        if value.get("fanart", "") <> "": super(Item, self).__setattr__("fanart", value["fanart"])
+
 
     def set_infolabels(self, name, value):
         '''
@@ -100,7 +104,15 @@ class Item(object):
             if name == "contentSerieName": self.__dict__["infoLabels"]["tvshowtitle"] = value
             if name == "contentType": self.__dict__["infoLabels"]["mediatype"] = value
             if name == "contentSeason": self.__dict__["infoLabels"]["season"] = value
-            if name == "contentEpisodeNumber": self.__dict__["infoLabels"]["'episode'"] = value
+            if name == "contentEpisodeNumber": self.__dict__["infoLabels"]["episode"] = value
+            if name == "contentThumbnail": self.__dict__["infoLabels"]["thumbnail"] = value
+
+    def __getattribute__(self, name):
+        if name.startswith("content") or name == "__dict__":
+            infoLabels = Item.__getattribute__(self, "infoLabels")
+            Item.setcontentDetails(self, "infoLabels", infoLabels)
+
+        return super(Item, self).__getattribute__(name)
 
     def __getattr__(self, name):
         '''

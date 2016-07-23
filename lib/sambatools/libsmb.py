@@ -64,6 +64,15 @@ def parse_url(url):
     # logger.info("[lib.samba.py] server_name=" + server_name + ", share_name=" + share_name + ", path=" + path + ",
     # user=" + user + ", password=" + password)
 
+    if type(server_name) == unicode:
+        server_name = server_name.encode("utf8")
+    if type(user) == unicode:
+        user = user.encode("utf8")
+    if type(password) == unicode:
+        password = password.encode("utf8")
+    if type(share_name) == unicode:
+        share_name = share_name.encode("utf8")
+
     return server_name, share_name, path, user, password
 
 
@@ -314,6 +323,17 @@ def delete_directory(folder, url):
         remote.deleteDirectory(share_name, path + folder)
 
         remote.close()
+
+
+def rename(old_name, new_name, url):
+    logger.info("[lib.samba.py] rename %s to %s" %(old_name, new_name))
+
+    if folder_exists(old_name, url) or file_exists(old_name, url):
+        server_name, share_name, path, user, password = parse_url(url)
+        remote = connect(server_name, user, password)
+        remote.rename(share_name, path + old_name, path + new_name)
+
+    remote.close()
 
 
 def usingsamba(path):

@@ -23,14 +23,13 @@
 # along with pelisalacarta 4.  If not, see <http://www.gnu.org/licenses/>.
 # --------------------------------------------------------------------------------
 
-import time
-import traceback
-import urllib2
 import re
+import time
 
 from core import jsontools
 from core import logger
 from core import scrapertools
+from platformcode import platformtools
 
 # -----------------------------------------------------------------------------------------------------------
 # Conjunto de funciones relacionadas con las infoLabels.
@@ -84,6 +83,171 @@ from core import scrapertools
 # --------------------------------------------------------------------------------------------------------------
 
 otmdb_global = None
+
+
+def cb_select_from_tmdb(item, tmdb_result):
+    if tmdb_result is None:
+        logger.debug("he pulsado 'cancelar' en la ventana de info de la serie/pelicula")
+        dict_dummie = {"id": ""}
+        item.tmdb_result = dict_dummie
+    else:
+        item.tmdb_result = tmdb_result
+
+
+def find_and_set_infoLabels_tmdb(item, ask_video=True):
+    global otmdb_global
+
+    if not item.infoLabels:
+        item.infoLabels = {}
+
+    contentType = item.contentType if item.contentType else ("movie" if not item.contentSerieName else "tvshow")
+    title = item.contentSerieName if contentType == "tvshow" else item.contentTitle
+    season = int(item.contentSeason) if item.contentSeason else ""
+    episode = int(item.contentEpisodeNumber) if item.contentEpisodeNumber else ""
+    contentType = "episode" if contentType == "tvshow" and item.contentSeason and item.contentEpisodeNumber else \
+        contentType
+    year = item.infoLabels.get('year', '')
+
+    video_type = "tv" if contentType in ["tvshow", "episode"] else "movie"
+
+    if not item.infoLabels.get("tmdb_id"):
+        while not item.tmdb_result:
+
+            otmdb_global = Tmdb(texto_buscado=title, tipo=video_type, year=year)
+            results = otmdb_global.get_list_resultados()
+
+            if ask_video and len(results) > 1:
+                platformtools.show_video_info(results,
+                                              caption="[{0}]: Selecciona la {1} correcta".
+                                              format(title, "serie" if video_type == "tv" else "pelicula"),
+                                              callback='cb_select_from_tmdb', item=item)
+            else:
+                if len(results) > 0 and results[0]["id"] != "":
+                    cb_select_from_tmdb(item, results[0])
+                else:  # No hay resultados
+                    cb_select_from_tmdb(item, {})
+                    # Pregunta el titulo
+                    it = platformtools.dialog_input(title, "No se ha encontrado la {0}, introduzca el nombre correcto".
+                                                    format("serie" if video_type == "tv" else "pelicula"))
+                    if it is not None:
+                        title = it
+
+                    else:  # Cancelar
+                        cb_select_from_tmdb(item, results[0])
+                        break
+
+    else:
+        if not otmdb_global or otmdb_global.result.get("id") != item.infoLabels['tmdb_id']:
+            otmdb_global = Tmdb(id_Tmdb=item.infoLabels['tmdb_id'], tipo=video_type, idioma_busqueda="es")
+
+        item.tmdb_result = otmdb_global.result
+
+    infoLabels = item.infoLabels if type(item.infoLabels) == dict else {}
+    infoLabels["mediatype"] = contentType
+
+    result = item.tmdb_result
+    del item.tmdb_result
+
+    if not result:
+        item.infoLabels = infoLabels
+        return
+
+    for k, v in result.items():
+        if v == '':
+            continue
+        elif k == 'videos':
+            if len(v) > 0:
+                if v[0]["site"] == "YouTube":
+                    infoLabels['trailer'] = "https://www.youtube.com/watch?v=" + v[0]["key"]
+        elif k == 'number_of_episodes':
+            infoLabels['totalepisodes'] = int(v)
+        elif k == 'number_of_seasons':
+            infoLabels['totalseasons'] = int(v)
+        elif k == 'overview':
+            infoLabels['plot'] = otmdb_global.get_sinopsis()
+        elif k == 'runtime':
+            infoLabels['duration'] = int(v)*60
+        elif k == 'release_date':
+            infoLabels['year'] = int(v[:4])
+        elif k == 'first_air_date':
+            infoLabels['year'] = int(v[:4])
+            infoLabels['aired'] = v
+            infoLabels['premiered'] = v
+        elif k == 'original_title':
+            infoLabels['originaltitle'] = v
+        elif k == 'vote_average':
+            infoLabels['rating'] = float(v)
+        elif k == 'vote_count':
+            infoLabels['votes'] = v
+        elif k == 'poster_path':
+            infoLabels['thumbnail'] = 'http://image.tmdb.org/t/p/original' + v
+        elif k == 'backdrop_path':
+            infoLabels['fanart'] = 'http://image.tmdb.org/t/p/original' + v
+        elif k == 'id':
+            infoLabels['tmdb_id'] = v
+        elif k == 'imdb_id':
+            infoLabels['imdb_id'] = v
+            infoLabels['IMDBNumber'] = v
+            infoLabels['code'] = v
+        elif k == 'genres':
+            infoLabels['genre'] = otmdb_global.get_generos()
+        elif k == 'name':
+            infoLabels['title'] = v
+            if contentType in ["episode", "tvshow"]:
+                infoLabels['tvshowname'] = v
+        elif k == 'production_companies':
+            infoLabels['studio'] = ", ".join(i['name'] for i in v)
+        elif k == 'production_countries' or k == 'origin_country':
+            if 'country' not in infoLabels:
+                infoLabels['country'] = ", ".join(i if type(i) == str else i['name'] for i in v)
+            else:
+                infoLabels['country'] = ", " + ", ".join(i if type(i) == str else i['name'] for i in v)
+        elif k == 'credits_cast':
+            infoLabels['castandrole'] = []
+            for c in sorted(v, key=lambda c: c.get("order")):
+                infoLabels['castandrole'].append((c['name'], c['character']))
+        elif k == 'credits_crew':
+            l_director = []
+            l_writer = []
+            for crew in v:
+                if crew['job'].lower() == 'director':
+                    l_director.append(crew['name'])
+                elif crew['job'].lower() in ('screenplay', 'writer'):
+                    l_writer.append(crew['name'])
+            if l_director:
+                infoLabels['director'] = ", ".join(l_director)
+            if l_writer:
+                if 'writer' not in infoLabels:
+                    infoLabels['writer'] = ", ".join(l_writer)
+                else:
+                    infoLabels['writer'] += "," + (",".join(l_writer))
+        elif k == 'created_by':
+            l_writer = []
+            for cr in v:
+                l_writer.append(cr['name'])
+            if 'writer' not in infoLabels:
+                infoLabels['writer'] = ",".join(l_writer)
+            else:
+                infoLabels['writer'] += "," + (",".join(l_writer))
+
+    if infoLabels["mediatype"] == "episode":
+        try:
+            episodio = otmdb_global.get_episodio(season, episode)
+        except:
+            pass
+            # No se ha podido buscar
+        else:
+            if episodio:
+                # Actualizar datos
+                infoLabels['title'] = episodio['episodio_titulo']
+                infoLabels['season'] = season
+                infoLabels['episode'] = episode
+                if episodio['episodio_sinopsis']:
+                    infoLabels['plot'] = episodio['episodio_sinopsis']
+                if episodio['episodio_imagen']:
+                    infoLabels['thumbnail'] = episodio['episodio_imagen']
+
+    item.infoLabels = infoLabels
 
 
 def set_infoLabels_item(item, seekTmdb=False, idioma_busqueda='es', lock=None):
@@ -1052,7 +1216,7 @@ class Tmdb(object):
             numtemporada = 1
 
         # if not self.temporada.has_key("season_number") or self.temporada["season_number"] != numtemporada:
-        if numtemporada > len(self.temporada) or self.temporada[numtemporada] is None:
+        if numtemporada > len(self.temporada) or self.temporada.get(numtemporada) is None:
             # Si no hay datos sobre la temporada solicitada, consultar en la web
 
             # http://api.themoviedb.org/3/tv/1407/season/1?api_key=f7f51775877e0bb6703520952b3c7840&language=es&
