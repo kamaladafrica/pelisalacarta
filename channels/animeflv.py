@@ -402,8 +402,8 @@ def findvideos(item):
 
     data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
 
-    if 'infoLabels' in item:
-        del item.infoLabels
+    # if 'infoLabels' in item:
+    #     del item.infoLabels
 
     url_anterior = scrapertools.find_single_match(data, '<a href="(/ver/[^"]+)".+?prev.png')
     url_siguiente = scrapertools.find_single_match(data, '<a href="(/ver/[^"]+)"[^.]+next.png')
@@ -420,6 +420,7 @@ def findvideos(item):
     itemlist.extend(servertools.find_video_items(data=data))
     for videoitem in itemlist:
         videoitem.channel = item.channel
+        videoitem.show = item.show
         videoitem.folder = False
 
     if url_anterior:

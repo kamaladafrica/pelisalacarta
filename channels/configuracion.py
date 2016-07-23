@@ -53,7 +53,7 @@ def mainlist(item):
 
 def check_for_updates(item):
     from core import updater
-    updater.checkforupdates(plugin_mode=False)
+    updater.checkforupdates()
 
 
 def settings(item):
@@ -64,6 +64,6 @@ def updatebiblio(item):
     logger.info("pelisalacarta.channels.ayuda updatebiblio")
 
     import library_service
-    library_service.update_from_conf()
+    library_service.main()
 
 
