@@ -72,7 +72,7 @@ def getmainlist(preferred_thumb=""):
                          action="mainlist",
                          thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),
                                                     "thumb_descargas.png"),
-                         viewmode="movie"))
+                         viewmode="list"))
 
     if "xbmceden" in config.get_platform():
         itemlist.append(Item(title=config.get_localized_string(30100),
