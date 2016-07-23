@@ -38,7 +38,6 @@ from core import scrapertools
 from core.item import Item
 from platformcode import library
 from platformcode import platformtools
-from platformcode import xbmctools
 
 
 def start():
@@ -105,7 +104,7 @@ def run():
             else:
                 logger.info("pelisalacarta.platformcode.launcher Check for plugin updates disabled")
 
-            xbmctools.renderItems(itemlist, item)
+            platformtools.render_items(itemlist, item)
 
         # Action for updating plugin
         elif (item.action=="update"):
@@ -121,14 +120,14 @@ def run():
             import channelselector
             itemlist = channelselector.getchanneltypes()
 
-            xbmctools.renderItems(itemlist, item)
+            platformtools.render_items(itemlist, item)
 
         # Action for channel listing on channelselector
         elif (item.action=="listchannels"):
             import channelselector
             itemlist = channelselector.filterchannels(item.category)
 
-            xbmctools.renderItems(itemlist, item)
+            platformtools.render_items(itemlist, item)
 
         # Action in certain channel specified in "action" and "channel" parameters
         else:
@@ -170,7 +169,7 @@ def run():
 
             logger.info("pelisalacarta.platformcode.launcher running channel {0} {1}".format(channel.__name__, channel.__file__))
 
-            # Special play action
+            # Special play action
             if item.action == "play":
                 logger.info("pelisalacarta.platformcode.launcher play")
 
@@ -182,7 +181,7 @@ def run():
                     # Play should return a list of playable URLS
                     if len(itemlist) > 0:
                         item = itemlist[0]
-                        xbmctools.play_video(item)
+                        platformtools.play_video(item)
 
                     # If not, shows user an error message
                     else:
@@ -193,7 +192,7 @@ def run():
                 # If player don't have a "play" function, not uses the standard play from xbmctools
                 else:
                     logger.info("pelisalacarta.platformcode.launcher executing core 'play' method")
-                    xbmctools.play_video(item)
+                    platformtools.play_video(item)
 
             # Special action for findvideos, where the plugin looks for known urls
             elif item.action == "findvideos":
@@ -232,20 +231,7 @@ def run():
                 from platformcode import subtitletools
                 subtitletools.saveSubtitleName(item)
 
-                # Show xbmc items as "movies", so plot is visible
-                import xbmcplugin
-
-                handle = sys.argv[1]
-                xbmcplugin.setContent(int( handle ),"movies")
-
-                # Add everything to XBMC item list
-                if type(itemlist) == list and itemlist:
-                    xbmctools.renderItems(itemlist, item)
-
-                # If not, it shows an empty list
-                # FIXME: Aquí deberíamos mostrar alguna explicación del tipo "No hay elementos, esto pasa por bla bla bla"
-                else:
-                    xbmctools.renderItems([], item)
+                platformtools.render_items(itemlist, item)
 
             # Special action for adding a movie to the library
             elif item.action == "add_pelicula_to_library":
@@ -274,27 +260,13 @@ def run():
                 else:
                     itemlist = []
                 
-                xbmctools.renderItems(itemlist, item)
+                platformtools.render_items(itemlist, item)
 
             # For all other actions
             else:
                 logger.info("pelisalacarta.platformcode.launcher executing channel '"+item.action+"' method")
                 itemlist = getattr(channel, item.action)(item)
-
-                # Activa el modo biblioteca para todos los canales genéricos, para que se vea el argumento
-                import xbmcplugin
-
-                handle = sys.argv[1]
-                xbmcplugin.setContent(int( handle ),"movies")
-
-                # Añade los items a la lista de XBMC
-                if type(itemlist) == list and itemlist:
-                    xbmctools.renderItems(itemlist, item)
-
-                # If not, it shows an empty list
-                # FIXME: Aquí deberíamos mostrar alguna explicación del tipo "No hay elementos, esto pasa por bla bla bla"
-                else:
-                    xbmctools.renderItems([], item)
+                platformtools.render_items(itemlist, item)
 
     except urllib2.URLError,e:
         import traceback
@@ -432,6 +404,5 @@ def play_from_library(item, channel, server_white_list, server_black_list):
         item = elegido
     logger.info("pelisalacarta.platformcode.launcher play_from_library Elegido %s (sub %s)" % (item.title,
                                                                                                item.subtitle))
-
-    xbmctools.play_video(item, strmfile=True)
+    platformtools.play_video(item, True)
     library.mark_as_watched(item)

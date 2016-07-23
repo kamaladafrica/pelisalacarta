@@ -611,7 +611,8 @@ def add_file_cine_library(item):
     library.save_library_movie(new_item)
     itemlist = []
     itemlist.append(Item(title='El vídeo '+item.show+' se ha añadido a la biblioteca'))
-    xbmctools.renderItems(itemlist, "", "", "")
+    # xbmctools.renderItems(itemlist, "", "", "")
+    platformtools.render_items(itemlist, "")
 
     return
 

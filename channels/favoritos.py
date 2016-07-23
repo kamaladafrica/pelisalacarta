@@ -26,78 +26,81 @@
 # ------------------------------------------------------------
 
 import os
-import sys
-import urllib
-
-from lib.sambatools import libsmb as samba
+import time
 
 from core import config
+from core import filetools
 from core import logger
 from core.item import Item
-
-if config.is_xbmc():
-    import xbmc
-
-CHANNELNAME = "favoritos"
-DEBUG = config.get_setting("debug")
-BOOKMARK_PATH = config.get_setting("bookmarkpath")
-
-if not BOOKMARK_PATH.upper().startswith("SMB://"):
-    if BOOKMARK_PATH.startswith("special://") and config.is_xbmc():
-        # logger.info("pelisalacarta.channels.favoritos Se esta utilizando el protocolo 'special'")
-        BOOKMARK_PATH = xbmc.translatePath(config.get_setting("bookmarkpath"))
-    if BOOKMARK_PATH == "":
-        BOOKMARK_PATH = os.path.join(config.get_data_path(), "bookmarks")
-    if not os.path.exists(BOOKMARK_PATH):
-        # logger.debug("[favoritos.py] Path de bookmarks no existe, se crea: " + BOOKMARK_PATH)
-        os.mkdir(BOOKMARK_PATH)
+from platformcode import platformtools
 
 
 def mainlist(item):
-    logger.info("pelisalacarta.channels.favoritos mainlist")
+    logger.info("pelisalacarta.core.favoritos mainlist")
     itemlist = []
+    bookmarkpath = config.get_setting("bookmarkpath")
 
-    # Crea un listado con las entradas de favoritos
-    if samba.usingsamba(BOOKMARK_PATH):
-        ficheros = samba.get_files(BOOKMARK_PATH)
-    else:
-        ficheros = os.listdir(BOOKMARK_PATH)
+    for fichero in sorted(filetools.listdir(bookmarkpath)):
+        if fichero.endswith(".json"):
 
-    # Ordena el listado por nombre de fichero (orden de incorporación)
-    ficheros.sort()
+            item = Item().fromjson(filetools.read(filetools.join(bookmarkpath, fichero)))
+            if item.action == "play":
+                item.channel = "favoritos"
 
-    # Rellena el listado
-    for fichero in ficheros:
-
-        try:
-            # Lee el bookmark
-            canal, titulo, thumbnail, plot, server, url, fulltitle = readbookmark(fichero)
-            if canal == "":
-                canal = "favoritos"
-
-            # Crea la entrada
-            # En extra va el nombre del fichero para poder borrarlo
-            # <-- Añado fulltitle con el titulo de la peli
-            itemlist.append(Item(channel=canal, action="play", url=url, server=server, title=fulltitle,
-                                 thumbnail=thumbnail, plot=plot, fanart=thumbnail,
-                                 extra=os.path.join(BOOKMARK_PATH, fichero), fulltitle=fulltitle, folder=False))
-        except:
-            for line in sys.exc_info():
-                logger.error("%s" % line)
-
+            item.path = filetools.join(bookmarkpath, fichero)
+            itemlist.append(item)
     return itemlist
 
 
-def readbookmark(filename, readpath=BOOKMARK_PATH):
-    logger.info("pelisalacarta.channels.favoritos readbookmark")
+def savebookmark(item):
+    logger.info("pelisalacarta.core.favoritos savebookmark")
+    bookmarkpath = config.get_setting("bookmarkpath")
 
-    if samba.usingsamba(readpath):
+    # Si se llega aqui mediante el menu contextual, hay que recuperar los parametros action y channel
+    if item.from_action:
+        item.__dict__["action"] = item.__dict__.pop("from_action")
+    if item.from_channel:
+        item.__dict__["channel"] = item.__dict__.pop("from_channel")
+
+    # Elegimos el nombre
+    title = item.contentTitle
+    if not title:
+        title = item.fulltitle
+    if not title:
+        title = item.title
+
+    item.title = platformtools.dialog_input(title + " [" + item.channel + "]")
+    if item.title is None:
+        return
+
+    # Graba el fichero
+    filename = filetools.join(bookmarkpath, str(time.time()) + ".json")
+    filetools.write(filename, item.tojson())
+
+    platformtools.dialog_ok(config.get_localized_string(30102), item.title,
+                            config.get_localized_string(30108))  # 'se ha añadido a favoritos'
+
+
+def deletebookmark(item):
+    logger.info("pelisalacarta.core.favoritos deletebookmark")
+    filetools.remove(item.path)
+    platformtools.itemlist_refresh()
+
+
+##################################################
+# Funciones para migrar favoritos antiguos (.txt)
+def readbookmark(filename, readpath=config.get_setting("bookmarkpath")):
+    logger.info("[favoritos.py] readbookmark")
+    import urllib
+
+    if readpath.lower().startswith("smb://"):
+        from lib.sambatools import libsmb as samba
         bookmarkfile = samba.get_file_handle_for_reading(filename, readpath)
     else:
         filepath = os.path.join(readpath, filename)
 
         # Lee el fichero de configuracion
-        logger.info("pelisalacarta.channels.favoritos filepath="+filepath)
+        logger.info("[favoritos.py] filepath=" + filepath)
         bookmarkfile = open(filepath)
     lines = bookmarkfile.readlines()
 
@@ -148,75 +151,29 @@ def readbookmark(filename, readpath=BOOKMARK_PATH):
     return canal, titulo, thumbnail, plot, server, url, fulltitle
 
 
-def savebookmark(canal=CHANNELNAME, titulo="", url="", thumbnail="", server="", plot="", fulltitle="",
-                 savepath=BOOKMARK_PATH):
-    logger.info("pelisalacarta.channels.favoritos savebookmark(path="+savepath+")")
+def check_bookmark(savepath):
+    # Crea un listado con las entradas de favoritos
 
-    # Crea el directorio de favoritos si no existe
-    if not samba.usingsamba(savepath):
-        try:
-            os.mkdir(savepath)
-        except:
-            pass
+    for fichero in sorted(filetools.listdir(savepath)):
+        # Ficheros antiguos (".txt")
+        if fichero.endswith(".txt"):
+            # Esperamos 0.1 segundos entre ficheros, para que no se solapen los nombres de archivo
+            time.sleep(0.1)
 
-    # Lee todos los ficheros
-    if samba.usingsamba(savepath):
-        ficheros = samba.get_files(savepath)
-    else:
-        ficheros = os.listdir(savepath)
-    ficheros.sort()
+            # Obtenemos el item desde el .txt
+            canal, titulo, thumbnail, plot, server, url, fulltitle = readbookmark(fichero)
+            if canal == "":
+                canal = "favoritos"
+            item = Item(channel=canal, action="play", url=url, server=server, title=fulltitle, thumbnail=thumbnail,
+                        plot=plot, fanart=thumbnail, extra=os.path.join(savepath, fichero), fulltitle=fulltitle,
+                        folder=False)
 
-    # Averigua el último número
-    if len(ficheros) > 0:
-        # XRJ: Linea problemática, sustituida por el bucle siguiente
-        # filenumber = int( ficheros[len(ficheros)-1][0:-4] )+1
-        filenumber = 1
-        for fichero in ficheros:
-            logger.info("pelisalacarta.channels.favoritos fichero="+fichero)
-            try:
-                tmpfilenumber = int(fichero[0:8])+1
-                if tmpfilenumber > filenumber:
-                    filenumber = tmpfilenumber
-            except:
-                pass
-    else:
-        filenumber = 1
+            # Eliminamos el .txt
+            filetools.remove(item.extra)
+            item.extra = ""
 
-    # Genera el contenido
-    filecontent = ""
-    filecontent = filecontent + urllib.quote_plus(titulo)+'\n'
-    filecontent = filecontent + urllib.quote_plus(url)+'\n'
-    filecontent = filecontent + urllib.quote_plus(thumbnail)+'\n'
-    filecontent = filecontent + urllib.quote_plus(server)+'\n'
-    filecontent = filecontent + urllib.quote_plus(plot)+'\n'
-    filecontent = filecontent + urllib.quote_plus(fulltitle)+'\n'
-    filecontent = filecontent + urllib.quote_plus(canal)+'\n'
+            # Graba el nuevo fichero
+            filename = filetools.join(savepath, str(time.time()) + ".json")
+            filetools.write(filename, item.tojson())
 
-    # Genera el nombre de fichero
-    from core import scrapertools
-    filename = '%08d-%s.txt' % (filenumber, scrapertools.slugify(fulltitle))
-    logger.info("pelisalacarta.channels.favoritos savebookmark filename="+filename)
-
-    # Graba el fichero
-    if not samba.usingsamba(savepath):
-        fullfilename = os.path.join(savepath, filename)
-        bookmarkfile = open(fullfilename, "w")
-        bookmarkfile.write(filecontent)
-        bookmarkfile.flush()
-        bookmarkfile.close()
-    else:
-        samba.store_File(filename, filecontent, savepath)
-
-
-def deletebookmark(fullfilename, deletepath=BOOKMARK_PATH):
-    logger.info("pelisalacarta.channels.favoritos deletebookmark(fullfilename="+fullfilename+",deletepath="+deletepath+")")
-
-    if not samba.usingsamba(deletepath):
-        os.remove(os.path.join(urllib.unquote_plus(deletepath), urllib.unquote_plus(fullfilename)))
-    else:
-        fullfilename = fullfilename.replace("\\", "/")
-        partes = fullfilename.split("/")
-        filename = partes[len(partes)-1]
-        logger.info("pelisalacarta.channels.favoritos filename="+filename)
-        logger.info("pelisalacarta.channels.favoritos deletepath="+deletepath)
-        samba.delete_files(filename, deletepath)
+check_bookmark(config.get_setting("bookmarkpath"))
