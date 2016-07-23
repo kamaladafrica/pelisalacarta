@@ -131,8 +131,8 @@ def buscartrailer(item):
                     buscartrailer(item)
                 else:
                     if item.action == "play":
-                        from platformcode import xbmctools
-                        xbmctools.play_video(item)
+                        from platformcode import platformtools
+                        platformtools.play_video(item)
                     return
     else:
         return itemlist

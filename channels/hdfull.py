@@ -606,7 +606,7 @@ def file_cine_library(item,url_targets):
 
 
 def add_file_cine_library(item):
-    from platformcode import library, xbmctools
+    from platformcode import library
     new_item = item.clone(title=item.show, action="play_from_library")
     library.save_library_movie(new_item)
     itemlist = []
