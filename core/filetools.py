@@ -8,7 +8,6 @@
 
 import locale
 import os
-import string
 import sys
 from socket import gaierror
 
@@ -32,7 +31,6 @@ except ImportError:
     from sambatools import libsmb as samba
 
 
-# TODO revisar con los caracteres validos dentro de title_to_filename()
 def remove_chars(path):
     """
     Elimina cáracteres no permitidos
@@ -401,71 +399,6 @@ def dirname(path):
     _dir = os.path.dirname(path)
 
     return _dir
-
-
-def elimina_tildes(s):
-    """
-    elimina las tildes de la cadena
-    @type s: str
-    @param s: cadena.
-    @rtype:   str
-    @return:  cadena sin tildes.
-    """
-    logger.info("filetools.py elimina_tildes")
-    import unicodedata
-
-    # TODO prueba para ver si se encodea correctamente en mac
-    # if not isinstance(s, unicode):
-    #     s = unicode(s)  # cast data to unicode
-    #     return unicodedata.normalize('NFKD', s).encode('ascii', 'ignore')
-
-    if not isinstance(s, unicode):
-        s = s.decode("UTF-8")
-    return ''.join((c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn'))
-    # s = s.replace("Á", "a")
-    # s = s.replace("É", "e")
-    # s = s.replace("Í", "i")
-    # s = s.replace("Ó", "o")
-    # s = s.replace("Ú", "u")
-    # s = s.replace("á", "a")
-    # s = s.replace("é", "e")
-    # s = s.replace("í", "i")
-    # s = s.replace("ó", "o")
-    # s = s.replace("ú", "u")
-    # s = s.replace("À", "a")
-    # s = s.replace("È", "e")
-    # s = s.replace("Ì", "i")
-    # s = s.replace("Ò", "o")
-    # s = s.replace("Ù", "u")
-    # s = s.replace("à", "a")
-    # s = s.replace("è", "e")
-    # s = s.replace("ì", "i")
-    # s = s.replace("ò", "o")
-    # s = s.replace("ù", "u")
-    # s = s.replace("ç", "c")
-    # s = s.replace("Ç", "C")
-    # s = s.replace("Ñ", "n")
-    # s = s.replace("ñ", "n")
-
-    # return s
-
-
-def title_to_filename(title):
-    """
-    devuelve un titulo con caracteres válidos para crear un fichero
-    @type title: str
-    @param title: title.
-    @rtype:   str
-    @return:  cadena correcta sin tildes.
-    """
-    logger.info("filetools.py title_to_filename")
-    logger.debug("title: " + title)
-    
-    title = remove_tags(title)
-    
-    safechars = string.letters + string.digits + " -_.[]()"
-    folder_name = filter(lambda c: c in safechars, elimina_tildes(title))
-    return str(folder_name)
 
 
 def remove_tags(title):

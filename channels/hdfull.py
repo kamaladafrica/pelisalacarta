@@ -594,9 +594,9 @@ def file_cine_library(item,url_targets):
     import os
     from core import filetools
     librarypath = os.path.join(config.get_library_path(),"CINE")
-    archivo = filetools.title_to_filename(item.show.strip())
+    archivo = item.show.strip()
     strmfile = archivo+".strm"
-    strmfilepath = os.path.join(librarypath,strmfile)
+    strmfilepath = filetools.join(librarypath,strmfile)
 
     if not os.path.exists(strmfilepath):
         itemlist = []
