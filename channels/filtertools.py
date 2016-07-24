@@ -82,7 +82,7 @@ def get_filtered_links(list_item, channel):
     _filter = None
 
     dict_filtered_shows = get_filtered_tvshows(channel)
-    tvshow = filetools.title_to_filename(list_item[0].show.lower().strip())
+    tvshow = list_item[0].show.lower().strip()
     if tvshow in dict_filtered_shows.keys():
         _filter = Filter(dict_filtered_shows[tvshow])
 
@@ -284,7 +284,7 @@ def config_filter(item):
     # OBTENEMOS LOS DATOS DEL JSON
     dict_series = get_filtered_tvshows(item.from_channel)
 
-    tvshow = filetools.title_to_filename(item.show.lower().strip())
+    tvshow = item.show.lower().strip()
 
     lang_selected = dict_series.get(tvshow, {}).get(TAG_LANGUAGE, 'Español')
     list_quality = dict_series.get(tvshow, {}).get(TAG_QUALITY_NOT_ALLOWED, "")
@@ -294,10 +294,10 @@ def config_filter(item):
     active = True
     custom_method = ""
     allow_option = False
-    if filetools.title_to_filename(item.show.lower().strip()) in dict_series:
+    if item.show.lower().strip() in dict_series:
         allow_option = True
         custom_method = "borrar_filtro"
-        active = dict_series.get(filetools.title_to_filename(item.show.lower().strip()), {}).get(TAG_ACTIVE, False)
+        active = dict_series.get(item.show.lower().strip(), {}).get(TAG_ACTIVE, False)
 
     list_controls = []
 
@@ -361,7 +361,7 @@ def borrar_filtro(item):
     if item:
         # OBTENEMOS LOS DATOS DEL JSON
         dict_series = get_filtered_tvshows(item.from_channel)
-        tvshow = filetools.title_to_filename(item.show.strip().lower())
+        tvshow = item.show.strip().lower()
 
         heading = "¿Está seguro que desea eliminar el filtro?"
         line1 = "Pulse 'Si' para eliminar el filtro de [COLOR blue]{0}[/COLOR], pulse 'No' o cierre la ventana para " \
@@ -399,7 +399,7 @@ def guardar_valores(item, dict_data_saved):
 
         # OBTENEMOS LOS DATOS DEL JSON
         dict_series = get_filtered_tvshows(item.from_channel)
-        tvshow = filetools.title_to_filename(item.show.strip().lower())
+        tvshow = item.show.strip().lower()
 
         logger.info("Se actualiza los datos")
 
@@ -469,7 +469,7 @@ def save_filter(item):
 
     dict_series = get_filtered_tvshows(item.from_channel)
 
-    name = filetools.title_to_filename(item.show.lower().strip())
+    name = item.show.lower().strip()
     logger.info("[filtertools.py] config_filter name {0}".format(name))
 
     open_tag_idioma = (0, item.title.find("[")+1)[item.title.find("[") >= 0]
@@ -518,7 +518,7 @@ def del_filter(item):
     logger.info("[filtertools.py] del_filter")
 
     dict_series = get_filtered_tvshows(item.from_channel)
-    dict_series.pop(filetools.title_to_filename(item.show.lower().strip()), None)
+    dict_series.pop(item.show.lower().strip(), None)
 
     fname, json_data = update_json_data(dict_series, item.from_channel)
     result = filetools.write(fname, json_data)

@@ -142,8 +142,7 @@ def save_library_movie(item):
 
     # progress dialog
     p_dialog = platformtools.dialog_progress('pelisalacarta', 'Añadiendo película...')
-    filename = filetools.title_to_filename("{0} [{1}].strm".format(item.fulltitle.strip().lower(),
-                                                                   item.channel))
+    filename = "{0} [{1}].strm".format(item.fulltitle.strip().lower(), item.channel)
     logger.debug(filename)
     fullfilename = filetools.join(MOVIES_PATH, filename)
     addon_name = sys.argv[0].strip()
@@ -216,8 +215,7 @@ def save_library_tvshow(item, episodelist):
     # TODO configurar para segun el scraper se llame a uno u otro
     tmdb.find_and_set_infoLabels_tmdb(item, config.get_setting("scrap_ask_name") == "true")
 
-    path = filetools.join(TVSHOWS_PATH, "{0} [{1}]".format(filetools.title_to_filename(
-        item.contentSerieName.strip().lower()), item.channel).lower())
+    path = filetools.join(TVSHOWS_PATH, "{0} [{1}]".format(item.contentSerieName.strip().lower(), item.channel).lower())
     if not filetools.exists(path):
         logger.info("pelisalacarta.platformcode.library save_library_tvshow Creando directorio serie:" + path)
         try:
@@ -325,8 +323,7 @@ def save_library_episodes(path, episodelist, serie, silent=False):
     if fallidos >= 0:
         # TODO arreglar el porque hay que poner la ruta special
         ruta = "special://home/userdata/addon_data/plugin.video.pelisalacarta/library/SERIES/" + \
-               "{0} [{1}]".format(filetools.title_to_filename(serie.contentSerieName.strip().lower()),
-                                  serie.channel).lower() + "/"
+               "{0} [{1}]".format(serie.contentSerieName.strip().lower(), serie.channel).lower() + "/"
         update(ruta)
 
     logger.debug("insertados= {0}, sobreescritos={1}, fallidos={2}".format(insertados, sobreescritos, fallidos))
