@@ -305,6 +305,10 @@ def save_library_episodes(path, episodelist, serie, silent=False):
         # Para depuración creamos un .json al lado del .strm, para poder visualizar que parametros se estan guardando
         filetools.write(fullfilename + ".json", e.tojson())
 
+        # TODO fix temporal, en algunas ocasiones no se reproduce desde la biblioteca de kodi si tiene valor
+        # por ejemplo serie doctor who, en seriesblanco
+        e.infoLabels['tmdb_id'] = ""
+
         if filetools.write(fullfilename, '{addon}?{url}'.format(addon=addon_name, url=e.tourl())):
             if nuevo:
                 insertados += 1
@@ -565,7 +569,7 @@ def mark_as_watched_on_kodi(item):
     @param item: elemento a marcar como visto
     """
     logger.info("pelisalacarta.platformcode.library mark_as_watched_on_kodi")
-
+    # logger.info("item mark_as_watched_on_kodi {}".format(item.tostring()))
     video_id = 0
     category = ''
     if 'infoLabels' in item:
@@ -577,8 +581,12 @@ def mark_as_watched_on_kodi(item):
             category = 'Movies'
             video_id = item.infoLabels['movieid']
 
+        else:
+            if hasattr(item, "show") or hasattr(item, "contentSerieName"):
+                category = 'Series'
+
     else:
-        if item.show:
+        if hasattr(item, "show") or hasattr(item, "contentSerieName"):
             category = 'Series'
 
     logger.info("se espera 5 segundos por si falla al reproducir el fichero")
