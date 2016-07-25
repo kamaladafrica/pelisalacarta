@@ -569,7 +569,7 @@ def mark_as_watched_on_kodi(item):
     @param item: elemento a marcar como visto
     """
     logger.info("pelisalacarta.platformcode.library mark_as_watched_on_kodi")
-    logger.info("item mark_as_watched_on_kodi {}".format(item.tostring()))
+    # logger.info("item mark_as_watched_on_kodi {}".format(item.tostring()))
     video_id = 0
     category = ''
     if 'infoLabels' in item:
