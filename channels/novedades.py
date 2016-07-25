@@ -51,27 +51,27 @@ def mainlist(item,thumbnail_type="squares"):
     thumbnail = (thumbnail_base if list_canales['peliculas']
                  else thumbnail_base + '/disabled') + "/thumb_canales_peliculas.png"
     itemlist.append(Item(channel=item.channel, action="novedades", extra="peliculas",
-                         title="Películas", thumbnail=thumbnail, folder=False))
+                         title="Películas", thumbnail=thumbnail))
 
     thumbnail = (thumbnail_base if list_canales['infantiles']
                  else thumbnail_base + '/disabled') + "/thumb_canales_infantiles.png"
     itemlist.append(Item(channel=item.channel, action="novedades", extra="infantiles",
-                         title="Para niños", thumbnail=thumbnail, folder=False))
+                         title="Para niños", thumbnail=thumbnail))
 
     thumbnail = (thumbnail_base if list_canales['series']
                  else thumbnail_base + '/disabled') + "/thumb_canales_series.png"
     itemlist.append(Item(channel=item.channel, action="novedades", extra="series",
-                         title="Episodios de series", thumbnail=thumbnail, folder=False))
+                         title="Episodios de series", thumbnail=thumbnail))
 
     thumbnail = (thumbnail_base if list_canales['anime']
                  else thumbnail_base + '/disabled') + "/thumb_canales_anime.png"
     itemlist.append(Item(channel=item.channel, action="novedades", extra="anime",
-                         title="Episodios de anime", thumbnail=thumbnail, folder=False))
+                         title="Episodios de anime", thumbnail=thumbnail))
 
     thumbnail = (thumbnail_base if list_canales['documentales']
                  else thumbnail_base + '/disabled') + "/thumb_canales_documentales.png"
     itemlist.append(Item(channel=item.channel, action="novedades", extra="documentales",
-                         title="Documentales", thumbnail=thumbnail, folder=False))
+                         title="Documentales", thumbnail=thumbnail))
 
     #itemlist.append(Item(channel=item.channel, action="menu_opciones", title="Opciones", viewmode="list",
     #                     thumbnail=thumbnail_base + "/thumb_configuracion.png"))
