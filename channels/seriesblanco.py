@@ -173,7 +173,9 @@ def episodios(item):
 
     for scrapedthumbnail, scrapedplot in matches:
         thumbnail = scrapedthumbnail
-        plot = scrapedplot
+        plot = scrapertools.entitiesfix(scrapertools.htmlclean(scrapedplot))
+
+    plot = ""
 
     '''
     <td>
