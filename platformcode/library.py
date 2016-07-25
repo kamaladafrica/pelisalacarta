@@ -569,7 +569,7 @@ def mark_as_watched_on_kodi(item):
     @param item: elemento a marcar como visto
     """
     logger.info("pelisalacarta.platformcode.library mark_as_watched_on_kodi")
-
+    logger.info("item mark_as_watched_on_kodi {}".format(item.tostring()))
     video_id = 0
     category = ''
     if 'infoLabels' in item:
@@ -581,8 +581,12 @@ def mark_as_watched_on_kodi(item):
             category = 'Movies'
             video_id = item.infoLabels['movieid']
 
+        else:
+            if hasattr(item, "show") or hasattr(item, "contentSerieName"):
+                category = 'Series'
+
     else:
-        if item.show:
+        if hasattr(item, "show") or hasattr(item, "contentSerieName"):
             category = 'Series'
 
     logger.info("se espera 5 segundos por si falla al reproducir el fichero")
