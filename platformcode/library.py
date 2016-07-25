@@ -305,6 +305,10 @@ def save_library_episodes(path, episodelist, serie, silent=False):
         # Para depuración creamos un .json al lado del .strm, para poder visualizar que parametros se estan guardando
         filetools.write(fullfilename + ".json", e.tojson())
 
+        # TODO fix temporal, en algunas ocasiones no se reproduce desde la biblioteca de kodi si tiene valor
+        # por ejemplo serie doctor who, en seriesblanco
+        e.infoLabels['tmdb_id'] = ""
+
         if filetools.write(fullfilename, '{addon}?{url}'.format(addon=addon_name, url=e.tourl())):
             if nuevo:
                 insertados += 1
