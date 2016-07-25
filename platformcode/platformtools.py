@@ -198,39 +198,23 @@ def render_items(itemlist, parent_item):
 
 def set_infolabels(listitem, item):
     """
-    Metodo para añadir informacion extra al listitem.
-    Se mantiene por retocompatibilidad, pero deberia despreciarse en futuras versiones.
-    @type listitem: list
-    @param listitem: lista de elementos para insertar infolabels
+    Metodo para pasar la informacion al listitem (ver tmdb.set_InfoLabels() )
+    item.infoLabels es un dicionario con los pares de clave/valor descritos en:
+    http://mirrors.xbmc.org/docs/python-docs/14.x-helix/xbmcgui.html#ListItem-setInfo
+    @param listitem: objeto xbmcgui.ListItem
+    @type listitem: xbmcgui.ListItem
+    @param item: objeto Item que representa a una pelicula, serie o capitulo
     @type item: item
-    @param item: elemnto de donde obtiene los infolabels
     """
-    if type(item.plot) == str and item.plot.startswith("{'infoLabels'"):
-        # Esta forma de pasar la informacion al listitem es obsoleta y deberia despreciarse
-        # plot tiene que ser un str con el siguiente formato:
-        #   plot="{'infoLabels':{dicionario con los pares de clave/valor descritos en
-        #               http://mirrors.xbmc.org/docs/python-docs/14.x-helix/xbmcgui.html#ListItem-setInfo}}"
+    # if not item.action or item.showInfo == False: return
 
-        try:
-            import ast
-            infodict = ast.literal_eval(item.plot)['infoLabels']
-            item.infoLabels = infodict
-            item.plot = ""
-        except (SyntaxError, ValueError) as e:
-            logger.info("set_infolabels - se ha dado un error al convertir {0}".format(e))
-            pass
+    if item.plot and item.infoLabels.get("plot", "") == "":
+        item.infoLabels['plot'] = item.plot
 
-    if len(item.infoLabels) > 0:
-        # Nuevo modelo para pasar la informacion al listitem (ver tmdb.set_InfoLabels() )
-        # item.infoLabels es un dicionario con los pares de clave/valor descritos en:
-        # http://mirrors.xbmc.org/docs/python-docs/14.x-helix/xbmcgui.html#ListItem-setInfo
-        it = item.clone()
-        it.infoLabels['title'] = it.title
-        listitem.setInfo("video", it.infoLabels)
+    it = item.clone()
+    it.infoLabels['title'] = it.title
 
-    elif item.plot != '':
-        # Retrocompatibilidad con canales q no utilizan infoLabels de ningun tipo
-        listitem.setInfo("video", {"Title": item.title, "Plot": item.plot, "Studio": item.channel.capitalize()})
+    listitem.setInfo("video", it.infoLabels)
 
 
 def set_context_commands(item, parent_item):
