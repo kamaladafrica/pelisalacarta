@@ -50,6 +50,7 @@ def start():
     # Test if all the required directories are created
     config.verify_directories_created()
 
+
 def run():
     logger.info("pelisalacarta.platformcode.launcher run")
 
@@ -77,7 +78,7 @@ def run():
             return
 
         # Action for main menu in channelselector
-        if ( item.action=="selectchannel" ):
+        if item.action == "selectchannel":
             import channelselector
             itemlist = channelselector.getmainlist()
 
@@ -90,15 +91,16 @@ def run():
                     version = updater.checkforupdates()
 
                     if version:
-                        import xbmcgui
-                        advertencia = xbmcgui.Dialog()
-                        advertencia.ok("Versión "+version+" disponible","Ya puedes descargar la nueva versión del plugin\ndesde el listado principal")
+                        platformtools.dialog_ok("Versión "+version+" disponible",
+                                                "Ya puedes descargar la nueva versión del plugin\n"
+                                                "desde el listado principal")
 
-                        itemlist.insert(0,Item(title="Descargar version "+version, version=version, channel="updater", action="update", thumbnail=channelselector.get_thumbnail_path() + "Crystal_Clear_action_info.png"))
+                        itemlist.insert(0, Item(title="Descargar version "+version, version=version, channel="updater",
+                                                action="update", thumbnail=channelselector.get_thumbnail_path() +
+                                                "Crystal_Clear_action_info.png"))
                 except:
-                    import xbmcgui
-                    advertencia = xbmcgui.Dialog()
-                    advertencia.ok("No se puede conectar","No ha sido posible comprobar","si hay actualizaciones")
+                    platformtools.dialog_ok("No se puede conectar", "No ha sido posible comprobar",
+                                            "si hay actualizaciones")
                     logger.info("cpelisalacarta.platformcode.launcher Fallo al verificar la actualización")
 
             else:
@@ -107,23 +109,23 @@ def run():
             platformtools.render_items(itemlist, item)
 
         # Action for updating plugin
-        elif (item.action=="update"):
+        elif item.action == "update":
 
             from core import updater
             updater.update(item)
-            if config.get_system_platform()!="xbox":
+            if config.get_system_platform() != "xbox":
                 import xbmc
-                xbmc.executebuiltin( "Container.Refresh" )
+                xbmc.executebuiltin("Container.Refresh")
 
         # Action for channel types on channelselector: movies, series, etc.
-        elif (item.action=="channeltypes"):
+        elif item.action == "channeltypes":
             import channelselector
             itemlist = channelselector.getchanneltypes()
 
             platformtools.render_items(itemlist, item)
 
         # Action for channel listing on channelselector
-        elif (item.action=="listchannels"):
+        elif item.action == "listchannels":
             import channelselector
             itemlist = channelselector.filterchannels(item.category)
 
@@ -133,21 +135,17 @@ def run():
         else:
 
             # Entry point for a channel is the "mainlist" action, so here we check parental control
-            if item.action=="mainlist":
+            if item.action == "mainlist":
                 
                 # Parental control
                 can_open_channel = False
 
                 # If it is an adult channel, and user has configured pin, asks for it
-                if channeltools.is_adult(item.channel) and config.get_setting("adult_pin")!="":
+                if channeltools.is_adult(item.channel) and config.get_setting("adult_pin") != "":
 
-                    import xbmc
-                    keyboard = xbmc.Keyboard("","PIN para canales de adultos",True)
-                    keyboard.doModal()
-
-                    if (keyboard.isConfirmed()):
-                        tecleado = keyboard.getText()
-                        if tecleado==config.get_setting("adult_pin"):
+                    tecleado = platformtools.dialog_input("", "PIN para canales de adultos", True)
+                    if tecleado is not None:
+                        if tecleado == config.get_setting("adult_pin"):
                             can_open_channel = True
 
                 # All the other cases can open the channel
@@ -161,13 +159,14 @@ def run():
             channel_file = os.path.join(config.get_runtime_path(), 'channels', item.channel+".py")
             logger.info("pelisalacarta.platformcode.launcher channel_file=%s" % channel_file)
 
-            if item.channel in ["personal","personal2","personal3","personal4","personal5"]:
+            if item.channel in ["personal", "personal2", "personal3", "personal4", "personal5"]:
                 import channels.personal as channel
 
             elif os.path.exists(channel_file):
                 channel = __import__('channels.%s' % item.channel, fromlist=["channels.%s" % item.channel])
 
-            logger.info("pelisalacarta.platformcode.launcher running channel {0} {1}".format(channel.__name__, channel.__file__))
+            logger.info("pelisalacarta.platformcode.launcher running channel {0} {1}".format(channel.__name__,
+                                                                                             channel.__file__))
 
             # Special play action
             if item.action == "play":
@@ -185,11 +184,9 @@ def run():
 
                     # If not, shows user an error message
                     else:
-                        import xbmcgui
-                        ventana_error = xbmcgui.Dialog()
-                        ok = ventana_error.ok("plugin", "No hay nada para reproducir")
+                        platformtools.dialog_ok("plugin", "No hay nada para reproducir")
 
-                # If player don't have a "play" function, not uses the standard play from xbmctools
+                # If player don't have a "play" function, not uses the standard play from platformtools
                 else:
                     logger.info("pelisalacarta.platformcode.launcher executing core 'play' method")
                     platformtools.play_video(item)
@@ -215,19 +212,6 @@ def run():
                 if config.get_setting('filter_servers') == 'true':
                     itemlist = filtered_servers(itemlist, server_white_list, server_black_list)
 
-                # Copy infolabels from parent item
-                if 'infoLabels' in item:
-
-                    # All but title
-                    if 'title' in item.infoLabels:
-                        item.infoLabels.pop('title')
-                    new_itemlist = itemlist[:]
-                    itemlist = []
-
-                    for i in new_itemlist:
-                        itemlist.append(i.clone(infoLabels=item.infoLabels))
-
-
                 from platformcode import subtitletools
                 subtitletools.saveSubtitleName(item)
 
@@ -246,17 +230,13 @@ def run():
                 downloadtools.download_all_episodes(item, channel)
 
             # Special action for searching, first asks for the words then call the "search" function
-            elif item.action=="search":
+            elif item.action == "search":
                 logger.info("pelisalacarta.platformcode.launcher search")
                 
-                import xbmc
-                keyboard = xbmc.Keyboard("")
-                keyboard.doModal()
-                
-                if (keyboard.isConfirmed()):
-                    tecleado = keyboard.getText()
+                tecleado = platformtools.dialog_input("")
+                if tecleado is not None:
                     tecleado = tecleado.replace(" ", "+")
-                    itemlist = channel.search(item,tecleado)
+                    itemlist = channel.search(item, tecleado)
                 else:
                     itemlist = []
                 
@@ -268,43 +248,41 @@ def run():
                 itemlist = getattr(channel, item.action)(item)
                 platformtools.render_items(itemlist, item)
 
-    except urllib2.URLError,e:
+    except urllib2.URLError, e:
         import traceback
         logger.error("pelisalacarta.platformcode.launcher "+traceback.format_exc())
-
-        import xbmcgui
-        ventana_error = xbmcgui.Dialog()
 
         # Grab inner and third party errors
         if hasattr(e, 'reason'):
-            logger.info("pelisalacarta.platformcode.launcher Razon del error, codigo: {0}, Razon: {1}".format(e.reason[0], e.reason[1]))
-            texto = config.get_localized_string(30050) # "No se puede conectar con el sitio web"
-            ok = ventana_error.ok ("plugin", texto)
+            logger.info("pelisalacarta.platformcode.launcher Razon del error, codigo: {0}, Razon: {1}"
+                        .format(e.reason[0], e.reason[1]))
+            # "No se puede conectar con el sitio web"
+            platformtools.dialog_ok("plugin", config.get_localized_string(30050))
         
         # Grab server response errors
-        elif hasattr(e,'code'):
-            logger.info("pelisalacarta.platformcode.launcher codigo de error HTTP : %d" %e.code)
-            texto = (config.get_localized_string(30051) % e.code) # "El sitio web no funciona correctamente (error http %d)"
-            ok = ventana_error.ok ("plugin", texto)
+        elif hasattr(e, 'code'):
+            logger.info("pelisalacarta.platformcode.launcher codigo de error HTTP : %d" % e.code)
+            # "El sitio web no funciona correctamente (error http %d)"
+            platformtools.dialog_ok("plugin", config.get_localized_string(30051) % e.code)
     
     except:
         import traceback
-        import xbmcgui
         logger.error("pelisalacarta.platformcode.launcher "+traceback.format_exc())
         
-        patron = 'File "'+os.path.join(config.get_runtime_path(),"channels","").replace("\\","\\\\")+'([^.]+)\.py"'
-        canal = scrapertools.find_single_match(traceback.format_exc(),patron)
+        patron = 'File "'+os.path.join(config.get_runtime_path(), "channels", "").replace("\\", "\\\\")+'([^.]+)\.py"'
+        canal = scrapertools.find_single_match(traceback.format_exc(), patron)
         
         if canal:
-            xbmcgui.Dialog().ok(
+            platformtools.dialog_ok(
                 "Error inesperado en el canal " + canal,
                 "Esto suele pasar cuando hay un fallo de conexión, cuando la web del canal "
                 "ha cambiado su estructura, o simplemente "
                 "porque hay algo mal en pelisalacarta.\nPara saber más detalles, consulta el log.")
         else:
-            xbmcgui.Dialog().ok(
+            platformtools.dialog_ok(
                 "Se ha producido un error en pelisalacarta",
-                "Comprueba el log para ver mas detalles del error." )
+                "Comprueba el log para ver mas detalles del error.")
+
 
 def set_server_list():
     logger.info("pelisalacarta.platformcode.launcher.set_server_list")
