@@ -175,8 +175,6 @@ def episodios(item):
         thumbnail = scrapedthumbnail
         plot = scrapertools.entitiesfix(scrapertools.htmlclean(scrapedplot))
 
-    plot = ""
-
     '''
     <td>
         <a href='/serie/534/temporada-1/capitulo-00/the-big-bang-theory.html'>1x00 - Capitulo 00 </a>
