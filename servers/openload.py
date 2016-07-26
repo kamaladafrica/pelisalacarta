@@ -43,7 +43,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
         text_encode = scrapertools.find_single_match(data,"Click to start Download.*?<script[^>]+>(.*?)</script")
         text_decode = aadecode(text_encode)
         
-        videourl = scrapertools.find_single_match(text_decode, '(http.*?)\}').replace("https://","http://")
+        videourl = "http://" + scrapertools.find_single_match(text_decode, "(openload.co/.*?)\}")
         extension = scrapertools.find_single_match(data, '<meta name="description" content="([^"]+)"')
         extension = "." + extension.rsplit(".", 1)[1]
         video_urls.append([extension + " [Openload]", videourl+header_down+extension])
@@ -56,7 +56,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
         # Buscamos la variable que nos indica el script correcto
         text_decode = aadecode(text_encode[index])
 
-        videourl = scrapertools.find_single_match(text_decode, "(http.*?true)").replace("https://","http://")
+        videourl = "http://" + scrapertools.find_single_match(text_decode, "(openload.co/.*?)\}")
         extension = "." + scrapertools.find_single_match(text_decode, "video/(\w+)")
         if config.get_platform() != "plex":
             video_urls.append([extension + " [Openload] ", videourl+header_down+extension, 0, subtitle])
