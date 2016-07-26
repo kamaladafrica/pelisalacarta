@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+xº# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Conector para powvideo
@@ -66,7 +66,7 @@ def find_videos(data):
     # http://powvideo.net/embed-sbb9ptsfqca2
     # http://powvideo.net/iframe-sbb9ptsfqca2
     # http://powvideo.net/preview-sbb9ptsfqca2
-    patronvideos  = 'powvideo.net/(?:embed-|iframe-|preview-|)([a-z0-9]+)'
+    patronvideos  = 'powvideo.net/(?:embed-|iframe-|preview-|)([A-9a-z0-9]+)'
     logger.info("pelisalacarta.servers.powvideo find_videos #"+patronvideos+"#")
     matches = re.compile(patronvideos,re.DOTALL).findall(data)
 
