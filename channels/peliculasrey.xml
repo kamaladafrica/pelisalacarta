@@ -8,8 +8,8 @@
     <language>es</language>
 
     <fanart></fanart>
-    <thumbnail></thumbnail>
-    <bannermenu></bannermenu>
+    <thumbnail>http://media.tvalacarta.info/pelisalacarta/squares/peliculasrey.png</thumbnail>
+    <bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/peliculasrey.png</bannermenu>
 
     <update_url></update_url>
     <version>2</version>
