@@ -32,6 +32,7 @@ import copy
 from core import jsontools
 from core import logger
 from core import scrapertools
+from platformcode import platformtools
 
 # -----------------------------------------------------------------------------------------------------------
 # Conjunto de funciones relacionadas con las infoLabels.
