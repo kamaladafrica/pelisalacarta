@@ -216,18 +216,6 @@ def run():
                 if config.get_setting('filter_servers') == 'true':
                     itemlist = filtered_servers(itemlist, server_white_list, server_black_list)
 
-                # Copy infolabels from parent item
-                if 'infoLabels' in item:
-
-                    # All but title
-                    if 'title' in item.infoLabels:
-                        item.infoLabels.pop('title')
-                    new_itemlist = itemlist[:]
-                    itemlist = []
-
-                    for i in new_itemlist:
-                        itemlist.append(i.clone(infoLabels=item.infoLabels))
-
 
                 from platformcode import subtitletools
                 subtitletools.saveSubtitleName(item)
