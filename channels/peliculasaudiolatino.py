@@ -193,41 +193,13 @@ def play(item):
     logger.info("channels.peliculasaudiolatino play")
     itemlist=[]
 
-    data2 = scrapertools.cachePage(item.url)
-    data2 = data2.replace("http://peliculasaudiolatino.com/show/vidbux.php?url=","http://www.vidbux.com/")
-    data2 = data2.replace("http://peliculasaudiolatino.com/show/vidxden.php?url=","http://www.vidxden.com/")
+    data = scrapertools.cachePage(item.url)
+    logger.info("data="+data)
 
-    data2 = data2.replace("http://peliculasaudiolatino.com/v/pl/play.php?url=","http://www.putlocker.com/embed/")
-    data2 = data2.replace("http://peliculasaudiolatino.com/v/mv/play.php?url=","http://www.modovideo.com/frame.php?v=")
-    data2 = data2.replace("http://peliculasaudiolatino.com/v/ss/play.php?url=","http://www.sockshare.com/embed/")
-    data2 = data2.replace("http://peliculasaudiolatino.com/v/vb/play.php?url=","http://vidbull.com/")
-    data2 = data2.replace("http://peliculasaudiolatino.com/v/vk/play.php?url=","http://vk.com/video_ext.php?oid=")
-    data2 = data2.replace("http://peliculasaudiolatino.com/v/ttv/play.php?url=","http://www.tumi.tv/")
+    url = scrapertools.find_single_match(data,'src="(http://peliculasaudiolatino.com/show/[^"]+)"')
+    logger.info("url="+url)
 
-    data2 = data2.replace("http://peliculasaudiolatino.com/show/sockshare.php?url=","http://www.sockshare.com/embed/")
-    data2 = data2.replace("http://peliculasaudiolatino.com/show/moevide.php?url=","http://moevideo.net/?page=video&uid=")
-    data2 = data2.replace("http://peliculasaudiolatino.com/show/novamov.php?url=","http://www.novamov.com/video/")
-    data2 = data2.replace("http://peliculasaudiolatino.com/show/movshare.php?url=","http://www.movshare.net/video/")
-    data2 = data2.replace("http://peliculasaudiolatino.com/show/divxstage.php?url=","http://www.divxstage.net/video/")
-    data2 = data2.replace("http://peliculasaudiolatino.com/show/tumi.php?url=","http://www.tumi.tv/")
-    data2 = data2.replace("http://peliculasaudiolatino.com/show/playerto.php?url=","http://played.to/")
-    data2 = data2.replace("http://peliculasaudiolatino.com/show/videoweed.php?url=","http://www.videoweed.es/file/")
-    data2 = data2.replace("http://peliculasaudiolatino.com/show/netu.php?url=","http://netu.tv/watch_video.php?v=")
-    data2 = data2.replace("http://peliculasaudiolatino.com/show/powvideo.php?url=","http://powvideo.net/")
-    
-    data2 = data2.replace("http://peliculasaudiolatino.com/show/streamin.php?url=","http://streamin.to/")
-    data2 = data2.replace("http://peliculasaudiolatino.com/show/vidspot.php?url=","http://vidspot.net/")
-    data2 = data2.replace("http://peliculasaudiolatino.com/show/allmy.php?url=","http://allmyvideos.net/")
-    data2 = data2.replace('http://peliculasaudiolatino.com/show/r"></iframe>url=',"http://realvid.net/")
-
-    data2 = data2.replace("http://peliculasaudiolatino.com/show/roc.php?url=","http://rocvideo.net/")
-    data2 = data2.replace("http://peliculasaudiolatino.com/show/vide.php?url=","http://thevideo.me/")
-    data2 = data2.replace("http://peliculasaudiolatino.com/show/vidto.php?url=","http://vidto.me/")
-    data2 = data2.replace("http://peliculasaudiolatino.com/show/vodlocker.php?url=","http://vodlocker.com/")
-    data2 = data2.replace("http://peliculasaudiolatino.com/show/videomega.php?url=","http://videomega.tv/?ref=")
-    data2 = data2.replace("http://peliculasaudiolatino.com/show/gamo.php?url=","http://gamovideo.com/")
-    data2 = data2.replace("http://peliculasaudiolatino.com/show/vidx.php?url=","http://www.vidxtreme.to/embed-")
-    data2 = data2.replace("%26","&")
+    data2 = scrapertools.cachePage(url)
     logger.info("data2="+data2)
 
     listavideos = servertools.findvideos(data2)
@@ -241,3 +213,5 @@ def play(item):
         itemlist.append( Item(channel=item.channel, action="play", title=scrapedtitle , fulltitle=item.fulltitle, url=videourl , server=server , folder=False) )
     
     return itemlist
+
+
