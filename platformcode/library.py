@@ -764,8 +764,8 @@ def update(_path):
     """
     actualiza la libreria
 
-    @type path: str
-    @param path: ruta que hay que actualizar en la libreria
+    @type _path: str
+    @param _path: ruta que hay que actualizar en la libreria
     """
     logger.info("pelisalacarta.platformcode.library update")
     # Se comenta la llamada normal para reutilizar 'payload' dependiendo del modo cliente

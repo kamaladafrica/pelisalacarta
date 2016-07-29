@@ -178,7 +178,6 @@ def main():
 
             p_dialog.close()
 
-
         else:
             logger.info("No actualiza la biblioteca, está desactivado en la configuración de pelisalacarta")
 
