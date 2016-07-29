@@ -36,6 +36,8 @@ def mainlist(item):
     itemlist.append(item.clone(title="Películas", action="lista", fanart="http://i.imgur.com/c3HS8kj.png"))
     itemlist.append(item.clone(title="Series", action="entradas", url="http://desmix.net/series/",
                                fanart="http://i.imgur.com/9loVksV.png"))
+    itemlist.append(item.clone(title="Miniseries", action="entradas", url="http://desmix.net/series/miniseries",
+                               fanart="http://i.imgur.com/9loVksV.png"))
     itemlist.append(item.clone(title="Documentales", action="entradas", url="http://desmix.net/documentales/",
                                fanart="http://i.imgur.com/Q7fsFI6.png"))
     itemlist.append(item.clone(title="Anime", action="entradas", url="http://desmix.net/anime/",
@@ -75,21 +77,25 @@ def busqueda(item):
     itemlist = []
     data = scrapertools.downloadpage(item.url)
 
+    contenido = ['Películas', 'Series', 'Documentales', 'Anime', 'Deportes', 'Miniseries', 'Vídeos']
     bloque = scrapertools.find_single_match(data, '<div id="content" role="main">(.*?)<div id="sidebar" '
                                                   'role="complementary">')
     patron = '<a class="clip-link".*?href="([^"]+)".*?<img alt="([^"]+)" src="([^"]+)"' \
              '.*?<p class="stats">(.*?)</p>'
     matches = scrapertools.find_multiple_matches(bloque, patron)
     for scrapedurl, scrapedtitle, scrapedthumbnail, scrapedcat in matches:
+        if scrapedcat not in contenido:
+            continue
         scrapedthumbnail = "http:"+scrapedthumbnail.replace("-129x180", "")
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        if ("Películas" in scrapedcat) or ("Documentales" in scrapedcat):
+        if ("Películas" in scrapedcat or "Documentales" in scrapedcat) and not "Series" in scrapedcat:
             titulo = scrapedtitle.split("[")[0]
             itemlist.append(item.clone(action="findvideos", title=scrapedtitle, url=scrapedurl,
                                        thumbnail=scrapedthumbnail, fulltitle=titulo, context="05", contentTitle=titulo))
         else:
             itemlist.append(item.clone(action="episodios", title=scrapedtitle, url=scrapedurl,  context="25",
-                                       thumbnail=scrapedthumbnail, fulltitle=scrapedtitle, contentTitle=scrapedtitle))
+                                       thumbnail=scrapedthumbnail, fulltitle=scrapedtitle, contentTitle=scrapedtitle,
+                                       show=scrapedtitle))
 
     next_page = scrapertools.find_single_match(data, '<a class="nextpostslink".*?href="([^"]+)"')
     if next_page != "":
@@ -123,7 +129,7 @@ def entradas(item):
 
     bloque = scrapertools.find_single_match(data, '<div id="content" role="main">(.*?)<div id="sidebar" '
                                                   'role="complementary">')
-    contenido = ["series", "deportes", "anime"]
+    contenido = ["series", "deportes", "anime", 'miniseries']
     c_match = [True for match in contenido if match in item.url]
     #Patron dependiendo del contenido
     if True in c_match:
@@ -144,17 +150,23 @@ def entradas(item):
             itemlist.append(item.clone(action="episodios", title=titulo, url=scrapedurl, thumbnail=scrapedthumbnail,
                                        fulltitle=scrapedtitle, context="25", contentTitle=scrapedtitle))
     else:
-        patron = '<a class="clip-link".*?href="([^"]+)".*?<img alt="([^"]+)" src="([^"]+)"'
+        patron = '<a class="clip-link".*?href="([^"]+)".*?<img alt="([^"]+)" src="([^"]+)".*?<span class="cat">(.*?)</span>'
         matches = scrapertools.find_multiple_matches(bloque, patron)
-        for scrapedurl, scrapedtitle, scrapedthumbnail in matches:
+        for scrapedurl, scrapedtitle, scrapedthumbnail, categoria in matches:
             titulo = scrapertools.decodeHtmlentities(scrapedtitle)
             scrapedtitle = scrapertools.decodeHtmlentities(scrapedtitle.split("[")[0])
+            action = "findvideos"
+            show = ""
+            if "Series" in categoria:
+                action = "episodios"
+                show = scrapedtitle
+
             scrapedthumbnail = "http:"+scrapedthumbnail.replace("-129x180", "")
             scrapedthumbnail = scrapedthumbnail.rsplit("/", 1)[0]+"/"+urllib.quote(scrapedthumbnail.rsplit("/", 1)[1])
             if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-            itemlist.append(item.clone(action="findvideos", title=titulo, url=scrapedurl, thumbnail=scrapedthumbnail,
+            itemlist.append(item.clone(action=action, title=titulo, url=scrapedurl, thumbnail=scrapedthumbnail,
                                        fulltitle=scrapedtitle, context="05", contentTitle=scrapedtitle,
-                                       viewmode="movie_with_plot"))
+                                       viewmode="movie_with_plot", show=show))
 
     #Paginación
     next_page = scrapertools.find_single_match(data, '<a class="nextpostslink".*?href="([^"]+)"')
@@ -168,7 +180,7 @@ def episodios(item):
     logger.info("pelisalacarta.channels.descargasmix episodios")
     itemlist = []
 
-    if item.category != "" and item.action != "add_serie_to_library":
+    if item.category != "" and "Añadir esta serie a la biblioteca" not in item.title:
         try:
             from core import tmdb
             tmdb.set_infoLabels_item(item, __modo_grafico__)
@@ -190,16 +202,15 @@ def episodios(item):
 
     itemlist.sort(key=lambda item: item.title, reverse=True)
     item.plot = scrapertools.find_single_match(data, '<strong>SINOPSIS</strong>:(.*?)</p>')
-    if item.show != "":
+    if item.show != "" and "Añadir esta serie a la biblioteca" not in item.title:
         item.infoLabels['season'] = ""
         item.infoLabels['episode'] = ""
         itemlist.append(item.clone(channel="trailertools", title="Buscar Tráiler", action="buscartrailer", context="",
                                    text_color="magenta"))
-        if item.category != "" and item.action != "add_serie_to_library":
-            if config.get_library_support():
-                itemlist.append(Item(channel=item.channel, title="Añadir esta serie a la biblioteca", url=item.url,
-                                     action="add_serie_to_library", extra="episodios", show=item.show,
-                                     text_color="green"))
+        if config.get_library_support():
+            itemlist.append(Item(channel=item.channel, title="Añadir esta serie a la biblioteca", url=item.url,
+                                 action="add_serie_to_library", extra="episodios", show=item.show,
+                                 text_color="green"))
 
         if "tmbd_id" in item.infoLabels:
             try:
@@ -267,7 +278,7 @@ def epienlaces(item):
 
 def findvideos(item):
     logger.info("pelisalacarta.channels.descargasmix findvideos")
-    if item.extra != "":
+    if item.extra and item.extra != "findvideos":
         return epienlaces(item)
     itemlist = []
     item.text_color = color3
@@ -283,60 +294,71 @@ def findvideos(item):
         except:
             pass
 
-    #Patron torrent
-    matches = scrapertools.find_multiple_matches(data, 'class="separate3 magnet".*?href="([^"]+)"')
-    for scrapedurl in matches:
-        title = "[Torrent] "
-        title += urllib.unquote(scrapertools.find_single_match(scrapedurl, 'dn=(.*?)(?i)WWW.DescargasMix'))
-        itemlist.append(item.clone(action="play", server="torrent", title=title, url=scrapedurl, text_color="green"))
+    old_format = False
+    #Patron torrent antiguo formato
+    if "Enlaces de descarga</div>" in data:
+        old_format = True
+        matches = scrapertools.find_multiple_matches(data, 'class="separate3 magnet".*?href="([^"]+)"')
+        for scrapedurl in matches:
+            title = "[Torrent] "
+            title += urllib.unquote(scrapertools.find_single_match(scrapedurl, 'dn=(.*?)(?i)WWW.DescargasMix'))
+            itemlist.append(item.clone(action="play", server="torrent", title=title, url=scrapedurl, text_color="green"))
     
     #Patron online
-    data_online = scrapertools.find_single_match(data, 'Enlaces para ver online(.*?)<div class="section-box related-'
+    data_online = scrapertools.find_single_match(data, 'Ver online</div>(.*?)<div class="section-box related-'
                                                        'posts">')
     if len(data_online) > 0:
+        itemlist.append(item.clone(title="Enlaces Online", action="", text_color=color1))
         patron = 'dm\(c.a\(\'([^\']+)\''
         matches = scrapertools.find_multiple_matches(data_online, patron)
         for code in matches:
             enlace = dm(code)
             enlaces = servertools.findvideos(data=enlace)
             if len(enlaces) > 0:
-                title = "Ver vídeo en " + enlaces[0][2]
+                title = "   Ver vídeo en " + enlaces[0][2]
                 itemlist.append(item.clone(action="play", server=enlaces[0][2], title=title, url=enlaces[0][1]))
 
     #Patron descarga
-    data_descarga = scrapertools.find_single_match(data, 'Enlaces de descarga(.*?)<script>')
-    patron = '<div class="fondoenlaces".*?id=".*?_([^"]+)".*?textContent=nice=dm\(c.a\(\'([^\']+)\''
-    matches = scrapertools.find_multiple_matches(data_descarga, patron)
-    for scrapedserver, scrapedurl in matches:
-        if (scrapedserver == "ul") | (scrapedserver == "uploaded"):
-            scrapedserver = "uploadedto"
-        titulo = scrapedserver.capitalize()
-        if titulo == "Magnet":
+    bloques_descarga = scrapertools.find_multiple_matches(data, '<div class="floatLeft double(?:nuevo|)">(.*?)</div>(.*?)(?:<div id="mirrors"|<script>)')
+    for title_bloque, bloque in bloques_descarga:
+        if title_bloque == "Ver online":
             continue
-        mostrar_server = True
-        if config.get_setting("hidepremium") == "true":
-            mostrar_server = servertools.is_server_enabled(scrapedserver)
-        if mostrar_server:
-            try:
-                servers_module = __import__("servers."+scrapedserver)
-                #Saca numero de enlaces
-                patron = "(dm\(c.a\('"+scrapedurl.replace("+", "\+")+"'.*?)</div>"
-                data_enlaces = scrapertools.find_single_match(data_descarga, patron)
-                patron = 'dm\(c.a\(\'([^\']+)\''
-                matches_enlaces = scrapertools.find_multiple_matches(data_enlaces, patron)
-                numero = str(len(matches_enlaces))
-                if item.category != "Cine":
-                    itemlist.append(item.clone(action="enlaces", title=titulo+" - Nº enlaces:"+numero,
-                                               extra=scrapedurl))
-            except:
-                pass
+        itemlist.append(item.clone(title=title_bloque, action="", text_color=color1))
+        patron = '<div class="fondoenlaces".*?id=".*?_([^"]+)".*?textContent=nice=dm\(c.a\(\'([^\']+)\''
+        matches = scrapertools.find_multiple_matches(bloque, patron)
+        for scrapedserver, scrapedurl in matches:
+            if (scrapedserver == "ul") | (scrapedserver == "uploaded"):
+                scrapedserver = "uploadedto"
+            titulo = scrapedserver.capitalize()
+            if titulo == "Magnet" and old_format:
+                continue
+            elif titulo == "Magnet" and not old_format:
+                title = "   Enlace Torrent"
+                itemlist.append(item.clone(action="play", server="torrent", title=title, url=scrapedurl, text_color="green"))
+                continue
+            mostrar_server = True
+            if config.get_setting("hidepremium") == "true":
+                mostrar_server = servertools.is_server_enabled(scrapedserver)
+            if mostrar_server:
+                try:
+                    servers_module = __import__("servers."+scrapedserver)
+                    #Saca numero de enlaces
+                    patron = "(dm\(c.a\('"+scrapedurl.replace("+", "\+")+"'.*?)</div>"
+                    data_enlaces = scrapertools.find_single_match(bloque, patron)
+                    patron = 'dm\(c.a\(\'([^\']+)\''
+                    matches_enlaces = scrapertools.find_multiple_matches(data_enlaces, patron)
+                    numero = str(len(matches_enlaces))
+                    titulo = "   "+titulo+" - Nº enlaces:"+numero
+                    itemlist.append(item.clone(action="enlaces", title=titulo, extra=scrapedurl))
+                except:
+                    pass
 
     itemlist.append(item.clone(channel="trailertools", title="Buscar Tráiler", action="buscartrailer", context="",
                                text_color="magenta"))
     if item.category != "Cine" and config.get_library_support():
         itemlist.append(Item(channel=item.channel, title="Añadir a la biblioteca", action="add_pelicula_to_library",
-                             extra="findvideos", infoLabels={'title': item.fulltitle}, fulltitle=item.fulltitle,
-                             text_color="green"))
+                             extra="findvideos", url=item.url, infoLabels={'title': item.fulltitle},
+                             fulltitle=item.fulltitle, text_color="green"))
 
     return itemlist
 
