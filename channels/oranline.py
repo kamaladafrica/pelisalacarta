@@ -129,12 +129,19 @@ def newest(categoria):
 def peliculas(item):
     logger.info("pelisalacarta.channels.oranline peliculas")
     itemlist = []
+    nItemxPage = 25 if __modo_grafico__ else 100  # o los que haya en la pagina
 
     # Descarga la página
     data = scrapertools.downloadpage(item.url)
 
     # Extrae las entradas (carpetas)
     bloque = scrapertools.find_multiple_matches(data, '<li class="item">(.*?)</li>')
+
+    item_inicial = int(item.extra) if item.extra else 0
+    items_total = len(bloque)
+    item_final = item_inicial + nItemxPage if (item_inicial + nItemxPage) < items_total else items_total
+    bloque = bloque[item_inicial:item_final]
+
     for match in bloque:
         patron = 'href="([^"]+)".*?title="([^"]+)".*?src="([^"]+)".*?' \
                  'div class="idiomas">(.*?)<div class="calidad">(.*?)</div>'
@@ -175,10 +182,20 @@ def peliculas(item):
     except:
         pass
 
-    next_page = scrapertools.find_single_match(data, '<a href="([^"]+)"\s+><span [^>]+>&raquo;</span>')
-    if next_page != "":
-        itemlist.append(item.clone(action="peliculas", title=">> Página siguiente",
-                                   url=next_page.replace("&#038;", "&"), text_color=color3))
+    if itemlist:
+        # Paginacion solo cuando hay resultados:
+        #   Se pagina en subpaginas cuando el resultado es mayor q nItemxPage
+        #   Se pagina normal cuando ya no hay mas resultados por mostrar en la url
+        if item_final < items_total:
+            # Siguiente sub pagina
+            itemlist.append(item.clone(action="peliculas", title=">> Página siguiente", url=item.url,
+                                 text_color=color3, extra=str(nItemxPage)))
+        else:
+            # Siguiente pagina en web
+            next_page = scrapertools.find_single_match(data, '<a href="([^"]+)"\s+><span [^>]+>&raquo;</span>')
+            if next_page != "":
+                itemlist.append(item.clone(action="peliculas", title=">> Página siguiente", extra= '0',
+                                           url=next_page.replace("&#038;", "&"), text_color=color3))
 
     return itemlist
 
