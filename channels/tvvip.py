@@ -462,8 +462,8 @@ def series(item):
                 itemlist.sort(key=lambda item: item.title, reverse=True)
                 if config.get_library_support():
                     itemlist.append(Item(channel=item.channel, title="Añadir esta serie a la biblioteca", url=item.url,
-                                         action="series_library", fulltitle=data['name'], show=data['name'],
-                                         text_color="green"))
+                                         action="add_serie_to_library", show=data['name'],
+                                         text_color="green", extra="series_library"))
 
     if item.title == "Últimas Series": return itemlist
     if item.title == "Lista de Series A-Z": itemlist.sort(key=lambda item: item.fulltitle)
@@ -530,9 +530,10 @@ def series(item):
 
 def episodios(item):
     logger.info("pelisalacarta.channels.tvvip episodios")
+    logger.info("categoriaaa es "+item.tostring())
     itemlist = []
     # Redirección para actualización de biblioteca
-    if item.category == "" or item.category == "Series":
+    if item.category == "" or item.category == "Series" or "Añadir esta serie" in item.title:
         itemlist = series_library(item)
         return itemlist
 
@@ -590,14 +591,13 @@ def episodios(item):
             else:
                 show = item.title.split('(')[0]
             itemlist.append(Item(channel=item.channel, title="Añadir esta serie a la biblioteca", text_color="green",
-                                 url=item.url, action="series_library", fulltitle=show, show=show))
+                                 url=item.url, action="add_serie_to_library", show=show, extra="series_library"))
     return itemlist
 
 
 def series_library(item):
     logger.info("pelisalacarta.channels.tvvip series_library")
     # Funcion unicamente para añadir/actualizar series a la libreria
-    itemlist = []
     lista_episodios = []
     show = item.show.strip()
 
@@ -618,9 +618,9 @@ def series_library(item):
                         check_filename = scrapertools.get_season_and_episode(fulltitle)
                     except:
                         fulltitle += " " + str(data['seasonNumber']) + "x00"
-                    lista_episodios.append(
-                            item.clone(action="findvideos", server="", title=fulltitle,
-                                       extra=url, url=item.url, fulltitle=fulltitle, show=show))
+                    lista_episodios.append(Item(channel=item.channel, action="findvideos", server="",
+                                                title=fulltitle, extra=url, url=item.url, fulltitle=fulltitle,
+                                                contentTitle=fulltitle, show=show))
             else:
                 for child in data["repoChilds"]:
                     url = "http://tv-vip.com/json/repo/%s/index.json" % child
@@ -629,9 +629,9 @@ def series_library(item):
                         check_filename = scrapertools.get_season_and_episode(fulltitle)
                     except:
                         fulltitle += " " + str(data['seasonNumber']) + "x00"
-                    lista_episodios.append(
-                            item.clone(action="findvideos", server="", title=fulltitle,
-                                       extra=url, url=item.url, fulltitle=fulltitle, show=show))
+                    lista_episodios.append(Item(channel=item.channel, action="findvideos", server="",
+                                                title=fulltitle, extra=url, url=item.url, contentTitle=fulltitle, 
+                                                fulltitle=fulltitle, show=show))
     # Para series directas de una sola temporada
     else:
         data = data_serie
@@ -643,8 +643,9 @@ def series_library(item):
                     check_filename = scrapertools.get_season_and_episode(fulltitle)
                 except:
                     fulltitle += " 1x00"
-                lista_episodios.append(item.clone(action="findvideos", server="", title=fulltitle, url=item.url,
-                                                  extra=url, fulltitle=fulltitle, show=show))
+                lista_episodios.append(Item(channel=item.channel, action="findvideos", server="", title=fulltitle,
+                                            contentTitle=fulltitle, url=item.url, extra=url, fulltitle=fulltitle,
+                                            show=show))
         else:
             for child in data["repoChilds"]:
                 url = "http://tv-vip.com/json/repo/%s/index.json" % child
@@ -653,27 +654,11 @@ def series_library(item):
                     check_filename = scrapertools.get_season_and_episode(fulltitle)
                 except:
                     fulltitle += " 1x00"
-                lista_episodios.append(item.clone(action="findvideos", server="", title=fulltitle, url=item.url,
-                                                  extra=url, fulltitle=fulltitle, show=show))
-    try:
-        from platformcode import library
-        library.save_library_tvshow(item, lista_episodios)
-        if "Añadir esta serie" in item.title:
-            library.save_tvshow_in_file(item)
-        error = False
-    except:
-        import traceback
-        logger.info(traceback.format_exc())
-        error = True
+                lista_episodios.append(Item(channel=item.channel, action="findvideos", server="", title=fulltitle,
+                                            contentTitle=fulltitle, url=item.url, extra=url, fulltitle=fulltitle,
+                                            show=show))
 
-    if not error:
-        itemlist.append(Item(channel=item.channel, title='Serie añadida correctamente a la biblioteca',
-                             action="", folder=False))
-    else:
-        itemlist.append(Item(channel=item.channel, title='ERROR. Han ocurrido uno o varios errores en el proceso',
-                             action="", folder=False))
-
-    return itemlist
+    return lista_episodios
 
 
 def findvideos(item):
