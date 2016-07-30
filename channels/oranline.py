@@ -284,11 +284,11 @@ def findvideos(item):
     if itemlist:
         itemlist.append(item.clone(channel="trailertools", title="Buscar Tráiler", action="buscartrailer", context="",
                                    text_color="magenta"))    
-        if item.category != "Cine":
+        if item.extra != "findvideos":
             if config.get_library_support():
                 itemlist.append(Item(channel=item.channel, title="Añadir enlaces a la biblioteca", text_color="green",
                                      filtro=True, action="add_pelicula_to_library", fulltitle=item.fulltitle,
-                                     url=item.url, infoLabels={'title': item.fulltitle}))
+                                     extra="findvideos", url=item.url, infoLabels={'title': item.fulltitle}))
     
     else:
         itemlist.append(item.clone(title="No hay enlaces disponibles", action="", text_color=color3))
@@ -321,7 +321,7 @@ def bloque_enlaces(data, filtro_idioma, dict_idiomas, type, item):
             try:
                 servers_module = __import__("servers." + server)
                 title = "   Mirror en " + server + " (" + language + ") (Calidad " + calidad.strip() + ")"
-                if filtro_idioma == 4 or item.filtro:
+                if filtro_idioma == 4 or item.filtro or item.extra == "findvideos":
                     lista_enlaces.append(item.clone(title=title, action="play", server=server, text_color=color2,
                                                     url=scrapedurl, idioma=language))
                 else:
