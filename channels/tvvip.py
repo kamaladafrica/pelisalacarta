@@ -153,7 +153,7 @@ def busqueda(item, texto):
         else:
             itemlist.append(Item(channel=item.channel, action="findvideos", title=bbcode_kodi2html(title), url=url,
                                  thumbnail=thumbnail, fanart=fanart, fulltitle=fulltitle, contentTitle=fulltitle,
-                                 context="0", infoLabels=infolabels, viewmode="movie_with_plot", folder=True))
+                                 context="05", infoLabels=infolabels, viewmode="movie_with_plot", folder=True))
 
     return itemlist
 
@@ -231,9 +231,9 @@ def entradas(item):
     logger.info("pelisalacarta.channels.tvvip entradas")
     itemlist = []
     if item.title == "Nuevos Capítulos":
-        context = ""
+        context = "5"
     else:
-        context = "0"
+        context = "05"
     data = scrapertools.anti_cloudflare(item.url, host=host, headers=headers)
     data = jsontools.load_json(data)
     head = header_string + get_cookie_value()
@@ -277,11 +277,10 @@ def entradas(item):
         if child['year']:
             title += " (" + child['year'] + ")"
         title += quality
-        if item.show != "": title = child['name']
 
         itemlist.append(Item(channel=item.channel, action="findvideos", server="", title=title, url=url,
                              thumbnail=thumbnail, fanart=fanart, fulltitle=fulltitle, infoLabels=infolabels,
-                             contentTitle=fulltitle, context=context, show=data['name']))
+                             contentTitle=fulltitle, context=context))
 
     return itemlist
 
@@ -370,7 +369,7 @@ def entradasconlistas(item):
 
         itemlist.append(Item(channel=item.channel, action="findvideos", title=bbcode_kodi2html(title), url=url,
                              thumbnail=thumbnail, fanart=fanart, fulltitle=fulltitle, infoLabels=infolabels,
-                             contentTitle=fulltitle, context="0", viewmode="movie_with_plot", folder=True))
+                             contentTitle=fulltitle, context="05", viewmode="movie_with_plot", folder=True))
 
     # Se añade item para añadir la lista de vídeos a la biblioteca
     if data['sortedRepoChilds'] and len(itemlist) > 0 and contentList:
@@ -456,7 +455,7 @@ def series(item):
                 action = "series"
             itemlist.append(Item(channel=item.channel, action=action, title=bbcode_kodi2html(title), url=url, server="",
                                  thumbnail=thumbnail, fanart=fanart, fulltitle=fulltitle, infoLabels=infolabels,
-                                 contentTitle=fulltitle, context="2", viewmode="movie_with_plot", folder=True))
+                                 contentTitle=fulltitle, context="25", viewmode="movie_with_plot", folder=True))
             if len(itemlist) == len(data["sortedPlaylistChilds"]) and item.contentTitle != "Series":
 
                 itemlist.sort(key=lambda item: item.title, reverse=True)
@@ -521,7 +520,7 @@ def series(item):
 
         itemlist.append(Item(channel=item.channel, action="findvideos", title=bbcode_kodi2html(title), url=url,
                              server="", thumbnail=thumbnail, fanart=fanart, fulltitle=fulltitle, infoLabels=infolabels,
-                             contentTitle=fulltitle, context="2", viewmode="movie_with_plot", folder=True))
+                             contentTitle=fulltitle, context="25", viewmode="movie_with_plot", folder=True))
     if item.extra == "new":
         itemlist.sort(key=lambda item: item.title, reverse=True)
 
@@ -533,7 +532,7 @@ def episodios(item):
     logger.info("categoriaaa es "+item.tostring())
     itemlist = []
     # Redirección para actualización de biblioteca
-    if item.category == "" or item.category == "Series" or "Añadir esta serie" in item.title:
+    if item.extra == "series_library":
         itemlist = series_library(item)
         return itemlist
 
@@ -568,7 +567,7 @@ def episodios(item):
             except:
                 title = fulltitle = child['id']
             itemlist.append(item.clone(action=action, server="", title=title, url=url, thumbnail=thumbnail,
-                                       fanart=item.fanart, fulltitle=fulltitle, contentTitle=contentTitle, context="3",
+                                       fanart=item.fanart, fulltitle=fulltitle, contentTitle=contentTitle, context="35",
                                        viewmode="movie", extra=extra, show=item.fulltitle, folder=True))
     else:
         for child in data["repoChilds"]:
@@ -581,7 +580,7 @@ def episodios(item):
             title = fulltitle = child.capitalize().replace('_', ' ')
             itemlist.append(item.clone(action="findvideos", server="", title=title, url=url, thumbnail=thumbnail,
                                        fanart=item.fanart, fulltitle=fulltitle, contentTitle=item.fulltitle,
-                                       context="2", show=item.fulltitle, folder=True))
+                                       context="25", show=item.fulltitle, folder=True))
 
     # Opción de añadir a la biblioteca en casos de series de una única temporada
     if len(itemlist) > 0 and not "---" in item.title and item.title != "Nuevos Capítulos":
@@ -688,11 +687,14 @@ def findvideos(item):
             else:
                 itemlist.append(item.clone(action="play", server="directo", title=bbcode_kodi2html(title), url=url,
                                            contentTitle=item.fulltitle, viewmode="list", extra=id, folder=False))
-    if len(itemlist) > 0 and item.category != "Cine" and item.category != "" and item.category != "Series":
+
+    itemlist.append(item.clone(channel="trailertools", action="buscartrailer", title="Buscar Tráiler",
+                               text_color="magenta"))
+    if len(itemlist) > 0 and item.extra == "":
         if config.get_library_support():
             itemlist.append(Item(channel=item.channel, title="Añadir enlaces a la biblioteca", text_color="green",
                                        contentTitle=item.fulltitle, url=item.url, action="add_pelicula_to_library",
-                                       infoLabels={'title':item.fulltitle}, fulltitle=item.fulltitle))
+                                       infoLabels={'title':item.fulltitle}, extra="findvideos", fulltitle=item.fulltitle))
 
     return itemlist
 
@@ -758,9 +760,9 @@ def listas(item):
         infolabels['title'] = title
         try:
             from platformcode import library
-            new_item = item.clone(action="play_from_library", title=title, url=url, fulltitle=title, fanart=fanart,
+            new_item = item.clone(title=title, url=url, fulltitle=title, fanart=fanart, extra="findvideos",
                                   thumbnail=thumbnail, infoLabels=infolabels, category="Cine")
-            library.save_library_movie(new_item)
+            library.add_pelicula_to_library(new_item)
             error = False
         except:
             error = True
