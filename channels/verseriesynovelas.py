@@ -274,7 +274,7 @@ def episodios(item):
             itemlist.append(item.clone(action="findvideos", title=scrapedtitle, url=scrapedurl))
 
     itemlist.reverse()
-    if itemlist and "Añadir esta temporada a la biblioteca" not in item.title:
+    if itemlist and item.extra != "episodios":
         try:
             from core import tmdb
             tmdb.set_infoLabels_itemlist(itemlist, __modo_grafico__)
@@ -294,7 +294,7 @@ def findvideos(item):
     itemlist = []
     item.text_color = color3
 
-    if item.extra == "newest" or item.category == "":
+    if item.extra == "newest" and item.extra != "episodios":
         try:
             from core import tmdb
             tmdb.set_infoLabels_item(item, __modo_grafico__)
@@ -334,7 +334,7 @@ def findvideos(item):
 
     if not itemlist: 
         itemlist.append(item.clone(action="", title="No se ha encontrado ningún enlace"))
-    if item.fulltitle != "Añadir esta temporada a la biblioteca":
+    if item.extra != "episodios":
         url_lista = scrapertools.find_single_match(data, '<a class="regresar" href="([^"]+)"')
         if url_lista != "":
             itemlist.append(item.clone(action="episodios", title="Ir a la Lista de Capítulos", url=url_lista,
