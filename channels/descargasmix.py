@@ -180,14 +180,12 @@ def episodios(item):
     logger.info("pelisalacarta.channels.descargasmix episodios")
     itemlist = []
 
-    if item.category != "" and "Añadir esta serie a la biblioteca" not in item.title:
+    if item.extra == "":
         try:
             from core import tmdb
             tmdb.set_infoLabels_item(item, __modo_grafico__)
         except:
             pass
-    else:
-        item.infoLabels = {}
 
     data = scrapertools.downloadpage(item.url)
     patron = '(<ul class="menu" id="seasons-list">.*?<div class="section-box related-posts">)'
@@ -202,7 +200,7 @@ def episodios(item):
 
     itemlist.sort(key=lambda item: item.title, reverse=True)
     item.plot = scrapertools.find_single_match(data, '<strong>SINOPSIS</strong>:(.*?)</p>')
-    if item.show != "" and "Añadir esta serie a la biblioteca" not in item.title:
+    if item.show != "" and item.extra == "":
         item.infoLabels['season'] = ""
         item.infoLabels['episode'] = ""
         itemlist.append(item.clone(channel="trailertools", title="Buscar Tráiler", action="buscartrailer", context="",
@@ -355,7 +353,7 @@ def findvideos(item):
 
     itemlist.append(item.clone(channel="trailertools", title="Buscar Tráiler", action="buscartrailer", context="",
                                text_color="magenta"))
-    if item.category != "Cine" and config.get_library_support():
+    if item.extra != "findvideos" and config.get_library_support():
         itemlist.append(Item(channel=item.channel, title="Añadir a la biblioteca", action="add_pelicula_to_library",
                              extra="findvideos", url=item.url, infoLabels={'title': item.fulltitle},
                              fulltitle=item.fulltitle, text_color="green"))
