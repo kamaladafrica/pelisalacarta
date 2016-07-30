@@ -443,8 +443,8 @@ def menu_info(item):
     if config.get_library_support():
         itemlist.append(Item(channel=item.channel, action="add_pelicula_to_library", text_color=color5,
                              title="Añadir película a la biblioteca", url=item.url, thumbnail=item.thumbnail,
-                             infoLabels={'title': item.fulltitle}, fanart=item.fanart, fulltitle=item.fulltitle,
-                             extra="media"))
+                             fanart=item.fanart, fulltitle=item.fulltitle,
+                             extra="media|"))
     
     return itemlist
 
@@ -463,7 +463,7 @@ def episodios(item):
     data_season = data[:]
     headers["Referer"] = item.url
 
-    if item.category == "" or not __menu_info__:
+    if item.extra == "episodios" or not __menu_info__:
         action = "findvideos"
     else:
         action = "menu_info_episode"
@@ -479,16 +479,20 @@ def episodios(item):
             item.contentEpisodeNumber = episode.split("x")[1]
             
             title = episode + " - " + scrapedtitle
-            itemlist.append(item.clone(action=action, title=title, url=scrapedurl, text_color=color2, extra="episode"))
+            extra = "episode"
+            if item.extra == "episodios":
+                extra = "episode|"
+            itemlist.append(item.clone(action=action, title=title, url=scrapedurl, text_color=color2, extra=extra))
 
-    try:
-        from core import tmdb
-        tmdb.set_infoLabels_itemlist(itemlist, __modo_grafico__)
-    except:
-        pass
+    if item.extra != "episodios":
+        try:
+            from core import tmdb
+            tmdb.set_infoLabels_itemlist(itemlist, __modo_grafico__)
+        except:
+            pass
 
     itemlist.reverse()
-    if item.category != "" and not "Añadir serie a la biblioteca" in item.title:
+    if item.extra != "episodios":
         id = scrapertools.find_single_match(item.url, '/(\d+)/')
         data_trailer = scrapertools.downloadpage("http://www.cinefox.cc/media/trailer?idm=%s&mediaType=1" % id,
                                                      headers=headers.items())
@@ -558,14 +562,32 @@ def findvideos(item):
     logger.info("pelisalacarta.channels.cinefox findvideos")
     itemlist = []
 
+    if not "|" in item.extra and not __menu_info__:
+        data = scrapertools.downloadpage(item.url, headers=headers.items())
+        year = scrapertools.find_single_match(data, '<div class="media-summary">.*?release.*?>(\d+)<')
+        if year != "" and not "tmdb_id" in item.infoLabels:
+            try:
+                from core import tmdb
+                item.infoLabels["year"] = year
+                tmdb.set_infoLabels_item(item, __modo_grafico__)
+            except:
+                pass
+    
+        if item.infoLabels["plot"] == "":
+            sinopsis = scrapertools.find_single_match(data, '<p id="media-plot".*?>.*?\.\.\.(.*?)Si te parece')
+            item.infoLabels["plot"] = scrapertools.htmlclean(sinopsis)
+
     id = scrapertools.find_single_match(item.url, '/(\d+)/')
-    if item.category == "" or item.category == "Cine" or not __menu_info__:
-        url = "http://www.cinefox.cc/sources/list?id=%s&type=%s&order=%s" % (id, item.extra, "streaming")
+    if "|" in item.extra or not __menu_info__:
+        extra = item.extra
+        if "|" in item.extra:
+            extra = item.extra[:-1]
+        url = "http://www.cinefox.cc/sources/list?id=%s&type=%s&order=%s" % (id, extra, "streaming")
         itemlist.extend(get_enlaces(item, url, "Online"))
-        url = "http://www.cinefox.cc/sources/list?id=%s&type=%s&order=%s" % (id, item.extra, "download")
+        url = "http://www.cinefox.cc/sources/list?id=%s&type=%s&order=%s" % (id, extra, "download")
         itemlist.extend(get_enlaces(item, url, "de Descarga"))
 
-        if item.extra == "media":
+        if extra == "media":
             data_trailer = scrapertools.downloadpage("http://www.cinefox.cc/media/trailer?idm=%s&mediaType=1" % id,
                                                      headers=headers.items())
             trailer_url = jsontools.load_json(data_trailer)["video"]["url"]
@@ -576,11 +598,11 @@ def findvideos(item):
             itemlist.append(item.clone(channel="trailertools", action="buscartrailer", title="Buscar Tráiler",
                                        text_color="magenta", context=""))
 
-            if config.get_library_support() and (item.category != "" and item.category != "Cine"):
+            if config.get_library_support() and not "|" in item.extra:
                 itemlist.append(Item(channel=item.channel, action="add_pelicula_to_library", text_color=color5,
                                      title="Añadir película a la biblioteca", url=item.url, thumbnail=item.thumbnail,
                                      fanart=item.fanart, fulltitle=item.fulltitle,
-                                     extra="media"))
+                                     extra="media|"))
     else:
         url = "http://www.cinefox.cc/sources/list?id=%s&type=%s&order=%s" % (id, item.extra, item.type)
         type = item.type.replace("streaming", "Online").replace("download", "de Descarga")
