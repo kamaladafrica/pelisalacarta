@@ -91,10 +91,9 @@ otmdb_global = None
 def cb_select_from_tmdb(item, tmdb_result):
     if tmdb_result is None:
         logger.debug("he pulsado 'cancelar' en la ventana de info de la serie/pelicula")
-        dict_dummie = {"id": ""}
-        item.tmdb_result = dict_dummie
+        return None
     else:
-        item.tmdb_result = tmdb_result
+        return tmdb_result
 
 
 def find_and_set_infoLabels_tmdb(item, ask_video=True):
@@ -110,49 +109,43 @@ def find_and_set_infoLabels_tmdb(item, ask_video=True):
 
     video_type = "tv" if contentType in ["tvshow", "episode"] else "movie"
 
-    if not item.infoLabels.get("tmdb_id"):
-        while not item.tmdb_result:
+    tmdb_result = None
+    while not tmdb_result:
 
+        if not item.infoLabels.get("tmdb_id"):
             otmdb_global = Tmdb(texto_buscado=title, tipo=video_type, year=year)
-            results = otmdb_global.get_list_resultados()
-
-            if ask_video and len(results) > 1:
-                platformtools.show_video_info(results,
-                                              caption="[{0}]: Selecciona la {1} correcta".
-                                              format(title, "serie" if video_type == "tv" else "pelicula"),
-                                              callback='cb_select_from_tmdb', item=item)
-            else:
-                if len(results) > 0 and results[0]["id"] != "":
-                    cb_select_from_tmdb(item, results[0])
-                else:  # No hay resultados
-                    cb_select_from_tmdb(item, {})
-                    # Pregunta el titulo
-                    it = platformtools.dialog_input(title, "No se ha encontrado la {0}, introduzca el nombre correcto".
-                                                    format("serie" if video_type == "tv" else "pelicula"))
-                    if it is not None:
-                        title = it
-
-                    else:  # Cancelar
-                        cb_select_from_tmdb(item, results[0])
-                        break
-
-    else:
-        if not otmdb_global or otmdb_global.result.get("id") != item.infoLabels['tmdb_id']:
+        elif not otmdb_global or otmdb_global.result.get("id") != item.infoLabels['tmdb_id']:
             otmdb_global = Tmdb(id_Tmdb=item.infoLabels['tmdb_id'], tipo=video_type, idioma_busqueda="es")
 
-        item.tmdb_result = otmdb_global.result
+        results = otmdb_global.get_list_resultados()
+
+
+        if len(results) > 1 and ask_video:
+            tmdb_result = platformtools.show_video_info(results, caption="[{0}]: Selecciona la {1} correcta"
+                                                        .format(title, "serie" if video_type == "tv" else "pelicula"),
+                                                        callback='cb_select_from_tmdb', item=item)
+        elif len(results) > 0:
+            tmdb_result = results[0]
+
+        else:
+            # Pregunta el titulo
+            it = platformtools.dialog_input(title, "No se ha encontrado la {0}, introduzca el nombre correcto".
+                                            format("serie" if video_type == "tv" else "pelicula"))
+            if it is not None:
+                title = it
+            else:
+                logger.debug("he pulsado 'cancelar' en la ventana 'introduzca el nombre correcto'")
+                break
+
 
     infoLabels = item.infoLabels if type(item.infoLabels) == dict else {}
-    infoLabels["mediatype"] = contentType
 
-    result = item.tmdb_result
-    del item.tmdb_result
-
-    if not result:
+    if not tmdb_result:
         item.infoLabels = infoLabels
         return
 
-    infoLabels = otmdb_global.get_infoLabels(infoLabels)
+    infoLabels = otmdb_global.get_infoLabels(infoLabels, tmdb_result)
+    infoLabels["mediatype"] = contentType
 
     if infoLabels["mediatype"] == "episode":
         try:
@@ -834,7 +827,7 @@ class Tmdb(object):
 
         cr = 0
         for p in range(1, self.total_pages + 1):
-            for r in range(0, len(self.results) + 1):
+            for r in range(0, len(self.results)):
                 try:
                     self.load_resultado(r, p)
                     self.result['type'] = self.busqueda.get("tipo", "movie")
@@ -1229,7 +1222,7 @@ class Tmdb(object):
 
         return ret
 
-    def get_infoLabels(self, infoLabels=None):
+    def get_infoLabels(self, infoLabels=None, origen=None):
         """
         :param infoLabels: Informacion extra de la pelicula, serie, temporada o capitulo.
         :type infoLabels: Dict
@@ -1238,8 +1231,9 @@ class Tmdb(object):
         :rtype: Dict
         """
         ret_infoLabels = copy.copy(infoLabels) if infoLabels else {}
+        items = self.result.items() if not origen else origen.items()
 
-        for k, v in self.result.items():
+        for k, v in items:
             if v == '':
                 continue
             elif type(v) == str:

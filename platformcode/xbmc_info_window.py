@@ -287,6 +287,7 @@ class InfoWindow(xbmcgui.WindowXMLDialog):
         self.item = item
         self.indexList = -1
         self.listData = None
+        self.return_value = None
 
         # Obtenemos el canal desde donde se ha echo la llamada y cargamos los settings disponibles para ese canal
         channelpath = inspect.currentframe().f_back.f_back.f_code.co_filename
@@ -301,7 +302,7 @@ class InfoWindow(xbmcgui.WindowXMLDialog):
 
         # Muestra la ventana
         self.doModal()
-        return
+        return self.return_value
 
     def onInit(self):
         # Ponemos el foco en el boton de cerrar [X]
