@@ -132,7 +132,7 @@ def find_and_set_infoLabels_tmdb(item, ask_video=True):
                                           format("Serie" if video_type == "tv" else "Pelicula") ,
                                           "No se ha encontrado la {0}:".
                                           format("serie" if video_type == "tv" else "pelicula"),
-                                          "[COLOR blue]" + title + "[/COLOR]",
+                                          title,
                                           '¿Desea introducir otro nombre?'):
                 # Pregunta el titulo
                 it = platformtools.dialog_input(title, "Introduzca el nombre de la {0} a buscar".
