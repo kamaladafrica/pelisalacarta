@@ -5,11 +5,13 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 import re
+import requests
 
 from core import config
 from core import logger
 from core import scrapertools
 from core.item import Item
+
 
 DEBUG = config.get_setting("debug")
 
@@ -19,11 +21,13 @@ def strip_tags(value):
 
 def mainlist(item):
     logger.info("[filesmonster_catalogue.py] mainlist")
-
+    user=config.get_setting("filesmonsteruser")
     itemlist = []
     itemlist.append( Item(channel=item.channel, action="unusualporn" , title="Canal unusualporn.net"         , thumbnail="http://filesmonster.biz/img/logo.png"))    
     itemlist.append( Item(channel=item.channel, action="files_monster" , title="Canal files-monster.org"         , thumbnail="http://files-monster.org/template/static/images/logo.jpg"))  
     itemlist.append( Item(channel=item.channel, action="filesmonster", title="Canal filesmonster.filesdl.net", thumbnail="http://filesmonster.biz/img/logo.png"))    
+    if user!='': itemlist.append( Item(channel=item.channel, action="favoritos", title="Favoritos en filesmonster.com del usuario "+user, folder=True))
+ 
     return itemlist
 
 
@@ -59,6 +63,68 @@ def files_monster(item):
 
 
 
+def favoritos(item):
+	user=config.get_setting("filesmonsteruser")
+	password=config.get_setting("filesmonsterpassword")
+	logger.info("[filesmonster_catalogue.py] favoritos")
+	itemlist=[]
+	post2 = "username="+user+"&password="+password
+	login_url="http://filesmonster.com/api/public/login"
+	data1=scrapertools.cache_page(login_url, post=post2)
+	partes1=data1.split('"')
+	estado=partes1[3]
+	if estado!='success': itemlist.append( Item(channel=item.channel, title="No pudo accederse con tus datos de acceso de Filesmonster.com, introdúcelos en con el apartado figuración. Error: "+estado+data1 ))
+	url_favoritos="http://filesmonster.com/?favorites=1"
+	data2=scrapertools.cache_page(url_favoritos, post=post2)
+	data2 = scrapertools.find_single_match(data2,'favorites-table(.*?)pager')
+	patronvideos ='<a href="([^"]+)">([^<]+)</a>.*?del=([^"]+)"'
+	matches = re.compile(patronvideos,re.DOTALL).findall(data2)
+	contador=0
+	for url, title, borrar in matches:
+	  contador=contador+1
+	  if url.find("?fid=")==-1: itemlist.append( Item(channel=item.channel , action="play" ,  server="filesmonster", title=title, fulltitle= item.title ,url=url,  folder=False))
+	  else: itemlist.append( Item(channel=item.channel , action="detail" ,  server="filesmonster", title=title, fulltitle=title ,url=url, plot=url, folder=True))
+	  itemlist.append( Item(channel=item.channel, action="quitar_favorito", title="(-) quitar de mis favoritos en filesmonster.com" , url="http://filesmonster.com/?favorites=1&del="+borrar, plot=borrar))
+	  itemlist.append( Item(channel=item.channel,  title="" ))
+	if contador==0 and estado=='success':
+	  itemlist.append( Item(channel=item.channel,  title="No tienes ningún favorito, navega por las diferentes fuentes y añádelos" ))
+	return itemlist
+
+
+
+def quitar_favorito(item):
+    logger.info("[filesmonster_catalogue.py] categorias")
+    itemlist = [] 
+
+    data = scrapertools.downloadpage(item.url)
+    itemlist.append( Item(channel=item.channel, action="favoritos", title="El vídeo ha sido eliminado de tus favoritos, pulsa para volver a tu lista de favoritos")) 
+
+    return itemlist
+    
+    
+def anadir_favorito(item):
+    logger.info("[filesmonster_catalogue.py] anadir_favoritos")
+    user=config.get_setting("filesmonsteruser")
+    password=config.get_setting("filesmonsterpassword")
+    itemlist=[]
+    post2 = "username="+user+"&password="+password
+    login_url="http://filesmonster.com/api/public/login"
+    data1=scrapertools.cache_page(login_url, post=post2)
+    if item.plot=='el archivo': 
+    	id1=item.url.split('?id=')
+    	id=id1[1]
+    	que="file"
+    if item.plot=='la carpeta':
+    	id1=item.url.split('?fid=')
+    	id=id1[1]
+    	que="folder"
+    url="http://filesmonster.com/ajax/add_to_favorites"
+    post3 = "username="+user+"&password="+password+"&id="+id+"&obj_type="+que
+    data2=scrapertools.cache_page(url, post=post3)
+    if data2=='Already in Your favorites':itemlist.append( Item(channel=item.channel, action="favoritos", title=""+item.plot+" ya estaba en tu lista de favoritos ("+user+") en Filesmonster", ))
+    if data2!='You are not logged in' and data2!='Already in Your favorites':itemlist.append( Item(channel=item.channel, action="favoritos", title="Se ha añadido correctamente "+item.plot+" a tu lista de favoritos ("+user+") en Filesmonster",  plot=data1+data2 ))
+    if data2=='You are not logged in':itemlist.append( Item(channel=item.channel, action="favoritos", title="No ha sido posible añadir "+item.plot+" a tu lista de favoritos ("+user+" no logueado en Filesmonster)" ,))  
+    return itemlist
 
 
 
@@ -217,7 +283,8 @@ def detail(item):
     for url in matches:
         title = "Archivo %d: %s [filesmonster]" %(len(itemlist)+1, item.fulltitle)
         itemlist.append( Item(channel=item.channel , action="play" ,  server="filesmonster", title=title, fulltitle= item.fulltitle ,url=url, thumbnail=item.thumbnail, folder=False))
-
+        itemlist.append( Item(channel=item.channel , action="anadir_favorito" , title="(+) Añadir el vídeo a tus favoritos en filesmonster",url=url, thumbnail=item.thumbnail, plot="el archivo", folder=True))
+        itemlist.append( Item(channel=item.channel , title="")); 
 
 
     patronvideos  = '["|\'](http\://filesmonster.com/folders.php\?[^"\']+)["|\']'
@@ -228,6 +295,9 @@ def detail(item):
         logger.info(item.url)
         title = "Carpeta %d: %s [filesmonster]" %(len(itemlist)+1, item.fulltitle)
         itemlist.append( Item(channel=item.channel , action="detail" ,  title=title, fulltitle= item.fulltitle ,url=url, thumbnail=item.thumbnail, folder=True))
+        itemlist.append( Item(channel=item.channel , action="anadir_favorito" , title="(+) Añadir la carpeta a tus favoritos en filesmonster",url=url, plot="la carpeta", folder=True ))
+        itemlist.append( Item(channel=item.channel , title="")); 
+
 
 
     return itemlist
@@ -250,6 +320,8 @@ def detail_2(item):
     	url ="http://filesmonster.com/download.php"+match2[0] 
         title = "Archivo %d: %s [filesmonster]" %(len(itemlist)+1, item.fulltitle)
         itemlist.append( Item(channel=item.channel , action="play" ,  server="filesmonster", title=title, fulltitle= item.fulltitle ,url=url, thumbnail=item.thumbnail, folder=False))
+        itemlist.append( Item(channel=item.channel , action="anadir_favorito" , title="(+) Añadir el vídeo a tus favoritos en filesmonster",url=match2[0] , plot="el archivo" , folder=True))
+        itemlist.append( Item(channel=item.channel , title="")); 
 
 
 
@@ -261,6 +333,8 @@ def detail_2(item):
         logger.info(item.url)
         title = "Carpeta %d: %s [filesmonster]" %(len(itemlist)+1, item.fulltitle)
         itemlist.append( Item(channel=item.channel , action="detail" ,  title=title, fulltitle= item.fulltitle ,url=url, thumbnail=item.thumbnail, folder=True))
+        itemlist.append( Item(channel=item.channel , action="anadir_favorito" , title="(+) Añadir la carpeta a tus favoritos en filesmonster",url=url,  plot="la carpeta",  folder=True))
+        itemlist.append( Item(channel=item.channel , title="")); 
 
 
     return itemlist
