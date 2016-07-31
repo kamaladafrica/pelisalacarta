@@ -95,7 +95,7 @@ def favoritos(item):
 	  	partes2=linea.split("@")
 	  	parte_url=partes2[0]
 	  	parte_imagen=partes2[1]
-	  	if (parte_url==url):imagen=parte_imagen
+	  	if (parte_url==url):imagen=parte_imagen.rstrip('\n').rstrip('\r')
 	   	
 	  if url.find("?fid=")==-1: itemlist.append( Item(channel=item.channel , action="play" ,  server="filesmonster", title=title, fulltitle= item.title ,url=url, thumbnail=imagen, folder=False))
 	  else: itemlist.append( Item(channel=item.channel , action="detail" ,  server="filesmonster", title=title, fulltitle=title , thumbnail=imagen, url=url, folder=True))
