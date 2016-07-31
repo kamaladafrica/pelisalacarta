@@ -111,7 +111,6 @@ def find_and_set_infoLabels_tmdb(item, ask_video=True):
 
     tmdb_result = None
     while not tmdb_result:
-
         if not item.infoLabels.get("tmdb_id"):
             otmdb_global = Tmdb(texto_buscado=title, tipo=video_type, year=year)
         elif not otmdb_global or otmdb_global.result.get("id") != item.infoLabels['tmdb_id']:
@@ -127,14 +126,23 @@ def find_and_set_infoLabels_tmdb(item, ask_video=True):
         elif len(results) > 0:
             tmdb_result = results[0]
 
-        else:
-            # Pregunta el titulo
-            it = platformtools.dialog_input(title, "No se ha encontrado la {0}, introduzca el nombre correcto".
-                                            format("serie" if video_type == "tv" else "pelicula"))
-            if it is not None:
-                title = it
+
+        if tmdb_result is None:
+            if platformtools.dialog_yesno("{0} no encontrada".
+                                          format("Serie" if video_type == "tv" else "Pelicula") ,
+                                          "No se ha encontrado la {0}:".
+                                          format("serie" if video_type == "tv" else "pelicula"),
+                                          title,
+                                          '¿Desea introducir otro nombre?'):
+                # Pregunta el titulo
+                it = platformtools.dialog_input(title, "Introduzca el nombre de la {0} a buscar".
+                                                format("serie" if video_type == "tv" else "pelicula"))
+                if it is not None:
+                    title = it
+                else:
+                    logger.debug("he pulsado 'cancelar' en la ventana 'introduzca el nombre correcto'")
+                    break
             else:
-                logger.debug("he pulsado 'cancelar' en la ventana 'introduzca el nombre correcto'")
                 break
 
 
@@ -142,7 +150,7 @@ def find_and_set_infoLabels_tmdb(item, ask_video=True):
 
     if not tmdb_result:
         item.infoLabels = infoLabels
-        return
+        return False
 
     infoLabels = otmdb_global.get_infoLabels(infoLabels, tmdb_result)
     infoLabels["mediatype"] = contentType
@@ -165,6 +173,7 @@ def find_and_set_infoLabels_tmdb(item, ask_video=True):
                     infoLabels['thumbnail'] = episodio['episodio_imagen']
 
     item.infoLabels = infoLabels
+    return True
 
 
 def set_infoLabels_item(item, seekTmdb=True, idioma_busqueda='es', lock=None):
