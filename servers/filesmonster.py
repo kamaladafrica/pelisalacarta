@@ -33,8 +33,12 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
     url = 'http://filesmonster.com/api/public/premiumDownload'
     data2=scrapertools.cache_page(url, post=post)
     
+    
     partes=data2.split('"')
+    
     url=partes[7]
+    filename = scrapertools.get_filename_from_url(url)[-4:]
+    alerta=filename+" "+alerta
     if "http" not in url:alerta="[error de filesmonster premium]: "+url
     
     video_urls.append( [alerta ,url] )
@@ -53,7 +57,7 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
 
 
 
-# Encuentra vÃ­deos del servidor en el texto pasado
+# Encuentra vÃƒÂ­deos del servidor en el texto pasado
 def find_videos(data):
     encontrados = set()
     devuelve = []
