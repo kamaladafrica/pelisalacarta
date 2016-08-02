@@ -561,6 +561,60 @@ class Tmdb(object):
                                 }
                 }
     '''
+    dic_country = {"AD": "Andorra", "AE": "Emiratos Árabes Unidos", "AF": "Afganistán", "AG": "Antigua y Barbuda",
+                   "AI": "Anguila", "AL": "Albania", "AM": "Armenia", "AN": "Antillas Neerlandesas", "AO": "Angola",
+                   "AQ": "Antártida", "AR": "Argentina", "AS": "Samoa Americana", "AT": "Austria", "AU": "Australia",
+                   "AW": "Aruba", "AX": "Islas de Åland", "AZ": "Azerbayán", "BA": "Bosnia y Herzegovina",
+                   "BD": "Bangladesh", "BE": "Bélgica", "BF": "Burkina Faso", "BG": "Bulgaria", "BI": "Burundi",
+                   "BJ": "Benín", "BL": "San Bartolomé", "BM": "Islas Bermudas", "BN": "Brunéi", "BO": "Bolivia",
+                   "BR": "Brasil", "BS": "Bahamas", "BT": "Bhután", "BV": "Isla Bouvet", "BW": "Botsuana",
+                   "BY": "Bielorrusia", "BZ": "Belice", "CA": "Canadá", "CC": "Islas Cocos (Keeling)", "CD": "Congo",
+                   "CF": "República Centroafricana", "CG": "Congo", "CH": "Suiza", "CI": "Costa de Marfil",
+                   "CK": "Islas Cook", "CL": "Chile", "CM": "Camerún", "CN": "China", "CO": "Colombia",
+                   "CR": "Costa Rica", "CU": "Cuba", "CV": "Cabo Verde", "CX": "Isla de Navidad", "CY": "Chipre",
+                   "CZ": "República Checa", "DE": "Alemania", "DJ": "Yibuti", "DK": "Dinamarca", "DZ": "Algeria",
+                   "EC": "Ecuador", "EE": "Estonia", "EG": "Egipto", "EH": "Sahara Occidental", "ER": "Eritrea",
+                   "ES": "España", "ET": "Etiopía", "FI": "Finlandia", "FJ": "Fiyi", "FK": "Islas Malvinas",
+                   "FM": "Micronesia", "FO": "Islas Feroe", "FR": "Francia", "GA": "Gabón", "GB": "Gran Bretaña",
+                   "GD": "Granada", "GE": "Georgia", "GF": "Guayana Francesa", "GG": "Guernsey", "GH": "Ghana",
+                   "GI": "Gibraltar", "GL": "Groenlandia", "GM": "Gambia", "GN": "Guinea", "GP": "Guadalupe",
+                   "GQ": "Guinea Ecuatorial", "GR": "Grecia", "GS": "Islas Georgias del Sur y Sandwich del Sur",
+                   "GT": "Guatemala", "GW": "Guinea-Bissau", "GY": "Guyana", "HK": "Hong kong",
+                   "HM": "Islas Heard y McDonald", "HN": "Honduras", "HR": "Croacia", "HT": "Haití", "HU": "Hungría",
+                   "ID": "Indonesia", "IE": "Irlanda", "IM": "Isla de Man", "IN": "India",
+                   "IO": "Territorio Británico del Océano Índico", "IQ": "Irak", "IR": "Irán", "IS": "Islandia",
+                   "IT": "Italia", "JE": "Jersey", "JM": "Jamaica", "JO": "Jordania", "JP": "Japón", "KG": "Kirgizstán",
+                   "KH": "Camboya", "KM": "Comoras", "KP": "Corea del Norte", "KR": "Corea del Sur", "KW": "Kuwait",
+                   "KY": "Islas Caimán", "KZ": "Kazajistán", "LA": "Laos", "LB": "Líbano", "LC": "Santa Lucía",
+                   "LI": "Liechtenstein", "LK": "Sri lanka", "LR": "Liberia", "LS": "Lesoto", "LT": "Lituania",
+                   "LU": "Luxemburgo", "LV": "Letonia", "LY": "Libia", "MA": "Marruecos", "MC": "Mónaco",
+                   "MD": "Moldavia", "ME": "Montenegro", "MF": "San Martín (Francia)", "MG": "Madagascar",
+                   "MH": "Islas Marshall", "MK": "Macedônia", "ML": "Mali", "MM": "Birmania", "MN": "Mongolia",
+                   "MO": "Macao", "MP": "Islas Marianas del Norte", "MQ": "Martinica", "MR": "Mauritania",
+                   "MS": "Montserrat", "MT": "Malta", "MU": "Mauricio", "MV": "Islas Maldivas", "MW": "Malawi",
+                   "MX": "México", "MY": "Malasia", "NA": "Namibia", "NE": "Niger", "NG": "Nigeria", "NI": "Nicaragua",
+                   "NL": "Países Bajos", "NO": "Noruega", "NP": "Nepal", "NR": "Nauru", "NU": "Niue",
+                   "NZ": "Nueva Zelanda", "OM": "Omán", "PA": "Panamá", "PE": "Perú", "PF": "Polinesia Francesa",
+                   "PH": "Filipinas", "PK": "Pakistán", "PL": "Polonia", "PM": "San Pedro y Miquelón",
+                   "PN": "Islas Pitcairn", "PR": "Puerto Rico", "PS": "Palestina", "PT": "Portugal", "PW": "Palau",
+                   "PY": "Paraguay", "QA": "Qatar", "RE": "Reunión", "RO": "Rumanía", "RS": "Serbia", "RU": "Rusia",
+                   "RW": "Ruanda", "SA": "Arabia Saudita", "SB": "Islas Salomón", "SC": "Seychelles", "SD": "Sudán",
+                   "SE": "Suecia", "SG": "Singapur", "SH": "Santa Elena", "SI": "Eslovenia", "SJ": "Svalbard y Jan Mayen",
+                   "SK": "Eslovaquia", "SL": "Sierra Leona", "SM": "San Marino", "SN": "Senegal", "SO": "Somalia",
+                   "SV": "El Salvador", "SY": "Siria", "SZ": "Swazilandia", "TC": "Islas Turcas y Caicos", "TD": "Chad",
+                   "TF": "Territorios Australes y Antárticas Franceses", "TG": "Togo", "TH": "Tailandia",
+                   "TJ": "Tadjikistán", "TK": "Tokelau", "TL": "Timor Oriental", "TM": "Turkmenistán", "TN": "Tunez",
+                   "TO": "Tonga", "TR": "Turquía", "TT": "Trinidad y Tobago", "TV": "Tuvalu", "TW": "Taiwán",
+                   "TZ": "Tanzania", "UA": "Ucrania", "UG": "Uganda", "UM": "Islas Ultramarinas Menores de Estados Unidos",
+                   "UY": "Uruguay", "UZ": "Uzbekistán", "VA": "Ciudad del Vaticano", "VC": "San Vicente y las Granadinas",
+                   "VE": "Venezuela", "VG": "Islas Vírgenes Británicas", "VI": "Islas Vírgenes de los Estados Unidos",
+                   "VN": "Vietnam", "VU": "Vanuatu", "WF": "Wallis y Futuna", "WS": "Samoa", "YE": "Yemen",
+                   "YT": "Mayotte", "ZA": "Sudáfrica", "ZM": "Zambia", "ZW": "Zimbabue", "BB": "Barbados","BH": "Bahrein",
+                   "DM": "Dominica", "DO": "República Dominicana", "GU": "Guam", "IL": "Israel", "KE": "Kenia",
+                   "KI": "Kiribati", "KN": "San Cristóbal y Nieves", "MZ": "Mozambique", "NC": "Nueva Caledonia",
+                   "NF": "Isla Norfolk", "PG": "Papúa Nueva Guinea", "SR": "Surinám", "ST": "Santo Tomé y Príncipe",
+                   "US": "EEUU"}
+
 
     def __search(self, index_resultado=0, page=1):
         # http://api.themoviedb.org/3/search/movie?api_key=f7f51775877e0bb6703520952b3c7840&query=superman&language=es
@@ -728,10 +782,11 @@ class Tmdb(object):
                    % (self.busqueda["tipo"], self.busqueda["idioma"]))
             try:
                 lista_generos = jsontools.load_json(scrapertools.downloadpageWithoutCookies(url))["genres"]
+                for i in lista_generos:
+                    Tmdb.dic_generos[self.busqueda["idioma"]][self.busqueda["tipo"]][str(i["id"])] = i["name"]
             except:
                 pass
-            for i in lista_generos:
-                Tmdb.dic_generos[self.busqueda["idioma"]][self.busqueda["tipo"]][str(i["id"])] = i["name"]
+
 
         if self.busqueda["tipo"] == 'movie' or self.busqueda["tipo"] == "tv":
             if self.busqueda["idioma"] not in Tmdb.dic_generos:
@@ -1235,6 +1290,8 @@ class Tmdb(object):
         """
         :param infoLabels: Informacion extra de la pelicula, serie, temporada o capitulo.
         :type infoLabels: Dict
+        :param origen: Diccionario origen de donde se obtiene los infoLabels, por omision self.result
+        :type origen: Dict
         :return: Devuelve la informacion extra obtenida del objeto actual. Si se paso el parametro infoLables, el valor
         devuelto sera el leido como parametro debidamente actualizado.
         :rtype: Dict
@@ -1281,10 +1338,21 @@ class Tmdb(object):
             elif k == 'production_companies':
                 ret_infoLabels['studio'] = ", ".join(i['name'] for i in v)
             elif k == 'production_countries' or k == 'origin_country':
-                if 'country' not in ret_infoLabels:
-                    ret_infoLabels['country'] = ", ".join(i if type(i) == str else i['name'] for i in v)
-                else:
-                    ret_infoLabels['country'] = ", " + ", ".join(i if type(i) == str else i['name'] for i in v)
+                r = None
+                if type(v) == str:
+                    r = v
+                elif type(v) == list and len(v) > 0:
+                    if type(v[0]) == str:
+                        r = ", ".join(Tmdb.dic_country.get(i,i) for i in v)
+                    elif type(v[0]) == dict:
+                        r = ", ".join(Tmdb.dic_country.get(i['iso_3166_1'],i['iso_3166_1']) for i in v
+                                      if i.has_key('iso_3166_1'))
+
+                if r:
+                    if 'country' not in ret_infoLabels:
+                        ret_infoLabels['country'] = r
+                    else:
+                        ret_infoLabels['country'] += ", " + r
             elif k == 'credits_cast':
                 ret_infoLabels['castandrole'] = []
                 for c in sorted(v, key=lambda c: c.get("order")):
