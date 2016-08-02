@@ -9,6 +9,7 @@ import os
 
 from core import config
 from core import filetools
+from core import jsontools
 from core import logger
 from core import scrapertools
 from core.item import Item
@@ -324,6 +325,16 @@ def get_episodios(item):
                 continue
 
             epi = Item().fromurl(filetools.read(filetools.join(raiz, i)))
+
+            # Leemos los datos del .json para obtener los infolabels
+            if filetools.exists(filetools.join(raiz, i+".json")):
+                logger.info("hay fichero con infolabels")
+                json_data = jsontools.load_json(filetools.read(filetools.join(raiz, i+".json")))
+                logger.info("json data:{}".format(json_data))
+                infolabels = json_data["infoLabels"]
+                epi.infoLabels = infolabels
+                logger.info("epi.infoLabels:{}".format(epi.infoLabels))
+
             epi.contentChannel = item.contentChannel
             epi.path = filetools.join(raiz, i)
             epi.title = i
@@ -361,7 +372,7 @@ def get_episodios(item):
 
 
 def get_sort_temp_epi(item):
-    # logger.debug(item.tostring())
+    logger.debug(item.tostring())
     if item.infoLabels and item.infoLabels.get('season', "1") != "" and item.infoLabels.get('episode', "1") != "":
         return int(item.infoLabels.get('season', "1")), int(item.infoLabels.get('episode', "1"))
     else:
