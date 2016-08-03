@@ -183,7 +183,7 @@ def force_creation_advancedsettings(item):
             open(os.path.join(advancedsettings_kodi)).close
 
             nospaces = False
-            f_mod = open(os.path.join(advancedsettings_pelisalacarta)) as f_mod
+            f_mod = open(os.path.join(advancedsettings_pelisalacarta))
             if filecmp.cmp(advancedsettings_pelisalacarta, advancedsettings_same):
                 platformtools.dialog_ok("pelisalacarta",
                                         "advancessettings.xml estaba optimizado!",
