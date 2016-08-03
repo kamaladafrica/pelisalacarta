@@ -109,18 +109,22 @@ def read(path):
     data = ""
     if path.lower().startswith("smb://"):
         from sambatools.smb.smb_structs import OperationFailure
+        
         try:
-            with samba.get_file_handle_for_reading(os.path.basename(path), os.path.dirname(path)).read() as f:
-                for line in f:
-                    data += line
+            f = samba.get_file_handle_for_reading(os.path.basename(path), os.path.dirname(path)).read()
+            for line in f:
+                data += line
+            f.close()
+
         except OperationFailure:
             logger.info("filetools.py read: ERROR al leer el archivo: {0}".format(path))
 
     else:
         try:
-            with open(path, "rb") as f:
-                for line in f:
-                    data += line
+            f = open(path, "rb")
+            for line in f:
+                data += line
+            f.close()
         except EnvironmentError:
             logger.info("filetools.py read: ERROR al leer el archivo: {0}".format(path))
 
@@ -150,10 +154,12 @@ def write(path, data):
 
     else:
         try:
-            with open(path, "wb") as f:
-                f.write(data)
+            f = open(path, "wb")
+            f.write(data)
+            f.close()
+
         # except EnvironmentError:
-        except Exception as ex:
+        except Exception, ex:
             logger.info("filetools.write: Error al guardar el archivo: ")
             template = "An exception of type {0} occured. Arguments:\n{1!r}"
             message = template.format(type(ex).__name__, ex.args)

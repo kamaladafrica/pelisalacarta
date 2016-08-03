@@ -159,39 +159,42 @@ def search(item, tecleado):
     return do_search(item, [])
   
 def channel_result(item):
-  extra = item.extra.split("{}")[0]
-  channel = item.extra.split("{}")[1]
-  tecleado = item.extra.split("{}")[2]
-  exec "from channels import " + channel + " as module"
-  item.channel = channel
-  item.extra = extra
-  print item.url
-  itemlist = module.search(item, tecleado)
-  return itemlist
+    extra = item.extra.split("{}")[0]
+    channel = item.extra.split("{}")[1]
+    tecleado = item.extra.split("{}")[2]
+    exec "from channels import " + channel + " as module"
+    item.channel = channel
+    item.extra = extra
+    #print item.url
+    try:
+        itemlist = module.search(item, tecleado)
+    except:
+        import traceback
+        logger.error(traceback.format_exc())
+        itemlist = []
+      
+    return itemlist
 
 def channel_search(search_results, channel_parameters,tecleado):
     ListaCanales = []
     try:
-      exec "from channels import " + channel_parameters["channel"] + " as module"
-      mainlist = module.mainlist(Item(channel=channel_parameters["channel"]))
-      search_items = [item for item in mainlist if item.action=="search"]
-      
-      for item in search_items:
+        exec "from channels import " + channel_parameters["channel"] + " as module"
+        mainlist = module.mainlist(Item(channel=channel_parameters["channel"]))
+        search_items = [item for item in mainlist if item.action=="search"]
+
+        for item in search_items:
             result = module.search(item.clone(), tecleado)
             if result ==None: result = []
             if len(result):
                 if not channel_parameters["title"] in search_results:
-                  search_results[channel_parameters["title"]] = []
-                search_results[channel_parameters["title"]].append({"item": item, "itemlist":result})
+                    search_results[channel_parameters["title"]] = []
                 
-
+                search_results[channel_parameters["title"]].append({"item": item, "itemlist":result})
               
     except:
-      logger.error("No se puede buscar en: "+ channel_parameters["title"])  
-      import traceback
-      logger.error(traceback.format_exc())
-      
-            
+        logger.error("No se puede buscar en: "+ channel_parameters["title"])  
+        import traceback
+        logger.error(traceback.format_exc())
 
 # Esta es la función que realmente realiza la búsqueda
 def do_search(item, categories=[]):
@@ -278,9 +281,17 @@ def do_search(item, categories=[]):
 
     #Modo Multi Thread
     if multithread :
-        pendent =  len([a for a in searches if a.is_alive()])
-        while pendent:
+        try:
             pendent =  len([a for a in searches if a.is_alive()])
+        except:
+            pendent =  len([a for a in searches if a.isAlive()])
+
+        while pendent:
+            try:
+                pendent =  len([a for a in searches if a.is_alive()])
+            except:
+                pendent =  len([a for a in searches if a.isAlive()])
+
             percentage =  (len(searches) - pendent) * 100 / len(searches)
             progreso.update(percentage, "Buscando %s en %d canales..." % (tecleado, len(searches)))
             if progreso.iscanceled(): 

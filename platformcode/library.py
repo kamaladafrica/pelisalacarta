@@ -39,7 +39,10 @@ from core import filetools
 from core import jsontools
 from core import logger
 from core import scrapertools
-from core import tmdb
+try:
+    from core import tmdb
+except:
+    pass
 from core.item import Item
 from platformcode import platformtools
 
@@ -52,7 +55,7 @@ xbmc_host = config.get_setting("xbmc_host")
 xbmc_port = int(config.get_setting("xbmc_port"))
 # Base URL of the json RPC calls. For GET calls we append a "request" URI
 # parameter. For POSTs, we add the payload as JSON the the HTTP request body
-xbmc_json_rpc_url = "http://{host}:{port}/jsonrpc".format(host=xbmc_host, port=xbmc_port)
+xbmc_json_rpc_url = "http://"+xbmc_host+":"+str(xbmc_port)+"/jsonrpc"
 
 DEBUG = config.get_setting("debug")
 
@@ -220,7 +223,7 @@ def save_library_tvshow(item, episodelist):
         logger.info("pelisalacarta.platformcode.library save_library_tvshow Creando directorio serie:" + path)
         try:
             filetools.mkdir(path)
-        except OSError as exception:
+        except OSError, exception:
             if exception.errno != errno.EEXIST:
                 raise
 
@@ -465,8 +468,13 @@ def set_infolabels_from_library(itemlist, tipo):
         if result:
             for i in itemlist:
                 for r in result:
-                    r_filename_aux = r['file'][:-1] if r['file'].endswith(os.sep) or r['file'].endswith('/') else \
-                        r['file']
+
+                    if r['file'].endswith(os.sep) or r['file'].endswith('/'):
+                        r_filename_aux = r['file'][:-1]
+                    else:
+                        r_filename_aux = r['file']
+
+                    #r_filename_aux = r['file'][:-1] if r['file'].endswith(os.sep) or r['file'].endswith('/') else r['file']
                     r_filename = os.path.basename(r_filename_aux)
                     # logger.debug(os.path.basename(i.path) + '\n' + r_filename)
                     i_filename = os.path.basename(i.path)
@@ -475,14 +483,26 @@ def set_infolabels_from_library(itemlist, tipo):
 
                         # Obtener imagenes y asignarlas al item
                         if 'thumbnail' in infolabels:
-                            infolabels['thumbnail'] = urllib.unquote_plus(infolabels['thumbnail']).replace('image://',
-                                                                                                           '')
-                            i.thumbnail = infolabels['thumbnail'][:-1] if infolabels['thumbnail'].endswith('/') else \
-                                infolabels['thumbnail']
+
+                            infolabels['thumbnail'] = urllib.unquote_plus(infolabels['thumbnail']).replace('image://','')
+                            
+                            if infolabels['thumbnail'].endswith('/'):
+                                i.thumbnail = infolabels['thumbnail'][:-1]  
+                            else: 
+                                i.thumbnail = infolabels['thumbnail']
+
+                            #i.thumbnail = infolabels['thumbnail'][:-1] if infolabels['thumbnail'].endswith('/') else infolabels['thumbnail']
+
                         if 'fanart' in infolabels:
+                            
                             infolabels['fanart'] = urllib.unquote_plus(infolabels['fanart']).replace('image://', '')
-                            i.fanart = infolabels['fanart'][:-1] if infolabels['fanart'].endswith('/') else infolabels[
-                                'fanart']
+                        
+                            if infolabels['fanart'].endswith('/'):
+                                i.fanart = infolabels['fanart'][:-1]
+                            else:
+                                i.fanart = infolabels['fanart']
+
+                            #i.fanart = infolabels['fanart'][:-1] if infolabels['fanart'].endswith('/') else infolabels['fanart']
 
                         # Adaptar algunos campos al formato infoLables
                         if 'cast' in infolabels:
@@ -740,7 +760,7 @@ def get_data(payload):
 
             logger.info("pelisalacarta.platformcode.library get_data:: response {0}".format(response))
             data = jsontools.load_json(response)
-        except Exception as ex:
+        except Exception, ex:
             template = "An exception of type {0} occured. Arguments:\n{1!r}"
             message = template.format(type(ex).__name__, ex.args)
             logger.info("pelisalacarta.platformcode.library get_data:: error en xbmc_json_rpc_url: {0}".format(message))
@@ -748,7 +768,7 @@ def get_data(payload):
     else:
         try:
             data = jsontools.load_json(xbmc.executeJSONRPC(jsontools.dump_json(payload)))
-        except Exception as ex:
+        except Exception, ex:
             template = "An exception of type {0} occured. Arguments:\n{1!r}"
             message = template.format(type(ex).__name__, ex.args)
             logger.info("pelisalacarta.platformcode.library get_data:: error en xbmc.executeJSONRPC: {0}".
