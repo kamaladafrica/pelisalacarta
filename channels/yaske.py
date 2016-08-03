@@ -251,7 +251,7 @@ def findvideos(item):
             scrapedthumbnail = servertools.guess_server_thumbnail(scrapedtitle)
 
             logger.info("server="+server+", scrapedurl="+scrapedurl)
-            if scrapedurl.startswith("http"):
+            if scrapedurl.startswith("http") and not "olimpo.link" in scrapedurl:
                 itemlist.append( Item(channel=item.channel, action="play", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , folder=False, parentContent=item) )
         except:
             import traceback
