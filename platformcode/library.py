@@ -377,17 +377,17 @@ def set_infolabels_from_library(itemlist, tipo):
 
     elif tipo == 'Episodes':
         for item in itemlist:
-            if item.path.endswith(".strm"):
-                data_file = item.path
-                if filetools.exists(data_file):
-                    infolabels = Item().fromurl(filetools.read(data_file)).infoLabels
-                    item.infoLabels = infolabels
-            # TODO debería existir el else?
-            else:
-                data_file = os.path.splitext(item.path)[0] + ".json"
-                if filetools.exists(data_file):
-                    infolabels = Item().fromjson(filetools.read(data_file)).infoLabels
-                    item.infoLabels = infolabels
+            # if item.path.endswith(".strm"):
+            #     data_file = item.path
+            #     if filetools.exists(data_file):
+            #         infolabels = Item().fromurl(filetools.read(data_file)).infoLabels
+            #         item.infoLabels = infolabels
+            # # TODO debería existir el else?
+            # else:
+            data_file = os.path.splitext(item.path)[0] + ".json"
+            if filetools.exists(data_file):
+                infolabels = Item().fromjson(filetools.read(data_file)).infoLabels
+                item.infoLabels = infolabels
 
             item.plot = item.contentPlot
             item.thumbnail = item.contentThumbnail
