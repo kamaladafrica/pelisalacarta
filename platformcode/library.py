@@ -114,20 +114,16 @@ def save_library_movie(item):
     insertados = 0
     sobreescritos = 0
     fallidos = 0
-    logger.debug(item.tostring('\n'))
+    #logger.debug(item.tostring('\n'))
 
     # Itentamos obtener el titulo correcto:
-    # 1. contentTitle: Este deveria ser el sitio correcto
-    # 2. fulltitle
-    # 3. title
-    titulo = item.contentTitle
-    if not titulo:
-        titulo = item.fulltitle
-    if not titulo:
-        titulo = item.title
-
-    # Colocamos el titulo en su sitio para que tmdb lo localize
-    item.contentTitle = titulo
+    # contentTitle: Este deberia ser el sitio correcto para que tmdb lo localize, pero si no existe lo buscamos en:
+    # 1. fulltitle
+    # 2. title
+    if not item.contentTitle:
+        item.contentTitle = item.fulltitle #TODO Eliminar todo lo q no sea el titulo ([color], [b], año, calidad, etc..)
+    if not item.contentTitle:
+        item.contentTitle = item.title #TODO Eliminar todo lo q no sea el titulo ([color], [b], año, calidad, etc..)
 
     # Si llegados a este punto no tenemos titulo, salimos
     if not item.contentTitle or not item.channel:
@@ -142,8 +138,8 @@ def save_library_movie(item):
 
     # progress dialog
     p_dialog = platformtools.dialog_progress('pelisalacarta', 'Añadiendo película...')
-    filename = "{0} [{1}].strm".format(item.fulltitle.strip().lower(), item.channel)
-    logger.debug(filename)
+    filename = "{0} [{1}].strm".format(item.contentTitle.strip().lower(), item.channel)
+    #logger.debug(filename)
     fullfilename = filetools.join(MOVIES_PATH, filename)
     addon_name = sys.argv[0].strip()
     if not addon_name or addon_name.startswith("default.py"):
@@ -197,20 +193,17 @@ def save_library_tvshow(item, episodelist):
     logger.info("pelisalacarta.platformcode.library save_library_tvshow")
 
     # Itentamos obtener el titulo correcto:
-    # 1. contentSerieName: Este deveria ser el sitio correcto
-    # 2. show
-    titulo = item.contentSerieName
-    if not titulo:
-        titulo = item.show
-
-    # Colocamos el titulo en su sitio para que tmdb lo localize
-    item.contentSerieName = titulo
-    # establecemos "active" para que se actualice cuando se llame a library_service
-    item.active = True
+    # contentSerieName: Este deberia ser el sitio correcto para que tmdb lo localize, pero si no existe lo buscamos en
+    # item.show
+    if not item.contentSerieName:
+        item.contentSerieName = item.show #TODO Eliminar todo lo q no sea el titulo ([color], [b], año, calidad, etc..)
 
     # Si llegados a este punto no tenemos titulo, salimos
     if not item.contentSerieName or not item.channel:
         return 0, 0, -1  # Salimos sin guardar
+
+    # establecemos "active" para que se actualice cuando se llame a library_service
+    item.active = True
 
     # TODO configurar para segun el scraper se llame a uno u otro
     tmdb.find_and_set_infoLabels_tmdb(item, config.get_setting("scrap_ask_name") == "true")
@@ -254,15 +247,15 @@ def save_library_episodes(path, episodelist, serie, silent=False):
     @rtype sobreescritos: int
     @return:  el número de episodios sobreescritos
     @rtype fallidos: int
-    @return:  el número de episodios fallidos
+    @return:  el número de episodios fallidos o -1 si han fallado todos los episodios
     """
     logger.info("pelisalacarta.platformcode.library save_library_episodes")
-
+    num_episodes = len(episodelist)
     # No hay lista de episodios, no hay nada que guardar
-    if not len(episodelist):
+    if num_episodes == 0 :
         logger.info("pelisalacarta.platformcode.library save_library_episodes No hay lista de episodios, "
                     "salimos sin crear strm")
-        return 0, 0, 0
+        return 0, 0, -1
 
     insertados = 0
     sobreescritos = 0
@@ -275,7 +268,7 @@ def save_library_episodes(path, episodelist, serie, silent=False):
         p_dialog.update(0, 'Añadiendo episodio...')
 
     # fix float porque la division se hace mal en python 2.x
-    t = float(100) / len(episodelist)
+    t = float(100) / num_episodes
 
     addon_name = sys.argv[0].strip()
     if not addon_name or addon_name.startswith("default.py"):
@@ -287,6 +280,7 @@ def save_library_episodes(path, episodelist, serie, silent=False):
 
         # Añade todos menos el que dice "Añadir esta serie..." o "Descargar esta serie..."
         if e.action == "add_serie_to_library" or e.action == "download_all_episodes":
+            num_episodes -= 1
             continue
 
         season_episode = scrapertools.get_season_and_episode(e.title.lower())
@@ -307,7 +301,7 @@ def save_library_episodes(path, episodelist, serie, silent=False):
 
         # fix para crear correctamente los strms
         e.plot = e.plot[:200]
-        del e.infoLabels
+        del e.infoLabels #TODO esto sigo sin verlo claro
 
         if filetools.write(fullfilename, '{addon}?{url}'.format(addon=addon_name, url=e.tourl())):
             if nuevo:
@@ -324,11 +318,14 @@ def save_library_episodes(path, episodelist, serie, silent=False):
         p_dialog.close()
 
     # si se han añadido episodios los actualizamos en la biblioteca de Kodi con la serie
-    if fallidos >= 0:
+    if fallidos != num_episodes:
         # TODO arreglar el porque hay que poner la ruta special
         ruta = "special://home/userdata/addon_data/plugin.video.pelisalacarta/library/SERIES/" + \
                "{0} [{1}]".format(serie.contentSerieName.strip().lower(), serie.channel).lower() + "/"
         update(ruta)
+    else:
+        # Han fallado todos los episodios
+        fallidos = -1
 
     logger.debug("insertados= {0}, sobreescritos={1}, fallidos={2}".format(insertados, sobreescritos, fallidos))
     return insertados, sobreescritos, fallidos
@@ -835,7 +832,7 @@ def add_serie_to_library(item, channel):
         item.action = item.extra.split("###")[0]
         item.extra = item.extra.split("###")[1]
 
-    if item.from_action:
+    if item.from_action: #TODO Esto lo usa alguien????
         item.__dict__["action"] = item.__dict__.pop("from_action")
     if item.from_channel:
         item.__dict__["channel"] = item.__dict__.pop("from_channel")
