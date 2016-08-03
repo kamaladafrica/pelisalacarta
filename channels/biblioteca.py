@@ -325,16 +325,6 @@ def get_episodios(item):
                 continue
 
             epi = Item().fromurl(filetools.read(filetools.join(raiz, i)))
-
-            # Leemos los datos del .json para obtener los infolabels
-            if filetools.exists(filetools.join(raiz, i+".json")):
-                logger.info("hay fichero con infolabels")
-                json_data = jsontools.load_json(filetools.read(filetools.join(raiz, i+".json")))
-                logger.info("json data:{}".format(json_data))
-                infolabels = json_data["infoLabels"]
-                epi.infoLabels = infolabels
-                logger.info("epi.infoLabels:{}".format(epi.infoLabels))
-
             epi.contentChannel = item.contentChannel
             epi.path = filetools.join(raiz, i)
             epi.title = i
