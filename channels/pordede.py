@@ -48,7 +48,11 @@ def mainlist(item):
     return itemlist
 
 def settingCanal(item):
-    return platformtools.show_channel_settings()
+
+    if config.OLD_PLATFORM:
+        config.open_settings()
+    else:
+        return platformtools.show_channel_settings()
 
 def menuseries(item):
     logger.info("pelisalacarta.channels.pordede menuseries")
@@ -460,6 +464,9 @@ def findvideos(item, verTodos=False):
     itemsort = []
     sortlinks = config.get_setting("pordedesortlinks",item.channel) # 0:no, 1:valoracion, 2:idioma, 3:calidad, 4:idioma+calidad, 5:idioma+valoracion, 6:idioma+calidad+valoracion
     showlinks = config.get_setting("pordedeshowlinks",item.channel) # 0:todos, 1:ver online, 2:descargar
+
+    sortlinks = int(sortlinks) if sortlinks != '' and sortlinks !="No" else 0
+    showlinks = int(showlinks) if showlinks != '' and showlinks !="No" else 0
 
     for match in matches:
         if (DEBUG): logger.info("match="+match)

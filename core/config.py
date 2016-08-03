@@ -30,24 +30,21 @@ import os
 import xbmc
 import xbmcaddon
 
-PLATFORM_NAME = "kodi-jarvis"
-
+PLATFORM_NAME = "kodi-krypton"
+OLD_PLATFORM = False
 PLUGIN_NAME = "pelisalacarta"
+
 __settings__ = xbmcaddon.Addon(id="plugin.video." + PLUGIN_NAME)
 __language__ = __settings__.getLocalizedString
-
 
 def get_platform():
     return PLATFORM_NAME
 
-
 def is_xbmc():
     return True
 
-
 def get_library_support():
     return True
-
 
 def get_system_platform():
     """ fonction: pour recuperer la platform que xbmc tourne """
@@ -63,10 +60,8 @@ def get_system_platform():
         platform = "osx"
     return platform
 
-
 def open_settings():
     __settings__.openSettings()
-
 
 def get_setting(name, channel=""):
     """Retorna el valor de configuracion del parametro solicitado.
@@ -86,15 +81,34 @@ def get_setting(name, channel=""):
     value -- El valor del parametro 'name'
 
     """
+    #xbmc.log("config.get_setting name="+name+", channel="+channel+", OLD_PLATFORM="+str(OLD_PLATFORM))
+
+    # Specific channel setting
     if channel:
-        from core import channeltools
-        value = channeltools.get_channel_setting(name, channel)
-        if value is not None:
+
+        # Old platforms read settings from settings-oldplatform.xml, all but the "include_in_global_search", "include_in_newest..."
+        if OLD_PLATFORM and ("user" in name or "password" in name):
+            #xbmc.log("config.get_setting reading channel setting from main xml '"+channel+"_"+name+"'")
+            value = __settings__.getSetting(channel+"_"+name)
+            #xbmc.log("config.get_setting -> '"+value+"'")
             return value
 
-    # Devolvemos el valor del parametro global 'name'
-    return __settings__.getSetting(name)
+        # New platforms read settings from each channel
+        else:
+            #xbmc.log("config.get_setting reading channel setting '"+name+"' from channel xml")
+            from core import channeltools
+            value = channeltools.get_channel_setting(name, channel)
+            #xbmc.log("config.get_setting -> '"+repr(value)+"'")
 
+            if value is not None:
+                return value
+
+    # Global setting
+    else:
+        #xbmc.log("config.get_setting reading main setting '"+name+"'")
+        value = __settings__.getSetting(channel+name)
+        #xbmc.log("config.get_setting -> '"+value+"'")
+        return value
 
 def set_setting(name,value, channel=""):
     """Fija el valor de configuracion del parametro indicado.
@@ -124,11 +138,10 @@ def set_setting(name,value, channel=""):
         try:
             __settings__.setSetting(name, value)
         except:
-            logger.info("[config.py] ERROR al fijar el parametro global {0}= {1}".format(name, value))
+            #xbmc.log("[config.py] ERROR al fijar el parametro global {0}= {1}".format(name, value))
             return None
 
         return value
-
 
 def get_localized_string(code):
     dev = __language__(code)
@@ -139,7 +152,6 @@ def get_localized_string(code):
         pass
 
     return dev
-
 
 def get_library_path():
 
@@ -155,14 +167,11 @@ def get_library_path():
 
     return value
 
-
 def get_temp_file(filename):
     return xbmc.translatePath(os.path.join("special://temp/", filename))
 
-
 def get_runtime_path():
     return xbmc.translatePath(__settings__.getAddonInfo('Path'))
-
 
 def get_data_path():
     dev = xbmc.translatePath(__settings__.getAddonInfo('Profile'))
@@ -172,7 +181,6 @@ def get_data_path():
         os.makedirs(dev)
 
     return dev
-
 
 def get_cookie_data():
     import os
@@ -188,7 +196,7 @@ def get_cookie_data():
 # Test if all the required directories are created
 def verify_directories_created():
     import logger
-    logger.info("pelisalacarta.core.config.verify_directories_created")
+    #xbmc.log("pelisalacarta.core.config.verify_directories_created")
 
     # Force download path if empty
     download_path = get_setting("downloadpath")
@@ -229,7 +237,7 @@ def verify_directories_created():
             pass
 
     if is_xbmc():
-        logger.info("Es una plataforma XBMC")
+        #xbmc.log("Es una plataforma XBMC")
         if download_path.startswith("special://"):
             # Translate from special and create download_path if not exists
             download_path = xbmc.translatePath(download_path)
@@ -280,7 +288,7 @@ def verify_directories_created():
                     pass
 
     else:
-        logger.info("No es una plataforma XBMC")
+        #xbmc.log("No es una plataforma XBMC")
         # Create download_path if not exists
         if not download_path.lower().startswith("smb") and not os.path.exists(download_path):
             logger.debug("Creating download_path " + download_path)
