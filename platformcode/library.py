@@ -300,8 +300,8 @@ def save_library_episodes(path, episodelist, serie, silent=False):
         filetools.write(fullfilename + ".json", e.tojson())
 
         # fix para crear correctamente los strms
-        e.plot = e.plot[:200]
-        del e.infoLabels #TODO esto sigo sin verlo claro
+        e.plot = e.plot[:1000] #TODO esto es temporal
+
 
         if filetools.write(fullfilename, '{addon}?{url}'.format(addon=addon_name, url=e.tourl())):
             if nuevo:
@@ -322,7 +322,7 @@ def save_library_episodes(path, episodelist, serie, silent=False):
         # TODO arreglar el porque hay que poner la ruta special
         ruta = "special://home/userdata/addon_data/plugin.video.pelisalacarta/library/SERIES/" + \
                "{0} [{1}]".format(serie.contentSerieName.strip().lower(), serie.channel).lower() + "/"
-        update(ruta)
+        update(ruta) # TODO a mi no me funciona, pero puede ser por q tengo enlaces simbolicos en la ruta
     else:
         # Han fallado todos los episodios
         fallidos = -1
@@ -381,10 +381,11 @@ def set_infolabels_from_library(itemlist, tipo):
             #         item.infoLabels = infolabels
             # # TODO debería existir el else?
             # else:
-            data_file = os.path.splitext(item.path)[0] + ".json"
+            data_file = item.path + ".json"
             if filetools.exists(data_file):
                 infolabels = Item().fromjson(filetools.read(data_file)).infoLabels
                 item.infoLabels = infolabels
+
 
             item.plot = item.contentPlot
             item.thumbnail = item.contentThumbnail
