@@ -120,6 +120,7 @@ def novedades(item):
 
     global list_newest
     l_hilo = []
+    list_newest = []
 
     multithread = config.get_setting("multithread", "novedades")
     logger.info("pelisalacarta.channels.novedades multithread="+str(multithread))
@@ -127,7 +128,6 @@ def novedades(item):
     list_canales = get_list_canales()
 
     for channel_name in list_canales[item.extra]:
-        logger.info("pelisalacarta.channels.novedades")
         logger.info("pelisalacarta.channels.novedades obteniendo novedades de channel_name="+channel_name)
 
         # Modo Multi Thread
