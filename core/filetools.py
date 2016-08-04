@@ -109,20 +109,24 @@ def read(path):
     data = ""
     if path.lower().startswith("smb://"):
         from sambatools.smb.smb_structs import OperationFailure
+        
         try:
-            with samba.get_file_handle_for_reading(os.path.basename(path), os.path.dirname(path)).read() as f:
-                for line in f:
-                    data += line
+            f = samba.get_file_handle_for_reading(os.path.basename(path), os.path.dirname(path)).read()
+            for line in f:
+                data += line
+            f.close()
+
         except OperationFailure:
-            logger.info("filetools.py read: ERROR al leer el archivo: {0}".format(path))
+            logger.info("pelisalacarta.core.filetools read: ERROR al leer el archivo: {0}".format(path))
 
     else:
         try:
-            with open(path, "rb") as f:
-                for line in f:
-                    data += line
+            f = open(path, "rb")
+            for line in f:
+                data += line
+            f.close()
         except EnvironmentError:
-            logger.info("filetools.py read: ERROR al leer el archivo: {0}".format(path))
+            logger.info("pelisalacarta.core.filetools read: ERROR al leer el archivo: {0}".format(path))
 
     return data
 
@@ -143,22 +147,24 @@ def write(path, data):
         try:
             samba.store_file(os.path.basename(path), data, os.path.dirname(path))
         except OperationFailure:
-            logger.info("filetools.py write: Error al guardar el archivo: {0}".format(path))
+            logger.info("pelisalacarta.core.filetools write: Error al guardar el archivo: {0}".format(path))
             return False
         else:
             return True
 
     else:
         try:
-            with open(path, "wb") as f:
-                f.write(data)
+            f = open(path, "wb")
+            f.write(data)
+            f.close()
+
         # except EnvironmentError:
-        except Exception as ex:
+        except Exception, ex:
             logger.info("filetools.write: Error al guardar el archivo: ")
             template = "An exception of type {0} occured. Arguments:\n{1!r}"
             message = template.format(type(ex).__name__, ex.args)
             logger.info(message)
-            # logger.info("filetools.py write: Error al guardar el archivo: {0}".format(path))
+            # logger.info("pelisalacarta.core.filetools write: Error al guardar el archivo: {0}".format(path))
             return False
         else:
             return True
@@ -211,7 +217,7 @@ def exists(path):
             return samba.file_exists(os.path.basename(path), os.path.dirname(path)) or \
                    samba.folder_exists(os.path.basename(path), os.path.dirname(path))
         except gaierror:
-            logger.info("filetools.py exists: No es posible conectar con la ruta")
+            logger.info("pelisalacarta.core.filetools exists: No es posible conectar con la ruta")
             platformtools.dialog_notification("No es posible conectar con la ruta", path)
             return True
     else:
@@ -298,18 +304,22 @@ def mkdir(path):
     @param path: ruta a crear
     @type path: str
     """
+    logger.info("pelisalacarta.core.filetools mkdir "+path)
+
     path = encode(path)
     if path.lower().startswith("smb://"):
         try:
             samba.create_directory(os.path.basename(path), os.path.dirname(path))
         except gaierror:
-            logger.info("filetools.py mkdir: Error al crear la ruta")
+            import traceback
+            logger.info("pelisalacarta.core.filetools mkdir: Error al crear la ruta "+traceback.format_exc())
             platformtools.dialog_notification("Error al crear la ruta", path)
     else:
         try:
             os.mkdir(path)
         except OSError:
-            logger.info("filetools.py mkdir: Error al crear la ruta")
+            import traceback
+            logger.info("pelisalacarta.core.filetools mkdir: Error al crear la ruta "+traceback.format_exc())
             platformtools.dialog_notification("Error al crear la ruta", path)
 
 
@@ -409,7 +419,7 @@ def remove_tags(title):
     @rtype: str
     @return: cadena sin tags
     """
-    logger.info("filetools.py remove_tags")
+    logger.info("pelisalacarta.core.filetools remove_tags")
 
     title_without_tags = scrapertools.find_single_match(title, '\[color .+?\](.+)\[\/color\]')
 

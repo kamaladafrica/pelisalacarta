@@ -448,7 +448,11 @@ def getfilefromtitle(url,title):
 
     fullpath = os.path.join( config.get_setting("downloadpath") , nombrefichero )
     logger.info("pelisalacarta.core.downloadtools getfilefromtitle: fullpath=%s" % fullpath)
-    
+
+    if config.is_xbmc() and fullpath.startswith("special://"):
+        import xbmc
+        fullpath = xbmc.translatePath(fullpath)
+
     return fullpath
 
 def downloadtitle(url,title):
@@ -509,6 +513,10 @@ def downloadbest(video_urls,title,continuar=False):
 def downloadfile(url,nombrefichero,headers=[],silent=False,continuar=False):
     logger.info("pelisalacarta.core.downloadtools downloadfile: url="+url)
     logger.info("pelisalacarta.core.downloadtools downloadfile: nombrefichero="+nombrefichero)
+
+    if config.is_xbmc() and nombrefichero.startswith("special://"):
+        import xbmc
+        nombrefichero = xbmc.translatePath(nombrefichero)
 
     try:
         # Si no es XBMC, siempre a "Silent"
