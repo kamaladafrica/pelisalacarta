@@ -76,6 +76,22 @@
 		<lvalues>Ninguno</lvalues>
 	</settings>
 	<settings>
+		<id>menu_info</id>
+		<type>bool</type>
+		<label>Mostrar menú intermedio película/episodio</label>
+ 		<default>true</default>
+ 		<enabled>true</enabled>
+ 		<visible>true</visible>
+ 	</settings>
+	<settings>
+		<id>last_page</id>
+		<type>bool</type>
+		<label>Ocultar opción elegir página en películas (Kodi)</label>
+ 		<default>false</default>
+ 		<enabled>true</enabled>
+ 		<visible>true</visible>
+ 	</settings>
+	<settings>
 		<id>filtro_defecto_peliculas</id>
 		<type>label</type>
 		<label></label>

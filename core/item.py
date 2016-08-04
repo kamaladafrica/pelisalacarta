@@ -36,10 +36,10 @@ from core import jsontools as json
 
 class Item(object):
     def __init__(self, **kwargs):
-        """
+        '''
         Inicializacion del item
-        """
-        if "parentContent" in kwargs:
+        '''
+        if kwargs.has_key("parentContent"):
             self.set_parent_content(kwargs["parentContent"])
             del kwargs["parentContent"]
 
@@ -51,31 +51,29 @@ class Item(object):
         self.__dict__ = self.toutf8(self.__dict__)
 
     def __contains__(self, m):
-        """
+        '''
         Comprueba si un atributo existe en el item
-        """
+        '''
         return m in self.__dict__
 
     def __setattr__(self, name, value):
-        """
-        Función llamada al modificar cualquier atributo del item, modifica algunos atributos en función de los datos
-        modificados.
-        """
+        '''
+        Función llamada al modificar cualquier atributo del item, modifica algunos atributos en función de los datos modificados
+        '''
         if name == "__dict__":
             for key in value:
                 self.__setattr__(key, value[key])
             return
 
         # Descodificamos los HTML entities
-        if name in ["title", "plot", "fulltitle", "contentPlot", "contentTitle"]:
-            value = self.decode_html(value)
+        if name in ["title", "plot", "fulltitle", "contentPlot", "contentTitle"]: value = self.decode_html(value)
 
-        # Al modificar cualquiera de estos atributos content...
+       # Al modificar cualquiera de estos atributos content...
         if name in ["contentTitle", "contentPlot", "contentSerieName", "contentType", "contentEpisodeTitle",
                     "contentSeason", "contentEpisodeNumber", "contentThumbnail"]:
-            # ... marcamos hasContentDetails como "true"...
+            #... marcamos hasContentDetails como "true"...
             self.__dict__["hasContentDetails"] = "true"
-            # ...y actualizamos infoLables
+            #...y actualizamos infoLables
             if name == "contentTitle":
                 self.__dict__["infoLabels"]["title"] = value
             elif name == "contentPlot":
@@ -97,11 +95,10 @@ class Item(object):
             super(Item, self).__setattr__(name, value)
 
     def __getattr__(self, name):
-        """
+        '''
         Devuelve los valores por defecto en caso de que el atributo solicitado no exista en el item
-        """
-        if name.startswith("__"):
-            return super(Item, self).__getattribute__(name)
+        '''
+        if name.startswith("__"): return super(Item, self).__getattribute__(name)
 
         # valor por defecto para folder
         if name == "folder":
@@ -116,34 +113,32 @@ class Item(object):
             return "false"
 
         elif name in ["contentTitle", "contentPlot", "contentSerieName", "contentType", "contentEpisodeTitle",
-                      "contentSeason", "contentEpisodeNumber", "contentThumbnail"]:
+                    "contentSeason", "contentEpisodeNumber", "contentThumbnail"]:
             if name == "contentTitle":
-                return self.__dict__["infoLabels"].get("title", "")
+                return self.__dict__["infoLabels"].get("title","")
             elif name == "contentPlot":
-                return self.__dict__["infoLabels"].get("plot", "")
+                return self.__dict__["infoLabels"].get("plot","")
             elif name == "contentSerieName":
-                return self.__dict__["infoLabels"].get("tvshowtitle", "")
+                return self.__dict__["infoLabels"].get("tvshowtitle","")
             elif name == "contentType":
-                return self.__dict__["infoLabels"].get("mediatype", "")
+                return self.__dict__["infoLabels"].get("mediatype","")
             elif name == "contentEpisodeTitle":
                 return self.__dict__["infoLabels"].get("episodeName", "")
             elif name == "contentSeason":
-                return self.__dict__["infoLabels"].get("season", "")
+                return self.__dict__["infoLabels"].get("season","")
             elif name == "contentEpisodeNumber":
-                return self.__dict__["infoLabels"].get("episode", "")
+                return self.__dict__["infoLabels"].get("episode","")
             elif name == "contentThumbnail":
-                return self.__dict__["infoLabels"].get("thumbnail", "")
+                return self.__dict__["infoLabels"].get("thumbnail","")
 
         # valor por defecto para el resto de atributos
         else:
             return ""
 
     def set_parent_content(self, parentContent):
-        """
+        '''
         Rellena los campos contentDetails con la informacion del item "padre"
-        @type parentContent: item
-        @param parentContent: elemento padre con el que se rellena "self"
-        """
+        '''
         # Comprueba que parentContent sea un Item
         if not type(parentContent) == type(self):
             return
@@ -154,45 +149,38 @@ class Item(object):
                 self.__setattr__(attr, parentContent.__dict__[attr])
 
     def tostring(self, separator=", "):
-        """
+        '''
         Genera una cadena de texto con los datos del item para el log
         Uso: logger.info(item.tostring())
-        @type separator: str
-        @param separator: caracter que se utilizará como separador de campos
-        """
-        dic = self.__dict__.copy()
+        '''
+        dic= self.__dict__.copy()
 
         # Añadimos los campos content... si tienen algun valor
         for key in ["contentTitle", "contentPlot", "contentSerieName", "contentType",
                     "contentSeason", "contentEpisodeNumber", "contentThumbnail"]:
             value = self.__getattr__(key)
-            if value:
-                dic[key] = value
+            if value: dic[key]= value
 
         return separator.join([var + "=[" + str(dic[var]) + "]" for var in sorted(dic)])
 
     def tourl(self):
-        """
-        Genera una cadena de texto con los datos del item para crear una url, para volver generar el Item usar
-        item.fromurl()
+        '''
+        Genera una cadena de texto con los datos del item para crear una url, para volver generar el Item usar item.fromurl()
         Uso: url = item.tourl()
-        """
+        '''
         return urllib.quote(base64.b64encode(json.dumps(self.__dict__)))
 
     def fromurl(self, url):
-        """
+        '''
         Genera un item a partir de una cadena de texto. La cadena puede ser creada por la funcion tourl() o tener
         el formato antiguo: plugin://plugin.video.pelisalacarta/?channel=... (+ otros parametros)
-        Uso: Item().fromurl("cadena")
-        @type url: str
-        @param url: url
-        """
-        if "?" in url:
-            url = url.split("?")[1]
+        Uso: item.fromurl("cadena")
+        '''
+        if "?" in url: url = url.split("?")[1]
         try:
-            str_item = base64.b64decode(urllib.unquote(url))
-            json_item = json.loads(str_item, object_hook=self.toutf8)
-            self.__dict__.update(json_item)
+            STRItem = base64.b64decode(urllib.unquote(url))
+            JSONItem = json.loads(STRItem, object_hook=self.toutf8)
+            self.__dict__.update(JSONItem)
         except:
             url = urllib.unquote_plus(url)
             dct = dict([[param.split("=")[0], param.split("=")[1]] for param in url.split("&") if "=" in param])
@@ -201,71 +189,59 @@ class Item(object):
         return self
 
     def tojson(self, path=""):
-        """
+        '''
         Crea un JSON a partir del item, para guardar archivos de favoritos, lista de descargas, etc...
         Si se especifica un path, te lo guarda en la ruta especificada, si no, devuelve la cadena json
         Usos: item.tojson(path="ruta\archivo\json.json")
               file.write(item.tojson())
-        @type path: str
-        @param path: ruta
-        """
+        '''
         if path:
             open(path, "wb").write(json.dumps(self.__dict__, indent=4, sort_keys=True))
         else:
             return json.dumps(self.__dict__, indent=4, sort_keys=True)
 
-    def fromjson(self, str_item=None, path=""):
-        """
+    def fromjson(self, STRItem={}, path=""):
+        '''
         Genera un item a partir de un archivo JSON
         Si se especifica un path, lee directamente el archivo, si no, lee la cadena de texto pasada.
         Usos: item = Item().fromjson(path="ruta\archivo\json.json")
               item = Item().fromjson("Cadena de texto json")
-        @type str_item: dict
-        @param str_item: json para cargar en item
-        @type path: str
-        @param path: ruta donde se encuentra el fichero para leer.
-        """
-        if str_item is None:
-            str_item = {}
+        '''
         if path:
             if os.path.exists(path):
-                str_item = open(path, "rb").read()
+                STRItem = open(path, "rb").read()
             else:
-                str_item = {}
+                STRItem = {}
 
-        json_item = json.loads(str_item, object_hook=self.toutf8)
-        self.__dict__.update(json_item)
+        JSONItem = json.loads(STRItem, object_hook=self.toutf8)
+        self.__dict__.update(JSONItem)
         return self
 
     def clone(self, **kwargs):
-        """
+        '''
         Genera un nuevo item clonando el item actual
         Usos: NuevoItem = item.clone()
               NuevoItem = item.clone(title="Nuevo Titulo", action = "Nueva Accion")
-        """
+        '''
         newitem = copy.deepcopy(self)
         newitem.__dict__.update(kwargs)
         newitem.__dict__ = newitem.toutf8(newitem.__dict__)
         return newitem
 
-    @staticmethod
-    def decode_html(value):
-        """
+    def decode_html(self, value):
+        '''
         Descodifica las HTML entities
-        @type value: str
-        @param value: valor para realizar decode.
-        """
+        '''
         try:
             unicode_title = unicode(value, "utf8", "ignore")
             return HTMLParser().unescape(unicode_title).encode("utf8")
-        # TODO revisar excepcion
-        except UnicodeError:
+        except:
             return value
 
     def toutf8(self, *args):
-        """
+        '''
         Pasa el item a utf8
-        """
+        '''
         if len(args) > 0:
             value = args[0]
         else:
@@ -290,8 +266,7 @@ class Item(object):
 
                 newdct[key] = self.toutf8(value[key])
 
-            if len(args) > 0:
-                return newdct
+            if len(args) > 0: return newdct
 
         else:
             return value

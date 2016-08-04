@@ -48,7 +48,11 @@ def mainlist(item):
     return itemlist
 
 def settingCanal(item):
-    return platformtools.show_channel_settings()
+
+    if config.OLD_PLATFORM:
+        config.open_settings()
+    else:
+        return platformtools.show_channel_settings()
 
 def menuseries(item):
     logger.info("pelisalacarta.channels.pordede menuseries")
@@ -170,7 +174,13 @@ def parse_mixed_results(item,data):
         #http://www.pordede.com/links/view/slug/the-lego-movie/what/peli?popup=1
 
         if "/peli/" in scrapedurl or "/docu/" in scrapedurl:
-            sectionStr = "peli" if "/peli/" in scrapedurl else "docu"
+
+            #sectionStr = "peli" if "/peli/" in scrapedurl else "docu"
+            if "/peli/" in scrapedurl:
+                sectionStr = "peli" 
+            else:
+                sectionStr = "docu"
+
             referer = urlparse.urljoin(item.url,scrapedurl)
             url = referer.replace("/{0}/".format(sectionStr),"/links/view/slug/")+"/what/{0}".format(sectionStr)
             if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
@@ -269,7 +279,11 @@ def episodio(item):
         matches = re.compile(patron,re.DOTALL).findall(bloque_episodios)
 
         for scrapedurl,scrapedtitle,info,visto in matches:
-            visto_string = "[visto] " if visto.strip()=="active" else ""
+            #visto_string = "[visto] " if visto.strip()=="active" else ""
+            if visto.strip()=="active":
+                visto_string = "[visto] "
+            else:
+                visto_string = ""
             numero=episode
             title = visto_string+session+"x"+numero+" "+scrapertools.htmlclean(scrapedtitle)
             thumbnail = ""
@@ -326,7 +340,12 @@ def episodios(item):
         matches = re.compile(patron,re.DOTALL).findall(bloque_episodios)
 
         for scrapedurl,numero,scrapedtitle,info,visto in matches:
-            visto_string = "[visto] " if visto.strip()=="active" else ""
+            #visto_string = "[visto] " if visto.strip()=="active" else ""
+            if visto.strip()=="active":
+                visto_string = "[visto] "
+            else:
+                visto_string = ""
+
             title = visto_string+nombre_temporada.replace("Temporada ", "").replace("Extras", "Extras 0")+"x"+numero+" "+scrapertools.htmlclean(scrapedtitle)
             thumbnail = item.thumbnail
             fanart= item.fanart
@@ -461,6 +480,19 @@ def findvideos(item, verTodos=False):
     sortlinks = config.get_setting("pordedesortlinks",item.channel) # 0:no, 1:valoracion, 2:idioma, 3:calidad, 4:idioma+calidad, 5:idioma+valoracion, 6:idioma+calidad+valoracion
     showlinks = config.get_setting("pordedeshowlinks",item.channel) # 0:todos, 1:ver online, 2:descargar
 
+    #sortlinks = int(sortlinks) if sortlinks != '' and sortlinks !="No" else 0
+    #showlinks = int(showlinks) if showlinks != '' and showlinks !="No" else 0
+    
+    if sortlinks != '' and sortlinks !="No":
+        sortlinks = int(sortlinks)
+    else:
+        sortlinks = 0
+
+    if showlinks != '' and showlinks !="No":
+        showlinks = int(showlinks)
+    else:
+        showlinks = 0
+
     for match in matches:
         if (DEBUG): logger.info("match="+match)
 
@@ -487,7 +519,11 @@ def findvideos(item, verTodos=False):
         nombre_servidor = scrapertools.find_single_match(thumb_servidor,"popup_([^\.]+)\.png")
         if (DEBUG): logger.info("nombre_servidor="+nombre_servidor)
 
-        title = ("Download " if jdown != '' else "Ver en ")+nombre_servidor+" ("+idioma+") (Calidad "+calidad_video.strip()+", audio "+calidad_audio.strip()+")"
+        #title = ("Download " if jdown != '' else "Ver en ")+nombre_servidor+" ("+idioma+") (Calidad "+calidad_video.strip()+", audio "+calidad_audio.strip()+")"
+        if jdown != '':
+            title = "Download "+nombre_servidor+" ("+idioma+") (Calidad "+calidad_video.strip()+", audio "+calidad_audio.strip()+")"
+        else:
+            title = "Ver en "+nombre_servidor+" ("+idioma+") (Calidad "+calidad_video.strip()+", audio "+calidad_audio.strip()+")"
 
         cuenta = []
         valoracion = 0
@@ -495,7 +531,11 @@ def findvideos(item, verTodos=False):
             nn = scrapertools.find_single_match(match,'<span\s+data-num="([^"]+)"\s+class="defaultPopup"\s+href="/likes/popup/value/'+val+'/')
             if nn != '0' and nn != '':
                 cuenta.append(nn + ' ' + ['ok', 'ko', 'rep'][idx])
-                valoracion += int(nn) if val == '1' else -int(nn)
+                #valoracion += int(nn) if val == '1' else -int(nn)
+                if val == '1':
+                    valoracion += int(nn)
+                else: 
+                    valoracion += -int(nn)
 
         if len(cuenta) > 0:
             title += ' (' + ', '.join(cuenta) + ')'
@@ -525,7 +565,12 @@ def findvideos(item, verTodos=False):
 
     if sortlinks > 0:
         numberlinks = config.get_setting("pordedenumberlinks",item.channel) # 0:todos, > 0:n*5 (5,10,15,20,...)
-        numberlinks = int(numberlinks) if numberlinks != '' and numberlinks !="No" else 0
+        #numberlinks = int(numberlinks) if numberlinks != '' and numberlinks !="No" else 0
+        if numberlinks != '' and numberlinks !="No":
+            numberlinks = int(numberlinks) 
+        else:
+            numberlinks = 0
+
         if numberlinks == 0:
             verTodos = True
         itemsort = sorted(itemsort, key=lambda k: (k['orden1'], k['orden2']), reverse=True)
@@ -671,20 +716,39 @@ def valora_calidad(video, audio):
     prefs_audio = [ 'dts', '5.1', 'rip', 'line', 'screener' ]
 
     video = ''.join(video.split()).lower()
-    pts = (9 - prefs_video.index(video) if video in prefs_video else 1) * 10
+    #pts = (9 - prefs_video.index(video) if video in prefs_video else 1) * 10
+    if video in prefs_video:
+        pts = (9 - prefs_video.index(video)) * 10
+    else:
+        pts = (9 - 1) * 10
 
     audio = ''.join(audio.split()).lower()
-    pts += 9 - prefs_audio.index(audio) if audio in prefs_audio else 1
+    #pts += 9 - prefs_audio.index(audio) if audio in prefs_audio else 1
+    if audio in prefs_audio:
+        pts = (9 - prefs_audio.index(audio)) * 10
+    else:
+        pts = (9 - 1) * 10
 
     return pts
 
 def valora_idioma(idioma_0, idioma_1):
     prefs = [ 'spanish', 'spanish LAT', 'catalan', 'english', 'french' ]
 
-    pts = (9 - prefs.index(idioma_0) if idioma_0 in prefs else 1) * 10
+    #pts = (9 - prefs.index(idioma_0) if idioma_0 in prefs else 1) * 10
+    if idioma_0 in prefs:
+        pts = (9 - prefs.index(idioma_0)) * 10
+    else:
+        pts = (9 - 1) * 10
+
     if idioma_1 != '': # si hay subtítulos
         idioma_1 = idioma_1.replace(' SUB', '')
-        pts += 8 - prefs.index(idioma_1) if idioma_1 in prefs else 1
+
+        #pts += 8 - prefs.index(idioma_1) if idioma_1 in prefs else 1
+        if idioma_1 in prefs:
+            pts += 8 - prefs.index(idioma_1)
+        else:
+            pts += 8 - 1
+
     else:
         pts += 9 # sin subtítulos por delante
     return pts

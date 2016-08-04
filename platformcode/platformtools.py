@@ -766,9 +766,6 @@ def get_dialogo_opciones(item, default_action, strm):
             if config.get_setting("jdownloader_enabled") == "true":
                 # "Enviar a JDownloader"
                 opciones.append(config.get_localized_string(30158))
-            if config.get_setting("pyload_enabled") == "true":
-                # "Enviar a pyLoad"
-                opciones.append(config.get_localized_string(30158).replace("jDownloader", "pyLoad"))
 
         if default_action == "3":
             seleccion = len(opciones)-1

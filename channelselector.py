@@ -35,65 +35,74 @@ from core.item import Item
 
 DEBUG = config.get_setting("debug")
 
-
 def getmainlist(preferred_thumb=""):
     logger.info("channelselector.getmainlist")
     itemlist = list()
 
     # Añade los canales que forman el menú principal
+
     itemlist.append(Item(title=config.get_localized_string(30130),
-                         channel="novedades", action="mainlist",
-                         thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),
-                                                    "thumb_novedades.png"),
+                         channel="novedades", 
+                         action="mainlist",
+                         thumbnail=get_thumb(preferred_thumb,"thumb_novedades.png"),
                          viewmode="movie"))
+
     itemlist.append(Item(title=config.get_localized_string(30118),
-                         channel="channelselector", action="channeltypes",
-                         thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),
-                                                    "thumb_canales.png"),
+                         channel="channelselector", 
+                         action="channeltypes",
+                         thumbnail=get_thumb(preferred_thumb,"thumb_canales.png"),
                          viewmode="movie"))
 
     itemlist.append(Item(title=config.get_localized_string(30103),
-                         channel="buscador", action="mainlist",
-                         thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),
-                                                    "thumb_buscar.png"),
-                         viewmode="list"))
-    itemlist.append(Item(title=config.get_localized_string(30102),
-                         channel="favoritos", action="mainlist",
-                         thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),
-                                                    "thumb_favoritos.png"),
-                         viewmode="movie"))
-    if config.get_library_support():
-        itemlist.append(Item(title=config.get_localized_string(30131),
-                             channel="biblioteca", action="mainlist",
-                             thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),
-                                                        "thumb_biblioteca.png"),
-                             viewmode="movie"))
-    itemlist.append(Item(title=config.get_localized_string(30101), channel="descargas",
+                         channel="buscador", 
                          action="mainlist",
-                         thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),
-                                                    "thumb_descargas.png"),
+                         thumbnail=get_thumb(preferred_thumb,"thumb_buscar.png"),
                          viewmode="list"))
+
+    itemlist.append(Item(title=config.get_localized_string(30102),
+                         channel="favoritos", 
+                         action="mainlist",
+                         thumbnail=get_thumb(preferred_thumb,"thumb_favoritos.png"),
+                         viewmode="movie"))
+
+    if config.get_library_support():
+
+        itemlist.append(Item(title=config.get_localized_string(30131),
+                             channel="biblioteca", 
+                             action="mainlist",
+                             thumbnail=get_thumb(preferred_thumb,"thumb_biblioteca.png"),
+                             viewmode="movie"))
+
+    itemlist.append(Item(title=config.get_localized_string(30101), 
+                         channel="descargas",
+                         action="mainlist",
+                         thumbnail=get_thumb(preferred_thumb,"thumb_descargas.png"),
+                         viewmode="movie"))
 
     if "xbmceden" in config.get_platform():
+
         itemlist.append(Item(title=config.get_localized_string(30100),
-                             channel="configuracion", action="mainlist",
-                             thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),
-                                                        "thumb_configuracion.png"),
-                             folder=False, viewmode="list"))
+                             channel="configuracion", 
+                             action="mainlist",
+                             thumbnail=get_thumb(preferred_thumb,"thumb_configuracion.png"),
+                             folder=False, 
+                             viewmode="list"))
     else:
         itemlist.append(Item(title=config.get_localized_string(30100),
-                             channel="configuracion", action="mainlist",
-                             thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),
-                                                        "thumb_configuracion.png"),
+                             channel="configuracion", 
+                             action="mainlist",
+                             thumbnail=get_thumb(preferred_thumb,"thumb_configuracion.png"),
                              viewmode="list"))
-        # Se ha insertado "folder=False" para que no se habra una ventana tras salir de la configuracion
 
-
-    itemlist.append(Item(title=config.get_localized_string(30104), channel="ayuda", action="mainlist",
-                         thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb), "thumb_ayuda.png"),
+    itemlist.append(Item(title=config.get_localized_string(30104), 
+                         channel="ayuda", 
+                         action="mainlist",
+                         thumbnail=get_thumb(preferred_thumb,"thumb_ayuda.png"),
                          viewmode="list"))
     return itemlist
 
+def get_thumb(preferred_thumb,thumb_name):
+    return urlparse.urljoin(get_thumbnail_path(preferred_thumb),thumb_name)
 
 def getchanneltypes(preferred_thumb=""):
     logger.info("channelselector getchanneltypes")

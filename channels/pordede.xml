@@ -27,6 +27,7 @@
 		<label>@30014</label>
 		<enabled>true</enabled>
 		<visible>true</visible>
+		<default></default>
 	</settings>
 	<settings>
 		<id>pordedepassword</id>
@@ -35,6 +36,7 @@
 		<label>@30015</label>
 		<enabled>!eq(-1,'')</enabled>
 		<visible>true</visible>
+		<default></default>
 	</settings>
 	<settings>
 		<id>include_in_global_search</id>
