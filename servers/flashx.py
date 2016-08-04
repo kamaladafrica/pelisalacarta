@@ -5,8 +5,10 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 # ------------------------------------------------------------
 
+import os
 import re
 
+from core import config
 from core import logger
 from core import jsunpack
 from core import scrapertools
@@ -45,10 +47,22 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     # Extrae la URL
     # {file:"http://f11-play.flashx.tv/luq4gfc7gxixexzw6v4lhz4xqslgqmqku7gxjf4bk43u4qvwzsadrjsozxoa/video1.mp4"}
     video_urls = []
-    media_urls = scrapertools.find_multiple_matches(match, '\{file\:"([^"]+)"')
-    for media_url in media_urls:
-        if not media_url.endswith("png"):
-            video_urls.append(["." + media_url.rsplit('.', 1)[1] + " [flashx]", media_url])
+    media_urls = scrapertools.find_multiple_matches(match, '\{file\:"([^"]+)",label:"([^"]+)"')
+    subtitle = ""
+    for media_url, label in media_urls:
+        if media_url.endswith(".srt") and label == "Spanish":
+            try:
+                from core import filetools
+                data = scrapertools.downloadpage(media_url)
+                subtitle = os.path.join(config.get_data_path(), 'sub_flashx.srt')
+                filetools.write(subtitle, data)
+            except:
+                import traceback
+                logger.info("pelisalacarta.servers.videomega Error al descargar el subtítulo: "+traceback.format_exc())
+            
+    for media_url, label in media_urls:
+        if not media_url.endswith("png") and not media_url.endswith(".srt"):
+            video_urls.append(["." + media_url.rsplit('.', 1)[1] + " [flashx]", media_url, 0, subtitle])
 
     for video_url in video_urls:
         logger.info("pelisalacarta.servers.flashx %s - %s" % (video_url[0], video_url[1]))
@@ -64,7 +78,7 @@ def find_videos(data):
 
     # http://flashx.tv/z3nnqbspjyne
     # http://www.flashx.tv/embed-li5ydvxhg514.html
-    patronvideos = 'flashx.(?:tv|pw)/(?:embed-|)([a-z0-9A-Z]+)'
+    patronvideos = 'flashx.(?:tv|pw)/(?:embed.php\?c=|embed-|)([A-z0-9]+)'
     logger.info("pelisalacarta.servers.flashx find_videos #" + patronvideos + "#")
     matches = re.compile(patronvideos, re.DOTALL).findall(data)
 
