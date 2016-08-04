@@ -80,70 +80,96 @@ def force_creation_advancedsettings(item):
                                       "Deseas continuar?") == 1:
 
             # Backup del advancedsettings existente, antes de modificarlo.
-            with open(advancedsettings_kodi) as f_origen:
-                if not os.path.exists(fichero_backup):
-                    with open(fichero_backup, "w") as f_backup:
-                        for line in f_origen:
-                            f_backup.write(line)
+            f_origen = open(advancedsettings_kodi)
+
+            if not os.path.exists(fichero_backup):
+                f_backup = open(fichero_backup, "w")
+                
+                for line in f_origen:
+                    f_backup.write(line)
+                
+                f_backup.close()
+
+            else:
+                if platformtools.dialog_yesno("pelisalacarta",
+                                              "Backup anterior encontrado. ",
+                                              "Deseas sobreescribirlo?") == 1:
+                    os.remove(fichero_backup)
+
+                    f_backup = open(fichero_backup, "w")
+
+                    for line in f_origen:
+                        f_backup.write(line)
+
+                    f_backup.close()
+
+                    platformtools.dialog_notification("pelisalacarta",
+                                                      "Backup terminado!")
+                    logger.info("pelisalacarta.channels.ayuda Backup terminado!")
                 else:
-                    if platformtools.dialog_yesno("pelisalacarta",
-                                                  "Backup anterior encontrado. ",
-                                                  "Deseas sobreescribirlo?") == 1:
-                        os.remove(fichero_backup)
-                        with open(fichero_backup, "w") as f_backup:
-                            for line in f_origen:
-                                f_backup.write(line)
-                        platformtools.dialog_notification("pelisalacarta",
-                                                          "Backup terminado!")
-                        logger.info("pelisalacarta.channels.ayuda Backup terminado!")
-                    else:
-                        platformtools.dialog_notification("pelisalacarta",
-                                                          "Backup no modificado")
-                        logger.info("pelisalacarta.channels.ayuda Backup no modificado!")
+                    platformtools.dialog_notification("pelisalacarta",
+                                                      "Backup no modificado")
+                    logger.info("pelisalacarta.channels.ayuda Backup no modificado!")
+
+            f_origen.close()
 
             # Edicion de advancedsettings.xml
-            with open(os.path.join(advancedsettings_pelisalacarta)) as f_mod:
-                with open(os.path.join(advancedsettings_trans), "w") as f_trans:
-                    with open(os.path.join(advancedsettings_same), "w") as f_same:
-                        lines_seen = set()
-                        special_lines_seen = set()
-                        for line_mod in f_mod:
-                            with open(os.path.join(advancedsettings_kodi)) as f_orig:
-                                if (line_mod.startswith(("<advancedsettings>",
-                                                         "</network>",
-                                                         "</advancedsettings>")) and line_mod
-                                        not in special_lines_seen):
-                                    f_same.write(line_mod)
-                                    if not line_mod.startswith("</network>"):
-                                        f_trans.write(line_mod)
-                                    special_lines_seen.add(line_mod)
+            f_mod = open(os.path.join(advancedsettings_pelisalacarta))
+            f_trans = open(os.path.join(advancedsettings_trans), "w")
+            f_same = open(os.path.join(advancedsettings_same), "w")
 
-                                for line_orig in f_orig:
-                                    if (line_orig.startswith(("<advancedsettings>",
-                                                              "</advancedsettings>")) and line_orig
-                                            not in special_lines_seen and line_orig not in
-                                            lines_seen):
-                                        lines_seen.add(line_orig)
+            lines_seen = set()
+            special_lines_seen = set()
+            for line_mod in f_mod:
+                
+                f_orig = open(os.path.join(advancedsettings_kodi))
 
-                                    if (line_orig == line_mod and line_orig not in lines_seen and
-                                            line_orig not in special_lines_seen):
-                                        line_same = line_orig
-                                        f_same.write(line_same)
-                                        lines_seen.add(line_orig)
+                if (line_mod.startswith(("<advancedsettings>",
+                                         "</network>",
+                                         "</advancedsettings>")) and line_mod
+                        not in special_lines_seen):
+                    f_same.write(line_mod)
 
-                                    if (not line_orig.startswith(("<autodetectpingtime>",
-                                                                  "<curlclienttimeout>",
-                                                                  "<curllowspeedtime>",
-                                                                  "<curlretries>",
-                                                                  "<disableipv6>",
-                                                                  "<cachemembuffersize>")) and
-                                            line_orig not in lines_seen and line_orig not in
-                                            special_lines_seen):
-                                        line_trans = line_orig
-                                        if line_orig.startswith("<network>"):
-                                            f_same.write(line_orig)
-                                        f_trans.write(line_trans)
-                                        lines_seen.add(line_orig)
+                    if not line_mod.startswith("</network>"):
+                        f_trans.write(line_mod)
+                    
+                    special_lines_seen.add(line_mod)
+
+                for line_orig in f_orig:
+                    if (line_orig.startswith(("<advancedsettings>",
+                                              "</advancedsettings>")) and line_orig
+                            not in special_lines_seen and line_orig not in
+                            lines_seen):
+                        lines_seen.add(line_orig)
+
+                    if (line_orig == line_mod and line_orig not in lines_seen and
+                            line_orig not in special_lines_seen):
+                        line_same = line_orig
+                        f_same.write(line_same)
+                        lines_seen.add(line_orig)
+
+                    if (not line_orig.startswith(("<autodetectpingtime>",
+                                                  "<curlclienttimeout>",
+                                                  "<curllowspeedtime>",
+                                                  "<curlretries>",
+                                                  "<disableipv6>",
+                                                  "<cachemembuffersize>")) and
+                            line_orig not in lines_seen and line_orig not in
+                            special_lines_seen):
+
+                        line_trans = line_orig
+
+                        if line_orig.startswith("<network>"):
+                            f_same.write(line_orig)
+                        
+                        f_trans.write(line_trans)
+                        lines_seen.add(line_orig)
+
+                f_orig.close()
+
+            f_mod.close()
+            f_trans.close()
+            f_same.close()
 
             import filecmp
             if filecmp.cmp(advancedsettings_pelisalacarta, advancedsettings_same):
@@ -157,44 +183,50 @@ def force_creation_advancedsettings(item):
             open(os.path.join(advancedsettings_kodi)).close
 
             nospaces = False
-            with open(os.path.join(advancedsettings_pelisalacarta)) as f_mod:
-                if filecmp.cmp(advancedsettings_pelisalacarta, advancedsettings_same):
-                    platformtools.dialog_ok("pelisalacarta",
-                                            "advancessettings.xml estaba optimizado!",
-                                            "(No sera editado)")
-                else:
-                    platformtools.dialog_notification("pelisalacarta",
-                                                      "modificando advancedsettings.xml...")
-                    with open(os.path.join(advancedsettings_trans)) as f_trans:
-                        with open(os.path.join(advancedsettings_kodi), "w") as f_orig:
-                            for line_trans in f_trans:
-                                if line_trans.startswith("<network>"):
-                                    for line_mod in f_mod:
-                                        if not line_mod.startswith(("<advancedsettings>",
-                                                                    "</network>",
-                                                                    "</advancedsettings>")):
-                                            f_orig.write(line_mod)
-                                else:
-                                    if (line_trans.startswith("</advancedsettings>") or
-                                            nospaces):
-                                        line_trans = os.linesep.join([s for s in
-                                                                     line_trans.splitlines()
-                                                                     if s])
-                                        f_orig.write(line_trans)
-                                        nospaces = True
-                                    else:
-                                        f_orig.write(line_trans)
+            f_mod = open(os.path.join(advancedsettings_pelisalacarta))
+            if filecmp.cmp(advancedsettings_pelisalacarta, advancedsettings_same):
+                platformtools.dialog_ok("pelisalacarta",
+                                        "advancessettings.xml estaba optimizado!",
+                                        "(No sera editado)")
+            else:
+                platformtools.dialog_notification("pelisalacarta",
+                                                  "modificando advancedsettings.xml...")
+                f_trans = open(os.path.join(advancedsettings_trans))
+                f_orig = open(os.path.join(advancedsettings_kodi), "w")
 
-                            if os.path.getsize(advancedsettings_same) == 0:
-                                logger.info("UPSSS, ocurrio un error: same.txt esta vacio!")
-                            if os.path.getsize(advancedsettings_trans) == 0:
-                                logger.info("UPSSS, ocurrio un error: trans.txt esta vacio!")
-                                for line_mod in f_mod:
-                                    f_orig.write(line_mod)
+                for line_trans in f_trans:
+                    if line_trans.startswith("<network>"):
+                        for line_mod in f_mod:
+                            if not line_mod.startswith(("<advancedsettings>",
+                                                        "</network>",
+                                                        "</advancedsettings>")):
+                                f_orig.write(line_mod)
+                    else:
+                        if (line_trans.startswith("</advancedsettings>") or
+                                nospaces):
+                            line_trans = os.linesep.join([s for s in
+                                                         line_trans.splitlines()
+                                                         if s])
+                            f_orig.write(line_trans)
+                            nospaces = True
+                        else:
+                            f_orig.write(line_trans)
 
-                    platformtools.dialog_ok("pelisalacarta",
-                                            "Se ha modificado el fichero advancedsettings.xml",
-                                            "con la configuración óptima para el streaming")
+                if os.path.getsize(advancedsettings_same) == 0:
+                    logger.info("UPSSS, ocurrio un error: same.txt esta vacio!")
+                if os.path.getsize(advancedsettings_trans) == 0:
+                    logger.info("UPSSS, ocurrio un error: trans.txt esta vacio!")
+                    for line_mod in f_mod:
+                        f_orig.write(line_mod)
+
+                f_trans.close()
+                f_orig.close()
+
+                platformtools.dialog_ok("pelisalacarta",
+                                        "Se ha modificado el fichero advancedsettings.xml",
+                                        "con la configuración óptima para el streaming")
+            f_mod.close()
+
             if os.path.exists(advancedsettings_same):
                 logger.info("pelisalacarta.channels.ayuda Archivo de comparacion eliminado")
                 os.remove(advancedsettings_same)
@@ -208,10 +240,15 @@ def force_creation_advancedsettings(item):
     else:
         # Si no hay advancedsettings.xml se copia el advancedsettings.xml desde el directorio
         # resources al userdata.
-        with open(advancedsettings_pelisalacarta) as f_optimo:
-            with open(advancedsettings_kodi, "w") as f_original:
-                for line in f_optimo:
-                    f_original.write(line)
+        f_optimo = open(advancedsettings_pelisalacarta)
+        f_original = open(advancedsettings_kodi, "w")
+
+        for line in f_optimo:
+            f_original.write(line)
+        
+        f_optimo.close()
+        f_original.close()
+
         platformtools.dialog_ok("pelisalacarta",
                                 "Se ha creado un fichero advancedsettings.xml",
                                 "con la configuración óptima para streaming")
@@ -232,10 +269,16 @@ def recover_advancedsettings(item):
                                   "Deseas restaurar el backup de advancedsettings.xml?") == 1:
         if os.path.exists(fichero_backup):
             logger.info("pelisalacarta.channels.ayuda Existe un backup de advancedsettings.xml")
-            with open(fichero_backup) as f_backup:
-                with open(advancedsettings_kodi, "w") as f_original:
-                    for line in f_backup:
-                        f_original.write(line)
+            
+            f_backup = open(fichero_backup)
+            f_original = open(advancedsettings_kodi, "w")
+            
+            for line in f_backup:
+                f_original.write(line)
+            
+            f_backup.close()
+            f_original.close()
+
             platformtools.dialog_ok("pelislacarta",
                                     "Backup restaurado correctamente")
 
@@ -244,10 +287,15 @@ def recover_advancedsettings(item):
             if platformtools.dialog_yesno("pelisalacarta",
                                           "No hay ningun backup disponible."
                                           "Deseas crearlo?") == 1:
-                with open(advancedsettings_kodi) as f_origen:
-                    with open(fichero_backup, "w") as f_backup:
-                        for line in f_origen:
-                            f_backup.write(line)
+                f_origen = open(advancedsettings_kodi)
+                f_backup = open(fichero_backup, "w")
+
+                for line in f_origen:
+                    f_backup.write(line)
+
+                f_origen.close()
+                f_backup.close()
+
                 platformtools.dialog_notification("pelisalacarta", "Backup hecho!")
                 logger.info("pelisalacarta.channels.ayuda Backup terminado!")
             else:

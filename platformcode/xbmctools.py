@@ -35,7 +35,6 @@ import xbmcplugin
 from core import config
 from core import logger
 from platformcode import library
-from channels import descargas
 
 # Esto permite su ejecución en modo emulado
 try:
@@ -233,8 +232,6 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
 
             if config.get_setting("jdownloader_enabled")=="true":
                 opciones.append(config.get_localized_string(30158)) # "Enviar a JDownloader"
-            if config.get_setting("pyload_enabled")=="true":
-                opciones.append(config.get_localized_string(30158).replace("jDownloader","pyLoad")) # "Enviar a pyLoad"
 
         if default_action=="3":
             seleccion = len(opciones)-1
@@ -384,6 +381,7 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
         return
 
     elif opciones[seleccion]==config.get_localized_string(30159): #"Borrar descarga definitivamente"
+        from channels import descargas
         descargas.delete_error_bookmark(urllib.unquote_plus( item.extra ))
 
         advertencia = xbmcgui.Dialog()
@@ -392,6 +390,7 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
         return
 
     elif opciones[seleccion]==config.get_localized_string(30160): #"Pasar de nuevo a lista de descargas":
+        from channels import descargas
         descargas.mover_descarga_error_a_pendiente(urllib.unquote_plus( item.extra ))
 
         advertencia = xbmcgui.Dialog()
@@ -415,13 +414,14 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
         keyboard.doModal()
         if keyboard.isConfirmed():
             title = keyboard.getText()
-            favoritos.savebookmark(titulo=download_title,url=item.url,thumbnail=download_thumbnail,server=item.server,plot=download_plot,fulltitle=item.title)
+            favoritos.savebookmark(titulo=title,url=item.url,thumbnail=download_thumbnail,server=item.server,plot=download_plot,fulltitle=title)
             advertencia = xbmcgui.Dialog()
-            resultado = advertencia.ok(config.get_localized_string(30102) , item.title , config.get_localized_string(30108)) # 'se ha añadido a favoritos'
+            resultado = advertencia.ok(config.get_localized_string(30102) , title , config.get_localized_string(30108)) # 'se ha añadido a favoritos'
         return
 
     elif opciones[seleccion]==config.get_localized_string(30156): #"Quitar de lista de descargas":
         # La categoría es el nombre del fichero en la lista de descargas
+        from channels import descargas
         descargas.deletebookmark((urllib.unquote_plus( item.extra )))
 
         advertencia = xbmcgui.Dialog()
@@ -447,6 +447,7 @@ def play_video(item,desdefavoritos=False,desdedescargados=False,desderrordescarg
         if keyboard.isConfirmed():
             download_title = keyboard.getText()
 
+            from channels import descargas
             descargas.savebookmark(titulo=download_title,url=item.url,thumbnail=download_thumbnail,server=item.server,plot=download_plot,fulltitle=download_title)
 
             advertencia = xbmcgui.Dialog()

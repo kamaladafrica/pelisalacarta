@@ -106,18 +106,26 @@ def get_channel_controls_settings(channel_name):
         if not c.has_key('id') or not c.has_key('type') or not c.has_key('default'):
             # Si algun control de la lista  no tiene id, type o default lo ignoramos
             continue
+
         if not c.has_key('enabled') or c['enabled'] is None: 
             c['enabled']= True
         else:
-            if c['enabled'].lower() == "true": c['enabled'] = True 
-            elif c['enabled'].lower() == "false": c['enabled'] = False  
+            if c['enabled'].lower() == "true":
+                c['enabled'] = True 
+            elif c['enabled'].lower() == "false":
+                c['enabled'] = False  
+
         if not c.has_key('visible') or c['visible'] is None: 
             c['visible']= True
+
         else:
-            if c['visible'].lower() == "true": c['visible'] = True 
-            elif c['visible'].lower() == "false": c['visible'] = False 
+            if c['visible'].lower() == "true": 
+                c['visible'] = True 
+            elif c['visible'].lower() == "false": 
+                c['visible'] = False 
+
         if c['type'] == 'bool':
-            c['default'] = True if c['default'].lower() == "true" else False
+            c['default'] = (c['default'].lower() == "true")
             
         if unicode(c['default']).isnumeric():
             c['default'] = int(c['default'])    

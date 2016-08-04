@@ -54,6 +54,10 @@ def start():
 def run():
     logger.info("pelisalacarta.platformcode.launcher run")
 
+    # The start() function is not always executed on old platforms (XBMC versions under 12.0)
+    if config.OLD_PLATFORM:
+        config.verify_directories_created()
+
     # Extract item from sys.argv
     if sys.argv[2]:
         item = Item().fromurl(sys.argv[2])
@@ -166,9 +170,12 @@ def run():
                 import channels.personal as channel
 
             elif os.path.exists(channel_file):
-                channel = __import__('channels.%s' % item.channel, fromlist=["channels.%s" % item.channel])
+                try:
+                    channel = __import__('channels.%s' % item.channel, fromlist=["channels.%s" % item.channel])
+                except:
+                    exec "import channels."+item.channel+" as channel"
 
-            logger.info("pelisalacarta.platformcode.launcher running channel {0} {1}".format(channel.__name__, channel.__file__))
+            logger.info("pelisalacarta.platformcode.launcher running channel "+channel.__name__+" "+channel.__file__)
 
             # Special play action
             if item.action == "play":
@@ -293,7 +300,7 @@ def run():
 
         # Grab inner and third party errors
         if hasattr(e, 'reason'):
-            logger.info("pelisalacarta.platformcode.launcher Razon del error, codigo: {0}, Razon: {1}".format(e.reason[0], e.reason[1]))
+            logger.info("pelisalacarta.platformcode.launcher Razon del error, codigo: "+str(e.reason[0])+", Razon: "+str(e.reason[1]))
             texto = config.get_localized_string(30050) # "No se puede conectar con el sitio web"
             ok = ventana_error.ok ("plugin", texto)
         
