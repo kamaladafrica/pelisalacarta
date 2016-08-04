@@ -40,21 +40,17 @@
 
     <setting label="Cuentas en canales" type="lsep"/>
 
-    <setting id="mocosoftxaccount" type="bool" label="MocosoftX" default="false"/>
-    <setting id="mocosoftx_mocosoftxuser" type="text" label="User"  enable="eq(-1,true)" default=""/>
-    <setting id="mocosoftx_mocosoftxpassword" type="text" option="hidden" label="Password" enable="!eq(-1,)+eq(-2,true)" default=""/>
+    <setting id="mocosoftx_mocosoftxuser" type="text" label="Mocosoftx user" default=""/>
+    <setting id="mocosoftx_mocosoftxpassword" type="text" option="hidden" label="Mocosoftx password" default=""/>
 
-    <setting id="megahdaccount" type="bool" label="megaHD" default="false"/>                                                                                                 
-    <setting id="megahd_megahduser" type="text" label="User"  enable="eq(-1,true)" default=""/>                                                                                        
-    <setting id="megahd_megahdpassword" type="text" option="hidden" label="Password" enable="!eq(-1,)+eq(-2,true)" default=""/> 
+    <setting id="megahd_megahduser" type="text" label="Megahd user" default=""/>                                                                                        
+    <setting id="megahd_megahdpassword" type="text" option="hidden" label="Megahd password" default=""/> 
 
-    <setting id="megaforoaccount" type="bool" label="megaforo" default="false"/>
-    <setting id="megaforo_megaforomegaforouser" type="text" label="User"  enable="eq(-1,true)" default=""/>
-    <setting id="megaforo_megaforomegaforopassword" type="text" option="hidden" label="Password" enable="!eq(-1,)+eq(-2,true)" default=""/>
+    <setting id="megaforo_megaforomegaforouser" type="text" label="Megaforo user" default=""/>
+    <setting id="megaforo_megaforomegaforopassword" type="text" option="hidden" label="Megaforo password" default=""/>
 
-    <setting id="pordedeaccount" type="bool" label="pordede" default="false"/>
-    <setting id="pordede_pordedeuser" type="text" label="User"  enable="eq(-1,true)" default=""/>
-    <setting id="pordede_pordedepassword" type="text" option="hidden" label="Password" enable="!eq(-1,)+eq(-2,true)" default=""/>
+    <setting id="pordede_pordedeuser" type="text" label="Porede user" default=""/>
+    <setting id="pordede_pordedepassword" type="text" option="hidden" label="Pordede password" default=""/>
 
     <setting label="Canal Personal" type="lsep"/>
 
