@@ -76,8 +76,19 @@ def mainlist(item):
 
 def check_for_updates(item):
     from core import updater
-    updater.checkforupdates()
+  
+    try:
+        version = updater.checkforupdates()
+        if version:
+            import xbmcgui
+            yes_pressed = xbmcgui.Dialog().yesno( "Versión "+version+" disponible" , "¿Quieres instalarla?" )
+      
+            if yes_pressed:
+                item = Item(version=version)
+                updater.update(item)
 
+    except:
+        pass
 
 def settings(item):
     config.open_settings()
