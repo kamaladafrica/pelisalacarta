@@ -9,6 +9,7 @@ import os
 
 from core import config
 from core import filetools
+from core import jsontools
 from core import logger
 from core import scrapertools
 from core.item import Item
@@ -361,7 +362,7 @@ def get_episodios(item):
 
 
 def get_sort_temp_epi(item):
-    # logger.debug(item.tostring())
+    logger.debug(item.tostring())
     if item.infoLabels and item.infoLabels.get('season', "1") != "" and item.infoLabels.get('episode', "1") != "":
         return int(item.infoLabels.get('season', "1")), int(item.infoLabels.get('episode', "1"))
     else:
