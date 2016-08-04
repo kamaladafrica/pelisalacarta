@@ -218,10 +218,6 @@ def run():
                 if config.get_setting('filter_servers') == 'true':
                     itemlist = filtered_servers(itemlist, server_white_list, server_black_list)
 
-<<<<<<< HEAD
-=======
-
->>>>>>> cde6df71534c26fb56fed51a0080e8760f544898
                 from platformcode import subtitletools
                 subtitletools.saveSubtitleName(item)
 
@@ -264,17 +260,10 @@ def run():
 
         # Grab inner and third party errors
         if hasattr(e, 'reason'):
-<<<<<<< HEAD
-            logger.info("pelisalacarta.platformcode.launcher Razon del error, codigo: {0}, Razon: {1}"
-                        .format(e.reason[0], e.reason[1]))
-            # "No se puede conectar con el sitio web"
-            platformtools.dialog_ok("plugin", config.get_localized_string(30050))
-=======
             logger.info("pelisalacarta.platformcode.launcher Razon del error, codigo: "+str(e.reason[0])+", Razon: "+str(e.reason[1]))
             texto = config.get_localized_string(30050) # "No se puede conectar con el sitio web"
             ok = ventana_error.ok ("plugin", texto)
->>>>>>> cde6df71534c26fb56fed51a0080e8760f544898
-        
+
         # Grab server response errors
         elif hasattr(e, 'code'):
             logger.info("pelisalacarta.platformcode.launcher codigo de error HTTP : %d" % e.code)
