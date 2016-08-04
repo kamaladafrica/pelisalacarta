@@ -7,33 +7,40 @@
 
 import re
 
+from core import jsontools
 from core import logger
 from core import scrapertools
 
+
 def test_video_exists( page_url ):
     logger.info("pelisalacarta.servers.vidgg test_video_exists(page_url='%s')" % page_url)
-    data = scrapertools.cache_page(page_url)
-    if "This file no longer exists" in data: return False, "[Vidgg] El archivo no existe o ha sido borrado"
-    return True,""
+    data = jsontools.load_json(scrapertools.cache_page("http://www.vidgg.to/api-v2/alive.php?link=" + page_url))
+    if data["data"] == "NOT_FOUND" or data["data"] == "FAILED":
+        return False, "[Vidgg] El archivo no existe o ha sido borrado"
+    elif data["data"] == "CONVERTING":
+        return False, "[Vidgg] El archivo se está procesando"
+    else:
+        return True, ""
+
 
 def get_video_url( page_url , premium = False , user="" , password="", video_password="" ):
     logger.info("pelisalacarta.servers.vidgg get_video_url(page_url='%s')" % page_url)
 
-    file = scrapertools.find_single_match(page_url, 'http://vidgg.to/video/([a-z0-9]+)')
-    data = scrapertools.cache_page("http://vidgg.to/embed/?id=%s" % file)
-
-    key = scrapertools.find_single_match(data, 'var fkzd="([^"]+)"')
-    url = "http://www.vidgg.to/api/player.api.php?file=%s&key=%s&pass=undefined&cid3=undefined&numOfErrors=0&user=undefined&cid2=undefined&cid=undefined" % (file, key)
-
-    data = scrapertools.downloadpageGzip(url)
-    mediaurl = scrapertools.find_single_match(data, 'url=(.*?)&')
     video_urls = []
-    video_urls.append( [ scrapertools.get_filename_from_url(mediaurl)[-4:]+" [vidgg]", mediaurl])
+    data = scrapertools.cache_page(page_url)
+
+    mediaurls = scrapertools.find_multiple_matches(data, '<source src="([^"]+)"')
+    for i, mediaurl in enumerate(mediaurls):
+        title = scrapertools.get_filename_from_url(mediaurl)[-4:]+" [vidgg]"
+        if i > 0:
+            title = scrapertools.get_filename_from_url(mediaurl)[-4:]+" Mirror %s [vidgg]" % str(i)
+        video_urls.append( [title, mediaurl])
 
     for video_url in video_urls:
         logger.info("[vidgg.py] %s - %s" % (video_url[0],video_url[1]))
 
     return video_urls
+
 
 # Encuentra vídeos del servidor en el texto pasado
 def find_videos(data):
