@@ -102,6 +102,8 @@ def get_setting(name, channel=""):
 
             if value is not None:
                 return value
+            else:
+                return ""
 
     # Global setting
     else:
