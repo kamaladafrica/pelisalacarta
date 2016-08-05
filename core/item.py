@@ -47,6 +47,13 @@ class Item(object):
         if not type(self.__dict__.get("infoLabels", "")) == dict:
             self.__dict__["infoLabels"] = {}
 
+        kw = copy.copy(kwargs)
+        for k in kw:
+            if k in ["contentTitle", "contentPlot", "contentSerieName", "contentType", "contentEpisodeTitle",
+                    "contentSeason", "contentEpisodeNumber", "contentThumbnail", "plot"]:
+                self.__setattr__(k, kw[k])
+                del kwargs[k]
+
         self.__dict__.update(kwargs)
         self.__dict__ = self.toutf8(self.__dict__)
 
@@ -91,6 +98,9 @@ class Item(object):
             elif name == "contentThumbnail":
                 self.__dict__["infoLabels"]["thumbnail"] = value
 
+        elif name == "plot":
+            self.__dict__["infoLabels"]["plot"] = value
+
         else:
             super(Item, self).__setattr__(name, value)
 
@@ -113,10 +123,10 @@ class Item(object):
             return "false"
 
         elif name in ["contentTitle", "contentPlot", "contentSerieName", "contentType", "contentEpisodeTitle",
-                    "contentSeason", "contentEpisodeNumber", "contentThumbnail"]:
+                    "contentSeason", "contentEpisodeNumber", "contentThumbnail", "plot"]:
             if name == "contentTitle":
                 return self.__dict__["infoLabels"].get("title","")
-            elif name == "contentPlot":
+            elif name == "contentPlot" or name == "plot":
                 return self.__dict__["infoLabels"].get("plot","")
             elif name == "contentSerieName":
                 return self.__dict__["infoLabels"].get("tvshowtitle","")
@@ -144,7 +154,6 @@ class Item(object):
             return
         # Copia todos los atributos que empiecen por "content" y esten declarados y los infoLabels
         for attr in parentContent.__dict__:
-
             if attr.startswith("content") or attr == "infoLabels":
                 self.__setattr__(attr, parentContent.__dict__[attr])
 
@@ -156,8 +165,8 @@ class Item(object):
         dic= self.__dict__.copy()
 
         # Añadimos los campos content... si tienen algun valor
-        for key in ["contentTitle", "contentPlot", "contentSerieName", "contentType",
-                    "contentSeason", "contentEpisodeNumber", "contentThumbnail"]:
+        for key in ["contentTitle", "contentPlot", "contentSerieName", "contentType", "contentEpisodeTitle",
+                    "contentSeason", "contentEpisodeNumber", "contentThumbnail", "plot"]:
             value = self.__getattr__(key)
             if value: dic[key]= value
 
