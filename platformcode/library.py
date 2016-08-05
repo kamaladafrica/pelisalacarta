@@ -119,12 +119,12 @@ def save_library_movie(item):
     logger.debug(item.tostring('\n'))
 
     # Itentamos obtener el titulo correcto:
-    # 1. contentTitle: Este deveria ser el sitio correcto
-    # 2. fulltitle
+    # 1. fulltitle: Este deberia ser el sitio correcto, ya que title suele contener "Añadir a la biblioteca..."
+    # 2. contentTitle
     # 3. title
-    titulo = item.contentTitle
+    titulo = item.fulltitle
     if not titulo:
-        titulo = item.fulltitle
+        titulo = item.contentTitle
     if not titulo:
         titulo = item.title
 
@@ -294,22 +294,23 @@ def save_library_episodes(path, episodelist, serie, silent=False):
         season_episode = scrapertools.get_season_and_episode(e.title.lower())
         e.infoLabels = serie.infoLabels
         e.contentSeason, e.contentEpisodeNumber = season_episode.split("x")
+        e.strm = True
 
         filename = "{0}.strm".format(season_episode)
         fullfilename = filetools.join(path, filename)
 
         nuevo = not filetools.exists(fullfilename)
+        if not nuevo:
+            old_item = Item().fromurl(filetools.read(fullfilename))
+            if getattr(old_item, "infoLabels"):
+                playcount = old_item.infoLabels.get("playcount", 0)
+                e.infoLabels["playcount"] = playcount
+
         if e.infoLabels.get("tmdb_id"):
             tmdb.find_and_set_infoLabels_tmdb(e, config.get_setting("scrap_ask_name") == "true")
 
-        e.strm = True
-
         # Para depuración creamos un .json al lado del .strm, para poder visualizar que parametros se estan guardando
         filetools.write(fullfilename + ".json", e.tojson())
-
-        # TODO fix temporal, en algunas ocasiones no se reproduce desde la biblioteca de kodi si tiene valor
-        # por ejemplo serie doctor who, en seriesblanco
-        e.infoLabels['tmdb_id'] = ""
 
         if filetools.write(fullfilename, '{addon}?{url}'.format(addon=addon_name, url=e.tourl())):
             if nuevo:
@@ -473,7 +474,6 @@ def set_infolabels_from_library(itemlist, tipo):
                     else:
                         r_filename_aux = r['file']
 
-                    #r_filename_aux = r['file'][:-1] if r['file'].endswith(os.sep) or r['file'].endswith('/') else r['file']
                     r_filename = os.path.basename(r_filename_aux)
                     # logger.debug(os.path.basename(i.path) + '\n' + r_filename)
                     i_filename = os.path.basename(i.path)
@@ -483,14 +483,12 @@ def set_infolabels_from_library(itemlist, tipo):
                         # Obtener imagenes y asignarlas al item
                         if 'thumbnail' in infolabels:
 
-                            infolabels['thumbnail'] = urllib.unquote_plus(infolabels['thumbnail']).replace('image://','')
-                            
+                            infolabels['thumbnail'] = urllib.unquote_plus(infolabels['thumbnail']).replace('image://',
+                                                                                                           '')
                             if infolabels['thumbnail'].endswith('/'):
                                 i.thumbnail = infolabels['thumbnail'][:-1]  
                             else: 
                                 i.thumbnail = infolabels['thumbnail']
-
-                            #i.thumbnail = infolabels['thumbnail'][:-1] if infolabels['thumbnail'].endswith('/') else infolabels['thumbnail']
 
                         if 'fanart' in infolabels:
                             
@@ -500,8 +498,6 @@ def set_infolabels_from_library(itemlist, tipo):
                                 i.fanart = infolabels['fanart'][:-1]
                             else:
                                 i.fanart = infolabels['fanart']
-
-                            #i.fanart = infolabels['fanart'][:-1] if infolabels['fanart'].endswith('/') else infolabels['fanart']
 
                         # Adaptar algunos campos al formato infoLables
                         if 'cast' in infolabels:
