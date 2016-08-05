@@ -41,18 +41,24 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
             url = page_url.replace("/embed/","/f/")
             data = scrapertools.downloadpageWithoutCookies(url)
             text_encode = scrapertools.find_single_match(data,"Click to start Download.*?<script[^>]+>(.*?)</script")
-            text_decode = aadecode(text_encode)
+            try:
+                text_decode = aadecode(text_encode)
+                videourl = "http://" + scrapertools.find_single_match(text_decode, '(openload.co/.*?)\}')
+            except:
+                videourl = "http://"
 
-            videourl = "http://" + scrapertools.find_single_match(text_decode, '(openload.co/.*?)\}')
             if videourl == "http://":
                 videourl = decodeopenload(data)
             extension = scrapertools.find_single_match(data, '<meta name="description" content="([^"]+)"')
             extension = "." + extension.rsplit(".", 1)[1]
-            video_urls.append([extension + " [Openload]", videourl+header_down+extension])
         else:
             text_encode = scrapertools.find_multiple_matches(data,'<script[^>]+>(ﾟωﾟ.*?)</script>')
-            decodeindex = aadecode(text_encode[0])
-            subtract = scrapertools.find_single_match(decodeindex, 'welikekodi.*?(\([^;]+\))')
+            try:
+                decodeindex = aadecode(text_encode[0])
+                subtract = scrapertools.find_single_match(decodeindex, 'welikekodi.*?(\([^;]+\))')
+            except:
+                subtract = ""
+            
             if subtract:
                 index = int(eval(subtract))
                 # Buscamos la variable que nos indica el script correcto
