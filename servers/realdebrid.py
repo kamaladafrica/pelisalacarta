@@ -34,7 +34,7 @@ def get_video_url(page_url, premium=False, video_password=""):
             if token_auth == "":
                 return [["REAL-DEBRID: No se ha completado el proceso de autentificación", ""]]
         else:
-            return [["REAL-DEBRID: Es necesario activar la cuenta. Accede al menú de ayuda", ""]]
+            return [["Es necesario activar la cuenta. Accede al menú de ayuda", ""]]
 
     post_link = urllib.urlencode([("link", page_url), ("password", video_password)])
     headers["Authorization"] = "Bearer %s" % token_auth
