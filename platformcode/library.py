@@ -80,9 +80,6 @@ if not filetools.exists(TVSHOWS_PATH):
 TVSHOW_FILE = "series.json"
 TVSHOW_FILE_OLD = "series.xml"
 
-# Versions compatible with JSONRPC v6
-LIST_PLATFORM_COMPATIBLE = ["xbmc-frodo", "xbmc-gotham", "kodi-helix", "kodi-isengard", "kodi-jarvis"]
-
 otmdb = None
 
 
@@ -94,8 +91,10 @@ def is_compatible():
 
     """
     logger.info("pelisalacarta.platformcode.library is_compatible")
+    # Versions compatible with JSONRPC v6 (frodo en adelante).
+    # config.OLD_PLATFORM son todas las versiones de frodo hacia abajo.
     # Si hemos dicho que nos busque la información de Kodi, damos por supuesto que está configurada su biblioteca
-    if config.get_platform() in LIST_PLATFORM_COMPATIBLE and config.get_setting("get_metadata_from_kodi") == "true":
+    if not config.OLD_PLATFORM and config.get_setting("get_metadata_from_kodi") == "true":
         return True
     else:
         return False
