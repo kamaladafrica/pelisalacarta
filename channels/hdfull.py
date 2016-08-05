@@ -19,7 +19,11 @@ from core import servertools
 
 
 host = "http://hdfull.tv"
-account = ( config.get_setting('hdfulluser', 'hdfull') != "" )
+if config.get_setting('hdfulluser', 'hdfull'):
+    account = True
+else:
+    account = False
+
 
 
 def settingCanal(item):
