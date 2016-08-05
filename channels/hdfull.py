@@ -104,6 +104,7 @@ def search(item,texto):
 
     sid = scrapertools.get_match(data, '.__csrf_magic. value="(sid:[^"]+)"')
     item.extra = urllib.urlencode({'__csrf_magic':sid})+'&menu=search&query='+texto
+    item.title = "Buscar..."
     item.url = host+"/buscar"
 
     try:
