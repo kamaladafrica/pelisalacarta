@@ -242,7 +242,7 @@ def set_infoLabels_item(item, seekTmdb=True, idioma_busqueda='es', lock=None):
             item.infoLabels['mediatype'] = 'movie' if item.infoLabels['tvshowtitle'] == '' else 'tvshow'
         tipo = 'movie' if item.infoLabels['mediatype'] == 'movie' else 'tv'
 
-        if 'season' in item.infoLabels and 'tmdb_id' in item.infoLabels:
+        if 'season' in item.infoLabels:
             try:
                 numtemporada = int(item.infoLabels['season'])
             except ValueError:
@@ -251,10 +251,14 @@ def set_infoLabels_item(item, seekTmdb=True, idioma_busqueda='es', lock=None):
 
             if lock:
                 lock.acquire()
-            if not otmdb_global:
+            if not 'tmdb_id' in item.infoLabels and not otmdb_global:
+                otmdb_global = Tmdb(texto_buscado=item.infoLabels['tvshowtitle'], tipo=tipo,
+                                    idioma_busqueda=idioma_busqueda, year=str(item.infoLabels.get('year', '')))
+                __leer_datos(otmdb_global)
+            elif 'tmdb_id' in item.infoLabels and not otmdb_global:
                 otmdb_global = Tmdb(id_Tmdb=item.infoLabels['tmdb_id'], tipo=tipo, idioma_busqueda=idioma_busqueda)
                 __leer_datos(otmdb_global)
-                temporada = otmdb_global.get_temporada(numtemporada)
+            temporada = otmdb_global.get_temporada(numtemporada)
             if lock:
                 lock.release()
 
@@ -728,10 +732,10 @@ class Tmdb(object):
                    % (self.busqueda["tipo"], self.busqueda["idioma"]))
             try:
                 lista_generos = jsontools.load_json(scrapertools.downloadpageWithoutCookies(url))["genres"]
+                for i in lista_generos:
+                    Tmdb.dic_generos[self.busqueda["idioma"]][self.busqueda["tipo"]][str(i["id"])] = i["name"]
             except:
                 pass
-            for i in lista_generos:
-                Tmdb.dic_generos[self.busqueda["idioma"]][self.busqueda["tipo"]][str(i["id"])] = i["name"]
 
         if self.busqueda["tipo"] == 'movie' or self.busqueda["tipo"] == "tv":
             if self.busqueda["idioma"] not in Tmdb.dic_generos:
