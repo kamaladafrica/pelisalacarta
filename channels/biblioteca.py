@@ -9,7 +9,6 @@ import os
 
 from core import config
 from core import filetools
-from core import jsontools
 from core import logger
 from core import scrapertools
 from core.item import Item
@@ -17,82 +16,15 @@ from platformcode import library
 
 DEBUG = config.get_setting("debug")
 
-# THUMB_MOVIES = "https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/Directors%20Chair.png"
-# THUMB_TVSHOWS = "https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/TV%20Series.png"
-
 
 def mainlist(item):
     logger.info("pelisalacarta.channels.biblioteca mainlist")
 
     itemlist = list()
-    itemlist.append(Item(channel=item.channel, action="peliculas", title="Películas"))  #, thumbnail=THUMB_MOVIES))
-    itemlist.append(Item(channel=item.channel, action="series", title="Series"))  #, thumbnail=THUMB_TVSHOWS))
-
-    # itemlist.append(Item(channel=item.channel, title="", thumbnail=None, folder=False))
-    # TODO en el caso de que no se puedan usar menus contextuales para configurar datos sobre series o peliculas
-    # itemlist.append(Item(channel=item.channel, action="settings", title="Configuración", text_color="gold",
-    #                      text_blod=True,
-    #                      thumbnail="http://media.tvalacarta.info/pelisalacarta/squares/thumb_configuracion.png"))
+    itemlist.append(Item(channel=item.channel, action="peliculas", title="Películas"))
+    itemlist.append(Item(channel=item.channel, action="series", title="Series"))
 
     return itemlist
-
-
-# def settings(item):
-#     itemlist = list()
-#     itemlist.append(Item(channel=item.channel, action="peliculas", title="Películas"))  #, thumbnail=THUMB_MOVIES))
-#     itemlist.append(Item(channel=item.channel, action="settings_series", title="Series"))  #, thumbnail=THUMB_TVSHOWS))
-#
-#     return itemlist
-#
-#
-# def settings_series(item):
-#     logger.info("pelisalacarta.channels.biblioteca settings_series")
-#     strm_path = library.TVSHOWS_PATH
-#
-#     itemlist = []
-#
-#     # Obtenemos todos los strm de la biblioteca de SERIES recursivamente
-#     for raiz, subcarpetas, ficheros in filetools.walk(strm_path):
-#         for f in ficheros:
-#             if f == "tvshow.json":
-#                 i = filetools.join(raiz, f)
-#
-#                 tvshow = Item().fromjson(filetools.read(i))
-#                 logger.debug(tvshow.tostring())
-#                 tvshow.contentChannel = tvshow.channel
-#                 tvshow.path = os.path.dirname(i)
-#                 tvshow.title = os.path.basename(os.path.dirname(i))
-#                 tvshow.channel = "biblioteca"
-#                 tvshow.action = "conf_series"
-#                 tvshow.text_color = ""
-#
-#                 itemlist.append(tvshow)
-#
-#     # library.set_infolabels_from_library(itemlist, tipo='TVShows')
-#
-#     return sorted(itemlist, key=lambda it: it.title.lower())
-#
-#
-# def conf_series(item):
-#     logger.info("pelisalacarta.channels.biblioteca settings_series")
-#
-#     itemlist = []
-#     title = "Activar la actualización de episodios" if not item.active else "Desactivar la actualización de episodios"
-#
-#     itemlist.append(Item(channel=item.channel, action="activar_desactivar", title=title))
-#
-#     return itemlist
-#
-#
-# def activar_desactivar(item):
-#     logger.info("pelisalacarta.channels.biblioteca activar_desactivar")
-#
-#     logger.info("item .active antes es: {}".format(item.active))
-#
-#     item.active = not item.active
-#     logger.info("item .active despues es: {}".format(item.active))
-#
-#     return []
 
 
 def peliculas(item):
@@ -289,12 +221,23 @@ def get_temporadas(item):
     if config.get_setting("no_pile_on_seasons") == "Sólo si hay una temporada" and len(dict_temp) == 1:
         return get_episodios(item)
     else:
+        item.infoLabels["playcount"] = 0
         # Creamos un item por cada temporada
         for season, title in dict_temp.items():
             # fix para que se filtren bien los contenido, ya que sino se hereda el campo
             item.infoLabels['season'] = ""
+
+            # para ocultar la carpeta si los hijos ya están marcados como vistos
+            if getattr(item, "hide"+season):
+                item.infoLabels["playcount"] = 1
+            # else:
+            #     del item.infoLabels["playcount"]
+            # item.infoLabels["playcount"] = 1
+
+            logger.info("mi item de season2 es:{}".format(item.tostring()))
             new_item = item.clone(action="get_episodios", title=title, contentTitle=title, contentSeason=season,
                                   contentEpisodeNumber="", filtrar_season=True, text_color="")
+            logger.info("mi item de season3 es:{}".format(new_item.tostring()))
             itemlist.append(new_item)
             # logger.debug(new_item.tostring())
 
@@ -414,3 +357,51 @@ def play(item):
         v.contentThumbnail = item.thumbnail
 
     return itemlist
+
+
+# metodos de menu contextual
+def marcar_episodio(item):
+    logger.info("pelisalacarta.channels.biblioteca marcar_episodio")
+
+    import sys
+    addon_name = sys.argv[0].strip()
+    if not addon_name or addon_name.startswith("default.py"):
+        addon_name = "plugin://plugin.video.pelisalacarta/"
+    filetools.write(item.path, '{addon}?{url}'.format(addon=addon_name, url=item.tourl()))
+
+    import xbmc
+    xbmc.executebuiltin("Container.Refresh")
+
+
+def marcar_temporada(item):
+    logger.info("pelisalacarta.channels.biblioteca marcar_temporada")
+
+    # Obtenemos los archivos de los episodios
+    raiz, carpetas_series, ficheros = filetools.walk(item.path).next()
+
+    # Crear un item en la lista para cada strm encontrado
+    count = 0
+    for i in ficheros:
+        # strm
+        if i.endswith(".strm"):
+            season, episode = scrapertools.get_season_and_episode(i).split("x")
+
+            # TODO revisar
+            #  Si hay q filtrar por temporada, ignoramos los capitulos de otras temporadas
+            if item.filtrar_season and int(season) != int(item.contentSeason):
+                continue
+
+            setattr(item, "hide"+season, "1")
+            epi = Item().fromurl(filetools.read(filetools.join(raiz, i)))
+            epi.path = filetools.join(raiz, i)
+            epi.infoLabels["playcount"] = item.infoLabels["playcount"]
+
+            import sys
+            addon_name = sys.argv[0].strip()
+            if not addon_name or addon_name.startswith("default.py"):
+                addon_name = "plugin://plugin.video.pelisalacarta/"
+            if filetools.write(epi.path, '{addon}?{url}'.format(addon=addon_name, url=epi.tourl())):
+                count += 1
+
+    item.action = "get_temporadas"
+    get_temporadas(item)
