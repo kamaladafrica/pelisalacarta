@@ -206,15 +206,9 @@ def set_infolabels(listitem, item):
     @param item: objeto Item que representa a una pelicula, serie o capitulo
     @type item: item
     """
-    # if not item.action or item.showInfo == False: return
 
-    if item.plot and item.infoLabels.get("plot", "") == "":
-        item.infoLabels['plot'] = item.plot
-
-    it = item.clone()
-    it.infoLabels['title'] = it.title
-
-    listitem.setInfo("video", it.infoLabels)
+    listitem.setInfo("video", item.infoLabels)
+    listitem.setInfo("video", {"Title": item.title})
 
 
 def set_context_commands(item, parent_item):

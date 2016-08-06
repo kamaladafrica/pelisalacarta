@@ -118,6 +118,7 @@ def save_library_movie(item):
     fallidos = 0
     logger.debug(item.tostring('\n'))
 
+    '''
     # Itentamos obtener el titulo correcto:
     # 1. fulltitle: Este deberia ser el sitio correcto, ya que title suele contener "Añadir a la biblioteca..."
     # 2. contentTitle
@@ -130,6 +131,22 @@ def save_library_movie(item):
 
     # Colocamos el titulo en su sitio para que tmdb lo localize
     item.contentTitle = titulo
+    '''
+
+    # Itentamos obtener el titulo correcto:
+    # 1. contentTitle: Este deberia ser el sitio correcto, ya que title suele contener "Añadir a la biblioteca..."
+    # 2. fulltitle
+    # 3. title
+    logger.debug(item.contentTitle)
+    logger.debug(item.fulltitle)
+    logger.debug(item.title)
+    if not item.contentTitle:
+        # Colocamos el titulo correcto en su sitio para que tmdb lo localize
+        if item.fulltitle:
+            item.contentTitle = item.fulltitle
+        else:
+            item.contentTitle = item.title
+        logger.debug(item.contentTitle)
 
     # Si llegados a este punto no tenemos titulo, salimos
     if not item.contentTitle or not item.channel:
@@ -144,7 +161,8 @@ def save_library_movie(item):
 
     # progress dialog
     p_dialog = platformtools.dialog_progress('pelisalacarta', 'Añadiendo película...')
-    filename = "{0} [{1}].strm".format(item.fulltitle.strip().lower(), item.channel)
+    #filename = "{0} [{1}].strm".format(item.fulltitle.strip().lower(), item.channel)
+    filename = "{0} [{1}].strm".format(item.contentTitle.strip().lower(), item.channel)
     logger.debug(filename)
     fullfilename = filetools.join(MOVIES_PATH, filename)
     addon_name = sys.argv[0].strip()
@@ -164,8 +182,21 @@ def save_library_movie(item):
 
     # Para depuración creamos un .json al lado del .strm, para poder visualizar que parametros se estan guardando
     filetools.write(fullfilename + ".json", item.tojson())
+    url = item.tourl()
+    # Fix para urls demasiado largas
+    if len(url) > 3500:
+        mensaje = "La url es demasiado larga: \nLongitud inicial: " + str(len(url))
+        it= item.clone(infoLabels = {"title": item.infoLabels["title"], "tmdb_id": item.infoLabels["tmdb_id"],
+                                     "trailer": item.infoLabels["trailer"], "year": item.infoLabels["year"],
+                                     "mediatype":  item.infoLabels["mediatype"],  "fanart": item.infoLabels["fanart"],
+                                     "thumbnail":item.infoLabels["thumbnail"]})
+        url= it.tourl()
+        mensaje += "\nLongitud final: " + str(len(url))
+        logger.debug(mensaje)
 
-    if filetools.write(fullfilename, '{addon}?{url}'.format(addon=addon_name, url=item.tourl())):
+
+    logger.debug(str(len(url)))
+    if filetools.write(fullfilename, '{addon}?{url}'.format(addon=addon_name, url=url)):
         if 'tmdb_id' in item.infoLabels:
             create_nfo_file(item.infoLabels['tmdb_id'], fullfilename[:-5], "cine")
         else:
