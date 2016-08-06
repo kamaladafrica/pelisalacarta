@@ -130,6 +130,7 @@ def save_library_movie(item):
 
     # Colocamos el titulo en su sitio para que tmdb lo localize
     item.contentTitle = titulo
+    item.strm = True
 
     # Si llegados a este punto no tenemos titulo, salimos
     if not item.contentTitle or not item.channel:
@@ -159,11 +160,6 @@ def save_library_movie(item):
 
     p_dialog.update(100, 'Añadiendo película...', item.contentTitle)
     p_dialog.close()
-
-    item.strm = True
-
-    # Para depuración creamos un .json al lado del .strm, para poder visualizar que parametros se estan guardando
-    filetools.write(fullfilename + ".json", item.tojson())
 
     if filetools.write(fullfilename, '{addon}?{url}'.format(addon=addon_name, url=item.tourl())):
         if 'tmdb_id' in item.infoLabels:
@@ -308,9 +304,6 @@ def save_library_episodes(path, episodelist, serie, silent=False):
 
         if e.infoLabels.get("tmdb_id"):
             tmdb.find_and_set_infoLabels_tmdb(e, config.get_setting("scrap_ask_name") == "true")
-
-        # Para depuración creamos un .json al lado del .strm, para poder visualizar que parametros se estan guardando
-        filetools.write(fullfilename + ".json", e.tojson())
 
         if filetools.write(fullfilename, '{addon}?{url}'.format(addon=addon_name, url=e.tourl())):
             if nuevo:
@@ -566,11 +559,11 @@ def mark_as_watched_on_strm(item):
                 strm.infoLabels = {}
             strm.infoLabels["playcount"] = 1
             addon_name = sys.argv[0].strip()
-
+            # TODO ponerlo fuera y mirar el "default"
             if not addon_name:
                 addon_name = "plugin://plugin.video.pelisalacarta/"
 
-            filetools.write(item.path + ".json", strm.tojson())
+            # filetools.write(item.path + ".json", strm.tojson())
             filetools.write(item.path, '{addon}?{url}'.format(addon=addon_name, url=strm.tourl()))
             break
 
