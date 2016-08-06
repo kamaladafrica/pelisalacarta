@@ -155,12 +155,21 @@ def decodeopenload(data):
         imageTabs[i][j].append(imageStr[idx])
 
     # get signature data
-    scripts = scrapertools.find_multiple_matches(data, '<script src="(/assets/js/obfuscator/[^"]+)"')
-    for scr in scripts:
-        data = scrapertools.downloadpageWithoutCookies('https://openload.co%s' % scr)
-        if "signatureNumbers" in data:
-            break
-    signStr = scrapertools.find_single_match(data, '[\'"]([^"\']+)[\'"]')
+    signStr = ""
+    try:
+        data_obf = scrapertools.downloadpageWithoutCookies("https://openload.co/assets/js/obfuscator/n.js")
+        if "signatureNumbers" in data_obf:
+            signStr = scrapertools.find_single_match(data_obf, '[\'"]([^"\']+)[\'"]')
+    except:
+        pass
+
+    if not signStr:
+        scripts = scrapertools.find_multiple_matches(data, '<script src="(/assets/js/obfuscator/[^"]+)"')
+        for scr in scripts:
+            data_obf = scrapertools.downloadpageWithoutCookies('https://openload.co%s' % scr)
+            if "signatureNumbers" in data_obf:
+                signStr = scrapertools.find_single_match(data_obf, '[\'"]([^"\']+)[\'"]')
+                break
 
     # split signature data
     signTabs = []
