@@ -46,11 +46,15 @@ def mainlist(item):
         cuantos += cuantos
 
     if not config.is_xbmc():
-        title = "Activar cuenta real-debrid"
+        from core import channeltools
+        title = "Activar cuenta real-debrid (No activada)"
         action = "realdebrid"
+        token_auth = channeltools.get_channel_setting("realdebrid_token", "realdebrid")
         if config.get_setting("realdebridpremium") == "false":
-            title += " (Marca la casilla en la ventana de configuración de pelisalacarta para continuar)"
+            title = "Activar cuenta real-debrid (Marca la casilla en la ventana de configuración de pelisalacarta para continuar)"
             action = ""
+        elif token_auth:
+            title = "Activar cuenta real-debrid (Activada correctamente)"
         itemlist.append(Item(channel=item.channel, action=action, title=title))
 
     return itemlist
