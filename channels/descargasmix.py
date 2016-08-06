@@ -315,6 +315,9 @@ def findvideos(item):
         if title_bloque == "Ver online":
             continue
         itemlist.append(item.clone(title=title_bloque, action="", text_color=color1))
+        if '<div class="subiendo">' in bloque:
+            itemlist.append(item.clone(title="   Los enlaces se están subiendo", action=""))
+            continue
         patron = 'class="separate.*? ([^"]+)".*?(?:make_links.*?,|href=)[\'"]([^"\']+)["\']'
         matches = scrapertools.find_multiple_matches(bloque, patron)
         for scrapedserver, scrapedurl in matches:
