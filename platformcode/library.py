@@ -118,6 +118,7 @@ def save_library_movie(item):
     fallidos = 0
     logger.debug(item.tostring('\n'))
 
+    # TODO fijar orden de prevalencia
     '''
     # Itentamos obtener el titulo correcto:
     # 1. fulltitle: Este deberia ser el sitio correcto, ya que title suele contener "Añadir a la biblioteca..."
@@ -162,6 +163,7 @@ def save_library_movie(item):
     # progress dialog
     p_dialog = platformtools.dialog_progress('pelisalacarta', 'Añadiendo película...')
     #filename = "{0} [{1}].strm".format(item.fulltitle.strip().lower(), item.channel)
+    #  TODO utilizar contentTitle pero hay asegurarse q es un filename correcto
     filename = "{0} [{1}].strm".format(item.contentTitle.strip().lower(), item.channel)
     logger.debug(filename)
     fullfilename = filetools.join(MOVIES_PATH, filename)
@@ -181,7 +183,8 @@ def save_library_movie(item):
     item.strm = True
 
     # Para depuración creamos un .json al lado del .strm, para poder visualizar que parametros se estan guardando
-    filetools.write(fullfilename + ".json", item.tojson())
+    # filetools.write(fullfilename + ".json", item.tojson()) # TODO de momento se queda aunq comentado ;-)
+
     url = item.tourl()
     # Fix para urls demasiado largas
     if len(url) > 3500:
@@ -195,7 +198,6 @@ def save_library_movie(item):
         logger.debug(mensaje)
 
 
-    logger.debug(str(len(url)))
     if filetools.write(fullfilename, '{addon}?{url}'.format(addon=addon_name, url=url)):
         if 'tmdb_id' in item.infoLabels:
             create_nfo_file(item.infoLabels['tmdb_id'], fullfilename[:-5], "cine")

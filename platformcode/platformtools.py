@@ -165,7 +165,7 @@ def render_items(itemlist, parent_item):
             xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url='%s?%s' % (sys.argv[0], item.tourl()),
                                         listitem=listitem, isFolder=item.folder)
         else:
-            listitem.addContextMenuItems(context_commands, replaceItems=True)
+            listitem.addContextMenuItems(context_commands)
             xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url='%s?%s' % (sys.argv[0], item.tourl()),
                                         listitem=listitem, isFolder=item.folder,
                                         totalItems=item.totalItems if item.totalItems else 0)
@@ -307,13 +307,15 @@ def set_context_commands(item, parent_item):
                                                           from_channel=item.channel, from_action=item.action).tourl())))
 
     # Añadimos opción contextual para Añadir la serie completa a la biblioteca
-    if item.action in ["episodios", "get_episodios"] and (item.contentSerieName or item.show):
+    if item.channel != "biblioteca" and item.action in ["episodios", "get_episodios"] \
+            and (item.contentSerieName or item.show):
         context_commands.append(("Añadir Serie a Biblioteca", "XBMC.RunPlugin(%s?%s)" %
                                  (sys.argv[0], item.clone(action="add_serie_to_library",
                                                           from_action=item.action).tourl())))
 
     # Añadir Pelicula a Biblioteca
-    if item.action in ["detail", "findvideos"] and not (item.contentSerieName or item.show):
+    if item.channel != "biblioteca" and item.action in ["detail", "findvideos"] \
+            and not (item.contentSerieName or item.show):
         context_commands.append(("Añadir Pelicula a Biblioteca", "XBMC.RunPlugin(%s?%s)" %
                                  (sys.argv[0], item.clone(action="add_pelicula_to_library",
                                                           from_action=item.action).tourl())))
@@ -335,6 +337,82 @@ def set_context_commands(item, parent_item):
         context_commands.append(("Descargar Episodio", "XBMC.RunPlugin(%s?%s)" %
                                  (sys.argv[0], item.clone(channel="descargas", action="save_download",
                                                           from_channel=item.channel, from_action=item.action).tourl())))
+
+    # Menus para la Biblioteca - Inicio
+
+    # PELICULAS
+    if item.channel == "biblioteca" and not(item.contentSerieName or item.show):
+        if hasattr(item, 'infoLabels'):
+            contador = item.infoLabels.get('playcount', 0)
+
+            if contador > 0:
+                texto = "Marcar como no visto"
+                contador = 0
+            else:
+                texto = "Marcar como visto"
+                contador = 1
+
+            new_item = item.clone(channel="biblioteca", action="marcar_episodio")
+            new_item.infoLabels['playcount'] = contador
+
+            context_commands.append((texto, "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], new_item.tourl())))
+
+        context_commands.append(("Gestionar ...", "XBMC.RunPlugin(%s?%s)" %
+                                 (sys.argv[0], item.clone(channel="descargas", action="save_download",
+                                                          from_channel=item.channel, from_action=item.action).tourl())))
+        context_commands.append(("Explorar nuevo contenido", "XBMC.RunPlugin(%s?%s)" %
+                                 (sys.argv[0], item.clone(channel="descargas", action="save_download",
+                                                          from_channel=item.channel, from_action=item.action).tourl())))
+
+    # SERIES
+    if item.channel == "biblioteca" and item.action == "get_temporadas" and (item.contentSerieName or item.show):
+        # opciones para la serie
+        context_commands.append(("Información", "XBMC.RunPlugin(%s?%s)" %
+                                 (sys.argv[0], item.clone(channel="descargas", action="save_download",
+                                                          from_channel=item.channel, from_action=item.action).tourl())))
+        context_commands.append(("Marcar como visto", "XBMC.RunPlugin(%s?%s)" %
+                                 (sys.argv[0], item.clone(channel="descargas", action="save_download",
+                                                          from_channel=item.channel, from_action=item.action).tourl())))
+        context_commands.append(("Marcar como no visto", "XBMC.RunPlugin(%s?%s)" %
+                                 (sys.argv[0], item.clone(channel="descargas", action="save_download",
+                                                          from_channel=item.channel, from_action=item.action).tourl())))
+        context_commands.append(("Gestionar ...", "XBMC.RunPlugin(%s?%s)" %
+                                 (sys.argv[0], item.clone(channel="descargas", action="save_download",
+                                                          from_channel=item.channel, from_action=item.action).tourl())))
+        context_commands.append(("Explorar nuevo contenido", "XBMC.RunPlugin(%s?%s)" %
+                                 (sys.argv[0], item.clone(channel="descargas", action="save_download",
+                                                          from_channel=item.channel, from_action=item.action).tourl())))
+
+    if item.channel == "biblioteca" and item.action == "get_episodios" and (item.contentSerieName or item.show):
+        # opciones para temporadas
+        new_item = item.clone(channel="biblioteca", action="marcar_temporada")
+
+        new_item.infoLabels['playcount'] = 1
+        context_commands.append(("Marcar como visto", "XBMC.RunPlugin(%s?%s)" %
+                                 (sys.argv[0], new_item.tourl())))
+
+        new_item.infoLabels['playcount'] = 0
+        context_commands.append(("Marcar como no visto", "XBMC.RunPlugin(%s?%s)" %
+                                 (sys.argv[0], new_item.tourl())))
+
+    if item.channel == "biblioteca" and item.action == "findvideos" and (item.contentSerieName or item.show):
+        # opciones para episodio
+        if hasattr(item, 'infoLabels'):
+            contador = item.infoLabels.get('playcount', 0)
+
+            if contador > 0:
+                texto = "Marcar como no visto"
+                contador = 0
+            else:
+                texto = "Marcar como visto"
+                contador = 1
+
+            new_item = item.clone(channel="biblioteca", action="marcar_episodio")
+            new_item.infoLabels['playcount'] = contador
+
+            context_commands.append((texto, "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], new_item.tourl())))
+
+    # Menus para la Biblioteca - Fin
 
     # Opciones para todos los items
     # Abrir configuración desde cualquier lugar
@@ -812,19 +890,6 @@ def set_opcion(item, seleccion, opciones, video_urls):
         else:
             data = scrapertools.cachePage(config.get_setting("jdownloader")+"/action/add/links/grabber0/start1/web=" +
                                           item.url + " " + item.thumbnail)
-        salir = True
-
-    # "Enviar a pyLoad"
-    elif opciones[seleccion] == config.get_localized_string(30158).replace("jDownloader", "pyLoad"):
-        logger.info("Enviando a pyload...")
-
-        if item.show != "":
-            package_name = item.show
-        else:
-            package_name = "pelisalacarta"
-
-        from core import pyload_client
-        pyload_client.download(url=item.url, package_name=package_name)
         salir = True
 
     # "Descargar"
