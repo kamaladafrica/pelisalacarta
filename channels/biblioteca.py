@@ -382,9 +382,9 @@ def actualizacion_automatica(item):
     library.actualizacion_automatica(item)
 
 
-def eliminar_serie(item):
-    logger.info("pelisalacarta.channels.biblioteca eliminar_serie")
+def eliminar(item):
+    logger.info("pelisalacarta.channels.biblioteca eliminar")
     logger.info("item:{}".format(item.tostring()))
 
-    library.eliminar_serie(item)
+    library.delete(item)
 

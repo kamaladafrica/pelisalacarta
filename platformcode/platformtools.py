@@ -341,7 +341,7 @@ def set_context_commands(item, parent_item):
     # Menus para la Biblioteca - Inicio
 
     # PELICULAS
-    if item.channel == "biblioteca" and not(item.contentSerieName or item.show):
+    if item.channel == "biblioteca" and item.action == "findvideos" and not(item.contentSerieName or item.show):
         context_commands.append(("Información", "XBMC.Action(Info)"))
         if hasattr(item, 'infoLabels'):
             contador = item.infoLabels.get('playcount', 0)
@@ -358,10 +358,11 @@ def set_context_commands(item, parent_item):
 
             context_commands.append((texto, "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], new_item.tourl())))
 
-        context_commands.append(("Gestionar ...", "XBMC.RunPlugin(%s?%s)" %
-                                 (sys.argv[0], item.clone(channel="descargas", action="save_download",
-                                                          from_channel=item.channel, from_action=item.action).tourl())))
-        context_commands.append(("Explorar nuevo contenido", "XBMC.RunPlugin(%s?%s)" %
+        context_commands.append(("Eliminar", "XBMC.RunPlugin(%s?%s)" %
+                                 (sys.argv[0], item.clone(channel=item.channel, action="eliminar").tourl())))
+
+        # TODO
+        context_commands.append(("Cambiar contenido", "XBMC.RunPlugin(%s?%s)" %
                                  (sys.argv[0], item.clone(channel="descargas", action="save_download",
                                                           from_channel=item.channel, from_action=item.action).tourl())))
 
@@ -378,7 +379,7 @@ def set_context_commands(item, parent_item):
                                  (sys.argv[0], item.clone(channel="descargas", action="save_download",
                                                           from_channel=item.channel, from_action=item.action).tourl())))
         context_commands.append(("Eliminar", "XBMC.RunPlugin(%s?%s)" %
-                                 (sys.argv[0], item.clone(channel=item.channel, action="eliminar_serie").tourl())))
+                                 (sys.argv[0], item.clone(channel=item.channel, action="eliminar").tourl())))
 
         if item.active:
             texto = "No buscar automáticamente nuevos episodios"
@@ -392,7 +393,7 @@ def set_context_commands(item, parent_item):
         context_commands.append((texto, "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], new_item.tourl())))
 
         # TODO
-        context_commands.append(("Explorar nuevo contenido", "XBMC.RunPlugin(%s?%s)" %
+        context_commands.append(("Cambiar contenido", "XBMC.RunPlugin(%s?%s)" %
                                  (sys.argv[0], item.clone(channel="descargas", action="save_download",
                                                           from_channel=item.channel, from_action=item.action).tourl())))
 

@@ -940,7 +940,6 @@ def marcar_temporada(item):
 
 def actualizacion_automatica(item):
     logger.info("pelisalacarta.platformcode.library actualizacion_automatica")
-    logger.info("item:{}".format(item.tostring()))
 
     item.action = "episodios"
     item.channel = item.contentChannel
@@ -951,17 +950,26 @@ def actualizacion_automatica(item):
     xbmc.executebuiltin("Container.Refresh")
 
 
-def eliminar_serie(item):
-    logger.info("pelisalacarta.platformcode.library eliminar_serie")
-    logger.info("item:{}".format(item.tostring()))
+def delete(item):
+    logger.info("pelisalacarta.platformcode.library delete")
 
-    # TODO controlar el nombre por si no existe
-    result = platformtools.dialog_yesno("Eliminar serie",
-                                        "¿Realmente desea eliminar '%s'?" % item.infoLabels['title'])
+    if item.contentSerieName or item.show:
+        heading = "Eliminar serie"
+    else:
+        heading = "Eliminar película"
 
-    # TODO pendiente añadir el clean() para el directorio en Kodi
+    result = platformtools.dialog_yesno(heading, "¿Realmente desea eliminar '%s'?" % item.infoLabels['title'])
+
     if result:
-        filetools.rmdirtree(item.path)
 
+        if item.contentSerieName or item.show:
+            filetools.rmdirtree(item.path)
+        else:
+            filetools.remove(item.path)
+            filetools.remove(item.path[:-5] + ".nfo")
+            # TODO tb se borra aunque no sabemos si se dejara o se quedara la info dentro de nfo
+            filetools.remove(item.path[:-5] + ".strm.json")
+
+        clean()
         import xbmc
         xbmc.executebuiltin("Container.Refresh")
