@@ -190,10 +190,10 @@ def save_library_movie(item):
     # Fix para urls demasiado largas
     if len(url) > 3500:
         mensaje = "La url es demasiado larga: \nLongitud inicial: " + str(len(url))
-        it = item.clone(infoLabels = {"title": item.infoLabels["title"], "tmdb_id": item.infoLabels["tmdb_id"],
-                                     "trailer": item.infoLabels["trailer"], "year": item.infoLabels["year"],
-                                     "mediatype": item.infoLabels["mediatype"],  "fanart": item.infoLabels["fanart"],
-                                     "thumbnail": item.infoLabels["thumbnail"]})
+        it = item.clone(infoLabels={"title": item.infoLabels["title"], "tmdb_id": item.infoLabels["tmdb_id"],
+                                    "trailer": item.infoLabels["trailer"], "year": item.infoLabels["year"],
+                                    "mediatype": item.infoLabels["mediatype"],  "fanart": item.infoLabels["fanart"],
+                                    "thumbnail": item.infoLabels["thumbnail"]})
         url = it.tourl()
         mensaje += "\nLongitud final: " + str(len(url))
         logger.debug(mensaje)

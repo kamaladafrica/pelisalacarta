@@ -388,8 +388,3 @@ def eliminar_serie(item):
 
     library.eliminar_serie(item)
 
-    # import xbmc
-    # xbmc.executebuiltin("Container.Refresh")
-
-
-

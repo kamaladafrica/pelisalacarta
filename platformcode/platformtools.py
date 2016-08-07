@@ -342,6 +342,7 @@ def set_context_commands(item, parent_item):
 
     # PELICULAS
     if item.channel == "biblioteca" and not(item.contentSerieName or item.show):
+        context_commands.append(("Información", "XBMC.Action(Info)"))
         if hasattr(item, 'infoLabels'):
             contador = item.infoLabels.get('playcount', 0)
 
@@ -367,10 +368,7 @@ def set_context_commands(item, parent_item):
     # SERIES
     if item.channel == "biblioteca" and item.action == "get_temporadas" and (item.contentSerieName or item.show):
         # opciones para la serie
-        # TODO buscar el xmbc.executebuildin
-        context_commands.append(("Información", "XBMC.RunPlugin(%s?%s)" %
-                                 (sys.argv[0], item.clone(channel="descargas", action="save_download",
-                                                          from_channel=item.channel, from_action=item.action).tourl())))
+        context_commands.append(("Información", "XBMC.Action(Info)"))
         # TODO
         context_commands.append(("Marcar como visto", "XBMC.RunPlugin(%s?%s)" %
                                  (sys.argv[0], item.clone(channel="descargas", action="save_download",
@@ -392,7 +390,6 @@ def set_context_commands(item, parent_item):
         new_item = item.clone(channel="biblioteca", action="actualizacion_automatica")
         new_item.active = actualizar
         context_commands.append((texto, "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], new_item.tourl())))
-
 
         # TODO
         context_commands.append(("Explorar nuevo contenido", "XBMC.RunPlugin(%s?%s)" %
