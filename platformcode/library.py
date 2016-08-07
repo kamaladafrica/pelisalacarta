@@ -41,10 +41,14 @@ from core import logger
 from core import scrapertools
 try:
     from core import tmdb
-except:
-    pass
+except ImportError:
+    tmdb = None
 from core.item import Item
 from platformcode import platformtools
+
+addon_name = sys.argv[0].strip()
+if not addon_name or addon_name.startswith("default.py"):
+    addon_name = "plugin://plugin.video.pelisalacarta/"
 
 modo_cliente = int(config.get_setting("library_mode"))
 # Host name where XBMC is running, leave as localhost if on this PC
@@ -162,14 +166,11 @@ def save_library_movie(item):
 
     # progress dialog
     p_dialog = platformtools.dialog_progress('pelisalacarta', 'Añadiendo película...')
-    #filename = "{0} [{1}].strm".format(item.fulltitle.strip().lower(), item.channel)
+    # filename = "{0} [{1}].strm".format(item.fulltitle.strip().lower(), item.channel)
     #  TODO utilizar contentTitle pero hay asegurarse q es un filename correcto
     filename = "{0} [{1}].strm".format(item.contentTitle.strip().lower(), item.channel)
     logger.debug(filename)
     fullfilename = filetools.join(MOVIES_PATH, filename)
-    addon_name = sys.argv[0].strip()
-    if not addon_name or addon_name.startswith("default.py"):
-        addon_name = "plugin://plugin.video.pelisalacarta/"
 
     if filetools.exists(fullfilename):
         logger.info("pelisalacarta.platformcode.library savelibrary el fichero existe. Se sobreescribe")
@@ -189,14 +190,13 @@ def save_library_movie(item):
     # Fix para urls demasiado largas
     if len(url) > 3500:
         mensaje = "La url es demasiado larga: \nLongitud inicial: " + str(len(url))
-        it= item.clone(infoLabels = {"title": item.infoLabels["title"], "tmdb_id": item.infoLabels["tmdb_id"],
+        it = item.clone(infoLabels = {"title": item.infoLabels["title"], "tmdb_id": item.infoLabels["tmdb_id"],
                                      "trailer": item.infoLabels["trailer"], "year": item.infoLabels["year"],
-                                     "mediatype":  item.infoLabels["mediatype"],  "fanart": item.infoLabels["fanart"],
-                                     "thumbnail":item.infoLabels["thumbnail"]})
-        url= it.tourl()
+                                     "mediatype": item.infoLabels["mediatype"],  "fanart": item.infoLabels["fanart"],
+                                     "thumbnail": item.infoLabels["thumbnail"]})
+        url = it.tourl()
         mensaje += "\nLongitud final: " + str(len(url))
         logger.debug(mensaje)
-
 
     if filetools.write(fullfilename, '{addon}?{url}'.format(addon=addon_name, url=url)):
         if 'tmdb_id' in item.infoLabels:
@@ -311,10 +311,6 @@ def save_library_episodes(path, episodelist, serie, silent=False):
 
     # fix float porque la division se hace mal en python 2.x
     t = float(100) / len(episodelist)
-
-    addon_name = sys.argv[0].strip()
-    if not addon_name or addon_name.startswith("default.py"):
-        addon_name = "plugin://plugin.video.pelisalacarta/"
 
     for i, e in enumerate(episodelist):
         if not silent:
@@ -598,10 +594,6 @@ def mark_as_watched_on_strm(item):
             if not type(strm.infoLabels) == dict:
                 strm.infoLabels = {}
             strm.infoLabels["playcount"] = 1
-            addon_name = sys.argv[0].strip()
-
-            if not addon_name:
-                addon_name = "plugin://plugin.video.pelisalacarta/"
 
             filetools.write(item.path + ".json", strm.tojson())
             filetools.write(item.path, '{addon}?{url}'.format(addon=addon_name, url=strm.tourl()))
@@ -905,3 +897,71 @@ def add_serie_to_library(item, channel):
         platformtools.dialog_ok("Biblioteca", "La serie se ha añadido a la biblioteca")
         logger.info("[launcher.py] Se han añadido {0} episodios de la serie {1} a la biblioteca".format(insertados,
                                                                                                         item.show))
+
+
+# metodos de menu contextual
+def marcar_episodio(item):
+    logger.info("pelisalacarta.platformcode.library marcar_episodio")
+
+    filetools.write(item.path, '{addon}?{url}'.format(addon=addon_name, url=item.tourl()))
+
+    import xbmc
+    xbmc.executebuiltin("Container.Refresh")
+
+
+def marcar_temporada(item):
+    logger.info("pelisalacarta.platformcode.library marcar_temporada")
+
+    # Obtenemos los archivos de los episodios
+    raiz, carpetas_series, ficheros = filetools.walk(item.path).next()
+
+    # Crear un item en la lista para cada strm encontrado
+    count = 0
+    for i in ficheros:
+        # strm
+        if i.endswith(".strm"):
+            season, episode = scrapertools.get_season_and_episode(i).split("x")
+
+            # TODO revisar
+            #  Si hay q filtrar por temporada, ignoramos los capitulos de otras temporadas
+            if item.filtrar_season and int(season) != int(item.contentSeason):
+                continue
+
+            setattr(item, "hide"+season, "1")
+            epi = Item().fromurl(filetools.read(filetools.join(raiz, i)))
+            epi.path = filetools.join(raiz, i)
+            epi.infoLabels["playcount"] = item.infoLabels["playcount"]
+
+            if filetools.write(epi.path, '{addon}?{url}'.format(addon=addon_name, url=epi.tourl())):
+                count += 1
+
+    return item
+
+
+def actualizacion_automatica(item):
+    logger.info("pelisalacarta.platformcode.library actualizacion_automatica")
+    logger.info("item:{}".format(item.tostring()))
+
+    item.action = "episodios"
+    item.channel = item.contentChannel
+    del item.contentChannel
+    filetools.write(filetools.join(item.path, "tvshow.json"), item.tojson())
+
+    import xbmc
+    xbmc.executebuiltin("Container.Refresh")
+
+
+def eliminar_serie(item):
+    logger.info("pelisalacarta.platformcode.library eliminar_serie")
+    logger.info("item:{}".format(item.tostring()))
+
+    # TODO controlar el nombre por si no existe
+    result = platformtools.dialog_yesno("Eliminar serie",
+                                        "¿Realmente desea eliminar '%s'?" % item.infoLabels['title'])
+
+    # TODO pendiente añadir el clean() para el directorio en Kodi
+    if result:
+        filetools.rmdirtree(item.path)
+
+        import xbmc
+        xbmc.executebuiltin("Container.Refresh")
