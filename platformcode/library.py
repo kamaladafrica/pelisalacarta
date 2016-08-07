@@ -818,14 +818,20 @@ def update(_path):
     logger.info("pelisalacarta.platformcode.library update data:{0}".format(data))
 
 
-def clean():
+def clean(mostrar_dialogo=False):
     """
     limpia la libreria de elementos que no existen
+    @param mostrar_dialogo: muestra el cuadro de progreso mientras se limpia la biblioteca
+    @type mostrar_dialogo: bool
     """
     logger.info("pelisalacarta.platformcode.library clean")
-    # Se comenta la llamada normal para reutilizar 'payload' dependiendo del modo cliente
-    # xbmc.executebuiltin("CleanLibrary(video)")
-    payload = {"jsonrpc": "2.0", "method": "VideoLibrary.Clean", "id": 1}
+    if mostrar_dialogo:
+        dialog = "true"
+    else:
+        dialog = "false"
+
+    # TODO pendiente arreglar showdialogs
+    payload = {"jsonrpc": "2.0", "method": "VideoLibrary.Clean", "id": 1}  #, "showdialogs": dialog}
     data = get_data(payload)
     logger.info("pelisalacarta.platformcode.library clean data:{0}".format(data))
 
@@ -968,8 +974,11 @@ def delete(item):
             filetools.remove(item.path)
             filetools.remove(item.path[:-5] + ".nfo")
             # TODO tb se borra aunque no sabemos si se dejara o se quedara la info dentro de nfo
-            filetools.remove(item.path[:-5] + ".strm.json")
+            # filetools.remove(item.path[:-5] + ".strm.json")
 
-        clean()
         import xbmc
+        # esperamos 3 segundos para dar tiempo a borrar los ficheros
+        # xbmc.sleep(3000)
+        # TODO arreglar no funciona al limpiar en la biblioteca de Kodi
+        clean()
         xbmc.executebuiltin("Container.Refresh")
