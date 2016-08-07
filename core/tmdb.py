@@ -1249,7 +1249,10 @@ class Tmdb(object):
                 v = re.sub(r"\n|\r|\t", "", v)
 
             if k == 'overview':
-                ret_infoLabels['plot'] = self.get_sinopsis()
+                if origen:
+                    ret_infoLabels['plot'] = v
+                else:
+                    ret_infoLabels['plot'] = self.get_sinopsis()
             elif k == 'runtime':
                 ret_infoLabels['duration'] = v
             elif k == 'release_date':

@@ -138,16 +138,16 @@ def save_library_movie(item):
     # 1. contentTitle: Este deberia ser el sitio correcto, ya que title suele contener "Añadir a la biblioteca..."
     # 2. fulltitle
     # 3. title
-    logger.debug(item.contentTitle)
+    '''logger.debug(item.contentTitle)
     logger.debug(item.fulltitle)
-    logger.debug(item.title)
+    logger.debug(item.title)'''
     if not item.contentTitle:
         # Colocamos el titulo correcto en su sitio para que tmdb lo localize
         if item.fulltitle:
             item.contentTitle = item.fulltitle
         else:
             item.contentTitle = item.title
-        logger.debug(item.contentTitle)
+        #logger.debug(item.contentTitle)
 
     # Si llegados a este punto no tenemos titulo, salimos
     if not item.contentTitle or not item.channel:
@@ -164,8 +164,8 @@ def save_library_movie(item):
     p_dialog = platformtools.dialog_progress('pelisalacarta', 'Añadiendo película...')
     #filename = "{0} [{1}].strm".format(item.fulltitle.strip().lower(), item.channel)
     #  TODO utilizar contentTitle pero hay asegurarse q es un filename correcto
-    filename = "{0} [{1}].strm".format(item.contentTitle.strip().lower(), item.channel)
-    logger.debug(filename)
+    filename = ("%s [%s].strm" %(item.contentTitle.strip(), item.channel)).lower()
+    #logger.debug(filename)
     fullfilename = filetools.join(MOVIES_PATH, filename)
     addon_name = sys.argv[0].strip()
     if not addon_name or addon_name.startswith("default.py"):
@@ -185,7 +185,8 @@ def save_library_movie(item):
     # Para depuración creamos un .json al lado del .strm, para poder visualizar que parametros se estan guardando
     # filetools.write(fullfilename + ".json", item.tojson()) # TODO de momento se queda aunq comentado ;-)
 
-    url = item.tourl()
+    url = item.clone(infoLabels={}).tourl()
+    '''
     # Fix para urls demasiado largas
     if len(url) > 3500:
         mensaje = "La url es demasiado larga: \nLongitud inicial: " + str(len(url))
@@ -196,11 +197,12 @@ def save_library_movie(item):
         url= it.tourl()
         mensaje += "\nLongitud final: " + str(len(url))
         logger.debug(mensaje)
+    '''
 
 
-    if filetools.write(fullfilename, '{addon}?{url}'.format(addon=addon_name, url=url)):
+    if filetools.write(fullfilename, '%s?%s' %(addon_name, url)):
         if 'tmdb_id' in item.infoLabels:
-            create_nfo_file(item.infoLabels['tmdb_id'], fullfilename[:-5], "cine")
+            create_nfo_file(item, item.infoLabels['tmdb_id'], fullfilename[:-5], "Movies")
         else:
             if filetools.exists(fullfilename[:-5] + ".nfo"):
                 filetools.remove(fullfilename[:-5] + ".nfo")
@@ -234,12 +236,10 @@ def save_library_tvshow(item, episodelist):
     # Itentamos obtener el titulo correcto:
     # 1. contentSerieName: Este deveria ser el sitio correcto
     # 2. show
-    titulo = item.contentSerieName
-    if not titulo:
-        titulo = item.show
+    if not item.contentSerieName:
+        # Colocamos el titulo en su sitio para que tmdb lo localize
+        item.contentSerieName = item.show
 
-    # Colocamos el titulo en su sitio para que tmdb lo localize
-    item.contentSerieName = titulo
     # establecemos "active" para que se actualice cuando se llame a library_service
     item.active = True
 
@@ -250,7 +250,7 @@ def save_library_tvshow(item, episodelist):
     # TODO configurar para segun el scraper se llame a uno u otro
     tmdb.find_and_set_infoLabels_tmdb(item, config.get_setting("scrap_ask_name") == "true")
 
-    path = filetools.join(TVSHOWS_PATH, "{0} [{1}]".format(item.contentSerieName.strip().lower(), item.channel).lower())
+    path = filetools.join(TVSHOWS_PATH, ("%s [%s]" %(item.contentSerieName.strip(), item.channel)).lower())
     if not filetools.exists(path):
         logger.info("pelisalacarta.platformcode.library save_library_tvshow Creando directorio serie:" + path)
         try:
@@ -259,13 +259,14 @@ def save_library_tvshow(item, episodelist):
             if exception.errno != errno.EEXIST:
                 raise
 
-    filetools.write(filetools.join(path, "tvshow.json"), item.tojson())
+    #filetools.write(filetools.join(path, "tvshow.json"), item.tojson()) # TODO de momento se queda aunq comentado ;-)
 
     if 'tmdb_id' in item.infoLabels:
-        create_nfo_file(item.infoLabels['tmdb_id'], path, "serie")
+        create_nfo_file(item,item.infoLabels['tmdb_id'], path, "TVShows")
     else:
         if filetools.exists(filetools.join(path, "tvshow.nfo")):
             filetools.remove(filetools.join(path, "tvshow.nfo"))
+
 
     # Guardar los episodios
     insertados, sobreescritos, fallidos = save_library_episodes(path, episodelist, item)
@@ -329,23 +330,29 @@ def save_library_episodes(path, episodelist, serie, silent=False):
         e.contentSeason, e.contentEpisodeNumber = season_episode.split("x")
         e.strm = True
 
-        filename = "{0}.strm".format(season_episode)
+        filename = "%s.strm" %(season_episode)
         fullfilename = filetools.join(path, filename)
 
         nuevo = not filetools.exists(fullfilename)
-        if not nuevo:
+        '''if not nuevo:
             old_item = Item().fromurl(filetools.read(fullfilename))
             if getattr(old_item, "infoLabels"):
                 playcount = old_item.infoLabels.get("playcount", 0)
-                e.infoLabels["playcount"] = playcount
+                e.infoLabels["playcount"] = playcount'''
 
         if e.infoLabels.get("tmdb_id"):
             tmdb.find_and_set_infoLabels_tmdb(e, config.get_setting("scrap_ask_name") == "true")
 
         # Para depuración creamos un .json al lado del .strm, para poder visualizar que parametros se estan guardando
-        filetools.write(fullfilename + ".json", e.tojson())
+        #filetools.write(fullfilename + ".json", e.tojson()) # TODO de momento se queda aunq comentado ;-)
 
-        if filetools.write(fullfilename, '{addon}?{url}'.format(addon=addon_name, url=e.tourl())):
+        if filetools.write(fullfilename, '%s?%s' %(addon_name, e.clone(infoLabels={}).tourl())):
+            if 'tmdb_id' in e.infoLabels:
+                create_nfo_file(e, e.infoLabels['tmdb_id'], fullfilename[:-5], "Episodes")
+            else:
+                if filetools.exists(fullfilename[:-5] + ".nfo"):
+                    filetools.remove(fullfilename[:-5] + ".nfo")
+
             if nuevo:
                 insertados += 1
             else:
@@ -385,66 +392,68 @@ def set_infolabels_from_library(itemlist, tipo):
     # Metodo 1: De la bilioteca de pelisalacarta
     if tipo == 'Movies':
         for item in itemlist:
-            if item.path.endswith(".strm"):
-                data_file = item.path
-                if filetools.exists(data_file):
-                    infolabels = Item().fromurl(filetools.read(data_file)).infoLabels
-                    item.infoLabels = infolabels
-            else:
-                data_file = os.path.splitext(item.path)[0] + ".json"
-                if filetools.exists(data_file):
-                    infolabels = Item().fromjson(filetools.read(data_file)).infoLabels
-                    item.infoLabels = infolabels
+            data_file = os.path.splitext(item.path)[0] + ".nfo"
+
+            if filetools.exists(data_file):
+                data = filetools.read(data_file)
+                pos_ini= data.find('{')
+                data = data[pos_ini:]
+                infolabels = Item().fromjson(data).infoLabels
+                item.infoLabels = infolabels
+
 
             item.title = item.contentTitle
-            item.plot = item.contentPlot
+            #item.plot = item.contentPlot
             item.thumbnail = item.contentThumbnail
 
     elif tipo == 'TVShows':
         for item in itemlist:
-            data_file = filetools.join(item.path, "tvshow.json")
+            data_file = filetools.join(item.path, 'tvshow.nfo')
+
             if filetools.exists(data_file):
-                infolabels = Item().fromjson(filetools.read(data_file)).infoLabels
+                data = filetools.read(data_file)
+                pos_ini = data.find('{')
+                data = data[pos_ini:]
+                logger.debug(data)
+                infolabels = Item().fromjson(data).infoLabels
                 item.infoLabels = infolabels
 
             item.title = item.contentSerieName
             item.thumbnail = item.contentThumbnail
-            item.plot = item.contentPlot
+            #item.plot = item.contentPlot
 
     elif tipo == 'Episodes':
         for item in itemlist:
-            if item.path.endswith(".strm"):
-                data_file = item.path
-                if filetools.exists(data_file):
-                    infolabels = Item().fromurl(filetools.read(data_file)).infoLabels
-                    item.infoLabels = infolabels
-            # TODO debería existir el else?
-            else:
-                data_file = os.path.splitext(item.path)[0] + ".json"
-                if filetools.exists(data_file):
-                    infolabels = Item().fromjson(filetools.read(data_file)).infoLabels
-                    item.infoLabels = infolabels
+            data_file = os.path.splitext(item.path)[0] + ".nfo"
 
-            item.plot = item.contentPlot
+            if filetools.exists(data_file):
+                data = filetools.read(data_file)
+                pos_ini = data.find('{')
+                data = data[pos_ini:]
+                logger.debug(data)
+                infolabels = Item().fromjson(data).infoLabels
+                item.infoLabels = infolabels
+
+            #item.plot = item.contentPlot
             item.thumbnail = item.contentThumbnail
 
             if item.contentTitle:
                 if len(str(item.contentEpisodeNumber)) == 1:
-                    item.title = "{0}x0{1}".format(item.contentSeason, item.contentEpisodeNumber)
+                    item.title = "%sx0%s" %(item.contentSeason, item.contentEpisodeNumber)
                 else:
-                    item.title = "{0}x{1}".format(item.contentSeason, item.contentEpisodeNumber)
+                    item.title = "%sx%s" %(item.contentSeason, item.contentEpisodeNumber)
 
-                item.title = "{0} - {1}".format(item.title, item.contentTitle.strip())
+                item.title = "%s - %s" %(item.title, item.contentTitle.strip())
             else:
                 if "fulltitle" in item:
                     item.title = item.fulltitle
                 else:
                     if len(str(item.contentEpisodeNumber)) == 1:
-                        item.title = "{0}x0{1}".format(item.contentSeason, item.contentEpisodeNumber)
+                        item.title = "%sx0%s" %(item.contentSeason, item.contentEpisodeNumber)
                     else:
-                        item.title = "{0}x{1}".format(item.contentSeason, item.contentEpisodeNumber)
+                        item.title = "%sx%s" %(item.contentSeason, item.contentEpisodeNumber)
 
-                    item.title = "{0} - {1}".format(item.title, "Episodio {0}".format(item.contentEpisodeNumber))
+                    item.title = "%s - Episodio %s" %(item.title, item.contentEpisodeNumber)
 
     if config.get_setting("get_metadata_from_kodi") == "true":
         # Metodo2: De la bilioteca de kodi
@@ -838,27 +847,44 @@ def clean():
     logger.info("pelisalacarta.platformcode.library clean data:{0}".format(data))
 
 
-def create_nfo_file(video_id, path, type_video):
+def create_nfo_file(item, video_id, path, content_type):
     """
     crea el fichero nfo con la información para scrapear la pelicula o serie
+    @type item: Item
+    @param item: elemento que se va a guardar
     @type video_id: str
     @param video_id: codigo identificativo del video
     @type path: str
     @param path: ruta donde se creará el fichero
-    @type type_video: str
-    @param type_video: tipo de video "serie" o "pelicula"
+    @type content_type: str
+    @param content_type: tipo de video "TVShows", "Episodes" o "Movies"
     """
     # TODO meter un parametro más "scraper" para elegir entre una lista: imdb, tvdb, etc... y con el video_id pasado de
     # esa pagina se genere el nfo especifico
     logger.info("pelisalacarta.platformcode.library create_nfo_file")
+    it =item.clone(playcounts={})
 
-    if type_video == "serie":
-        data = "https://www.themoviedb.org/tv/{0}".format(video_id)
+    if content_type == "TVShows":
+        data = "https://www.themoviedb.org/tv/%s\n" %(video_id)
         nfo_file = filetools.join(path, "tvshow.nfo")
-    else:
-        data = "https://www.themoviedb.org/movie/{0}".format(video_id)
+        if filetools.exists(nfo_file):
+            data2 = filetools.read(nfo_file)
+            pos_ini = data2.find('{')
+            data2 = data2[pos_ini:]
+            it2 = Item().fromjson(data2)
+            if hasattr(it2, 'playcounts'):
+                it.playcounts2 = it2.playcounts
+
+
+    elif content_type == "Episodes":
+        data = "https://www.themoviedb.org/tv/%s/season/%s/episode/%s\n" %(video_id, it.contentSeason, it.contentEpisodeNumber)
         nfo_file = path + ".nfo"
 
+    else: # "Movies"
+        data = "https://www.themoviedb.org/movie/%s\n" %(video_id)
+        nfo_file = path + ".nfo"
+
+    data += it.tojson()
     filetools.write(nfo_file, data)
 
 

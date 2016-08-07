@@ -127,18 +127,15 @@ def series(item):
     # Obtenemos todos los strm de la biblioteca de SERIES recursivamente
     for raiz, subcarpetas, ficheros in filetools.walk(strm_path):
         for f in ficheros:
-            if f == "tvshow.json":
-                i = filetools.join(raiz, f)
-
-                tvshow = Item().fromjson(filetools.read(i))
-                logger.debug(tvshow.tostring())
-                tvshow.contentChannel = tvshow.channel
-                tvshow.path = os.path.dirname(i)
-                tvshow.title = os.path.basename(os.path.dirname(i))
+            if f == "tvshow.nfo":
+                tvshow = Item()
+                tvshow.path = raiz
+                tvshow.title = raiz.split('[')[0].strip().capitalize()
+                tvshow.contentChannel = raiz.split('[')[1][:-1]
                 tvshow.channel = "biblioteca"
                 tvshow.action = "get_temporadas"
                 tvshow.text_color = "blue"
-
+                logger.debug(tvshow.tostring("\n"))
                 itemlist.append(tvshow)
 
     # Obtenemos todos los videos de la biblioteca de SERIES recursivamente
