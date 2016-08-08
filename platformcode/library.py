@@ -165,9 +165,6 @@ def save_library_movie(item):
 
     item.strm = True
 
-    # Para depuración creamos un .json al lado del .strm, para poder visualizar que parametros se estan guardando
-    # filetools.write(fullfilename + ".json", item.tojson()) # TODO de momento se queda aunq comentado ;-)
-
     url = item.clone(infoLabels={}).tourl()
     if filetools.write(fullfilename, '%s?%s' %(addon_name, url)):
         if 'tmdb_id' in item.infoLabels:
@@ -227,8 +224,6 @@ def save_library_tvshow(item, episodelist):
         except OSError, exception:
             if exception.errno != errno.EEXIST:
                 raise
-
-    #filetools.write(filetools.join(path, "tvshow.json"), item.tojson()) # TODO de momento se queda aunq comentado ;-)
 
     if 'tmdb_id' in item.infoLabels:
         create_nfo_file(item,item.infoLabels['tmdb_id'], path, "TVShows")
@@ -303,9 +298,6 @@ def save_library_episodes(path, episodelist, serie, silent=False):
         if e.infoLabels.get("tmdb_id"):
             tmdb.find_and_set_infoLabels_tmdb(e, config.get_setting("scrap_ask_name") == "true")
 
-        # Para depuración creamos un .json al lado del .strm, para poder visualizar que parametros se estan guardando
-        #filetools.write(fullfilename + ".json", e.tojson()) # TODO de momento se queda aunq comentado ;-)
-
         if filetools.write(fullfilename, '%s?%s' %(addon_name, e.clone(infoLabels={}).tourl())):
             if 'tmdb_id' in e.infoLabels:
                 create_nfo_file(e, e.infoLabels['tmdb_id'], fullfilename[:-5], "Episodes")
@@ -341,9 +333,8 @@ def save_library_episodes(path, episodelist, serie, silent=False):
         # Si hay nuevos episodios los marcamos como no vistos en tvshow.nfo
         nfo_file = filetools.join(path, "tvshow.nfo")
         if filetools.exists(nfo_file):
-            tvshow_file = filetools.read(nfo_file)
-            url_scraper = tvshow_file[:tvshow_file.find('{')]
-            tvshow_item = Item().fromjson(tvshow_file[tvshow_file.find('{'):])
+            url_scraper =filetools.read(nfo_file,0,1)
+            tvshow_item = Item().fromjson(filetools.read(nfo_file,1))
             tvshow_item.playcounts.update(news_in_playcounts)
 
             filetools.write(nfo_file, url_scraper + tvshow_item.tojson())
@@ -369,10 +360,10 @@ def set_infolabels_from_library(itemlist, tipo):
         for item in itemlist:
             data_file = os.path.splitext(item.path)[0] + ".nfo"
             if filetools.exists(data_file):
-                data = filetools.read(data_file)
-                it = Item().fromjson(data[data.find('{'):])
+                it = Item().fromjson(filetools.read(data_file,1))
                 item.infoLabels = it.infoLabels
                 item.playcounts = it.playcounts
+                item.fanart = item.infoLabels.get('fanart',"")
 
             item.thumbnail = item.contentThumbnail
             item.title = item.contentTitle
@@ -381,10 +372,10 @@ def set_infolabels_from_library(itemlist, tipo):
         for item in itemlist:
             data_file = filetools.join(item.path, 'tvshow.nfo')
             if filetools.exists(data_file):
-                data = filetools.read(data_file)
-                it = Item().fromjson(data[data.find('{'):])
+                it = Item().fromjson(filetools.read(data_file,1))
                 item.infoLabels = it.infoLabels
                 item.playcounts = it.playcounts
+                item.fanart = item.infoLabels.get('fanart', "")
 
             item.thumbnail = item.contentThumbnail
             item.title = item.contentSerieName
@@ -392,13 +383,14 @@ def set_infolabels_from_library(itemlist, tipo):
     elif tipo == 'Episodes':
         for item in itemlist:
             data_file = os.path.splitext(item.path)[0] + ".nfo"
+
             if filetools.exists(data_file):
-                data = filetools.read(data_file)
-                infoLabels = Item().fromjson(data[data.find('{'):]).infoLabels
+                data = filetools.read(data_file, 1)
+                infoLabels = Item().fromjson(data).infoLabels
                 item.infoLabels = infoLabels
+                item.fanart = item.infoLabels.get('fanart', "")
 
             item.thumbnail = item.contentThumbnail
-            #item.title = "%sx%s" % (item.contentSeason, str(item.contentEpisodeNumber).zfill(2))
             if item.contentTitle:
                 title_episodie = item.contentTitle.strip()
             else:
@@ -564,9 +556,8 @@ def mark_as_watched_on_strm(item):
                     # Fichero nfo no encontrado
                     break
 
-            data = filetools.read(f)
-            url_scraper = data[:data.find('{')]
-            it = Item().fromjson(data[data.find('{'):])
+            url_scraper = data[filetools.read(f, 0, 1)]
+            it = Item().fromjson(filetools.read(f, 1))
             name_file =  os.path.splitext(os.path.basename(item.path))[0]
             if not hasattr(it, 'playcounts'): it.playcounts = {}
             it.playcounts.update({name_file: 1})
@@ -831,8 +822,7 @@ def create_nfo_file(item, video_id, path, content_type):
         data = "https://www.themoviedb.org/tv/%s\n" %(video_id)
         nfo_file = filetools.join(path, "tvshow.nfo")
         if filetools.exists(nfo_file):
-            tvshow_file = filetools.read(nfo_file)
-            tvshow_item = Item().fromjson(tvshow_file[tvshow_file.find('{'):])
+            tvshow_item = Item().fromjson(filetools.read(nfo_file, 1))
             if hasattr(tvshow_item, 'playcounts'):
                 it.playcounts = tvshow_item.playcounts
 
@@ -844,8 +834,7 @@ def create_nfo_file(item, video_id, path, content_type):
         data = "https://www.themoviedb.org/movie/%s\n" %(video_id)
         nfo_file = path + ".nfo"
         if filetools.exists(nfo_file):
-            movie_file = filetools.read(nfo_file)
-            movie_item = Item().fromjson(movie_file[movie_file.find('{'):])
+            movie_item = Item().fromjson(filetools.read(nfo_file, 1))
             if hasattr(movie_item, 'playcounts'):
                 it.playcounts = movie_item.playcounts
 
@@ -900,22 +889,26 @@ def add_serie_to_library(item, channel):
 
 
 # metodos de menu contextual
-def marcar_episodio(item):
+def marcar_episodio(item): #TODO propongo cambiarle el nombre por q vale para episodios y peliculas
     logger.info("pelisalacarta.platformcode.library marcar_episodio")
 
-    #filetools.write(item.path, '{addon}?{url}'.format(addon=addon_name, url=item.tourl()))
     f = filetools.join(os.path.dirname(item.path), 'tvshow.nfo')
-    data = filetools.read(f)
-    url_scraper = data[:data.find('{')]
-    it = Item().fromjson(data[data.find('{'):])
-    name_file = os.path.splitext(os.path.basename(item.path))[0]
-    if not hasattr(it, 'playcounts'): it.playcounts = {}
-    it.playcounts[name_file] = 1
+    if not filetools.exists(f) and item.path.endswith(".strm"):
+        # Si no existe probamos a ver si es una pelicula
+        f = item.path[:-5] + '.nfo'
 
-    filetools.write(f, url_scraper + it.tojson())
+    if filetools.exists(f):
+        url_scraper = filetools.read(f, 0, 1)
+        it = Item().fromjson(filetools.read(f, 1))
+        name_file = os.path.splitext(os.path.basename(item.path))[0]
+        if not hasattr(it, 'playcounts'): it.playcounts = {}
+        it.playcounts[name_file] = 1
 
-    import xbmc
-    xbmc.executebuiltin("Container.Refresh")
+        filetools.write(f, url_scraper + it.tojson())
+        item.infoLabels['playcount'] = 1
+
+        import xbmc
+        xbmc.executebuiltin("Container.Refresh")
 
 
 def marcar_temporada(item):
@@ -923,9 +916,8 @@ def marcar_temporada(item):
 
     # Obtener el diccionario de episodios marcados
     f = filetools.join(item.path, 'tvshow.nfo')
-    data = filetools.read(f)
-    url_scraper = data[:data.find('{')]
-    it = Item().fromjson(data[data.find('{'):])
+    url_scraper = filetools.read(f, 0, 1)
+    it = Item().fromjson(filetools.read(f, 1))
     if not hasattr(it, 'playcounts'): it.playcounts = {}
 
     # Obtenemos los archivos de los episodios
@@ -940,15 +932,7 @@ def marcar_temporada(item):
                 name_file = os.path.splitext(os.path.basename(i))[0]
                 it.playcounts[name_file] = 1
                 episodios_marcados += 1
-                '''
-                    setattr(item, "hide"+season, "1")
-                    epi = Item().fromurl(filetools.read(filetools.join(raiz, i)))
-                    epi.path = filetools.join(raiz, i)
-                    epi.infoLabels["playcount"] = item.infoLabels["playcount"]
 
-                    if filetools.write(epi.path, '{addon}?{url}'.format(addon=addon_name, url=epi.tourl())):
-                        count += 1
-                '''
 
     if episodios_marcados:
         # Añadimos la temporada al diccionario item.playcounts
@@ -956,6 +940,7 @@ def marcar_temporada(item):
 
         # Guardamos los cambios en tvshow.nfo
         filetools.write(f, url_scraper + it.tojson())
+        item.infoLabels['playcount'] = 1
 
     return item
 

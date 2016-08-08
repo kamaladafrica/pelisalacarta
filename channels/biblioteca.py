@@ -217,6 +217,7 @@ def get_temporadas(item):
             season = i.split('x')[0]
             dict_temp[season] = "Temporada " + str(season)
 
+
     if config.get_setting("no_pile_on_seasons") == "Sólo si hay una temporada" and len(dict_temp) == 1:
         return get_episodios(item)
     else:
@@ -224,7 +225,7 @@ def get_temporadas(item):
         # Creamos un item por cada temporada
         for season, title in dict_temp.items():
             # fix para que se filtren bien los contenido, ya que sino se hereda el campo
-            # item.infoLabels['season'] = ""
+            #item.infoLabels['season'] = ""
 
             # para ocultar la carpeta si los hijos ya están marcados como vistos
             if hasattr(item, 'playcounts') and item.playcounts.get("season %s" %season):
@@ -234,7 +235,6 @@ def get_temporadas(item):
                                   contentEpisodeNumber="", filtrar_season=True, text_color="")
 
             itemlist.append(new_item)
-            # logger.debug(new_item.tostring())
 
         if len(itemlist) > 1:
             itemlist = sorted(itemlist, key=lambda it: int(it.contentSeason))
