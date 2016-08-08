@@ -360,45 +360,28 @@ def play(item):
 def marcar_episodio(item):
     logger.info("pelisalacarta.channels.biblioteca marcar_episodio")
 
-    import sys
-    addon_name = sys.argv[0].strip()
-    if not addon_name or addon_name.startswith("default.py"):
-        addon_name = "plugin://plugin.video.pelisalacarta/"
-    filetools.write(item.path, '{addon}?{url}'.format(addon=addon_name, url=item.tourl()))
-
-    import xbmc
-    xbmc.executebuiltin("Container.Refresh")
+    library.marcar_episodio(item)
 
 
 def marcar_temporada(item):
     logger.info("pelisalacarta.channels.biblioteca marcar_temporada")
 
-    # Obtenemos los archivos de los episodios
-    raiz, carpetas_series, ficheros = filetools.walk(item.path).next()
-
-    # Crear un item en la lista para cada strm encontrado
-    count = 0
-    for i in ficheros:
-        # strm
-        if i.endswith(".strm"):
-            season, episode = scrapertools.get_season_and_episode(i).split("x")
-
-            # TODO revisar
-            #  Si hay q filtrar por temporada, ignoramos los capitulos de otras temporadas
-            if item.filtrar_season and int(season) != int(item.contentSeason):
-                continue
-
-            setattr(item, "hide"+season, "1")
-            epi = Item().fromurl(filetools.read(filetools.join(raiz, i)))
-            epi.path = filetools.join(raiz, i)
-            epi.infoLabels["playcount"] = item.infoLabels["playcount"]
-
-            import sys
-            addon_name = sys.argv[0].strip()
-            if not addon_name or addon_name.startswith("default.py"):
-                addon_name = "plugin://plugin.video.pelisalacarta/"
-            if filetools.write(epi.path, '{addon}?{url}'.format(addon=addon_name, url=epi.tourl())):
-                count += 1
+    item = library.marcar_temporada(item)
 
     item.action = "get_temporadas"
     get_temporadas(item)
+
+
+def actualizacion_automatica(item):
+    logger.info("pelisalacarta.channels.biblioteca actualizacion_automatica")
+    logger.info("item:{}".format(item.tostring()))
+
+    library.actualizacion_automatica(item)
+
+
+def eliminar(item):
+    logger.info("pelisalacarta.channels.biblioteca eliminar")
+    logger.info("item:{}".format(item.tostring()))
+
+    library.delete(item)
+

@@ -41,10 +41,14 @@ from core import logger
 from core import scrapertools
 try:
     from core import tmdb
-except:
-    pass
+except ImportError:
+    tmdb = None
 from core.item import Item
 from platformcode import platformtools
+
+addon_name = sys.argv[0].strip()
+if not addon_name or addon_name.startswith("default.py"):
+    addon_name = "plugin://plugin.video.pelisalacarta/"
 
 modo_cliente = int(config.get_setting("library_mode"))
 # Host name where XBMC is running, leave as localhost if on this PC
@@ -162,14 +166,11 @@ def save_library_movie(item):
 
     # progress dialog
     p_dialog = platformtools.dialog_progress('pelisalacarta', 'Añadiendo película...')
-    #filename = "{0} [{1}].strm".format(item.fulltitle.strip().lower(), item.channel)
+    # filename = "{0} [{1}].strm".format(item.fulltitle.strip().lower(), item.channel)
     #  TODO utilizar contentTitle pero hay asegurarse q es un filename correcto
     filename = ("%s [%s].strm" %(item.contentTitle.strip(), item.channel)).lower()
     #logger.debug(filename)
     fullfilename = filetools.join(MOVIES_PATH, filename)
-    addon_name = sys.argv[0].strip()
-    if not addon_name or addon_name.startswith("default.py"):
-        addon_name = "plugin://plugin.video.pelisalacarta/"
 
     if filetools.exists(fullfilename):
         logger.info("pelisalacarta.platformcode.library savelibrary el fichero existe. Se sobreescribe")
@@ -198,7 +199,6 @@ def save_library_movie(item):
         mensaje += "\nLongitud final: " + str(len(url))
         logger.debug(mensaje)
     '''
-
 
     if filetools.write(fullfilename, '%s?%s' %(addon_name, url)):
         if 'tmdb_id' in item.infoLabels:
@@ -312,10 +312,6 @@ def save_library_episodes(path, episodelist, serie, silent=False):
 
     # fix float porque la division se hace mal en python 2.x
     t = float(100) / len(episodelist)
-
-    addon_name = sys.argv[0].strip()
-    if not addon_name or addon_name.startswith("default.py"):
-        addon_name = "plugin://plugin.video.pelisalacarta/"
 
     for i, e in enumerate(episodelist):
         if not silent:
@@ -607,10 +603,6 @@ def mark_as_watched_on_strm(item):
             if not type(strm.infoLabels) == dict:
                 strm.infoLabels = {}
             strm.infoLabels["playcount"] = 1
-            addon_name = sys.argv[0].strip()
-
-            if not addon_name:
-                addon_name = "plugin://plugin.video.pelisalacarta/"
 
             filetools.write(item.path + ".json", strm.tojson())
             filetools.write(item.path, '{addon}?{url}'.format(addon=addon_name, url=strm.tourl()))
@@ -835,14 +827,20 @@ def update(_path):
     logger.info("pelisalacarta.platformcode.library update data:{0}".format(data))
 
 
-def clean():
+def clean(mostrar_dialogo=False):
     """
     limpia la libreria de elementos que no existen
+    @param mostrar_dialogo: muestra el cuadro de progreso mientras se limpia la biblioteca
+    @type mostrar_dialogo: bool
     """
     logger.info("pelisalacarta.platformcode.library clean")
-    # Se comenta la llamada normal para reutilizar 'payload' dependiendo del modo cliente
-    # xbmc.executebuiltin("CleanLibrary(video)")
-    payload = {"jsonrpc": "2.0", "method": "VideoLibrary.Clean", "id": 1}
+    if mostrar_dialogo:
+        dialog = "true"
+    else:
+        dialog = "false"
+
+    # TODO pendiente arreglar showdialogs
+    payload = {"jsonrpc": "2.0", "method": "VideoLibrary.Clean", "id": 1}  #, "showdialogs": dialog}
     data = get_data(payload)
     logger.info("pelisalacarta.platformcode.library clean data:{0}".format(data))
 
@@ -931,3 +929,82 @@ def add_serie_to_library(item, channel):
         platformtools.dialog_ok("Biblioteca", "La serie se ha añadido a la biblioteca")
         logger.info("[launcher.py] Se han añadido {0} episodios de la serie {1} a la biblioteca".format(insertados,
                                                                                                         item.show))
+
+
+# metodos de menu contextual
+def marcar_episodio(item):
+    logger.info("pelisalacarta.platformcode.library marcar_episodio")
+
+    filetools.write(item.path, '{addon}?{url}'.format(addon=addon_name, url=item.tourl()))
+
+    import xbmc
+    xbmc.executebuiltin("Container.Refresh")
+
+
+def marcar_temporada(item):
+    logger.info("pelisalacarta.platformcode.library marcar_temporada")
+
+    # Obtenemos los archivos de los episodios
+    raiz, carpetas_series, ficheros = filetools.walk(item.path).next()
+
+    # Crear un item en la lista para cada strm encontrado
+    count = 0
+    for i in ficheros:
+        # strm
+        if i.endswith(".strm"):
+            season, episode = scrapertools.get_season_and_episode(i).split("x")
+
+            # TODO revisar
+            #  Si hay q filtrar por temporada, ignoramos los capitulos de otras temporadas
+            if item.filtrar_season and int(season) != int(item.contentSeason):
+                continue
+
+            setattr(item, "hide"+season, "1")
+            epi = Item().fromurl(filetools.read(filetools.join(raiz, i)))
+            epi.path = filetools.join(raiz, i)
+            epi.infoLabels["playcount"] = item.infoLabels["playcount"]
+
+            if filetools.write(epi.path, '{addon}?{url}'.format(addon=addon_name, url=epi.tourl())):
+                count += 1
+
+    return item
+
+
+def actualizacion_automatica(item):
+    logger.info("pelisalacarta.platformcode.library actualizacion_automatica")
+
+    item.action = "episodios"
+    item.channel = item.contentChannel
+    del item.contentChannel
+    filetools.write(filetools.join(item.path, "tvshow.json"), item.tojson())
+
+    import xbmc
+    xbmc.executebuiltin("Container.Refresh")
+
+
+def delete(item):
+    logger.info("pelisalacarta.platformcode.library delete")
+
+    if item.contentSerieName or item.show:
+        heading = "Eliminar serie"
+    else:
+        heading = "Eliminar película"
+
+    result = platformtools.dialog_yesno(heading, "¿Realmente desea eliminar '%s'?" % item.infoLabels['title'])
+
+    if result:
+
+        if item.contentSerieName or item.show:
+            filetools.rmdirtree(item.path)
+        else:
+            filetools.remove(item.path)
+            filetools.remove(item.path[:-5] + ".nfo")
+            # TODO tb se borra aunque no sabemos si se dejara o se quedara la info dentro de nfo
+            # filetools.remove(item.path[:-5] + ".strm.json")
+
+        import xbmc
+        # esperamos 3 segundos para dar tiempo a borrar los ficheros
+        # xbmc.sleep(3000)
+        # TODO arreglar no funciona al limpiar en la biblioteca de Kodi
+        clean()
+        xbmc.executebuiltin("Container.Refresh")

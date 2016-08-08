@@ -66,12 +66,13 @@ def encode(path, _samba=False):
     @rtype: str
     @return ruta encodeada
     """
+    # TODO arreglar encoding
     if path.lower().startswith("smb://") or _samba:
         path = unicode(path, "utf8")
     else:
         _ENCODING = sys.getfilesystemencoding() or locale.getdefaultlocale()[1] or 'utf-8'
-        path = unicode(path, "utf8")
-        path = path.encode(_ENCODING)
+        path = unicode(path, "utf-8")
+        path = path.encode("utf-8")
 
     return remove_chars(path)
 
@@ -83,6 +84,7 @@ def decode(path):
     @rtype: str
     @return: ruta codificado en UTF-8
     """
+    # TODO arreglar encoding
     _ENCODING = sys.getfilesystemencoding() or locale.getdefaultlocale()[1] or 'utf-8'
 
     if type(path) == list:
@@ -92,8 +94,8 @@ def decode(path):
             path[x] = path[x].encode("utf8")
     else:
         if not type(path) == unicode:
-            path = path.decode(_ENCODING)
-        path = path.encode("utf8")
+            path = path.decode("utf-8")
+        path = path.encode("utf-8")
     return path
 
 
@@ -283,6 +285,23 @@ def remove(path):
         samba.delete_files(os.path.basename(path), os.path.dirname(path))
     else:
         os.remove(path)
+
+
+def rmdirtree(path):
+    """
+    Elimina un directorio y su contenido
+    @param path: ruta a eliminar
+    @type path: str
+    """
+
+    path = encode(path)
+    # TODO mirar deltree para samba
+    if path.lower().startswith("smb://"):
+        # samba.delete_directory(os.path.basename(path), os.path.dirname(path))
+        pass
+    else:
+        import shutil
+        shutil.rmtree(path, ignore_errors=True)
 
 
 def rmdir(path):
