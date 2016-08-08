@@ -618,17 +618,18 @@ def get_enlaces(item, url, type):
     headers["Referer"] = item.url
     data = scrapertools.downloadpage(url, headers=headers.items())
 
-    patron = '<div class="available-source" data-target="([^"]+)">.*?class="language.*?title="([^"]+)"' \
+    patron = '<div class="available-source".*?data-url="([^"]+)".*?class="language.*?title="([^"]+)"' \
              '.*?class="source-name.*?>\s*([^<]+)<.*?<span class="quality-text">([^<]+)<'
     matches = scrapertools.find_multiple_matches(data, patron)
     if matches:
-        for id_post, idioma, server, calidad in matches:
+        for scrapedurl, idioma, server, calidad in matches:
             if server == "streamin": server = "streaminto"
             if server == "waaw" or server == "miracine": server = "netutv"
             if server == "ul": server = "uploadedto"
             if servertools.is_server_enabled(server):
                 scrapedtitle = "    Ver en " + server.capitalize() + " [" + idioma + "/" + calidad + "]"
-                itemlist.append(item.clone(action="play", title=scrapedtitle, text_color=color2, extra=id_post))
+                itemlist.append(item.clone(action="play", url=scrapedurl, title=scrapedtitle, text_color=color2,
+                                           extra=""))
 
     if len(itemlist) == 1:
         itemlist.append(item.clone(title="   No hay enlaces disponibles", action="", text_color=color2))
@@ -640,12 +641,14 @@ def play(item):
     logger.info("pelisalacarta.channels.cinefox play")
     itemlist = []
 
-    headers["Referer"] = item.url
-    post = "id=%s" % item.extra
-    data = scrapertools.downloadpage("http://www.cinefox.cc/goto/", post=post, headers=headers.items())
+    if item.extra != "":
+        headers["Referer"] = item.url
+        post = "id=%s" % item.extra
+        data = scrapertools.downloadpage("http://www.cinefox.cc/goto/", post=post, headers=headers.items())
 
-    url = scrapertools.find_single_match(data, 'document.location\s*=\s*"([^"]+)"')
-    url = url.replace("http://miracine.tv/n/?etu=", "http://hqq.tv/player/embed_player.php?vid=")
+        item.url = scrapertools.find_single_match(data, 'document.location\s*=\s*"([^"]+)"')
+
+    url = item.url.replace("http://miracine.tv/n/?etu=", "http://hqq.tv/player/embed_player.php?vid=")
     url = url.replace("streamcloud.eu/embed-", "streamcloud.eu/")
     enlaces = servertools.findvideos(url)[0]
     itemlist.append(item.clone(url=enlaces[1], server=enlaces[2]))
