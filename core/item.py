@@ -163,13 +163,13 @@ class Item(object):
         Uso: logger.info(item.tostring())
         '''
         dic= self.__dict__.copy()
-
+        '''
         # Añadimos los campos content... si tienen algun valor
         for key in ["contentTitle", "contentPlot", "contentSerieName", "contentType", "contentEpisodeTitle",
                     "contentSeason", "contentEpisodeNumber", "contentThumbnail", "plot"]:
             value = self.__getattr__(key)
             if value: dic[key]= value
-
+        '''
         return separator.join([var + "=[" + str(dic[var]) + "]" for var in sorted(dic)])
 
     def tourl(self):

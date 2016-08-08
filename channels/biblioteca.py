@@ -130,14 +130,14 @@ def series(item):
             if f == "tvshow.nfo":
                 tvshow = Item()
                 tvshow.path = raiz
-                tvshow.title = raiz.split('[')[0].strip().capitalize()
+                tvshow.title = os.path.basename(raiz).split('[')[0].strip().capitalize()
                 tvshow.contentChannel = raiz.split('[')[1][:-1]
                 tvshow.channel = "biblioteca"
                 tvshow.action = "get_temporadas"
                 tvshow.text_color = "blue"
-                logger.debug(tvshow.tostring("\n"))
-                itemlist.append(tvshow)
 
+                itemlist.append(tvshow)
+    '''
     # Obtenemos todos los videos de la biblioteca de SERIES recursivamente
     for raiz, subcarpetas, ficheros in filetools.walk(download_path):
         for f in ficheros:
@@ -153,7 +153,7 @@ def series(item):
                 tvshow.text_color = "green"
 
                 itemlist.append(tvshow)
-
+    '''
     library.set_infolabels_from_library(itemlist, tipo='TVShows')
 
     # Agrupamos las series por canales
@@ -168,11 +168,13 @@ def series(item):
 
                     if "list_channels" not in itemlist[i]:
                         list_channels = []
-                        dict_first_channel = {"path": itemlist[i].path, "channel": itemlist[i].contentChannel}
+                        dict_first_channel = {"path": itemlist[i].path, "channel": itemlist[i].contentChannel,
+                                              "playcounts": itemlist[i].playcounts}
                         list_channels.append(dict_first_channel.copy())
                         itemlist[j].list_channels = list_channels
 
-                    dict_other_channel = {"path": itemlist[j].path, "channel": itemlist[j].contentChannel}
+                    dict_other_channel = {"path": itemlist[j].path, "channel": itemlist[j].contentChannel,
+                                          "playcounts": itemlist[i].playcounts}
                     itemlist[j].list_channels.append(dict_other_channel.copy())
                     itemlist[j].action = "get_canales_tvshow"
                     itemlist[j].text_color = "orange"
@@ -195,7 +197,7 @@ def get_canales_tvshow(item):
     for channel in item.list_channels:
         title = '{0} [{1}]'.format(item.contentTitle, channel["channel"])
         itemlist.append(item.clone(action='get_temporadas', title=title, path=channel['path'],
-                                   contentChannel=channel["channel"], text_color=""))
+                                   contentChannel=channel["channel"], text_color="", playcounts=channel["playcounts"]))
 
     return sorted(itemlist, key=lambda it: it.contentChannel.lower() if not it.contentChannel == "local" else 0)
 
@@ -222,19 +224,15 @@ def get_temporadas(item):
         # Creamos un item por cada temporada
         for season, title in dict_temp.items():
             # fix para que se filtren bien los contenido, ya que sino se hereda el campo
-            item.infoLabels['season'] = ""
+            # item.infoLabels['season'] = ""
 
             # para ocultar la carpeta si los hijos ya están marcados como vistos
-            if getattr(item, "hide"+season):
+            if hasattr(item, 'playcounts') and item.playcounts.get("season %s" %season):
                 item.infoLabels["playcount"] = 1
-            # else:
-            #     del item.infoLabels["playcount"]
-            # item.infoLabels["playcount"] = 1
 
-            logger.info("mi item de season2 es:{}".format(item.tostring()))
             new_item = item.clone(action="get_episodios", title=title, contentTitle=title, contentSeason=season,
                                   contentEpisodeNumber="", filtrar_season=True, text_color="")
-            logger.info("mi item de season3 es:{}".format(new_item.tostring()))
+
             itemlist.append(new_item)
             # logger.debug(new_item.tostring())
 
@@ -243,6 +241,7 @@ def get_temporadas(item):
 
         if config.get_setting("show_all_seasons") == "true":
             new_item = item.clone(action="get_episodios", title="*Todas las temporadas", text_color="")
+            new_item.infoLabels["playcount"] = 0
             itemlist.insert(0, new_item)
 
     return itemlist
@@ -251,6 +250,7 @@ def get_temporadas(item):
 def get_episodios(item):
     logger.info("pelisalacarta.channels.biblioteca get_episodios")
     itemlist = []
+    episodes_wathed = []
 
     # Obtenemos los archivos de los episodios
     raiz, carpetas_series, ficheros = filetools.walk(item.path).next()
@@ -276,7 +276,10 @@ def get_episodios(item):
             epi.text_color = ""
             # fix para que no se ejecute el método de play para la biblioteca de Kodi
             epi.strm = False
-            
+
+            if item.playcounts.get(i[:-5]):
+                episodes_wathed.append(i[:-5])
+
             itemlist.append(epi)
 
         # videos
@@ -298,6 +301,12 @@ def get_episodios(item):
             itemlist.append(epi)
 
     library.set_infolabels_from_library(itemlist, tipo="Episodes")
+
+    # Marcarmos los epìsodios vistos
+    for e in itemlist:
+        if scrapertools.get_season_and_episode(e.title) in episodes_wathed:
+            e.infoLabels["playcount"] = 1
+
     return sorted(itemlist, key=get_sort_temp_epi)
 
 
