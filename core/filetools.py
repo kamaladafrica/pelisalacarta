@@ -146,7 +146,7 @@ def read(path, linea_inicio = 0, total_lineas = None):
             f.close()
 
         except EnvironmentError:
-           logger.info("pelisalacarta.core.filetools read: ERROR al leer el archivo: {0}".format(path))
+          logger.info("pelisalacarta.core.filetools read: ERROR al leer el archivo: {0}".format(path))
 
     return data
 
