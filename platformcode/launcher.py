@@ -178,7 +178,7 @@ def run():
             if item.action == "play":
                 logger.info("pelisalacarta.platformcode.launcher play")
                 logger.debug("item_toPlay: " + "\n" + item.tostring('\n'))
-                return
+
                 # First checks if channel has a "play" function
                 if hasattr(channel, 'play'):
                     logger.info("pelisalacarta.platformcode.launcher executing channel 'play' method")
@@ -222,7 +222,7 @@ def run():
 
             # Special action for playing a video from the library
             elif item.action == "play_from_library":
-                play_from_library(item, channel, server_white_list, server_black_list)
+                play_from_library(item, server_white_list, server_black_list)
 
             # Special action for adding a movie to the library
             elif item.action == "add_pelicula_to_library":
@@ -351,87 +351,20 @@ def filtered_servers(itemlist, server_white_list, server_black_list):
 
     return new_list
 
-
-def play_from_library(item, channel, server_white_list, server_black_list):
+def play_from_library(item, server_white_list, server_black_list):
     logger.info("pelisalacarta.platformcode.launcher play_from_library")
     #logger.debug("item: " + "\n" + item.tostring('\n'))
 
-    if item.nfo:
-        # Venimos del canal Biblioteca.
-        if item.contentChannel:
-            # Solo hay un canal. Obtenemos los resultados del canal y volvemos
-            itemlist = getattr(channel, 'filtrar_por_canal')(item)
-        else:
-            # Hay mas de un canal. Buscamos los canales y volvemos
-            itemlist = getattr(channel, 'buscar_canales')(item)
-
-        platformtools.render_items(itemlist, item)
-        return
-
-
-    # Venimos de la libreria de Kodi
-
-    # Buscar canales
-    list_canales = getattr(channel, 'buscar_canales')(item)
-
-    if len(list_canales) > 1:
-        # Si hay mas de un canal mostrar cuadro de seleccion
-        opciones = [item.title for item in list_canales]
-        seleccion = platformtools.dialog_select(config.get_localized_string(30163), opciones)
-
-        if seleccion == -1:
-            # Cancelar
-            return
-
-        canal_seleccionado = list_canales[seleccion]
-
-    else:
-        # Solo hay un canal
-        canal_seleccionado = list_canales[0]
-
-
-    # Filtrar_por_canales
-    list_partes = getattr(channel, 'filtrar_por_canal')(canal_seleccionado)
-
-    logger.debug(str([item.title for item in list_partes]))
-    if list_partes[0].multi:
-        if len(list_partes) > 1:
-            # si hay mas de una parte o episodio mostrar cuadro de seleccion
-            opciones = [item.title for item in list_partes]
-            seleccion = platformtools.dialog_select(config.get_localized_string(30163), opciones)
-
-            if seleccion == -1:
-                # Cancelar
-                return
-
-            parte_seleccionada = list_partes[seleccion]
-
-        else:
-            # Solo hay una parte
-            parte_seleccionada = list_partes[0]
-
-
-        # Importamos el canal de la parte seleccionada
-        try:
-            channel = __import__('channels.%s' % parte_seleccionada.channel, fromlist=["channels.%s" % parte_seleccionada.channel])
-        except:
-            exec "import channels." + parte_seleccionada.channel + " as channel"
-
-        # Ejecutamos find_videos, del canal o común
-        if hasattr(channel, 'findvideos'):
-            list_servers = getattr(channel, 'findvideos')(parte_seleccionada)
-        else:
-            from core import servertools
-            list_servers = servertools.find_video_items(parte_seleccionada)
-
-    else:
-        list_servers = list_partes
+    # Llamamos al metodo findvideos del canal biblioteca
+    from channels import biblioteca
+    list_servers = getattr(biblioteca, 'findvideos')(item)
 
     if config.get_setting('filter_servers') == 'true':
         list_servers = filtered_servers(list_servers, server_white_list, server_black_list)
 
     if len(list_servers) == 0:
         # Cancelar no hay nada q reproducir
+        logger.debug("Cancelar no hay nada que reproducir")
         return
     elif len(list_servers) == 1:
         # Solo hay un server
@@ -443,12 +376,13 @@ def play_from_library(item, channel, server_white_list, server_black_list):
 
         if seleccion == -1:
             # Cancelar
+            logger.debug("Se ha pulsado Cancelar en el cuadro de dialogo")
             return
         server_seleccionado = list_servers[seleccion]
 
+    #logger.debug("server_seleccionado: " + "\n" + server_seleccionado.tostring('\n'))
 
-    logger.debug("server_seleccionado: " + "\n" + server_seleccionado.tostring('\n'))
-    '''
+
     # Importamos el canal desde el q reproduciremos
     try:
         channel = __import__('channels.%s' % server_seleccionado.channel,
@@ -466,7 +400,7 @@ def play_from_library(item, channel, server_white_list, server_black_list):
                                                                                                item.subtitle))
     platformtools.play_video(item, True)
     library.mark_as_watched(item)
-    '''
+
 
 
 

@@ -132,27 +132,42 @@ def main():
             p_dialog.update(0, '')
             show_list = []
 
+
             for path, folders, files in filetools.walk(library.TVSHOWS_PATH):
-                show_list.extend([filetools.join(path, f) for f in files if f == "tvshow.json"])
+                show_list.extend([filetools.join(path, f) for f in files if f == "tvshow.nfo"])
 
             # fix float porque la division se hace mal en python 2.x
             t = float(100) / len(show_list)
 
             for i, tvshow_file in enumerate(show_list):
-                serie = Item().fromjson(filetools.read(tvshow_file))
+                serie = Item().fromjson(filetools.read(tvshow_file,1))
                 path = filetools.dirname(tvshow_file)
 
-                logger.info("pelisalacarta.library_service serie="+serie.contentSerieName)
-                logger.info("pelisalacarta.library_service Actualizando " + path)
-                logger.info("pelisalacarta.library_service url " + serie.url)
-                show_name = serie.contentTitle
-                if show_name == "":
-                    show_name = serie.show
-                p_dialog.update(int(math.ceil((i+1) * t)), heading, show_name)
+                if serie.contentSeriename == "":
+                    serie.contentSeriename = serie.show
+                logger.info("pelisalacarta.library_service serie=" + serie.contentSerieName)
+                p_dialog.update(int(math.ceil((i+1) * t)), heading, serie.contentSeriename)
+
+                if not serie.active:
+                    continue
 
                 # si la serie esta activa se actualiza
-                if serie.active:
+                logger.info("pelisalacarta.library_service Actualizando " + path)
+                logger.info("pelisalacarta.library_service url " + serie.url)
 
+                # Obtenemos una lista de los canales
+                list_canales = []
+                for fd in filetools.listdir(path):
+                    if fd.endswith('.dat'):
+                        contenido, nom_canal = fd[:-5].split('[')
+                        if nom_canal not in list_canales:
+                            list_canales.append(nom_canal)
+
+                #logger.debug("%s: %s" %(serie.contentSerieName,str(list_canales) ))
+                for channel in list_canales:
+                    serie.channel = channel
+                    serie.url = serie.library_urls.get(channel)
+                    p_dialog.update(int(math.ceil((i + 1) * t)), heading, "%s: %s" %(serie.contentSerieName,serie.channel.capitalize() ))
                     try:
                         pathchannels = filetools.join(config.get_runtime_path(), "channels", serie.channel + '.py')
                         logger.info("pelisalacarta.library_service Cargando canal: " + pathchannels + " " +

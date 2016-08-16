@@ -34,6 +34,18 @@ from HTMLParser import HTMLParser
 from core import jsontools as json
 
 
+class InfoLabels(dict):
+    def __missing__(self, key):
+        '''
+        valores por defecto en caso de que la clave solicitada no exista
+        '''
+        if key in ['rating']:
+            # Ejemplo de clave q devuelve un float por defecto
+            return 0.0
+        else:
+            # El resto de claves devuelven cadenas vacias por defecto
+            return ""
+
 class Item(object):
     def __init__(self, **kwargs):
         '''
@@ -43,9 +55,12 @@ class Item(object):
             self.set_parent_content(kwargs["parentContent"])
             del kwargs["parentContent"]
 
-        # Creamos el atributo infoLabels si no existe
-        if not type(self.__dict__.get("infoLabels", "")) == dict:
-            self.__dict__["infoLabels"] = {}
+        # Creamos el atributo infoLabels
+        self.__dict__["infoLabels"] = InfoLabels()
+        if kwargs.has_key("infoLabels"):
+            if isinstance(kwargs["infoLabels"], dict):
+                self.__dict__["infoLabels"].update(kwargs["infoLabels"])
+            del kwargs["infoLabels"]
 
         kw = copy.copy(kwargs)
         for k in kw:
@@ -71,6 +86,7 @@ class Item(object):
             for key in value:
                 self.__setattr__(key, value[key])
             return
+
 
         # Descodificamos los HTML entities
         if name in ["title", "plot", "fulltitle", "contentPlot", "contentTitle"]: value = self.decode_html(value)
@@ -100,6 +116,15 @@ class Item(object):
 
         elif name == "plot":
             self.__dict__["infoLabels"]["plot"] = value
+
+        # Al asignar un valor a infoLables
+        elif name == "infoLabels":
+            if isinstance(value, dict):
+                value_defaultdict = InfoLabels(value)
+                if value:
+                    self.__dict__["infoLabels"].update(value_defaultdict)
+                else:
+                    self.__dict__["infoLabels"] = value_defaultdict
 
         else:
             super(Item, self).__setattr__(name, value)
@@ -195,6 +220,10 @@ class Item(object):
             dct = dict([[param.split("=")[0], param.split("=")[1]] for param in url.split("&") if "=" in param])
             self.__dict__.update(dct)
             self.__dict__ = self.toutf8(self.__dict__)
+
+        if 'infoLabels' in self.__dict__ and not isinstance(self.__dict__['infoLabels'],InfoLabels):
+            self.__dict__['infoLabels'] = InfoLabels(self.__dict__['infoLabels'])
+
         return self
 
     def tojson(self, path=""):
@@ -224,6 +253,10 @@ class Item(object):
 
         JSONItem = json.loads(STRItem, object_hook=self.toutf8)
         self.__dict__.update(JSONItem)
+
+        if 'infoLabels' in self.__dict__ and not isinstance(self.__dict__['infoLabels'], InfoLabels):
+            self.__dict__['infoLabels'] = InfoLabels(self.__dict__['infoLabels'])
+
         return self
 
     def clone(self, **kwargs):
@@ -267,7 +300,7 @@ class Item(object):
                 value[x] = self.toutf8(value[x])
             return value
 
-        elif type(value) == dict:
+        elif isinstance(value,dict):
             newdct = {}
             for key in value:
                 if type(key) == unicode:
@@ -275,7 +308,11 @@ class Item(object):
 
                 newdct[key] = self.toutf8(value[key])
 
-            if len(args) > 0: return newdct
+            if len(args) > 0:
+                if isinstance(value, InfoLabels):
+                    return InfoLabels(newdct)
+                else:
+                    return newdct
 
         else:
             return value

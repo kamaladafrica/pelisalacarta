@@ -166,13 +166,14 @@ def save_library_movie(item):
     strm_path = filetools.join(path, "%s.strm" %base_name)
     nfo_path = filetools.join(path, "%s.nfo" % base_name)
     if not filetools.exists(strm_path):
-        item_strm = item.clone(action='play_from_library', channel='biblioteca', path= path, infoLabels={})
+        item_strm = item.clone(action='play_from_library', channel='biblioteca', path= path,
+                               infoLabels={'title': item.contentTitle})
 
         if filetools.write(strm_path, '%s?%s' %(addon_name, item_strm.tourl())):
             # Crear base_name.nfo si no existe con la url_scraper, info de la pelicula y marcas de vista
             if not filetools.exists(nfo_path):
                 url_scraper = "https://www.themoviedb.org/movie/%s\n" %item.infoLabels['tmdb_id']
-                item.playcounts = {base_name: 0}
+                item.library_playcounts = {base_name: 0}
 
                 if not filetools.write(nfo_path, url_scraper + item.tojson()):
                     # Si no se puede crear base_name.nfo borramos base_name.strm
@@ -259,23 +260,38 @@ def save_library_tvshow(item, episodelist):
             if exception.errno != errno.EEXIST:
                 raise
 
-    # Guarda tvshow.nfo, si no existe, con la url_scraper, info de la serie y marcas de episodios vistos
-    nfo_path = filetools.join(path, "tvshow.nfo")
-    if not filetools.exists(nfo_path):
-        logger.info("pelisalacarta.platformcode.library save_library_tvshow Creando tvshow.nfo:" + nfo_path)
+    tvshow_path = filetools.join(path, "tvshow.nfo")
+    if not filetools.exists(tvshow_path):
+        # Creamos tvshow.nfo, si no existe, con la url_scraper, info de la serie y marcas de episodios vistos
+        logger.info("pelisalacarta.platformcode.library save_library_tvshow Creando tvshow.nfo:" + tvshow_path)
         url_scraper = "https://www.themoviedb.org/tv/%s\n" % item.infoLabels['tmdb_id']
         item_tvshow = item.clone()
-        item_tvshow.playcounts = {}
+        item_tvshow.library_playcounts = {}
+        item_tvshow.library_urls = {item.channel: item.url}
         item_tvshow.title = item_tvshow.contentTitle
         item_tvshow.channel = "biblioteca"
         item_tvshow.fanart = item_tvshow.infoLabels['fanart']
         item_tvshow.path = path
-        filetools.write(nfo_path, url_scraper + item_tvshow.tojson())
+        item_tvshow.url =""
+
+        filetools.write(tvshow_path, url_scraper + item_tvshow.tojson())
+
+    else:
+        # Si existe tvshow.nfo, pero estamos añadiendo un nuevo canal actualizamos el listado de urls
+        url_scraper = filetools.read(tvshow_path, 0, 1)
+        tvshow_item = Item().fromjson(filetools.read(tvshow_path, 1))
+        if item.channel not in tvshow_item.library_urls:
+            tvshow_item.library_urls[item.channel] = item.url
+            filetools.write(tvshow_path, url_scraper + tvshow_item.tojson())
+
+
 
     # Guardar los episodios
     insertados, sobreescritos, fallidos = save_library_episodes(path, episodelist, item)
 
     #TODO si fallidos == -1 podriamos comprobar si es necesario eliminar la serie
+
+
 
     return insertados, sobreescritos, fallidos
 
@@ -339,6 +355,8 @@ def save_library_episodes(path, episodelist, serie, silent=False):
             item_strm.contentSeason = e.contentSeason
             item_strm.contentEpisodeNumber = e.contentEpisodeNumber
             item_strm.contentType = e.contentType
+            item_strm.contentTitle = "%sx%s" %(e.contentSeason, str(e.contentEpisodeNumber).zfill(2))
+            logger.debug(item_strm.tostring('\n'))
 
             filetools.write(strm_path, '%s?%s' % (addon_name, item_strm.tourl()))
 
@@ -355,7 +373,7 @@ def save_library_episodes(path, episodelist, serie, silent=False):
         dat_path = filetools.join(path, ("%s [%s].dat" % (season_episode, e.channel)).lower())
         if filetools.exists(nfo_path) and filetools.exists(strm_path):
             nuevo = not filetools.exists(dat_path)
-
+            #filetools.write(dat_path + '.json', e.tojson()) #only for debugger
             if filetools.write(dat_path, '%s?%s' % (addon_name, e.tourl())):
                 if nuevo:
                     logger.info("pelisalacarta.platformcode.library savelibrary Insertado: %s" % dat_path)
@@ -387,7 +405,7 @@ def save_library_episodes(path, episodelist, serie, silent=False):
         try:
             url_scraper =filetools.read(tvshow_path,0,1)
             tvshow_item = Item().fromjson(filetools.read(tvshow_path,1))
-            tvshow_item.playcounts.update(news_in_playcounts)
+            tvshow_item.library_playcounts.update(news_in_playcounts)
 
             filetools.write(tvshow_path, url_scraper + tvshow_item.tojson())
         except:
@@ -404,7 +422,7 @@ def save_library_episodes(path, episodelist, serie, silent=False):
     if fallidos == len(episodelist):
         fallidos = -1
 
-    logger.debug("insertados= %s, sobreescritos= %s, fallidos= %s" %(insertados, sobreescritos, fallidos))
+    logger.debug("%s [%s]: insertados= %s, sobreescritos= %s, fallidos= %s" %(serie.contentSerieName, serie.channel, insertados, sobreescritos, fallidos))
     return insertados, sobreescritos, fallidos
 
 '''
@@ -427,7 +445,7 @@ def set_infolabels_from_library(itemlist, tipo):
             if filetools.exists(data_file):
                 it = Item().fromjson(filetools.read(data_file,1))
                 item.infoLabels = it.infoLabels
-                item.playcounts = it.playcounts
+                item.library_playcounts = it.library_playcounts
                 item.fanart = item.infoLabels.get('fanart',"")
 
             item.thumbnail = item.contentThumbnail
@@ -439,7 +457,7 @@ def set_infolabels_from_library(itemlist, tipo):
             if filetools.exists(data_file):
                 it = Item().fromjson(filetools.read(data_file,1))
                 item.infoLabels = it.infoLabels
-                item.playcounts = it.playcounts
+                item.library_playcounts = it.library_playcounts
                 item.fanart = item.infoLabels.get('fanart', "")
 
             item.thumbnail = item.contentThumbnail
@@ -624,8 +642,8 @@ def mark_as_watched_on_strm(item):
             url_scraper = data[filetools.read(f, 0, 1)]
             it = Item().fromjson(filetools.read(f, 1))
             name_file =  os.path.splitext(os.path.basename(item.path))[0]
-            if not hasattr(it, 'playcounts'): it.playcounts = {}
-            it.playcounts.update({name_file: 1})
+            if not hasattr(it, 'library_playcounts'): it.library_playcounts = {}
+            it.library_playcounts.update({name_file: 1})
 
             filetools.write(f, url_scraper + it.tojson())
 
@@ -881,15 +899,15 @@ def create_nfo_file(item, video_id, path, content_type):
     # TODO meter un parametro más "scraper" para elegir entre una lista: imdb, tvdb, etc... y con el video_id pasado de
     # esa pagina se genere el nfo especifico
     logger.info("pelisalacarta.platformcode.library create_nfo_file")
-    it =item.clone(playcounts={})
+    it =item.clone(library_playcounts={})
 
     if content_type == "TVShows":
         data = "https://www.themoviedb.org/tv/%s\n" %(video_id)
         nfo_file = filetools.join(path, "tvshow.nfo")
         if filetools.exists(nfo_file):
             tvshow_item = Item().fromjson(filetools.read(nfo_file, 1))
-            if hasattr(tvshow_item, 'playcounts'):
-                it.playcounts = tvshow_item.playcounts
+            if hasattr(tvshow_item, 'library_playcounts'):
+                it.library_playcounts = tvshow_item.library_playcounts
 
     elif content_type == "Episodes":
         data = "https://www.themoviedb.org/tv/%s/season/%s/episode/%s\n" %(video_id, it.contentSeason, it.contentEpisodeNumber)
@@ -900,8 +918,8 @@ def create_nfo_file(item, video_id, path, content_type):
         nfo_file = path + ".nfo"
         if filetools.exists(nfo_file):
             movie_item = Item().fromjson(filetools.read(nfo_file, 1))
-            if hasattr(movie_item, 'playcounts'):
-                it.playcounts = movie_item.playcounts
+            if hasattr(movie_item, 'library_playcounts'):
+                it.library_playcounts = movie_item.library_playcounts
 
 
     data += it.tojson()
@@ -956,24 +974,24 @@ def add_serie_to_library(item, channel):
 # metodos de menu contextual
 def marcar_episodio(item): #TODO propongo cambiarle el nombre por q vale para episodios y peliculas
     logger.info("pelisalacarta.platformcode.library marcar_episodio")
+    logger.debug("item:\n" + item.tostring('\n'))
 
-    f = filetools.join(os.path.dirname(item.path), 'tvshow.nfo')
-    if not filetools.exists(f) and item.path.endswith(".strm"):
-        # Si no existe probamos a ver si es una pelicula
-        f = item.path[:-5] + '.nfo'
+    if item.contentType == 'movie':
+        f= item.nfo
+    else:
+        f = filetools.join(item.path, 'tvshow.nfo')
 
     if filetools.exists(f):
         url_scraper = filetools.read(f, 0, 1)
         it = Item().fromjson(filetools.read(f, 1))
-        name_file = os.path.splitext(os.path.basename(item.path))[0]
-        if not hasattr(it, 'playcounts'): it.playcounts = {}
-        it.playcounts[name_file] = 1
+        if not hasattr(it, 'library_playcounts'): it.library_playcounts = {}
+        it.library_playcounts[item.contentTitle.lower()] = 1
 
         filetools.write(f, url_scraper + it.tojson())
         item.infoLabels['playcount'] = 1
 
         import xbmc
-        xbmc.executebuiltin("Container.Refresh")
+        xbmc.executebuiltin("Container.Refresh") #TODO no parece funcionar hay q salir hasta el menu series/peliculas para actualizar
 
 
 def marcar_temporada(item):
@@ -983,7 +1001,7 @@ def marcar_temporada(item):
     f = filetools.join(item.path, 'tvshow.nfo')
     url_scraper = filetools.read(f, 0, 1)
     it = Item().fromjson(filetools.read(f, 1))
-    if not hasattr(it, 'playcounts'): it.playcounts = {}
+    if not hasattr(it, 'library_playcounts'): it.library_playcounts = {}
 
     # Obtenemos los archivos de los episodios
     raiz, carpetas_series, ficheros = filetools.walk(item.path).next()
@@ -995,13 +1013,13 @@ def marcar_temporada(item):
             season, episode = scrapertools.get_season_and_episode(i).split("x")
             if int(season) == int(item.contentSeason):
                 name_file = os.path.splitext(os.path.basename(i))[0]
-                it.playcounts[name_file] = 1
+                it.library_playcounts[name_file] = 1
                 episodios_marcados += 1
 
 
     if episodios_marcados:
-        # Añadimos la temporada al diccionario item.playcounts
-        it.playcounts["season %s" %item.contentSeason] = 1
+        # Añadimos la temporada al diccionario item.library_playcounts
+        it.library_playcounts["season %s" %item.contentSeason] = 1
 
         # Guardamos los cambios en tvshow.nfo
         filetools.write(f, url_scraper + it.tojson())
