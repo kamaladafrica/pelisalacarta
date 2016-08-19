@@ -33,7 +33,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     data = scrapertools.downloadpageWithoutCookies(page_url)
     subtitle = scrapertools.find_single_match(data, '<track kind="captions" src="([^"]+)" srclang="es"')
     #Header para la descarga
-    header_down = "|User-Agent="+headers['User-Agent']+"|"
+    header_down = "|User-Agent="+headers['User-Agent']
 
     try:
         from lib.aadecode import decode as aadecode
@@ -49,8 +49,6 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
 
             if videourl == "http://":
                 videourl = decodeopenload(data)
-            extension = scrapertools.find_single_match(data, '<meta name="description" content="([^"]+)"')
-            extension = "." + extension.rsplit(".", 1)[1]
         else:
             text_encode = scrapertools.find_multiple_matches(data,'<script[^>]+>(ﾟωﾟ.*?)</script>')
             try:
@@ -63,11 +61,11 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
                 index = int(eval(subtract))
                 # Buscamos la variable que nos indica el script correcto
                 text_decode = aadecode(text_encode[index])
-                videourl = "http://" + scrapertools.find_single_match(text_decode, "(openload.co/.*?)\}")
-                extension = "." + scrapertools.find_single_match(text_decode, "video/(\w+)")
+                videourl = "https://" + scrapertools.find_single_match(text_decode, "(openload.co/.*?)\}")
             else:
                 videourl = decodeopenload(data)
-                extension = "." + scrapertools.find_single_match(decodeindex, "video/(\w+)")
+
+            videourl = scrapertools.getLocationHeaderFromResponse(videourl)
     except:
         import traceback
         logger.info("pelisalacarta.servers.openload "+traceback.format_exc())
@@ -85,7 +83,10 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
             data = jsontools.load_json(data)
             extension = "." + scrapertools.find_single_match(data["result"]["content_type"], '/(\w+)')
             videourl = data['result']['url'] + '?mime=true'
+            videourl = scrapertools.getLocationHeaderFromResponse(videourl)
 
+    extension = scrapertools.find_single_match(data, '<meta name="description" content="([^"]+)"')
+    extension = "." + extension.rsplit(".", 1)[1]
     if config.get_platform() != "plex":
         video_urls.append([extension + " [Openload] ", videourl+header_down+extension, 0, subtitle])
     else:
@@ -206,6 +207,6 @@ def decodeopenload(data):
         res.append(''.join(linkData[idx]).replace(',', ''))
 
     res = res[3] + '~' + res[1] + '~' + res[2] + '~' + res[0]
-    videourl = 'http://openload.co/stream/{0}?mime=true'.format(res)
+    videourl = 'https://openload.co/stream/{0}?mime=true'.format(res)
     
     return videourl
