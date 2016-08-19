@@ -35,6 +35,9 @@ from core import jsontools as json
 
 
 class InfoLabels(dict):
+    def __str__(self):
+        return self.tostring(separador=',\r\t')
+
     def __missing__(self, key):
         '''
         valores por defecto en caso de que la clave solicitada no exista
@@ -45,6 +48,22 @@ class InfoLabels(dict):
         else:
             # El resto de claves devuelven cadenas vacias por defecto
             return ""
+
+    def tostring(self, separador=', '):
+        ls = []
+        for i in super(InfoLabels, self).items():
+            i_str = str(i)[1:-1]
+            if isinstance(i[0], str):
+                old = i[0] + "',"
+                new = i[0] + "':"
+            else:
+                old = str(i[0]) + ","
+                new = str(i[0]) + ":"
+            ls.append(i_str.replace(old, new, 1))
+
+        return "{%s}" % separador.join(ls)
+
+
 
 class Item(object):
     def __init__(self, **kwargs):
@@ -170,6 +189,9 @@ class Item(object):
         else:
             return ""
 
+    def __str__(self):
+        return '\r\t' + self.tostring('\r\t')
+
     def set_parent_content(self, parentContent):
         '''
         Rellena los campos contentDetails con la informacion del item "padre"
@@ -195,7 +217,21 @@ class Item(object):
             value = self.__getattr__(key)
             if value: dic[key]= value
 
-        return separator.join([var + "=[" + str(dic[var]) + "]" for var in sorted(dic)])
+        ls = []
+        for var in sorted(dic):
+            if isinstance(dic[var],str):
+                valor = "'%s'" %dic[var]
+            elif isinstance(dic[var],InfoLabels):
+                if separator == '\r\t':
+                    valor = dic[var].tostring(',\r\t\t')
+                else:
+                    valor = dic[var].tostring()
+            else:
+                valor = str(dic[var])
+
+            ls.append(var + "= " + valor)
+
+        return separator.join(ls)
 
     def tourl(self):
         '''
