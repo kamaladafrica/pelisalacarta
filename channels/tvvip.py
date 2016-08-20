@@ -722,8 +722,8 @@ def play(item):
 
     data = requests.get(uri_request, headers=headers_play)
     data = jsontools.load_json(data.text)
-    url = item.url.replace("/transcoder/", "/s/transcoder/") + "?t=" + str(data['t']) + "&m=" + data['m'] + "&b=" + \
-          data['b'] + head
+    url = item.url.replace("/transcoder/", "/s/transcoder/") + "?tt=" + str(data['tt']) + \
+          "&mm=" + data['mm'] + "&bb=" + data['bb'] + head
     itemlist.append(item.clone(action="play", server="directo", url=url, folder=False))
     return itemlist
 
