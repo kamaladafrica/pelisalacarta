@@ -34,10 +34,7 @@ def mainlist(item):
     item.text_color = color1
     
     itemlist.append(item.clone(title="Películas", action="lista", fanart="http://i.imgur.com/c3HS8kj.png"))
-    itemlist.append(item.clone(title="Series", action="entradas", url="http://desmix.net/series/",
-                               fanart="http://i.imgur.com/9loVksV.png"))
-    itemlist.append(item.clone(title="Miniseries", action="entradas", url="http://desmix.net/series/miniseries",
-                               fanart="http://i.imgur.com/9loVksV.png"))
+    itemlist.append(item.clone(title="Series", action="lista_series", fanart="http://i.imgur.com/9loVksV.png"))
     itemlist.append(item.clone(title="Documentales", action="entradas", url="http://desmix.net/documentales/",
                                fanart="http://i.imgur.com/Q7fsFI6.png"))
     itemlist.append(item.clone(title="Anime", action="entradas", url="http://desmix.net/anime/",
@@ -117,6 +114,18 @@ def lista(item):
                                url="http://desmix.net/peliculas/latino-peliculas"))
     itemlist.append(item.clone(title="VOSE", action="entradas", url="http://desmix.net/peliculas/subtituladas"))
     itemlist.append(item.clone(title="3D", action="entradas", url="http://desmix.net/peliculas/3d"))
+    itemlist.append(item.clone(title="Géneros", action="generos", url="http://desmix.net/peliculas/"))
+
+    return itemlist
+
+
+def lista_series(item):
+    logger.info("pelisalacarta.channels.descargasmix lista_series")
+    itemlist = []
+
+    itemlist.append(item.clone(title="Novedades", action="entradas", url="http://desmix.net/series/"))
+    itemlist.append(item.clone(title="Miniseries", action="entradas", url="http://desmix.net/series/miniseries"))
+    itemlist.append(item.clone(title="Géneros", action="generos", url="http://desmix.net/series/"))
 
     return itemlist
 
@@ -172,6 +181,20 @@ def entradas(item):
     next_page = scrapertools.find_single_match(data, '<a class="nextpostslink".*?href="([^"]+)"')
     if next_page != "":
         itemlist.append(item.clone(title=">> Siguiente", url=next_page, text_color=color3))
+
+    return itemlist
+
+
+def generos(item):
+    logger.info("pelisalacarta.channels.descargasmix generos")
+    itemlist = []
+
+    data = scrapertools.downloadpage(item.url)
+    bloque = scrapertools.find_single_match(data, '<div class="categorias">(.*?)</div>')
+    matches = scrapertools.find_multiple_matches(bloque, '<a href="([^"]+)">([^<]+)</a>')
+    for scrapedurl, scrapedtitle in matches:
+        scrapedurl = "http://desmix.net" + scrapedurl
+        itemlist.append(item.clone(action="entradas", url=scrapedurl, title=scrapedtitle))
 
     return itemlist
 
