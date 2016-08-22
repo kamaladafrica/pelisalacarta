@@ -12,7 +12,7 @@ from core import logger
 from core import scrapertools
 
 
-headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0'}
+headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:47.0) Gecko/20100101 Firefox/47.0'}
 
 
 def test_video_exists(page_url):
@@ -48,9 +48,13 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
                 videourl = "http://"
 
             if videourl == "http://":
-                videourl = decodeopenload(data)
+                hiddenurl = scrapertools.find_single_match(data, 'id="hiddenurl\s*">(.*?)<')
+                if hiddenurl:
+                    videourl = decode_hidden(hiddenurl)
+                else:
+                    videourl = decodeopenload(data)
         else:
-            text_encode = scrapertools.find_multiple_matches(data,'<script[^>]+>(ﾟωﾟ.*?)</script>')
+            text_encode = scrapertools.find_multiple_matches(data, '(ﾟωﾟ.*?\(\'\_\'\));')
             try:
                 decodeindex = aadecode(text_encode[0])
                 subtract = scrapertools.find_single_match(decodeindex, 'welikekodi.*?(\([^;]+\))')
@@ -63,7 +67,11 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
                 text_decode = aadecode(text_encode[index])
                 videourl = "https://" + scrapertools.find_single_match(text_decode, "(openload.co/.*?)\}")
             else:
-                videourl = decodeopenload(data)
+                hiddenurl = scrapertools.find_single_match(data, 'id="hiddenurl\s*">(.*?)<')
+                if hiddenurl:
+                    videourl = decode_hidden(hiddenurl)
+                else:
+                    videourl = decodeopenload(data)
 
             videourl = scrapertools.getLocationHeaderFromResponse(videourl)
     except:
@@ -209,4 +217,16 @@ def decodeopenload(data):
     res = res[3] + '~' + res[1] + '~' + res[2] + '~' + res[0]
     videourl = 'https://openload.co/stream/{0}?mime=true'.format(res)
     
+    return videourl
+
+
+def decode_hidden(text):
+    text = scrapertools.decodeHtmlentities(text)
+    s = []
+    for i in range(0, len(text)):
+        j = ord(text[i])
+        s.append(chr(33 + ((j+14) % 94)))
+
+    videourl = "https://openload.co/stream/{0}?mime=true".format("".join(s))
+
     return videourl
