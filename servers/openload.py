@@ -223,8 +223,8 @@ def decodeopenload(data):
 def decode_hidden(text):
     text = scrapertools.decodeHtmlentities(text)
     s = []
-    for i in range(0, len(text)):
-        j = ord(text[i])
+    for char in text:
+        j = ord(char)
         s.append(chr(33 + ((j+14) % 94)))
 
     videourl = "https://openload.co/stream/{0}?mime=true".format("".join(s))
