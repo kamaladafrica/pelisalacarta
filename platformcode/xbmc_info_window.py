@@ -30,7 +30,7 @@ import re
 import xbmcgui
 
 from core.tmdb import Tmdb
-from core.item import Item
+from core.item import Item, InfoLabels
 from core import logger
 
 
@@ -124,29 +124,26 @@ class InfoWindow(xbmcgui.WindowXMLDialog):
 
     def get_item_info(self, item):
         # Recogemos los parametros del Item que nos interesan:
-        if "title" in item and item.title != "":
-            self.item_title = item.title
-        if "fulltitle" in item and item.fulltitle != "":
+        self.item_title = item.title
+        if item.fulltitle:
             self.item_title = item.fulltitle
-        if "contentTitle" in item and item.contentTitle != "":
+        if item.contentTitle:
             self.item_title = item.contentTitle
 
-        if "show" in item and item.show != "":
+        if item.show:
             self.item_serie = item.show
-        if "contentSerieName" in item and item.contentSerieName != "":
+        if item.contentSerieName:
             self.item_serie = item.contentSerieName
 
-        if "contentSeason" in item and item.contentSeason != "":
+        if item.contentSeason:
             self.item_temporada = item.contentSeason
-        if "contentepisodeNumber" in item and item.contentepisodeNumber != "":
-            self.item_episodio = item.contentepisodeNumber
+        if item.contentEpisodeNumber:
+            self.item_episodio = item.contentEpisodeNumber
 
         # i no existen contentepisodeNumber o contentSeason intenta sacarlo del titulo
         if not self.item_episodio or not self.item_temporada:
             self.get_episode_from_title(item)
 
-    def get_dict_info(self, dct):
-        self.result = dct
 
     def get_tmdb_movie_data(self, text):
         # Buscamos la pelicula si no lo esta ya
@@ -158,110 +155,88 @@ class InfoWindow(xbmcgui.WindowXMLDialog):
             return False
 
         # Informacion de la pelicula
-        self.result["type"] = "movie"
-        self.result["tmdb_id"] = self.otmdb.get_id()
-        self.result["title"] = self.otmdb.result["title"]
-        self.result["original_title"] = self.otmdb.result["original_title"]
-        self.result["date"] = self.get_date(self.otmdb.result["release_date"])
-        self.result["language"] = self.get_language(self.otmdb.result["original_language"])
-        self.result["rating"] = self.otmdb.result["vote_average"] + "/10 (" + self.otmdb.result["vote_count"] + ")"
-        self.result["genres"] = ", ".join(self.otmdb.result["genres"])
-        self.result["thumbnail"] = self.otmdb.get_poster()
-        self.result["fanart"] = self.otmdb.get_backdrop()
-        self.result["overview"] = self.otmdb.result["overview"]
+        infoLabels = self.otmdb.get_infoLabels()
+        infoLabels["mediatype"] = "movie"
+        infoLabels["language"] = self.get_language(infoLabels["original_language"])
+        infoLabels["puntuacion"] = str(infoLabels["rating"]) + "/10 (" + str(infoLabels["votes"]) + ")"
+
+        self.result = infoLabels
 
         return True
 
-    def get_tmdb_tv_data(self, text, season=0, episode=0):
-        # Pasamos la temporada y episodeo a int()
-        season = int(season)
-        episode = int(episode)
-
+    def get_tmdb_tv_data(self, text):
         # Buscamos la serie si no esta cargada
         if not self.otmdb:
             self.otmdb = Tmdb(texto_buscado=text, idioma_busqueda="es", tipo="tv")
 
-        _id = self.otmdb.get_id()
-
         # Si no hay resultados salimos
-        if not _id:
+        if not self.otmdb.get_id():
             return False
 
         # informacion generica de la serie
-        self.result["type"] = "tv"
-        self.result["tmdb_id"] = self.otmdb.get_id()
-        self.result["title"] = self.otmdb.result.get("name", "N/A")
-        self.result["rating"] = self.otmdb.result["vote_average"] + "/10 (" + self.otmdb.result["vote_count"] + ")"
-        self.result["genres"] = ", ".join(self.otmdb.result["genres"])
-        self.result["language"] = self.get_language(self.otmdb.result["original_language"])
-        self.result["thumbnail"] = self.otmdb.get_poster()
-        self.result["fanart"] = self.otmdb.get_backdrop()
-        self.result["overview"] = self.otmdb.result.get("overview", "N/A")
+        infoLabels = self.otmdb.get_infoLabels()
+        infoLabels["mediatype"] = "tvshow"
+        infoLabels["language"] = self.get_language(infoLabels["original_language"])
+        infoLabels["puntuacion"] = str(infoLabels["rating"]) + "/10 (" + str(infoLabels["votes"]) + ")"
 
-        # Si tenemos informacion de temporada y episodio
-        if season and episode:
-            if "seasons" not in self.result or self.result["seasons"] == "":
-                self.otmdb = Tmdb(id_Tmdb=id, idioma_busqueda="es", tipo="tv")
+        self.result = infoLabels
+
+        # Si tenemos informacion de temporada
+        if self.item_temporada:
+            if not self.result["seasons"]:
+                self.otmdb = Tmdb(id_Tmdb=infoLabels['tmdb_id'], idioma_busqueda="es", tipo="tv")
+                #logger.debug(str(self.otmdb.get_infoLabels()))
+
                 self.result["seasons"] = str(self.otmdb.result.get("number_of_seasons", 0))
 
-            if season > self.result["seasons"]:
-                season = self.result["season_count"]
+            if self.item_temporada > self.result["seasons"]:
+                self.item_temporada = self.result["season_count"]
 
-            if episode > self.otmdb.result.get("seasons")[season-1]["episode_count"]:
-                episode = self.otmdb.result.get("seasons")[season]["episode_count"]
+            if self.item_episodio > self.otmdb.result.get("seasons")[self.item_temporada-1]["episode_count"]:
+                self.item_episodio = self.otmdb.result.get("seasons")[self.item_temporada]["episode_count"]
 
             # Solicitamos información del episodio concreto
-            episode_info = self.otmdb.get_episodio(season, episode)
+            episode_info = self.otmdb.get_episodio(self.item_temporada, self.item_episodio)
 
             # informacion de la temporada
-            self.result["season"] = str(season)
+            self.result["season"] = str(self.item_temporada)
+            self.result["temporada_nombre"] = episode_info.get("temporada_nombre", "N/A")
+            self.result["episodes"] = str(episode_info.get('temporada_num_episodios', "N/A"))
             if episode_info.get("temporada_poster"):
                 self.result["thumbnail"] = episode_info.get("temporada_poster")
-            if self.otmdb.result.get("overview"):
-                self.result["overview"] = self.otmdb.result.get("overview")
+            if episode_info.get("temporada_sinopsis"):
+                self.result["plot"] = episode_info.get("temporada_sinopsis")
 
-            # informacion del episodio
-            self.result["episode"] = str(episode)
-            self.result["episodes"] = str(episode_info.get('temporada_num_episodios', 0))
-            self.result["episode_title"] = episode_info.get("episodio_titulo", "N/A")
-            self.result["date"] = self.get_date(self.otmdb.temporada[season]["episodes"][episode-1].get("air_date"))
-            if episode_info.get("episodio_imagen"):
-                self.result["fanart"] = episode_info.get("episodio_imagen")
-            if episode_info.get("episodio_sinopsis"):
-                self.result["overview"] = episode_info.get("episodio_sinopsis")
+            # Si tenemos numero de episodio:
+            if self.item_episodio:
+                # informacion del episodio
+                self.result["episode"] = str(self.item_episodio)
+                self.result["episode_title"] = episode_info.get("episodio_titulo", "N/A")
+                self.result["date"] = self.get_date(self.otmdb.temporada[self.item_temporada]["episodes"][self.item_episodio-1].get("air_date"))
+                if episode_info.get("episodio_imagen"):
+                    self.result["fanart"] = episode_info.get("episodio_imagen")
+                if episode_info.get("episodio_sinopsis"):
+                    self.result["plot"] = episode_info.get("episodio_sinopsis")
 
         return True
 
     def get_tmdb_data(self, data_in):
         self.otmdb = None
+        #logger.debug(str(data_in))
 
         if self.listData:
-            data = {}
-
-            if data_in["type"] == "movie":
-                # Modo Listado de peliculas
-                data["title"] = data_in["title"]
-                data["original_title"] = data_in["original_title"]
-                data["date"] = self.get_date(data_in["release_date"])
-
-            else:
-                # Modo Listado de series
-                data["title"] = data_in.get("name", "N/A")
+            infoLabels = InfoLabels()
 
             # Datos comunes a todos los listados
-            data["type"] = data_in["type"]
-            data["tmdb_id"] = data_in["id"]
-            data["language"] = self.get_language(data_in["original_language"])
-            data["rating"] = data_in["vote_average"] + "/10 (" + data_in["vote_count"] + ")"
-            data["genres"] = ", ".join(data_in["genres"])
-            data["thumbnail"] = data_in["thumbnail"]
-            data["fanart"] = data_in["fanart"]
-            data["overview"] = data_in.get("overview")
+            infoLabels = Tmdb().get_infoLabels(infoLabels=infoLabels, origen=data_in)
+            infoLabels["language"] = self.get_language(infoLabels["original_language"])
+            infoLabels["puntuacion"] = str(data_in["vote_average"]) + "/10 (" + str(data_in["vote_count"]) + ")"
+
             self.from_tmdb = False
-            self.result = data
+            self.result = infoLabels
 
         else:
-            if type(data_in) == Item:
+            if isinstance(data_in,Item):
                 self.from_tmdb = True
                 self.get_item_info(data_in)
 
@@ -269,16 +244,18 @@ class InfoWindow(xbmcgui.WindowXMLDialog):
                 if not self.item_serie:
                     encontrado = self.get_tmdb_movie_data(self.item_title)
                     if not encontrado:
-                        encontrado = self.get_tmdb_tv_data(self.item_title, self.item_temporada, self.item_episodio)
+                        encontrado = self.get_tmdb_tv_data(self.item_title)
 
                 else:
-                    encontrado = self.get_tmdb_tv_data(self.item_serie, self.item_temporada, self.item_episodio)
+                    encontrado = self.get_tmdb_tv_data(self.item_serie)
                     if not encontrado:
                         encontrado = self.get_tmdb_movie_data(self.item_serie)
 
-            if type(data_in) == dict:
+            if isinstance(data_in,dict):
                 self.from_tmdb = False
-                self.get_dict_info(data_in)
+                self.result = InfoLabels(data_in)
+
+        #logger.debug(str(self.result))
 
     def Start(self, data, caption="Información del vídeo", callback=None, item=None):
         # Capturamos los parametros
@@ -314,19 +291,19 @@ class InfoWindow(xbmcgui.WindowXMLDialog):
         self.getControl(10005).setImage(self.result.get("thumbnail", "InfoWindow/img_no_disponible.png"))
 
         # Cargamos los datos para el formato pelicula
-        if self.result.get("type", "movie") == "movie":
+        if self.result.get("mediatype", "movie") == "movie":
             self.getControl(10006).setLabel("Titulo:")
             self.getControl(10007).setLabel(self.result.get("title", "N/A"))
             self.getControl(10008).setLabel("Titulo Original:")
-            self.getControl(10009).setLabel(self.result.get("original_title", "N/A"))
+            self.getControl(10009).setLabel(self.result.get("originaltitle", "N/A"))
             self.getControl(100010).setLabel("Idioma original:")
             self.getControl(100011).setLabel(self.result.get("language", "N/A"))
             self.getControl(100012).setLabel("Puntuacion:")
-            self.getControl(100013).setLabel(self.result.get("rating", "N/A"))
+            self.getControl(100013).setLabel(self.result.get("puntuacion", "N/A"))
             self.getControl(100014).setLabel("Lanzamiento:")
-            self.getControl(100015).setLabel(self.result.get("date", "N/A"))
+            self.getControl(100015).setLabel(self.result.get("release_date", "N/A"))
             self.getControl(100016).setLabel("Generos:")
-            self.getControl(100017).setLabel(self.result.get("genres", "N/A"))
+            self.getControl(100017).setLabel(self.result.get("genre", "N/A"))
 
         # Cargamos los datos para el formato serie
         else:
@@ -335,15 +312,19 @@ class InfoWindow(xbmcgui.WindowXMLDialog):
             self.getControl(10008).setLabel("Idioma original:")
             self.getControl(10009).setLabel(self.result.get("language", "N/A"))
             self.getControl(100010).setLabel("Puntuacion:")
-            self.getControl(100011).setLabel(self.result.get("rating", "N/A"))
+            self.getControl(100011).setLabel(self.result.get("puntuacion", "N/A"))
             self.getControl(100012).setLabel("Generos:")
-            self.getControl(100013).setLabel(self.result.get("genres", "N/A"))
-            if self.result.get("season") and self.result.get("episode"):
-                self.getControl(100014).setLabel("Titulo:")
-                self.getControl(100015).setLabel(self.result.get("episode_title", "N/A"))
+            self.getControl(100013).setLabel(self.result.get("genre", "N/A"))
+
+            if self.result.get("season"):
+                self.getControl(100014).setLabel("Titulo temporada:")
+                self.getControl(100015).setLabel(self.result.get("temporada_nombre", "N/A"))
                 self.getControl(100016).setLabel("Temporada:")
                 self.getControl(100017).setLabel(self.result.get("season", "N/A") + " de " +
                                                  self.result.get("seasons", "N/A"))
+            if self.result.get("episode"):
+                self.getControl(100014).setLabel("Titulo:")
+                self.getControl(100015).setLabel(self.result.get("episode_title", "N/A"))
                 self.getControl(100018).setLabel("Episodio:")
                 self.getControl(100019).setLabel(self.result.get("episode", "N/A") + " de " +
                                                  self.result.get("episodes", "N/A"))
@@ -351,22 +332,27 @@ class InfoWindow(xbmcgui.WindowXMLDialog):
                 self.getControl(100021).setLabel(self.result.get("date", "N/A"))
 
         # Sinopsis
-        if "overview" in self.result and self.result['overview']:
+        if self.result['plot']:
             self.getControl(100022).setLabel("Sinopsis:")
-            self.getControl(100023).setText(self.result.get("overview", "N/A"))
+            self.getControl(100023).setText(self.result.get("plot", "N/A"))
         else:
             self.getControl(100022).setLabel("")
             self.getControl(100023).setText("")
 
         # Cargamos los botones si es necesario
-        self.getControl(10024).setVisible(self.indexList > -1)
-        self.getControl(10025).setEnabled(self.indexList > 0)
-        self.getControl(10026).setEnabled(self.indexList + 1 != len(self.listData))
-        self.getControl(100029).setLabel("({0}/{1})".format(self.indexList + 1, len(self.listData)))
+        self.getControl(10024).setVisible(self.indexList > -1) # Grupo de botones
+        self.getControl(10025).setEnabled(self.indexList > 0) #Anterior
+        if self.listData:
+            m = len(self.listData)
+        else:
+             m =1
+        self.getControl(10026).setEnabled(self.indexList + 1 != m)  # Siguiente
+        self.getControl(100029).setLabel("(%s/%s)" %(self.indexList + 1, m)) # x/m
 
-        # Ponemos el foto en el botón "Anterior",
+        # Ponemos el foco en el botón "Anterior",
         # si estuviera desactivado iria el foco al boton "Siguiente" y pasara lo mismo al botón "Cancelar"
         self.setFocus(self.getControl(10024))
+
 
     def onClick(self, id):
         logger.info("pelisalacarta.platformcode.xbmc_info_window onClick id="+repr(id))
@@ -405,7 +391,7 @@ class InfoWindow(xbmcgui.WindowXMLDialog):
                         self.return_value = getattr(cb_channel, self.callback)(self.item, None)
 
     def onAction(self, action):
-        # logger.info("pelisalacarta.platformcode.xbmc_info_window onAction action="+repr(action.getId()))
+        logger.info("pelisalacarta.platformcode.xbmc_info_window onAction action="+repr(action.getId()))
 
         # Accion 1: Flecha izquierda
         if action == 1:
