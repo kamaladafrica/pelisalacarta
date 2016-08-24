@@ -274,7 +274,6 @@ def set_infoLabels_item(item, seekTmdb=True, idioma_busqueda='es', lock=None):
         if item.infoLabels['fanart']:
             item.fanart = item.infoLabels['fanart']
 
-
     if seekTmdb:
         # Comprobamos q tipo de contenido es...
         if item.infoLabels['mediatype'] == 'movie':
@@ -391,27 +390,27 @@ def set_infoLabels_item(item, seekTmdb=True, idioma_busqueda='es', lock=None):
                     otmdb = Tmdb(external_id=item.infoLabels['tvrage_id'], external_source="tvrage_id",
                                  tipo=tipo_busqueda, idioma_busqueda=idioma_busqueda)
 
+
             if otmdb is None:
                 # No se ha podido buscar por ID...
                 # hacerlo por titulo
-                if item.infoLabels['title']:
-                    if tipo_busqueda == 'tv':
-                        # Busqueda de serie por titulo y filtrando sus resultados si es necesario
-                        otmdb = Tmdb(texto_buscado=item.infoLabels['tvshowtitle'], tipo=tipo_busqueda,
-                                     idioma_busqueda=idioma_busqueda, filtro=item.infoLabels.get('filtro', {}),
+                if tipo_busqueda == 'tv':
+                    # Busqueda de serie por titulo y filtrando sus resultados si es necesario
+                    otmdb = Tmdb(texto_buscado=item.infoLabels['tvshowtitle'], tipo=tipo_busqueda,
+                                 idioma_busqueda=idioma_busqueda, filtro=item.infoLabels.get('filtro', {}),
+                                 year=item.infoLabels['year'])
+                else:
+                    # Busqueda de pelicula por titulo...
+                    if item.infoLabels['year'] or item.infoLabels['filtro']:
+                        # ...y año o filtro
+                        if item.contentTitle:
+                            titulo_buscado = item.contentTitle
+                        else:
+                            titulo_buscado = item.fulltitle
+                        otmdb = Tmdb(texto_buscado=titulo_buscado, tipo=tipo_busqueda,
+                                     idioma_busqueda=idioma_busqueda,
+                                     filtro=item.infoLabels.get('filtro', {}),
                                      year=item.infoLabels['year'])
-                    else:
-                        # Busqueda de pelicula por titulo...
-                        if item.infoLabels['year'] or item.infoLabels['filtro']:
-                            # ...y año o filtro
-                            if item.contentTitle:
-                                titulo_buscado = item.contentTitle
-                            else:
-                                titulo_buscado = item.fulltitle
-                            otmdb = Tmdb(texto_buscado=titulo_buscado, tipo=tipo_busqueda,
-                                         idioma_busqueda=idioma_busqueda,
-                                         filtro=item.infoLabels.get('filtro', {}),
-                                         year=item.infoLabels['year'])
 
             if otmdb is not None and otmdb.get_id():
                 # La busqueda ha encontrado un resultado valido
@@ -744,7 +743,7 @@ class Tmdb(object):
                                                   self.busqueda_idioma, self.busqueda_include_adult,page))
 
             if self.busqueda_year:
-                url += '&year=%s' %(self.busqueda["year"])
+                url += '&year=%s' %(self.busqueda_year)
 
             buscando = self.busqueda_texto.capitalize()
             logger.info("[Tmdb.py] Buscando %s en pagina %s:\n%s" % (buscando, page, url))

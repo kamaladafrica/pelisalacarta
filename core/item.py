@@ -112,8 +112,8 @@ class Item(object):
 
         kw = copy.copy(kwargs)
         for k in kw:
-            if k in ["contentTitle", "contentPlot", "contentSerieName", "contentType", "contentEpisodeTitle",
-                    "contentSeason", "contentEpisodeNumber", "contentThumbnail", "plot"]:
+            if k in ["contentTitle", "contentPlot", "contentSerieName", "show", "contentType", "contentEpisodeTitle",
+                    "contentSeason", "contentEpisodeNumber", "contentThumbnail", "plot", "duration"]:
                 self.__setattr__(k, kw[k])
                 del kwargs[k]
 
@@ -141,7 +141,7 @@ class Item(object):
 
        # Al modificar cualquiera de estos atributos content...
         if name in ["contentTitle", "contentPlot", "contentSerieName", "contentType", "contentEpisodeTitle",
-                    "contentSeason", "contentEpisodeNumber", "contentThumbnail"]:
+                    "contentSeason", "contentEpisodeNumber", "contentThumbnail", "show"]:
             #... marcamos hasContentDetails como "true"...
             self.__dict__["hasContentDetails"] = "true"
             #...y actualizamos infoLables
@@ -149,7 +149,7 @@ class Item(object):
                 self.__dict__["infoLabels"]["title"] = value
             elif name == "contentPlot":
                 self.__dict__["infoLabels"]["plot"] = value
-            elif name == "contentSerieName":
+            elif name == "contentSerieName" or name == "show":
                 self.__dict__["infoLabels"]["tvshowtitle"] = value
             elif name == "contentType":
                 self.__dict__["infoLabels"]["mediatype"] = value
@@ -199,13 +199,13 @@ class Item(object):
         elif name == "hasContentDetails":
             return "false"
 
-        elif name in ["contentTitle", "contentPlot", "contentSerieName", "contentType", "contentEpisodeTitle",
+        elif name in ["contentTitle", "contentPlot", "contentSerieName", "show", "contentType", "contentEpisodeTitle",
                     "contentSeason", "contentEpisodeNumber", "contentThumbnail", "plot", "duration"]:
             if name == "contentTitle":
                 return self.__dict__["infoLabels"]["title"]
             elif name == "contentPlot" or name == "plot":
                 return self.__dict__["infoLabels"]["plot"]
-            elif name == "contentSerieName":
+            elif name == "contentSerieName" or name == "show":
                 return self.__dict__["infoLabels"]["tvshowtitle"]
             elif name == "contentType":
                 return self.__dict__["infoLabels"]["mediatype"]
@@ -337,6 +337,8 @@ class Item(object):
               NuevoItem = item.clone(title="Nuevo Titulo", action = "Nueva Accion")
         '''
         newitem = copy.deepcopy(self)
+        if kwargs.has_key("infoLabels"):
+            kwargs["infoLabels"] = InfoLabels(kwargs["infoLabels"])
         newitem.__dict__.update(kwargs)
         newitem.__dict__ = newitem.toutf8(newitem.__dict__)
         return newitem
