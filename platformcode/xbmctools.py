@@ -991,10 +991,5 @@ def set_infoLabels(listitem,item):
     :param item: objeto Item que representa a una pelicula, serie o capitulo
     :return: None
     """
-    if item.plot and item.infoLabels.get("plot","") == "":
-        item.infoLabels['plot'] = item.plot
-
-    it = item.clone()
-    it.infoLabels['title'] = it.title
-
-    listitem.setInfo("video", it.infoLabels)
+    listitem.setInfo("video", item.infoLabels)
+    listitem.setInfo("video", {"Title": item.title})
