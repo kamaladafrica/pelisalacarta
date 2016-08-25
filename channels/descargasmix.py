@@ -212,8 +212,11 @@ def episodios(item):
         new_item = item.clone()
         new_item.infoLabels['season'] = scrapedtitle.split(" ", 1)[0].split("x")[0]
         new_item.infoLabels['episode'] = scrapedtitle.split(" ", 1)[0].split("x")[1]
-        title = item.fulltitle+" "+scrapedtitle.strip()
-        itemlist.append(new_item.clone(action="epienlaces", title=title, extra=scrapedtitle))
+        if item.fulltitle != "Añadir esta serie a la biblioteca":
+            title = item.fulltitle+" "+scrapedtitle.strip()
+        else:
+            title = scrapedtitle.strip()
+        itemlist.append(new_item.clone(action="epienlaces", title=title, extra=scrapedtitle, fulltitle=title))
 
     itemlist.sort(key=lambda item: item.title, reverse=True)
     item.plot = scrapertools.find_single_match(data, '<strong>SINOPSIS</strong>:(.*?)</p>')
