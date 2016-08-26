@@ -26,7 +26,7 @@ def test_video_exists(page_url):
 
     data = scrapertools.downloadpageWithoutCookies(page_url)
 
-    if 'FILE NOT FOUND' in data:
+    if 'File Not Found' in data:
         return False, "[FlashX] El archivo no existe o ha sido borrado"
 
     return True, ""
@@ -42,7 +42,10 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     headers_c = [['User-Agent', 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0'],
                  ['Referer', page_url],
                  ['Cookie', '; lang=1']]
-    coding = scrapertools.downloadpage("http://www.flashx.tv/coding.js?c=%s" % file_id, headers=headers_c)
+    coding_url = scrapertools.find_single_match(data, 'src="(http://www.flashx.tv/\w+.js\?[^"]+)"')
+    if coding_url.endswith("="):
+        coding_url += file_id
+    coding = scrapertools.downloadpage(coding_url, headers=headers_c)
 
     data = scrapertools.downloadpage(page_url, headers=headers)
     flashx_id = scrapertools.find_single_match(data, 'name="id" value="([^"]+)"')
