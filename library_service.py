@@ -177,7 +177,7 @@ def main():
                         itemlist = obj.episodios(serie)
 
                         try:
-                            library.save_library_episodes(path, itemlist, serie, True)
+                            library.save_library_episodes(path, itemlist, serie, silent=True, overwrite= False )
                         except Exception as ex:
                             logger.info("pelisalacarta.library_service Error al guardar los capitulos de la serie")
                             template = "An exception of type {0} occured. Arguments:\n{1!r}"

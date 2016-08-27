@@ -150,27 +150,11 @@ def find_and_set_infoLabels_tmdb(item, ask_video=True):
         item.infoLabels = infoLabels
         return False
 
-    infoLabels = otmdb_global.get_infoLabels(infoLabels, tmdb_result)
-    #infoLabels["mediatype"] = item.contentType
-
-    if infoLabels["mediatype"] == "episode":
-        try:
-            episodio = otmdb_global.get_episodio(item.contentSeason, item.contentEpisodeNumber)
-        except:
-            pass
-            # No se ha podido buscar
-        else:
-            if episodio:
-                # Actualizar datos
-                infoLabels['title'] = episodio['episodio_titulo']
-                infoLabels['season'] = item.contentSeason
-                infoLabels['episode'] = item.contentEpisodeNumber
-                if episodio['episodio_sinopsis']:
-                    infoLabels['plot'] = episodio['episodio_sinopsis']
-                if episodio['episodio_imagen']:
-                    infoLabels['thumbnail'] = episodio['episodio_imagen']
-
+    otmdb_global = None
+    infoLabels['tmdb_id'] = tmdb_result['id']
     item.infoLabels = infoLabels
+    set_infoLabels_item(item)
+
     return True
 
 def set_infoLabels(source, seekTmdb=True, idioma_busqueda='es'):
@@ -819,10 +803,10 @@ class Tmdb(object):
                 try:
                     if self.load_resultado(r, p):
                         result = self.result.copy()
-                        if self.busqueda_tipo == 'tv':
+                        '''if self.busqueda_tipo == 'tv':
                             result['mediatype'] = 'tvshow'
                         else:
-                            result['mediatype'] = self.busqueda_tipo
+                            result['mediatype'] = self.busqueda_tipo'''
                         result['thumbnail'] = self.get_poster(size="w300")
                         result['fanart'] = self.get_backdrop()
                         res.append(result)
@@ -1078,6 +1062,7 @@ class Tmdb(object):
             return {}
 
         ret_dic = dict()
+        # Obtener datos para esta temporada
         ret_dic["temporada_nombre"] = temporada["name"]
         ret_dic["temporada_sinopsis"] = temporada["overview"]
         ret_dic["temporada_num_episodios"] = len(temporada["episodes"])
@@ -1087,7 +1072,20 @@ class Tmdb(object):
             ret_dic["temporada_poster"] = 'http://image.tmdb.org/t/p/original' + temporada["poster_path"]
         else:
             ret_dic["temporada_poster"] = ""
+        dic_aux = temporada.get('credits', {})
+        ret_dic["temporada_cast"] = dic_aux.get('cast', [])
+        ret_dic["temporada_crew"] = dic_aux.get('crew', [])
+        if capitulo == -1:
+            # Si solo buscamos datos de la temporada,
+            # incluir el equipo tecnico que ha intervenido en algun capitulo
+            dic_aux = dict((i['id'], i) for i in ret_dic["temporada_crew"])
+            for e in temporada["episodes"]:
+                for crew in e['crew']:
+                    if crew['id'] not in dic_aux.keys():
+                        dic_aux[crew['id']] = crew
+            ret_dic["temporada_crew"] = dic_aux.values()
 
+        # Obtener datos del capitulo si procede
         if capitulo != -1:
             episodio = temporada["episodes"][capitulo - 1]
             ret_dic["episodio_titulo"] = episodio["name"]
@@ -1102,6 +1100,7 @@ class Tmdb(object):
                 ret_dic["episodio_imagen"] = 'http://image.tmdb.org/t/p/original' + episodio["still_path"]
             else:
                 ret_dic["episodio_imagen"] = ""
+
 
         return ret_dic
 
@@ -1162,23 +1161,37 @@ class Tmdb(object):
         devuelto sera el leido como parametro debidamente actualizado.
         :rtype: Dict
         """
+
         if infoLabels:
             ret_infoLabels = InfoLabels(infoLabels)
         else:
             ret_infoLabels = InfoLabels()
 
+        # Iniciar listados
+        l_country = [i.strip() for i in ret_infoLabels['country'].split(',') if ret_infoLabels['country']]
+        l_director = [i.strip() for i in ret_infoLabels['director'].split(',') if ret_infoLabels['director']]
+        l_writer = [i.strip() for i in ret_infoLabels['writer'].split(',') if ret_infoLabels['writer']]
+        l_castandrole = ret_infoLabels.get('castandrole', [])
+
         if not origen:
-            items = self.result.items()
-        else:
-            items = origen.items()
+            origen = self.result
+
+        if 'credits' in origen.keys():
+            dic_origen_credits = origen['credits']
+            origen['credits_cast'] = dic_origen_credits.get('cast',[])
+            origen['credits_crew'] = dic_origen_credits.get('crew', [])
+            del origen['credits']
+
+        items = origen.items()
 
         # Informacion Temporada/episodio
         if ret_infoLabels['season'] and self.temporada.get(ret_infoLabels['season']):
-
             # Si hay datos cargados de la temporada indicada
             episodio = -1
             if ret_infoLabels['episode']: episodio = ret_infoLabels['episode']
+
             items.extend(self.get_episodio(ret_infoLabels['season'], episodio).items())
+
 
         for k, v in items:
             if not v:
@@ -1191,91 +1204,109 @@ class Tmdb(object):
                     ret_infoLabels['plot'] = v
                 else:
                     ret_infoLabels['plot'] = self.get_sinopsis()
+
             elif k == 'runtime':
                 ret_infoLabels['duration'] = v
+
             elif k == 'release_date':
                 ret_infoLabels['year'] = int(v[:4])
                 ret_infoLabels['release_date'] = v.split("-")[2] + "/" + v.split("-")[1] + "/" + v.split("-")[0]
+
             elif k == 'first_air_date':
                 ret_infoLabels['year'] = int(v[:4])
                 ret_infoLabels['aired'] = v.split("-")[2] + "/" + v.split("-")[1] + "/" + v.split("-")[0]
                 ret_infoLabels['premiered'] = ret_infoLabels['aired']
+
             elif k == 'original_title' or k == 'original_name':
                 ret_infoLabels['originaltitle'] = v
+
             elif k == 'vote_average':
                 ret_infoLabels['rating'] = float(v)
+
             elif k == 'vote_count':
                 ret_infoLabels['votes'] = v
+
             elif k == 'poster_path':
                 ret_infoLabels['thumbnail'] = 'http://image.tmdb.org/t/p/original' + v
+
             elif k == 'backdrop_path':
                 ret_infoLabels['fanart'] = 'http://image.tmdb.org/t/p/original' + v
+
             elif k == 'id':
                 ret_infoLabels['tmdb_id'] = v
+
             elif k == 'imdb_id':
                 ret_infoLabels['imdb_id'] = v
-                ret_infoLabels['IMDBNumber'] = v
-                ret_infoLabels['code'] = v
+
+            elif k == 'external_ids':
+                if 'tvdb_id' in v: ret_infoLabels['tvdb_id'] = v['tvdb_id']
+                if 'imdb_id' in v: ret_infoLabels['imdb_id'] = v['imdb_id']
+
             elif k in ['genres', "genre_ids", "genre"]:
                 ret_infoLabels['genre'] = self.get_generos(origen)
-            elif k == 'name':
+
+            elif k == 'name' or k == 'title':
                 ret_infoLabels['title'] = v
+
             elif k == 'production_companies':
                 ret_infoLabels['studio'] = ", ".join(i['name'] for i in v)
-            elif k == 'production_countries' or k == 'origin_country':
-                r = None
-                if isinstance(v,str):
-                    r = v
-                elif isinstance(v,list) and len(v) > 0:
-                    if isinstance(v[0],str):
-                        r = ", ".join(Tmdb.dic_country.get(i, i) for i in v)
-                    elif isinstance(v[0],dict):
-                        r = ", ".join(Tmdb.dic_country.get(i['iso_3166_1'], i['iso_3166_1']) for i in v
-                                      if i.has_key('iso_3166_1'))
 
-                if r:
-                    if 'country' not in ret_infoLabels:
-                        ret_infoLabels['country'] = r
-                    else:
-                        ret_infoLabels['country'] += ", " + r
-            elif k == 'credits_cast':
-                ret_infoLabels['castandrole'] = []
-                for c in sorted(v, key=lambda c: c.get("order")):
-                    ret_infoLabels['castandrole'].append((c['name'], c['character']))
-            elif k == 'credits_crew':
-                l_director = []
-                l_writer = []
-                for crew in v:
-                    if crew['job'].lower() == 'director':
-                        l_director.append(crew['name'])
-                    elif crew['job'].lower() in ('screenplay', 'writer'):
-                        l_writer.append(crew['name'])
-                if l_director:
-                    ret_infoLabels['director'] = ", ".join(l_director)
-                if l_writer:
-                    if 'writer' not in ret_infoLabels:
-                        ret_infoLabels['writer'] = ", ".join(l_writer)
-                    else:
-                        ret_infoLabels['writer'] += "," + (",".join(l_writer))
-            elif k == 'created_by':
-                l_writer = []
-                for cr in v:
-                    l_writer.append(cr['name'])
-                if 'writer' not in ret_infoLabels:
-                    ret_infoLabels['writer'] = ",".join(l_writer)
-                else:
-                    ret_infoLabels['writer'] += "," + (",".join(l_writer))
+            elif k == 'credits_cast' or k == 'temporada_cast' or k == 'episodio_guest_stars':
+                dic_aux = dict((name, character) for (name, character) in l_castandrole)
+                l_castandrole.extend([(p['name'], p['character']) for p in v if p['name'] not in dic_aux.keys()])
+
             elif k == 'videos':
-                if not isinstance(v,list):
+                if not isinstance(v, list):
                     v = v.get('result', [])
                 for i in v:
                     if i.get("site", "") == "YouTube":
                         ret_infoLabels['trailer'] = "https://www.youtube.com/watch?v=" + v[0]["key"]
                         break
 
+            elif k == 'production_countries' or k == 'origin_country':
+                if isinstance(v,str):
+                    l_country = list(set(l_country + v.split(',')))
+
+                elif isinstance(v,list) and len(v) > 0:
+                    if isinstance(v[0],str):
+                        l_country = list(set(l_country + v))
+                    elif isinstance(v[0],dict):
+                        # {'iso_3166_1': 'FR', 'name':'France'}
+                        for i in v:
+                            if i.has_key('iso_3166_1'):
+                                pais = Tmdb.dic_country.get(i['iso_3166_1'], i['iso_3166_1'])
+                                l_country = list(set(l_country + [pais]))
+
+            elif k == 'credits_crew' or k == 'episodio_crew' or k == 'temporada_crew':
+                for crew in v:
+                    if crew['job'].lower() == 'director':
+                        l_director = list(set(l_director + [crew['name']]))
+
+                    elif crew['job'].lower() in ('screenplay', 'writer'):
+                        l_writer = list(set(l_writer + [crew['name']]))
+
+            elif k == 'created_by':
+                for crew in v:
+                    l_writer = list(set(l_writer + [crew['name']]))
+
+
+
             elif isinstance(v,str) or isinstance(v,int) or isinstance(v,float):
                 ret_infoLabels[k] = v
+
             else:
                 logger.debug("Atributos no añadidos: " + k +'= '+ str(v))
+                pass
+
+        # Ordenar las listas y convertirlas en str si es necesario
+        if l_castandrole:
+            ret_infoLabels['castandrole'] = sorted(l_castandrole, key=lambda tup: tup[0])
+        if l_country:
+            ret_infoLabels['country'] = ', '.join(sorted(l_country))
+        if l_director:
+            ret_infoLabels['director'] = ', '.join(sorted(l_director))
+        if l_writer:
+            ret_infoLabels['writer'] = ', '.join(sorted(l_writer))
+
 
         return ret_infoLabels

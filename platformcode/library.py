@@ -182,14 +182,14 @@ def save_library_movie(item):
 
     # Solo si existen base_name.nfo y base_name.strm continuamos
     if filetools.exists(nfo_path) and filetools.exists(strm_path):
-        dat_path = filetools.join(path, ("%s [%s].dat" %(base_name, item.channel)).lower())
-        if filetools.exists(dat_path):
+        json_path = filetools.join(path, ("%s [%s].json" %(base_name, item.channel)).lower())
+        if filetools.exists(json_path):
             logger.info("pelisalacarta.platformcode.library savelibrary el fichero existe. Se sobreescribe")
             sobreescritos += 1
         else:
             insertados += 1
 
-        if filetools.write(dat_path, '%s?%s' % (addon_name, item.clone(infoLabels={}).tourl())):
+        if filetools.write(json_path, '%s?%s' % (addon_name, item.clone(infoLabels={}).tojson())):
             p_dialog.update(100, 'Añadiendo película...', item.contentTitle)
             p_dialog.close()
 
@@ -296,7 +296,7 @@ def save_library_tvshow(item, episodelist):
     return insertados, sobreescritos, fallidos
 
 
-def save_library_episodes(path, episodelist, serie, silent=False):
+def save_library_episodes(path, episodelist, serie, silent=False, overwrite= True):
     """
     guarda en la ruta indicada todos los capitulos incluidos en la lista episodelist
     @type path: str
@@ -370,27 +370,29 @@ def save_library_episodes(path, episodelist, serie, silent=False):
             filetools.write(nfo_path, url_scraper + item_nfo.tojson())
 
         # Solo si existen season_episode.nfo y season_episode.strm continuamos
-        dat_path = filetools.join(path, ("%s [%s].dat" % (season_episode, e.channel)).lower())
+        json_path = filetools.join(path, ("%s [%s].json" % (season_episode, e.channel)).lower())
         if filetools.exists(nfo_path) and filetools.exists(strm_path):
-            nuevo = not filetools.exists(dat_path)
-            #filetools.write(dat_path + '.json', e.tojson()) #only for debugger
-            if filetools.write(dat_path, '%s?%s' % (addon_name, e.tourl())):
-                if nuevo:
-                    logger.info("pelisalacarta.platformcode.library savelibrary Insertado: %s" % dat_path)
-                    insertados += 1
-                    # Marcamos episodio como no visto
-                    news_in_playcounts[season_episode] = 0
-                    # Marcamos la temporada como no vista
-                    news_in_playcounts["season %s" % e.contentSeason] = 0
+            nuevo = not filetools.exists(json_path)
+
+            if nuevo or overwrite:
+                #if filetools.write(json_path, '%s?%s' % (addon_name, e.tojson())):
+                if filetools.write(json_path, e.tojson()): #TODO si funciona hacerlo en cine tb
+                    if nuevo:
+                        logger.info("pelisalacarta.platformcode.library savelibrary Insertado: %s" % json_path)
+                        insertados += 1
+                        # Marcamos episodio como no visto
+                        news_in_playcounts[season_episode] = 0
+                        # Marcamos la temporada como no vista
+                        news_in_playcounts["season %s" % e.contentSeason] = 0
+                    else:
+                        logger.info("pelisalacarta.platformcode.library savelibrary Sobreescrito: %s" % json_path)
+                        sobreescritos += 1
                 else:
-                    logger.info("pelisalacarta.platformcode.library savelibrary Sobreescrito: %s" % dat_path)
-                    sobreescritos += 1
-            else:
-                logger.info("pelisalacarta.platformcode.library savelibrary Fallido: %s" % dat_path)
-                fallidos += 1
+                    logger.info("pelisalacarta.platformcode.library savelibrary Fallido: %s" % json_path)
+                    fallidos += 1
 
         else:
-            logger.info("pelisalacarta.platformcode.library savelibrary Fallido: %s" % dat_path)
+            logger.info("pelisalacarta.platformcode.library savelibrary Fallido: %s" % json_path)
             fallidos += 1
 
         if not silent and p_dialog.iscanceled():

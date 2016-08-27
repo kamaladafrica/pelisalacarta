@@ -72,15 +72,17 @@ class InfoLabels(dict):
             else:
                 return 'movie'
 
-
-
         else:
             # El resto de claves devuelven cadenas vacias por defecto
             return ""
 
     def tostring(self, separador=', '):
         ls = []
-        for i in sorted(super(InfoLabels, self).items()):
+        dic =  dict(super(InfoLabels, self).items())
+        if 'mediatype' not in dic.keys():
+            dic['mediatype'] = self.__missing__('mediatype')
+
+        for i in sorted(dic.items()):
             i_str = str(i)[1:-1]
             if isinstance(i[0], str):
                 old = i[0] + "',"

@@ -68,8 +68,8 @@ def peliculas(item):
                 '''
                 list_canales = []
                 for fd in filetools.listdir(raiz):
-                    if fd.endswith('.dat'):
-                        # Obtenemos el canal desde el nombre del fichero_[canal].dat
+                    if fd.endswith('.json'):
+                        # Obtenemos el canal desde el nombre del fichero_[canal].json
                         nom_canal = os.path.basename(fd)[:-5].split('[')[1]
                         if not nom_canal in list_canales:
                             list_canales.append(nom_canal)
@@ -170,7 +170,7 @@ def get_temporadas(item):
         return get_episodios(item)
 
     for f in ficheros:
-        if f.endswith('.dat'):
+        if f.endswith('.json'):
             season = f.split('x')[0]
             dict_temp[season] = "Temporada " + str(season)
 
@@ -262,7 +262,7 @@ def get_episodios(item):
 def findvideos(item):
     logger.info("pelisalacarta.channels.biblioteca findvideos")
     #logger.debug("item:\n" + item.tostring('\n'))
-    logger.debug(str(type(item.infoLabels)))
+    #logger.debug(str(type(item.infoLabels)))
     itemlist = []
     list_canales = {}
 
@@ -271,8 +271,8 @@ def findvideos(item):
         return []
 
     for fd in filetools.listdir(item.path):
-        if fd.endswith('.dat'):
-            contenido,nom_canal = fd[:-5].split('[')
+        if fd.endswith('.json'):
+            contenido,nom_canal = fd[:-6].split('[')
             #logger.debug(contenido)
             contentTitle = filter(lambda c: c not in ":*?<>|\/", item.contentTitle).strip().lower()
             #logger.debug(contentTitle)
@@ -281,7 +281,7 @@ def findvideos(item):
                 list_canales[nom_canal] = filetools.join(item.path,fd)
 
     #logger.debug(str(list_canales))
-    for nom_canal, dat_path in list_canales.items():
+    for nom_canal, json_path in list_canales.items():
         # TODO lo siguiente podriamos hacerlo multihilo
         # Importamos el canal de la parte seleccionada
         try:
@@ -290,14 +290,14 @@ def findvideos(item):
         except:
             exec "import channels." + nom_canal + " as channel"
 
-        item_dat = Item().fromurl(filetools.read(dat_path))
+        item_json = Item().fromjson(filetools.read(json_path))
 
         # Ejecutamos find_videos, del canal o común
         if hasattr(channel, 'findvideos'):
-            list_servers = getattr(channel, 'findvideos')(item_dat)
+            list_servers = getattr(channel, 'findvideos')(item_json)
         else:
             from core import servertools
-            list_servers = servertools.find_video_items(item_dat)
+            list_servers = servertools.find_video_items(item_json)
 
         if len(list_canales) > 1:
             # Cambiarle el titulo a los servers añadiendoles el nombre del canal delante y
