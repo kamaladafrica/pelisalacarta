@@ -40,9 +40,9 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
         if "videocontainer" not in data:
             url = page_url.replace("/embed/","/f/")
             data = scrapertools.downloadpageWithoutCookies(url)
-            text_encode = scrapertools.find_single_match(data,"Click to start Download.*?<script[^>]+>(.*?)</script")
+            text_encode = scrapertools.find_multiple_matches(data,"(ﾟωﾟ.*?\(\'\_\'\));")
             try:
-                text_decode = aadecode(text_encode)
+                text_decode = aadecode(text_encode[0])
                 videourl = "http://" + scrapertools.find_single_match(text_decode, '(openload.co/.*?)\}')
             except:
                 videourl = "http://"
@@ -50,10 +50,13 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
             if videourl == "http://":
                 hiddenurl = scrapertools.find_single_match(data, 'id="hiddenurl\s*">(.*?)<')
                 if hiddenurl:
-                    videourl = decode_hidden(hiddenurl)
+                    numbers = scrapertools.find_multiple_matches(text_decode, '((?:-\s*|)\d+)')
+                    videourl = decode_hidden(hiddenurl, numbers)
                 else:
                     videourl = decodeopenload(data)
-            videourl = scrapertools.getLocationHeaderFromResponse(videourl)
+            # Falla el método, se utiliza la api aunque en horas punta no funciona
+            if not videourl:
+                videourl = get_link_api(page_url)
         else:
             text_encode = scrapertools.find_multiple_matches(data, '(ﾟωﾟ.*?\(\'\_\'\));')
             try:
@@ -70,29 +73,19 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
             else:
                 hiddenurl = scrapertools.find_single_match(data, 'id="hiddenurl\s*">(.*?)<')
                 if hiddenurl:
-                    videourl = decode_hidden(hiddenurl)
+                    numbers = scrapertools.find_multiple_matches(decodeindex, '((?:-\s*|)\d+)')
+                    videourl = decode_hidden(hiddenurl, numbers)
                 else:
                     videourl = decodeopenload(data)
 
-            videourl = scrapertools.getLocationHeaderFromResponse(videourl)
+            # Falla el método, se utiliza la api aunque en horas punta no funciona
+            if not videourl:
+                videourl = get_link_api(page_url)
     except:
         import traceback
         logger.info("pelisalacarta.servers.openload "+traceback.format_exc())
-        
         # Falla el método, se utiliza la api aunque en horas punta no funciona
-        from core import jsontools
-        file_id = scrapertools.find_single_match(page_url, 'embed/([0-9a-zA-Z-_]+)')
-        login = "97b2326d7db81f0f"
-        key = "AQFO3QJQ"
-        data = scrapertools.downloadpageWithoutCookies("https://api.openload.co/1/file/dlticket?file=%s&login=%s&key=%s" % (file_id, login, key))
-        data = jsontools.load_json(data)
-        if data["status"] == 200:
-            ticket = data["result"]["ticket"]
-            data = scrapertools.downloadpageWithoutCookies("https://api.openload.co/1/file/dl?file=%s&ticket=%s" % (file_id, ticket))
-            data = jsontools.load_json(data)
-            extension = "." + scrapertools.find_single_match(data["result"]["content_type"], '/(\w+)')
-            videourl = data['result']['url'] + '?mime=true'
-            videourl = scrapertools.getLocationHeaderFromResponse(videourl)
+        videourl = get_link_api(page_url)
 
     extension = scrapertools.find_single_match(data, '<meta name="description" content="([^"]+)"')
     extension = "." + extension.rsplit(".", 1)[1]
@@ -221,7 +214,11 @@ def decodeopenload(data):
     return videourl
 
 
-def decode_hidden(text):
+def decode_hidden(text, numbers):
+    n = []
+    for i in range(-5, 0):
+        n.append(int(numbers[i]))
+
     text = scrapertools.decodeHtmlentities(text)
     text = text.replace("&gt9", ">").replace("&quot9", '"').replace("&lt9", '<').replace("&amp9", '&')
     s = []
@@ -230,7 +227,29 @@ def decode_hidden(text):
         s.append(chr(33 + ((j+14) % 94)))
 
     temp = "".join(s)
-    text_decode = temp[:len(temp)-1] + chr(ord(temp[-1]) + 2)
+    text_decode = temp[n[0]:n[1]] + chr(ord(temp[n[2]]) + n[4])
     videourl = "https://openload.co/stream/{0}?mime=true".format(text_decode)
+    videourl = scrapertools.getLocationHeaderFromResponse(videourl)
+    videourl = videourl.replace("https", "http").replace("?mime=true", "")
 
     return videourl
+
+
+def get_link_api(page_url):
+    from core import jsontools
+    file_id = scrapertools.find_single_match(page_url, 'embed/([0-9a-zA-Z-_]+)')
+    login = "97b2326d7db81f0f"
+    key = "AQFO3QJQ"
+    data = scrapertools.downloadpageWithoutCookies("https://api.openload.co/1/file/dlticket?file=%s&login=%s&key=%s" % (file_id, login, key))
+    data = jsontools.load_json(data)
+    if data["status"] == 200:
+        ticket = data["result"]["ticket"]
+        data = scrapertools.downloadpageWithoutCookies("https://api.openload.co/1/file/dl?file=%s&ticket=%s" % (file_id, ticket))
+        data = jsontools.load_json(data)
+        extension = "." + scrapertools.find_single_match(data["result"]["content_type"], '/(\w+)')
+        videourl = data['result']['url'] + '?mime=true'
+        videourl = scrapertools.getLocationHeaderFromResponse(videourl)
+        videourl = videourl.replace("https", "http").replace("?mime=true", "")
+        return videourl
+
+    return ""
