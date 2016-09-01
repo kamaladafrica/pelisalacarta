@@ -353,7 +353,7 @@ def filtered_servers(itemlist, server_white_list, server_black_list):
 
 def play_from_library(item, server_white_list, server_black_list):
     logger.info("pelisalacarta.platformcode.launcher play_from_library")
-    #logger.debug("item: " + "\n" + item.tostring('\n'))
+    #logger.debug("item: \n" + item.tostring('\n'))
 
     # Llamamos al metodo findvideos del canal biblioteca
     from channels import biblioteca
@@ -380,8 +380,6 @@ def play_from_library(item, server_white_list, server_black_list):
             return
         server_seleccionado = list_servers[seleccion]
 
-    #logger.debug("server_seleccionado: " + "\n" + server_seleccionado.tostring('\n'))
-
 
     # Importamos el canal desde el q reproduciremos
     try:
@@ -393,13 +391,18 @@ def play_from_library(item, server_white_list, server_black_list):
     # Ejecuta el método play del canal, si lo hay
     try:
         itemlist = channel.play(server_seleccionado)
-        item = itemlist[0]
+        new_item = itemlist[0]
     except AttributeError:
-        item = elegido
-    logger.info("pelisalacarta.platformcode.launcher play_from_library Elegido %s (sub %s)" % (item.title,
-                                                                                               item.subtitle))
-    platformtools.play_video(item, True)
-    library.mark_as_watched(item)
+        new_item = server_seleccionado
+    logger.info("pelisalacarta.platformcode.launcher play_from_library Elegido %s (sub %s)" % (item.title,item.subtitle))
+
+    # Esto es necesario por si el play del canal elimina los datos
+    new_item.nfo = item.nfo
+    new_item.strm_path = item.strm_path
+
+
+    platformtools.play_video(new_item, True)
+    library.mark_auto_as_watched(new_item)
 
 
 

@@ -24,16 +24,22 @@ def mainlist(item,preferred_thumbnail="squares"):
     logger.info("pelisalacarta.channels.buscador mainlist")
 
     itemlist = list()
-    itemlist.append(Item(channel=item.channel, action="search", title="Buscar por titulo..."))
-
-
-    itemlist.append(Item(channel=item.channel, action="search", title="Buscar por categorias...", extra="categorias"))
+    context = [{"title": "Elegir canales incluidos",
+                "action": "settingCanal",
+                "channel": item.channel}]
+    itemlist.append(Item(channel=item.channel, action="search", title="Buscar por titulo...", context= context))
+    itemlist.append(Item(channel=item.channel, action="search", title="Buscar por categorias...", extra="categorias",
+                         context= context))
     #itemlist.append(Item(channel=item.channel, action="opciones", title="Opciones"))
 
     saved_searches_list = get_saved_searches()
-
+    context2 = context[:]
+    context2.append({"title": "Borrar búsquedas guardadas",
+                     "action": "clear_saved_searches",
+                     "channel": item.channel})
     for saved_search_text in saved_searches_list:
-        itemlist.append(Item(channel=item.channel, action="do_search", title=' "'+saved_search_text+'"', extra=saved_search_text))
+        itemlist.append(Item(channel=item.channel, action="do_search", title=' "'+saved_search_text+'"',
+                             extra=saved_search_text,  context= context2))
 
     return itemlist
     

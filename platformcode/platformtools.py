@@ -165,7 +165,7 @@ def render_items(itemlist, parent_item):
             xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url='%s?%s' % (sys.argv[0], item.tourl()),
                                         listitem=listitem, isFolder=item.folder)
         else:
-            listitem.addContextMenuItems(context_commands)
+            listitem.addContextMenuItems(context_commands, replaceItems=True)
             xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url='%s?%s' % (sys.argv[0], item.tourl()),
                                         listitem=listitem, isFolder=item.folder,
                                         totalItems=item.totalItems if item.totalItems else 0)
@@ -294,6 +294,16 @@ def set_context_commands(item, parent_item):
             context_commands.append((command.title, "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], command.tourl())))
 
     # Opciones segun criterios
+
+    # Mostrar informacion: si el item tiene plot suponemos q es una serie, temporada, capitulo o pelicula
+    if item.infoLabels['plot']:
+        context_commands.append(("Información", "XBMC.Action(Info)"))
+
+    # Ir al Menu Principal (channel.mainlist)
+    if parent_item.channel not in ["novedades"] and item.action!="mainlist" and  parent_item.action!="mainlist":
+        context_commands.append(("Ir al Menu Principal", "XBMC.Container.Refresh (%s?%s)" %
+                                 (sys.argv[0], Item(channel=item.channel, action="mainlist").tourl())))
+
     # Quitar de Favoritos
     if parent_item.channel == "favoritos":
         context_commands.append(("Quitar a Favoritos", "XBMC.RunPlugin(%s?%s)" %
@@ -321,117 +331,34 @@ def set_context_commands(item, parent_item):
                                                           from_action=item.action).tourl())))
 
     # Descargar pelicula
-    if item.action in ["detail", "findvideos"] and not (item.contentSerieName or item.show):
+    if item.action in ["detail", "findvideos"] and item.contentType == 'movie':
         context_commands.append(("Descargar Pelicula", "XBMC.RunPlugin(%s?%s)" %
                                  (sys.argv[0], item.clone(channel="descargas", action="save_download_movie",
                                                           from_channel=item.channel, from_action=item.action).tourl())))
 
     # Descargar serie
-    if item.action in ["episodios", "get_episodios"] and (item.contentSerieName or item.show):
+    if item.action in ["episodios", "get_episodios"] and item.contentType != 'movie':
         context_commands.append(("Descargar Serie", "XBMC.RunPlugin(%s?%s)" %
                                  (sys.argv[0], item.clone(channel="descargas", action="save_download_tvshow",
                                                           from_channel=item.channel, from_action=item.action).tourl())))
 
     # Descargar episodio
-    if item.action in ["detail", "findvideos"] and (item.contentSerieName or item.show):
+    if item.action in ["detail", "findvideos"] and item.contentType != 'movie':
         context_commands.append(("Descargar Episodio", "XBMC.RunPlugin(%s?%s)" %
                                  (sys.argv[0], item.clone(channel="descargas", action="save_download",
                                                           from_channel=item.channel, from_action=item.action).tourl())))
 
-    # Menus para la Biblioteca - Inicio
 
-    # PELICULAS
-    if item.channel == "biblioteca" and item.action == "findvideos" and not(item.contentSerieName or item.show):
-        context_commands.append(("Información", "XBMC.Action(Info)"))
-        if hasattr(item, 'infoLabels'):
-            contador = item.infoLabels.get('playcount', 0)
+    # Abrir configuración
+    if parent_item.channel not in ["configuracion","novedades","buscador"]:
+        context_commands.append(("Abrir Configuración", "XBMC.Container.Update(%s?%s)" %
+                                 (sys.argv[0], Item(channel="configuracion", action="mainlist").tourl())))
 
-            if contador > 0:
-                texto = "Marcar como no visto"
-                contador = 0
-            else:
-                texto = "Marcar como visto"
-                contador = 1
 
-            new_item = item.clone(channel="biblioteca", action="marcar_episodio")
-            new_item.infoLabels['playcount'] = contador
 
-            context_commands.append((texto, "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], new_item.tourl())))
 
-        context_commands.append(("Eliminar", "XBMC.RunPlugin(%s?%s)" %
-                                 (sys.argv[0], item.clone(channel=item.channel, action="eliminar").tourl())))
 
-        # TODO
-        context_commands.append(("Cambiar contenido", "XBMC.RunPlugin(%s?%s)" %
-                                 (sys.argv[0], item.clone(channel="descargas", action="save_download",
-                                                          from_channel=item.channel, from_action=item.action).tourl())))
-
-    # SERIES
-    if item.channel == "biblioteca" and item.action == "get_temporadas" and (item.contentSerieName or item.show):
-        # opciones para la serie
-        context_commands.append(("Información", "XBMC.Action(Info)"))
-        # TODO
-        context_commands.append(("Marcar como visto", "XBMC.RunPlugin(%s?%s)" %
-                                 (sys.argv[0], item.clone(channel="descargas", action="save_download",
-                                                          from_channel=item.channel, from_action=item.action).tourl())))
-        # TODO
-        context_commands.append(("Marcar como no visto", "XBMC.RunPlugin(%s?%s)" %
-                                 (sys.argv[0], item.clone(channel="descargas", action="save_download",
-                                                          from_channel=item.channel, from_action=item.action).tourl())))
-        context_commands.append(("Eliminar", "XBMC.RunPlugin(%s?%s)" %
-                                 (sys.argv[0], item.clone(channel=item.channel, action="eliminar").tourl())))
-
-        if item.active:
-            texto = "No buscar automáticamente nuevos episodios"
-            actualizar = False
-        else:
-            texto = "Buscar automáticamente nuevos episodios"
-            actualizar = True
-
-        new_item = item.clone(channel="biblioteca", action="actualizacion_automatica")
-        new_item.active = actualizar
-        context_commands.append((texto, "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], new_item.tourl())))
-
-        # TODO
-        context_commands.append(("Cambiar contenido", "XBMC.RunPlugin(%s?%s)" %
-                                 (sys.argv[0], item.clone(channel="descargas", action="save_download",
-                                                          from_channel=item.channel, from_action=item.action).tourl())))
-
-    if item.channel == "biblioteca" and item.action == "get_episodios" and (item.contentSerieName or item.show):
-        # TODO que se oculte tb la carpeta padre
-        # opciones para temporadas
-        new_item = item.clone(channel="biblioteca", action="marcar_temporada")
-
-        new_item.infoLabels['playcount'] = 1
-        context_commands.append(("Marcar como visto", "XBMC.RunPlugin(%s?%s)" %
-                                 (sys.argv[0], new_item.tourl())))
-
-        new_item.infoLabels['playcount'] = 0
-        context_commands.append(("Marcar como no visto", "XBMC.RunPlugin(%s?%s)" %
-                                 (sys.argv[0], new_item.tourl())))
-
-    if item.channel == "biblioteca" and item.action == "findvideos" and (item.contentSerieName or item.show):
-        # opciones para episodio
-        if hasattr(item, 'infoLabels'):
-            new_item = item.clone(channel="biblioteca", action="marcar_episodio")
-
-            if item.infoLabels.get('playcount', 0):
-                texto = "Marcar como no visto"
-                new_item.infoLabels['playcount'] = 0
-            else:
-                texto = "Marcar como visto"
-                new_item.infoLabels['playcount'] = 1
-
-            context_commands.append((texto, "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], new_item.tourl())))
-
-    # Menus para la Biblioteca - Fin
-
-    # Opciones para todos los items
-    # Abrir configuración desde cualquier lugar
-    context_commands.append(("Abrir Configuración", "XBMC.RunPlugin(%s?%s)" %
-                             (sys.argv[0], Item(channel="configuracion", action="mainlist").tourl())))
-
-    return context_commands
+    return sorted(context_commands, key=lambda comand: comand[0])
 
 
 def is_playing():
@@ -476,9 +403,13 @@ def play_video(item, strm=False):
 def get_info_video(item, mediaurl, strm):
     logger.info("pelisalacarta.platformcode.platformtools get_info_video")
     # Obtención datos de la Biblioteca (solo strms que estén en la biblioteca)
-    if strm:
+    logger.debug("######################################0")
+    '''if strm:
+        logger.debug("######################################1")
+        raise
         xlistitem = get_library_info(mediaurl)
     else:
+        logger.debug("######################################2")
         play_title = item.fulltitle
         play_thumbnail = item.thumbnail
         play_plot = item.plot
@@ -497,9 +428,143 @@ def get_info_video(item, mediaurl, strm):
         xlistitem.setInfo("video", {"Title": play_title, "Plot": play_plot, "Studio": item.channel,
                                     "Genre": item.category})
 
-        set_infolabels(xlistitem, item)
+        set_infolabels(xlistitem, item)'''
 
+    xlistitem = xbmcgui.ListItem(thumbnailImage=item.thumbnail)
+    set_infolabels(xlistitem, item)
     return xlistitem
+
+
+def get_library_info(mediaurl):
+    """
+    Obtiene información de la Biblioteca si existe (ficheros strm) o de los parámetros
+    @type mediaurl: str
+    @param mediaurl: url a la que se asocia la información de la biblioteca
+    """
+    if DEBUG:
+        logger.info('pelisalacarta.platformcode.platformstools playlist OBTENCIÓN DE DATOS DE BIBLIOTECA')
+
+    # Información básica
+    label = xbmc.getInfoLabel('listitem.label')
+    label2 = xbmc.getInfoLabel('listitem.label2')
+    icon_image = xbmc.getInfoImage('listitem.icon')
+    thumbnail_image = xbmc.getInfoImage('listitem.Thumb')
+
+    if DEBUG:
+        logger.info("[platformstools.py]getMediaInfo: label = " + label)
+        logger.info("[platformstools.py]getMediaInfo: label2 = " + label2)
+        logger.info("[platformstools.py]getMediaInfo: iconImage = " + icon_image)
+        logger.info("[platformstools.py]getMediaInfo: thumbnailImage = " + thumbnail_image)
+
+    # Creación de listitem
+    listitem = xbmcgui.ListItem(label, label2, icon_image, thumbnail_image, mediaurl)
+
+    # Información adicional
+    lista = [
+        # (Comedy)
+        ('listitem.genre', 's'),
+        # (2009)
+        ('listitem.year', 'i'),
+        # (4)
+        ('listitem.episode', 'i'),
+        # (1)
+        ('listitem.season', 'i'),
+        # (192)
+        ('listitem.top250', 'i'),
+        # (3)
+        ('listitem.tracknumber', 'i'),
+        # (6.4) - range is 0..10
+        ('listitem.rating', 'f'),
+        # (2) - number of times this item has been played
+        ('listitem.playcount', 'i'),
+        # (2) - range is 0..8.  See GUIListItem.h for values
+        # ('listitem.overlay', 'i'),
+        # JUR - listitem devuelve un string, pero addinfo espera un int. Ver traducción más abajo
+        ('listitem.overlay', 's'),
+        # (Michal C. Hall) - List concatenated into a string
+        # ('listitem.cast', 's'),
+        # (Michael C. Hall|Dexter) - List concatenated into a string
+        # ('listitem.castandrole', 's'),
+        # (Dagur Kari)
+        ('listitem.director', 's'),
+        # (PG-13)
+        ('listitem.mpaa', 's'),
+        # (Long Description)
+        ('listitem.plot', 's'),
+        # (Short Description)
+        ('listitem.plotoutline', 's'),
+        # (Big Fan)
+        ('listitem.title', 's'),
+        # (3)
+        ('listitem.duration', 's'),
+        # (Warner Bros.)
+        ('listitem.studio', 's'),
+        # (An awesome movie) - short description of movie
+        ('listitem.tagline', 's'),
+        # (Robert D. Siegel)
+        ('listitem.writer', 's'),
+        # (Heroes)
+        ('listitem.tvshowtitle', 's'),
+        # (2005-03-04)
+        ('listitem.premiered', 's'),
+        # (Continuing) - status of a TVshow
+        ('listitem.status', 's'),
+        # (tt0110293) - IMDb code
+        ('listitem.code', 's'),
+        # (2008-12-07)
+        ('listitem.aired', 's'),
+        # (Andy Kaufman) - writing credits
+        ('listitem.credits', 's'),
+        # (%Y-%m-%d %h
+        ('listitem.lastplayed', 's'),
+        # (The Joshua Tree)
+        ('listitem.album', 's'),
+        # (12345 votes)
+        ('listitem.votes', 's'),
+        # (/home/user/trailer.avi)
+        ('listitem.trailer', 's'),
+    ]
+    # Obtenemos toda la info disponible y la metemos en un diccionario
+    # para la función setInfo.
+    infodict = dict()
+    for label, tipo in lista:
+        key = label.split('.', 1)[1]
+        value = xbmc.getInfoLabel(label)
+        if value != "":
+            if DEBUG:
+                logger.info("[platformstools.py]getMediaInfo: "+key+" = " + value)
+            if tipo == 's':
+                infodict[key] = value
+            elif tipo == 'i':
+                infodict[key] = int(value)
+            elif tipo == 'f':
+                infodict[key] = float(value)
+
+    # Transforma el valor de overlay de string a int.
+    if 'overlay' in infodict:
+        value = infodict['overlay'].lower()
+        if value.find('rar') > -1:
+            infodict['overlay'] = 1
+        elif value.find('zip') > -1:
+            infodict['overlay'] = 2
+        elif value.find('trained') > -1:
+            infodict['overlay'] = 3
+        elif value.find('hastrainer') > -1:
+            infodict['overlay'] = 4
+        elif value.find('locked') > -1:
+            infodict['overlay'] = 5
+        elif value.find('unwatched') > -1:
+            infodict['overlay'] = 6
+        elif value.find('watched') > -1:
+            infodict['overlay'] = 7
+        elif value.find('hd') > -1:
+            infodict['overlay'] = 8
+        else:
+            infodict.pop('overlay')
+    if len(infodict) > 0:
+        listitem.setInfo("video", infodict)
+
+    return listitem
 
 
 def get_seleccion(default_action, opciones, seleccion, video_urls):
@@ -637,138 +702,6 @@ def alert_no_disponible_server(server):
 def alert_unsopported_server():
     # 'Servidor no soportado o desconocido' , 'Prueba en otro servidor o en otro canal'
     dialog_ok(config.get_localized_string(30065), config.get_localized_string(30058))
-
-
-def get_library_info(mediaurl):
-    """
-    Obtiene información de la Biblioteca si existe (ficheros strm) o de los parámetros
-    @type mediaurl: str
-    @param mediaurl: url a la que se asocia la información de la biblioteca
-    """
-    if DEBUG:
-        logger.info('pelisalacarta.platformcode.platformstools playlist OBTENCIÓN DE DATOS DE BIBLIOTECA')
-
-    # Información básica
-    label = xbmc.getInfoLabel('listitem.label')
-    label2 = xbmc.getInfoLabel('listitem.label2')
-    icon_image = xbmc.getInfoImage('listitem.icon')
-    thumbnail_image = xbmc.getInfoImage('listitem.Thumb')
-
-    if DEBUG:
-        logger.info("[platformstools.py]getMediaInfo: label = " + label)
-        logger.info("[platformstools.py]getMediaInfo: label2 = " + label2)
-        logger.info("[platformstools.py]getMediaInfo: iconImage = " + icon_image)
-        logger.info("[platformstools.py]getMediaInfo: thumbnailImage = " + thumbnail_image)
-
-    # Creación de listitem
-    listitem = xbmcgui.ListItem(label, label2, icon_image, thumbnail_image, mediaurl)
-
-    # Información adicional
-    lista = [
-        # (Comedy)
-        ('listitem.genre', 's'),
-        # (2009)
-        ('listitem.year', 'i'),
-        # (4)
-        ('listitem.episode', 'i'),
-        # (1)
-        ('listitem.season', 'i'),
-        # (192)
-        ('listitem.top250', 'i'),
-        # (3)
-        ('listitem.tracknumber', 'i'),
-        # (6.4) - range is 0..10
-        ('listitem.rating', 'f'),
-        # (2) - number of times this item has been played
-        ('listitem.playcount', 'i'),
-        # (2) - range is 0..8.  See GUIListItem.h for values
-        # ('listitem.overlay', 'i'),
-        # JUR - listitem devuelve un string, pero addinfo espera un int. Ver traducción más abajo
-        ('listitem.overlay', 's'),
-        # (Michal C. Hall) - List concatenated into a string
-        # ('listitem.cast', 's'),
-        # (Michael C. Hall|Dexter) - List concatenated into a string
-        # ('listitem.castandrole', 's'),
-        # (Dagur Kari)
-        ('listitem.director', 's'),
-        # (PG-13)
-        ('listitem.mpaa', 's'),
-        # (Long Description)
-        ('listitem.plot', 's'),
-        # (Short Description)
-        ('listitem.plotoutline', 's'),
-        # (Big Fan)
-        ('listitem.title', 's'),
-        # (3)
-        ('listitem.duration', 's'),
-        # (Warner Bros.)
-        ('listitem.studio', 's'),
-        # (An awesome movie) - short description of movie
-        ('listitem.tagline', 's'),
-        # (Robert D. Siegel)
-        ('listitem.writer', 's'),
-        # (Heroes)
-        ('listitem.tvshowtitle', 's'),
-        # (2005-03-04)
-        ('listitem.premiered', 's'),
-        # (Continuing) - status of a TVshow
-        ('listitem.status', 's'),
-        # (tt0110293) - IMDb code
-        ('listitem.code', 's'),
-        # (2008-12-07)
-        ('listitem.aired', 's'),
-        # (Andy Kaufman) - writing credits
-        ('listitem.credits', 's'),
-        # (%Y-%m-%d %h
-        ('listitem.lastplayed', 's'),
-        # (The Joshua Tree)
-        ('listitem.album', 's'),
-        # (12345 votes)
-        ('listitem.votes', 's'),
-        # (/home/user/trailer.avi)
-        ('listitem.trailer', 's'),
-    ]
-    # Obtenemos toda la info disponible y la metemos en un diccionario
-    # para la función setInfo.
-    infodict = dict()
-    for label, tipo in lista:
-        key = label.split('.', 1)[1]
-        value = xbmc.getInfoLabel(label)
-        if value != "":
-            if DEBUG:
-                logger.info("[platformstools.py]getMediaInfo: "+key+" = " + value)
-            if tipo == 's':
-                infodict[key] = value
-            elif tipo == 'i':
-                infodict[key] = int(value)
-            elif tipo == 'f':
-                infodict[key] = float(value)
-
-    # Transforma el valor de overlay de string a int.
-    if 'overlay' in infodict:
-        value = infodict['overlay'].lower()
-        if value.find('rar') > -1:
-            infodict['overlay'] = 1
-        elif value.find('zip') > -1:
-            infodict['overlay'] = 2
-        elif value.find('trained') > -1:
-            infodict['overlay'] = 3
-        elif value.find('hastrainer') > -1:
-            infodict['overlay'] = 4
-        elif value.find('locked') > -1:
-            infodict['overlay'] = 5
-        elif value.find('unwatched') > -1:
-            infodict['overlay'] = 6
-        elif value.find('watched') > -1:
-            infodict['overlay'] = 7
-        elif value.find('hd') > -1:
-            infodict['overlay'] = 8
-        else:
-            infodict.pop('overlay')
-    if len(infodict) > 0:
-        listitem.setInfo("video", infodict)
-
-    return listitem
 
 
 def handle_wait(time_to_wait, title, text):

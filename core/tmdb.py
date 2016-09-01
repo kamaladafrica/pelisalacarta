@@ -109,10 +109,14 @@ def find_and_set_infoLabels_tmdb(item, ask_video=True):
         tipo_contenido = "serie"
         title = item.contentSerieName
 
+    title = re.sub('\[\\\?(B|I|COLOR)\s?[^\]]*\]', '', title)
     tmdb_result = None
     while not tmdb_result:
         if not item.infoLabels.get("tmdb_id"):
-            otmdb_global = Tmdb(texto_buscado=title, tipo=tipo_busqueda, year=item.infoLabels['year'])
+            if not item.infoLabels.get("imdb_id"):
+                otmdb_global = Tmdb(texto_buscado=title, tipo=tipo_busqueda, year=item.infoLabels['year'])
+            else:
+                otmdb_global = Tmdb(external_id=item.infoLabels.get("imdb_id"), external_source="imdb_id" , tipo=tipo_busqueda)
         elif not otmdb_global or otmdb_global.result.get("id") != item.infoLabels['tmdb_id']:
             otmdb_global = Tmdb(id_Tmdb=item.infoLabels['tmdb_id'], tipo=tipo_busqueda, idioma_busqueda="es")
 
@@ -616,7 +620,7 @@ class Tmdb(object):
         self.temporada = {}
 
         self.busqueda_id = kwargs.get('id_Tmdb','')
-        self.busqueda_texto = texto_buscado
+        self.busqueda_texto = re.sub('\[\\\?(B|I|COLOR)\s?[^\]]*\]', '', texto_buscado)
         self.busqueda_tipo = kwargs.get('tipo', 'movie')
         self.busqueda_idioma = kwargs.get('idioma_busqueda', 'es')
         self.busqueda_include_adult = kwargs.get('include_adult', False)
@@ -1290,12 +1294,11 @@ class Tmdb(object):
                     l_writer = list(set(l_writer + [crew['name']]))
 
 
-
             elif isinstance(v,str) or isinstance(v,int) or isinstance(v,float):
                 ret_infoLabels[k] = v
 
             else:
-                logger.debug("Atributos no añadidos: " + k +'= '+ str(v))
+                #logger.debug("Atributos no añadidos: " + k +'= '+ str(v))
                 pass
 
         # Ordenar las listas y convertirlas en str si es necesario

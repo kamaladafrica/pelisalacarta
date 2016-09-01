@@ -120,7 +120,7 @@ def create_tvshows_from_json(_actualizado):
             logger.info("ERROR al leer el archivo: {0}".format(fname))
 
 
-def main():
+def main(overwrite= True):
     logger.info("pelisalacarta.library_service Actualizando series...")
     p_dialog = None
 
@@ -153,21 +153,12 @@ def main():
 
                 # si la serie esta activa se actualiza
                 logger.info("pelisalacarta.library_service Actualizando " + path)
-                logger.info("pelisalacarta.library_service url " + serie.url)
-
-                # Obtenemos una lista de los canales
-                list_canales = []
-                for fd in filetools.listdir(path):
-                    if fd.endswith('.dat'):
-                        contenido, nom_canal = fd[:-5].split('[')
-                        if nom_canal not in list_canales:
-                            list_canales.append(nom_canal)
 
                 #logger.debug("%s: %s" %(serie.contentSerieName,str(list_canales) ))
-                for channel in list_canales:
+                for channel, url in serie.library_urls.items():
                     serie.channel = channel
-                    serie.url = serie.library_urls.get(channel)
-                    p_dialog.update(int(math.ceil((i + 1) * t)), heading, "%s: %s" %(serie.contentSerieName,serie.channel.capitalize() ))
+                    serie.url = url
+                    p_dialog.update(int(math.ceil((i + 1) * t)), heading, "%s: %s" %(serie.contentSerieName, serie.channel.capitalize() ))
                     try:
                         pathchannels = filetools.join(config.get_runtime_path(), "channels", serie.channel + '.py')
                         logger.info("pelisalacarta.library_service Cargando canal: " + pathchannels + " " +
@@ -177,7 +168,7 @@ def main():
                         itemlist = obj.episodios(serie)
 
                         try:
-                            library.save_library_episodes(path, itemlist, serie, silent=True, overwrite= False )
+                            library.save_library_episodes(path, itemlist, serie, silent=True, overwrite= overwrite )
                         except Exception as ex:
                             logger.info("pelisalacarta.library_service Error al guardar los capitulos de la serie")
                             template = "An exception of type {0} occured. Arguments:\n{1!r}"
@@ -210,4 +201,4 @@ if __name__ == "__main__":
 
     actualizado = create_tvshows_from_xml()
     create_tvshows_from_json(actualizado)
-    main()
+    main(overwrite= False)
