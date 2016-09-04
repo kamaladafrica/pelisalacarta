@@ -592,11 +592,11 @@ def trailer(item):
 
 def file_cine_library(item,url_targets):
     import os
-    from platformcode import library
+    from core import filetools
     librarypath = os.path.join(config.get_library_path(),"CINE")
-    archivo = library.title_to_filename(item.show.strip())
+    archivo = item.show.strip()
     strmfile = archivo+".strm"
-    strmfilepath = os.path.join(librarypath,strmfile)
+    strmfilepath = filetools.join(librarypath,strmfile)
 
     if not os.path.exists(strmfilepath):
         itemlist = []
@@ -608,7 +608,7 @@ def file_cine_library(item,url_targets):
 def add_file_cine_library(item):
     from platformcode import library, xbmctools
     new_item = item.clone(title=item.show, action="play_from_library")
-    library.savelibrary(new_item)
+    library.save_library_movie(new_item)
     itemlist = []
     itemlist.append(Item(title='El vídeo '+item.show+' se ha añadido a la biblioteca'))
     xbmctools.renderItems(itemlist, "", "", "")
@@ -622,6 +622,12 @@ def play(item):
         id = item.url.split("###")[1].split(";")[0]
         type = item.url.split("###")[1].split(";")[1]
         item.url = item.url.split("###")[0]
+
+    if "aHR0c" in item.url:
+        import base64
+        item.url = base64.decodestring(item.url.split("/")[-1])
+        if "VideoMega" in item.title and not "videomega" in item.url:
+            item.url = "http://videomega.tv/cdn.php?" + item.url
 
     itemlist = servertools.find_video_items(data=item.url)
 

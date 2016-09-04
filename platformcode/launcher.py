@@ -37,7 +37,9 @@ from core import logger
 from core import scrapertools
 from core.item import Item
 from platformcode import library
+from platformcode import platformtools
 from platformcode import xbmctools
+
 
 def start():
     """ Primera funcion que se ejecuta al entrar en el plugin.
@@ -51,6 +53,10 @@ def start():
 
 def run():
     logger.info("pelisalacarta.platformcode.launcher run")
+
+    # The start() function is not always executed on old platforms (XBMC versions under 12.0)
+    if config.OLD_PLATFORM:
+        config.verify_directories_created()
 
     # Extract item from sys.argv
     if sys.argv[2]:
@@ -164,24 +170,16 @@ def run():
                 import channels.personal as channel
 
             elif os.path.exists(channel_file):
-                channel = __import__('channels.%s' % item.channel, fromlist=["channels.%s" % item.channel])
+                try:
+                    channel = __import__('channels.%s' % item.channel, fromlist=["channels.%s" % item.channel])
+                except:
+                    exec "import channels."+item.channel+" as channel"
 
-            logger.info("pelisalacarta.platformcode.launcher running channel {0} {1}".format(channel.__name__, channel.__file__))
+            logger.info("pelisalacarta.platformcode.launcher running channel "+channel.__name__+" "+channel.__file__)
 
             # Special play action
             if item.action == "play":
                 logger.info("pelisalacarta.platformcode.launcher play")
-
-                # Mark as watched item on Library channel
-                id_video = 0
-                category = ''
-                if 'infoLabels' in item:
-                    if 'episodeid' in item.infoLabels and item.infoLabels['episodeid']:
-                        category = 'Series'
-                        id_video = item.infoLabels['episodeid']
-                    elif 'movieid' in item.infoLabels and item.infoLabels['movieid']:
-                        category = 'Movies'
-                        id_video = item.infoLabels['movieid']
 
                 # First checks if channel has a "play" function
                 if hasattr(channel, 'play'):
@@ -192,9 +190,7 @@ def run():
                     if len(itemlist) > 0:
                         item = itemlist[0]
                         xbmctools.play_video(item)
-                        if id_video != 0:
-                            library.mark_as_watched(category, id_video)
-                    
+
                     # If not, shows user an error message
                     else:
                         import xbmcgui
@@ -205,38 +201,27 @@ def run():
                 else:
                     logger.info("pelisalacarta.platformcode.launcher executing core 'play' method")
                     xbmctools.play_video(item)
-                    if id_video != 0:
-                        library.mark_as_watched(category, id_video)
 
             # Special action for findvideos, where the plugin looks for known urls
             elif item.action == "findvideos":
+
+                if item.strm:
+                    # Special action for playing a video from the library
+                    play_from_library(item, channel, server_white_list, server_black_list)
 
                 # First checks if channel has a "findvideos" function
                 if hasattr(channel, 'findvideos'):
                     itemlist = getattr(channel, item.action)(item)
 
-                    if config.get_setting('filter_servers') == 'true':
-                        itemlist = filtered_servers(itemlist, server_white_list, server_black_list)
-
                 # If not, uses the generic findvideos function
                 else:
-                    logger.info("pelisalacarta.platformcode.launcher no channel 'findvideos' method, executing core method")
+                    logger.info("pelisalacarta.platformcode.launcher no channel 'findvideos' method, "
+                                "executing core method")
                     from core import servertools
                     itemlist = servertools.find_video_items(item)
-                    if config.get_setting('filter_servers') == 'true':
-                        itemlist = filtered_servers(itemlist, server_white_list, server_black_list)
 
-                # Copy infolabels from parent item
-                if 'infoLabels' in item:
-                    
-                    # All but title
-                    if 'title' in item.infoLabels:
-                        item.infoLabels.pop('title')
-                    new_itemlist = itemlist[:]
-                    itemlist = []
-                    
-                    for i in new_itemlist:
-                        itemlist.append(i.clone(infoLabels=item.infoLabels))
+                if config.get_setting('filter_servers') == 'true':
+                    itemlist = filtered_servers(itemlist, server_white_list, server_black_list)
 
 
                 from platformcode import subtitletools
@@ -256,10 +241,6 @@ def run():
                 # FIXME: Aquí deberíamos mostrar alguna explicación del tipo "No hay elementos, esto pasa por bla bla bla"
                 else:
                     xbmctools.renderItems([], item)
-
-            # Special action for playing a video from the library
-            elif item.action == "play_from_library":
-                play_from_library(item, channel, server_white_list, server_black_list)
 
             # Special action for adding a movie to the library
             elif item.action == "add_pelicula_to_library":
@@ -319,7 +300,7 @@ def run():
 
         # Grab inner and third party errors
         if hasattr(e, 'reason'):
-            logger.info("pelisalacarta.platformcode.launcher Razon del error, codigo: {0}, Razon: {1}".format(e.reason[0], e.reason[1]))
+            logger.info("pelisalacarta.platformcode.launcher Razon del error, codigo: "+str(e.reason[0])+", Razon: "+str(e.reason[1]))
             texto = config.get_localized_string(30050) # "No se puede conectar con el sitio web"
             ok = ventana_error.ok ("plugin", texto)
         
@@ -367,6 +348,7 @@ def set_server_list():
 
     return server_white_list, server_black_list
 
+
 def filtered_servers(itemlist, server_white_list, server_black_list):
     logger.info("pelisalacarta.platformcode.launcher.filtered_servers")
     new_list = []
@@ -381,7 +363,6 @@ def filtered_servers(itemlist, server_white_list, server_black_list):
         for item in itemlist:
             logger.info("item.title " + item.title)
             if any(server in item.title for server in server_white_list):
-                # if item.title in server_white_list:
                 logger.info("found")
                 new_list.append(item)
                 white_counter += 1
@@ -393,15 +374,16 @@ def filtered_servers(itemlist, server_white_list, server_black_list):
         for item in itemlist:
             logger.info("item.title " + item.title)
             if any(server in item.title for server in server_black_list):
-                # if item.title in server_white_list:
                 logger.info("found")
                 black_counter += 1
             else:
                 new_list.append(item)
                 logger.info("not found")
 
-    logger.info("pelisalacarta.platformcode.launcher filtered_servers whiteList server %s has #%d rows" % (server_white_list, white_counter))
-    logger.info("pelisalacarta.platformcode.launcher filtered_servers blackList server %s has #%d rows" % (server_black_list, black_counter))
+    logger.info("pelisalacarta.platformcode.launcher filtered_servers whiteList server %s has #%d rows" %
+                (server_white_list, white_counter))
+    logger.info("pelisalacarta.platformcode.launcher filtered_servers blackList server %s has #%d rows" %
+                (server_black_list, black_counter))
 
     if len(new_list) == 0:
         new_list = itemlist
@@ -412,22 +394,16 @@ def filtered_servers(itemlist, server_white_list, server_black_list):
 def play_from_library(item, channel, server_white_list, server_black_list):
     logger.info("pelisalacarta.platformcode.launcher play_from_library")
 
-    category = item.category
-
     logger.info("pelisalacarta.platformcode.launcher play_from_library item.server=#"+item.server+"#")
     # Ejecuta find_videos, del canal o común
-    try:
-        itemlist = getattr(channel, "findvideos")(item)
-
-        if config.get_setting('filter_servers') == 'true':
-            itemlist = filtered_servers(itemlist, server_white_list, server_black_list)
-
-    except:
+    if hasattr(channel, 'findvideos'):
+        itemlist = getattr(channel, item.action)(item)
+    else:
         from core import servertools
         itemlist = servertools.find_video_items(item)
 
-        if config.get_setting('filter_servers') == 'true':
-            itemlist = filtered_servers(itemlist, server_white_list, server_black_list)
+    if config.get_setting('filter_servers') == 'true':
+        itemlist = filtered_servers(itemlist, server_white_list, server_black_list)
 
     if len(itemlist) > 0:
         # El usuario elige el mirror
@@ -435,9 +411,7 @@ def play_from_library(item, channel, server_white_list, server_black_list):
         for item in itemlist:
             opciones.append(item.title)
 
-        import xbmcgui
-        dia = xbmcgui.Dialog()
-        seleccion = dia.select(config.get_localized_string(30163), opciones)
+        seleccion = platformtools.dialog_select(config.get_localized_string(30163), opciones)
         elegido = itemlist[seleccion]
 
         if seleccion == -1:
@@ -449,9 +423,10 @@ def play_from_library(item, channel, server_white_list, server_black_list):
     try:
         itemlist = channel.play(elegido)
         item = itemlist[0]
-    except:
+    except AttributeError:
         item = elegido
-    logger.info("pelisalacarta.platformcode.launcher play_from_library Elegido %s (sub %s)" % (item.title, item.subtitle))
+    logger.info("pelisalacarta.platformcode.launcher play_from_library Elegido %s (sub %s)" % (item.title,
+                                                                                               item.subtitle))
 
     xbmctools.play_video(item, strmfile=True)
-    library.mark_as_watched(category, 0)
+    library.mark_as_watched(item)

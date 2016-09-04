@@ -35,13 +35,23 @@ from core import config
 from core import logger
 from core.item import Item
 
+if config.is_xbmc():
+    import xbmc
+
 CHANNELNAME = "favoritos"
 DEBUG = config.get_setting("debug")
 BOOKMARK_PATH = config.get_setting("bookmarkpath")
 
-if not samba.usingsamba(BOOKMARK_PATH):
+if not BOOKMARK_PATH.upper().startswith("SMB://"):
+    if BOOKMARK_PATH.startswith("special://") and config.is_xbmc():
+        # logger.info("pelisalacarta.channels.favoritos Se esta utilizando el protocolo 'special'")
+        BOOKMARK_PATH = xbmc.translatePath(config.get_setting("bookmarkpath"))
     if BOOKMARK_PATH == "":
         BOOKMARK_PATH = os.path.join(config.get_data_path(), "bookmarks")
+    if not os.path.exists(BOOKMARK_PATH):
+        # logger.debug("[favoritos.py] Path de bookmarks no existe, se crea: " + BOOKMARK_PATH)
+        os.mkdir(BOOKMARK_PATH)
+
 
 def mainlist(item):
     logger.info("pelisalacarta.channels.favoritos mainlist")
@@ -52,10 +62,10 @@ def mainlist(item):
         ficheros = samba.get_files(BOOKMARK_PATH)
     else:
         ficheros = os.listdir(BOOKMARK_PATH)
-    
+
     # Ordena el listado por nombre de fichero (orden de incorporación)
     ficheros.sort()
-    
+
     # Rellena el listado
     for fichero in ficheros:
 
@@ -74,7 +84,7 @@ def mainlist(item):
         except:
             for line in sys.exc_info():
                 logger.error("%s" % line)
-    
+
     return itemlist
 
 
@@ -95,22 +105,22 @@ def readbookmark(filename, readpath=BOOKMARK_PATH):
         titulo = urllib.unquote_plus(lines[0].strip())
     except:
         titulo = lines[0].strip()
-    
+
     try:
         url = urllib.unquote_plus(lines[1].strip())
     except:
         url = lines[1].strip()
-    
+
     try:
         thumbnail = urllib.unquote_plus(lines[2].strip())
     except:
         thumbnail = lines[2].strip()
-    
+
     try:
         server = urllib.unquote_plus(lines[3].strip())
     except:
         server = lines[3].strip()
-        
+
     try:
         plot = urllib.unquote_plus(lines[4].strip())
     except:
@@ -155,7 +165,7 @@ def savebookmark(canal=CHANNELNAME, titulo="", url="", thumbnail="", server="", 
     else:
         ficheros = os.listdir(savepath)
     ficheros.sort()
-    
+
     # Averigua el último número
     if len(ficheros) > 0:
         # XRJ: Linea problemática, sustituida por el bucle siguiente

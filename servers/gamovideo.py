@@ -11,11 +11,10 @@ from core import jsunpack
 from core import logger
 from core import scrapertools
 
-headers = [["User-Agent","Mozilla/5.0 (Windows NT 10.0; WOW64; rv:45.0) Gecko/20100101 Firefox/45.0"]]
 
 def test_video_exists( page_url ):
     logger.info("pelisalacarta.servers.gamovideo test_video_exists(page_url='%s')" % page_url)
-    data = scrapertools.cache_page(page_url, headers=headers)
+    data = scrapertools.cache_page(page_url)
 
     if ("File was deleted" or "Not Found") in data:
         return False, "[Gamovideo] El archivo no existe o ha sido borrado"
@@ -25,7 +24,7 @@ def test_video_exists( page_url ):
 def get_video_url( page_url , premium = False , user="" , password="", video_password="" ):
     logger.info("pelisalacarta.servers.gamovideo get_video_url(page_url='%s')" % page_url)
 
-    data = scrapertools.cache_page(page_url,headers=headers)
+    data = scrapertools.cache_page(page_url)
     packer = scrapertools.find_single_match(data,"<script type='text/javascript'>(eval.function.p,a,c,k,e,d..*?)</script>")
     unpacker = jsunpack.unpack(data) if packer != "" else ""
     if unpacker != "": data = unpacker
@@ -62,7 +61,7 @@ def find_videos(data):
 
     for match in matches:
         titulo = "[gamovideo]"
-        url = "http://gamovideo.com//embed-%s.html" % match
+        url = "http://gamovideo.com/embed-%s.html" % match
         if url not in encontrados:
             logger.info("  url="+url)
             devuelve.append( [ titulo , url , 'gamovideo' ] )

@@ -56,7 +56,7 @@ def search(item,texto, categoria="*"):
 def getsearchresults(item, data, action):
     itemlist = []
 
-    patron='_results_wrapper">(.*?)<div id="fixed-footer">'
+    patron='_results_wrapper">(.*?)<div id="fixed-footer"'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for match in matches:        
         #<li class="nth-child1n"> <figure> <a href="/pelicula/el-moderno-sherlock-holmes-1924" title="El moderno Sherlock Holmes (1924)"><img width="100" height="144" src="http://s.staticyonkis.com/img/peliculas/100x144/el-moderno-sherlock-holmes-1924.jpg" alt=""></a> <figcaption>8.0</figcaption> </figure> <aside> <h2><a href="/pelicula/el-moderno-sherlock-holmes-1924" title="El moderno Sherlock Holmes (1924)">El moderno Sherlock Holmes (1924)</a></h2> <p class="date">1924 | Estados Unidos | votos: 3</p> <div class="content">Película sobre el mundo del cine, Keaton es un proyeccionista que sueña con ser un detective cuando, milagrosamente, se encuentra dentro de la película que está proyectando. Allí intentará salvar a su amada de las garras del villano. Una de...</div> <p class="generos">  <a href="/genero/comedia">Comedia</a>  <a class="topic" href="/genero/cine-mudo">Cine mudo</a>  <a class="topic" href="/genero/mediometraje">Mediometraje</a>  <i>(1 más) <span class="aditional_links"> <span>  <a class="topic" href="/genero/sherlock-holmes">Sherlock Holmes</a>  </span> </span> </i>  </p> </aside> </li>
@@ -224,7 +224,7 @@ def episodios(item):
 
     No = 0
     for match in matches:
-        itemlist.extend( addChapters(Item(url=item.url,extra=match, thumbnail=item.thumbnail,show=item.show,plot=item.plot,fulltitle=item.title)) )
+        itemlist.extend( addChapters(Item(channel=item.channel, url=item.url,extra=match, thumbnail=item.thumbnail,show=item.show,plot=item.plot,fulltitle=item.title)) )
         '''
         if(len(matches)==1):
             itemlist = addChapters(Item(url=match, thumbnail=thumbnail))

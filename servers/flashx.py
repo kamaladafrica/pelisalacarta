@@ -5,15 +5,16 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 # ------------------------------------------------------------
 
+import os
 import re
 
+from core import config
 from core import logger
 from core import jsunpack
 from core import scrapertools
 
 
-headers = [['User-Agent',
-            'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.14) Gecko/20080404 Firefox/2.0.0.14']]
+headers = [['User-Agent', 'Mozilla/5.0']]
 
 
 def test_video_exists(page_url):
@@ -32,6 +33,12 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
 
     # Lo pide una vez
     data = scrapertools.cache_page(page_url, headers=headers)
+    # Si salta aviso, se carga la pagina de comprobacion y luego la inicial
+    if "You try to access this video with Kodi" in data:
+        url_reload = scrapertools.find_single_match(data, 'try to reload the page.*?href="([^"]+)"')
+        data = scrapertools.cache_page(url_reload, headers=headers)
+        data = scrapertools.cache_page(page_url, headers=headers)
+
     match = scrapertools.find_single_match(data, "<script type='text/javascript'>(.*?)</script>")
 
     if match.startswith("eval"):
@@ -40,10 +47,22 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     # Extrae la URL
     # {file:"http://f11-play.flashx.tv/luq4gfc7gxixexzw6v4lhz4xqslgqmqku7gxjf4bk43u4qvwzsadrjsozxoa/video1.mp4"}
     video_urls = []
-    media_urls = scrapertools.find_multiple_matches(match, '\{file\:"([^"]+)"')
-    for media_url in media_urls:
-        if not media_url.endswith("png"):
-            video_urls.append(["." + media_url.rsplit('.', 1)[1] + " [flashx]", media_url])
+    media_urls = scrapertools.find_multiple_matches(match, '\{file\:"([^"]+)",label:"([^"]+)"')
+    subtitle = ""
+    for media_url, label in media_urls:
+        if media_url.endswith(".srt") and label == "Spanish":
+            try:
+                from core import filetools
+                data = scrapertools.downloadpage(media_url)
+                subtitle = os.path.join(config.get_data_path(), 'sub_flashx.srt')
+                filetools.write(subtitle, data)
+            except:
+                import traceback
+                logger.info("pelisalacarta.servers.videomega Error al descargar el subtítulo: "+traceback.format_exc())
+            
+    for media_url, label in media_urls:
+        if not media_url.endswith("png") and not media_url.endswith(".srt"):
+            video_urls.append(["." + media_url.rsplit('.', 1)[1] + " [flashx]", media_url, 0, subtitle])
 
     for video_url in video_urls:
         logger.info("pelisalacarta.servers.flashx %s - %s" % (video_url[0], video_url[1]))
@@ -59,13 +78,13 @@ def find_videos(data):
 
     # http://flashx.tv/z3nnqbspjyne
     # http://www.flashx.tv/embed-li5ydvxhg514.html
-    patronvideos = 'flashx.(?:tv|pw)/(?:embed-|)([a-z0-9A-Z]+)'
+    patronvideos = 'flashx.(?:tv|pw)/(?:embed.php\?c=|embed-|)([A-z0-9]+)'
     logger.info("pelisalacarta.servers.flashx find_videos #" + patronvideos + "#")
     matches = re.compile(patronvideos, re.DOTALL).findall(data)
 
     for match in matches:
         titulo = "[flashx]"
-        url = "http://www.flashx.tv/playit-%s.html" % match
+        url = "http://www.flashx.tv/playvid-%s.html" % match
         if url not in encontrados:
             logger.info("  url=" + url)
             devuelve.append([titulo, url, 'flashx'])

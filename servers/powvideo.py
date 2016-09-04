@@ -18,7 +18,7 @@ def test_video_exists( page_url ):
     logger.info("pelisalacarta.servers.powvideo test_video_exists(page_url='%s')" % page_url)
     
     data = scrapertools.cache_page(page_url)
-    if "File Not Found" in data: return False, "[powvideo] El archivo no existe o  ha sido borrado"
+    if "File Not Found" in data: return False, "[powvideo] El archivo no existe o ha sido borrado"
     
     return True,""
 
@@ -41,11 +41,19 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
     matches = scrapertools.find_multiple_matches(data, "src:'([^']+)'")
     video_urls = []
     for video_url in matches:
+        logger.info("pelisalacarta.servers.powvideo video_url="+video_url)
         filename = scrapertools.get_filename_from_url(video_url)[-4:]
+        logger.info("pelisalacarta.servers.powvideo filename="+filename)
+
         if video_url.startswith("rtmp"):
-            rtmp, playpath = video_url.split("vod/",1)
-            video_url = "%s playpath=%s swfUrl=http://powvideo.net/player6/jwplayer.flash.swf pageUrl=%s" % (rtmp+"vod/", playpath, page_url)
+            if "vod/" in video_url:
+                rtmp, playpath = video_url.split("vod/",1)
+                video_url = "%s playpath=%s swfUrl=http://powvideo.net/player6/jwplayer.flash.swf pageUrl=%s" % (rtmp+"vod/", playpath, page_url)
+            else:
+                rtmp, playpath = video_url.split("mp4:",1)
+                video_url = "%s playpath=%s swfUrl=http://powvideo.net/player6/jwplayer.flash.swf pageUrl=%s" % (rtmp, "mp4:"+playpath, page_url)
             filename = "RTMP"
+        
         elif "m3u8" in video_url:
             video_url += "|User-Agent="+headers[0][1]
 
