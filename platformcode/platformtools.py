@@ -348,7 +348,6 @@ def set_context_commands(item, parent_item):
                                  (sys.argv[0], item.clone(channel="descargas", action="save_download",
                                                           from_channel=item.channel, from_action=item.action).tourl())))
 
-
     # Abrir configuración
     if parent_item.channel not in ["configuracion","novedades","buscador"]:
         context_commands.append(("Abrir Configuración", "XBMC.Container.Update(%s?%s)" %
@@ -434,7 +433,7 @@ def get_info_video(item, mediaurl, strm):
     set_infolabels(xlistitem, item)
     return xlistitem
 
-
+'''
 def get_library_info(mediaurl):
     """
     Obtiene información de la Biblioteca si existe (ficheros strm) o de los parámetros
@@ -565,7 +564,7 @@ def get_library_info(mediaurl):
         listitem.setInfo("video", infodict)
 
     return listitem
-
+'''
 
 def get_seleccion(default_action, opciones, seleccion, video_urls):
     # preguntar
