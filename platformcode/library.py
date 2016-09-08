@@ -241,7 +241,7 @@ def save_library_tvshow(item, episodelist):
     @return:  el número de episodios fallidos o -1 si ha fallado toda la serie
     """
     logger.info("pelisalacarta.platformcode.library save_library_tvshow")
-    logger.debug(item.tostring('\n'))
+    #logger.debug(item.tostring('\n'))
     path = ""
 
     # Itentamos obtener el titulo correcto:
@@ -265,8 +265,6 @@ def save_library_tvshow(item, episodelist):
     if not tmdb_return or not item.infoLabels['imdb_id']:
         # TODO de momento si no hay resultado no añadimos nada, aunq podriamos abrir un cuadro para introducir el identificador/nombre a mano
         return 0, 0, -1
-
-    logger.debug(str(item.infoLabels))
 
     id = item.infoLabels['imdb_id']
     if item.infoLabels['originaltitle']:
@@ -448,7 +446,6 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite= Tru
         # TODO arreglar el porque hay que poner la ruta special
         ruta = "special://home/userdata/addon_data/plugin.video.pelisalacarta/library/SERIES/" + \
                os.path.basename(path) + "/"
-        logger.debug(ruta)
         update(ruta)
 
     if fallidos == len(episodelist):
@@ -466,6 +463,7 @@ def mark_auto_as_watched(item):
         condicion = int(config.get_setting("watched_setting"))
 
         xbmc.sleep(5000)
+
         while xbmc.Player().isPlaying():
             tiempo_actual = xbmc.Player().getTime()
             totaltime = xbmc.Player().getTotalTime()
@@ -493,6 +491,7 @@ def mark_auto_as_watched(item):
         Thread(target=mark_as_watched_subThread, args=[item]).start()
 
 
+
 def mark_content_as_watched_on_kodi(item, value=1):
     """
     marca el contenido como visto o no visto en la libreria de Kodi
@@ -513,7 +512,7 @@ def mark_content_as_watched_on_kodi(item, value=1):
         data = get_data(payload)
         if 'result' in data:
             for d in data['result']['movies']:
-                if d['file'].endswith(item.strm_path):
+                if d['file'].endswith(item.strm_path.replace(MOVIES_PATH,"")):
                     movieid = d['movieid']
                     break
 
@@ -530,7 +529,7 @@ def mark_content_as_watched_on_kodi(item, value=1):
         data = get_data(payload)
         if 'result' in data:
             for d in data['result']['episodes']:
-                if d['file'].endswith(item.strm_path):
+                if d['file'].endswith(item.strm_path.replace(TVSHOWS_PATH,"")):
                     episodeid = d['episodeid']
                     break
 
@@ -581,7 +580,7 @@ def mark_season_as_watched_on_kodi(item, value=1):
         sql = 'update files set playCount= %s where idFile  in ' \
               '(select idfile from episode_view where strPath like "%s" and c12= %s)' %\
               (value, item_path, item.contentSeason)
-        logger.debug(sql)
+        #logger.debug(sql)
         cur.execute(sql)
         conn.commit()
         cur.close()

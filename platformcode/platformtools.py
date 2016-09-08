@@ -169,7 +169,7 @@ def render_items(itemlist, parent_item):
             xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url='%s?%s' % (sys.argv[0], item.tourl()),
                                         listitem=listitem, isFolder=item.folder,
                                         totalItems=item.totalItems if item.totalItems else 0)
-        logger.debug(str(item))
+
     # Vista 5x3 hasta llegar al listado de canales
     if parent_item.channel not in ["channelselector", ""]:
         xbmcplugin.setContent(int(sys.argv[1]), "movies")
@@ -432,17 +432,20 @@ def play_video(item, strm=False):
     # se lanza el reproductor
     set_player(item, xlistitem, mediaurl, view, strm)
 
+    # si es un archivo de la biblioteca enviar a marcar como visto
+    if strm or item.strm_path:
+        from platformcode import library
+        library.mark_auto_as_watched(item)
+
 
 def get_info_video(item, mediaurl, strm):
     logger.info("pelisalacarta.platformcode.platformtools get_info_video")
     # Obtención datos de la Biblioteca (solo strms que estén en la biblioteca)
-    logger.debug("######################################0")
-    '''if strm:
-        logger.debug("######################################1")
-        raise
-        xlistitem = get_library_info(mediaurl)
+    #logger.debug("item:\n" + item.tostring('\n'))
+    '''
+    if strm:
+        #xlistitem = get_library_info(mediaurl)
     else:
-        logger.debug("######################################2")
         play_title = item.fulltitle
         play_thumbnail = item.thumbnail
         play_plot = item.plot
@@ -461,11 +464,12 @@ def get_info_video(item, mediaurl, strm):
         xlistitem.setInfo("video", {"Title": play_title, "Plot": play_plot, "Studio": item.channel,
                                     "Genre": item.category})
 
-        set_infolabels(xlistitem, item)'''
-
-    xlistitem = xbmcgui.ListItem(thumbnailImage=item.thumbnail)
+        set_infolabels(xlistitem, item)
+    '''
+    xlistitem = xbmcgui.ListItem(path= mediaurl,thumbnailImage=item.thumbnail)
     set_infolabels(xlistitem, item)
     return xlistitem
+
 
 '''
 def get_library_info(mediaurl):
@@ -599,6 +603,7 @@ def get_library_info(mediaurl):
 
     return listitem
 '''
+
 
 def get_seleccion(default_action, opciones, seleccion, video_urls):
     # preguntar
@@ -956,6 +961,8 @@ def get_video_seleccionado(item, seleccion, video_urls):
 
 def set_player(item, xlistitem, mediaurl, view, strm):
     logger.info("platformtools set_player")
+    #logger.debug("item:\n" + item.tostring('\n'))
+
     # Si es un fichero strm no hace falta el play
     if strm:
         xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, xlistitem)
