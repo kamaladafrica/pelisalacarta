@@ -29,9 +29,12 @@ def get_video_url(page_url, premium=False, video_password=""):
     # Se comprueba si existe un token guardado y sino se ejecuta el proceso de autentificación
     token_auth = channeltools.get_channel_setting("realdebrid_token", "realdebrid")
     if token_auth is None or token_auth == "":
-        token_auth = authentication()
-        if token_auth == "":
-            return [["REAL-DEBRID: No se ha completado el proceso de autentificación", ""]]
+        if config.is_xbmc():
+            token_auth = authentication()
+            if token_auth == "":
+                return [["REAL-DEBRID: No se ha completado el proceso de autentificación", ""]]
+        else:
+            return [["Es necesario activar la cuenta. Accede al menú de ayuda", ""]]
 
     post_link = urllib.urlencode([("link", page_url), ("password", video_password)])
     headers["Authorization"] = "Bearer %s" % token_auth

@@ -45,6 +45,18 @@ def mainlist(item):
                              title="Restaurar advancedsettings.xml del backup", folder=False))
         cuantos += cuantos
 
+    if not config.is_xbmc():
+        from core import channeltools
+        title = "Activar cuenta real-debrid (No activada)"
+        action = "realdebrid"
+        token_auth = channeltools.get_channel_setting("realdebrid_token", "realdebrid")
+        if config.get_setting("realdebridpremium") == "false":
+            title = "Activar cuenta real-debrid (Marca la casilla en la ventana de configuración de pelisalacarta para continuar)"
+            action = ""
+        elif token_auth:
+            title = "Activar cuenta real-debrid (Activada correctamente)"
+        itemlist.append(Item(channel=item.channel, action=action, title=title))
+
     return itemlist
 
 
@@ -308,3 +320,88 @@ def recover_advancedsettings(item):
         logger.info("pelisalacarta.channels.ayuda Optimizacion de adavancedsettings.xml cancelada!")
 
     return []
+
+
+def realdebrid(item):
+    logger.info("pelisalacarta.channels.ayuda realdebrid")
+    itemlist = []
+    
+    verify_url, user_code, device_code = request_access()
+    
+    itemlist.append(Item(channel=item.channel, action="", title="Pasos para realizar la autenticación (Estando logueado en tu cuenta real-debrid):"))
+    itemlist.append(Item(channel=item.channel, action="", title="1. Abre el navegador y entra en esta página: %s" % verify_url))
+    itemlist.append(Item(channel=item.channel, action="", title='2. Introduce este código y presiona "Allow": %s' % user_code))
+    itemlist.append(Item(channel=item.channel, action="authentication", title="--> Pulsa aquí una vez introducido el código <---", extra=device_code))
+    
+    return itemlist
+
+
+def request_access():
+    logger.info("pelisalacarta.channels.ayuda request_access")
+    from core import jsontools
+    from core import scrapertools
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:47.0) Gecko/20100101 Firefox/47.0'}
+    try:
+        client_id = "YTWNFBIJEEBP6"
+        
+        # Se solicita url y código de verificación para conceder permiso a la app
+        url = "http://api.real-debrid.com/oauth/v2/device/code?client_id=%s&new_credentials=yes" % (client_id)
+        data = scrapertools.downloadpage(url, headers=headers.items())
+        data = jsontools.load_json(data)
+        verify_url = data["verification_url"]
+        user_code = data["user_code"]
+        device_code = data["device_code"]
+
+        return verify_url, user_code, device_code
+    except:
+        import traceback
+        logger.error(traceback.format_exc())
+        return "", "", ""
+
+
+def authentication(item):
+    logger.info("pelisalacarta.channels.ayuda authentication")
+    import urllib
+    from core import channeltools
+    from core import jsontools
+    from core import scrapertools
+
+    itemlist = []
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:47.0) Gecko/20100101 Firefox/47.0'}
+    client_id = "YTWNFBIJEEBP6"
+    device_code = item.extra
+    token = ""
+    try:
+        url = "https://api.real-debrid.com/oauth/v2/device/credentials?client_id=%s&code=%s" \
+              % (client_id, device_code)
+        data = scrapertools.downloadpage(url, headers=headers.items())
+        data = jsontools.load_json(data)
+
+        debrid_id = data["client_id"]
+        secret = data["client_secret"] 
+
+        # Se solicita el token de acceso y el de actualización para cuando el primero caduque
+        post = urllib.urlencode({"client_id": debrid_id, "client_secret": secret, "code": device_code,
+                                 "grant_type": "http://oauth.net/grant_type/device/1.0"})
+        data = scrapertools.downloadpage("https://api.real-debrid.com/oauth/v2/token", post=post,
+                                         headers=headers.items())
+        data = jsontools.load_json(data)
+
+        token = data["access_token"]
+        refresh = data["refresh_token"]
+
+        channeltools.set_channel_setting("realdebrid_id", debrid_id, "realdebrid")
+        channeltools.set_channel_setting("realdebrid_secret", secret, "realdebrid")
+        channeltools.set_channel_setting("realdebrid_token", token, "realdebrid")
+        channeltools.set_channel_setting("realdebrid_refresh", refresh, "realdebrid")
+        
+    except:
+        import traceback
+        logger.error(traceback.format_exc())
+
+    if token:
+        itemlist.append(Item(channel=item.channel, action="", title="Cuenta activada correctamente"))
+    else:
+        itemlist.append(Item(channel=item.channel, action="", title="Error en el proceso de activación, vuelve a intentarlo"))
+
+    return itemlist
