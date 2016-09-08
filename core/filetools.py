@@ -67,11 +67,10 @@ def encode(path, _samba=False):
     @return ruta encodeada
     """
     if path.lower().startswith("smb://") or _samba:
-        path = unicode(path, "utf8")
+        path = unicode(path, "utf-8")
     else:
-        _ENCODING = sys.getfilesystemencoding() or locale.getdefaultlocale()[1] or 'utf-8'
-        path = unicode(path, "utf8")
-        path = path.encode(_ENCODING)
+        path = unicode(path, "utf-8")
+        # _ENCODING = sys.getfilesystemecoding() or locale.getdefaultlocale()[1] or 'utf-8'
 
     return remove_chars(path)
 
@@ -83,6 +82,7 @@ def decode(path):
     @rtype: str
     @return: ruta codificado en UTF-8
     """
+    # TODO arreglar encoding
     _ENCODING = sys.getfilesystemencoding() or locale.getdefaultlocale()[1] or 'utf-8'
 
     if type(path) == list:
@@ -92,8 +92,8 @@ def decode(path):
             path[x] = path[x].encode("utf8")
     else:
         if not type(path) == unicode:
-            path = path.decode(_ENCODING)
-        path = path.encode("utf8")
+            path = path.decode("utf-8")
+        path = path.encode("utf-8")
     return path
 
 
@@ -109,7 +109,7 @@ def read(path):
     data = ""
     if path.lower().startswith("smb://"):
         from sambatools.smb.smb_structs import OperationFailure
-        
+
         try:
             f = samba.get_file_handle_for_reading(os.path.basename(path), os.path.dirname(path)).read()
             for line in f:
@@ -285,6 +285,23 @@ def remove(path):
         os.remove(path)
 
 
+def rmdirtree(path):
+    """
+    Elimina un directorio y su contenido
+    @param path: ruta a eliminar
+    @type path: str
+    """
+
+    path = encode(path)
+    # TODO mirar deltree para samba
+    if path.lower().startswith("smb://"):
+        # samba.delete_directory(os.path.basename(path), os.path.dirname(path))
+        pass
+    else:
+        import shutil
+        shutil.rmtree(path, ignore_errors=True)
+
+
 def rmdir(path):
     """
     Elimina un directorio
@@ -298,7 +315,7 @@ def rmdir(path):
         os.rmdir(path)
 
 
-def mkdir(path):
+def mkdir(path, respect=True):
     """
     Crea un directorio
     @param path: ruta a crear
@@ -316,11 +333,33 @@ def mkdir(path):
             platformtools.dialog_notification("Error al crear la ruta", path)
     else:
         try:
+            path = normalize(path, respect)
             os.mkdir(path)
         except OSError:
             import traceback
             logger.info("pelisalacarta.core.filetools mkdir: Error al crear la ruta "+traceback.format_exc())
             platformtools.dialog_notification("Error al crear la ruta", path)
+
+
+def normalize(s, respect=True):
+    """
+    Convierte a unicode las tildes de una cadena o las elimina.
+    @param s: cadena a convertir
+    @type s: str
+    @param respect: valor que especifica el tipo de formulario, si conversa los caracteres originales
+    @bool respect: bool
+    @rtype: str
+    @return: devuelve la conversión
+    """
+    if respect:
+        form = "NFC"
+    else:
+        form = "NFD"
+
+    import unicodedata
+    if not isinstance(s, unicode):
+        s = s.decode("UTF-8")
+    return ''.join((c for c in unicodedata.normalize(form, s) if unicodedata.category(c) != 'Mn'))
 
 
 def join(*paths):
