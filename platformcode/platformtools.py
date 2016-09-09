@@ -209,6 +209,7 @@ def set_infolabels(listitem, item):
 
     listitem.setInfo("video", item.infoLabels)
     listitem.setInfo("video", {"Title": item.title})
+    listitem.setArt({'poster': item.thumbnail})
 
 
 def set_context_commands(item, parent_item):
