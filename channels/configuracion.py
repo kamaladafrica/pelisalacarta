@@ -154,7 +154,7 @@ def addchannel(item):
         result = downloadtools.downloadfile(tecleado, localfilename, continuar=False)
         if result == -3:
             dyesno = platformtools.dialog_yesno("El archivo ya existe", "Ya existe el %s %s." \
-                                                " ¿Desea sobreescribirlo?" % (info_accion, filename))
+                                                " ¿Desea sobrescribirlo?" % (info_accion, filename))
             if dyesno:
                 backup = filetools.join(config.get_data_path(), 'backups')
                 if not filetools.exists(backup):
