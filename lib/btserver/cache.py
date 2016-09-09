@@ -1,7 +1,12 @@
 import os.path
-import libtorrent as lt
 import re
 import base64
+
+try:
+    from python_libtorrent import get_libtorrent
+    lt = get_libtorrent()
+except Exception, e:
+    import libtorrent as lt
 
 class Cache(object):
     CACHE_DIR='.cache'
