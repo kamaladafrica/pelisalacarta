@@ -177,7 +177,7 @@ def run():
             # Special play action
             if item.action == "play":
                 logger.info("pelisalacarta.platformcode.launcher play")
-                logger.debug("item_toPlay: " + "\n" + item.tostring('\n'))
+                #logger.debug("item_toPlay: " + "\n" + item.tostring('\n'))
 
                 # First checks if channel has a "play" function
                 if hasattr(channel, 'play'):
@@ -380,7 +380,7 @@ def play_from_library(item, server_white_list, server_black_list):
             return
         server_seleccionado = list_servers[seleccion]
 
-
+    #logger.debug(str(server_seleccionado))
     # Importamos el canal desde el q reproduciremos
     try:
         channel = __import__('channels.%s' % server_seleccionado.channel,
@@ -394,15 +394,16 @@ def play_from_library(item, server_white_list, server_black_list):
         new_item = itemlist[0]
     except AttributeError:
         new_item = server_seleccionado
-    logger.info("pelisalacarta.platformcode.launcher play_from_library Elegido %s (sub %s)" % (item.title,item.subtitle))
+
+    logger.info("pelisalacarta.platformcode.launcher play_from_library Elegido %s (sub %s)"
+                %(new_item.title,new_item.subtitle))
 
     # Esto es necesario por si el play del canal elimina los datos
     new_item.nfo = item.nfo
     new_item.strm_path = item.strm_path
 
-
     platformtools.play_video(new_item, True)
-    library.mark_auto_as_watched(new_item)
+
 
 
 

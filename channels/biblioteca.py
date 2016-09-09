@@ -327,7 +327,7 @@ def get_episodios(item):
 
 def findvideos(item):
     logger.info("pelisalacarta.channels.biblioteca findvideos")
-    logger.debug("item:\n" + item.tostring('\n'))
+    #logger.debug("item:\n" + item.tostring('\n'))
 
     itemlist = []
     list_canales = {}
@@ -413,7 +413,7 @@ def play(item):
     else:
         itemlist = [item.clone(url=item.strm_path, server="local")]
 
-    library.mark_auto_as_watched(item)
+    #library.mark_auto_as_watched(item)
 
     # Esto es necesario por si el play del canal elimina los datos
     for v in itemlist:
@@ -447,6 +447,5 @@ def actualizacion_automatica(item):
 
 def eliminar(item):
     logger.info("pelisalacarta.channels.biblioteca eliminar")
-    #logger.info("item:{}".format(item.tostring()))
     library.delete(item)
 

@@ -265,19 +265,20 @@ def set_context_commands(item, parent_item):
                     from_channel=item.channel
                 ).tourl())))
 
-            if command == "guardar filtro":
+            elif command == "guardar filtro":
                 context_commands.append(("guardar filtro serie", "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], item.clone(
                     channel="filtertools",
                     action="save_filter",
                     from_channel=item.channel
                 ).tourl())))
 
-            if command == "borrar filtro":
+            elif command == "borrar filtro":
                 context_commands.append(("Eliminar Filtro", "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], item.clone(
                     channel="filtertools",
                     action="del_filter",
                     from_channel=item.channel
                 ).tourl())))
+
 
         # Formato dict
         if type(command) == dict:
@@ -294,11 +295,44 @@ def set_context_commands(item, parent_item):
         if type(command) == Item:
             context_commands.append((command.title, "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], command.tourl())))
 
+
     # Opciones segun criterios
 
     # Mostrar informacion: si el item tiene plot suponemos q es una serie, temporada, capitulo o pelicula
     if item.infoLabels['plot']:
         context_commands.append(("Información", "XBMC.Action(Info)"))
+
+    # ExtendedInfo: Si esta instalado el addon y se cumplen una serie de condiciones
+    if xbmc.getCondVisibility('System.HasAddon(script.extendedinfo)'):
+        if item.contentType == "episode" and item.contentEpisodeNumber and item.contentSeason \
+                and (item.infoLabels['tmdb_id'] or item.contentSerieName):
+            param = "tvshow_id =%s, tvshow=%s, season=%s, episode=%s" \
+                    % (item.infoLabels['tmdb_id'], item.contentSerieName, item.contentSeason,
+                       item.contentEpisodeNumber)
+            context_commands.append(("ExtendedInfo",
+                                     "XBMC.RunScript(script.extendedinfo,info=extendedepisodeinfo,%s)" % (param)))
+
+        elif item.contentType == "season" and item.contentSeason \
+                and (item.infoLabels['tmdb_id'] or item.contentSerieName):
+            param = "tvshow_id =%s,tvshow=%s, season=%s" \
+                    % (item.infoLabels['tmdb_id'], item.contentSerieName, item.contentSeason)
+            context_commands.append(("ExtendedInfo",
+                                     "XBMC.RunScript(script.extendedinfo,info=seasoninfo,%s)" % (param)))
+
+        elif item.contentType == "tvshow" and (item.infoLabels['tmdb_id'] or item.infoLabels['tvdb_id']
+                                               or item.infoLabels['imdb_id'] or item.contentSerieName):
+            param = "id =%s,tvdb_id=%s,imdb_id=%s,name=%s" \
+                    % (item.infoLabels['tmdb_id'], item.infoLabels['tvdb_id'], item.infoLabels['imdb_id'],
+                       item.contentSerieName)
+            context_commands.append(("ExtendedInfo",
+                                     "XBMC.RunScript(script.extendedinfo,info=extendedtvinfo,%s)" % (param)))
+
+        elif item.contentType == "movie" and (item.infoLabels['tmdb_id'] or item.infoLabels['imdb_id']
+                                              or item.contentTitle):
+            param = "id =%s,imdb_id=%s,name=%s" \
+                    % (item.infoLabels['tmdb_id'], item.infoLabels['imdb_id'], item.contentTitle)
+            context_commands.append(("ExtendedInfo",
+                                     "XBMC.RunScript(script.extendedinfo,info=extendedinfo,%s)" % (param)))
 
     # Ir al Menu Principal (channel.mainlist)
     if parent_item.channel not in ["novedades"] and item.action!="mainlist" and  parent_item.action!="mainlist":
@@ -348,7 +382,6 @@ def set_context_commands(item, parent_item):
         context_commands.append(("Descargar Episodio", "XBMC.RunPlugin(%s?%s)" %
                                  (sys.argv[0], item.clone(channel="descargas", action="save_download",
                                                           from_channel=item.channel, from_action=item.action).tourl())))
-
 
     # Abrir configuración
     if parent_item.channel not in ["configuracion","novedades","buscador"]:
@@ -400,17 +433,20 @@ def play_video(item, strm=False):
     # se lanza el reproductor
     set_player(item, xlistitem, mediaurl, view, strm)
 
+    # si es un archivo de la biblioteca enviar a marcar como visto
+    if strm or item.strm_path:
+        from platformcode import library
+        library.mark_auto_as_watched(item)
+
 
 def get_info_video(item, mediaurl, strm):
     logger.info("pelisalacarta.platformcode.platformtools get_info_video")
     # Obtención datos de la Biblioteca (solo strms que estén en la biblioteca)
-    logger.debug("######################################0")
-    '''if strm:
-        logger.debug("######################################1")
-        raise
-        xlistitem = get_library_info(mediaurl)
+    #logger.debug("item:\n" + item.tostring('\n'))
+    '''
+    if strm:
+        #xlistitem = get_library_info(mediaurl)
     else:
-        logger.debug("######################################2")
         play_title = item.fulltitle
         play_thumbnail = item.thumbnail
         play_plot = item.plot
@@ -429,13 +465,14 @@ def get_info_video(item, mediaurl, strm):
         xlistitem.setInfo("video", {"Title": play_title, "Plot": play_plot, "Studio": item.channel,
                                     "Genre": item.category})
 
-        set_infolabels(xlistitem, item)'''
-
-    xlistitem = xbmcgui.ListItem(thumbnailImage=item.thumbnail)
+        set_infolabels(xlistitem, item)
+    '''
+    xlistitem = xbmcgui.ListItem(path= mediaurl,thumbnailImage=item.thumbnail)
     set_infolabels(xlistitem, item)
     return xlistitem
 
 
+'''
 def get_library_info(mediaurl):
     """
     Obtiene información de la Biblioteca si existe (ficheros strm) o de los parámetros
@@ -566,6 +603,7 @@ def get_library_info(mediaurl):
         listitem.setInfo("video", infodict)
 
     return listitem
+'''
 
 
 def get_seleccion(default_action, opciones, seleccion, video_urls):
@@ -924,6 +962,8 @@ def get_video_seleccionado(item, seleccion, video_urls):
 
 def set_player(item, xlistitem, mediaurl, view, strm):
     logger.info("platformtools set_player")
+    #logger.debug("item:\n" + item.tostring('\n'))
+
     # Si es un fichero strm no hace falta el play
     if strm:
         xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, xlistitem)

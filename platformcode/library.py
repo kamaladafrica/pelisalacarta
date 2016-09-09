@@ -241,7 +241,7 @@ def save_library_tvshow(item, episodelist):
     @return:  el número de episodios fallidos o -1 si ha fallado toda la serie
     """
     logger.info("pelisalacarta.platformcode.library save_library_tvshow")
-    logger.debug(item.tostring('\n'))
+    #logger.debug(item.tostring('\n'))
     path = ""
 
     # Itentamos obtener el titulo correcto:
@@ -265,8 +265,6 @@ def save_library_tvshow(item, episodelist):
     if not tmdb_return or not item.infoLabels['imdb_id']:
         # TODO de momento si no hay resultado no añadimos nada, aunq podriamos abrir un cuadro para introducir el identificador/nombre a mano
         return 0, 0, -1
-
-    logger.debug(str(item.infoLabels))
 
     id = item.infoLabels['imdb_id']
     if item.infoLabels['originaltitle']:
@@ -448,7 +446,6 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite= Tru
         # TODO arreglar el porque hay que poner la ruta special
         ruta = "special://home/userdata/addon_data/plugin.video.pelisalacarta/library/SERIES/" + \
                os.path.basename(path) + "/"
-        logger.debug(ruta)
         update(ruta)
 
     if fallidos == len(episodelist):
@@ -466,6 +463,7 @@ def mark_auto_as_watched(item):
         condicion = int(config.get_setting("watched_setting"))
 
         xbmc.sleep(5000)
+
         while xbmc.Player().isPlaying():
             tiempo_actual = xbmc.Player().getTime()
             totaltime = xbmc.Player().getTotalTime()
@@ -479,8 +477,8 @@ def mark_auto_as_watched(item):
             elif condicion == 3:  # '80%'
                 mark_time = totaltime * 0.8
 
-            logger.debug(str(tiempo_actual))
-            logger.debug(str(mark_time))
+            #logger.debug(str(tiempo_actual))
+            #logger.debug(str(mark_time))
 
             if tiempo_actual > mark_time:
                 mark_content_as_watched(item, 1)
@@ -491,6 +489,7 @@ def mark_auto_as_watched(item):
     # Si esta configurado para marcar como visto
     if config.get_setting("mark_as_watched") == "true":
         Thread(target=mark_as_watched_subThread, args=[item]).start()
+
 
 
 def mark_content_as_watched_on_kodi(item, value=1):
@@ -513,7 +512,7 @@ def mark_content_as_watched_on_kodi(item, value=1):
         data = get_data(payload)
         if 'result' in data:
             for d in data['result']['movies']:
-                if d['file'].endswith(item.strm_path):
+                if d['file'].endswith(item.strm_path.replace(MOVIES_PATH,"")):
                     movieid = d['movieid']
                     break
 
@@ -530,7 +529,7 @@ def mark_content_as_watched_on_kodi(item, value=1):
         data = get_data(payload)
         if 'result' in data:
             for d in data['result']['episodes']:
-                if d['file'].endswith(item.strm_path):
+                if d['file'].endswith(item.strm_path.replace(TVSHOWS_PATH,"")):
                     episodeid = d['episodeid']
                     break
 
@@ -547,29 +546,44 @@ def mark_content_as_watched_on_kodi(item, value=1):
             logger.error("ERROR al poner el contenido como visto")
 
 
-def mark_season_as_watched_on_kodi(season, value=1):
+def mark_season_as_watched_on_kodi(item, value=1):
     """
         marca toda la temporada como vista o no vista en la libreria de Kodi
-        @type season: int
-        @param season: numero de temporada
+        @type item: item
+        @param item: elemento a marcar
         @type value: int
         @param value: >0 para visto, 0 para no visto
         """
     logger.info("pelisalacarta.platformcode.library mark_content_as_watched_on_kodi")
 
-    payload = {"jsonrpc": "2.0", "method": "VideoLibrary.GetEpisodes",
-               "params": {"properties": ["title", "playcount", "showtitle", "season", "tvshowid"]},
-               "id": 1}
+    # Solo podemos marcar la temporada como vista en la BBDD de Kodi si la BBDD es local,
+    # en caso de compartir BBDD esta funcionalidad no funcionara
+    if modo_cliente:
+        return
 
-    data = get_data(payload)
-    if 'result' in data:
-        for d in data['result']['episodes']:
-            if d['season'] == int(season):
-                payload_f = {"jsonrpc": "2.0",
-                             "method": "VideoLibrary.SetEpisodeDetails",
-                             "params": {"episodeid": d['episodeid'], "playcount": value},
-                             "id": 1}
-                data = get_data(payload_f)
+    # Buscamos el nombre de la BBDD de videos
+    file_db = ""
+    for f in os.listdir(xbmc.translatePath("special://userdata/Database")):
+        path_f = os.path.join(xbmc.translatePath("special://userdata/Database"), f)
+
+        if os.path.isfile(path_f) and f.lower().startswith('myvideos') and f.lower().endswith('.db'):
+            file_db = path_f
+            break
+
+    if file_db:
+        import sqlite3
+        conn = sqlite3.connect(file_db)
+        cur = conn.cursor()
+        item_path = "%" + item.path.replace("\\\\","\\").replace(TVSHOWS_PATH,"")
+        if item_path[:-1] != "\\":
+            item_path += "\\"
+        sql = 'update files set playCount= %s where idFile  in ' \
+              '(select idfile from episode_view where strPath like "%s" and c12= %s)' %\
+              (value, item_path, item.contentSeason)
+        #logger.debug(sql)
+        cur.execute(sql)
+        conn.commit()
+        cur.close()
 
 
 def get_data(payload):
@@ -579,7 +593,7 @@ def get_data(payload):
     @param payload: data
     :return:
     """
-    logger.info("pelisalacarta.platformcode.library get_data:: payload {0}".format(payload))
+    logger.info("pelisalacarta.platformcode.library get_data: payload %s" %payload)
     # Required header for XBMC JSON-RPC calls, otherwise you'll get a 415 HTTP response code - Unsupported media type
     headers = {'content-type': 'application/json'}
 
@@ -590,12 +604,12 @@ def get_data(payload):
             response = f.read()
             f.close()
 
-            logger.info("pelisalacarta.platformcode.library get_data:: response {0}".format(response))
+            logger.info("pelisalacarta.platformcode.library get_data: response %s" %response)
             data = jsontools.load_json(response)
         except Exception, ex:
             template = "An exception of type {0} occured. Arguments:\n{1!r}"
             message = template.format(type(ex).__name__, ex.args)
-            logger.info("pelisalacarta.platformcode.library get_data:: error en xbmc_json_rpc_url: {0}".format(message))
+            logger.info("pelisalacarta.platformcode.library get_data: error en xbmc_json_rpc_url: %s" %message)
             data = ["error"]
     else:
         try:
@@ -607,7 +621,7 @@ def get_data(payload):
                         format(message))
             data = ["error"]
 
-    logger.info("pelisalacarta.platformcode.library get_data:: data {0}".format(data))
+    logger.info("pelisalacarta.platformcode.library get_data: data %s" %data)
 
     return data
 
@@ -722,7 +736,8 @@ def mark_content_as_watched(item, value=1):
 
 def mark_season_as_watched(item, value=1):
     logger.info("pelisalacarta.platformcode.library mark_season_as_watched")
-
+    '''mark_season_as_watched_on_kodi(item.contentSeason, value)
+    raise'''
     # Obtener el diccionario de episodios marcados
     f = filetools.join(item.path, 'tvshow.nfo')
     url_scraper = filetools.read(f, 0, 1)
@@ -751,7 +766,7 @@ def mark_season_as_watched(item, value=1):
         filetools.write(f, url_scraper + it.tojson())
         item.infoLabels['playcount'] = value
         # Actualizamos la BBDD de Kodi
-        mark_season_as_watched_on_kodi(item.contentSeason, value)
+        mark_season_as_watched_on_kodi(item, value)
 
     import xbmc
     xbmc.executebuiltin("Container.Refresh")
