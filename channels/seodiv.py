@@ -13,18 +13,11 @@ from core import scrapertools
 from core.item import Item
 from core import servertools
 
-__channel__ = "seodiv"
-__category__ = "S"
-__type__ = "generic"
-__title__ = "seodiv"
-__language__ = "ES"
 
 DEBUG = config.get_setting("debug")
 
 host='http://www.seodiv.com'
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("pelisalacarta.channels.seodiv mainlist")
@@ -32,7 +25,7 @@ def mainlist(item):
     itemlist = []
     
 
-    itemlist.append( Item(channel=__channel__, title="Todos", action="todas", url=host,thumbnail='https://s32.postimg.org/544rx8n51/series.png', fanart='https://s32.postimg.org/544rx8n51/series.png'))
+    itemlist.append( Item(channel=item.channel, title="Todos", action="todas", url=host,thumbnail='https://s32.postimg.org/544rx8n51/series.png', fanart='https://s32.postimg.org/544rx8n51/series.png'))
    
     return itemlist
 
@@ -55,7 +48,7 @@ def todas(item):
         fanart = 'https://s32.postimg.org/gh8lhbkb9/seodiv.png'
         plot = scrapedplot
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=__channel__, action="temporadas" ,title=title , url=url, thumbnail=thumbnail, fanart=fanart, plot= plot ))
+        itemlist.append( Item(channel=item.channel, action="temporadas" ,title=title , url=url, thumbnail=thumbnail, fanart=fanart, plot= plot ))
            
 
     return itemlist
@@ -83,7 +76,7 @@ def categorias(item):
 	url = scrapedurl
 	title = scrapedtitle
 	if (DEBUG): logger.info("title=["+title+"], url=["+url+"])")
-	itemlist.append( Item(channel=__channel__, action="todas" , title=title, fulltitle=item.fulltitle, url=url))
+	itemlist.append( Item(channel=item.channel, action="todas" , title=title, fulltitle=item.fulltitle, url=url))
         
     return itemlist            
         
@@ -103,7 +96,7 @@ def temporadas(item):
 	   plot = item.plot
 	   fanart = scrapertools.find_single_match(data,'<img src="([^"]+)"/>.*?</a>')
 	   if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-	   itemlist.append( Item(channel=__channel__, action="episodios" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart, temp=str(temp)))
+	   itemlist.append( Item(channel=item.channel, action="episodios" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart, temp=str(temp)))
            temp = temp+1 
         return itemlist
     else:
@@ -134,7 +127,7 @@ def episodios(item):
 	fanart=''
 	if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
 	if str(item.title) in scrapedurl or 'temporada'not in str(item.title):
-           itemlist.append( Item(channel=__channel__, action="findvideos" , title=title, fulltitle=item.fulltitle, url=url, thumbnail=item.thumbnail, plot=plot))
+           itemlist.append( Item(channel=item.channel, action="findvideos" , title=title, fulltitle=item.fulltitle, url=url, thumbnail=item.thumbnail, plot=plot))
         
     return itemlist            
                                  
