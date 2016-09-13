@@ -338,15 +338,10 @@ def set_context_commands(item, parent_item):
         context_commands.append(("Ir al Menu Principal", "XBMC.Container.Refresh (%s?%s)" %
                                  (sys.argv[0], Item(channel=item.channel, action="mainlist").tourl())))
 
-    # Quitar de Favoritos
-    if parent_item.channel == "favoritos":
-        context_commands.append(("Quitar a Favoritos", "XBMC.RunPlugin(%s?%s)" %
-                                 (sys.argv[0], item.clone(channel="favoritos", action="deletebookmark").tourl())))
-
     # Añadir a Favoritos
     if item.channel not in ["channelselector", "favoritos", "descargas", "buscador", "biblioteca", "novedades", "ayuda",
                             "configuracion", ""] and not parent_item.channel == "favoritos":
-        context_commands.append(("Añadir a Favoritos", "XBMC.RunPlugin(%s?%s)" %
+        context_commands.append((config.get_localized_string(30155), "XBMC.RunPlugin(%s?%s)" %
                                  (sys.argv[0], item.clone(channel="favoritos", action="savebookmark",
                                                           from_channel=item.channel, from_action=item.action).tourl())))
 
@@ -359,7 +354,7 @@ def set_context_commands(item, parent_item):
 
     # Añadir Pelicula a Biblioteca
     if item.channel != "biblioteca" and item.action in ["detail", "findvideos"] \
-            and not (item.contentSerieName or item.show):
+            and item.contentType == 'movie':
         context_commands.append(("Añadir Pelicula a Biblioteca", "XBMC.RunPlugin(%s?%s)" %
                                  (sys.argv[0], item.clone(action="add_pelicula_to_library",
                                                           from_action=item.action).tourl())))
@@ -400,7 +395,7 @@ def is_playing():
 
 def play_video(item, strm=False):
     logger.info("pelisalacarta.platformcode.platformtools play_video")
-    # logger.info(item.tostring('\n'))
+    #logger.debug(item.tostring('\n'))
 
     default_action = config.get_setting("default_action")
     logger.info("default_action="+default_action)
@@ -637,6 +632,7 @@ def handle_wait(time_to_wait, title, text):
 
 def get_dialogo_opciones(item, default_action, strm):
     logger.info("platformtools get_dialogo_opciones")
+    #logger.debug(item.tostring('\n'))
     from core import servertools
 
     opciones = []
@@ -670,7 +666,7 @@ def get_dialogo_opciones(item, default_action, strm):
             opcion = config.get_localized_string(30153)
             opciones.append(opcion)
 
-            if item.channel == "favoritos":
+            if item.isFavourite:
                 # "Quitar de favoritos"
                 opciones.append(config.get_localized_string(30154))
             else:
@@ -717,6 +713,7 @@ def get_dialogo_opciones(item, default_action, strm):
 
 def set_opcion(item, seleccion, opciones, video_urls):
     logger.info("platformtools set_opcion")
+    #logger.debug(item.tostring('\n'))
     salir = False
     # No ha elegido nada, lo más probable porque haya dado al ESC
     # TODO revisar
@@ -749,15 +746,12 @@ def set_opcion(item, seleccion, opciones, video_urls):
     elif opciones[seleccion] == config.get_localized_string(30154):
         from channels import favoritos
         favoritos.deletebookmark(item)
-
-        # 'Se ha quitado de favoritos'
-        dialog_ok(config.get_localized_string(30102), item.title, config.get_localized_string(30105))
-        xbmc.executebuiltin("Container.Refresh")
         salir = True
 
     # "Añadir a favoritos":
     elif opciones[seleccion] == config.get_localized_string(30155):
         from channels import favoritos
+        item.from_channel="favoritos"
         favoritos.savebookmark(item)
         salir = True
 
