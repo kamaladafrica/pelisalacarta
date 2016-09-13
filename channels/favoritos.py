@@ -59,11 +59,11 @@ def mainlist(item):
             item.isFavourite = True
 
             item.context = [{"title": config.get_localized_string(30154), #"Quitar de favoritos"
-                             "action": "deletebookmark",
+                             "action": "delFavourite",
                              "channel": "favoritos",
                              "from_title": item.title},
                             {"title": "Renombrar",
-                             "action": "renamebookmark",
+                             "action": "renameFavourite",
                              "channel": "favoritos",
                              "from_title": item.title}
                             ]
@@ -96,8 +96,8 @@ def save_favourites(favourites_list):
     return filetools.write(FAVOURITES_PATH, raw)
 
 
-def savebookmark(item):
-    logger.info("pelisalacarta.core.favoritos savebookmark")
+def addFavourite(item):
+    logger.info("pelisalacarta.core.favoritos addFavourite")
     #logger.debug(item.tostring('\n'))
 
     # Si se llega aqui mediante el menu contextual, hay que recuperar los parametros action y channel
@@ -115,8 +115,8 @@ def savebookmark(item):
                                 config.get_localized_string(30108))  # 'se ha añadido a favoritos'
 
 
-def deletebookmark(item):
-    logger.info("pelisalacarta.core.favoritos deletebookmark")
+def delFavourite(item):
+    logger.info("pelisalacarta.core.favoritos delFavourite")
     #logger.debug(item.tostring('\n'))
 
     if item.from_title:
@@ -134,8 +134,8 @@ def deletebookmark(item):
             break
 
 
-def renamebookmark(item):
-    logger.info("pelisalacarta.core.favoritos rename")
+def renameFavourite(item):
+    logger.info("pelisalacarta.core.favoritos renameFavourite")
     #logger.debug(item.tostring('\n'))
 
     #Buscar el item q queremos renombrar en favourites.xml
@@ -160,7 +160,7 @@ def readbookmark(filename, readpath=config.get_setting("bookmarkpath")):
     logger.info("[favoritos.py] readbookmark")
     import urllib
 
-    if readpath.lower().startswith("smb://"):
+    '''if readpath.lower().startswith("smb://"):
         from lib.sambatools import libsmb as samba
         bookmarkfile = samba.get_file_handle_for_reading(filename, readpath)
     else:
@@ -168,7 +168,11 @@ def readbookmark(filename, readpath=config.get_setting("bookmarkpath")):
 
         # Lee el fichero de configuracion
         logger.info("[favoritos.py] filepath=" + filepath)
-        bookmarkfile = open(filepath)
+        bookmarkfile = open(filepath)'''
+
+    filepath = filetools.join(readpath, filename)
+    bookmarkfile = filetools.open_for_reading(filepath)
+
     lines = bookmarkfile.readlines()
 
     try:
@@ -218,10 +222,11 @@ def readbookmark(filename, readpath=config.get_setting("bookmarkpath")):
     return canal, titulo, thumbnail, plot, server, url, fulltitle
 
 
-def check_bookmark(savepath):
+def check_bookmark(readpath):
     # Crea un listado con las entradas de favoritos
+    itemlist = []
 
-    for fichero in sorted(filetools.listdir(savepath)):
+    for fichero in sorted(filetools.listdir(readpath)):
         # Ficheros antiguos (".txt")
         if fichero.endswith(".txt"):
             # Esperamos 0.1 segundos entre ficheros, para que no se solapen los nombres de archivo
@@ -232,15 +237,18 @@ def check_bookmark(savepath):
             if canal == "":
                 canal = "favoritos"
             item = Item(channel=canal, action="play", url=url, server=server, title=fulltitle, thumbnail=thumbnail,
-                        plot=plot, fanart=thumbnail, extra=os.path.join(savepath, fichero), fulltitle=fulltitle,
-                        folder=False)
+                        plot=plot, fanart=thumbnail, fulltitle=fulltitle, folder=False)
 
-            # Eliminamos el .txt
-            filetools.remove(item.extra)
-            item.extra = ""
+            filetools.rename(filetools.join(readpath, fichero),fichero[:-4] + ".old")
+            itemlist.append(item)
 
-            # Graba el nuevo fichero
-            filename = filetools.join(savepath, str(time.time()) + ".json")
-            filetools.write(filename, item.tojson())
+    # Si hay Favoritos q guardar
+    if itemlist:
+        favourites_list = read_favourites()
+        for item in itemlist:
+            data = "ActivateWindow(10025,&quot;plugin://plugin.video.pelisalacarta/?" + item.tourl() + "&quot;,return)"
+            favourites_list.append((item.title, item.thumbnail, data))
+        if save_favourites(favourites_list):
+            logger.debug("Conversion de txt a xml correcta")
 
 check_bookmark(config.get_setting("bookmarkpath"))

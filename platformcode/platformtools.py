@@ -342,7 +342,7 @@ def set_context_commands(item, parent_item):
     if item.channel not in ["channelselector", "favoritos", "descargas", "buscador", "biblioteca", "novedades", "ayuda",
                             "configuracion", ""] and not parent_item.channel == "favoritos":
         context_commands.append((config.get_localized_string(30155), "XBMC.RunPlugin(%s?%s)" %
-                                 (sys.argv[0], item.clone(channel="favoritos", action="savebookmark",
+                                 (sys.argv[0], item.clone(channel="favoritos", action="addFavourite",
                                                           from_channel=item.channel, from_action=item.action).tourl())))
 
     # Añadimos opción contextual para Añadir la serie completa a la biblioteca
@@ -745,14 +745,14 @@ def set_opcion(item, seleccion, opciones, video_urls):
     # "Quitar de favoritos"
     elif opciones[seleccion] == config.get_localized_string(30154):
         from channels import favoritos
-        favoritos.deletebookmark(item)
+        favoritos.delFavourite(item)
         salir = True
 
     # "Añadir a favoritos":
     elif opciones[seleccion] == config.get_localized_string(30155):
         from channels import favoritos
         item.from_channel="favoritos"
-        favoritos.savebookmark(item)
+        favoritos.addFavourite(item)
         salir = True
 
     # "Añadir a Biblioteca":  # Library
