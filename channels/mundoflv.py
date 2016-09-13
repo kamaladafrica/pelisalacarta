@@ -274,39 +274,9 @@ def search(item,texto):
     logger.info("mundoflv.py search")
     texto = texto.replace(" ","+")
     item.url = item.url+texto
-    #itemlist = []
-    #if texto!='':
-    return busqueda(item)
-#             try:
-#                 data = scrapertools.cache_page(item.url)
-#                 patron = '<img class=.*?src="([^"]+)" alt="([^"]+)">.<span><\/span>.<\/div>.<div.*?>.<!--.*?>.<span class.*?>.<span class.*?\/span>.<\/span>.<!--.*?>.<h3><a href="([^"]+)">.*?/h3>'
-#                 #patron +='.*?<h3><a href="([^"]+)"</a></h3>'
-#                 matches = re.compile(patron,re.DOTALL).findall(data)
-#                 scrapertools.printMatches(matches)
-#                 for scrapedthumbnail, scrapedtitle, scrapedurl in matches:
-#                     url = scrapedurl
-#                     title = scrapertools.decodeHtmlentities(scrapedtitle)
-#                     thumbnail = scrapedthumbnail
-#                     plot = ''
-#                     if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-#                     itemlist.append( Item(channel=item.channel, action="temporadas" , title=title , fulltitle=title, url=url, thumbnail=thumbnail, plot=plot, folder ="true" ))
-#                  #Paginacion
-
-#                 patron  = "<a rel='nofollow' class=previouspostslink' href='([^']+)'>Siguiente &rsaquo;</a>"
-#                 next_page_url = scrapertools.find_single_match(data,"<a rel='nofollow' class=previouspostslink' href='([^']+)'>Siguiente &rsaquo;</a>")
-#                 if next_page_url!="":
-#                     item.url=next_page_url
-#                     import inspect
-#                     itemlist.append(
-#                     Item(channel = item.channel,action = "search",title = ">> Página siguiente", url = next_page_url))   
-
-#                 return itemlist
-#             except:
-#                import sys
-#                for line in sys.exc_info():
-#                    logger.error( "%s" % line )
-#             return [] 
-
+    if texto!='':
+       return busqueda(item)
+    
 def findvideos(item):
 
     logger.info("pelisalacarta.channels.mundoflv findvideos")
