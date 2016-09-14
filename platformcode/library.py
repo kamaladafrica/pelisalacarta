@@ -213,8 +213,8 @@ def save_library_movie(item):
 
             # actualizamos la biblioteca de Kodi con la pelicula
             # TODO arreglar el porque hay que poner la ruta special
-            ruta = "special://home/userdata/addon_data/plugin.video.pelisalacarta/library/CINE/"
-            update(ruta)
+            #ruta = "special://home/userdata/addon_data/plugin.video.pelisalacarta/library/CINE/"
+            update()
 
             return insertados, sobreescritos, fallidos
 
@@ -444,9 +444,9 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite= Tru
 
         # ... y actualizamos la biblioteca de Kodi
         # TODO arreglar el porque hay que poner la ruta special
-        ruta = "special://home/userdata/addon_data/plugin.video.pelisalacarta/library/SERIES/" + \
-               os.path.basename(path) + "/"
-        update(ruta)
+        #ruta = "special://home/userdata/addon_data/plugin.video.pelisalacarta/library/SERIES/" + \
+        #      os.path.basename(path) + "/"
+        update()
 
     if fallidos == len(episodelist):
         fallidos = -1
@@ -626,7 +626,7 @@ def get_data(payload):
     return data
 
 
-def update(_path):
+def update(_path=''):
     """
     actualiza la libreria
 
@@ -635,13 +635,13 @@ def update(_path):
     """
     logger.info("pelisalacarta.platformcode.library update")
     # Se comenta la llamada normal para reutilizar 'payload' dependiendo del modo cliente
-    # xbmc.executebuiltin('UpdateLibrary(video)')
+    #xbmc.executebuiltin('UpdateLibrary(video)')
     if _path:
         payload = {"jsonrpc": "2.0", "method": "VideoLibrary.Scan", "params": {"directory": _path}, "id": 1}
     else:
         payload = {"jsonrpc": "2.0", "method": "VideoLibrary.Scan", "id": 1}
     data = get_data(payload)
-    logger.info("pelisalacarta.platformcode.library update data:{0}".format(data))
+    logger.info("pelisalacarta.platformcode.library update data: %s" %data)
 
 
 def clean(mostrar_dialogo=False):
@@ -651,15 +651,10 @@ def clean(mostrar_dialogo=False):
     @type mostrar_dialogo: bool
     """
     logger.info("pelisalacarta.platformcode.library clean")
-    if mostrar_dialogo:
-        dialog = "true"
-    else:
-        dialog = "false"
-
-    # TODO pendiente arreglar showdialogs
-    payload = {"jsonrpc": "2.0", "method": "VideoLibrary.Clean", "id": 1}  #, "showdialogs": dialog}
+    payload = {"jsonrpc": "2.0", "method": "VideoLibrary.Clean", "id": 1,
+               "params": {"showdialogs": mostrar_dialogo}}
     data = get_data(payload)
-    logger.info("pelisalacarta.platformcode.library clean data:{0}".format(data))
+    logger.info("pelisalacarta.platformcode.library clean data: %s" %data)
 
 
 def add_pelicula_to_library(item):
@@ -772,8 +767,8 @@ def mark_season_as_watched(item, value=1):
     xbmc.executebuiltin("Container.Refresh")
 
 
-def actualizacion_automatica(item, value=True):
-    logger.info("pelisalacarta.platformcode.library actualizacion_automatica")
+def mark_tvshow_as_updatable(item, value=True):
+    logger.info("pelisalacarta.platformcode.library mark_tvshow_as_updatable")
     url_scraper = filetools.read(item.nfo, 0, 1)
     it = Item().fromjson(filetools.read(item.nfo, 1))
     it.active = value

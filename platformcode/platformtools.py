@@ -339,16 +339,11 @@ def set_context_commands(item, parent_item):
         context_commands.append(("Ir al Menu Principal", "XBMC.Container.Refresh (%s?%s)" %
                                  (sys.argv[0], Item(channel=item.channel, action="mainlist").tourl())))
 
-    # Quitar de Favoritos
-    if parent_item.channel == "favoritos":
-        context_commands.append(("Quitar a Favoritos", "XBMC.RunPlugin(%s?%s)" %
-                                 (sys.argv[0], item.clone(channel="favoritos", action="deletebookmark").tourl())))
-
     # Añadir a Favoritos
     if item.channel not in ["channelselector", "favoritos", "descargas", "buscador", "biblioteca", "novedades", "ayuda",
                             "configuracion", ""] and not parent_item.channel == "favoritos":
-        context_commands.append(("Añadir a Favoritos", "XBMC.RunPlugin(%s?%s)" %
-                                 (sys.argv[0], item.clone(channel="favoritos", action="savebookmark",
+        context_commands.append((config.get_localized_string(30155), "XBMC.RunPlugin(%s?%s)" %
+                                 (sys.argv[0], item.clone(channel="favoritos", action="addFavourite",
                                                           from_channel=item.channel, from_action=item.action).tourl())))
 
     # Añadimos opción contextual para Añadir la serie completa a la biblioteca
@@ -360,7 +355,7 @@ def set_context_commands(item, parent_item):
 
     # Añadir Pelicula a Biblioteca
     if item.channel != "biblioteca" and item.action in ["detail", "findvideos"] \
-            and not (item.contentSerieName or item.show):
+            and item.contentType == 'movie':
         context_commands.append(("Añadir Pelicula a Biblioteca", "XBMC.RunPlugin(%s?%s)" %
                                  (sys.argv[0], item.clone(action="add_pelicula_to_library",
                                                           from_action=item.action).tourl())))
@@ -401,7 +396,7 @@ def is_playing():
 
 def play_video(item, strm=False):
     logger.info("pelisalacarta.platformcode.platformtools play_video")
-    # logger.info(item.tostring('\n'))
+    #logger.debug(item.tostring('\n'))
 
     default_action = config.get_setting("default_action")
     logger.info("default_action="+default_action)
@@ -470,140 +465,6 @@ def get_info_video(item, mediaurl, strm):
     xlistitem = xbmcgui.ListItem(path= mediaurl,thumbnailImage=item.thumbnail)
     set_infolabels(xlistitem, item)
     return xlistitem
-
-
-'''
-def get_library_info(mediaurl):
-    """
-    Obtiene información de la Biblioteca si existe (ficheros strm) o de los parámetros
-    @type mediaurl: str
-    @param mediaurl: url a la que se asocia la información de la biblioteca
-    """
-    if DEBUG:
-        logger.info('pelisalacarta.platformcode.platformstools playlist OBTENCIÓN DE DATOS DE BIBLIOTECA')
-
-    # Información básica
-    label = xbmc.getInfoLabel('listitem.label')
-    label2 = xbmc.getInfoLabel('listitem.label2')
-    icon_image = xbmc.getInfoImage('listitem.icon')
-    thumbnail_image = xbmc.getInfoImage('listitem.Thumb')
-
-    if DEBUG:
-        logger.info("[platformstools.py]getMediaInfo: label = " + label)
-        logger.info("[platformstools.py]getMediaInfo: label2 = " + label2)
-        logger.info("[platformstools.py]getMediaInfo: iconImage = " + icon_image)
-        logger.info("[platformstools.py]getMediaInfo: thumbnailImage = " + thumbnail_image)
-
-    # Creación de listitem
-    listitem = xbmcgui.ListItem(label, label2, icon_image, thumbnail_image, mediaurl)
-
-    # Información adicional
-    lista = [
-        # (Comedy)
-        ('listitem.genre', 's'),
-        # (2009)
-        ('listitem.year', 'i'),
-        # (4)
-        ('listitem.episode', 'i'),
-        # (1)
-        ('listitem.season', 'i'),
-        # (192)
-        ('listitem.top250', 'i'),
-        # (3)
-        ('listitem.tracknumber', 'i'),
-        # (6.4) - range is 0..10
-        ('listitem.rating', 'f'),
-        # (2) - number of times this item has been played
-        ('listitem.playcount', 'i'),
-        # (2) - range is 0..8.  See GUIListItem.h for values
-        # ('listitem.overlay', 'i'),
-        # JUR - listitem devuelve un string, pero addinfo espera un int. Ver traducción más abajo
-        ('listitem.overlay', 's'),
-        # (Michal C. Hall) - List concatenated into a string
-        # ('listitem.cast', 's'),
-        # (Michael C. Hall|Dexter) - List concatenated into a string
-        # ('listitem.castandrole', 's'),
-        # (Dagur Kari)
-        ('listitem.director', 's'),
-        # (PG-13)
-        ('listitem.mpaa', 's'),
-        # (Long Description)
-        ('listitem.plot', 's'),
-        # (Short Description)
-        ('listitem.plotoutline', 's'),
-        # (Big Fan)
-        ('listitem.title', 's'),
-        # (3)
-        ('listitem.duration', 's'),
-        # (Warner Bros.)
-        ('listitem.studio', 's'),
-        # (An awesome movie) - short description of movie
-        ('listitem.tagline', 's'),
-        # (Robert D. Siegel)
-        ('listitem.writer', 's'),
-        # (Heroes)
-        ('listitem.tvshowtitle', 's'),
-        # (2005-03-04)
-        ('listitem.premiered', 's'),
-        # (Continuing) - status of a TVshow
-        ('listitem.status', 's'),
-        # (tt0110293) - IMDb code
-        ('listitem.code', 's'),
-        # (2008-12-07)
-        ('listitem.aired', 's'),
-        # (Andy Kaufman) - writing credits
-        ('listitem.credits', 's'),
-        # (%Y-%m-%d %h
-        ('listitem.lastplayed', 's'),
-        # (The Joshua Tree)
-        ('listitem.album', 's'),
-        # (12345 votes)
-        ('listitem.votes', 's'),
-        # (/home/user/trailer.avi)
-        ('listitem.trailer', 's'),
-    ]
-    # Obtenemos toda la info disponible y la metemos en un diccionario
-    # para la función setInfo.
-    infodict = dict()
-    for label, tipo in lista:
-        key = label.split('.', 1)[1]
-        value = xbmc.getInfoLabel(label)
-        if value != "":
-            if DEBUG:
-                logger.info("[platformstools.py]getMediaInfo: "+key+" = " + value)
-            if tipo == 's':
-                infodict[key] = value
-            elif tipo == 'i':
-                infodict[key] = int(value)
-            elif tipo == 'f':
-                infodict[key] = float(value)
-
-    # Transforma el valor de overlay de string a int.
-    if 'overlay' in infodict:
-        value = infodict['overlay'].lower()
-        if value.find('rar') > -1:
-            infodict['overlay'] = 1
-        elif value.find('zip') > -1:
-            infodict['overlay'] = 2
-        elif value.find('trained') > -1:
-            infodict['overlay'] = 3
-        elif value.find('hastrainer') > -1:
-            infodict['overlay'] = 4
-        elif value.find('locked') > -1:
-            infodict['overlay'] = 5
-        elif value.find('unwatched') > -1:
-            infodict['overlay'] = 6
-        elif value.find('watched') > -1:
-            infodict['overlay'] = 7
-        elif value.find('hd') > -1:
-            infodict['overlay'] = 8
-        else:
-            infodict.pop('overlay')
-    if len(infodict) > 0:
-        listitem.setInfo("video", infodict)
-
-    return listitem
-'''
 
 
 def get_seleccion(default_action, opciones, seleccion, video_urls):
@@ -772,6 +633,7 @@ def handle_wait(time_to_wait, title, text):
 
 def get_dialogo_opciones(item, default_action, strm):
     logger.info("platformtools get_dialogo_opciones")
+    #logger.debug(item.tostring('\n'))
     from core import servertools
 
     opciones = []
@@ -805,7 +667,7 @@ def get_dialogo_opciones(item, default_action, strm):
             opcion = config.get_localized_string(30153)
             opciones.append(opcion)
 
-            if item.channel == "favoritos":
+            if item.isFavourite:
                 # "Quitar de favoritos"
                 opciones.append(config.get_localized_string(30154))
             else:
@@ -852,6 +714,7 @@ def get_dialogo_opciones(item, default_action, strm):
 
 def set_opcion(item, seleccion, opciones, video_urls):
     logger.info("platformtools set_opcion")
+    #logger.debug(item.tostring('\n'))
     salir = False
     # No ha elegido nada, lo más probable porque haya dado al ESC
     # TODO revisar
@@ -883,17 +746,14 @@ def set_opcion(item, seleccion, opciones, video_urls):
     # "Quitar de favoritos"
     elif opciones[seleccion] == config.get_localized_string(30154):
         from channels import favoritos
-        favoritos.deletebookmark(item)
-
-        # 'Se ha quitado de favoritos'
-        dialog_ok(config.get_localized_string(30102), item.title, config.get_localized_string(30105))
-        xbmc.executebuiltin("Container.Refresh")
+        favoritos.delFavourite(item)
         salir = True
 
     # "Añadir a favoritos":
     elif opciones[seleccion] == config.get_localized_string(30155):
         from channels import favoritos
-        favoritos.savebookmark(item)
+        item.from_channel="favoritos"
+        favoritos.addFavourite(item)
         salir = True
 
     # "Añadir a Biblioteca":  # Library

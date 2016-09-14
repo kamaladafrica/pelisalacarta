@@ -21,8 +21,10 @@ def mainlist(item):
     logger.info("pelisalacarta.channels.biblioteca mainlist")
 
     itemlist = list()
-    itemlist.append(Item(channel=item.channel, action="peliculas", title="Películas"))#, thumbnail="K:\squares\\thumb_biblioteca_peliculas.png"))
-    itemlist.append(Item(channel=item.channel, action="series", title="Series"))#, thumbnail="K:\squares\\thumb_biblioteca_series.png"))
+    itemlist.append(Item(channel=item.channel, action="peliculas", title="Películas",
+                         thumbnail="http://media.tvalacarta.info/pelisalacarta/squares/thumb_biblioteca_peliculas.png"))
+    itemlist.append(Item(channel=item.channel, action="series", title="Series",
+                         thumbnail="http://media.tvalacarta.info/pelisalacarta/squares/thumb_biblioteca_series.png"))
 
     return itemlist
 
@@ -159,7 +161,7 @@ def series(item):
                     value = True
 
                 item_tvshow.context = [{"title": texto,
-                                        "action": "actualizacion_automatica",
+                                        "action": "mark_tvshow_as_updatable",
                                         "channel": "biblioteca",
                                         "active": value},
                                         {"title": "Eliminar (PENDIENTE)",
@@ -440,9 +442,9 @@ def mark_season_as_watched(item):
     library.mark_season_as_watched(item, item.playcount)
 
 
-def actualizacion_automatica(item):
-    logger.info("pelisalacarta.channels.biblioteca actualizacion_automatica")
-    library.actualizacion_automatica(item, item.active)
+def mark_tvshow_as_updatable(item):
+    logger.info("pelisalacarta.channels.biblioteca mark_tvshow_as_updatable")
+    library.mark_tvshow_as_updatable(item, item.active)
 
 
 def eliminar(item):

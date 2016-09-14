@@ -183,10 +183,12 @@ def run():
                 if hasattr(channel, 'play'):
                     logger.info("pelisalacarta.platformcode.launcher executing channel 'play' method")
                     itemlist = channel.play(item)
-
+                    isFavourite = item.isFavourite
                     # Play should return a list of playable URLS
                     if len(itemlist) > 0:
                         item = itemlist[0]
+                        if isFavourite:
+                            item.isFavourite = True
                         platformtools.play_video(item)
 
                     # If not, shows user an error message

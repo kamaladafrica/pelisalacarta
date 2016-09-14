@@ -253,7 +253,7 @@ def download_from_url(url, item, continuar=True):
     @param continuar: establece si resume la descarga
     """
     logger.info("pelisalacarta.core.descargas download_url - Intentando descargar: %s" % url)
-
+    logger.debug("item:\n" + item.tostring('\n'))
     # Obtenemos la ruta de descarga y el nombre del archivo
 
     download_path = os.path.dirname(filetools.join(config.get_library_path(), item.downloadFilename))
