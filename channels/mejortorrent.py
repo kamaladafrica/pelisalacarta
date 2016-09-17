@@ -311,7 +311,11 @@ def episodios(item):
             # Sólo comprobar Tmdb si el formato es temporadaXcapitulo
             if len(epi) > 1:
                 temporada = re.sub("\D", "", epi[0])
-                capitulo  = re.sub("\D", "", epi[1])
+                capitulo = re.search("\d+", epi[1])
+                if capitulo:
+                    capitulo = capitulo.group()
+                else:
+                    capitulo = 1
 
                 epi_data = oTmdb.get_episodio(temporada, capitulo)
                 logger.debug("epi_data=" + str(epi_data))
