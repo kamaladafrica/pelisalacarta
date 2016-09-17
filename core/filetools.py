@@ -70,7 +70,7 @@ def encode(path, _samba=False):
         path = unicode(path, "utf-8", "replace")
 
     if path.lower().startswith("smb://") or _samba:
-        path = path.encode("utf-8")
+        path = path.encode("utf-8", "replace")
     else:
         _ENCODING = sys.getfilesystemencoding() or locale.getdefaultlocale()[1] or 'utf-8'
         path = path.encode(_ENCODING, "replace")
@@ -93,7 +93,7 @@ def decode(path):
         for x in range(len(path)):
             if not type(path[x]) == unicode:
                 path[x] = path[x].decode(_ENCODING, "replace")
-            path[x] = path[x].encode("utf8", "replace")
+            path[x] = path[x].encode("utf-8", "replace")
     else:
         if not type(path) == unicode:
             path = path.decode(_ENCODING, "replace")
