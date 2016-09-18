@@ -58,8 +58,14 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
                     else:
                         from jjdecode import JJDecoder
                         jjencode = scrapertools.find_single_match(data, '<script type="text/javascript">(j=.*?\(\)\)\(\);)')
+                        if not jjencode:
+                            pack = scrapertools.find_multiple_matches(data, '(eval \(function\(p,a,c,k,e,d\).*?\{\}\)\))')[-1]
+                            jjencode = openload_clean(pack)
                         jjdec = JJDecoder(jjencode).decode()
                         number = scrapertools.find_single_match(jjdec, 'charCodeAt\(0\)\s*\+\s*(\d+)')
+                        varhidden = scrapertools.find_single_match(jjdec, 'var\s*\w*\s*=\s*\$\("[#]*([^"]+)"\).text')
+                        if varhidden != "hiddenurl":
+                            hiddenurl = scrapertools.find_single_match(data, 'id="'+varhidden+'">(.*?)<')
                         videourl = decode_hidden(hiddenurl, number)
                         
                 else:
@@ -91,8 +97,14 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
                     else:
                         from jjdecode import JJDecoder
                         jjencode = scrapertools.find_single_match(data, '<script type="text/javascript">(j=.*?\(\)\)\(\);)')
+                        if not jjencode:
+                            pack = scrapertools.find_multiple_matches(data, '(eval \(function\(p,a,c,k,e,d\).*?\{\}\)\))')[-1]
+                            jjencode = openload_clean(pack)
                         jjdec = JJDecoder(jjencode).decode()
                         number = scrapertools.find_single_match(jjdec, 'charCodeAt\(0\)\s*\+\s*(\d+)')
+                        varhidden = scrapertools.find_single_match(jjdec, 'var\s*\w*\s*=\s*\$\("[#]*([^"]+)"\).text')
+                        if varhidden != "hiddenurl":
+                            hiddenurl = scrapertools.find_single_match(data, 'id="'+varhidden+'">(.*?)<')
                         videourl = decode_hidden(hiddenurl, number)
                 else:
                     videourl = decodeopenload(data)
@@ -233,6 +245,32 @@ def decodeopenload(data):
     return videourl
 
 
+def openload_clean(string):
+    import urllib2
+    if "function" in string:
+        matches = re.findall(r"=\"([^\"]+).*?} *\((\d+)\)", string, re.DOTALL)[0]
+
+        def substr(char):
+            char = char.group(0)
+            number = ord(char) + int(matches[1])
+            if char <= "Z":
+                char_value = 90
+            else:
+                char_value = 122
+            if char_value >= number:
+                return chr(ord(char))
+            else:
+                return chr(number - 26)
+
+        string = re.sub(r"[A-Za-z]", substr, matches[0])
+        string = urllib2.unquote(string)
+
+        for n, z in enumerate(['j','_','__','___']):
+            string = re.sub(r'%s' % n, z, string)
+
+    return string
+
+
 def decode_hidden(text, number):
     text = scrapertools.decodeHtmlentities(text)
     text = text.replace("&gt9", ">").replace("&quot9", '"').replace("&lt9", '<').replace("&amp9", '&')
@@ -262,9 +300,8 @@ def get_link_api(page_url):
         data = scrapertools.downloadpageWithoutCookies("https://api.openload.co/1/file/dl?file=%s&ticket=%s" % (file_id, ticket))
         data = jsontools.load_json(data)
         extension = "." + scrapertools.find_single_match(data["result"]["content_type"], '/(\w+)')
-        videourl = data['result']['url'] + '?mime=true'
-        videourl = scrapertools.getLocationHeaderFromResponse(videourl)
-        videourl = videourl.replace("https", "http").replace("?mime=true", "")
+        videourl = data['result']['url']
+        videourl = videourl.replace("https", "http")
         return videourl
 
     return ""
