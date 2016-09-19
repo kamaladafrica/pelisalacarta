@@ -113,7 +113,7 @@ def episodios(item):
         item.title = item.title.strip()
         item.title = item.title.replace(' ','-')
                 
-    patron ='<li><a href="([^"]+)">Capitulo ([^<]+)<\/a><\/li>'
+    patron ='<li><a href="([^"]+)">.*?Capitulo.*?([\d\d<]+)'
     
         
     matches = re.compile(patron,re.DOTALL).findall(data)
@@ -121,7 +121,7 @@ def episodios(item):
     
     for scrapedurl, scrapedtitle in matches:
         url = host+scrapedurl
-	title = ' Capitulo '+scrapedtitle+' ('+idioma+')'
+	title = ' Capitulo '+scrapedtitle.strip('<')+' ('+idioma+')'
 	thumbnail = item.thumbnail
 	plot = item.plot
 	fanart=''

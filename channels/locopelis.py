@@ -91,7 +91,7 @@ def todas(item):
     if actual and ultima and siguiente <= int(ultima):
        #import inspect
        titlen = 'Pagina Siguiente >>> '+str(actual)+'/'+str(ultima)
-       fanart = 'https://s32.postimg.org/4q1u1hxnp/locopelis.png'
+       fanart = 'https://s31.postimg.org/5worjw2nv/locopelis.png'
        itemlist.append(Item(channel = item.channel, action = "todas", title =titlen, url = siguiente_url, fanart = fanart))
     return itemlist
 
