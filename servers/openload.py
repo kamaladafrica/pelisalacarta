@@ -50,11 +50,11 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
                 videourl = "http://"
 
             if videourl == "http://":
-                hiddenurl = scrapertools.find_single_match(data, 'id="hiddenurl\s*">(.*?)<')
+                hiddenurl, valuehidden = scrapertools.find_single_match(data, '<span id="([^"]+)">(.*?)<')
                 if hiddenurl:
                     number = scrapertools.find_single_match(text_decode, 'charCodeAt\(0\)\s*+\s*(\d+)')
                     if number:
-                        videourl = decode_hidden(hiddenurl, number)
+                        videourl = decode_hidden(valuehidden, number)
                     else:
                         from jjdecode import JJDecoder
                         jjencode = scrapertools.find_single_match(data, '<script type="text/javascript">(j=.*?\(\)\)\(\);)')
@@ -64,9 +64,9 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
                         jjdec = JJDecoder(jjencode).decode()
                         number = scrapertools.find_single_match(jjdec, 'charCodeAt\(0\)\s*\+\s*(\d+)')
                         varhidden = scrapertools.find_single_match(jjdec, 'var\s*\w*\s*=\s*\$\("[#]*([^"]+)"\).text')
-                        if varhidden != "hiddenurl":
-                            hiddenurl = scrapertools.find_single_match(data, 'id="'+varhidden+'">(.*?)<')
-                        videourl = decode_hidden(hiddenurl, number)
+                        if varhidden != hiddenurl:
+                            valuehidden = scrapertools.find_single_match(data, 'id="'+varhidden+'">(.*?)<')
+                        videourl = decode_hidden(valuehidden, number)
                         
                 else:
                     videourl = decodeopenload(data)
@@ -89,11 +89,11 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
                 text_decode2 = aadecode(text_encode[index])
                 videourl = "https://" + scrapertools.find_single_match(text_decode2, "(openload.co/.*?)\}")
             else:
-                hiddenurl = scrapertools.find_single_match(data, 'id="hiddenurl\s*">(.*?)<')
+                hiddenurl, valuehidden = scrapertools.find_single_match(data, '<span id="([^"]+)">(.*?)<')
                 if hiddenurl:
                     number = scrapertools.find_single_match(text_decode, 'charCodeAt\(0\)\s*+\s*(\d+)')
                     if number:
-                        videourl = decode_hidden(hiddenurl, number)
+                        videourl = decode_hidden(valuehidden, number)
                     else:
                         from jjdecode import JJDecoder
                         jjencode = scrapertools.find_single_match(data, '<script type="text/javascript">(j=.*?\(\)\)\(\);)')
@@ -103,9 +103,9 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
                         jjdec = JJDecoder(jjencode).decode()
                         number = scrapertools.find_single_match(jjdec, 'charCodeAt\(0\)\s*\+\s*(\d+)')
                         varhidden = scrapertools.find_single_match(jjdec, 'var\s*\w*\s*=\s*\$\("[#]*([^"]+)"\).text')
-                        if varhidden != "hiddenurl":
-                            hiddenurl = scrapertools.find_single_match(data, 'id="'+varhidden+'">(.*?)<')
-                        videourl = decode_hidden(hiddenurl, number)
+                        if varhidden != hiddenurl:
+                            valuehidden = scrapertools.find_single_match(data, 'id="'+varhidden+'">(.*?)<')
+                        videourl = decode_hidden(valuehidden, number)
                 else:
                     videourl = decodeopenload(data)
 
