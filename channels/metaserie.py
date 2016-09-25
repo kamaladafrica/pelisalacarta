@@ -12,25 +12,17 @@ from core import scrapertools
 from core.item import Item
 from core import servertools
 
-__channel__ = "metaserie"
-__category__ = "S"
-__type__ = "generic"
-__title__ = "MetaSerie"
-__language__ = "ES"
 
 DEBUG = config.get_setting("debug")
 
-
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("pelisalacarta.channels.metaserie mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, title="Series", action="todas", url="http://metaserie.com/series-agregadas", thumbnail='https://s32.postimg.org/544rx8n51/series.png', fanart='https://s32.postimg.org/544rx8n51/series.png'))
-    itemlist.append( Item(channel=__channel__, title="Anime", action="todas", url="http://metaserie.com/animes-agregados",thumbnail='https://s31.postimg.org/lppob54d7/anime.png', fanart='https://s31.postimg.org/lppob54d7/anime.png'))
-    itemlist.append( Item(channel=__channel__, title="Buscar", action="search", url="http://www.metaserie.com/?s=", thumbnail='https://s31.postimg.org/qose4p13f/Buscar.png', fanart='https://s31.postimg.org/qose4p13f/Buscar.png'))
+    itemlist.append( Item(channel=item.channel, title="Series", action="todas", url="http://metaserie.com/series-agregadas", thumbnail='https://s32.postimg.org/544rx8n51/series.png', fanart='https://s32.postimg.org/544rx8n51/series.png'))
+    itemlist.append( Item(channel=item.channel, title="Anime", action="todas", url="http://metaserie.com/animes-agregados",thumbnail='https://s31.postimg.org/lppob54d7/anime.png', fanart='https://s31.postimg.org/lppob54d7/anime.png'))
+    itemlist.append( Item(channel=item.channel, title="Buscar", action="search", url="http://www.metaserie.com/?s=", thumbnail='https://s31.postimg.org/qose4p13f/Buscar.png', fanart='https://s31.postimg.org/qose4p13f/Buscar.png'))
     return itemlist
 
 def todas(item):
@@ -52,7 +44,7 @@ def todas(item):
         plot = scrapedplot
         fanart = 'https://s32.postimg.org/7g50yo39h/metaserie.png'
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=__channel__, action="temporadas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart))
+        itemlist.append( Item(channel=item.channel, action="temporadas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart))
     
     #Paginacion
 
@@ -62,7 +54,7 @@ def todas(item):
         import inspect
         itemlist.append(
             Item(
-                channel = __channel__,
+                channel = item.channel,
                 action = "todas",
                 title = ">> Página siguiente",
                 url = next_page_url, thumbnail='https://s32.postimg.org/4zppxf5j9/siguiente.png'
@@ -86,7 +78,7 @@ def temporadas(item):
         plot = item.plot
         fanart = scrapertools.find_single_match(data,'<img src="([^"]+)"/>.*?</a>')
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=__channel__, action="episodios" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart))
+        itemlist.append( Item(channel=item.channel, action="episodios" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart))
 
     return itemlist
 
@@ -106,7 +98,7 @@ def episodios(item):
         plot = item.plot
         fanart=item.fanart
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=__channel__, action="findvideos" , title=title, fulltitle=item.fulltitle, url=url, thumbnail=item.thumbnail, plot=plot))
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title, fulltitle=item.fulltitle, url=url, thumbnail=item.thumbnail, plot=plot))
         
     return itemlist
 
@@ -127,7 +119,7 @@ def search(item,texto):
                      thumbnail = ''
                      plot = ''
                      if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-                     itemlist.append( Item(channel=__channel__, action="temporadas" , title=title , fulltitle=title, url=url, thumbnail=thumbnail, plot=plot, folder ="true" ))
+                     itemlist.append( Item(channel=item.channel, action="temporadas" , title=title , fulltitle=title, url=url, thumbnail=thumbnail, plot=plot, folder ="true" ))
 
                  return itemlist
              except:
@@ -157,12 +149,12 @@ def findvideos(item):
         extra = item.thumbnail
         thumbnail = servertools.guess_server_thumbnail(scrapedserv)
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=__channel__, action="play" , title=title, fulltitle=titulo, url=url, thumbnail=thumbnail, extra=extra))
+        itemlist.append( Item(channel=item.channel, action="play" , title=title, fulltitle=titulo, url=url, thumbnail=thumbnail, extra=extra))
 
     if anterior !='':
-        itemlist.append( Item(channel=__channel__, action="findvideos" , title='Capitulo Anterior' , url=anterior, thumbnail='https://s31.postimg.org/k5kpwyrgb/anterior.png', folder ="true" ))
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title='Capitulo Anterior' , url=anterior, thumbnail='https://s31.postimg.org/k5kpwyrgb/anterior.png', folder ="true" ))
     if siguiente !='':
-        itemlist.append( Item(channel=__channel__, action="findvideos" , title='Capitulo Siguiente' , url=siguiente, thumbnail='https://s32.postimg.org/4zppxf5j9/siguiente.png', folder ="true" ))
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title='Capitulo Siguiente' , url=siguiente, thumbnail='https://s32.postimg.org/4zppxf5j9/siguiente.png', folder ="true" ))
     return itemlist
 
 def play(item):
@@ -171,7 +163,7 @@ def play(item):
     from core import servertools
     itemlist.extend(servertools.find_video_items(data=item.url))
     for videoitem in itemlist:
-        videoitem.channel = __channel__
+        video = item.channel
         videoitem.title = item.fulltitle
         videoitem.folder = False
         videoitem.thumbnail = item.extra

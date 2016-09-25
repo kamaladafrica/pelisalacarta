@@ -12,11 +12,11 @@ from core import scrapertools
 from core.item import Item
 from core import servertools
 
-__channel__ = "cinecalidad"
-__category__ = "F"
-__type__ = "generic"
-__title__ = "cinecalidad"
-__language__ = "ES"
+#__channel__ = "cinecalidad"
+#__category__ = "F"
+#__type__ = "generic"
+#__title__ = "cinecalidad"
+#__language__ = "ES"
 
 DEBUG = config.get_setting("debug")
 host=''
@@ -25,16 +25,16 @@ thumbes='http://flags.fmcdn.net/data/flags/normal/es.png'
 thumbbr='http://flags.fmcdn.net/data/flags/normal/br.png'
 
 
-def isGeneric():
-    return True
+#def isGeneric():
+#    return True
 
 def mainlist(item):
     idioma2 ="destacadas" 
     logger.info("pelisalacarta.channels.cinecalidad mainlist")
     itemlist = []
-    itemlist.append( Item(channel=__channel__, title="Audio Latino", action="submenu",host="http://cinecalidad.com/",thumbnail=thumbmx, extra = "peliculas"))
-    itemlist.append( Item(channel=__channel__, title="Audio Castellano", action="submenu",host="http://cinecalidad.com/espana/",thumbnail=thumbes, extra = "peliculas"))
-    itemlist.append( Item(channel=__channel__, title="Audio Portugues", action="submenu",host="http://cinemaqualidade.com/",thumbnail=thumbbr, extra ="filmes"))
+    itemlist.append( Item(channel=item.channel, title="Audio Latino", action="submenu",host="http://cinecalidad.com/",thumbnail=thumbmx, extra = "peliculas"))
+    itemlist.append( Item(channel=item.channel, title="Audio Castellano", action="submenu",host="http://cinecalidad.com/espana/",thumbnail=thumbes, extra = "peliculas"))
+    itemlist.append( Item(channel=item.channel, title="Audio Portugues", action="submenu",host="http://cinemaqualidade.com/",thumbnail=thumbbr, extra ="filmes"))
     return itemlist
 
 
@@ -47,10 +47,10 @@ def submenu(item):
        idioma2 = "destacado"
     logger.info("pelisalacarta.channels.cinecalidad submenu")
     itemlist = []
-    itemlist.append( Item(channel=__channel__, title=idioma.capitalize(), action="peliculas", url=host,thumbnail='https://s31.postimg.org/4g4lytrqj/peliculas.png', fanart='https://s31.postimg.org/4g4lytrqj/peliculas.png'))
-    itemlist.append( Item(channel=__channel__, title="Destacadas", action="peliculas", url=host+"/genero-"+idioma+"/"+idioma2+"/", thumbnail='https://s32.postimg.org/wzyinepsl/destacadas.png', fanart='https://s32.postimg.org/wzyinepsl/destacadas.png'))
-    itemlist.append( Item(channel=__channel__, title="Generos", action="generos", url=host+"/genero-"+idioma, thumbnail='https://s31.postimg.org/szbr0gmkb/generos.png',fanart='https://s31.postimg.org/szbr0gmkb/generos.png'))   
-    itemlist.append( Item(channel=__channel__, title="Por Año", action="anyos", url=host+"/"+idioma+"-por-ano", thumbnail='https://s31.postimg.org/iyl5fvzqz/pora_o.png', fanart='https://s31.postimg.org/iyl5fvzqz/pora_o.png'))
+    itemlist.append( Item(channel=item.channel, title=idioma.capitalize(), action="peliculas", url=host,thumbnail='https://s31.postimg.org/4g4lytrqj/peliculas.png', fanart='https://s31.postimg.org/4g4lytrqj/peliculas.png'))
+    itemlist.append( Item(channel=item.channel, title="Destacadas", action="peliculas", url=host+"/genero-"+idioma+"/"+idioma2+"/", thumbnail='https://s32.postimg.org/wzyinepsl/destacadas.png', fanart='https://s32.postimg.org/wzyinepsl/destacadas.png'))
+    itemlist.append( Item(channel=item.channel, title="Generos", action="generos", url=host+"/genero-"+idioma, thumbnail='https://s31.postimg.org/szbr0gmkb/generos.png',fanart='https://s31.postimg.org/szbr0gmkb/generos.png'))   
+    itemlist.append( Item(channel=item.channel, title="Por Año", action="anyos", url=host+"/"+idioma+"-por-ano", thumbnail='https://s31.postimg.org/iyl5fvzqz/pora_o.png', fanart='https://s31.postimg.org/iyl5fvzqz/pora_o.png'))
     
     return itemlist
 
@@ -71,7 +71,7 @@ def anyos(item):
         thumbnail = item.thumbnail
         plot = item.plot
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=__channel__, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=item.thumbnail))
+        itemlist.append( Item(channel=item.channel, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=item.thumbnail))
 
     return itemlist
 
@@ -104,7 +104,7 @@ def generos(item):
         thumbnail = tgenero[scrapedtitle]
         plot = item.plot
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=__channel__, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=item.thumbnail))
+        itemlist.append( Item(channel=item.channel, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=item.thumbnail))
 
     return itemlist
 
@@ -122,11 +122,12 @@ def peliculas(item):
         thumbnail = scrapedthumbnail
         plot = scrapedplot
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart='https://s31.postimg.org/puxmvsi7v/cinecalidad.png'))
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart='https://s31.postimg.org/puxmvsi7v/cinecalidad.png'))
+    
     try:     
         patron  = "<link rel='next' href='([^']+)' />" 
         next_page = re.compile(patron,re.DOTALL).findall(data)
-        itemlist.append( Item(channel=__channel__, action="peliculas", title="Página siguiente >>" , url=next_page[0], fanart='https://s31.postimg.org/puxmvsi7v/cinecalidad.png') )
+        itemlist.append( Item(channel=item.channel, action="peliculas", title="Página siguiente >>" , url=next_page[0], fanart='https://s31.postimg.org/puxmvsi7v/cinecalidad.png') )
 
     except: pass
     return itemlist
@@ -164,7 +165,7 @@ def findvideos(item):
            thumbnail = servertools.guess_server_thumbnail(servidor[dec(scrapedurl)])
            plot = ""
            if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-           itemlist.append( Item(channel=__channel__, action="play" , title=title ,fulltitle = item.title, url=url, thumbnail=thumbnail, plot=plot,extra=item.thumbnail, server=servidor[dec(scrapedurl)]))
+           itemlist.append( Item(channel=item.channel, action="play" , title=title ,fulltitle = item.title, url=url, thumbnail=thumbnail, plot=plot,extra=item.thumbnail, server=servidor[dec(scrapedurl)]))
     return itemlist
 
 def play(item):
@@ -178,7 +179,7 @@ def play(item):
 #      url = scrapertools.find_single_match(data, '"downloadlink": "([^"]+)"')
 #      url = url.replace("\\","")
 #      if url != '':
-#         itemlist.append(Item(channel=__channel__, title=item.fulltitle, url=url, server="directo", action="play",thumbnail=item.extra, fulltitle=item.fulltitle))
+#         itemlist.append(Item(channel=item.channel, title=item.fulltitle, url=url, server="directo", action="play",thumbnail=item.extra, fulltitle=item.fulltitle))
 #    
 #    else:
 #      logger.info("pelisalacarta.channels.cinecalidad play url="+item.url)
@@ -188,6 +189,6 @@ def play(item):
         videoitem.title = item.fulltitle
         videoitem.fulltitle = item.fulltitle
         videoitem.thumbnail = item.extra
-        videoitem.channel = __channel__
+        videochannel=item.channel
     return itemlist
 
