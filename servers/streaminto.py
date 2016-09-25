@@ -29,17 +29,8 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     data = re.sub(r'\n|\t|\s+', '', scrapertools.cache_page(page_url))
 
     video_urls = []
-    # {type:"html5",config:{file:'http://95.211.191.133:8777/3ki7frw76xuzcg3h5f6cbf7a34mbb2zr44g7sdojszegjqx5tdsaxgwr42vq/v.flv','provider':'http'}
-    media_url = scrapertools.get_match(data, """{type:"html5",config:{file:'([^']+)','provider':'http'}""")
+    media_url = scrapertools.get_match(data, """.setup\({file:"([^"]+)",image""")
     video_urls.append([scrapertools.get_filename_from_url(media_url)[-4:] + " [streaminto]", media_url])
-
-    # streamer:"rtmp://95.211.191.133:1935/vod?h=3ki7frw76xuzcg3h5f6cbf7a34mbb2zr44g7sdojszegjqx5tdsaxgwr42vq"
-    rtmp_url = scrapertools.get_match(data, 'streamer:"([^"]+)"')
-    # ({file:"53/7269023927_n.flv?h=3ki7frw76xuzcg3h5f6cbf7a34mbb2zr44g7sdojszegjqx5tdsaxgwr42vq",
-    playpath = scrapertools.get_match(data, '\({file:"([^"]+)",')
-    swfUrl = "http://streamin.to/player/player.swf"
-    media_url = rtmp_url + " playpath=" + playpath + " swfUrl=" + swfUrl
-    video_urls.append(["RTMP [streaminto]", media_url])
 
     for video_url in video_urls:
         logger.info("pelisalacarta.servers.streaminto %s - %s" % (video_url[0], video_url[1]))

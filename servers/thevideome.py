@@ -21,10 +21,16 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
         page_url = page_url.replace("http://thevideo.me/","http://thevideo.me/embed-") + ".html"
     
     data = scrapertools.cache_page( page_url )
+
+    tkn = scrapertools.find_single_match(data, "tkn='([^']+)'")
+    data_vt = scrapertools.downloadpage("http://thevideo.me/jwv/%s" % tkn)
+    data_vt = scrapertools.find_single_match(data_vt, 'jwConfig\|([^\|]+)\|')
+    
     media_urls = scrapertools.find_multiple_matches(data,"label\s*\:\s*'([^']+)'\s*\,\s*file\s*\:\s*'([^']+)'")
     video_urls = []
 
-    for label,media_url in media_urls:
+    for label, media_url in media_urls:
+        media_url += "?direct=false&ua=1&vt=%s" % data_vt
         video_urls.append( [ scrapertools.get_filename_from_url(media_url)[-4:]+" ("+label+") [thevideo.me]",media_url])
 
     return video_urls

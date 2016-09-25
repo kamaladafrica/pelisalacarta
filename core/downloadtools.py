@@ -566,7 +566,7 @@ def downloadfile(url, nombrefichero, headers=None, silent=False, continuar=False
         # el fichero ya existe y no se quiere continuar, se aborta
         elif os.path.exists(nombrefichero) and not continuar:
             logger.info("pelisalacarta.core.downloadtools downloadfile: el fichero existe, no se descarga de nuevo")
-            return
+            return -3
 
         # el fichero no existe
         else:

@@ -57,78 +57,67 @@ def remove_chars(path):
 
 def encode(path, _samba=False):
     """
-    Codifica una ruta segun el sistema operativo que estemos utilizando
-    El argumento path tiene que estar codificado en UTF-8
-    @type path str
-    @param path parametro a codificar
+    Codifica una ruta según el sistema operativo que estemos utilizando.
+    El argumento path tiene que estar codificado en utf-8
+    @type path unicode o str con codificación utf-8
+    @param path parámetro a codificar
     @type _samba bool
     @para _samba si la ruta es samba o no
     @rtype: str
-    @return ruta encodeada
+    @return ruta codificada en juego de caracteres del sistema o utf-8 si samba
     """
-    # TODO arreglar encoding
+    if not type(path) == unicode:
+        path = unicode(path, "utf-8", "ignore")
+
     if path.lower().startswith("smb://") or _samba:
-        path = unicode(path, "utf8")
+        path = path.encode("utf-8", "ignore")
     else:
         _ENCODING = sys.getfilesystemencoding() or locale.getdefaultlocale()[1] or 'utf-8'
-        path = unicode(path, "utf-8")
-        path = path.encode("utf-8")
+        path = path.encode(_ENCODING, "ignore")
 
     return remove_chars(path)
 
 
 def decode(path):
     """
-    Descodifica una ruta segun el sistema operativo que estemos utilizando
+    Convierte una cadena de texto al juego de caracteres utf-8
+    eliminando los caracteres que no estén permitidos en utf-8
+    @type: str, unicode, list de str o unicode
     @param path: puede ser una ruta o un list() con varias rutas
     @rtype: str
     @return: ruta codificado en UTF-8
     """
-    # TODO arreglar encoding
     _ENCODING = sys.getfilesystemencoding() or locale.getdefaultlocale()[1] or 'utf-8'
 
     if type(path) == list:
         for x in range(len(path)):
             if not type(path[x]) == unicode:
-                path[x] = path[x].decode(_ENCODING)
-            path[x] = path[x].encode("utf8")
+                path[x] = path[x].decode(_ENCODING, "ignore")
+            path[x] = path[x].encode("utf-8", "ignore")
     else:
         if not type(path) == unicode:
-            path = path.decode("utf-8")
-        path = path.encode("utf-8")
+            path = path.decode(_ENCODING, "ignore")
+        path = path.encode("utf-8", "ignore")
     return path
 
 
-def read(path, linea_inicio = 0, total_lineas = None):
+def read(path):
     """
     Lee el contenido de un archivo y devuelve los datos
     @param path: ruta del fichero
     @type path: str
-    @:param linea_inicio: primera linea a leer del fichero
-    @:type linea_inicio: int positivo
-    @:param total_lineas: numero maximo de lineas a leer. Si es None o 0 o superior al total de lineas se leera el
-        fichero hasta el final.
-    @:type total_lineas: int positivo
     @rtype: str
     @return: datos que contiene el fichero
     """
     path = encode(path)
     data = ""
-    n_line = 0
-    line_count =0
-    if total_lineas <= 0: total_lineas = None
-
     if path.lower().startswith("smb://"):
         from sambatools.smb.smb_structs import OperationFailure
-        
+
         try:
             f = samba.get_file_handle_for_reading(os.path.basename(path), os.path.dirname(path)).read()
             for line in f:
-                if n_line >= linea_inicio:
-                    data += line
-                    line_count += 1
-                n_line += 1
-                if total_lineas is not None and line_count == int(total_lineas): break
+                data += line
             f.close()
 
         except OperationFailure:
@@ -138,15 +127,10 @@ def read(path, linea_inicio = 0, total_lineas = None):
         try:
             f = open(path, "rb")
             for line in f:
-                if n_line >= linea_inicio:
-                    data += line
-                    line_count +=1
-                n_line += 1
-                if total_lineas is not None and line_count == int(total_lineas): break
+                data += line
             f.close()
-
         except EnvironmentError:
-          logger.info("pelisalacarta.core.filetools read: ERROR al leer el archivo: {0}".format(path))
+            logger.info("pelisalacarta.core.filetools read: ERROR al leer el archivo: {0}".format(path))
 
     return data
 
@@ -335,7 +319,7 @@ def rmdir(path):
         os.rmdir(path)
 
 
-def mkdir(path):
+def mkdir(path, respect=True):
     """
     Crea un directorio
     @param path: ruta a crear
@@ -353,11 +337,33 @@ def mkdir(path):
             platformtools.dialog_notification("Error al crear la ruta", path)
     else:
         try:
+            path = normalize(path, respect)
             os.mkdir(path)
         except OSError:
             import traceback
             logger.info("pelisalacarta.core.filetools mkdir: Error al crear la ruta "+traceback.format_exc())
             platformtools.dialog_notification("Error al crear la ruta", path)
+
+
+def normalize(s, respect=True):
+    """
+    Convierte a unicode las tildes de una cadena o las elimina.
+    @param s: cadena a convertir
+    @type s: str
+    @param respect: valor que especifica el tipo de formulario, si conversa los caracteres originales
+    @bool respect: bool
+    @rtype: str
+    @return: devuelve la conversión
+    """
+    if respect:
+        form = "NFC"
+    else:
+        form = "NFD"
+
+    import unicodedata
+    if not isinstance(s, unicode):
+        s = s.decode("UTF-8")
+    return ''.join((c for c in unicodedata.normalize(form, s) if unicodedata.category(c) != 'Mn'))
 
 
 def join(*paths):
