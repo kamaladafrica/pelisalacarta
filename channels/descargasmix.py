@@ -159,9 +159,9 @@ def entradas(item):
             itemlist.append(item.clone(action="episodios", title=titulo, url=scrapedurl, thumbnail=scrapedthumbnail,
                                        fulltitle=scrapedtitle, context="25", contentTitle=scrapedtitle))
     else:
-        patron = '<a class="clip-link".*?href="([^"]+)".*?<img alt="([^"]+)" src="([^"]+)".*?<span class="cat">(.*?)</span>'
+        patron = '<a class="clip-link".*?href="([^"]+)".*?<img alt="([^"]+)" src="([^"]+)".*?<span class="cat">(.*?)</span>(.*?)</p>'
         matches = scrapertools.find_multiple_matches(bloque, patron)
-        for scrapedurl, scrapedtitle, scrapedthumbnail, categoria in matches:
+        for scrapedurl, scrapedtitle, scrapedthumbnail, categoria, info in matches:
             titulo = scrapertools.decodeHtmlentities(scrapedtitle)
             scrapedtitle = scrapertools.decodeHtmlentities(scrapedtitle.split("[")[0])
             action = "findvideos"
@@ -169,6 +169,17 @@ def entradas(item):
             if "Series" in categoria:
                 action = "episodios"
                 show = scrapedtitle
+            elif categoria and categoria != "peliculas" and categoria != "documentales":
+                try:
+                    titulo += " ["+categoria.rsplit(", ",1)[1]+"]"
+                except:
+                    titulo += " ["+categoria+"]"
+                if 'l-espmini' in info:
+                    titulo += " [ESP]"
+                if 'l-latmini' in info:
+                    titulo += " [LAT]"
+                if 'l-vosemini' in info:
+                    titulo += " [VOSE]"
 
             scrapedthumbnail = "http:"+scrapedthumbnail.replace("-129x180", "")
             scrapedthumbnail = scrapedthumbnail.rsplit("/", 1)[0]+"/"+urllib.quote(scrapedthumbnail.rsplit("/", 1)[1])
@@ -323,7 +334,14 @@ def findvideos(item):
     data_online = scrapertools.find_single_match(data, 'Ver online</div>(.*?)<div class="section-box related-'
                                                        'posts">')
     if len(data_online) > 0:
-        itemlist.append(item.clone(title="Enlaces Online", action="", text_color=color1))
+        title = "Enlaces Online"
+        if '"l-latino2"' in data_online:
+            title += " [LAT]"
+        elif '"l-esp2"' in data_online:
+            title += " [ESP]"
+        elif '"l-vose2"' in data_online:
+            title += " [VOSE]"
+        itemlist.append(item.clone(title=title, action="", text_color=color1))
         patron = 'make_links.*?,[\'"]([^"\']+)["\']'
         matches = scrapertools.find_multiple_matches(data_online, patron)
         for code in matches:
@@ -334,12 +352,18 @@ def findvideos(item):
                 itemlist.append(item.clone(action="play", server=enlaces[0][2], title=title, url=enlaces[0][1]))
 
     #Patron descarga
-    patron = '<div class="floatLeft double(?:nuevo|)">(.*?)</div>(.*?)' \
-             '(?:<div(?: id="mirrors"|) class="contentModuleSmall mirrors">|<div class="section-box related-posts">)'
+    patron = '<div class="(?:floatLeft |)double(?:nuevo|)">(.*?)</div>(.*?)' \
+             '(?:<div(?: id="mirrors"|) class="(?:contentModuleSmall |)mirrors">|<div class="section-box related-posts">)'
     bloques_descarga = scrapertools.find_multiple_matches(data, patron)
     for title_bloque, bloque in bloques_descarga:
         if title_bloque == "Ver online":
             continue
+        if '"l-latino2"' in bloque:
+            title_bloque += " [LAT]"
+        elif '"l-esp2"' in bloque:
+            title_bloque += " [ESP]"
+        elif '"l-vose2"' in bloque:
+            title_bloque += " [VOSE]"
         itemlist.append(item.clone(title=title_bloque, action="", text_color=color1))
         if '<div class="subiendo">' in bloque:
             itemlist.append(item.clone(title="   Los enlaces se están subiendo", action=""))
