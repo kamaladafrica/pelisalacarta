@@ -42,7 +42,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     headers_c = [['User-Agent', 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0'],
                  ['Referer', page_url],
                  ['Cookie', '; lang=1']]
-    coding_url = scrapertools.find_single_match(data, 'src="(http://www.flashx.tv/\w+.js\?[^"]+)"')
+    coding_url = scrapertools.find_single_match(data, '(?i)src="(http://www.flashx.tv/\w+.js\?[^"]+)"')
     if coding_url.endswith("="):
         coding_url += file_id
     coding = scrapertools.downloadpage(coding_url, headers=headers_c)
@@ -58,10 +58,16 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     headers.append(['Cookie', 'lang=1; file_id=%s; aff=%s' % (file_id, aff)])
     data = scrapertools.downloadpage('http://www.flashx.tv/dl?%s' % flashx_id, post=post, headers=headers)
 
-    match = scrapertools.find_single_match(data, "(eval\(function\(p,a,c,k.*?)\s+</script>")
-    if match:
-        match = jsunpack.unpack(match)
-    else:
+    matches = scrapertools.find_multiple_matches(data, "(eval\(function\(p,a,c,k.*?)\s+</script>")
+    for match in matches:
+        try:
+            match = jsunpack.unpack(match)
+        except:
+            match = ""
+        if "file" in match:
+            break
+
+    if not match:
         match = data
 
     # Extrae la URL
