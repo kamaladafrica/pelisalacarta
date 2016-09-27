@@ -101,23 +101,36 @@ def decode(path):
     return path
 
 
-def read(path):
+def read(path, linea_inicio = 0, total_lineas = None):
     """
     Lee el contenido de un archivo y devuelve los datos
     @param path: ruta del fichero
     @type path: str
+    @:param linea_inicio: primera linea a leer del fichero
+    @:type linea_inicio: int positivo
+    @:param total_lineas: numero maximo de lineas a leer. Si es None o 0 o superior al total de lineas se leera el
+        fichero hasta el final.
+    @:type total_lineas: int positivo
     @rtype: str
     @return: datos que contiene el fichero
     """
     path = encode(path)
     data = ""
+    n_line = 0
+    line_count =0
+    if total_lineas <= 0: total_lineas = None
+
     if path.lower().startswith("smb://"):
         from sambatools.smb.smb_structs import OperationFailure
 
         try:
             f = samba.get_file_handle_for_reading(os.path.basename(path), os.path.dirname(path)).read()
             for line in f:
-                data += line
+                if n_line >= linea_inicio:
+                    data += line
+                    line_count += 1
+                n_line += 1
+                if total_lineas is not None and line_count == int(total_lineas): break
             f.close()
 
         except OperationFailure:
@@ -127,10 +140,15 @@ def read(path):
         try:
             f = open(path, "rb")
             for line in f:
-                data += line
+                if n_line >= linea_inicio:
+                    data += line
+                    line_count +=1
+                n_line += 1
+                if total_lineas is not None and line_count == int(total_lineas): break
             f.close()
+
         except EnvironmentError:
-            logger.info("pelisalacarta.core.filetools read: ERROR al leer el archivo: {0}".format(path))
+           logger.info("pelisalacarta.core.filetools read: ERROR al leer el archivo: {0}".format(path))
 
     return data
 
