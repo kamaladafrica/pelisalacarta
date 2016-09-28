@@ -271,6 +271,7 @@ def episodio(item):
     patrontemporada = '<div class="checkSeason"[^>]+>Temporada '+session+'<div class="right" onclick="controller.checkSeason(.*?)\s+</div></div>'
     matchestemporadas = re.compile(patrontemporada,re.DOTALL).findall(data)
 
+
     for bloque_episodios in matchestemporadas:
         if (DEBUG): logger.info("bloque_episodios="+bloque_episodios)
 
@@ -321,15 +322,17 @@ def peliculas(item):
 def episodios(item):
     logger.info("pelisalacarta.channels.pordede episodios")
     itemlist = []
-
     headers = DEFAULT_HEADERS[:]
 
     # Descarga la pagina
+    idserie = ''
     data = scrapertools.cache_page(item.url, headers=headers)
     if (DEBUG): logger.info("data="+data)
 
     patrontemporada = '<div class="checkSeason"[^>]+>([^<]+)<div class="right" onclick="controller.checkSeason(.*?)\s+</div></div>'
     matchestemporadas = re.compile(patrontemporada,re.DOTALL).findall(data)
+
+    idserie = scrapertools.find_single_match(data,'<div id="layout4" class="itemProfile modelContainer" data-model="serie" data-id="(\d+)"')
 
     for nombre_temporada,bloque_episodios in matchestemporadas:
         if (DEBUG): logger.info("nombre_temporada="+nombre_temporada)
@@ -369,6 +372,11 @@ def episodios(item):
         #show = re.sub(r"\s\(\d+\.\d+\)", "", item.show)
         itemlist.append( Item(channel='pordede', title="Añadir esta serie a la biblioteca de XBMC", url=item.url, action="add_serie_to_library", extra="episodios###", show=show) )
         itemlist.append( Item(channel='pordede', title="Descargar todos los episodios de la serie", url=item.url, action="download_all_episodes", extra="episodios", show=show))
+        itemlist.append( Item(channel='pordede', title="Marcar como Pendiente", tipo="serie", idtemp=idserie, valor="1", action="pordede_check", show=show))
+        itemlist.append( Item(channel='pordede', title="Marcar como Siguiendo", tipo="serie", idtemp=idserie, valor="2", action="pordede_check", show=show))
+        itemlist.append( Item(channel='pordede', title="Marcar como Finalizada", tipo="serie", idtemp=idserie, valor="3", action="pordede_check", show=show))
+        itemlist.append( Item(channel='pordede', title="Marcar como Favorita", tipo="serie", idtemp=idserie, valor="4", action="pordede_check", show=show))
+        itemlist.append( Item(channel='pordede', title="Quitar marca", tipo="serie", idtemp=idserie, valor="0", action="pordede_check", show=show))
 
     return itemlist
 
@@ -459,6 +467,7 @@ def findvideos(item, verTodos=False):
     #headers.append(["Referer",item.extra])
     #headers.append(["X-Requested-With","XMLHttpRequest"])
     data = scrapertools.cache_page(item.url,headers=headers)
+    logger.info(data)
     #if (DEBUG): logger.info("data="+data)
 
     # Extrae las entradas (carpetas)
@@ -472,6 +481,8 @@ def findvideos(item, verTodos=False):
     patron  = '<a target="_blank" class="a aporteLink(.*?)</a>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     itemlist = []
+
+    idpeli = scrapertools.find_single_match(data,'<div class="buttons"><button class="defaultPopup onlyLogin" href="/links/create/ref_id/(\d+)/ref_model/4">Añadir enlace')
 
     if (config.get_platform().startswith("xbmc") or config.get_platform().startswith("kodi")) and "/what/peli" in item.url:
         itemlist.append( Item(channel=item.channel, action="infosinopsis" , title="INFO / SINOPSIS" , url=item.url, thumbnail=item.thumbnail, fanart=item.fanart,  folder=False ))
@@ -579,6 +590,12 @@ def findvideos(item, verTodos=False):
                 itemlist.append(Item(channel=item.channel, action='findallvideos' , title='Ver todos los enlaces', url=item.url, extra=item.extra ))
                 break
             itemlist.append( Item(channel=item.channel, action=subitem['action'] , title=subitem['title'] , url=subitem['url'] , thumbnail=subitem['thumbnail'] , fanart= subitem['fanart'], plot=subitem['plot'] , extra=subitem['extra'] , fulltitle=subitem['fulltitle'] ))
+    
+    if "/what/peli" in item.url or "/what/docu" in item.url:
+	    itemlist.append( Item(channel=item.channel, action="pordede_check" , tipo="peli", title="Marcar como Pendiente" , valor="1", idtemp=idpeli))
+	    itemlist.append( Item(channel=item.channel, action="pordede_check" , tipo="peli", title="Marcar como Vista" , valor="3", idtemp=idpeli))
+	    itemlist.append( Item(channel=item.channel, action="pordede_check" , tipo="peli", title="Marcar como Favorita" , valor="4", idtemp=idpeli))
+	    itemlist.append( Item(channel=item.channel, action="pordede_check" , tipo="peli", title="Quitar Marca" , valor="0", idtemp=idpeli))
 
     return itemlist
 
@@ -752,3 +769,7 @@ def valora_idioma(idioma_0, idioma_1):
     else:
         pts += 9 # sin subtítulos por delante
     return pts
+
+def pordede_check(item):
+    headers = DEFAULT_HEADERS[:]
+    scrapertools.downloadpage("http://www.pordede.com/ajax/mediaaction", post="model="+item.tipo+"&id="+item.idtemp+"&action=status&value="+item.valor)

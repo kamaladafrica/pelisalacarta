@@ -246,11 +246,12 @@ def findvideos(item):
     data = data.replace("\n", "").replace("\t", "")
     data = scrapertools.decodeHtmlentities(data)
 
-    try:
-        from core import tmdb
-        tmdb.set_infoLabels(item, __modo_grafico__)
-    except:
-        pass
+    if item.extra != "library":
+        try:
+            from core import tmdb
+            tmdb.set_infoLabels(item, __modo_grafico__)
+        except:
+            pass
 
     #Enlaces Online
     patron = '<span class="movie-online-list" id_movies_types="([^"]+)" id_movies_servers="([^"]+)".*?id_lang=' \
@@ -296,11 +297,12 @@ def findvideos(item):
 
         itemlist.append(item.clone(channel="trailertools", action="buscartrailer", title="Buscar Tráiler",
                                    text_color="magenta", context=""))
-        if item.category != "Cine":
+        if item.extra != "library":
             if config.get_library_support():
                 itemlist.append(Item(channel=item.channel, title="Añadir película a la biblioteca",
                                      action="add_pelicula_to_library", url=item.url, text_color="green",
-                                     infoLabels={'title': item.fulltitle}, fulltitle=item.fulltitle))
+                                     infoLabels={'title': item.fulltitle}, fulltitle=item.fulltitle,
+                                     extra="library"))
 
     return itemlist
 

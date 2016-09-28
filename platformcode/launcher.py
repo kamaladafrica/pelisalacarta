@@ -280,16 +280,27 @@ def run():
         patron = 'File "'+os.path.join(config.get_runtime_path(), "channels", "").replace("\\", "\\\\")+'([^.]+)\.py"'
         canal = scrapertools.find_single_match(traceback.format_exc(), patron)
         
+        try:
+            xbmc_version = int(xbmc.getInfoLabel( "System.BuildVersion" ).split(".", 1)[0])
+            if xbmc_version > 13:
+                log_name = "kodi.log"
+            else:
+                log_name = "xbmc.log"
+            log_message = "Ruta: "+xbmc.translatePath("special://logpath")+log_name
+        except:
+            log_message = ""
+
         if canal:
             platformtools.dialog_ok(
                 "Error inesperado en el canal " + canal,
-                "Esto suele pasar cuando hay un fallo de conexión, cuando la web del canal "
-                "ha cambiado su estructura, o simplemente "
-                "porque hay algo mal en pelisalacarta.\nPara saber más detalles, consulta el log.")
+                "Puede deberse a un fallo de conexión, la web del canal "
+                "ha cambiado su estructura, o un error interno de pelisalacarta.",
+                "Para saber más detalles, consulta el log.", log_message)
         else:
             platformtools.dialog_ok(
                 "Se ha producido un error en pelisalacarta",
-                "Comprueba el log para ver mas detalles del error.")
+                "Comprueba el log para ver mas detalles del error.",
+                log_message)
 
 
 def set_server_list():

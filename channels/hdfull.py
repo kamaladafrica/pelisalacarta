@@ -19,7 +19,11 @@ from core import servertools
 
 
 host = "http://hdfull.tv"
-account = ( config.get_setting('hdfulluser', 'hdfull') != "" )
+if config.get_setting('hdfulluser', 'hdfull'):
+    account = True
+else:
+    account = False
+
 
 
 def settingCanal(item):
@@ -100,6 +104,7 @@ def search(item,texto):
 
     sid = scrapertools.get_match(data, '.__csrf_magic. value="(sid:[^"]+)"')
     item.extra = urllib.urlencode({'__csrf_magic':sid})+'&menu=search&query='+texto
+    item.title = "Buscar..."
     item.url = host+"/buscar"
 
     try:

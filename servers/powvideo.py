@@ -51,7 +51,7 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
                 video_url = "%s playpath=%s swfUrl=http://powvideo.net/player6/jwplayer.flash.swf pageUrl=%s" % (rtmp+"vod/", playpath, page_url)
             else:
                 rtmp, playpath = video_url.split("mp4:",1)
-                video_url = "%s playpath=%s swfUrl=http://powvideo.net/player6/jwplayer.flash.swf pageUrl=%s" % (rtmp+, "mp4:"+playpath, page_url)
+                video_url = "%s playpath=%s swfUrl=http://powvideo.net/player6/jwplayer.flash.swf pageUrl=%s" % (rtmp, "mp4:"+playpath, page_url)
             filename = "RTMP"
         
         elif "m3u8" in video_url:
