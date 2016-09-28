@@ -148,7 +148,7 @@ def series(item):
                 tvshow_path = filetools.join(raiz, f)
                 url_scraper, item_tvshow = read_nfo(tvshow_path)
                 item_tvshow.title = item_tvshow.contentTitle
-                item_tvshow.text_color = "0xEC0000FF" # TODO Opcionalmente podemos cambiar color si hay mas de un canal
+                item_tvshow.text_color = "0xFFDF7401" # TODO Opcionalmente podemos cambiar color si hay mas de un canal
                 item_tvshow.path = raiz
                 item_tvshow.nfo = tvshow_path
 
@@ -329,7 +329,7 @@ def get_episodios(item):
 
 def findvideos(item):
     logger.info("pelisalacarta.channels.biblioteca findvideos")
-    #logger.debug("item:\n" + item.tostring('\n'))
+    logger.debug("item:\n" + item.tostring('\n'))
 
     itemlist = []
     list_canales = {}

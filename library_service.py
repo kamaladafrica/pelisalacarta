@@ -73,7 +73,8 @@ def create_tvshows_from_xml():
                         else:
                             serie.infoLabels['title'] = tvshow
 
-                        library.save_library_tvshow(serie, list())
+                        insertados, sobreescritos, fallidos = library.save_library_tvshow(serie, list())
+                        # TODO si fallidos !=0 controlar error
 
                     filetools.rename(fname, "series.xml.old")
 
@@ -201,4 +202,4 @@ if __name__ == "__main__":
 
     actualizado = create_tvshows_from_xml()
     create_tvshows_from_json(actualizado)
-    main(overwrite= False)
+    #main(overwrite= False)

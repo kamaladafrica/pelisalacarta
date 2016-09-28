@@ -375,6 +375,7 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite= Tru
         season_episode = scrapertools.get_season_and_episode(e.title.lower())
         e.infoLabels = serie.infoLabels
         e.contentSeason, e.contentEpisodeNumber = season_episode.split("x")
+        season_episode = "%sx%s" %(e.contentSeason, str(e.contentEpisodeNumber).zfill(2))
 
         strm_path = filetools.join(path, "%s.strm" % season_episode)
         if not filetools.exists(strm_path):
@@ -383,7 +384,7 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite= Tru
             item_strm.contentSeason = e.contentSeason
             item_strm.contentEpisodeNumber = e.contentEpisodeNumber
             item_strm.contentType = e.contentType
-            item_strm.contentTitle = "%sx%s" %(e.contentSeason, str(e.contentEpisodeNumber).zfill(2))
+            item_strm.contentTitle = season_episode
             #logger.debug(item_strm.tostring('\n'))
 
             filetools.write(strm_path, '%s?%s' % (addon_name, item_strm.tourl()))
