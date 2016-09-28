@@ -120,6 +120,7 @@
         <setting id="show_all_seasons" type="bool" label="Mostrar la opción &quot;Todos las temporadas&quot;" default="true"/>
         <setting id="no_pile_on_seasons" type="select" label="No apilar temporadas de series" values="Nunca|Sólo si hay una temporada|Siempre" default="Sólo si hay una temporada"/>
         <setting id="scrap_ask_name" type="bool" label="Confirmar nombre de la pelicula/serie al añadir a la biblioteca" default="true"/>
+		<setting id="ask_channel" type="bool" label="Mostrar cuadro de selección de canales " default="false"/>
         <setting type="sep"/>
         <setting label="Filtros" type="lsep"/>
         <setting id="filter_servers" type="bool" label="30068" default="false"/>

@@ -356,7 +356,20 @@ def findvideos(item):
             if (contentTitle in contenido.strip() or item.contentType == 'movie') and nom_canal not in list_canales.keys():
                 list_canales[nom_canal] = filetools.join(path_dir,fd)
 
+    filtro_canal = ''
+    if len(list_canales) > 1 and config.get_setting("ask_channel") == "true":
+        from platformcode import platformtools
+        opciones = [k.capitalize() for k in list_canales.keys()]
+        index = platformtools.dialog_select(config.get_localized_string(30163), opciones)
+        logger.debug(str(index))
+        if index > -1:
+            filtro_canal = opciones[index]
+
+
     for nom_canal, json_path in list_canales.items():
+        if filtro_canal and filtro_canal != nom_canal.capitalize():
+            continue
+
         # TODO lo siguiente podriamos hacerlo multihilo
         # Importamos el canal de la parte seleccionada
         try:
