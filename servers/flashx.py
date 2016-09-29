@@ -56,7 +56,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     time.sleep(6)
     headers.append(['Referer', page_url])
     headers.append(['Cookie', 'lang=1; file_id=%s; aff=%s' % (file_id, aff)])
-    data = scrapertools.downloadpage('http://www.flashx.tv/dl?%s' % flashx_id, post=post, headers=headers)
+    data = scrapertools.downloadpage('http://www.flashx.tv/dl', post=post, headers=headers)
 
     matches = scrapertools.find_multiple_matches(data, "(eval\(function\(p,a,c,k.*?)\s+</script>")
     for match in matches:
