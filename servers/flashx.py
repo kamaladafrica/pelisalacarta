@@ -84,7 +84,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
                 filetools.write(subtitle, data)
             except:
                 import traceback
-                logger.info("pelisalacarta.servers.videomega Error al descargar el subtítulo: "+traceback.format_exc())
+                logger.info("pelisalacarta.servers.flashx Error al descargar el subtítulo: "+traceback.format_exc())
             
     for media_url, label in media_urls:
         if not media_url.endswith("png") and not media_url.endswith(".srt"):
