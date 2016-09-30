@@ -61,9 +61,11 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
                         if not jjencode:
                             pack = scrapertools.find_multiple_matches(data, '(eval \(function\(p,a,c,k,e,d\).*?\{\}\)\))')[-1]
                             jjencode = openload_clean(pack)
+
                         jjdec = JJDecoder(jjencode).decode()
                         number = scrapertools.find_single_match(jjdec, 'charCodeAt\(0\)\s*\+\s*(\d+)')
-                        varhidden = scrapertools.find_single_match(jjdec, 'var\s*\w*\s*=\s*\$\("[#]*([^"]+)"\).text')
+                        varj = scrapertools.find_single_match(jjdec, 'var j\s*=\s*(\w+)\.charCodeAt')
+                        varhidden = scrapertools.find_single_match(jjdec, 'var\s*'+varj+'\s*=\s*\$\("[#]*([^"]+)"\).text')
                         if varhidden != hiddenurl:
                             valuehidden = scrapertools.find_single_match(data, 'id="'+varhidden+'">(.*?)<')
                         videourl = decode_hidden(valuehidden, number)
@@ -100,9 +102,11 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
                         if not jjencode:
                             pack = scrapertools.find_multiple_matches(data, '(eval \(function\(p,a,c,k,e,d\).*?\{\}\)\))')[-1]
                             jjencode = openload_clean(pack)
+
                         jjdec = JJDecoder(jjencode).decode()
                         number = scrapertools.find_single_match(jjdec, 'charCodeAt\(0\)\s*\+\s*(\d+)')
-                        varhidden = scrapertools.find_single_match(jjdec, 'var\s*\w*\s*=\s*\$\("[#]*([^"]+)"\).text')
+                        varj = scrapertools.find_single_match(jjdec, 'var j\s*=\s*(\w+)\.charCodeAt')
+                        varhidden = scrapertools.find_single_match(jjdec, 'var\s*'+varj+'\s*=\s*\$\("[#]*([^"]+)"\).text')
                         if varhidden != hiddenurl:
                             valuehidden = scrapertools.find_single_match(data, 'id="'+varhidden+'">(.*?)<')
                         videourl = decode_hidden(valuehidden, number)
