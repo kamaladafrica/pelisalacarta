@@ -35,40 +35,61 @@ def test_video_exists(page_url):
 def get_video_url(page_url, premium=False, user="", password="", video_password=""):
     logger.info("pelisalacarta.servers.flashx url=" + page_url)
 
-    data = scrapertools.downloadpageWithoutCookies(page_url)
+    # Lo pide una vez
+    data = scrapertools.cache_page(page_url, headers=headers)
+    # Si salta aviso, se carga la pagina de comprobacion y luego la inicial
+    if "You try to access this video with Kodi" in data:
+        url_reload = scrapertools.find_single_match(data, 'try to reload the page.*?href="([^"]+)"')
+        try:
+            data = scrapertools.cache_page(url_reload, headers=headers)
+            data = scrapertools.cache_page(page_url, headers=headers)
+        except:
+            pass
 
-    file_id = scrapertools.find_single_match(data, "'file_id', '([^']+)'")
-    aff = scrapertools.find_single_match(data, "'aff', '([^']+)'")
-    headers_c = [['User-Agent', 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0'],
-                 ['Referer', page_url],
-                 ['Cookie', '; lang=1']]
-    coding_url = scrapertools.find_single_match(data, '(?i)src="(http://www.flashx.tv/\w+.js\?[^"]+)"')
-    if coding_url.endswith("="):
-        coding_url += file_id
-    coding = scrapertools.downloadpage(coding_url, headers=headers_c)
+    match = scrapertools.find_single_match(data, "<script type='text/javascript'>(.*?)</script>")
 
-    data = scrapertools.downloadpage(page_url, headers=headers)
-    flashx_id = scrapertools.find_single_match(data, 'name="id" value="([^"]+)"')
-    fname = scrapertools.find_single_match(data, 'name="fname" value="([^"]+)"')
-    hash_f = scrapertools.find_single_match(data, 'name="hash" value="([^"]+)"')
-    post = 'op=download1&usr_login=&id=%s&fname=%s&referer=&hash=%s&imhuman=Proceed+to+video' % (flashx_id, urllib.quote(fname), hash_f)
-
-    time.sleep(6)
-    headers.append(['Referer', page_url])
-    headers.append(['Cookie', 'lang=1; file_id=%s; aff=%s' % (file_id, aff)])
-    data = scrapertools.downloadpage('http://www.flashx.tv/dl', post=post, headers=headers)
-
-    matches = scrapertools.find_multiple_matches(data, "(eval\(function\(p,a,c,k.*?)\s+</script>")
-    for match in matches:
+    if match.startswith("eval"):
         try:
             match = jsunpack.unpack(match)
         except:
-            match = ""
-        if "file" in match:
-            break
+            pass
 
-    if not match:
-        match = data
+    if not "sources:[{file:" in match:
+        page_url = page_url.replace("playvid-", "")
+        data = scrapertools.downloadpageWithoutCookies(page_url)
+
+        file_id = scrapertools.find_single_match(data, "'file_id', '([^']+)'")
+        aff = scrapertools.find_single_match(data, "'aff', '([^']+)'")
+        headers_c = [['User-Agent', 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0'],
+                     ['Referer', page_url],
+                     ['Cookie', '; lang=1']]
+        coding_url = scrapertools.find_single_match(data, '(?i)src="(http://www.flashx.tv/\w+.js\?[^"]+)"')
+        if coding_url.endswith("="):
+            coding_url += file_id
+        coding = scrapertools.downloadpage(coding_url, headers=headers_c)
+
+        data = scrapertools.downloadpage(page_url, headers=headers)
+        flashx_id = scrapertools.find_single_match(data, 'name="id" value="([^"]+)"')
+        fname = scrapertools.find_single_match(data, 'name="fname" value="([^"]+)"')
+        hash_f = scrapertools.find_single_match(data, 'name="hash" value="([^"]+)"')
+        post = 'op=download1&usr_login=&id=%s&fname=%s&referer=&hash=%s&imhuman=Proceed+to+video' % (flashx_id, urllib.quote(fname), hash_f)
+
+        time.sleep(6)
+        headers.append(['Referer', page_url])
+        headers.append(['Cookie', 'lang=1; file_id=%s; aff=%s' % (file_id, aff)])
+        data = scrapertools.downloadpage('http://www.flashx.tv/dl', post=post, headers=headers)
+
+        matches = scrapertools.find_multiple_matches(data, "(eval\(function\(p,a,c,k.*?)\s+</script>")
+        for match in matches:
+            try:
+                match = jsunpack.unpack(match)
+            except:
+                match = ""
+            if "file" in match:
+                break
+
+        if not match:
+            match = data
 
     # Extrae la URL
     # {file:"http://f11-play.flashx.tv/luq4gfc7gxixexzw6v4lhz4xqslgqmqku7gxjf4bk43u4qvwzsadrjsozxoa/video1.mp4"}
@@ -110,7 +131,7 @@ def find_videos(data):
 
     for match in matches:
         titulo = "[flashx]"
-        url = "http://www.flashx.tv/%s.html" % match
+        url = "http://www.flashx.tv/playvid-%s.html" % match
         if url not in encontrados:
             logger.info("  url=" + url)
             devuelve.append([titulo, url, 'flashx'])
