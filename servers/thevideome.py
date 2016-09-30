@@ -22,14 +22,14 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
     
     data = scrapertools.cache_page( page_url )
 
-    tkn = scrapertools.find_single_match(data, "tkn='([^']+)'")
+    tkn = scrapertools.find_single_match(data, "mpri_Key='([^']+)'")
     data_vt = scrapertools.downloadpage("http://thevideo.me/jwv/%s" % tkn)
-    data_vt = scrapertools.find_single_match(data_vt, 'jwConfig\|([^\|]+)\|')
+    data_vt = scrapertools.find_single_match(data_vt, 'function\|([^\|]+)\|')
     
-    media_urls = scrapertools.find_multiple_matches(data,"label\s*\:\s*'([^']+)'\s*\,\s*file\s*\:\s*'([^']+)'")
+    media_urls = scrapertools.find_multiple_matches(data,'\{"file"\s*\:\s*"([^"]+)"\s*,\s*"label"\s*\:\s*"([^"]+)"')
     video_urls = []
 
-    for label, media_url in media_urls:
+    for media_url, label  in media_urls:
         media_url += "?direct=false&ua=1&vt=%s" % data_vt
         video_urls.append( [ scrapertools.get_filename_from_url(media_url)[-4:]+" ("+label+") [thevideo.me]",media_url])
 
