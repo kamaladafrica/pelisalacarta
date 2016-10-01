@@ -359,10 +359,10 @@ def findvideos(item):
     filtro_canal = ''
     if len(list_canales) > 1 and config.get_setting("ask_channel") == "true":
         from platformcode import platformtools
-        opciones = [k.capitalize() for k in list_canales.keys()]
+        opciones = ["Mostrar solo los enlaces de %s" %k.capitalize() for k in list_canales.keys()]
+        opciones.insert(0,"Mostrar todos los enlaces")
         index = platformtools.dialog_select(config.get_localized_string(30163), opciones)
-        logger.debug(str(index))
-        if index > -1:
+        if index > 0:
             filtro_canal = opciones[index]
 
 

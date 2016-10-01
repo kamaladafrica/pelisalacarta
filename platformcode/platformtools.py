@@ -407,6 +407,8 @@ def play_video(item, strm=False):
 
     # se obtienen la opción predeterminada de la configuración del addon
     seleccion = get_seleccion(default_action, opciones, seleccion, video_urls)
+    if seleccion < 0: # Cuadro cancelado
+        return
 
     logger.info("seleccion=%d" % seleccion)
     logger.info("seleccion=%s" % opciones[seleccion])
@@ -721,6 +723,7 @@ def set_opcion(item, seleccion, opciones, video_urls):
         # Para evitar el error "Uno o más elementos fallaron" al cancelar la selección desde fichero strm
         listitem = xbmcgui.ListItem(item.title, iconImage="DefaultVideo.png", thumbnailImage=item.thumbnail)
         xbmcplugin.setResolvedUrl(int(sys.argv[1]), False, listitem)
+
 
     # "Enviar a JDownloader"
     if opciones[seleccion] == config.get_localized_string(30158):
