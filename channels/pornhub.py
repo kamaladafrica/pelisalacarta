@@ -72,7 +72,7 @@ def peliculas(item):
     patron = '<div class="phimage">.*?'
     patron += '<a href="([^"]+)" title="([^"]+).*?'
     patron += '<var class="duration">([^<]+)</var>(.*?)</div>.*?'
-    patron += 'data-smallthumb="([^"]+)"'
+    patron += 'data-mediumthumb="([^"]+)"'
     
     matches = re.compile(patron,re.DOTALL).findall(videodata)
     
