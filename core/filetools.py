@@ -148,7 +148,7 @@ def read(path, linea_inicio = 0, total_lineas = None):
             f.close()
 
         except EnvironmentError:
-           logger.info("pelisalacarta.core.filetools read: ERROR al leer el archivo: {0}".format(path))
+          logger.info("pelisalacarta.core.filetools read: ERROR al leer el archivo: %s" %path)
 
     return data
 
@@ -355,7 +355,7 @@ def mkdir(path, respect=True):
             platformtools.dialog_notification("Error al crear la ruta", path)
     else:
         try:
-            path = normalize(path, respect)
+            #path = normalize(path, respect)
             os.mkdir(path)
         except OSError:
             import traceback

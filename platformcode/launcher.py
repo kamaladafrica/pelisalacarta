@@ -177,7 +177,7 @@ def run():
             # Special play action
             if item.action == "play":
                 logger.info("pelisalacarta.platformcode.launcher play")
-                # logger.debug("item_toPlay: " + "\n" + item.tostring('\n'))
+                #logger.debug("item_toPlay: " + "\n" + item.tostring('\n'))
 
                 # First checks if channel has a "play" function
                 if hasattr(channel, 'play'):
@@ -302,6 +302,7 @@ def run():
                 "Comprueba el log para ver mas detalles del error.",
                 log_message)
 
+
 def set_server_list():
     logger.info("pelisalacarta.platformcode.launcher.set_server_list")
 
@@ -415,3 +416,15 @@ def play_from_library(item, server_white_list, server_black_list):
     new_item.strm_path = item.strm_path
 
     platformtools.play_video(new_item, True)
+
+
+
+
+
+
+
+
+
+
+
+

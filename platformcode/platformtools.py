@@ -209,7 +209,8 @@ def set_infolabels(listitem, item):
 
     listitem.setInfo("video", item.infoLabels)
     listitem.setInfo("video", {"Title": item.title})
-    listitem.setArt({'poster': item.thumbnail})
+    # Añadido para Kodi Kyrpton (v17)
+    listitem.setArt("poster", item.thumbnail)
 
 
 def set_context_commands(item, parent_item):
@@ -408,6 +409,8 @@ def play_video(item, strm=False):
 
     # se obtienen la opción predeterminada de la configuración del addon
     seleccion = get_seleccion(default_action, opciones, seleccion, video_urls)
+    if seleccion < 0: # Cuadro cancelado
+        return
 
     logger.info("seleccion=%d" % seleccion)
     logger.info("seleccion=%s" % opciones[seleccion])
@@ -490,7 +493,7 @@ def show_channel_settings(list_controls=None, dict_values=None, caption="", call
                           custom_button=None):
     """
     Muestra un cuadro de configuracion personalizado para cada canal y guarda los datos al cerrarlo.
-    
+
     Parametros: ver descripcion en xbmc_config_menu.SettingsWindow
     @param list_controls: lista de elementos a mostrar en la ventana.
     @type list_controls: list
@@ -722,6 +725,7 @@ def set_opcion(item, seleccion, opciones, video_urls):
         # Para evitar el error "Uno o más elementos fallaron" al cancelar la selección desde fichero strm
         listitem = xbmcgui.ListItem(item.title, iconImage="DefaultVideo.png", thumbnailImage=item.thumbnail)
         xbmcplugin.setResolvedUrl(int(sys.argv[1]), False, listitem)
+
 
     # "Enviar a JDownloader"
     if opciones[seleccion] == config.get_localized_string(30158):

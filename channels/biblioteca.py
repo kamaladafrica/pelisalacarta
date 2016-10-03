@@ -146,9 +146,10 @@ def series(item):
         for f in ficheros:
             if f == "tvshow.nfo":
                 tvshow_path = filetools.join(raiz, f)
+                logger.debug(tvshow_path)
                 url_scraper, item_tvshow = read_nfo(tvshow_path)
                 item_tvshow.title = item_tvshow.contentTitle
-                item_tvshow.text_color = "0xEC0000FF" # TODO Opcionalmente podemos cambiar color si hay mas de un canal
+                item_tvshow.text_color = "0xFFDF7401" # TODO Opcionalmente podemos cambiar color si hay mas de un canal
                 item_tvshow.path = raiz
                 item_tvshow.nfo = tvshow_path
 
@@ -329,7 +330,7 @@ def get_episodios(item):
 
 def findvideos(item):
     logger.info("pelisalacarta.channels.biblioteca findvideos")
-    #logger.debug("item:\n" + item.tostring('\n'))
+    logger.debug("item:\n" + item.tostring('\n'))
 
     itemlist = []
     list_canales = {}
@@ -356,7 +357,22 @@ def findvideos(item):
             if (contentTitle in contenido.strip() or item.contentType == 'movie') and nom_canal not in list_canales.keys():
                 list_canales[nom_canal] = filetools.join(path_dir,fd)
 
+    filtro_canal = ''
+    if len(list_canales) > 1 and config.get_setting("ask_channel") == "true":
+        from platformcode import platformtools
+        opciones = ["Mostrar solo los enlaces de %s" %k.capitalize() for k in list_canales.keys()]
+        opciones.insert(0,"Mostrar todos los enlaces")
+        index = platformtools.dialog_select(config.get_localized_string(30163), opciones)
+        if index < 0:
+            return []
+        if index > 0:
+            filtro_canal = opciones[index]
+
+
     for nom_canal, json_path in list_canales.items():
+        if filtro_canal and filtro_canal != nom_canal.capitalize():
+            continue
+
         # TODO lo siguiente podriamos hacerlo multihilo
         # Importamos el canal de la parte seleccionada
         try:
@@ -450,4 +466,3 @@ def mark_tvshow_as_updatable(item):
 def eliminar(item):
     logger.info("pelisalacarta.channels.biblioteca eliminar")
     library.delete(item)
-
