@@ -202,4 +202,4 @@ if __name__ == "__main__":
 
     actualizado = create_tvshows_from_xml()
     create_tvshows_from_json(actualizado)
-    #main(overwrite= False)
+    main(overwrite= False)

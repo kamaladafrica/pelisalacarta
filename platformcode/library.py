@@ -241,7 +241,7 @@ def save_library_tvshow(item, episodelist):
     @return:  el número de episodios fallidos o -1 si ha fallado toda la serie
     """
     logger.info("pelisalacarta.platformcode.library save_library_tvshow")
-    #logger.debug(item.tostring('\n'))
+    logger.debug(item.tostring('\n'))
     path = ""
 
     # Itentamos obtener el titulo correcto:
@@ -691,16 +691,14 @@ def add_serie_to_library(item, channel):
 
     if fallidos == -1:
         platformtools.dialog_ok("Biblioteca", "ERROR, la serie NO se ha añadido a la biblioteca")
-        logger.error("La serie {0} no se ha podido añadir a la biblioteca".format(item.show))
+        logger.error("La serie %s no se ha podido añadir a la biblioteca" %item.show)
 
     elif fallidos > 0:
         platformtools.dialog_ok("Biblioteca", "ERROR, la serie NO se ha añadido completa a la biblioteca")
-        logger.error("No se han podido añadir {0} episodios de la serie {1} a la biblioteca".format(fallidos,
-                                                                                                    item.show))
+        logger.error("No se han podido añadir %s episodios de la serie %s a la biblioteca" %(fallidos, item.show))
     else:
         platformtools.dialog_ok("Biblioteca", "La serie se ha añadido a la biblioteca")
-        logger.info("[launcher.py] Se han añadido {0} episodios de la serie {1} a la biblioteca".format(insertados,
-                                                                                                        item.show))
+        logger.info("[launcher.py] Se han añadido %s episodios de la serie %s a la biblioteca" %(insertados, item.show))
 
 
 # metodos de menu contextual

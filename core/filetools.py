@@ -355,7 +355,7 @@ def mkdir(path, respect=True):
             platformtools.dialog_notification("Error al crear la ruta", path)
     else:
         try:
-            path = normalize(path, respect)
+            #path = normalize(path, respect)
             os.mkdir(path)
         except OSError:
             import traceback
