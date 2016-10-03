@@ -428,4 +428,4 @@ def findvideos(item):
     
 def episodios(item):
     # Necesario para las actualizaciones automaticas
-    return completo(Item(url=item.url, show=item.show, extra= "serie_add"))
+    return completo(Item(channel=item.channel, url=item.url, show=item.show, extra= "serie_add"))

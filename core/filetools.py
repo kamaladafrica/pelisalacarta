@@ -122,7 +122,7 @@ def read(path, linea_inicio = 0, total_lineas = None):
 
     if path.lower().startswith("smb://"):
         from sambatools.smb.smb_structs import OperationFailure
-
+        
         try:
             f = samba.get_file_handle_for_reading(os.path.basename(path), os.path.dirname(path)).read()
             for line in f:

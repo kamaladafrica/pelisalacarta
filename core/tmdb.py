@@ -1070,8 +1070,11 @@ class Tmdb(object):
         ret_dic["temporada_nombre"] = temporada["name"]
         ret_dic["temporada_sinopsis"] = temporada["overview"]
         ret_dic["temporada_num_episodios"] = len(temporada["episodes"])
-        date = temporada["air_date"].split("-")
-        ret_dic["temporada_air_date"] = date[2] + "/" + date[1] + "/" + date[0]
+        if temporada["air_date"]:
+            date = temporada["air_date"].split("-")
+            ret_dic["temporada_air_date"] = date[2] + "/" + date[1] + "/" + date[0]
+        else:
+            ret_dic["temporada_air_date"] = ""
         if temporada["poster_path"]:
             ret_dic["temporada_poster"] = 'http://image.tmdb.org/t/p/original' + temporada["poster_path"]
         else:
@@ -1094,8 +1097,11 @@ class Tmdb(object):
             episodio = temporada["episodes"][capitulo - 1]
             ret_dic["episodio_titulo"] = episodio["name"]
             ret_dic["episodio_sinopsis"] = episodio["overview"]
-            date = episodio["air_date"].split("-")
-            ret_dic["episodio_air_date"] = date[2] + "/" + date[1] + "/" + date[0]
+            if episodio["air_date"]:
+                date = episodio["air_date"].split("-")
+                ret_dic["episodio_air_date"] = date[2] + "/" + date[1] + "/" + date[0]
+            else:
+                ret_dic["episodio_air_date"] = ""
             ret_dic["episodio_crew"] = episodio["crew"]
             ret_dic["episodio_guest_stars"] = episodio["guest_stars"]
             ret_dic["episodio_vote_count"] = episodio["vote_count"]
