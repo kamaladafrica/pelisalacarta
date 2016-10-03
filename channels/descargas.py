@@ -54,7 +54,7 @@ def mainlist(item):
         if not _file.endswith(".json"):
             continue
 
-        filepath = os.path.join(item.url, _file)
+        filepath = filetools.join(item.url, _file)
 
         # Creamos el Item
         json_item = Item().fromjson(filetools.read(filepath))
@@ -102,7 +102,7 @@ def mainlist(item):
 
 
 def update_library(item):
-    video_path = os.path.join(config.get_library_path(), item.downloadFilename)
+    video_path = filetools.join(config.get_library_path(), item.downloadFilename)
 
     # Peliculas
     if not item.contentSerieName:
@@ -119,7 +119,7 @@ def update_library(item):
             serie.contentSerieName = item.contentSerieName
             tmdb.find_and_set_infoLabels_tmdb(serie)
 
-        open(os.path.join(os.path.dirname(video_path), "tvshow.json"), "wb").write(serie.tojson())
+        open(filetools.join(filetools.dirname(video_path), "tvshow.json"), "wb").write(serie.tojson())
 
         if item.infoLabels.get("tmdb_id"):
             serie.contentSeason = item.contentSeason
@@ -127,7 +127,7 @@ def update_library(item):
             logger.info(item.tostring("\n"))
             tmdb.find_and_set_infoLabels_tmdb(serie)
 
-        open(os.path.join(os.path.dirname(video_path), "tvshow.nfo"), "wb").write(
+        open(os.filetools.join(filetools.dirname(video_path), "tvshow.nfo"), "wb").write(
             "https://www.themoviedb.org/tv/%s" % serie.infoLabels.get("tmdb_id"))
         open(os.path.splitext(video_path)[0] + ".json", "wb").write(serie.tojson())
 
@@ -140,7 +140,7 @@ def clean_all(item):
     """
     logger.info("pelisalacarta.core.descargas clean_all")
     for fichero in sorted(filetools.listdir(item.url)):
-        filetools.remove(os.path.join(item.url, fichero))
+        filetools.remove(filetools.join(item.url, fichero))
 
     platformtools.itemlist_refresh()
 
@@ -154,9 +154,9 @@ def clean_ready(item):
     logger.info("pelisalacarta.core.descargas clean_ready")
     for fichero in sorted(filetools.listdir(item.url)):
         if fichero.endswith(".json"):
-            download_item = Item().fromjson(filetools.read(os.path.join(item.url, fichero)))
+            download_item = Item().fromjson(filetools.read(filetools.join(item.url, fichero)))
             if download_item.downloadStatus == 2:
-                filetools.remove(os.path.join(item.url, fichero))
+                filetools.remove(filetools.join(item.url, fichero))
 
     platformtools.itemlist_refresh()
 
@@ -170,14 +170,14 @@ def restart_error(item):
     logger.info("pelisalacarta.core.descargas restart_error")
     for fichero in sorted(filetools.listdir(item.url)):
         if fichero.endswith(".json"):
-            download_item = Item().fromjson(filetools.read(os.path.join(item.url, fichero)))
+            download_item = Item().fromjson(filetools.read(filetools.join(item.url, fichero)))
             if download_item.downloadStatus == 3:
-                if filetools.isfile(os.path.join(config.get_library_path(), download_item.downloadFilename)):
-                    filetools.remove(os.path.join(config.get_library_path(), download_item.downloadFilename))
+                if filetools.isfile(filetools.join(config.get_library_path(), download_item.downloadFilename)):
+                    filetools.remove(filetools.join(config.get_library_path(), download_item.downloadFilename))
                 download_item.downloadStatus = 0
                 download_item.downloadComplete = 0
                 download_item.downloadProgress = 0
-                filetools.write(os.path.join(item.url, fichero), download_item.tojson())
+                filetools.write(filetools.join(item.url, fichero), download_item.tojson())
 
     platformtools.itemlist_refresh()
 
@@ -231,8 +231,8 @@ def menu(item):
 
     # Reiniciar descarga
     if opciones[seleccion] == op[2]:
-        if filetools.isfile(os.path.join(config.get_library_path(), item.downloadFilename)):
-            filetools.remove(os.path.join(config.get_library_path(), item.downloadFilename))
+        if filetools.isfile(filetools.join(config.get_library_path(), item.downloadFilename)):
+            filetools.remove(filetools.join(config.get_library_path(), item.downloadFilename))
         json_item = Item().fromjson(filetools.read(item.path))
         json_item.downloadStatus = 0
         json_item.downloadComplete = 0
@@ -256,7 +256,7 @@ def download_from_url(url, item, continuar=True):
     logger.debug("item:\n" + item.tostring('\n'))
     # Obtenemos la ruta de descarga y el nombre del archivo
 
-    download_path = os.path.dirname(filetools.join(config.get_library_path(), item.downloadFilename))
+    download_path = filetools.dirname(filetools.join(config.get_library_path(), item.downloadFilename))
     file_name = os.path.basename(filetools.join(config.get_library_path(), item.downloadFilename))
 
     # Creamos la carpeta si no existe
@@ -385,8 +385,8 @@ def downloadall(item):
     time.sleep(0.5)
     for fichero in sorted(filetools.listdir(item.url)):
         if fichero.endswith(".json"):
-            download_item = Item().fromjson(filetools.read(os.path.join(item.url, fichero)))
-            download_item.path = os.path.join(item.url, fichero)
+            download_item = Item().fromjson(filetools.read(filetools.join(item.url, fichero)))
+            download_item.path = filetools.join(item.url, fichero)
             if download_item.downloadStatus in [0, 1]:
 
                 res = start_download(download_item, True)
@@ -510,10 +510,10 @@ def get_episodes(item):
             episodios[x].title.lower()).split("x")
 
         if not episodios[x].contentSeason or not episodios[x].contentEpisodeNumber or not episodios[x].contentTitle:
-            episodios[x].downloadFilename = os.path.join(item.downloadFilename,
+            episodios[x].downloadFilename = filetools.join(item.downloadFilename,
                                                          downloadtools.limpia_nombre_excepto_1(episodios[x].title))
         else:
-            episodios[x].downloadFilename = os.path.join(item.downloadFilename,
+            episodios[x].downloadFilename = filetools.join(item.downloadFilename,
                                                          "{0}x{1} - {2}".format(episodios[x].contentSeason,
                                                                                 episodios[x].contentEpisodeNumber,
                                                                                 episodios[x].contentTitle))
@@ -547,10 +547,10 @@ def save_download_movie(item):
     item.downloadProgress = 0
     item.downloadSize = 0
     item.downloadCompleted = 0
-    item.downloadFilename = os.path.join("Descargas", "Cine", downloadtools.limpia_nombre_excepto_1(item.contentTitle))
+    item.downloadFilename = filetools.join("Descargas", "Cine", downloadtools.limpia_nombre_excepto_1(item.contentTitle))
     item.downloadFilename += " [" + item.contentChannel + "]"
 
-    item.path = os.path.join(config.get_setting("downloadlistpath"), str(time.time()) + ".json")
+    item.path = filetools.join(config.get_setting("downloadlistpath"), str(time.time()) + ".json")
     filetools.write(item.path, item.tojson())
     start = platformtools.dialog_yesno(config.get_localized_string(30101), "¿Iniciar la descarga ahora?")
 
@@ -572,14 +572,14 @@ def save_download_tvshow(item):
 
     tmdb.find_and_set_infoLabels_tmdb(item)
 
-    item.downloadFilename = os.path.join("Descargas", "Series", item.contentSerieName)
+    item.downloadFilename = filetools.join("Descargas", "Series", item.contentSerieName)
     itemlist = get_episodes(item)
 
     progreso = platformtools.dialog_progress("Descargas", "Añadiendo capitulos...")
 
     for x in range(len(itemlist)):
         progreso.update(x * 100 / len(itemlist), os.path.basename(itemlist[x].downloadFilename))
-        itemlist[x].path = os.path.join(config.get_setting("downloadlistpath"), str(time.time()) + ".json")
+        itemlist[x].path = filetools.join(config.get_setting("downloadlistpath"), str(time.time()) + ".json")
         filetools.write(itemlist[x].path, itemlist[x].tojson())
         time.sleep(0.1)
 
@@ -610,7 +610,7 @@ def check_bookmark(savepath):
             # Obtenemos el item desde el .txt
             canal, titulo, thumbnail, plot, server, url, fulltitle = favoritos.readbookmark(fichero, savepath)
             item = Item(channel=canal, action="play", url=url, server=server, title=fulltitle, thumbnail=thumbnail,
-                        plot=plot, fanart=thumbnail, extra=os.path.join(savepath, fichero), fulltitle=fulltitle,
+                        plot=plot, fanart=thumbnail, extra=filetools.join(savepath, fichero), fulltitle=fulltitle,
                         folder=False)
 
             # Eliminamos el .txt
@@ -618,7 +618,7 @@ def check_bookmark(savepath):
             item.extra = ""
 
             # Guardamos el archivo
-            filename = os.path.join(savepath, str(time.time()) + ".json")
+            filename = filetools.join(savepath, str(time.time()) + ".json")
             filetools.write(filename, item.tojson())
 
 
