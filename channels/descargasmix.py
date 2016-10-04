@@ -425,6 +425,7 @@ def play(item):
         global DEFAULT_HEADERS
         DEFAULT_HEADERS.append(["Referer", item.extra])
         data = scrapertools.downloadpage(item.url, headers=DEFAULT_HEADERS)
+        subtitulo = scrapertools.find_single_match(data, "var subtitulo='([^']+)'")
         DEFAULT_HEADERS[1][1] = item.url
         calidades = ["1080p", "720p", "480p", "360p"]
         for i in range(0, len(calidades)):
@@ -433,7 +434,7 @@ def play(item):
                 url_video = scrapertools.get_header_from_response(url_redirect, header_to_get="location", headers=DEFAULT_HEADERS)
                 if url_video:
                     url_video = url_video.replace(",", "%2C")
-                    itemlist.append(item.clone(url=url_video))
+                    itemlist.append(item.clone(url=url_video, subtitle=subtitulo))
                     break
     else:
         itemlist.append(item.clone())
