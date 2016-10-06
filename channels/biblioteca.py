@@ -146,7 +146,7 @@ def series(item):
         for f in ficheros:
             if f == "tvshow.nfo":
                 tvshow_path = filetools.join(raiz, f)
-                logger.debug(tvshow_path)
+                #logger.debug(tvshow_path)
                 url_scraper, item_tvshow = read_nfo(tvshow_path)
                 item_tvshow.title = item_tvshow.contentTitle
                 item_tvshow.text_color = "0xFFDF7401" # TODO Opcionalmente podemos cambiar color si hay mas de un canal

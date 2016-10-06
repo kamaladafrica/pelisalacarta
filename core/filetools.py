@@ -202,7 +202,6 @@ def open_for_reading(path):
     """
     path = encode(path)
     if path.lower().startswith("smb://"):
-
         return samba.get_file_handle_for_reading(os.path.basename(path), os.path.dirname(path))
     else:
         return open(path, "rb")
@@ -215,14 +214,31 @@ def rename(path, new_name):
     @type path: str
     @param new_name: nuevo nombre
     @type new_name: str
+    @rtype: bool
+    @return: devuelve False en caso de error
     """
     path = encode(path)
     if path.lower().startswith("smb://"):
         new_name = encode(new_name, True)
-        samba.rename(os.path.basename(path), new_name, os.path.dirname(path))
+        try:
+            samba.rename(os.path.basename(path), new_name, os.path.dirname(path))
+        except:
+            import traceback
+            logger.info("pelisalacarta.core.filetools mkdir: Error al renombrar el archivo o carpeta" + traceback.format_exc())
+            platformtools.dialog_notification("Error al renombrar", path)
+            return False
     else:
         new_name = encode(new_name, False)
-        os.rename(path, os.path.join(os.path.dirname(path), new_name))
+        try:
+            os.rename(path, os.path.join(os.path.dirname(path), new_name))
+        except OSError:
+            import traceback
+            logger.info(
+                "pelisalacarta.core.filetools mkdir: Error al renombrar el archivo o carpeta" + traceback.format_exc())
+            platformtools.dialog_notification("Error al renombrar", path)
+            return False
+
+    return True
 
 
 def exists(path):
@@ -299,12 +315,28 @@ def remove(path):
     Elimina un archivo
     @param path: ruta del fichero a eliminar
     @type path: str
+    @rtype: bool
+    @return: devuelve False en caso de error
     """
     path = encode(path)
     if path.lower().startswith("smb://"):
-        samba.delete_files(os.path.basename(path), os.path.dirname(path))
+        try:
+            samba.delete_files(os.path.basename(path), os.path.dirname(path))
+        except:
+            import traceback
+            logger.info("pelisalacarta.core.filetools mkdir: Error al eliminar el archivo " + traceback.format_exc())
+            platformtools.dialog_notification("Error al eliminar el archivo", path)
+            return False
     else:
-        os.remove(path)
+        try:
+            os.remove(path)
+        except OSError:
+            import traceback
+            logger.info("pelisalacarta.core.filetools mkdir: Error al eliminar el archivo " + traceback.format_exc())
+            platformtools.dialog_notification("Error al eliminar el archivo", path)
+            return False
+
+    return True
 
 
 def rmdirtree(path):
@@ -312,6 +344,8 @@ def rmdirtree(path):
     Elimina un directorio y su contenido
     @param path: ruta a eliminar
     @type path: str
+    @rtype: bool
+    @return: devuelve False en caso de error
     """
 
     path = encode(path)
@@ -323,18 +357,40 @@ def rmdirtree(path):
         import shutil
         shutil.rmtree(path, ignore_errors=True)
 
+    if exists(path): # No se ha eliminado
+        return False
+
+    return True
+
 
 def rmdir(path):
     """
     Elimina un directorio
     @param path: ruta a eliminar
     @type path: str
+    @rtype: bool
+    @return: devuelve False en caso de error
     """
     path = encode(path)
+
     if path.lower().startswith("smb://"):
-        samba.delete_directory(os.path.basename(path), os.path.dirname(path))
+        try:
+            samba.delete_directory(os.path.basename(path), os.path.dirname(path))
+        except:
+            import traceback
+            logger.info("pelisalacarta.core.filetools mkdir: Error al eliminar el directorio " + traceback.format_exc())
+            platformtools.dialog_notification("Error al eliminar el directorio", path)
+            return False
     else:
-        os.rmdir(path)
+        try:
+            os.rmdir(path)
+        except OSError:
+            import traceback
+            logger.info("pelisalacarta.core.filetools mkdir: Error al eliminar el directorio " + traceback.format_exc())
+            platformtools.dialog_notification("Error al eliminar el directorio", path)
+            return False
+
+    return True
 
 
 def mkdir(path, respect=True):
@@ -342,6 +398,8 @@ def mkdir(path, respect=True):
     Crea un directorio
     @param path: ruta a crear
     @type path: str
+    @rtype: bool
+    @return: devuelve False en caso de error
     """
     logger.info("pelisalacarta.core.filetools mkdir "+path)
 
@@ -353,6 +411,7 @@ def mkdir(path, respect=True):
             import traceback
             logger.info("pelisalacarta.core.filetools mkdir: Error al crear la ruta "+traceback.format_exc())
             platformtools.dialog_notification("Error al crear la ruta", path)
+            return False
     else:
         try:
             #path = normalize(path, respect)
@@ -361,6 +420,9 @@ def mkdir(path, respect=True):
             import traceback
             logger.info("pelisalacarta.core.filetools mkdir: Error al crear la ruta "+traceback.format_exc())
             platformtools.dialog_notification("Error al crear la ruta", path)
+            return False
+
+    return True
 
 
 def normalize(s, respect=True):
@@ -458,6 +520,33 @@ def listdir(path):
         return decode(os.listdir(path))
 
 
+def split(path):
+    """
+    Devuelve una tupla formada por el directorio y el nombre del fichero de una ruta
+    @param path: ruta
+    @type path: str
+    @return: (dirname, basename)
+    @rtype: tuple
+    """
+    if path.lower().startswith("smb://"):
+        if '/' not in path[6:]:
+            path = path.replace("smb://", "smb:///", 1)
+        return path.rsplit('/',1)
+    else:
+        return os.path.split(path)
+
+
+def basename(path):
+    """
+    Devuelve el nombre del fichero de una ruta
+    @param path: ruta
+    @type path: str
+    @return: fichero de la ruta
+    @rtype: str
+    """
+    return split(path)[1]
+
+
 def dirname(path):
     """
     Devuelve el directorio de una ruta
@@ -466,10 +555,7 @@ def dirname(path):
     @return: directorio de la ruta
     @rtype: str
     """
-    # TODO pendiente parte samba
-    _dir = os.path.dirname(path)
-
-    return _dir
+    return split(path)[0]
 
 
 def remove_tags(title):

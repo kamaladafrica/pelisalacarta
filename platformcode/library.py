@@ -81,8 +81,8 @@ if not filetools.exists(TVSHOWS_PATH):
     logger.info("pelisalacarta.platformcode.library Tvshows path doesn't exist:" + TVSHOWS_PATH)
     filetools.mkdir(TVSHOWS_PATH)
 
-TVSHOW_FILE = "series.json"
-TVSHOW_FILE_OLD = "series.xml"
+#TVSHOW_FILE = "series.json"
+#TVSHOW_FILE_OLD = "series.xml"
 
 otmdb = None
 
@@ -251,8 +251,8 @@ def save_library_tvshow(item, episodelist):
         # Colocamos el titulo en su sitio para que tmdb lo localize
         item.contentSerieName = item.show
 
-    # Si llegados a este punto no tenemos titulo, salimos
-    if not item.contentSerieName or not item.channel:
+    # Si llegados a este punto no tenemos titulo o tmdb_id, salimos
+    if not (item.contentSerieName or item.infoLabels['tmdb_id']) or not item.channel:
         return 0, 0, -1  # Salimos sin guardar
 
     # TODO configurar para segun el scraper se llame a uno u otro
@@ -313,6 +313,9 @@ def save_library_tvshow(item, episodelist):
         filetools.write(tvshow_path, url_scraper + tvshow_item.tojson())
 
 
+    if not episodelist:
+        # La lista de episodios esta vacia
+        return 0, 0, 0
 
     # Guardar los episodios
     insertados, sobreescritos, fallidos = save_library_episodes(path, episodelist, item)
@@ -447,7 +450,7 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite= Tru
         # TODO arreglar el porque hay que poner la ruta special
         #ruta = "special://home/userdata/addon_data/plugin.video.pelisalacarta/library/SERIES/" + \
         #      os.path.basename(path) + "/"
-        update()
+        #update() # TODO mover a la funcion anterior?
 
     if fallidos == len(episodelist):
         fallidos = -1
@@ -600,13 +603,13 @@ def get_data(payload):
 
     if modo_cliente:
         try:
-            req = urllib2.Request(xbmc_json_rpc_url, data=jsontools.dump_json(payload), headers=headers)
+            req = urllib2.Request(xbmc_json_rpc_url, data=jsontools.dumps(payload), headers=headers)
             f = urllib2.urlopen(req)
             response = f.read()
             f.close()
 
             logger.info("pelisalacarta.platformcode.library get_data: response %s" %response)
-            data = jsontools.load_json(response)
+            data = jsontools.loads(response)
         except Exception, ex:
             template = "An exception of type {0} occured. Arguments:\n{1!r}"
             message = template.format(type(ex).__name__, ex.args)
@@ -614,7 +617,7 @@ def get_data(payload):
             data = ["error"]
     else:
         try:
-            data = jsontools.load_json(xbmc.executeJSONRPC(jsontools.dump_json(payload)))
+            data = jsontools.loads(xbmc.executeJSONRPC(jsontools.dumps(payload)))
         except Exception, ex:
             template = "An exception of type {0} occured. Arguments:\n{1!r}"
             message = template.format(type(ex).__name__, ex.args)
@@ -684,8 +687,15 @@ def add_serie_to_library(item, channel):
     if item.from_channel:
         item.__dict__["channel"] = item.__dict__.pop("from_channel")
 
-    # Obtiene el listado desde el que se llamó
+    # Obtiene el listado de episodios
     itemlist = getattr(channel, item.action)(item)
+
+    if not itemlist:
+        platformtools.dialog_ok("Biblioteca", "ERROR, la serie NO se ha añadido a la biblioteca",
+                                "No se ha podido obtener ningun episodio")
+        logger.error("La serie %s no se ha podido añadir a la biblioteca. No se ha podido obtener ningun episodio"
+                     %item.show)
+        return
 
     insertados, sobreescritos, fallidos = save_library_tvshow(item, itemlist)
 
