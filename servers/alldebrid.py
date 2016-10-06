@@ -26,15 +26,16 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
     if data and data["link"] and not data["error"]:
         extension = ".%s [alldebrid]" % data["filename"].rsplit(".",1)[1]
         video_urls.append([extension, data["link"]])
+
     else:
         try:
-            server_error = "Alldebrid: "+data["error"]
+            server_error = "Alldebrid: "+data["error"].decode("utf-8","ignore")
             server_error = server_error.replace("This link isn't available on the hoster website.",
                                                 "Enlace no disponible en el servidor de descarga") \
-                                       .replace("Hoster unsupported or under maintenance.",
+                                                .replace("Hoster unsupported or under maintenance.",
                                                 "Servidor no soportado o en mantenimiento")
         except:
-            server_error = "Alldebrid: Error en el usuario/contraseña o en la web"
+            server_error = "Alldebrid: Error en el usuario/password o en la web"
 
         video_urls.append([server_error, ''])
 
