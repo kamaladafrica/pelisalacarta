@@ -415,6 +415,8 @@ def play(item):
     itemlist = []
     if "enlacesmix.com" in item.url:
         DEFAULT_HEADERS.append(["Referer", item.extra])
+        if not item.url.startswith("http:"):
+            item.url = "http:" + item.url
         data = scrapertools.downloadpage(item.url, headers=DEFAULT_HEADERS)
         item.url = scrapertools.find_single_match(data, 'iframe src="([^"]+)"')
          
