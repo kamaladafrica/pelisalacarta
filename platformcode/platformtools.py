@@ -209,7 +209,8 @@ def set_infolabels(listitem, item):
 
     listitem.setInfo("video", item.infoLabels)
     listitem.setInfo("video", {"Title": item.title})
-
+    # Añadido para Kodi Krypton (v17)
+    listitem.setArt({"poster": item.thumbnail})
 
 def set_context_commands(item, parent_item):
     """

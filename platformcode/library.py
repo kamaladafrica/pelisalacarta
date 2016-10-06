@@ -253,6 +253,7 @@ def save_library_tvshow(item, episodelist):
 
     # Si llegados a este punto no tenemos titulo o tmdb_id, salimos
     if not (item.contentSerieName or item.infoLabels['tmdb_id']) or not item.channel:
+        logger.debug("NO ENCONTRADO contentSerieName NI tmdb_id")
         return 0, 0, -1  # Salimos sin guardar
 
     # TODO configurar para segun el scraper se llame a uno u otro
@@ -264,6 +265,7 @@ def save_library_tvshow(item, episodelist):
     #  item.infoLabels['imdb_id'] == "" : No se ha encontrado el identificador de IMDB necesario para continuar, salimos
     if not tmdb_return or not item.infoLabels['imdb_id']:
         # TODO de momento si no hay resultado no añadimos nada, aunq podriamos abrir un cuadro para introducir el identificador/nombre a mano
+        logger.debug("NO ENCONTRADO EN TMDB O NO TIENE IMDB_ID")
         return 0, 0, -1
 
     id = item.infoLabels['imdb_id']
@@ -450,7 +452,7 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite= Tru
         # TODO arreglar el porque hay que poner la ruta special
         #ruta = "special://home/userdata/addon_data/plugin.video.pelisalacarta/library/SERIES/" + \
         #      os.path.basename(path) + "/"
-        #update() # TODO mover a la funcion anterior?
+        update(get_library_path_kodi_update(FOLDER_TVSHOWS))
 
     if fallidos == len(episodelist):
         fallidos = -1
@@ -709,6 +711,26 @@ def add_serie_to_library(item, channel):
     else:
         platformtools.dialog_ok("Biblioteca", "La serie se ha añadido a la biblioteca")
         logger.info("[launcher.py] Se han añadido %s episodios de la serie %s a la biblioteca" %(insertados, item.show))
+
+
+def get_library_path_kodi_update(content_type=FOLDER_TVSHOWS):
+    """
+    devuelve la ruta para kodi hacer el update de la biblioteca
+    @type content_type: str
+    @param content_type: tipo de contenido para actualizar, series o peliculas
+    @rtype str
+    @return url para hacer videoScan de kodi.
+    """
+    value = config.get_setting("librarypath")
+    if value == "":
+        value = "special://home/userdata/addon_data/plugin.video." + config.PLUGIN_NAME + "/library/" + content_type + \
+                "/"
+    else:
+        value = filetools.join(value, content_type)
+
+    logger.info("la ruta es " + value)
+
+    return value
 
 
 # metodos de menu contextual
