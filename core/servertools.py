@@ -234,6 +234,7 @@ def resolve_video_urls_for_playing(server,url,video_password="",muestra_dialogo=
                     return video_urls,False,"No se puede encontrar el vídeo en "+server
 
             # Obtiene enlaces para las diferentes opciones premium
+            error_message = []
             for premium in server_parameters["premium"]:
               if config.get_setting(premium+"premium")=="true":
                 if muestra_dialogo:
@@ -244,10 +245,18 @@ def resolve_video_urls_for_playing(server,url,video_password="",muestra_dialogo=
                     if not "REAL-DEBRID:" in debrid_urls[0][0]:
                         video_urls.extend(debrid_urls)
                     else:
-                        if len(video_urls) == 0:
-                            return video_urls, False, debrid_urls[0][0]
+                        error_message.append(debrid_urls[0][0])
+                elif premium == "alldebrid":
+                    alldebrid_urls = premium_conector.get_video_url( page_url=url , premium=True , user=config.get_setting(premium+"user") , password=config.get_setting(premium+"password"), video_password=video_password )
+                    if not "Alldebrid:" in alldebrid_urls[0][0]:
+                        video_urls.extend(alldebrid_urls)
+                    else:
+                        error_message.append(alldebrid_urls[0][0])
                 else:
                     video_urls.extend(premium_conector.get_video_url( page_url=url , premium=True , user=config.get_setting(premium+"user") , password=config.get_setting(premium+"password"), video_password=video_password ))
+
+            if not video_urls and error_message:
+                return video_urls, False, " || ".join(error_message)
 
             if muestra_dialogo:
                 progreso.update( 100 , "Proceso finalizado")
