@@ -292,7 +292,7 @@ def fichas(item):
 
 def episodios(item):
     logger.info("pelisalacarta.channels.hdfull episodios")
-
+    id = "0"
     itemlist = []
 
     ## Carga estados
