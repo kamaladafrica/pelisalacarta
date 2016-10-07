@@ -212,7 +212,6 @@ def set_infolabels(listitem, item):
     # Añadido para Kodi Krypton (v17)
     listitem.setArt({"poster": item.thumbnail})
 
-
 def set_context_commands(item, parent_item):
     """
     Función para generar los menus contextuales.
@@ -493,7 +492,7 @@ def show_channel_settings(list_controls=None, dict_values=None, caption="", call
                           custom_button=None):
     """
     Muestra un cuadro de configuracion personalizado para cada canal y guarda los datos al cerrarlo.
-
+    
     Parametros: ver descripcion en xbmc_config_menu.SettingsWindow
     @param list_controls: lista de elementos a mostrar en la ventana.
     @type list_controls: list
