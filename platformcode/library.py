@@ -269,8 +269,8 @@ def save_library_tvshow(item, episodelist):
         return 0, 0, -1
 
     id = item.infoLabels['imdb_id']
-    if item.infoLabels['originaltitle']:
-        base_name = item.infoLabels['originaltitle']
+    if item.infoLabels['title']:
+        base_name = item.infoLabels['title']
     else:
         base_name = item.contentSerieName
 
