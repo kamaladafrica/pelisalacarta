@@ -90,7 +90,7 @@ def run():
             if config.get_setting("updatecheck2") == "true":
                 logger.info("pelisalacarta.platformcode.launcher Check for plugin updates enabled")
                 from core import updater
-
+                
                 try:
                     version = updater.checkforupdates()
 
@@ -140,7 +140,7 @@ def run():
 
             # Entry point for a channel is the "mainlist" action, so here we check parental control
             if item.action == "mainlist":
-
+                
                 # Parental control
                 can_open_channel = False
 
@@ -241,14 +241,14 @@ def run():
             # Special action for searching, first asks for the words then call the "search" function
             elif item.action == "search":
                 logger.info("pelisalacarta.platformcode.launcher search")
-
+                
                 tecleado = platformtools.dialog_input("")
                 if tecleado is not None:
                     tecleado = tecleado.replace(" ", "+")
                     itemlist = channel.search(item, tecleado)
                 else:
                     itemlist = []
-
+                
                 platformtools.render_items(itemlist, item)
 
             # For all other actions
@@ -272,14 +272,14 @@ def run():
             logger.info("pelisalacarta.platformcode.launcher codigo de error HTTP : %d" % e.code)
             # "El sitio web no funciona correctamente (error http %d)"
             platformtools.dialog_ok("plugin", config.get_localized_string(30051) % e.code)
-
+    
     except:
         import traceback
         logger.error("pelisalacarta.platformcode.launcher "+traceback.format_exc())
-
+        
         patron = 'File "'+os.path.join(config.get_runtime_path(), "channels", "").replace("\\", "\\\\")+'([^.]+)\.py"'
         canal = scrapertools.find_single_match(traceback.format_exc(), patron)
-
+        
         try:
             xbmc_version = int(xbmc.getInfoLabel( "System.BuildVersion" ).split(".", 1)[0])
             if xbmc_version > 13:
@@ -416,6 +416,7 @@ def play_from_library(item, server_white_list, server_black_list):
     new_item.strm_path = item.strm_path
 
     platformtools.play_video(new_item, True)
+
 
 
 
