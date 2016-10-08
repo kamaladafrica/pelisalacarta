@@ -49,8 +49,8 @@ def mainlist(item):
     #bookmarkpath = config.get_setting("bookmarkpath") #TODO si solo se usa para esto podriamos eliminarlo
 
     for name,thumb,data in read_favourites():
-        if "plugin://plugin.video.pelisalacarta/?" in data:
-            url = scrapertools.find_single_match(data, 'plugin://plugin.video.pelisalacarta/\?([^;]*)')\
+        if "plugin://plugin.video.%s/?" % config.PLUGIN_NAME in data:
+            url = scrapertools.find_single_match(data, 'plugin://plugin.video.%s/\?([^;]*)'  % config.PLUGIN_NAME)\
                 .replace("&quot", "")
 
             item = Item().fromurl(url)
@@ -107,11 +107,12 @@ def addFavourite(item):
         item.__dict__["channel"] = item.__dict__.pop("from_channel")
 
     favourites_list = read_favourites()
-    data = "ActivateWindow(10025,&quot;plugin://plugin.video.pelisalacarta/?" + item.tourl() + "&quot;,return)"
-    favourites_list.append((item.title,item.thumbnail,data))
+    data = "ActivateWindow(10025,&quot;plugin://plugin.video.%s/?" % config.PLUGIN_NAME + item.tourl() + "&quot;,return)"
+    titulo = item.title.replace('"',"'")
+    favourites_list.append((titulo,item.thumbnail,data))
 
     if save_favourites(favourites_list):
-        platformtools.dialog_ok(config.get_localized_string(30102), item.title,
+        platformtools.dialog_ok(config.get_localized_string(30102),titulo,
                                 config.get_localized_string(30108))  # 'se ha añadido a favoritos'
 
 
@@ -156,21 +157,10 @@ def renameFavourite(item):
 
 ##################################################
 # Funciones para migrar favoritos antiguos (.txt)
-def readbookmark(filename, readpath=config.get_setting("bookmarkpath")):
+def readbookmark(filepath):
     logger.info("[favoritos.py] readbookmark")
     import urllib
 
-    '''if readpath.lower().startswith("smb://"):
-        from lib.sambatools import libsmb as samba
-        bookmarkfile = samba.get_file_handle_for_reading(filename, readpath)
-    else:
-        filepath = os.path.join(readpath, filename)
-
-        # Lee el fichero de configuracion
-        logger.info("[favoritos.py] filepath=" + filepath)
-        bookmarkfile = open(filepath)'''
-
-    filepath = filetools.join(readpath, filename)
     bookmarkfile = filetools.open_for_reading(filepath)
 
     lines = bookmarkfile.readlines()
@@ -226,6 +216,10 @@ def check_bookmark(readpath):
     # Crea un listado con las entradas de favoritos
     itemlist = []
 
+    if readpath.startswith("special://") and config.is_xbmc():
+        import xbmc
+        readpath = xbmc.translatePath(readpath)
+
     for fichero in sorted(filetools.listdir(readpath)):
         # Ficheros antiguos (".txt")
         if fichero.endswith(".txt"):
@@ -233,7 +227,7 @@ def check_bookmark(readpath):
             time.sleep(0.1)
 
             # Obtenemos el item desde el .txt
-            canal, titulo, thumbnail, plot, server, url, fulltitle = readbookmark(fichero)
+            canal, titulo, thumbnail, plot, server, url, fulltitle = readbookmark(filetools.join(readpath, fichero))
             if canal == "":
                 canal = "favoritos"
             item = Item(channel=canal, action="play", url=url, server=server, title=fulltitle, thumbnail=thumbnail,
@@ -250,5 +244,6 @@ def check_bookmark(readpath):
             favourites_list.append((item.title, item.thumbnail, data))
         if save_favourites(favourites_list):
             logger.debug("Conversion de txt a xml correcta")
+
 
 check_bookmark(config.get_setting("bookmarkpath"))
