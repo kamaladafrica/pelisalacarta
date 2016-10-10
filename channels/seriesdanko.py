@@ -86,7 +86,7 @@ def mas_vistas(item):
     patron = "<div class='widget HTML' id='HTML3'.+?<div class='widget-content'>(.*?)</div>"
     data = scrapertools.get_match(data, patron)
 
-    return series_seccion(data)
+    return series_seccion(data, item)
 
 
 def listado_completo(item):
@@ -101,7 +101,7 @@ def listado_completo(item):
     return series_seccion(data)
 
 
-def series_seccion(data):
+def series_seccion(data, item):
     logger.info("pelisalacarta.seriesdanko series_seccion")
 
     itemlist = []
