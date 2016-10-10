@@ -382,13 +382,18 @@ def findvideos(item):
             exec "import channels." + nom_canal + " as channel"
 
         item_json = Item().fromjson(filetools.read(json_path))
+        list_servers = []
 
-        # Ejecutamos find_videos, del canal o común
-        if hasattr(channel, 'findvideos'):
-            list_servers = getattr(channel, 'findvideos')(item_json)
-        else:
-            from core import servertools
-            list_servers = servertools.find_video_items(item_json)
+        try:
+            # Ejecutamos find_videos, del canal o común
+            if hasattr(channel, 'findvideos'):
+                list_servers = getattr(channel, 'findvideos')(item_json)
+            else:
+                from core import servertools
+                list_servers = servertools.find_video_items(item_json)
+        except:
+            logger.error("Ha fallado la funcion findvideo para el canal %s" %nom_canal)
+
 
         # Cambiarle el titulo a los servers añadiendoles el nombre del canal delante y
         # las infoLabels y las imagenes del item si el server no tiene

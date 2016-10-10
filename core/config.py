@@ -296,8 +296,10 @@ def verify_directories_created():
     # Create library_path if not exists
     # TODO si tiene smb se debería poder dejar que cree? filetools permite crear carpetas para SMB
     if not get_library_path().lower().startswith("smb") and not os.path.exists(get_library_path()):
-        logger.debug("Creating library_path " + get_library_path())
-        filetools.mkdir(get_library_path())
+        librarypath = get_library_path()
+        logger.debug("Creating library_path " + librarypath)
+        if filetools.mkdir(librarypath):
+            set_setting("library_version", "v4")
 
     # Create settings_path is not exists
     settings_path = filetools.join(get_data_path(), "settings_channels")

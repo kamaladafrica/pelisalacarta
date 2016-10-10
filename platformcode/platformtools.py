@@ -340,7 +340,10 @@ def set_context_commands(item, parent_item):
                                  (sys.argv[0], Item(channel=item.channel, action="mainlist").tourl())))
 
     # Añadir a Favoritos
-    if item.channel not in ["channelselector", "favoritos", "descargas", "buscador", "biblioteca", "novedades", "ayuda",
+    #logger.debug("item:\n" + item.tostring('\n'))
+    '''if item.channel not in ["channelselector", "favoritos", "descargas", "buscador", "biblioteca", "novedades", "ayuda",
+                            "configuracion", ""] and not parent_item.channel == "favoritos":'''
+    if item.channel not in ["favoritos", "biblioteca", "ayuda",
                             "configuracion", ""] and not parent_item.channel == "favoritos":
         context_commands.append((config.get_localized_string(30155), "XBMC.RunPlugin(%s?%s)" %
                                  (sys.argv[0], item.clone(channel="favoritos", action="addFavourite",

@@ -244,12 +244,12 @@ def main(overwrite= True):
 
 if __name__ == "__main__":
     if config.get_setting("library_version") != 'v4':
-        platformtools.dialog_ok("Biblioteca: Se va a actualizar al nuevo formato",
-                                "Seleccione el nombre correcto de cada serie, si no está seguro pulse 'Cancelar'.",
-                                "Hay nuevas opciones en 'Biblioteca' y en la 'configuración' del addon.")
+        platformtools.dialog_ok(config.PLUGIN_NAME.capitalize(), "Se va a actualizar la biblioteca al nuevo formato",
+                                "Seleccione el nombre correcto de cada serie, si no está seguro pulse 'Cancelar'.")
 
         if not convert_old_to_v4():
-            platformtools.dialog_ok("Biblioteca", "ERROR, al actualizar al nuevo formato")
+            platformtools.dialog_ok(config.PLUGIN_NAME.capitalize(),
+                                    "ERROR, al actualizar la biblioteca al nuevo formato")
             exit
 
     main(overwrite= False)
