@@ -434,7 +434,7 @@ def play_video(item, strm=False):
     set_player(item, xlistitem, mediaurl, view, strm)
 
     # si es un archivo de la biblioteca enviar a marcar como visto
-    if strm or item.strm_path:
+    if (strm or item.strm_path):
         from platformcode import library
         library.mark_auto_as_watched(item)
 
@@ -828,19 +828,19 @@ def get_video_seleccionado(item, seleccion, video_urls):
 
 def set_player(item, xlistitem, mediaurl, view, strm):
     logger.info("platformtools set_player")
-    #logger.debug("item:\n" + item.tostring('\n'))
+    logger.debug("item:\n" + item.tostring('\n'))
+
+    # Movido del conector "torrent" aqui
+    if item.server == "torrent":
+        play_torrent(item, xlistitem, mediaurl)
+        return
 
     # Si es un fichero strm no hace falta el play
-    if strm:
+    elif strm:
         xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, xlistitem)
         if item.subtitle != "":
             xbmc.sleep(2000)
             xbmc.Player().setSubtitles(item.subtitle)
-
-    # Movido del conector "torrent" aqui
-    elif item.server == "torrent":
-        play_torrent(item, xlistitem, mediaurl)
-        return
 
     else:
         logger.info("player_mode="+config.get_setting("player_mode"))
@@ -976,6 +976,7 @@ def play_torrent(item, xlistitem, mediaurl):
                     playlist.add(videourl, xlistitem)
                     xbmc_player = xbmc.Player()
                     xbmc_player.play(playlist)
+
 
                     # Marcamos como reproducido para que no se vuelva a iniciar
                     played = True

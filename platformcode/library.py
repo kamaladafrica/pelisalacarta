@@ -162,7 +162,8 @@ def save_library_movie(item):
     base_name = item.contentTitle
 
     #  TODO hay q asegurarse q base_name es un filename correcto
-    base_name = filter(lambda c: c not in ":*?<>|\/", base_name).strip().lower()
+    #base_name = filter(lambda c: c not in ":*?<>|\/", base_name).strip().lower()
+    base_name = filetools.text2filename(base_name)
 
     for raiz, subcarpetas, ficheros in filetools.walk(MOVIES_PATH):
         for c in subcarpetas:
@@ -171,7 +172,7 @@ def save_library_movie(item):
                 break
 
     if not path:
-        path = filetools.join(MOVIES_PATH, "%s [%s]" % (base_name, id))
+        path = filetools.join(MOVIES_PATH, ("%s [%s]" % (base_name, id)).strip())
         logger.info("pelisalacarta.platformcode.library save_library_movie Creando directorio pelicula:" + path)
         try:
             filetools.mkdir(path)
@@ -277,7 +278,8 @@ def save_library_tvshow(item, episodelist):
         base_name = item.contentSerieName
 
     #  TODO hay q asegurarse q base_name es un filename correcto
-    base_name = filter(lambda c: c not in ":*?<>|\/", base_name).strip().lower()
+    #base_name = filter(lambda c: c not in ":*?<>|\/", base_name).strip().lower()
+    base_name = filetools.text2filename(base_name)
 
     for raiz, subcarpetas, ficheros in filetools.walk(TVSHOWS_PATH):
         for c in subcarpetas:
@@ -286,7 +288,7 @@ def save_library_tvshow(item, episodelist):
                 break
 
     if not path:
-        path = filetools.join(TVSHOWS_PATH, ("%s [%s]" %(base_name, id)))
+        path = filetools.join(TVSHOWS_PATH, ("%s [%s]" %(base_name, id)).strip())
         logger.info("pelisalacarta.platformcode.library save_library_tvshow Creando directorio serie:" + path)
         try:
             filetools.mkdir(path)
@@ -477,7 +479,7 @@ def mark_auto_as_watched(item):
             totaltime = xbmc.Player().getTotalTime()
 
             if condicion == 0:  # '5 minutos'
-                mark_time = 300000 #FOR DEBUG = 30
+                mark_time = 30#0000 #FOR DEBUG = 30
             elif condicion == 1:  # '30%'
                 mark_time = totaltime * 0.3
             elif condicion == 2:  # '50%'
