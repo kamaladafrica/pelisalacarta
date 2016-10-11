@@ -26,10 +26,46 @@ color1, color2, color3 = perfil[__perfil__]
 DEBUG = config.get_setting("debug")
 CHANNEL_HOST = "http://www.verseriesynovelas.tv"
 CHANNEL_HEADERS = [
-    ["User-Agent", "Mozilla/5.0"],
+    ["User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:49.0) Gecko/20100101 Firefox/49.0"],
     ["Accept-Encoding", "gzip, deflate"],
     ["Referer", CHANNEL_HOST]
     ]
+
+
+def login():
+    logger.info("pelisalacarta.channels.verseriesynovelas login")
+
+    try:
+        user = config.get_setting("verseriesynovelasuser", "verseriesynovelas")
+        password = config.get_setting("verseriesynovelaspassword", "verseriesynovelas")
+        if user == "" and password == "":
+            return False, "Para ver los enlaces de este canal es necesario registrarse en www.verseriesynovelas.tv"
+        elif user == "" or password == "":
+            return False, "Usuario o contraseña en blanco. Revisa tus credenciales"
+        data = scrapertools.downloadpage("http://www.verseriesynovelas.tv/")
+        if user in data:
+            return True, ""
+        
+        try:
+            os.remove(os.path.join(config.get_data_path(), 'cookies', 'verseriesynovelas.tv.dat'))
+        except:
+            pass
+
+        post = "log=%s&pwd=%s&redirect_to=http://www.verseriesynovelas.tv/wp-admin/&action=login" % (user, password)
+        data = scrapertools.downloadpage("http://www.verseriesynovelas.tv/iniciar-sesion", post=post)
+        if "La contraseña que has introducido" in data:
+            logger.info("pelisalacarta.channels.verseriesynovelas Error en el login")
+            return False, "Contraseña errónea. Comprueba tus credenciales"
+        elif "Nombre de usuario no válido" in data:
+            logger.info("pelisalacarta.channels.verseriesynovelas Error en el login")
+            return False, "Nombre de usuario no válido. Comprueba tus credenciales"            
+        else:
+            logger.info("pelisalacarta.channels.verseriesynovelas Login correcto")
+            return True, ""
+    except:
+        import traceback
+        logger.info(traceback.format_exc())
+        return False, "Error durante el login. Comprueba tus credenciales"
 
 
 def mainlist(item):
@@ -37,16 +73,21 @@ def mainlist(item):
     itemlist = []
     item.text_color = color1
     
-    itemlist.append(item.clone(title="Nuevos Capítulos", action="novedades", fanart="http://i.imgur.com/9loVksV.png",
-                               url="http://www.verseriesynovelas.tv/archivos/nuevo"))
-    itemlist.append(item.clone(title="Últimas Series", action="ultimas", fanart="http://i.imgur.com/9loVksV.png",
-                               url="http://www.verseriesynovelas.tv/"))
-    itemlist.append(item.clone(title="Lista de Series A-Z", action="indices", fanart="http://i.imgur.com/9loVksV.png",
-                               url="http://www.verseriesynovelas.tv/"))
-    itemlist.append(item.clone(title="Categorías", action="indices", fanart="http://i.imgur.com/9loVksV.png",
-                               url="http://www.verseriesynovelas.tv/"))
-    itemlist.append(item.clone(title="", action=""))
-    itemlist.append(item.clone(title="Buscar...", action="search", fanart="http://i.imgur.com/9loVksV.png"))
+    logueado, error_message = login()
+    
+    if not logueado:
+        itemlist.append(item.clone(title=error_message, action="", text_color="darkorange"))
+    else:
+        itemlist.append(item.clone(title="Nuevos Capítulos", action="novedades", fanart="http://i.imgur.com/9loVksV.png",
+                                   url="http://www.verseriesynovelas.tv/archivos/nuevo"))
+        itemlist.append(item.clone(title="Últimas Series", action="ultimas", fanart="http://i.imgur.com/9loVksV.png",
+                                   url="http://www.verseriesynovelas.tv/"))
+        itemlist.append(item.clone(title="Lista de Series A-Z", action="indices", fanart="http://i.imgur.com/9loVksV.png",
+                                   url="http://www.verseriesynovelas.tv/"))
+        itemlist.append(item.clone(title="Categorías", action="indices", fanart="http://i.imgur.com/9loVksV.png",
+                                   url="http://www.verseriesynovelas.tv/"))
+        itemlist.append(item.clone(title="", action=""))
+        itemlist.append(item.clone(title="Buscar...", action="search", fanart="http://i.imgur.com/9loVksV.png"))
     itemlist.append(item.clone(title="Configurar canal...", action="configuracion", text_color="gold", folder=False))
     
     return itemlist
@@ -64,7 +105,7 @@ def indices(item):
     logger.info("pelisalacarta.channels.verseriesynovelas indices")
 
     itemlist = []
-    data = scrapertools.anti_cloudflare(item.url, host=CHANNEL_HOST, headers=CHANNEL_HEADERS)
+    data = scrapertools.downloadpage(item.url, headers=CHANNEL_HEADERS)
     data = data.replace("\n", "").replace("\t", "")
 
     if "Categorías" in item.title:
@@ -101,7 +142,7 @@ def busqueda(item, texto=""):
     itemlist = []
     item.text_color = color2
 
-    data = scrapertools.anti_cloudflare(item.url, host=CHANNEL_HOST, headers=CHANNEL_HEADERS)
+    data = scrapertools.downloadpage(item.url, headers=CHANNEL_HEADERS)
     data = data.replace("\n", "").replace("\t", "")
 
     bloque = scrapertools.find_single_match(data, '<ul class="list-paginacion">(.*?)</section>')
@@ -155,7 +196,8 @@ def novedades(item):
     logger.info("pelisalacarta.channels.verseriesynovelas novedades")
     itemlist = []
     item.text_color = color2
-    data = scrapertools.anti_cloudflare(item.url, host=CHANNEL_HOST, headers=CHANNEL_HEADERS)
+
+    data = scrapertools.downloadpage(item.url, headers=CHANNEL_HEADERS)
     data = data.replace("\n", "").replace("\t", "")
 
     bloque = scrapertools.find_single_match(data, '<section class="list-galeria">(.*?)</section>')
@@ -205,7 +247,7 @@ def ultimas(item, texto=""):
     itemlist = []
     item.text_color = color2
 
-    data = scrapertools.anti_cloudflare(item.url, host=CHANNEL_HOST, headers=CHANNEL_HEADERS)
+    data = scrapertools.downloadpage(item.url, headers=CHANNEL_HEADERS)
     data = data.replace("\n", "").replace("\t", "")
 
     bloque = scrapertools.find_single_match(data, '<ul class="list-paginacion">(.*?)</section>')
@@ -247,7 +289,7 @@ def episodios(item):
     logger.info("pelisalacarta.channels.verseriesynovelas episodios")
     itemlist = []
 
-    data = scrapertools.anti_cloudflare(item.url, host=CHANNEL_HOST, headers=CHANNEL_HEADERS)
+    data = scrapertools.downloadpage(item.url, headers=CHANNEL_HEADERS)
     data = data.replace("\n", "").replace("\t", "")
 
     plot = scrapertools.find_single_match(data, '<p><p>(.*?)</p>')
@@ -271,7 +313,7 @@ def episodios(item):
             if "EN.png" in match:
                 scrapedtitle += "[V.O]"
             if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"]")
-            itemlist.append(item.clone(action="findvideos", title=scrapedtitle, url=scrapedurl))
+            itemlist.append(item.clone(action="findvideos", title=scrapedtitle, url=scrapedurl, fulltitle=scrapedtitle))
 
     itemlist.reverse()
     if itemlist and item.extra != "episodios":
@@ -301,14 +343,17 @@ def findvideos(item):
         except:
             pass
 
-    data = scrapertools.anti_cloudflare(item.url, host=CHANNEL_HOST, headers=CHANNEL_HEADERS)
-    data = data.replace("\n", "").replace("\t", "")
+    data = scrapertools.downloadpage(item.url, headers=CHANNEL_HEADERS)
+    if "valida el captcha" in data:
+        logueado, error = login()
+        data = scrapertools.downloadpage(item.url, headers=CHANNEL_HEADERS)    
+    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
 
     bloque = scrapertools.find_multiple_matches(data, '<tr><td data-th="Idioma">(.*?)</div>')
     for match in bloque:
-        patron = '.*?data-th="Calidad">(.*?)<.*?' \
+        patron = 'data-th="Calidad">(.*?)<.*?' \
                  '"Servidor".*?src="http://www.google.com/s2/favicons\?domain=(.*?)\.' \
-                 '.*?<td data-th="Enlace"><a href="(http://www.verseriesynovelas.tv/enlaces.php.*?)"'
+                 '.*?<td data-th="Enlace"><a href="(http://www.verseriesynovelas.tv/link/enlaces.php.*?)"'
         matches = scrapertools.find_multiple_matches(match, patron)
         for quality, server, url in matches:
             if server == "streamin":
@@ -347,8 +392,26 @@ def play(item):
     logger.info("pelisalacarta.channels.verseriesynovelas play")
     itemlist = []
     
-    item.url = item.url.replace("enlaces.php?op=", "enlace.php?u=")
-    location = scrapertools.get_header_from_response(item.url, headers=CHANNEL_HEADERS, header_to_get="location")
+    try:
+        data = scrapertools.downloadpage(item.url, headers=CHANNEL_HEADERS)
+    except:
+        pass
+
+    url_redirect = scrapertools.find_single_match(data, 'href="(http://www.verseriesynovelas.tv/link/enlace.php\?u=[^"]+)"')
+    if not url_redirect:
+        try:
+            import StringIO
+            compressedstream = StringIO.StringIO(data)
+            import gzip
+            gzipper = gzip.GzipFile(fileobj=compressedstream)
+            data = gzipper.read()
+            gzipper.close()
+            url_redirect = scrapertools.find_single_match(data, 'href="(http://www.verseriesynovelas.tv/link/enlace.php\?u=[^"]+)"')
+        except:
+            pass
+
+    
+    location = scrapertools.get_header_from_response(url_redirect, headers=CHANNEL_HEADERS[:2], header_to_get="location")
     enlaces = servertools.findvideos(data=location)
     if len(enlaces) > 0:
         itemlist.append(item.clone(action="play", server=enlaces[0][2], url=enlaces[0][1]))
