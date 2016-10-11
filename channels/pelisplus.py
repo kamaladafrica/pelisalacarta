@@ -45,6 +45,8 @@ def menupeliculas(item):
     
     itemlist.append( Item(channel=item.channel, title="Generos", action="generos", url=host+'peliculas/pag-1', thumbnail='https://s31.postimg.org/szbr0gmkb/generos.png', fanart='https://s31.postimg.org/szbr0gmkb/generos.png', extra='documentales/'))
     
+    itemlist.append( Item(channel=item.channel, title="Buscar", action="search", url=host+'busqueda/?s=', thumbnail='https://s31.postimg.org/qose4p13f/Buscar.png', fanart='https://s31.postimg.org/qose4p13f/Buscar.png', extra='peliculas/'))
+    
     return itemlist
 
 def menuseries(item):
@@ -84,6 +86,7 @@ def lista(item):
            plot = scrapertools.find_single_match(datab,'<span>Sinopsis:<\/span>.([^<]+)<span class="text-detail-hide"><\/span>.<\/p>')
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
         itemlist.append( Item(channel=item.channel, action=accion , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart))
+           
         
 #Paginacion
 
@@ -181,8 +184,17 @@ def generos(item):
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
         itemlist.append( Item(channel=item.channel, action="lista" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, fanart = fanart, extra=extra))
     return itemlist
+    
+    
+def search(item,texto):
+    logger.info("pelisplus.py search")
+    texto = texto.replace(" ","+")
+    item.url = item.url+texto
 
-
+    if texto!='':
+        return lista(item)
+    else:
+        return []    
 
 
 def findvideos(item):
@@ -194,7 +206,7 @@ def findvideos(item):
     matches = re.compile(patron,re.DOTALL).findall(datas)
     
     for scrapedurl in matches:
-       if 'elreyxhd' in scrapedurl:
+       if 'elreyxhd' or 'pelisplus.biz'in scrapedurl:
            data = scrapertools.cachePage(scrapedurl, headers=headers)
            patron ='file":"([^"]+)","label":"([^"]+)","type":".*?","default":".*?"'
            matches = re.compile(patron,re.DOTALL).findall(data)
