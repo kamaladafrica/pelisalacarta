@@ -227,7 +227,7 @@ def episodios(item):
             title = item.fulltitle+" "+scrapedtitle.strip()
         else:
             title = scrapedtitle.strip()
-        itemlist.append(new_item.clone(action="epienlaces", title=title, extra=scrapedtitle, fulltitle=title))
+        itemlist.append(new_item.clone(action="findvideos", title=title, extra=scrapedtitle, fulltitle=title))
 
     itemlist.sort(key=lambda item: item.title, reverse=True)
     item.plot = scrapertools.find_single_match(data, '<strong>SINOPSIS</strong>:(.*?)</p>')
