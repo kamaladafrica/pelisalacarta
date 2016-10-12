@@ -212,6 +212,7 @@ def set_infolabels(listitem, item):
     # Añadido para Kodi Krypton (v17)
     listitem.setArt({"poster": item.thumbnail})
 
+
 def set_context_commands(item, parent_item):
     """
     Función para generar los menus contextuales.
@@ -227,9 +228,6 @@ def set_context_commands(item, parent_item):
                     item.context = [{"title":"Nombre del menu", "action": "action del menu", "channel",
                                     "channel del menu"}, {...}]
 
-                - Item(): Se cargara el item pasado como opcion en item.context, tal cual se pase
-                    item.context = [Item(title="titulo del menu", action="action del menu", channel="channel de menu"),
-                                    Item(...)]
         2. Añadiendo opciones segun criterios
             Se pueden añadir opciones al menu contextual a items que cumplan ciertas condiciones
 
@@ -251,33 +249,39 @@ def set_context_commands(item, parent_item):
     else:
         context = []
 
-    # Eliminamos los datos de item.context, ya que no los vamos a necesitar mas
-    item.context = ""
 
     # Opciones segun item.context
     for command in context:
         # Predefinidos
         if type(command) == str:
-            if command == "menu filtro":
+            if command == "menu_filtro":
                 context_commands.append(("Menu Filtro", "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], item.clone(
                     channel="filtertools",
                     action="config_filter",
                     from_channel=item.channel
                 ).tourl())))
 
-            elif command == "guardar filtro":
-                context_commands.append(("guardar filtro serie", "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], item.clone(
+            elif command == "guardar_filtro":
+                context_commands.append(("Guardar Filtro Serie", "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], item.clone(
                     channel="filtertools",
                     action="save_filter",
                     from_channel=item.channel
                 ).tourl())))
 
-            elif command == "borrar filtro":
+            elif command == "borrar_filtro":
                 context_commands.append(("Eliminar Filtro", "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], item.clone(
                     channel="filtertools",
                     action="del_filter",
                     from_channel=item.channel
                 ).tourl())))
+
+            elif command == "buscar_trailer" or command == "05" or command == "25": # TODO eliminar opciones "05" y "25"
+                context_commands.append(("Buscar Trailer", "XBMC.RunPlugin(%s?%s)" % ( sys.argv[0] , item.clone(
+                    channel="trailertools",
+                    action="buscartrailer",
+                    contextual=True
+                ).tourl())))
+
 
 
         # Formato dict
@@ -291,9 +295,6 @@ def set_context_commands(item, parent_item):
             context_commands.append(
                 (command["title"], "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], item.clone(**command).tourl())))
 
-        # Formato Item
-        if type(command) == Item:
-            context_commands.append((command.title, "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], command.tourl())))
 
 
     # Opciones segun criterios
@@ -679,7 +680,7 @@ def get_dialogo_opciones(item, default_action, strm):
                 # "Añadir a favoritos"
                 opciones.append(config.get_localized_string(30155))
 
-            if not strm:
+            if not strm and item.contentType == 'movie':
                 # "Añadir a Biblioteca"
                 opciones.append(config.get_localized_string(30161))
 
@@ -764,21 +765,15 @@ def set_opcion(item, seleccion, opciones, video_urls):
 
     # "Añadir a Biblioteca":  # Library
     elif opciones[seleccion] == config.get_localized_string(30161):
-
         titulo = item.fulltitle
         if titulo == "":
             titulo = item.title
 
-        # TODO ¿SOLO peliculas?
         new_item = item.clone(title=titulo, action="play_from_library", category="Cine",
                               fulltitle=item.fulltitle, channel=item.channel)
-        from platformcode import library
-        insertados, sobreescritos, fallidos = library.save_library_movie(new_item)
 
-        advertencia = xbmcgui.Dialog()
-        if fallidos == 0:
-            advertencia.ok(config.get_localized_string(30131), titulo,
-                           config.get_localized_string(30135))  # 'se ha añadido a la biblioteca'
+        from platformcode import library
+        library.add_pelicula_to_library(new_item)
 
         salir = True
 

@@ -45,7 +45,7 @@ def text2filename(text):
     for i, j in dict_char.iteritems():
         filename = filename.replace(i, j)
 
-    filename = filter(lambda c: c in "abcçdefghijklmnñopqrstuvwxyz1234567890-_()[]'. ", text)
+    filename = filter(lambda c: c in "abcçdefghijklmnñopqrstuvwxyz1234567890-_()[]'. ", filename)
 
     return filename
 

@@ -67,12 +67,13 @@ def run():
         item = Item(action="selectchannel", viewmode="movie")
 
     logger.info("pelisalacarta.platformcode.launcher "+item.tostring())
-
+    
+    '''
     # Set server filters
     server_white_list = []
     server_black_list = []
     if config.get_setting('filter_servers') == 'true':
-        server_white_list, server_black_list = set_server_list()
+        server_white_list, server_black_list = set_server_list()'''
 
     try:
 
@@ -134,6 +135,12 @@ def run():
             itemlist = channelselector.filterchannels(item.category)
 
             platformtools.render_items(itemlist, item)
+
+        # Special action for playing a video from the library
+        elif item.action == "play_from_library":
+            play_from_library(item)
+            return
+
 
         # Action in certain channel specified in "action" and "channel" parameters
         else:
@@ -215,6 +222,7 @@ def run():
                     itemlist = servertools.find_video_items(item)
 
                 if config.get_setting('filter_servers') == 'true':
+                    server_white_list, server_black_list = set_server_list()
                     itemlist = filtered_servers(itemlist, server_white_list, server_black_list)
 
                 from platformcode import subtitletools
@@ -222,9 +230,6 @@ def run():
 
                 platformtools.render_items(itemlist, item)
 
-            # Special action for playing a video from the library
-            elif item.action == "play_from_library":
-                play_from_library(item, server_white_list, server_black_list)
 
             # Special action for adding a movie to the library
             elif item.action == "add_pelicula_to_library":
@@ -364,58 +369,34 @@ def filtered_servers(itemlist, server_white_list, server_black_list):
 
     return new_list
 
-def play_from_library(item, server_white_list, server_black_list):
+
+def play_from_library(item):
+    '''
+        Los .strm al reproducirlos desde kodi, este espera que sea un archivo "reproducible" asi que no puede contener mas items, como mucho se puede colocar
+        un dialogo de seleccion.
+        Esto lo solucionamos "engañando a kodi" y haciendole creer que se ha reproducido algo, asi despues mediante "Container.Update()" cargamos el strm como
+        si un item desde dentro de pelisalacarta se tratara, quitando todas las limitaciones y permitiendo reproducir mediante la funcion general sin tener
+        que crear nuevos metodos para la biblioteca
+    '''
     logger.info("pelisalacarta.platformcode.launcher play_from_library")
     #logger.debug("item: \n" + item.tostring('\n'))
 
-    # Llamamos al metodo findvideos del canal biblioteca
-    from channels import biblioteca
-    list_servers = getattr(biblioteca, 'findvideos')(item)
+    import xbmcgui
+    import xbmcplugin
+    import xbmc
+    # Intentamos reproducir una imagen (esto no hace nada y ademas no da error)
+    xbmcplugin.setResolvedUrl(int(sys.argv[1]), True,
+                              xbmcgui.ListItem(path=os.path.join(config.get_runtime_path(), "icon.png")))
 
-    if config.get_setting('filter_servers') == 'true':
-        list_servers = filtered_servers(list_servers, server_white_list, server_black_list)
+    # Por si acaso la imagen hiciera (en futuras versiones) le damos a stop para detener la reproduccion
+    xbmc.Player().stop()
 
-    if len(list_servers) == 0:
-        # Cancelar no hay nada q reproducir
-        logger.debug("Cancelar no hay nada que reproducir")
-        return
-    elif len(list_servers) == 1:
-        # Solo hay un server
-        server_seleccionado = list_servers[0]
-    else:
-        # Si hay mas de una opcion para el video mostrar el cuadro de seleccion
-        opciones = [item.title for item in list_servers]
-        seleccion = platformtools.dialog_select(config.get_localized_string(30163), opciones)
+    # modificamos el action (actualmente la biblioteca necesita "findvideos" ya que es donde se buscan las fuentes
+    item.action = "findvideos"
 
-        if seleccion == -1:
-            # Cancelar
-            logger.debug("Se ha pulsado Cancelar en el cuadro de dialogo")
-            return
-        server_seleccionado = list_servers[seleccion]
-
-    #logger.debug(str(server_seleccionado))
-    # Importamos el canal desde el q reproduciremos
-    try:
-        channel = __import__('channels.%s' % server_seleccionado.channel,
-                             fromlist=["channels.%s" % server_seleccionado.channel])
-    except:
-        exec "import channels." + server_seleccionado.channel + " as channel"
-
-    # Ejecuta el método play del canal, si lo hay
-    try:
-        itemlist = channel.play(server_seleccionado)
-        new_item = itemlist[0]
-    except AttributeError:
-        new_item = server_seleccionado
-
-    logger.info("pelisalacarta.platformcode.launcher play_from_library Elegido %s (sub %s)"
-                %(new_item.title,new_item.subtitle))
-
-    # Esto es necesario por si el play del canal elimina los datos
-    new_item.nfo = item.nfo
-    new_item.strm_path = item.strm_path
-
-    platformtools.play_video(new_item, True)
+    # y volvemos a lanzar kodi
+    xbmc.executebuiltin("Container.Update(" + sys.argv[0] + "?" + item.tourl() + ")")
+    return
 
 
 
