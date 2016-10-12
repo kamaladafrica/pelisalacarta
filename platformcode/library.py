@@ -136,6 +136,7 @@ def save_library_movie(item):
 
     # Si llegados a este punto no tenemos titulo, salimos
     if not item.contentTitle or not item.channel:
+        logger.debug("NO ENCONTRADO contentTitle")
         return 0, 0, -1  # Salimos sin guardar
 
     # TODO configurar para segun el scraper se llamara a uno u otro
@@ -147,6 +148,7 @@ def save_library_movie(item):
     #  item.infoLabels['imdb_id'] == "" : No se ha encontrado el identificador de IMDB necesario para continuar, salimos
     if not tmdb_return or not item.infoLabels['imdb_id']:
         # TODO de momento si no hay resultado no añadimos nada, aunq podriamos abrir un cuadro para introducir el identificador/nombre a mano
+        logger.debug("NO ENCONTRADO EN TMDB O NO TIENE IMDB_ID")
         return 0, 0, -1
 
     id = item.infoLabels['imdb_id']
@@ -154,13 +156,14 @@ def save_library_movie(item):
     # progress dialog
     p_dialog = platformtools.dialog_progress('pelisalacarta', 'Añadiendo película...')
 
-    if item.infoLabels['originaltitle']:
+    '''if item.infoLabels['originaltitle']:
         base_name = item.infoLabels['originaltitle']
-    else:
-        base_name = item.contentTitle
+    else:'''
+    base_name = item.contentTitle
 
     #  TODO hay q asegurarse q base_name es un filename correcto
-    base_name = filter(lambda c: c not in ":*?<>|\/", base_name).strip().lower()
+    #base_name = filter(lambda c: c not in ":*?<>|\/", base_name).strip().lower()
+    base_name = filetools.text2filename(base_name)
 
     for raiz, subcarpetas, ficheros in filetools.walk(MOVIES_PATH):
         for c in subcarpetas:
@@ -169,7 +172,7 @@ def save_library_movie(item):
                 break
 
     if not path:
-        path = filetools.join(MOVIES_PATH, "%s [%s]" % (base_name, id))
+        path = filetools.join(MOVIES_PATH, ("%s [%s]" % (base_name, id)).strip())
         logger.info("pelisalacarta.platformcode.library save_library_movie Creando directorio pelicula:" + path)
         try:
             filetools.mkdir(path)
@@ -275,7 +278,8 @@ def save_library_tvshow(item, episodelist):
         base_name = item.contentSerieName
 
     #  TODO hay q asegurarse q base_name es un filename correcto
-    base_name = filter(lambda c: c not in ":*?<>|\/", base_name).strip().lower()
+    #base_name = filter(lambda c: c not in ":*?<>|\/", base_name).strip().lower()
+    base_name = filetools.text2filename(base_name)
 
     for raiz, subcarpetas, ficheros in filetools.walk(TVSHOWS_PATH):
         for c in subcarpetas:
@@ -284,7 +288,7 @@ def save_library_tvshow(item, episodelist):
                 break
 
     if not path:
-        path = filetools.join(TVSHOWS_PATH, ("%s [%s]" %(base_name, id)))
+        path = filetools.join(TVSHOWS_PATH, ("%s [%s]" %(base_name, id)).strip())
         logger.info("pelisalacarta.platformcode.library save_library_tvshow Creando directorio serie:" + path)
         try:
             filetools.mkdir(path)
@@ -475,7 +479,7 @@ def mark_auto_as_watched(item):
             totaltime = xbmc.Player().getTotalTime()
 
             if condicion == 0:  # '5 minutos'
-                mark_time = 300000 #FOR DEBUG = 30
+                mark_time = 30#0000 #FOR DEBUG = 30
             elif condicion == 1:  # '30%'
                 mark_time = totaltime * 0.3
             elif condicion == 2:  # '50%'

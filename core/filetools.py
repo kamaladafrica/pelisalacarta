@@ -32,6 +32,27 @@ except ImportError:
     from sambatools import libsmb as samba
 
 
+def text2filename(text):
+    # Eliminamos o sustituimos los caracteres no validos
+
+    filename = text.strip().lower()
+
+    dict_char = {'á':'a', 'à':'a', 'ä':'a', 'â':'a',
+                 'é': 'e', 'è': 'e', 'ë': 'e', 'ê': 'e',
+                 'í': 'i', 'ì': 'i', 'ï': 'i', 'î': 'i',
+                 'ó': 'o', 'ò': 'o', 'ö': 'o', 'ô': 'o',
+                 'ú': 'u', 'ù': 'u', 'ü': 'u', 'û': 'u'} #, 'ç':'c', 'ñ':'n'}
+    for i, j in dict_char.iteritems():
+        filename = filename.replace(i, j)
+
+    filename = filter(lambda c: c in "abcçdefghijklmnñopqrstuvwxyz1234567890-_()[]'. ", text)
+
+    return filename
+
+
+
+
+
 def remove_chars(path):
     """
     Elimina cáracteres no permitidos
