@@ -30,7 +30,7 @@ configuración para mostrar la opción de filtro, actualmente sólo se permite e
 'platformtools.show_channel_settings' esté disponible para las distintas plataformas
 '''
 OPCION_FILTRO = config.is_xbmc()
-CONTEXT = ("", "menu filtro")[OPCION_FILTRO]
+CONTEXT = ("", "menu_filtro")[OPCION_FILTRO]
 DEBUG = config.get_setting("debug")
 
 
@@ -244,7 +244,7 @@ def parseVideos(item, typeStr, data):
             itemlist.append(Item(channel=item.channel, title=title, url=urlparse.urljoin(HOST, vFields.get("link")),
                                  action="play", show=item.show, language=IDIOMAS.get(vFields.get("language"), "OVOS"),
                                  quality=quality, list_idiomas=list_idiomas, list_calidad=CALIDADES,
-                                 fulltitle=item.title, context=CONTEXT+"|guardar filtro"))
+                                 fulltitle=item.title, context=CONTEXT+"|guardar_filtro"))
 
         if len(itemlist) > 0 and OPCION_FILTRO:
             itemlist = filtertools.get_filtered_links(itemlist, item.channel)

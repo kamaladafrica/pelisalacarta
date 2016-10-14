@@ -149,7 +149,7 @@ def series(item):
                 #logger.debug(tvshow_path)
                 url_scraper, item_tvshow = read_nfo(tvshow_path)
                 item_tvshow.title = item_tvshow.contentTitle
-                item_tvshow.text_color = "0xFFDF7401" # TODO Opcionalmente podemos cambiar color si hay mas de un canal
+                item_tvshow.text_color = "0xFFDF7401"
                 item_tvshow.path = raiz
                 item_tvshow.nfo = tvshow_path
 
@@ -366,14 +366,13 @@ def findvideos(item):
         if index < 0:
             return []
         if index > 0:
-            filtro_canal = opciones[index]
+            filtro_canal = opciones[index].replace("Mostrar solo los enlaces de ","")
 
 
     for nom_canal, json_path in list_canales.items():
         if filtro_canal and filtro_canal != nom_canal.capitalize():
             continue
 
-        # TODO lo siguiente podriamos hacerlo multihilo
         # Importamos el canal de la parte seleccionada
         try:
             channel = __import__('channels.%s' % nom_canal,
@@ -401,7 +400,6 @@ def findvideos(item):
             if not server.action: # Ignorar las etiquetas
                 continue
 
-            # TODO Opcionalmente podriamos alternar entre varios colores (cada canal de un color)
             server.contentChannel = server.channel
             server.channel = "biblioteca"
             server.nfo = item.nfo
@@ -436,7 +434,6 @@ def play(item):
     else:
         itemlist = [item.clone(url=item.strm_path, server="local")]
 
-    #library.mark_auto_as_watched(item)
 
     # Esto es necesario por si el play del canal elimina los datos
     for v in itemlist:

@@ -97,7 +97,7 @@ def cb_select_from_tmdb(item, tmdb_result):
         return tmdb_result
 
 
-def find_and_set_infoLabels_tmdb(item, ask_video=True):
+def find_and_set_infoLabels_tmdb(item):
     global otmdb_global
 
     if item.contentType == "movie":
@@ -122,7 +122,7 @@ def find_and_set_infoLabels_tmdb(item, ask_video=True):
 
         results = otmdb_global.get_list_resultados()
 
-        if len(results) > 1 and ask_video: #TODO q pasa si ask_video es False?
+        if len(results) > 1:
             tmdb_result = platformtools.show_video_info(results, callback='cb_select_from_tmdb', item=item,
                                                 caption = "[%s]: Selecciona la %s correcta" %(title, tipo_contenido))
 
@@ -132,10 +132,13 @@ def find_and_set_infoLabels_tmdb(item, ask_video=True):
         if tmdb_result is None:
             # En muchas ocasiones no lo encuentra por que el titulo incluye el (año),
             # si es asi lo quitamos y volvemos a probar
-            if len(title) > 7 and title.endswith("(%s)" %title[-5:-1]):
-                title = title[:-6].strip()
+            year = scrapertools.find_single_match(title, "^.+?\s*(\(\d{4}\))$")
+            if year:
+                title = title.replace(year,"").strip()
+                item.infoLabels['year'] = year [1:-1]
+
             else:
-                # Si no lo encunetra solo preguntamos por el titulo correcto
+                # Si no lo encuentra solo, preguntamos por el titulo correcto
                 if platformtools.dialog_yesno("%s no encontrada" % tipo_contenido.capitalize(),
                                               "No se ha encontrado la %s:" % tipo_contenido, title,
                                               '¿Desea introducir otro nombre?'):
@@ -283,7 +286,7 @@ def set_infoLabels_item(item, seekTmdb=True, idioma_busqueda='es', lock=None):
             if lock:
                 lock.acquire()
 
-            if not otmdb_global or otmdb_global.result.get("id") != item.infoLabels['tmdb_id']:
+            if not otmdb_global or (item.infoLabels['tmdb_id'] and otmdb_global.result.get("id") != item.infoLabels['tmdb_id']):
                 if item.infoLabels['tmdb_id']:
                     otmdb_global = Tmdb(id_Tmdb=item.infoLabels['tmdb_id'], tipo=tipo_busqueda,
                                         idioma_busqueda=idioma_busqueda)
@@ -657,7 +660,6 @@ class Tmdb(object):
                 self.__by_id(source=kwargs.get('external_source'))
 
         else:
-            # TODO objeto creado pero sin resultados
             logger.debug("Creado objeto vacio")
 
 

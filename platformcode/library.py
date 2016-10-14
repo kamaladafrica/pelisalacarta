@@ -87,21 +87,18 @@ if not filetools.exists(TVSHOWS_PATH):
 otmdb = None
 
 
+'''
 def is_compatible():
     """
     comprueba si la plataforma es xbmc/Kodi, la version es compatible y si está configurada la libreria en Kodi.
     @rtype:   bool
     @return:  si es compatible.
-
     """
     logger.info("pelisalacarta.platformcode.library is_compatible")
-    # Versions compatible with JSONRPC v6 (frodo en adelante).
-    # config.OLD_PLATFORM son todas las versiones de frodo hacia abajo.
-    # Si hemos dicho que nos busque la información de Kodi, damos por supuesto que está configurada su biblioteca
-    if not config.OLD_PLATFORM and config.get_setting("get_metadata_from_kodi") == "true":
-        return True
-    else:
-        return False
+    # Versions compatible with JSONRPC v6 (v12 frodo en adelante).
+    version_xbmc = int(xbmc.getInfoLabel("System.BuildVersion").split(".", 1)[0])
+    return version_xbmc > 11
+'''
 
 
 def save_library_movie(item):
@@ -117,7 +114,7 @@ def save_library_movie(item):
     @return:  el número de elementos fallidos o -1 si ha fallado todo
     """
     logger.info("pelisalacarta.platformcode.library save_library_movie")
-    # logger.debug(item.tostring('\n'))
+    #logger.debug(item.tostring('\n'))
     insertados = 0
     sobreescritos = 0
     fallidos = 0
@@ -140,7 +137,7 @@ def save_library_movie(item):
         return 0, 0, -1  # Salimos sin guardar
 
     # TODO configurar para segun el scraper se llamara a uno u otro
-    tmdb_return = tmdb.find_and_set_infoLabels_tmdb(item, config.get_setting("scrap_ask_name") == "true")
+    tmdb_return = tmdb.find_and_set_infoLabels_tmdb(item)
 
     # Llegados a este punto podemos tener:
     #  tmdb_return = True: Un item con infoLabels con la información actualizada de la peli
@@ -156,14 +153,7 @@ def save_library_movie(item):
     # progress dialog
     p_dialog = platformtools.dialog_progress('pelisalacarta', 'Añadiendo película...')
 
-    '''if item.infoLabels['originaltitle']:
-        base_name = item.infoLabels['originaltitle']
-    else:'''
-    base_name = item.contentTitle
-
-    #  TODO hay q asegurarse q base_name es un filename correcto
-    #base_name = filter(lambda c: c not in ":*?<>|\/", base_name).strip().lower()
-    base_name = filetools.text2filename(base_name)
+    base_name = filetools.text2filename(item.contentTitle)
 
     for raiz, subcarpetas, ficheros in filetools.walk(MOVIES_PATH):
         for c in subcarpetas:
@@ -244,7 +234,7 @@ def save_library_tvshow(item, episodelist):
     @return:  el número de episodios fallidos o -1 si ha fallado toda la serie
     """
     logger.info("pelisalacarta.platformcode.library save_library_tvshow")
-    logger.debug(item.tostring('\n'))
+    #logger.debug(item.tostring('\n'))
     path = ""
 
     # Itentamos obtener el titulo correcto:
@@ -260,7 +250,7 @@ def save_library_tvshow(item, episodelist):
         return 0, 0, -1  # Salimos sin guardar
 
     # TODO configurar para segun el scraper se llame a uno u otro
-    tmdb_return = tmdb.find_and_set_infoLabels_tmdb(item, config.get_setting("scrap_ask_name") == "true")
+    tmdb_return = tmdb.find_and_set_infoLabels_tmdb(item)
 
     # Llegados a este punto podemos tener:
     #  tmdb_return = True: Un item con infoLabels con la información actualizada de la serie
@@ -277,8 +267,6 @@ def save_library_tvshow(item, episodelist):
     else:
         base_name = item.contentSerieName
 
-    #  TODO hay q asegurarse q base_name es un filename correcto
-    #base_name = filter(lambda c: c not in ":*?<>|\/", base_name).strip().lower()
     base_name = filetools.text2filename(base_name)
 
     for raiz, subcarpetas, ficheros in filetools.walk(TVSHOWS_PATH):
@@ -381,10 +369,13 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite= Tru
         if e.action == "add_serie_to_library" or e.action == "download_all_episodes":
             continue
 
-        season_episode = scrapertools.get_season_and_episode(e.title.lower())
-        e.infoLabels = serie.infoLabels
-        e.contentSeason, e.contentEpisodeNumber = season_episode.split("x")
-        season_episode = "%sx%s" %(e.contentSeason, str(e.contentEpisodeNumber).zfill(2))
+        try:
+            season_episode = scrapertools.get_season_and_episode(e.title.lower())
+            e.infoLabels = serie.infoLabels
+            e.contentSeason, e.contentEpisodeNumber = season_episode.split("x")
+            season_episode = "%sx%s" %(e.contentSeason, str(e.contentEpisodeNumber).zfill(2))
+        except:
+            continue
 
         strm_path = filetools.join(path, "%s.strm" % season_episode)
         if not filetools.exists(strm_path):
@@ -402,7 +393,7 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite= Tru
         nfo_path = filetools.join(path, "%s.nfo" % season_episode)
         if not filetools.exists(nfo_path) and e.infoLabels.get("tmdb_id"):
             # Si no existe season_episode.nfo añadirlo
-            tmdb.find_and_set_infoLabels_tmdb(e, config.get_setting("scrap_ask_name") == "true")
+            tmdb.find_and_set_infoLabels_tmdb(e)
             item_nfo = e.clone(channel="biblioteca", url="",action = 'findvideos', strm_path= strm_path.replace(TVSHOWS_PATH,""))
             url_scraper = "https://www.themoviedb.org/tv/%s/season/%s/episode/%s\n" %(item_nfo.infoLabels['tmdb_id'],
                             item_nfo.contentSeason, item_nfo.contentEpisodeNumber)
@@ -479,7 +470,7 @@ def mark_auto_as_watched(item):
             totaltime = xbmc.Player().getTotalTime()
 
             if condicion == 0:  # '5 minutos'
-                mark_time = 30#0000 #FOR DEBUG = 30
+                mark_time = 300000 #FOR DEBUG = 30
             elif condicion == 1:  # '30%'
                 mark_time = totaltime * 0.3
             elif condicion == 2:  # '50%'
@@ -572,13 +563,21 @@ def mark_season_as_watched_on_kodi(item, value=1):
         return
 
     # Buscamos el nombre de la BBDD de videos
+    code_db = {'10': 'MyVideos37.db', '11': 'MyVideos60.db', '12': 'MyVideos75.db', '13': 'MyVideos78.db',
+               '14': 'MyVideos90.db', '15': 'MyVideos93.db', '16': 'MyVideos99.db', '17': 'MyVideos107.db'}
     file_db = ""
-    for f in os.listdir(xbmc.translatePath("special://userdata/Database")):
-        path_f = os.path.join(xbmc.translatePath("special://userdata/Database"), f)
+    video_db = code_db.get(xbmc.getInfoLabel("System.BuildVersion").split(".", 1)[0], '')
+    if video_db:
+        file_db = os.path.join(xbmc.translatePath("special://userdata/Database"), video_db)
+    # metodo alternativo para localizar la BBDD
+    if not file_db or  filetools.exists(file_db):
+        file_db = ""
+        for f in os.listdir(xbmc.translatePath("special://userdata/Database")):
+            path_f = os.path.join(xbmc.translatePath("special://userdata/Database"), f)
 
-        if os.path.isfile(path_f) and f.lower().startswith('myvideos') and f.lower().endswith('.db'):
-            file_db = path_f
-            break
+            if os.path.isfile(path_f) and f.lower().startswith('myvideos') and f.lower().endswith('.db'):
+                file_db = path_f
+                break
 
     if file_db:
         import sqlite3
@@ -674,14 +673,15 @@ def add_pelicula_to_library(item):
     insertados, sobreescritos, fallidos = save_library_movie(new_item)
 
     if fallidos == 0:
-        platformtools.dialog_ok("Biblioteca", "La pelicula se ha añadido a la biblioteca")
+        platformtools.dialog_ok(config.get_localized_string(30131), item.title,
+                                config.get_localized_string(30135)) # 'se ha añadido a la biblioteca'
     else:
-        platformtools.dialog_ok("Biblioteca", "ERROR, la pelicula NO se ha añadido a la biblioteca")
+        platformtools.dialog_ok(config.get_localized_string(30131), "ERROR, la pelicula NO se ha añadido a la biblioteca")
 
 
-def add_serie_to_library(item, channel):
+def add_serie_to_library(item, channel= None):
     logger.info("pelisalacarta.platformcode.library add_serie_to_library, show=#"+item.show+"#")
-
+    logger.debug(item.tostring('\n'))
     # Esta marca es porque el item tiene algo más aparte en el atributo "extra"
     item.action = item.extra
     if "###" in item.extra:
@@ -692,6 +692,13 @@ def add_serie_to_library(item, channel):
         item.__dict__["action"] = item.__dict__.pop("from_action")
     if item.from_channel:
         item.__dict__["channel"] = item.__dict__.pop("from_channel")
+
+    if not channel:
+        try:
+            channel = __import__('channels.%s' % item.channel, fromlist=["channels.%s" % item.channel])
+        except:
+            exec "import channels." + item.channel + " as channel"
+
 
     # Obtiene el listado de episodios
     itemlist = getattr(channel, item.action)(item)

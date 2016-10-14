@@ -150,8 +150,9 @@ def convert_old_to_v4():
 
 
     platformtools.dialog_notification("Biblioteca actualizada al nuevo formato",
-                                      "%s series convertidas y %s series descartadas. A continuacion se descargaran "
-                                      "todos los episodios" % (series_insertadas, series_fallidas), time=12000)
+                                      "%s series convertidas y %s series descartadas. A continuación se va a "
+                                      "obtener la información de todos los episodios" %
+                                      (series_insertadas, series_fallidas), time=12000)
 
     # Por ultimo limpia la libreria, por que las rutas anteriores ya no existen
     library.clean()

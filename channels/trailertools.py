@@ -118,7 +118,7 @@ def buscartrailer(item):
         if itemlist:
             for video_url in itemlist:
                 opciones.append(video_url.title)
-
+            from platformcode import platformtools
             seleccion = platformtools.dialog_select("Buscando: "+item.contentTitle, opciones)
             logger.info("seleccion=%d" % seleccion)
             logger.info("seleccion=%s" % opciones[seleccion])
