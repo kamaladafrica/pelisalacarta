@@ -68,13 +68,6 @@ def run():
 
     logger.info("pelisalacarta.platformcode.launcher "+item.tostring())
     
-    '''
-    # Set server filters
-    server_white_list = []
-    server_black_list = []
-    if config.get_setting('filter_servers') == 'true':
-        server_white_list, server_black_list = set_server_list()'''
-
     try:
 
         # If item has no action, stops here
@@ -222,8 +215,7 @@ def run():
                     itemlist = servertools.find_video_items(item)
 
                 if config.get_setting('filter_servers') == 'true':
-                    server_white_list, server_black_list = set_server_list()
-                    itemlist = filtered_servers(itemlist, server_white_list, server_black_list)
+                    itemlist = filtered_servers(itemlist)
 
                 from platformcode import subtitletools
                 subtitletools.saveSubtitleName(item)
@@ -328,36 +320,35 @@ def set_server_list():
     return server_white_list, server_black_list
 
 
-def filtered_servers(itemlist, server_white_list, server_black_list):
+def filtered_servers(itemlist):
     logger.info("pelisalacarta.platformcode.launcher.filtered_servers")
     new_list = []
     white_counter = 0
     black_counter = 0
 
-    logger.info("pelisalacarta.platformcode.launcher filtered_servers whiteList %s" % server_white_list)
-    logger.info("pelisalacarta.platformcode.launcher filtered_servers blackList %s" % server_black_list)
+    server_white_list, server_black_list = set_server_list()
 
     if len(server_white_list) > 0:
-        logger.info("pelisalacarta.platformcode.launcher filtered_servers whiteList")
+        # logger.info("pelisalacarta.platformcode.launcher filtered_servers whiteList")
         for item in itemlist:
             logger.info("item.title " + item.title)
             if any(server in item.title for server in server_white_list):
-                logger.info("found")
+                # logger.info("found")
                 new_list.append(item)
                 white_counter += 1
-            else:
-                logger.info("not found")
+            # else:
+            #     logger.info("not found")
 
     if len(server_black_list) > 0:
-        logger.info("pelisalacarta.platformcode.launcher filtered_servers blackList")
+        # logger.info("pelisalacarta.platformcode.launcher filtered_servers blackList")
         for item in itemlist:
             logger.info("item.title " + item.title)
             if any(server in item.title for server in server_black_list):
-                logger.info("found")
+                # logger.info("found")
                 black_counter += 1
             else:
                 new_list.append(item)
-                logger.info("not found")
+                # logger.info("not found")
 
     logger.info("pelisalacarta.platformcode.launcher filtered_servers whiteList server %s has #%d rows" %
                 (server_white_list, white_counter))
