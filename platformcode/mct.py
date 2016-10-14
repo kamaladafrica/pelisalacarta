@@ -130,7 +130,12 @@ def play(url, xlistitem, is_view=None, subtitle=""):
     video_file = ""
     # -- magnet2torrent -----------------------------------------
     if torrent_file.startswith("magnet"):
-        tempdir = tempfile.mkdtemp()
+        try:
+            tempdir = tempfile.mkdtemp()
+        except IOError:
+            tempdir = os.path.join(save_path_torrents , "temp")
+            if not os.path.exists(tempdir): os.mkdir(tempdir)
+
         params = {
             'save_path': tempdir,
             'trackers':trackers,
