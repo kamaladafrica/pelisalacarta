@@ -159,8 +159,7 @@ def series(item):
     itemlist = []
 
     for scrapedthumbnail, scrapedurl, scrapedtitle, scrapedplot in matches:
-        item.infoLabels['year'] = scrapertools.find_single_match(scrapedtitle.strip(), "^.+?\s*\((\d{4})\)$")
-        title = scrapedtitle.strip().replace(item.infoLabels['year'], "").strip()
+        title = scrapedtitle.strip()  # scrapertools.unescape(scrapedtitle)
         url = urlparse.urljoin(item.url, scrapedurl)
         thumbnail = scrapedthumbnail
         plot = scrapertools.htmlclean(scrapedplot)
