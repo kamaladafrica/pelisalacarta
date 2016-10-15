@@ -719,11 +719,13 @@ def add_serie_to_library(item, channel= None):
         logger.info("[launcher.py] Se han añadido %s episodios de la serie %s a la biblioteca" %(insertados, item.show))
 
 
-def get_library_path_kodi_update(content_type=FOLDER_TVSHOWS, path):
+def get_library_path_kodi_update(content_type=FOLDER_TVSHOWS, path=""):
     """
     devuelve la ruta para kodi hacer el update de la biblioteca
     @type content_type: str
     @param content_type: tipo de contenido para actualizar, series o peliculas
+    @type path: str
+    @param path: nombre de la carpeta a escanear.
     @rtype str
     @return url para hacer videoScan de kodi.
     """
@@ -732,7 +734,10 @@ def get_library_path_kodi_update(content_type=FOLDER_TVSHOWS, path):
         value = "special://home/userdata/addon_data/plugin.video." + config.PLUGIN_NAME + "/library/" + content_type + \
                 "/"
     else:
-        value = filetools.join(value, content_type, path)
+        if path == "":
+            value = ""
+        else:
+            value = filetools.join(value, content_type, path)
 
     logger.info("la ruta es " + value)
 
