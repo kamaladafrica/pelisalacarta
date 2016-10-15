@@ -247,9 +247,6 @@ def episodios(item):
     logger.info("pelisalacarta.channels.verseriesynovelas episodios")
     itemlist = []
 
-    if not "infoLabels" in item:
-        item.infoLabels = {}
-
     data = scrapertools.anti_cloudflare(item.url, host=CHANNEL_HOST, headers=CHANNEL_HEADERS)
     data = data.replace("\n", "").replace("\t", "")
 
@@ -277,7 +274,7 @@ def episodios(item):
             itemlist.append(item.clone(action="findvideos", title=scrapedtitle, url=scrapedurl))
 
     itemlist.reverse()
-    if itemlist and item.action != "add_serie_to_library":
+    if itemlist and item.extra != "episodios":
         try:
             from core import tmdb
             tmdb.set_infoLabels_itemlist(itemlist, __modo_grafico__)
@@ -297,7 +294,7 @@ def findvideos(item):
     itemlist = []
     item.text_color = color3
 
-    if item.extra == "newest" or item.category == "":
+    if item.extra == "newest" and item.extra != "episodios":
         try:
             from core import tmdb
             tmdb.set_infoLabels_item(item, __modo_grafico__)
@@ -337,7 +334,7 @@ def findvideos(item):
 
     if not itemlist: 
         itemlist.append(item.clone(action="", title="No se ha encontrado ningún enlace"))
-    if item.category != "":
+    if item.extra != "episodios":
         url_lista = scrapertools.find_single_match(data, '<a class="regresar" href="([^"]+)"')
         if url_lista != "":
             itemlist.append(item.clone(action="episodios", title="Ir a la Lista de Capítulos", url=url_lista,

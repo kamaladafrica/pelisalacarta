@@ -7,8 +7,8 @@
 	<adult>false</adult>
 	<language>es</language>
 
-	<fanart>https://upload.wikimedia.org/wikipedia/en/8/86/Forensic_Files_Titlecard_Seasons_1-6.png</fanart>
-	<thumbnail>https://upload.wikimedia.org/wikipedia/en/8/86/Forensic_Files_Titlecard_Seasons_1-6.png</thumbnail>
+	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/crimenes.png</bannermenu>
+	<thumbnail>http://media.tvalacarta.info/pelisalacarta/squares/crimenes.png</thumbnail>
 	<bannermenu></bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>

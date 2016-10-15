@@ -20,15 +20,14 @@ logger.info("pelisalacarta.channels.buscador init")
 
 DEBUG = config.get_setting("debug")
 
-
 def mainlist(item,preferred_thumbnail="squares"):
     logger.info("pelisalacarta.channels.buscador mainlist")
 
     itemlist = list()
-    itemlist.append(Item(channel=item.channel, action="search", title="Busqueda generica..."))
+    itemlist.append(Item(channel=item.channel, action="search", title="Buscar por titulo..."))
 
 
-    itemlist.append(Item(channel=item.channel, action="search", title="Busqueda por categorias...", extra="categorias"))
+    itemlist.append(Item(channel=item.channel, action="search", title="Buscar por categorias...", extra="categorias"))
     #itemlist.append(Item(channel=item.channel, action="opciones", title="Opciones"))
 
     saved_searches_list = get_saved_searches()
@@ -90,8 +89,8 @@ def settingCanal(item):
     return platformtools.show_channel_settings(list_controls=list_controls, caption= "Canales incluidos en la búsqueda global", callback="save_settings", item=item)
     
 def save_settings(item,dict_values):
-  for v in dict_values:
-    config.set_setting("include_in_global_search", dict_values[v],v)
+    for v in dict_values:
+        config.set_setting("include_in_global_search", dict_values[v],v)
     
 def searchbycat(item):
     # Only in xbmc/kodi
@@ -133,15 +132,15 @@ def searchbycat(item):
 def search_cb(item,values=""):
     cat = []
     for c in values:
-      if values[c]:
-        cat.append(c)
+        if values[c]:
+          cat.append(c)
 
     if not len(cat):
-      return None
+        return None
     else:
-      logger.info(item.tostring())
-      logger.info(str(cat))
-      return do_search(item, cat)
+        logger.info(item.tostring())
+        logger.info(str(cat))
+        return do_search(item, cat)
   
   
 # Al llamar a esta función, el sistema pedirá primero el texto a buscar
@@ -160,39 +159,42 @@ def search(item, tecleado):
     return do_search(item, [])
   
 def channel_result(item):
-  extra = item.extra.split("{}")[0]
-  channel = item.extra.split("{}")[1]
-  tecleado = item.extra.split("{}")[2]
-  exec "from channels import " + channel + " as module"
-  item.channel = channel
-  item.extra = extra
-  print item.url
-  itemlist = module.search(item, tecleado)
-  return itemlist
+    extra = item.extra.split("{}")[0]
+    channel = item.extra.split("{}")[1]
+    tecleado = item.extra.split("{}")[2]
+    exec "from channels import " + channel + " as module"
+    item.channel = channel
+    item.extra = extra
+    #print item.url
+    try:
+        itemlist = module.search(item, tecleado)
+    except:
+        import traceback
+        logger.error(traceback.format_exc())
+        itemlist = []
+      
+    return itemlist
 
 def channel_search(search_results, channel_parameters,tecleado):
     ListaCanales = []
     try:
-      exec "from channels import " + channel_parameters["channel"] + " as module"
-      mainlist = module.mainlist(Item(channel=channel_parameters["channel"]))
-      search_items = [item for item in mainlist if item.action=="search"]
-      
-      for item in search_items:
+        exec "from channels import " + channel_parameters["channel"] + " as module"
+        mainlist = module.mainlist(Item(channel=channel_parameters["channel"]))
+        search_items = [item for item in mainlist if item.action=="search"]
+
+        for item in search_items:
             result = module.search(item.clone(), tecleado)
             if result ==None: result = []
             if len(result):
-              if not channel_parameters["title"] in search_results:
-                search_results[channel_parameters["title"]] = []
-              search_results[channel_parameters["title"]].append({"item": item, "itemlist":result})
+                if not channel_parameters["title"] in search_results:
+                    search_results[channel_parameters["title"]] = []
                 
-
+                search_results[channel_parameters["title"]].append({"item": item, "itemlist":result})
               
     except:
-      logger.error("No se puede buscar en: "+ channel_parameters["title"])  
-      import traceback
-      logger.error(traceback.format_exc())
-      
-            
+        logger.error("No se puede buscar en: "+ channel_parameters["title"])  
+        import traceback
+        logger.error(traceback.format_exc())
 
 # Esta es la función que realmente realiza la búsqueda
 def do_search(item, categories=[]):
@@ -225,7 +227,7 @@ def do_search(item, categories=[]):
     start_time = time.time()
     
     if multithread:
-      progreso.update(0, "Buscando %s..." % (tecleado))
+        progreso.update(0, "Buscando %s..." % (tecleado))
       
     for index, infile in enumerate(channel_files):
         percentage = index*100/number_of_channels
@@ -264,50 +266,57 @@ def do_search(item, categories=[]):
         
         #Modo Multi Thread            
         if multithread:
-          t = Thread(target=channel_search,args=[search_results, channel_parameters, tecleado])
-          t.setDaemon(True) 
-          t.start()
-          searches.append(t)
+            t = Thread(target=channel_search,args=[search_results, channel_parameters, tecleado])
+            t.setDaemon(True) 
+            t.start()
+            searches.append(t)
         
         #Modo single Thread
         else:
-          logger.info("pelisalacarta.channels.buscador Intentado busqueda en " + basename_without_extension + " de " + tecleado)
+            logger.info("pelisalacarta.channels.buscador Intentado busqueda en " + basename_without_extension + " de " + tecleado)
 
-          progreso.update(percentage, "Buscando %s en %s..." % (tecleado, channel_parameters["title"]))
-          channel_search(search_results, channel_parameters, tecleado)
+            progreso.update(percentage, "Buscando %s en %s..." % (tecleado, channel_parameters["title"]))
+            channel_search(search_results, channel_parameters, tecleado)
     
 
     #Modo Multi Thread
     if multithread :
-      pendent =  len([a for a in searches if a.is_alive()])
-      while pendent:
-        pendent =  len([a for a in searches if a.is_alive()])
-        percentage =  (len(searches) - pendent) * 100 / len(searches)
-        progreso.update(percentage, "Buscando %s en %d canales..." % (tecleado, len(searches)))
-        if progreso.iscanceled(): break
-        time.sleep(0.5)
+        try:
+            pendent =  len([a for a in searches if a.is_alive()])
+        except:
+            pendent =  len([a for a in searches if a.isAlive()])
+
+        while pendent:
+            try:
+                pendent =  len([a for a in searches if a.is_alive()])
+            except:
+                pendent =  len([a for a in searches if a.isAlive()])
+
+            percentage =  (len(searches) - pendent) * 100 / len(searches)
+            progreso.update(percentage, "Buscando %s en %d canales..." % (tecleado, len(searches)))
+            if progreso.iscanceled(): 
+                break
+            time.sleep(0.5)
           
     total = 0 
     
     for channel in sorted(search_results.keys()):
-      for search in search_results[channel]:
-        total+= len(search["itemlist"])
-        if result_mode ==0:
-            title = channel
-            if len(search_results[channel]) > 1:
-              title += " [" + search["item"].title.strip() + "]"
-            title +=" (" + str(len(search["itemlist"])) + ")"
-            
-            title = re.sub("\[COLOR [^\]]+\]","",title)
-            title = re.sub("\[/COLOR]","",title)
-            
-            extra = search["item"].extra + "{}" + search["item"].channel + "{}" + tecleado
-            itemlist.append(Item(title=title, channel="buscador",action="channel_result", url=search["item"].url, extra = extra, folder=True))
-        else:
-          itemlist.extend(search["itemlist"])
-  
-  
-  
+        for search in search_results[channel]:
+            total+= len(search["itemlist"])
+            if result_mode ==0:
+                title = channel
+                if len(search_results[channel]) > 1:
+                    title += " [" + search["item"].title.strip() + "]"
+                title +=" (" + str(len(search["itemlist"])) + ")"
+                
+                title = re.sub("\[COLOR [^\]]+\]","",title)
+                title = re.sub("\[/COLOR]","",title)
+                
+                extra = search["item"].extra + "{}" + search["item"].channel + "{}" + tecleado
+                itemlist.append(Item(title=title, channel="buscador",action="channel_result", url=search["item"].url, extra = extra, folder=True))
+            else:
+                itemlist.extend(search["itemlist"])
+
     title="Buscando: '%s' | Encontrado: %d vídeos | Tiempo: %2.f segundos" % (tecleado,total, time.time()-start_time)
     itemlist.insert(0,Item(title=title, color='yellow'))
 
@@ -320,7 +329,11 @@ def save_search(text):
 
     saved_searches_limit = int((10, 20, 30, 40, )[int(config.get_setting("saved_searches_limit", "buscador"))])
 
-    saved_searches_list = list(config.get_setting("saved_searches_list", "buscador"))
+    current_saved_searches_list = config.get_setting("saved_searches_list", "buscador")
+    if current_saved_searches_list is None:
+        saved_searches_list = []
+    else:
+        saved_searches_list = list(current_saved_searches_list)
 
     if text in saved_searches_list:
         saved_searches_list.remove(text)
@@ -337,6 +350,10 @@ def clear_saved_searches(item):
 
 def get_saved_searches():
 
-    return list(config.get_setting("saved_searches_list", "buscador"))
+    current_saved_searches_list = config.get_setting("saved_searches_list", "buscador")
+    if current_saved_searches_list is None:
+        saved_searches_list = []
+    else:
+        saved_searches_list = list(current_saved_searches_list)
     
-    
+    return saved_searches_list

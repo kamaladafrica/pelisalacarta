@@ -61,7 +61,8 @@ def mainlist(item):
     logger.info("pelisalacarta.channels.animeflv mainlist")
 
     itemlist = list([])
-    itemlist.append(Item(channel=item.channel, action="novedades_episodios", title="Últimos episodios", url=CHANNEL_HOST, viewmode="movie"))
+    itemlist.append(Item(channel=item.channel, action="novedades_episodios", title="Últimos episodios",
+                         url=CHANNEL_HOST, viewmode="movie"))
     itemlist.append(Item(channel=item.channel, action="menuseries", title="Series",
                          url=urlparse.urljoin(CHANNEL_HOST, "animes/?orden=nombre&mostrar=series")))
     itemlist.append(Item(channel=item.channel, action="menuovas", title="OVAS",
@@ -83,7 +84,8 @@ def menuseries(item):
     itemlist.append(Item(channel=item.channel, action="generos", title="Por géneros",
                          url=urlparse.urljoin(CHANNEL_HOST, "animes/?orden=nombre&mostrar=series")))
     itemlist.append(Item(channel=item.channel, action="series", title="En emisión",
-                         url=urlparse.urljoin(CHANNEL_HOST, "animes/en-emision/?orden=nombre&mostrar=series", viewmode="movies_with_plot")))
+                         url=urlparse.urljoin(CHANNEL_HOST, "animes/en-emision/?orden=nombre&mostrar=series"),
+                         viewmode="movies_with_plot"))
 
     return itemlist
 
@@ -97,7 +99,8 @@ def menuovas(item):
     itemlist.append(Item(channel=item.channel, action="generos", title="Por géneros",
                          url=urlparse.urljoin(CHANNEL_HOST, "animes/?orden=nombre&mostrar=ovas")))
     itemlist.append(Item(channel=item.channel, action="series", title="En emisión",
-                         url=urlparse.urljoin(CHANNEL_HOST, "animes/en-emision/?orden=nombre&mostrar=ovas", viewmode="movies_with_plot")))
+                         url=urlparse.urljoin(CHANNEL_HOST, "animes/en-emision/?orden=nombre&mostrar=ovas"),
+                         viewmode="movies_with_plot"))
 
     return itemlist
 
@@ -111,7 +114,8 @@ def menupeliculas(item):
     itemlist.append(Item(channel=item.channel, action="generos", title="Por géneros",
                          url=urlparse.urljoin(CHANNEL_HOST, "animes/?orden=nombre&mostrar=peliculas")))
     itemlist.append(Item(channel=item.channel, action="series", title="En emisión",
-                         url=urlparse.urljoin(CHANNEL_HOST, "animes/en-emision/?orden=nombre&mostrar=peliculas", viewmode="movies_with_plot")))
+                         url=urlparse.urljoin(CHANNEL_HOST, "animes/en-emision/?orden=nombre&mostrar=peliculas"),
+                         viewmode="movies_with_plot"))
 
     return itemlist
 
@@ -171,31 +175,16 @@ def search(item, texto):
         item.url = urlparse.urljoin(CHANNEL_HOST, "animes/?buscar=")
     texto = texto.replace(" ", "+")
     item.url = "{0}{1}".format(item.url, texto)
-    try:
-        return series(item)
-    # Se captura la excepción, para no interrumpir al buscador global si un canal falla
-    except:
-        import sys
-        for line in sys.exc_info():
-            logger.error("{0}".format(line))
-        return []
+    return series(item)
 
 def newest(categoria):
     itemlist = []
-    item = Item()
-    try:
-        if categoria == 'anime':
-            item.url = "http://animeflv.net/"
-            itemlist= novedades_episodios(item)
 
-    # Se captura la excepción, para no interrumpir al canal novedades si un canal falla
-    except:
-        import sys
-        for line in sys.exc_info():
-            logger.error("{0}".format(line))
-        return []
+    if categoria == 'anime':
+        itemlist = novedades_episodios(Item(url = "http://animeflv.net/"))
 
     return itemlist
+
 
 def novedades_episodios(item):
     logger.info("pelisalacarta.channels.animeflv novedades")
@@ -223,25 +212,22 @@ def novedades_episodios(item):
         scrapedurl = urlparse.urljoin(item.url, match[0])
         scrapedthumbnail = urlparse.urljoin(item.url, match[2].replace("mini", "portada"))
         scrapedplot = ""
-        if DEBUG:
-            logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(scrapedtitle, scrapedurl,
-                                                                         scrapedthumbnail))
+        #if DEBUG: logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(scrapedtitle, scrapedurl, scrapedthumbnail))
 
-        newItem = Item(channel=item.channel, action="findvideos", title=scrapedtitle, url=scrapedurl,
-                       thumbnail=scrapedthumbnail, plot=scrapedplot, fulltitle=fulltitle)
+        new_item = Item(channel=item.channel, action="findvideos", title=scrapedtitle, url=scrapedurl,
+                        thumbnail=scrapedthumbnail, plot=scrapedplot, fulltitle=fulltitle)
 
-        contentTitle = scrapertools.entityunescape(match[1])
-        if contentTitle:
-            episode = scrapertools.get_match(contentTitle, '\s+(\d+)$')
-            contentTitle = contentTitle.replace(episode, '')
-            season, episode = numbered_for_tratk(contentTitle, 1, episode)
-            newItem.hasContentDetails = "true"
-            newItem.contentTitle = contentTitle
-            newItem.contentSeason = season
-            newItem.contentEpisodeNumber = int(episode)
+        content_title = scrapertools.entityunescape(match[1])
+        if content_title:
+            episode = scrapertools.get_match(content_title, '\s+(\d+)$')
+            content_title = content_title.replace(episode, '')
+            season, episode = numbered_for_tratk(content_title, 1, episode)
+            new_item.hasContentDetails = "true"
+            new_item.contentTitle = content_title
+            new_item.contentSeason = season
+            new_item.contentEpisodeNumber = int(episode)
 
-        itemlist.append(newItem)
-
+        itemlist.append(new_item)
 
     return itemlist
 
@@ -293,8 +279,7 @@ def series(item):
         thumbnail = urlparse.urljoin(item.url, scrapedthumbnail)
         plot = scrapertools.htmlclean(scrapedplot)
         show = title
-        if DEBUG:
-            logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
+        #if DEBUG:logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
         itemlist.append(Item(channel=item.channel, action="episodios", title=title, url=url, thumbnail=thumbnail,
                              plot=plot, show=show, fulltitle=fulltitle, fanart=thumbnail, folder=True))
 
@@ -308,7 +293,8 @@ def series(item):
             scrapedplot = ""
 
             itemlist.append(Item(channel=item.channel, action="series", title=scrapedtitle, url=scrapedurl,
-                                 thumbnail=scrapedthumbnail, plot=scrapedplot, folder=True, viewmode="movies_with_plot"))
+                                 thumbnail=scrapedthumbnail, plot=scrapedplot, folder=True,
+                                 viewmode="movies_with_plot"))
 
     return itemlist
 
@@ -334,7 +320,7 @@ def episodios(item):
     </ul>
     '''
 
-    data = scrapertools.get_match(data, '<div class="tit">Listado de episodios.*?</div>(.*?)</ul>')
+    data = scrapertools.find_single_match(data, '<div class="tit">Listado de episodios.*?</div>(.*?)</ul>')
     patron = '<li><a href="([^"]+)">([^<]+)</a></li>'
     matches = re.compile(patron, re.DOTALL).findall(data)
 
@@ -349,7 +335,7 @@ def episodios(item):
 
         season = 1
         episode = 1
-        patron = "{0}{1}".format(re.escape(item.show), "\s+(\d+)")
+        patron = re.escape(item.show) + "\s+(\d+)"
         # logger.info("title {0}".format(title))
         # logger.info("patron {0}".format(patron))
 
@@ -364,19 +350,18 @@ def episodios(item):
 
         episode_title = scrapertools.find_single_match(title, "\d+:\s*(.*)")
         if episode_title == "":
-            episode_title = "Episodio {0}".format(episode)
+            episode_title = "Episodio "+str(episode)
 
         season, episode = numbered_for_tratk(item.show, season, episode)
 
         if len(str(episode)) == 1:
-            title = "{0}x0{1}".format(season, episode)
+            title = str(season)+"x0"+str(episode)
         else:
-            title = "{0}x{1}".format(season, episode)
+            title = str(season)+"x"+str(episode)
 
-        title = "{0} - {1} {2}".format(item.show, title, episode_title)
+        title = item.show+" - "+title+" "+episode_title
 
-        if DEBUG:
-            logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
+        #if DEBUG: logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
 
         itemlist.append(Item(channel=item.channel, action="findvideos", title=title, url=url,
                              thumbnail=thumbnail, plot=plot, show=item.show, fulltitle="{0} {1}"
@@ -396,8 +381,8 @@ def findvideos(item):
 
     data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
 
-    if 'infoLabels' in item:
-        del item.infoLabels
+    # if 'infoLabels' in item:
+    #     del item.infoLabels
 
     url_anterior = scrapertools.find_single_match(data, '<a href="(/ver/[^"]+)".+?prev.png')
     url_siguiente = scrapertools.find_single_match(data, '<a href="(/ver/[^"]+)"[^.]+next.png')
@@ -408,12 +393,13 @@ def findvideos(item):
 
     data = data.replace("\\\\", "")
     data = data.replace("\\/", "/")
-    logger.info("data={0}".format(data))
+    logger.info("data="+data)
 
     from core import servertools
     itemlist.extend(servertools.find_video_items(data=data))
     for videoitem in itemlist:
         videoitem.channel = item.channel
+        videoitem.show = item.show
         videoitem.folder = False
 
     if url_anterior:
@@ -459,11 +445,13 @@ def numbered_for_tratk(show, season, episode):
         data = ""
 
         try:
-            with open(fname, "r") as f:
-                for line in f:
-                    data += line
+            f = open(fname, "r")
+            for line in f:
+                data += line
+            f.close()
+
         except EnvironmentError:
-            logger("ERROR al leer el archivo: {0}".format(fname))
+            logger.info("ERROR al leer el archivo: {0}".format(fname))
 
         json_data = jsontools.load_json(data)
 
@@ -478,7 +466,7 @@ def numbered_for_tratk(show, season, episode):
                 del dict_series[key]
 
     if show in dict_series:
-        logger.info("ha encontrado algo: {0}".format(dict_series[show]))
+        logger.info("ha encontrado algo: "+str(dict_series[show]))
 
         if len(dict_series[show]['season_episode']) > 1:
             for row in dict_series[show]['season_episode']:
@@ -492,5 +480,5 @@ def numbered_for_tratk(show, season, episode):
             new_season = dict_series[show]['season_episode'][0][0]
             new_episode += dict_series[show]['season_episode'][0][1]
 
-    logger.info("pelisalacarta.channels.animeflv numbered_for_tratk: {0}:{1}".format(new_season, new_episode))
+    logger.info("pelisalacarta.channels.animeflv numbered_for_tratk: "+str(new_season)+":"+str(new_episode))
     return new_season, new_episode

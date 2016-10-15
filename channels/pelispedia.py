@@ -22,7 +22,7 @@ DEBUG = config.get_setting("debug")
 
 CHANNEL_HOST = "http://www.pelispedia.tv/"
 CHANNEL_DEFAULT_HEADERS = [
-    ["User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:33.0) Gecko/20100101 Firefox/33.0"],
+    ["User-Agent", "Mozilla/5.0"],
     ["Accept-Encoding", "gzip, deflate"],
     ["Referer", CHANNEL_HOST]
 ]
@@ -466,7 +466,7 @@ def play(item):
 
     itemlist = []
     # Para videos flash y html5
-    if "pelispedia.tv" in item.url:
+    if item.url.startswith("http://www.pelispedia.tv"):
         key = scrapertools.find_single_match(item.url, 'index.php\?id=([^&]+)&sub=([^&]+)&.+?imagen=([^&]+)')
         subtitle = ""
         thumbnail = ""
@@ -492,7 +492,7 @@ def play(item):
             itemlist.append(Item(channel=__channel__, title=item.title, url=url, server="directo", action="play",
                                  subtitle=subtitle, thumbnail=thumbnail))
 
-    elif "pelispedia.biz" in item.url:
+    elif item.url.startswith("http://www.pelispedia.biz"):
         logger.info("estoy en el otro html5")
         key = scrapertools.find_single_match(item.url, 'v=([^&]+).+?imagen=([^&]+)')
 

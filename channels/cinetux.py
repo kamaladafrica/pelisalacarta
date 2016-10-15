@@ -237,7 +237,7 @@ def findvideos(item):
     data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
     year = scrapertools.find_single_match(data, '<h1><span>.*?rel="tag">([^<]+)</a>')
 
-    if year != "":
+    if year != "" and item.extra != "library":
         item.infoLabels['year'] = int(year)        
         # Ampliamos datos en tmdb
         if item.infoLabels['plot'] == "":
@@ -246,7 +246,7 @@ def findvideos(item):
             except:
                 pass
 
-    if item.infoLabels['plot'] == "":
+    if item.infoLabels.get('plot') == "":
         plot = scrapertools.find_single_match(data, '<div class="sinopsis"><p>(.*?)</p>')
         item.infoLabels['plot'] = plot
 
@@ -267,11 +267,12 @@ def findvideos(item):
         itemlist.append(item.clone(channel="trailertools", title="Buscar Tráiler", action="buscartrailer", context="",
                                    text_color="magenta"))    
         # Opción "Añadir esta película a la biblioteca de XBMC"
-        if item.category != "Cine":
+        if item.extra != "library":
             if config.get_library_support():
                 itemlist.append(Item(channel=item.channel, title="Añadir a la biblioteca", text_color="green",
                                      filtro=True, action="add_pelicula_to_library", url=item.url,
-                                     infoLabels={'title': item.fulltitle}, fulltitle=item.fulltitle))
+                                     infoLabels={'title': item.fulltitle}, fulltitle=item.fulltitle,
+                                     extra="library"))
     
     else:
         itemlist.append(item.clone(title="No hay enlaces disponibles", action="", text_color=color3))

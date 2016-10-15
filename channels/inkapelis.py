@@ -199,14 +199,15 @@ def findvideos(item):
     item.infoLabels["plot"] = scrapertools.htmlclean(sinopsis)
     # Busca en tmdb si no se ha hecho antes
     if item.extra != "eroticas":
-        year = scrapertools.find_single_match(data, 'Año de lanzamiento.*?"ab">(\d+)')
-        if year != "":
-            try:
-                item.infoLabels['year'] = year
-                # Obtenemos los datos basicos de todas las peliculas mediante multihilos
-                tmdb.set_infoLabels(item, __modo_grafico__)
-            except:
-                pass
+        if item.extra != "library":
+            year = scrapertools.find_single_match(data, 'Año de lanzamiento.*?"ab">(\d+)')
+            if year != "":
+                try:
+                    item.infoLabels['year'] = year
+                    # Obtenemos los datos basicos de todas las peliculas mediante multihilos
+                    tmdb.set_infoLabels(item, __modo_grafico__)
+                except:
+                    pass
         trailer_url = scrapertools.find_single_match(data, 'id="trailerpro">.*?src="([^"]+)"')
         item.infoLabels["trailer"] = "www.youtube.com/watch?v=TqqF3-qgJw4"
 
@@ -232,11 +233,11 @@ def findvideos(item):
         if not config.get_setting('menu_trailer', item.channel):
             itemlist.append(item.clone(channel="trailertools", action="buscartrailer", title="Buscar Tráiler",
                                        text_color="magenta", context=""))
-        if item.category != "Cine":
+        if item.extra != "library":
             if config.get_library_support():
                 itemlist.append(Item(channel=item.channel, title="Añadir película a la biblioteca",
                                      action="add_pelicula_to_library", url=item.url, fulltitle=item.fulltitle,
-                                     infoLabels={'title': item.fulltitle}, text_color="green"))
+                                     infoLabels={'title': item.fulltitle}, text_color="green", extra="library"))
 
     return itemlist
 

@@ -5,7 +5,7 @@
     <!-- ======================================= -->
     <!-- De 30000 a 30049: Configuració         -->
     <!-- ======================================= -->
-    
+
     <!-- Comunes -->
     <string id="30000">Reproductor (solo XBOX):</string>
     <string id="30001">Comprova actualitzacions:</string>
@@ -33,10 +33,10 @@
 	<string id="30031">Qualitat de vídeos (FLV)</string>
     	<string id="30032">Qualitat Normal (SD)</string>
     	<string id="30033">Qualitat Alta (HD)(si existeix)</string>
-	
+
     	<string id="30034">Usuari pàgines privades:</string>
     	<string id="30035">Contrasenya pàgines privades:</string>
-    
+
     <!-- Altres -->
     <string id="30017">Directori de descàrregues:</string>
     <string id="30018">Directori de la llista descàrregues:</string>
@@ -66,7 +66,7 @@
     <string id="30041">Res a la memòria cau</string>
     <string id="30042">Directori de la memòria cau:</string>
     <string id="30043">Tria la millor vista (Només Confluence):</string>
-    
+
     <string id="30044">Mode de reproducció:</string>
 
     <string id="30013">Habilita un canal personal</string>
@@ -74,6 +74,12 @@
     <string id="30049">Logo del canal</string>
     <string id="30045">URL/fitxer amb els vídeos</string>
     <string id="30047">Elements per pàgina</string>
+
+    <!-- Filtros -->
+    <string id="30068">Filtrar per servidors: </string>
+    <string id="30069">Llista Blanca: </string>
+    <string id="30070">Llista Negra: </string>
+    <string id="30071">Per posar diversos servidors utilitza "," com a separador </string>
 
     <!-- =============================================================== -->
     <!-- De 30050 a 30099: Mensajes informativos - error                 -->
@@ -103,7 +109,7 @@
 	<string id="30102">Preferits</string>
 	<string id="30103">Cerca</string>
 	<string id="30104">Ajuda</string>
-	
+
 	<string id="30105">S'ha tret de preferits</string>
 	<string id="30106">S'ha tret de la llista de les descàrregues</string>
 	<string id="30107">Ha tornat a la llista de les descàrregues</string>
@@ -163,14 +169,14 @@
     <string id="30301">Desa aquest canal als preferits</string>
     <string id="30302">Elimina aquest canal dels preferits</string>
     <string id="30303">Canvia el nom al títol d'aquest canal</string>
-    
+
     <!-- Megalive menú strings -->
     <string id="30401">Mur de canals</string>
     <string id="30402">Categories</string>
     <string id="30403">Canals Preferits</string>
     <string id="30404">Veure Canal por Codi(ID)</string>
     <string id="30405">Introdueix el codi del canal</string>
-    
+
     <!-- Justin.tv Category menú strings -->
     <string id="30406">Afegeix a Jtv preferits</string>
     <string id="30407">Elimina de Jtv Preferits</string>
@@ -203,19 +209,19 @@
     <string id="30435">Directori de subtítols</string>
     <string id="30436">Subtítol a carregar</string>
     <string id="30437">introdueix direcció</string>
-    
+
     <!-- LetMeWatchThis -->
     <string id="40001">Pel·lícules - Novetats</string>
     <string id="40002">Sèries - Novetats</string>
     <string id="40003">Pàgina següent</string>
-    
+
     <!-- =============================================================== -->
     <!-- Category strings                                                -->
     <!-- =============================================================== -->
     <string id="30500">Comptes</string>
     <string id="30501">Rutes</string>
     <string id="30502">Altres</string>
-    
+
     <!-- TVShack strings -->
     <string id="30900">TVShack</string>
     <string id="30901">Sèries TV (VO)</string>

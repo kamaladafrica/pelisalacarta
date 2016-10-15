@@ -44,7 +44,7 @@
 		<id>include_in_newest_infantiles</id>
 		<type>bool</type>
 		<label>Incluir en Novedades - Infantiles</label>
-		<default>true</default>
+		<default>false</default>
 		<enabled>true</enabled>
 		<visible>true</visible>
 	</settings>

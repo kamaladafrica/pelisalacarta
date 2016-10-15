@@ -11,7 +11,8 @@
 	<date>01/07/2016</date>
 	<changes>Eliminado código innecesario.</changes>
 	<fanart></fanart>
-	<thumbnail>http://i.imgur.com/Kxuf5ZS.png?1</thumbnail>
+	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/areadocumental.png</bannermenu>
+	<thumbnail>http://media.tvalacarta.info/pelisalacarta/squares/areadocumental.png</thumbnail>
 	<categories>
 		<category>documentary</category>
 	</categories>

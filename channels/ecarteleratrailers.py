@@ -15,9 +15,8 @@ from core.item import Item
 
 DEBUG = config.get_setting("debug")
 
-
 def mainlist(item):
-    logger.info("[ecarteleratrailers.py] mainlist")
+    logger.info("pelisalacarta.channels.ecarteleratrailers mainlist")
     itemlist=[]
 
     if item.url=="":
@@ -32,27 +31,24 @@ def mainlist(item):
     # ------------------------------------------------------
     # Extrae las películas
     # ------------------------------------------------------
-    patron  = '<div class="cuadronoticia">.*?<img src="([^"]+)".*?'
-    patron += '<div class="cnottxtv">.*?<h3><a href="([^"]+)">([^<]+)</a></h3>.*?'
-    patron += '<img class="bandera" src="http\:\/\/www\.ecartelera\.com\/images\/([^"]+)"[^<]+'
-    patron += '<br/>([^<]+)</div>'
+    patron  = '<div class="viditem"[^<]+'
+    patron += '<div class="fimg"><a href="([^"]+)"><img alt="([^"]+)" src="([^"]+)"/><p class="length">([^<]+)</p></a></div[^<]+'
+    patron += '<div class="fcnt"[^<]+'
+    patron += '<h4><a[^<]+</a></h4[^<]+'
+    patron += '<p class="desc">([^<]+)</p>'
+
     matches = re.compile(patron,re.DOTALL).findall(data)
     if DEBUG: scrapertools.printMatches(matches)
 
-    for match in matches:
-        scrapedtitle = match[2] #unicode( , "iso-8859-1" , errors="replace" ).encode("utf-8")
+    for scrapedurl,scrapedtitle,scrapedthumbnail,duration,scrapedplot in matches:
 
-        if match[3]=="fl_1.gif":
-            scrapedtitle += " (Castellano)"
-        elif match[3]=="fl_2.gif":
-            scrapedtitle += " (Inglés)"
+        title = scrapedtitle + " ("+duration+")"
+        url = scrapedurl
+        thumbnail = scrapedthumbnail
+        plot = scrapedplot.strip()
 
-        scrapedurl = match[1]
-        scrapedthumbnail = match[0]
-        scrapedplot = match[4]
-
-        if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=item.channel, action="play" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot, server="directo", folder=False))
+        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+        itemlist.append( Item(channel=item.channel, action="play" , title=title , url=url, thumbnail=thumbnail, fanart=thumbnail, plot=plot, server="directo", folder=False))
 
     # ------------------------------------------------------
     # Extrae la página siguiente
@@ -75,19 +71,19 @@ def mainlist(item):
 
 # Reproducir un vídeo
 def play(item):
-    logger.info("[ecarteleratrailers.py] play")
+    logger.info("pelisalacarta.channels.ecarteleratrailers play")
     itemlist=[]
     # Descarga la página
     data = scrapertools.cachePage(item.url)
     logger.info(data)
 
     # Extrae las películas
-    patron  = "file\: '([^']+)'"
+    patron  = '<source src="([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
 
     if len(matches)>0:
         url = urlparse.urljoin(item.url,matches[0])
-        logger.info("[ecarteleratrailers.py] url="+url)
+        logger.info("pelisalacarta.channels.ecarteleratrailers url="+url)
         itemlist.append( Item(channel=item.channel, action="play" , title=item.title , url=url, thumbnail=item.thumbnail, plot=item.plot, server="directo", folder=False))
 
     return itemlist

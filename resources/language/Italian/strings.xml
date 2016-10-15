@@ -75,6 +75,12 @@
     <string id="30045">Video list URL / file</string>
     <string id="30047">Elements per page</string>
 
+    <!-- Filtri -->
+    <string id="30068">Filtro per server:</string>
+    <string id="30069">White List:</string>
+    <string id="30070">Blacklist:</string>
+    <string id="30071">Per mettere più server che utilizzano "," come separatore</string>
+
     <!-- =============================================================== -->
     <!-- 30050 to 30099: Info / Messaggi d' errore                       -->
     <!-- =============================================================== -->

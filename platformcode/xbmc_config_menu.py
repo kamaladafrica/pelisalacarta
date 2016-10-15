@@ -754,10 +754,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                 try:
                     cb_channel = __import__('channels.%s' % self.channel, fromlist=["channels.%s" % self.channel])
                 except ImportError:
-                    try:
-                        cb_channel = __import__('core.%s' % self.channel, fromlist=["core.%s" % self.channel])
-                    except ImportError:
-                        logger.error('Imposible importar %s' % self.channel)
+                    logger.error('Imposible importar %s' % self.channel)
                 self.return_value = getattr(cb_channel, self.custom_button['method'])(self.item)
             else:
                 for c in self.controls:
@@ -791,10 +788,8 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                 try:
                     cb_channel = __import__('channels.%s' % self.channel, fromlist=["channels.%s" % self.channel])
                 except ImportError:
-                    try:
-                        cb_channel = __import__('core.%s' % self.channel, fromlist=["core.%s" % self.channel])
-                    except ImportError:
-                        logger.error('Imposible importar %s' % self.channel)
+                    logger.error('Imposible importar %s' % self.channel)
+
                 self.return_value = getattr(cb_channel, self.callback)(self.item, self.values)
 
         # Controles de ajustes, si se cambia el valor de un ajuste, cambiamos el valor guardado en el diccionario de
