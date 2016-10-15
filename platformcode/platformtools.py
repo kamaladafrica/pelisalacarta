@@ -174,8 +174,9 @@ def render_items(itemlist, parent_item):
     if parent_item.channel not in ["channelselector", ""]:
         xbmcplugin.setContent(int(sys.argv[1]), "movies")
 
-    # TODO: ¿Que utlilidad tiene esta linea?
-    xbmcplugin.setPluginCategory(handle=int(sys.argv[1]), category=parent_item.category)
+
+    # Fijamos el "breadcrumb"
+    xbmcplugin.setPluginCategory(handle=int(sys.argv[1]), category=parent_item.category.capitalize())
 
     # No ordenar items
     xbmcplugin.addSortMethod(handle=int(sys.argv[1]), sortMethod=xbmcplugin.SORT_METHOD_NONE)

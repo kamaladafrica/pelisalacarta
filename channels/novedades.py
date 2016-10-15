@@ -58,6 +58,7 @@ def mainlist(item,thumbnail_type="squares"):
                          "extra": new_item.extra,
                          "action": "settingCanal",
                          "channel": new_item.channel}]
+    new_item.category = "Novedades en %s" % new_item.extra
     itemlist.append(new_item)
 
     if list_canales['infantiles']:
@@ -67,6 +68,7 @@ def mainlist(item,thumbnail_type="squares"):
                          "extra": new_item.extra,
                          "action": "settingCanal",
                          "channel": new_item.channel}]
+    new_item.category = "Novedades en %s" % new_item.extra
     itemlist.append(new_item)
 
     if list_canales['series']:
@@ -76,6 +78,7 @@ def mainlist(item,thumbnail_type="squares"):
                          "extra": new_item.extra,
                          "action": "settingCanal",
                          "channel": new_item.channel}]
+    new_item.category = "Novedades en %s" % new_item.extra
     itemlist.append(new_item)
 
     if list_canales['anime']:
@@ -85,6 +88,7 @@ def mainlist(item,thumbnail_type="squares"):
                          "extra": new_item.extra,
                          "action": "settingCanal",
                          "channel": new_item.channel}]
+    new_item.category = "Novedades en %s" % new_item.extra
     itemlist.append(new_item)
 
     if list_canales['documentales']:
@@ -94,6 +98,7 @@ def mainlist(item,thumbnail_type="squares"):
                          "extra": new_item.extra,
                          "action": "settingCanal",
                          "channel": new_item.channel}]
+    new_item.category = "Novedades en %s" % new_item.extra
     itemlist.append(new_item)
 
     #itemlist.append(Item(channel=item.channel, action="menu_opciones", title="Opciones", viewmode="list",
