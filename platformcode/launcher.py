@@ -64,7 +64,7 @@ def run():
 
     # If no item, this is mainlist
     else:
-        item = Item(action="selectchannel", viewmode="movie")
+        item = Item(channel="channelselector", action="getmainlist", viewmode="movie")
 
     logger.info("pelisalacarta.platformcode.launcher "+item.tostring())
     
@@ -76,7 +76,7 @@ def run():
             return
 
         # Action for main menu in channelselector
-        if item.action == "selectchannel":
+        if item.action == "getmainlist":
             import channelselector
             itemlist = channelselector.getmainlist()
 
