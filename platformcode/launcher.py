@@ -64,7 +64,7 @@ def run():
 
     # If no item, this is mainlist
     else:
-        item = Item(action="selectchannel", viewmode="movie")
+        item = Item(channel="channelselector", action="getmainlist", viewmode="movie")
 
     logger.info("pelisalacarta.platformcode.launcher "+item.tostring())
     
@@ -76,7 +76,7 @@ def run():
             return
 
         # Action for main menu in channelselector
-        if item.action == "selectchannel":
+        if item.action == "getmainlist":
             import channelselector
             itemlist = channelselector.getmainlist()
 
@@ -116,16 +116,16 @@ def run():
                 xbmc.executebuiltin("Container.Refresh")
 
         # Action for channel types on channelselector: movies, series, etc.
-        elif item.action == "channeltypes":
+        elif item.action == "getchanneltypes":
             import channelselector
             itemlist = channelselector.getchanneltypes()
 
             platformtools.render_items(itemlist, item)
 
         # Action for channel listing on channelselector
-        elif item.action == "listchannels":
+        elif item.action == "filterchannels":
             import channelselector
-            itemlist = channelselector.filterchannels(item.category)
+            itemlist = channelselector.filterchannels(item.channel_type)
 
             platformtools.render_items(itemlist, item)
 
