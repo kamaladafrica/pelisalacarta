@@ -146,7 +146,7 @@ def convert_old_to_v4():
                         series_fallidas += 1
 
 
-    config.set_setting("library_version", version)
+    config.set_setting("library_version", 'v4')
 
 
     platformtools.dialog_notification("Biblioteca actualizada al nuevo formato",
