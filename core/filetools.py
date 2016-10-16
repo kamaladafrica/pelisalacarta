@@ -61,13 +61,13 @@ def remove_chars(path):
     @rtype: str
     @return: devuelve la cadena sin los caracteres no permitidos
     """
-    chars = ":*?<>|"
     if path.lower().startswith("smb://"):
-
+        chars = "*?<>|"
         path = path[6:]
         return "smb://" + ''.join([c for c in path if c not in chars])
 
     else:
+        chars = ":*?<>|"
         if path.find(":\\") == 1:
             unidad = path[0:3]
             path = path[2:]
@@ -146,7 +146,7 @@ def read(path, linea_inicio=0, total_lineas=None):
         from sambatools.smb.smb_structs import OperationFailure
 
         try:
-            f = samba.get_file_handle_for_reading(os.path.basename(path), os.path.dirname(path)).read()
+            f = samba.get_file_handle_for_reading(os.path.basename(path), os.path.dirname(path))
             for line in f:
                 if n_line >= linea_inicio:
                     data += line
