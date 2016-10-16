@@ -61,13 +61,18 @@ def remove_chars(path):
     @rtype: str
     @return: devuelve la cadena sin los caracteres no permitidos
     """
+    chars = ":*?<>|"
     if path.lower().startswith("smb://"):
-        chars = "*?<>|"
         path = path[6:]
-        return "smb://" + ''.join([c for c in path if c not in chars])
+
+        if "@" in path:
+            user, path = path.split("@",1)
+            return "smb://" + user + "@" + ''.join([c for c in path if c not in chars])
+
+        else:
+            return "smb://" + ''.join([c for c in path if c not in chars])
 
     else:
-        chars = ":*?<>|"
         if path.find(":\\") == 1:
             unidad = path[0:3]
             path = path[2:]
@@ -75,6 +80,7 @@ def remove_chars(path):
             unidad = ""
 
         return unidad + ''.join([c for c in path if c not in chars])
+
 
 
 def encode(path, _samba=False):
