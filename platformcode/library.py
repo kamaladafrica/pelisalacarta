@@ -205,9 +205,7 @@ def save_library_movie(item):
             p_dialog.close()
 
             # actualizamos la biblioteca de Kodi con la pelicula
-            # TODO arreglar el porque hay que poner la ruta special
-            #ruta = "special://home/userdata/addon_data/plugin.video.pelisalacarta/library/CINE/"
-            update()
+            update(get_library_path_kodi_update(FOLDER_MOVIES, os.path.basename(path) + "/"))
 
             return insertados, sobreescritos, fallidos
 
@@ -444,10 +442,7 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite= Tru
             fallidos = -1
 
         # ... y actualizamos la biblioteca de Kodi
-        # TODO arreglar el porque hay que poner la ruta special
-        #ruta = "special://home/userdata/addon_data/plugin.video.pelisalacarta/library/SERIES/" + \
-        #      os.path.basename(path) + "/"
-        update(get_library_path_kodi_update(FOLDER_TVSHOWS))
+        update(get_library_path_kodi_update(FOLDER_TVSHOWS, os.path.basename(path) + "/"))
 
     if fallidos == len(episodelist):
         fallidos = -1
@@ -724,11 +719,13 @@ def add_serie_to_library(item, channel= None):
         logger.info("[launcher.py] Se han añadido %s episodios de la serie %s a la biblioteca" %(insertados, item.show))
 
 
-def get_library_path_kodi_update(content_type=FOLDER_TVSHOWS):
+def get_library_path_kodi_update(content_type=FOLDER_TVSHOWS, path=""):
     """
     devuelve la ruta para kodi hacer el update de la biblioteca
     @type content_type: str
     @param content_type: tipo de contenido para actualizar, series o peliculas
+    @type path: str
+    @param path: nombre de la carpeta a escanear.
     @rtype str
     @return url para hacer videoScan de kodi.
     """
@@ -737,7 +734,10 @@ def get_library_path_kodi_update(content_type=FOLDER_TVSHOWS):
         value = "special://home/userdata/addon_data/plugin.video." + config.PLUGIN_NAME + "/library/" + content_type + \
                 "/"
     else:
-        value = filetools.join(value, content_type)
+        if path == "":
+            value = ""
+        else:
+            value = filetools.join(value, content_type, path)
 
     logger.info("la ruta es " + value)
 
