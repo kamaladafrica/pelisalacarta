@@ -63,9 +63,14 @@ def remove_chars(path):
     """
     chars = ":*?<>|"
     if path.lower().startswith("smb://"):
-
         path = path[6:]
-        return "smb://" + ''.join([c for c in path if c not in chars])
+
+        if "@" in path:
+            user, path = path.split("@",1)
+            return "smb://" + user + "@" + ''.join([c for c in path if c not in chars])
+
+        else:
+            return "smb://" + ''.join([c for c in path if c not in chars])
 
     else:
         if path.find(":\\") == 1:
@@ -75,6 +80,7 @@ def remove_chars(path):
             unidad = ""
 
         return unidad + ''.join([c for c in path if c not in chars])
+
 
 
 def encode(path, _samba=False):
@@ -146,7 +152,7 @@ def read(path, linea_inicio=0, total_lineas=None):
         from sambatools.smb.smb_structs import OperationFailure
 
         try:
-            f = samba.get_file_handle_for_reading(os.path.basename(path), os.path.dirname(path)).read()
+            f = samba.get_file_handle_for_reading(os.path.basename(path), os.path.dirname(path))
             for line in f:
                 if n_line >= linea_inicio:
                     data += line

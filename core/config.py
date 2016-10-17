@@ -181,6 +181,9 @@ def get_library_path():
     if value == "":
         value = default
 
+    if value.lower().startswith("smb://") and not value.endswith("/"):
+        value += "/"
+
     return value
 
 
