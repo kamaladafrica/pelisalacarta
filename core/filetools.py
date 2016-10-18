@@ -37,7 +37,7 @@ def text2filename(text):
 
     filename = text.strip().lower()
 
-    dict_char = {'á':'a', 'à':'a', 'ä':'a', 'â':'a',
+    dict_char = {'á': 'a', 'à': 'a', 'ä': 'a', 'â': 'a',
                  'é': 'e', 'è': 'e', 'ë': 'e', 'ê': 'e',
                  'í': 'i', 'ì': 'i', 'ï': 'i', 'î': 'i',
                  'ó': 'o', 'ò': 'o', 'ö': 'o', 'ô': 'o',
@@ -50,9 +50,6 @@ def text2filename(text):
     return filename
 
 
-
-
-
 def remove_chars(path):
     """
     Elimina cáracteres no permitidos
@@ -63,13 +60,12 @@ def remove_chars(path):
     """
     chars = ":*?<>|"
     if path.lower().startswith("smb://"):
-        path = path[6:]
-
-        if "@" in path:
+        import re
+        if re.search(r'(?i)smb://([^\:]+)\:([^\@]+)@', path):
             user, path = path.split("@",1)
             return "smb://" + user + "@" + ''.join([c for c in path if c not in chars])
-
         else:
+            path = path[6:]
             return "smb://" + ''.join([c for c in path if c not in chars])
 
     else:
@@ -80,7 +76,6 @@ def remove_chars(path):
             unidad = ""
 
         return unidad + ''.join([c for c in path if c not in chars])
-
 
 
 def encode(path, _samba=False):

@@ -487,7 +487,6 @@ def mark_auto_as_watched(item):
         Thread(target=mark_as_watched_subThread, args=[item]).start()
 
 
-
 def mark_content_as_watched_on_kodi(item, value=1):
     """
     marca el contenido como visto o no visto en la libreria de Kodi
@@ -497,6 +496,7 @@ def mark_content_as_watched_on_kodi(item, value=1):
     @param value: >0 para visto, 0 para no visto
     """
     logger.info("pelisalacarta.platformcode.library mark_content_as_watched_on_kodi")
+    #logger.debug("item:\n" + item.tostring('\n'))
     payload_f = ''
 
     if item.contentType == "movie":
@@ -508,7 +508,7 @@ def mark_content_as_watched_on_kodi(item, value=1):
         data = get_data(payload)
         if 'result' in data:
             for d in data['result']['movies']:
-                if d['file'].endswith(item.strm_path.replace(MOVIES_PATH,"")):
+                if d['file'].replace("/","\\").endswith(item.strm_path.replace("/","\\")):
                     movieid = d['movieid']
                     break
 
@@ -525,7 +525,7 @@ def mark_content_as_watched_on_kodi(item, value=1):
         data = get_data(payload)
         if 'result' in data:
             for d in data['result']['episodes']:
-                if d['file'].endswith(item.strm_path.replace(TVSHOWS_PATH,"")):
+                if d['file'].replace("/","\\").endswith(item.strm_path.replace("/","\\")):
                     episodeid = d['episodeid']
                     break
 
@@ -550,22 +550,58 @@ def mark_season_as_watched_on_kodi(item, value=1):
         @type value: int
         @param value: >0 para visto, 0 para no visto
         """
-    logger.info("pelisalacarta.platformcode.library mark_content_as_watched_on_kodi")
+    logger.info("pelisalacarta.platformcode.library mark_season_as_watched_on_kodi")
+    #logger.debug("item:\n" + item.tostring('\n'))
 
     # Solo podemos marcar la temporada como vista en la BBDD de Kodi si la BBDD es local,
     # en caso de compartir BBDD esta funcionalidad no funcionara
     if modo_cliente:
         return
 
-    # Buscamos el nombre de la BBDD de videos
+    if value == 0:
+        value = 'Null'
+
+    request_season = ''
+    if item.contentSeason > -1:
+        request_season = ' and c12= %s' % item.contentSeason
+
+    item_path1 = "%" + item.path.replace("\\\\", "\\").replace(TVSHOWS_PATH, "")
+    if item_path1[:-1] != "\\":
+        item_path1 += "\\"
+    item_path2 = item_path1.replace("\\", "/")
+
+    sql = 'update files set playCount= %s where idFile  in ' \
+          '(select idfile from episode_view where strPath like "%s" or strPath like "%s"%s)' % \
+          (value, item_path1, item_path2, request_season)
+
+    execute_sql_kodi(sql)
+
+
+def execute_sql_kodi(sql):
+    """
+    Ejecuta la consulta sql contra la base de datos de kodi
+    @param sql: Consulta sql valida
+    @type sql: str
+    @rtype total_changes: int
+    @return: Numero de registros modificados o devueltos por la consulta
+    @rtype nun_records: sqlite3.Cursor
+    @return: Objeto con el resultado de la consulta
+    """
+    logger.info("pelisalacarta.platformcode.library execute_sql_kodi")
+    file_db = ""
+    nun_records = 0
+    cursor = None
+
+    # Buscamos el nombre de la BBDD de videos segun la version de kodi
     code_db = {'10': 'MyVideos37.db', '11': 'MyVideos60.db', '12': 'MyVideos75.db', '13': 'MyVideos78.db',
                '14': 'MyVideos90.db', '15': 'MyVideos93.db', '16': 'MyVideos99.db', '17': 'MyVideos107.db'}
-    file_db = ""
+
     video_db = code_db.get(xbmc.getInfoLabel("System.BuildVersion").split(".", 1)[0], '')
     if video_db:
         file_db = os.path.join(xbmc.translatePath("special://userdata/Database"), video_db)
+
     # metodo alternativo para localizar la BBDD
-    if not file_db or  filetools.exists(file_db):
+    if not file_db or not filetools.exists(file_db):
         file_db = ""
         for f in os.listdir(xbmc.translatePath("special://userdata/Database")):
             path_f = os.path.join(xbmc.translatePath("special://userdata/Database"), f)
@@ -575,19 +611,29 @@ def mark_season_as_watched_on_kodi(item, value=1):
                 break
 
     if file_db:
-        import sqlite3
-        conn = sqlite3.connect(file_db)
-        cur = conn.cursor()
-        item_path = "%" + item.path.replace("\\\\","\\").replace(TVSHOWS_PATH,"")
-        if item_path[:-1] != "\\":
-            item_path += "\\"
-        sql = 'update files set playCount= %s where idFile  in ' \
-              '(select idfile from episode_view where strPath like "%s" and c12= %s)' %\
-              (value, item_path, item.contentSeason)
-        #logger.debug(sql)
-        cur.execute(sql)
-        conn.commit()
-        cur.close()
+        logger.debug("Archivo de BD: %s" % file_db)
+        try:
+            import sqlite3
+            conn = sqlite3.connect(file_db)
+            cursor = conn.cursor()
+
+            logger.debug("Ejecutando sql: %s" % sql)
+            cursor.execute(sql)
+            conn.commit()
+
+            if sql.lower().startswith("select"):
+                nun_records = len(cursor.fetchall())
+            else:
+                nun_records = conn.total_changes
+
+            conn.close()
+        except:
+            logger.error("Error al ejecutar la consulta sql")
+
+    else:
+        logger.debug("Base de datos no encontrada")
+
+    return nun_records, cursor
 
 
 def get_data(payload):
@@ -755,7 +801,7 @@ def mark_content_as_watched(item, value=1):
 
         if item.contentType == 'movie':
             name_file = os.path.splitext(os.path.basename(item.nfo))[0]
-        else: #(item.contentType =='episode')
+        else:
             name_file = item.contentTitle
 
         if not hasattr(it, 'library_playcounts'): it.library_playcounts = {}
@@ -764,17 +810,22 @@ def mark_content_as_watched(item, value=1):
         # Guardamos los cambios en item.nfo
         if filetools.write(item.nfo, url_scraper + it.tojson()):
             item.infoLabels['playcount'] = value
-            # Actualizamos la BBDD de Kodi
-            mark_content_as_watched_on_kodi(item, value)
 
-            import xbmc
-            xbmc.executebuiltin("Container.Refresh")
+            if item.contentType == 'tvshow':
+                # Actualizar toda la serie
+                new_item = item.clone(contentSeason=-1)
+                mark_season_as_watched(new_item, value)
+
+            else:
+                mark_content_as_watched_on_kodi(item, value)
+
+                import xbmc
+                xbmc.executebuiltin("Container.Refresh")
 
 
 def mark_season_as_watched(item, value=1):
     logger.info("pelisalacarta.platformcode.library mark_season_as_watched")
-    '''mark_season_as_watched_on_kodi(item.contentSeason, value)
-    raise'''
+    #logger.debug("item:\n" + item.tostring('\n'))
     # Obtener el diccionario de episodios marcados
     f = filetools.join(item.path, 'tvshow.nfo')
     url_scraper = filetools.read(f, 0, 1)
@@ -789,15 +840,21 @@ def mark_season_as_watched(item, value=1):
     for i in ficheros:
         if i.endswith(".strm"):
             season, episode = scrapertools.get_season_and_episode(i).split("x")
-            if int(season) == int(item.contentSeason):
+            if int(item.contentSeason) == -1 or int(season) == int(item.contentSeason):
                 name_file = os.path.splitext(os.path.basename(i))[0]
                 it.library_playcounts[name_file] = value
                 episodios_marcados += 1
 
 
     if episodios_marcados:
-        # Añadimos la temporada al diccionario item.library_playcounts
-        it.library_playcounts["season %s" %item.contentSeason] = value
+        if int(item.contentSeason) == -1:
+        # Añadimos todas las temporadas al diccionario item.library_playcounts
+            for k in it.library_playcounts.keys():
+                if k.startswith("season"):
+                    it.library_playcounts[k] = value
+        else:
+            # Añadimos la temporada al diccionario item.library_playcounts
+            it.library_playcounts["season %s" %item.contentSeason] = value
 
         # Guardamos los cambios en tvshow.nfo
         filetools.write(f, url_scraper + it.tojson())
@@ -823,27 +880,25 @@ def mark_tvshow_as_updatable(item, value=True):
 
 def delete(item):
     logger.info("pelisalacarta.platformcode.library delete")
+    #logger.debug("item:\n" + item.tostring('\n'))
 
-    if item.contentSerieName or item.show:
-        heading = "Eliminar serie"
-    else:
+    if item.contentType == 'movie':
         heading = "Eliminar película"
+        new_item = Item(channel="biblioteca", action="peliculas", title="Películas",
+                        category="Biblioteca de películas",
+                        thumbnail="http://media.tvalacarta.info/pelisalacarta/squares/thumb_biblioteca_peliculas.png")
 
-    result = platformtools.dialog_yesno(heading, "¿Realmente desea eliminar '%s'?" % item.infoLabels['title'])
 
-    if result:
+    else:
+        heading = "Eliminar serie"
 
-        if item.contentSerieName or item.show:
-            filetools.rmdirtree(item.path)
-        else:
-            filetools.remove(item.path)
-            filetools.remove(item.path[:-5] + ".nfo")
-            # TODO tb se borra aunque no sabemos si se dejara o se quedara la info dentro de nfo
-            # filetools.remove(item.path[:-5] + ".strm.json")
+    if platformtools.dialog_yesno(heading,
+                                  "¿Realmente desea eliminar '%s' de su biblioteca?" % item.infoLabels['title']):
+        filetools.rmdirtree(item.path)
 
-        import xbmc
         # esperamos 3 segundos para dar tiempo a borrar los ficheros
         # xbmc.sleep(3000)
         # TODO arreglar no funciona al limpiar en la biblioteca de Kodi
         clean()
-        xbmc.executebuiltin("Container.Refresh")
+        #xbmc.executebuiltin("Container.Refresh")
+        platformtools.itemlist_update(new_item)

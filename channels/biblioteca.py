@@ -67,28 +67,30 @@ def peliculas(item):
                 url_scraper, new_item = read_nfo(nfo_path)
 
                 new_item.nfo = nfo_path
+                new_item.path = raiz
                 new_item.thumbnail = new_item.contentThumbnail
                 new_item.text_color = "blue"
+
+                # Menu contextual: Marcar como visto/no visto
                 visto = new_item.library_playcounts.get(os.path.splitext(f)[0], 0)
                 new_item.infoLabels["playcount"] = visto
-
                 if visto > 0:
-                    texto = "Marcar como no visto"
+                    texto_visto = "Marcar película como no vista"
                     contador = 0
                 else:
-                    texto = "Marcar como visto"
+                    texto_visto = "Marcar película como vista"
                     contador = 1
 
-                new_item.context = [{"title":texto,
+                new_item.context = [{"title":texto_visto,
                                      "action":"mark_content_as_watched",
                                      "channel":"biblioteca",
                                      "playcount":contador},
-                                    {"title": "Eliminar (PENDIENTE)",
+                                    {"title": "Eliminar esta película",
                                      "action": "eliminar",
-                                     "channel": "biblioteca"},
-                                    {"title": "Cambiar contenido (PENDIENTE)",
-                                     "action": "",
                                      "channel": "biblioteca"}]
+                                    #,{"title": "Cambiar contenido (PENDIENTE)",
+                                    #"action": "",
+                                    # "channel": "biblioteca"}]
 
                 # Opcion colorear si hay mas de un canal
                 '''
@@ -155,24 +157,40 @@ def series(item):
                 item_tvshow.path = raiz
                 item_tvshow.nfo = tvshow_path
 
+                # Menu contextual: Marcar como visto/no visto
+                visto = item_tvshow.library_playcounts.get(item_tvshow.contentTitle, 0)
+                item_tvshow.infoLabels["playcount"] = visto
+                if visto > 0:
+                    texto_visto = "Marcar serie como no vista"
+                    contador = 0
+                else:
+                    texto_visto = "Marcar serie como vista"
+                    contador = 1
+
                 # Menu contextual: Buscar automáticamente nuevos episodios o no
                 if item_tvshow.active:
-                    texto = "No buscar automáticamente nuevos episodios"
+                    texto_update = "No buscar automáticamente nuevos episodios"
                     value = False
                 else:
-                    texto = "Buscar automáticamente nuevos episodios"
+                    texto_update = "Buscar automáticamente nuevos episodios"
                     value = True
 
-                item_tvshow.context = [{"title": texto,
+
+
+                item_tvshow.context = [{"title":texto_visto,
+                                        "action":"mark_content_as_watched",
+                                        "channel":"biblioteca",
+                                        "playcount":contador},
+                                       {"title": texto_update,
                                         "action": "mark_tvshow_as_updatable",
                                         "channel": "biblioteca",
                                         "active": value},
-                                        {"title": "Eliminar (PENDIENTE)",
+                                        {"title": "Eliminar esta serie",
                                         "action": "eliminar",
-                                        "channel": "biblioteca"},
-                                        {"title": "Cambiar contenido (PENDIENTE)",
-                                        "action": "",
                                         "channel": "biblioteca"}]
+                                        #,{"title": "Cambiar contenido (PENDIENTE)",
+                                        #"action": "",
+                                        #"channel": "biblioteca"}]
 
                 #logger.debug("item_tvshow:\n" + item_tvshow.tostring('\n'))
                 itemlist.append(item_tvshow)
@@ -231,10 +249,10 @@ def get_temporadas(item):
             visto = item_nfo.library_playcounts.get("season %s" % season, 0)
             new_item.infoLabels["playcount"] = visto
             if visto > 0:
-                texto = "Marcar como no vista"
+                texto = "Marcar temporada como no vista"
                 value = 0
             else:
-                texto = "Marcar como vista"
+                texto = "Marcar temporada como vista"
                 value = 1
             new_item.context = [{"title": texto,
                                  "action": "mark_season_as_watched",
@@ -258,7 +276,7 @@ def get_temporadas(item):
 
 def get_episodios(item):
     logger.info("pelisalacarta.channels.biblioteca get_episodios")
-    #logger.debug("item:\n" + item.tostring('\n'))
+    logger.debug("item:\n" + item.tostring('\n'))
     itemlist = []
     episodes_wathed = []
 
@@ -294,10 +312,10 @@ def get_episodios(item):
             visto = item_nfo.library_playcounts.get(season_episode, 0)
             epi.infoLabels["playcount"] = visto
             if visto > 0:
-                texto = "Marcar como no visto"
+                texto = "Marcar episodio como no visto"
                 value = 0
             else:
-                texto = "Marcar como visto"
+                texto = "Marcar episodio como visto"
                 value = 1
             epi.context = [{"title": texto,
                             "action": "mark_content_as_watched",
@@ -469,5 +487,16 @@ def mark_tvshow_as_updatable(item):
 
 def eliminar(item):
     logger.info("pelisalacarta.channels.biblioteca eliminar")
-    library.delete(item)
+    from platformcode import platformtools
+
+    if item.contentType == 'movie':
+        heading = "Eliminar película"
+    else:
+        heading = "Eliminar serie"
+
+    if platformtools.dialog_yesno(heading,
+                                  "¿Realmente desea eliminar '%s' de su biblioteca?" % item.infoLabels['title']):
+        filetools.rmdirtree(item.path)
+        library.clean()
+        platformtools.itemlist_refresh()
 
