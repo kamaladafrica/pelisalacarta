@@ -28,65 +28,67 @@
 import traceback
 import logger
 
-#Incorporadas las funciones loads() y dumps() para json y simplejson
-def loads(*args, **kwargs):
 
-    try:
-        #logger.info("pelisalacarta.core.jsontools loads Probando json incluido en el interprete")
-        import json
-        return to_utf8(json.loads(*args, **kwargs))
-    except ImportError:
-        pass
-    except:
-       logger.info(traceback.format_exc())
-    
-    try:
-        logger.info("pelisalacarta.core.jsontools loads Probando simplejson incluido en el interprete")
-        import simplejson as json
-        return to_utf8(json.loads(*args, **kwargs))
-    except ImportError:
-        pass
-    except:
-       logger.info(traceback.format_exc())
-       
-    try:
-        logger.info("pelisalacarta.core.jsontools loads Probando simplejson en el directorio lib")
-        from lib import simplejson as json
-        return to_utf8(json.loads(*args, **kwargs))
-    except ImportError:
-        pass
-    except:
-       logger.info(traceback.format_exc())
-
-def dumps(*args, **kwargs):
-
-    try:
-        #logger.info("pelisalacarta.core.jsontools loads Probando json incluido en el interprete")
-        import json
-        return json.dumps(*args, **kwargs)
-    except ImportError:
-        pass
-    except:
-        logger.info(traceback.format_exc())
-
-    try:
-        logger.info("pelisalacarta.core.jsontools loads Probando simplejson incluido en el interprete")
-        import simplejson as json
-        return json.dumps(*args, **kwargs)
-    except ImportError:
-        pass
-    except:
-        logger.info(traceback.format_exc())
+def load_json(*args, **kwargs):
 
     try:
         logger.info("pelisalacarta.core.jsontools loads Probando simplejson en el directorio lib")
         from lib import simplejson as json
-        return json.dumps(*args, **kwargs)
+        if "object_hook" in kwargs:
+            # return to_utf8(json.loads(*args, **kwargs))
+            return json.loads(*args, **kwargs)
+        else:
+            # return to_utf8(json.loads(*args, object_hook=to_utf8))
+            return json.loads(*args, object_hook=to_utf8)
+
     except ImportError:
-        pass
+        json = None
     except:
         logger.info(traceback.format_exc())
- 
+
+    # TODO comprobar si hace falta para plex
+    try:
+        logger.info("pelisalacarta.core.jsontools.load_json Probando JSON de Plex")
+        json_data = JSON.ObjectFromString(*args, encoding="utf-8")
+        logger.info("pelisalacarta.core.jsontools.load_json -> "+repr(json_data))
+        return json_data
+    except:
+        logger.info(traceback.format_exc())
+
+    logger.info("pelisalacarta.core.jsontools.load_json No se ha encontrado un parser de JSON valido")
+    logger.info("pelisalacarta.core.jsontools.load_json -> (nada)")
+    return {}
+
+
+def dump_json(*args, **kwargs):
+
+    try:
+        logger.info("pelisalacarta.core.jsontools dumps Probando simplejson en el directorio lib")
+        from lib import simplejson as json
+        if kwargs:
+            return json.dumps(*args, **kwargs)
+        else:
+            return json.dumps(*args, indent=4, skipkeys=True, sort_keys=True, ensure_ascii=False)
+            # return json.dumps(*args, indent=4, sort_keys=True, ensure_ascii=False)
+    except ImportError:
+        json = None
+    except:
+        logger.info(traceback.format_exc())
+
+    # TODO comprobar si hace falta para plex
+    try:
+        logger.info("pelisalacarta.core.jsontools.dump_json Probando JSON de Plex")
+        json_data = JSON.StringFromObject(*args)   #, encoding="utf-8")
+        logger.info("pelisalacarta.core.jsontools.dump_json -> "+repr(json_data))
+        return json_data
+    except:
+        logger.info(traceback.format_exc())
+
+    logger.info("pelisalacarta.core.jsontools.dump_json No se ha encontrado un parser de JSON valido")
+    logger.info("pelisalacarta.core.jsontools.dump_json -> (nada)")
+    return {}
+
+
 def to_utf8(dct):
 
     if isinstance(dct, dict):
@@ -99,124 +101,34 @@ def to_utf8(dct):
         return dct
 
 
-##############
-        
-def load_json(data):
-    #logger.info("core.jsontools.load_json Probando simplejson en directorio lib")
-
-    try:
-        #logger.info("pelisalacarta.core.jsontools.load_json Probando simplejson en directorio lib")
-        from lib import simplejson
-        json_data = simplejson.loads(data, object_hook= to_utf8)
-        logger.info("pelisalacarta.core.jsontools.load_json -> "+repr(json_data))
-        return json_data
-    except:
-        logger.info(traceback.format_exc())
-
-        try:
-            logger.info("pelisalacarta.core.jsontools.load_json Probando simplejson incluido en el interprete")
-            import simplejson
-            json_data = simplejson.loads(data, object_hook=to_utf8)
-            logger.info("pelisalacarta.core.jsontools.load_json -> "+repr(json_data))
-            return json_data
-        except:
-            logger.info(traceback.format_exc())
-            
-            try:
-                logger.info("pelisalacarta.core.jsontools.load_json Probando json incluido en el interprete")
-                import json
-                json_data = json.loads(data, object_hook=to_utf8)
-                logger.info("pelisalacarta.core.jsontools.load_json -> "+repr(json_data))
-                return json_data
-            except:
-                logger.info(traceback.format_exc())
-
-                try:
-                    logger.info("pelisalacarta.core.jsontools.load_json Probando JSON de Plex")
-                    json_data = JSON.ObjectFromString(data, encoding="utf-8")
-                    logger.info("pelisalacarta.core.jsontools.load_json -> "+repr(json_data))
-                    return json_data
-                except:
-                    logger.info(traceback.format_exc())
-
-    logger.info("pelisalacarta.core.jsontools.load_json No se ha encontrado un parser de JSON valido")
-    logger.info("pelisalacarta.core.jsontools.load_json -> (nada)")
-    return ""
-
-
-def dump_json(data):
-    #logger.info("pelisalacarta.core.jsontools.dump_json Probando simplejson en directorio lib")
-
-    try:
-        #logger.info("pelisalacarta.core.jsontools.dump_json Probando simplejson en directorio lib")
-        from lib import simplejson
-        json_data = simplejson.dumps(data, indent=4, skipkeys=True, sort_keys=True, ensure_ascii=False)
-        # json_data = byteify(json_data)
-        logger.info("pelisalacarta.core.jsontools.dump_json -> "+repr(json_data))
-        return json_data
-    except:
-        logger.info(traceback.format_exc())
-
-        try:
-            logger.info("pelisalacarta.core.jsontools.dump_json Probando simplejson incluido en el interprete")
-            import simplejson
-            json_data = simplejson.dumps(data, indent=4, skipkeys=True, sort_keys=True, ensure_ascii=False)
-            logger.info("pelisalacarta.core.jsontools.dump_json -> "+repr(json_data))
-            return json_data
-        except:
-            logger.info(traceback.format_exc())
-
-            try:
-                logger.info("pelisalacarta.core.jsontools.dump_json Probando json incluido en el interprete")
-                import json
-                json_data = json.dumps(data, indent=4, skipkeys=True, sort_keys=True, ensure_ascii=False)
-                logger.info("pelisalacarta.core.jsontools.dump_json -> "+repr(json_data))
-                return json_data
-            except:
-                logger.info(traceback.format_exc())
-
-                try:
-                    logger.info("pelisalacarta.core.jsontools.dump_json Probando JSON de Plex")
-                    json_data = JSON.StringFromObject(data)  #, encoding="utf-8")
-                    logger.info("pelisalacarta.core.jsontools.dump_json -> "+repr(json_data))
-                    return json_data
-                except:
-                    logger.info(traceback.format_exc())
-
-    logger.info("pelisalacarta.core.jsontools.dump_json No se ha encontrado un parser de JSON valido")
-    logger.info("pelisalacarta.core.jsontools.dump_json -> (nada)")
-    return ""
-
-    
 def xmlTojson(path_xml):
+    """
+    Lee un fichero xml y retorna un diccionario json
 
-    '''Lee un fichero xml y retorna un diccionario json
-    
     Parametros:
     path_xml (str) -- Ruta completa al archivo XML que se desea leer.
-    
+
     Retorna:
-    Si el argumento path_xml no señala a un archivo XML valido retorna un diccionario vacio. 
+    Si el argumento path_xml no señala a un archivo XML valido retorna un diccionario vacio.
     En caso cortrario retorna un diccionario construido a partir de los campos del archivo XML.
-    
-    '''
-    
+
+    """
+
     import os
-    ret ={}
+    ret = {}
     try:
         if os.path.exists(path_xml):
-            infile = open( path_xml , "rb" )
+            infile = open(path_xml, "rb")
             data = infile.read()
             infile.close()
             ret = Xml2Json(data).result
     except:
         import traceback
-        logger.info("pelisalacarta.core.jsontools xmlTojson ERROR al leer el fichero y/o crear el json de "+path_xml)
-        logger.info("pelisalacarta.core.jsontools "+traceback.format_exc())
-        
-    return ret    
-    
-    
+        logger.info("pelisalacarta.core.jsontools xmlTojson ERROR al leer el fichero y/o crear el json de " + path_xml)
+        logger.info("pelisalacarta.core.jsontools " + traceback.format_exc())
+
+    return ret
+
 
 class Xml2Json:
     # http://code.activestate.com/recipes/577494-convert-xml-into-json-python-dicts-and-lists-struc/
@@ -224,8 +136,8 @@ class Xml2Json:
     # {u'doc': {u'tag': {u'subtag': u'data', u't': [u'data1', u'data2']}}}
     LIST_TAGS = ['COMMANDS']
 
-    def __init__(self, data = None):
-        #print "################## INIT"
+    def __init__(self, data=None):
+        # print "################## INIT"
         from xml.parsers.expat import ParserCreate
         self._parser = ParserCreate()
         self._parser.StartElementHandler = self.start
@@ -235,9 +147,9 @@ class Xml2Json:
         if data:
             self.feed(data)
             self.close()
-        
+
     def feed(self, data):
-        #print "################## FEED"
+        # print "################## FEED"
         self._stack = []
         self._data = ''
         self._parser.Parse(data, 0)
@@ -245,22 +157,21 @@ class Xml2Json:
     def close(self):
         self._parser.Parse("", 1)
         del self._parser
-        #print "################## CLOSE"
+        # print "################## CLOSE"
         self.result = to_utf8(self.result)
-        
 
     def start(self, tag, attrs):
         assert attrs == {}
         assert self._data.strip() == ''
-        #print "START", repr(tag)
+        # print "START", repr(tag)
         self._stack.append([tag])
         self._data = ''
 
     def end(self, tag):
-        #print "END", repr(tag)
+        # print "END", repr(tag)
         last_tag = self._stack.pop()
         assert last_tag[0] == tag
-        if len(last_tag) == 1: #leaf
+        if len(last_tag) == 1:  # leaf
             data = self._data
         else:
             if tag not in Xml2Json.LIST_TAGS:
@@ -275,15 +186,14 @@ class Xml2Json:
                             data[k] = [el, v]
                         else:
                             el.append(v)
-            else: #force into a list
-                data = [{k:v} for k, v in last_tag[1:]]
+            else:  # force into a list
+                data = [{k: v} for k, v in last_tag[1:]]
         if self._stack:
             self._stack[-1].append((tag, data))
         else:
-            self.result = {tag:data}
+            self.result = {tag: data}
         self._data = ''
 
     def data(self, data):
-        #print "################## DATA"
+        # print "################## DATA"
         self._data = data
-   

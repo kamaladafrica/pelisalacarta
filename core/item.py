@@ -271,11 +271,18 @@ class Item(object):
         return separator.join(ls)
 
     def tourl(self):
-        '''
-        Genera una cadena de texto con los datos del item para crear una url, para volver generar el Item usar item.fromurl()
+        """
+        Genera una cadena de texto con los datos del item para crear una url, para volver generar el Item usar
+        item.fromurl().
+
         Uso: url = item.tourl()
-        '''
-        return urllib.quote(base64.b64encode(json.dumps(self.__dict__)))
+        """
+        dump = json.dump_json(self.__dict__)
+        # if empty dict
+        if not dump:
+            # set a str to avoid b64encode fails
+            dump = ""
+        return urllib.quote(base64.b64encode(dump))
 
     def fromurl(self, url):
         '''
@@ -286,7 +293,7 @@ class Item(object):
         if "?" in url: url = url.split("?")[1]
         try:
             STRItem = base64.b64decode(urllib.unquote(url))
-            JSONItem = json.loads(STRItem, object_hook=self.toutf8)
+            JSONItem = json.load_json(STRItem, object_hook=self.toutf8)
             self.__dict__.update(JSONItem)
         except:
             url = urllib.unquote_plus(url)
@@ -307,9 +314,9 @@ class Item(object):
               file.write(item.tojson())
         '''
         if path:
-            open(path, "wb").write(json.dumps(self.__dict__, indent=4, sort_keys=True))
+            open(path, "wb").write(json.dump_json(self.__dict__))
         else:
-            return json.dumps(self.__dict__, indent=4, sort_keys=True)
+            return json.dump_json(self.__dict__)
 
     def fromjson(self, STRItem={}, path=""):
         '''
@@ -324,7 +331,7 @@ class Item(object):
             else:
                 STRItem = {}
 
-        JSONItem = json.loads(STRItem, object_hook=self.toutf8)
+        JSONItem = json.load_json(STRItem, object_hook=self.toutf8)
         self.__dict__.update(JSONItem)
 
         if 'infoLabels' in self.__dict__ and not isinstance(self.__dict__['infoLabels'], InfoLabels):
