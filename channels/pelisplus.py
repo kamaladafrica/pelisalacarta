@@ -40,10 +40,13 @@ def menupeliculas(item):
     itemlist = []
     
     itemlist.append( Item(channel=item.channel, title="Ultimas", action="lista", url=host+'estrenos/pag-1', thumbnail='https://s31.postimg.org/3ua9kwg23/ultimas.png', fanart='https://s31.postimg.org/3ua9kwg23/ultimas.png', extra='estrenos/'))
+    #itemlist.append( Item(channel=item.channel, title="Ultimas", action="lista", url=host+'busqueda/?s=doble', thumbnail='https://s31.postimg.org/3ua9kwg23/ultimas.png', fanart='https://s31.postimg.org/3ua9kwg23/ultimas.png', extra='estrenos/'))
     
     itemlist.append( Item(channel=item.channel, title="Todas", action="lista", url=host+'peliculas/pag-1', thumbnail='https://s12.postimg.org/iygbg8ip9/todas.png', fanart='https://s12.postimg.org/iygbg8ip9/todas.png', extra='peliculas/'))
     
     itemlist.append( Item(channel=item.channel, title="Generos", action="generos", url=host+'peliculas/pag-1', thumbnail='https://s31.postimg.org/szbr0gmkb/generos.png', fanart='https://s31.postimg.org/szbr0gmkb/generos.png', extra='documentales/'))
+    
+    itemlist.append( Item(channel=item.channel, title="Buscar", action="search", url=host+'busqueda/?s=', thumbnail='https://s31.postimg.org/qose4p13f/Buscar.png', fanart='https://s31.postimg.org/qose4p13f/Buscar.png', extra='peliculas/'))
     
     return itemlist
 
@@ -55,20 +58,36 @@ def menuseries(item):
     itemlist.append( Item(channel=item.channel, title="Todas", action="lista", url=host+"series/pag-1",thumbnail='https://s12.postimg.org/iygbg8ip9/todas.png', fanart='https://s12.postimg.org/iygbg8ip9/todas.png', extra='series/'))
         
     itemlist.append( Item(channel=item.channel, title="Generos", action="generos", url=host+'series/pag-1', thumbnail='https://s31.postimg.org/szbr0gmkb/generos.png', fanart='https://s31.postimg.org/szbr0gmkb/generos.png', extra='series/'))
+
+    itemlist.append( Item(channel=item.channel, title="Buscar", action="search", url=host+'busqueda/?s=', thumbnail='https://s31.postimg.org/qose4p13f/Buscar.png', fanart='https://s31.postimg.org/qose4p13f/Buscar.png', extra='series/'))
     
     return itemlist
     
-    
+def search(item,texto):
+    logger.info("pelisplus.py search")
+    texto = texto.replace(" ","+")
+    item.url = item.url+texto
+
+    if texto!='':
+        return lista(item)
+    else:
+        return []    
+
 def lista(item):
     logger.info("pelisalacarta.channels.pelisplus lista")
     if item.extra =='series/':
         accion = 'temporadas'
+        
     else:
-        accion = 'findvideos'    
+        accion = 'findvideos'
+    
     itemlist = []
     data = scrapertools.cache_page(item.url)
     
-    patron ='<img.*?width="147" heigh="197".*?src="([^"]+)".*?>.*?.<i class="icon online-play"><\/i>.*?.<h2 class="title title-.*?">.*?.<a href="([^"]+)" title="([^"]+)">.*?>'
+    if item.title != 'Buscar':
+        patron ='<img.*?width="147" heigh="197".*?src="([^"]+)".*?>.*?.<i class="icon online-play"><\/i>.*?.<h2 class="title title-.*?">.*?.<a href="([^"]+)" title="([^"]+)">.*?>'
+    else:
+        patron = '<img data-original="([^"]+)".*?width="147" heigh="197".*?src=.*?>.*?\n<i class="icon online-play"><\/i>.*?\n<h2 class="title title-.*?">.*?\n<a href="([^"]+)" title="([^"]+)">.*?>'
     
     matches = re.compile(patron,re.DOTALL).findall(data)
 
@@ -83,16 +102,22 @@ def lista(item):
            fanart = scrapertools.find_single_match(datab,'<meta property="og:image" content="([^"]+)" \/>')
            plot = scrapertools.find_single_match(datab,'<span>Sinopsis:<\/span>.([^<]+)<span class="text-detail-hide"><\/span>.<\/p>')
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action=accion , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart))
+        
+        if item.title != 'Buscar':
+           itemlist.append( Item(channel=item.channel, action=accion , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart))
+        else:
+           item.extra = item.extra.rstrip('s/')
+           if item.extra in url:
+           	 itemlist.append( Item(channel=item.channel, action=accion , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart))  
         
 #Paginacion
-
-    actual = scrapertools.find_single_match(data,'<a href="http:\/\/www.pelisplus.tv\/.*?\/pag-([^p]+)pag-2" class="page bicon last"><<\/a>')
-    if itemlist !=[]:
-        next_page = str(int(actual)+1)
-        next_page_url = host+item.extra+'pag-'+next_page
-        import inspect
-        itemlist.append(Item(channel = item.channel, action = "lista", title = 'Siguiente >>>', url = next_page_url, thumbnail='https://s32.postimg.org/4zppxf5j9/siguiente.png',extra=item.extra))
+    if item.title != 'Buscar':
+       actual = scrapertools.find_single_match(data,'<a href="http:\/\/www.pelisplus.tv\/.*?\/pag-([^p]+)pag-2" class="page bicon last"><<\/a>')
+       if itemlist !=[]:
+           next_page = str(int(actual)+1)
+           next_page_url = host+item.extra+'pag-'+next_page
+           import inspect
+           itemlist.append(Item(channel = item.channel, action = "lista", title = 'Siguiente >>>', url = next_page_url, thumbnail='https://s32.postimg.org/4zppxf5j9/siguiente.png',extra=item.extra))
     return itemlist
     
 def temporadas(item):
@@ -181,9 +206,7 @@ def generos(item):
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
         itemlist.append( Item(channel=item.channel, action="lista" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, fanart = fanart, extra=extra))
     return itemlist
-
-
-
+    
 
 def findvideos(item):
     logger.info ("pelisalacarta.channels.pelisplus findvideos")
@@ -194,7 +217,7 @@ def findvideos(item):
     matches = re.compile(patron,re.DOTALL).findall(datas)
     
     for scrapedurl in matches:
-       if 'elreyxhd' in scrapedurl:
+       if 'elreyxhd' or 'pelisplus.biz'in scrapedurl:
            data = scrapertools.cachePage(scrapedurl, headers=headers)
            patron ='file":"([^"]+)","label":"([^"]+)","type":".*?","default":".*?"'
            matches = re.compile(patron,re.DOTALL).findall(data)
