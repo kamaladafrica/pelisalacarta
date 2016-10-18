@@ -181,7 +181,7 @@ def get_channel_setting(name, channel):
             dict_file = {}
             dict_file['settings']= dict_settings
             # Creamos el archivo ../settings/channel_data.json
-            json_data = jsontools.dump_json(dict_file)
+            json_data = jsontools.dump_json(dict_file).encode("utf-8")
             try:
                 open(file_settings, "w").write(json_data)
             except EnvironmentError:
@@ -243,7 +243,8 @@ def set_channel_setting(name, value, channel):
 
     # Creamos el archivo ../settings/channel_data.json
     try:
-        open(file_settings, "w").write(jsontools.dump_json(dict_file))
+        json_data = jsontools.dump_json(dict_file).encode("utf-8")
+        open(file_settings, "w").write(json_data)
     except EnvironmentError:
         logger.info("[config.py] ERROR al salvar el archivo: {0}".format(file_settings))
         return None
