@@ -111,6 +111,7 @@
         <!--<setting type="sep" />-->
         <setting label="Biblioteca" type="lsep"/>
         <setting id="updatelibrary" type="bool" label="30201" default="false"/>
+        <setting id="updatelibrary_wait" type="enum" label="Esperar en el inicio antes de actualizar" values="Nada|10 seg|20 seg|30 seg|60 seg" default="0" enable="eq(-1,true)"/>
         <setting id="library_mode" type="enum" values="Servidor|Cliente" label="Modo" default="0"/>
         <setting id="xbmc_host" type="text" label="Nombre Servidor" enable="eq(-1,1)" default=""/>
         <setting id="xbmc_port" type="number" label="Puerto Servidor" enable="eq(-2,1)" default="0"/>

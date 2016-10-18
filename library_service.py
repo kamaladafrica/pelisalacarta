@@ -37,12 +37,11 @@ from core.item import Item
 from platformcode import library
 from platformcode import platformtools
 
-path_series_xml = filetools.join(config.get_data_path(), "series.xml")
-path_series_json = filetools.join(config.get_data_path(), "series.json")
-
 
 def convert_old_to_v4():
     logger.info("pelisalacarta.platformcode.library_service convert_old_to_v4")
+    path_series_xml = filetools.join(config.get_data_path(), "series.xml")
+    path_series_json = filetools.join(config.get_data_path(), "series.json")
     series_insertadas = 0
     series_fallidas = 0
     version = 'v?'
@@ -170,6 +169,13 @@ def main(overwrite= True):
     try:
 
         if config.get_setting("updatelibrary") == "true":
+            updatelibrary_wait = [0, 10000, 20000, 30000, 60000]
+            wait = updatelibrary_wait[int(config.get_setting("updatelibrary_wait"))]
+            if wait > 0:
+                import xbmc
+                xbmc.sleep(wait)
+
+
             heading = 'Actualizando biblioteca....'
             p_dialog = platformtools.dialog_progress_bg('pelisalacarta', heading)
             p_dialog.update(0, '')
