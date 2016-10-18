@@ -13,41 +13,34 @@ from core import scrapertools
 from core.item import Item
 from core import servertools
 
-__channel__ = "locopelis"
-__category__ = "S"
-__type__ = "generic"
-__title__ = "locopelis"
-__language__ = "ES"
 
 DEBUG = config.get_setting("debug")
 
 host='http://www.locopelis.com/'
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("pelisalacarta.channels.locopelis mainlist")
 
     itemlist = []
     
-    itemlist.append( Item(channel=__channel__, title="Peliculas", action="todas", url=host, thumbnail='https://s31.postimg.org/4g4lytrqj/peliculas.png', fanart='https://s31.postimg.org/4g4lytrqj/peliculas.png'))
+    itemlist.append( Item(channel=item.channel, title="Peliculas", action="todas", url=host, thumbnail='https://s31.postimg.org/4g4lytrqj/peliculas.png', fanart='https://s31.postimg.org/4g4lytrqj/peliculas.png'))
     
-    itemlist.append( Item(channel=__channel__, title="Generos", action="generos", url=host,thumbnail='https://s31.postimg.org/szbr0gmkb/generos.png', fanart='https://s31.postimg.org/szbr0gmkb/generos.png'))
+    itemlist.append( Item(channel=item.channel, title="Generos", action="generos", url=host,thumbnail='https://s31.postimg.org/szbr0gmkb/generos.png', fanart='https://s31.postimg.org/szbr0gmkb/generos.png'))
     
-    itemlist.append( Item(channel=__channel__, title="Alfabetico", action="letras", url=host, thumbnail='https://s31.postimg.org/c3bm9cnl7/a_z.png', fanart='https://s31.postimg.org/c3bm9cnl7/a_z.png', extra='letras'))
+    itemlist.append( Item(channel=item.channel, title="Alfabetico", action="letras", url=host, thumbnail='https://s31.postimg.org/c3bm9cnl7/a_z.png', fanart='https://s31.postimg.org/c3bm9cnl7/a_z.png', extra='letras'))
     
-    itemlist.append( Item(channel=__channel__, title="Ultimas Agregadas", action="ultimas", url=host, thumbnail='https://s31.postimg.org/3ua9kwg23/ultimas.png', fanart='https://s31.postimg.org/3ua9kwg23/ultimas.png'))
+    itemlist.append( Item(channel=item.channel, title="Ultimas Agregadas", action="ultimas", url=host, thumbnail='https://s31.postimg.org/3ua9kwg23/ultimas.png', fanart='https://s31.postimg.org/3ua9kwg23/ultimas.png'))
     
-    itemlist.append( Item(channel=__channel__, title="Mas Vistas", action="todas", url=host+'pelicula/peliculas-mas-vistas', thumbnail='https://s32.postimg.org/466gt3ipx/vistas.png', fanart='https://s32.postimg.org/466gt3ipx/vistas.png'))
+    itemlist.append( Item(channel=item.channel, title="Mas Vistas", action="todas", url=host+'pelicula/peliculas-mas-vistas', thumbnail='https://s32.postimg.org/466gt3ipx/vistas.png', fanart='https://s32.postimg.org/466gt3ipx/vistas.png'))
     
-    itemlist.append( Item(channel=__channel__, title="Mas Votadas", action="todas", url=host+'pelicula/peliculas-mas-votadas', thumbnail='https://s31.postimg.org/9ooh78xej/votadas.png', fanart='https://s31.postimg.org/9ooh78xej/votadas.png'))
+    itemlist.append( Item(channel=item.channel, title="Mas Votadas", action="todas", url=host+'pelicula/peliculas-mas-votadas', thumbnail='https://s31.postimg.org/9ooh78xej/votadas.png', fanart='https://s31.postimg.org/9ooh78xej/votadas.png'))
     
-    itemlist.append( Item(channel=__channel__, title="Estrenos DVD", action="todas", url=host+'pelicula/ultimas-peliculas/estrenos-dvd', thumbnail='https://s31.postimg.org/6sksfqarf/dvd.png', fanart='https://s31.postimg.org/6sksfqarf/dvd.png'))
+    itemlist.append( Item(channel=item.channel, title="Estrenos DVD", action="todas", url=host+'pelicula/ultimas-peliculas/estrenos-dvd', thumbnail='https://s31.postimg.org/6sksfqarf/dvd.png', fanart='https://s31.postimg.org/6sksfqarf/dvd.png'))
     
-    itemlist.append( Item(channel=__channel__, title="Actualizadas", action="todas", url=host+'pelicula/ultimas-peliculas/ultimas/actualizadas', thumbnail='https://s31.postimg.org/tucv1wmgr/actualizadas.png', fanart='https://s31.postimg.org/tucv1wmgr/actualizadas.png'))
+    itemlist.append( Item(channel=item.channel, title="Actualizadas", action="todas", url=host+'pelicula/ultimas-peliculas/ultimas/actualizadas', thumbnail='https://s31.postimg.org/tucv1wmgr/actualizadas.png', fanart='https://s31.postimg.org/tucv1wmgr/actualizadas.png'))
     
-    itemlist.append( Item(channel=__channel__, title="Buscar", action="search", url=host+'/buscar/?q=', thumbnail='https://s31.postimg.org/qose4p13f/Buscar.png', fanart='https://s31.postimg.org/qose4p13f/Buscar.png'))
+    itemlist.append( Item(channel=item.channel, title="Buscar", action="search", url=host+'/buscar/?q=', thumbnail='https://s31.postimg.org/qose4p13f/Buscar.png', fanart='https://s31.postimg.org/qose4p13f/Buscar.png'))
     
     return itemlist
 
@@ -80,7 +73,7 @@ def todas(item):
         fanart = 'https://s31.postimg.org/5worjw2nv/locopelis.png'
         
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=__channel__, action="findvideos" ,title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, extra=idioma))
+        itemlist.append( Item(channel=item.channel, action="findvideos" ,title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, extra=idioma))
     
 #Paginacion
     siguiente=''
@@ -98,8 +91,8 @@ def todas(item):
     if actual and ultima and siguiente <= int(ultima):
        #import inspect
        titlen = 'Pagina Siguiente >>> '+str(actual)+'/'+str(ultima)
-       fanart = 'https://s32.postimg.org/4q1u1hxnp/locopelis.png'
-       itemlist.append(Item(channel = __channel__, action = "todas", title =titlen, url = siguiente_url, fanart = fanart))
+       fanart = 'https://s31.postimg.org/5worjw2nv/locopelis.png'
+       itemlist.append(Item(channel = item.channel, action = "todas", title =titlen, url = siguiente_url, fanart = fanart))
     return itemlist
 
 
@@ -150,7 +143,7 @@ def generos(item):
            fanart = ''
 	plot = ''
 	if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-	itemlist.append( Item(channel=__channel__, action="todas" , title=title.lower(), fulltitle=item.fulltitle, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart))
+	itemlist.append( Item(channel=item.channel, action="todas" , title=title.lower(), fulltitle=item.fulltitle, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart))
         
     return itemlist
 
@@ -174,7 +167,7 @@ def ultimas(item):
 	title = title.encode('utf-8') 
         fanart = 'https://s31.postimg.org/3ua9kwg23/ultimas.png'
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=__channel__, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart))
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart))
 
     return itemlist
 
@@ -246,7 +239,7 @@ def letras(item):
            fanart = ''  
    
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=__channel__, action=action, title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart))
+        itemlist.append( Item(channel=item.channel, action=action, title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart))
 
     return itemlist
     
@@ -269,7 +262,7 @@ def findvideos(item):
     from core import servertools
     itemlist.extend(servertools.find_video_items(data=data))
     for videoitem in itemlist:
-        videoitem.channel = __channel__
+        videoitem.channel = item.channel
         videoitem.folder = False
         videoitem.extra = item.thumbnail
         videoitem.fulltitle = item.title
@@ -282,7 +275,7 @@ def play(item):
     from core import servertools
     itemlist.extend(servertools.find_video_items(data=item.url))
     for videoitem in itemlist:
-        videoitem.channel = __channel__
+        videoitem.channel = item.channel
         videoitem.title = item.title
         videoitem.folder = False
         videoitem.thumbnail = item.extra

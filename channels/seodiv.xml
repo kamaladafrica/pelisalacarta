@@ -4,7 +4,7 @@
 	<name>Seodiv</name>
 
 	<active>true</active>
-	<adult>true</adult>
+	<adult>false</adult>
 	<language>es</language>
 
 	<fanart></fanart>

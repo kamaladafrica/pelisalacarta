@@ -159,9 +159,9 @@ def entradas(item):
             itemlist.append(item.clone(action="episodios", title=titulo, url=scrapedurl, thumbnail=scrapedthumbnail,
                                        fulltitle=scrapedtitle, context="25", contentTitle=scrapedtitle))
     else:
-        patron = '<a class="clip-link".*?href="([^"]+)".*?<img alt="([^"]+)" src="([^"]+)".*?<span class="cat">(.*?)</span>'
+        patron = '<a class="clip-link".*?href="([^"]+)".*?<img alt="([^"]+)" src="([^"]+)".*?<span class="cat">(.*?)</span>(.*?)</p>'
         matches = scrapertools.find_multiple_matches(bloque, patron)
-        for scrapedurl, scrapedtitle, scrapedthumbnail, categoria in matches:
+        for scrapedurl, scrapedtitle, scrapedthumbnail, categoria, info in matches:
             titulo = scrapertools.decodeHtmlentities(scrapedtitle)
             scrapedtitle = scrapertools.decodeHtmlentities(scrapedtitle.split("[")[0])
             action = "findvideos"
@@ -169,6 +169,17 @@ def entradas(item):
             if "Series" in categoria:
                 action = "episodios"
                 show = scrapedtitle
+            elif categoria and categoria != "peliculas" and categoria != "documentales":
+                try:
+                    titulo += " ["+categoria.rsplit(", ",1)[1]+"]"
+                except:
+                    titulo += " ["+categoria+"]"
+                if 'l-espmini' in info:
+                    titulo += " [ESP]"
+                if 'l-latmini' in info:
+                    titulo += " [LAT]"
+                if 'l-vosemini' in info:
+                    titulo += " [VOSE]"
 
             scrapedthumbnail = "http:"+scrapedthumbnail.replace("-129x180", "")
             scrapedthumbnail = scrapedthumbnail.rsplit("/", 1)[0]+"/"+urllib.quote(scrapedthumbnail.rsplit("/", 1)[1])
@@ -216,7 +227,7 @@ def episodios(item):
             title = item.fulltitle+" "+scrapedtitle.strip()
         else:
             title = scrapedtitle.strip()
-        itemlist.append(new_item.clone(action="epienlaces", title=title, extra=scrapedtitle, fulltitle=title))
+        itemlist.append(new_item.clone(action="findvideos", title=title, extra=scrapedtitle, fulltitle=title))
 
     itemlist.sort(key=lambda item: item.title, reverse=True)
     item.plot = scrapertools.find_single_match(data, '<strong>SINOPSIS</strong>:(.*?)</p>')
@@ -323,7 +334,14 @@ def findvideos(item):
     data_online = scrapertools.find_single_match(data, 'Ver online</div>(.*?)<div class="section-box related-'
                                                        'posts">')
     if len(data_online) > 0:
-        itemlist.append(item.clone(title="Enlaces Online", action="", text_color=color1))
+        title = "Enlaces Online"
+        if '"l-latino2"' in data_online:
+            title += " [LAT]"
+        elif '"l-esp2"' in data_online:
+            title += " [ESP]"
+        elif '"l-vose2"' in data_online:
+            title += " [VOSE]"
+        itemlist.append(item.clone(title=title, action="", text_color=color1))
         patron = 'make_links.*?,[\'"]([^"\']+)["\']'
         matches = scrapertools.find_multiple_matches(data_online, patron)
         for code in matches:
@@ -332,14 +350,26 @@ def findvideos(item):
             if len(enlaces) > 0:
                 title = "   Ver vídeo en " + enlaces[0][2]
                 itemlist.append(item.clone(action="play", server=enlaces[0][2], title=title, url=enlaces[0][1]))
+    scriptg = scrapertools.find_single_match(data, "<script type='text/javascript'>str='([^']+)'")
+    if scriptg:
+        gvideo = urllib.unquote_plus(scriptg.replace("@", "%"))
+        url = scrapertools.find_single_match(gvideo, 'src="([^"]+)"')
+        if url:
+            itemlist.append(item.clone(action="play", server="directo", url=url, title="   Ver vídeo en Googlevideo (Máxima calidad)", extra=item.url))
 
     #Patron descarga
-    patron = '<div class="floatLeft double(?:nuevo|)">(.*?)</div>(.*?)' \
-             '(?:<div(?: id="mirrors"|) class="contentModuleSmall mirrors">|<div class="section-box related-posts">)'
+    patron = '<div class="(?:floatLeft |)double(?:nuevo|)">(.*?)</div>(.*?)' \
+             '(?:<div(?: id="mirrors"|) class="(?:contentModuleSmall |)mirrors">|<div class="section-box related-posts">)'
     bloques_descarga = scrapertools.find_multiple_matches(data, patron)
     for title_bloque, bloque in bloques_descarga:
         if title_bloque == "Ver online":
             continue
+        if '"l-latino2"' in bloque:
+            title_bloque += " [LAT]"
+        elif '"l-esp2"' in bloque:
+            title_bloque += " [ESP]"
+        elif '"l-vose2"' in bloque:
+            title_bloque += " [VOSE]"
         itemlist.append(item.clone(title=title_bloque, action="", text_color=color1))
         if '<div class="subiendo">' in bloque:
             itemlist.append(item.clone(title="   Los enlaces se están subiendo", action=""))
@@ -385,12 +415,29 @@ def play(item):
     itemlist = []
     if "enlacesmix.com" in item.url:
         DEFAULT_HEADERS.append(["Referer", item.extra])
+        if not item.url.startswith("http:"):
+            item.url = "http:" + item.url
         data = scrapertools.downloadpage(item.url, headers=DEFAULT_HEADERS)
         item.url = scrapertools.find_single_match(data, 'iframe src="([^"]+)"')
          
         enlaces = servertools.findvideos(data=item.url)[0]
         if len(enlaces) > 0:
             itemlist.append(item.clone(action="play", server=enlaces[2], url=enlaces[1]))
+    elif item.server == "directo":
+        global DEFAULT_HEADERS
+        DEFAULT_HEADERS.append(["Referer", item.extra])
+        data = scrapertools.downloadpage(item.url, headers=DEFAULT_HEADERS)
+        subtitulo = scrapertools.find_single_match(data, "var subtitulo='([^']+)'")
+        DEFAULT_HEADERS[1][1] = item.url
+        calidades = ["1080p", "720p", "480p", "360p"]
+        for i in range(0, len(calidades)):
+            url_redirect = scrapertools.find_single_match(data, "{file:'([^']+)',label:'"+calidades[i]+"'")
+            if url_redirect:
+                url_video = scrapertools.get_header_from_response(url_redirect, header_to_get="location", headers=DEFAULT_HEADERS)
+                if url_video:
+                    url_video = url_video.replace(",", "%2C")
+                    itemlist.append(item.clone(url=url_video, subtitle=subtitulo))
+                    break
     else:
         itemlist.append(item.clone())
     

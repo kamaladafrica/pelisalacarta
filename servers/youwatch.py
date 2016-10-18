@@ -48,7 +48,7 @@ def find_videos(data):
 
     for match in matches:
         titulo = "[youwatch]"
-        url = "http://chouhaa.info/embed-%s.html" % match
+        url = "http://8azpdgm8.xyz/embed-%s.html" % match
         if url not in encontrados:
             logger.info("  url=" + url)
             devuelve.append([titulo, url, 'youwatch'])

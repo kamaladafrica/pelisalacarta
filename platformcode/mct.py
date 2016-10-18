@@ -69,8 +69,7 @@ def play(url, xlistitem, is_view=None, subtitle=""):
         # -- El nombre del torrent será el que contiene en los --
         # -- datos.                                             -
         re_name = urllib.unquote( scrapertools.get_match(data,':name\d+:(.*?)\d+:') )
-        #torrent_file = os.path.join(save_path_torrents, re_name+'.torrent')
-        torrent_file = filetools.join(save_path_torrents, unicode(re_name, "'utf-8'", errors="replace")+'.torrent')
+        torrent_file = filetools.join(save_path_torrents, filetools.encode(re_name + '.torrent'))
 
         f = open(torrent_file,'wb')
         f.write(data)
@@ -130,7 +129,12 @@ def play(url, xlistitem, is_view=None, subtitle=""):
     video_file = ""
     # -- magnet2torrent -----------------------------------------
     if torrent_file.startswith("magnet"):
-        tempdir = tempfile.mkdtemp()
+        try:
+            tempdir = tempfile.mkdtemp()
+        except IOError:
+            tempdir = os.path.join(save_path_torrents , "temp")
+            if not os.path.exists(tempdir): os.mkdir(tempdir)
+
         params = {
             'save_path': tempdir,
             'trackers':trackers,

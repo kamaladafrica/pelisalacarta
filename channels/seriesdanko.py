@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 # ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
@@ -69,9 +69,10 @@ def novedades(item):
         # patron = "^(.*?)(?:Ya Disponible|Disponible|Disponbile|disponible|\(Actualizada\))$"
         # match = re.compile(patron, re.DOTALL).findall(scrapedtitle)
         title = scrapertools.decodeHtmlentities(scrapedtitle)
+        show = scrapertools.find_single_match(title, "^(.+?) \d+[x|X]\d+")
 
         itemlist.append(Item(channel=item.channel, title=title, url=urlparse.urljoin(HOST, scrapedurl),
-                        action="episodios", thumbnail=scrapedthumb))
+                        action="episodios", thumbnail=scrapedthumb, show=show))
 
     return itemlist
 
@@ -86,7 +87,7 @@ def mas_vistas(item):
     patron = "<div class='widget HTML' id='HTML3'.+?<div class='widget-content'>(.*?)</div>"
     data = scrapertools.get_match(data, patron)
 
-    return series_seccion(data)
+    return series_seccion(item, data)
 
 
 def listado_completo(item):
@@ -98,10 +99,10 @@ def listado_completo(item):
     patron = '<div class="widget HTML" id="HTML10".+?<div class="widget-content">(.*?)</div>'
     data = scrapertools.get_match(data, patron)
 
-    return series_seccion(data)
+    return series_seccion(item, data)
 
 
-def series_seccion(data):
+def series_seccion(item, data):
     logger.info("pelisalacarta.seriesdanko series_seccion")
 
     itemlist = []
@@ -119,8 +120,7 @@ def listado_alfabetico(item):
 
     itemlist = []
 
-    for letra in ['0', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S',
-                  'T', 'U', 'V', 'W', 'X', 'Y', 'Z']:
+    for letra in '0ABCDEFGHIJKLMNOPQRSTUVWXYZ':
         itemlist.append(Item(channel=item.channel, action="series_por_letra", title=letra,
                              url=urlparse.urljoin(HOST, "series.php?id={letra}".format(letra=letra))))
 

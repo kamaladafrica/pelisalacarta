@@ -163,7 +163,7 @@ def get_channel_setting(name, channel):
         # Obtenemos configuracion guardada de ../settings/channel_data.json
         try:
             dict_file = jsontools.load_json(open(file_settings, "r").read())
-            if dict_file.has_key('settings'): 
+            if isinstance(dict_file, dict) and dict_file.has_key('settings'):
               dict_settings = dict_file['settings']
         except EnvironmentError:
             logger.info("ERROR al leer el archivo: {0}".format(file_settings))
