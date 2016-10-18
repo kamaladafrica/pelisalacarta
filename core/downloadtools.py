@@ -704,9 +704,11 @@ def downloadfile(url,nombrefichero,headers=[],silent=False,continuar=False):
                 return -2
 
     except:
-        if url.startswith("rtmp") and not silent:
-            from platformcode import platformtools
-            advertencia = platformtools.dialog_ok( "No puedes descargar ese vídeo","Las descargas en RTMP aún no","están soportadas")
+        if url.startswith("rtmp"):
+            error = downloadfileRTMP(url, nombrefichero, silent)
+            if error and not silent:
+                from platformcode import platformtools
+                advertencia = platformtools.dialog_ok( "No puedes descargar ese vídeo","Las descargas en RTMP aún no","están soportadas")
         else:
             import traceback,sys
             from pprint import pprint
@@ -729,6 +731,55 @@ def downloadfile(url,nombrefichero,headers=[],silent=False,continuar=False):
             pass
 
     logger.info("Fin descarga del fichero")
+
+def downloadfileRTMP(url,nombrefichero,silent):
+  ''' No usa librtmp ya que no siempre está disponible.
+      Lanza un subproceso con rtmpdump. En Windows es necesario instalarlo.
+      No usa threads así que no muestra ninguna barra de progreso ni tampoco
+      se marca el final real de la descarga en el log info.
+  '''
+  Programfiles = os.getenv('Programfiles')
+  if Programfiles:  # Windows
+    rtmpdump_cmd = Programfiles + "/rtmpdump/rtmpdump.exe"
+    nombrefichero = '"'+nombrefichero+'"'  # Windows necesita las comillas en el nombre
+  else:
+    rtmpdump_cmd = "/usr/bin/rtmpdump"
+
+  if not os.path.isfile(rtmpdump_cmd) and not silent:
+    from platformcode import platformtools
+    advertencia = platformtools.dialog_ok( "Falta " + rtmpdump_cmd, "Comprueba que rtmpdump está instalado")
+    return True
+
+  valid_rtmpdump_options = ["help", "url", "rtmp", "host", "port", "socks", "protocol", "playpath", "playlist", "swfUrl", "tcUrl", "pageUrl", "app", "swfhash", "swfsize", "swfVfy", "swfAge", "auth", "conn", "flashVer", "live", "subscribe", "realtime", "flv", "resume", "timeout", "start", "stop", "token", "jtv", "hashes", "buffer", "skip", "quiet", "verbose", "debug"]   # for rtmpdump 2.4
+
+  url_args = url.split(' ')
+  rtmp_url = url_args[0]
+  rtmp_args = url_args[1:]
+
+  rtmpdump_args = ["--rtmp", rtmp_url]
+  for arg in rtmp_args:
+    n = arg.find('=')
+    if n < 0: 
+      if arg not in valid_rtmpdump_options:
+        continue
+      rtmpdump_args += ["--"+arg]
+    else:
+      if arg[:n] not in valid_rtmpdump_options:
+        continue
+      rtmpdump_args += ["--"+arg[:n], arg[n+1:]]
+
+  try:
+    rtmpdump_args = [rtmpdump_cmd] + rtmpdump_args + ["-o", nombrefichero]
+    from os import spawnv, P_NOWAIT
+    logger.info("tvalacarta.core.downloadtools Iniciando descarga del fichero: %s" % " ".join(rtmpdump_args))
+    rtmpdump_exit = spawnv(P_NOWAIT, rtmpdump_cmd, rtmpdump_args)
+    if not silent:
+      from platformcode import platformtools
+      advertencia = platformtools.dialog_ok( "La opción de descarga RTMP es experimental", "y el vídeo se descargará en segundo plano.", "No se mostrará ninguna barra de progreso.")
+  except:
+      return True
+
+  return
 
 def downloadfileGzipped(url,pathfichero):
     logger.info("pelisalacarta.core.downloadtools downloadfileGzipped: url="+url)
