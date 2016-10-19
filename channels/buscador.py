@@ -24,16 +24,22 @@ def mainlist(item,preferred_thumbnail="squares"):
     logger.info("pelisalacarta.channels.buscador mainlist")
 
     itemlist = list()
-    itemlist.append(Item(channel=item.channel, action="search", title="Buscar por titulo..."))
-
-
-    itemlist.append(Item(channel=item.channel, action="search", title="Buscar por categorias...", extra="categorias"))
+    context = [{"title": "Elegir canales incluidos",
+                "action": "settingCanal",
+                "channel": item.channel}]
+    itemlist.append(Item(channel=item.channel, action="search", title="Buscar por titulo...", context= context))
+    itemlist.append(Item(channel=item.channel, action="search", title="Buscar por categorias...", extra="categorias",
+                         context= context))
     #itemlist.append(Item(channel=item.channel, action="opciones", title="Opciones"))
 
     saved_searches_list = get_saved_searches()
-
+    context2 = context[:]
+    context2.append({"title": "Borrar búsquedas guardadas",
+                     "action": "clear_saved_searches",
+                     "channel": item.channel})
     for saved_search_text in saved_searches_list:
-        itemlist.append(Item(channel=item.channel, action="do_search", title=' "'+saved_search_text+'"', extra=saved_search_text))
+        itemlist.append(Item(channel=item.channel, action="do_search", title=' "'+saved_search_text+'"',
+                             extra=saved_search_text,  context= context2, category=saved_search_text))
 
     return itemlist
     
@@ -148,6 +154,7 @@ def search_cb(item,values=""):
 def search(item, tecleado):
     logger.info("pelisalacarta.channels.buscador search")
     tecleado = tecleado.replace("+", " ")
+    item.category = tecleado
 
     if tecleado != "":
         save_search(tecleado)
@@ -309,7 +316,8 @@ def do_search(item, categories=[]):
                 title = re.sub("\[/COLOR]","",title)
                 
                 extra = search["item"].extra + "{}" + search["item"].channel + "{}" + tecleado
-                itemlist.append(Item(title=title, channel="buscador",action="channel_result", url=search["item"].url, extra = extra, folder=True))
+                itemlist.append(Item(title=title, channel="buscador",action="channel_result", url=search["item"].url,
+                                     extra = extra, folder=True))
             else:
                 itemlist.extend(search["itemlist"])
 
@@ -337,6 +345,7 @@ def save_search(text):
     saved_searches_list.insert(0,text)
     
     config.set_setting("saved_searches_list", saved_searches_list[:saved_searches_limit], "buscador")
+
 
 def clear_saved_searches(item):
     

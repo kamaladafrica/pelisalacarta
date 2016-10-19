@@ -101,9 +101,6 @@ class Item(object):
         '''
         Inicializacion del item
         '''
-        if kwargs.has_key("parentContent"):
-            self.set_parent_content(kwargs["parentContent"])
-            del kwargs["parentContent"]
 
         # Creamos el atributo infoLabels
         self.__dict__["infoLabels"] = InfoLabels()
@@ -111,6 +108,10 @@ class Item(object):
             if isinstance(kwargs["infoLabels"], dict):
                 self.__dict__["infoLabels"].update(kwargs["infoLabels"])
             del kwargs["infoLabels"]
+
+        if kwargs.has_key("parentContent"):
+            self.set_parent_content(kwargs["parentContent"])
+            del kwargs["parentContent"]
 
         kw = copy.copy(kwargs)
         for k in kw:
@@ -385,10 +386,11 @@ class Item(object):
         elif isinstance(value,dict):
             newdct = {}
             for key in value:
+                v = self.toutf8(value[key])
                 if type(key) == unicode:
                     key = key.encode("utf8")
 
-                newdct[key] = self.toutf8(value[key])
+                newdct[key] = v
 
             if len(args) > 0:
                 if isinstance(value, InfoLabels):

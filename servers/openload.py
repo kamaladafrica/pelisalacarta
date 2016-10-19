@@ -42,76 +42,44 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
             data = scrapertools.downloadpageWithoutCookies(url)
             text_encode = scrapertools.find_multiple_matches(data,"(ﾟωﾟ.*?\(\'\_\'\));")
             text_decode = ""
-            try:
-                for t in text_encode:
-                    text_decode += aadecode(t)
-                videourl = "http://" + scrapertools.find_single_match(text_decode, '(openload.co/.*?)\}')
-            except:
-                videourl = "http://"
+            for t in text_encode:
+                text_decode += aadecode(t)
 
-            if videourl == "http://":
-                hiddenurl, valuehidden = scrapertools.find_single_match(data, '<span id="([^"]+)">(.*?)<')
-                if hiddenurl:
-                    number = scrapertools.find_single_match(text_decode, 'charCodeAt\(0\)\s*+\s*(\d+)')
-                    if number:
-                        videourl = decode_hidden(valuehidden, number)
-                    else:
-                        from jjdecode import JJDecoder
-                        jjencode = scrapertools.find_single_match(data, '<script type="text/javascript">(j=.*?\(\)\)\(\);)')
-                        if not jjencode:
-                            pack = scrapertools.find_multiple_matches(data, '(eval \(function\(p,a,c,k,e,d\).*?\{\}\)\))')[-1]
-                            jjencode = openload_clean(pack)
-
-                        jjdec = JJDecoder(jjencode).decode()
-                        number = scrapertools.find_single_match(jjdec, 'charCodeAt\(0\)\s*\+\s*(\d+)')
-                        varj = scrapertools.find_single_match(jjdec, 'var j\s*=\s*(\w+)\.charCodeAt')
-                        varhidden = scrapertools.find_single_match(jjdec, 'var\s*'+varj+'\s*=\s*\$\("[#]*([^"]+)"\).text')
-                        if varhidden != hiddenurl:
-                            valuehidden = scrapertools.find_single_match(data, 'id="'+varhidden+'">(.*?)<')
-                        videourl = decode_hidden(valuehidden, number)
-                        
-                else:
-                    videourl = decodeopenload(data)
+            number = scrapertools.find_single_match(text_decode, 'charCodeAt\(0\)\s*\+\s*(\d+)')
+            varj = scrapertools.find_single_match(text_decode, 'var magic\s*=\s*(\w+)\.slice')
+            varhidden = scrapertools.find_single_match(text_decode, 'var\s*'+varj+'\s*=\s*\$\("[#]*([^"]+)"\).text')
+            valuehidden = scrapertools.find_single_match(data, 'id="'+varhidden+'">(.*?)<')
+            magic = ord(valuehidden[-1])
+            valuehidden = valuehidden.split(chr(magic-1))
+            valuehidden = "\t".join(valuehidden)
+            valuehidden = valuehidden.split(valuehidden[-1])
+            valuehidden = chr(magic-1).join(valuehidden)
+            valuehidden = valuehidden.split("\t")
+            valuehidden = chr(magic).join(valuehidden)
+            
+            videourl = decode_hidden(valuehidden, number)
             # Falla el método, se utiliza la api aunque en horas punta no funciona
             if not videourl:
                 videourl = get_link_api(page_url)
         else:
             text_encode = scrapertools.find_multiple_matches(data, '(ﾟωﾟ.*?\(\'\_\'\));')
             text_decode = ""
-            try:
-                for t in text_encode:
-                    text_decode += aadecode(t)
-                subtract = scrapertools.find_single_match(text_decode, 'welikekodi.*?(\([^;]+\))')
-            except:
-                subtract = ""
-            
-            if subtract:
-                index = int(eval(subtract))
-                # Buscamos la variable que nos indica el script correcto
-                text_decode2 = aadecode(text_encode[index])
-                videourl = "https://" + scrapertools.find_single_match(text_decode2, "(openload.co/.*?)\}")
-            else:
-                hiddenurl, valuehidden = scrapertools.find_single_match(data, '<span id="([^"]+)">(.*?)<')
-                if hiddenurl:
-                    number = scrapertools.find_single_match(text_decode, 'charCodeAt\(0\)\s*+\s*(\d+)')
-                    if number:
-                        videourl = decode_hidden(valuehidden, number)
-                    else:
-                        from jjdecode import JJDecoder
-                        jjencode = scrapertools.find_single_match(data, '<script type="text/javascript">(j=.*?\(\)\)\(\);)')
-                        if not jjencode:
-                            pack = scrapertools.find_multiple_matches(data, '(eval \(function\(p,a,c,k,e,d\).*?\{\}\)\))')[-1]
-                            jjencode = openload_clean(pack)
+            for t in text_encode:
+                text_decode += aadecode(t)
 
-                        jjdec = JJDecoder(jjencode).decode()
-                        number = scrapertools.find_single_match(jjdec, 'charCodeAt\(0\)\s*\+\s*(\d+)')
-                        varj = scrapertools.find_single_match(jjdec, 'var j\s*=\s*(\w+)\.charCodeAt')
-                        varhidden = scrapertools.find_single_match(jjdec, 'var\s*'+varj+'\s*=\s*\$\("[#]*([^"]+)"\).text')
-                        if varhidden != hiddenurl:
-                            valuehidden = scrapertools.find_single_match(data, 'id="'+varhidden+'">(.*?)<')
-                        videourl = decode_hidden(valuehidden, number)
-                else:
-                    videourl = decodeopenload(data)
+            number = scrapertools.find_single_match(text_decode, 'charCodeAt\(0\)\s*\+\s*(\d+)')
+            varj = scrapertools.find_single_match(text_decode, 'var magic\s*=\s*(\w+)\.slice')
+            varhidden = scrapertools.find_single_match(text_decode, 'var\s*'+varj+'\s*=\s*\$\("[#]*([^"]+)"\).text')
+            valuehidden = scrapertools.find_single_match(data, 'id="'+varhidden+'">(.*?)<')
+            magic = ord(valuehidden[-1])
+            valuehidden = valuehidden.split(chr(magic-1))
+            valuehidden = "\t".join(valuehidden)
+            valuehidden = valuehidden.split(valuehidden[-1])
+            valuehidden = chr(magic-1).join(valuehidden)
+            valuehidden = valuehidden.split("\t")
+            valuehidden = chr(magic).join(valuehidden)
+            
+            videourl = decode_hidden(valuehidden, number)
 
             # Falla el método, se utiliza la api aunque en horas punta no funciona
             if not videourl:
@@ -158,119 +126,22 @@ def find_videos(text):
     return devuelve
 
 
-#Code take from plugin IPTVPlayer: https://gitlab.com/iptvplayer-for-e2/iptvplayer-for-e2/
-#Thanks to samsamsam for his work
-def decodeopenload(data):
-    import base64, math
-    from lib.png import Reader as PNGReader
-    # get image data
-    imageData = scrapertools.find_single_match(data, '<img *id="linkimg" *src="([^"]+)"')
-
-    imageData = base64.b64decode(imageData.rsplit('base64,', 1)[1])
-    x, y, pixel, meta = PNGReader(bytes=imageData).read()
-
-    imageStr = ""
-    try:
-        for item in pixel:
-            for p in item:
-                imageStr += chr(p)
-    except:
-        pass
-
-    # split image data
-    imageTabs = []
-    i = -1
-    for idx in range(len(imageStr)):
-        if imageStr[idx] == '\0':
-            break
-        if 0 == (idx % (12 * 20)):
-            imageTabs.append([])
-            i += 1
-            j = -1
-        if 0 == (idx % (20)):
-            imageTabs[i].append([])
-            j += 1
-        imageTabs[i][j].append(imageStr[idx])
-
-    # get signature data
-    signStr = ""
-    try:
-        data_obf = scrapertools.downloadpageWithoutCookies("https://openload.co/assets/js/obfuscator/n.js")
-        if "signatureNumbers" in data_obf:
-            signStr = scrapertools.find_single_match(data_obf, '[\'"]([^"\']+)[\'"]')
-    except:
-        pass
-
-    if not signStr:
-        scripts = scrapertools.find_multiple_matches(data, '<script src="(/assets/js/obfuscator/[^"]+)"')
-        for scr in scripts:
-            data_obf = scrapertools.downloadpageWithoutCookies('https://openload.co%s' % scr)
-            if "signatureNumbers" in data_obf:
-                signStr = scrapertools.find_single_match(data_obf, '[\'"]([^"\']+)[\'"]')
-                break
-
-    # split signature data
-    signTabs = []
-    i = -1
-    for idx in range(len(signStr)):
-        if signStr[idx] == '\0':
-            break
-        if 0 == (idx % (11 * 26)):
-            signTabs.append([])
-            i += 1
-            j = -1
-        if 0 == (idx % (26)):
-            signTabs[i].append([])
-            j += 1
-        signTabs[i][j].append(signStr[idx])
-
-    # get link data
-    linkData = {}
-    for i in [2, 3, 5, 7]:
-        linkData[i] = []
-        tmp = ord('c')
-        for j in range(len(signTabs[i])):
-            for k in range(len(signTabs[i][j])):
-                if tmp > 122:
-                    tmp = ord('b')
-                if signTabs[i][j][k] == chr(int(math.floor(tmp))):
-                    if len(linkData[i]) > j:
-                        continue
-                    tmp += 2.5;
-                    if k < len(imageTabs[i][j]):
-                        linkData[i].append(imageTabs[i][j][k])
-    res = []
-    for idx in linkData:
-        res.append(''.join(linkData[idx]).replace(',', ''))
-
-    res = res[3] + '~' + res[1] + '~' + res[2] + '~' + res[0]
-    videourl = 'https://openload.co/stream/{0}?mime=true'.format(res)
-    
-    return videourl
-
-
 def openload_clean(string):
     import urllib2
     if "function" in string:
-        matches = re.findall(r"=\"([^\"]+).*?} *\((\d+)\)", string, re.DOTALL)[0]
+        a, z = scrapertools.get_match(string,r"=\"([^\"]+).*?} *\((\d+)\)")
 
-        def substr(char):
-            char = char.group(0)
-            number = ord(char) + int(matches[1])
-            if char <= "Z":
-                char_value = 90
-            else:
-                char_value = 122
-            if char_value >= number:
-                return chr(ord(char))
-            else:
-                return chr(number - 26)
+        x = scrapertools.find_multiple_matches(a, '([a-zA-Z])')
 
-        string = re.sub(r"[A-Za-z]", substr, matches[0])
-        string = urllib2.unquote(string)
+        for c in x:
+            y = (32 | ord(c)) + int(z)
+            x = chr(y) if 122 >= y else chr(y-26)
+            a = re.sub(r'(%s)' % c, x , a)
 
-        for n, z in enumerate(['j','_','__','___']):
-            string = re.sub(r'%s' % n, z, string)
+        string = urllib2.unquote(a)
+
+        for n, c in enumerate(['j','_','__','___']):
+            string = re.sub(r'%s' % n, c, string)
 
     return string
 

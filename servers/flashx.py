@@ -40,6 +40,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     # Si salta aviso, se carga la pagina de comprobacion y luego la inicial
     if "You try to access this video with Kodi" in data:
         url_reload = scrapertools.find_single_match(data, 'try to reload the page.*?href="([^"]+)"')
+        url_reload = "http://www.flashx.tv" + url_reload[1:]
         try:
             data = scrapertools.cache_page(url_reload, headers=headers)
             data = scrapertools.cache_page(page_url, headers=headers)

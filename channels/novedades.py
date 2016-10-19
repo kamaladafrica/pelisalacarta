@@ -50,26 +50,56 @@ def mainlist(item,thumbnail_type="squares"):
     thumbnail_base = "http://media.tvalacarta.info/pelisalacarta/"+thumbnail_type+"/"
     thumbnail = thumbnail_base + '/disabled'
 
+
     if list_canales['peliculas']:
         thumbnail = thumbnail_base + "/thumb_canales_peliculas.png"
-    itemlist.append(Item(channel=item.channel, action="novedades", extra="peliculas", title="Películas", thumbnail=thumbnail))
+    new_item = Item(channel=item.channel, action="novedades", extra="peliculas", title="Películas", thumbnail=thumbnail)
+    new_item.context = [{"title": "Canales incluidos en: %s" %new_item.title,
+                         "extra": new_item.extra,
+                         "action": "settingCanal",
+                         "channel": new_item.channel}]
+    new_item.category = "Novedades en %s" % new_item.extra
+    itemlist.append(new_item)
 
     if list_canales['infantiles']:
         thumbnail = thumbnail_base + "/thumb_canales_infantiles.png"
-    itemlist.append(Item(channel=item.channel, action="novedades", extra="infantiles", title="Para niños", thumbnail=thumbnail))
+    new_item = Item(channel=item.channel, action="novedades", extra="infantiles", title="Para niños", thumbnail=thumbnail)
+    new_item.context = [{"title": "Canales incluidos en: %s" %new_item.title,
+                         "extra": new_item.extra,
+                         "action": "settingCanal",
+                         "channel": new_item.channel}]
+    new_item.category = "Novedades en %s" % new_item.extra
+    itemlist.append(new_item)
 
     if list_canales['series']:
         thumbnail = thumbnail_base + "/thumb_canales_series.png"
-    itemlist.append(Item(channel=item.channel, action="novedades", extra="series", title="Episodios de series", thumbnail=thumbnail))
+    new_item = Item(channel=item.channel, action="novedades", extra="series", title="Episodios de series", thumbnail=thumbnail)
+    new_item.context = [{"title": "Canales incluidos en: %s" %new_item.title,
+                         "extra": new_item.extra,
+                         "action": "settingCanal",
+                         "channel": new_item.channel}]
+    new_item.category = "Novedades en %s" % new_item.extra
+    itemlist.append(new_item)
 
     if list_canales['anime']:
         thumbnail = thumbnail_base + "/thumb_canales_anime.png"
-    itemlist.append(Item(channel=item.channel, action="novedades", extra="anime", title="Episodios de anime", thumbnail=thumbnail))
+    new_item = Item(channel=item.channel, action="novedades", extra="anime", title="Episodios de anime", thumbnail=thumbnail)
+    new_item.context = [{"title": "Canales incluidos en: %s" %new_item.title,
+                         "extra": new_item.extra,
+                         "action": "settingCanal",
+                         "channel": new_item.channel}]
+    new_item.category = "Novedades en %s" % new_item.extra
+    itemlist.append(new_item)
 
     if list_canales['documentales']:
         thumbnail = thumbnail_base + "/thumb_canales_documentales.png"
-
-    itemlist.append(Item(channel=item.channel, action="novedades", extra="documentales", title="Documentales", thumbnail=thumbnail))
+    new_item = Item(channel=item.channel, action="novedades", extra="documentales", title="Documentales", thumbnail=thumbnail)
+    new_item.context = [{"title": "Canales incluidos en: %s" %new_item.title,
+                         "extra": new_item.extra,
+                         "action": "settingCanal",
+                         "channel": new_item.channel}]
+    new_item.category = "Novedades en %s" % new_item.extra
+    itemlist.append(new_item)
 
     #itemlist.append(Item(channel=item.channel, action="menu_opciones", title="Opciones", viewmode="list",
     #                     thumbnail=thumbnail_base + "/thumb_configuracion.png"))
@@ -382,8 +412,9 @@ def settingCanal(item):
 
         list_controls.append(control)
 
+    caption = "Canales incluidos en Novedades " + item.title.replace("Canales incluidos en: ","- ").strip()
     return platformtools.show_channel_settings(list_controls=list_controls, callback="save_settings", item=item,
-                                               caption= "Canales incluidos en Novedades " + item.title.strip())
+                                               caption= caption)
 
 
 def save_settings(item,dict_values):
