@@ -233,8 +233,6 @@ def parse_videos(item, tipo, data):
 
     itemlist = []
 
-    logger.debug("data11 {}".format(data))
-
     pattern = "<td.+?<img src='/assets/img/banderas/([^\.]+).+?</td><td.+?>(.*?)</td><td.+?" \
               "<img src='/assets/img/servidores/([^\.]+).+?</td><td.+?href='([^']+)'.+?>.*?</a></td>" \
               "<td.+?>(.*?)</td>"
