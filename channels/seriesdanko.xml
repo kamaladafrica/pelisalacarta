@@ -12,9 +12,9 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/seriesdanko.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>6</version>
-	<date>01/07/2016</date>
-	<changes>Eliminado código innecesario.</changes>
+	<version>7</version>
+	<date>19/10/2016</date>
+	<changes>Corregidos errores.</changes>
 
 	<categories>
 		<category>serie</category>
