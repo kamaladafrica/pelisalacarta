@@ -233,22 +233,24 @@ def parse_videos(item, tipo, data):
 
     itemlist = []
 
+    logger.debug("data11 {}".format(data))
+
     pattern = "<td.+?<img src='/assets/img/banderas/([^\.]+).+?</td><td.+?>(.*?)</td><td.+?" \
               "<img src='/assets/img/servidores/([^\.]+).+?</td><td.+?href='([^']+)'.+?>.*?</a></td>" \
-              "<td.+?>(.+?)</td><td.+?>(.*?)</td>"
+              "<td.+?>(.*?)</td>"
 
     links = re.findall(pattern, data, re.MULTILINE | re.DOTALL)
 
-    for language, date, server, link, uploader, quality in links:
+    for language, date, server, link, quality in links:
         if quality == "":
             quality = "SD"
-        title = "{tipo} en {server} [{idioma}] [{quality}] ({uploader}: {fecha})".\
-            format(tipo=tipo, server=server, idioma=IDIOMAS.get(language, "OVOS"), quality=quality, uploader=uploader,
-                   fecha=date)
+        title = "{tipo} en {server} [{idioma}] [{quality}] ({fecha})".\
+            format(tipo=tipo, server=server, idioma=IDIOMAS.get(language, "OVOS"), quality=quality, fecha=date)
 
         itemlist.append(Item(channel=item.channel, title=title, url=urlparse.urljoin(HOST, link), action="play",
                              show=item.show, language=IDIOMAS.get(language, "OVOS"), quality=quality,
-                             list_idiomas=list_idiomas, list_calidad=CALIDADES, context=CONTEXT+"|guardar_filtro"))
+                             list_idiomas=list_idiomas, list_calidad=CALIDADES, context=CONTEXT+"|guardar_filtro",
+                             fulltitle=item.title))
 
     if len(itemlist) > 0 and OPCION_FILTRO:
         itemlist = filtertools.get_filtered_links(itemlist, item.channel)
@@ -266,9 +268,15 @@ def play(item):
     url = scrapertools.find_single_match(data, patron)
 
     itemlist = servertools.find_video_items(data=url)
+    titulo = scrapertools.find_single_match(item.fulltitle, "^(.*?)\s\[.+?$")
+    if titulo:
+        titulo += " [{language}]".format(language=item.language)
 
     for videoitem in itemlist:
-        videoitem.title = item.title
+        if titulo:
+            videoitem.title = titulo
+        else:
+            videoitem.title = item.title
         videoitem.channel = item.channel
 
     return itemlist

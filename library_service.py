@@ -94,7 +94,7 @@ def convert_old_to_v4():
             version = 'v4'
 
         except EnvironmentError:
-            logger.info("ERROR al leer el archivo: %s" %path_series_xml)
+            logger.info("ERROR al leer el archivo: %s" % path_series_xml)
             return False
 
     # Convertir libreria de v2(json) a v4
@@ -123,11 +123,11 @@ def convert_old_to_v4():
             version = 'v4'
 
         except EnvironmentError:
-            logger.info("ERROR al leer el archivo: %s" %path_series_json)
+            logger.info("ERROR al leer el archivo: %s" % path_series_json)
             return False
 
     # Convertir libreria de v3 a v4
-    if version !='v4':
+    if version != 'v4':
         # Obtenemos todos los tvshow.json de la biblioteca de SERIES_OLD recursivamente
         for raiz, subcarpetas, ficheros in filetools.walk(path_series_old):
             for f in ficheros:
@@ -138,15 +138,12 @@ def convert_old_to_v4():
                         if fallidos == 0:
                             series_insertadas += 1
                             platformtools.dialog_notification("Serie actualizada", serie.infoLabels['title'])
-                            version = 'v4'
                         else:
                             series_fallidas += 1
                     except:
                         series_fallidas += 1
 
-
     config.set_setting("library_version", 'v4')
-
 
     platformtools.dialog_notification("Biblioteca actualizada al nuevo formato",
                                       "%s series convertidas y %s series descartadas. A continuación se va a "
@@ -159,10 +156,7 @@ def convert_old_to_v4():
     return True
 
 
-
-
-
-def main(overwrite= True):
+def main(overwrite=True):
     logger.info("pelisalacarta.library_service Actualizando series...")
     p_dialog = None
 
@@ -175,12 +169,10 @@ def main(overwrite= True):
                 import xbmc
                 xbmc.sleep(wait)
 
-
             heading = 'Actualizando biblioteca....'
             p_dialog = platformtools.dialog_progress_bg('pelisalacarta', heading)
             p_dialog.update(0, '')
             show_list = []
-
 
             for path, folders, files in filetools.walk(library.TVSHOWS_PATH):
                 show_list.extend([filetools.join(path, f) for f in files if f == "tvshow.nfo"])
@@ -189,7 +181,7 @@ def main(overwrite= True):
             t = float(100) / len(show_list)
 
             for i, tvshow_file in enumerate(show_list):
-                serie = Item().fromjson(filetools.read(tvshow_file,1))
+                serie = Item().fromjson(filetools.read(tvshow_file, 1))
                 path = filetools.dirname(tvshow_file)
 
                 if serie.contentSeriename == "":
@@ -203,12 +195,12 @@ def main(overwrite= True):
                 # si la serie esta activa se actualiza
                 logger.info("pelisalacarta.library_service Actualizando " + path)
 
-                #logger.debug("%s: %s" %(serie.contentSerieName,str(list_canales) ))
+                # logger.debug("%s: %s" %(serie.contentSerieName,str(list_canales) ))
                 for channel, url in serie.library_urls.items():
                     serie.channel = channel
                     serie.url = url
-                    p_dialog.update(int(math.ceil((i + 1) * t)), heading, "%s: %s" %(serie.contentSerieName,
-                                                                                     serie.channel.capitalize() ))
+                    p_dialog.update(int(math.ceil((i + 1) * t)), heading, "%s: %s" % (serie.contentSerieName,
+                                                                                      serie.channel.capitalize()))
                     try:
                         pathchannels = filetools.join(config.get_runtime_path(), "channels", serie.channel + '.py')
                         logger.info("pelisalacarta.library_service Cargando canal: " + pathchannels + " " +
@@ -218,8 +210,7 @@ def main(overwrite= True):
                         itemlist = obj.episodios(serie)
 
                         try:
-                            insertados, sobreescritos, fallidos = library.save_library_episodes(path, itemlist, serie,
-                                                                                    silent=True, overwrite= overwrite )
+                            library.save_library_episodes(path, itemlist, serie, silent=True, overwrite=overwrite)
 
                         except Exception as ex:
                             logger.info("pelisalacarta.library_service Error al guardar los capitulos de la serie")
@@ -257,6 +248,7 @@ if __name__ == "__main__":
         if not convert_old_to_v4():
             platformtools.dialog_ok(config.PLUGIN_NAME.capitalize(),
                                     "ERROR, al actualizar la biblioteca al nuevo formato")
-            exit
-
-    main(overwrite= False)
+        else:
+            main(overwrite=False)
+    else:
+        main(overwrite=False)

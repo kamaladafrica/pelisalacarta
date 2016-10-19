@@ -174,7 +174,6 @@ def render_items(itemlist, parent_item):
     if parent_item.channel not in ["channelselector", ""]:
         xbmcplugin.setContent(int(sys.argv[1]), "movies")
 
-
     # Fijamos el "breadcrumb"
     xbmcplugin.setPluginCategory(handle=int(sys.argv[1]), category=parent_item.category.capitalize())
 
@@ -209,7 +208,10 @@ def set_infolabels(listitem, item):
     """
 
     listitem.setInfo("video", item.infoLabels)
-    listitem.setInfo("video", {"Title": item.title})
+    if item.fulltitle:
+        listitem.setInfo("video", {"Title": item.fulltitle})
+    else:
+        listitem.setInfo("video", {"Title": item.title})
     # Añadido para Kodi Krypton (v17)
     listitem.setArt({"poster": item.thumbnail})
 
@@ -251,7 +253,6 @@ def set_context_commands(item, parent_item):
     else:
         context = []
 
-
     # Opciones segun item.context
     for command in context:
         # Predefinidos
@@ -277,14 +278,12 @@ def set_context_commands(item, parent_item):
                     from_channel=item.channel
                 ).tourl())))
 
-            elif command == "buscar_trailer" or command == "05" or command == "25": # TODO eliminar opciones "05" y "25"
-                context_commands.append(("Buscar Trailer", "XBMC.RunPlugin(%s?%s)" % ( sys.argv[0] , item.clone(
+            elif command == "buscar_trailer" or command == "05" or command == "25":  # TODO eliminar opcion "05" y "25"
+                context_commands.append(("Buscar Trailer", "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], item.clone(
                     channel="trailertools",
                     action="buscartrailer",
                     contextual=True
                 ).tourl())))
-
-
 
         # Formato dict
         if type(command) == dict:
@@ -296,8 +295,6 @@ def set_context_commands(item, parent_item):
                 command["from_channel"] = item.channel
             context_commands.append(
                 (command["title"], "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], item.clone(**command).tourl())))
-
-
 
     # Opciones segun criterios
 
@@ -313,32 +310,33 @@ def set_context_commands(item, parent_item):
                     % (item.infoLabels['tmdb_id'], item.contentSerieName, item.contentSeason,
                        item.contentEpisodeNumber)
             context_commands.append(("ExtendedInfo",
-                                     "XBMC.RunScript(script.extendedinfo,info=extendedepisodeinfo,%s)" % (param)))
+                                     "XBMC.RunScript(script.extendedinfo,info=extendedepisodeinfo,%s)" % param))
 
         elif item.contentType == "season" and item.contentSeason \
                 and (item.infoLabels['tmdb_id'] or item.contentSerieName):
             param = "tvshow_id =%s,tvshow=%s, season=%s" \
                     % (item.infoLabels['tmdb_id'], item.contentSerieName, item.contentSeason)
             context_commands.append(("ExtendedInfo",
-                                     "XBMC.RunScript(script.extendedinfo,info=seasoninfo,%s)" % (param)))
+                                     "XBMC.RunScript(script.extendedinfo,info=seasoninfo,%s)" % param))
 
-        elif item.contentType == "tvshow" and (item.infoLabels['tmdb_id'] or item.infoLabels['tvdb_id']
-                                               or item.infoLabels['imdb_id'] or item.contentSerieName):
+        elif item.contentType == "tvshow" and (item.infoLabels['tmdb_id'] or item.infoLabels['tvdb_id'] or
+                                               item.infoLabels['imdb_id'] or item.contentSerieName):
             param = "id =%s,tvdb_id=%s,imdb_id=%s,name=%s" \
                     % (item.infoLabels['tmdb_id'], item.infoLabels['tvdb_id'], item.infoLabels['imdb_id'],
                        item.contentSerieName)
             context_commands.append(("ExtendedInfo",
-                                     "XBMC.RunScript(script.extendedinfo,info=extendedtvinfo,%s)" % (param)))
+                                     "XBMC.RunScript(script.extendedinfo,info=extendedtvinfo,%s)" % param))
 
-        elif item.contentType == "movie" and (item.infoLabels['tmdb_id'] or item.infoLabels['imdb_id']
-                                              or item.contentTitle):
+        elif item.contentType == "movie" and (item.infoLabels['tmdb_id'] or item.infoLabels['imdb_id'] or
+                                              item.contentTitle):
             param = "id =%s,imdb_id=%s,name=%s" \
                     % (item.infoLabels['tmdb_id'], item.infoLabels['imdb_id'], item.contentTitle)
             context_commands.append(("ExtendedInfo",
-                                     "XBMC.RunScript(script.extendedinfo,info=extendedinfo,%s)" % (param)))
+                                     "XBMC.RunScript(script.extendedinfo,info=extendedinfo,%s)" % param))
 
     # Ir al Menu Principal (channel.mainlist)
-    if parent_item.channel not in ["novedades", "channelselector"] and item.action!="mainlist" and  parent_item.action!="mainlist":
+    if parent_item.channel not in ["novedades", "channelselector"] and item.action != "mainlist" \
+            and parent_item.action != "mainlist":
         context_commands.append(("Ir al Menu Principal", "XBMC.Container.Refresh (%s?%s)" %
                                  (sys.argv[0], Item(channel=item.channel, action="mainlist").tourl())))
 
@@ -346,7 +344,7 @@ def set_context_commands(item, parent_item):
     '''if item.channel not in ["channelselector", "favoritos", "descargas", "buscador", "biblioteca", "novedades", "ayuda",
                             "configuracion", ""] and not parent_item.channel == "favoritos":'''
     if version_xbmc < 17 and (item.channel not in ["favoritos", "biblioteca", "ayuda",
-                            "configuracion", ""] and not parent_item.channel == "favoritos"):
+                                                   "configuracion", ""] and not parent_item.channel == "favoritos"):
         context_commands.append((config.get_localized_string(30155), "XBMC.RunPlugin(%s?%s)" %
                                  (sys.argv[0], item.clone(channel="favoritos", action="addFavourite",
                                                           from_channel=item.channel, from_action=item.action).tourl())))
@@ -384,13 +382,9 @@ def set_context_commands(item, parent_item):
                                                           from_channel=item.channel, from_action=item.action).tourl())))
 
     # Abrir configuración
-    if parent_item.channel not in ["configuracion","novedades","buscador"]:
+    if parent_item.channel not in ["configuracion", "novedades", "buscador"]:
         context_commands.append(("Abrir Configuración", "XBMC.Container.Update(%s?%s)" %
                                  (sys.argv[0], Item(channel="configuracion", action="mainlist").tourl())))
-
-
-
-
 
     return sorted(context_commands, key=lambda comand: comand[0])
 
@@ -401,10 +395,10 @@ def is_playing():
 
 def play_video(item, strm=False):
     logger.info("pelisalacarta.platformcode.platformtools play_video")
-    #logger.debug(item.tostring('\n'))
+    # logger.debug(item.tostring('\n'))
 
     default_action = config.get_setting("default_action")
-    logger.info("default_action="+default_action)
+    logger.info("default_action=" + default_action)
 
     # Abre el diálogo de selección para ver las opciones disponibles
     opciones, video_urls, seleccion, salir = get_dialogo_opciones(item, default_action, strm)
@@ -413,7 +407,7 @@ def play_video(item, strm=False):
 
     # se obtienen la opción predeterminada de la configuración del addon
     seleccion = get_seleccion(default_action, opciones, seleccion, video_urls)
-    if seleccion < 0: # Cuadro cancelado
+    if seleccion < 0:  # Cuadro cancelado
         return
 
     logger.info("seleccion=%d" % seleccion)
@@ -430,48 +424,16 @@ def play_video(item, strm=False):
         return
 
     # se obtiene la información del video.
-    xlistitem = get_info_video(item, mediaurl, strm)
+    xlistitem = xbmcgui.ListItem(path=mediaurl, thumbnailImage=item.thumbnail)
+    set_infolabels(xlistitem, item)
 
     # se lanza el reproductor
     set_player(item, xlistitem, mediaurl, view, strm)
 
     # si es un archivo de la biblioteca enviar a marcar como visto
-    if (strm or item.strm_path):
+    if strm or item.strm_path:
         from platformcode import library
         library.mark_auto_as_watched(item)
-
-
-def get_info_video(item, mediaurl, strm):
-    logger.info("pelisalacarta.platformcode.platformtools get_info_video")
-    # Obtención datos de la Biblioteca (solo strms que estén en la biblioteca)
-    #logger.debug("item:\n" + item.tostring('\n'))
-    '''
-    if strm:
-        #xlistitem = get_library_info(mediaurl)
-    else:
-        play_title = item.fulltitle
-        play_thumbnail = item.thumbnail
-        play_plot = item.plot
-
-        if item.hasContentDetails == "true":
-            play_title = item.contentTitle
-            play_thumbnail = item.contentThumbnail
-            play_plot = item.contentPlot
-
-        try:
-            xlistitem = xbmcgui.ListItem(play_title, iconImage="DefaultVideo.png", thumbnailImage=play_thumbnail,
-                                         path=mediaurl)
-        except:
-            xlistitem = xbmcgui.ListItem(play_title, iconImage="DefaultVideo.png", thumbnailImage=play_thumbnail)
-
-        xlistitem.setInfo("video", {"Title": play_title, "Plot": play_plot, "Studio": item.channel,
-                                    "Genre": item.category})
-
-        set_infolabels(xlistitem, item)
-    '''
-    xlistitem = xbmcgui.ListItem(path= mediaurl,thumbnailImage=item.thumbnail)
-    set_infolabels(xlistitem, item)
-    return xlistitem
 
 
 def get_seleccion(default_action, opciones, seleccion, video_urls):
@@ -516,7 +478,7 @@ def show_channel_settings(list_controls=None, dict_values=None, caption="", call
     @rtype: SettingsWindow
     """
     from xbmc_config_menu import SettingsWindow
-    return SettingsWindow("ChannelSettings.xml", config.get_runtime_path())\
+    return SettingsWindow("ChannelSettings.xml", config.get_runtime_path()) \
         .start(list_controls=list_controls, dict_values=dict_values, title=caption, callback=callback, item=item,
                custom_button=custom_button)
 
@@ -613,7 +575,7 @@ def alert_unsopported_server():
 
 def handle_wait(time_to_wait, title, text):
     logger.info("handle_wait(time_to_wait=%d)" % time_to_wait)
-    espera = dialog_progress(' '+title, "")
+    espera = dialog_progress(' ' + title, "")
 
     secs = 0
     increment = int(100 / time_to_wait)
@@ -621,10 +583,10 @@ def handle_wait(time_to_wait, title, text):
     cancelled = False
     while secs < time_to_wait:
         secs += 1
-        percent = increment*secs
+        percent = increment * secs
         secs_left = str((time_to_wait - secs))
-        remaining_display = ' Espera '+secs_left+' segundos para que comience el vídeo...'
-        espera.update(percent, ' '+text, remaining_display)
+        remaining_display = ' Espera ' + secs_left + ' segundos para que comience el vídeo...'
+        espera.update(percent, ' ' + text, remaining_display)
         xbmc.sleep(1000)
         if espera.iscanceled():
             cancelled = True
@@ -640,7 +602,7 @@ def handle_wait(time_to_wait, title, text):
 
 def get_dialogo_opciones(item, default_action, strm):
     logger.info("platformtools get_dialogo_opciones")
-    #logger.debug(item.tostring('\n'))
+    # logger.debug(item.tostring('\n'))
     from core import servertools
 
     opciones = []
@@ -690,7 +652,7 @@ def get_dialogo_opciones(item, default_action, strm):
                 opciones.append(config.get_localized_string(30158))
 
         if default_action == "3":
-            seleccion = len(opciones)-1
+            seleccion = len(opciones) - 1
 
         # Busqueda de trailers en youtube
         if item.channel not in ["Trailer", "ecarteleratrailers"]:
@@ -721,7 +683,7 @@ def get_dialogo_opciones(item, default_action, strm):
 
 def set_opcion(item, seleccion, opciones, video_urls):
     logger.info("platformtools set_opcion")
-    #logger.debug(item.tostring('\n'))
+    # logger.debug(item.tostring('\n'))
     salir = False
     # No ha elegido nada, lo más probable porque haya dado al ESC
     # TODO revisar
@@ -730,17 +692,16 @@ def set_opcion(item, seleccion, opciones, video_urls):
         listitem = xbmcgui.ListItem(item.title, iconImage="DefaultVideo.png", thumbnailImage=item.thumbnail)
         xbmcplugin.setResolvedUrl(int(sys.argv[1]), False, listitem)
 
-
     # "Enviar a JDownloader"
     if opciones[seleccion] == config.get_localized_string(30158):
         from core import scrapertools
 
         # TODO comprobar que devuelve 'data'
         if item.subtitle != "":
-            data = scrapertools.cachePage(config.get_setting("jdownloader")+"/action/add/links/grabber0/start1/web=" +
+            data = scrapertools.cachePage(config.get_setting("jdownloader") + "/action/add/links/grabber0/start1/web=" +
                                           item.url + " " + item.thumbnail + " " + item.subtitle)
         else:
-            data = scrapertools.cachePage(config.get_setting("jdownloader")+"/action/add/links/grabber0/start1/web=" +
+            data = scrapertools.cachePage(config.get_setting("jdownloader") + "/action/add/links/grabber0/start1/web=" +
                                           item.url + " " + item.thumbnail)
         salir = True
 
@@ -760,7 +721,7 @@ def set_opcion(item, seleccion, opciones, video_urls):
     # "Añadir a favoritos":
     elif opciones[seleccion] == config.get_localized_string(30155):
         from channels import favoritos
-        item.from_channel="favoritos"
+        item.from_channel = "favoritos"
         favoritos.addFavourite(item)
         salir = True
 
@@ -839,8 +800,8 @@ def set_player(item, xlistitem, mediaurl, view, strm):
             xbmc.Player().setSubtitles(item.subtitle)
 
     else:
-        logger.info("player_mode="+config.get_setting("player_mode"))
-        logger.info("mediaurl="+mediaurl)
+        logger.info("player_mode=" + config.get_setting("player_mode"))
+        logger.info("mediaurl=" + mediaurl)
         if config.get_setting("player_mode") == "3" or "megacrypter.com" in mediaurl:
             import download_and_play
             download_and_play.download_and_play(mediaurl, "download_and_play.tmp", config.get_setting("downloadpath"))
@@ -855,7 +816,7 @@ def set_player(item, xlistitem, mediaurl, view, strm):
 
             # Reproduce
             playersettings = config.get_setting('player_type')
-            logger.info("pelisalacarta.platformcode.platformstools playersettings="+playersettings)
+            logger.info("pelisalacarta.platformcode.platformstools playersettings=" + playersettings)
 
             if config.get_system_platform() == "xbox":
                 player_type = xbmc.PLAYER_CORE_AUTO
@@ -881,11 +842,11 @@ def set_player(item, xlistitem, mediaurl, view, strm):
             xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, xbmcgui.ListItem(path=mediaurl))
 
         elif config.get_setting("player_mode") == "2":
-            xbmc.executebuiltin("PlayMedia("+mediaurl+")")
+            xbmc.executebuiltin("PlayMedia(" + mediaurl + ")")
 
     # TODO MIRAR DE QUITAR VIEW
     if item.subtitle != "" and view:
-        logger.info("Subtítulos externos: "+item.subtitle)
+        logger.info("Subtítulos externos: " + item.subtitle)
         xbmc.Player().setSubtitles(item.subtitle)
 
 
@@ -972,7 +933,6 @@ def play_torrent(item, xlistitem, mediaurl):
                     playlist.add(videourl, xlistitem)
                     xbmc_player = xbmc.Player()
                     xbmc_player.play(playlist)
-
 
                     # Marcamos como reproducido para que no se vuelva a iniciar
                     played = True

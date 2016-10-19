@@ -14,7 +14,7 @@
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
 	<version>7</version>
 	<date>19/10/2016</date>
-	<changes>Corregidos errores.</changes>
+	<changes>Corregidos errores, mejoras en visualización.</changes>
 
 	<categories>
 		<category>serie</category>

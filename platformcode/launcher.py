@@ -134,7 +134,6 @@ def run():
             play_from_library(item)
             return
 
-
         # Action in certain channel specified in "action" and "channel" parameters
         else:
 
@@ -163,13 +162,15 @@ def run():
             channel_file = os.path.join(config.get_runtime_path(), 'channels', item.channel+".py")
             logger.info("pelisalacarta.platformcode.launcher channel_file=%s" % channel_file)
 
+            channel = None
+
             if item.channel in ["personal", "personal2", "personal3", "personal4", "personal5"]:
                 import channels.personal as channel
 
             elif os.path.exists(channel_file):
                 try:
                     channel = __import__('channels.%s' % item.channel, fromlist=["channels.%s" % item.channel])
-                except:
+                except ImportError:
                     exec "import channels."+item.channel+" as channel"
 
             logger.info("pelisalacarta.platformcode.launcher running channel "+channel.__name__+" "+channel.__file__)
@@ -177,17 +178,17 @@ def run():
             # Special play action
             if item.action == "play":
                 logger.info("pelisalacarta.platformcode.launcher play")
-                #logger.debug("item_toPlay: " + "\n" + item.tostring('\n'))
+                # logger.debug("item_toPlay: " + "\n" + item.tostring('\n'))
 
                 # First checks if channel has a "play" function
                 if hasattr(channel, 'play'):
                     logger.info("pelisalacarta.platformcode.launcher executing channel 'play' method")
                     itemlist = channel.play(item)
-                    isFavourite = item.isFavourite
+                    b_favourite = item.isFavourite
                     # Play should return a list of playable URLS
                     if len(itemlist) > 0:
                         item = itemlist[0]
-                        if isFavourite:
+                        if b_favourite:
                             item.isFavourite = True
                         platformtools.play_video(item)
 
@@ -222,7 +223,6 @@ def run():
 
                 platformtools.render_items(itemlist, item)
 
-
             # Special action for adding a movie to the library
             elif item.action == "add_pelicula_to_library":
                 library.add_pelicula_to_library(item)
@@ -242,6 +242,7 @@ def run():
                 tecleado = platformtools.dialog_input("")
                 if tecleado is not None:
                     tecleado = tecleado.replace(" ", "+")
+                    # TODO revisar 'personal.py' porque no tiene función search y daría problemas
                     itemlist = channel.search(item, tecleado)
                 else:
                     itemlist = []
@@ -260,9 +261,10 @@ def run():
 
         # Grab inner and third party errors
         if hasattr(e, 'reason'):
-            logger.info("pelisalacarta.platformcode.launcher Razon del error, codigo: "+str(e.reason[0])+", Razon: "+str(e.reason[1]))
-            texto = config.get_localized_string(30050) # "No se puede conectar con el sitio web"
-            platformtools.dialog_ok ("plugin", texto)
+            logger.info("pelisalacarta.platformcode.launcher Razon del error, codigo: "+str(e.reason[0])+", Razon: " +
+                        str(e.reason[1]))
+            texto = config.get_localized_string(30050)  # "No se puede conectar con el sitio web"
+            platformtools.dialog_ok("plugin", texto)
 
         # Grab server response errors
         elif hasattr(e, 'code'):
@@ -278,7 +280,8 @@ def run():
         canal = scrapertools.find_single_match(traceback.format_exc(), patron)
         
         try:
-            xbmc_version = int(xbmc.getInfoLabel( "System.BuildVersion" ).split(".", 1)[0])
+            import xbmc
+            xbmc_version = int(xbmc.getInfoLabel("System.BuildVersion").split(".", 1)[0])
             if xbmc_version > 13:
                 log_name = "kodi.log"
             else:
@@ -362,15 +365,18 @@ def filtered_servers(itemlist):
 
 
 def play_from_library(item):
-    '''
-        Los .strm al reproducirlos desde kodi, este espera que sea un archivo "reproducible" asi que no puede contener mas items, como mucho se puede colocar
-        un dialogo de seleccion.
-        Esto lo solucionamos "engañando a kodi" y haciendole creer que se ha reproducido algo, asi despues mediante "Container.Update()" cargamos el strm como
-        si un item desde dentro de pelisalacarta se tratara, quitando todas las limitaciones y permitiendo reproducir mediante la funcion general sin tener
-        que crear nuevos metodos para la biblioteca
-    '''
+    """
+        Los .strm al reproducirlos desde kodi, este espera que sea un archivo "reproducible" asi que no puede contener
+        más items, como mucho se puede colocar un dialogo de seleccion.
+        Esto lo solucionamos "engañando a kodi" y haciendole creer que se ha reproducido algo, asi despues mediante
+        "Container.Update()" cargamos el strm como si un item desde dentro de pelisalacarta se tratara, quitando todas
+        las limitaciones y permitiendo reproducir mediante la funcion general sin tener que crear nuevos métodos para
+        la biblioteca.
+        @type item: item
+        @param item: elemento con información
+    """
     logger.info("pelisalacarta.platformcode.launcher play_from_library")
-    #logger.debug("item: \n" + item.tostring('\n'))
+    # logger.debug("item: \n" + item.tostring('\n'))
 
     import xbmcgui
     import xbmcplugin
@@ -388,16 +394,3 @@ def play_from_library(item):
     # y volvemos a lanzar kodi
     xbmc.executebuiltin("Container.Update(" + sys.argv[0] + "?" + item.tourl() + ")")
     return
-
-
-
-
-
-
-
-
-
-
-
-
-

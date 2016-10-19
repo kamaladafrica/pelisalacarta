@@ -41,7 +41,7 @@ def text2filename(text):
                  'é': 'e', 'è': 'e', 'ë': 'e', 'ê': 'e',
                  'í': 'i', 'ì': 'i', 'ï': 'i', 'î': 'i',
                  'ó': 'o', 'ò': 'o', 'ö': 'o', 'ô': 'o',
-                 'ú': 'u', 'ù': 'u', 'ü': 'u', 'û': 'u'} #, 'ç':'c', 'ñ':'n'}
+                 'ú': 'u', 'ù': 'u', 'ü': 'u', 'û': 'u'}  # , 'ç':'c', 'ñ':'n'}
     for i, j in dict_char.iteritems():
         filename = filename.replace(i, j)
 
@@ -62,7 +62,7 @@ def remove_chars(path):
     if path.lower().startswith("smb://"):
         import re
         if re.search(r'(?i)smb://([^\:]+)\:([^\@]+)@', path):
-            user, path = path.split("@",1)
+            user, path = path.split("@", 1)
             return "smb://" + user + "@" + ''.join([c for c in path if c not in chars])
         else:
             path = path[6:]
@@ -129,11 +129,11 @@ def read(path, linea_inicio=0, total_lineas=None):
     Lee el contenido de un archivo y devuelve los datos
     @param path: ruta del fichero
     @type path: str
-    @:param linea_inicio: primera linea a leer del fichero
-    @:type linea_inicio: int positivo
-    @:param total_lineas: numero maximo de lineas a leer. Si es None o 0 o superior al total de lineas se leera el
+    @param linea_inicio: primera linea a leer del fichero
+    @type linea_inicio: int positivo
+    @param total_lineas: numero maximo de lineas a leer. Si es None, 0 o superior al total de lineas se leera el
         fichero hasta el final.
-    @:type total_lineas: int positivo
+    @type total_lineas: int positivo
     @rtype: str
     @return: datos que contiene el fichero
     """
@@ -141,7 +141,8 @@ def read(path, linea_inicio=0, total_lineas=None):
     data = ""
     n_line = 0
     line_count = 0
-    if total_lineas <= 0: total_lineas = None
+    if total_lineas <= 0:
+        total_lineas = None
 
     if path.lower().startswith("smb://"):
         from sambatools.smb.smb_structs import OperationFailure
@@ -153,7 +154,8 @@ def read(path, linea_inicio=0, total_lineas=None):
                     data += line
                     line_count += 1
                 n_line += 1
-                if total_lineas is not None and line_count == int(total_lineas): break
+                if total_lineas is not None and line_count == int(total_lineas):
+                    break
             f.close()
 
         except OperationFailure:
@@ -167,7 +169,8 @@ def read(path, linea_inicio=0, total_lineas=None):
                     data += line
                     line_count += 1
                 n_line += 1
-                if total_lineas is not None and line_count == int(total_lineas): break
+                if total_lineas is not None and line_count == int(total_lineas):
+                    break
             f.close()
 
         except EnvironmentError:
@@ -417,7 +420,7 @@ def rmdir(path):
     return True
 
 
-def mkdir(path, respect=True):
+def mkdir(path):
     """
     Crea un directorio
     @param path: ruta a crear
@@ -449,25 +452,25 @@ def mkdir(path, respect=True):
     return True
 
 
-def normalize(s, respect=True):
-    """
-    Convierte a unicode las tildes de una cadena o las elimina.
-    @param s: cadena a convertir
-    @type s: str
-    @param respect: valor que especifica el tipo de formulario, si conversa los caracteres originales
-    @bool respect: bool
-    @rtype: str
-    @return: devuelve la conversión
-    """
-    if respect:
-        form = "NFC"
-    else:
-        form = "NFD"
-
-    import unicodedata
-    if not isinstance(s, unicode):
-        s = s.decode("UTF-8")
-    return ''.join((c for c in unicodedata.normalize(form, s) if unicodedata.category(c) != 'Mn'))
+# def normalize(s, respect=True):
+#     """
+#     Convierte a unicode las tildes de una cadena o las elimina.
+#     @param s: cadena a convertir
+#     @type s: str
+#     @param respect: valor que especifica el tipo de formulario, si conversa los caracteres originales
+#     @bool respect: bool
+#     @rtype: str
+#     @return: devuelve la conversión
+#     """
+#     if respect:
+#         form = "NFC"
+#     else:
+#         form = "NFD"
+#
+#     import unicodedata
+#     if not isinstance(s, unicode):
+#         s = s.decode("UTF-8")
+#     return ''.join((c for c in unicodedata.normalize(form, s) if unicodedata.category(c) != 'Mn'))
 
 
 def join(*paths):

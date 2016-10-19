@@ -29,7 +29,6 @@ import errno
 import math
 import os
 import sys
-import urllib
 import urllib2
 from threading import Thread
 
@@ -39,6 +38,7 @@ from core import filetools
 from core import jsontools
 from core import logger
 from core import scrapertools
+
 try:
     from core import tmdb
 except ImportError:
@@ -59,7 +59,7 @@ xbmc_host = config.get_setting("xbmc_host")
 xbmc_port = int(config.get_setting("xbmc_port"))
 # Base URL of the json RPC calls. For GET calls we append a "request" URI
 # parameter. For POSTs, we add the payload as JSON the the HTTP request body
-xbmc_json_rpc_url = "http://"+xbmc_host+":"+str(xbmc_port)+"/jsonrpc"
+xbmc_json_rpc_url = "http://" + xbmc_host + ":" + str(xbmc_port) + "/jsonrpc"
 
 DEBUG = config.get_setting("debug")
 
@@ -81,24 +81,7 @@ if not filetools.exists(TVSHOWS_PATH):
     logger.info("pelisalacarta.platformcode.library Tvshows path doesn't exist:" + TVSHOWS_PATH)
     filetools.mkdir(TVSHOWS_PATH)
 
-#TVSHOW_FILE = "series.json"
-#TVSHOW_FILE_OLD = "series.xml"
-
 otmdb = None
-
-
-'''
-def is_compatible():
-    """
-    comprueba si la plataforma es xbmc/Kodi, la version es compatible y si está configurada la libreria en Kodi.
-    @rtype:   bool
-    @return:  si es compatible.
-    """
-    logger.info("pelisalacarta.platformcode.library is_compatible")
-    # Versions compatible with JSONRPC v6 (v12 frodo en adelante).
-    version_xbmc = int(xbmc.getInfoLabel("System.BuildVersion").split(".", 1)[0])
-    return version_xbmc > 11
-'''
 
 
 def save_library_movie(item):
@@ -114,7 +97,7 @@ def save_library_movie(item):
     @return:  el número de elementos fallidos o -1 si ha fallado todo
     """
     logger.info("pelisalacarta.platformcode.library save_library_movie")
-    #logger.debug(item.tostring('\n'))
+    # logger.debug(item.tostring('\n'))
     insertados = 0
     sobreescritos = 0
     fallidos = 0
@@ -144,11 +127,12 @@ def save_library_movie(item):
     #  tmdb_return = False: Un item sin información de la peli (se ha dado a cancelar en la ventana)
     #  item.infoLabels['imdb_id'] == "" : No se ha encontrado el identificador de IMDB necesario para continuar, salimos
     if not tmdb_return or not item.infoLabels['imdb_id']:
-        # TODO de momento si no hay resultado no añadimos nada, aunq podriamos abrir un cuadro para introducir el identificador/nombre a mano
+        # TODO de momento si no hay resultado no añadimos nada,
+        # aunq podriamos abrir un cuadro para introducir el identificador/nombre a mano
         logger.debug("NO ENCONTRADO EN TMDB O NO TIENE IMDB_ID")
         return 0, 0, -1
 
-    id = item.infoLabels['imdb_id']
+    _id = item.infoLabels['imdb_id']
 
     # progress dialog
     p_dialog = platformtools.dialog_progress('pelisalacarta', 'Añadiendo película...')
@@ -157,12 +141,12 @@ def save_library_movie(item):
 
     for raiz, subcarpetas, ficheros in filetools.walk(MOVIES_PATH):
         for c in subcarpetas:
-            if c.endswith("[%s]" %id):
+            if c.endswith("[%s]" % _id):
                 path = filetools.join(raiz, c)
                 break
 
     if not path:
-        path = filetools.join(MOVIES_PATH, ("%s [%s]" % (base_name, id)).strip())
+        path = filetools.join(MOVIES_PATH, ("%s [%s]" % (base_name, _id)).strip())
         logger.info("pelisalacarta.platformcode.library save_library_movie Creando directorio pelicula:" + path)
         try:
             filetools.mkdir(path)
@@ -171,29 +155,28 @@ def save_library_movie(item):
                 raise
 
     # Crear base_name.strm con un item para ir a get_canales si no existe
-    strm_path = filetools.join(path, "%s.strm" %base_name)
-    nfo_path = filetools.join(path, "%s [%s].nfo" % (base_name, id))
+    strm_path = filetools.join(path, "%s.strm" % base_name)
+    nfo_path = filetools.join(path, "%s [%s].nfo" % (base_name, _id))
     if not filetools.exists(strm_path):
-        item_strm = item.clone(channel='biblioteca', action='play_from_library', strm_path= strm_path.replace(MOVIES_PATH,""),
-                               contentType='movie', infoLabels={'title': item.contentTitle})
+        item_strm = item.clone(channel='biblioteca', action='play_from_library',
+                               strm_path=strm_path.replace(MOVIES_PATH, ""), contentType='movie',
+                               infoLabels={'title': item.contentTitle})
 
-        if filetools.write(strm_path, '%s?%s' %(addon_name, item_strm.tourl())):
-            #filetools.write(strm_path + ".debug", '%s?%s' % (addon_name, item_strm.tojson())) # FOR DEBUG
+        if filetools.write(strm_path, '%s?%s' % (addon_name, item_strm.tourl())):
             # Crear base_name.nfo si no existe con la url_scraper, info de la pelicula y marcas de vista
             if not filetools.exists(nfo_path):
-                url_scraper = "https://www.themoviedb.org/movie/%s\n" %item.infoLabels['tmdb_id']
-                item_nfo = Item(title = item.contentTitle, channel = "biblioteca", action = 'findvideos',
-                                library_playcounts = {"%s [%s]" % (base_name, id): 0}, infoLabels= item.infoLabels,
+                url_scraper = "https://www.themoviedb.org/movie/%s\n" % item.infoLabels['tmdb_id']
+                item_nfo = Item(title=item.contentTitle, channel="biblioteca", action='findvideos',
+                                library_playcounts={"%s [%s]" % (base_name, _id): 0}, infoLabels=item.infoLabels,
                                 strm_path=strm_path.replace(MOVIES_PATH, ""))
 
                 if not filetools.write(nfo_path, url_scraper + item_nfo.tojson()):
                     # Si no se puede crear base_name.nfo borramos base_name.strm
                     filetools.remove(strm_path)
 
-
     # Solo si existen base_name.nfo y base_name.strm continuamos
     if filetools.exists(nfo_path) and filetools.exists(strm_path):
-        json_path = filetools.join(path, ("%s [%s].json" %(base_name, item.channel)).lower())
+        json_path = filetools.join(path, ("%s [%s].json" % (base_name, item.channel)).lower())
         if filetools.exists(json_path):
             logger.info("pelisalacarta.platformcode.library savelibrary el fichero existe. Se sobreescribe")
             sobreescritos += 1
@@ -205,7 +188,7 @@ def save_library_movie(item):
             p_dialog.close()
 
             # actualizamos la biblioteca de Kodi con la pelicula
-            update(get_library_path_kodi_update(FOLDER_MOVIES, os.path.basename(path) + "/"))
+            update(FOLDER_MOVIES, os.path.basename(path) + "/")
 
             return insertados, sobreescritos, fallidos
 
@@ -232,7 +215,7 @@ def save_library_tvshow(item, episodelist):
     @return:  el número de episodios fallidos o -1 si ha fallado toda la serie
     """
     logger.info("pelisalacarta.platformcode.library save_library_tvshow")
-    #logger.debug(item.tostring('\n'))
+    # logger.debug(item.tostring('\n'))
     path = ""
 
     # Itentamos obtener el titulo correcto:
@@ -255,11 +238,12 @@ def save_library_tvshow(item, episodelist):
     #  tmdb_return = False: Un item sin información de la peli (se ha dado a cancelar en la ventana)
     #  item.infoLabels['imdb_id'] == "" : No se ha encontrado el identificador de IMDB necesario para continuar, salimos
     if not tmdb_return or not item.infoLabels['imdb_id']:
-        # TODO de momento si no hay resultado no añadimos nada, aunq podriamos abrir un cuadro para introducir el identificador/nombre a mano
+        # TODO de momento si no hay resultado no añadimos nada,
+        # aunq podriamos abrir un cuadro para introducir el identificador/nombre a mano
         logger.debug("NO ENCONTRADO EN TMDB O NO TIENE IMDB_ID")
         return 0, 0, -1
 
-    id = item.infoLabels['imdb_id']
+    _id = item.infoLabels['imdb_id']
     if item.infoLabels['title']:
         base_name = item.infoLabels['title']
     else:
@@ -269,12 +253,12 @@ def save_library_tvshow(item, episodelist):
 
     for raiz, subcarpetas, ficheros in filetools.walk(TVSHOWS_PATH):
         for c in subcarpetas:
-            if c.endswith("[%s]" % id):
+            if c.endswith("[%s]" % _id):
                 path = filetools.join(raiz, c)
                 break
 
     if not path:
-        path = filetools.join(TVSHOWS_PATH, ("%s [%s]" %(base_name, id)).strip())
+        path = filetools.join(TVSHOWS_PATH, ("%s [%s]" % (base_name, _id)).strip())
         logger.info("pelisalacarta.platformcode.library save_library_tvshow Creando directorio serie:" + path)
         try:
             filetools.mkdir(path)
@@ -288,10 +272,10 @@ def save_library_tvshow(item, episodelist):
         logger.info("pelisalacarta.platformcode.library save_library_tvshow Creando tvshow.nfo:" + tvshow_path)
         url_scraper = "https://www.themoviedb.org/tv/%s\n" % item.infoLabels['tmdb_id']
 
-        item_tvshow = Item(title = item.contentTitle, channel = "biblioteca", action = "get_temporadas",
-                           fanart = item.infoLabels['fanart'], thumbnail= item.infoLabels['thumbnail'],
-                           infoLabels = item.infoLabels, path = path.replace(TVSHOWS_PATH,""))
-        item_tvshow.active = True # para que se actualice cuando se llame a library_service
+        item_tvshow = Item(title=item.contentTitle, channel="biblioteca", action="get_temporadas",
+                           fanart=item.infoLabels['fanart'], thumbnail=item.infoLabels['thumbnail'],
+                           infoLabels=item.infoLabels, path=path.replace(TVSHOWS_PATH, ""))
+        item_tvshow.active = True  # para que se actualice cuando se llame a library_service
         item_tvshow.library_playcounts = {}
         item_tvshow.library_urls = {item.channel: item.url}
 
@@ -304,7 +288,6 @@ def save_library_tvshow(item, episodelist):
         tvshow_item.library_urls[item.channel] = item.url
         filetools.write(tvshow_path, url_scraper + tvshow_item.tojson())
 
-
     if not episodelist:
         # La lista de episodios esta vacia
         return 0, 0, 0
@@ -312,14 +295,12 @@ def save_library_tvshow(item, episodelist):
     # Guardar los episodios
     insertados, sobreescritos, fallidos = save_library_episodes(path, episodelist, item)
 
-    #TODO si fallidos == -1 podriamos comprobar si es necesario eliminar la serie
-
-
+    # TODO si fallidos == -1 podriamos comprobar si es necesario eliminar la serie
 
     return insertados, sobreescritos, fallidos
 
 
-def save_library_episodes(path, episodelist, serie, silent=False, overwrite= True):
+def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True):
     """
     guarda en la ruta indicada todos los capitulos incluidos en la lista episodelist
     @type path: str
@@ -330,6 +311,8 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite= Tru
     @param serie: serie de la que se van a guardar los episodios
     @type silent: bool
     @param silent: establece si se muestra la notificación
+    @param overwrite: permite sobreescribir los ficheros existentes
+    @type overwrite: bool
     @rtype insertados: int
     @return:  el número de episodios insertados
     @rtype sobreescritos: int
@@ -348,7 +331,7 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite= Tru
     insertados = 0
     sobreescritos = 0
     fallidos = 0
-    news_in_playcounts= {}
+    news_in_playcounts = {}
 
     # Silent es para no mostrar progreso (para library_service)
     if not silent:
@@ -361,7 +344,7 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite= Tru
 
     for i, e in enumerate(episodelist):
         if not silent:
-            p_dialog.update(int(math.ceil((i+1) * t)), 'Añadiendo episodio...', e.title)
+            p_dialog.update(int(math.ceil((i + 1) * t)), 'Añadiendo episodio...', e.title)
 
         # Añade todos menos el que dice "Añadir esta serie..." o "Descargar esta serie..."
         if e.action == "add_serie_to_library" or e.action == "download_all_episodes":
@@ -371,19 +354,20 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite= Tru
             season_episode = scrapertools.get_season_and_episode(e.title.lower())
             e.infoLabels = serie.infoLabels
             e.contentSeason, e.contentEpisodeNumber = season_episode.split("x")
-            season_episode = "%sx%s" %(e.contentSeason, str(e.contentEpisodeNumber).zfill(2))
+            season_episode = "%sx%s" % (e.contentSeason, str(e.contentEpisodeNumber).zfill(2))
         except:
             continue
 
         strm_path = filetools.join(path, "%s.strm" % season_episode)
         if not filetools.exists(strm_path):
             # Si no existe season_episode.strm añadirlo
-            item_strm = e.clone(action='play_from_library', channel='biblioteca', strm_path= strm_path.replace(TVSHOWS_PATH,""), infoLabels={})
+            item_strm = e.clone(action='play_from_library', channel='biblioteca',
+                                strm_path=strm_path.replace(TVSHOWS_PATH, ""), infoLabels={})
             item_strm.contentSeason = e.contentSeason
             item_strm.contentEpisodeNumber = e.contentEpisodeNumber
             item_strm.contentType = e.contentType
             item_strm.contentTitle = season_episode
-            #logger.debug(item_strm.tostring('\n'))
+            # logger.debug(item_strm.tostring('\n'))
 
             filetools.write(strm_path, '%s?%s' % (addon_name, item_strm.tourl()))
             # filetools.write(strm_path + '.debug', '%s?%s' % (addon_name, item_strm.tojson())) # For debug
@@ -392,9 +376,11 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite= Tru
         if not filetools.exists(nfo_path) and e.infoLabels.get("tmdb_id"):
             # Si no existe season_episode.nfo añadirlo
             tmdb.find_and_set_infoLabels_tmdb(e)
-            item_nfo = e.clone(channel="biblioteca", url="",action = 'findvideos', strm_path= strm_path.replace(TVSHOWS_PATH,""))
-            url_scraper = "https://www.themoviedb.org/tv/%s/season/%s/episode/%s\n" %(item_nfo.infoLabels['tmdb_id'],
-                            item_nfo.contentSeason, item_nfo.contentEpisodeNumber)
+            item_nfo = e.clone(channel="biblioteca", url="", action='findvideos',
+                               strm_path=strm_path.replace(TVSHOWS_PATH, ""))
+            url_scraper = "https://www.themoviedb.org/tv/%s/season/%s/episode/%s\n" % (item_nfo.infoLabels['tmdb_id'],
+                                                                                       item_nfo.contentSeason,
+                                                                                       item_nfo.contentEpisodeNumber)
             filetools.write(nfo_path, url_scraper + item_nfo.tojson())
 
         # Solo si existen season_episode.nfo y season_episode.strm continuamos
@@ -432,8 +418,8 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite= Tru
         # Si hay nuevos episodios los marcamos como no vistos en tvshow.nfo ...
         tvshow_path = filetools.join(path, "tvshow.nfo")
         try:
-            url_scraper =filetools.read(tvshow_path,0,1)
-            tvshow_item = Item().fromjson(filetools.read(tvshow_path,1))
+            url_scraper = filetools.read(tvshow_path, 0, 1)
+            tvshow_item = Item().fromjson(filetools.read(tvshow_path, 1))
             tvshow_item.library_playcounts.update(news_in_playcounts)
 
             filetools.write(tvshow_path, url_scraper + tvshow_item.tojson())
@@ -442,19 +428,20 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite= Tru
             fallidos = -1
 
         # ... y actualizamos la biblioteca de Kodi
-        update(get_library_path_kodi_update(FOLDER_TVSHOWS, os.path.basename(path) + "/"))
+        update(FOLDER_TVSHOWS, os.path.basename(path) + "/")
 
     if fallidos == len(episodelist):
         fallidos = -1
 
-    logger.debug("%s [%s]: insertados= %s, sobreescritos= %s, fallidos= %s" %(serie.contentSerieName, serie.channel, insertados, sobreescritos, fallidos))
+    logger.debug("%s [%s]: insertados= %s, sobreescritos= %s, fallidos= %s" %
+                 (serie.contentSerieName, serie.channel, insertados, sobreescritos, fallidos))
     return insertados, sobreescritos, fallidos
 
 
 def mark_auto_as_watched(item):
     def mark_as_watched_subThread(item):
         logger.info("pelisalacarta.platformcode.library mark_as_watched_subThread")
-        #logger.debug("item:\n" + item.tostring('\n'))
+        # logger.debug("item:\n" + item.tostring('\n'))
 
         condicion = int(config.get_setting("watched_setting"))
 
@@ -464,8 +451,9 @@ def mark_auto_as_watched(item):
             tiempo_actual = xbmc.Player().getTime()
             totaltime = xbmc.Player().getTotalTime()
 
+            mark_time = 0
             if condicion == 0:  # '5 minutos'
-                mark_time = 300000 #FOR DEBUG = 30
+                mark_time = 300000  # FOR DEBUG = 30
             elif condicion == 1:  # '30%'
                 mark_time = totaltime * 0.3
             elif condicion == 2:  # '50%'
@@ -473,8 +461,8 @@ def mark_auto_as_watched(item):
             elif condicion == 3:  # '80%'
                 mark_time = totaltime * 0.8
 
-            #logger.debug(str(tiempo_actual))
-            #logger.debug(str(mark_time))
+            # logger.debug(str(tiempo_actual))
+            # logger.debug(str(mark_time))
 
             if tiempo_actual > mark_time:
                 mark_content_as_watched(item, 1)
@@ -496,7 +484,7 @@ def mark_content_as_watched_on_kodi(item, value=1):
     @param value: >0 para visto, 0 para no visto
     """
     logger.info("pelisalacarta.platformcode.library mark_content_as_watched_on_kodi")
-    #logger.debug("item:\n" + item.tostring('\n'))
+    # logger.debug("item:\n" + item.tostring('\n'))
     payload_f = ''
 
     if item.contentType == "movie":
@@ -508,7 +496,7 @@ def mark_content_as_watched_on_kodi(item, value=1):
         data = get_data(payload)
         if 'result' in data:
             for d in data['result']['movies']:
-                if d['file'].replace("/","\\").endswith(item.strm_path.replace("/","\\")):
+                if d['file'].replace("/", "\\").endswith(item.strm_path.replace("/", "\\")):
                     movieid = d['movieid']
                     break
 
@@ -519,13 +507,13 @@ def mark_content_as_watched_on_kodi(item, value=1):
     else:  # item.contentType != 'movie'
         episodeid = 0
         payload = {"jsonrpc": "2.0", "method": "VideoLibrary.GetEpisodes",
-                    "params": {"properties": ["title", "playcount", "showtitle", "file", "tvshowid"]},
-                    "id": 1}
+                   "params": {"properties": ["title", "playcount", "showtitle", "file", "tvshowid"]},
+                   "id": 1}
 
         data = get_data(payload)
         if 'result' in data:
             for d in data['result']['episodes']:
-                if d['file'].replace("/","\\").endswith(item.strm_path.replace("/","\\")):
+                if d['file'].replace("/", "\\").endswith(item.strm_path.replace("/", "\\")):
                     episodeid = d['episodeid']
                     break
 
@@ -533,11 +521,10 @@ def mark_content_as_watched_on_kodi(item, value=1):
             payload_f = {"jsonrpc": "2.0", "method": "VideoLibrary.SetEpisodeDetails", "params": {
                 "episodeid": episodeid, "playcount": value}, "id": 1}
 
-
     if payload_f:
         # Marcar como visto
         data = get_data(payload_f)
-        #logger.debug(str(data))
+        # logger.debug(str(data))
         if data['result'] != 'OK':
             logger.error("ERROR al poner el contenido como visto")
 
@@ -551,7 +538,7 @@ def mark_season_as_watched_on_kodi(item, value=1):
         @param value: >0 para visto, 0 para no visto
         """
     logger.info("pelisalacarta.platformcode.library mark_season_as_watched_on_kodi")
-    #logger.debug("item:\n" + item.tostring('\n'))
+    # logger.debug("item:\n" + item.tostring('\n'))
 
     # Solo podemos marcar la temporada como vista en la BBDD de Kodi si la BBDD es local,
     # en caso de compartir BBDD esta funcionalidad no funcionara
@@ -612,6 +599,7 @@ def execute_sql_kodi(sql):
 
     if file_db:
         logger.debug("Archivo de BD: %s" % file_db)
+        conn = None
         try:
             import sqlite3
             conn = sqlite3.connect(file_db)
@@ -629,6 +617,8 @@ def execute_sql_kodi(sql):
             conn.close()
         except:
             logger.error("Error al ejecutar la consulta sql")
+            if conn:
+                conn.close()
 
     else:
         logger.debug("Base de datos no encontrada")
@@ -643,7 +633,7 @@ def get_data(payload):
     @param payload: data
     :return:
     """
-    logger.info("pelisalacarta.platformcode.library get_data: payload %s" %payload)
+    logger.info("pelisalacarta.platformcode.library get_data: payload %s" % payload)
     # Required header for XBMC JSON-RPC calls, otherwise you'll get a 415 HTTP response code - Unsupported media type
     headers = {'content-type': 'application/json'}
 
@@ -654,12 +644,12 @@ def get_data(payload):
             response = f.read()
             f.close()
 
-            logger.info("pelisalacarta.platformcode.library get_data: response %s" %response)
+            logger.info("pelisalacarta.platformcode.library get_data: response %s" % response)
             data = jsontools.loads(response)
         except Exception, ex:
             template = "An exception of type {0} occured. Arguments:\n{1!r}"
             message = template.format(type(ex).__name__, ex.args)
-            logger.info("pelisalacarta.platformcode.library get_data: error en xbmc_json_rpc_url: %s" %message)
+            logger.info("pelisalacarta.platformcode.library get_data: error en xbmc_json_rpc_url: %s" % message)
             data = ["error"]
     else:
         try:
@@ -671,27 +661,43 @@ def get_data(payload):
                         format(message))
             data = ["error"]
 
-    logger.info("pelisalacarta.platformcode.library get_data: data %s" %data)
+    logger.info("pelisalacarta.platformcode.library get_data: data %s" % data)
 
     return data
 
 
-def update(_path=''):
+def update(content_type=FOLDER_TVSHOWS, folder=""):
     """
-    actualiza la libreria
+    Actualiza la libreria dependiendo del tipo de contenido y la ruta que se le pase.
 
-    @type _path: str
-    @param _path: ruta que hay que actualizar en la libreria
+    @type content_type: str
+    @param content_type: tipo de contenido para actualizar, series o peliculas
+    @type folder: str
+    @param folder: nombre de la carpeta a escanear.
     """
     logger.info("pelisalacarta.platformcode.library update")
+
+    librarypath = config.get_setting("librarypath")
+    if librarypath == "":
+        librarypath = "special://home/userdata/addon_data/plugin.video." + config.PLUGIN_NAME + "/library/" + \
+                      content_type + "/"
+    else:
+        if folder == "":
+            librarypath = ""
+        else:
+            librarypath = filetools.join(librarypath, content_type, folder)
+
+    # logger.info("la ruta es " + librarypath)
+    _path = librarypath
+
     # Se comenta la llamada normal para reutilizar 'payload' dependiendo del modo cliente
-    #xbmc.executebuiltin('UpdateLibrary(video)')
+    # xbmc.executebuiltin('UpdateLibrary(video)')
     if _path:
         payload = {"jsonrpc": "2.0", "method": "VideoLibrary.Scan", "params": {"directory": _path}, "id": 1}
     else:
         payload = {"jsonrpc": "2.0", "method": "VideoLibrary.Scan", "id": 1}
     data = get_data(payload)
-    logger.info("pelisalacarta.platformcode.library update data: %s" %data)
+    logger.info("pelisalacarta.platformcode.library update data: %s" % data)
 
 
 def clean(mostrar_dialogo=False):
@@ -704,7 +710,7 @@ def clean(mostrar_dialogo=False):
     payload = {"jsonrpc": "2.0", "method": "VideoLibrary.Clean", "id": 1,
                "params": {"showdialogs": mostrar_dialogo}}
     data = get_data(payload)
-    logger.info("pelisalacarta.platformcode.library clean data: %s" %data)
+    logger.info("pelisalacarta.platformcode.library clean data: %s" % data)
 
 
 def add_pelicula_to_library(item):
@@ -715,13 +721,14 @@ def add_pelicula_to_library(item):
 
     if fallidos == 0:
         platformtools.dialog_ok(config.get_localized_string(30131), item.title,
-                                config.get_localized_string(30135)) # 'se ha añadido a la biblioteca'
+                                config.get_localized_string(30135))  # 'se ha añadido a la biblioteca'
     else:
-        platformtools.dialog_ok(config.get_localized_string(30131), "ERROR, la pelicula NO se ha añadido a la biblioteca")
+        platformtools.dialog_ok(config.get_localized_string(30131),
+                                "ERROR, la pelicula NO se ha añadido a la biblioteca")
 
 
-def add_serie_to_library(item, channel= None):
-    logger.info("pelisalacarta.platformcode.library add_serie_to_library, show=#"+item.show+"#")
+def add_serie_to_library(item, channel=None):
+    logger.info("pelisalacarta.platformcode.library add_serie_to_library, show=#" + item.show + "#")
     logger.debug(item.tostring('\n'))
     # Esta marca es porque el item tiene algo más aparte en el atributo "extra"
     item.action = item.extra
@@ -737,9 +744,8 @@ def add_serie_to_library(item, channel= None):
     if not channel:
         try:
             channel = __import__('channels.%s' % item.channel, fromlist=["channels.%s" % item.channel])
-        except:
+        except ImportError:
             exec "import channels." + item.channel + " as channel"
-
 
     # Obtiene el listado de episodios
     itemlist = getattr(channel, item.action)(item)
@@ -748,52 +754,28 @@ def add_serie_to_library(item, channel= None):
         platformtools.dialog_ok("Biblioteca", "ERROR, la serie NO se ha añadido a la biblioteca",
                                 "No se ha podido obtener ningun episodio")
         logger.error("La serie %s no se ha podido añadir a la biblioteca. No se ha podido obtener ningun episodio"
-                     %item.show)
+                     % item.show)
         return
 
     insertados, sobreescritos, fallidos = save_library_tvshow(item, itemlist)
 
     if fallidos == -1:
         platformtools.dialog_ok("Biblioteca", "ERROR, la serie NO se ha añadido a la biblioteca")
-        logger.error("La serie %s no se ha podido añadir a la biblioteca" %item.show)
+        logger.error("La serie %s no se ha podido añadir a la biblioteca" % item.show)
 
     elif fallidos > 0:
         platformtools.dialog_ok("Biblioteca", "ERROR, la serie NO se ha añadido completa a la biblioteca")
-        logger.error("No se han podido añadir %s episodios de la serie %s a la biblioteca" %(fallidos, item.show))
+        logger.error("No se han podido añadir %s episodios de la serie %s a la biblioteca" % (fallidos, item.show))
     else:
         platformtools.dialog_ok("Biblioteca", "La serie se ha añadido a la biblioteca")
-        logger.info("[launcher.py] Se han añadido %s episodios de la serie %s a la biblioteca" %(insertados, item.show))
-
-
-def get_library_path_kodi_update(content_type=FOLDER_TVSHOWS, path=""):
-    """
-    devuelve la ruta para kodi hacer el update de la biblioteca
-    @type content_type: str
-    @param content_type: tipo de contenido para actualizar, series o peliculas
-    @type path: str
-    @param path: nombre de la carpeta a escanear.
-    @rtype str
-    @return url para hacer videoScan de kodi.
-    """
-    value = config.get_setting("librarypath")
-    if value == "":
-        value = "special://home/userdata/addon_data/plugin.video." + config.PLUGIN_NAME + "/library/" + content_type + \
-                "/"
-    else:
-        if path == "":
-            value = ""
-        else:
-            value = filetools.join(value, content_type, path)
-
-    logger.info("la ruta es " + value)
-
-    return value
+        logger.info("[launcher.py] Se han añadido %s episodios de la serie %s a la biblioteca" %
+                    (insertados, item.show))
 
 
 # metodos de menu contextual
 def mark_content_as_watched(item, value=1):
     logger.info("pelisalacarta.platformcode.library mark_content_as_watched")
-    #logger.debug("item:\n" + item.tostring('\n'))
+    # logger.debug("item:\n" + item.tostring('\n'))
 
     if filetools.exists(item.nfo):
         url_scraper = filetools.read(item.nfo, 0, 1)
@@ -804,7 +786,8 @@ def mark_content_as_watched(item, value=1):
         else:
             name_file = item.contentTitle
 
-        if not hasattr(it, 'library_playcounts'): it.library_playcounts = {}
+        if not hasattr(it, 'library_playcounts'):
+            it.library_playcounts = {}
         it.library_playcounts.update({name_file: value})
 
         # Guardamos los cambios en item.nfo
@@ -825,12 +808,13 @@ def mark_content_as_watched(item, value=1):
 
 def mark_season_as_watched(item, value=1):
     logger.info("pelisalacarta.platformcode.library mark_season_as_watched")
-    #logger.debug("item:\n" + item.tostring('\n'))
+    # logger.debug("item:\n" + item.tostring('\n'))
     # Obtener el diccionario de episodios marcados
     f = filetools.join(item.path, 'tvshow.nfo')
     url_scraper = filetools.read(f, 0, 1)
     it = Item().fromjson(filetools.read(f, 1))
-    if not hasattr(it, 'library_playcounts'): it.library_playcounts = {}
+    if not hasattr(it, 'library_playcounts'):
+        it.library_playcounts = {}
 
     # Obtenemos los archivos de los episodios
     raiz, carpetas_series, ficheros = filetools.walk(item.path).next()
@@ -845,16 +829,15 @@ def mark_season_as_watched(item, value=1):
                 it.library_playcounts[name_file] = value
                 episodios_marcados += 1
 
-
     if episodios_marcados:
         if int(item.contentSeason) == -1:
-        # Añadimos todas las temporadas al diccionario item.library_playcounts
+            # Añadimos todas las temporadas al diccionario item.library_playcounts
             for k in it.library_playcounts.keys():
                 if k.startswith("season"):
                     it.library_playcounts[k] = value
         else:
             # Añadimos la temporada al diccionario item.library_playcounts
-            it.library_playcounts["season %s" %item.contentSeason] = value
+            it.library_playcounts["season %s" % item.contentSeason] = value
 
         # Guardamos los cambios en tvshow.nfo
         filetools.write(f, url_scraper + it.tojson())
@@ -876,29 +859,3 @@ def mark_tvshow_as_updatable(item, value=True):
     item.active = value
     import xbmc
     xbmc.executebuiltin("Container.Refresh")
-
-
-def delete(item):
-    logger.info("pelisalacarta.platformcode.library delete")
-    #logger.debug("item:\n" + item.tostring('\n'))
-
-    if item.contentType == 'movie':
-        heading = "Eliminar película"
-        new_item = Item(channel="biblioteca", action="peliculas", title="Películas",
-                        category="Biblioteca de películas",
-                        thumbnail="http://media.tvalacarta.info/pelisalacarta/squares/thumb_biblioteca_peliculas.png")
-
-
-    else:
-        heading = "Eliminar serie"
-
-    if platformtools.dialog_yesno(heading,
-                                  "¿Realmente desea eliminar '%s' de su biblioteca?" % item.infoLabels['title']):
-        filetools.rmdirtree(item.path)
-
-        # esperamos 3 segundos para dar tiempo a borrar los ficheros
-        # xbmc.sleep(3000)
-        # TODO arreglar no funciona al limpiar en la biblioteca de Kodi
-        clean()
-        #xbmc.executebuiltin("Container.Refresh")
-        platformtools.itemlist_update(new_item)
