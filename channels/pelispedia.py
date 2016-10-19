@@ -425,7 +425,7 @@ def temporadas(item):
 
 def findvideos(item):
     logger.info("pelisalacarta.channels.pelispedia findvideos")
-
+    logger.debug(item.contentTitle)
     itemlist = []
 
     # Descarga la página
@@ -451,12 +451,14 @@ def findvideos(item):
                 itemlist.append(item.clone(title=title, url=url, action="play"))
         else:
             title = "Ver vídeo en ["+scrapedtitle+"]"
-            itemlist.append(item.clone(title=title, url=scrapedurl, action="play", extra=item.url))
+            new_item = item.clone(title=title, url=scrapedurl, action="play", extra=item.url)
+            itemlist.append(new_item)
 
     # Opción "Añadir esta serie a la biblioteca de XBMC"
     if item.extra == "movies" and config.get_library_support() and len(itemlist) > 0:
         itemlist.append(Item(channel=__channel__, title="Añadir esta película a la biblioteca de XBMC", url=item.url,
-                             action="add_pelicula_to_library", extra="findvideos", fulltitle=item.title, text_color= color2))
+                             infoLabels= item.infoLabels, action="add_pelicula_to_library", extra="findvideos",
+                             fulltitle=item.title, text_color= color2))
 
     return itemlist
 

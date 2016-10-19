@@ -292,7 +292,7 @@ def fichas(item):
 
 def episodios(item):
     logger.info("pelisalacarta.channels.hdfull episodios")
-
+    id = "0"
     itemlist = []
 
     ## Carga estados
@@ -611,12 +611,13 @@ def file_cine_library(item,url_targets):
 
 
 def add_file_cine_library(item):
-    from platformcode import library, xbmctools
+    from platformcode import library
     new_item = item.clone(title=item.show, action="play_from_library")
     library.save_library_movie(new_item)
     itemlist = []
     itemlist.append(Item(title='El vídeo '+item.show+' se ha añadido a la biblioteca'))
-    xbmctools.renderItems(itemlist, "", "", "")
+    # xbmctools.renderItems(itemlist, "", "", "")
+    platformtools.render_items(itemlist, "")
 
     return
 

@@ -22,6 +22,7 @@ try:
 except ImportError:
     try:
         import xbmc
+
         librerias = xbmc.translatePath(os.path.join(config.get_runtime_path(), 'lib'))
     except ImportError:
         xbmc = None
@@ -29,6 +30,24 @@ except ImportError:
 
     sys.path.append(librerias)
     from sambatools import libsmb as samba
+
+
+def text2filename(text):
+    # Eliminamos o sustituimos los caracteres no validos
+
+    filename = text.strip().lower()
+
+    dict_char = {'á': 'a', 'à': 'a', 'ä': 'a', 'â': 'a',
+                 'é': 'e', 'è': 'e', 'ë': 'e', 'ê': 'e',
+                 'í': 'i', 'ì': 'i', 'ï': 'i', 'î': 'i',
+                 'ó': 'o', 'ò': 'o', 'ö': 'o', 'ô': 'o',
+                 'ú': 'u', 'ù': 'u', 'ü': 'u', 'û': 'u'}  # , 'ç':'c', 'ñ':'n'}
+    for i, j in dict_char.iteritems():
+        filename = filename.replace(i, j)
+
+    filename = filter(lambda c: c in "abcçdefghijklmnñopqrstuvwxyz1234567890-_()[]'. ", filename)
+
+    return filename
 
 
 def remove_chars(path):
@@ -41,9 +60,13 @@ def remove_chars(path):
     """
     chars = ":*?<>|"
     if path.lower().startswith("smb://"):
-
-        path = path[6:]
-        return "smb://" + ''.join([c for c in path if c not in chars])
+        import re
+        if re.search(r'(?i)smb://([^\:]+)\:([^\@]+)@', path):
+            user, path = path.split("@", 1)
+            return "smb://" + user + "@" + ''.join([c for c in path if c not in chars])
+        else:
+            path = path[6:]
+            return "smb://" + ''.join([c for c in path if c not in chars])
 
     else:
         if path.find(":\\") == 1:
@@ -101,23 +124,38 @@ def decode(path):
     return path
 
 
-def read(path):
+def read(path, linea_inicio=0, total_lineas=None):
     """
     Lee el contenido de un archivo y devuelve los datos
     @param path: ruta del fichero
     @type path: str
+    @param linea_inicio: primera linea a leer del fichero
+    @type linea_inicio: int positivo
+    @param total_lineas: numero maximo de lineas a leer. Si es None, 0 o superior al total de lineas se leera el
+        fichero hasta el final.
+    @type total_lineas: int positivo
     @rtype: str
     @return: datos que contiene el fichero
     """
     path = encode(path)
     data = ""
+    n_line = 0
+    line_count = 0
+    if total_lineas <= 0:
+        total_lineas = None
+
     if path.lower().startswith("smb://"):
         from sambatools.smb.smb_structs import OperationFailure
 
         try:
-            f = samba.get_file_handle_for_reading(os.path.basename(path), os.path.dirname(path)).read()
+            f = samba.get_file_handle_for_reading(os.path.basename(path), os.path.dirname(path))
             for line in f:
-                data += line
+                if n_line >= linea_inicio:
+                    data += line
+                    line_count += 1
+                n_line += 1
+                if total_lineas is not None and line_count == int(total_lineas):
+                    break
             f.close()
 
         except OperationFailure:
@@ -127,10 +165,16 @@ def read(path):
         try:
             f = open(path, "rb")
             for line in f:
-                data += line
+                if n_line >= linea_inicio:
+                    data += line
+                    line_count += 1
+                n_line += 1
+                if total_lineas is not None and line_count == int(total_lineas):
+                    break
             f.close()
+
         except EnvironmentError:
-            logger.info("pelisalacarta.core.filetools read: ERROR al leer el archivo: {0}".format(path))
+            logger.info("pelisalacarta.core.filetools read: ERROR al leer el archivo: %s" % path)
 
     return data
 
@@ -184,7 +228,6 @@ def open_for_reading(path):
     """
     path = encode(path)
     if path.lower().startswith("smb://"):
-
         return samba.get_file_handle_for_reading(os.path.basename(path), os.path.dirname(path))
     else:
         return open(path, "rb")
@@ -197,14 +240,32 @@ def rename(path, new_name):
     @type path: str
     @param new_name: nuevo nombre
     @type new_name: str
+    @rtype: bool
+    @return: devuelve False en caso de error
     """
     path = encode(path)
     if path.lower().startswith("smb://"):
         new_name = encode(new_name, True)
-        samba.rename(os.path.basename(path), new_name, os.path.dirname(path))
+        try:
+            samba.rename(os.path.basename(path), new_name, os.path.dirname(path))
+        except:
+            import traceback
+            logger.info(
+                "pelisalacarta.core.filetools mkdir: Error al renombrar el archivo o carpeta" + traceback.format_exc())
+            platformtools.dialog_notification("Error al renombrar", path)
+            return False
     else:
         new_name = encode(new_name, False)
-        os.rename(path, os.path.join(os.path.dirname(path), new_name))
+        try:
+            os.rename(path, os.path.join(os.path.dirname(path), new_name))
+        except OSError:
+            import traceback
+            logger.info(
+                "pelisalacarta.core.filetools mkdir: Error al renombrar el archivo o carpeta" + traceback.format_exc())
+            platformtools.dialog_notification("Error al renombrar", path)
+            return False
+
+    return True
 
 
 def exists(path):
@@ -281,12 +342,28 @@ def remove(path):
     Elimina un archivo
     @param path: ruta del fichero a eliminar
     @type path: str
+    @rtype: bool
+    @return: devuelve False en caso de error
     """
     path = encode(path)
     if path.lower().startswith("smb://"):
-        samba.delete_files(os.path.basename(path), os.path.dirname(path))
+        try:
+            samba.delete_files(os.path.basename(path), os.path.dirname(path))
+        except:
+            import traceback
+            logger.info("pelisalacarta.core.filetools mkdir: Error al eliminar el archivo " + traceback.format_exc())
+            platformtools.dialog_notification("Error al eliminar el archivo", path)
+            return False
     else:
-        os.remove(path)
+        try:
+            os.remove(path)
+        except OSError:
+            import traceback
+            logger.info("pelisalacarta.core.filetools mkdir: Error al eliminar el archivo " + traceback.format_exc())
+            platformtools.dialog_notification("Error al eliminar el archivo", path)
+            return False
+
+    return True
 
 
 def rmdirtree(path):
@@ -294,16 +371,27 @@ def rmdirtree(path):
     Elimina un directorio y su contenido
     @param path: ruta a eliminar
     @type path: str
+    @rtype: bool
+    @return: devuelve False en caso de error
     """
 
     path = encode(path)
-    # TODO mirar deltree para samba
     if path.lower().startswith("smb://"):
-        # samba.delete_directory(os.path.basename(path), os.path.dirname(path))
-        pass
+        try:
+            for raiz, subcarpetas, ficheros in walk(path, topdown=False):
+                samba.delete_files(ficheros, raiz)
+                for s in subcarpetas:
+                    samba.delete_directory(s, raiz)
+        except:
+            pass
     else:
         import shutil
         shutil.rmtree(path, ignore_errors=True)
+
+    if exists(path):  # No se ha eliminado
+        return False
+
+    return True
 
 
 def rmdir(path):
@@ -311,21 +399,40 @@ def rmdir(path):
     Elimina un directorio
     @param path: ruta a eliminar
     @type path: str
+    @rtype: bool
+    @return: devuelve False en caso de error
     """
     path = encode(path)
+
     if path.lower().startswith("smb://"):
-        samba.delete_directory(os.path.basename(path), os.path.dirname(path))
+        try:
+            samba.delete_directory(os.path.basename(path), os.path.dirname(path))
+        except:
+            import traceback
+            logger.info("pelisalacarta.core.filetools mkdir: Error al eliminar el directorio " + traceback.format_exc())
+            platformtools.dialog_notification("Error al eliminar el directorio", path)
+            return False
     else:
-        os.rmdir(path)
+        try:
+            os.rmdir(path)
+        except OSError:
+            import traceback
+            logger.info("pelisalacarta.core.filetools mkdir: Error al eliminar el directorio " + traceback.format_exc())
+            platformtools.dialog_notification("Error al eliminar el directorio", path)
+            return False
+
+    return True
 
 
-def mkdir(path, respect=True):
+def mkdir(path):
     """
     Crea un directorio
     @param path: ruta a crear
     @type path: str
+    @rtype: bool
+    @return: devuelve False en caso de error
     """
-    logger.info("pelisalacarta.core.filetools mkdir "+path)
+    logger.info("pelisalacarta.core.filetools mkdir " + path)
 
     path = encode(path)
     if path.lower().startswith("smb://"):
@@ -333,37 +440,41 @@ def mkdir(path, respect=True):
             samba.create_directory(os.path.basename(path), os.path.dirname(path))
         except gaierror:
             import traceback
-            logger.info("pelisalacarta.core.filetools mkdir: Error al crear la ruta "+traceback.format_exc())
+            logger.info("pelisalacarta.core.filetools mkdir: Error al crear la ruta " + traceback.format_exc())
             platformtools.dialog_notification("Error al crear la ruta", path)
+            return False
     else:
         try:
-            path = normalize(path, respect)
+            # path = normalize(path, respect)
             os.mkdir(path)
         except OSError:
             import traceback
-            logger.info("pelisalacarta.core.filetools mkdir: Error al crear la ruta "+traceback.format_exc())
+            logger.info("pelisalacarta.core.filetools mkdir: Error al crear la ruta " + traceback.format_exc())
             platformtools.dialog_notification("Error al crear la ruta", path)
+            return False
+
+    return True
 
 
-def normalize(s, respect=True):
-    """
-    Convierte a unicode las tildes de una cadena o las elimina.
-    @param s: cadena a convertir
-    @type s: str
-    @param respect: valor que especifica el tipo de formulario, si conversa los caracteres originales
-    @bool respect: bool
-    @rtype: str
-    @return: devuelve la conversión
-    """
-    if respect:
-        form = "NFC"
-    else:
-        form = "NFD"
-
-    import unicodedata
-    if not isinstance(s, unicode):
-        s = s.decode("UTF-8")
-    return ''.join((c for c in unicodedata.normalize(form, s) if unicodedata.category(c) != 'Mn'))
+# def normalize(s, respect=True):
+#     """
+#     Convierte a unicode las tildes de una cadena o las elimina.
+#     @param s: cadena a convertir
+#     @type s: str
+#     @param respect: valor que especifica el tipo de formulario, si conversa los caracteres originales
+#     @bool respect: bool
+#     @rtype: str
+#     @return: devuelve la conversión
+#     """
+#     if respect:
+#         form = "NFC"
+#     else:
+#         form = "NFD"
+#
+#     import unicodedata
+#     if not isinstance(s, unicode):
+#         s = s.decode("UTF-8")
+#     return ''.join((c for c in unicodedata.normalize(form, s) if unicodedata.category(c) != 'Mn'))
 
 
 def join(*paths):
@@ -440,6 +551,33 @@ def listdir(path):
         return decode(os.listdir(path))
 
 
+def split(path):
+    """
+    Devuelve una tupla formada por el directorio y el nombre del fichero de una ruta
+    @param path: ruta
+    @type path: str
+    @return: (dirname, basename)
+    @rtype: tuple
+    """
+    if path.lower().startswith("smb://"):
+        if '/' not in path[6:]:
+            path = path.replace("smb://", "smb:///", 1)
+        return path.rsplit('/', 1)
+    else:
+        return os.path.split(path)
+
+
+def basename(path):
+    """
+    Devuelve el nombre del fichero de una ruta
+    @param path: ruta
+    @type path: str
+    @return: fichero de la ruta
+    @rtype: str
+    """
+    return split(path)[1]
+
+
 def dirname(path):
     """
     Devuelve el directorio de una ruta
@@ -448,10 +586,7 @@ def dirname(path):
     @return: directorio de la ruta
     @rtype: str
     """
-    # TODO pendiente parte samba
-    _dir = os.path.dirname(path)
-
-    return _dir
+    return split(path)[0]
 
 
 def remove_tags(title):
