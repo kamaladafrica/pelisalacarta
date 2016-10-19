@@ -153,6 +153,7 @@ def search_cb(item,values=""):
 # y lo pasará en el parámetro "tecleado"
 def search(item, tecleado):
     logger.info("pelisalacarta.channels.buscador search")
+    tecleado = tecleado.replace("+", " ")
     item.category = tecleado
 
     if tecleado != "":
@@ -287,18 +288,13 @@ def do_search(item, categories=[]):
     
 
     #Modo Multi Thread
+    #Usando isAlive() no es necesario try-except, 
+    #ya que esta funcion (a diferencia de is_alive()) 
+    #es compatible tanto con versiones antiguas de python como nuevas
     if multithread :
-        try:
-            pendent =  len([a for a in searches if a.is_alive()])
-        except:
-            pendent =  len([a for a in searches if a.isAlive()])
-
+        pendent =  len([a for a in searches if a.isAlive()])
         while pendent:
-            try:
-                pendent =  len([a for a in searches if a.is_alive()])
-            except:
-                pendent =  len([a for a in searches if a.isAlive()])
-
+            pendent =  len([a for a in searches if a.isAlive()])
             percentage =  (len(searches) - pendent) * 100 / len(searches)
             progreso.update(percentage, "Buscando %s en %d canales..." % (tecleado, len(searches)))
             if progreso.iscanceled(): 

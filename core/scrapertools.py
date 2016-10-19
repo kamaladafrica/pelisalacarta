@@ -330,6 +330,13 @@ def downloadpage(url,post=None,headers=DEFAULT_HEADERS,follow_redirects=True, ti
     logger.info("pelisalacarta.core.scrapertools downloadpage")
     logger.info("pelisalacarta.core.scrapertools url="+url)
 
+    data, _ = downloadpageWithResult(url=url, post=post, headers=headers, follow_redirects=follow_redirects, timeout=timeout, header_to_get=header_to_get)
+    return data
+
+def downloadpageWithResult(url,post=None,headers=DEFAULT_HEADERS,follow_redirects=True, timeout=DEFAULT_TIMEOUT, header_to_get=None):
+    logger.info("pelisalacarta.core.scrapertools downloadpageWithResult")
+    logger.info("pelisalacarta.core.scrapertools url="+url)
+
     if post is not None:
         logger.info("pelisalacarta.core.scrapertools post="+post)
     else:
@@ -344,6 +351,7 @@ def downloadpage(url,post=None,headers=DEFAULT_HEADERS,follow_redirects=True, ti
 
     dominio = urlparse.urlparse(url)[1].replace("www.", "")
     ficherocookies = os.path.join(COOKIES_PATH, dominio + ".dat" )
+    resultCode = 0
     logger.info("pelisalacarta.core.scrapertools ficherocookies="+ficherocookies)
 
     cj = None
@@ -485,12 +493,15 @@ def downloadpage(url,post=None,headers=DEFAULT_HEADERS,follow_redirects=True, ti
         else:
             logger.info("pelisalacarta.core.scrapertools normal")
             data = handle.read()
+
+        resultCode = handle.getcode()
     except urllib2.HTTPError,e:
         import traceback
         logger.info(traceback.format_exc())
         data = e.read()
+        resultCode = e.code
         #logger.info("data="+repr(data))
-        return data
+        return data, resultCode
 
     info = handle.info()
     logger.info("pelisalacarta.core.scrapertools Respuesta")
@@ -525,7 +536,7 @@ def downloadpage(url,post=None,headers=DEFAULT_HEADERS,follow_redirects=True, ti
     fin = time.clock()
     logger.info("pelisalacarta.core.scrapertools Descargado en %d segundos " % (fin-inicio+1))
 
-    return data
+    return data, resultCode
 
 import cookielib
 class MyCookiePolicy(cookielib.DefaultCookiePolicy):

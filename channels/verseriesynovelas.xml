@@ -5,10 +5,10 @@
 	<language>es</language>
 	<update_url></update_url>
 	<active>true</active>
-	<version>4</version>
+	<version>5</version>
 	<adult>false</adult>
-	<date>08/07/2016</date>
-	<changes>Correcciones y adaptacion a la nueva version</changes>
+	<date>11/10/2016</date>
+	<changes>Reparado por cambios en la web, ahora necesita registro</changes>
 	<fanart></fanart>
 	<thumbnail>http://i.imgur.com/ZhQknRE.png</thumbnail>
     <bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/verseriesynovelas.png</bannermenu>
@@ -52,5 +52,22 @@
 		<lvalues>Perfil 3</lvalues>
 		<lvalues>Perfil 2</lvalues>
 		<lvalues>Perfil 1</lvalues>
+	</settings>
+	<settings>
+		<id>verseriesynovelasuser</id>
+		<type>text</type>
+		<label>@30014</label>
+		<enabled>true</enabled>
+		<visible>true</visible>
+		<default></default>
+	</settings>
+	<settings>
+		<id>verseriesynovelaspassword</id>
+		<type>text</type>
+		<hidden>true</hidden>
+		<label>@30015</label>
+		<enabled>!eq(-1,'')</enabled>
+		<visible>true</visible>
+		<default></default>
 	</settings>
 </channel>

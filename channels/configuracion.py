@@ -105,8 +105,11 @@ def updatebiblio(item):
 def menu_addchannels(item):
     logger.info("pelisalacarta.channels.configuracion menu_addchannels")
     itemlist = []
+    itemlist.append(Item(channel=CHANNELNAME, title="# Copia de seguridad automática en caso de sobrescritura", action="", text_color="green"))
     itemlist.append(Item(channel=CHANNELNAME, title="Añadir o actualizar canal", action="addchannel", folder=False))
     itemlist.append(Item(channel=CHANNELNAME, title="Añadir o actualizar conector", action="addchannel", folder=False))
+    itemlist.append(Item(channel=CHANNELNAME, title="Mostrar ruta de carpeta para copias de seguridad", action="backups", folder=False))
+    itemlist.append(Item(channel=CHANNELNAME, title="Eliminar copias de seguridad guardadas", action="backups", folder=False))
 
     return itemlist
 
@@ -114,6 +117,7 @@ def menu_addchannels(item):
 def addchannel(item):
     from platformcode import platformtools
     from core import filetools
+    import time, os
     logger.info("pelisalacarta.channels.configuracion addchannel")
     
     tecleado = platformtools.dialog_input("", "Introduzca la URL")
@@ -137,33 +141,74 @@ def addchannel(item):
     except:
         extension = ""
 
+    files = []
+    zip = False
     if extension == "py" or extension == "xml":
         filename = tecleado.rsplit("/",1)[1]
         localfilename = filetools.join(local_folder, filename)
-        zip = False
+        files.append([tecleado, localfilename, filename])
     else:
-        filename = 'new%s.zip' % info_accion
-        localfilename = filetools.join(config.get_data_path(), filename)
-        zip = True
+        import re
+        from core import scrapertools
+        # Comprueba si la url apunta a una carpeta completa (channels o servers) de github
+        if re.search(r'https://github.com/[^\s]+/'+folder_to_extract, tecleado):
+            try:
+                data = scrapertools.downloadpage(tecleado)
+                matches = scrapertools.find_multiple_matches(data, '<td class="content">.*?href="([^"]+)".*?title="([^"]+)"')
+                for url, filename in matches:
+                    url = "https://raw.githubusercontent.com" + url.replace("/blob/", "/")
+                    localfilename = filetools.join(local_folder, filename)
+                    files.append([url, localfilename, filename])
+            except:
+                import traceback
+                logger.info("Detalle del error: %s" % traceback.format_exc())
+                platformtools.dialog_ok("Error", "La url no es correcta o no está disponible")
+                return
+        else:
+            filename = 'new%s.zip' % info_accion
+            localfilename = filetools.join(config.get_data_path(), filename)
+            files.append([tecleado, localfilename, filename])
+            zip = True
 
     logger.info("pelisalacarta.channels.configuracion localfilename=%s" % localfilename)
     logger.info("pelisalacarta.channels.configuracion descarga fichero...")
     
     try:
+        if len(files) > 1:
+            lista_opciones = ["No", "Sí", "Sí (Sobrescribir todos)"]
+            overwrite_all = False
         from core import downloadtools
-        result = downloadtools.downloadfile(tecleado, localfilename, continuar=False)
-        if result == -3:
-            dyesno = platformtools.dialog_yesno("El archivo ya existe", "Ya existe el %s %s." \
-                                                " ¿Desea sobrescribirlo?" % (info_accion, filename))
-            if dyesno:
-                backup = filetools.join(config.get_data_path(), 'backups')
-                if not filetools.exists(backup):
-                    filetools.mkdir(backup)
-                import shutil
-                shutil.copy2(localfilename, filetools.join(backup, filename))
-                result = downloadtools.downloadfile(tecleado, localfilename, continuar=True)
-            else:
-                return
+        for url, localfilename, filename in files:
+            result = downloadtools.downloadfile(url, localfilename, continuar=False)
+            if result == -3:
+                if len(files) == 1:
+                    dyesno = platformtools.dialog_yesno("El archivo ya existe", "Ya existe el %s %s." \
+                                                        " ¿Desea sobrescribirlo?" % (info_accion, filename))
+                else:
+                    if not overwrite_all:
+                        dyesno = platformtools.dialog_select("El archivo %s ya existe, ¿desea sobrescribirlo?"
+                                                             % filename, lista_opciones)
+                    else:
+                        dyesno = 1
+                # Diálogo cancelado
+                if dyesno == -1:
+                    return
+                # Caso de carpeta github, opción sobrescribir todos
+                elif dyesno == 2:
+                    overwrite_all = True
+                elif dyesno:
+                    hora_folder = "Copia seguridad [%s]" % time.strftime("%d-%m_%H-%M", time.localtime())
+                    backup = filetools.join(config.get_data_path(), 'backups', hora_folder, folder_to_extract)
+                    if not filetools.exists(backup):
+                        os.makedirs(backup)
+                    import shutil
+                    shutil.copy2(localfilename, filetools.join(backup, filename))
+                    result = downloadtools.downloadfile(url, localfilename, continuar=True)
+                else:
+                    if len(files) == 1:
+                        return
+                    else:
+                        continue
     except:
         import traceback
         logger.info("Detalle del error: %s" % traceback.format_exc())
@@ -191,4 +236,31 @@ def addchannel(item):
         filetools.remove(localfilename)
         logger.info("pelisalacarta.channels.configuracion ...fichero borrado")
 
-    platformtools.dialog_ok("Éxito", "%s instalado/actualizado correctamente" % info_accion.capitalize())
+    platformtools.dialog_ok("Éxito", "Actualización/Instalación realizada correctamente")
+
+
+def backups(item):
+    from platformcode import platformtools
+    from core import filetools
+    logger.info("pelisalacarta.channel.configuracion backups")
+
+    ruta = filetools.join(config.get_data_path(), 'backups')
+    ruta_split = ""
+    if "ruta" in item.title:
+        heading = "Ruta de copias de seguridad"
+        if not filetools.exists(ruta):
+            folders = "Carpeta no creada"
+        else:
+            folders = str(len(filetools.listdir(ruta))) + " copia/s de seguridad guardadas"
+        if len(ruta) > 55:
+            ruta_split = ruta[55:]
+            ruta = ruta[:55]
+        platformtools.dialog_ok(heading, ruta, ruta_split, folders)
+    else:
+        if not filetools.exists(ruta):
+            platformtools.dialog_ok("La carpeta no existe", "No hay copias de seguridad guardadas")
+        else:
+            dyesno = platformtools.dialog_yesno("Las copias de seguridad se eliminarán", "¿Está seguro?")
+            if dyesno:
+                import shutil
+                shutil.rmtree(ruta, ignore_errors=True)

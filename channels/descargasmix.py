@@ -227,7 +227,7 @@ def episodios(item):
             title = item.fulltitle+" "+scrapedtitle.strip()
         else:
             title = scrapedtitle.strip()
-        itemlist.append(new_item.clone(action="epienlaces", title=title, extra=scrapedtitle, fulltitle=title))
+        itemlist.append(new_item.clone(action="findvideos", title=title, extra=scrapedtitle, fulltitle=title))
 
     itemlist.sort(key=lambda item: item.title, reverse=True)
     item.plot = scrapertools.find_single_match(data, '<strong>SINOPSIS</strong>:(.*?)</p>')
@@ -350,6 +350,12 @@ def findvideos(item):
             if len(enlaces) > 0:
                 title = "   Ver vídeo en " + enlaces[0][2]
                 itemlist.append(item.clone(action="play", server=enlaces[0][2], title=title, url=enlaces[0][1]))
+    scriptg = scrapertools.find_single_match(data, "<script type='text/javascript'>str='([^']+)'")
+    if scriptg:
+        gvideo = urllib.unquote_plus(scriptg.replace("@", "%"))
+        url = scrapertools.find_single_match(gvideo, 'src="([^"]+)"')
+        if url:
+            itemlist.append(item.clone(action="play", server="directo", url=url, title="   Ver vídeo en Googlevideo (Máxima calidad)", extra=item.url))
 
     #Patron descarga
     patron = '<div class="(?:floatLeft |)double(?:nuevo|)">(.*?)</div>(.*?)' \
@@ -409,12 +415,29 @@ def play(item):
     itemlist = []
     if "enlacesmix.com" in item.url:
         DEFAULT_HEADERS.append(["Referer", item.extra])
+        if not item.url.startswith("http:"):
+            item.url = "http:" + item.url
         data = scrapertools.downloadpage(item.url, headers=DEFAULT_HEADERS)
         item.url = scrapertools.find_single_match(data, 'iframe src="([^"]+)"')
          
         enlaces = servertools.findvideos(data=item.url)[0]
         if len(enlaces) > 0:
             itemlist.append(item.clone(action="play", server=enlaces[2], url=enlaces[1]))
+    elif item.server == "directo":
+        global DEFAULT_HEADERS
+        DEFAULT_HEADERS.append(["Referer", item.extra])
+        data = scrapertools.downloadpage(item.url, headers=DEFAULT_HEADERS)
+        subtitulo = scrapertools.find_single_match(data, "var subtitulo='([^']+)'")
+        DEFAULT_HEADERS[1][1] = item.url
+        calidades = ["1080p", "720p", "480p", "360p"]
+        for i in range(0, len(calidades)):
+            url_redirect = scrapertools.find_single_match(data, "{file:'([^']+)',label:'"+calidades[i]+"'")
+            if url_redirect:
+                url_video = scrapertools.get_header_from_response(url_redirect, header_to_get="location", headers=DEFAULT_HEADERS)
+                if url_video:
+                    url_video = url_video.replace(",", "%2C")
+                    itemlist.append(item.clone(url=url_video, subtitle=subtitulo))
+                    break
     else:
         itemlist.append(item.clone())
     
