@@ -26,52 +26,63 @@
 #------------------------------------------------------------
 
 from core import config
+import inspect
+import os
+import xbmc
+
 loggeractive = (config.get_setting("debug")=="true")
 
-import xbmc
 
 def log_enable(active):
     global loggeractive
     loggeractive = active
 
+
+def encode_log(message):
+    #Unicode to utf8
+    if type(message) == unicode: 
+        message = texto.encode("utf8")
+        
+    #All encodings to utf8
+    elif type(message) == str:
+        message = unicode(message, "utf8", errors="replace").encode("utf8")
+        
+    #Objects to string
+    else:
+        message = repr(message) #or str(message)
+
+    return message
+
+def get_caller(message = None):
+        module=inspect.getmodule(inspect.stack()[2][0]).__name__
+        function = inspect.stack()[2][3]
+        
+        if module == "__main__": module = "pelisalacarta" 
+        else: module = "pelisalacarta." + module
+        if message:
+          if not module in message:
+              if function == "<module>": return module + " " + message
+              else: return module + " [" + function + "] " + message
+          else:
+              return message
+        else:
+          if function == "<module>": return module
+          else: return module + "." + function
+
 def info(texto):
     if loggeractive:
-        try:
-            xbmc.log(texto)
-        except:
-            # FIXME: ¿Esto de que falle al poner un log no se puede resolver con un encode("ascii",errors="ignore") ?
-            validchars = " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!#$%&'()-@[]^_`{}~."
-            stripped = ''.join(c for c in texto if c in validchars)
-            xbmc.log("(stripped) "+stripped)
+        xbmc.log(get_caller(encode_log(texto)), xbmc.LOGNOTICE)
+
 
 def debug(texto):
     if loggeractive:
-        try:
-            import inspect
-            import os
-            last=inspect.stack()[1]
-            modulo= os.path.basename(os.path.splitext(last[1])[0])
-            funcion= last [3]
-            texto= "    [" + modulo + "." + funcion + "] " + texto
-            xbmc.log("######## DEBUG #########")
-            xbmc.log(texto)
-        except:
-            validchars = " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!#$%&'()-@[]^_`{}~."
-            stripped = ''.join(c for c in texto if c in validchars)
-            xbmc.log("(stripped) "+stripped)
+        texto= "    [" + get_caller() + "] " + encode_log(texto)
+        xbmc.log("######## DEBUG #########", xbmc.LOGNOTICE)
+        xbmc.log(texto, xbmc.LOGNOTICE)
+
 
 def error(texto):
     if loggeractive:
-        try:
-            import inspect
-            import os
-            last=inspect.stack()[1]
-            modulo= os.path.basename(os.path.splitext(last[1])[0])
-            funcion= last [3]
-            texto= "    [" + modulo + "." + funcion + "] " + texto
-            xbmc.log("######## ERROR #########")
-            xbmc.log(texto)
-        except:
-            validchars = " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!#$%&'()-@[]^_`{}~."
-            stripped = ''.join(c for c in texto if c in validchars)
-            xbmc.log("(stripped) "+stripped)
+        texto= "    [" + get_caller() + "] " + encode_log(texto)
+        xbmc.log("######## ERROR #########", xbmc.LOGNOTICE)
+        xbmc.log(texto, xbmc.LOGNOTICE)
