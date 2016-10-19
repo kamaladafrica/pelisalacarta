@@ -32,6 +32,13 @@ configuración para mostrar la opción de filtro, actualmente sólo se permite e
 OPCION_FILTRO = config.is_xbmc()
 CONTEXT = ("", "menu_filtro")[OPCION_FILTRO]
 DEBUG = config.get_setting("debug")
+CHANNEL_HOST = 'http://seriesblanco.com'
+CHANNEL_HEADERS = [
+    ['User-Agent', 'Mozilla/5.0'],
+    ['Accept-Encoding', 'gzip, deflate'],
+    ['Referer', CHANNEL_HOST],
+    ['Connection', 'keep-alive']
+]
 
 
 def mainlist(item):
@@ -86,7 +93,7 @@ def search(item, texto):
     if texto != "":
         item.url = urlparse.urljoin(HOST, "/search.php?q1={0}".format(texto))
 
-    data = scrapertools.cache_page(item.url)
+    data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_HEADERS, host=CHANNEL_HOST)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
     data = re.sub(r"<!--.*?-->", "", data)
     data = unicode(data, "iso-8859-1", errors="replace").encode("utf-8")
@@ -130,7 +137,7 @@ def series(item):
     itemlist = []
 
     # Descarga la página
-    data = scrapertools.cache_page(item.url)
+    data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_HEADERS, host=CHANNEL_HOST)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
     data = re.sub(r"<!--.*?-->", "", data)
     data = unicode(data, "iso-8859-1", errors="replace").encode("utf-8")
@@ -155,7 +162,7 @@ def episodios(item):
     itemlist = []
 
     # Descarga la página
-    data = scrapertools.cache_page(item.url)
+    data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_HEADERS, host=CHANNEL_HOST)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
     data = re.sub(r"<!--.*?-->", "", data)
     data = unicode(data, "iso-8859-1", errors="replace").encode("utf-8")
@@ -221,7 +228,7 @@ def episodios(item):
 def parseVideos(item, typeStr, data):
     videoPatternsStr = [
         '<tr.+?<span>(?P<date>.+?)</span>.*?banderas/(?P<language>[^\.]+).+?href="(?P<link>[^"]+).+?servidores/'
-        '(?P<server>[^\.]+).*?</td>.*?<td>.*?<span>(?P<uploader>.+?)</span>.*?<span>(?P<quality>.*?)</span>.*?</tr>',
+        '(?P<server>[^\.]+).*?</td>.*?<td>.*?<span>(?P<uploader>.+?)</span>.*?<span>(?P<quality>.*?)</span>',
         '<tr.+?banderas/(?P<language>[^\.]+).+?<td[^>]*>(?P<date>.+?)</td>.+?href=[\'"](?P<link>[^\'"]+)'
         '.+?servidores/(?P<server>[^\.]+).*?</td>.*?<td[^>]*>.*?<a[^>]+>(?P<uploader>.+?)</a>.*?</td>.*?<td[^>]*>'
         '(?P<quality>.*?)</td>.*?</tr>'
@@ -272,7 +279,7 @@ def findvideos(item):
     logger.info("pelisalacarta.seriesblanco findvideos")
 
     # Descarga la página
-    data = scrapertools.cache_page(item.url)
+    data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_HEADERS, host=CHANNEL_HOST)
 
     online = extractVideosSection(data)
     return parseVideos(item, "Ver", online[0]) + parseVideos(item, "Descargar", online[1])
@@ -282,7 +289,7 @@ def play(item):
     logger.info("pelisalacarta.channels.seriesblanco play url={0}".format(item.url))
 
     if item.url.startswith(HOST):
-        data = scrapertools.cache_page(item.url)
+        data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_HEADERS, host=CHANNEL_HOST)
 
         patron = "<input type='button' value='Ver o Descargar' onclick='window.open\(\"([^\"]+)\"\);'/>"
         url = scrapertools.find_single_match(data, patron)

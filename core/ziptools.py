@@ -77,10 +77,12 @@ class ziptools:
                         if not dyesno:
                             break
                         if backup:
-                            backup = os.path.join(config.get_data_path(), 'backups')
-                            if not os.path.exists(backup):
-                                os.mkdir(backup)
+                            import time
                             import shutil
+                            hora_folder = "Copia seguridad [%s]" % time.strftime("%d-%m_%H-%M", time.localtime())
+                            backup = os.path.join(config.get_data_path(), 'backups', hora_folder, folder_to_extract)
+                            if not os.path.exists(backup):
+                                os.makedirs(backup)
                             shutil.copy2(outfilename, os.path.join(backup, os.path.basename(outfilename)))
                         
                     outfile = open(outfilename, 'wb')
