@@ -305,13 +305,20 @@ def folder_exists(folder, url):
 
 
 def delete_files(_file, url):
-    logger.info("[lib.samba.py] delete_files " + _file)
-
-    if file_exists(_file, url):
+    if type(_file) is list:
         server_name, share_name, path, user, password = parse_url(url)
         remote = connect(server_name, user, password)
-        remote.deleteFiles(share_name, path + _file)
+        for f in _file:
+            logger.info("[lib.samba.py] delete_files " + f)
+            remote.deleteFiles(share_name, path + f)
         remote.close()
+    else:
+        logger.info("[lib.samba.py] delete_files " + _file)
+        if file_exists(_file, url):
+            server_name, share_name, path, user, password = parse_url(url)
+            remote = connect(server_name, user, password)
+            remote.deleteFiles(share_name, path + _file)
+            remote.close()
 
 
 def delete_directory(folder, url):

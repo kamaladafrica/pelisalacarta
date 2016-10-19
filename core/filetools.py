@@ -376,10 +376,14 @@ def rmdirtree(path):
     """
 
     path = encode(path)
-    # TODO mirar deltree para samba
     if path.lower().startswith("smb://"):
-        # samba.delete_directory(os.path.basename(path), os.path.dirname(path))
-        pass
+        try:
+            for raiz, subcarpetas, ficheros in walk(path, topdown=False):
+                samba.delete_files(ficheros, raiz)
+                for s in subcarpetas:
+                    samba.delete_directory(s, raiz)
+        except:
+            pass
     else:
         import shutil
         shutil.rmtree(path, ignore_errors=True)
