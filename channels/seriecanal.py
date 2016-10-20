@@ -149,7 +149,7 @@ def series(item):
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+scrapedthumbnail+"]")
         itemlist.append(item.clone(action="findvideos", title=title, fulltitle=scrapedtitle, url=url,
                                    thumbnail=scrapedthumbnail, plot=scrapedplot, contentTitle=scrapedtitle,
-                                   context="25", show=scrapedtitle))
+                                   context=["buscar_trailer"], show=scrapedtitle, contentType="tvshow"))
 
     try:
         from core import tmdb
@@ -187,7 +187,8 @@ def findvideos(item):
 
         item.infoLabels['episode'] = scrapertools.find_single_match(scrapedtitle, "Episodio (\d+)")
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"]")
-        itemlist.append(item.clone(action="play", title=scrapedtitle, url=scrapedurl, server="torrent"))
+        itemlist.append(item.clone(action="play", title=scrapedtitle, url=scrapedurl, server="torrent",
+                                   contentType="episode"))
 
     #Busca en la seccion online
     data_online = scrapertools.find_single_match(data, "<th>Enlaces de Visionado Online</th>(.*?)</table>")
@@ -203,7 +204,7 @@ def findvideos(item):
             title = "["+server.capitalize()+"]"+" "+scrapedtitle
 
             item.infoLabels['episode'] = scrapertools.find_single_match(scrapedtitle, "Episodio (\d+)")
-            itemlist.append(item.clone(action="play", title=title, url=scrapedurl))
+            itemlist.append(item.clone(action="play", title=title, url=scrapedurl, contentType="episode"))
 
     #Comprueba si hay otras temporadas
     if not "No hay disponible ninguna Temporada adicional" in data:
@@ -219,7 +220,8 @@ def findvideos(item):
             if temporada != "":
                 item.infoLabels['season'] = temporada
                 item.infoLabels['episode'] = ""
-            itemlist.append(item.clone(action="findvideos", title=scrapedtitle, url=url, text_color="red"))
+            itemlist.append(item.clone(action="findvideos", title=scrapedtitle, url=url, text_color="red",
+                                       contentType="season"))
 
     try:
         from core import tmdb

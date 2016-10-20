@@ -123,7 +123,8 @@ def entradas(item):
             thumbnail = scrapedthumbnail.replace("w185", "original")
             if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+thumbnail+"]")
             itemlist.append(item.clone(action="findvideos", title=scrapedtitle, url=scrapedurl, thumbnail=thumbnail,
-                                       contentTitle=scrapedtitle, fulltitle=scrapedtitle, context="05"))
+                                       contentTitle=scrapedtitle, fulltitle=scrapedtitle, context=["buscar_trailer"],
+                                       contentType="movie"))
 
     else:
         # Extrae las entradas
@@ -149,7 +150,8 @@ def entradas(item):
                 thumbnail = scrapedthumbnail.replace("w185", "original")
                 if DEBUG: logger.info("title=["+title+"], url=["+url+"], thumbnail=["+scrapedthumbnail+"]")
                 itemlist.append(item.clone(action="findvideos", title=title, url=url, contentTitle=scrapedtitle,
-                                           fulltitle=scrapedtitle, thumbnail=thumbnail, context="05"))
+                                           fulltitle=scrapedtitle, thumbnail=thumbnail, context=["buscar_trailer"],
+                                           contentType="movie"))
 
     # Extrae la marca de la siguiente página
     next_page = scrapertools.find_single_match(data, '<span class="current">.*?<\/span><a href="([^"]+)"')

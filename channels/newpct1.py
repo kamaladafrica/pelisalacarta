@@ -143,8 +143,17 @@ def listado(item):
         show = title
         if item.extra!="buscar-list":
             title = title + ' ' + calidad
+
+        context_title = scrapertools.find_single_match(url, "http://www.newpct1.com/(.*?)/(.*?)/")
+        context = context_title[0].replace("pelicula","movie").replace("descargar","movie").replace("series","tvshow")
+        context_title = context_title[1].replace("-"," ")
+        if re.search( '\d{4}', context_title[-4:]):
+            context_title = context_title[:-4]
+        elif re.search( '\(\d{4}\)', context_title[-6:]):
+            context_title = context_title[:-6]
             
-        itemlist.append( Item(channel=item.channel, action=action, title=title, url=url, thumbnail=thumbnail, extra=extra, show=show ) )
+        itemlist.append( Item(channel=item.channel, action=action, title=title, url=url, thumbnail=thumbnail, extra=extra, show=show,
+                              contentTitle=context_title, contentType=context, context=["buscar_trailer"]) )
 
     if "pagination" in data:
         patron = '<ul class="pagination">(.*?)</ul>'

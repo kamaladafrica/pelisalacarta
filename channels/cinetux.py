@@ -151,7 +151,8 @@ def peliculas(item):
             "title=[" + scrapedtitle + "], url=[" + scrapedurl + "], thumbnail=[" + scrapedthumbnail + "]")
         new_item = item.clone(action="findvideos", title=scrapedtitle, fulltitle=fulltitle,
                               url=scrapedurl, thumbnail=scrapedthumbnail, infoLabels={},
-                              contentTitle=fulltitle, context="05", viewmode="list")
+                              contentTitle=fulltitle, context=["buscar_trailer"], viewmode="list",
+                              contentType="movie")
         if year != "": new_item.infoLabels['year'] = int(year)
         itemlist.append(new_item)
     try:
@@ -186,7 +187,8 @@ def vistas(item):
             "title=[" + scrapedtitle + "], url=[" + scrapedurl + "], thumbnail=[" + scrapedthumbnail + "]")
         new_item = item.clone(action="findvideos", title=scrapedtitle, fulltitle=scrapedtitle,
                               url=scrapedurl, thumbnail=scrapedthumbnail, infoLabels={},
-                              contentTitle=scrapedtitle, context="05", viewmode="list")
+                              contentTitle=scrapedtitle, context=["buscar_trailer"], viewmode="list",
+                              contentType="movie")
         itemlist.append(new_item)
 
     # Extrae el paginador
