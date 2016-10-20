@@ -46,9 +46,9 @@ def mainlist(item,preferred_thumbnail="squares"):
     
 def opciones(item):
     itemlist = []
-    itemlist.append(Item(channel=item.channel, action="settingCanal", title="Elegir canales incluidos en la búsqueda"))
-    itemlist.append(Item(channel=item.channel, action="clear_saved_searches", title="Borrar búsquedas guardadas"))
-    itemlist.append(Item(channel=item.channel, action="settings", title="Otros ajustes"))
+    itemlist.append(Item(channel=item.channel, action="settingCanal", title="Elegir canales incluidos en la búsqueda", folder= False))
+    itemlist.append(Item(channel=item.channel, action="clear_saved_searches", title="Borrar búsquedas guardadas", folder= False))
+    itemlist.append(Item(channel=item.channel, action="settings", title="Otros ajustes", folder= False))
     return itemlist
         
 def settings(item):

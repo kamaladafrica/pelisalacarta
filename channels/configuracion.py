@@ -53,28 +53,34 @@ def mainlist(item):
     itemlist.append(Item(channel=CHANNELNAME, title="   Comprobar actualizaciones", action="check_for_updates", folder=False))
     itemlist.append(Item(channel=CHANNELNAME, title="   Añadir o Actualizar canal/conector desde una URL", action="menu_addchannels"))
     itemlist.append(Item(channel=item.channel, action="", title="", folder=False))
-
+    itemlist.append(Item(channel=item.channel, action="test", title="Test", folder=False))
     if not config.OLD_PLATFORM:
-
         itemlist.append(Item(channel=CHANNELNAME, title="Ajustes por canales", action="", folder=False))
-
-        itemlist.append(Item(channel="allpeliculas",  title="   Configuración del canal 'allpeliculas'", action="configuracion", folder=False))
-        itemlist.append(Item(channel="cinefox",  title="   Configuración del canal 'cinefox'", action="configuracion", folder=False))
-        itemlist.append(Item(channel="cinetux",  title="   Configuración del canal 'cinetux'", action="configuracion", folder=False))
-        itemlist.append(Item(channel="descargasmix",  title="   Configuración del canal 'descargasmix'", action="configuracion", folder=False))
-        itemlist.append(Item(channel="hdfull",  title="   Configuración del canal 'hdfull'", action="settingCanal", folder=False))
-        itemlist.append(Item(channel="inkapelis",  title="   Configuración del canal 'inkapelis'", action="configuracion", folder=False))
-        itemlist.append(Item(channel="megaforo",  title="   Configuración del canal 'megaforo'", action="settingCanal", folder=False))
-        itemlist.append(Item(channel="megahd",  title="   Configuración del canal 'megahd'", action="settingCanal", folder=False))
-        itemlist.append(Item(channel="oranline",  title="   Configuración del canal 'oranline'", action="configuracion", folder=False))
-        itemlist.append(Item(channel="pelisdanko",  title="   Configuración del canal 'pelisdanko'", action="configuracion", folder=False))
-        itemlist.append(Item(channel="pelispedia",  title="   Configuración del canal 'pelispedia'", action="configuracion", folder=False))
-        itemlist.append(Item(channel="pordede",  title="   Configuración del canal 'pordede'", action="settingCanal", folder=False))
-        itemlist.append(Item(channel="verseriesynovelas",  title="   Configuración del canal 'verseriesynovelas'", action="configuracion", folder=False))
+        import channelselector
+        from core import channeltools
+        channel_list = channelselector.filterchannels("all")
+        for channel in channel_list:
+          jsonchannel = channeltools.get_channel_json(channel.channel)
+          if jsonchannel.get("settings"):
+            setting = jsonchannel["settings"]
+            if type(setting) == list:
+              if len([s for s in setting if "id" in s and not "include_in_" in s["id"]]):
+                itemlist.append(Item(channel=CHANNELNAME,  title="   Configuración del canal '%s'" % channel.title, action="channel_config", config=channel.channel, folder=False))
 
     return itemlist
 
 
+def channel_config(item):
+  from platformcode import platformtools
+  import os
+  return platformtools.show_channel_settings(channelpath=os.path.join(config.get_runtime_path(),"channels", item.config))
+
+def test(item):
+  from core import tmdb
+  item.contentTitle="Thor"
+  tmdb.find_and_set_infoLabels_tmdb(item)
+  return
+  
 def check_for_updates(item):
     from core import updater
   

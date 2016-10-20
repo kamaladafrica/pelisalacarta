@@ -34,7 +34,7 @@
           <width>50</width>
           <height>30</height>
           <texturefocus>Controls/DialogCloseButton-focus.png</texturefocus>
-          <texturenofocus>Controls/DialogCloseButton.png</texturenofocus>
+          <texturenofocus>Controls/DialogCloseButton.png</texturenofocus>    
         </control>
         <control type="button" id="10004">
           <posx>155</posx>
@@ -43,9 +43,9 @@
           <height>30</height>
           <textwidth>110</textwidth>
           <texturefocus>Controls/KeyboardKey.png</texturefocus>
-          <texturenofocus>Controls/KeyboardKeyNF.png</texturenofocus>
+          <texturenofocus>Controls/KeyboardKeyNF.png</texturenofocus>  
           <align>center</align>
-          <aligny>center</aligny>
+          <aligny>center</aligny>  
           <label>OK</label>
         </control>
         <control type="button" id="10005">
@@ -55,9 +55,9 @@
           <height>30</height>
           <textwidth>110</textwidth>
           <texturefocus>Controls/KeyboardKey.png</texturefocus>
-          <texturenofocus>Controls/KeyboardKeyNF.png</texturenofocus>
+          <texturenofocus>Controls/KeyboardKeyNF.png</texturenofocus>   
           <align>center</align>
-          <aligny>center</aligny>
+          <aligny>center</aligny> 
           <label>Cancelar</label>
         </control>
         <control type="button" id="10006">
@@ -67,7 +67,7 @@
           <height>30</height>
           <textwidth>110</textwidth>
           <texturefocus>Controls/KeyboardKey.png</texturefocus>
-          <texturenofocus>Controls/KeyboardKeyNF.png</texturenofocus>
+          <texturenofocus>Controls/KeyboardKeyNF.png</texturenofocus>    
           <align>center</align>
           <aligny>center</aligny>
           <label>Por defecto</label>
@@ -77,7 +77,7 @@
           <posx>20</posx>
           <width>745</width>
           <height>387</height>
-          <control type="image">
+          <control type="image">  
             <width>745</width>
             <height>387</height>
             <texture>Windows/BackControls.png</texture>
