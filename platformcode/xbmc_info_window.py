@@ -282,6 +282,11 @@ class InfoWindow(xbmcgui.WindowXMLDialog):
         return self.return_value
 
     def onInit(self):
+        if xbmcgui.__version__ == "1.2":
+          self.setCoordinateResolution(1)
+        else:
+          self.setCoordinateResolution(5)
+          
         # Ponemos el foco en el boton de cerrar [X]
         self.setFocus(self.getControl(10003))
 
@@ -379,7 +384,7 @@ class InfoWindow(xbmcgui.WindowXMLDialog):
             if self.callback:
                 cb_channel = None
                 try:
-                    cb_channel = __import__('core.%s' % self.channel, fromlist=["core.%s" % self.channel])
+                    cb_channel = __import__('core.%s' % self.channel, None, None, ["core.%s" % self.channel])
                 except ImportError:
                     logger.error('Imposible importar %s' % self.channel)
 
@@ -390,8 +395,12 @@ class InfoWindow(xbmcgui.WindowXMLDialog):
                     if cb_channel:
                         self.return_value = getattr(cb_channel, self.callback)(self.item, None)
 
+    def onFocus(self, id):
+      pass
+      
     def onAction(self, action):
         logger.info("pelisalacarta.platformcode.xbmc_info_window onAction action="+repr(action.getId()))
+        action = action.getId()
 
         # Accion 1: Flecha izquierda
         if action == 1:
