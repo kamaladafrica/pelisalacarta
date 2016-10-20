@@ -112,7 +112,7 @@ def novedades(item):
             itemlist.append(item.clone(action="enlaces", title=bbcode_kodi2html(scrapedtitle),
                                        url=scrapedurl, thumbnail=scrapedthumbnail, fanart=scrapedthumbnail,
                                        fulltitle=contentTitle, filtro=False, contentTitle=contentTitle,
-                                       context="05", trailer=True))
+                                       context=["buscar_trailer"], contentType="movie", trailer=True))
 
     # Busca enlaces de paginas siguientes...
     next_page_url = scrapertools.find_single_match(data, '<a href="([^"]+)" rel="next">')
@@ -157,7 +157,7 @@ def actualizadas(item):
             itemlist.append(item.clone(action="enlaces", title=bbcode_kodi2html(scrapedtitle),
                                        url=scrapedurl, thumbnail=scrapedthumbnail, fanart=scrapedthumbnail,
                                        fulltitle=contentTitle, filtro=False, contentTitle=contentTitle,
-                                       context="05"))
+                                       context=["buscar_trailer"], contentType="movie"))
 
     return itemlist
 

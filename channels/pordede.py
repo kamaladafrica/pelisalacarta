@@ -184,11 +184,13 @@ def parse_mixed_results(item,data):
             referer = urlparse.urljoin(item.url,scrapedurl)
             url = referer.replace("/{0}/".format(sectionStr),"/links/view/slug/")+"/what/{0}".format(sectionStr)
             if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-            itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=fulltitle, fanart=fanart))
+            itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=fulltitle, fanart=fanart,
+                                  contentTitle=scrapedtitle, contentType="movie", context=["buscar_trailer"]))
         else:
             referer = item.url
             url = urlparse.urljoin(item.url,scrapedurl)
-            itemlist.append( Item(channel=item.channel, action="episodios" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=fulltitle, show=title, fanart=fanart))
+            itemlist.append( Item(channel=item.channel, action="episodios" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=fulltitle, show=title, fanart=fanart,
+                                  contentTitle=scrapedtitle, contentType="tvshow", context=["buscar_trailer"]))
 
 
     next_page = scrapertools.find_single_match(data, '<div class="loadingBar" data-url="([^"]+)"')

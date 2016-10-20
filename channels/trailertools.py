@@ -49,7 +49,11 @@ def buscartrailer(item):
     logger.info("pelisalacarta.channels.trailertools buscartrailer")
 
     # Se elimina la opciçon de Buscar Trailer del menú contextual para evitar redundancias
-    item.context = item.context.replace("5", "")
+    if type(item.context) is str and "buscar_trailer" in item.context:
+        item.context = item.context.replace("buscar_trailer", "")
+    elif type(item.context) is list and "buscar_trailer" in item.context:
+        item.context.remove("buscar_trailer")
+    
     item.text_color = ""
     # Si no se indica el parámetro contextual se entiende que no se ejecuta desde este mení
     if item.contextual == "":
@@ -92,11 +96,11 @@ def buscartrailer(item):
             title = "Trailer por defecto  [" + server + "]"
             itemlist.append(item.clone(title=title, url=url, server=server, action="play"))
         if item.show != "" or ("tvshowtitle" in item.infoLabels and item.infoLabels['tvshowtitle'] != ""):
-            type = "tv"
+            tipo = "tv"
         else:
-            type = "movie"
+            tipo = "movie"
         try:
-            itemlist.extend(tmdb_trailers(item, type))
+            itemlist.extend(tmdb_trailers(item, tipo))
         except:
             import traceback
             logger.error(traceback.format_exc())
@@ -152,16 +156,16 @@ def manual_search(item):
             return jayhap_search(item.clone(contentTitle=texto))
 
 
-def tmdb_trailers(item, type="movie"):
+def tmdb_trailers(item, tipo="movie"):
     logger.info("pelisalacarta.channels.trailertools tmdb_trailers")
 
     from core.tmdb import Tmdb
     itemlist = []
     tmdb_search = None
     if "tmdb_id" in item.infoLabels and item.infoLabels['tmdb_id'] != "":
-        tmdb_search = Tmdb(id_Tmdb=item.infoLabels['tmdb_id'], tipo=type, idioma_busqueda='es')
+        tmdb_search = Tmdb(id_Tmdb=item.infoLabels['tmdb_id'], tipo=tipo, idioma_busqueda='es')
     elif "year" in item.infoLabels and item.infoLabels['year'] != "":
-        tmdb_search = Tmdb(texto_buscado=item.contentTitle, tipo=type, year=item.infoLabels['year'])
+        tmdb_search = Tmdb(texto_buscado=item.contentTitle, tipo=tipo, year=item.infoLabels['year'])
 
     if tmdb_search:
         for result in tmdb_search.get_videos():

@@ -114,10 +114,10 @@ def busqueda(item):
         item.infoLabels['rating'] = vote
         if "Series" not in genre:
             itemlist.append(item.clone(action="findvideos", title=titulo, fulltitle=title, url=url, thumbnail=thumbnail,
-                                       context="05", contentTitle=title))
+                                       context=["buscar_trailer"], contentTitle=title, contentType="movie"))
         else:
             itemlist.append(item.clone(action="temporadas", title=titulo, fulltitle=title, url=url, thumbnail=thumbnail,
-                                       context="25", contentTitle=title))
+                                       context=["buscar_trailer"], contentTitle=title, contentType="tvshow"))
 
     # Paginacion
     next_page = scrapertools.find_single_match(data, 'class="pagination-active".*?href="([^"]+)"')
@@ -181,11 +181,17 @@ def lista(item):
         item.infoLabels['trailer'] = trailer.replace("youtu.be/", "http://www.youtube.com/watch?v=")
         if item.extra != "tv" or "Series" not in genre:
             itemlist.append(item.clone(action="findvideos", title=titulo, fulltitle=title, url=url, thumbnail=thumbnail,
-                                       context="05", contentTitle=title))
+                                       context=["buscar_trailer"], contentTitle=title, contentType="movie"))
         else:
             itemlist.append(item.clone(action="temporadas", title=titulo, fulltitle=title, url=url, thumbnail=thumbnail,
-                                       context="25", contentTitle=title, show=title))
+                                       context=["buscar_trailer"], contentTitle=title, show=title, contentType="tvshow"))
 
+    try:
+        from core import tmdb
+        # Obtenemos los datos basicos de todas las peliculas mediante multihilos
+        tmdb.set_infoLabels_itemlist(itemlist, __modo_grafico__)
+    except:
+        pass
     # Paginacion
     next_page = scrapertools.find_single_match(data, 'class="pagination-active".*?href="([^"]+)"')
     if next_page != "":
@@ -321,7 +327,7 @@ def temporadas(item):
     matches = list(set(matches))
     for season in matches:
         item.infoLabels['season'] = season
-        itemlist.append(item.clone(action="findvideostv", title="Temporada "+season, context="25"))
+        itemlist.append(item.clone(action="findvideostv", title="Temporada "+season, context=["buscar_trailer"], contentType="season"))
 
     itemlist.sort(key=lambda item: item.title)
     try:
@@ -368,7 +374,7 @@ def findvideostv(item):
             titulo += server.capitalize()+"]   ["+idioma+"] ("+calidad_videos.get(quality)+")"
             item.infoLabels['episode'] = episode
 
-            itemlist.append(item.clone(action="play", title=titulo, url=url))
+            itemlist.append(item.clone(action="play", title=titulo, url=url, contentType="episode"))
 
     #Enlace Descarga
     patron = '<span class="movie-downloadlink-list" id_movies_types="([^"]+)" id_movies_servers="([^"]+)".*?episode=' \
