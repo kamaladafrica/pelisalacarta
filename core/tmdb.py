@@ -1033,9 +1033,9 @@ class Tmdb(object):
 
             if "status_code" in self.temporada[numtemporada]:
                 # Se ha producido un error
-                self.temporada[numtemporada] = {}
+                self.temporada[numtemporada] =  {"episodes":{}}
                 logger.error("La busqueda de " + buscando + " no dio resultados.")
-                return {}
+
 
         return self.temporada[numtemporada]
 
