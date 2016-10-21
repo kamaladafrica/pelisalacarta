@@ -225,7 +225,7 @@ def novedades(item):
             if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
             itemlist.append(item.clone(action="findvideos", title=scrapedtitle, url=scrapedurl,
                                        thumbnail=scrapedthumbnail, fulltitle=titleinfo, show=titleinfo,
-                                       contentTitle=contentTitle, context="25"))
+                                       contentTitle=contentTitle, context=["buscar_trailer"], contentType="tvshow"))
 
     if item.extra != "newest":
         try:
@@ -269,7 +269,8 @@ def ultimas(item, texto=""):
                 logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
             itemlist.append(item.clone(action="episodios", title=scrapedtitle, url=scrapedurl,
                                        thumbnail=scrapedthumbnail, fulltitle=titleinfo,
-                                       contentTitle=titleinfo, context="25", show=titleinfo))
+                                       contentTitle=titleinfo, context=["buscar_trailer"], show=titleinfo,
+                                       contentType="tvshow"))
 
     try:
         from core import tmdb
@@ -313,7 +314,8 @@ def episodios(item):
             if "EN.png" in match:
                 scrapedtitle += "[V.O]"
             if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"]")
-            itemlist.append(item.clone(action="findvideos", title=scrapedtitle, url=scrapedurl, fulltitle=scrapedtitle))
+            itemlist.append(item.clone(action="findvideos", title=scrapedtitle, url=scrapedurl,
+                                       fulltitle=scrapedtitle, contentType="episode"))
 
     itemlist.reverse()
     if itemlist and item.extra != "episodios":
@@ -384,6 +386,8 @@ def findvideos(item):
         if url_lista != "":
             itemlist.append(item.clone(action="episodios", title="Ir a la Lista de Capítulos", url=url_lista,
                                        text_color="red", context=""))
+    for item1 in itemlist:
+        logger.info(item1.tostring())
 
     return itemlist
 

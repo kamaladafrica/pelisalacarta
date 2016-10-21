@@ -456,7 +456,7 @@ def get_seleccion(default_action, opciones, seleccion, video_urls):
 
 
 def show_channel_settings(list_controls=None, dict_values=None, caption="", callback=None, item=None,
-                          custom_button=None):
+                          custom_button=None, channelpath=None):
     """
     Muestra un cuadro de configuracion personalizado para cada canal y guarda los datos al cerrarlo.
     
@@ -480,7 +480,7 @@ def show_channel_settings(list_controls=None, dict_values=None, caption="", call
     from xbmc_config_menu import SettingsWindow
     return SettingsWindow("ChannelSettings.xml", config.get_runtime_path()) \
         .start(list_controls=list_controls, dict_values=dict_values, title=caption, callback=callback, item=item,
-               custom_button=custom_button)
+               custom_button=custom_button, channelpath=channelpath)
 
 
 def show_video_info(data, caption="", callback=None, item=None):

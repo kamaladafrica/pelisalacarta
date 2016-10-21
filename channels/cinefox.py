@@ -114,21 +114,21 @@ def busqueda(item):
             plot = scrapertools.htmlclean(plot)
             if "/serie/" in scrapedurl:
                 action = "episodios"
-                context = "25"
                 show = scrapedtitle
                 scrapedurl += "/episodios"
                 title = " [Serie]"
+                contentType = "tvshow"
             elif "/pelicula/" in scrapedurl:
                 action = "menu_info"
-                context = "05"
                 show = ""
                 title = " [Película]"
+                contentType = "movie"
             else:
                 continue
             title = scrapedtitle + title + " (" + year + ")"
             itemlist.append(item.clone(action=action, title=title, url=scrapedurl, thumbnail=scrapedthumbnail,
-                                       contentTitle=scrapedtitle, fulltitle=scrapedtitle, context=context, plot=plot,
-                                       show=show, text_color=color2))
+                                       contentTitle=scrapedtitle, fulltitle=scrapedtitle, context=["buscar_trailer"],
+                                       plot=plot, show=show, text_color=color2, contentType=contentType))
 
     try:
         from core import tmdb
@@ -347,7 +347,7 @@ def peliculas(item):
                 url = urlparse.urljoin(host, scrapedurl)
                 itemlist.append(Item(channel=item.channel, action=action, title=scrapedtitle, url=url, extra="media",
                                      thumbnail=scrapedthumbnail, contentTitle=scrapedtitle, fulltitle=scrapedtitle,
-                                     text_color=color2, context="05"))
+                                     text_color=color2, context=["buscar_trailer"], contentType="movie"))
         else:
             patron = '<div class="audio-info">(.*?)<div class="quality-info".*?>([^<]+)</div>' \
                      '.*?src="([^"]+)".*?href="([^"]+)">([^<]+)</a>'
@@ -365,7 +365,7 @@ def peliculas(item):
 
                 itemlist.append(Item(channel=item.channel, action=action, title=title, url=url, extra="media",
                                      thumbnail=scrapedthumbnail, contentTitle=scrapedtitle, fulltitle=scrapedtitle,
-                                     text_color=color2, context="05"))
+                                     text_color=color2, context=["buscar_trailer"], contentType="movie"))
 
     next_page = scrapertools.find_single_match(data, 'href="([^"]+)"[^>]+>Siguiente')
     if next_page != "" and item.title != "":
@@ -406,8 +406,8 @@ def ultimos(item):
             title = show + " - " + re.sub(show, '', scrapedtitle) + " [" + "/".join(audios) + "]"
             url = urlparse.urljoin(host, scrapedurl)
             itemlist.append(item.clone(action=action, title=title, url=url, thumbnail=scrapedthumbnail,
-                                       contentTitle=show, fulltitle=show, show=show, context="25",
-                                       text_color=color2, extra="ultimos"))
+                                       contentTitle=show, fulltitle=show, show=show, context=["buscar_trailer"],
+                                       text_color=color2, extra="ultimos", contentType="tvshow"))
 
     try:
         from core import tmdb
@@ -438,7 +438,7 @@ def series(item):
             url = urlparse.urljoin(host, scrapedurl + "/episodios")
             itemlist.append(Item(channel=item.channel, action="episodios", title=scrapedtitle, url=url,
                                  thumbnail=scrapedthumbnail, contentTitle=scrapedtitle, fulltitle=scrapedtitle,
-                                 show=scrapedtitle, text_color=color2, context="25"))
+                                 show=scrapedtitle, text_color=color2, context=["buscar_trailer"], contentType="tvshow"))
 
     try:
         from core import tmdb
@@ -527,7 +527,7 @@ def episodios(item):
             extra = "episode"
             if item.extra == "episodios":
                 extra = "episode|"
-            itemlist.append(item.clone(action=action, title=title, url=scrapedurl, text_color=color2, extra=extra))
+            itemlist.append(item.clone(action=action, title=title, url=scrapedurl, text_color=color2, extra=extra, contentType="episode"))
 
     if item.extra != "episodios":
         try:

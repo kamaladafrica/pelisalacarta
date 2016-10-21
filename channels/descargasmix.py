@@ -88,11 +88,11 @@ def busqueda(item):
         if ("Películas" in scrapedcat or "Documentales" in scrapedcat) and not "Series" in scrapedcat:
             titulo = scrapedtitle.split("[")[0]
             itemlist.append(item.clone(action="findvideos", title=scrapedtitle, url=scrapedurl,
-                                       thumbnail=scrapedthumbnail, fulltitle=titulo, context="05", contentTitle=titulo))
+                                       thumbnail=scrapedthumbnail, fulltitle=titulo, context=["buscar_trailer"], contentTitle=titulo, contentType="movie"))
         else:
-            itemlist.append(item.clone(action="episodios", title=scrapedtitle, url=scrapedurl,  context="25",
+            itemlist.append(item.clone(action="episodios", title=scrapedtitle, url=scrapedurl,  context=["buscar_trailer"],
                                        thumbnail=scrapedthumbnail, fulltitle=scrapedtitle, contentTitle=scrapedtitle,
-                                       show=scrapedtitle))
+                                       show=scrapedtitle, contentType="tvshow"))
 
     next_page = scrapertools.find_single_match(data, '<a class="nextpostslink".*?href="([^"]+)"')
     if next_page != "":
@@ -157,7 +157,7 @@ def entradas(item):
             if "series" in item.url or "anime" in item.url:
                 item.show = scrapedtitle
             itemlist.append(item.clone(action="episodios", title=titulo, url=scrapedurl, thumbnail=scrapedthumbnail,
-                                       fulltitle=scrapedtitle, context="25", contentTitle=scrapedtitle))
+                                       fulltitle=scrapedtitle, context=["buscar_trailer"], contentTitle=scrapedtitle, contentType="tvshow"))
     else:
         patron = '<a class="clip-link".*?href="([^"]+)".*?<img alt="([^"]+)" src="([^"]+)".*?<span class="cat">(.*?)</span>(.*?)</p>'
         matches = scrapertools.find_multiple_matches(bloque, patron)
@@ -185,8 +185,8 @@ def entradas(item):
             scrapedthumbnail = scrapedthumbnail.rsplit("/", 1)[0]+"/"+urllib.quote(scrapedthumbnail.rsplit("/", 1)[1])
             if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
             itemlist.append(item.clone(action=action, title=titulo, url=scrapedurl, thumbnail=scrapedthumbnail,
-                                       fulltitle=scrapedtitle, context="05", contentTitle=scrapedtitle,
-                                       viewmode="movie_with_plot", show=show))
+                                       fulltitle=scrapedtitle, context=["buscar_trailer"], contentTitle=scrapedtitle,
+                                       viewmode="movie_with_plot", show=show, contentType="movie"))
 
     #Paginación
     next_page = scrapertools.find_single_match(data, '<a class="nextpostslink".*?href="([^"]+)"')
@@ -227,7 +227,7 @@ def episodios(item):
             title = item.fulltitle+" "+scrapedtitle.strip()
         else:
             title = scrapedtitle.strip()
-        itemlist.append(new_item.clone(action="findvideos", title=title, extra=scrapedtitle, fulltitle=title))
+        itemlist.append(new_item.clone(action="findvideos", title=title, extra=scrapedtitle, fulltitle=title, contentType="episode"))
 
     itemlist.sort(key=lambda item: item.title, reverse=True)
     item.plot = scrapertools.find_single_match(data, '<strong>SINOPSIS</strong>:(.*?)</p>')

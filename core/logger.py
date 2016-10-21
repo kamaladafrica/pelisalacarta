@@ -41,7 +41,7 @@ def log_enable(active):
 def encode_log(message):
     #Unicode to utf8
     if type(message) == unicode: 
-        message = texto.encode("utf8")
+        message = message.encode("utf8")
         
     #All encodings to utf8
     elif type(message) == str:
