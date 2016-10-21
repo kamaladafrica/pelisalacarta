@@ -450,7 +450,7 @@ def add_pelicula_to_library(item):
     insertados, sobreescritos, fallidos = save_library_movie(new_item)
 
     if fallidos == 0:
-        platformtools.dialog_ok(config.get_localized_string(30131), item.title,
+        platformtools.dialog_ok(config.get_localized_string(30131), new_item.contentTitle,
                                 config.get_localized_string(30135))  # 'se ha añadido a la biblioteca'
     else:
         platformtools.dialog_ok(config.get_localized_string(30131),

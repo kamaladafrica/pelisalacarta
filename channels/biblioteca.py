@@ -349,6 +349,7 @@ def findvideos(item):
 
     itemlist = []
     list_canales = {}
+    local = False
 
     if not item.contentTitle or not item.strm_path:
         logger.debug("No se pueden buscar videos por falta de parametros")
@@ -373,15 +374,30 @@ def findvideos(item):
                     list_canales.keys():
                 list_canales[nom_canal] = filetools.join(path_dir, fd)
 
+    num_canales = len(list_canales)
+    if 'local' in list_canales:
+        local = True
+        del list_canales['local']
+        itemlist.append(item.clone(channel="biblioteca", action='play', contentChannel='local',
+                                   title="Ver video local"))
+
     filtro_canal = ''
-    if len(list_canales) > 1 and config.get_setting("ask_channel") == "true":
-        from platformcode import platformtools
+    if num_canales > 1 and config.get_setting("ask_channel") == "true":
         opciones = ["Mostrar solo los enlaces de %s" % k.capitalize() for k in list_canales.keys()]
         opciones.insert(0, "Mostrar todos los enlaces")
+        if local:
+            opciones.append("Mostrar solo video local")
+
+        from platformcode import platformtools
         index = platformtools.dialog_select(config.get_localized_string(30163), opciones)
         if index < 0:
             return []
-        if index > 0:
+
+        elif local and index == len(opciones) - 1:
+            filtro_canal = 'local'
+
+
+        elif index > 0:
             filtro_canal = opciones[index].replace("Mostrar solo los enlaces de ", "")
 
     for nom_canal, json_path in list_canales.items():
