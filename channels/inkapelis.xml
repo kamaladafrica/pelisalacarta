@@ -57,4 +57,36 @@
 		<lvalues>Perfil 2</lvalues>
 		<lvalues>Perfil 1</lvalues>
 	</settings>
+	<settings>
+		<id>filtro_defecto_peliculas</id>
+		<type>label</type>
+		<label></label>
+ 		<default></default>
+ 		<enabled>true</enabled>
+ 		<visible>false</visible>
+ 	</settings>
+	<settings>
+		<id>pers_peliculas1</id>
+		<type>label</type>
+		<label></label>
+ 		<default></default>
+ 		<enabled>true</enabled>
+ 		<visible>false</visible>
+ 	</settings>
+	<settings>
+		<id>pers_peliculas2</id>
+		<type>label</type>
+		<label></label>
+ 		<default></default>
+ 		<enabled>true</enabled>
+ 		<visible>false</visible>
+ 	</settings>
+	<settings>
+		<id>pers_peliculas3</id>
+		<type>label</type>
+		<label></label>
+ 		<default></default>
+ 		<enabled>true</enabled>
+ 		<visible>false</visible>
+ 	</settings>
 </channel>
