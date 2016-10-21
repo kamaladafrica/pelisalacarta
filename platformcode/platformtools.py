@@ -395,7 +395,15 @@ def is_playing():
 
 def play_video(item, strm=False):
     logger.info("pelisalacarta.platformcode.platformtools play_video")
-    # logger.debug(item.tostring('\n'))
+    #logger.debug(item.tostring('\n'))
+
+    if item.channel == 'descargas':
+        logger.info("Reproducir video local: %s [%s]" % (item.title, item.url))
+        playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
+        playlist.clear()
+        playlist.add(item.url)
+        xbmc.Player().play(playlist)
+        return
 
     default_action = config.get_setting("default_action")
     logger.info("default_action=" + default_action)
@@ -602,7 +610,7 @@ def handle_wait(time_to_wait, title, text):
 
 def get_dialogo_opciones(item, default_action, strm):
     logger.info("platformtools get_dialogo_opciones")
-    # logger.debug(item.tostring('\n'))
+    #logger.debug(item.tostring('\n'))
     from core import servertools
 
     opciones = []

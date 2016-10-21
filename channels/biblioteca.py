@@ -349,7 +349,7 @@ def findvideos(item):
 
     itemlist = []
     list_canales = {}
-    local = False
+    item_local = None
 
     if not item.contentTitle or not item.strm_path:
         logger.debug("No se pueden buscar videos por falta de parametros")
@@ -375,30 +375,34 @@ def findvideos(item):
                 list_canales[nom_canal] = filetools.join(path_dir, fd)
 
     num_canales = len(list_canales)
-    if 'local' in list_canales:
-        local = True
-        del list_canales['local']
-        itemlist.append(item.clone(channel="biblioteca", action='play', contentChannel='local',
-                                   title="Ver video local"))
+    if 'descargas' in list_canales:
+        json_path = list_canales['descargas']
+        item_json = Item().fromjson(filetools.read(json_path))
+        item_local = item_json.clone(action='play')
+        itemlist.append(item_local)
+        del list_canales['descargas']
+
 
     filtro_canal = ''
     if num_canales > 1 and config.get_setting("ask_channel") == "true":
         opciones = ["Mostrar solo los enlaces de %s" % k.capitalize() for k in list_canales.keys()]
         opciones.insert(0, "Mostrar todos los enlaces")
-        if local:
-            opciones.append("Mostrar solo video local")
+        if item_local:
+            opciones.append(item_local.title)
 
         from platformcode import platformtools
         index = platformtools.dialog_select(config.get_localized_string(30163), opciones)
         if index < 0:
             return []
 
-        elif local and index == len(opciones) - 1:
-            filtro_canal = 'local'
+        elif item_local and index == len(opciones) - 1:
+            filtro_canal = 'descargas'
+            platformtools.play_video(item_local)
 
 
         elif index > 0:
             filtro_canal = opciones[index].replace("Mostrar solo los enlaces de ", "")
+            itemlist = []
 
     for nom_canal, json_path in list_canales.items():
         if filtro_canal and filtro_canal != nom_canal.capitalize():
@@ -450,7 +454,7 @@ def findvideos(item):
 
 def play(item):
     logger.info("pelisalacarta.channels.biblioteca play")
-    # logger.debug("item:\n" + item.tostring('\n'))
+    #logger.debug("item:\n" + item.tostring('\n'))
 
     if not item.contentChannel == "local":
         channel = __import__('channels.%s' % item.contentChannel, fromlist=["channels.%s" % item.contentChannel])
