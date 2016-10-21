@@ -61,12 +61,8 @@ def remove_chars(path):
     chars = ":*?<>|"
     if path.lower().startswith("smb://"):
         import re
-        if re.search(r'(?i)smb://([^\:]+)\:([^\@]+)@', path):
-            user, path = path.split("@", 1)
-            return "smb://" + user + "@" + ''.join([c for c in path if c not in chars])
-        else:
-            path = path[6:]
-            return "smb://" + ''.join([c for c in path if c not in chars])
+        parts = re.split(r'smb://(.+?)/(.+)', path)[1:3]
+        return "smb://" + parts[0] + "/" + ''.join([c for c in parts[1] if c not in chars])
 
     else:
         if path.find(":\\") == 1:
