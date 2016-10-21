@@ -709,7 +709,7 @@ def set_opcion(item, seleccion, opciones, video_urls):
     elif opciones[seleccion] == config.get_localized_string(30153):
         item.video_urls = video_urls
         from channels import descargas
-        descargas.save_download_movie(item)
+        descargas.save_download(item)
         salir = True
 
     # "Quitar de favoritos"
