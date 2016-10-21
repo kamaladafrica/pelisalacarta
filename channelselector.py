@@ -82,8 +82,7 @@ def getmainlist(preferred_thumb=""):
                          channel="descargas",
                          action="mainlist",
                          thumbnail=get_thumb(preferred_thumb,"thumb_descargas.png"),
-                         category=config.get_localized_string(30101),
-                         viewmode="movie"))
+                         viewmode="list"))
 
     if "xbmceden" in config.get_platform():
 
