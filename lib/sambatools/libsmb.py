@@ -214,7 +214,17 @@ def store_file(_file, data, url):
 
     remote.close()
 
+def write_file(_file, fileobj, url):
+    logger.info("[lib.samba.py] write_file")
 
+    server_name, share_name, path, user, password = parse_url(url)
+    remote = connect(server_name, user, password)
+
+    a = remote.storeFile(share_name, path + _file, fileobj)
+
+    remote.close()
+    
+    
 def create_directory(folder, url):
     logger.info("[lib.samba.py] create_directory " + folder)
 

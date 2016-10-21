@@ -223,10 +223,17 @@ def open_for_reading(path):
     @return: datos del fichero
     """
     path = encode(path)
-    if path.lower().startswith("smb://"):
-        return samba.get_file_handle_for_reading(os.path.basename(path), os.path.dirname(path))
-    else:
-        return open(path, "rb")
+    try:
+      if path.lower().startswith("smb://"):
+          return samba.get_file_handle_for_reading(os.path.basename(path), os.path.dirname(path))
+      else:
+          return open(path, "rb")
+    except:
+      import traceback
+      logger.info("pelisalacarta.core.open_for_reading mkdir: Error al abrir el archivo " + traceback.format_exc())
+      platformtools.dialog_notification("Error al abrir", path)
+      return False
+     
 
 
 def rename(path, new_name):
@@ -261,6 +268,39 @@ def rename(path, new_name):
             platformtools.dialog_notification("Error al renombrar", path)
             return False
 
+    return True
+
+def copy(path, dest):
+    """
+    Copia un archivo
+    @param path: ruta del fichero a copiar
+    @type path: str
+    @param dest: ruta donde copiar
+    @type dest: str
+    @rtype: bool
+    @return: devuelve False en caso de error
+    """
+    dest = encode(dest)
+    
+    f = open_for_reading(path)
+    
+    if f:
+      try:
+        if dest.lower().startswith("smb://"):
+          samba.write_file(os.path.basename(dest), f, os.path.dirname(dest))
+        else:
+          open(dest, "wb").write(f.read())
+      except:
+        logger.info("pelisalacarta.core.filetools copy: No es posible escribir el archivo de destino")
+        f.close()
+        return False
+      
+    else:
+      logger.info("pelisalacarta.core.filetools copy: No es posible leer el arcivo de origen")
+      f.close()
+      return False
+      
+    f.close()
     return True
 
 

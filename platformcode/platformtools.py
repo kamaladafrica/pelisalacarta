@@ -364,19 +364,19 @@ def set_context_commands(item, parent_item):
                                                           from_action=item.action).tourl())))
 
     # Descargar pelicula
-    if item.action in ["detail", "findvideos"] and item.contentType == 'movie':
+    if item.action in ["detail", "findvideos", "play"] and item.contentType not in ["tvshow","episode"]:
         context_commands.append(("Descargar Pelicula", "XBMC.RunPlugin(%s?%s)" %
-                                 (sys.argv[0], item.clone(channel="descargas", action="save_download_movie",
+                                 (sys.argv[0], item.clone(channel="descargas", action="save_download",
                                                           from_channel=item.channel, from_action=item.action).tourl())))
 
     # Descargar serie
-    if item.action in ["episodios", "get_episodios"] and item.contentType != 'movie':
+    if item.action in ["episodios", "get_episodios"] and item.contentType == 'tvshow':
         context_commands.append(("Descargar Serie", "XBMC.RunPlugin(%s?%s)" %
-                                 (sys.argv[0], item.clone(channel="descargas", action="save_download_tvshow",
+                                 (sys.argv[0], item.clone(channel="descargas", action="save_download",
                                                           from_channel=item.channel, from_action=item.action).tourl())))
 
     # Descargar episodio
-    if item.action in ["detail", "findvideos"] and item.contentType != 'movie':
+    if item.action in ["detail", "findvideos", "play"] and item.contentType == 'episode':
         context_commands.append(("Descargar Episodio", "XBMC.RunPlugin(%s?%s)" %
                                  (sys.argv[0], item.clone(channel="descargas", action="save_download",
                                                           from_channel=item.channel, from_action=item.action).tourl())))
@@ -717,7 +717,7 @@ def set_opcion(item, seleccion, opciones, video_urls):
     elif opciones[seleccion] == config.get_localized_string(30153):
         item.video_urls = video_urls
         from channels import descargas
-        descargas.save_download_movie(item)
+        descargas.save_download(item)
         salir = True
 
     # "Quitar de favoritos"
