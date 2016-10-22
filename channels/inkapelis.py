@@ -18,10 +18,10 @@ __modo_grafico__ = config.get_setting("modo_grafico", "inkapelis")
 __perfil__ = int(config.get_setting("perfil", "inkapelis"))
 
 # Fijar perfil de color
-perfil = [['0xFFFFE6CC', '0xFFFFCE9C', '0xFF994D00'],
-          ['0xFFA5F6AF', '0xFF5FDA6D', '0xFF11811E'],
-          ['0xFF58D3F7', '0xFF2E9AFE', '0xFF2E64FE']]
-color1, color2, color3 = perfil[__perfil__]
+perfil = [['0xFFFFE6CC', '0xFFFFCE9C', '0xFF994D00', '0xFFFE2E2E'],
+          ['0xFFA5F6AF', '0xFF5FDA6D', '0xFF11811E', '0xFFFE2E2E'],
+          ['0xFF58D3F7', '0xFF2E9AFE', '0xFF2E64FE', '0xFFFE2E2E']]
+color1, color2, color3, color4 = perfil[__perfil__]
 
 DEBUG = config.get_setting("debug")
 thumb_channel = "http://i.imgur.com/I7MxHZI.png"
@@ -38,6 +38,15 @@ def mainlist(item):
     itemlist.append(item.clone(title="Géneros", action="generos", url="http://www.inkapelis.com/", text_color=color1))
     itemlist.append(item.clone(title="Buscar...", action="search", text_color=color1))
     itemlist.append(item.clone(action="", title=""))
+    itemlist.append(item.clone(action="filtro", title="Filtrar películas", url="http://www.inkapelis.com/?s=", text_color=color1))
+    # Filtros personalizados para peliculas
+    for i in range(1, 4):
+        filtros = config.get_setting("pers_peliculas" + str(i), item.channel)
+        if filtros:
+            title = "Filtro Personalizado " + str(i)
+            new_item = item.clone()
+            new_item.values = filtros
+            itemlist.append(new_item.clone(action="filtro", title=title, url="http://www.inkapelis.com/?s=", text_color=color2))
     itemlist.append(item.clone(action="configuracion", title="Configurar canal...", text_color="gold", folder=False))
     return itemlist
 
@@ -106,6 +115,113 @@ def generos(item):
     return itemlist
 
 
+def filtro(item):
+    logger.info("pelisalacarta.channels.inkapelis filtro")
+    
+    list_controls = []
+    valores = {}
+    strings = {}
+    # Se utilizan los valores por defecto/guardados o los del filtro personalizado
+    if not item.values:
+        valores_guardados = config.get_setting("filtro_defecto_peliculas", item.channel)
+    else:
+        valores_guardados = item.values
+        item.values = ""
+
+    dict_values = valores_guardados if valores_guardados else None
+    if dict_values:
+        dict_values["filtro_per"] = 0
+    
+    list_controls.append({'id': 'texto', 'label': 'Cadena de búsqueda', 'enabled': True,
+                          'type': 'text', 'default': '', 'visible': True})
+    data = scrapertools.downloadpage(item.url)
+    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
+    matches = scrapertools.find_multiple_matches(data, 'option value="">([^<]+)</option>(.*?)</select>')
+    i = 1
+    for filtro_title, values in matches:
+        id = filtro_title.replace("A\xc3\xb1o", "year").lower()
+        filtro_title = filtro_title.replace("A\xc3\xb1o", "Año")
+        list_controls.append({'id': id, 'label': filtro_title, 'enabled': True,
+                              'type': 'list', 'default': 0, 'visible': True})
+        valores[id] = []
+        valores[id].append('')
+        strings[filtro_title] = []
+        list_controls[i]['lvalues'] = []
+        list_controls[i]['lvalues'].append('Cualquiera')
+        strings[filtro_title].append('Cualquiera')
+        patron = '<option value="([^"]+)">([^<]+)</option>'
+        matches_v = scrapertools.find_multiple_matches(values, patron)
+        for value, key in matches_v:
+            list_controls[i]['lvalues'].append(key)
+            valores[id].append(value)
+            strings[filtro_title].append(key)
+
+        i += 1
+
+    item.valores = valores
+    item.strings = strings
+    if "Filtro Personalizado" in item.title:
+        return filtrado(item, valores_guardados)
+
+    list_controls.append({'id': 'espacio', 'label': '', 'enabled': False,
+                          'type': 'label', 'default': '', 'visible': True})
+    list_controls.append({'id': 'save', 'label': 'Establecer como filtro por defecto', 'enabled': True,
+                          'type': 'bool', 'default': False, 'visible': True})
+    list_controls.append({'id': 'filtro_per', 'label': 'Guardar filtro en acceso directo...', 'enabled': True,
+                          'type': 'list', 'default': 0, 'visible': True, 'lvalues': ['No guardar', 'Filtro 1',
+                                                                                     'Filtro 2', 'Filtro 3']})
+    list_controls.append({'id': 'remove', 'label': 'Eliminar filtro personalizado...', 'enabled': True,
+                          'type': 'list', 'default': 0, 'visible': True, 'lvalues': ['No eliminar', 'Filtro 1',
+                                                                                     'Filtro 2', 'Filtro 3']})
+
+    from platformcode import platformtools
+    return platformtools.show_channel_settings(list_controls=list_controls, dict_values=dict_values,
+                                               caption="Filtra los resultados", item=item, callback='filtrado')
+
+
+def filtrado(item, values):
+    values_copy = values.copy()
+    # Guarda el filtro para que sea el que se cargue por defecto
+    if "save" in values and values["save"]:
+        values_copy.pop("remove")
+        values_copy.pop("filtro_per")
+        values_copy.pop("save")
+        config.set_setting("filtro_defecto_peliculas", values_copy, item.channel)
+
+    # Elimina el filtro personalizado elegido
+    if "remove" in values and values["remove"] != 0:
+        config.set_setting("pers_peliculas" + str(values["remove"]), "", item.channel)
+
+    values_copy = values.copy()
+    # Guarda el filtro en un acceso directo personalizado
+    if "filtro_per" in values and values["filtro_per"] != 0:
+        index = "peliculas" + str(values["filtro_per"])
+        values_copy.pop("filtro_per")
+        values_copy.pop("save")
+        values_copy.pop("remove")
+        config.set_setting("pers_" + index, values_copy, item.channel)
+
+    genero = item.valores["genero"][values["genero"]]
+    year = item.valores["year"][values["year"]]
+    calidad = item.valores["calidad"][values["calidad"]]
+    idioma = item.valores["idioma"][values["idioma"]]
+    texto = values["texto"].replace(" ", "+")
+
+    strings = []
+    for key, value in dict(item.strings).items():
+        key2 = key.replace("Año", "year").lower()
+        strings.append(key + ": " + value[values[key2]])
+    strings.append("Texto: " + texto)
+
+    item.valores = "Filtro: " + ", ".join(sorted(strings))
+    item.strings = ""
+    item.url = "http://www.inkapelis.com/?anio=%s&genero=%s&calidad=%s&idioma=%s&s=%s" % \
+               (year, genero, calidad, idioma, texto)
+    item.extra = "Buscar"
+
+    return entradas(item)
+
+
 def entradas(item):
     logger.info("pelisalacarta.channels.inkapelis entradas")
 
@@ -113,18 +229,27 @@ def entradas(item):
     item.text_color = color2
     # Descarga la página
     data = scrapertools.downloadpage(item.url)
+    if "valores" in item and item.valores:
+        itemlist.append(item.clone(action="", title=item.valores, text_color=color4))
 
     #IF en caso de busqueda
     if item.extra == "Buscar":
         # Extrae las entradas
-        patron = '<div class="col-xs-2">.*?<a href="([^"]+)" title="([^"]+)"> <img src="([^"]+)"'
-        matches = scrapertools.find_multiple_matches(data, patron)
-        for scrapedurl, scrapedtitle, scrapedthumbnail in matches:
-            thumbnail = scrapedthumbnail.replace("w185", "original")
-            if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+thumbnail+"]")
-            itemlist.append(item.clone(action="findvideos", title=scrapedtitle, url=scrapedurl, thumbnail=thumbnail,
-                                       contentTitle=scrapedtitle, fulltitle=scrapedtitle, context=["buscar_trailer"],
-                                       contentType="movie"))
+        entradas = scrapertools.find_multiple_matches(data, '<div class="col-mt-5 postsh">(.*?)</div></div></div>')
+        patron = '<div class="poster-media-card([^"]+)">.*?<a href="([^"]+)" title="([^"]+)">' \
+                 '.*?<img.*?src="([^"]+)"'
+        for match in entradas:
+            matches = scrapertools.find_multiple_matches(match, patron)
+            for calidad, scrapedurl, scrapedtitle,  scrapedthumbnail in matches:
+                thumbnail = scrapedthumbnail.replace("w185", "original")
+                title = scrapedtitle
+                calidad = calidad.strip()
+                if calidad:
+                    title += "  [" + calidad + "]"
+                if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+thumbnail+"]")
+                itemlist.append(item.clone(action="findvideos", title=title, url=scrapedurl, thumbnail=thumbnail,
+                                           contentTitle=scrapedtitle, fulltitle=scrapedtitle, context=["buscar_trailer"],
+                                           contentType="movie"))
 
     else:
         # Extrae las entradas
@@ -143,10 +268,16 @@ def entradas(item):
                 #Salto entradas adultos
                 if category == "Eroticas +18":
                     continue
+                idioma = idioma.strip()
+                calidad = calidad.strip()
                 scrapedtitle = scrapedtitle.replace("Ver Pelicula ", "")
-                title = scrapedtitle + "  [" + idioma + "] [" + calidad + "]"
+                title = scrapedtitle
+                if idioma:
+                    title += "  [" + idioma + "]"
+                if calidad:
+                    title += "  [" + calidad + "]"
                 if 'class="proximamente"' in match:
-                    title += " Próximamente "
+                    title += " [Próximamente]"
                 thumbnail = scrapedthumbnail.replace("w185", "original")
                 if DEBUG: logger.info("title=["+title+"], url=["+url+"], thumbnail=["+scrapedthumbnail+"]")
                 itemlist.append(item.clone(action="findvideos", title=title, url=url, contentTitle=scrapedtitle,
@@ -156,6 +287,8 @@ def entradas(item):
     # Extrae la marca de la siguiente página
     next_page = scrapertools.find_single_match(data, '<span class="current">.*?<\/span><a href="([^"]+)"')
     if next_page != "":
+        if item.extra == "Buscar":
+            next_page = next_page.replace('&#038;', '&')
         itemlist.append(item.clone(action="entradas", title="Siguiente", url=next_page, text_color=color3))
 
     return itemlist

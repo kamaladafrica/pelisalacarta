@@ -42,7 +42,7 @@ def find_videos(text):
 
     #http://speedplay.us/kgcldj6y8l8t.html
     #http://speedplay.pw/embed-kgcldj6y8l8t.html
-    patronvideos  = 'speedplay.(?:us|pw)/(?:embed-|)([A-Z0-9a-z]+)'
+    patronvideos  = 'speedplay.(?:us|pw|xyz)/(?:embed-|)([A-Z0-9a-z]+)'
     logger.info("pelisalacarta.servers.speedplay find_videos #"+patronvideos+"#")
     matches = re.compile(patronvideos,re.DOTALL).findall(text)
 
