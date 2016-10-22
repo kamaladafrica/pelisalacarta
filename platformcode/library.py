@@ -259,7 +259,7 @@ def save_library_tvshow(item, episodelist):
 
     if not path:
         path = filetools.join(TVSHOWS_PATH, ("%s [%s]" % (base_name, _id)).strip())
-        logger.info("pelisalacarta.platformcode.library save_library_tvshow Creando directorio serie:" + path)
+        logger.info("Creando directorio serie: " + path)
         try:
             filetools.mkdir(path)
         except OSError, exception:
@@ -269,7 +269,7 @@ def save_library_tvshow(item, episodelist):
     tvshow_path = filetools.join(path, "tvshow.nfo")
     if not filetools.exists(tvshow_path):
         # Creamos tvshow.nfo, si no existe, con la url_scraper, info de la serie y marcas de episodios vistos
-        logger.info("pelisalacarta.platformcode.library save_library_tvshow Creando tvshow.nfo:" + tvshow_path)
+        logger.info("Creando tvshow.nfo: " + tvshow_path)
         url_scraper = "https://www.themoviedb.org/tv/%s\n" % item.infoLabels['tmdb_id']
 
         item_tvshow = Item(title=item.contentTitle, channel="biblioteca", action="get_temporadas",
@@ -463,8 +463,8 @@ def add_serie_to_library(item, channel=None):
         @type item: item
         @param item: item que representa la serie a guardar
         @type channel: modulo
-        @param channel: canal desde el que se guardara la serie
-
+        @param channel: canal desde el que se guardara la serie.
+            Por defecto se importara item.from_channel o item.channel
 
     """
     logger.info("pelisalacarta.platformcode.library add_serie_to_library, show=#" + item.show + "#")

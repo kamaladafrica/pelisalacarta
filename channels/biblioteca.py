@@ -282,6 +282,9 @@ def get_episodios(item):
     for i in ficheros:
         if i.endswith('.strm'):
             season_episode = scrapertools.get_season_and_episode(i)
+            if not season_episode:
+                # El fichero no incluye el numero de temporada y episodio
+                continue
             season, episode = season_episode.split("x")
             # Si hay q filtrar por temporada, ignoramos los capitulos de otras temporadas
             if item.filtrar_season and int(season) != int(item.contentSeason):
@@ -528,7 +531,12 @@ def mark_season_as_watched(item):
     episodios_marcados = 0
     for i in ficheros:
         if i.endswith(".strm"):
-            season, episode = scrapertools.get_season_and_episode(i).split("x")
+            season_episode = scrapertools.get_season_and_episode(i)
+            if not season_episode:
+                # El fichero no incluye el numero de temporada y episodio
+                continue
+            season, episode = season_episode.split("x")
+
             if int(item.contentSeason) == -1 or int(season) == int(item.contentSeason):
                 name_file = os.path.splitext(os.path.basename(i))[0]
                 it.library_playcounts[name_file] = item.playcount

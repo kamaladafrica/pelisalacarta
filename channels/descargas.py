@@ -437,14 +437,16 @@ def get_episodes(item):
         episodio.downloadProgress = 0
         episodio.downloadSize = 0
         episodio.downloadCompleted = 0
-        episodio.contentSeason, episodio.contentEpisodeNumber = scrapertools.get_season_and_episode(
-            episodio.title.lower()).split("x")
 
-        if not episodio.contentSeason or not episodio.contentEpisodeNumber or not episodio.contentTitle:
-            episodio.downloadFilename = filetools.encode(os.path.join(item.downloadFilename, episodio.title))
+        season_and_episode = scrapertools.get_season_and_episode(episodio.title)
+
+        if season_and_episode and episodio.contentTitle:
+            episodio.contentSeason, episodio.contentEpisodeNumber = season_and_episode.split("x")
+            episodio.downloadFilename = filetools.encode(os.path.join(item.downloadFilename,"%s - %s" %
+                                                                      (season_and_episode, episodio.contentTitle)))
         else:
-            episodio.downloadFilename = filetools.encode(os.path.join(item.downloadFilename, "%sx%s - %s" % (
-            episodio.contentSeason, episodio.contentEpisodeNumber, episodio.contentTitle)))
+            episodio.downloadFilename = filetools.encode(os.path.join(item.downloadFilename, episodio.title))
+
 
     return episodios
 
