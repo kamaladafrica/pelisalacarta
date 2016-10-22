@@ -156,10 +156,16 @@ def busqueda(item, texto=""):
                 continue
 
             scrapedtitle = scrapertools.decodeHtmlentities(scrapedtitle).replace(" online", "")
+            titleinfo = re.sub(r'(?i)((primera|segunda|tercera|cuarta|quinta|sexta) temporada)', "Temporada",
+                               scrapedtitle)
+            titleinfo = titleinfo.split("Temporada")[0].strip()
+            titleinfo = re.sub(r'(\(\d{4}\))|(\(\d{4}\s*-\s*\d{4}\))', '', titleinfo)
+
             if DEBUG:
                 logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
             itemlist.append(item.clone(action="episodios", title=scrapedtitle, url=scrapedurl,
-                                       thumbnail=scrapedthumbnail, fulltitle=scrapedtitle))
+                                       thumbnail=scrapedthumbnail, fulltitle=scrapedtitle, show=titleinfo,
+                                       contentType="tvshow", contentTitle=titleinfo))
     # Paginación
     next_page = scrapertools.find_single_match(data, '<a class="nextpostslink".*?href="([^"]+)">')
     if next_page != "":
@@ -207,12 +213,18 @@ def novedades(item):
         matches = scrapertools.find_multiple_matches(match, patron)
         for scrapedurl, scrapedthumbnail, scrapedtitle in matches:
             titleinfo = scrapertools.decodeHtmlentities(scrapedtitle)
-            titleinfo = re.split("Temporada", titleinfo, flags=re.IGNORECASE)[0]
+            try:
+                titleinfo = re.split("Temporada", titleinfo, flags=re.IGNORECASE)[0]
+            except:
+                try:
+                    titleinfo = re.split("Capitulo", titleinfo, flags=re.IGNORECASE)[0]
+                except:
+                    pass
             scrapedtitle = scrapertools.decodeHtmlentities(scrapedtitle) + " "
             if item.extra != "newest":
                 contentTitle = titleinfo
             else:
-                contentTitle = re.sub(r'(?i)(temporada |episodios |capítulo )', '', scrapedtitle)
+                contentTitle = re.sub(r'(?i)(temporada |episodios |capítulo |capitulo )', '', scrapedtitle)
 
             if "ES.png" in match:
                 scrapedtitle += "[CAST]"
@@ -264,6 +276,7 @@ def ultimas(item, texto=""):
             titleinfo = re.sub(r'(?i)((primera|segunda|tercera|cuarta|quinta|sexta) temporada)', "Temporada",
                                scrapedtitle)
             titleinfo = titleinfo.split("Temporada")[0].strip()
+            titleinfo = re.sub(r'(\(\d{4}\))|(\(\d{4}\s*-\s*\d{4}\))', '', titleinfo)
 
             if DEBUG:
                 logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
@@ -299,9 +312,19 @@ def episodios(item):
     for match in bloque:
         matches = scrapertools.find_multiple_matches(match, '.*?href="([^"]+)".*?title="([^"]+)"')
         for scrapedurl, scrapedtitle in matches:
-            season, episode = scrapertools.find_single_match(scrapedtitle, '(\d+)(?:×|x)(\d+)')
-            item.infoLabels['season'] = season
-            item.infoLabels['episode'] = episode
+            try:
+                season, episode = scrapertools.find_single_match(scrapedtitle, '(\d+)(?:×|x)(\d+)')
+                item.infoLabels['season'] = season
+                item.infoLabels['episode'] = episode
+                contentType = "episode"
+            except:
+                try:
+                    episode = scrapertools.find_single_match(scrapedtitle, '(?i)(?:Capitulo|Capítulo|Episodio)\s*(\d+)')
+                    item.infoLabels['season'] = "1"
+                    item.infoLabels['episode'] = episode
+                    contentType = "episode"
+                except:
+                    contentType = "tvshow"
                
             scrapedtitle = scrapertools.decodeHtmlentities(scrapedtitle) + "  "
             scrapedtitle = scrapedtitle.replace('Temporada', '')
@@ -315,7 +338,7 @@ def episodios(item):
                 scrapedtitle += "[V.O]"
             if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"]")
             itemlist.append(item.clone(action="findvideos", title=scrapedtitle, url=scrapedurl,
-                                       fulltitle=scrapedtitle, contentType="episode"))
+                                       fulltitle=scrapedtitle, contentType=contentType))
 
     itemlist.reverse()
     if itemlist and item.extra != "episodios":
@@ -386,8 +409,6 @@ def findvideos(item):
         if url_lista != "":
             itemlist.append(item.clone(action="episodios", title="Ir a la Lista de Capítulos", url=url_lista,
                                        text_color="red", context=""))
-    for item1 in itemlist:
-        logger.info(item1.tostring())
 
     return itemlist
 
