@@ -113,6 +113,8 @@ def render_items(itemlist, parent_item):
     """
     # Si el itemlist no es un list salimos
     if not type(itemlist) == list:
+        if config.get_platform() == "boxee":
+          xbmcplugin.endOfDirectory(handle=int(sys.argv[1]), succeeded=True)
         return
 
     # Si no hay ningun item, mostramos un aviso
@@ -148,8 +150,11 @@ def render_items(itemlist, parent_item):
         listitem = xbmcgui.ListItem(item.title, iconImage=icon_image, thumbnailImage=item.thumbnail)
 
         # Ponemos el fanart
-        listitem.setProperty('fanart_image',
-                             item.fanart if item.fanart else os.path.join(config.get_runtime_path(), "fanart.jpg"))
+        if item.fanart:
+          listitem.setProperty('fanart_image', item.fanart)
+        else:
+          listitem.setProperty('fanart_image', os.path.join(config.get_runtime_path(), "fanart.jpg"))                  
+                             
 
         # TODO: ¿Se puede eliminar esta linea? yo no he visto que haga ningun efecto.
         xbmcplugin.setPluginFanart(int(sys.argv[1]), os.path.join(config.get_runtime_path(), "fanart.jpg"))
@@ -166,9 +171,11 @@ def render_items(itemlist, parent_item):
                                         listitem=listitem, isFolder=item.folder)
         else:
             listitem.addContextMenuItems(context_commands, replaceItems=True)
+            
+            if not item.totalItems: item.totalItems = 0
             xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url='%s?%s' % (sys.argv[0], item.tourl()),
                                         listitem=listitem, isFolder=item.folder,
-                                        totalItems=item.totalItems if item.totalItems else 0)
+                                        totalItems=item.totalItems)
 
     # Vista 5x3 hasta llegar al listado de canales
     if parent_item.channel not in ["channelselector", ""]:
@@ -206,14 +213,17 @@ def set_infolabels(listitem, item):
     @param item: objeto Item que representa a una pelicula, serie o capitulo
     @type item: item
     """
-
-    listitem.setInfo("video", item.infoLabels)
+    if item.infoLabels:
+      listitem.setInfo("video", item.infoLabels)
+      
     if item.fulltitle:
         listitem.setInfo("video", {"Title": item.fulltitle})
     else:
         listitem.setInfo("video", {"Title": item.title})
+        
     # Añadido para Kodi Krypton (v17)
-    listitem.setArt({"poster": item.thumbnail})
+    if int(xbmc.getInfoLabel("System.BuildVersion").split(".", 1)[0]) > 16:
+      listitem.setArt({"poster": item.thumbnail})
 
 
 def set_context_commands(item, parent_item):

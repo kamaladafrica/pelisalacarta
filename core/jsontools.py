@@ -35,11 +35,10 @@ def load_json(*args, **kwargs):
         logger.info("pelisalacarta.core.jsontools loads Probando simplejson en el directorio lib")
         from lib import simplejson as json
         if "object_hook" in kwargs:
-            # return to_utf8(json.loads(*args, **kwargs))
             return json.loads(*args, **kwargs)
         else:
-            # return to_utf8(json.loads(*args, object_hook=to_utf8))
-            return json.loads(*args, object_hook=to_utf8)
+            kwargs["object_hook"] = to_utf8
+            return json.loads(*args, **kwargs)
 
     except ImportError:
         json = None
@@ -49,7 +48,8 @@ def load_json(*args, **kwargs):
     # TODO comprobar si hace falta para plex
     try:
         logger.info("pelisalacarta.core.jsontools.load_json Probando JSON de Plex")
-        json_data = JSON.ObjectFromString(*args, encoding="utf-8")
+        kwargs = {"encoding":"utf-8"}
+        json_data = JSON.ObjectFromString(*args, **kwargs)
         logger.info("pelisalacarta.core.jsontools.load_json -> "+repr(json_data))
         return json_data
     except:
@@ -68,8 +68,8 @@ def dump_json(*args, **kwargs):
         if kwargs:
             return json.dumps(*args, **kwargs)
         else:
-            return json.dumps(*args, indent=4, skipkeys=True, sort_keys=True, ensure_ascii=False)
-            # return json.dumps(*args, indent=4, sort_keys=True, ensure_ascii=False)
+            kwargs = {"indent":4, "skipkeys": True, "sort_keys": True, "ensure_ascii": False}
+            return json.dumps(*args, **kwargs)
     except ImportError:
         json = None
     except:

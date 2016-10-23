@@ -54,10 +54,6 @@ def start():
 def run():
     logger.info("pelisalacarta.platformcode.launcher run")
 
-    # The start() function is not always executed on old platforms (XBMC versions under 12.0)
-    if config.OLD_PLATFORM:
-        config.verify_directories_created()
-
     # Extract item from sys.argv
     if sys.argv[2]:
         item = Item().fromurl(sys.argv[2])
@@ -169,7 +165,7 @@ def run():
 
             elif os.path.exists(channel_file):
                 try:
-                    channel = __import__('channels.%s' % item.channel, fromlist=["channels.%s" % item.channel])
+                    channel = __import__('channels.%s' % item.channel, None, None, ["channels.%s" % item.channel])
                 except ImportError:
                     exec "import channels."+item.channel+" as channel"
 

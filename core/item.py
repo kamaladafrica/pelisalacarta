@@ -47,6 +47,13 @@ class InfoLabels(dict):
         else:
             super(InfoLabels, self).__setattr__(name, value)
 
+    #Python 2.4
+    def __getitem__(self, key):
+        try:
+          return super(InfoLabels, self).__getitem__(key)
+        except:
+          return self.__missing__(key)
+          
     def __missing__(self, key):
         '''
         Valores por defecto en caso de que la clave solicitada no exista.

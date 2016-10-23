@@ -54,7 +54,14 @@ def encode_log(message):
     return message
 
 def get_caller(message = None):
-        module=inspect.getmodule(inspect.stack()[2][0]).__name__
+        module=inspect.getmodule(inspect.stack()[2][0])
+        
+        #En boxee en cosaiones no detecta el modulo, de este modo lo hacemos manual
+        if module == None: 
+          module = ".".join(os.path.splitext(inspect.stack()[2][1].split("pelisalacarta")[1])[0].split(os.path.sep))[1:]
+        else: 
+          module = module.__name__
+        
         function = inspect.stack()[2][3]
         
         if module == "__main__": module = "pelisalacarta" 

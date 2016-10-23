@@ -147,8 +147,10 @@ def get_video_urls(server,url):
     return video_urls
 
 def get_channel_module(channel_name):
-    channels_module = __import__("channels."+channel_name)
-    channel_module = getattr(channels_module,channel_name)
+    if not "." in channel_name:
+      channel_module = __import__('channels.%s' % channel_name, None, None, ["channels.%s" % channel_name])
+    else:
+      channel_module = __import__(channel_name, None, None, [channel_name])
     return channel_module
 
 def get_server_from_url(url):

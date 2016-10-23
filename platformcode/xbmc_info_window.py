@@ -293,7 +293,7 @@ class InfoWindow(xbmcgui.WindowXMLDialog):
         # Ponemos el título y las imagenes
         self.getControl(10002).setLabel(self.caption)
         self.getControl(10004).setImage(self.result.get("fanart", ""))
-        self.getControl(10005).setImage(self.result.get("thumbnail", "InfoWindow/img_no_disponible.png"))
+        self.getControl(10005).setImage(self.result.get("thumbnail", "images/img_no_disponible.png"))
 
         # Cargamos los datos para el formato pelicula
         if self.result.get("mediatype", "movie") == "movie":
