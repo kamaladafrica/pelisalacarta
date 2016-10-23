@@ -721,13 +721,13 @@ def get_data(payload):
 
     if modo_cliente:
         try:
-            req = urllib2.Request(xbmc_json_rpc_url, data=jsontools.dumps(payload), headers=headers)
+            req = urllib2.Request(xbmc_json_rpc_url, data=jsontools.dump_json(payload), headers=headers)
             f = urllib2.urlopen(req)
             response = f.read()
             f.close()
 
             logger.info("pelisalacarta.platformcode.library get_data: response %s" % response)
-            data = jsontools.loads(response)
+            data = jsontools.load_json(response)
         except Exception, ex:
             template = "An exception of type {0} occured. Arguments:\n{1!r}"
             message = template.format(type(ex).__name__, ex.args)
@@ -735,7 +735,7 @@ def get_data(payload):
             data = ["error"]
     else:
         try:
-            data = jsontools.loads(xbmc.executeJSONRPC(jsontools.dumps(payload)))
+            data = jsontools.load_json(xbmc.executeJSONRPC(jsontools.dump_json(payload)))
         except Exception, ex:
             template = "An exception of type {0} occured. Arguments:\n{1!r}"
             message = template.format(type(ex).__name__, ex.args)
