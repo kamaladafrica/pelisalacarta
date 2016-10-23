@@ -1352,7 +1352,7 @@ def get_season_and_episode(title):
     @return: Numero de temporada y episodio en formato "1x01" o cadena vacia si no se han encontrado
     """
     filename = ""
-    patron = "(?:s|season|t|temp\w*)\s*(\d+)\s*(?:e|x|capitulo|epi\w*)\s*(\d+)"
+    patron = "(?:s|season|t|temp\w*|^)\s*(\d+)\s*(?:e|x|capitulo|epi\w*)\s*(\d+)"
     try:
         matches = re.compile(patron, re.I).search(title)
         if matches:
