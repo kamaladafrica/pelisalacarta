@@ -28,65 +28,52 @@
 import traceback
 import logger
 
+try:
+  logger.info("Probando json incluido en el interprete")
+  import json
+except ImportError:
+  logger.info("json incluido en el interprete **NO** disponible")
+  
+  try:
+    logger.info("Probando simplejson incluido en el interprete")
+    import simplejson as json
+  except ImportError:
+    logger.info("simplejson incluido en el interprete **NO** disponible")
+    
+    try:
+      logger.info("Probando simplejson en el directorio lib")
+      from lib import simplejson as json
+    except ImportError:
+      logger.info("simplejson en el directorio lib **NO** disponible")
+      logger.error("No se ha encontrado un parser de JSON valido")
+      json = None
+
+
 
 def load_json(*args, **kwargs):
-
-    try:
-        logger.info("pelisalacarta.core.jsontools loads Probando simplejson en el directorio lib")
-        from lib import simplejson as json
-        if "object_hook" in kwargs:
-            return json.loads(*args, **kwargs)
-        else:
-            kwargs["object_hook"] = to_utf8
-            return json.loads(*args, **kwargs)
-
-    except ImportError:
-        json = None
+    if not "object_hook" in kwargs:
+        kwargs["object_hook"] = to_utf8
+        
+    try:    
+      value = json.loads(*args, **kwargs)
     except:
-        logger.info(traceback.format_exc())
+      logger.error("**NO** se ha podido cargar el JSON")
+      value = {}
+     
+    return value
 
-    # TODO comprobar si hace falta para plex
-    try:
-        logger.info("pelisalacarta.core.jsontools.load_json Probando JSON de Plex")
-        kwargs = {"encoding":"utf-8"}
-        json_data = JSON.ObjectFromString(*args, **kwargs)
-        logger.info("pelisalacarta.core.jsontools.load_json -> "+repr(json_data))
-        return json_data
-    except:
-        logger.info(traceback.format_exc())
-
-    logger.info("pelisalacarta.core.jsontools.load_json No se ha encontrado un parser de JSON valido")
-    logger.info("pelisalacarta.core.jsontools.load_json -> (nada)")
-    return {}
 
 
 def dump_json(*args, **kwargs):
+    if not kwargs:
+        kwargs = {"indent":4, "skipkeys": True, "sort_keys": True, "ensure_ascii": False}
 
-    try:
-        logger.info("pelisalacarta.core.jsontools dumps Probando simplejson en el directorio lib")
-        from lib import simplejson as json
-        if kwargs:
-            return json.dumps(*args, **kwargs)
-        else:
-            kwargs = {"indent":4, "skipkeys": True, "sort_keys": True, "ensure_ascii": False}
-            return json.dumps(*args, **kwargs)
-    except ImportError:
-        json = None
+    try:    
+      value = json.dumps(*args, **kwargs)
     except:
-        logger.info(traceback.format_exc())
-
-    # TODO comprobar si hace falta para plex
-    try:
-        logger.info("pelisalacarta.core.jsontools.dump_json Probando JSON de Plex")
-        json_data = JSON.StringFromObject(*args)   #, encoding="utf-8")
-        logger.info("pelisalacarta.core.jsontools.dump_json -> "+repr(json_data))
-        return json_data
-    except:
-        logger.info(traceback.format_exc())
-
-    logger.info("pelisalacarta.core.jsontools.dump_json No se ha encontrado un parser de JSON valido")
-    logger.info("pelisalacarta.core.jsontools.dump_json -> (nada)")
-    return {}
+      logger.error("**NO** se ha podido cargar el JSON")
+      value = ""
+    return value
 
 
 def to_utf8(dct):
