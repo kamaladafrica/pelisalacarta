@@ -615,7 +615,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
 
                 # Cambiamos las propiedades
                 control.setVisible(False)
-                label.setLabel(label)
+                control.setLabel(label)
 
                 # Lo añadimos al listado
                 self.controls.append(

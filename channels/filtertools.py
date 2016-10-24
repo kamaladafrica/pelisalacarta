@@ -292,12 +292,12 @@ def config_filter(item):
     # logger.info("list quality {}".format(list_quality))
 
     active = True
-    custom_method = ""
+    custom_button = {'visible': False}
     allow_option = False
     if item.show.lower().strip() in dict_series:
         allow_option = True
-        custom_method = "borrar_filtro"
         active = dict_series.get(item.show.lower().strip(), {}).get(TAG_ACTIVE, False)
+        custom_button = {'label': 'Borrar', 'function': 'borrar_filtro', 'visible': True, 'close': True}
 
     list_controls = []
 
@@ -348,8 +348,6 @@ def config_filter(item):
 
         # concatenamos list_controls con list_controls_calidad
         list_controls.extend(list_controls_calidad)
-
-    custom_button = {'name': 'Borrar', 'method': custom_method}
 
     platformtools.show_channel_settings(list_controls=list_controls, callback='guardar_valores', item=item,
                                         caption="Filtrado de enlaces para: [COLOR blue]{0}[/COLOR]".format(item.show),
