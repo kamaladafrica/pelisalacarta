@@ -494,7 +494,7 @@ def downloadpageWithResult(url,post=None,headers=DEFAULT_HEADERS,follow_redirect
             logger.info("pelisalacarta.core.scrapertools normal")
             data = handle.read()
 
-        resultCode = handle.getcode()
+        resultCode = handle.code
     except urllib2.HTTPError,e:
         import traceback
         logger.info(traceback.format_exc())

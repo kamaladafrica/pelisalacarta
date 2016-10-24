@@ -42,9 +42,8 @@ def mainlist(item):
 
     itemlist.append(Item(channel=CHANNELNAME, title="Ajustes especiales", action="", folder=False))
 
-    if not config.OLD_PLATFORM:
-        itemlist.append(Item(channel="novedades", title="   Ajustes de la sección 'Novedades'", action="menu_opciones", folder=True))
-        itemlist.append(Item(channel="buscador",  title="   Ajustes del buscador global", action="opciones", folder=True))
+    itemlist.append(Item(channel="novedades", title="   Ajustes de la sección 'Novedades'", action="menu_opciones", folder=True))
+    itemlist.append(Item(channel="buscador",  title="   Ajustes del buscador global", action="opciones", folder=True))
 
     if config.is_xbmc():
         itemlist.append(Item(channel=item.channel, action="updatebiblio",
@@ -53,19 +52,19 @@ def mainlist(item):
     itemlist.append(Item(channel=CHANNELNAME, title="   Comprobar actualizaciones", action="check_for_updates", folder=False))
     itemlist.append(Item(channel=CHANNELNAME, title="   Añadir o Actualizar canal/conector desde una URL", action="menu_addchannels"))
     itemlist.append(Item(channel=item.channel, action="", title="", folder=False))
-    itemlist.append(Item(channel=item.channel, action="test", title="Test", folder=False))
-    if not config.OLD_PLATFORM:
-        itemlist.append(Item(channel=CHANNELNAME, title="Ajustes por canales", action="", folder=False))
-        import channelselector
-        from core import channeltools
-        channel_list = channelselector.filterchannels("all")
-        for channel in channel_list:
-          jsonchannel = channeltools.get_channel_json(channel.channel)
-          if jsonchannel.get("settings"):
-            setting = jsonchannel["settings"]
-            if type(setting) == list:
-              if len([s for s in setting if "id" in s and not "include_in_" in s["id"]]):
-                itemlist.append(Item(channel=CHANNELNAME,  title="   Configuración del canal '%s'" % channel.title, action="channel_config", config=channel.channel, folder=False))
+
+
+    itemlist.append(Item(channel=CHANNELNAME, title="Ajustes por canales", action="", folder=False))
+    import channelselector
+    from core import channeltools
+    channel_list = channelselector.filterchannels("all")
+    for channel in channel_list:
+      jsonchannel = channeltools.get_channel_json(channel.channel)
+      if jsonchannel.get("settings"):
+        setting = jsonchannel["settings"]
+        if type(setting) == list:
+          if len([s for s in setting if "id" in s and not "include_in_" in s["id"]]):
+            itemlist.append(Item(channel=CHANNELNAME,  title="   Configuración del canal '%s'" % channel.title, action="channel_config", config=channel.channel, folder=False))
 
     return itemlist
 
@@ -74,12 +73,6 @@ def channel_config(item):
   from platformcode import platformtools
   import os
   return platformtools.show_channel_settings(channelpath=os.path.join(config.get_runtime_path(),"channels", item.config))
-
-def test(item):
-  from core import tmdb
-  item.contentTitle="Thor"
-  tmdb.find_and_set_infoLabels_tmdb(item)
-  return
   
 def check_for_updates(item):
     from core import updater

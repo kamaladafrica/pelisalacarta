@@ -31,7 +31,6 @@ import xbmc
 import xbmcaddon
 
 PLATFORM_NAME = "kodi-krypton"
-OLD_PLATFORM = False
 PLUGIN_NAME = "pelisalacarta"
 
 __settings__ = xbmcaddon.Addon(id="plugin.video." + PLUGIN_NAME)
@@ -89,29 +88,19 @@ def get_setting(name, channel=""):
     value -- El valor del parametro 'name'
 
     """
-    # xbmc.log("config.get_setting name="+name+", channel="+channel+", OLD_PLATFORM="+str(OLD_PLATFORM))
 
     # Specific channel setting
     if channel:
 
-        # Old platforms read settings from settings-oldplatform.xml, all but the "include_in_global_search", "include_in_newest..."
-        if OLD_PLATFORM and ("user" in name or "password" in name):
-            # xbmc.log("config.get_setting reading channel setting from main xml '"+channel+"_"+name+"'")
-            value = __settings__.getSetting(channel+"_"+name)
-            # xbmc.log("config.get_setting -> '"+value+"'")
+        # xbmc.log("config.get_setting reading channel setting '"+name+"' from channel xml")
+        from core import channeltools
+        value = channeltools.get_channel_setting(name, channel)
+        # xbmc.log("config.get_setting -> '"+repr(value)+"'")
+
+        if value is not None:
             return value
-
-        # New platforms read settings from each channel
         else:
-            # xbmc.log("config.get_setting reading channel setting '"+name+"' from channel xml")
-            from core import channeltools
-            value = channeltools.get_channel_setting(name, channel)
-            # xbmc.log("config.get_setting -> '"+repr(value)+"'")
-
-            if value is not None:
-                return value
-            else:
-                return ""
+            return ""
 
     # Global setting
     else:

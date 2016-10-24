@@ -11,10 +11,7 @@ import urllib
 from core import logger
 from core import scrapertools
 
-try:
-    import simplejson as json
-except ImportError:
-    import json
+from core import jsontools as json
 
 def get_video_url( page_url , premium = False , user="" , password="", video_password="" ):
     logger.info("[youtube.py] get_video_url(page_url='%s')" % page_url)
@@ -141,7 +138,7 @@ def extractFlashVars(data):
         data = removeAdditionalEndingDelimiter(data)                             
                                                                                       
         if found:                                                                     
-            data = json.loads(data)                                                   
+            data = json.load_json(data)
             if assets:                                                                
                 flashvars = data["assets"]                                            
             else:                                                                     

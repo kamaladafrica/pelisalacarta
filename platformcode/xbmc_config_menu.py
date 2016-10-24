@@ -176,7 +176,17 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
         self.title = title
         self.callback = callback
         self.item = item
-        self.custom_button = custom_button
+        
+        
+        if type(custom_button) == dict:
+          self.custom_button = {} 
+          self.custom_button["label"] = custom_button.get("label", "")
+          self.custom_button["function"] = custom_button.get("function", "")
+          self.custom_button["visible"] = bool(custom_button.get("visible", True))
+          self.custom_button["close"] = bool(custom_button.get("close", False))
+        else:
+          self.custom_button = None
+          
 
         # Obtenemos el canal desde donde se ha echo la llamada y cargamos los settings disponibles para ese canal
         if not channelpath:
@@ -363,8 +373,8 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
         self.getControl(10002).setLabel(self.title)
 
         if self.custom_button is not None:
-            if self.custom_button['method'] != "":
-                self.getControl(10006).setLabel(self.custom_button['name'])
+            if self.custom_button['visible'] == True:
+                self.getControl(10006).setLabel(self.custom_button['label'])
             else:
                 self.getControl(10006).setVisible(False)
                 self.getControl(10004).setPosition(self.getControl(10004).getPosition()[0] + 80, self.getControl(10004).getPosition()[1])
@@ -465,12 +475,15 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                     else:
                         self.values[id] = default
 
-                value = self.values[id]
+                
 
             if ctype == "bool":
                 c["default"] = bool(c["default"])
                 self.values[id] = bool(self.values[id])
-
+            
+            if ctype in ["bool", "text", "list"]:
+              value = self.values[id]
+            
             # Control "bool"
             if ctype == "bool":
                 # Creamos el control
@@ -581,6 +594,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                 # Cambiamos las propiedades
                 control.setVisible(False)
                 label.setVisible(False)
+                label.setLabel(lvalues[value])
                 upBtn.setVisible(False)
                 downBtn.setVisible(False)
 
@@ -601,6 +615,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
 
                 # Cambiamos las propiedades
                 control.setVisible(False)
+                control.setLabel(label)
 
                 # Lo añadimos al listado
                 self.controls.append(
@@ -729,7 +744,10 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                 else:
                     control["control"].setPosition(control["x"], control["y"])
                     control["control"].setVisible(True)
-                    control["label"].setPosition(control["x"], control["y"])
+                    if config.get_platform() == "boxee":
+                    	control["label"].setPosition(control["x"] + self.controls_width - 30, control["y"])
+                    else:
+                    	control["label"].setPosition(control["x"], control["y"])
                     control["label"].setVisible(True)
                     control["upBtn"].setPosition(control["x"] + control["control"].getWidth() - 25, control["y"] + 3)
                     control["upBtn"].setVisible(True)
@@ -776,7 +794,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                     self.getControl(10004).setEnabled(True)
 
     def check_default(self):
-        if not self.custom_button:
+        if self.custom_button is None:
             def_values = dict([[c["id"], c["default"]] for c in self.controls])
 
             if def_values == self.values:
@@ -787,14 +805,17 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
     def onClick(self, id):
         # Valores por defecto
         if id == 10006:
-            if self.custom_button['method'] != "":
-                self.close()
-                cb_channel = None
+            if self.custom_button is not None:
                 try:
                     cb_channel = __import__('channels.%s' % self.channel, None, None, ["channels.%s" % self.channel])
                 except ImportError:
                     logger.error('Imposible importar %s' % self.channel)
-                self.return_value = getattr(cb_channel, self.custom_button['method'])(self.item)
+                else:
+                  self.return_value = getattr(cb_channel, self.custom_button['function'])(self.item)
+                  if self.custom_button["close"] == True:
+                    self.close()
+                
+                
             else:
                 for c in self.controls:
                     if c["type"] == "text":

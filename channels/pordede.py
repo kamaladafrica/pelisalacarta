@@ -48,11 +48,7 @@ def mainlist(item):
     return itemlist
 
 def settingCanal(item):
-
-    if config.OLD_PLATFORM:
-        config.open_settings()
-    else:
-        return platformtools.show_channel_settings()
+    return platformtools.show_channel_settings()
 
 def menuseries(item):
     logger.info("pelisalacarta.channels.pordede menuseries")

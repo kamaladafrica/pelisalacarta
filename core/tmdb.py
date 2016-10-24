@@ -424,6 +424,13 @@ def set_infoLabels_item(item, seekTmdb=True, idioma_busqueda='es', lock=None):
 
 # Clase auxiliar
 class ResultDictDefault(dict):
+    #Python 2.4
+    def __getitem__(self, key):
+        try:
+          return super(ResultDictDefault, self).__getitem__(key)
+        except:
+          return self.__missing__(key)
+          
     def __missing__(self, key):
         '''
         valores por defecto en caso de que la clave solicitada no exista

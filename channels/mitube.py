@@ -5,7 +5,7 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import json
+from core import jsontools as json
 import os
 import re
 import sys
@@ -169,7 +169,7 @@ def series(item):
     data = scrapertools.cache_page(item.url)
  #, headers = ANIMEFLV_REQUEST_HEADERS)
    # print data
-    wdata = json.loads(data)
+    wdata = json.load_json(data)
   #  songs = get_tracks_from_json(wdata)
     try:
         items = wdata['items']
