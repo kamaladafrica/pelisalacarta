@@ -100,6 +100,7 @@ def cb_select_from_tmdb(item, tmdb_result):
 def find_and_set_infoLabels_tmdb(item):
     global otmdb_global
 
+
     if item.contentType == "movie":
         tipo_busqueda = "movie"
         tipo_contenido = "pelicula"
@@ -158,15 +159,16 @@ def find_and_set_infoLabels_tmdb(item):
     else:
         infoLabels = InfoLabels()
 
-    if not tmdb_result:
+    if tmdb_result:
+        infoLabels['tmdb_id'] = tmdb_result['id']
+        item.infoLabels = infoLabels
+        set_infoLabels_item(item)
+        return True
+
+    else:
         item.infoLabels = infoLabels
         return False
 
-    #otmdb_global = None
-    infoLabels['tmdb_id'] = tmdb_result['id']
-    item.infoLabels = infoLabels
-    set_infoLabels_item(item)
-    return True
 
 def set_infoLabels(source, seekTmdb=True, idioma_busqueda='es'):
     """
@@ -666,6 +668,7 @@ class Tmdb(object):
 
     @classmethod
     def rellenar_dic_generos(cls, tipo='movie', idioma='es'):
+        resultado = {}
         # Rellenar diccionario de generos del tipo e idioma pasados como parametros
         if idioma not in cls.dic_generos:
             cls.dic_generos[idioma] = {}
@@ -676,11 +679,16 @@ class Tmdb(object):
                    % (tipo, idioma))
             try:
                 logger.info("[Tmdb.py] Rellenando dicionario de generos")
-                lista_generos = jsontools.load_json(scrapertools.downloadpageWithoutCookies(url))["genres"]
+                resultado = jsontools.load_json(scrapertools.downloadpageWithoutCookies(url))
+                lista_generos = resultado["genres"]
                 for i in lista_generos:
                     cls.dic_generos[idioma][tipo][str(i["id"])] = i["name"]
             except:
                 pass
+
+            if "status_code" in resultado:
+                msg = "Error de tmdb: %s %s" % (resultado["status_code"], resultado["status_message"])
+                logger.error(msg)
 
     def __by_id(self, source='tmdb'):
         resultado = {}
@@ -721,7 +729,10 @@ class Tmdb(object):
             self.result = ResultDictDefault(resultado)
         else:
             # No hay resultados de la busqueda
-            logger.debug("La busqueda de %s no dio resultados." % buscando)
+            msg = "La busqueda de %s no dio resultados." % buscando
+            if "status_code" in resultado:
+                msg += "\nError de tmdb: %s %s" % (resultado["status_code"], resultado["status_message"])
+            logger.debug(msg)
 
     def __search(self, index_results=0, page=1):
         resultado = {}
@@ -763,23 +774,30 @@ class Tmdb(object):
                             results.remove(r)
                             total_results -= 1
 
+
+        if results:
             if index_results >= len(results):
+                # Se ha solicitado un numero de resultado mayor de los obtenidos
                 logger.error(
-                    "La busqueda de '%s' no dio %s resultados para la pagina %s" % (buscando, index_results, page))
+                    "La busqueda de '%s' dio %s resultados para la pagina %s\nImposible mostrar el resultado numero %s"
+                    % (buscando, len(results), page, index_results))
                 return 0
 
-
-        # Retornamos el numero de resultados de esta pagina
-        if results:
+            # Retornamos el numero de resultados de esta pagina
             self.results = results
             self.total_results = total_results
             self.total_pages = total_pages
             self.result = ResultDictDefault(self.results[index_results])
             return len(self.results)
+
         else:
             # No hay resultados de la busqueda
-            logger.error("La busqueda de '%s' no dio resultados para la pagina %s" % (buscando, page))
+            msg = "La busqueda de '%s' no dio resultados para la pagina %s" % (buscando, page)
+            if "status_code" in resultado:
+                msg += "\nError de tmdb: %s %s" % (resultado["status_code"], resultado["status_message"])
+            logger.error(msg)
             return 0
+
 
     def load_resultado(self, index_results=0, page=1):
         # Si no hay resultados, solo hay uno o
@@ -901,6 +919,10 @@ class Tmdb(object):
                 if 'overview' in resultado:
                     self.result['overview'] = resultado['overview']
                     ret = self.result['overview']
+
+                if "status_code" in resultado:
+                    msg = "Error de tmdb: %s %s" % (resultado["status_code"], resultado["status_message"])
+                logger.debug(msg)
 
         return ret
 
@@ -1030,12 +1052,14 @@ class Tmdb(object):
             try:
                 self.temporada[numtemporada] = jsontools.load_json(scrapertools.downloadpageWithoutCookies(url))
             except:
-                self.temporada[numtemporada] = ["status_code"]
+                self.temporada[numtemporada] = {"status_code": 15}
 
             if "status_code" in self.temporada[numtemporada]:
                 # Se ha producido un error
                 self.temporada[numtemporada] =  {"episodes":{}}
-                logger.error("La busqueda de " + buscando + " no dio resultados.")
+                msg = "La busqueda de " + buscando + " no dio resultados."
+                msg += "\nError de tmdb: %s %s" % (resultado["status_code"], resultado["status_message"])
+                logger.debug(msg)
 
 
         return self.temporada[numtemporada]
@@ -1159,6 +1183,10 @@ class Tmdb(object):
                 if dict_videos['results']:
                     dict_videos['results'] = sorted(dict_videos['results'], key=lambda x: (x['type'], x['size']))
                     self.result["videos"].extend(dict_videos['results'])
+
+            if "status_code" in dict_videos:
+                msg = "Error de tmdb: %s %s" % (dict_videos["status_code"], dict_videos["status_message"])
+                logger.debug(msg)
 
             # Si las busqueda han obtenido resultados devolver un listado de objetos
             for i in self.result['videos']:
