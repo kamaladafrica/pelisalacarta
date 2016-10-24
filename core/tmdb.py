@@ -682,7 +682,7 @@ class Tmdb(object):
                    % (tipo, idioma))
             try:
                 logger.info("[Tmdb.py] Rellenando dicionario de generos")
-                lista_generos = jsontools.loads(scrapertools.downloadpageWithoutCookies(url))["genres"]
+                lista_generos = jsontools.load_json(scrapertools.downloadpageWithoutCookies(url))["genres"]
                 for i in lista_generos:
                     cls.dic_generos[idioma][tipo][str(i["id"])] = i["name"]
             except:
@@ -711,7 +711,7 @@ class Tmdb(object):
             logger.info("[Tmdb.py] Buscando %s:\n%s" % (buscando, url))
 
             try:
-                resultado = jsontools.loads(scrapertools.downloadpageWithoutCookies(url))
+                resultado = jsontools.load_json(scrapertools.downloadpageWithoutCookies(url))
                 if source != "tmdb":
                     if self.busqueda_tipo == "movie":
                         resultado = resultado["movie_results"][0]
@@ -751,7 +751,7 @@ class Tmdb(object):
             logger.info("[Tmdb.py] Buscando %s en pagina %s:\n%s" % (buscando, page, url))
 
             try:
-                resultado = jsontools.loads(scrapertools.downloadpageWithoutCookies(url))
+                resultado = jsontools.load_json(scrapertools.downloadpageWithoutCookies(url))
                 total_results = resultado["total_results"]
                 total_pages = resultado["total_pages"]
             except:
@@ -900,7 +900,7 @@ class Tmdb(object):
                 url = ('http://api.themoviedb.org/3/%s/%s?api_key=f7f51775877e0bb6703520952b3c7840&language=%s' %
                        (self.busqueda_tipo, self.busqueda_id, self.busqueda_idioma))
                 try:
-                    resultado = jsontools.loads(scrapertools.downloadpageWithoutCookies(url))
+                    resultado = jsontools.load_json(scrapertools.downloadpageWithoutCookies(url))
                 except:
                     pass
 
@@ -1034,7 +1034,7 @@ class Tmdb(object):
             buscando = "id_Tmdb: " + str(self.result["id"]) + " temporada: " + str(numtemporada) + "\nURL: " + url
             logger.info("[Tmdb.py] Buscando " + buscando)
             try:
-                self.temporada[numtemporada] = jsontools.loads(scrapertools.downloadpageWithoutCookies(url))
+                self.temporada[numtemporada] = jsontools.load_json(scrapertools.downloadpageWithoutCookies(url))
             except:
                 self.temporada[numtemporada] = ["status_code"]
 
@@ -1145,7 +1145,7 @@ class Tmdb(object):
                 url = "http://api.themoviedb.org/3/%s/%s/videos?api_key=f7f51775877e0bb6703520952b3c7840&language=%s" \
                       % (self.busqueda_tipo, self.result['id'], self.busqueda_idioma)
                 try:
-                    dict_videos = jsontools.loads(scrapertools.downloadpageWithoutCookies(url))
+                    dict_videos = jsontools.load_json(scrapertools.downloadpageWithoutCookies(url))
                 except:
                     pass
 
@@ -1158,7 +1158,7 @@ class Tmdb(object):
                 url = "http://api.themoviedb.org/3/%s/%s/videos?api_key=f7f51775877e0bb6703520952b3c7840" \
                       % (self.busqueda_tipo, self.result['id'])
                 try:
-                    dict_videos = jsontools.loads(scrapertools.downloadpageWithoutCookies(url))
+                    dict_videos = jsontools.load_json(scrapertools.downloadpageWithoutCookies(url))
                 except:
                     pass
 

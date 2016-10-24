@@ -100,7 +100,7 @@ def convert_old_to_v4():
     # Convertir libreria de v2(json) a v4
     if filetools.exists(path_series_json):
         try:
-            data = jsontools.loads(filetools.read(path_series_json))
+            data = jsontools.load_json(filetools.read(path_series_json))
             for tvshow in data:
                 for channel in data[tvshow]["channels"]:
                     try:

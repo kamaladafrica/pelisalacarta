@@ -12,6 +12,7 @@ from core import logger
 from core import config
 from core import scrapertools
 from core.item import Item
+from core import jsontools as json
 
 DEBUG = config.get_setting("debug")
 
@@ -58,9 +59,8 @@ def mainlist(item):
 def videos(item):
     logger.info("[beeg.py] videos")
     itemlist = []
-    import json
-    data = scrapertools.cache_page(item.url)  
-    JSONData = json.loads(data)
+    data = scrapertools.cache_page(item.url)
+    JSONData = json.load_json(data)
     
     
     for Video in JSONData["videos"]:
@@ -82,9 +82,8 @@ def videos(item):
 def listcategorias(item):
     logger.info("[beeg.py] listcategorias")
     itemlist = []
-    import json
-    data = scrapertools.cache_page(item.url)  
-    JSONData = json.loads(data)
+    data = scrapertools.cache_page(item.url)
+    JSONData = json.load_json(data)
     
     
     for Tag in JSONData["tags"]["popular"]:
@@ -112,10 +111,9 @@ def search(item,texto):
 def play(item):
     logger.info("[beeg.py] findvideos")
     itemlist = []
-    import json
-    data = scrapertools.downloadpage(item.url)  
+    data = scrapertools.downloadpage(item.url)
 
-    JSONData = json.loads(data)
+    JSONData = json.load_json(data)
     for key in JSONData:
       videourl = re.compile("([0-9]+p)",re.DOTALL).findall(key)
       if videourl: 
