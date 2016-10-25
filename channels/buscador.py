@@ -79,9 +79,17 @@ def settingCanal(item):
             continue
         
         # No incluir si en la configuracion del canal no existe "include_in_global_search"
-        include_in_global_search = config.get_setting("include_in_global_search",channel_name)
-        if include_in_global_search == "":
+        include = channel_parameters["include_in_global_search"]
+        if include not in ["", "true"]:
             continue
+        else:
+            # Se busca en la configuración del canal el valor guardado
+            include_in_global_search = config.get_setting("include_in_global_search",channel_name)
+
+        # Si no hay valor en la configuración del canal se coloca como True ya que así estaba por defecto
+        if include_in_global_search == "":
+            include_in_global_search = True
+
         
         control = {'id': channel_name,
                       'type': "bool",                    
@@ -189,6 +197,8 @@ def channel_search(search_results, channel_parameters,tecleado):
         exec "from channels import " + channel_parameters["channel"] + " as module"
         mainlist = module.mainlist(Item(channel=channel_parameters["channel"]))
         search_items = [item for item in mainlist if item.action=="search"]
+        if not search_items:
+            search_items = [Item(channel=channel_parameters["channel"], action="search")]
 
         for item in search_items:
             result = module.search(item.clone(), tecleado)
@@ -264,9 +274,13 @@ def do_search(item, categories=[]):
         
         # No busca si es un canal excluido de la busqueda global
         include_in_global_search = channel_parameters["include_in_global_search"]
-        if include_in_global_search == "":
-            #Buscar en la configuracion del canal
+        if include_in_global_search in ["", "true"]:
+            # Buscar en la configuracion del canal
             include_in_global_search = str(config.get_setting("include_in_global_search",basename_without_extension))
+            # Si no hay valor en la configuración del canal se incluye ya que así estaba por defecto
+            if include_in_global_search == "":
+                include_in_global_search = "true"
+
         if include_in_global_search.lower() != "true":
             continue
             
