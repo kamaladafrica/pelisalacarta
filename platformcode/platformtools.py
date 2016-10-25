@@ -374,23 +374,28 @@ def set_context_commands(item, parent_item):
                                                           from_action=item.action).tourl())))
 
     # Descargar pelicula
-    if item.action in ["detail", "findvideos", "play"] and item.contentType not in ["tvshow","episode"]:
+    if item.contentType == "movie":
         context_commands.append(("Descargar Pelicula", "XBMC.RunPlugin(%s?%s)" %
                                  (sys.argv[0], item.clone(channel="descargas", action="save_download",
                                                           from_channel=item.channel, from_action=item.action).tourl())))
 
     # Descargar serie
-    if item.action in ["episodios", "get_episodios"] and item.contentType == 'tvshow':
+    if item.contentType == "tvshow":
         context_commands.append(("Descargar Serie", "XBMC.RunPlugin(%s?%s)" %
                                  (sys.argv[0], item.clone(channel="descargas", action="save_download",
                                                           from_channel=item.channel, from_action=item.action).tourl())))
 
     # Descargar episodio
-    if item.action in ["detail", "findvideos", "play"] and item.contentType == 'episode':
+    if item.contentType == "episode":
         context_commands.append(("Descargar Episodio", "XBMC.RunPlugin(%s?%s)" %
                                  (sys.argv[0], item.clone(channel="descargas", action="save_download",
                                                           from_channel=item.channel, from_action=item.action).tourl())))
 
+    # Descargar temporada
+    if item.contentType == "season":
+        context_commands.append(("Descargar Temporada", "XBMC.RunPlugin(%s?%s)" %
+                                 (sys.argv[0], item.clone(channel="descargas", action="save_download",
+                                                          from_channel=item.channel, from_action=item.action).tourl())))
     # Abrir configuración
     if parent_item.channel not in ["configuracion", "novedades", "buscador"]:
         context_commands.append(("Abrir Configuración", "XBMC.Container.Update(%s?%s)" %

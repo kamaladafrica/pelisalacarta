@@ -361,7 +361,7 @@ def download_from_best_server(item):
     # Las ordenamos segun calidad
     play_items.sort(key=ordenar)
 
-    result = 3
+    result =  {"downloadStatus": 3}
     time.sleep(3)
     progreso.close
     # Recorremos el listado de servers, hasta encontrar uno que funcione
@@ -415,44 +415,61 @@ def start_download(item):
 
 def get_episodes(item):
     logger.info("pelisalacarta.channels.descargas get_episodes")
+    
+    #El item YA es un episodio, no cal buscar
+    if item.contentType == "episode":
+      episodes = [item.clone()]
+      
+    #El item es uma serie o temporada
+    elif item.contentType in ["tvshow", "season"]:
+      # importamos el canal
+      channel = __import__('channels.%s' % item.contentChannel, None, None, ["channels.%s" % item.contentChannel])
+      # Obtenemos el listado de episodios
+      episodes = getattr(channel, item.contentAction)(item)
+    
+    itemlist = []
+    
+    #Tenemos las lista, ahora vamos a comprobar
+    for episode in episodes:
+      #Si partiamos de un item que ya era episodio estos datos ya están bien, no hay que modificarlos
+      if item.contentType != "episode":
+        episode.infoLabels = item.infoLabels
+        episode.contentAction = episode.action
+        episode.contentChannel = episode.channel
+      
+      #Si el resultado es una temporada, no nos vale, tenemos que descargar los episodios de cada temporada
+      if episode.contentType == "season":
+        itemlist.extend(get_episodes(episode))
+      
+      #Si el resultado es un episodio ya es lo que necesitamos, lo preparamos para añadirlo a la descarga 
+      if episode.contentType == "episode":
+        episode.action = "menu"
+        episode.channel = "descargas"
+        episode.downloadStatus = 0
+        episode.downloadProgress = 0
+        episode.downloadSize = 0
+        episode.downloadCompleted = 0
 
-    # Items que seran quitados del listado
-    remove_items = ["add_serie_to_library", "download_all_episodes"]
+        season_and_episode = scrapertools.get_season_and_episode(episode.title)
 
-    # importamos el canal
-    channel = __import__('channels.%s' % item.contentChannel, fromlist=["channels.%s" % item.contentChannel])
-
-    # Obtenemos el listado de episodios
-    episodios = getattr(channel, item.contentAction)(item)
-    episodios = [episodio for episodio in episodios if episodio.action not in remove_items]
-
-    for episodio in episodios:
-        episodio.infoLabels = item.infoLabels
-        episodio.contentAction = episodio.action
-        episodio.contentChannel = episodio.channel
-
-        episodio.action = "menu"
-        episodio.channel = "descargas"
-        episodio.downloadStatus = 0
-        episodio.downloadProgress = 0
-        episodio.downloadSize = 0
-        episodio.downloadCompleted = 0
-
-        season_and_episode = scrapertools.get_season_and_episode(episodio.title)
-
-        if season_and_episode and episodio.contentTitle:
-            episodio.contentSeason, episodio.contentEpisodeNumber = season_and_episode.split("x")
-            episodio.downloadFilename = filetools.encode(os.path.join(item.downloadFilename,"%s - %s" %
-                                                                      (season_and_episode, episodio.contentTitle)))
+        if season_and_episode and episode.contentTitle:
+            episode.contentSeason, episode.contentEpisodeNumber = season_and_episode.split("x")
+            episode.downloadFilename = filetools.encode(os.path.join(item.downloadFilename,"%s - %s" %
+                                                                      (season_and_episode, episode.contentTitle)))
         else:
-            episodio.downloadFilename = filetools.encode(os.path.join(item.downloadFilename, episodio.title))
-
-
-    return episodios
+            episode.downloadFilename = filetools.encode(os.path.join(item.downloadFilename, episode.title))
+            
+        itemlist.append(episode)
+        
+      #Cualquier otro resultado no nos vale, lo ignoramos
+      else:
+        logger.info("Omitiendo item no válido: %s" % episode.tostring())
+        
+    return itemlist 
 
 
 def save_download(item):
-    logger.info("pelisalacarta.channels.descargas save_download_movie")
+    logger.info("pelisalacarta.channels.descargas save_download")
     # Menu contextual
     if item.from_action and item.from_channel:
         item.channel = item.from_channel
@@ -463,19 +480,14 @@ def save_download(item):
     item.contentChannel = item.channel
     item.contentAction = item.action
 
-    if not item.contentTitle:
-        if item.fulltitle:
-            item.contentTitle = re.sub("\[[^\]]+\]|\([^\)]+\)", "", item.fulltitle).strip()
-        else:
-            item.contentTitle = re.sub("\[[^\]]+\]|\([^\)]+\)", "", item.title).strip()
-
-    if not item.contentSerieName and item.show: item.contentSerieName = item.show
-
-    if item.contentSerieName:
+    if item.contentType in ["tvshow", "episode", "season"]:
         save_download_tvshow(item)
-    else:
+                
+    elif item.contentType == "movie":
         save_download_movie(item)
-
+    
+    else:
+        logger.error("ContentType no admitido")
 
 def save_download_movie(item):
     logger.info("pelisalacarta.channels.descargas save_download_movie")
@@ -501,7 +513,8 @@ def save_download_movie(item):
 
 def save_download_tvshow(item):
     logger.info("pelisalacarta.channels.descargas save_download_tvshow")
-
+    logger.info("Tipo: %s" % item.contentType)
+    
     tmdb.find_and_set_infoLabels_tmdb(item)
 
     item.downloadFilename = item.downloadFilename = "%s [%s]" % (item.contentSerieName, item.contentChannel)
