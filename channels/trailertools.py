@@ -70,8 +70,11 @@ def buscartrailer(item):
             item.contentTitle = item.contentTitle.strip()
     else:
         item.contentTitle = item.fulltitle.strip()
-        
-    item.year = item.infoLabels['year'] if "year" in item.infoLabels else ""
+    if "year" in item.infoLabels:    
+      item.year = item.infoLabels['year']
+    else:
+      item.year = ""
+      
     logger.info("pelisalacarta.channels.trailertools Búsqueda: %s" % item.contentTitle)
     logger.info("pelisalacarta.channels.trailertools Año: %s" % item.year)
 
@@ -104,8 +107,11 @@ def buscartrailer(item):
         except:
             import traceback
             logger.error(traceback.format_exc())
-        
-        title = "[COLOR green]%s[/COLOR]" if item.contextual else "%s"
+            
+        if item.contextual:
+          title = "[COLOR green]%s[/COLOR]"
+        else:
+          title = "%s"
         itemlist.append(item.clone(title=title % "Búsqueda en Youtube", action="youtube_search",
                                    text_color="green"))
         itemlist.append(item.clone(title=title % "Búsqueda en Filmaffinity",
@@ -215,7 +221,10 @@ def youtube_search(item):
                                    action="", thumbnail="", text_color=""))
 
     if keyboard:
-        title = "[COLOR green]%s[/COLOR]" if item.contextual else "%s"
+        if item.contextual:
+          title = "[COLOR green]%s[/COLOR]"
+        else: 
+          title = "%s"
         itemlist.append(item.clone(title=title % "Búsqueda Manual en Youtube", action="manual_search",
                                    text_color="green", thumbnail="", extra="youtube"))
 
@@ -288,7 +297,10 @@ def abandomoviez_search(item):
                                    text_color=""))
     
         if keyboard:
-            title = "[COLOR green]%s[/COLOR]" if item.contextual else "%s"
+            if item.contextual:
+              title = "[COLOR green]%s[/COLOR]"
+            else: 
+              title = "%s"
             devuelve.append(item.clone(title=title % "Búsqueda Manual en Abandomoviez",
                                        action="manual_search", thumbnail="", text_color="green", extra="abandomoviez"))
 
@@ -319,7 +331,10 @@ def search_links_abando(item):
                                            action="play", text_color="white"))
         else:
             for scrapedurl, language, scrapedtitle in matches:
-                idioma = " (ESP)" if language == "1" else " (V.O)"
+                if language == "1":
+                  idioma = " (ESP)"
+                else:
+                  idioma = " (V.O)"
                 scrapedurl = urlparse.urljoin("http://www.abandomoviez.net/%s" % item.prefix, scrapedurl)
                 scrapedtitle = scrapertools.htmlclean(scrapedtitle) + idioma + "  [youtube]"
                 if item.contextual:
@@ -338,7 +353,10 @@ def search_links_abando(item):
             progreso.close()
 
     if keyboard:
-        title = "[COLOR green]%s[/COLOR]" if item.contextual else "%s"
+        if item.contextual:
+          title = "[COLOR green]%s[/COLOR]"
+        else: 
+          title = "%s"
         itemlist.append(item.clone(title=title % "Búsqueda Manual en Abandomoviez",
                                    action="manual_search", thumbnail="", text_color="green", extra="abandomoviez"))
     return itemlist
@@ -407,7 +425,10 @@ def filmaffinity_search(item):
                                    action="", thumbnail="", text_color=""))
 
         if keyboard:
-            title = "[COLOR green]%s[/COLOR]" if item.contextual else "%s"
+            if item.contextual:
+              title = "[COLOR green]%s[/COLOR]"
+            else: 
+              title = "%s"
             devuelve.append(item.clone(title=title % "Búsqueda Manual en Filmaffinity",
                                        action="manual_search", text_color="green", thumbnail="", extra="filmaffinity"))
         
@@ -436,7 +457,10 @@ def search_links_filmaff(item):
                                        action="play", text_color="white"))
 
     if keyboard:
-        title = "[COLOR green]%s[/COLOR]" if item.contextual else "%s"
+        if item.contextual:
+          title = "[COLOR green]%s[/COLOR]"
+        else: 
+          title = "%s"
         itemlist.append(item.clone(title=title % "Búsqueda Manual en Filmaffinity",
                                    action="manual_search", thumbnail="", text_color="green", extra="filmaffinity"))
     return itemlist
@@ -483,7 +507,10 @@ def jayhap_search(item):
                                    thumbnail="", text_color=""))
 
     if keyboard:
-        title = "[COLOR green]%s[/COLOR]" if item.contextual else "%s"
+        if item.contextual:
+          title = "[COLOR green]%s[/COLOR]"
+        else: 
+          title = "%s"
         itemlist.append(item.clone(title=title % "Búsqueda Manual en Jayhap", action="manual_search",
                                    text_color="green", thumbnail="", extra="jayhap"))
 

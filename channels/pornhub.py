@@ -53,7 +53,12 @@ def categorias(item):
         
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedthumbnail,scrapedtitle in matches:
-        url = urlparse.urljoin(item.url,scrapedurl + ("&o=cm" if "?" in scrapedurl else "?o=cm"))
+    
+        if "?" in scrapedurl:
+          url = urlparse.urljoin(item.url,scrapedurl + "&o=cm" )
+        else:
+          url = urlparse.urljoin(item.url,scrapedurl + "?o=cm")
+          
         itemlist.append( Item(channel=item.channel, action="peliculas", title=scrapedtitle, url=url, fanart=item.fanart, thumbnail=scrapedthumbnail))
     
     itemlist.sort(key=lambda x: x.title)
