@@ -517,7 +517,7 @@ def get_episodes(item):
         if season_and_episode and episode.contentTitle:
             episode.contentSeason, episode.contentEpisodeNumber = season_and_episode.split("x")
             episode.downloadFilename = os.path.join(item.downloadFilename,"%s - %s" %
-                                                                      (season_and_episode, episode.contentTitle))
+                                                                      (season_and_episode, episode.contentTitle.strip()))
         else:
             episode.contentTitle = re.sub("\[[^\]]+\]|\([^\)]+\)","",episode.title).strip()
             episode.downloadFilename = os.path.join(item.downloadFilename, episode.contentTitle)
@@ -566,7 +566,7 @@ def save_download_movie(item):
     item.downloadProgress = 0
     item.downloadSize = 0
     item.downloadCompleted = 0
-    item.downloadFilename = "%s [%s]" % (item.contentTitle, item.contentChannel)
+    item.downloadFilename = "%s [%s]" % (item.contentTitle.strip(), item.contentChannel)
     if item.text_color: del item.text_color
     if item.text_bold: del item.text_bold
     if item.text_italic: del item.text_italic
