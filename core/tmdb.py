@@ -688,6 +688,7 @@ class Tmdb(object):
                 logger.info("[Tmdb.py] Rellenando dicionario de generos")
                 resultado = jsontools.load_json(scrapertools.downloadpageWithoutCookies(url))
                 lista_generos = resultado["genres"]
+
                 for i in lista_generos:
                     cls.dic_generos[idioma][tipo][str(i["id"])] = i["name"]
             except:
@@ -1065,7 +1066,7 @@ class Tmdb(object):
                 # Se ha producido un error
                 self.temporada[numtemporada] =  {"episodes":{}}
                 msg = "La busqueda de " + buscando + " no dio resultados."
-                msg += "\nError de tmdb: %s %s" % (resultado["status_code"], resultado["status_message"])
+                msg += "\nError de tmdb: %s %s" % (self.temporada[numtemporada]["status_code"], self.temporada[numtemporada]["status_message"])
                 logger.debug(msg)
 
 
@@ -1261,7 +1262,7 @@ class Tmdb(object):
                     ret_infoLabels['plot'] = self.get_sinopsis()
 
             elif k == 'runtime':
-                ret_infoLabels['duration'] = v
+                ret_infoLabels['duration'] = int(v) * 60
 
             elif k == 'release_date':
                 ret_infoLabels['year'] = int(v[:4])
