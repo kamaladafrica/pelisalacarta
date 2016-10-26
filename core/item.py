@@ -140,6 +140,7 @@ class Item(object):
         '''
         Función llamada al modificar cualquier atributo del item, modifica algunos atributos en función de los datos modificados
         '''
+        value = self.toutf8(value)
         if name == "__dict__":
             for key in value:
                 self.__setattr__(key, value[key])
