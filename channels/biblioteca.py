@@ -446,13 +446,12 @@ def findvideos(item):
             server.strm_path = item.strm_path
             server.title = "%s: %s" % (nom_canal.capitalize(), server.title)
 
-            # if len(server.infoLabels) <= len(item.infoLabels):
-            server.infoLabels = item.infoLabels
+            server.infoLabels = item_json.infoLabels
 
             if not server.thumbnail:
                 server.thumbnail = item.thumbnail
 
-            # logger.debug(server.tostring('\n'))
+            #logger.debug("server:\n%s" % server.tostring('\n'))
             itemlist.append(server)
 
     # return sorted(itemlist, key=lambda it: it.title.lower())
