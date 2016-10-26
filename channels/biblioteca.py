@@ -71,6 +71,10 @@ def peliculas(item):
                 new_item.thumbnail = new_item.contentThumbnail
                 new_item.text_color = "blue"
 
+                if not filetools.exists(filetools.join(new_item.path, filetools.basename(new_item.strm_path))):
+                    # Si se ha eliminado el strm desde la bilbioteca de kodi, no mostrarlo
+                    continue
+
                 # Menu contextual: Marcar como visto/no visto
                 visto = new_item.library_playcounts.get(os.path.splitext(f)[0], 0)
                 new_item.infoLabels["playcount"] = visto
@@ -114,7 +118,7 @@ def peliculas(item):
                     continue
                 '''
 
-                # logger.debug("new_item: " + new_item.tostring('\n'))
+                logger.debug("new_item: " + new_item.tostring('\n'))
                 itemlist.append(new_item)
 
     '''

@@ -28,6 +28,7 @@
 from core import config
 from core.item import Item
 from core import logger
+from core import filetools
 
 DEBUG = True
 CHANNELNAME = "configuracion"
@@ -97,8 +98,23 @@ def settings(item):
 def updatebiblio(item):
     logger.info("pelisalacarta.channels.ayuda updatebiblio")
 
+    # Actualizar las series activas sobreescribiendo
     import library_service
     library_service.main()
+
+    # Eliminar las carpetas de peliculas que no contengan archivo strm
+    from platformcode import library
+    for raiz, subcarpetas, ficheros in filetools.walk(library.MOVIES_PATH):
+        strm = False
+        for f in ficheros:
+            if f.endswith(".strm"):
+                strm = True
+                break
+
+        if ficheros and not strm:
+            logger.debug("Borrando carpeta de pelicula eliminada: %s" % raiz)
+            filetools.rmdirtree(raiz)
+
 
 
 def menu_addchannels(item):
@@ -115,7 +131,7 @@ def menu_addchannels(item):
 
 def addchannel(item):
     from platformcode import platformtools
-    from core import filetools
+
     import time, os
     logger.info("pelisalacarta.channels.configuracion addchannel")
     
@@ -240,7 +256,6 @@ def addchannel(item):
 
 def backups(item):
     from platformcode import platformtools
-    from core import filetools
     logger.info("pelisalacarta.channel.configuracion backups")
 
     ruta = filetools.join(config.get_data_path(), 'backups')
