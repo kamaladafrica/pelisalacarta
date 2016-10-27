@@ -583,7 +583,12 @@ def mark_content_as_watched_on_kodi(item, value=1):
         data = get_data(payload)
         if 'result' in data:
             for d in data['result']['movies']:
-                if d['file'].replace("/", "\\").endswith(item.strm_path.replace("/", "\\")):
+
+                filename = os.path.basename(item.strm_path)
+                head, tail = os.path.split(os.path.split(item.strm_path)[0])
+                path = os.path.join(tail, filename)
+                if d['file'].replace("/", "\\").endswith(path.replace("/", "\\")):
+                    # logger.debug("marco la pelicula como vista")
                     movieid = d['movieid']
                     break
 
@@ -600,7 +605,12 @@ def mark_content_as_watched_on_kodi(item, value=1):
         data = get_data(payload)
         if 'result' in data:
             for d in data['result']['episodes']:
-                if d['file'].replace("/", "\\").endswith(item.strm_path.replace("/", "\\")):
+
+                filename = os.path.basename(item.strm_path)
+                head, tail = os.path.split(os.path.split(item.strm_path)[0])
+                path = os.path.join(tail, filename)
+                if d['file'].replace("/", "\\").endswith(path.replace("/", "\\")):
+                    # logger.debug("marco el episodio como visto")
                     episodeid = d['episodeid']
                     break
 
