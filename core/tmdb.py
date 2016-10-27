@@ -358,7 +358,7 @@ def set_infoLabels_item(item, seekTmdb=True, idioma_busqueda='es', lock=None):
         # Buscar...
         else:
             otmdb = copy.copy(otmdb_global)
-            #if otmdb is None:
+            #if otmdb is None: 
             # Busquedas por ID...
             if item.infoLabels['tmdb_id']:
                 # ...Busqueda por tmdb_id
@@ -1060,14 +1060,15 @@ class Tmdb(object):
             try:
                 self.temporada[numtemporada] = jsontools.load_json(scrapertools.downloadpageWithoutCookies(url))
             except:
-                self.temporada[numtemporada] = {"status_code": 15}
+                self.temporada[numtemporada] = {"status_code": 15, "status_message": "Failed"}
 
             if "status_code" in self.temporada[numtemporada]:
                 # Se ha producido un error
-                self.temporada[numtemporada] =  {"episodes":{}}
                 msg = "La busqueda de " + buscando + " no dio resultados."
                 msg += "\nError de tmdb: %s %s" % (self.temporada[numtemporada]["status_code"], self.temporada[numtemporada]["status_message"])
                 logger.debug(msg)
+                self.temporada[numtemporada] = {"episodes": {}}
+
 
 
         return self.temporada[numtemporada]
