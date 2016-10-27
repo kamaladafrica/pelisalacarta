@@ -900,35 +900,66 @@ def play_torrent(item, xlistitem, mediaurl):
     if seleccion == 0:
         import time
         played = False
-
+        debug =  (config.get_setting("debug") == "true")
+        debug = False
         # Importamos el cliente
         from btserver import Client
 
         # Iniciamos el cliente:
-        c = Client(url=mediaurl, is_playing_fnc=xbmc.Player().isPlaying, wait_time=None, timeout=5,
-                   temp_path=os.path.join(config.get_data_path(), "torrent"))
+        c = Client(url=mediaurl, is_playing_fnc=xbmc.Player().isPlaying, wait_time=None, timeout=10,
+                   temp_path=os.path.join(config.get_data_path(), "torrent"), print_status=debug)
 
         # Mostramos el progreso
         progreso = dialog_progress("Pelisalacarta - Torrent", "Iniciando...")
 
         # Mientras el progreso no sea cancelado ni el cliente cerrado
-        while not progreso.iscanceled() and not c.closed:
+        while not c.closed:
             try:
                 # Obtenemos el estado del torrent
                 s = c.status
-
-                # Montamos las tres lineas con la info del torrent
-                txt = '%.2f%% de %.1fMB %s | %.1f kB/s' % \
-                      (s.progress_file, s.file_size, s.str_state, s._download_rate)
-                txt2 = 'S: %d(%d) P: %d(%d) | DHT:%s (%d) | Trakers: %d' % \
-                       (s.num_seeds, s.num_complete, s.num_peers, s.num_incomplete, s.dht_state, s.dht_nodes,
-                        s.trackers)
-                txt3 = 'Origen Peers TRK: %d DHT: %d PEX: %d LSD %d ' % \
-                       (s.trk_peers, s.dht_peers, s.pex_peers, s.lsd_peers)
+                if debug:
+                  # Montamos las tres lineas con la info del torrent
+                  txt = '%.2f%% de %.1fMB %s | %.1f kB/s' % \
+                        (s.progress_file, s.file_size, s.str_state, s._download_rate)
+                  txt2 = 'S: %d(%d) P: %d(%d) | DHT:%s (%d) | Trakers: %d' % \
+                         (s.num_seeds, s.num_complete, s.num_peers, s.num_incomplete, s.dht_state, s.dht_nodes,
+                          s.trackers)
+                  txt3 = 'Origen Peers TRK: %d DHT: %d PEX: %d LSD %d ' % \
+                         (s.trk_peers, s.dht_peers, s.pex_peers, s.lsd_peers)
+                else:
+                  txt = '%.2f%% de %.1fMB %s | %.1f kB/s' % \
+                        (s.progress_file, s.file_size, s.str_state, s._download_rate)
+                  txt2 = 'S: %d(%d) P: %d(%d)' % (s.num_seeds, s.num_complete, s.num_peers, s.num_incomplete)
+                  try:
+                    txt3 = 'Deteniendo automaticamente en: %ss' % (int(s.timeout))   
+                  except:
+                    txt3 = ''
 
                 progreso.update(s.buffer, txt, txt2, txt3)
-                time.sleep(1)
+                time.sleep(0.5)
+                
+                if progreso.iscanceled():
+                  progreso.close()
+                  if s.buffer == 100:
+                    if dialog_yesno("Pelisalacarta - Torrent", "¿Deseas iniciar la reproduccion?"):
+                      played = False
+                      progreso = dialog_progress("Pelisalacarta - Torrent", "")
+                      progreso.update(s.buffer, txt, txt2, txt3)
+                    else:
+                      progreso = dialog_progress("Pelisalacarta - Torrent", "")
+                      break
+                      
+                  else:
+                    if dialog_yesno("Pelisalacarta - Torrent", "¿Deseas cancelar el proceso?"):
+                      progreso = dialog_progress("Pelisalacarta - Torrent", "")
+                      break
+                      
+                    else:
+                      progreso = dialog_progress("Pelisalacarta - Torrent", "")
+                      progreso.update(s.buffer, txt, txt2, txt3)
 
+                   
+   
                 # Si el buffer se ha llenado y la reproduccion no ha sido iniciada, se inicia
                 if s.buffer == 100 and not played:
                     # Cerramos el progreso
@@ -952,12 +983,14 @@ def play_torrent(item, xlistitem, mediaurl):
                         time.sleep(1)
 
                     # Cuando este cerrado,  Volvemos a mostrar el dialogo
-                    progreso = dialog_progress("Pelisalacarta - Torrent", "Iniciando...")
+                    progreso = dialog_progress("Pelisalacarta - Torrent", "")
+                    progreso.update(s.buffer, txt, txt2, txt3)
 
             except:
                 import traceback
                 logger.info(traceback.format_exc())
                 break
+            
 
         progreso.update(100, "Terminando y eliminando datos", " ", " ")
 
