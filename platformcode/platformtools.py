@@ -901,7 +901,7 @@ def play_torrent(item, xlistitem, mediaurl):
         import time
         played = False
         debug =  (config.get_setting("debug") == "true")
-        debug = False
+        
         # Importamos el cliente
         from btserver import Client
 
