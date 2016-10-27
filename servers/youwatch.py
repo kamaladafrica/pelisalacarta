@@ -21,7 +21,8 @@ def test_video_exists(page_url):
 def get_video_url(page_url, premium=False, user="", password="", video_password=""):
     logger.info("pelisalacarta.servers.youwatch get_video_url(page_url='%s')" % page_url)
 
-    data = scrapertools.cache_page(page_url)
+    redireccion = scrapertools.getLocationHeaderFromResponse(page_url)
+    data = scrapertools.cache_page(redireccion)
     url_redirect = scrapertools.find_single_match(data, '<iframe src="([^"]+)"')
     data = scrapertools.cache_page(url_redirect)
 
@@ -48,7 +49,7 @@ def find_videos(data):
 
     for match in matches:
         titulo = "[youwatch]"
-        url = "http://8azpdgm8.xyz/embed-%s.html" % match
+        url = "http://youwatch.org/embed-%s.html" % match
         if url not in encontrados:
             logger.info("  url=" + url)
             devuelve.append([titulo, url, 'youwatch'])
