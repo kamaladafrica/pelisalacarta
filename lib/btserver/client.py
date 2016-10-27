@@ -365,8 +365,7 @@ class Client(object):
                 pieces=s.pieces[self.file.first_piece:self.file.last_piece]
                 progress= float(sum(pieces))/len(pieces)
             else:
-                pieces=s.pieces
-                progress= float(sum(pieces))/len(pieces)
+                progress=0
 
             s.progress_file=progress * 100
             
