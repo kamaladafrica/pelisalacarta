@@ -246,11 +246,8 @@ def menu(item):
 
 def move_to_libray(item):
     # Copiamos el archivo a la biblioteca
-    filetools.copy(filetools.join(config.get_setting("downloadpath"), item.downloadFilename),
+    filetools.move(filetools.join(config.get_setting("downloadpath"), item.downloadFilename),
                    filetools.join(config.get_library_path(), filetools.basename(item.downloadFilename)))
-
-    # Eliminamos el origen
-    filetools.remove(filetools.join(config.get_setting("downloadpath"), item.downloadFilename))
 
     # Añadimos el contenido a la biblioteca
     # TODO: incorporar funcion
