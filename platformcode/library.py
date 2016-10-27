@@ -373,6 +373,7 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
             # filetools.write(strm_path + '.debug', '%s?%s' % (addon_name, item_strm.tojson())) # For debug
 
         nfo_path = filetools.join(path, "%s.nfo" % season_episode)
+        item_nfo = None
         if not filetools.exists(nfo_path) and e.infoLabels.get("tmdb_id"):
             # Si no existe season_episode.nfo añadirlo
             tmdb.find_and_set_infoLabels_tmdb(e)
@@ -389,6 +390,12 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
             nuevo = not filetools.exists(json_path)
 
             if nuevo or overwrite:
+                # Obtenemos infoLabel del episodio
+                if not item_nfo:
+                    item_nfo = Item().fromjson(filetools.read(nfo_path, 1))
+
+                e.infoLabels = item_nfo.infoLabels
+
                 if filetools.write(json_path, e.tojson()):
                     if nuevo:
                         logger.info("pelisalacarta.platformcode.library savelibrary Insertado: %s" % json_path)
