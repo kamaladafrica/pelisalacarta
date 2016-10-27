@@ -27,7 +27,6 @@
 
 import errno
 import math
-import os
 import sys
 import urllib2
 from threading import Thread
@@ -188,7 +187,7 @@ def save_library_movie(item):
             p_dialog.close()
 
             # actualizamos la biblioteca de Kodi con la pelicula
-            update(FOLDER_MOVIES, os.path.basename(path) + "/")
+            update(FOLDER_MOVIES, filetools.basename(path) + "/")
 
             return insertados, sobreescritos, fallidos
 
@@ -435,7 +434,7 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
             fallidos = -1
 
         # ... y actualizamos la biblioteca de Kodi
-        update(FOLDER_TVSHOWS, os.path.basename(path) + "/")
+        update(FOLDER_TVSHOWS, filetools.basename(path) + "/")
 
     if fallidos == len(episodelist):
         fallidos = -1
@@ -584,9 +583,9 @@ def mark_content_as_watched_on_kodi(item, value=1):
         if 'result' in data:
             for d in data['result']['movies']:
 
-                filename = os.path.basename(item.strm_path)
-                head, tail = os.path.split(os.path.split(item.strm_path)[0])
-                path = os.path.join(tail, filename)
+                filename = filetools.basename(item.strm_path)
+                head, tail = filetools.split(filetools.split(item.strm_path)[0])
+                path = filetools.join(tail, filename)
                 if d['file'].replace("/", "\\").endswith(path.replace("/", "\\")):
                     # logger.debug("marco la pelicula como vista")
                     movieid = d['movieid']
@@ -606,9 +605,9 @@ def mark_content_as_watched_on_kodi(item, value=1):
         if 'result' in data:
             for d in data['result']['episodes']:
 
-                filename = os.path.basename(item.strm_path)
-                head, tail = os.path.split(os.path.split(item.strm_path)[0])
-                path = os.path.join(tail, filename)
+                filename = filetools.basename(item.strm_path)
+                head, tail = filetools.split(filetools.split(item.strm_path)[0])
+                path = filetools.join(tail, filename)
                 if d['file'].replace("/", "\\").endswith(path.replace("/", "\\")):
                     # logger.debug("marco el episodio como visto")
                     episodeid = d['episodeid']
@@ -682,15 +681,15 @@ def execute_sql_kodi(sql):
 
     video_db = code_db.get(xbmc.getInfoLabel("System.BuildVersion").split(".", 1)[0], '')
     if video_db:
-        file_db = os.path.join(xbmc.translatePath("special://userdata/Database"), video_db)
+        file_db = filetools.join(xbmc.translatePath("special://userdata/Database"), video_db)
 
     # metodo alternativo para localizar la BBDD
     if not file_db or not filetools.exists(file_db):
         file_db = ""
-        for f in os.listdir(xbmc.translatePath("special://userdata/Database")):
-            path_f = os.path.join(xbmc.translatePath("special://userdata/Database"), f)
+        for f in filetools.listdir(xbmc.translatePath("special://userdata/Database")):
+            path_f = filetools.join(xbmc.translatePath("special://userdata/Database"), f)
 
-            if os.path.isfile(path_f) and f.lower().startswith('myvideos') and f.lower().endswith('.db'):
+            if filetools.isfile(path_f) and f.lower().startswith('myvideos') and f.lower().endswith('.db'):
                 file_db = path_f
                 break
 
