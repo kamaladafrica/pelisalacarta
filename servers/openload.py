@@ -40,50 +40,30 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
         if "videocontainer" not in data:
             url = page_url.replace("/embed/","/f/")
             data = scrapertools.downloadpageWithoutCookies(url)
-            text_encode = scrapertools.find_multiple_matches(data,"(ﾟωﾟ.*?\(\'\_\'\));")
-            text_decode = ""
-            for t in text_encode:
-                text_decode += aadecode(t)
 
-            number = scrapertools.find_single_match(text_decode, 'charCodeAt\(0\)\s*\+\s*(\d+)')
-            varj = scrapertools.find_single_match(text_decode, 'var magic\s*=\s*(\w+)\.slice')
-            varhidden = scrapertools.find_single_match(text_decode, 'var\s*'+varj+'\s*=\s*\$\("[#]*([^"]+)"\).text')
-            valuehidden = scrapertools.find_single_match(data, 'id="'+varhidden+'">(.*?)<')
-            magic = ord(valuehidden[-1])
-            valuehidden = valuehidden.split(chr(magic-1))
-            valuehidden = "\t".join(valuehidden)
-            valuehidden = valuehidden.split(valuehidden[-1])
-            valuehidden = chr(magic-1).join(valuehidden)
-            valuehidden = valuehidden.split("\t")
-            valuehidden = chr(magic).join(valuehidden)
-            
-            videourl = decode_hidden(valuehidden, number)
-            # Falla el método, se utiliza la api aunque en horas punta no funciona
-            if not videourl:
-                videourl = get_link_api(page_url)
-        else:
-            text_encode = scrapertools.find_multiple_matches(data, '(ﾟωﾟ.*?\(\'\_\'\));')
-            text_decode = ""
-            for t in text_encode:
-                text_decode += aadecode(t)
+        text_encode = scrapertools.find_multiple_matches(data, '(ﾟωﾟ.*?\(\'\_\'\));')
+        text_decode = ""
+        for t in text_encode:
+            text_decode += aadecode(t)
 
-            number = scrapertools.find_single_match(text_decode, 'charCodeAt\(0\)\s*\+\s*(\d+)')
-            varj = scrapertools.find_single_match(text_decode, 'var magic\s*=\s*(\w+)\.slice')
-            varhidden = scrapertools.find_single_match(text_decode, 'var\s*'+varj+'\s*=\s*\$\("[#]*([^"]+)"\).text')
-            valuehidden = scrapertools.find_single_match(data, 'id="'+varhidden+'">(.*?)<')
-            magic = ord(valuehidden[-1])
-            valuehidden = valuehidden.split(chr(magic-1))
-            valuehidden = "\t".join(valuehidden)
-            valuehidden = valuehidden.split(valuehidden[-1])
-            valuehidden = chr(magic-1).join(valuehidden)
-            valuehidden = valuehidden.split("\t")
-            valuehidden = chr(magic).join(valuehidden)
-            
-            videourl = decode_hidden(valuehidden, number)
+        number = scrapertools.find_single_match(text_decode, 'charCodeAt\(0\)\s*\+\s*(\d+)')
+        varj = scrapertools.find_single_match(text_decode, 'var magic\s*=\s*(\w+)\.slice')
+        varhidden = scrapertools.find_single_match(text_decode, 'var\s*'+varj+'\s*=\s*\$\("[#]*([^"]+)"\).text')
+        valuehidden = scrapertools.find_single_match(data, 'id="'+varhidden+'">(.*?)<')
 
-            # Falla el método, se utiliza la api aunque en horas punta no funciona
-            if not videourl:
-                videourl = get_link_api(page_url)
+        magic = ord(valuehidden[-1])
+        valuehidden = valuehidden.split(chr(magic-1))
+        valuehidden = "\t".join(valuehidden)
+        valuehidden = valuehidden.split(valuehidden[-1])
+        valuehidden = chr(magic-1).join(valuehidden)
+        valuehidden = valuehidden.split("\t")
+        valuehidden = chr(magic).join(valuehidden)
+        
+        videourl = decode_hidden(valuehidden, number)
+
+        # Falla el método, se utiliza la api aunque en horas punta no funciona
+        if not videourl:
+            videourl = get_link_api(page_url)
     except:
         import traceback
         logger.info("pelisalacarta.servers.openload "+traceback.format_exc())
@@ -147,8 +127,9 @@ def openload_clean(string):
 
 
 def decode_hidden(text, number):
+    text = text.replace("&gt9", ">").replace("&quot9", '"').replace("&lt9", '<') \
+               .replace("&amp9", '&').replace("&gt;", ">").replace("&lt;", "<")
     text = scrapertools.decodeHtmlentities(text)
-    text = text.replace("&gt9", ">").replace("&quot9", '"').replace("&lt9", '<').replace("&amp9", '&')
     s = []
     for char in text:
         j = ord(char)
@@ -165,7 +146,7 @@ def decode_hidden(text, number):
 
 def get_link_api(page_url):
     from core import jsontools
-    file_id = scrapertools.find_single_match(page_url, 'embed/([0-9a-zA-Z-_]+)')
+    file_id = scrapertools.find_single_match(page_url, '(?:embed|f)/([0-9a-zA-Z-_]+)')
     login = "97b2326d7db81f0f"
     key = "AQFO3QJQ"
     data = scrapertools.downloadpageWithoutCookies("https://api.openload.co/1/file/dlticket?file=%s&login=%s&key=%s" % (file_id, login, key))
