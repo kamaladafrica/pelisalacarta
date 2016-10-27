@@ -282,27 +282,20 @@ def move(path, dest):
     """
     #samba/samba
     if path.lower().startswith("smb://") and dest.lower().startswith("smb://"):
+        try:
+          dest = encode(dest, True)
+          path = encode(path, True)
+          #Calculamos la ruta de destino relativa a la ruta de origen tipo "../../Carpeta/archivo.mp4"
+          new_file =  "/".join(os.path.relpath(os.path.dirname(dest), os.path.dirname(path)).split(os.sep) + [os.path.basename(dest)])
 
-        #Las dos rutas son iguales,solo cambia el nombre del archivo, en este caso redirigimos a rename
-        if path.split("/")[:-1] == dest.split("/")[:-1]:
-          return rename(path, os.path.basename(dest))
-
-        #Las dos rutas NO son iguales de manera que hay que mover el archivo
-        else:
-          try:
-            dest = encode(dest, True)
-            path = encode(path, True)
-            #Calculamos la ruta de destino relativa a la ruta de origen tipo "../../Carpeta/archivo.mp4"
-            new_file =  "/".join(os.path.relpath(os.path.dirname(dest), os.path.dirname(path)).split(os.sep) + [os.path.basename(dest)])
-
-            samba.rename(os.path.basename(path), new_file, os.path.dirname(path))
-            return True
-          except:
-              import traceback
-              logger.info(
-                  "pelisalacarta.core.filetools mkdir: Error al mover el archivo" + traceback.format_exc())
-              platformtools.dialog_notification("Error al mover", path)
-              return False
+          samba.rename(os.path.basename(path), new_file, os.path.dirname(path))
+          return True
+        except:
+            import traceback
+            logger.info(
+                "pelisalacarta.core.filetools mkdir: Error al mover el archivo" + traceback.format_exc())
+            platformtools.dialog_notification("Error al mover", path)
+            return False
               
     #local/local
     elif not path.lower().startswith("smb://") and not dest.lower().startswith("smb://"):
