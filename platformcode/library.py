@@ -354,7 +354,11 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
             continue
 
         try:
-            season_episode = scrapertools.get_season_and_episode(e.title.lower())
+            if e.channel == "descargas":
+                season_episode = scrapertools.get_season_and_episode(e.contentTitle.lower())
+            else:
+                season_episode = scrapertools.get_season_and_episode(e.title.lower())
+
             e.infoLabels = serie.infoLabels
             e.contentSeason, e.contentEpisodeNumber = season_episode.split("x")
             season_episode = "%sx%s" % (e.contentSeason, str(e.contentEpisodeNumber).zfill(2))
@@ -450,7 +454,17 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
 
 def add_pelicula_to_library(item):
     """
-        guarda en la libreria de peliculas el elemento item, con los valores que contiene.
+        guarda una pelicula en la libreria de cine. La pelicula puede ser un enlace dentro de un canal o un video
+        descargado previamente.
+
+        Para añadir episodios descargados en local, el item debe tener exclusivamente:
+            - contentTitle: titulo de la pelicula
+            - title: titulo a mostrar junto al listado de enlaces -findvideos- ("Reproducir video local HD")
+            - infoLabels["tmdb_id"] o infoLabels["imdb_id"]
+            - contentType == "movie"
+            - channel = "descargas"
+            - url : ruta local al video
+
         @type item: item
         @param item: elemento que se va a guardar.
     """
@@ -469,7 +483,19 @@ def add_pelicula_to_library(item):
 
 def add_serie_to_library(item, channel=None):
     """
-        guarda en la libreria de series la serie con todos los capitulos incluidos en la lista episodelist
+        Guarda contenido en la libreria de series. Este contenido puede ser uno de estos dos:
+            - La serie con todos los capitulos incluidos en la lista episodelist.
+            - Un solo capitulo descargado previamente en local.
+
+        Para añadir episodios descargados en local, el item debe tener exclusivamente:
+            - contentSerieName (o show): Titulo de la serie
+            - contentTitle: titulo del episodio para extraer season_and_episode ("1x01 Piloto")
+            - title: titulo a mostrar junto al listado de enlaces -findvideos- ("Reproducir video local")
+            - infoLabels["tmdb_id"] o infoLabels["imdb_id"]
+            - contentType != "movie"
+            - channel = "descargas"
+            - url : ruta local al video
+
         @type item: item
         @param item: item que representa la serie a guardar
         @type channel: modulo
@@ -481,8 +507,10 @@ def add_serie_to_library(item, channel=None):
     logger.debug(item.tostring('\n'))
     itemlist = []
 
-    if item.channel != "descargas":
+    if item.channel == "descargas":
+        itemlist = [item.clone()]
 
+    else:
         # Esta marca es porque el item tiene algo más aparte en el atributo "extra"
         item.action = item.extra
         if "###" in item.extra:
@@ -505,8 +533,6 @@ def add_serie_to_library(item, channel=None):
         # Obtiene el listado de episodios
         itemlist = getattr(channel, item.action)(item)
 
-    else: # item.channel == "descargas"
-        itemlist = [Item(title="3x10")]
 
 
     if not itemlist:
