@@ -115,7 +115,10 @@ def openload_clean(string):
 
         for c in x:
             y = (32 | ord(c)) + int(z)
-            x = chr(y) if 122 >= y else chr(y-26)
+            if 122 >= y:
+              x = chr(y)  
+            else:
+              chr(y-26)
             a = re.sub(r'(%s)' % c, x , a)
 
         string = urllib2.unquote(a)

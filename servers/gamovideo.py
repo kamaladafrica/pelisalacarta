@@ -26,7 +26,10 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
 
     data = scrapertools.cache_page(page_url)
     packer = scrapertools.find_single_match(data,"<script type='text/javascript'>(eval.function.p,a,c,k,e,d..*?)</script>")
-    unpacker = jsunpack.unpack(data) if packer != "" else ""
+    if packer != "":
+      unpacker = jsunpack.unpack(data)  
+    else:
+      unpacker = ""
     if unpacker != "": data = unpacker
 
     data = re.sub(r'\n|\t|\s+', '', data)
