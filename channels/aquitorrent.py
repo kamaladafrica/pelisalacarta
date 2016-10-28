@@ -542,8 +542,9 @@ def unzip(url):
     # Open the url
     try:
         f = urllib2.urlopen(url)
-        with open( torrents_path+"/temp.zip", "wb") as local_file:
-            local_file.write(f.read())
+        local_file = open( torrents_path+"/temp.zip", "wb")
+        local_file.write(f.read())
+        local_file.close()
         
         # Open our local file for writing
         fh = open(torrents_path+"/temp.zip", 'rb')

@@ -71,7 +71,10 @@ def search(item, texto):
 def listadoSeries(item):
     logger.info("pelisalacarta.channels.tremendaseries listadoSeries")
     itemlist = []
-    nItemxPage = 28 if __modo_grafico__ else 100 # o los que haya en la pagina
+    if __modo_grafico__:
+      nItemxPage = 28 
+    else:
+      nItemxPage = 100 # o los que haya en la pagina
     
     data0 = re.sub(r"\n|\r|\t|\s{2}|(<!--.*?-->)","",scrapertools.cache_page(item.url))
     patron = '<div class="nuevos_caps"(.*?)</div></div>'
@@ -84,7 +87,10 @@ def listadoSeries(item):
     
     item_inicial= int(item.extra)
     items_total = len(matches)
-    item_final= item_inicial + nItemxPage if (item_inicial + nItemxPage) < items_total else items_total
+    if (item_inicial + nItemxPage) < items_total:
+      item_final = item_inicial + nItemxPage  
+    else:
+      item_final = items_total
     matches = matches[item_inicial:item_final]
     #logger.debug(" %i - %i - %i" %(item_inicial, item_final, items_total))
 
@@ -230,7 +236,8 @@ def findvideos(item):
         
         for url, titulo, servidor, idioma, calidad in matches2:
             servidor = servidor.replace('www.','')
-            servidor =  servidor.split('.')[0] if '.' in servidor else servidor
+            if '.' in servidor:
+              servidor =  servidor.split('.')[0]
             titulo += ' (' + idioma + ') [' + calidad + ']'
             
             newItem = item.clone(action="play", title=titulo, url=url, folder=True, text_color= color1, server= servidor)
