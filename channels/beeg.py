@@ -44,7 +44,7 @@ def decode(key):
   n = []
   for x in range(len(o),0,-3):
     if x >=3:
-      n.append(o[x -3])
+      n.append(o[(x -3):x])
     else:
       n.append(o[0:x])
     
