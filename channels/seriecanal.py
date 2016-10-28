@@ -143,13 +143,16 @@ def series(item):
         title = scrapedtitle + " - " + scrapedtemp + " - " + scrapedepi
         url = urlparse.urljoin(URL_BASE, scrapedurl)
         temporada = scrapertools.find_single_match(scrapedtemp, "(\d+)")
+        new_item = item.clone()
+        new_item.contentType = "tvshow"
         if temporada != "":
-            item.infoLabels['season'] = temporada
+            new_item.infoLabels['season'] = temporada
+            new_item.contentType = "season"
 
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append(item.clone(action="findvideos", title=title, fulltitle=scrapedtitle, url=url,
+        itemlist.append(new_item.clone(action="findvideos", title=title, fulltitle=scrapedtitle, url=url,
                                    thumbnail=scrapedthumbnail, plot=scrapedplot, contentTitle=scrapedtitle,
-                                   context=["buscar_trailer"], show=scrapedtitle, contentType="tvshow"))
+                                   context=["buscar_trailer"], show=scrapedtitle))
 
     try:
         from core import tmdb
@@ -179,15 +182,16 @@ def findvideos(item):
     patron = '<p class="item_name".*?<a href="([^"]+)".*?>([^"]+)</a>'
     matches = scrapertools.find_multiple_matches(data_download, patron)
     for scrapedurl, scrapedepi in matches:
+        new_item = item.clone()
         if "Episodio" not in scrapedepi:
             scrapedtitle = "[Torrent] Episodio " + scrapedepi
         else:
             scrapedtitle = "[Torrent] " + scrapedepi
         scrapedtitle = scrapertools.htmlclean(scrapedtitle)
 
-        item.infoLabels['episode'] = scrapertools.find_single_match(scrapedtitle, "Episodio (\d+)")
+        new_item.infoLabels['episode'] = scrapertools.find_single_match(scrapedtitle, "Episodio (\d+)")
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"]")
-        itemlist.append(item.clone(action="play", title=scrapedtitle, url=scrapedurl, server="torrent",
+        itemlist.append(new_item.clone(action="play", title=scrapedtitle, url=scrapedurl, server="torrent",
                                    contentType="episode"))
 
     #Busca en la seccion online
@@ -200,11 +204,12 @@ def findvideos(item):
         #Deshecha enlaces de trailers
         scrapedtitle = scrapertools.htmlclean(scrapedtitle)
         if (scrapedthumb != "images/series/youtube.png") & (scrapedtitle != "Trailer"):
+            new_item = item.clone()
             server = scrapertools.find_single_match(scrapedthumb, "images/series/(.*?).png")
             title = "["+server.capitalize()+"]"+" "+scrapedtitle
 
-            item.infoLabels['episode'] = scrapertools.find_single_match(scrapedtitle, "Episodio (\d+)")
-            itemlist.append(item.clone(action="play", title=title, url=scrapedurl, contentType="episode"))
+            new_item.infoLabels['episode'] = scrapertools.find_single_match(scrapedtitle, "Episodio (\d+)")
+            itemlist.append(new_item.clone(action="play", title=title, url=scrapedurl, contentType="episode"))
 
     #Comprueba si hay otras temporadas
     if not "No hay disponible ninguna Temporada adicional" in data:
@@ -214,13 +219,14 @@ def findvideos(item):
                   '<p class="text-success"><strong>([^"]+)</strong>'
         matches = scrapertools.find_multiple_matches(data_temp, patron)
         for scrapedurl, scrapedtitle in matches:
+            new_item = item.clone()
             url = urlparse.urljoin(URL_BASE, scrapedurl)
             scrapedtitle = scrapedtitle.capitalize()
             temporada = scrapertools.find_single_match(scrapedtitle, "Temporada (\d+)")
             if temporada != "":
-                item.infoLabels['season'] = temporada
-                item.infoLabels['episode'] = ""
-            itemlist.append(item.clone(action="findvideos", title=scrapedtitle, url=url, text_color="red",
+                new_item.infoLabels['season'] = temporada
+                new_item.infoLabels['episode'] = ""
+            itemlist.append(new_item.clone(action="findvideos", title=scrapedtitle, url=url, text_color="red",
                                        contentType="season"))
 
     try:
@@ -229,8 +235,11 @@ def findvideos(item):
     except:
         pass
 
-    itemlist.append(item.clone(channel="trailertools", title="Buscar Tráiler", action="buscartrailer", context="",
-                               text_color="magenta"))
+    new_item = item.clone()
+    if config.is_xbmc():
+        new_item.contextual = True
+    itemlist.append(new_item.clone(channel="trailertools", title="Buscar Tráiler", action="buscartrailer", context="",
+                                   text_color="magenta"))
     return itemlist
 
 
