@@ -255,7 +255,7 @@ def mainlist_filter(channel, list_idiomas, list_calidad):
         else: 
           tag_color = "0xff00fa9a"
         if idx % 2 == 0:
-            if dict_series[tvshow][TAG_ACTIVE]
+            if dict_series[tvshow][TAG_ACTIVE]:
               tag_color = "blue"
             else:
                tag_color = "0xff00bfff"

@@ -241,8 +241,10 @@ def listado(item):
     itemlist = []
 
     action = "findvideos"
+    contentType = "movie"
     if item.extra == 'serie':
         action = "temporadas"
+        contentType = "tvshow"
 
     data = scrapertools.anti_cloudflare(item.url , host=CHANNEL_HOST , headers=CHANNEL_DEFAULT_HEADERS )
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
@@ -257,7 +259,7 @@ def listado(item):
         plot = scrapertools.entityunescape(scrapedplot)
 
         new_item= Item(channel=__channel__, title=title, url=urlparse.urljoin(CHANNEL_HOST, scrapedurl), action=action,
-                       thumbnail=scrapedthumbnail, plot=plot, context="", extra=item.extra, text_color= color3)
+                       thumbnail=scrapedthumbnail, plot=plot, context="", extra=item.extra, text_color= color3,contentType=contentType)
 
         if item.extra == 'serie':
             new_item.show = scrapertools.unescape(scrapedtitle.strip())
@@ -340,7 +342,7 @@ def episodios(item):
 
         title = "{season}x{episode}: {name}".format(season=season, episode=episode.zfill(2),
                                                     name=scrapertools.unescape(scrapedname))
-        new_item = item.clone(title=title, url=scrapedurl, action="findvideos", text_color=color3)
+        new_item = item.clone(title=title, url=scrapedurl, action="findvideos", text_color=color3, contentType="episode")
         if 'infoLabels' not in new_item:
             new_item.infoLabels={}
 
@@ -392,7 +394,7 @@ def temporadas(item):
     if len(matches) > 1:
         for scrapedseason,scrapedthumbnail in matches:
             temporada = scrapertools.find_single_match(scrapedseason, '(\d+)')
-            newItem = item.clone(text_color=color2, action="episodios", season=temporada, thumbnail=scrapedthumbnail)
+            newItem = item.clone(text_color=color2, action="episodios", season=temporada, thumbnail=scrapedthumbnail, contentType="season")
             newItem.infoLabels['season'] = temporada
             newItem.extra=""
             itemlist.append(newItem)
