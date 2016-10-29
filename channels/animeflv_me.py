@@ -315,9 +315,10 @@ def numbered_for_tratk(show, season, episode):
         data = ""
 
         try:
-            with open(fname, "r") as f:
-                for line in f:
-                    data += line
+            f = open(fname, "r")
+            for line in f:
+                data += line
+            f.close()
         except EnvironmentError:
             logger.info("ERROR al leer el archivo: {0}".format(fname))
 

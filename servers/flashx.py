@@ -28,6 +28,8 @@ def test_video_exists(page_url):
 
     if 'File Not Found' in data:
         return False, "[FlashX] El archivo no existe o ha sido borrado"
+    elif 'Video is processing now' in data:
+        return False, "[FlashX] El archivo se está procesando"
 
     return True, ""
 

@@ -515,6 +515,9 @@ def findvideos(item):
        matches = re.compile(patron,re.DOTALL).findall(data)
     
        for scrapedtitle, scrapedtorrent in matches:
+           if "adf.ly" in scrapedtorrent:
+              from servers import adfly
+              scrapedtorrent = adfly.get_long_url(scrapedtorrent)
            itemlist.append( Item(channel=item.channel, title =scrapedtitle+"[COLOR green][B] [magnet][/B][/COLOR]", url=scrapedtorrent, action="play", server="torrent", thumbnail=item.thumbnail, fanart=item.extra , folder=False) )
 
 
@@ -542,8 +545,9 @@ def unzip(url):
     # Open the url
     try:
         f = urllib2.urlopen(url)
-        with open( torrents_path+"/temp.zip", "wb") as local_file:
-            local_file.write(f.read())
+        local_file = open( torrents_path+"/temp.zip", "wb")
+        local_file.write(f.read())
+        local_file.close()
         
         # Open our local file for writing
         fh = open(torrents_path+"/temp.zip", 'rb')

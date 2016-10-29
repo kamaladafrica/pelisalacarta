@@ -128,7 +128,10 @@ def filtro(item):
         valores_guardados = item.values
         item.values = ""
 
-    dict_values = valores_guardados if valores_guardados else None
+    if valores_guardados:
+      dict_values = valores_guardados
+    else:
+      dict_values = None
     if dict_values:
         dict_values["filtro_per"] = 0
     

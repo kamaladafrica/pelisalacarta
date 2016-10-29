@@ -129,17 +129,28 @@ def newest(categoria):
 def peliculas(item):
     logger.info("pelisalacarta.channels.oranline peliculas")
     itemlist = []
-    nItemxPage = 25 if __modo_grafico__ else 100  # o los que haya en la pagina
+    if __modo_grafico__:
+      nItemxPage = 25  
+    else:
+      nItemxPage = 100  # o los que haya en la pagina
 
     # Descarga la página
     data = scrapertools.downloadpage(item.url)
 
     # Extrae las entradas (carpetas)
     bloque = scrapertools.find_multiple_matches(data, '<li class="item">(.*?)</li>')
-
-    item_inicial = int(item.extra) if item.extra else 0
+    
+    if item.extra:
+      item_inicial = int(item.extra)  
+    else:
+      item_inicial = 0
     items_total = len(bloque)
-    item_final = item_inicial + nItemxPage if (item_inicial + nItemxPage) < items_total else items_total
+    
+    if (item_inicial + nItemxPage) < items_total:
+      item_final = item_inicial + nItemxPage  
+    else:
+      item_final = items_total
+      
     bloque = bloque[item_inicial:item_final]
 
     for match in bloque:

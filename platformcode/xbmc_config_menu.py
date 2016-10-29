@@ -538,7 +538,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                 else:
 
                   control = xbmcgui.ControlEdit(self.controls_pos_x, -100, self.controls_width - 5, self.height_control,
-                                                label, font=font, isPassword=hidden, textColor=color,
+                                                label, font, color,  '', 4, isPassword=hidden, 
                                                 focusTexture=os.path.join(self.mediapath, 'Controls',
                                                                           'MenuItemFO.png'),
                                                 noFocusTexture=os.path.join(self.mediapath, 'Controls',
@@ -795,7 +795,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
 
     def check_default(self):
         if self.custom_button is None:
-            def_values = dict([[c["id"], c["default"]] for c in self.controls])
+            def_values = dict([[c["id"], c.get("default")] for c in self.controls])
 
             if def_values == self.values:
                 self.getControl(10006).setEnabled(False)
@@ -1003,7 +1003,7 @@ class ControlEdit(xbmcgui.ControlButton):
     self.window = kwargs["window"]
     self.label = ""
     self.text = ""
-    self.textControl = xbmcgui.ControlLabel(self.getX(), self.getY(), self.getWidth(), self.getHeight(),self.text, font=kwargs["font"],textColor=kwargs["textColor"], alignment= 1)
+    self.textControl = xbmcgui.ControlLabel(self.getX(), self.getY(), self.getWidth(), self.getHeight(),self.text, font=kwargs["font"],textColor=kwargs["textColor"], alignment= 4 | 1)
     self.window.addControl(self.textControl)
       
   def setLabel(self,val):
