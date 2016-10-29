@@ -313,7 +313,7 @@ def get_episodios(item):
 
 def findvideos(item):
     logger.info("pelisalacarta.channels.biblioteca findvideos")
-    logger.debug("item:\n" + item.tostring('\n'))
+    #logger.debug("item:\n" + item.tostring('\n'))
 
     itemlist = []
     list_canales = {}

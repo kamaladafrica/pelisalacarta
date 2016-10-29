@@ -99,7 +99,7 @@ def cb_select_from_tmdb(item, tmdb_result):
 
 def find_and_set_infoLabels_tmdb(item):
     global otmdb_global
-
+    #logger.debug("item:\n" + item.tostring('\n'))
 
     if item.contentType == "movie":
         tipo_busqueda = "movie"
@@ -361,37 +361,37 @@ def set_infoLabels_item(item, seekTmdb=True, idioma_busqueda='es', lock=None):
         # Buscar...
         else:
             otmdb = copy.copy(otmdb_global)
-            if otmdb is None:
-                # Busquedas por ID...
-                if item.infoLabels['tmdb_id']:
-                    # ...Busqueda por tmdb_id
-                    otmdb = Tmdb(id_Tmdb=item.infoLabels['tmdb_id'], tipo=tipo_busqueda,
-                                 idioma_busqueda=idioma_busqueda)
+            #if otmdb is None: # Se elimina por q sino falla al añadir series por falta de imdb, pero por contra provoca mas llamadas
+            # Busquedas por ID...
+            if item.infoLabels['tmdb_id']:
+                # ...Busqueda por tmdb_id
+                otmdb = Tmdb(id_Tmdb=item.infoLabels['tmdb_id'], tipo=tipo_busqueda,
+                             idioma_busqueda=idioma_busqueda)
 
-                elif item.infoLabels['imdb_id']:
-                    # ...Busqueda por imdb code
-                    otmdb = Tmdb(external_id=item.infoLabels['imdb_id'], external_source="imdb_id",
+            elif item.infoLabels['imdb_id']:
+                # ...Busqueda por imdb code
+                otmdb = Tmdb(external_id=item.infoLabels['imdb_id'], external_source="imdb_id",
+                             tipo=tipo_busqueda,
+                             idioma_busqueda=idioma_busqueda)
+
+            elif tipo_busqueda == 'tv':  # buscar con otros codigos
+                if item.infoLabels['tvdb_id']:
+                    # ...Busqueda por tvdb_id
+                    otmdb = Tmdb(external_id=item.infoLabels['tvdb_id'], external_source="tvdb_id",
                                  tipo=tipo_busqueda,
                                  idioma_busqueda=idioma_busqueda)
-
-                elif tipo_busqueda == 'tv':  # buscar con otros codigos
-                    if item.infoLabels['tvdb_id']:
-                        # ...Busqueda por tvdb_id
-                        otmdb = Tmdb(external_id=item.infoLabels['tvdb_id'], external_source="tvdb_id",
-                                     tipo=tipo_busqueda,
-                                     idioma_busqueda=idioma_busqueda)
-                    elif item.infoLabels['freebase_mid']:
-                        # ...Busqueda por freebase_mid
-                        otmdb = Tmdb(external_id=item.infoLabels['freebase_mid'], external_source="freebase_mid",
-                                     tipo=tipo_busqueda, idioma_busqueda=idioma_busqueda)
-                    elif item.infoLabels['freebase_id']:
-                        # ...Busqueda por freebase_id
-                        otmdb = Tmdb(external_id=item.infoLabels['freebase_id'], external_source="freebase_id",
-                                     tipo=tipo_busqueda, idioma_busqueda=idioma_busqueda)
-                    elif item.infoLabels['tvrage_id']:
-                        # ...Busqueda por tvrage_id
-                        otmdb = Tmdb(external_id=item.infoLabels['tvrage_id'], external_source="tvrage_id",
-                                     tipo=tipo_busqueda, idioma_busqueda=idioma_busqueda)
+                elif item.infoLabels['freebase_mid']:
+                    # ...Busqueda por freebase_mid
+                    otmdb = Tmdb(external_id=item.infoLabels['freebase_mid'], external_source="freebase_mid",
+                                 tipo=tipo_busqueda, idioma_busqueda=idioma_busqueda)
+                elif item.infoLabels['freebase_id']:
+                    # ...Busqueda por freebase_id
+                    otmdb = Tmdb(external_id=item.infoLabels['freebase_id'], external_source="freebase_id",
+                                 tipo=tipo_busqueda, idioma_busqueda=idioma_busqueda)
+                elif item.infoLabels['tvrage_id']:
+                    # ...Busqueda por tvrage_id
+                    otmdb = Tmdb(external_id=item.infoLabels['tvrage_id'], external_source="tvrage_id",
+                                 tipo=tipo_busqueda, idioma_busqueda=idioma_busqueda)
 
             if otmdb is None:
                 # No se ha podido buscar por ID...

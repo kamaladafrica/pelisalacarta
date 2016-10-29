@@ -504,7 +504,7 @@ def add_serie_to_library(item, channel=None):
 
     """
     logger.info("pelisalacarta.platformcode.library add_serie_to_library, show=#" + item.show + "#")
-    logger.debug(item.tostring('\n'))
+    #logger.debug(item.tostring('\n'))
     itemlist = []
 
     if item.channel == "descargas":
