@@ -270,6 +270,8 @@ def get_episodios(item):
 
             # Menu contextual: Releer tvshow.nfo
             url_scraper, item_nfo = read_nfo(item.nfo)
+            if item_nfo.library_filter_show:
+                epi.library_filter_show = item_nfo.library_filter_show
 
             # Menu contextual: Marcar episodio como visto o no
             visto = item_nfo.library_playcounts.get(season_episode, 0)
@@ -390,8 +392,7 @@ def findvideos(item):
         try:
             # si el canal tiene filtro se le pasa el nombre que tiene guardado para que filtre correctamente.
             if item_json.list_calidad:
-                url_scraper, item_nfo = read_nfo(item.nfo)
-                item_json.show = item_nfo.library_filter_show[nom_canal]
+                item_json.show = item.library_filter_show[nom_canal]
 
             # Ejecutamos find_videos, del canal o común
             if hasattr(channel, 'findvideos'):
