@@ -480,7 +480,7 @@ def mark_content_as_watched(item):
                 new_item = item.clone(contentSeason=-1)
                 mark_season_as_watched(new_item)
 
-            elif config.is_xbmc():
+            if config.is_xbmc():
                 library.mark_content_as_watched_on_kodi(item, item.playcount)
                 platformtools.itemlist_refresh()
 
