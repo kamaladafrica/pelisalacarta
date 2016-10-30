@@ -99,7 +99,7 @@ def cb_select_from_tmdb(item, tmdb_result):
 
 def find_and_set_infoLabels_tmdb(item):
     global otmdb_global
-
+    #logger.debug("item:\n" + item.tostring('\n'))
 
     if item.contentType == "movie":
         tipo_busqueda = "movie"
@@ -289,7 +289,10 @@ def set_infoLabels_item(item, seekTmdb=True, idioma_busqueda='es', lock=None):
             if lock:
                 lock.acquire()
 
-            if not otmdb_global or (item.infoLabels['tmdb_id'] and otmdb_global.result.get("id") != item.infoLabels['tmdb_id']):
+            if not otmdb_global or (item.infoLabels['tmdb_id'] and
+                                    otmdb_global.result.get("id") != item.infoLabels['tmdb_id']) \
+                                or (otmdb_global.texto_buscado and
+                                    otmdb_global.texto_buscado != item.infoLabels['tvshowtitle']):
                 if item.infoLabels['tmdb_id']:
                     otmdb_global = Tmdb(id_Tmdb=item.infoLabels['tmdb_id'], tipo=tipo_busqueda,
                                         idioma_busqueda=idioma_busqueda)
@@ -358,7 +361,7 @@ def set_infoLabels_item(item, seekTmdb=True, idioma_busqueda='es', lock=None):
         # Buscar...
         else:
             otmdb = copy.copy(otmdb_global)
-            #if otmdb is None:
+            #if otmdb is None: # Se elimina por q sino falla al añadir series por falta de imdb, pero por contra provoca mas llamadas
             # Busquedas por ID...
             if item.infoLabels['tmdb_id']:
                 # ...Busqueda por tmdb_id
@@ -636,6 +639,7 @@ class Tmdb(object):
         self.total_results = 0
 
         self.temporada = {}
+        self.texto_buscado = texto_buscado
 
         self.busqueda_id = kwargs.get('id_Tmdb','')
         self.busqueda_texto = re.sub('\[\\\?(B|I|COLOR)\s?[^\]]*\]', '', texto_buscado)
@@ -1060,14 +1064,15 @@ class Tmdb(object):
             try:
                 self.temporada[numtemporada] = jsontools.load_json(scrapertools.downloadpageWithoutCookies(url))
             except:
-                self.temporada[numtemporada] = {"status_code": 15}
+                self.temporada[numtemporada] = {"status_code": 15, "status_message": "Failed"}
 
             if "status_code" in self.temporada[numtemporada]:
                 # Se ha producido un error
-                self.temporada[numtemporada] =  {"episodes":{}}
                 msg = "La busqueda de " + buscando + " no dio resultados."
                 msg += "\nError de tmdb: %s %s" % (self.temporada[numtemporada]["status_code"], self.temporada[numtemporada]["status_message"])
                 logger.debug(msg)
+                self.temporada[numtemporada] = {"episodes": {}}
+
 
 
         return self.temporada[numtemporada]

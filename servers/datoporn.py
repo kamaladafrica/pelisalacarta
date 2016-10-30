@@ -28,12 +28,14 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
 
     data = scrapertools.cache_page(page_url)
 
-    match = scrapertools.find_single_match(data, "<script type='text/javascript'>(.*?)</script>")
-    data = jsunpack.unpack(match)
+    media_urls = scrapertools.find_multiple_matches(data,'\[\{file\:"([^"]+)"')
+    if not media_urls:
+        match = scrapertools.find_single_match(data, "<script type='text/javascript'>(.*?)</script>")
+        data = jsunpack.unpack(match)
+        media_urls = scrapertools.find_multiple_matches(data,'\[\{file\:"([^"]+)"')
 
     # Extrae la URL
     video_urls = []
-    media_urls = scrapertools.find_multiple_matches(data,'\[\{file\:"([^"]+)"')
     for media_url in media_urls:
         video_urls.append( [ "."+media_url.rsplit('.',1)[1]+" [datoporn]", media_url])
 

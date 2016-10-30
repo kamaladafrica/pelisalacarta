@@ -250,9 +250,15 @@ def mainlist_filter(channel, list_idiomas, list_calidad):
 
     idx = 0
     for tvshow in sorted(dict_series):
-        tag_color = "0xff008000" if dict_series[tvshow][TAG_ACTIVE] else "0xff00fa9a"
+        if dict_series[tvshow][TAG_ACTIVE]:
+          tag_color = "0xff008000"
+        else: 
+          tag_color = "0xff00fa9a"
         if idx % 2 == 0:
-            tag_color = "blue" if dict_series[tvshow][TAG_ACTIVE] else "0xff00bfff"
+            if dict_series[tvshow][TAG_ACTIVE]:
+              tag_color = "blue"
+            else:
+               tag_color = "0xff00bfff"
 
         idx += 1
         name = dict_series.get(tvshow, {}).get(TAG_NAME, tvshow)

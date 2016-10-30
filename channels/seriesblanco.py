@@ -270,7 +270,10 @@ def extractVideosSection(data):
         return extractVideosSection(scrapertools.cachePagePost(HOST + 'ajax.php', result[0][2]))
 
     row = len(result) - 2
-    idx = 1 if result[row][1] else 0
+    if result[row][1]:
+      idx = 1
+    else:
+      idx = 0
 
     return [result[row][idx], result[row + 1][idx]]
 

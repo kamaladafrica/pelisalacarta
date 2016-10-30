@@ -29,22 +29,26 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
     video_urls = []
     data = scrapertools.cache_page(page_url)
 
-    id_file = page_url.rsplit("/",1)[1]
-    key = scrapertools.find_single_match(data, 'flashvars\.filekey\s*=\s*"([^"]+)"')
-    if not key:
-        varkey = scrapertools.find_single_match(data, 'flashvars\.filekey\s*=\s*([^;]+);')
-        key = scrapertools.find_single_match(data, varkey+'\s*=\s*"([^"]+)"')
+    mediaurls = scrapertools.find_multiple_matches(data, '<source src="([^"]+)"')
+    if not mediaurls:
+        id_file = page_url.rsplit("/",1)[1]
+        key = scrapertools.find_single_match(data, 'flashvars\.filekey\s*=\s*"([^"]+)"')
+        if not key:
+            varkey = scrapertools.find_single_match(data, 'flashvars\.filekey\s*=\s*([^;]+);')
+            key = scrapertools.find_single_match(data, varkey+'\s*=\s*"([^"]+)"')
 
-    # Primera url, se extrae una url erronea necesaria para sacar el enlace
-    url = "http://www.vidgg.to//api/player.api.php?cid2=undefined&cid=undefined&numOfErrors=0&user=undefined&cid3=undefined&key=%s&file=%s&pass=undefined" % (key, id_file)
-    data = scrapertools.cache_page(url)
-    
-    url_error = scrapertools.find_single_match(data, 'url=([^&]+)&')
-    url = "http://www.vidgg.to//api/player.api.php?cid2=undefined&cid=undefined&numOfErrors=1&errorUrl=%s&errorCode=404&user=undefined&cid3=undefined&key=%s&file=%s&pass=undefined" % (url_error, key, id_file)
-    data = scrapertools.cache_page(url)
-    mediaurl = scrapertools.find_single_match(data, 'url=([^&]+)&')
-    title = scrapertools.get_filename_from_url(mediaurl)[-4:]+" [vidgg]"
-    video_urls.append( [title, mediaurl])
+        # Primera url, se extrae una url erronea necesaria para sacar el enlace
+        url = "http://www.vidgg.to//api/player.api.php?cid2=undefined&cid=undefined&numOfErrors=0&user=undefined&cid3=undefined&key=%s&file=%s&pass=undefined" % (key, id_file)
+        data = scrapertools.cache_page(url)
+        
+        url_error = scrapertools.find_single_match(data, 'url=([^&]+)&')
+        url = "http://www.vidgg.to//api/player.api.php?cid2=undefined&cid=undefined&numOfErrors=1&errorUrl=%s&errorCode=404&user=undefined&cid3=undefined&key=%s&file=%s&pass=undefined" % (url_error, key, id_file)
+        data = scrapertools.cache_page(url)
+        mediaurls = scrapertools.find_multiple_matches(data, 'url=([^&]+)&')
+
+    for i, mediaurl in enumerate(mediaurls):
+        title = scrapertools.get_filename_from_url(mediaurl)[-4:]+" Mirror %s [vidgg]" % str(i+1)
+        video_urls.append( [title, mediaurl])
 
     for video_url in video_urls:
         logger.info("[vidgg.py] %s - %s" % (video_url[0],video_url[1]))

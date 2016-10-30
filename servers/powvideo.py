@@ -32,7 +32,7 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
     data = scrapertools.cache_page(url, headers=headers)
 
     # Extrae la URL
-    data = scrapertools.find_single_match(data,"<script type='text/javascript'>(.*?)</script>")
+    data = scrapertools.find_single_match(data,"<script type=[\"']text/javascript[\"']>(eval.*?)</script>")
     data = jsunpack.unpack(data).replace("\\","")
 
     data = scrapertools.find_single_match(data,"sources\=\[([^\]]+)\]")

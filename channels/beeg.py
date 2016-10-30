@@ -40,8 +40,14 @@ def decode(key):
     i =  n % t
     s = ord(a[i:i+1]) % 21
     o += chr(r-s)
-  
-  n=[o[(x -3) if x >=3 else 0:x] for x in range(len(o),0,-3)]
+    
+  n = []
+  for x in range(len(o),0,-3):
+    if x >=3:
+      n.append(o[(x -3):x])
+    else:
+      n.append(o[0:x])
+    
   return "".join(n)
 
 get_api_url()

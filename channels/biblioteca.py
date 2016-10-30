@@ -56,7 +56,6 @@ def read_nfo(path_nfo, item=None):
 
 
 def peliculas(item):
-    # TODO falta añadir descargas
     logger.info("pelisalacarta.channels.biblioteca peliculas")
     itemlist = []
 
@@ -121,30 +120,11 @@ def peliculas(item):
                 logger.debug("new_item: " + new_item.tostring('\n'))
                 itemlist.append(new_item)
 
-    '''
-    # Obtenemos todos los videos de la biblioteca de CINE recursivamente
-    download_path = filetools.join(config.get_library_path(), "Descargas", "Cine")
-    for raiz, subcarpetas, ficheros in filetools.walk(download_path):
-        for f in ficheros:
-            if not f.endswith(".json") and not f.endswith(".nfo")and not f.endswith(".srt"):
-                i = filetools.join(raiz, f)
-
-                movie = Item()
-                movie.contentChannel = "local"
-                movie.path = i
-                movie.title = os.path.splitext(os.path.basename(i))[0].capitalize()
-                movie.channel = "biblioteca"
-                movie.action = "play"
-                movie.text_color = "green"
-
-                itemlist.append(movie)
-    '''
 
     return sorted(itemlist, key=lambda it: it.title.lower())
 
 
 def series(item):
-    # TODO falta añadir descargas
     logger.info("pelisalacarta.channels.biblioteca series")
     itemlist = []
 
@@ -196,25 +176,6 @@ def series(item):
 
                 # logger.debug("item_tvshow:\n" + item_tvshow.tostring('\n'))
                 itemlist.append(item_tvshow)
-
-    '''
-       # Obtenemos todos los videos de la biblioteca de SERIES recursivamente
-       download_path = filetools.join(config.get_library_path(), "Descargas", "Series")
-       for raiz, subcarpetas, ficheros in filetools.walk(download_path):
-           for f in ficheros:
-               if f == "tvshow.json":
-                   i = filetools.join(raiz, f)
-
-                   tvshow = Item().fromjson(filetools.read(i))
-                   tvshow.contentChannel = "local"
-                   tvshow.path = os.path.dirname(i)
-                   tvshow.title = os.path.basename(os.path.dirname(i))
-                   tvshow.channel = "biblioteca"
-                   tvshow.action = "get_temporadas"
-                   tvshow.text_color = "green"
-
-                   itemlist.append(tvshow)
-       '''
 
     return sorted(itemlist, key=lambda it: it.title.lower())
 
@@ -352,7 +313,7 @@ def get_episodios(item):
 
 def findvideos(item):
     logger.info("pelisalacarta.channels.biblioteca findvideos")
-    logger.debug("item:\n" + item.tostring('\n'))
+    #logger.debug("item:\n" + item.tostring('\n'))
 
     itemlist = []
     list_canales = {}
@@ -385,9 +346,14 @@ def findvideos(item):
     if 'descargas' in list_canales:
         json_path = list_canales['descargas']
         item_json = Item().fromjson(filetools.read(json_path))
-        item_local = item_json.clone(action='play')
-        itemlist.append(item_local)
         del list_canales['descargas']
+
+        # Comprobar q el video no haya sido borrado
+        if filetools.exists(item_json.url):
+            item_local = item_json.clone(action='play')
+            itemlist.append(item_local)
+        else:
+            num_canales -= 1
 
 
     filtro_canal = ''

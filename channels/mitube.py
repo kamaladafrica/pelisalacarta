@@ -86,7 +86,10 @@ def search(item,texto):
     url = "https://www.googleapis.com/youtube/v3/search"
     query = generate_search_qs(urllib2.unquote(term), 1)
     ##have_results = _search(url, original_term, query)
-    item.url = url + "?" + urlencode(query) if query else url
+    if query:
+      item.url = url + "?" + urlencode(query) 
+    else:
+      item.url = url
     # use cached value if exists
 
     try:
