@@ -403,6 +403,8 @@ def guardar_valores(item, dict_data_saved):
         logger.debug('item: {0}\ndatos: {1}'.format(item.tostring(), dict_data_saved))
 
         # OBTENEMOS LOS DATOS DEL JSON
+        if item.from_channel == "biblioteca":
+            item.from_channel = item.contentChannel
         dict_series = get_filtered_tvshows(item.from_channel)
         tvshow = item.show.strip().lower()
 
@@ -463,75 +465,77 @@ def update_json_data(dict_series, filename):
     return fname, json_data
 
 
-def save_filter(item):
-    """
-    salva el filtro a través del menú contextual
+# TODO PENDIENTE DE ARREGLAR
 
-    :param item: item
-    :type item: item
-    """
-    logger.info("[filtertools.py] save_filter")
-
-    dict_series = get_filtered_tvshows(item.from_channel)
-
-    name = item.show.lower().strip()
-    logger.info("[filtertools.py] config_filter name {0}".format(name))
-
-    open_tag_idioma = (0, item.title.find("[")+1)[item.title.find("[") >= 0]
-    close_tag_idioma = (0, item.title.find("]"))[item.title.find("]") >= 0]
-    idioma = item.title[open_tag_idioma: close_tag_idioma]
-
-    open_tag_calidad = (0, item.title.find("[", item.title.find("[") + 1)+1)[item.title.find("[", item.title.find("[") + 1) >= 0]
-    close_tag_calidad = (0, item.title.find("]", item.title.find("]") + 1))[item.title.find("]", item.title.find("]") + 1) >= 0]
-    calidad_no_permitida = ""  # item.title[open_tag_calidad: close_tag_calidad]
-
-    # filter_idioma = ""
-    # logger.info("idioma {0}".format(idioma))
-    # if idioma != "":
-    #     filter_idioma = [key for key, value in dict_idiomas.iteritems() if value == idioma][0]
-
-    list_calidad = list()
-
-    dict_filter = {TAG_NAME: item.show, TAG_ACTIVE: True, TAG_LANGUAGE: idioma, TAG_QUALITY_NOT_ALLOWED: list_calidad}
-    dict_series[name] = dict_filter
-
-    # filter_list = item.extra.split("##")
-    # dict_series = eval(filter_list[0])
-    # dict_filter = eval(filter_list[2])
-    # dict_series[filter_list[1].strip().lower()] = dict_filter
-    # logger.info("categoria {0}".format(item.from_channel))
-
-    fname, json_data = update_json_data(dict_series, item.from_channel)
-    result = filetools.write(fname, json_data)
-
-    if result:
-        message = "FILTRO GUARDADO"
-    else:
-        message = "Error al guardar en disco"
-
-    heading = "{0} [1]".format(item.show.strip(), idioma)
-    platformtools.dialog_notification(heading, message)
-
-
-def del_filter(item):
-    """
-    elimina el filtro a través del menú contextual
-
-    :param item: item
-    :type item: item
-    """
-    logger.info("[filtertools.py] del_filter")
-
-    dict_series = get_filtered_tvshows(item.from_channel)
-    dict_series.pop(item.show.lower().strip(), None)
-
-    fname, json_data = update_json_data(dict_series, item.from_channel)
-    result = filetools.write(fname, json_data)
-
-    if result:
-        message = "FILTRO ELIMINADO"
-    else:
-        message = "Error al guardar en disco"
-
-    heading = "{0}".format(item.show.strip())
-    platformtools.dialog_notification(heading, message)
+# def save_filter(item):
+#     """
+#     salva el filtro a través del menú contextual
+#
+#     :param item: item
+#     :type item: item
+#     """
+#     logger.info("[filtertools.py] save_filter")
+#
+#     dict_series = get_filtered_tvshows(item.from_channel)
+#
+#     name = item.show.lower().strip()
+#     logger.info("[filtertools.py] config_filter name {0}".format(name))
+#
+#     open_tag_idioma = (0, item.title.find("[")+1)[item.title.find("[") >= 0]
+#     close_tag_idioma = (0, item.title.find("]"))[item.title.find("]") >= 0]
+#     idioma = item.title[open_tag_idioma: close_tag_idioma]
+#
+#     open_tag_calidad = (0, item.title.find("[", item.title.find("[") + 1)+1)[item.title.find("[", item.title.find("[") + 1) >= 0]
+#     close_tag_calidad = (0, item.title.find("]", item.title.find("]") + 1))[item.title.find("]", item.title.find("]") + 1) >= 0]
+#     calidad_no_permitida = ""  # item.title[open_tag_calidad: close_tag_calidad]
+#
+#     # filter_idioma = ""
+#     # logger.info("idioma {0}".format(idioma))
+#     # if idioma != "":
+#     #     filter_idioma = [key for key, value in dict_idiomas.iteritems() if value == idioma][0]
+#
+#     list_calidad = list()
+#
+#     dict_filter = {TAG_NAME: item.show, TAG_ACTIVE: True, TAG_LANGUAGE: idioma, TAG_QUALITY_NOT_ALLOWED: list_calidad}
+#     dict_series[name] = dict_filter
+#
+#     # filter_list = item.extra.split("##")
+#     # dict_series = eval(filter_list[0])
+#     # dict_filter = eval(filter_list[2])
+#     # dict_series[filter_list[1].strip().lower()] = dict_filter
+#     # logger.info("categoria {0}".format(item.from_channel))
+#
+#     fname, json_data = update_json_data(dict_series, item.from_channel)
+#     result = filetools.write(fname, json_data)
+#
+#     if result:
+#         message = "FILTRO GUARDADO"
+#     else:
+#         message = "Error al guardar en disco"
+#
+#     heading = "{0} [1]".format(item.show.strip(), idioma)
+#     platformtools.dialog_notification(heading, message)
+#
+#
+# def del_filter(item):
+#     """
+#     elimina el filtro a través del menú contextual
+#
+#     :param item: item
+#     :type item: item
+#     """
+#     logger.info("[filtertools.py] del_filter")
+#
+#     dict_series = get_filtered_tvshows(item.from_channel)
+#     dict_series.pop(item.show.lower().strip(), None)
+#
+#     fname, json_data = update_json_data(dict_series, item.from_channel)
+#     result = filetools.write(fname, json_data)
+#
+#     if result:
+#         message = "FILTRO ELIMINADO"
+#     else:
+#         message = "Error al guardar en disco"
+#
+#     heading = "{0}".format(item.show.strip())
+#     platformtools.dialog_notification(heading, message)

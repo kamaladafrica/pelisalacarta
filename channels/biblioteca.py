@@ -49,7 +49,7 @@ def read_nfo(path_nfo, item=None):
         else:
             it = Item().fromjson(filetools.read(path_nfo, 1))
 
-        if 'fanart' in it.infoLabels:  # it.fanart = it.infoLabels.get('fanart', "")
+        if 'fanart' in it.infoLabels:
             it.fanart = it.infoLabels['fanart']
 
     return url_scraper, it
@@ -119,7 +119,6 @@ def peliculas(item):
 
                 logger.debug("new_item: " + new_item.tostring('\n'))
                 itemlist.append(new_item)
-
 
     return sorted(itemlist, key=lambda it: it.title.lower())
 
@@ -313,7 +312,7 @@ def get_episodios(item):
 
 def findvideos(item):
     logger.info("pelisalacarta.channels.biblioteca findvideos")
-    #logger.debug("item:\n" + item.tostring('\n'))
+    # logger.debug("item:\n" + item.tostring('\n'))
 
     itemlist = []
     list_canales = {}
@@ -355,7 +354,6 @@ def findvideos(item):
         else:
             num_canales -= 1
 
-
     filtro_canal = ''
     if num_canales > 1 and config.get_setting("ask_channel") == "true":
         opciones = ["Mostrar solo los enlaces de %s" % k.capitalize() for k in list_canales.keys()]
@@ -371,7 +369,6 @@ def findvideos(item):
         elif item_local and index == len(opciones) - 1:
             filtro_canal = 'descargas'
             platformtools.play_video(item_local)
-
 
         elif index > 0:
             filtro_canal = opciones[index].replace("Mostrar solo los enlaces de ", "")
@@ -391,6 +388,11 @@ def findvideos(item):
         list_servers = []
 
         try:
+            # si el canal tiene filtro se le pasa el nombre que tiene guardado para que filtre correctamente.
+            if item_json.list_calidad:
+                url_scraper, item_nfo = read_nfo(item.nfo)
+                item_json.show = item_nfo.library_filter_show[nom_canal]
+
             # Ejecutamos find_videos, del canal o común
             if hasattr(channel, 'findvideos'):
                 list_servers = getattr(channel, 'findvideos')(item_json)
@@ -417,7 +419,7 @@ def findvideos(item):
             if not server.thumbnail:
                 server.thumbnail = item.thumbnail
 
-            #logger.debug("server:\n%s" % server.tostring('\n'))
+            # logger.debug("server:\n%s" % server.tostring('\n'))
             itemlist.append(server)
 
     # return sorted(itemlist, key=lambda it: it.title.lower())
@@ -426,7 +428,7 @@ def findvideos(item):
 
 def play(item):
     logger.info("pelisalacarta.channels.biblioteca play")
-    #logger.debug("item:\n" + item.tostring('\n'))
+    # logger.debug("item:\n" + item.tostring('\n'))
 
     if not item.contentChannel == "local":
         channel = __import__('channels.%s' % item.contentChannel, fromlist=["channels.%s" % item.contentChannel])
@@ -528,7 +530,6 @@ def mark_season_as_watched(item):
         if config.is_xbmc():
             # Actualizamos la BBDD de Kodi
             library.mark_season_as_watched_on_kodi(item, item.playcount)
-
 
     platformtools.itemlist_refresh()
 
