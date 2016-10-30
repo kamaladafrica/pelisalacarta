@@ -578,7 +578,7 @@ def eliminar(item):
 
 def check_season_playcount(item, season):
     logger.info("pelisalacarta.channels.biblioteca check_season_playcount")
-    logger.debug("item " + item.tostring("\n"))
+    # logger.debug("item " + item.tostring("\n"))
 
     episodios_temporada = 0
     episodios_vistos_temporada = 0
@@ -600,7 +600,7 @@ def check_season_playcount(item, season):
 
 def check_tvshow_playcount(item, season):
     logger.info("pelisalacarta.channels.biblioteca check_tvshow_playcount")
-    logger.debug("item " + item.tostring("\n"))
+    # logger.debug("item " + item.tostring("\n"))
 
     temporadas_serie = 0
     temporadas_vistas_serie = 0
