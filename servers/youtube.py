@@ -194,6 +194,7 @@ def scrapeWebPageForVideoLinks(data):
     if flashvars.has_key(u"ttsurl"):
         logger.info("ttsurl="+flashvars[u"ttsurl"])
 
+    js_signature = ""
     for url_desc in flashvars[u"url_encoded_fmt_stream_map"].split(u","):
         url_desc_map = cgi.parse_qs(url_desc)
         logger.info(u"url_map: " + repr(url_desc_map))
@@ -215,11 +216,28 @@ def scrapeWebPageForVideoLinks(data):
 
             if url_desc_map.has_key(u"sig"):
                 url = url + u"&signature=" + url_desc_map[u"sig"][0]
+            elif url_desc_map.has_key(u"s"):
+                sig = url_desc_map[u"s"][0]
+                if not js_signature:
+                    urljs = scrapertools.find_single_match(data, '"assets":.*?"js":\s*"([^"]+)"')
+                    urljs = urljs.replace("\\", "")
+                    if urljs:
+                        data_js = scrapertools.downloadpage("http:"+urljs)
+                        from jsinterpreter import JSInterpreter
+                        funcname = scrapertools.find_single_match(data_js, '\.sig\|\|([A-z0-9$]+)\(')
 
-            #links[key] = url
+                        jsi = JSInterpreter(data_js)
+                        js_signature = jsi.extract_function(funcname)
+
+                signature = js_signature([sig])
+                url += u"&signature=" + signature
+
+            # Se encodean las comas para que no falle en método built-in
+            url = url.replace(",", "%2C")
             video_urls.append( [ "("+fmt_value[key]+") [youtube]" , url ])
         except:
-            logger.info("ERROR EN "+str(url_desc))
+            import traceback
+            logger.info(traceback.format_exc())
 
     return video_urls
 
