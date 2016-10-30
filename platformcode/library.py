@@ -379,6 +379,10 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
             item_strm.contentTitle = season_episode
             # logger.debug(item_strm.tostring('\n'))
 
+            # si el canal tiene filtro se le pasa el nombre que tiene guardado para que filtre correctamente.
+            if item_strm.list_idiomas:
+                item_strm.library_filter_show = serie.library_filter_show
+
             filetools.write(strm_path, '%s?%s' % (addon_name, item_strm.tourl()))
             # filetools.write(strm_path + '.debug', '%s?%s' % (addon_name, item_strm.tojson())) # For debug
 

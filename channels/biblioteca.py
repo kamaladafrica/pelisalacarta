@@ -391,7 +391,7 @@ def findvideos(item):
 
         try:
             # si el canal tiene filtro se le pasa el nombre que tiene guardado para que filtre correctamente.
-            if item_json.list_calidad:
+            if item_json.list_idiomas:
                 item_json.show = item.library_filter_show[nom_canal]
 
             # Ejecutamos find_videos, del canal o común
