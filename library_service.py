@@ -163,11 +163,12 @@ def main(overwrite=True):
     try:
 
         if config.get_setting("updatelibrary") == "true":
-            updatelibrary_wait = [0, 10000, 20000, 30000, 60000]
-            wait = updatelibrary_wait[int(config.get_setting("updatelibrary_wait"))]
-            if wait > 0:
-                import xbmc
-                xbmc.sleep(wait)
+            if not overwrite: # No venimos del canal configuracion
+                updatelibrary_wait = [0, 10000, 20000, 30000, 60000]
+                wait = updatelibrary_wait[int(config.get_setting("updatelibrary_wait"))]
+                if wait > 0:
+                    import xbmc
+                    xbmc.sleep(wait)
 
             heading = 'Actualizando biblioteca....'
             p_dialog = platformtools.dialog_progress_bg('pelisalacarta', heading)
@@ -184,10 +185,8 @@ def main(overwrite=True):
                 serie = Item().fromjson(filetools.read(tvshow_file, 1))
                 path = filetools.dirname(tvshow_file)
 
-                if serie.contentSeriename == "":
-                    serie.contentSeriename = serie.show
                 logger.info("pelisalacarta.library_service serie=" + serie.contentSerieName)
-                p_dialog.update(int(math.ceil((i+1) * t)), heading, serie.contentSeriename)
+                p_dialog.update(int(math.ceil((i+1) * t)), heading, serie.contentSerieName)
 
                 if not serie.active:
                     continue
@@ -199,12 +198,16 @@ def main(overwrite=True):
                 for channel, url in serie.library_urls.items():
                     serie.channel = channel
                     serie.url = url
+
                     p_dialog.update(int(math.ceil((i + 1) * t)), heading, "%s: %s" % (serie.contentSerieName,
                                                                                       serie.channel.capitalize()))
                     try:
                         pathchannels = filetools.join(config.get_runtime_path(), "channels", serie.channel + '.py')
                         logger.info("pelisalacarta.library_service Cargando canal: " + pathchannels + " " +
                                     serie.channel)
+
+                        if serie.library_filter_show:
+                            serie.show = serie.library_filter_show.get(channel, serie.contentSerieName)
 
                         obj = imp.load_source(serie.channel, pathchannels)
                         itemlist = obj.episodios(serie)
