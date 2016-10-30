@@ -464,6 +464,8 @@ def mark_content_as_watched(item):
 
         if item.contentType == 'movie':
             name_file = os.path.splitext(os.path.basename(item.nfo))[0]
+        elif item.contentType == 'episode':
+            name_file = item.contentSeason + "x" + item.contentEpisodeNumber
         else:
             name_file = item.contentTitle
 
@@ -473,10 +475,7 @@ def mark_content_as_watched(item):
 
         # se comprueba que si todos los episodios de una temporada están marcados, se marque tb la temporada
         if item.contentType != 'movie':
-            season_episode = scrapertools.get_season_and_episode(item.contentTitle)
-            if season_episode:
-                season, episode = season_episode.split("x")
-                it = check_season_playcount(it, season)
+            it = check_season_playcount(it, item.contentSeason)
 
         # Guardamos los cambios en item.nfo
         if filetools.write(item.nfo, url_scraper + it.tojson()):
