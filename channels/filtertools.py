@@ -96,7 +96,6 @@ def get_filtered_links(list_item, channel):
 
                 # viene de episodios
                 if "[" in item.language:
-                    logger.debug("item.language")
                     list_language = item.language.replace("[", "").replace("]", "").split(" ")
                     if _filter.language in list_language:
                         language_count += 1
