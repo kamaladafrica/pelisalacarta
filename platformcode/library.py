@@ -414,6 +414,8 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
                         news_in_playcounts[season_episode] = 0
                         # Marcamos la temporada como no vista
                         news_in_playcounts["season %s" % e.contentSeason] = 0
+                        # Marcamos la serie como no vista
+                        news_in_playcounts[serie.title] = 0
                     else:
                         logger.info("pelisalacarta.platformcode.library savelibrary Sobreescrito: %s" % json_path)
                         sobreescritos += 1
