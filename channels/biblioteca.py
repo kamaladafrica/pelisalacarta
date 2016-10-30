@@ -471,6 +471,13 @@ def mark_content_as_watched(item):
             it.library_playcounts = {}
         it.library_playcounts.update({name_file: item.playcount})
 
+        # se comprueba que si todos los episodios de una temporada están marcados, se marque tb la temporada
+        if item.contentType != 'movie':
+            season_episode = scrapertools.get_season_and_episode(item.contentTitle)
+            if season_episode:
+                season, episode = season_episode.split("x")
+                it = check_season_playcount(it, season)
+
         # Guardamos los cambios en item.nfo
         if filetools.write(item.nfo, url_scraper + it.tojson()):
             item.infoLabels['playcount'] = item.playcount
@@ -524,6 +531,9 @@ def mark_season_as_watched(item):
             # Añadimos la temporada al diccionario item.library_playcounts
             it.library_playcounts["season %s" % item.contentSeason] = item.playcount
 
+            # se comprueba que si todas las temporadas están vistas, se marque la serie como vista
+            it = check_tvshow_playcount(it, item.contentSeason)
+
         # Guardamos los cambios en tvshow.nfo
         filetools.write(f, url_scraper + it.tojson())
         item.infoLabels['playcount'] = item.playcount
@@ -565,3 +575,45 @@ def eliminar(item):
             library.clean()
 
         platformtools.itemlist_refresh()
+
+
+def check_season_playcount(item, season):
+    logger.info("pelisalacarta.channels.biblioteca check_season_playcount")
+    logger.debug("item " + item.tostring("\n"))
+
+    episodios_temporada = 0
+    episodios_vistos_temporada = 0
+    for key, value in item.library_playcounts.iteritems():
+        if key.startswith(season+"x"):
+            episodios_temporada += 1
+            if value > 0:
+                episodios_vistos_temporada += 1
+
+    if episodios_temporada == episodios_vistos_temporada:
+        # se comprueba que si todas las temporadas están vistas, se marque la serie como vista
+        item.library_playcounts.update({"season %s" % season: 1})
+    else:
+        # se comprueba que si todas las temporadas están vistas, se marque la serie como vista
+        item.library_playcounts.update({"season %s" % season: 0})
+
+    return check_tvshow_playcount(item, season)
+
+
+def check_tvshow_playcount(item, season):
+    logger.info("pelisalacarta.channels.biblioteca check_tvshow_playcount")
+    logger.debug("item " + item.tostring("\n"))
+
+    temporadas_serie = 0
+    temporadas_vistas_serie = 0
+    for key, value in item.library_playcounts.iteritems():
+        if key == ("season %s" % season):
+            temporadas_serie += 1
+            if value > 0:
+                temporadas_vistas_serie += 1
+
+    if temporadas_serie == temporadas_vistas_serie:
+        item.library_playcounts.update({item.title: 1})
+    else:
+        item.library_playcounts.update({item.title: 0})
+
+    return item
