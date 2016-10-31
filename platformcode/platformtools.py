@@ -288,7 +288,7 @@ def set_context_commands(item, parent_item):
                     from_channel=item.channel
                 ).tourl())))
 
-            elif command == "buscar_trailer" or command == "05" or command == "25":  # TODO eliminar opcion "05" y "25"
+            elif command == "buscar_trailer" or item.action == "findvideos":
                 context_commands.append(("Buscar Trailer", "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], item.clone(
                     channel="trailertools",
                     action="buscartrailer",

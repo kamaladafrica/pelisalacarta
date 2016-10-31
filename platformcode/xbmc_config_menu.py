@@ -988,6 +988,10 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
         if action == 10:
             self.close()
 
+        self.evaluate_conditions()
+        self.check_default()
+        self.check_ok()
+
 
 class ControlEdit(xbmcgui.ControlButton):
   
