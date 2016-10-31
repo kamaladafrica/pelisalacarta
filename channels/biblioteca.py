@@ -446,7 +446,11 @@ def play(item):
         v.nfo = item.nfo
         v.strm_path = item.strm_path
         v.infoLabels = item.infoLabels
-        v.title = item.contentTitle
+        if item.contentTitle:
+            v.title = item.contentTitle
+        else:
+            if item.contentType == "episode":
+                v.title = "Episodio %s" % item.contentEpisodeNumber
         v.thumbnail = item.thumbnail
         v.contentThumbnail = item.thumbnail
 
