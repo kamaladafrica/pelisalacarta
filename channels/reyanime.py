@@ -28,11 +28,11 @@ def mainlist(item):
     logger.info("pelisalacarta.channels.reyanime mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=item.channel, action="series"       , title="En emisión"           , url="http://reyanime.com/anime/emision" , viewmode="movie_with_plot"))
-    itemlist.append( Item(channel=item.channel, action="letras"       , title="Por orden alfabético" , url="http://reyanime.com/lista-numeros" ))
-    itemlist.append( Item(channel=item.channel, action="generos"      , title="Por géneros"          , url="http://reyanime.com/genero/accion" ))
-    itemlist.append( Item(channel=item.channel, action="series"       , title="Últimos agregados"    , url="http://reyanime.com/anime/ultimos/" , viewmode="movie_with_plot"))
-    itemlist.append( Item(channel=item.channel, action="series"       , title="Proximamente"         , url="http://reyanime.com/anime/proximamente/" , viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, action="series"       , title="En emisión"           , url="http://reyanime.com/ver/emision" , viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, action="letras"       , title="Por orden alfabético" , url="http://reyanime.com/ver/lista-numeros" ))
+    itemlist.append( Item(channel=item.channel, action="generos"      , title="Por géneros"          , url="http://reyanime.com/ver/genero/accion" ))
+    itemlist.append( Item(channel=item.channel, action="series"       , title="Últimos agregados"    , url="http://reyanime.com/ver/ultimos" , viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, action="series"       , title="Proximamente"         , url="http://reyanime.com/ver/proximamente" , viewmode="movie_with_plot"))
   
     return itemlist
 
@@ -59,7 +59,7 @@ def generos(item):
     logger.info("pelisalacarta.channels.reyanime generos")
 
     itemlist = []
-    itemlist.append( Item(channel=item.channel, action="series" , title="acción" , url="http://reyanime.com/genero/accion", viewmode="movie_with_plot"))
+    #itemlist.append( Item(channel=item.channel, action="series" , title="acción" , url="http://reyanime.com/ver/genero/accion", viewmode="movie_with_plot"))
 
     data = scrapertools.cache_page(item.url)
     data = scrapertools.get_match(data,'<div class="lista-hoja-genero-2"(.*?)</div>')
@@ -82,7 +82,7 @@ def series(item):
 
     # Descarga la pagina
     data = scrapertools.cache_page(item.url)
-    logger.info("data="+data)
+    #logger.info("data="+data)
 
     # Extrae las entradas 
     '''
@@ -159,10 +159,11 @@ def episodios(item):
     data = scrapertools.cache_page(item.url)
     data = scrapertools.find_single_match(data,'<div id="box-cap"(.*?)</div>')
 
-    patron = '<a href="([^"]+)" title="([^"]+)"[^<]+<b>([^<]+)<'
+    # <a title="active-raid-kidou-kyoushuushitsu-dai-hakkei-12" href="/active-raid-kidou-kyoushuushitsu-dai-hakkei-12/"><b>12</b>
+    patron = 'href="([^"]+).*?<b>([^<]+)'
     matches = re.compile(patron,re.DOTALL).findall(data)
 
-    for scrapedurl,linktitle,scrapedtitle in matches:
+    for scrapedurl,scrapedtitle in matches:
         title = scrapedtitle.strip()
         
         try:
@@ -207,7 +208,7 @@ def findvideos(item):
         #page_url = build_video_url(servername,videoid)
 
         title = "Ver en "+servername
-        itemlist.append( Item(channel=item.channel, action="play", title=title , fulltitle=item.fulltitle, url=page_url , folder=False) )
+        itemlist.append( Item(channel=item.channel, action="play", title=title , url=page_url , folder=False) )
 
     return itemlist
 
@@ -216,7 +217,7 @@ def play(item):
     itemlist=[]
 
     data = scrapertools.cache_page(item.url)
-    logger.info("data="+data)
+    #logger.info("data="+data)
 
     listavideos = servertools.findvideos(data)
     for video in listavideos:
