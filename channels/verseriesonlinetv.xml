@@ -2,7 +2,7 @@
 <channel>
 	<id>verseriesonlinetv</id>
 	<name>Veriesonlinetv</name>
-    <active>true</active>
+    <active>false</active>
     <adult>false</adult>
     <language>es</language>
     
