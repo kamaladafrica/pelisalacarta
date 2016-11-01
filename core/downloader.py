@@ -73,7 +73,7 @@ class Downloader:
 
     @property  
     def remaining_time(self):
-      if self.speed[0]:
+      if self.speed[0] and self._file_size:
         t = (self.size[0] - self.downloaded[0]) / self.speed[0]
       else:
         t = 0
@@ -92,6 +92,8 @@ class Downloader:
     def progress(self):
       if self._file_size:
         return float(self.downloaded[0]) * 100 / float(self._file_size)
+      elif self._state == self.states.completed:
+        return 100
       else:
         return 0
 
@@ -212,7 +214,6 @@ class Downloader:
 
     def __get_download_headers__(self):
       for x in range(3):
-        print ("Conectando con el servidor...")
         try:
           if not sys.hexversion > 0x0204FFFF:
             conn = urllib2.urlopen(urllib2.Request(self.url, headers=self._headers))
@@ -223,7 +224,6 @@ class Downloader:
         except:
           self.response_headers = dict()
           self._state = self.states.error
-          print ("Error al conectar con el servidor")
         else:
           self.response_headers = conn.headers.dict
           self._state = self.states.stopped
@@ -344,9 +344,8 @@ class Downloader:
           self._download_lock.release()
           break
 
-        
-        #Si comprueba si ya está completada, y si lo esta, pasa a la siguiente  
-        if self._download_info["parts"][id]["current"] > self._download_info["parts"][id]["end"]:
+        #Si comprueba si ya está completada, y si lo esta, pasa a la siguiente 
+        if self._download_info["parts"][id]["current"] > self._download_info["parts"][id]["end"] and self._download_info["parts"][id]["end"] > -1:
           self._download_info["parts"][id]["status"]  = self.states.completed
           continue
           
