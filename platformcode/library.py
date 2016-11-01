@@ -352,10 +352,8 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
             continue
 
         try:
-            if e.channel == "descargas":
-                season_episode = scrapertools.get_season_and_episode(e.contentTitle.lower())
-            else:
-                season_episode = scrapertools.get_season_and_episode(e.title.lower())
+
+            season_episode = scrapertools.get_season_and_episode(e.title.lower())
 
             e.infoLabels = serie.infoLabels
             e.contentSeason, e.contentEpisodeNumber = season_episode.split("x")
