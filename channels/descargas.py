@@ -549,8 +549,7 @@ def get_episodes(item):
         #Episodio, Temporada y Titulo
         if not episode.contentSeason or not episode.contentEpisodeNumber or not episode.contentTitle:
           season_and_episode = scrapertools.get_season_and_episode(episode.title)
-          episode_title = episode.title.replace(season_and_episode, "").strip()
-          episode.contentSeason, episode.contentEpisodeNumber = season_and_episode.split("x")
+          episode_title = episode.title.replace(season_and_episode, "").strip(": -")
           
           if not episode.contentSeason: episode.contentSeason = season_and_episode.split("x")[0]
           if not episode.contentEpisodeNumber: episode.contentEpisodeNumber = season_and_episode.split("x")[1]
