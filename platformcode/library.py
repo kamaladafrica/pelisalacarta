@@ -145,6 +145,7 @@ def save_library_movie(item):
                 break
 
     if not path:
+        # Crear carpeta
         path = filetools.join(MOVIES_PATH, ("%s [%s]" % (base_name, _id)).strip())
         logger.info("pelisalacarta.platformcode.library save_library_movie Creando directorio pelicula:" + path)
         try:
@@ -153,28 +154,32 @@ def save_library_movie(item):
             if exception.errno != errno.EEXIST:
                 raise
 
-    # Crear base_name.strm con un item para ir a get_canales si no existe
-    strm_path = filetools.join(path, "%s.strm" % base_name)
     nfo_path = filetools.join(path, "%s [%s].nfo" % (base_name, _id))
+    if not filetools.exists(nfo_path):
+        # Creamos .nfo si no existe
+        logger.info("Creando .nfo: " + nfo_path)
+        url_scraper = "https://www.themoviedb.org/movie/%s\n" % item.infoLabels['tmdb_id']
+        item_nfo = Item(title=item.contentTitle, channel="biblioteca", action='findvideos',
+                    library_playcounts={"%s [%s]" % (base_name, _id): 0}, infoLabels=item.infoLabels,
+                    library_urls={})
+
+    else:
+        # Si existe .nfo, pero estamos añadiendo un nuevo canal lo abrimos
+        url_scraper = filetools.read(nfo_path, 0, 1)
+        item_nfo = Item().fromjson(filetools.read(nfo_path, 1))
+
+
+    strm_path = filetools.join(path, "%s.strm" % base_name)
     if not filetools.exists(strm_path):
+        # Crear base_name.strm si no existe
         item_strm = item.clone(channel='biblioteca', action='play_from_library',
                                strm_path=strm_path.replace(MOVIES_PATH, ""), contentType='movie',
                                infoLabels={'title': item.contentTitle})
+        filetools.write(strm_path, '%s?%s' % (addon_name, item_strm.tourl()))
+        item_nfo.strm_path = strm_path.replace(MOVIES_PATH, "")
 
-        if filetools.write(strm_path, '%s?%s' % (addon_name, item_strm.tourl())):
-            # Crear base_name.nfo si no existe con la url_scraper, info de la pelicula y marcas de vista
-            if not filetools.exists(nfo_path):
-                url_scraper = "https://www.themoviedb.org/movie/%s\n" % item.infoLabels['tmdb_id']
-                item_nfo = Item(title=item.contentTitle, channel="biblioteca", action='findvideos',
-                                library_playcounts={"%s [%s]" % (base_name, _id): 0}, infoLabels=item.infoLabels,
-                                strm_path=strm_path.replace(MOVIES_PATH, ""))
-
-                if not filetools.write(nfo_path, url_scraper + item_nfo.tojson()):
-                    # Si no se puede crear base_name.nfo borramos base_name.strm
-                    filetools.remove(strm_path)
-
-    # Solo si existen base_name.nfo y base_name.strm continuamos
-    if filetools.exists(nfo_path) and filetools.exists(strm_path):
+    # Solo si existen item_nfo y .strm continuamos
+    if item_nfo and filetools.exists(strm_path):
         json_path = filetools.join(path, ("%s [%s].json" % (base_name, item.channel)).lower())
         if filetools.exists(json_path):
             logger.info("pelisalacarta.platformcode.library savelibrary el fichero existe. Se sobreescribe")
@@ -184,12 +189,15 @@ def save_library_movie(item):
 
         if filetools.write(json_path, item.tojson()):
             p_dialog.update(100, 'Añadiendo película...', item.contentTitle)
-            p_dialog.close()
+            item_nfo.library_urls[item.channel] = item.url
 
-            # actualizamos la biblioteca de Kodi con la pelicula
-            update(FOLDER_MOVIES, filetools.basename(path) + "/")
+            if filetools.write(nfo_path, url_scraper + item_nfo.tojson()):
+                # actualizamos la biblioteca de Kodi con la pelicula
+                if config.is_xbmc():
+                    update(FOLDER_MOVIES, filetools.basename(path) + "/")
 
-            return insertados, sobreescritos, fallidos
+                p_dialog.close()
+                return insertados, sobreescritos, fallidos
 
     # Si llegamos a este punto es por q algo ha fallado
     logger.error("No se ha podido guardar %s en la biblioteca" % item.contentTitle)
@@ -451,7 +459,8 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
             fallidos = -1
 
         # ... y actualizamos la biblioteca de Kodi
-        update(FOLDER_TVSHOWS, filetools.basename(path) + "/")
+        if config.is_xbmc():
+            update(FOLDER_TVSHOWS, filetools.basename(path) + "/")
 
     if fallidos == len(episodelist):
         fallidos = -1

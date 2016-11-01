@@ -84,39 +84,29 @@ def peliculas(item):
                     texto_visto = "Marcar película como vista"
                     contador = 1
 
+                # Menu contextual: Eliminar serie/canal
+                num_canales = len(new_item.library_urls)
+                if "descargas" in new_item.library_urls:
+                    num_canales -= 1
+                if num_canales > 1:
+                    texto_eliminar = "Eliminar película/canal"
+                    multicanal = True
+                else:
+                    texto_eliminar = "Eliminar esta película"
+                    multicanal = False
+
+
                 new_item.context = [{"title": texto_visto,
                                      "action": "mark_content_as_watched",
                                      "channel": "biblioteca",
                                      "playcount": contador},
-                                    {"title": "Eliminar esta película",
+                                    {"title": texto_eliminar,
                                      "action": "eliminar",
-                                     "channel": "biblioteca"}]
+                                     "channel": "biblioteca",
+                                     "multicanal": multicanal}]
                 # ,{"title": "Cambiar contenido (PENDIENTE)",
                 # "action": "",
                 # "channel": "biblioteca"}]
-
-                # Opcion colorear si hay mas de un canal
-                '''
-                list_canales = []
-                for fd in filetools.listdir(raiz):
-                    if fd.endswith('.json'):
-                        # Obtenemos el canal desde el nombre del fichero_[canal].json
-                        nom_canal = os.path.basename(fd)[:-5].split('[')[1]
-                        if not nom_canal in list_canales:
-                            list_canales.append(nom_canal)
-
-                if len(list_canales) == 1:
-                    # Si solo hay un canal no es necesario buscar mas canales
-                    new_item.contentChannel = list_canales[0]
-
-                elif len(list_canales) > 1:
-                    new_item.contentChannel = ""
-                    new_item.text_color = "orange"
-                else:
-                    # Si no hay canales no añadimos el item
-                    continue
-                '''
-
                 logger.debug("new_item: " + new_item.tostring('\n'))
                 itemlist.append(new_item)
 
@@ -158,6 +148,17 @@ def series(item):
                     value = True
                     item_tvshow.text_color = "0xFFDF7401"
 
+                # Menu contextual: Eliminar serie/canal
+                num_canales = len(item_tvshow.library_urls)
+                if "descargas" in item_tvshow.library_urls:
+                    num_canales -= 1
+                if  num_canales > 1:
+                    texto_eliminar = "Eliminar serie/canal"
+                    multicanal = True
+                else:
+                    texto_eliminar = "Eliminar esta serie"
+                    multicanal = False
+
                 item_tvshow.context = [{"title": texto_visto,
                                         "action": "mark_content_as_watched",
                                         "channel": "biblioteca",
@@ -166,9 +167,10 @@ def series(item):
                                         "action": "mark_tvshow_as_updatable",
                                         "channel": "biblioteca",
                                         "active": value},
-                                       {"title": "Eliminar esta serie",
+                                       {"title": texto_eliminar,
                                         "action": "eliminar",
-                                        "channel": "biblioteca"}]
+                                        "channel": "biblioteca",
+                                        "multicanal": multicanal}]
                 # ,{"title": "Cambiar contenido (PENDIENTE)",
                 # "action": "",
                 # "channel": "biblioteca"}]
@@ -291,23 +293,6 @@ def get_episodios(item):
             # logger.debug("epi:\n" + epi.tostring('\n'))
             itemlist.append(epi)
 
-        # videos TODO
-        '''elif not i.endswith(".nfo") and not i.endswith(".json") and not i.endswith(".srt"):
-            season, episode = scrapertools.get_season_and_episode(i).split("x")
-            # Si hay q filtrar por temporada, ignoramos los capitulos de otras temporadas
-            if item.filtrar_season and int(season) != int(item.contentSeason):
-                continue
-
-            epi = Item()
-            epi.contentChannel = "local"
-            epi.path = filetools.join(raiz, i)
-            epi.title = i
-            epi.channel = "biblioteca"
-            epi.action = "play"
-            epi.contentEpisodeNumber = episode
-            epi.contentSeason = season
-
-            itemlist.append(epi)'''
 
     return sorted(itemlist, key=lambda it: (int(it.contentSeason), int(it.contentEpisodeNumber)))
 
@@ -559,15 +544,8 @@ def mark_tvshow_as_updatable(item):
 
 
 def eliminar(item):
-    logger.info("pelisalacarta.channels.biblioteca eliminar")
 
-    if item.contentType == 'movie':
-        heading = "Eliminar película"
-    else:
-        heading = "Eliminar serie"
-
-    if platformtools.dialog_yesno(heading,
-                                  "¿Realmente desea eliminar '%s' de su biblioteca?" % item.infoLabels['title']):
+    def eliminar_todo(item):
         filetools.rmdirtree(item.path)
         if config.is_xbmc():
             import xbmc
@@ -577,7 +555,54 @@ def eliminar(item):
             # limpiamos la biblioteca de Kodi
             library.clean()
 
+        logger.info("Eliminados todos los enlaces")
         platformtools.itemlist_refresh()
+
+
+    logger.info(item.contentTitle)
+    #logger.debug(item.tostring('\n'))
+
+    if item.contentType == 'movie':
+        heading = "Eliminar película"
+    else:
+        heading = "Eliminar serie"
+
+    if item.multicanal:
+        # Obtener listado de canales
+        opciones = ["Eliminar solo los enlaces de %s" % k.capitalize() for k in item.library_urls.keys() if k !="descargas"]
+        opciones.insert(0, heading)
+
+        index = platformtools.dialog_select(config.get_localized_string(30163), opciones)
+
+        if index == 0:
+            # Seleccionado Eliminar pelicula/serie
+            eliminar_todo(item)
+
+        elif index > 0:
+            # Seleccionado Eliminar canal X
+            canal = opciones[index].replace("Eliminar solo los enlaces de ", "").lower()
+
+            num_enlaces= 0
+            for fd in filetools.listdir(item.path):
+                if fd.endswith(canal + '].json'):
+                    if filetools.remove(filetools.join(item.path, fd)):
+                        num_enlaces += 1
+
+            if num_enlaces > 0:
+                # Actualizar .nfo
+                url_scraper, item_nfo = read_nfo(item.nfo)
+                del item_nfo.library_urls[canal]
+                filetools.write(item.nfo, url_scraper + item_nfo.tojson())
+
+            msg_txt = "Eliminados %s enlaces del canal %s" % (num_enlaces, canal)
+            logger.info(msg_txt)
+            platformtools.dialog_notification(heading, msg_txt)
+            platformtools.itemlist_refresh()
+
+    else:
+        if platformtools.dialog_yesno(heading,
+                                      "¿Realmente desea eliminar '%s' de su biblioteca?" % item.infoLabels['title']):
+            eliminar_todo(item)
 
 
 def check_season_playcount(item, season):
