@@ -67,7 +67,7 @@ def dialog_select(heading, _list):
     return xbmcgui.Dialog().select(heading, _list)
 
 
-def dialog_progress(heading, line1, line2="", line3=""):
+def dialog_progress(heading, line1, line2=" ", line3=" "):
     dialog = xbmcgui.DialogProgress()
     dialog.create(heading, line1, line2, line3)
     return dialog
@@ -374,25 +374,25 @@ def set_context_commands(item, parent_item):
                                                           from_action=item.action).tourl())))
 
     # Descargar pelicula
-    if item.contentType == "movie":
+    if item.hasContentType and item.contentType == "movie" and not item.channel == "descargas":
         context_commands.append(("Descargar Pelicula", "XBMC.RunPlugin(%s?%s)" %
                                  (sys.argv[0], item.clone(channel="descargas", action="save_download",
                                                           from_channel=item.channel, from_action=item.action).tourl())))
 
     # Descargar serie
-    if item.contentType == "tvshow":
+    if item.hasContentType and item.contentType == "tvshow" and not item.channel == "descargas":
         context_commands.append(("Descargar Serie", "XBMC.RunPlugin(%s?%s)" %
                                  (sys.argv[0], item.clone(channel="descargas", action="save_download",
                                                           from_channel=item.channel, from_action=item.action).tourl())))
 
     # Descargar episodio
-    if item.contentType == "episode":
+    if item.hasContentType and item.contentType == "episode" and not item.channel == "descargas":
         context_commands.append(("Descargar Episodio", "XBMC.RunPlugin(%s?%s)" %
                                  (sys.argv[0], item.clone(channel="descargas", action="save_download",
                                                           from_channel=item.channel, from_action=item.action).tourl())))
 
     # Descargar temporada
-    if item.contentType == "season":
+    if item.hasContentType and item.contentType == "season" and not item.channel == "descargas":
         context_commands.append(("Descargar Temporada", "XBMC.RunPlugin(%s?%s)" %
                                  (sys.argv[0], item.clone(channel="descargas", action="save_download",
                                                           from_channel=item.channel, from_action=item.action).tourl())))
@@ -730,8 +730,9 @@ def set_opcion(item, seleccion, opciones, video_urls):
 
     # "Descargar"
     elif opciones[seleccion] == config.get_localized_string(30153):
-        item.video_urls = video_urls
         from channels import descargas
+        if item.contentType == "list" or item.contentType == "tvshow":
+          item.contentType = "video"
         descargas.save_download(item)
         salir = True
 
