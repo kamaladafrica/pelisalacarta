@@ -172,7 +172,7 @@ class Downloader:
       self._state = self.states.stopped
       self._write_lock = Lock()   
       self._download_lock = Lock()
-      self._headers = {"User-Agent":"Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.14) Gecko/20080404 Firefox/2.0.0.14"}
+      self._headers = {"User-Agent":"Kodi/15.2 (Windows NT 10.0; WOW64) App_Bitness/32 Version/15.2-Git:20151019-02e7013"}
       
       self._threads = [Thread(target= self.__start_part__) for x in range(self._max_connections)]
       self._speed_thread = Thread(target= self.__speed_metter__)
@@ -232,8 +232,10 @@ class Downloader:
 
     def __get_download_filename__(self):
       #Obtenemos nombre de archivo y extension
-      if "filename" in self.response_headers.get("content-disposition",""):
-        cd_filename, cd_ext = os.path.splitext(urllib.unquote_plus(re.compile("attachment; filename ?= ?[\"|']?([^\"']+)[\"|']?").match(self.response_headers.get("content-disposition")).group(1)))
+      if "filename" in self.response_headers.get("content-disposition","") and "attachment" in self.response_headers.get("content-disposition",""):
+          cd_filename, cd_ext = os.path.splitext(urllib.unquote_plus(re.compile("attachment; filename ?= ?[\"|']?([^\"']+)[\"|']?").match(self.response_headers.get("content-disposition")).group(1)))
+      if "filename" in self.response_headers.get("content-disposition","") and "inline" in self.response_headers.get("content-disposition",""):
+          cd_filename, cd_ext = os.path.splitext(urllib.unquote_plus(re.compile("inline; filename ?= ?[\"|']?([^\"']+)[\"|']?").match(self.response_headers.get("content-disposition")).group(1)))
       else:
           cd_filename, cd_ext = "",""
           
