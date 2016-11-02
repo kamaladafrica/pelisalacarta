@@ -29,25 +29,21 @@ import errno
 import math
 import sys
 import urllib2
-from threading import Thread
-
 import xbmc
+from threading import Thread
 from core import config
 from core import filetools
 from core import jsontools
 from core import logger
 from core import scrapertools
-
-try:
-    from core import tmdb
-except ImportError:
-    tmdb = None
+from core import tmdb
 from core.item import Item
 from platformcode import platformtools
 
 addon_name = sys.argv[0].strip()
 if not addon_name or addon_name.startswith("default.py"):
     addon_name = "plugin://plugin.video.pelisalacarta/"
+
 
 modo_cliente = int(config.get_setting("library_mode"))
 # Host name where XBMC is running, leave as localhost if on this PC
@@ -60,7 +56,6 @@ xbmc_port = int(config.get_setting("xbmc_port"))
 # parameter. For POSTs, we add the payload as JSON the the HTTP request body
 xbmc_json_rpc_url = "http://" + xbmc_host + ":" + str(xbmc_port) + "/jsonrpc"
 
-DEBUG = config.get_setting("debug")
 
 LIBRARY_PATH = config.get_library_path()
 if not filetools.exists(LIBRARY_PATH):
@@ -70,17 +65,9 @@ if not filetools.exists(LIBRARY_PATH):
 # TODO permitir cambiar las rutas y nombres en settings para 'cine' y 'series'
 FOLDER_MOVIES = "CINE"  # config.get_localized_string(30072)
 MOVIES_PATH = filetools.join(LIBRARY_PATH, FOLDER_MOVIES)
-if not filetools.exists(MOVIES_PATH):
-    logger.info("pelisalacarta.platformcode.library Movies path doesn't exist:" + MOVIES_PATH)
-    filetools.mkdir(MOVIES_PATH)
-
 FOLDER_TVSHOWS = "SERIES"  # config.get_localized_string(30073)
 TVSHOWS_PATH = filetools.join(LIBRARY_PATH, FOLDER_TVSHOWS)
-if not filetools.exists(TVSHOWS_PATH):
-    logger.info("pelisalacarta.platformcode.library Tvshows path doesn't exist:" + TVSHOWS_PATH)
-    filetools.mkdir(TVSHOWS_PATH)
 
-otmdb = None
 
 
 def save_library_movie(item):
@@ -392,7 +379,6 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
                 item_strm.library_filter_show = serie.library_filter_show
 
             filetools.write(strm_path, '%s?%s' % (addon_name, item_strm.tourl()))
-            # filetools.write(strm_path + '.debug', '%s?%s' % (addon_name, item_strm.tojson())) # For debug
 
         nfo_path = filetools.join(path, "%s.nfo" % season_episode)
         item_nfo = None
@@ -718,15 +704,15 @@ def execute_sql_kodi(sql):
     Ejecuta la consulta sql contra la base de datos de kodi
     @param sql: Consulta sql valida
     @type sql: str
-    @rtype total_changes: int
     @return: Numero de registros modificados o devueltos por la consulta
-    @rtype nun_records: sqlite3.Cursor
-    @return: Objeto con el resultado de la consulta
+    @rtype nun_records: int
+    @return: lista con el resultado de la consulta
+    @rtype records: list of tuples
     """
     logger.info("pelisalacarta.platformcode.library execute_sql_kodi")
     file_db = ""
     nun_records = 0
-    cursor = None
+    records = None
 
     # Buscamos el nombre de la BBDD de videos segun la version de kodi
     code_db = {'10': 'MyVideos37.db', '11': 'MyVideos60.db', '12': 'MyVideos75.db', '13': 'MyVideos78.db',
@@ -747,24 +733,28 @@ def execute_sql_kodi(sql):
                 break
 
     if file_db:
-        logger.debug("Archivo de BD: %s" % file_db)
+        logger.info("Archivo de BD: %s" % file_db)
         conn = None
         try:
             import sqlite3
             conn = sqlite3.connect(file_db)
             cursor = conn.cursor()
 
-            logger.debug("Ejecutando sql: %s" % sql)
+            logger.info("Ejecutando sql: %s" % sql)
             cursor.execute(sql)
             conn.commit()
 
+            records = cursor.fetchall()
             if sql.lower().startswith("select"):
-                nun_records = len(cursor.fetchall())
+                nun_records = len(records)
+                if nun_records == 1 and records[0][0] is None:
+                    nun_records = 0
+                    records = []
             else:
                 nun_records = conn.total_changes
 
             conn.close()
-            logger.debug("Consulta ejecutada. Registros: %s" % nun_records)
+            logger.info("Consulta ejecutada. Registros: %s" % nun_records)
 
         except:
             logger.error("Error al ejecutar la consulta sql")
@@ -774,7 +764,7 @@ def execute_sql_kodi(sql):
     else:
         logger.debug("Base de datos no encontrada")
 
-    return nun_records, cursor
+    return nun_records, records
 
 
 def get_data(payload):
@@ -862,3 +852,106 @@ def clean(mostrar_dialogo=False):
                "params": {"showdialogs": mostrar_dialogo}}
     data = get_data(payload)
     logger.info("pelisalacarta.platformcode.library clean data: %s" % data)
+
+
+def establecer_contenido(content_type):
+    if config.is_xbmc():
+        ret = False
+
+        librarypath = config.get_setting("librarypath")
+        if librarypath == "" and xbmc.getCondVisibility('System.HasAddon(metadata.themoviedb.org)') and \
+                xbmc.getCondVisibility('System.HasAddon(metadata.tvshows.themoviedb.org)'):
+
+            # Fijamos strPath
+            librarypath = "special://home/userdata/addon_data/plugin.video." + config.PLUGIN_NAME + "/library/"
+            strPath =  librarypath + content_type + "/"
+            logger.info("%s: %s" % (content_type, strPath))
+
+            # Buscamos el idPath
+            idPath = 0
+            sql = 'SELECT MAX(idPath) FROM path'
+            nun_records, records = execute_sql_kodi(sql)
+            if nun_records == 1:
+                idPath = records[0][0] + 1
+
+
+            # Buscamos el idParentPath
+            idParentPath = 0
+            ParentPath = False
+            sql = 'SELECT idPath FROM path where strPath="%s"' % librarypath
+            nun_records, records = execute_sql_kodi(sql)
+            if nun_records == 1:
+                idParentPath = records[0][0]
+                ParentPath = True
+            else:
+                # No existe librarypath en la BD: la insertamos
+                sql = 'INSERT INTO path (idPath, strPath,  scanRecursive, useFolderNames, noUpdate, exclude) VALUES ' \
+                      '(%s, "%s", 0, 0, 0, 0)' % (idPath, librarypath)
+                nun_records, records = execute_sql_kodi(sql)
+                if nun_records == 1:
+                    ParentPath = True
+                    idParentPath = idPath
+                    idPath += 1
+
+
+            if ParentPath:
+                # Fijamos strContent, strScraper, scanRecursive y strSettings
+                if content_type == FOLDER_MOVIES:
+                    strContent = 'movies'
+                    strScraper = 'metadata.themoviedb.org'
+                    scanRecursive = 2147483647
+                    strSettings = "<settings><setting id='RatingS' value='TMDb' /><setting id='certprefix' value='Rated ' />" \
+                                  "<setting id='fanart' value='true' /><setting id='keeporiginaltitle' value='false' />" \
+                                  "<setting id='language' value='es' /><setting id='tmdbcertcountry' value='us' />" \
+                                  "<setting id='trailer' value='true' /></settings>"
+                else:
+                    strContent = 'tvshows'
+                    strScraper = 'metadata.tvshows.themoviedb.org'
+                    scanRecursive = 0
+                    strSettings = "<settings><setting id='fanart' value='true' />" \
+                                  "<setting id='keeporiginaltitle' value='false' />" \
+                                  "<setting id='language' value='es' /></settings>"
+
+
+                # Comprobamos si ya existe strPath en la BD para evitar duplicados
+                sql = 'SELECT idPath FROM path where strPath="%s"' % strPath
+                nun_records, records = execute_sql_kodi(sql)
+                if nun_records == 1:
+                    # Actualizamos el scraper
+                    idPath = records[0][0]
+                    sql = 'UPDATE path SET strContent="%s", strScraper="%s", scanRecursive=%s, strSettings="%s" ' \
+                          'WHERE idPath=%s' % (strContent, strScraper, scanRecursive, strSettings, idPath)
+
+                else:
+                    # Insertamos el scraper
+                    sql = 'INSERT INTO path (idPath, strPath, strContent, strScraper, scanRecursive, useFolderNames, ' \
+                          'strSettings, noUpdate, exclude, idParentPath) VALUES (%s, "%s", "%s", "%s", %s, 0, ' \
+                          '"%s", 0, 0, %s)' % (idPath, strPath, strContent, strScraper, scanRecursive, strSettings, idParentPath)
+
+                nun_records, records = execute_sql_kodi(sql)
+                if nun_records == 1:
+                    ret = True
+                    logger.info("Biblioteca  %s configurada" % content_type)
+
+
+        if not ret:
+            heading = "Biblioteca no configurada"
+            msg_text = "Asegurese de tener instalado el scraper de The Movie Database"
+            platformtools.dialog_notification(heading, msg_text, icon=1, time=8000)
+            logger.info("%s: %s" % (heading,msg_text))
+
+
+
+'''
+Main
+'''
+if not filetools.exists(MOVIES_PATH):
+    logger.info("pelisalacarta.platformcode.library Movies path doesn't exist:" + MOVIES_PATH)
+    if filetools.mkdir(MOVIES_PATH):
+        establecer_contenido(FOLDER_MOVIES)
+
+
+if not filetools.exists(TVSHOWS_PATH):
+    logger.info("pelisalacarta.platformcode.library Tvshows path doesn't exist:" + TVSHOWS_PATH)
+    if filetools.mkdir(TVSHOWS_PATH):
+        establecer_contenido(FOLDER_TVSHOWS)
