@@ -203,7 +203,7 @@ def render_items(itemlist, parent_item):
     xbmcplugin.endOfDirectory(handle=int(sys.argv[1]), succeeded=True)
 
 
-def set_infolabels(listitem, item):
+def set_infolabels(listitem, item, player=False):
     """
     Metodo para pasar la informacion al listitem (ver tmdb.set_InfoLabels() )
     item.infoLabels es un dicionario con los pares de clave/valor descritos en:
@@ -216,9 +216,13 @@ def set_infolabels(listitem, item):
     if item.infoLabels:
       listitem.setInfo("video", item.infoLabels)
       
-    if item.fulltitle:
-        listitem.setInfo("video", {"Title": item.fulltitle})
-    else:
+    if player and not item.contentTitle:
+        if item.fulltitle:
+          listitem.setInfo("video", {"Title": item.fulltitle})
+        else:
+          listitem.setInfo("video", {"Title": item.title})
+          
+    elif not player:
         listitem.setInfo("video", {"Title": item.title})
         
     # Añadido para Kodi Krypton (v17)
@@ -414,10 +418,9 @@ def play_video(item, strm=False):
 
     if item.channel == 'descargas':
         logger.info("Reproducir video local: %s [%s]" % (item.title, item.url))
-        playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
-        playlist.clear()
-        playlist.add(item.url)
-        xbmc.Player().play(playlist)
+        xlistitem = xbmcgui.ListItem(path=item.url, thumbnailImage=item.thumbnail)
+        set_infolabels(xlistitem, item, True)
+        xbmc.Player().play(item.url, xlistitem)
         return
 
     default_action = config.get_setting("default_action")
@@ -448,7 +451,7 @@ def play_video(item, strm=False):
 
     # se obtiene la información del video.
     xlistitem = xbmcgui.ListItem(path=mediaurl, thumbnailImage=item.thumbnail)
-    set_infolabels(xlistitem, item)
+    set_infolabels(xlistitem, item, True)
 
     # se lanza el reproductor
     set_player(item, xlistitem, mediaurl, view, strm)
