@@ -267,28 +267,7 @@ def set_context_commands(item, parent_item):
     for command in context:
         # Predefinidos
         if type(command) == str:
-            if command == "menu_filtro":
-                context_commands.append(("Menu Filtro", "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], item.clone(
-                    channel="filtertools",
-                    action="config_filter",
-                    from_channel=item.channel
-                ).tourl())))
-
-            elif command == "guardar_filtro":
-                context_commands.append(("Guardar Filtro Serie", "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], item.clone(
-                    channel="filtertools",
-                    action="save_filter",
-                    from_channel=item.channel
-                ).tourl())))
-
-            elif command == "borrar_filtro":
-                context_commands.append(("Eliminar Filtro", "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], item.clone(
-                    channel="filtertools",
-                    action="del_filter",
-                    from_channel=item.channel
-                ).tourl())))
-
-            elif command == "buscar_trailer" or item.action == "findvideos":
+            if command == "buscar_trailer" or item.action == "findvideos":
                 context_commands.append(("Buscar Trailer", "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], item.clone(
                     channel="trailertools",
                     action="buscartrailer",

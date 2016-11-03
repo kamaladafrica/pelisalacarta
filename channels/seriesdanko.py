@@ -21,12 +21,6 @@ IDIOMAS = {'es': 'Español', 'la': 'Latino', 'vos': 'VOS', 'vo': 'VO'}
 list_idiomas = [v for v in IDIOMAS.values()]
 CALIDADES = ['SD', 'MicroHD', 'HD/MKV']
 
-'''
-configuración para mostrar la opción de filtro, actualmente sólo se permite en xbmc, se cambiará cuando
-'platformtools.show_channel_settings' esté disponible para las distintas plataformas
-'''
-OPCION_FILTRO = config.is_xbmc()
-CONTEXT = ("", "menu_filtro")[OPCION_FILTRO]
 DEBUG = config.get_setting("debug")
 
 
@@ -40,16 +34,10 @@ def mainlist(item):
     itemlist.append(Item(channel=item.channel, title="Todas las series", action="listado_completo", url=HOST))
     itemlist.append(Item(channel=item.channel, title="Buscar...", action="search", url=HOST))
 
-    if OPCION_FILTRO:
-        itemlist.append(Item(channel=item.channel, title="[COLOR yellow]Configurar filtro para series...[/COLOR]",
-                             action="open_filtertools"))
+    if filtertools.context:
+        itemlist = filtertools.show_option(itemlist, item.channel, list_idiomas, CALIDADES)
 
     return itemlist
-
-
-def open_filtertools(item):
-
-    return filtertools.mainlist_filter(channel=item.channel, list_idiomas=list_idiomas, list_calidad=CALIDADES)
 
 
 def novedades(item):
@@ -164,9 +152,9 @@ def series(item):
         patron = "^(?:Capitulos de: )(.*?)$"
         match = re.compile(patron, re.DOTALL).findall(scrapedtitle)
         title = scrapertools.decodeHtmlentities(match[0])
-        itemlist.append(Item(channel=item.channel, title=title, url=urlparse.urljoin(HOST, scrapedurl.replace("..", "")),
-                             action="episodios", show=title.strip(), thumbnail=scrapedthumb, plot="",
-                             list_idiomas=list_idiomas, list_calidad=CALIDADES, context=CONTEXT))
+        itemlist.append(Item(channel=item.channel, title=title, action="episodios", plot="", show=title.strip(),
+                             url=urlparse.urljoin(HOST, scrapedurl.replace("..", "")), thumbnail=scrapedthumb,
+                             list_idiomas=list_idiomas, list_calidad=CALIDADES, context=filtertools.context))
 
     return itemlist
 
@@ -202,9 +190,9 @@ def episodios(item):
 
         itemlist.append(Item(channel=item.channel, title=title, url=urlparse.urljoin(HOST, scrapedurl),
                              action="findvideos", show=item.show, thumbnail=thumbnail, plot="", language=idioma,
-                             list_idiomas=list_idiomas, list_calidad=CALIDADES, context=CONTEXT))
+                             list_idiomas=list_idiomas, list_calidad=CALIDADES, context=filtertools.context))
 
-    if len(itemlist) > 0 and OPCION_FILTRO:
+    if len(itemlist) > 0 and filtertools.context:
             itemlist = filtertools.get_filtered_links(itemlist, item.channel)
 
     # Opción "Añadir esta serie a la biblioteca de XBMC"
@@ -247,10 +235,11 @@ def parse_videos(item, tipo, data):
 
         itemlist.append(Item(channel=item.channel, title=title, url=urlparse.urljoin(HOST, link), action="play",
                              show=item.show, language=IDIOMAS.get(language, "OVOS"), quality=quality,
-                             list_idiomas=list_idiomas, list_calidad=CALIDADES, context=CONTEXT+"|guardar_filtro",
-                             fulltitle=item.title))
+                             list_idiomas=list_idiomas, list_calidad=CALIDADES, fulltitle=item.title,
+                             context=filtertools.context))
+        # context=CONTEXT+"|guardar_filtro"))
 
-    if len(itemlist) > 0 and OPCION_FILTRO:
+    if len(itemlist) > 0 and filtertools.context:
         itemlist = filtertools.get_filtered_links(itemlist, item.channel)
 
     return itemlist

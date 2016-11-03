@@ -57,7 +57,48 @@ class Filter:
 # TODO echar un ojo a https://pyformat.info/, se puede formatear el estilo y hacer referencias directamente a elementos
 
 __channel__ = "filtertools"
-DEBUG = config.get_setting("debug")
+
+
+def context():
+    _context = ""
+    '''
+    configuración para mostrar la opción de filtro, actualmente sólo se permite en xbmc, se cambiará cuando
+    'platformtools.show_channel_settings' esté disponible para las distintas plataformas
+    '''
+    if config.is_xbmc():
+        _context = [{"title": "Menu Filtro",
+                     "action": "config_filter",
+                     "channel": "filtertools"}]
+
+    # elif command == "guardar_filtro":
+    # context_commands.append(("Guardar Filtro Serie", "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], item.clone(
+    #     channel="filtertools",
+    #     action="save_filter",
+    #     from_channel=item.channel
+    # ).tourl())))
+    #
+    # elif command == "borrar_filtro":
+    #     context_commands.append(("Eliminar Filtro", "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], item.clone(
+    #         channel="filtertools",
+    #         action="del_filter",
+    #         from_channel=item.channel
+    #     ).tourl())))
+
+    return _context
+
+context = context()
+
+
+def show_option(itemlist, channel, list_idiomas, list_calidad):
+    itemlist.append(Item(channel=__channel__, title="[COLOR yellow]Configurar filtro para series...[/COLOR]",
+                         action="open_filtertools", list_idiomas=list_idiomas, list_calidad=list_calidad,
+                         from_channel=channel))
+
+    return itemlist
+
+
+def open_filtertools(item):
+    return mainlist_filter(channel=item.from_channel, list_idiomas=item.list_idiomas, list_calidad=item.list_calidad)
 
 
 def get_filtered_links(list_item, channel):
@@ -73,8 +114,7 @@ def get_filtered_links(list_item, channel):
     """
     logger.info("[filtertools.py] get_filtered_links")
 
-    if DEBUG:
-        logger.info("total de items : {0}".format(len(list_item)))
+    logger.info("total de items : {0}".format(len(list_item)))
 
     new_itemlist = []
     quality_count = 0
@@ -123,14 +163,12 @@ def get_filtered_links(list_item, channel):
                 new_itemlist.append(new_item)
                 logger.info("{0} | context: {1}".format(item.title, item.context))
                 # TODO mirar el context para cambiarlo por como dice super_berny
-                if DEBUG:
-                    logger.info(" -Enlace añadido")
+                logger.info(" -Enlace añadido")
 
-            if DEBUG:
-                logger.info(" idioma valido?: {0}, item.language: {1}, filter.language: {2}"
-                            .format(is_language_valid, item.language, _filter.language))
-                logger.info(" calidad valida?: {0}, item.quality: {1}, filter.quality_not_allowed: {2}"
-                            .format(is_quality_valid, quality, _filter.quality_not_allowed))
+            logger.info(" idioma valido?: {0}, item.language: {1}, filter.language: {2}"
+                        .format(is_language_valid, item.language, _filter.language))
+            logger.info(" calidad valida?: {0}, item.quality: {1}, filter.quality_not_allowed: {2}"
+                        .format(is_quality_valid, quality, _filter.quality_not_allowed))
 
         logger.info("ITEMS FILTRADOS: {0}/{1}, idioma[{2}]:{3}, calidad_no_permitida{4}:{5}"
                     .format(len(new_itemlist), len(list_item), _filter.language, language_count,
@@ -197,8 +235,7 @@ def get_filtered_tvshows(from_channel):
     if TAG_TVSHOW_FILTER in dict_data:
         dict_series = dict_data[TAG_TVSHOW_FILTER]
 
-    if DEBUG:
-        logger.info("json_series: {0}".format(dict_series))
+    logger.info("json_series: {0}".format(dict_series))
 
     return dict_series
 
@@ -252,14 +289,14 @@ def mainlist_filter(channel, list_idiomas, list_calidad):
     idx = 0
     for tvshow in sorted(dict_series):
         if dict_series[tvshow][TAG_ACTIVE]:
-          tag_color = "0xff008000"
-        else: 
-          tag_color = "0xff00fa9a"
+            tag_color = "0xff008000"
+        else:
+            tag_color = "0xff00fa9a"
         if idx % 2 == 0:
             if dict_series[tvshow][TAG_ACTIVE]:
-              tag_color = "blue"
+                tag_color = "blue"
             else:
-               tag_color = "0xff00bfff"
+                tag_color = "0xff00bfff"
 
         idx += 1
         name = dict_series.get(tvshow, {}).get(TAG_NAME, tvshow)
