@@ -14,17 +14,21 @@ from core import scrapertools
 def test_video_exists( page_url ):
     logger.info("pelisalacarta.streamplay test_video_exists(page_url='%s')" % page_url)
     data = scrapertools.cache_page(page_url)
-    if ("File was deleted" or "Not Found") in data: return False, "[Streamplay] El archivo no existe o ha sido borrado"
+    #if ("File was deleted" or "Not Found") in data: return False, "[Streamplay] El archivo no existe o ha sido borrado"
     return True,""
 
 def get_video_url( page_url , premium = False , user="" , password="", video_password="" ):
     logger.info("pelisalacarta.streamplay get_video_url(page_url='%s')" % page_url)
     data = scrapertools.cache_page(page_url)
 
-    matches = scrapertools.find_single_match(data, "<script type='text/javascript'>(eval\(function\(p,a,c,k,e,d.*?)</script>")
+    matches = scrapertools.find_single_match(data, '<script type="text/javascript">(eval\(function\(p,a,c,k,e,d.*?)</script>')
     matchjs = jsunpack.unpack(matches).replace("\\","")
 
     mediaurl = scrapertools.find_single_match(matchjs, ',file:"(http://[^"]+)"')
+    mediaurl = mediaurl.split("/")
+    mediaurl[3] = mediaurl[3][1:]
+    mediaurl = "/".join(mediaurl)
+    
     video_urls = []
     video_urls.append( [ scrapertools.get_filename_from_url(mediaurl)[-4:]+" [streamplay]", mediaurl])
 
