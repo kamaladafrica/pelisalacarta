@@ -18,11 +18,11 @@ from core.item import Item
 
 DEBUG = config.get_setting("debug")
 HEADER = [
-    ["Host","www.yaske.cc"],
+    ["Host","www.yaske.ro"],
     ["Connection","keep-alive"],
     ["Accept","text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"],
     ["User-Agent","Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:46.0) Gecko/20100101 Firefox/46.0"],
-    ["Referer","http://www.yaske.cc/"],
+    ["Referer","http://www.yaske.ro/"],
     ["Accept-Encoding","gzip,deflate"],
     ["Accept-Language","es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3"],
     ["Cache-Control","max-age=0"]
@@ -33,11 +33,11 @@ def mainlist(item):
     logger.info("pelisalacarta.yaske mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=item.channel, title="Novedades"          , action="peliculas",       url="http://www.yaske.cc/"))
-    itemlist.append( Item(channel=item.channel, title="Por año"            , action="menu_buscar_contenido",      url="http://www.yaske.cc/", extra="year"))
-    itemlist.append( Item(channel=item.channel, title="Por género"         , action="menu_buscar_contenido", url="http://www.yaske.cc/", extra="gender"))
-    itemlist.append( Item(channel=item.channel, title="Por calidad"        , action="menu_buscar_contenido",  url="http://www.yaske.cc/", extra="quality"))
-    itemlist.append( Item(channel=item.channel, title="Por idioma"         , action="menu_buscar_contenido",    url="http://www.yaske.cc/", extra="language"))
+    itemlist.append( Item(channel=item.channel, title="Novedades"          , action="peliculas",       url="http://www.yaske.ro/"))
+    itemlist.append( Item(channel=item.channel, title="Por año"            , action="menu_buscar_contenido",      url="http://www.yaske.ro/", extra="year"))
+    itemlist.append( Item(channel=item.channel, title="Por género"         , action="menu_buscar_contenido", url="http://www.yaske.ro/", extra="gender"))
+    itemlist.append( Item(channel=item.channel, title="Por calidad"        , action="menu_buscar_contenido",  url="http://www.yaske.ro/", extra="quality"))
+    itemlist.append( Item(channel=item.channel, title="Por idioma"         , action="menu_buscar_contenido",    url="http://www.yaske.ro/", extra="language"))
     itemlist.append( Item(channel=item.channel, title="Buscar"             , action="search") )
 
     return itemlist
@@ -95,16 +95,38 @@ def peliculas(item):
 
     # Extrae las entradas
     '''
-    <li class="item-movies c8"><a class="image-block" href="http://www.yaske.to/es/pelicula/0005346/ver-transformers-4-online.html" title="Transformers 4: La era de la extinci&oacute;n"><img src="http://www.yaske.to/upload/images/59481937cedbdd789cec00aab9f7ed8b.jpg" width="140" height="200" /></a><ul class="bottombox"><li title="Transformers 4: La era de la extinci&oacute;n"><a href="http://www.yaske.to/es/pelicula/0005346/ver-transformers-4-online.html" title="Transformers 4: La era de la extinci&oacute;n">Transformers 4: La&hellip;</a></li><li>Accion, ciencia Ficcion</li><li><img src='http://www.yaske.to/theme/01/data/images/flags/es_es.png' title='Spanish ' width='25'/> <img src='http://www.yaske.to/theme/01/data/images/flags/en_es.png' title='English SUB Spanish' width='25'/> <img src='http://www.yaske.to/theme/01/data/images/flags/la_la.png' title='Latino ' width='25'/> </li><li><a rel="lyteframe" rev="width: 600px; height: 380px; scrolling: no;" youtube="trailer" href="http://www.youtube.com/v/&amp;hl&amp;autoplay=1" target="_blank"><img src="http://2.bp.blogspot.com/-hj7moVFACQU/UBoi0HAFeyI/AAAAAAAAA9o/2I2KPisYtsk/s1600/vertrailer.png" height="22" border="0"></a></li></ul><div class="quality">Hd Real 720</div><div class="view"><span>view: 335482</span></div></li>
+       <li class="item-movies c8">
+        <div class="tooltipyk">
+        <a class="image-block" href="http://www.yaske.ro/es/pelicula/0010962/ver-the-walking-dead-7x02-online.html" title="The Walking Dead 7x02">
+        <img src="http://www.yaske.cc/upload/images/b59808b9b505c15283159099ff7320c6.jpg" alt="The Walking Dead 7x02" width="140" height="200" />
+        </a>
+    <span class="tooltipm">
+        <img class="callout" src="http://www.yaske.cc/upload/tooltip/callout_black.gif" />
+        <div class="moTitulo"><b>Título: </b>The Walking Dead 7x02<br><br></div>
+        <div class="moSinopsis"><b>Sinopsis: </b>Array<br><br></div>
+        <div class="moYear"><b>Año: </b>2016</div>
+        </span>
+       </div>
+        <ul class="bottombox">
+            <li><a href="http://www.yaske.ro/es/pelicula/0010962/ver-the-walking-dead-7x02-online.html" title="The Walking Dead 7x02">
+                The Walking Dead 7x02    	</a></li>
+            <li>Accion, Thrillers, Terror</li>
+            <li><img src='http://www.yaske.ro/theme/01/data/images/flags/en_es.png' title='English SUB Spanish' width='25'/> <img src='http://www.yaske.ro/theme/01/data/images/flags/la_la.png' title='Latino ' width='25'/> <img src='http://www.yaske.ro/theme/01/data/images/flags/es_es.png' title='Spanish ' width='25'/> </li>
+            <li>        	<img class="opa3" src="http://storage.ysk.pe/b6b5870914222d773c5b76234978e376.png" height="22" border="0">
+            </li>
+        </ul>
+        <div class="quality">Hd Real 720</div>
+        <div class="view"><span>view: 6895</span></div>
+    </li>
     '''
-    patron  = '<li class="item-movies[^"]+"><div class="tooltipyk">'
+    patron  = '<li class="item-movies.*?'
     patron += '<a class="image-block" href="([^"]+)" title="([^"]+)">'
-    patron += '<img src="([^"]+)"[^/]+/.*?'
+    patron += '<img src="([^"]+).*?'
     patron += '<ul class="bottombox">.*?<li>(<img.*?)</li>.*?</ul>'
     patron += '<div class="quality">([^<]+)</div>'
  
     matches = re.compile(patron,re.DOTALL).findall(data)
-    logger.debug(repr(matches))
+    logger.debug(matches)
     itemlist = []
 
     for scrapedurl, scrapedtitle, scrapedthumbnail, idiomas, calidad in matches:
@@ -145,10 +167,10 @@ def menu_buscar_contenido(item):
     logger.info("pelisalacarta.yaske menu_categorias")
 
     data = scrapertools.cache_page(item.url,headers=HEADER)
-    logger.info("data="+data)
+    #logger.info("data="+data)
 
     data = scrapertools.get_match(data,'<select name="'+item.extra+'"(.*?)</select>')
-    logger.info("data="+data)
+    #logger.info("data="+data)
 
     # Extrae las entradas
     patron  = "<option value='([^']+)'>([^<]+)</option>"
@@ -160,7 +182,7 @@ def menu_buscar_contenido(item):
         scrapedthumbnail = ""
         scrapedplot = ""
 
-        url = "http://www.yaske.cc/es/peliculas/custom/?"+item.extra+"="+scrapedurl
+        url = "http://www.yaske.ro/es/peliculas/custom/?"+item.extra+"="+scrapedurl
 
         itemlist.append( Item(channel=item.channel, action="peliculas", title=scrapedtitle , url=url , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
 

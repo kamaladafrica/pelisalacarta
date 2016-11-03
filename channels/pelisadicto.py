@@ -33,7 +33,8 @@ def porGenero(item):
 
     itemlist = []
     itemlist.append( Item(channel=item.channel , action="agregadas" , title="Acción",url="http://pelisadicto.com/genero/Acción/1", viewmode="movie_with_plot"))
-    itemlist.append( Item(channel=item.channel , action="agregadas" , title="Adulto",url="http://pelisadicto.com/genero/Adulto/1", viewmode="movie_with_plot"))
+    if config.get_setting("adult_mode") == "true":
+        itemlist.append( Item(channel=item.channel , action="agregadas" , title="Adulto",url="http://pelisadicto.com/genero/Adulto/1", viewmode="movie_with_plot"))
     itemlist.append( Item(channel=item.channel , action="agregadas" , title="Animación",url="http://pelisadicto.com/genero/Animación/1", viewmode="movie_with_plot"))
     itemlist.append( Item(channel=item.channel , action="agregadas" , title="Aventura",url="http://pelisadicto.com/genero/Aventura/1", viewmode="movie_with_plot"))
     itemlist.append( Item(channel=item.channel , action="agregadas" , title="Biográfico",url="http://pelisadicto.com/genero/Biográfico/1", viewmode="movie_with_plot"))
@@ -96,7 +97,7 @@ def agregadas(item):
     '''
 
     data = scrapertools.cache_page(item.url)
-    logger.info("data="+data)
+    #logger.info("data="+data)
 
     # Extrae las entradas
     fichas = re.sub(r"\n|\s{2}","",scrapertools.get_match(data,'<ul class="thumbnails">(.*?)</ul>'))
@@ -132,6 +133,7 @@ def findvideos(item):
     logger.info("[pelisadicto.py] findvideos")
 
     itemlist = []
+    plot = ""
 
     data = re.sub(r"\n|\s{2}","",scrapertools.cache_page(item.url))
 
@@ -141,7 +143,8 @@ def findvideos(item):
     patron += "<h2>[^<]+</h2> "
     patron += "<p>([^<]+)</p>"
     matches = re.compile(patron,re.DOTALL).findall(data)
-    plot = matches[0]
+    if matches:
+        plot = matches[0]
 
     # Descarga la pagina
     data = scrapertools.cache_page(item.url)
