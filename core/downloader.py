@@ -173,6 +173,7 @@ class Downloader:
       self._write_lock = Lock()   
       self._download_lock = Lock()
       self._headers = {"User-Agent":"Kodi/15.2 (Windows NT 10.0; WOW64) App_Bitness/32 Version/15.2-Git:20151019-02e7013"}
+      self._speed = 0
       
       self._threads = [Thread(target= self.__start_part__) for x in range(self._max_connections)]
       self._speed_thread = Thread(target= self.__speed_metter__)
