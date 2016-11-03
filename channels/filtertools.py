@@ -91,17 +91,17 @@ context = context()
 
 def show_option(itemlist, channel, list_idiomas, list_calidad):
     itemlist.append(Item(channel=__channel__, title="[COLOR yellow]Configurar filtro para series...[/COLOR]",
-                         action="open_filtertools", list_idiomas=list_idiomas, list_calidad=list_calidad,
+                         action="load", list_idiomas=list_idiomas, list_calidad=list_calidad,
                          from_channel=channel))
 
     return itemlist
 
 
-def open_filtertools(item):
-    return mainlist_filter(channel=item.from_channel, list_idiomas=item.list_idiomas, list_calidad=item.list_calidad)
+def load(item):
+    return mainlist(channel=item.from_channel, list_idiomas=item.list_idiomas, list_calidad=item.list_calidad)
 
 
-def get_filtered_links(list_item, channel):
+def get_links(list_item, channel):
     """
     Devuelve una lista de enlaces filtrados.
 
@@ -121,7 +121,7 @@ def get_filtered_links(list_item, channel):
     language_count = 0
     _filter = None
 
-    dict_filtered_shows = get_filtered_tvshows(channel)
+    dict_filtered_shows = get_tvshows(channel)
     tvshow = list_item[0].show.lower().strip()
     if tvshow in dict_filtered_shows.keys():
         _filter = Filter(dict_filtered_shows[tvshow])
@@ -209,7 +209,7 @@ def no_filter(item):
     return lista
 
 
-def get_filtered_tvshows(from_channel):
+def get_tvshows(from_channel):
     """
     Obtiene las series filtradas de un canal
 
@@ -269,7 +269,7 @@ def check_json_file(data, fname, dict_data):
             logger.info("Está vacío el fichero: {0}".format(fname))
 
 
-def mainlist_filter(channel, list_idiomas, list_calidad):
+def mainlist(channel, list_idiomas, list_calidad):
     """
     Muestra una lista de las series filtradas
 
@@ -284,7 +284,7 @@ def mainlist_filter(channel, list_idiomas, list_calidad):
     """
     logger.info("[filtertools.py] mainlist_filter")
     itemlist = []
-    dict_series = get_filtered_tvshows(channel)
+    dict_series = get_tvshows(channel)
 
     idx = 0
     for tvshow in sorted(dict_series):
@@ -315,7 +315,7 @@ def mainlist_filter(channel, list_idiomas, list_calidad):
     return itemlist
 
 
-def config_filter(item):
+def config(item):
     """
     muestra una serie filtrada para su configuración
 
@@ -326,7 +326,7 @@ def config_filter(item):
     logger.info("item {0}".format(item.tostring()))
 
     # OBTENEMOS LOS DATOS DEL JSON
-    dict_series = get_filtered_tvshows(item.from_channel)
+    dict_series = get_tvshows(item.from_channel)
 
     tvshow = item.show.lower().strip()
 
@@ -402,7 +402,7 @@ def borrar_filtro(item):
     logger.info("[filtertools.py] borrar_filtro")
     if item:
         # OBTENEMOS LOS DATOS DEL JSON
-        dict_series = get_filtered_tvshows(item.from_channel)
+        dict_series = get_tvshows(item.from_channel)
         tvshow = item.show.strip().lower()
 
         heading = "¿Está seguro que desea eliminar el filtro?"
@@ -442,7 +442,7 @@ def guardar_valores(item, dict_data_saved):
         # OBTENEMOS LOS DATOS DEL JSON
         if item.from_channel == "biblioteca":
             item.from_channel = item.contentChannel
-        dict_series = get_filtered_tvshows(item.from_channel)
+        dict_series = get_tvshows(item.from_channel)
         tvshow = item.show.strip().lower()
 
         logger.info("Se actualiza los datos")

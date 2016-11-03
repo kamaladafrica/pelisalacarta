@@ -193,7 +193,7 @@ def episodios(item):
                              list_idiomas=list_idiomas, list_calidad=CALIDADES, context=filtertools.context))
 
     if len(itemlist) > 0 and filtertools.context:
-            itemlist = filtertools.get_filtered_links(itemlist, item.channel)
+            itemlist = filtertools.get_links(itemlist, item.channel)
 
     # Opción "Añadir esta serie a la biblioteca de XBMC"
     if config.get_library_support() and len(itemlist) > 0:
@@ -240,7 +240,7 @@ def parse_videos(item, tipo, data):
         # context=CONTEXT+"|guardar_filtro"))
 
     if len(itemlist) > 0 and filtertools.context:
-        itemlist = filtertools.get_filtered_links(itemlist, item.channel)
+        itemlist = filtertools.get_links(itemlist, item.channel)
 
     return itemlist
 
