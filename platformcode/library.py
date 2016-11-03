@@ -854,47 +854,88 @@ def clean(mostrar_dialogo=False):
     logger.info("pelisalacarta.platformcode.library clean data: %s" % data)
 
 
-def establecer_contenido(content_type):
+def establecer_contenido(content_type, silent=False):
     if config.is_xbmc():
-        ret = False
+        continuar = False
 
         librarypath = config.get_setting("librarypath")
-        if librarypath == "" and xbmc.getCondVisibility('System.HasAddon(metadata.themoviedb.org)') and \
-                xbmc.getCondVisibility('System.HasAddon(metadata.tvshows.themoviedb.org)'):
+        if librarypath == "":
+            continuar = True
+            if content_type == FOLDER_MOVIES:
+                if not xbmc.getCondVisibility('System.HasAddon(metadata.themoviedb.org)'):
+                    if not silent:
+                        # Preguntar si queremos instalar metadata.themoviedb.org
+                        install = platformtools.dialog_yesno("The Movie Database",
+                                                             "No se ha encontrado el Scraper de películas de TheMovieDB.",
+                                                             "¿Desea instalarlo ahora?")
+                    else:
+                        install = True
 
-            # Fijamos strPath
-            librarypath = "special://home/userdata/addon_data/plugin.video." + config.PLUGIN_NAME + "/library/"
-            strPath =  librarypath + content_type + "/"
-            logger.info("%s: %s" % (content_type, strPath))
+                    if install:
+                        try:
+                            # Instalar metadata.themoviedb.org
+                            xbmc.executebuiltin('xbmc.installaddon(metadata.themoviedb.org)', True)
+                            logger.info("Instalado el Scraper de películas de TheMovieDB")
+                        except:
+                            pass
 
-            # Buscamos el idPath
-            idPath = 0
-            sql = 'SELECT MAX(idPath) FROM path'
-            nun_records, records = execute_sql_kodi(sql)
-            if nun_records == 1:
-                idPath = records[0][0] + 1
+                    continuar = (install and xbmc.getCondVisibility('System.HasAddon(metadata.themoviedb.org)'))
 
-
-            # Buscamos el idParentPath
-            idParentPath = 0
-            ParentPath = False
-            sql = 'SELECT idPath FROM path where strPath="%s"' % librarypath
-            nun_records, records = execute_sql_kodi(sql)
-            if nun_records == 1:
-                idParentPath = records[0][0]
-                ParentPath = True
             else:
-                # No existe librarypath en la BD: la insertamos
-                sql = 'INSERT INTO path (idPath, strPath,  scanRecursive, useFolderNames, noUpdate, exclude) VALUES ' \
-                      '(%s, "%s", 0, 0, 0, 0)' % (idPath, librarypath)
+                if not xbmc.getCondVisibility('System.HasAddon(metadata.tvshows.themoviedb.org)'):
+                    if not silent:
+                        # Preguntar si queremos instalar metadata.tvshows.themoviedb.org
+                        install = platformtools.dialog_yesno("The Movie Database",
+                                                             "No se ha encontrado el Scraper de series de TheMovieDB.",
+                                                             "¿Desea instalarlo ahora?")
+                    else:
+                        install = True
+
+                    if install:
+                        try:
+                            # Instalar metadata.tvshows.themoviedb.org
+                            xbmc.executebuiltin('xbmc.installaddon(metadata.tvshows.themoviedb.org)', True)
+                            logger.info("Instalado el Scraper de series de TheMovieDB")
+                        except:
+                            pass
+
+                    continuar = (install and xbmc.getCondVisibility('System.HasAddon(metadata.tvshows.themoviedb.org)'))
+
+            idPath = 0
+            idParentPath = 0
+            strPath = ""
+            if continuar:
+                continuar = False
+                librarypath = "special://home/userdata/addon_data/plugin.video." + config.PLUGIN_NAME + "/library/"
+
+                # Buscamos el idPath
+                sql = 'SELECT MAX(idPath) FROM path'
                 nun_records, records = execute_sql_kodi(sql)
                 if nun_records == 1:
-                    ParentPath = True
-                    idParentPath = idPath
-                    idPath += 1
+                    idPath = records[0][0] + 1
 
 
-            if ParentPath:
+                # Buscamos el idParentPath
+                sql = 'SELECT idPath, strPath FROM path where strPath LIKE "%s"' % \
+                                            librarypath.replace('/profile/', '/%/').replace('/home/userdata/', '/%/')
+                nun_records, records = execute_sql_kodi(sql)
+                if nun_records == 1:
+                    idParentPath = records[0][0]
+                    librarypath = records[0][1]
+                    continuar = True
+                else:
+                    # No existe librarypath en la BD: la insertamos
+                    sql = 'INSERT INTO path (idPath, strPath,  scanRecursive, useFolderNames, noUpdate, exclude) VALUES ' \
+                          '(%s, "%s", 0, 0, 0, 0)' % (idPath, librarypath)
+                    nun_records, records = execute_sql_kodi(sql)
+                    if nun_records == 1:
+                        continuar = True
+                        idParentPath = idPath
+                        idPath += 1
+
+            if continuar:
+                continuar = False
+
                 # Fijamos strContent, strScraper, scanRecursive y strSettings
                 if content_type == FOLDER_MOVIES:
                     strContent = 'movies'
@@ -912,29 +953,42 @@ def establecer_contenido(content_type):
                                   "<setting id='keeporiginaltitle' value='false' />" \
                                   "<setting id='language' value='es' /></settings>"
 
+                # Fijamos strPath
+                strPath = librarypath + content_type + "/"
+                logger.info("%s: %s" % (content_type, strPath))
 
                 # Comprobamos si ya existe strPath en la BD para evitar duplicados
                 sql = 'SELECT idPath FROM path where strPath="%s"' % strPath
                 nun_records, records = execute_sql_kodi(sql)
-                if nun_records == 1:
-                    # Actualizamos el scraper
-                    idPath = records[0][0]
-                    sql = 'UPDATE path SET strContent="%s", strScraper="%s", scanRecursive=%s, strSettings="%s" ' \
-                          'WHERE idPath=%s' % (strContent, strScraper, scanRecursive, strSettings, idPath)
-
-                else:
+                sql = ""
+                if nun_records == 0:
                     # Insertamos el scraper
                     sql = 'INSERT INTO path (idPath, strPath, strContent, strScraper, scanRecursive, useFolderNames, ' \
                           'strSettings, noUpdate, exclude, idParentPath) VALUES (%s, "%s", "%s", "%s", %s, 0, ' \
-                          '"%s", 0, 0, %s)' % (idPath, strPath, strContent, strScraper, scanRecursive, strSettings, idParentPath)
+                          '"%s", 0, 0, %s)' % (
+                          idPath, strPath, strContent, strScraper, scanRecursive, strSettings, idParentPath)
+                else:
+                    if not silent:
+                        # Preguntar si queremos configurar themoviedb.org como opcion por defecto
+                        actualizar = platformtools.dialog_yesno("The Movie Database",
+                                                             "¿Desea configurar este Scraper en español "
+                                                             "como opción por defecto?")
+                    else:
+                        actualizar = True
 
-                nun_records, records = execute_sql_kodi(sql)
-                if nun_records == 1:
-                    ret = True
-                    logger.info("Biblioteca  %s configurada" % content_type)
+                    if actualizar:
+                        # Actualizamos el scraper
+                        idPath = records[0][0]
+                        sql = 'UPDATE path SET strContent="%s", strScraper="%s", scanRecursive=%s, strSettings="%s" ' \
+                              'WHERE idPath=%s' % (strContent, strScraper, scanRecursive, strSettings, idPath)
 
+                if sql:
+                    nun_records, records = execute_sql_kodi(sql)
+                    if nun_records == 1:
+                        continuar = True
+                        logger.info("Biblioteca  %s configurada" % content_type)
 
-        if not ret:
+        if not continuar:
             heading = "Biblioteca no configurada"
             msg_text = "Asegurese de tener instalado el scraper de The Movie Database"
             platformtools.dialog_notification(heading, msg_text, icon=1, time=8000)
