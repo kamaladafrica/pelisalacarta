@@ -67,7 +67,7 @@ def context():
     '''
     if config.is_xbmc():
         _context = [{"title": "Menu Filtro",
-                     "action": "config_filter",
+                     "action": "config_item",
                      "channel": "filtertools"}]
 
     # elif command == "guardar_filtro":
@@ -305,7 +305,7 @@ def mainlist(channel, list_idiomas, list_calidad):
             activo = ""
         title = "Configurar [COLOR {0}][{1}][/COLOR]{2}".format(tag_color, name, activo)
 
-        itemlist.append(Item(channel=__channel__, action="config_filter", title=title, show=name,
+        itemlist.append(Item(channel=__channel__, action="config_item", title=title, show=name,
                              list_idiomas=list_idiomas, list_calidad=list_calidad, from_channel=channel))
 
     if len(itemlist) == 0:
@@ -315,7 +315,7 @@ def mainlist(channel, list_idiomas, list_calidad):
     return itemlist
 
 
-def config(item):
+def config_item(item):
     """
     muestra una serie filtrada para su configuración
 
@@ -516,7 +516,7 @@ def update_json_data(dict_series, filename):
 #     dict_series = get_filtered_tvshows(item.from_channel)
 #
 #     name = item.show.lower().strip()
-#     logger.info("[filtertools.py] config_filter name {0}".format(name))
+#     logger.info("[filtertools.py] config_item name {0}".format(name))
 #
 #     open_tag_idioma = (0, item.title.find("[")+1)[item.title.find("[") >= 0]
 #     close_tag_idioma = (0, item.title.find("]"))[item.title.find("]") >= 0]
