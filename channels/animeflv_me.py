@@ -234,12 +234,7 @@ def episodios(item):
         else:
             season, episode = numbered_for_tratk(item.show, season, episode)
 
-            if len(str(episode)) == 1:
-                title = "{0}x0{1}".format(season, episode)
-            else:
-                title = "{0}x{1}".format(season, episode)
-
-            title = "{0} {1} ({2})".format(title, "Episodio " + str(episode), date)
+            title = "{0}x{1:02d} {2} ({3})".format(season, episode, "Episodio " + str(episode), date)
 
             if DEBUG:
                 logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
@@ -267,12 +262,17 @@ def findvideos(item):
     itemlist = []
 
     data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
-    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
+    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data);
 
-    data = scrapertools.find_single_match(data, "var part = \[([^\]]+)\]")
+    urlApi = scrapertools.find_single_match(data, "http:\/\/api\.animeflv\.me\/[^\"]+")
+
+    data = scrapertools.anti_cloudflare(urlApi, headers=CHANNEL_DEFAULT_HEADERS)
+
+    data = scrapertools.find_single_match(data, "var part = \[([^\]]+)")
 
     patron = '"([^"]+)"'
     matches = re.compile(patron, re.DOTALL).findall(data)
+
     list_quality = ["360", "480", "720", "1080"]
 
     # eliminamos la fecha del titulo a mostrar
