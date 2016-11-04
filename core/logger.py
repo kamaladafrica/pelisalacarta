@@ -23,14 +23,15 @@
 # along with pelisalacarta 4.  If not, see <http://www.gnu.org/licenses/>.
 # --------------------------------------------------------------------------------
 # Logger (kodi)
-#------------------------------------------------------------
+# --------------------------------------------------------------------------------
 
-from core import config
 import inspect
 import os
-import xbmc
 
-loggeractive = (config.get_setting("debug")=="true")
+import xbmc
+from core import config
+
+loggeractive = (config.get_setting("debug") == "true")
 
 
 def log_enable(active):
@@ -38,58 +39,75 @@ def log_enable(active):
     loggeractive = active
 
 
-def encode_log(message):
-    #Unicode to utf8
-    if type(message) == unicode: 
-        message = message.encode("utf8")
-        
-    #All encodings to utf8
-    elif type(message) == str:
-        message = unicode(message, "utf8", errors="replace").encode("utf8")
-        
-    #Objects to string
-    else:
-        message = repr(message) #or str(message)
+def encode_log(message=None):
+    if message:
+        # Unicode to utf8
+        if type(message) == unicode:
+            message = message.encode("utf8")
+
+        # All encodings to utf8
+        elif type(message) == str:
+            message = unicode(message, "utf8", errors="replace").encode("utf8")
+
+        # Objects to string
+        else:
+            message = repr(message)  # or str(message)
 
     return message
 
-def get_caller(message = None):
-        module=inspect.getmodule(inspect.stack()[2][0])
-        
-        #En boxee en cosaiones no detecta el modulo, de este modo lo hacemos manual
-        if module == None: 
-          module = ".".join(os.path.splitext(inspect.stack()[2][1].split("pelisalacarta")[1])[0].split(os.path.sep))[1:]
-        else: 
-          module = module.__name__
-        
-        function = inspect.stack()[2][3]
-        
-        if module == "__main__": module = "pelisalacarta" 
-        else: module = "pelisalacarta." + module
-        if message:
-          if not module in message:
-              if function == "<module>": return module + " " + message
-              else: return module + " [" + function + "] " + message
-          else:
-              return message
-        else:
-          if function == "<module>": return module
-          else: return module + "." + function
 
-def info(texto):
+def get_caller(message=None):
+    module = inspect.getmodule(inspect.stack()[2][0])
+
+    # En boxee en cosaiones no detecta el modulo, de este modo lo hacemos manual
+    if module is None:
+        module = ".".join(os.path.splitext(inspect.stack()[2][1].split("pelisalacarta")[1])[0].split(os.path.sep))[1:]
+    else:
+        module = module.__name__
+
+    function = inspect.stack()[2][3]
+
+    if module == "__main__":
+        module = "pelisalacarta"
+    else:
+        module = "pelisalacarta." + module
+    if message:
+        if module not in message:
+            if function == "<module>":
+                return module + " " + message
+            else:
+                return module + " [" + function + "] " + message
+        else:
+            return message
+    else:
+        if function == "<module>":
+            return module
+        else:
+            return module + "." + function
+
+
+def info(texto=None):
     if loggeractive:
         xbmc.log(get_caller(encode_log(texto)), xbmc.LOGNOTICE)
 
 
-def debug(texto):
+def debug(texto=None):
     if loggeractive:
-        texto= "    [" + get_caller() + "] " + encode_log(texto)
+        if texto:
+            texto = "    [" + get_caller() + "] " + encode_log(texto)
+        else:
+            texto = "    [" + get_caller() + "] "
+
         xbmc.log("######## DEBUG #########", xbmc.LOGNOTICE)
         xbmc.log(texto, xbmc.LOGNOTICE)
 
 
-def error(texto):
+def error(texto=None):
     if loggeractive:
-        texto= "    [" + get_caller() + "] " + encode_log(texto)
+        if texto:
+            texto = "    [" + get_caller() + "] " + encode_log(texto)
+        else:
+            texto = "    [" + get_caller() + "] "
+
         xbmc.log("######## ERROR #########", xbmc.LOGNOTICE)
         xbmc.log(texto, xbmc.LOGNOTICE)
