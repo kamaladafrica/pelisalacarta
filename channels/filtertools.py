@@ -488,7 +488,7 @@ def update_json_data(dict_series, filename):
             logger.debug("   existe el key SERIES")
             dict_data[TAG_TVSHOW_FILTER] = dict_series
         else:
-            logger.debig("   NO existe el key SERIES")
+            logger.debug("   NO existe el key SERIES")
             new_dict = {TAG_TVSHOW_FILTER: dict_series}
             dict_data.update(new_dict)
     else:
