@@ -155,7 +155,6 @@ def save_library_movie(item):
         url_scraper = filetools.read(nfo_path, 0, 1)
         item_nfo = Item().fromjson(filetools.read(nfo_path, 1))
 
-
     strm_path = filetools.join(path, "%s.strm" % base_name)
     if not filetools.exists(strm_path):
         # Crear base_name.strm si no existe
@@ -271,18 +270,22 @@ def save_library_tvshow(item, episodelist):
                            infoLabels=item.infoLabels, path=path.replace(TVSHOWS_PATH, ""))
         item_tvshow.library_playcounts = {}
         item_tvshow.library_urls = {item.channel: item.url}
-        if episodelist and episodelist[0].list_idiomas:
-            # Si el canal permite tener filtros
-            item_tvshow.library_filter_show = {item.channel: episodelist[0].show}
+
+        # si el canal tiene filtro de idiomas, escogemos el valor del index 1, para evitar la opción
+        # "Añadir a biblioteca XBMC", que no contiene toda la información
+        if episodelist and episodelist[1].list_idiomas:
+            item_tvshow.library_filter_show = {item.channel: episodelist[1].show}
 
     else:
         # Si existe tvshow.nfo, pero estamos añadiendo un nuevo canal actualizamos el listado de urls
         url_scraper = filetools.read(tvshow_path, 0, 1)
         item_tvshow = Item().fromjson(filetools.read(tvshow_path, 1))
         item_tvshow.library_urls[item.channel] = item.url
-        if episodelist and episodelist[0].list_idiomas:
-            # Si el canal permite tener filtros
-            item_tvshow.library_filter_show[item.channel] = episodelist[0].show
+
+        # si el canal tiene filtro de idiomas, escogemos el valor del index 1, para evitar la opción
+        # "Añadir a biblioteca XBMC", que no contiene toda la información
+        if episodelist and episodelist[1].list_idiomas:
+            item_tvshow.library_filter_show[item.channel] = episodelist[1].show
 
     if not item_tvshow.active and item.channel != "descargas":
         item_tvshow.active = True  # para que se actualice cuando se llame a library_service
@@ -372,12 +375,21 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
             item_strm.contentEpisodeNumber = e.contentEpisodeNumber
             item_strm.contentType = e.contentType
             item_strm.contentTitle = season_episode
-            # logger.debug(item_strm.tostring('\n'))
 
-            # si el canal tiene filtro se le pasa el nombre que tiene guardado para que filtre correctamente.
+            # si el canal tiene filtro se le pasa el nombre que tiene guardado para que filtre correctamente,
             if item_strm.list_idiomas:
-                item_strm.library_filter_show = serie.library_filter_show
+                # si viene de library_service se obtiene del fichero tvshow.nfo, propiedad "library_filter_show"
+                if "library_filter_show" in serie:
+                    item_strm.library_filter_show = serie.library_filter_show.get(serie.channel, "")
+                # si se ha agregado la serie lo obtenemos del titulo.
+                else:
+                    item_strm.library_filter_show = serie.title
 
+                if item_strm.library_filter_show == "":
+                    logger.error("Se ha producido un error al obtener el nombre de la serie a filtrar")
+
+            # logger.debug("item_strm" + item_strm.tostring('\n'))
+            # logger.debug("serie " + serie.tostring('\n'))
             filetools.write(strm_path, '%s?%s' % (addon_name, item_strm.tourl()))
 
         nfo_path = filetools.join(path, "%s.nfo" % season_episode)
@@ -413,7 +425,8 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
                         # Marcamos la temporada como no vista
                         news_in_playcounts["season %s" % e.contentSeason] = 0
                         # Marcamos la serie como no vista
-                        news_in_playcounts[serie.title] = 0
+                        # logger.debug("serie " + serie.tostring('\n'))
+                        news_in_playcounts[serie.contentTitle] = 0
                     else:
                         logger.info("pelisalacarta.platformcode.library savelibrary Sobreescrito: %s" % json_path)
                         sobreescritos += 1
