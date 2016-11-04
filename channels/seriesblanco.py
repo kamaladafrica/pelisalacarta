@@ -34,7 +34,7 @@ CHANNEL_HEADERS = [
 
 
 def mainlist(item):
-    logger.info("pelisalacarta.seriesblanco mainlist")
+    logger.info()
 
     thumb_series = get_thumbnail("thumb_canales_series.png")
     thumb_series_az = get_thumbnail("thumb_canales_series_az.png")
@@ -54,7 +54,7 @@ def mainlist(item):
 
 
 def series_listado_alfabetico(item):
-    logger.info("pelisalacarta.seriesblanco series_listado_alfabetico")
+    logger.info()
 
     itemlist = []
 
@@ -72,7 +72,7 @@ def series_por_letra(item):
 
 
 def search(item, texto):
-    logger.info("[pelisalacarta.seriesblanco search texto={0}".format(texto))
+    logger.info("texto={0}".format(texto))
 
     itemlist = []
 
@@ -118,7 +118,7 @@ def search(item, texto):
 
 
 def series(item):
-    logger.info("pelisalacarta.seriesblanco series")
+    logger.info()
 
     itemlist = []
 
@@ -143,7 +143,7 @@ def series(item):
 
 
 def episodios(item):
-    logger.info("pelisalacarta.seriesblanco episodios")
+    logger.info()
 
     itemlist = []
 
@@ -266,7 +266,7 @@ def extractVideosSection(data):
 
 
 def findvideos(item):
-    logger.info("pelisalacarta.seriesblanco findvideos")
+    logger.info()
 
     # Descarga la página
     data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_HEADERS, host=CHANNEL_HOST)
@@ -276,7 +276,7 @@ def findvideos(item):
 
 
 def play(item):
-    logger.info("pelisalacarta.channels.seriesblanco play url={0}".format(item.url))
+    logger.info("play url={0}".format(item.url))
 
     if item.url.startswith(HOST):
         data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_HEADERS, host=CHANNEL_HOST)

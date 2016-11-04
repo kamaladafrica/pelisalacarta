@@ -59,7 +59,7 @@ def encode_log(message=None):
 def get_caller(message=None):
     module = inspect.getmodule(inspect.stack()[2][0])
 
-    # En boxee en cosaiones no detecta el modulo, de este modo lo hacemos manual
+    # En boxee en ocasiones no detecta el modulo, de este modo lo hacemos manual
     if module is None:
         module = ".".join(os.path.splitext(inspect.stack()[2][1].split("pelisalacarta")[1])[0].split(os.path.sep))[1:]
     else:

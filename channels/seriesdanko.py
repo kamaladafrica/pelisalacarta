@@ -25,7 +25,7 @@ DEBUG = config.get_setting("debug")
 
 
 def mainlist(item):
-    logger.info("pelisalacarta.seriesdanko mainlist")
+    logger.info()
 
     itemlist = list()
     itemlist.append(Item(channel=item.channel, title="Novedades", action="novedades", url=HOST))
@@ -41,7 +41,7 @@ def mainlist(item):
 
 
 def novedades(item):
-    logger.info("pelisalacarta.seriesdanko novedades")
+    logger.info()
 
     itemlist = list()
 
@@ -66,7 +66,7 @@ def novedades(item):
 
 
 def mas_vistas(item):
-    logger.info("pelisalacarta.seriesdanko mas_vistas")
+    logger.info()
 
     data = scrapertools.cache_page(item.url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
@@ -79,7 +79,7 @@ def mas_vistas(item):
 
 
 def listado_completo(item):
-    logger.info("pelisalacarta.seriesdanko listado_completo")
+    logger.info()
 
     data = scrapertools.cache_page(item.url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
@@ -91,7 +91,7 @@ def listado_completo(item):
 
 
 def series_seccion(item, data):
-    logger.info("pelisalacarta.seriesdanko series_seccion")
+    logger.info()
 
     itemlist = []
     patron = "<a href='([^']+)'.*?>(.*?)</a>"
@@ -104,7 +104,7 @@ def series_seccion(item, data):
 
 
 def listado_alfabetico(item):
-    logger.info("pelisalacarta.seriesdanko listado_alfabetico")
+    logger.info()
 
     itemlist = []
 
@@ -121,7 +121,7 @@ def series_por_letra(item):
 
 
 def search(item, texto):
-    logger.info("[pelisalacarta.seriesdanko search texto={0}".format(texto))
+    logger.info("texto={0}".format(texto))
 
     if texto != "":
         item.url = urlparse.urljoin(HOST, "/pag_search.php?q1={0}".format(texto))
@@ -137,7 +137,7 @@ def search(item, texto):
 
 
 def series(item):
-    logger.info("pelisalacarta.seriesdanko series")
+    logger.info()
 
     itemlist = []
 
@@ -160,7 +160,7 @@ def series(item):
 
 
 def episodios(item):
-    logger.info("pelisalacarta.seriesdanko episodios")
+    logger.info()
 
     itemlist = []
 
@@ -204,7 +204,7 @@ def episodios(item):
 
 
 def findvideos(item):
-    logger.info("pelisalacarta.seriesdanko findvideos")
+    logger.info()
 
     data = scrapertools.cache_page(item.url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
@@ -217,7 +217,7 @@ def findvideos(item):
 
 
 def parse_videos(item, tipo, data):
-    logger.info("pelisalacarta.seriesdanko parse_videos")
+    logger.info()
 
     itemlist = []
 
@@ -246,7 +246,7 @@ def parse_videos(item, tipo, data):
 
 
 def play(item):
-    logger.info("pelisalacarta.seriesdanko play url={0}".format(item.url))
+    logger.info("play url={0}".format(item.url))
 
     data = scrapertools.cache_page(item.url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
