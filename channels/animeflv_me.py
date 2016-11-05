@@ -9,13 +9,13 @@ import re
 import sys
 import urlparse
 
+from channels import renumeratetools
 from core import config
 from core import jsontools
 from core import logger
 from core import scrapertools
 from core.item import Item
 
-DEBUG = config.get_setting("debug")
 CHANNEL_HOST = "http://animeflv.me/"
 CHANNEL_DEFAULT_HEADERS = [
     ["User-Agent", "Mozilla/5.0"],
@@ -76,6 +76,9 @@ def mainlist(item):
     itemlist.append(Item(channel=item.channel, action="search", title="Buscar...",
                          url=urlparse.urljoin(CHANNEL_HOST, "Buscar?s=")))
 
+    if renumeratetools.context:
+        itemlist = renumeratetools.show_option(item.channel, itemlist)
+
     return itemlist
 
 
@@ -96,8 +99,7 @@ def letras(item):
         url = urlparse.urljoin(item.url, scrapedurl)
         thumbnail = ""
         plot = ""
-        if DEBUG:
-            logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
+        logger.debug("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
 
         itemlist.append(Item(channel=item.channel, action="series", title=title, url=url, thumbnail=thumbnail,
                              plot=plot, viewmode="movies_with_plot"))
@@ -122,8 +124,7 @@ def generos(item):
         url = urlparse.urljoin(item.url, scrapedurl)
         thumbnail = ""
         plot = ""
-        if DEBUG:
-            logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
+        logger.debug("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
 
         itemlist.append(Item(channel=item.channel, action="series", title=title, url=url, thumbnail=thumbnail,
                              plot=plot, viewmode="movies_with_plot"))
@@ -164,10 +165,10 @@ def series(item):
         thumbnail = scrapedthumbnail
         plot = scrapertools.htmlclean(scrapedplot)
         show = title
-        if DEBUG:
-            logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
-        itemlist.append(Item(channel=item.channel, action="episodios", title=title, url=url, thumbnail=thumbnail+ head,
-                             plot=plot, show=show, fanart=thumbnail + head, viewmode="movies_with_plot"))
+        logger.debug("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
+        itemlist.append(Item(channel=item.channel, action="episodios", title=title, url=url, thumbnail=thumbnail + head,
+                             plot=plot, show=show, fanart=thumbnail + head, viewmode="movies_with_plot",
+                             context=renumeratetools.context))
 
     pagina = scrapertools.find_single_match(data, '<li class=\'current\'>.*?</li><li><a href="([^"]+)"')
 
@@ -225,8 +226,7 @@ def episodios(item):
 
         if pelicula:
             title = "{0} ({1})".format(title, date)
-            if DEBUG:
-                logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
+            logger.debug("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
             item.url = url
             itemlist.append(Item(channel=item.channel, action="findvideos", title=title, url=url,
                                  thumbnail=thumbnail, plot=plot, fulltitle="{0} {1}".format(item.show, title),
@@ -236,8 +236,7 @@ def episodios(item):
 
             title = "{0}x{1:02d} {2} ({3})".format(season, episode, "Episodio " + str(episode), date)
 
-            if DEBUG:
-                logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
+            logger.debug("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
 
             itemlist.append(Item(channel=item.channel, action="findvideos", title=title, url=url,
                                  thumbnail=thumbnail, plot=plot, show=item.show, fulltitle="{0} {1}"
@@ -262,11 +261,11 @@ def findvideos(item):
     itemlist = []
 
     data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
-    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data);
+    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
 
-    urlApi = scrapertools.find_single_match(data, "http:\/\/api\.animeflv\.me\/[^\"]+")
+    url_api = scrapertools.find_single_match(data, "http:\/\/api\.animeflv\.me\/[^\"]+")
 
-    data = scrapertools.anti_cloudflare(urlApi, headers=CHANNEL_DEFAULT_HEADERS)
+    data = scrapertools.anti_cloudflare(url_api, headers=CHANNEL_DEFAULT_HEADERS)
 
     data = scrapertools.find_single_match(data, "var part = \[([^\]]+)")
 

@@ -90,8 +90,8 @@ def dialog_input(default="", heading="", hidden=False):
 
 def dialog_numeric(_type, heading, default=""):
     dialog = xbmcgui.Dialog()
-    dialog.numeric(_type, heading, default)
-    return dialog
+    d = dialog.numeric(_type, heading, default)
+    return d
 
 
 def itemlist_refresh():
