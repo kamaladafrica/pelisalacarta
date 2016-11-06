@@ -318,8 +318,7 @@ class Item(object):
         except:
             url = urllib.unquote_plus(url)
             dct = dict([[param.split("=")[0], param.split("=")[1]] for param in url.split("&") if "=" in param])
-            for kw in JSONItem:
-              self.__setattr__(kw, JSONItem[kw])
+            self.__dict__.update(dct)
             self.__dict__ = self.toutf8(self.__dict__)
 
         if 'infoLabels' in self.__dict__ and not isinstance(self.__dict__['infoLabels'],InfoLabels):
