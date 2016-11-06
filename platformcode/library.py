@@ -264,8 +264,8 @@ def save_library_tvshow(item, episodelist):
     if not filetools.exists(tvshow_path):
         # Creamos tvshow.nfo, si no existe, con la url_scraper, info de la serie y marcas de episodios vistos
         logger.info("Creando tvshow.nfo: " + tvshow_path)
-        url_scraper = "https://www.themoviedb.org/tv/%s\n" % item.infoLabels['tmdb_id']
-
+        #url_scraper = "https://www.themoviedb.org/tv/%s\n" % item.infoLabels['tmdb_id']
+        url_scraper = item.infoLabels['url_scraper'] + "\n"
         item_tvshow = Item(title=item.contentTitle, channel="biblioteca", action="get_temporadas",
                            fanart=item.infoLabels['fanart'], thumbnail=item.infoLabels['thumbnail'],
                            infoLabels=item.infoLabels, path=path.replace(TVSHOWS_PATH, ""))
@@ -945,6 +945,8 @@ def establecer_contenido(content_type, silent=False):
                                   "<setting id='fanart' value='true' /><setting id='keeporiginaltitle' value='false' />" \
                                   "<setting id='language' value='es' /><setting id='tmdbcertcountry' value='us' />" \
                                   "<setting id='trailer' value='true' /></settings>"
+                    strActualizar = "¿Desea configurar este Scraper en español como opción por defecto para películas?"
+
                 else:
                     strContent = 'tvshows'
                     strScraper = 'metadata.tvshows.themoviedb.org'
@@ -952,6 +954,7 @@ def establecer_contenido(content_type, silent=False):
                     strSettings = "<settings><setting id='fanart' value='true' />" \
                                   "<setting id='keeporiginaltitle' value='false' />" \
                                   "<setting id='language' value='es' /></settings>"
+                    strActualizar = "¿Desea configurar este Scraper en español como opción por defecto para series?"
 
                 # Fijamos strPath
                 strPath = librarypath + content_type + "/"
@@ -970,9 +973,7 @@ def establecer_contenido(content_type, silent=False):
                 else:
                     if not silent:
                         # Preguntar si queremos configurar themoviedb.org como opcion por defecto
-                        actualizar = platformtools.dialog_yesno("The Movie Database",
-                                                             "¿Desea configurar este Scraper en español "
-                                                             "como opción por defecto?")
+                        actualizar = platformtools.dialog_yesno("The Movie Database", strActualizar)
                     else:
                         actualizar = True
 
