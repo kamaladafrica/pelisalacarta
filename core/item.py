@@ -38,15 +38,20 @@ class InfoLabels(dict):
     def __str__(self):
         return self.tostring(separador=',\r\t')
 
-    def __setattr__(self, name, value):
+    def __setitem__(self, name, value):
+        #forzamos int() en season y episode
+        if name in ["season", "episode"]:
+            value = int(value)
+            
         if name in ['IMDBNumber', 'code', 'imdb_id']:
             # Por compatibilidad hemos de guardar el valor en los tres campos
-            super(InfoLabels, self).__setattr__('IMDBNumber', value)
-            super(InfoLabels, self).__setattr__('code', value)
-            super(InfoLabels, self).__setattr__('imdb_id', value)
+            super(InfoLabels, self).__setitem__('IMDBNumber', value)
+            super(InfoLabels, self).__setitem__('code', value)
+            super(InfoLabels, self).__setitem__('imdb_id', value)
         else:
-            super(InfoLabels, self).__setattr__(name, value)
-
+            super(InfoLabels, self).__setitem__(name, value)
+    
+      
     #Python 2.4
     def __getitem__(self, key):
         try:
@@ -76,8 +81,11 @@ class InfoLabels(dict):
                 else:
                     return 'tvshow'
 
-            else:
+            elif 'title' in super(InfoLabels,self).keys() and super(InfoLabels,self).__getitem__('title') !="":
                 return 'movie'
+                
+            else:
+                return 'list'
 
         else:
             # El resto de claves devuelven cadenas vacias por defecto
@@ -209,7 +217,10 @@ class Item(object):
         # Valor por defecto para hasContentDetails
         elif name == "hasContentDetails":
             return "false"
-
+            
+        elif name == "hasContentType":
+          return "mediatype" in self.__dict__["infoLabels"] 
+        
         elif name in ["contentTitle", "contentPlot", "contentSerieName", "show", "contentType", "contentEpisodeTitle",
                     "contentSeason", "contentEpisodeNumber", "contentThumbnail", "plot", "duration"]:
             if name == "contentTitle":
@@ -357,7 +368,8 @@ class Item(object):
         newitem = copy.deepcopy(self)
         if kwargs.has_key("infoLabels"):
             kwargs["infoLabels"] = InfoLabels(kwargs["infoLabels"])
-        newitem.__dict__.update(kwargs)
+        for kw in kwargs:
+          newitem.__setattr__(kw, kwargs[kw])
         newitem.__dict__ = newitem.toutf8(newitem.__dict__)
         return newitem
 

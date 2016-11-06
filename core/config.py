@@ -106,6 +106,10 @@ def get_setting(name, channel=""):
     else:
         # xbmc.log("config.get_setting reading main setting '"+name+"'")
         value = __settings__.getSetting(channel+name)
+        #Translate Path if start with "special://"
+        if value.startswith("special://"):
+          value = xbmc.translatePath(value)
+          
         # xbmc.log("config.get_setting -> '"+value+"'")
         return value
 
