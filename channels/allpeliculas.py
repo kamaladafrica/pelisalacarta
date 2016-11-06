@@ -327,7 +327,7 @@ def temporadas(item):
     matches = list(set(matches))
     for season in matches:
         item.infoLabels['season'] = season
-        itemlist.append(item.clone(action="findvideostv", title="Temporada "+season, context=["buscar_trailer"], contentType="season"))
+        itemlist.append(item.clone(action="episodios", title="Temporada "+season, context=["buscar_trailer"], contentType="season"))
 
     itemlist.sort(key=lambda item: item.title)
     try:
@@ -344,6 +344,42 @@ def temporadas(item):
                                text_color="magenta", context=""))
     
     return itemlist
+    
+    
+def episodios(item):
+    logger.info("pelisalacarta.channels.allpeliculas findvideostv")
+    itemlist = []
+
+    #Rellena diccionarios idioma y calidad
+    idiomas_videos, calidad_videos = dict_videos()
+
+    data = scrapertools.downloadpage(item.url)
+    data = data.replace("\n", "").replace("\t", "")
+    data = scrapertools.decodeHtmlentities(data)
+
+    patron = '<li><a class="movie-episode"[^>]+season="'+str(item.infoLabels['season'])+'"[^>]+>([^<]+)</a></li>'
+    matches = scrapertools.find_multiple_matches(data, patron)
+    capitulos = []
+    for  title in matches:
+       if not title in capitulos:
+          logger.info(title)
+          episode = int(title.split(" ")[1])
+          capitulos.append(title)
+          itemlist.append(item.clone(action="findvideostv", title=title, contentEpisodeNumber=episode, contentType="episode"))
+    
+    itemlist.sort(key=lambda item: item.contentEpisodeNumber)
+    try:
+        from core import tmdb
+        tmdb.set_infoLabels_itemlist(itemlist, __modo_grafico__)
+    except:
+        pass
+    for item in itemlist:
+      if item.infoLabels["episodio_titulo"]:
+        item.title = "%dx%02d: %s"%(item.contentSeason, item.contentEpisodeNumber, item.infoLabels["episodio_titulo"])
+      else:
+        item.title = "%dx%02d: %s"%(item.contentSeason, item.contentEpisodeNumber, item.title)
+        
+    return itemlist
 
 
 def findvideostv(item):
@@ -357,11 +393,11 @@ def findvideostv(item):
     data = data.replace("\n", "").replace("\t", "")
     data = scrapertools.decodeHtmlentities(data)
 
-    patron = '<span class="movie-online-list" id_movies_types="([^"]+)" id_movies_servers="([^"]+)".*?episode=' \
-             '"([^"]+)" season="' + \
-             item.infoLabels['season'] + '" id_lang="([^"]+)".*?online-link="([^"]+)"'
+    patron = '<span class="movie-online-list" id_movies_types="([^"]+)" id_movies_servers="([^"]+)".*?episode="'+str(item.infoLabels['episode']) +'" season="' + \
+             str(item.infoLabels['season']) + '" id_lang="([^"]+)".*?online-link="([^"]+)"'
+
     matches = scrapertools.find_multiple_matches(data, patron)
-    for quality, servidor_num, episode, language, url in matches:
+    for quality, servidor_num, language, url in matches:
         try:
             server = SERVERS[servidor_num]
             servers_module = __import__("servers."+server)
@@ -370,15 +406,12 @@ def findvideostv(item):
 
         if server != "directo":
             idioma = IDIOMAS.get(idiomas_videos.get(language))
-            titulo = "Episodio "+episode+" ["
-            titulo += server.capitalize()+"]   ["+idioma+"] ("+calidad_videos.get(quality)+")"
-            item.infoLabels['episode'] = episode
+            titulo = server.capitalize()+" ["+idioma+"] ("+calidad_videos.get(quality)+")"
 
             itemlist.append(item.clone(action="play", title=titulo, url=url, contentType="episode"))
 
     #Enlace Descarga
-    patron = '<span class="movie-downloadlink-list" id_movies_types="([^"]+)" id_movies_servers="([^"]+)".*?episode=' \
-             '"([^"]+)" season="'+item.infoLabels['season'] + '" id_lang="([^"]+)".*?online-link="([^"]+)"'
+    patron = '<span class="movie-downloadlink-list" id_movies_types="([^"]+)" id_movies_servers="([^"]+)".*?episode="'+str(item.infoLabels['episode']) +'" season="'+str(item.infoLabels['season']) + '" id_lang="([^"]+)".*?online-link="([^"]+)"'
     matches = scrapertools.find_multiple_matches(data, patron)
     for quality, servidor_num, episode, language, url in matches:
         mostrar_server = True
@@ -393,9 +426,7 @@ def findvideostv(item):
                 mostrar_server = servertools.is_server_enabled(server)
             if mostrar_server:
                 idioma = IDIOMAS.get(idiomas_videos.get(language))
-                titulo = "Episodio "+episode+" "
-                titulo += server.capitalize()+"   ["+idioma+"] ("+calidad_videos.get(quality)+")"
-                item.infoLabels['episode'] = episode
+                titulo = server.capitalize()+" ["+idioma+"] ("+calidad_videos.get(quality)+")"
                 itemlist.append(item.clone(action="play", title=titulo, url=url))
 
     itemlist.sort(key=lambda item: (int(item.infoLabels['episode']), item.title))
