@@ -9,7 +9,7 @@ import re
 import sys
 import urlparse
 
-from channels import renumeratetools
+from channels import renumbertools
 from core import config
 from core import jsontools
 from core import logger
@@ -38,7 +38,7 @@ FAIRY TAIL:
     - SEASON 3: EPISODE 54 --> [season 3, episode: 96 ( [48=season2] +[ 48=season1] )]
     - SEASON 4: EPISODE 175 --> [season 4: episode: 150 ( [54=season3] + [48=season2] + [48=season3] )]
 
-animeflv_data.json
+animeflv_me_data.json
 {
     "TVSHOW_RENUMBER": {
         "Fairy Tail": {
@@ -61,7 +61,7 @@ animeflv_data.json
 
 
 def mainlist(item):
-    logger.info("pelisalacarta.channels.animeflv_me mainlist")
+    logger.info()
 
     itemlist = list()
 
@@ -76,14 +76,14 @@ def mainlist(item):
     itemlist.append(Item(channel=item.channel, action="search", title="Buscar...",
                          url=urlparse.urljoin(CHANNEL_HOST, "Buscar?s=")))
 
-    if renumeratetools.context:
-        itemlist = renumeratetools.show_option(item.channel, itemlist)
+    if renumbertools.context:
+        itemlist = renumbertools.show_option(item.channel, itemlist)
 
     return itemlist
 
 
 def letras(item):
-    logger.info("pelisalacarta.channels.animeflv_me letras")
+    logger.info()
 
     itemlist = []
 
@@ -108,7 +108,7 @@ def letras(item):
 
 
 def generos(item):
-    logger.info("pelisalacarta.channels.animeflv_me generos")
+    logger.info()
 
     itemlist = []
     data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
@@ -133,7 +133,7 @@ def generos(item):
 
 
 def search(item, texto):
-    logger.info("pelisalacarta.channels.animeflv_net search")
+    logger.info()
 
     texto = texto.replace(" ", "%20")
     item.url = "{0}{1}".format(item.url, texto)
@@ -148,7 +148,7 @@ def search(item, texto):
 
 
 def series(item):
-    logger.info("pelisalacarta.channels.animeflv_me series")
+    logger.info()
 
     data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
     head = header_string + get_cookie_value()
@@ -163,12 +163,12 @@ def series(item):
         title = scrapedtitle.strip()  # scrapertools.unescape(scrapedtitle)
         url = urlparse.urljoin(item.url, scrapedurl)
         thumbnail = scrapedthumbnail
-        plot = scrapertools.htmlclean(scrapedplot)
+        plot = scrapertools.htmlclean(scrapedplot).strip()
         show = title
         logger.debug("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
         itemlist.append(Item(channel=item.channel, action="episodios", title=title, url=url, thumbnail=thumbnail + head,
                              plot=plot, show=show, fanart=thumbnail + head, viewmode="movies_with_plot",
-                             context=renumeratetools.context))
+                             context=renumbertools.context))
 
     pagina = scrapertools.find_single_match(data, '<li class=\'current\'>.*?</li><li><a href="([^"]+)"')
 
@@ -186,7 +186,7 @@ def series(item):
 
 
 def episodios(item):
-    logger.info("pelisalacarta.channels.animeflv_me episodios")
+    logger.info()
     itemlist = []
 
     data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
@@ -257,7 +257,7 @@ def episodios(item):
 
 
 def findvideos(item):
-    logger.info("pelisalacarta.channels.animeflv_me findvideos")
+    logger.info()
     itemlist = []
 
     data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
@@ -299,7 +299,7 @@ def numbered_for_tratk(show, season, episode):
     :return: season, episode
     :rtype: int, int
     """
-    logger.info("pelisalacarta.channels.animeflv_me numbered_for_tratk")
+    logger.info()
     show = show.lower()
 
     new_season = season
@@ -348,7 +348,7 @@ def numbered_for_tratk(show, season, episode):
             new_season = dict_series[show]['season_episode'][0][0]
             new_episode += dict_series[show]['season_episode'][0][1]
 
-    logger.info("pelisalacarta.channels.animeflv_me numbered_for_tratk: {0}:{1}".format(new_season, new_episode))
+    logger.info("{0}:{1}".format(new_season, new_episode))
     return new_season, new_episode
 
 
