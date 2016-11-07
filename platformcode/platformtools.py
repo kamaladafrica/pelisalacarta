@@ -378,25 +378,25 @@ def set_context_commands(item, parent_item):
                                                           from_action=item.action).tourl())))
 
     # Descargar pelicula
-    if item.hasContentType and item.contentType == "movie" and not item.channel == "descargas":
+    if item.contentType == "movie" and not item.channel == "descargas":
         context_commands.append(("Descargar Pelicula", "XBMC.RunPlugin(%s?%s)" %
                                  (sys.argv[0], item.clone(channel="descargas", action="save_download",
                                                           from_channel=item.channel, from_action=item.action).tourl())))
 
     # Descargar serie
-    if item.hasContentType and item.contentType == "tvshow" and not item.channel == "descargas":
+    if item.contentType == "tvshow" and not item.channel == "descargas":
         context_commands.append(("Descargar Serie", "XBMC.RunPlugin(%s?%s)" %
                                  (sys.argv[0], item.clone(channel="descargas", action="save_download",
                                                           from_channel=item.channel, from_action=item.action).tourl())))
 
     # Descargar episodio
-    if item.hasContentType and item.contentType == "episode" and not item.channel == "descargas":
+    if item.contentType == "episode" and not item.channel == "descargas":
         context_commands.append(("Descargar Episodio", "XBMC.RunPlugin(%s?%s)" %
                                  (sys.argv[0], item.clone(channel="descargas", action="save_download",
                                                           from_channel=item.channel, from_action=item.action).tourl())))
 
     # Descargar temporada
-    if item.hasContentType and item.contentType == "season" and not item.channel == "descargas":
+    if item.contentType == "season" and not item.channel == "descargas":
         context_commands.append(("Descargar Temporada", "XBMC.RunPlugin(%s?%s)" %
                                  (sys.argv[0], item.clone(channel="descargas", action="save_download",
                                                           from_channel=item.channel, from_action=item.action).tourl())))

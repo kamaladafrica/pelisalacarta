@@ -217,9 +217,6 @@ class Item(object):
         # Valor por defecto para hasContentDetails
         elif name == "hasContentDetails":
             return "false"
-            
-        elif name == "hasContentType":
-          return "mediatype" in self.__dict__["infoLabels"] 
         
         elif name in ["contentTitle", "contentPlot", "contentSerieName", "show", "contentType", "contentEpisodeTitle",
                     "contentSeason", "contentEpisodeNumber", "contentThumbnail", "plot", "duration"]:
