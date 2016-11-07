@@ -300,13 +300,13 @@ def update_json_data(dict_series, filename):
 
 
 class RenumberWindow(xbmcgui.WindowDialog):
-    ID_BOTON_CERRAR = 3004
-    ID_BOTON_OK = 3008
-    ID_BOTON_CANCELAR = 3009
-    ID_BOTON_BORRAR = 3010
-    ID_BOTON_ANYADIR_TEMP = 3011
-    ID_BOTON_INFO = 3012
-    ID_CHECK_ACT_INTERNET = 3013
+    ID_BUTTON_CLOSE = 3004
+    ID_BUTTON_OK = 3008
+    ID_BUTTON_CANCEL = 3009
+    ID_BUTTON_DELETE = 3010
+    ID_BUTTON_ADD_SEASON = 3011
+    ID_BUTTON_INFO = 3012
+    ID_CHECK_UPDATE_INTERNET = 3013
 
     def __init__(self, *args, **kwargs):
         logger.debug()
@@ -328,12 +328,12 @@ class RenumberWindow(xbmcgui.WindowDialog):
                                             alignment=2)
         self.addControl(header_title)
 
-        self.btn_cerrar = xbmcgui.ControlButton(975, 125, 50, 30, '',
-                                                focusTexture=os.path.join(self.mediapath, 'Controls',
-                                                                          'DialogCloseButton-focus.png'),
-                                                noFocusTexture=os.path.join(self.mediapath, 'Controls',
-                                                                            'DialogCloseButton.png'))
-        self.addControl(self.btn_cerrar)
+        self.btn_close = xbmcgui.ControlButton(975, 125, 50, 30, '',
+                                               focusTexture=os.path.join(self.mediapath, 'Controls',
+                                                                         'DialogCloseButton-focus.png'),
+                                               noFocusTexture=os.path.join(self.mediapath, 'Controls',
+                                                                           'DialogCloseButton.png'))
+        self.addControl(self.btn_close)
 
         controls_bg = xbmcgui.ControlImage(260, 150, 745, 327,
                                            os.path.join(self.mediapath, 'Windows', 'BackControls.png'))
@@ -345,71 +345,67 @@ class RenumberWindow(xbmcgui.WindowDialog):
         scroll2_bg = xbmcgui.ControlImage(1015, 150, 10, 387, os.path.join(self.mediapath, 'Controls', 'ScrollBar.png'))
         self.addControl(scroll2_bg)
 
-        self.btn_aceptar = xbmcgui.ControlButton(408, 550, 120, 30, 'OK', font=self.font,
-                                                 focusTexture=os.path.join(self.mediapath, 'Controls',
-                                                                           'KeyboardKey.png'),
-                                                 noFocusTexture=os.path.join(self.mediapath, 'Controls',
-                                                                             'KeyboardKeyNF.png'), alignment=4 | 2)
-        self.addControl(self.btn_aceptar)
+        self.btn_ok = xbmcgui.ControlButton(408, 550, 120, 30, 'OK', font=self.font,
+                                            focusTexture=os.path.join(self.mediapath, 'Controls',
+                                                                      'KeyboardKey.png'),
+                                            noFocusTexture=os.path.join(self.mediapath, 'Controls',
+                                                                        'KeyboardKeyNF.png'), alignment=4 | 2)
+        self.addControl(self.btn_ok)
 
-        self.btn_cancelar = xbmcgui.ControlButton(578, 550, 120, 30, 'Cancelar', font=self.font,
-                                                  focusTexture=os.path.join(self.mediapath, 'Controls',
-                                                                            'KeyboardKey.png'),
-                                                  noFocusTexture=os.path.join(self.mediapath, 'Controls',
-                                                                              'KeyboardKeyNF.png'), alignment=4 | 2)
-        self.addControl(self.btn_cancelar)
+        self.btn_cancel = xbmcgui.ControlButton(578, 550, 120, 30, 'Cancelar', font=self.font,
+                                                focusTexture=os.path.join(self.mediapath, 'Controls',
+                                                                          'KeyboardKey.png'),
+                                                noFocusTexture=os.path.join(self.mediapath, 'Controls',
+                                                                            'KeyboardKeyNF.png'), alignment=4 | 2)
+        self.addControl(self.btn_cancel)
 
-        btn_borrar = True
-        if btn_borrar:
-            self.btn_borrar = xbmcgui.ControlButton(748, 550, 120, 30, 'Borrar', font=self.font,
-                                                    focusTexture=os.path.join(self.mediapath, 'Controls',
-                                                                              'KeyboardKey.png'),
-                                                    noFocusTexture=os.path.join(self.mediapath, 'Controls',
-                                                                                'KeyboardKeyNF.png'), alignment=4 | 2)
-            self.addControl(self.btn_borrar)
+        self.btn_delete = xbmcgui.ControlButton(748, 550, 120, 30, 'Borrar', font=self.font,
+                                                focusTexture=os.path.join(self.mediapath, 'Controls',
+                                                                          'KeyboardKey.png'),
+                                                noFocusTexture=os.path.join(self.mediapath, 'Controls',
+                                                                            'KeyboardKeyNF.png'), alignment=4 | 2)
+        self.addControl(self.btn_delete)
 
-        # btn_add = xbmcgui.ControlButton(270, 492, 180, 30, 'Añadir Temporada', font=self.font,
-        btn_add = xbmcgui.ControlButton(348, 492, 180, 30, 'Añadir Temporada', font=self.font,
-                                                     focusTexture=os.path.join(self.mediapath, 'Controls',
-                                                                               'KeyboardKey.png'),
-                                                     noFocusTexture=os.path.join(self.mediapath, 'Controls',
-                                                                                 'KeyboardKeyNF.png'), alignment=4 | 2)
-        self.addControl(btn_add)
+        btn_add_season = xbmcgui.ControlButton(348, 492, 180, 30, 'Añadir Temporada', font=self.font,
+                                               focusTexture=os.path.join(self.mediapath, 'Controls',
+                                                                         'KeyboardKey.png'),
+                                               noFocusTexture=os.path.join(self.mediapath, 'Controls',
+                                                                           'KeyboardKeyNF.png'), alignment=4 | 2)
+        self.addControl(btn_add_season)
 
-        self.btn_informacion = xbmcgui.ControlButton(578, 492, 120, 30, 'Información', font=self.font,
-                                             focusTexture=os.path.join(self.mediapath, 'Controls',
-                                                                       'KeyboardKey.png'),
-                                             noFocusTexture=os.path.join(self.mediapath, 'Controls',
-                                                                         'KeyboardKeyNF.png'), alignment=4 | 2)
-        self.addControl(self.btn_informacion)
+        self.btn_info = xbmcgui.ControlButton(578, 492, 120, 30, 'Información', font=self.font,
+                                              focusTexture=os.path.join(self.mediapath, 'Controls',
+                                                                        'KeyboardKey.png'),
+                                              noFocusTexture=os.path.join(self.mediapath, 'Controls',
+                                                                          'KeyboardKeyNF.png'), alignment=4 | 2)
+        self.addControl(self.btn_info)
 
-        self.radio_actualizar = xbmcgui.ControlRadioButton(748, 490, 235,
-                                 34, "Actualizar desde Internet:", font=self.font,
-                                 focusTexture=os.path.join(self.mediapath, 'Controls',
-                                                           'MenuItemFO.png'),
-                                 noFocusTexture=os.path.join(self.mediapath, 'Controls',
-                                                             'MenuItemNF.png'),
-                                 focusOnTexture=os.path.join(self.mediapath, 'Controls',
-                                                             'radiobutton-focus.png'),
-                                 noFocusOnTexture=os.path.join(self.mediapath, 'Controls',
-                                                               'radiobutton-focus.png'),
-                                 focusOffTexture=os.path.join(self.mediapath, 'Controls',
-                                                              'radiobutton-nofocus.png'),
-                                 noFocusOffTexture=os.path.join(self.mediapath, 'Controls',
-                                                                'radiobutton-nofocus.png'))
-        self.addControl(self.radio_actualizar)
-        self.radio_actualizar.setEnabled(False)
+        self.check_update_internet = xbmcgui.ControlRadioButton(748, 490, 235,
+                                                                34, "Actualizar desde Internet:", font=self.font,
+                                                                focusTexture=os.path.join(self.mediapath, 'Controls',
+                                                                                          'MenuItemFO.png'),
+                                                                noFocusTexture=os.path.join(self.mediapath, 'Controls',
+                                                                                            'MenuItemNF.png'),
+                                                                focusOnTexture=os.path.join(self.mediapath, 'Controls',
+                                                                                            'radiobutton-focus.png'),
+                                                                noFocusOnTexture=os.path.join(self.mediapath,
+                                                                                              'Controls',
+                                                                                              'radiobutton-focus.png'),
+                                                                focusOffTexture=os.path.join(self.mediapath, 'Controls',
+                                                                                             'radiobutton-nofocus.png'),
+                                                                noFocusOffTexture=os.path.join(self.mediapath,
+                                                                                               'Controls',
+                                                                                               'radiobutton-nofocus.png'))
+        self.addControl(self.check_update_internet)
+        self.check_update_internet.setEnabled(False)
 
         window_bg = xbmcgui.ControlImage(260, 535, 760, 2,
-                                                  os.path.join(self.mediapath, 'Controls', 'ScrollBack.png'))
+                                         os.path.join(self.mediapath, 'Controls', 'ScrollBack.png'))
         self.addControl(window_bg)
 
 
         # self.setFocus(self.btn_informacion)
-
         self.onInit()
-
-        # self.doModal()
 
     def onInit(self, *args, **kwargs):
         if kwargs.get("data"):
@@ -426,31 +422,33 @@ class RenumberWindow(xbmcgui.WindowDialog):
             self.data.sort(key=lambda el: int(el[0]), reverse=False)
 
             for e in self.data:
-                header_title2 = xbmcgui.ControlLabel(250, pos_y + 3, 150, 34, "Temporada:", font="font12_title", textColor="0xFFFFA500",
+                label_season = xbmcgui.ControlLabel(250, pos_y + 3, 150, 34, "Temporada:", font="font12_title",
+                                                    textColor="0xFFFFA500",
+                                                    alignment=2)
+                self.addControl(label_season)
+
+                text_season = xbmcgui.ControlTextBox(380, pos_y + 3, 100, 34, font="font12_title")
+                self.addControl(text_season)
+                text_season.setText(str(e[0]))
+
+                label_episode = xbmcgui.ControlLabel(400, pos_y + 3, 150, 34, "Episodios:", font="font12_title",
+                                                     textColor="0xFFFFA500",
                                                      alignment=2)
-                self.addControl(header_title2)
+                self.addControl(label_episode)
 
-                header_title3 = xbmcgui.ControlTextBox(380, pos_y + 3, 100, 34, font="font12_title")
-                self.addControl(header_title3)
-                header_title3.setText(str(e[0]))
+                text_episode = xbmcgui.ControlTextBox(520, pos_y + 3, 700, 34, font="font12_title")
+                self.addControl(text_episode)
+                text_episode.setText(str(e[1]))
 
-                header_title2 = xbmcgui.ControlLabel(400, pos_y + 3, 150, 34, "Episodios:", font="font12_title", textColor="0xFFFFA500",
-                                                     alignment=2)
-                self.addControl(header_title2)
-
-                header_title3 = xbmcgui.ControlTextBox(520, pos_y + 3, 700, 34, font="font12_title")
-                self.addControl(header_title3)
-                header_title3.setText(str(e[1]))
-
-                btn_informacion = xbmcgui.ControlButton(870, pos_y, 120, 30, 'Eliminar', font=self.font,
-                                                             focusTexture=os.path.join(self.mediapath, 'Controls',
-                                                                                       'KeyboardKey.png'),
-                                                             noFocusTexture=os.path.join(self.mediapath, 'Controls',
-                                                                                         'KeyboardKeyNF.png'), alignment=4 | 2)
-                self.addControl(btn_informacion)
+                btn_eliminar = xbmcgui.ControlButton(870, pos_y, 120, 30, 'Eliminar', font=self.font,
+                                                     focusTexture=os.path.join(self.mediapath, 'Controls',
+                                                                               'KeyboardKey.png'),
+                                                     noFocusTexture=os.path.join(self.mediapath, 'Controls',
+                                                                                 'KeyboardKeyNF.png'), alignment=4 | 2)
+                self.addControl(btn_eliminar)
 
                 window_bg = xbmcgui.ControlImage(270, pos_y + 40, 725, 2,
-                                                      os.path.join(self.mediapath, 'Controls', 'ScrollBack.png'))
+                                                 os.path.join(self.mediapath, 'Controls', 'ScrollBack.png'))
                 self.addControl(window_bg)
 
                 pos_y += 50
@@ -475,20 +473,20 @@ class RenumberWindow(xbmcgui.WindowDialog):
         logger.debug("mierda control: %s" % control.getId())
         control_id = control.getId()
 
-        if control_id == self.ID_BOTON_OK:
+        if control_id == self.ID_BUTTON_OK:
             pass
-        if control_id in [self.ID_BOTON_CERRAR, self.ID_BOTON_CANCELAR]:
+        if control_id in [self.ID_BUTTON_CLOSE, self.ID_BUTTON_CANCEL]:
             self.close()
-        elif control_id == self.ID_BOTON_BORRAR:
+        elif control_id == self.ID_BUTTON_DELETE:
             self.close()
             borrar(self.channel, self.show)
-        elif control_id == self.ID_BOTON_ANYADIR_TEMP:
+        elif control_id == self.ID_BUTTON_ADD_SEASON:
             data = add_season(self.channel, self.show)
             # se ha producido un error al guardar los datos, volvemos a enviar los datos que teníamos
             if data is None:
                 data = self.data
             self.onInit(data=data)
-        elif control_id == self.ID_BOTON_INFO:
+        elif control_id == self.ID_BUTTON_INFO:
             self.method_info()
 
     def onAction(self, action):
@@ -501,8 +499,8 @@ class RenumberWindow(xbmcgui.WindowDialog):
         # Accion 1: Flecha izquierda
         if action == 1:
             # Si el foco no está en ninguno de los 6 botones inferiores, y esta en un "list" cambiamos el valor
-            if focus not in [self.ID_BOTON_ANYADIR_TEMP, self.ID_BOTON_INFO, self.ID_CHECK_ACT_INTERNET,
-                             self.ID_BOTON_OK, self.ID_BOTON_CANCELAR, self.ID_BOTON_BORRAR]:
+            if focus not in [self.ID_BUTTON_ADD_SEASON, self.ID_BUTTON_INFO, self.ID_CHECK_UPDATE_INTERNET,
+                             self.ID_BUTTON_OK, self.ID_BUTTON_CANCEL, self.ID_BUTTON_DELETE]:
                 pass
                 # control = self.getFocus()
                 # for cont in self.controls:
@@ -516,30 +514,30 @@ class RenumberWindow(xbmcgui.WindowDialog):
 
             # Si el foco está en alguno de los 6 botones inferiores, movemos al siguiente
             else:
-                if focus in [self.ID_BOTON_ANYADIR_TEMP, self.ID_BOTON_INFO, self.ID_CHECK_ACT_INTERNET]:
-                    if focus == self.ID_BOTON_ANYADIR_TEMP:
+                if focus in [self.ID_BUTTON_ADD_SEASON, self.ID_BUTTON_INFO, self.ID_CHECK_UPDATE_INTERNET]:
+                    if focus == self.ID_BUTTON_ADD_SEASON:
                         pass
                         # vamos al ultimo control
-                    elif focus == self.ID_BOTON_INFO:
-                        self.setFocusId(self.ID_BOTON_ANYADIR_TEMP)
-                    elif focus == self.ID_CHECK_ACT_INTERNET:
-                        self.setFocusId(self.ID_BOTON_INFO)
+                    elif focus == self.ID_BUTTON_INFO:
+                        self.setFocusId(self.ID_BUTTON_ADD_SEASON)
+                    elif focus == self.ID_CHECK_UPDATE_INTERNET:
+                        self.setFocusId(self.ID_BUTTON_INFO)
 
-                elif focus in [self.ID_BOTON_OK, self.ID_BOTON_CANCELAR, self.ID_BOTON_BORRAR]:
-                    if focus == self.ID_BOTON_OK:
-                        self.setFocusId(self.ID_BOTON_INFO)
+                elif focus in [self.ID_BUTTON_OK, self.ID_BUTTON_CANCEL, self.ID_BUTTON_DELETE]:
+                    if focus == self.ID_BUTTON_OK:
+                        self.setFocusId(self.ID_BUTTON_INFO)
                         # TODO cambiar cuando se habilite la opcion de actualizar por internet
-                        # self.setFocusId(self.ID_CHECK_ACT_INTERNET)
-                    elif focus == self.ID_BOTON_CANCELAR:
-                        self.setFocusId(self.ID_BOTON_OK)
-                    elif focus == self.ID_BOTON_BORRAR:
-                        self.setFocusId(self.ID_BOTON_CANCELAR)
+                        # self.setFocusId(self.ID_CHECK_UPDATE_INTERNET)
+                    elif focus == self.ID_BUTTON_CANCEL:
+                        self.setFocusId(self.ID_BUTTON_OK)
+                    elif focus == self.ID_BUTTON_DELETE:
+                        self.setFocusId(self.ID_BUTTON_CANCEL)
 
         # Accion 2: Flecha derecha
         elif action == 2:
             # Si el foco no está en ninguno de los 6 botones inferiores, y esta en un "list" cambiamos el valor
-            if focus not in [self.ID_BOTON_ANYADIR_TEMP, self.ID_BOTON_INFO, self.ID_CHECK_ACT_INTERNET,
-                             self.ID_BOTON_OK, self.ID_BOTON_CANCELAR, self.ID_BOTON_BORRAR]:
+            if focus not in [self.ID_BUTTON_ADD_SEASON, self.ID_BUTTON_INFO, self.ID_CHECK_UPDATE_INTERNET,
+                             self.ID_BUTTON_OK, self.ID_BUTTON_CANCEL, self.ID_BUTTON_DELETE]:
                 pass
                 # control = self.getFocus()
                 # for cont in self.controls:
@@ -553,22 +551,22 @@ class RenumberWindow(xbmcgui.WindowDialog):
 
             # Si el foco está en alguno de los 6 botones inferiores, movemos al siguiente
             else:
-                if focus in [self.ID_BOTON_ANYADIR_TEMP, self.ID_BOTON_INFO, self.ID_CHECK_ACT_INTERNET]:
-                    if focus == self.ID_BOTON_ANYADIR_TEMP:
-                        self.setFocusId(self.ID_BOTON_INFO)
-                    if focus == self.ID_BOTON_INFO:
-                        self.setFocusId(self.ID_BOTON_OK)
+                if focus in [self.ID_BUTTON_ADD_SEASON, self.ID_BUTTON_INFO, self.ID_CHECK_UPDATE_INTERNET]:
+                    if focus == self.ID_BUTTON_ADD_SEASON:
+                        self.setFocusId(self.ID_BUTTON_INFO)
+                    if focus == self.ID_BUTTON_INFO:
+                        self.setFocusId(self.ID_BUTTON_OK)
                         # TODO cambiar cuando se habilite la opcion de actualizar por internet
-                        # self.setFocusId(self.ID_CHECK_ACT_INTERNET)
-                    if focus == self.ID_CHECK_ACT_INTERNET:
-                        self.setFocusId(self.ID_BOTON_OK)
+                        # self.setFocusId(self.ID_CHECK_UPDATE_INTERNET)
+                    if focus == self.ID_CHECK_UPDATE_INTERNET:
+                        self.setFocusId(self.ID_BUTTON_OK)
 
-                elif focus in [self.ID_BOTON_OK, self.ID_BOTON_CANCELAR, self.ID_BOTON_BORRAR]:
-                    if focus == self.ID_BOTON_OK:
-                        self.setFocusId(self.ID_BOTON_CANCELAR)
-                    if focus == self.ID_BOTON_CANCELAR:
-                        self.setFocusId(self.ID_BOTON_BORRAR)
-                    if focus == self.ID_BOTON_BORRAR:
+                elif focus in [self.ID_BUTTON_OK, self.ID_BUTTON_CANCEL, self.ID_BUTTON_DELETE]:
+                    if focus == self.ID_BUTTON_OK:
+                        self.setFocusId(self.ID_BUTTON_CANCEL)
+                    if focus == self.ID_BUTTON_CANCEL:
+                        self.setFocusId(self.ID_BUTTON_DELETE)
+                    if focus == self.ID_BUTTON_DELETE:
                         # vamos al primer control
                         pass
 
@@ -592,22 +590,22 @@ class RenumberWindow(xbmcgui.WindowDialog):
 
         # ACTION_PREVIOUS_MENU = 10
         # ACTION_NAV_BACK = 92
-        elif action == 10 or action == 92:
+        elif action in [10, 92]:
             self.close()
 
         logger.debug("el foco lo tiene " + str(focus))
 
     def move_down(self, focus):
         # Si el foco está en uno de los tres botones medios, bajamos el foco a la otra linea de botones
-        if focus in [self.ID_BOTON_ANYADIR_TEMP, self.ID_BOTON_INFO, self.ID_CHECK_ACT_INTERNET]:
-            if focus == self.ID_BOTON_ANYADIR_TEMP:
-                self.setFocusId(self.ID_BOTON_OK)
-            elif focus == self.ID_BOTON_INFO:
-                self.setFocusId(self.ID_BOTON_CANCELAR)
-            elif focus == self.ID_CHECK_ACT_INTERNET:
-                self.setFocusId(self.ID_BOTON_BORRAR)
+        if focus in [self.ID_BUTTON_ADD_SEASON, self.ID_BUTTON_INFO, self.ID_CHECK_UPDATE_INTERNET]:
+            if focus == self.ID_BUTTON_ADD_SEASON:
+                self.setFocusId(self.ID_BUTTON_OK)
+            elif focus == self.ID_BUTTON_INFO:
+                self.setFocusId(self.ID_BUTTON_CANCEL)
+            elif focus == self.ID_CHECK_UPDATE_INTERNET:
+                self.setFocusId(self.ID_BUTTON_DELETE)
         # Si el foco está en uno de los tres botones inferiores, subimos el foco al primer control del listado
-        elif focus in [self.ID_BOTON_OK, self.ID_BOTON_CANCELAR, self.ID_BOTON_BORRAR]:
+        elif focus in [self.ID_BUTTON_OK, self.ID_BUTTON_CANCEL, self.ID_BUTTON_DELETE]:
             pass
         # nos movemos entre los elementos del listado
         else:
@@ -615,18 +613,18 @@ class RenumberWindow(xbmcgui.WindowDialog):
 
     def move_up(self, focus):
         # Si el foco está en uno de los tres botones medios, subimos el foco al último control del listado
-        if focus in [self.ID_BOTON_ANYADIR_TEMP, self.ID_BOTON_INFO, self.ID_CHECK_ACT_INTERNET]:
+        if focus in [self.ID_BUTTON_ADD_SEASON, self.ID_BUTTON_INFO, self.ID_CHECK_UPDATE_INTERNET]:
             pass
         # Si el foco está en uno de los tres botones inferiores, subimos el foco a la otra linea de botones
-        elif focus in [self.ID_BOTON_OK, self.ID_BOTON_CANCELAR, self.ID_BOTON_BORRAR]:
-            if focus == self.ID_BOTON_OK:
-                self.setFocusId(self.ID_BOTON_ANYADIR_TEMP)
-            elif focus == self.ID_BOTON_CANCELAR:
-                self.setFocusId(self.ID_BOTON_INFO)
-            elif focus == self.ID_BOTON_BORRAR:
-                self.setFocusId(self.ID_BOTON_INFO)
+        elif focus in [self.ID_BUTTON_OK, self.ID_BUTTON_CANCEL, self.ID_BUTTON_DELETE]:
+            if focus == self.ID_BUTTON_OK:
+                self.setFocusId(self.ID_BUTTON_ADD_SEASON)
+            elif focus == self.ID_BUTTON_CANCEL:
+                self.setFocusId(self.ID_BUTTON_INFO)
+            elif focus == self.ID_BUTTON_DELETE:
+                self.setFocusId(self.ID_BUTTON_INFO)
                 # TODO cambiar cuando se habilite la opcion de actualizar por internet
-                # self.setFocusId(self.ID_CHECK_ACT_INTERNET)
+                # self.setFocusId(self.ID_CHECK_UPDATE_INTERNET)
         # nos movemos entre los elementos del listado
         else:
             pass
@@ -673,60 +671,3 @@ class TextBox(xbmcgui.WindowXMLDialog):
 
     def onAction(self, action):
         self.close()
-
-
-# class ControlEdit(xbmcgui.ControlButton):
-#     def __new__(self, *args, **kwargs):
-#         del kwargs["isPassword"]
-#         del kwargs["window"]
-#         args = list(args)
-#         return xbmcgui.ControlButton.__new__(self, *args, **kwargs)
-#
-#     def __init__(self, *args, **kwargs):
-#         self.isPassword = kwargs["isPassword"]
-#         self.window = kwargs["window"]
-#         self.label = ""
-#         self.text = ""
-#         self.textControl = xbmcgui.ControlLabel(self.getX(), self.getY(), self.getWidth(), self.getHeight(), self.text,
-#                                                 font=kwargs["font"], textColor=kwargs["textColor"], alignment=4 | 1)
-#         self.window.addControl(self.textControl)
-#
-#     def setLabel(self, val):
-#         self.label = val
-#         xbmcgui.ControlButton.setLabel(self, val)
-#
-#     def getX(self):
-#         return xbmcgui.ControlButton.getPosition(self)[0]
-#
-#     def getY(self):
-#         return xbmcgui.ControlButton.getPosition(self)[1]
-#
-#     def setEnabled(self, e):
-#         xbmcgui.ControlButton.setEnabled(self, e)
-#         self.textControl.setEnabled(e)
-#
-#     def setWidth(self, w):
-#         xbmcgui.ControlButton.setWidth(self, w)
-#         self.textControl.setWidth(w / 2)
-#
-#     def setHeight(self, w):
-#         xbmcgui.ControlButton.setHeight(self, w)
-#         self.textControl.setHeight(w)
-#
-#     def setPosition(self, x, y):
-#         xbmcgui.ControlButton.setPosition(self, x, y)
-#         self.textControl.setPosition(x + self.getWidth() / 2, y)
-#
-#     def setText(self, text):
-#         self.text = text
-#         if self.isPassword:
-#             self.textControl.setLabel("*" * len(self.text))
-#         else:
-#             self.textControl.setLabel(self.text)
-#
-#     def getText(self):
-#         return self.text
-#
-#
-# if not hasattr(xbmcgui, "ControlEdit"):
-#     xbmcgui.ControlEdit = ControlEdit
