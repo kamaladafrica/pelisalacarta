@@ -905,12 +905,12 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
       pass
 
     def onAction(self, action):
+        # Obtenemos el foco
+        focus = self.getFocusId()
+
         action = action.getId()
         # Accion 1: Flecha derecha
         if action == 1:
-            # Obtenemos el foco
-            focus = self.getFocusId()
-
             # Si el foco no está en ninguno de los tres botones inferiores, y esta en un "list" cambiamos el valor
             if focus not in [10004, 10005, 10006]:
                 control = self.getFocus()
@@ -931,10 +931,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                     self.setFocusId(10004)
 
         # Accion 1: Flecha izquierda
-        if action == 2:
-            # Obtenemos el foco
-            focus = self.getFocusId()
-
+        elif action == 2:
             # Si el foco no está en ninguno de los tres botones inferiores, y esta en un "list" cambiamos el valor
             if focus not in [10004, 10005, 10006]:
                 control = self.getFocus()
@@ -955,21 +952,15 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                     self.setFocusId(10006)
 
         # Accion 4: Flecha abajo
-        if action == 4:
-            # Obtenemos el foco
-            focus = self.getFocusId()
-
+        elif action == 4:
             # Si el foco no está en ninguno de los tres botones inferiores, bajamos el foco en los controles de ajustes
             if focus not in [10004, 10005, 10006]:
                 self.move_down()
 
         # Accion 4: Flecha arriba
-        if action == 3:
-            # Obtenemos el foco
-            focus = self.getFocusId()
-
+        elif action == 3:
             # Si el foco no está en ninguno de los tres botones inferiores, subimos el foco en los controles de ajustes
-            if focus not in [10003,10004, 10005, 10006]:
+            if focus not in [10003, 10004, 10005, 10006]:
                 self.move_up()
 
             # Si el foco está en alguno de los tres botones inferiores, ponemos el foco en el ultimo ajuste.
@@ -977,15 +968,16 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                 self.setFocus(self.controls[-1]["control"])
 
         # Accion 104: Scroll arriba
-        if action == 104:
+        elif action == 104:
             self.scroll(1)
 
         # Accion 105: Scroll abajo
-        if action == 105:
+        elif action == 105:
             self.scroll(-1)
 
-        # Accion 10: Back
-        if action == 10:
+        # ACTION_PREVIOUS_MENU 10
+        # ACTION_NAV_BACK 92
+        elif action in [10, 92]:
             self.close()
 
         self.evaluate_conditions()
