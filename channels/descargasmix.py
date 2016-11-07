@@ -83,7 +83,9 @@ def busqueda(item):
     for scrapedurl, scrapedtitle, scrapedthumbnail, scrapedcat in matches:
         if not [True for c in contenido if c in scrapedcat]:
             continue
-        scrapedthumbnail = "http:"+scrapedthumbnail.replace("-129x180", "")
+        if not scrapedthumbnail.startswith("http"):
+                scrapedthumbnail = "http:"+scrapedthumbnail
+        scrapedthumbnail = scrapedthumbnail.replace("-129x180", "")
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
         if ("Películas" in scrapedcat or "Documentales" in scrapedcat) and not "Series" in scrapedcat:
             titulo = scrapedtitle.split("[")[0]
@@ -151,7 +153,9 @@ def entradas(item):
             titulo = scrapedtitle+scrapedinfo	
             titulo = scrapertools.decodeHtmlentities(titulo)
             scrapedtitle = scrapertools.decodeHtmlentities(scrapedtitle)
-            scrapedthumbnail = "http:"+scrapedthumbnail.replace("-129x180", "")
+            if not scrapedthumbnail.startswith("http"):
+                scrapedthumbnail = "http:"+scrapedthumbnail
+            scrapedthumbnail = scrapedthumbnail.replace("-129x180", "")
             scrapedthumbnail = scrapedthumbnail.rsplit("/", 1)[0]+"/"+urllib.quote(scrapedthumbnail.rsplit("/", 1)[1])
             if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
             if "series" in item.url or "anime" in item.url:
@@ -180,8 +184,9 @@ def entradas(item):
                     titulo += " [LAT]"
                 if 'l-vosemini' in info:
                     titulo += " [VOSE]"
-
-            scrapedthumbnail = "http:"+scrapedthumbnail.replace("-129x180", "")
+            if not scrapedthumbnail.startswith("http"):
+                scrapedthumbnail = "http:"+scrapedthumbnail
+            scrapedthumbnail = scrapedthumbnail.replace("-129x180", "")
             scrapedthumbnail = scrapedthumbnail.rsplit("/", 1)[0]+"/"+urllib.quote(scrapedthumbnail.rsplit("/", 1)[1])
             if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
             itemlist.append(item.clone(action=action, title=titulo, url=scrapedurl, thumbnail=scrapedthumbnail,
