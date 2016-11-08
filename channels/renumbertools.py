@@ -301,12 +301,12 @@ def update_json_data(dict_series, filename):
 
 class RenumberWindow(xbmcgui.WindowDialog):
     ID_BUTTON_CLOSE = 3004
-    ID_BUTTON_OK = 3008
-    ID_BUTTON_CANCEL = 3009
-    ID_BUTTON_DELETE = 3010
-    ID_BUTTON_ADD_SEASON = 3011
-    ID_BUTTON_INFO = 3012
-    ID_CHECK_UPDATE_INTERNET = 3013
+    ID_BUTTON_ADD_SEASON = 3008
+    ID_BUTTON_INFO = 3009
+    ID_CHECK_UPDATE_INTERNET = 3010
+    ID_BUTTON_OK = 3012
+    ID_BUTTON_CANCEL = 3013
+    ID_BUTTON_DELETE = 3014
 
     def __init__(self, *args, **kwargs):
         logger.debug()
@@ -323,71 +323,58 @@ class RenumberWindow(xbmcgui.WindowDialog):
         self.mediapath = os.path.join(config.get_runtime_path(), 'resources', 'skins', 'Default', 'media')
         self.font = "font12"
 
-        self.window_bg = xbmcgui.ControlImage(240, 110, 800, 500,
+        self.window_bg = xbmcgui.ControlImage(320, 110, 600, 500,
                                               os.path.join(self.mediapath, 'Windows', 'DialogBack.png'))
         self.addControl(self.window_bg)
 
-        header_bg = xbmcgui.ControlImage(240, 110, 800, 40, os.path.join(self.mediapath, 'Windows', 'dialogheader.png'))
+        header_bg = xbmcgui.ControlImage(self.window_bg.getX(), 118, 600, 40, os.path.join(self.mediapath, 'Windows', 'dialogheader.png'))
         self.addControl(header_bg)
 
-        header_title = xbmcgui.ControlLabel(275, 125, 700, 34, self.show, font="font12_title", textColor="0xFFFFA500",
-                                            alignment=2)
-        self.addControl(header_title)
-
-        self.btn_close = xbmcgui.ControlButton(975, 125, 50, 30, '',
+        btn_close_w = 64
+        self.btn_close = xbmcgui.ControlButton(self.window_bg.getX() + self.window_bg.getWidth() - btn_close_w - 10,
+                                               125, btn_close_w, 30, '',
                                                focusTexture=os.path.join(self.mediapath, 'Controls',
                                                                          'DialogCloseButton-focus.png'),
                                                noFocusTexture=os.path.join(self.mediapath, 'Controls',
                                                                            'DialogCloseButton.png'))
         self.addControl(self.btn_close)
 
-        self.controls_bg = xbmcgui.ControlImage(260, 150, 745, 327,
+        header_title = xbmcgui.ControlLabel(self.window_bg.getX() + 20, 128, self.window_bg.getWidth() -
+                                            self.btn_close.getWidth() - 30, 70, self.show, font="font12_title", textColor="0xFFFFA500")
+        self.addControl(header_title)
+
+        self.controls_bg = xbmcgui.ControlImage(self.window_bg.getX() + 20, 160, 545, 327,
                                                 os.path.join(self.mediapath, 'Windows', 'BackControls.png'))
         self.addControl(self.controls_bg)
 
-        scroll_bg = xbmcgui.ControlImage(1015, 150, 10, 327, os.path.join(self.mediapath, 'Controls', 'ScrollBack.png'))
+        scroll_bg = xbmcgui.ControlImage(self.window_bg.getX() + self.window_bg.getWidth() - 25, self.controls_bg.getY(), 10, 327,
+                                         os.path.join(self.mediapath, 'Controls', 'ScrollBack.png'))
         self.addControl(scroll_bg)
 
-        scroll2_bg = xbmcgui.ControlImage(1015, 150, 10, 327, os.path.join(self.mediapath, 'Controls', 'ScrollBar.png'))
+        scroll2_bg = xbmcgui.ControlImage(self.window_bg.getX() + self.window_bg.getWidth() - 25, self.controls_bg.getY(), 10, 327,
+                                          os.path.join(self.mediapath, 'Controls', 'ScrollBar.png'))
         self.addControl(scroll2_bg)
 
-        self.btn_ok = xbmcgui.ControlButton(408, 550, 120, 30, 'OK', font=self.font,
-                                            focusTexture=os.path.join(self.mediapath, 'Controls',
-                                                                      'KeyboardKey.png'),
-                                            noFocusTexture=os.path.join(self.mediapath, 'Controls',
-                                                                        'KeyboardKeyNF.png'), alignment=4 | 2)
-        self.addControl(self.btn_ok)
-
-        self.btn_cancel = xbmcgui.ControlButton(578, 550, 120, 30, 'Cancelar', font=self.font,
-                                                focusTexture=os.path.join(self.mediapath, 'Controls',
-                                                                          'KeyboardKey.png'),
-                                                noFocusTexture=os.path.join(self.mediapath, 'Controls',
-                                                                            'KeyboardKeyNF.png'), alignment=4 | 2)
-        self.addControl(self.btn_cancel)
-
-        self.btn_delete = xbmcgui.ControlButton(748, 550, 120, 30, 'Borrar', font=self.font,
-                                                focusTexture=os.path.join(self.mediapath, 'Controls',
-                                                                          'KeyboardKey.png'),
-                                                noFocusTexture=os.path.join(self.mediapath, 'Controls',
-                                                                            'KeyboardKeyNF.png'), alignment=4 | 2)
-        self.addControl(self.btn_delete)
-
-        btn_add_season = xbmcgui.ControlButton(348, 492, 180, 30, 'Añadir Temporada', font=self.font,
+        btn_add_season = xbmcgui.ControlButton(self.window_bg.getX() + 20, 496, 165, 30, 'Añadir Temporada',
+                                               font=self.font,
                                                focusTexture=os.path.join(self.mediapath, 'Controls',
                                                                          'KeyboardKey.png'),
                                                noFocusTexture=os.path.join(self.mediapath, 'Controls',
                                                                            'KeyboardKeyNF.png'), alignment=4 | 2)
         self.addControl(btn_add_season)
 
-        self.btn_info = xbmcgui.ControlButton(578, 492, 120, 30, 'Información', font=self.font,
+        self.btn_info = xbmcgui.ControlButton(self.window_bg.getX() + 210, 496, 120, 30, 'Información', font=self.font,
                                               focusTexture=os.path.join(self.mediapath, 'Controls',
                                                                         'KeyboardKey.png'),
                                               noFocusTexture=os.path.join(self.mediapath, 'Controls',
                                                                           'KeyboardKeyNF.png'), alignment=4 | 2)
         self.addControl(self.btn_info)
 
-        self.check_update_internet = xbmcgui.ControlRadioButton(748, 490, 235,
-                                                                34, "Actualizar desde Internet:", font=self.font,
+        check_update_internet_w = 235
+        self.check_update_internet = xbmcgui.ControlRadioButton(self.window_bg.getX() + self.window_bg.getWidth() -
+                                                                check_update_internet_w - 20, 494,
+                                                                check_update_internet_w, 34,
+                                                                "Actualizar desde Internet:", font=self.font,
                                                                 focusTexture=os.path.join(self.mediapath, 'Controls',
                                                                                           'MenuItemFO.png'),
                                                                 noFocusTexture=os.path.join(self.mediapath, 'Controls',
@@ -401,13 +388,35 @@ class RenumberWindow(xbmcgui.WindowDialog):
                                                                                              'radiobutton-nofocus.png'),
                                                                 noFocusOffTexture=os.path.join(self.mediapath,
                                                                                                'Controls',
-                                                                                               'radiobutton-nofocus.png'))
+                                                                                               'radiobutton-nofocus.png'
+                                                                                               ))
         self.addControl(self.check_update_internet)
         self.check_update_internet.setEnabled(False)
 
-        window_bg = xbmcgui.ControlImage(260, 535, 760, 2,
+        window_bg = xbmcgui.ControlImage(self.window_bg.getX() + 20, 538, self.window_bg.getWidth() - 40, 2,
                                          os.path.join(self.mediapath, 'Controls', 'ScrollBack.png'))
         self.addControl(window_bg)
+
+        self.btn_ok = xbmcgui.ControlButton(self.window_bg.getX() + 68, 552, 120, 30, 'OK', font=self.font,
+                                            focusTexture=os.path.join(self.mediapath, 'Controls',
+                                                                      'KeyboardKey.png'),
+                                            noFocusTexture=os.path.join(self.mediapath, 'Controls',
+                                                                        'KeyboardKeyNF.png'), alignment=4 | 2)
+        self.addControl(self.btn_ok)
+
+        self.btn_cancel = xbmcgui.ControlButton(self.btn_info.getX()+30, 552, 120, 30, 'Cancelar', font=self.font,
+                                                focusTexture=os.path.join(self.mediapath, 'Controls',
+                                                                          'KeyboardKey.png'),
+                                                noFocusTexture=os.path.join(self.mediapath, 'Controls',
+                                                                            'KeyboardKeyNF.png'), alignment=4 | 2)
+        self.addControl(self.btn_cancel)
+
+        self.btn_delete = xbmcgui.ControlButton(self.btn_cancel.getX() + self.btn_cancel.getWidth() + 50, 552, 120, 30, 'Borrar',
+                                                font=self.font, focusTexture=os.path.join(self.mediapath, 'Controls',
+                                                                                          'KeyboardKey.png'),
+                                                noFocusTexture=os.path.join(self.mediapath, 'Controls',
+                                                                            'KeyboardKeyNF.png'), alignment=4 | 2)
+        self.addControl(self.btn_delete)
 
         # self.setFocus(self.btn_informacion)
         self.onInit()
@@ -440,7 +449,7 @@ class RenumberWindow(xbmcgui.WindowDialog):
                 label_episode_w = 90
                 pos_x += text_season_w + 25
                 label_episode = xbmcgui.ControlLabel(pos_x, pos_y + 3, label_episode_w, 34, "Episodios:", font="font12",
-                                                     textColor="0xFF2E64FE", alignment=2)
+                                                     textColor="0xFF2E64FE")
                 self.addControl(label_episode)
 
                 pos_x += label_episode_w + 5
@@ -448,11 +457,15 @@ class RenumberWindow(xbmcgui.WindowDialog):
                 self.addControl(text_episode)
                 text_episode.setText(str(e[1]))
 
-                btn_delete_season = xbmcgui.ControlButton(870, pos_y, 120, 30, 'Eliminar', font=self.font,
-                                                     focusTexture=os.path.join(self.mediapath, 'Controls',
-                                                                               'KeyboardKey.png'),
-                                                     noFocusTexture=os.path.join(self.mediapath, 'Controls',
-                                                                                 'KeyboardKeyNF.png'), alignment=4 | 2)
+                btn_delete_season_w = 120
+                btn_delete_season = xbmcgui.ControlButton(self.controls_bg.getX() + self.controls_bg.getWidth() -
+                                                          btn_delete_season_w - 14, pos_y, btn_delete_season_w, 30,
+                                                          'Eliminar', font=self.font,
+                                                          focusTexture=os.path.join(self.mediapath, 'Controls',
+                                                                                    'KeyboardKey.png'),
+                                                          noFocusTexture=os.path.join(self.mediapath, 'Controls',
+                                                                                      'KeyboardKeyNF.png'),
+                                                          alignment=4 | 2)
                 self.addControl(btn_delete_season)
 
                 window_bg = xbmcgui.ControlImage(self.controls_bg.getX() + 10, pos_y + 40, self.controls_bg.getWidth() -
