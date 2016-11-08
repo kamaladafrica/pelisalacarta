@@ -44,8 +44,8 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
     rtmp_url = rtmp_url.split(playpath)[0]+" playpath="+playpath+" swfUrl=http://gamovideo.com/player61/jwplayer.flash.swf"
 
     video_urls = []
+    video_urls.append(["RTMP [gamovideo]",rtmp_url])
     video_urls.append([scrapertools.get_filename_from_url(mediaurl)[-4:]+" [gamovideo]",mediaurl])
-    video_urls.append(["RTMP [gamovideo]",rtmp_url])     
 
     for video_url in video_urls:
         logger.info("pelisalacarta.servers.gamovideo %s - %s" % (video_url[0],video_url[1]))
