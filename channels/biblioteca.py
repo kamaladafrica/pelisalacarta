@@ -33,21 +33,43 @@ def mainlist(item):
 
 
 def read_nfo(path_nfo, item=None):
+    """
+    Metodo para leer archivos nfo.
+        Los arcivos nfo tienen la siguiente extructura: url_scraper | xml + item_json
+        [url_scraper] y [xml] son opcionales, pero solo uno de ellos ha de existir siempre.
+    @param path_nfo: ruta absoluta al archivo nfo
+    @type path_nfo: str
+    @param item: Si se pasa este parametro el item devuelto sera una copia de este con
+        los valores de 'infoLabels', 'library_playcounts' y 'path' leidos del nfo
+    @type: Item
+    @return: Una tupla formada por la 'url_scraper' y el objeto 'item_json'
+    @rtype: tuple (str, Item)
+    """
     url_scraper = ""
     it = None
     if filetools.exists(path_nfo):
         url_scraper = filetools.read(path_nfo, 0, 1)
+        data = filetools.read(path_nfo, 1)
+
+        if not url_scraper.startswith('http'):
+            # url_scraper no valida, xml presente
+            url_scraper = ''
+            import re
+            data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
+            data = re.sub("(<tvshow>|<movie>)(.*?)(</tvshow>|</movie>)", "", data)
+
+        it_nfo = Item().fromjson(data)
+
 
         if item:
             it = item.clone()
-            it_nfo = Item().fromjson(filetools.read(path_nfo, 1))
             it.infoLabels = it_nfo.infoLabels
             if 'library_playcounts' in it_nfo:
                 it.library_playcounts = it_nfo.library_playcounts
             if it_nfo.path:
                 it.path = it_nfo.path
         else:
-            it = Item().fromjson(filetools.read(path_nfo, 1))
+            it = it_nfo
 
         if 'fanart' in it.infoLabels:
             it.fanart = it.infoLabels['fanart']
@@ -377,7 +399,15 @@ def findvideos(item):
         try:
             # si el canal tiene filtro se le pasa el nombre que tiene guardado para que filtre correctamente.
             if item_json.list_idiomas:
-                item_json.show = item.library_filter_show[nom_canal]
+                # si se viene desde la biblioteca de pelisalacarta
+                if "library_filter_show" in item:
+                    item_json.show = item.library_filter_show.get(nom_canal, "")
+                # si se viene desde la biblioteca de Kodi
+                else:
+                    item_json.show = item_json.contentSerieName
+
+                if item_json.show == "":
+                    logger.error("Se ha producido un error al obtener el nombre de la serie a filtrar")
 
             # Ejecutamos find_videos, del canal o común
             if hasattr(channel, 'findvideos'):
@@ -386,7 +416,7 @@ def findvideos(item):
                 from core import servertools
                 list_servers = servertools.find_video_items(item_json)
         except:
-            logger.error("Ha fallado la funcion findvideo para el canal %s" % nom_canal)
+            logger.error("Ha fallado la funcion findvideos para el canal %s" % nom_canal)
 
         # Cambiarle el titulo a los servers añadiendoles el nombre del canal delante y
         # las infoLabels y las imagenes del item si el server no tiene
