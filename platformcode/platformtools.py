@@ -849,6 +849,7 @@ def set_player(item, xlistitem, mediaurl, view, strm):
     # TODO MIRAR DE QUITAR VIEW
     if item.subtitle != "" and view:
         logger.info("Subtítulos externos: " + item.subtitle)
+        xbmc.sleep(2000)
         xbmc.Player().setSubtitles(item.subtitle)
 
 
