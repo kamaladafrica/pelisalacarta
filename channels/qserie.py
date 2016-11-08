@@ -63,7 +63,7 @@ def todas(item):
         plot = scrapedplot
         fanart = 'https://s31.postimg.org/dousrbu9n/qserie.png'
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="temporadas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, extra=idioma))
+        itemlist.append( Item(channel=item.channel, action="temporadas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, extra=idioma, contentSerieName = scrapedtitle, extra1 =''))
     
 #Paginacion
     siguiente=''
@@ -89,24 +89,38 @@ def todas(item):
 def temporadas(item):
     logger.info("pelisalacarta.channels.qserie temporadas")
     itemlist = []
+    templist =[]
     data = scrapertools.cache_page(item.url)
     url_base= item.url
     patron = '<a href="javascript:.*?;" class="lccn"><b>([^<]+)<\/b><\/a>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     temp=1
     if matches:
-	for scrapedtitle in matches:
-	   url = url_base
-	   title = scrapedtitle
-	   thumbnail = item.thumbnail
-	   plot = item.plot
-	   fanart = scrapertools.find_single_match(data,'<img src="([^"]+)"/>.*?</a>')
-	   if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-	   itemlist.append( Item(channel=item.channel, action="episodios" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart, temp=str(temp)))
-           temp = temp+1 
-        return itemlist
+        for scrapedtitle in matches:
+           url = url_base
+           title = scrapedtitle
+           thumbnail = item.thumbnail
+           plot = item.plot
+           fanart = scrapertools.find_single_match(data,'<img src="([^"]+)"/>.*?</a>')
+           if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
+           itemlist.append( Item(channel=item.channel, action="episodios" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart, temp=str(temp), contentSerieName =item.contentSerieName, extra1 = item.extra1, extra2=item.extra2))
+           temp = temp+1
+        if item.extra == 'temporadas':
+            for tempitem in itemlist:
+              templist += episodios(tempitem)
+       
+        if config.get_library_support() and len(itemlist) > 0:
+            itemlist.append(Item(channel=item.channel, title='[COLOR yellow]Añadir esta serie a la biblioteca[/COLOR]', url=item.url,
+                             action="add_serie_to_library", extra="temporadas", contentSerieName=item.contentSerieName, extra1 = item.extra1, extra2='todos'))
+        if item.extra == 'temporadas':
+            item.extra2='todos'
+            return templist
+        else:
+            return itemlist
     else:
        item.title =''
+       item.extra1 = 'unico'
+       if item.extra == 'temporadas': item.extra2 = 'todos'
        return episodios(item)
        
 
@@ -116,22 +130,31 @@ def episodios(item):
     itemlist = []
     data = scrapertools.cache_page(item.url)
     if item.title=='':
+        item.title = 'Temporada 1'
         patron ='<li><a href="([^"]+)" class="lcc"><b>([^<]+)<\/b>.*?<\/a><\/li>' 
     else: 
         patron = '<li><a href="([^"]+)" class="lcc"><b>([^<]+)<\/b> - Temp\. '+item.temp+'<\/a><\/li>'
 #    title = str(item.index(item.title))  
     matches = re.compile(patron,re.DOTALL).findall(data)
-
+    
     for scrapedurl,scrapedtitle in matches:
-	url = urlparse.urljoin(item.url,scrapedurl)
-	title = item.title+' '+scrapedtitle
-	thumbnail = item.thumbnail
-	plot = item.plot
-	fanart=item.fanart
-	if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-	itemlist.append( Item(channel=item.channel, action="findvideos" , title=title, fulltitle=item.fulltitle, url=url, thumbnail=item.thumbnail, plot=plot))
-        
+        url = urlparse.urljoin(item.url,scrapedurl)
+        capitulo = re.findall(r'\d+',scrapedtitle)
+        title = item.title+'x'+capitulo[0]
+#        title = item.extra+item.extra2
+        thumbnail = item.thumbnail
+        plot = item.plot
+        fanart=item.fanart
+        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title, fulltitle=item.fulltitle, url=url, thumbnail=item.thumbnail, plot=plot, extra = item.extra, extra1 =item.extra1, extra2=item.extra2))
+    if item.extra1 == 'unico':
+        if config.get_library_support() and len(itemlist) > 0:
+                itemlist.append(Item(channel=item.channel, title='[COLOR yellow]Añadir esta serie a la biblioteca[/COLOR]', url=item.url,
+                             action="add_serie_to_library", extra="temporadas", contentSerieName=item.contentSerieName, extra1 =item.extra1, extra2 = item.extra2))
+    
+    
     return itemlist
+    
 
 
 
@@ -194,11 +217,13 @@ def ultimas(item):
         thumbnail= scrapertools.get_match(data,'<link rel="image_src" href="([^"]+)"/>')
         realplot = scrapertools.find_single_match(data, '<p itemprop="articleBody">([^<]+)<\/p> ')
         plot = scrapertools.remove_htmltags(realplot)
+        inutil = re.findall(r' Temporada \d', scrapedtitle)
         title = scrapedtitle
         title = scrapertools.decodeHtmlentities(title)
+        realtitle = scrapedtitle.replace(inutil[0],'')
         fanart = 'https://s31.postimg.org/3ua9kwg23/ultimas.png'
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="temporadas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart))
+        itemlist.append( Item(channel=item.channel, action="temporadas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, contentSerieName = realtitle))
 
     return itemlist
 
@@ -270,7 +295,7 @@ def lasmas(item):
            fanart = ''  
    
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action=action, title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart))
+        itemlist.append( Item(channel=item.channel, action=action, title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, contentSerieName = scrapedtitle))
 
     return itemlist
     
@@ -296,16 +321,17 @@ def findvideos(item):
        videoitem.fanart =item.fanart
 #       videoitem.thumbnail = servertools.guess_server_thumbnail(videoite.server)
        videoitem.title = titulo+" "+videoitem.server
+#       videoitem.title = item.extra2
+    if item.extra2 != 'todos':
+       data = scrapertools.cache_page(anterior)
+       existe = scrapertools.find_single_match(data,'<center>La pel.cula que quieres ver no existe.</center>')
+       if not existe:
+           itemlist.append( Item(channel=item.channel, action="findvideos" , title='Capitulo Anterior' , url=anterior, thumbnail='https://s31.postimg.org/k5kpwyrgb/anterior.png', folder =True ))
     
-    data = scrapertools.cache_page(anterior)
-    existe = scrapertools.find_single_match(data,'<center>La pel.cula que quieres ver no existe.</center>')
-    if not existe:
-        itemlist.append( Item(channel=item.channel, action="findvideos" , title='Capitulo Anterior' , url=anterior, thumbnail='https://s31.postimg.org/k5kpwyrgb/anterior.png', folder ="true" ))
-    
-    data = scrapertools.cache_page(siguiente)
-    existe = scrapertools.find_single_match(data,'<center>La pel.cula que quieres ver no existe.</center>')
-    if  not existe:
-        itemlist.append( Item(channel=item.channel, action="findvideos" , title='Capitulo Siguiente' , url=siguiente, thumbnail='https://s32.postimg.org/4zppxf5j9/siguiente.png', folder ="true" ))
+       data = scrapertools.cache_page(siguiente)
+       existe = scrapertools.find_single_match(data,'<center>La pel.cula que quieres ver no existe.</center>')
+       if  not existe:
+           itemlist.append( Item(channel=item.channel, action="findvideos" , title='Capitulo Siguiente' , url=siguiente, thumbnail='https://s32.postimg.org/4zppxf5j9/siguiente.png', folder =True ))
         
     return itemlist    
     

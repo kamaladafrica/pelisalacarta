@@ -108,7 +108,7 @@ def peliculas(item):
     itemlist = []
     data = scrapertools.cache_page(item.url)
    
-    patron = '<div class="home_post_cont.*? post_box">.*?<a href="([^"]+)".*?src="([^"]+)".*?title="([^"]+)".*?p&gt;([^&]+)'
+    patron = '<div class="home_post_cont.*? post_box"> <a href="([^"]+)".*?src="([^"]+)".*?title="([^"]+)".*?p&gt;([^&]+)&lt;'
     matches = re.compile(patron,re.DOTALL).findall(data)
 
     for scrapedurl,scrapedthumbnail,scrapedtitle,scrapedplot in matches:
@@ -117,7 +117,7 @@ def peliculas(item):
         thumbnail = scrapedthumbnail
         plot = scrapedplot
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart='https://s31.postimg.org/puxmvsi7v/cinecalidad.png'))
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart='https://s31.postimg.org/puxmvsi7v/cinecalidad.png', contentTitle = title))
     
     try:     
         patron  = "<link rel='next' href='([^']+)' />" 
@@ -151,7 +151,7 @@ def findvideos(item):
     for scrapedurl,scrapedtitle in matches:
         if dec(scrapedurl) in servidor: 
            url = dec(scrapedurl)+dec(scrapedtitle)
-           title = "Ver "+item.title+" en "+servidor[dec(scrapedurl)].upper()
+           title = "Ver "+item.contentTitle+" en "+servidor[dec(scrapedurl)].upper()
            if (servidor[dec(scrapedurl)]) in recomendados:
               title=title+"[COLOR limegreen] [I] (Recomedado) [/I] [/COLOR]"
 #           if (servidor[dec(scrapedurl)])=='pcloud':
@@ -161,24 +161,16 @@ def findvideos(item):
            plot = ""
            if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
            itemlist.append( Item(channel=item.channel, action="play" , title=title ,fulltitle = item.title, url=url, thumbnail=thumbnail, plot=plot,extra=item.thumbnail, server=servidor[dec(scrapedurl)]))
+    
+    if config.get_library_support() and len(itemlist) > 0 and item.extra !='findvideos' :
+        itemlist.append(Item(channel=item.channel, title='[COLOR yellow]Añadir esta pelicula a la biblioteca[/COLOR]', url=item.url,
+                             action="add_pelicula_to_library", extra="findvideos", contentTitle = item.contentTitle))
     return itemlist
 
 def play(item):
     
     logger.info("pelisalacarta.channels.cinecalidad play url="+item.url)
     itemlist = servertools.find_video_items(data=item.url)
-
-#    if "pcloud.com/" in item.url:
-#      data = scrapertools.cache_page(item.url)
-#      # logger.info("data-- {0}".format(data))
-#      url = scrapertools.find_single_match(data, '"downloadlink": "([^"]+)"')
-#      url = url.replace("\\","")
-#      if url != '':
-#         itemlist.append(Item(channel=item.channel, title=item.fulltitle, url=url, server="directo", action="play",thumbnail=item.extra, fulltitle=item.fulltitle))
-#    
-#    else:
-#      logger.info("pelisalacarta.channels.cinecalidad play url="+item.url)
-#      itemlist = servertools.find_video_items(data=item.url)
             
     for videoitem in itemlist:
         videoitem.title = item.fulltitle
