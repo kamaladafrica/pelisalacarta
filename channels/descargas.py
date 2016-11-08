@@ -258,12 +258,12 @@ def move_to_libray(item):
       logger.error("No se ha encontrado el archivo: %s" % origen)
     
     if filetools.isfile(destino):
-      if item.contentType == "movie":
+      if item.contentType == "movie" and item.infoLabels["tmdb_id"]:
         library_item = Item(title="Descargado: %s" % item.downloadFilename, channel= "descargas", action="findvideos", infoLabels=item.infoLabels, url=destino)
         
         library.save_library_movie(library_item)
         
-      elif item.contentType == "episode":
+      elif item.contentType == "episode" and item.infoLabels["tmdb_id"]:
         library_item = Item(title="Descargado: %s" % item.downloadFilename, channel= "descargas", action="findvideos", infoLabels=item.infoLabels, url=destino)
         
         tvshow = Item(channel= "descargas", contentType="tvshow", infoLabels = {"tmdb_id": item.infoLabels["tmdb_id"]})
@@ -645,11 +645,12 @@ def get_episodes(item):
             episode.contentEpisodeNumber = season_and_episode.split("x")[1]
           
         #Buscamos en tmdb
-        tmdb.find_and_set_infoLabels_tmdb(episode)
+        if item.infoLabels["tmdb_id"]:
+          tmdb.find_and_set_infoLabels_tmdb(episode)
                 
         #Episodio, Temporada y Titulo
         if not episode.contentTitle:
-          episode.contentTitle = episode.title
+          episode.contentTitle = re.sub("\[[^\]]+\]|\([^\)]+\)|\d*x\d*\s*-","",episode.title).strip()
           
         episode.downloadFilename = os.path.join(item.downloadFilename,"%dx%0.2d - %s" % (episode.contentSeason, episode.contentEpisodeNumber, episode.contentTitle.strip()))
         
