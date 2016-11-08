@@ -310,6 +310,12 @@ class RenumberWindow(xbmcgui.WindowDialog):
 
     def __init__(self, *args, **kwargs):
         logger.debug()
+
+        if xbmcgui.__version__ == "1.2":
+            self.setCoordinateResolution(1)
+        else:
+            self.setCoordinateResolution(5)
+
         self.show = kwargs.get("show")
         self.channel = kwargs.get("channel")
         self.data = kwargs.get("data")
@@ -335,14 +341,14 @@ class RenumberWindow(xbmcgui.WindowDialog):
                                                                            'DialogCloseButton.png'))
         self.addControl(self.btn_close)
 
-        controls_bg = xbmcgui.ControlImage(260, 150, 745, 327,
-                                           os.path.join(self.mediapath, 'Windows', 'BackControls.png'))
-        self.addControl(controls_bg)
+        self.controls_bg = xbmcgui.ControlImage(260, 150, 745, 327,
+                                                os.path.join(self.mediapath, 'Windows', 'BackControls.png'))
+        self.addControl(self.controls_bg)
 
         scroll_bg = xbmcgui.ControlImage(1015, 150, 10, 327, os.path.join(self.mediapath, 'Controls', 'ScrollBack.png'))
         self.addControl(scroll_bg)
 
-        scroll2_bg = xbmcgui.ControlImage(1015, 150, 10, 387, os.path.join(self.mediapath, 'Controls', 'ScrollBar.png'))
+        scroll2_bg = xbmcgui.ControlImage(1015, 150, 10, 327, os.path.join(self.mediapath, 'Controls', 'ScrollBar.png'))
         self.addControl(scroll2_bg)
 
         self.btn_ok = xbmcgui.ControlButton(408, 550, 120, 30, 'OK', font=self.font,
@@ -403,52 +409,54 @@ class RenumberWindow(xbmcgui.WindowDialog):
                                          os.path.join(self.mediapath, 'Controls', 'ScrollBack.png'))
         self.addControl(window_bg)
 
-
         # self.setFocus(self.btn_informacion)
         self.onInit()
+        self.doModal()
 
     def onInit(self, *args, **kwargs):
         if kwargs.get("data"):
             self.data = kwargs.get("data")
-        logger.debug("mojonazo2")
-        logger.debug("data %s" % self.data)
         try:
 
             # listado temporada / episodios
-            pos_inicial_y = 160
-            pos_y = pos_inicial_y
+            pos_y = self.controls_bg.getY() + 10
 
             # cambiamos el orden para que se vea en orden ascendente
             self.data.sort(key=lambda el: int(el[0]), reverse=False)
 
             for e in self.data:
-                label_season = xbmcgui.ControlLabel(250, pos_y + 3, 150, 34, "Temporada:", font="font12_title",
-                                                    textColor="0xFFFFA500",
-                                                    alignment=2)
+                label_season_w = 100
+                pos_x = self.controls_bg.getX() + 15
+                label_season = xbmcgui.ControlLabel(pos_x, pos_y + 3, label_season_w, 34,
+                                                    "Temporada:", font="font12", textColor="0xFF2E64FE")
                 self.addControl(label_season)
 
-                text_season = xbmcgui.ControlTextBox(380, pos_y + 3, 100, 34, font="font12_title")
+                pos_x += label_season_w + 5
+                text_season_w = 20
+                text_season = xbmcgui.ControlTextBox(pos_x, pos_y + 3, text_season_w, 34, font="font12_title")
                 self.addControl(text_season)
                 text_season.setText(str(e[0]))
 
-                label_episode = xbmcgui.ControlLabel(400, pos_y + 3, 150, 34, "Episodios:", font="font12_title",
-                                                     textColor="0xFFFFA500",
-                                                     alignment=2)
+                label_episode_w = 90
+                pos_x += text_season_w + 25
+                label_episode = xbmcgui.ControlLabel(pos_x, pos_y + 3, label_episode_w, 34, "Episodios:", font="font12",
+                                                     textColor="0xFF2E64FE", alignment=2)
                 self.addControl(label_episode)
 
-                text_episode = xbmcgui.ControlTextBox(520, pos_y + 3, 700, 34, font="font12_title")
+                pos_x += label_episode_w + 5
+                text_episode = xbmcgui.ControlTextBox(pos_x, pos_y + 3, 700, 34, font="font12_title")
                 self.addControl(text_episode)
                 text_episode.setText(str(e[1]))
 
-                btn_eliminar = xbmcgui.ControlButton(870, pos_y, 120, 30, 'Eliminar', font=self.font,
+                btn_delete_season = xbmcgui.ControlButton(870, pos_y, 120, 30, 'Eliminar', font=self.font,
                                                      focusTexture=os.path.join(self.mediapath, 'Controls',
                                                                                'KeyboardKey.png'),
                                                      noFocusTexture=os.path.join(self.mediapath, 'Controls',
                                                                                  'KeyboardKeyNF.png'), alignment=4 | 2)
-                self.addControl(btn_eliminar)
+                self.addControl(btn_delete_season)
 
-                window_bg = xbmcgui.ControlImage(270, pos_y + 40, 725, 2,
-                                                 os.path.join(self.mediapath, 'Controls', 'ScrollBack.png'))
+                window_bg = xbmcgui.ControlImage(self.controls_bg.getX() + 10, pos_y + 40, self.controls_bg.getWidth() -
+                                                 20, 2, os.path.join(self.mediapath, 'Controls', 'ScrollBack.png'))
                 self.addControl(window_bg)
 
                 pos_y += 50
@@ -458,7 +466,7 @@ class RenumberWindow(xbmcgui.WindowDialog):
         except Exception, Ex:
             logger.error("HA HABIDO UNA HOSTIA %s" % Ex)
             pass
-        self.doModal()
+        # self.doModal()
         pass
 
     def onClick(self, control_id):
@@ -470,7 +478,7 @@ class RenumberWindow(xbmcgui.WindowDialog):
         pass
 
     def onControl(self, control):
-        logger.debug("mierda control: %s" % control.getId())
+        logger.debug("%s" % control.getId())
         control_id = control.getId()
 
         if control_id == self.ID_BUTTON_OK:
@@ -490,7 +498,7 @@ class RenumberWindow(xbmcgui.WindowDialog):
             self.method_info()
 
     def onAction(self, action):
-        logger.debug("action %s" % action.getId())
+        logger.debug("%s" % action.getId())
 
         # Obtenemos el foco
         focus = self.getFocusId()
