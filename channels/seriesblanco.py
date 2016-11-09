@@ -24,14 +24,6 @@ HOST = "http://seriesblanco.com/"
 IDIOMAS = {'es': 'Español', 'en': 'Inglés', 'la': 'Latino', 'vo': 'VO', 'vos': 'VOS', 'vosi': 'VOSI', 'otro': 'OVOS'}
 list_idiomas = [v for v in IDIOMAS.values()]
 CALIDADES = ['SD', 'HDiTunes', 'Micro-HD-720p', 'Micro-HD-1080p', '1080p', '720p']
-
-'''
-configuración para mostrar la opción de filtro, actualmente sólo se permite en xbmc, se cambiará cuando
-'platformtools.show_channel_settings' esté disponible para las distintas plataformas
-'''
-OPCION_FILTRO = config.is_xbmc()
-CONTEXT = ("", "menu_filtro")[OPCION_FILTRO]
-DEBUG = config.get_setting("debug")
 CHANNEL_HOST = 'http://seriesblanco.com'
 CHANNEL_HEADERS = [
     ['User-Agent', 'Mozilla/5.0'],
@@ -42,7 +34,7 @@ CHANNEL_HEADERS = [
 
 
 def mainlist(item):
-    logger.info("pelisalacarta.seriesblanco mainlist")
+    logger.info()
 
     thumb_series = get_thumbnail("thumb_canales_series.png")
     thumb_series_az = get_thumbnail("thumb_canales_series_az.png")
@@ -55,20 +47,14 @@ def mainlist(item):
                          url=urlparse.urljoin(HOST, "lista_series/"), thumbnail=thumb_series))
     itemlist.append(Item(channel=item.channel, title="Buscar...", action="search", url=HOST, thumbnail=thumb_buscar))
 
-    if OPCION_FILTRO:
-        itemlist.append(Item(channel=item.channel, title="[COLOR yellow]Configurar filtro para series...[/COLOR]",
-                             action="open_filtertools"))
+    if filtertools.context:
+        itemlist = filtertools.show_option(itemlist, item.channel, list_idiomas, CALIDADES)
 
     return itemlist
 
 
-def open_filtertools(item):
-
-    return filtertools.mainlist_filter(channel=item.channel, list_idiomas=list_idiomas, list_calidad=CALIDADES)
-
-
 def series_listado_alfabetico(item):
-    logger.info("pelisalacarta.seriesblanco series_listado_alfabetico")
+    logger.info()
 
     itemlist = []
 
@@ -86,7 +72,7 @@ def series_por_letra(item):
 
 
 def search(item, texto):
-    logger.info("[pelisalacarta.seriesblanco search texto={0}".format(texto))
+    logger.info("texto={0}".format(texto))
 
     itemlist = []
 
@@ -119,7 +105,7 @@ def search(item, texto):
     for scrapedthumb, scrapedurl, scrapedtitle in matches:
         itemlist.append(Item(channel=item.channel, title=scrapedtitle.strip(), url=urlparse.urljoin(HOST, scrapedurl),
                              action="episodios", show=scrapedtitle.strip(), thumbnail=scrapedthumb,
-                             list_idiomas=list_idiomas, list_calidad=CALIDADES, context=CONTEXT))
+                             list_idiomas=list_idiomas, list_calidad=CALIDADES, context=filtertools.context))
 
     try:
         return itemlist
@@ -132,7 +118,7 @@ def search(item, texto):
 
 
 def series(item):
-    logger.info("pelisalacarta.seriesblanco series")
+    logger.info()
 
     itemlist = []
 
@@ -151,13 +137,13 @@ def series(item):
     for scrapedurl, scrapedtitle in matches:
         itemlist.append(Item(channel=item.channel, title=scrapedtitle.strip(), url=urlparse.urljoin(HOST, scrapedurl),
                              action="episodios", show=scrapedtitle.strip(), thumbnail=thumbnail,
-                             list_idiomas=list_idiomas, list_calidad=CALIDADES, context=CONTEXT))
+                             list_idiomas=list_idiomas, list_calidad=CALIDADES, context=filtertools.context))
 
     return itemlist
 
 
 def episodios(item):
-    logger.info("pelisalacarta.seriesblanco episodios")
+    logger.info()
 
     itemlist = []
 
@@ -207,15 +193,15 @@ def episodios(item):
         title = item.show + " - " + scrapedtitle + idioma
         itemlist.append(Item(channel=item.channel, title=title, url=urlparse.urljoin(HOST, scrapedurl),
                              action="findvideos", show=item.show, thumbnail=thumbnail, plot=plot, language=idioma,
-                             list_idiomas=list_idiomas, list_calidad=CALIDADES, context=CONTEXT))
+                             list_idiomas=list_idiomas, list_calidad=CALIDADES, context=filtertools.context))
 
     if len(itemlist) == 0 and "<title>404 Not Found</title>" in data:
         itemlist.append(Item(channel=item.channel, title="la url '" + item.url +
-                                                        "' parece no estar disponible en la web. Iténtalo más tarde.",
+                                                         "' parece no estar disponible en la web. Iténtalo más tarde.",
                              url=item.url, action="series"))
 
-    if len(itemlist) > 0 and OPCION_FILTRO:
-        itemlist = filtertools.get_filtered_links(itemlist, item.channel)
+    if len(itemlist) > 0 and filtertools.context:
+        itemlist = filtertools.get_links(itemlist, item.channel)
 
     # Opción "Añadir esta serie a la biblioteca de XBMC"
     if config.get_library_support() and len(itemlist) > 0:
@@ -251,10 +237,11 @@ def parseVideos(item, typeStr, data):
             itemlist.append(Item(channel=item.channel, title=title, url=urlparse.urljoin(HOST, vFields.get("link")),
                                  action="play", show=item.show, language=IDIOMAS.get(vFields.get("language"), "OVOS"),
                                  quality=quality, list_idiomas=list_idiomas, list_calidad=CALIDADES,
-                                 fulltitle=item.title, context=CONTEXT+"|guardar_filtro"))
+                                 fulltitle=item.title, context=filtertools.context))
+            # context=filtertools.context+"|guardar_filtro"))
 
-        if len(itemlist) > 0 and OPCION_FILTRO:
-            itemlist = filtertools.get_filtered_links(itemlist, item.channel)
+        if len(itemlist) > 0 and filtertools.context:
+            itemlist = filtertools.get_links(itemlist, item.channel)
 
         if len(itemlist) > 0:
             return itemlist
@@ -271,15 +258,15 @@ def extractVideosSection(data):
 
     row = len(result) - 2
     if result[row][1]:
-      idx = 1
+        idx = 1
     else:
-      idx = 0
+        idx = 0
 
     return [result[row][idx], result[row + 1][idx]]
 
 
 def findvideos(item):
-    logger.info("pelisalacarta.seriesblanco findvideos")
+    logger.info()
 
     # Descarga la página
     data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_HEADERS, host=CHANNEL_HOST)
@@ -289,7 +276,7 @@ def findvideos(item):
 
 
 def play(item):
-    logger.info("pelisalacarta.channels.seriesblanco play url={0}".format(item.url))
+    logger.info("play url={0}".format(item.url))
 
     if item.url.startswith(HOST):
         data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_HEADERS, host=CHANNEL_HOST)

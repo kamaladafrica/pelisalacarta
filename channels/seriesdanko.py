@@ -21,17 +21,11 @@ IDIOMAS = {'es': 'Español', 'la': 'Latino', 'vos': 'VOS', 'vo': 'VO'}
 list_idiomas = [v for v in IDIOMAS.values()]
 CALIDADES = ['SD', 'MicroHD', 'HD/MKV']
 
-'''
-configuración para mostrar la opción de filtro, actualmente sólo se permite en xbmc, se cambiará cuando
-'platformtools.show_channel_settings' esté disponible para las distintas plataformas
-'''
-OPCION_FILTRO = config.is_xbmc()
-CONTEXT = ("", "menu_filtro")[OPCION_FILTRO]
 DEBUG = config.get_setting("debug")
 
 
 def mainlist(item):
-    logger.info("pelisalacarta.seriesdanko mainlist")
+    logger.info()
 
     itemlist = list()
     itemlist.append(Item(channel=item.channel, title="Novedades", action="novedades", url=HOST))
@@ -40,20 +34,14 @@ def mainlist(item):
     itemlist.append(Item(channel=item.channel, title="Todas las series", action="listado_completo", url=HOST))
     itemlist.append(Item(channel=item.channel, title="Buscar...", action="search", url=HOST))
 
-    if OPCION_FILTRO:
-        itemlist.append(Item(channel=item.channel, title="[COLOR yellow]Configurar filtro para series...[/COLOR]",
-                             action="open_filtertools"))
+    if filtertools.context:
+        itemlist = filtertools.show_option(itemlist, item.channel, list_idiomas, CALIDADES)
 
     return itemlist
 
 
-def open_filtertools(item):
-
-    return filtertools.mainlist_filter(channel=item.channel, list_idiomas=list_idiomas, list_calidad=CALIDADES)
-
-
 def novedades(item):
-    logger.info("pelisalacarta.seriesdanko novedades")
+    logger.info()
 
     itemlist = list()
 
@@ -78,7 +66,7 @@ def novedades(item):
 
 
 def mas_vistas(item):
-    logger.info("pelisalacarta.seriesdanko mas_vistas")
+    logger.info()
 
     data = scrapertools.cache_page(item.url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
@@ -91,7 +79,7 @@ def mas_vistas(item):
 
 
 def listado_completo(item):
-    logger.info("pelisalacarta.seriesdanko listado_completo")
+    logger.info()
 
     data = scrapertools.cache_page(item.url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
@@ -103,7 +91,7 @@ def listado_completo(item):
 
 
 def series_seccion(item, data):
-    logger.info("pelisalacarta.seriesdanko series_seccion")
+    logger.info()
 
     itemlist = []
     patron = "<a href='([^']+)'.*?>(.*?)</a>"
@@ -116,7 +104,7 @@ def series_seccion(item, data):
 
 
 def listado_alfabetico(item):
-    logger.info("pelisalacarta.seriesdanko listado_alfabetico")
+    logger.info()
 
     itemlist = []
 
@@ -133,7 +121,7 @@ def series_por_letra(item):
 
 
 def search(item, texto):
-    logger.info("[pelisalacarta.seriesdanko search texto={0}".format(texto))
+    logger.info("texto={0}".format(texto))
 
     if texto != "":
         item.url = urlparse.urljoin(HOST, "/pag_search.php?q1={0}".format(texto))
@@ -149,7 +137,7 @@ def search(item, texto):
 
 
 def series(item):
-    logger.info("pelisalacarta.seriesdanko series")
+    logger.info()
 
     itemlist = []
 
@@ -164,15 +152,15 @@ def series(item):
         patron = "^(?:Capitulos de: )(.*?)$"
         match = re.compile(patron, re.DOTALL).findall(scrapedtitle)
         title = scrapertools.decodeHtmlentities(match[0])
-        itemlist.append(Item(channel=item.channel, title=title, url=urlparse.urljoin(HOST, scrapedurl.replace("..", "")),
-                             action="episodios", show=title.strip(), thumbnail=scrapedthumb, plot="",
-                             list_idiomas=list_idiomas, list_calidad=CALIDADES, context=CONTEXT))
+        itemlist.append(Item(channel=item.channel, title=title, action="episodios", plot="", show=title.strip(),
+                             url=urlparse.urljoin(HOST, scrapedurl.replace("..", "")), thumbnail=scrapedthumb,
+                             list_idiomas=list_idiomas, list_calidad=CALIDADES, context=filtertools.context))
 
     return itemlist
 
 
 def episodios(item):
-    logger.info("pelisalacarta.seriesdanko episodios")
+    logger.info()
 
     itemlist = []
 
@@ -202,10 +190,10 @@ def episodios(item):
 
         itemlist.append(Item(channel=item.channel, title=title, url=urlparse.urljoin(HOST, scrapedurl),
                              action="findvideos", show=item.show, thumbnail=thumbnail, plot="", language=idioma,
-                             list_idiomas=list_idiomas, list_calidad=CALIDADES, context=CONTEXT))
+                             list_idiomas=list_idiomas, list_calidad=CALIDADES, context=filtertools.context))
 
-    if len(itemlist) > 0 and OPCION_FILTRO:
-            itemlist = filtertools.get_filtered_links(itemlist, item.channel)
+    if len(itemlist) > 0 and filtertools.context:
+            itemlist = filtertools.get_links(itemlist, item.channel)
 
     # Opción "Añadir esta serie a la biblioteca de XBMC"
     if config.get_library_support() and len(itemlist) > 0:
@@ -216,7 +204,7 @@ def episodios(item):
 
 
 def findvideos(item):
-    logger.info("pelisalacarta.seriesdanko findvideos")
+    logger.info()
 
     data = scrapertools.cache_page(item.url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
@@ -229,7 +217,7 @@ def findvideos(item):
 
 
 def parse_videos(item, tipo, data):
-    logger.info("pelisalacarta.seriesdanko parse_videos")
+    logger.info()
 
     itemlist = []
 
@@ -247,17 +235,18 @@ def parse_videos(item, tipo, data):
 
         itemlist.append(Item(channel=item.channel, title=title, url=urlparse.urljoin(HOST, link), action="play",
                              show=item.show, language=IDIOMAS.get(language, "OVOS"), quality=quality,
-                             list_idiomas=list_idiomas, list_calidad=CALIDADES, context=CONTEXT+"|guardar_filtro",
-                             fulltitle=item.title))
+                             list_idiomas=list_idiomas, list_calidad=CALIDADES, fulltitle=item.title,
+                             context=filtertools.context))
+        # context=CONTEXT+"|guardar_filtro"))
 
-    if len(itemlist) > 0 and OPCION_FILTRO:
-        itemlist = filtertools.get_filtered_links(itemlist, item.channel)
+    if len(itemlist) > 0 and filtertools.context:
+        itemlist = filtertools.get_links(itemlist, item.channel)
 
     return itemlist
 
 
 def play(item):
-    logger.info("pelisalacarta.seriesdanko play url={0}".format(item.url))
+    logger.info("play url={0}".format(item.url))
 
     data = scrapertools.cache_page(item.url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)

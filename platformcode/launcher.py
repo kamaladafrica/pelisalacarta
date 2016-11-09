@@ -229,7 +229,10 @@ def run():
 
             # Special action for downloading all episodes from a serie
             elif item.action == "download_all_episodes":
-                downloadtools.download_all_episodes(item, channel)
+                from channels import descargas
+                item.action = item.extra
+                del item.extra
+                descargas.save_download(item)
 
             # Special action for searching, first asks for the words then call the "search" function
             elif item.action == "search":

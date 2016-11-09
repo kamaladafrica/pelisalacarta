@@ -51,16 +51,54 @@ class Filter:
         self.language = dict_filter[TAG_LANGUAGE]
         self.quality_not_allowed = dict_filter[TAG_QUALITY_NOT_ALLOWED]
 
-# TODO mejorar tema de colores
-# TODO mejorar logger
-# TODO meter try/catch
 # TODO echar un ojo a https://pyformat.info/, se puede formatear el estilo y hacer referencias directamente a elementos
 
 __channel__ = "filtertools"
-DEBUG = config.get_setting("debug")
 
 
-def get_filtered_links(list_item, channel):
+def context():
+    _context = ""
+    '''
+    configuración para mostrar la opción de filtro, actualmente sólo se permite en xbmc, se cambiará cuando
+    'platformtools.show_channel_settings' esté disponible para las distintas plataformas
+    '''
+    if config.is_xbmc():
+        _context = [{"title": "Menu Filtro",
+                     "action": "config_item",
+                     "channel": "filtertools"}]
+
+    # elif command == "guardar_filtro":
+    # context_commands.append(("Guardar Filtro Serie", "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], item.clone(
+    #     channel="filtertools",
+    #     action="save_filter",
+    #     from_channel=item.channel
+    # ).tourl())))
+    #
+    # elif command == "borrar_filtro":
+    #     context_commands.append(("Eliminar Filtro", "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], item.clone(
+    #         channel="filtertools",
+    #         action="del_filter",
+    #         from_channel=item.channel
+    #     ).tourl())))
+
+    return _context
+
+context = context()
+
+
+def show_option(itemlist, channel, list_idiomas, list_calidad):
+    itemlist.append(Item(channel=__channel__, title="[COLOR yellow]Configurar filtro para series...[/COLOR]",
+                         action="load", list_idiomas=list_idiomas, list_calidad=list_calidad,
+                         from_channel=channel))
+
+    return itemlist
+
+
+def load(item):
+    return mainlist(channel=item.from_channel, list_idiomas=item.list_idiomas, list_calidad=item.list_calidad)
+
+
+def get_links(list_item, channel):
     """
     Devuelve una lista de enlaces filtrados.
 
@@ -71,23 +109,22 @@ def get_filtered_links(list_item, channel):
     :return: lista de Item
     :rtype: list[Item]
     """
-    logger.info("[filtertools.py] get_filtered_links")
+    logger.info()
 
-    if DEBUG:
-        logger.info("total de items : {0}".format(len(list_item)))
+    logger.debug("total de items : {0}".format(len(list_item)))
 
     new_itemlist = []
     quality_count = 0
     language_count = 0
     _filter = None
 
-    dict_filtered_shows = get_filtered_tvshows(channel)
+    dict_filtered_shows = get_tvshows(channel)
     tvshow = list_item[0].show.lower().strip()
     if tvshow in dict_filtered_shows.keys():
         _filter = Filter(dict_filtered_shows[tvshow])
 
     if _filter and _filter.active:
-        logger.info("filter datos: {0}".format(_filter))
+        logger.debug("filter datos: {0}".format(_filter))
 
         for item in list_item:
 
@@ -121,16 +158,13 @@ def get_filtered_links(list_item, channel):
             if is_language_valid and is_quality_valid:
                 new_item = item.clone(channel=channel)
                 new_itemlist.append(new_item)
-                logger.info("{0} | context: {1}".format(item.title, item.context))
-                # TODO mirar el context para cambiarlo por como dice super_berny
-                if DEBUG:
-                    logger.info(" -Enlace añadido")
+                logger.debug("{0} | context: {1}".format(item.title, item.context))
+                logger.debug(" -Enlace añadido")
 
-            if DEBUG:
-                logger.info(" idioma valido?: {0}, item.language: {1}, filter.language: {2}"
-                            .format(is_language_valid, item.language, _filter.language))
-                logger.info(" calidad valida?: {0}, item.quality: {1}, filter.quality_not_allowed: {2}"
-                            .format(is_quality_valid, quality, _filter.quality_not_allowed))
+            logger.debug(" idioma valido?: {0}, item.language: {1}, filter.language: {2}"
+                         .format(is_language_valid, item.language, _filter.language))
+            logger.debug(" calidad valida?: {0}, item.quality: {1}, filter.quality_not_allowed: {2}"
+                         .format(is_quality_valid, quality, _filter.quality_not_allowed))
 
         logger.info("ITEMS FILTRADOS: {0}/{1}, idioma[{2}]:{3}, calidad_no_permitida{4}:{5}"
                     .format(len(new_itemlist), len(list_item), _filter.language, language_count,
@@ -162,7 +196,7 @@ def no_filter(item):
     :return: liasta de enlaces
     :rtype: list[Item]
     """
-    logger.info("[filtertools.py] no_filter")
+    logger.info()
 
     lista = []
     for i in item.lista:
@@ -171,7 +205,7 @@ def no_filter(item):
     return lista
 
 
-def get_filtered_tvshows(from_channel):
+def get_tvshows(from_channel):
     """
     Obtiene las series filtradas de un canal
 
@@ -180,7 +214,7 @@ def get_filtered_tvshows(from_channel):
     :return: dict con las series
     :rtype: dict
     """
-    logger.info("[filtertools.py] get_filtered_tvshows")
+    logger.info()
     dict_series = {}
     name_file = from_channel
 
@@ -197,8 +231,7 @@ def get_filtered_tvshows(from_channel):
     if TAG_TVSHOW_FILTER in dict_data:
         dict_series = dict_data[TAG_TVSHOW_FILTER]
 
-    if DEBUG:
-        logger.info("json_series: {0}".format(dict_series))
+    logger.debug("json_series: {0}".format(dict_series))
 
     return dict_series
 
@@ -215,24 +248,24 @@ def check_json_file(data, fname, dict_data):
     :param dict_data: nombre del diccionario
     :type dict_data: dict
     """
-    logger.info("[filtertools.py] check_json_file")
+    logger.info()
     if not dict_data:
-        logger.info("Error al cargar el json del fichero {0}".format(fname))
+        logger.error("Error al cargar el json del fichero {0}".format(fname))
 
         if data != "":
             # se crea un nuevo fichero
             title = filetools.write("{0}.bk".format(fname), data)
             if title != "":
-                logger.info("Ha habido un error al guardar el fichero: {0}.bk"
-                            .format(fname))
+                logger.error("Ha habido un error al guardar el fichero: {0}.bk"
+                             .format(fname))
             else:
-                logger.info("Se ha guardado una copia con el nombre: {0}.bk"
-                            .format(fname))
+                logger.debug("Se ha guardado una copia con el nombre: {0}.bk"
+                             .format(fname))
         else:
-            logger.info("Está vacío el fichero: {0}".format(fname))
+            logger.debug("Está vacío el fichero: {0}".format(fname))
 
 
-def mainlist_filter(channel, list_idiomas, list_calidad):
+def mainlist(channel, list_idiomas, list_calidad):
     """
     Muestra una lista de las series filtradas
 
@@ -245,21 +278,21 @@ def mainlist_filter(channel, list_idiomas, list_calidad):
     :return: lista de Item
     :rtype: list[Item]
     """
-    logger.info("[filtertools.py] mainlist_filter")
+    logger.info()
     itemlist = []
-    dict_series = get_filtered_tvshows(channel)
+    dict_series = get_tvshows(channel)
 
     idx = 0
     for tvshow in sorted(dict_series):
         if dict_series[tvshow][TAG_ACTIVE]:
-          tag_color = "0xff008000"
-        else: 
-          tag_color = "0xff00fa9a"
+            tag_color = "0xff008000"
+        else:
+            tag_color = "0xff00fa9a"
         if idx % 2 == 0:
             if dict_series[tvshow][TAG_ACTIVE]:
-              tag_color = "blue"
+                tag_color = "blue"
             else:
-               tag_color = "0xff00bfff"
+                tag_color = "0xff00bfff"
 
         idx += 1
         name = dict_series.get(tvshow, {}).get(TAG_NAME, tvshow)
@@ -268,7 +301,7 @@ def mainlist_filter(channel, list_idiomas, list_calidad):
             activo = ""
         title = "Configurar [COLOR {0}][{1}][/COLOR]{2}".format(tag_color, name, activo)
 
-        itemlist.append(Item(channel=__channel__, action="config_filter", title=title, show=name,
+        itemlist.append(Item(channel=__channel__, action="config_item", title=title, show=name,
                              list_idiomas=list_idiomas, list_calidad=list_calidad, from_channel=channel))
 
     if len(itemlist) == 0:
@@ -278,18 +311,18 @@ def mainlist_filter(channel, list_idiomas, list_calidad):
     return itemlist
 
 
-def config_filter(item):
+def config_item(item):
     """
     muestra una serie filtrada para su configuración
 
     :param item: item
     :type item: Item
     """
-    logger.info("[filtertools.py] config_filter")
+    logger.info()
     logger.info("item {0}".format(item.tostring()))
 
     # OBTENEMOS LOS DATOS DEL JSON
-    dict_series = get_filtered_tvshows(item.from_channel)
+    dict_series = get_tvshows(item.from_channel)
 
     tvshow = item.show.lower().strip()
 
@@ -362,10 +395,10 @@ def config_filter(item):
 
 
 def borrar_filtro(item):
-    logger.info("[filtertools.py] borrar_filtro")
+    logger.info()
     if item:
         # OBTENEMOS LOS DATOS DEL JSON
-        dict_series = get_filtered_tvshows(item.from_channel)
+        dict_series = get_tvshows(item.from_channel)
         tvshow = item.show.strip().lower()
 
         heading = "¿Está seguro que desea eliminar el filtro?"
@@ -397,7 +430,7 @@ def guardar_valores(item, dict_data_saved):
     :param dict_data_saved: diccionario con los datos salvados
     :type dict_data_saved: dict
     """
-    logger.info("[filtertools.py] guardar_valores")
+    logger.info()
     # Aqui tienes q gestionar los datos obtenidos del cuadro de dialogo
     if item and dict_data_saved:
         logger.debug('item: {0}\ndatos: {1}'.format(item.tostring(), dict_data_saved))
@@ -405,7 +438,7 @@ def guardar_valores(item, dict_data_saved):
         # OBTENEMOS LOS DATOS DEL JSON
         if item.from_channel == "biblioteca":
             item.from_channel = item.contentChannel
-        dict_series = get_filtered_tvshows(item.from_channel)
+        dict_series = get_tvshows(item.from_channel)
         tvshow = item.show.strip().lower()
 
         logger.info("Se actualiza los datos")
@@ -443,7 +476,7 @@ def update_json_data(dict_series, filename):
     :return: fname, json_data
     :rtype: str, dict
     """
-    logger.info("[filtertools.py] update_json_data")
+    logger.info()
     if not os.path.exists(os.path.join(config.get_data_path(), "settings_channels")):
         os.mkdir(os.path.join(config.get_data_path(), "settings_channels"))
     fname = os.path.join(config.get_data_path(), "settings_channels", filename + "_data.json")
@@ -452,14 +485,14 @@ def update_json_data(dict_series, filename):
     # es un dict
     if dict_data:
         if TAG_TVSHOW_FILTER in dict_data:
-            logger.info("   existe el key SERIES")
+            logger.debug("   existe el key SERIES")
             dict_data[TAG_TVSHOW_FILTER] = dict_series
         else:
-            logger.info("   NO existe el key SERIES")
+            logger.debug("   NO existe el key SERIES")
             new_dict = {TAG_TVSHOW_FILTER: dict_series}
             dict_data.update(new_dict)
     else:
-        logger.info("   NO es un dict")
+        logger.debug("   NO es un dict")
         dict_data = {TAG_TVSHOW_FILTER: dict_series}
     json_data = jsontools.dump_json(dict_data)
     return fname, json_data
@@ -479,7 +512,7 @@ def update_json_data(dict_series, filename):
 #     dict_series = get_filtered_tvshows(item.from_channel)
 #
 #     name = item.show.lower().strip()
-#     logger.info("[filtertools.py] config_filter name {0}".format(name))
+#     logger.info("[filtertools.py] config_item name {0}".format(name))
 #
 #     open_tag_idioma = (0, item.title.find("[")+1)[item.title.find("[") >= 0]
 #     close_tag_idioma = (0, item.title.find("]"))[item.title.find("]") >= 0]

@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <server>
-	<active>true</active>
-	<changes>Versión incial</changes>
-	<date>25/03/2016</date>
+	<active>false</active>
+	<changes>Servidor cerrado</changes>
+	<date>07/11/2016</date>
 	<free>false</free>
 	<id>one80upload</id>
 	<name>one80upload</name>
@@ -12,5 +12,5 @@
 	</premium>
 	<thumbnail>http://media.tvalacarta.info/servers/server_one80upload.png</thumbnail>
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/servers/</update_url>
-	<version>1</version>
+	<version>2</version>
 </server>
