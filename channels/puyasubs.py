@@ -17,7 +17,7 @@ from core.item import Item
 __modo_grafico__ = config.get_setting('modo_grafico', 'puyasubs')
 __perfil__ = int(config.get_setting('perfil', "puyasubs"))
 
-# Fijar perfil de color
+# Fijar perfil de color            
 perfil = [['0xFFFFE6CC', '0xFFFFCE9C', '0xFF994D00', '0xFFFE2E2E', '0xFFFFD700'],
           ['0xFFA5F6AF', '0xFF5FDA6D', '0xFF11811E', '0xFFFE2E2E', '0xFFFFD700'],
           ['0xFF58D3F7', '0xFF2E9AFE', '0xFF2E64FE', '0xFFFE2E2E', '0xFFFFD700']]
@@ -47,7 +47,7 @@ def mainlist(item):
                          thumbnail=item.thumbnail, url="http://puya.se/?page_id=25507", text_color=color1))
     itemlist.append(Item(channel=item.channel, action="descargas", title="   Descargas Películas y Ovas",
                          thumbnail=item.thumbnail, url="http://puya.se/?page_id=25503", text_color=color1))
-
+                         
     itemlist.append(Item(channel=item.channel, action="torrents", title="Lista de Torrents", thumbnail=item.thumbnail,
                          url="https://www.nyaa.se/?page=search&term=puya", text_color=color1))
 
@@ -102,8 +102,8 @@ def listado(item):
             itemlist.append(Item(channel=item.channel, action="findvideos", url=url, title=title, thumbnail=thumb,
                                  contentTitle=contenttitle, show=contenttitle, contentType=tipo,
                                  infoLabels={'filtro': filtro_tmdb}, text_color=color1))
-
-    if "cat=4" in item.url or item.extra == "busqueda":
+    
+    if ("cat=4" in item.url or item.extra == "busqueda") and not item.extra == "novedades":
         from core import tmdb
         tmdb.set_infoLabels_itemlist(itemlist, __modo_grafico__)
 
@@ -135,7 +135,7 @@ def descargas(item):
                                    .replace("[Puya+] ", "")
         contenttitle = re.sub(r'(\[[^\]]*\])', '', contenttitle).strip()
         filtro_tmdb = {"original_language": "ja"}.items()
-
+        
         tipo = "tvshow"
         if "page_id=25503" in item.url:
             tipo = "movie"
@@ -146,7 +146,7 @@ def descargas(item):
         itemlist.append(Item(channel=item.channel, action=action, url=url, title=title, contentTitle=contenttitle,
                              show=contenttitle, contentType=tipo, infoLabels={'filtro': filtro_tmdb},
                              text_color=color1))
-
+    
     from core import tmdb
     tmdb.set_infoLabels_itemlist(itemlist, __modo_grafico__)
 
@@ -168,9 +168,9 @@ def letra(item):
     for match in matches:
         itemlist.append(Item(channel=item.channel, title=match, action="descargas", letra=match, url=item.url,
                              thumbnail=item.thumbnail, text_color=color1))
-
+    
     return itemlist
-
+    
 
 def torrents(item):
     logger.info("pelisalacarta.channels.puyasubs torrents")
@@ -195,7 +195,7 @@ def torrents(item):
         itemlist.append(Item(channel=item.channel, action="play", url=url, title=title, contentTitle=contenttitle,
                              server="torrent", show=contenttitle, contentType="tvshow", text_color=color1,
                              infoLabels={'filtro': filtro_tmdb}))
-
+    
     from core import tmdb
     tmdb.set_infoLabels_itemlist(itemlist, __modo_grafico__)
 
@@ -215,6 +215,9 @@ def torrents(item):
 
 def findvideos(item):
     logger.info("pelisalacarta.channels.puyasubs findvideos")
+    if item.infoLabels["tmdb_id"] and not item.infoLabels["plot"]:
+        from core import tmdb
+        tmdb.set_infoLabels_item(item, True, idioma_busqueda="en")
 
     itemlist = list()
 
@@ -297,9 +300,9 @@ def carpeta(item):
     else:
         from megaserver import Client
         from platformcode import platformtools
-
+            
         c = Client(url=item.url)
-
+        
         files = c.get_files()
         c.stop()
         for enlace in files:
@@ -314,8 +317,11 @@ def carpeta(item):
 
 def extract_safe(item):
     logger.info("pelisalacarta.channels.puyasubs extract_safe")
+    if item.infoLabels["tmdb_id"] and not item.infoLabels["plot"]:
+        from core import tmdb
+        tmdb.set_infoLabels_item(item, True, idioma_busqueda="en")
     itemlist = list()
-
+    
     hash = item.url.rsplit("/", 1)[1]
     headers = [['Content-Type', 'application/json;charset=utf-8']]
     post = jsontools.dump_json({"hash": hash})
@@ -338,14 +344,14 @@ def extract_safe(item):
                 action = "carpeta"
 
         itemlist.append(item.clone(title=title, action=action, url=enlace, server=server))
-
+    
     return itemlist
 
 
 def play(item):
     logger.info("pelisalacarta.channels.puyasubs play")
     itemlist = list()
-
+    
     if item.server == "torrent" and "frozen" in item.url:
         data = scrapertools.downloadpage(item.url)
         enlace = scrapertools.find_single_match(data, "<div id='descargar_torrent'>.*?href='([^']+)'")
@@ -369,10 +375,13 @@ def newest(categoria):
     item = Item()
     try:
         item.url = "http://puya.se/?cat=4"
+        item.extra = "novedades"
         itemlist = listado(item)
 
         if itemlist[-1].action == "listado":
             itemlist.pop()
+        for it in itemlist:
+            it.contentTitle = it.title
 
     # Se captura la excepción, para no interrumpir al canal novedades si un canal falla
     except:
