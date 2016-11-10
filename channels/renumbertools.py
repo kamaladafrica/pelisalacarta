@@ -152,11 +152,12 @@ def config_item(item):
     else:
         # tenemos información y devolvemos los datos añadidos para que se muestre en la ventana
         if data:
-            return add_season(item.from_channel, item.show)
+            return add_season(data)
         # es la primera vez que se añaden datos (usando menú contextual) por lo que no devolvemos nada
         # para evitar error al listar los items
         else:
-            add_season(item.from_channel, item.show)
+            data = add_season(data)
+            write_data(item.from_channel, item.show, data)
 
 
 def borrar(channel, show):
@@ -181,18 +182,16 @@ def borrar(channel, show):
         platformtools.dialog_notification(heading, message)
 
 
-def add_season(channel, show):
-    # logger.info("item {0}".format(item.tostring("\n")))
+def add_season(data=None):
 
-    # OBTENEMOS LOS DATOS DEL JSON
-    dict_series = get_tvshows(channel)
-    tvshow = show.strip()
-    list_season_episode = dict_series.get(tvshow, {}).get(TAG_SEASON_EPISODE, [])
-    logger.debug("item {0}".format(list_season_episode))
+    logger.debug("item {0}".format(data))
     heading = "Introduzca el número de la temporada"
     default = 2
+    list_season_episode = data
+
     if list_season_episode:
         # mostrar temporada + 1 de la lista
+        # TODO buscar la primera posicion libre
         default = list_season_episode[0][0]+1
 
     season = platformtools.dialog_numeric(0, heading, str(default))
@@ -204,37 +203,51 @@ def add_season(channel, show):
         if list_season_episode:
             for e in list_season_episode:
                 # mostrar suma episodios de la lista
+                # sumar hasta el indice del primer libre encontrado
                 default += e[1]
         episode = platformtools.dialog_numeric(0, heading, str(default))
 
         # si hemos insertado un valor en el episodio
         if episode != "":
             if list_season_episode:
+                # TODO REORDENAR LOS ELEMENTOS
                 list_season_episode.insert(0, [int(season), int(episode)])
                 new_list_season_episode = list_season_episode[:]
-                dict_renumerate = {TAG_SEASON_EPISODE: new_list_season_episode}
+                return new_list_season_episode
             else:
-                dict_renumerate = {TAG_SEASON_EPISODE: [[int(season), int(episode)]]}
+                return [[int(season), int(episode)]]
 
-            dict_series[tvshow] = dict_renumerate
 
-            fname, json_data = update_json_data(dict_series, channel)
-            result = filetools.write(fname, json_data)
+def write_data(channel, show, data):
 
-            if result:
-                message = "FILTRO GUARDADO"
-                ok = True
-            else:
-                message = "Error al guardar en disco"
-                ok = False
+    # OBTENEMOS LOS DATOS DEL JSON
+    dict_series = get_tvshows(channel)
+    tvshow = show.strip()
+    list_season_episode = dict_series.get(tvshow, {}).get(TAG_SEASON_EPISODE, [])
+    logger.debug("item {0}".format(list_season_episode))
 
-            heading = show.strip()
-            platformtools.dialog_notification(heading, message)
+    # cambiamos el orden para que se vea en orden descendente y usarse bien en el _data.json
+    data.sort(key=lambda el: int(el[0]), reverse=True)
+    dict_renumerate = {TAG_SEASON_EPISODE: data}
 
-            if ok:
-                return dict_renumerate.get(TAG_SEASON_EPISODE)
-            else:
-                return None
+    dict_series[tvshow] = dict_renumerate
+    fname, json_data = update_json_data(dict_series, channel)
+    result = filetools.write(fname, json_data)
+
+    if result:
+        message = "FILTRO GUARDADO"
+        ok = True
+    else:
+        message = "Error al guardar en disco"
+        ok = False
+
+    heading = show.strip()
+    platformtools.dialog_notification(heading, message)
+
+    if ok:
+        return dict_renumerate.get(TAG_SEASON_EPISODE)
+    else:
+        return None
 
 
 def check_json_file(data, fname, dict_data):
@@ -450,21 +463,29 @@ class RenumberWindow(xbmcgui.WindowDialog):
     def onInit(self, *args, **kwargs):
         if kwargs.get("data"):
             self.data = kwargs.get("data")
-        try:
 
+        logger.debug("data en onInit: {}".format(self.data))
+        try:
             # listado temporada / episodios
             pos_y = self.controls_bg.getY() + 10
-
-            # cambiamos el orden para que se vea en orden ascendente
-            self.data.sort(key=lambda el: int(el[0]), reverse=False)
 
             # mostramos el scroll si hay más de 5 elementos
             if len(self.data) > 5:
                 self.controls_bg.setWidth(545)
                 self.scroll_bg.setVisible(True)
                 self.scroll2_bg.setVisible(True)
+            else:
+                self.controls_bg.setWidth(562)
+                self.scroll_bg.setVisible(False)
+                self.scroll2_bg.setVisible(False)
+
+            # eliminamos los componentes al repintar la ventana
+            for linea in self.controls:
+                self.removeControls(linea)
 
             self.controls = []
+            # cambiamos el orden para que se vea en orden ascendente
+            self.data.sort(key=lambda el: int(el[0]), reverse=False)
 
             for index, e in enumerate(self.data):
                 pos_x = self.controls_bg.getX() + 15
@@ -472,7 +493,7 @@ class RenumberWindow(xbmcgui.WindowDialog):
                 label_season = xbmcgui.ControlLabel(pos_x, pos_y + 3, label_season_w, 34,
                                                     "Temporada:", font=self.font, textColor="0xFF2E64FE")
                 self.addControl(label_season)
-                logger.debug("ID label season[{}]:{} ".format(index, label_season.getId()))
+                # label_season.setVisible(False)
 
                 pos_x += label_season_w + 5
 
@@ -498,12 +519,14 @@ class RenumberWindow(xbmcgui.WindowDialog):
                 edit_season.setPosition(pos_x, pos_y - 2)
                 edit_season.setWidth(25)
                 edit_season.setHeight(35)
+                # edit_season.setVisible(False)
 
                 label_episode_w = 90
                 pos_x += edit_season.getWidth() + 60
                 label_episode = xbmcgui.ControlLabel(pos_x, pos_y + 3, label_episode_w, 34, "Episodios:",
                                                      font=self.font, textColor="0xFF2E64FE")
                 self.addControl(label_episode)
+                # label_episode.setVisible(False)
 
                 pos_x += label_episode_w + 5
                 # control bugeado se tiene que usar metodos sets para que se cree correctamente.
@@ -518,6 +541,7 @@ class RenumberWindow(xbmcgui.WindowDialog):
                 edit_episode.setPosition(pos_x, pos_y - 2)
                 edit_episode.setWidth(40)
                 edit_episode.setHeight(35)
+                # edit_episode.setVisible(False)
 
                 btn_delete_season_w = 120
                 btn_delete_season = xbmcgui.ControlButton(self.controls_bg.getX() + self.controls_bg.getWidth() -
@@ -529,10 +553,12 @@ class RenumberWindow(xbmcgui.WindowDialog):
                                                                                       'KeyboardKeyNF.png'),
                                                           alignment=ALIGN_CENTER)
                 self.addControl(btn_delete_season)
+                # btn_delete_season.setVisible(False)
 
                 hb_bg = xbmcgui.ControlImage(self.controls_bg.getX() + 10, pos_y + 40, self.controls_bg.getWidth() - 20,
                                              2, os.path.join(self.mediapath, 'Controls', 'ScrollBack.png'))
                 self.addControl(hb_bg)
+                # hb_bg.setVisible(False)
 
                 pos_y += 50
 
@@ -545,7 +571,7 @@ class RenumberWindow(xbmcgui.WindowDialog):
                     btn_delete_season.setVisible(False)
                     hb_bg.setVisible(False)
 
-                line = [edit_season, edit_episode, btn_delete_season]
+                line = [edit_season, edit_episode, btn_delete_season, label_season, label_episode, hb_bg]
 
                 self.controls.append(line)
 
@@ -568,14 +594,17 @@ class RenumberWindow(xbmcgui.WindowDialog):
         control_id = control.getId()
 
         if control_id == ID_BUTTON_OK:
-            pass
+            write_data(self.channel, self.show, self.data)
+            self.close()
         if control_id in [ID_BUTTON_CLOSE, ID_BUTTON_CANCEL]:
             self.close()
         elif control_id == ID_BUTTON_DELETE:
             self.close()
             borrar(self.channel, self.show)
         elif control_id == ID_BUTTON_ADD_SEASON:
-            data = add_season(self.channel, self.show)
+            logger.debug("data que enviamos: {}".format(self.data))
+            data = add_season(self.data)
+            logger.debug("data que recibimos: {}".format(data))
             # se ha producido un error al guardar los datos, volvemos a enviar los datos que teníamos
             if data is None:
                 data = self.data
@@ -586,8 +615,15 @@ class RenumberWindow(xbmcgui.WindowDialog):
             for x, linea in enumerate(self.controls):
                 if control_id == self.controls[x][2].getId():
                     logger.debug("estoy dentrooooo")
-                    # self.data.del
-                    break
+                    logger.debug("A data %s" % self.data)
+                    self.removeControls(self.controls[x])
+                    del self.controls[x]
+                    del self.data[x]
+                    logger.debug("D data %s" % self.data)
+                    self.onInit(data=self.data)
+
+
+                    return
 
     def onAction(self, action):
         logger.debug("%s" % action.getId())
@@ -604,22 +640,23 @@ class RenumberWindow(xbmcgui.WindowDialog):
                 # Localizamos en el listado de controles el control que tiene el focus
                 # todo mirar tema del cursor en el valor al desplazar lateralmente
                 for x, linea in enumerate(self.controls):
-                    for y, el in enumerate(linea):
+                    for y, el in enumerate(linea[:-3]):
                         if el.getId() == focus:
                             logger.debug("x:{} y:{} controls.length:{} linea.length:{}".format(x, y, len(self.controls),
                                                                                                len(linea)))
                             if y > 0:
                                 self.setFocus(self.controls[x][y-1])
                             else:
-                                self.setFocus(self.controls[x][len(linea) - 1])
+                                self.setFocus(self.controls[x][len(linea) - 4])
                             return
 
             # Si el foco está en alguno de los 6 botones inferiores, movemos al siguiente
             else:
                 if focus in [ID_BUTTON_ADD_SEASON, ID_BUTTON_INFO, ID_CHECK_UPDATE_INTERNET]:
                     if focus == ID_BUTTON_ADD_SEASON:
-                        pass
-                        # vamos al ultimo control
+                        self.setFocusId(ID_BUTTON_INFO)
+                        # TODO cambiar cuando se habilite la opcion de actualizar por internet
+                        # self.setFocusId(ID_CHECK_UPDATE_INTERNET)
                     elif focus == ID_BUTTON_INFO:
                         self.setFocusId(ID_BUTTON_ADD_SEASON)
                     elif focus == ID_CHECK_UPDATE_INTERNET:
@@ -627,9 +664,7 @@ class RenumberWindow(xbmcgui.WindowDialog):
 
                 elif focus in [ID_BUTTON_OK, ID_BUTTON_CANCEL, ID_BUTTON_DELETE]:
                     if focus == ID_BUTTON_OK:
-                        self.setFocusId(ID_BUTTON_INFO)
-                        # TODO cambiar cuando se habilite la opcion de actualizar por internet
-                        # self.setFocusId(ID_CHECK_UPDATE_INTERNET)
+                        self.setFocusId(ID_BUTTON_DELETE)
                     elif focus == ID_BUTTON_CANCEL:
                         self.setFocusId(ID_BUTTON_OK)
                     elif focus == ID_BUTTON_DELETE:
@@ -643,10 +678,10 @@ class RenumberWindow(xbmcgui.WindowDialog):
                 # Localizamos en el listado de controles el control que tiene el focus
                 # todo mirar tema del cursor en el valor al desplazar lateralmente
                 for x, linea in enumerate(self.controls):
-                    for y, el in enumerate(linea):
+                    for y, el in enumerate(linea[:-3]):
                         if el.getId() == focus:
                             logger.debug("x:{} controls.length:{}".format(x, len(self.controls)))
-                            if y < len(linea) - 1:
+                            if y < len(linea) - 4:
                                 self.setFocus(self.controls[x][y+1])
                             else:
                                 self.setFocus(self.controls[x][0])
@@ -658,7 +693,7 @@ class RenumberWindow(xbmcgui.WindowDialog):
                     if focus == ID_BUTTON_ADD_SEASON:
                         self.setFocusId(ID_BUTTON_INFO)
                     if focus == ID_BUTTON_INFO:
-                        self.setFocusId(ID_BUTTON_OK)
+                        self.setFocusId(ID_BUTTON_ADD_SEASON)
                         # TODO cambiar cuando se habilite la opcion de actualizar por internet
                         # self.setFocusId(ID_CHECK_UPDATE_INTERNET)
                     if focus == ID_CHECK_UPDATE_INTERNET:
@@ -670,8 +705,7 @@ class RenumberWindow(xbmcgui.WindowDialog):
                     if focus == ID_BUTTON_CANCEL:
                         self.setFocusId(ID_BUTTON_DELETE)
                     if focus == ID_BUTTON_DELETE:
-                        # vamos al primer control
-                        pass
+                        self.setFocusId(ID_BUTTON_OK)
 
         # Flecha arriba
         elif action == xbmcgui.ACTION_MOVE_UP:
@@ -719,7 +753,7 @@ class RenumberWindow(xbmcgui.WindowDialog):
                     if el.getId() == focus:
                         logger.debug("x:{} controls.length:{}".format(x, len(self.controls)))
                         if x+1 < len(self.controls):
-                            self.scroll()
+                            self.scroll(+1)
 
                             self.setFocus(self.controls[x+1][y])
                         else:
