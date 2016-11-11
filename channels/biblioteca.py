@@ -32,51 +32,6 @@ def mainlist(item):
     return itemlist
 
 
-def read_nfo(path_nfo, item=None):
-    """
-    Metodo para leer archivos nfo.
-        Los arcivos nfo tienen la siguiente extructura: url_scraper | xml + item_json
-        [url_scraper] y [xml] son opcionales, pero solo uno de ellos ha de existir siempre.
-    @param path_nfo: ruta absoluta al archivo nfo
-    @type path_nfo: str
-    @param item: Si se pasa este parametro el item devuelto sera una copia de este con
-        los valores de 'infoLabels', 'library_playcounts' y 'path' leidos del nfo
-    @type: Item
-    @return: Una tupla formada por la 'url_scraper' y el objeto 'item_json'
-    @rtype: tuple (str, Item)
-    """
-    url_scraper = ""
-    it = None
-    if filetools.exists(path_nfo):
-        url_scraper = filetools.read(path_nfo, 0, 1)
-        data = filetools.read(path_nfo, 1)
-
-        if not url_scraper.startswith('http'):
-            # url_scraper no valida, xml presente
-            url_scraper = ''
-            import re
-            data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
-            data = re.sub("(<tvshow>|<movie>)(.*?)(</tvshow>|</movie>)", "", data)
-
-        it_nfo = Item().fromjson(data)
-
-
-        if item:
-            it = item.clone()
-            it.infoLabels = it_nfo.infoLabels
-            if 'library_playcounts' in it_nfo:
-                it.library_playcounts = it_nfo.library_playcounts
-            if it_nfo.path:
-                it.path = it_nfo.path
-        else:
-            it = it_nfo
-
-        if 'fanart' in it.infoLabels:
-            it.fanart = it.infoLabels['fanart']
-
-    return url_scraper, it
-
-
 def peliculas(item):
     logger.info("pelisalacarta.channels.biblioteca peliculas")
     itemlist = []
@@ -85,7 +40,7 @@ def peliculas(item):
         for f in ficheros:
             if f.endswith(".nfo"):
                 nfo_path = filetools.join(raiz, f)
-                url_scraper, new_item = read_nfo(nfo_path)
+                url_scraper, new_item = library.read_nfo(nfo_path)
 
                 new_item.nfo = nfo_path
                 new_item.path = raiz
@@ -145,7 +100,7 @@ def series(item):
             if f == "tvshow.nfo":
                 tvshow_path = filetools.join(raiz, f)
                 # logger.debug(tvshow_path)
-                url_scraper, item_tvshow = read_nfo(tvshow_path)
+                url_scraper, item_tvshow = library.read_nfo(tvshow_path)
                 item_tvshow.title = item_tvshow.contentTitle
                 item_tvshow.path = raiz
                 item_tvshow.nfo = tvshow_path
@@ -161,13 +116,13 @@ def series(item):
                     contador = 1
 
                 # Menu contextual: Buscar automáticamente nuevos episodios o no
-                if item_tvshow.active:
+                if int(item_tvshow.active) > 0:
                     texto_update = "No buscar automáticamente nuevos episodios"
-                    value = False
+                    value = 0
                     item_tvshow.text_color = "green"
                 else:
                     texto_update = "Buscar automáticamente nuevos episodios"
-                    value = True
+                    value = 1
                     item_tvshow.text_color = "0xFFDF7401"
 
                 # Menu contextual: Eliminar serie/canal
@@ -228,7 +183,7 @@ def get_temporadas(item):
                                   filtrar_season=True)
 
             # Menu contextual: Releer tvshow.nfo
-            url_scraper, item_nfo = read_nfo(item.nfo)
+            url_scraper, item_nfo = library.read_nfo(item.nfo)
 
             # Menu contextual: Marcar la temporada como vista o no
             visto = item_nfo.library_playcounts.get("season %s" % season, 0)
@@ -280,7 +235,7 @@ def get_episodios(item):
 
             # Obtener los datos del season_episode.nfo
             nfo_path = filetools.join(raiz, i).replace('.strm', '.nfo')
-            url_scraper, epi = read_nfo(nfo_path)
+            url_scraper, epi = library.read_nfo(nfo_path)
 
             # Fijar el titulo del capitulo si es posible
             if epi.contentTitle:
@@ -293,7 +248,7 @@ def get_episodios(item):
             epi.title = "%sx%s - %s" % (epi.contentSeason, str(epi.contentEpisodeNumber).zfill(2), title_episodie)
 
             # Menu contextual: Releer tvshow.nfo
-            url_scraper, item_nfo = read_nfo(item.nfo)
+            url_scraper, item_nfo = library.read_nfo(item.nfo)
             if item_nfo.library_filter_show:
                 epi.library_filter_show = item_nfo.library_filter_show
 
@@ -620,7 +575,7 @@ def eliminar(item):
 
             if num_enlaces > 0:
                 # Actualizar .nfo
-                url_scraper, item_nfo = read_nfo(item.nfo)
+                url_scraper, item_nfo = library.read_nfo(item.nfo)
                 del item_nfo.library_urls[canal]
                 filetools.write(item.nfo, url_scraper + item_nfo.tojson())
 

@@ -28,6 +28,7 @@
 import imp
 import math
 import re
+import datetime
 
 from core import config
 from core import filetools
@@ -156,6 +157,48 @@ def convert_old_to_v4():
     return True
 
 
+def update(path, p_dialog, i, t, serie, overwrite):
+    logger.info("pelisalacarta.library_service Actualizando " + path)
+
+    # logger.debug("%s: %s" %(serie.contentSerieName,str(list_canales) ))
+    for channel, url in serie.library_urls.items():
+        serie.channel = channel
+        serie.url = url
+
+        heading = 'Actualizando biblioteca....'
+        p_dialog.update(int(math.ceil((i + 1) * t)), heading, "%s: %s" % (serie.contentSerieName,
+                                                                          serie.channel.capitalize()))
+        try:
+            pathchannels = filetools.join(config.get_runtime_path(), "channels", serie.channel + '.py')
+            logger.info("pelisalacarta.library_service Cargando canal: " + pathchannels + " " +
+                        serie.channel)
+
+            if serie.library_filter_show:
+                serie.show = serie.library_filter_show.get(channel, serie.contentSerieName)
+
+            obj = imp.load_source(serie.channel, pathchannels)
+            itemlist = obj.episodios(serie)
+
+            try:
+                insertados, sobreescritos, fallidos = library.save_library_episodes(path, itemlist, serie, silent=True, overwrite=overwrite)
+                return (insertados > 0)
+
+            except Exception as ex:
+                logger.info("pelisalacarta.library_service Error al guardar los capitulos de la serie")
+                template = "An exception of type {0} occured. Arguments:\n{1!r}"
+                message = template.format(type(ex).__name__, ex.args)
+                logger.info(message)
+
+        except Exception as ex:
+            logger.error("Error al obtener los episodios de: {0}".
+                         format(serie.show))
+            template = "An exception of type {0} occured. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            logger.info(message)
+
+    return False
+
+
 def main(overwrite=True):
     logger.info("pelisalacarta.library_service Actualizando series...")
     p_dialog = None
@@ -182,51 +225,55 @@ def main(overwrite=True):
             t = float(100) / len(show_list)
 
             for i, tvshow_file in enumerate(show_list):
-                serie = Item().fromjson(filetools.read(tvshow_file, 1))
+                url_scraper, serie = library.read_nfo(tvshow_file)
                 path = filetools.dirname(tvshow_file)
 
                 logger.info("pelisalacarta.library_service serie=" + serie.contentSerieName)
                 p_dialog.update(int(math.ceil((i+1) * t)), heading, serie.contentSerieName)
 
+                interval = int(serie.active) # Podria ser del tipo bool
+
                 if not serie.active:
+                    # si la serie no esta activa descartar
                     continue
 
-                # si la serie esta activa se actualiza
-                logger.info("pelisalacarta.library_service Actualizando " + path)
+                # obtenemos la fecha de la proxima actualizacion programada para esta serie
+                next_update = serie.next_update
+                if next_update:
+                    y, m, d = next_update.split('-')
+                    next_update = datetime.date(int(y), int(m), int(d))
+                else:
+                    next_update = datetime.date.today()
 
-                # logger.debug("%s: %s" %(serie.contentSerieName,str(list_canales) ))
-                for channel, url in serie.library_urls.items():
-                    serie.channel = channel
-                    serie.url = url
 
-                    p_dialog.update(int(math.ceil((i + 1) * t)), heading, "%s: %s" % (serie.contentSerieName,
-                                                                                      serie.channel.capitalize()))
-                    try:
-                        pathchannels = filetools.join(config.get_runtime_path(), "channels", serie.channel + '.py')
-                        logger.info("pelisalacarta.library_service Cargando canal: " + pathchannels + " " +
-                                    serie.channel)
+                # si la serie esta activa ...
+                if overwrite:
+                    #... forzar actualizacion independientemente del intervalo
+                    update(path, p_dialog, i, t, serie, overwrite)
 
-                        if serie.library_filter_show:
-                            serie.show = serie.library_filter_show.get(channel, serie.contentSerieName)
+                elif interval == 1 and next_update <= datetime.date.today():
+                    # ...actualizacion diaria
+                    if not update(path, p_dialog, i, t, serie, overwrite) \
+                            and next_update <= datetime.date.today() - datetime.timedelta(days=7):
+                        # si hace una semana q no se actualiza, pasar el intervalo a semanal
+                        interval = 7
 
-                        obj = imp.load_source(serie.channel, pathchannels)
-                        itemlist = obj.episodios(serie)
+                elif interval == 7 and next_update <= datetime.date.today():
+                    # ...actualizacion semanal
+                    if not update(path, p_dialog, i, t, serie, overwrite) \
+                            and next_update <= datetime.date.today() - datetime.timedelta(days=14):
+                        # si hace 2 semanas q no se actualiza, pasar el intervalo a mensual
+                        interval = 30
 
-                        try:
-                            library.save_library_episodes(path, itemlist, serie, silent=True, overwrite=overwrite)
+                elif interval == 30 and next_update <= datetime.date.today():
+                    # ...actualizacion mensual
+                    update(path, p_dialog, i, t, serie, overwrite)
 
-                        except Exception as ex:
-                            logger.info("pelisalacarta.library_service Error al guardar los capitulos de la serie")
-                            template = "An exception of type {0} occured. Arguments:\n{1!r}"
-                            message = template.format(type(ex).__name__, ex.args)
-                            logger.info(message)
 
-                    except Exception as ex:
-                        logger.error("Error al obtener los episodios de: {0}".
-                                     format(serie.show))
-                        template = "An exception of type {0} occured. Arguments:\n{1!r}"
-                        message = template.format(type(ex).__name__, ex.args)
-                        logger.info(message)
+                if interval != int(serie.active) or next_update.strftime('%Y-%m-%d') != serie.next_update:
+                    serie.active = interval
+                    serie.next_update = next_update.strftime('%Y-%m-%d')
+                    filetools.write(tvshow_file, url_scraper + serie.tojson())
 
             p_dialog.close()
 
