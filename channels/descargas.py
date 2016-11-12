@@ -384,7 +384,7 @@ def sort_method(item):
                          
     order_list_calidad = ["BLURAY", "FULLHD", "HD", "480P", "360P", "240P"]
     match_list_calidad = {"BLURAY"   : ["BR", "BLURAY"],
-                          "FULLHD"  : ["FULLHD", "FULL HD", "1080"],
+                          "FULLHD"  : ["FULLHD", "FULL HD", "1080", "HD1080", "HD 1080"],
                           "HD"  : ["HD", "HD REAL", "HD 720", "720", "HDTV"],
                           "480P"  : ["SD", "480P"],
                           "360P"  : ["360P"],
@@ -470,11 +470,11 @@ def download_from_url(url, item):
 def download_from_server(item):
     unsupported_servers = ["torrent"]
     
-    progreso = platformtools.dialog_progress("Descargas", "Obteniendo enlaces")        
+    progreso = platformtools.dialog_progress("Descargas", "Probando con: %s" % item.server)        
     channel = __import__('channels.%s' % item.contentChannel, None, None, ["channels.%s" % item.contentChannel])
     if hasattr(channel, "play"):
 
-        progreso.update(50, "Obteniendo enlaces.", "Conectando con %s..." % item.contentChannel)
+        progreso.update(50, "Probando con: %s" % item.server, "Conectando con %s..." % item.contentChannel)
         try:
           itemlist = getattr(channel, "play")(item.clone(channel=item.contentChannel, action=item.contentAction))
         except:
