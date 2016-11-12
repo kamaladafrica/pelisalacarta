@@ -26,40 +26,6 @@ header_string = "|User-Agent=Mozilla/5.0" \
                 "&Referer=http://animeflv.me&Cookie="
 
 
-'''
-### PARA USAR CON TRATK.TV ###
-
-season: debe ir en orden descendente
-episode: la "temporada 1" siempre son "0 capitulos", la "temporada 2" es el "numero de capitulos de la temporada 1"
-
-FAIRY TAIL:
-    - SEASON 1: EPISODE 48 --> [season 1, episode: 0]
-    - SEASON 2: EPISODE 48 --> [season 2, episode: 48]
-    - SEASON 3: EPISODE 54 --> [season 3, episode: 96 ( [48=season2] +[ 48=season1] )]
-    - SEASON 4: EPISODE 175 --> [season 4: episode: 150 ( [54=season3] + [48=season2] + [48=season3] )]
-
-animeflv_me_data.json
-{
-    "TVSHOW_RENUMBER": {
-        "Fairy Tail": {
-            "season_episode": [
-                [4, 150],
-                [3, 96],
-                [2, 48],
-                [1, 0]
-            ]
-        },
-        "Fairy Tail (2014)": {
-            "season_episode": [
-                [6, 51],
-                [5, 0]
-            ]
-        }
-    }
-}
-'''
-
-
 def mainlist(item):
     logger.info()
 
@@ -232,7 +198,7 @@ def episodios(item):
                                  thumbnail=thumbnail, plot=plot, fulltitle="{0} {1}".format(item.show, title),
                                  fanart=thumbnail, viewmode="movies_with_plot", folder=True))
         else:
-            season, episode = numbered_for_tratk(item.show, season, episode)
+            season, episode = renumbertools.numbered_for_tratk(item.channel, item.show, season, episode)
 
             title = "{0}x{1:02d} {2} ({3})".format(season, episode, "Episodio " + str(episode), date)
 
@@ -284,72 +250,6 @@ def findvideos(item):
                              folder=True, fulltitle=title, viewmode="movies_with_plot"))
 
     return sorted(itemlist, key=lambda it: int(scrapertools.find_single_match(it.title, "\[(.+?)\]")), reverse=True)
-
-
-def numbered_for_tratk(show, season, episode):
-    """
-    Devuelve la temporada y episodio convertido para que se marque correctamente en tratk.tv
-
-    :param show: Nombre de la serie a comprobar
-    :type show: str
-    :param season: Temporada que devuelve el scrapper
-    :type season: int
-    :param episode: Episodio que devuelve el scrapper
-    :type episode: int
-    :return: season, episode
-    :rtype: int, int
-    """
-    logger.info()
-    show = show.lower()
-
-    new_season = season
-    new_episode = episode
-    dict_series = {}
-
-    name_file = os.path.splitext(os.path.basename(__file__))[0]
-    fname = os.path.join(config.get_data_path(), "settings_channels", name_file + "_data.json")
-
-    if os.path.isfile(fname):
-
-        data = ""
-
-        try:
-            f = open(fname, "r")
-            for line in f:
-                data += line
-            f.close()
-        except EnvironmentError:
-            logger.info("ERROR al leer el archivo: {0}".format(fname))
-
-        json_data = jsontools.load_json(data)
-
-        if 'TVSHOW_RENUMBER' in json_data:
-            dict_series = json_data['TVSHOW_RENUMBER']
-
-        # ponemos en minusculas el key, ya que previamente hemos hecho lo mismo con show.
-        for key in dict_series.keys():
-            new_key = key.lower()
-            if new_key != key:
-                dict_series[new_key] = dict_series[key]
-                del dict_series[key]
-
-    if show in dict_series:
-        logger.info("ha encontrado algo: {0}".format(dict_series[show]))
-
-        if len(dict_series[show]['season_episode']) > 1:
-            for row in dict_series[show]['season_episode']:
-
-                if new_episode > row[1]:
-                    new_episode -= row[1]
-                    new_season = row[0]
-                    break
-
-        else:
-            new_season = dict_series[show]['season_episode'][0][0]
-            new_episode += dict_series[show]['season_episode'][0][1]
-
-    logger.info("{0}:{1}".format(new_season, new_episode))
-    return new_season, new_episode
 
 
 def get_cookie_value():
