@@ -154,6 +154,10 @@ def play(url, xlistitem, is_view=None, subtitle=""):
                 dp.close()
                 remove_files( download, torrent_file, video_file, ses, h )
                 return
+
+            h.force_dht_announce()
+            xbmc.sleep(1000)
+
         dp.close()
         info = h.get_torrent_info()
         data = lt.bencode( lt.create_torrent(info).generate() )
