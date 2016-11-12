@@ -91,36 +91,25 @@ def play(url, xlistitem, is_view=None, subtitle=""):
 
     ses.add_dht_router("router.bittorrent.com",6881)
     ses.add_dht_router("router.utorrent.com",6881)
-    ses.add_dht_router("router.bitcomet.com",554)
     ses.add_dht_router("dht.transmissionbt.com",6881)
 
     trackers = [
-        "http://exodus.desync.com:6969/announce",
-        "udp://tracker.publicbt.com:80/announce",
         "udp://tracker.openbittorrent.com:80/announce",
         "http://tracker.torrentbay.to:6969/announce",
-        "http://fr33dom.h33t.com:3310/announce",
         "http://tracker.pow7.com/announce",
         "udp://tracker.ccc.de:80/announce",
-        "http://tracker.bittorrent.am:80/announce",
-        "http://denis.stalker.h3q.com:6969/announce",
-        "udp://tracker.prq.to:80/announce",
-        "udp://tracker.istole.it:80/announce",
         "udp://open.demonii.com:1337",
 
         "http://9.rarbg.com:2710/announce",
-        "http://announce.torrentsmd.com:6969/announce",
         "http://bt.careland.com.cn:6969/announce",
         "http://explodie.org:6969/announce",
         "http://mgtracker.org:2710/announce",
         "http://tracker.best-torrents.net:6969/announce",
         "http://tracker.tfile.me/announce",
-        "http://tracker.torrenty.org:6969/announce",
         "http://tracker1.wasabii.com.tw:6969/announce",
         "udp://9.rarbg.com:2710/announce",
         "udp://9.rarbg.me:2710/announce",
         "udp://coppersurfer.tk:6969/announce",
-        "udp://tracker.btzoo.eu:80/announce",
 
         "http://www.spanishtracker.com:2710/announce",
         "http://www.todotorrents.com:2710/announce",
