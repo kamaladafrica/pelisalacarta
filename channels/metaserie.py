@@ -44,7 +44,7 @@ def todas(item):
         plot = scrapedplot
         fanart = 'https://s32.postimg.org/7g50yo39h/metaserie.png'
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="temporadas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart))
+        itemlist.append( Item(channel=item.channel, action="temporadas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, contentSerieName=title))
     
     #Paginacion
 
@@ -63,8 +63,9 @@ def todas(item):
     return itemlist
 
 def temporadas(item):
-    logger.info("pelisalacarta.channels.metaserie temporadas")
+    logger.debug("pelisalacarta.channels.metaserie temporadas")
     itemlist = []
+    templist = []
     data = scrapertools.cache_page(item.url)
     
     patron = '<li class=".*?="([^"]+)".*?>([^<]+)</a>'
@@ -78,12 +79,23 @@ def temporadas(item):
         plot = item.plot
         fanart = scrapertools.find_single_match(data,'<img src="([^"]+)"/>.*?</a>')
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="episodios" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart))
-
-    return itemlist
+        itemlist.append( Item(channel=item.channel, action="episodios" , title=title ,fulltitle = item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart, contentSerieName=item.contentSerieName))
+    
+    if item.extra == 'temporadas':
+        for tempitem in itemlist:
+            templist += episodios(tempitem)
+       
+    if config.get_library_support() and len(itemlist) > 0:
+        itemlist.append(Item(channel=item.channel, title='[COLOR yellow]Añadir esta serie a la biblioteca[/COLOR]', url=item.url,
+                             action="add_serie_to_library", extra="temporadas", contentSerieName=item.contentSerieName))
+    if item.extra == 'temporadas':
+        return templist
+    else:
+        return itemlist
+    
 
 def episodios(item):
-    logger.info("pelisalacarta.channels.metaserie episodios")
+    logger.debug("pelisalacarta.channels.metaserie episodios")
     itemlist = []
     data = scrapertools.cache_page(item.url)
     
@@ -93,12 +105,13 @@ def episodios(item):
     for scrapedurl,scrapedtitle in matches:
         url = urlparse.urljoin(item.url,scrapedurl)
         title = scrapedtitle
-        title = title.replace ("&#215;","×") 
+        title = title.replace ("&#215;","x")
+        title = title.replace ("×","x")
         thumbnail = item.thumbnail
         plot = item.plot
         fanart=item.fanart
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title, fulltitle=item.fulltitle, url=url, thumbnail=item.thumbnail, plot=plot))
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title, fulltitle=item.fulltitle, url=url, thumbnail=item.thumbnail, plot=plot, contentSerieName=item.contentSerieName))
         
     return itemlist
 
@@ -119,7 +132,7 @@ def search(item,texto):
                      thumbnail = ''
                      plot = ''
                      if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-                     itemlist.append( Item(channel=item.channel, action="temporadas" , title=title , fulltitle=title, url=url, thumbnail=thumbnail, plot=plot, folder ="true" ))
+                     itemlist.append( Item(channel=item.channel, action="temporadas" , title=title , fulltitle=title, url=url, thumbnail=thumbnail, plot=plot, folder =True, contentSerieName=title ))
 
                  return itemlist
              except:
@@ -140,21 +153,21 @@ def findvideos(item):
     
     anterior = scrapertools.find_single_match(data,'<th scope="col"><a href="([^"]+)" rel="prev" class="local-link">Anterior</a></th>')
     siguiente = scrapertools.find_single_match(data,'<th scope="col"><a href="([^"]+)" rel="next" class="local-link">Siguiente</a></th>')
-    titulo = scrapertools.find_single_match(data,'<h1 class="entry-title">([^<]+)</h1>		</header>')
-    
+    #titulo = scrapertools.find_single_match(data,'<h1 class="entry-title">([^<]+)</h1>		</header>')
+    #titulo = titulo.encode('utf-8')
 
     for scrapedid, scrapedurl, scrapedserv in matches:
         url = scrapedurl
-        title = titulo+' audio '+audio[scrapedid]+' en '+scrapedserv
+        title = item.title+' audio '+audio[scrapedid]+' en '+scrapedserv
         extra = item.thumbnail
         thumbnail = servertools.guess_server_thumbnail(scrapedserv)
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="play" , title=title, fulltitle=titulo, url=url, thumbnail=thumbnail, extra=extra))
-
-    if anterior !='':
-        itemlist.append( Item(channel=item.channel, action="findvideos" , title='Capitulo Anterior' , url=anterior, thumbnail='https://s31.postimg.org/k5kpwyrgb/anterior.png', folder ="true" ))
-    if siguiente !='':
-        itemlist.append( Item(channel=item.channel, action="findvideos" , title='Capitulo Siguiente' , url=siguiente, thumbnail='https://s32.postimg.org/4zppxf5j9/siguiente.png', folder ="true" ))
+        itemlist.append( Item(channel=item.channel, action="play" , title=title, fulltitle=item.contentSerieName, url=url, thumbnail=thumbnail, extra=extra, folder= True))
+    if item.extra1 != 'capitulos':
+        if anterior !='':
+            itemlist.append( Item(channel=item.channel, action="findvideos" , title='Capitulo Anterior' , url=anterior, thumbnail='https://s31.postimg.org/k5kpwyrgb/anterior.png', folder =True ))
+        if siguiente !='':
+            itemlist.append( Item(channel=item.channel, action="findvideos" , title='Capitulo Siguiente' , url=siguiente, thumbnail='https://s32.postimg.org/4zppxf5j9/siguiente.png', folder =True ))
     return itemlist
 
 def play(item):
