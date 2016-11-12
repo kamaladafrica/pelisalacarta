@@ -253,29 +253,32 @@ def add_season(data=None):
 
     logger.debug("data {0}".format(data))
     heading = "Introduzca el número de la temporada"
-    default = 2
+    # default = 2
     # se reordena la lista
     list_season_episode = data
     list_season_episode.sort(key=lambda el: int(el[0]), reverse=False)
 
-    if list_season_episode:
-        # mostrar temporada + 1 de la lista
-        # TODO buscar la primera posicion libre
-        default = list_season_episode[0][0]+1
+    # if list_season_episode:
+    #     # mostrar temporada + 1 de la lista
+    #     # TODO buscar la primera posicion libre
+    #     default = list_season_episode[0][0]+1
 
-    season = platformtools.dialog_numeric(0, heading, str(default))
-    # todo comprobar que la temporada que se ha pasado no existe en la lista y luego dejar añadirla
+    season = platformtools.dialog_numeric(0, heading)  # , str(default))
+    for element in list_season_episode:
+        if int(season) == element[0]:
+            platformtools.dialog_notification("No se añade la temporada", "Ya existe, edíte la existente")
+            return
 
     # si hemos insertado un valor en la temporada
     if season != "" and int(season) > 0:
         heading = "Introduzca el número de episodio desde que empieza la temporada"
-        default = 0
-        if list_season_episode:
-            for e in list_season_episode:
-                # mostrar suma episodios de la lista
-                # sumar hasta el indice del primer libre encontrado
-                default += e[1]
-        episode = platformtools.dialog_numeric(0, heading, str(default))
+        # default = 0
+        # if list_season_episode:
+        #     for e in list_season_episode:
+        #         # mostrar suma episodios de la lista
+        #         # sumar hasta el indice del primer libre encontrado
+        #         default += e[1]
+        episode = platformtools.dialog_numeric(0, heading)  # , str(default))
 
         # si hemos insertado un valor en el episodio
         if episode != "":
@@ -661,7 +664,9 @@ class RenumberWindow(xbmcgui.WindowDialog):
             borrar(self.channel, self.show)
         elif control_id == ID_BUTTON_ADD_SEASON:
             # logger.debug("data que enviamos: {}".format(self.data))
-            self.data = add_season(self.data)
+            data = add_season(self.data)
+            if data:
+                self.data = data
             # logger.debug("data que recibimos: {}".format(self.data))
             self.onInit()
 

@@ -11,7 +11,6 @@ import urlparse
 
 from channels import renumbertools
 from core import config
-from core import jsontools
 from core import logger
 from core import scrapertools
 from core.item import Item
