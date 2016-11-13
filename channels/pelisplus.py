@@ -74,8 +74,8 @@ def search(item,texto):
         return []    
 
 def lista(item):
-    logger.info("pelisalacarta.channels.pelisplus lista")
-    if item.extra =='series/':
+    logger.debug("pelisalacarta.channels.pelisplus lista")
+    if 'series/' in item.extra:
         accion = 'temporadas'
         
     else:
@@ -104,11 +104,11 @@ def lista(item):
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
         
         if item.title != 'Buscar':
-           itemlist.append( Item(channel=item.channel, action=accion , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart))
+           itemlist.append( Item(channel=item.channel, action=accion , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, contentSerieName =scrapedtitle, contentTitle =scrapedtitle))
         else:
            item.extra = item.extra.rstrip('s/')
            if item.extra in url:
-           	 itemlist.append( Item(channel=item.channel, action=accion , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart))  
+           	 itemlist.append( Item(channel=item.channel, action=accion , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, contentSerieName =scrapedtitle, contentTitle =scrapedtitle))
         
 #Paginacion
     if item.title != 'Buscar':
@@ -123,6 +123,7 @@ def lista(item):
 def temporadas(item):
     logger.info("pelisalacarta.channels.pelisplus temporadas")
     itemlist = []
+    templist =[]
     data = scrapertools.cache_page(item.url)
     
     patron = '<span class="ico accordion_down"><\/span>Temporada([^<]+)'
@@ -135,9 +136,20 @@ def temporadas(item):
         plot = scrapertools.find_single_match(data,'<span>Sinopsis:<\/span>.([^<]+).<span class="text-detail-hide"><\/span>')
         fanart = scrapertools.find_single_match(data,'<img src="([^"]+)"/>.*?</a>')
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="episodios" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart, extra=scrapedtitle.rstrip('\n')))
-
-    return itemlist
+        itemlist.append( Item(channel=item.channel, action="episodios" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart, extra=scrapedtitle.rstrip('\n'), contentSerieName =item.contentSerieName))
+    
+    if item.extra == 'temporadas':
+        for tempitem in itemlist:
+            templist += episodios(tempitem)
+       
+    if config.get_library_support() and len(itemlist) > 0:
+        itemlist.append(Item(channel=item.channel, title='[COLOR yellow]Añadir esta serie a la biblioteca[/COLOR]', url=item.url,
+                             action="add_serie_to_library", extra="temporadas", contentSerieName=item.contentSerieName))
+    if item.extra == 'temporadas':
+        return templist
+    else:
+        return itemlist
+    #return itemlist
     
 def episodios(item):
     logger.info("pelisalacarta.channels.pelisplus episodios")
@@ -146,11 +158,14 @@ def episodios(item):
     patron = '<span class="ico season_play"><\/span>([^<]+)<\/a>.<a href="([^"]+)" class="season-online enabled">'
     temporada = 'temporada/'+item.extra.strip(' ')
     matches = re.compile(patron,re.DOTALL).findall(data)
-    for scrapedtitle, scrapedurl in matches:
+    contentSeasonNumber = re.findall (r'\d+', item.title)
+    for scrapedtitle, scrapedurl in matches:      
 
         if temporada in scrapedurl:
            url = scrapedurl
-           title = scrapedtitle
+           capitulo = re.findall(r'Capitulo \d+', scrapedtitle)
+           contentEpisodeNumber = re.findall(r'\d+', capitulo[0])
+           title = contentSeasonNumber[0]+'x'+contentEpisodeNumber[0]+' - '+scrapedtitle
            thumbnail = scrapertools.find_single_match(data,'<img src="([^"]+)" alt="" class="picture-movie">')
            plot = ''
            
@@ -217,28 +232,59 @@ def findvideos(item):
     matches = re.compile(patron,re.DOTALL).findall(datas)
     
     for scrapedurl in matches:
-       if 'elreyxhd' or 'pelisplus.biz'in scrapedurl:
-           data = scrapertools.cachePage(scrapedurl, headers=headers)
-           patron ='file":"([^"]+)","label":"([^"]+)","type":".*?","default":".*?"'
-           matches = re.compile(patron,re.DOTALL).findall(data)
-           
-           for scrapedurl, scrapedcalidad in matches:
-              url = scrapedurl 
-              title = item.title+' ('+scrapedcalidad+')'
-              thumbnail = item.thumbnail
-              fanart=item.fanart
-              if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-              itemlist.append( Item(channel=item.channel, action="play" , title=title , url=url, thumbnail=thumbnail,fanart =fanart))
-       else:
-           url = scrapedurl
-           from core import servertools
-           itemlist.extend(servertools.find_video_items(data=datas))
        
-       for videoitem in itemlist:
-           videoitem.channel = item.channel
-           videoitem.thumbnail = item.thumbnail
-           videoitem.action = 'play'
-           videoitem.fulltitle = item.title
+       
+       if 'elreyxhd' or 'pelisplus.biz'in scrapedurl:
+            data = scrapertools.cachePage(scrapedurl, headers=headers)
+            quote = scrapertools.find_single_match(data,'sources.*?file.*?http')
+            
+            if quote and "'" in quote:
+               patronr ="file:'([^']+)',label:'([^.*?]+)',type:.*?'.*?}"
+            elif '"' in quote:
+               patronr ='file:"([^"]+)",label:"([^.*?]+)",type:.*?".*?}'
+            matchesr = re.compile(patronr,re.DOTALL).findall(data)
+            
+            for scrapedurl, scrapedcalidad in matchesr:
+               print scrapedurl +' '+scrapedcalidad
+               url = scrapedurl 
+               title = item.contentTitle+' ('+scrapedcalidad+')'
+               thumbnail = item.thumbnail
+               fanart=item.fanart
+               if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
+               itemlist.append( Item(channel=item.channel, action="play" , title=title , url=url, thumbnail=thumbnail,fanart =fanart))
+
+
+    url = scrapedurl
+    from core import servertools
+    itemlist.extend(servertools.find_video_items(data=datas))
+    
+    for videoitem in itemlist:
+
+        videoitem.channel = item.channel
+        if videoitem.server != '':
+           videoitem.thumbnail = servertools.guess_server_thumbnail (videoitem.server)
+        else:
+          videoitem.thumbnail = item.thumbnail
+        videoitem.action = 'play'
+        videoitem.fulltitle = item.title
+        
+        if 'redirector' not in videoitem.url and 'youtube' not in videoitem.url:
+           videoitem.title = item.contentTitle+' ('+videoitem.server+')'
+        
+    n=0   
+    for videoitem in itemlist:
+       if 'youtube' in videoitem.url:
+          videoitem.title='[COLOR orange]Trailer en'+' ('+videoitem.server+')[/COLOR]'
+          itemlist[n], itemlist[-1] = itemlist[-1], itemlist[n]
+       n=n+1
+
+    if item.extra =='findvideos'and 'youtube' in itemlist[-1]:
+      itemlist.pop(1)
+
+    if 'serie' not in item.url:
+       if config.get_library_support() and len(itemlist) > 0 and item.extra !='findvideos':
+          itemlist.append(Item(channel=item.channel, title='[COLOR yellow]Añadir esta pelicula a la biblioteca[/COLOR]', url=item.url,
+                             action="add_pelicula_to_library", extra="findvideos", contentTitle = item.contentTitle))
           
     return itemlist
  

@@ -73,7 +73,7 @@ def todas(item):
         fanart = 'https://s31.postimg.org/5worjw2nv/locopelis.png'
         
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="findvideos" ,title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, extra=idioma))
+        itemlist.append( Item(channel=item.channel, action="findvideos" ,title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, extra=idioma, contentTitle = scrapedtitle.decode('cp1252')))
     
 #Paginacion
     siguiente=''
@@ -266,7 +266,11 @@ def findvideos(item):
         videoitem.folder = False
         videoitem.extra = item.thumbnail
         videoitem.fulltitle = item.title
-        #videoitem.title = item.title 
+        #videoitem.title = item.title
+
+    if config.get_library_support() and len(itemlist) > 0 and item.extra !='findvideos' :
+        itemlist.append(Item(channel=item.channel, title='[COLOR yellow]Añadir esta pelicula a la biblioteca[/COLOR]', url=item.url,
+                             action="add_pelicula_to_library", extra="findvideos", contentTitle = item.contentTitle)) 
     return itemlist
 
 def play(item):

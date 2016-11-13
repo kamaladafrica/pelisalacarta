@@ -20,6 +20,8 @@ thumbes ='http://flags.fmcdn.net/data/flags/normal/es.png'
 thumben ='http://flags.fmcdn.net/data/flags/normal/gb.png'
 thumbsub ='https://s32.postimg.org/nzstk8z11/sub.png'
 
+def isGeneric():
+    return True
 
 def mainlist(item):
     logger.info("pelisalacarta.channels.mundoflv mainlist")
@@ -63,7 +65,7 @@ def todas(item):
         plot = ''
         fanart = 'https://s32.postimg.org/h1ewz9hhx/mundoflv.png'
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="temporadas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart))
+        itemlist.append( Item(channel=item.channel, action="idioma" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, contentSerieName=title))
     
     #Paginacion
 
@@ -104,7 +106,7 @@ def letras(item):
         plot = ""
         fanart = item.fanart
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="todas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart))
+        itemlist.append( Item(channel=item.channel, action="todas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart ,contentSerieName=title))
 
     return itemlist
 
@@ -128,7 +130,7 @@ def masvistas(item):
         # title = title.replace("&","x");
         fanart = item.fanart
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="temporadas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart))
+        itemlist.append( Item(channel=item.channel, action="temporadas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, contentSerieName=title))
 
     return itemlist
 
@@ -152,7 +154,7 @@ def recomendadas(item):
         # title = title.replace("&","x");
         fanart = item.fanart
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="temporadas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart))
+        itemlist.append( Item(channel=item.channel, action="temporadas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart,contentSerieName=title))
 
     return itemlist
 
@@ -177,13 +179,15 @@ def ultimas(item):
         # title = title.replace("&","x");
         fanart = item.fanart
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="temporadas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart))
+        itemlist.append( Item(channel=item.channel, action="temporadas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart,contentSerieName=title))
 
     return itemlist
 
 def temporadas(item):
-    logger.info("pelisalacarta.channels.mundoflv temporadas")
+    logger.debug("pelisalacarta.channels.mundoflv temporadas")
+    
     itemlist = []
+    templist = []
     data = scrapertools.cache_page(item.url)
     realplot = ''
     patron = "<button class='classnamer' onclick='javascript: mostrarcapitulos.*?blank'>([^<]+)</button>"
@@ -191,7 +195,7 @@ def temporadas(item):
     matches = re.compile(patron,re.DOTALL).findall(data)
     
     serieid = scrapertools.find_single_match(data,"<link rel='shortlink' href='http:\/\/mundoflv.com\/\?p=([^']+)' \/>")
-    
+    item.thumbnail = item.thumbvid
     for scrapedtitle in matches:
         url = 'http://mundoflv.com/wp-content/themes/wpRafael/includes/capitulos.php?serie='+serieid+'&sr=&temporada=' + scrapedtitle
         title = 'Temporada '+ scrapertools.decodeHtmlentities(scrapedtitle)
@@ -200,12 +204,22 @@ def temporadas(item):
         plot = scrapertools.remove_htmltags(realplot)
         fanart = ''#scrapertools.find_single_match(data,'<img src="([^"]+)"/>.*?</a>')
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="episodios" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart))
-
-    return itemlist
+        itemlist.append( Item(channel=item.channel, action="episodios" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart, extra1=item.extra1, contentSerieName=item.contentSerieName))
+    
+    if item.extra=='temporadas':
+        for tempitem in itemlist:
+    	    templist += episodios(tempitem)
+        
+    if config.get_library_support() and len(itemlist) > 0:
+        itemlist.append(Item(channel=item.channel, title='[COLOR yellow]Añadir esta serie a la biblioteca[/COLOR]', url=item.url,
+                             action="add_serie_to_library", extra="temporadas", contentSerieName=item.contentSerieName, extra1 = item.extra1))
+    if item.extra=='temporadas':
+    	return templist
+    else:
+    	return itemlist
 
 def episodios(item):
-    logger.info("pelisalacarta.channels.mundoflv episodios")
+    logger.debug("pelisalacarta.channels.mundoflv episodios")
     itemlist = []
     data = scrapertools.cache_page(item.url)
      
@@ -216,31 +230,54 @@ def episodios(item):
         item.url=item.url.replace("&sr","")
         item.url=item.url.replace("capitulos","enlaces")
         url = item.url+'&capitulo=' + scrapedtitle
-        title=item.fulltitle+' '+item.title+ ' episodio '+scrapedtitle
-        
+        title=item.contentSerieName+' '+item.title.strip('Temporada')+'x'+scrapedtitle
         thumbnail = item.thumbnail
         plot = item.plot
         fanart=''
         idioma=''
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="idioma" , title=title, fulltitle=item.fulltitle, url=url, thumbnail=item.thumbnail, plot=plot, extra='',idioma=''))
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title, fulltitle=item.fulltitle, url=url, thumbnail=item.thumbnail, plot=plot, extra1=item.extra1,idioma=''))
+    
     return itemlist
     
 def idioma(item):
     logger.info("pelisalacarta.channels.mundoflv idioma")
 
     itemlist = []
-    thumvid =item.thumbnail
-    itemlist.append( Item(channel=item.channel, title="Latino", action="findvideos", url=item.url, thumbnail=thumbmx, fanart='', extra = 'la', fulltitle = item.title, thumvid=thumvid))
+    thumbvid =item.thumbnail
+    itemlist.append( Item(channel=item.channel, title="Latino", action="temporadas", url=item.url, thumbnail=thumbmx, fanart='', extra1 = 'la', fulltitle = item.title, thumbvid = thumbvid, contentSerieName=item.contentSerieName))
     
-    itemlist.append( Item(channel=item.channel, title="Español", action="findvideos", url=item.url, thumbnail=thumbes, fanart='', extra = 'es', fulltitle = item.title))
+    itemlist.append( Item(channel=item.channel, title="Español", action="temporadas", url=item.url, thumbnail=thumbes, fanart='', extra1 = 'es', fulltitle = item.title, thumbvid = thumbvid, contentSerieName=item.contentSerieName))
     
-    itemlist.append( Item(channel=item.channel, title="Subtitulado", action="findvideos", url=item.url, thumbnail=thumbsub, fanart='', extra = 'sub', fulltitle = item.title))
+    itemlist.append( Item(channel=item.channel, title="Subtitulado", action="temporadas", url=item.url, thumbnail=thumbsub, fanart='', extra1 = 'sub', fulltitle = item.title, thumbvid = thumbvid, contentSerieName=item.contentSerieName))
     
-    itemlist.append( Item(channel=item.channel, title="Original", action="findvideos", url=item.url, thumbnail=thumben, fanart='', extra = 'en', fulltitle = item.title))
+    itemlist.append( Item(channel=item.channel, title="Original", action="temporadas", url=item.url, thumbnail=thumben, fanart='', extra1 = 'en', fulltitle = item.title, thumbvid = thumbvid, contentSerieName=item.contentSerieName))
     
+    return itemlist 
+
+def findvideos(item):
+
+    logger.info("pelisalacarta.channels.mundoflv findvideos")
+    itemlist = []
+    data = scrapertools.cache_page(item.url)
+    
+    patron ='href="([^"]+)".*?'
+    patron +='color="gold">([^<]+)<'
+    matches = re.compile(patron,re.DOTALL).findall(data)
+    for scrapedurl, scrapedidioma in matches:
+        if scrapedidioma == item.extra1:
+           url = scrapedurl
+           data = scrapertools.cache_page(url)
+           from core import servertools
+           itemlist.extend(servertools.find_video_items(item=item, data=data))
+    for videoitem in itemlist:
+        videoitem.channel = item.channel
+        videoitem.folder = False
+        videoitem.extra = item.thumbvid
+        videoitem.fulltitle = item.fulltitle
+#        videoitem.action = play
     return itemlist
-    
+
 def busqueda(item):
     logger.info("mundoflv.py busqueda")
     itemlist = []
@@ -256,7 +293,7 @@ def busqueda(item):
         thumbnail = scrapedthumbnail
         plot = ''
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="temporadas" , title=title , fulltitle=title, url=url, thumbnail=thumbnail, plot=plot))
+        itemlist.append( Item(channel=item.channel, action="temporadas" , title=title , fulltitle=title, url=url, thumbnail=thumbnail, plot=plot, contentSerieName=title))
    #Paginacion
     patron  = "<a rel='nofollow' class=previouspostslink' href='([^']+)'>Siguiente &rsaquo;</a>"
     next_page_url = scrapertools.find_single_match(data,"<a rel='nofollow' class=previouspostslink' href='([^']+)'>Siguiente &rsaquo;</a>")
@@ -266,39 +303,11 @@ def busqueda(item):
         itemlist.append(Item(channel = item.channel,action = "busqueda",title = ">> Página siguiente", url = next_page_url))   
 
     return itemlist
-    
 
-
-                 
 def search(item,texto):
     logger.info("mundoflv.py search")
     texto = texto.replace(" ","+")
     item.url = item.url+texto
     if texto!='':
-       return busqueda(item)
-    
-def findvideos(item):
-
-    logger.info("pelisalacarta.channels.mundoflv findvideos")
-    itemlist = []
-    data = scrapertools.cache_page(item.url)
-    
-    patron ='href="([^"]+)".*?'
-    patron +='color="gold">([^<]+)<'
-    matches = re.compile(patron,re.DOTALL).findall(data)
-        
-    for scrapedurl, scrapedidioma in matches:
-        if scrapedidioma == item.extra:
-           url = scrapedurl
-           data = scrapertools.cache_page(url)
-           from core import servertools
-           itemlist.extend(servertools.find_video_items(item=item, data=data))
-    for videoitem in itemlist:
-        videoitem.channel = item.channel
-        videoitem.folder = False
-        videoitem.extra = item.thumvid
-        videoitem.fulltitle = item.fulltitle
-#        videoitem.action = play
-
-    return itemlist
+       return busqueda(item)    
 
