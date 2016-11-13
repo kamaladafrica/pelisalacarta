@@ -259,6 +259,11 @@ def save_library_tvshow(item, episodelist):
             if exception.errno != errno.EEXIST:
                 raise
 
+    # Eliminamos de la lista lo que no sean episodios
+    for it in episodelist:
+        if not scrapertools.get_season_and_episode(it.title):
+            episodelist.remove(it)
+
     tvshow_path = filetools.join(path, "tvshow.nfo")
     if not filetools.exists(tvshow_path):
         # Creamos tvshow.nfo, si no existe, con la url_scraper, info de la serie y marcas de episodios vistos
@@ -271,21 +276,21 @@ def save_library_tvshow(item, episodelist):
         item_tvshow.library_playcounts = {}
         item_tvshow.library_urls = {item.channel: item.url}
 
-        # si el canal tiene filtro de idiomas, escogemos el valor del index 1, para evitar la opción
-        # "Añadir a biblioteca XBMC", que no contiene toda la información
-        if episodelist and episodelist[1].list_idiomas:
-            item_tvshow.library_filter_show = {item.channel: episodelist[1].show}
-
     else:
         # Si existe tvshow.nfo, pero estamos añadiendo un nuevo canal actualizamos el listado de urls
         url_scraper = filetools.read(tvshow_path, 0, 1)
         item_tvshow = Item().fromjson(filetools.read(tvshow_path, 1))
         item_tvshow.library_urls[item.channel] = item.url
 
-        # si el canal tiene filtro de idiomas, escogemos el valor del index 1, para evitar la opción
-        # "Añadir a biblioteca XBMC", que no contiene toda la información
-        if episodelist and episodelist[1].list_idiomas:
-            item_tvshow.library_filter_show[item.channel] = episodelist[1].show
+    # FILTERTOOLS
+    # si el canal tiene filtro de idiomas, añadimos el canal y el show
+    if episodelist and "list_idiomas" in episodelist[0]:
+        # si ya hemos añadido un canal previamente con filtro, añadimos o actualizamos el canal y show
+        if "library_filter_show" in item_tvshow:
+            item_tvshow.library_filter_show[item.channel] = item.show
+        # no habia ningún canal con filtro y lo generamos por primera vez
+        else:
+            item_tvshow.library_filter_show = {item.channel: item.show}
 
     if not item_tvshow.active and item.channel != "descargas":
         item_tvshow.active = True  # para que se actualice cuando se llame a library_service
@@ -350,12 +355,7 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
         if not silent:
             p_dialog.update(int(math.ceil((i + 1) * t)), 'Añadiendo episodio...', e.title)
 
-        # Añade todos menos el que dice "Añadir esta serie..." o "Descargar esta serie..."
-        if e.action == "add_serie_to_library" or e.action == "download_all_episodes":
-            continue
-
         try:
-
             season_episode = scrapertools.get_season_and_episode(e.title.lower())
 
             e.infoLabels = serie.infoLabels
@@ -374,6 +374,7 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
             item_strm.contentType = e.contentType
             item_strm.contentTitle = season_episode
 
+            # FILTERTOOLS
             # si el canal tiene filtro se le pasa el nombre que tiene guardado para que filtre correctamente,
             if item_strm.list_idiomas:
                 # si viene de library_service se obtiene del fichero tvshow.nfo, propiedad "library_filter_show"
@@ -381,7 +382,7 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
                     item_strm.library_filter_show = serie.library_filter_show.get(serie.channel, "")
                 # si se ha agregado la serie lo obtenemos del titulo.
                 else:
-                    item_strm.library_filter_show = serie.title
+                    item_strm.library_filter_show = {serie.channel: serie.show}
 
                 if item_strm.library_filter_show == "":
                     logger.error("Se ha producido un error al obtener el nombre de la serie a filtrar")

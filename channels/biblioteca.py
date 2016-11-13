@@ -293,7 +293,6 @@ def get_episodios(item):
             # logger.debug("epi:\n" + epi.tostring('\n'))
             itemlist.append(epi)
 
-
     return sorted(itemlist, key=lambda it: (int(it.contentSeason), int(it.contentEpisodeNumber)))
 
 
@@ -375,17 +374,12 @@ def findvideos(item):
         list_servers = []
 
         try:
+            # FILTERTOOLS
             # si el canal tiene filtro se le pasa el nombre que tiene guardado para que filtre correctamente.
-            if item_json.list_idiomas:
+            if "list_idiomas" in item_json:
                 # si se viene desde la biblioteca de pelisalacarta
                 if "library_filter_show" in item:
                     item_json.show = item.library_filter_show.get(nom_canal, "")
-                # si se viene desde la biblioteca de Kodi
-                else:
-                    item_json.show = item_json.contentSerieName
-
-                if item_json.show == "":
-                    logger.error("Se ha producido un error al obtener el nombre de la serie a filtrar")
 
             # Ejecutamos find_videos, del canal o común
             if hasattr(channel, 'findvideos'):
@@ -393,8 +387,11 @@ def findvideos(item):
             else:
                 from core import servertools
                 list_servers = servertools.find_video_items(item_json)
-        except:
+        except Exception as ex:
             logger.error("Ha fallado la funcion findvideos para el canal %s" % nom_canal)
+            template = "An exception of type {0} occured. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            logger.error(message)
 
         # Cambiarle el titulo a los servers añadiendoles el nombre del canal delante y
         # las infoLabels y las imagenes del item si el server no tiene
