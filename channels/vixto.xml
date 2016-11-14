@@ -1,47 +1,35 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <channel>
-	<id>oranline</id>
-	<name>Oranline</name>
+	<id>vixto</id>
+	<name>Vixto</name>
 
 	<active>true</active>
 	<adult>false</adult>
 	<language>es</language>
 
-	<fanart>https://d18.usercdn.com/i/03860/v89p218dygxz.jpg</fanart>
-	<thumbnail>http://media.tvalacarta.info/pelisalacarta/squares/oranline.png</thumbnail>
-	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/oranline.png</bannermenu>
+	<fanart></fanart>
+	<thumbnail>http://i.imgur.com/y4c4HT2.png</thumbnail>
+	<bannermenu></bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>5</version>
-	<date>08/07/2016</date>
-	<changes>Correcciones y adaptacion a la nueva version</changes>
+	<version>1</version>
+	<date>12/11/2016</date>
+	<changes>Primera version, sustituye a oranline</changes>
 
 	<categories>
 		<category>latino</category>
 		<category>movie</category>
-		<category>documentary</category>
+		<category>serie</category>
+		<category>vos</category>
 	</categories>
 
 	<settings>
-		<id>include_in_global_search</id>
-		<type>bool</type>
-		<label>Incluir en busqueda global</label>
-		<default>false</default>
-		<enabled>true</enabled>
-		<visible>true</visible>
+		<include_in_global_search>false</include_in_global_search>
 	</settings>
 	<settings>
 		<id>include_in_newest_peliculas</id>
 		<type>bool</type>
 		<label>Incluir en Novedades - Películas</label>
-		<default>true</default>
-		<enabled>true</enabled>
-		<visible>true</visible>
-	</settings>
-	<settings>
-		<id>include_in_newest_documentales</id>
-		<type>bool</type>
-		<label>Incluir en Novedades - Documentales</label>
 		<default>true</default>
 		<enabled>true</enabled>
 		<visible>true</visible>
@@ -69,10 +57,9 @@
 		<id>filterlanguages</id>
 		<type>list</type>
 		<label>Mostrar enlaces en idioma...</label>
-		<default>4</default>
+		<default>3</default>
 		<enabled>true</enabled>
 		<visible>true</visible>
-		<lvalues>Inglés</lvalues>
 		<lvalues>VOSE</lvalues>
 		<lvalues>Latino</lvalues>
 		<lvalues>Español</lvalues>
@@ -90,14 +77,14 @@
 		<lvalues>No filtrar</lvalues>
 	</settings>
 	<settings>
-		<id>viewmode</id>
+		<id>orderlinks</id>
 		<type>list</type>
-		<label>Elegir vista por defecto (Confluence)...</label>
+		<label>Ordenar enlaces por...</label>
 		<default>2</default>
 		<enabled>true</enabled>
 		<visible>true</visible>
-		<lvalues>Sinopsis</lvalues>
-		<lvalues>Miniatura</lvalues>
-		<lvalues>Lista</lvalues>
+		<lvalues>Servidor</lvalues>
+		<lvalues>Idioma</lvalues>
+		<lvalues>Más recientes</lvalues>
 	</settings>
 </channel>
