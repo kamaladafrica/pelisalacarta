@@ -256,7 +256,8 @@ def add_season(data=None):
     # default = 2
     # se reordena la lista
     list_season_episode = data
-    list_season_episode.sort(key=lambda el: int(el[0]), reverse=False)
+    if list_season_episode:
+        list_season_episode.sort(key=lambda el: int(el[0]), reverse=False)
 
     # if list_season_episode:
     #     # mostrar temporada + 1 de la lista
