@@ -19,7 +19,7 @@ DEBUG = config.get_setting("debug")
 
 
 def mainlist(item):
-    logger.info("pelisalacarta.channels.biblioteca mainlist")
+    logger.info()
 
     itemlist = list()
     itemlist.append(Item(channel=item.channel, action="peliculas", title="Películas",
@@ -33,14 +33,14 @@ def mainlist(item):
 
 
 def peliculas(item):
-    logger.info("pelisalacarta.channels.biblioteca peliculas")
+    logger.info()
     itemlist = []
 
     for raiz, subcarpetas, ficheros in filetools.walk(library.MOVIES_PATH):
         for f in ficheros:
             if f.endswith(".nfo"):
                 nfo_path = filetools.join(raiz, f)
-                url_scraper, new_item = library.read_nfo(nfo_path)
+                head_nfo, new_item = library.read_nfo(nfo_path)
 
                 new_item.nfo = nfo_path
                 new_item.path = raiz
@@ -91,7 +91,7 @@ def peliculas(item):
 
 
 def series(item):
-    logger.info("pelisalacarta.channels.biblioteca series")
+    logger.info()
     itemlist = []
 
     # Obtenemos todos los tvshow.nfo de la biblioteca de SERIES recursivamente
@@ -100,7 +100,7 @@ def series(item):
             if f == "tvshow.nfo":
                 tvshow_path = filetools.join(raiz, f)
                 # logger.debug(tvshow_path)
-                url_scraper, item_tvshow = library.read_nfo(tvshow_path)
+                head_nfo, item_tvshow = library.read_nfo(tvshow_path)
                 item_tvshow.title = item_tvshow.contentTitle
                 item_tvshow.path = raiz
                 item_tvshow.nfo = tvshow_path
@@ -159,7 +159,7 @@ def series(item):
 
 
 def get_temporadas(item):
-    logger.info("pelisalacarta.channels.biblioteca get_temporadas")
+    logger.info()
     # logger.debug("item:\n" + item.tostring('\n'))
     itemlist = []
     dict_temp = {}
@@ -183,7 +183,7 @@ def get_temporadas(item):
                                   filtrar_season=True)
 
             # Menu contextual: Releer tvshow.nfo
-            url_scraper, item_nfo = library.read_nfo(item.nfo)
+            head_nfo, item_nfo = library.read_nfo(item.nfo)
 
             # Menu contextual: Marcar la temporada como vista o no
             visto = item_nfo.library_playcounts.get("season %s" % season, 0)
@@ -214,8 +214,8 @@ def get_temporadas(item):
 
 
 def get_episodios(item):
-    logger.info("pelisalacarta.channels.biblioteca get_episodios")
-    logger.debug("item:\n" + item.tostring('\n'))
+    logger.info()
+    #logger.debug("item:\n" + item.tostring('\n'))
     itemlist = []
 
     # Obtenemos los archivos de los episodios
@@ -235,7 +235,7 @@ def get_episodios(item):
 
             # Obtener los datos del season_episode.nfo
             nfo_path = filetools.join(raiz, i).replace('.strm', '.nfo')
-            url_scraper, epi = library.read_nfo(nfo_path)
+            head_nfo, epi = library.read_nfo(nfo_path)
 
             # Fijar el titulo del capitulo si es posible
             if epi.contentTitle:
@@ -248,7 +248,7 @@ def get_episodios(item):
             epi.title = "%sx%s - %s" % (epi.contentSeason, str(epi.contentEpisodeNumber).zfill(2), title_episodie)
 
             # Menu contextual: Releer tvshow.nfo
-            url_scraper, item_nfo = library.read_nfo(item.nfo)
+            head_nfo, item_nfo = library.read_nfo(item.nfo)
             if item_nfo.library_filter_show:
                 epi.library_filter_show = item_nfo.library_filter_show
 
@@ -274,7 +274,7 @@ def get_episodios(item):
 
 
 def findvideos(item):
-    logger.info("pelisalacarta.channels.biblioteca findvideos")
+    logger.info()
     # logger.debug("item:\n" + item.tostring('\n'))
 
     itemlist = []
@@ -395,7 +395,7 @@ def findvideos(item):
 
 
 def play(item):
-    logger.info("pelisalacarta.channels.biblioteca play")
+    logger.info()
     # logger.debug("item:\n" + item.tostring('\n'))
 
     if not item.contentChannel == "local":
@@ -426,11 +426,11 @@ def play(item):
 
 # metodos de menu contextual
 def mark_content_as_watched(item):
-    logger.info("pelisalacarta.channels.biblioteca mark_content_as_watched")
+    logger.info()
     # logger.debug("item:\n" + item.tostring('\n'))
 
     if filetools.exists(item.nfo):
-        url_scraper = filetools.read(item.nfo, 0, 1)
+        head_nfo = filetools.read(item.nfo, 0, 1)
         it = Item().fromjson(filetools.read(item.nfo, 1))
 
         if item.contentType == 'movie':
@@ -449,7 +449,7 @@ def mark_content_as_watched(item):
             it = check_season_playcount(it, item.contentSeason)
 
         # Guardamos los cambios en item.nfo
-        if filetools.write(item.nfo, url_scraper + it.tojson()):
+        if filetools.write(item.nfo, head_nfo + it.tojson()):
             item.infoLabels['playcount'] = item.playcount
 
             if item.contentType == 'tvshow':
@@ -463,13 +463,12 @@ def mark_content_as_watched(item):
 
 
 def mark_season_as_watched(item):
-    logger.info("pelisalacarta.channels.biblioteca mark_season_as_watched")
+    logger.info()
     # logger.debug("item:\n" + item.tostring('\n'))
 
     # Obtener el diccionario de episodios marcados
     f = filetools.join(item.path, 'tvshow.nfo')
-    url_scraper = filetools.read(f, 0, 1)
-    it = Item().fromjson(filetools.read(f, 1))
+    head_nfo, it = library.read_nfo(f)
     if not hasattr(it, 'library_playcounts'):
         it.library_playcounts = {}
 
@@ -505,7 +504,7 @@ def mark_season_as_watched(item):
             it = check_tvshow_playcount(it, item.contentSeason)
 
         # Guardamos los cambios en tvshow.nfo
-        filetools.write(f, url_scraper + it.tojson())
+        filetools.write(f, head_nfo + it.tojson())
         item.infoLabels['playcount'] = item.playcount
 
         if config.is_xbmc():
@@ -516,11 +515,10 @@ def mark_season_as_watched(item):
 
 
 def mark_tvshow_as_updatable(item):
-    logger.info("pelisalacarta.channels.biblioteca mark_tvshow_as_updatable")
-    url_scraper = filetools.read(item.nfo, 0, 1)
-    it = Item().fromjson(filetools.read(item.nfo, 1))
+    logger.info()
+    head_nfo, it = library.read_nfo(item.nfo)
     it.active = item.active
-    filetools.write(item.nfo, url_scraper + it.tojson())
+    filetools.write(item.nfo, head_nfo + it.tojson())
 
     platformtools.itemlist_refresh()
 
@@ -572,9 +570,9 @@ def eliminar(item):
 
             if num_enlaces > 0:
                 # Actualizar .nfo
-                url_scraper, item_nfo = library.read_nfo(item.nfo)
+                head_nfo, item_nfo = library.read_nfo(item.nfo)
                 del item_nfo.library_urls[canal]
-                filetools.write(item.nfo, url_scraper + item_nfo.tojson())
+                filetools.write(item.nfo, head_nfo + item_nfo.tojson())
 
             msg_txt = "Eliminados %s enlaces del canal %s" % (num_enlaces, canal)
             logger.info(msg_txt)
@@ -588,7 +586,7 @@ def eliminar(item):
 
 
 def check_season_playcount(item, season):
-    logger.info("pelisalacarta.channels.biblioteca check_season_playcount")
+    logger.info()
     # logger.debug("item " + item.tostring("\n"))
 
     episodios_temporada = 0
@@ -610,7 +608,7 @@ def check_season_playcount(item, season):
 
 
 def check_tvshow_playcount(item, season):
-    logger.info("pelisalacarta.channels.biblioteca check_tvshow_playcount")
+    logger.info()
     # logger.debug("item " + item.tostring("\n"))
 
     temporadas_serie = 0

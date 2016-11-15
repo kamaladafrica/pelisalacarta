@@ -39,15 +39,19 @@ class InfoLabels(dict):
         return self.tostring(separador=',\r\t')
 
     def __setitem__(self, name, value):
-        #forzamos int() en season y episode
         if name in ["season", "episode"]:
-            value = int(value)
+            # forzamos int() en season y episode
+            try:
+                super(InfoLabels, self).__setitem__(name, int(value))
+            except:
+                pass
             
-        if name in ['IMDBNumber', 'code', 'imdb_id']:
+        elif name in ['IMDBNumber', 'imdb_id']:
             # Por compatibilidad hemos de guardar el valor en los tres campos
             super(InfoLabels, self).__setitem__('IMDBNumber', value)
-            super(InfoLabels, self).__setitem__('code', value)
+            #super(InfoLabels, self).__setitem__('code', value)
             super(InfoLabels, self).__setitem__('imdb_id', value)
+
         else:
             super(InfoLabels, self).__setitem__(name, value)
     
@@ -67,6 +71,13 @@ class InfoLabels(dict):
         if key in ['rating']:
             # Ejemplo de clave q devuelve un str formateado como float por defecto
             return '0.0'
+
+        elif key == 'code':
+            if 'imdb_id' in super(InfoLabels,self).keys() and super(InfoLabels,self).__getitem__('imdb_id') !="":
+                return super(InfoLabels,self).__getitem__('imdb_id')
+            else:
+                return ""
+
         elif key == 'mediatype':
             # "movie", "tvshow", "season", "episode"
             if 'tvshowtitle' in super(InfoLabels,self).keys():

@@ -158,7 +158,7 @@ def convert_old_to_v4():
 
 
 def update(path, p_dialog, i, t, serie, overwrite):
-    logger.info("pelisalacarta.library_service Actualizando " + path)
+    logger.info("Actualizando " + path)
 
     # logger.debug("%s: %s" %(serie.contentSerieName,str(list_canales) ))
     for channel, url in serie.library_urls.items():
@@ -170,7 +170,7 @@ def update(path, p_dialog, i, t, serie, overwrite):
                                                                           serie.channel.capitalize()))
         try:
             pathchannels = filetools.join(config.get_runtime_path(), "channels", serie.channel + '.py')
-            logger.info("pelisalacarta.library_service Cargando canal: " + pathchannels + " " +
+            logger.info("Cargando canal: " + pathchannels + " " +
                         serie.channel)
 
             if serie.library_filter_show:
@@ -184,7 +184,7 @@ def update(path, p_dialog, i, t, serie, overwrite):
                 return (insertados > 0)
 
             except Exception as ex:
-                logger.info("pelisalacarta.library_service Error al guardar los capitulos de la serie")
+                logger.info("Error al guardar los capitulos de la serie")
                 template = "An exception of type {0} occured. Arguments:\n{1!r}"
                 message = template.format(type(ex).__name__, ex.args)
                 logger.info(message)
@@ -202,6 +202,7 @@ def update(path, p_dialog, i, t, serie, overwrite):
 def main(overwrite=True):
     logger.info("Actualizando series...")
     p_dialog = None
+    hoy = datetime.date.today()
 
     try:
 
@@ -225,7 +226,7 @@ def main(overwrite=True):
             t = float(100) / len(show_list)
 
             for i, tvshow_file in enumerate(show_list):
-                url_scraper, serie = library.read_nfo(tvshow_file)
+                head_nfo, serie = library.read_nfo(tvshow_file)
                 path = filetools.dirname(tvshow_file)
 
                 logger.info("serie=" + serie.contentSerieName)
@@ -237,43 +238,55 @@ def main(overwrite=True):
                     # si la serie no esta activa descartar
                     continue
 
-                # obtenemos la fecha de la proxima actualizacion programada para esta serie
-                next_update = serie.next_update
-                if next_update:
-                    y, m, d = next_update.split('-')
-                    next_update = datetime.date(int(y), int(m), int(d))
+                # obtenemos las fecha de auctualizacion y de la proxima programada para esta serie
+                update_next = serie.update_next
+                if update_next:
+                    y, m, d = update_next.split('-')
+                    update_next = datetime.date(int(y), int(m), int(d))
                 else:
-                    next_update = datetime.date.today()
+                    update_next = hoy
+
+                update_last = serie.update_last
+                if update_last:
+                    y, m, d = update_last.split('-')
+                    update_last = datetime.date(int(y), int(m), int(d))
+                else:
+                    update_last = hoy
 
 
                 # si la serie esta activa ...
                 if overwrite:
-                    #... forzar actualizacion independientemente del intervalo
+                    # ... forzar actualizacion independientemente del intervalo
                     update(path, p_dialog, i, t, serie, overwrite)
 
-                elif interval == 1 and next_update <= datetime.date.today():
+                elif interval == 1 and update_next <= hoy:
                     # ...actualizacion diaria
                     if not update(path, p_dialog, i, t, serie, overwrite) \
-                            and next_update <= datetime.date.today() - datetime.timedelta(days=7):
+                            and update_last <= hoy - datetime.timedelta(days=7):
                         # si hace una semana q no se actualiza, pasar el intervalo a semanal
                         interval = 7
+                        update_next = hoy + datetime.timedelta(days=interval)
 
-                elif interval == 7 and next_update <= datetime.date.today():
+                elif interval == 7 and update_next <= hoy:
                     # ...actualizacion semanal
-                    if not update(path, p_dialog, i, t, serie, overwrite) \
-                            and next_update <= datetime.date.today() - datetime.timedelta(days=14):
-                        # si hace 2 semanas q no se actualiza, pasar el intervalo a mensual
-                        interval = 30
+                    if not update(path, p_dialog, i, t, serie, overwrite):
+                        if update_last <= hoy - datetime.timedelta(days=14):
+                            # si hace 2 semanas q no se actualiza, pasar el intervalo a mensual
+                            interval = 30
 
-                elif interval == 30 and next_update <= datetime.date.today():
+                        update_next += datetime.timedelta(days=interval)
+
+                elif interval == 30 and update_next <= hoy:
                     # ...actualizacion mensual
-                    update(path, p_dialog, i, t, serie, overwrite)
+                    if not update(path, p_dialog, i, t, serie, overwrite):
+                        update_next += datetime.timedelta(days=interval)
 
 
-                if interval != int(serie.active) or next_update.strftime('%Y-%m-%d') != serie.next_update:
+                if interval != int(serie.active) or update_next.strftime('%Y-%m-%d') != serie.update_next:
                     serie.active = interval
-                    serie.next_update = next_update.strftime('%Y-%m-%d')
-                    filetools.write(tvshow_file, url_scraper + serie.tojson())
+                    serie.update_next = update_next.strftime('%Y-%m-%d')
+                    filetools.write(tvshow_file, head_nfo + serie.tojson())
+
 
             p_dialog.close()
 
