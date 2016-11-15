@@ -384,6 +384,7 @@ def set_context_commands(item, parent_item):
         context_commands.append(("Abrir Configuración", "XBMC.Container.Update(%s?%s)" %
                                  (sys.argv[0], Item(channel="configuracion", action="mainlist").tourl())))
 
+    #context_commands.append((item.contentType, "XBMC.Action(Info)")) # For debug
     return sorted(context_commands, key=lambda comand: comand[0])
 
 

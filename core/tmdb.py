@@ -112,16 +112,18 @@ def find_and_set_infoLabels_tmdb(item):
 
     title = re.sub('\[\\\?(B|I|COLOR)\s?[^\]]*\]', '', title)
     tmdb_result = None
+    results = []
     while not tmdb_result:
-        if not item.infoLabels.get("tmdb_id"):
-            if not item.infoLabels.get("imdb_id"):
-                otmdb_global = Tmdb(texto_buscado=title, tipo=tipo_busqueda, year=item.infoLabels['year'])
-            else:
-                otmdb_global = Tmdb(external_id=item.infoLabels.get("imdb_id"), external_source="imdb_id" , tipo=tipo_busqueda)
-        elif not otmdb_global or otmdb_global.result.get("id") != item.infoLabels['tmdb_id']:
-            otmdb_global = Tmdb(id_Tmdb=item.infoLabels['tmdb_id'], tipo=tipo_busqueda, idioma_busqueda="es")
+        if not results:
+            if not item.infoLabels.get("tmdb_id"):
+                if not item.infoLabels.get("imdb_id"):
+                    otmdb_global = Tmdb(texto_buscado=title, tipo=tipo_busqueda, year=item.infoLabels['year'])
+                else:
+                    otmdb_global = Tmdb(external_id=item.infoLabels.get("imdb_id"), external_source="imdb_id" , tipo=tipo_busqueda)
+            elif not otmdb_global or otmdb_global.result.get("id") != item.infoLabels['tmdb_id']:
+                otmdb_global = Tmdb(id_Tmdb=item.infoLabels['tmdb_id'], tipo=tipo_busqueda, idioma_busqueda="es")
 
-        results = otmdb_global.get_list_resultados()
+            results = otmdb_global.get_list_resultados()
 
         if len(results) > 1:
             tmdb_result = platformtools.show_video_info(results, callback='cb_select_from_tmdb', item=item,
@@ -130,7 +132,9 @@ def find_and_set_infoLabels_tmdb(item):
         elif len(results) > 0:
             tmdb_result = results[0]
 
+
         if tmdb_result is None:
+            results = []
             # En muchas ocasiones no lo encuentra por que el titulo incluye el (año),
             # si es asi lo quitamos y volvemos a probar
             year = scrapertools.find_single_match(title, "^.+?\s*(\(\d{4}\))$")
@@ -139,10 +143,22 @@ def find_and_set_infoLabels_tmdb(item):
                 item.infoLabels['year'] = year [1:-1]
 
             else:
-                # Si no lo encuentra solo, preguntamos por el titulo correcto
-                if platformtools.dialog_yesno("%s no encontrada" % tipo_contenido.capitalize(),
-                                              "No se ha encontrado la %s:" % tipo_contenido, title,
-                                              '¿Desea introducir otro nombre?'):
+                index = -1
+                if tipo_contenido == "serie":
+                    # Si no lo encuentra la serie por si solo, presentamos una lista de opciones
+                    opciones = ["Introducir otro nombre", "Buscar en TheTvDB.com"]
+                    index = platformtools.dialog_select("%s no encontrada" % tipo_contenido.capitalize(), opciones)
+
+                elif platformtools.dialog_yesno("Película no encontrada",
+                                               "No se ha encontrado la película:", title,
+                                               '¿Desea introducir otro nombre?'):
+                    index = 0
+
+                if index < 0:
+                    logger.debug("he pulsado 'cancelar' en la ventana '%s no encontrada'" % tipo_contenido.capitalize())
+                    break
+
+                if index == 0: # "Introducir otro nombre"
                     # Pregunta el titulo
                     it = platformtools.dialog_input(title, "Introduzca el nombre de la %s a buscar" % tipo_contenido)
                     if it is not None:
@@ -151,8 +167,10 @@ def find_and_set_infoLabels_tmdb(item):
                     else:
                         logger.debug("he pulsado 'cancelar' en la ventana 'introduzca el nombre correcto'")
                         break
-                else:
-                    break
+
+                if index == 1: # "Buscar en TheTvDB.com"
+                    results = tvdb_series_by_title(title)
+
 
     if isinstance(item.infoLabels, InfoLabels):
         infoLabels = item.infoLabels
@@ -160,11 +178,20 @@ def find_and_set_infoLabels_tmdb(item):
         infoLabels = InfoLabels()
 
     if tmdb_result:
-        infoLabels['tmdb_id'] = tmdb_result['id']
-        item.infoLabels = infoLabels
-        set_infoLabels_item(item)
-        return True
+        if 'id' in tmdb_result:
+            # resultados obtenidos de tmdb
+            infoLabels['tmdb_id'] = tmdb_result['id']
+            infoLabels['url_scraper'] = "https://www.themoviedb.org/tv/%s" % infoLabels['tmdb_id']
+            item.infoLabels = infoLabels
+            set_infoLabels_item(item)
 
+        elif 'tvdb_id' in tmdb_result:
+            # resultados obtenidos de tvdb
+            infoLabels.update(tmdb_result)
+            item.infoLabels = infoLabels
+
+        logger.debug("item:\n" + item.tostring('\n'))
+        return True
     else:
         item.infoLabels = infoLabels
         return False
@@ -193,6 +220,7 @@ def set_infoLabels(source, seekTmdb=True, idioma_busqueda='es'):
         ret = set_infoLabels_item(source, seekTmdb, idioma_busqueda)
         logger.debug("Se han obtenido los datos del enlace en %f segundos" % (time.time() - start_time))
     return ret
+
 
 def set_infoLabels_itemlist(item_list, seekTmdb=False, idioma_busqueda='es'):
     """
@@ -245,6 +273,7 @@ def set_infoLabels_itemlist(item_list, seekTmdb=False, idioma_busqueda='es'):
 
     # Reconstruir y devolver la lista solo con los resultados de las llamadas individuales
     return [ii[2] for ii in r_list]
+
 
 def set_infoLabels_item(item, seekTmdb=True, idioma_busqueda='es', lock=None):
     # -----------------------------------------------------------------------------------------------------------
@@ -422,6 +451,55 @@ def set_infoLabels_item(item, seekTmdb=True, idioma_busqueda='es', lock=None):
     # La busqueda en tmdb esta desactivada o no ha dado resultado
     item.contentType = item.infoLabels['mediatype']
     return -1 * len(item.infoLabels)
+
+
+def tvdb_series_by_title(title, idioma="es"):
+    list_series = []
+    limite = 8
+
+    SeriesByTitleUrl = 'http://thetvdb.com/api/GetSeries.php?seriesname=%s&language=%s' % \
+                       (title.replace(' ', '%20'), idioma)
+    data = scrapertools.cache_page(SeriesByTitleUrl)
+    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
+
+    patron = '<Series>(.*?)</Series>'
+    matches = scrapertools.find_multiple_matches(data, patron)
+    for serie in matches:
+        info = {"type": "tv", "mediatype": "tvshow"}
+        info["imdb_id"] = scrapertools.find_single_match(serie, '<IMDB_ID>([^<]*)</IMDB_ID>')
+        if info["imdb_id"]:
+            info["title"] = scrapertools.find_single_match(serie, '<SeriesName>([^<]*)</SeriesName>')
+            #info["date"] = scrapertools.find_single_match(serie, '<FirstAired>([^<]*)</FirstAired>')
+            info["tvdb_id"] = scrapertools.find_single_match(serie, '<id>([^<]*)</id>')
+            info["plot"] = scrapertools.find_single_match(serie, '<Overview>([^<]*)</Overview>')
+            info["url_scraper"] = "http://thetvdb.com/?tab=series&id=" + info["tvdb_id"]
+
+            # Recuperar imagenes
+            BannersBySeriesIdUrl = 'http://thetvdb.com/api/1D62F2F90030C444/series/%s/banners.xml' % info["tvdb_id"]
+            data = scrapertools.cache_page(BannersBySeriesIdUrl)
+            data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
+
+            patron = '<Banner>(.*?)</Banner>'
+            banners = scrapertools.find_multiple_matches(data, patron)
+            for banner in banners:
+                BannerType =  scrapertools.find_single_match(banner, '<BannerType>([^<]*)</BannerType>')
+                if BannerType == 'fanart' and not "fanart" in info:
+                    info["fanart"] = 'http://thetvdb.com/banners/' + \
+                                     scrapertools.find_single_match(banner, '<BannerPath>([^<]*)</BannerPath>')
+                if BannerType == 'poster' and not "thumbnail" in info:
+                    info["thumbnail"] = 'http://thetvdb.com/banners/' + \
+                                     scrapertools.find_single_match(banner, '<BannerPath>([^<]*)</BannerPath>')
+                if "fanart" in info and "thumbnail" in info:
+                    break
+
+
+            list_series.append(info)
+            limite -= 1
+            if limite == 0:
+                break
+
+    #logger.debug(list_series)
+    return list_series
 
 
 
@@ -643,7 +721,7 @@ class Tmdb(object):
 
         self.busqueda_id = kwargs.get('id_Tmdb','')
         self.busqueda_texto = re.sub('\[\\\?(B|I|COLOR)\s?[^\]]*\]', '', texto_buscado)
-        self.busqueda_tipo = kwargs.get('tipo', 'movie')
+        self.busqueda_tipo = kwargs.get('tipo', '')
         self.busqueda_idioma = kwargs.get('idioma_busqueda', 'es')
         self.busqueda_include_adult = kwargs.get('include_adult', False)
         self.busqueda_year = kwargs.get('year', '')
@@ -654,6 +732,9 @@ class Tmdb(object):
             (self.busqueda_idioma not in Tmdb.dic_generos or
              self.busqueda_tipo not in Tmdb.dic_generos[self.busqueda_idioma]):
                 self.rellenar_dic_generos(self.busqueda_tipo, self.busqueda_idioma)
+
+        if not self.busqueda_tipo:
+            self.busqueda_tipo = 'movie'
 
         if self.busqueda_id:
             # Busqueda por identificador tmdb
@@ -845,10 +926,7 @@ class Tmdb(object):
                 try:
                     if self.load_resultado(r, p):
                         result = self.result.copy()
-                        '''if self.busqueda_tipo == 'tv':
-                            result['mediatype'] = 'tvshow'
-                        else:
-                            result['mediatype'] = self.busqueda_tipo'''
+
                         result['thumbnail'] = self.get_poster(size="w300")
                         result['fanart'] = self.get_backdrop()
                         res.append(result)

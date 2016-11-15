@@ -69,6 +69,50 @@ FOLDER_TVSHOWS = "SERIES"  # config.get_localized_string(30073)
 TVSHOWS_PATH = filetools.join(LIBRARY_PATH, FOLDER_TVSHOWS)
 
 
+def read_nfo(path_nfo, item=None):
+    """
+    Metodo para leer archivos nfo.
+        Los arcivos nfo tienen la siguiente extructura: url_scraper | xml + item_json
+        [url_scraper] y [xml] son opcionales, pero solo uno de ellos ha de existir siempre.
+    @param path_nfo: ruta absoluta al archivo nfo
+    @type path_nfo: str
+    @param item: Si se pasa este parametro el item devuelto sera una copia de este con
+        los valores de 'infoLabels', 'library_playcounts' y 'path' leidos del nfo
+    @type: Item
+    @return: Una tupla formada por la 'url_scraper' y el objeto 'item_json'
+    @rtype: tuple (str, Item)
+    """
+    url_scraper = ""
+    it = None
+    if filetools.exists(path_nfo):
+        url_scraper = filetools.read(path_nfo, 0, 1)
+        data = filetools.read(path_nfo, 1)
+
+        if not url_scraper.startswith('http'):
+            # url_scraper no valida, xml presente
+            url_scraper = ''
+            import re
+            data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
+            data = re.sub("(<tvshow>|<movie>)(.*?)(</tvshow>|</movie>)", "", data)
+
+        it_nfo = Item().fromjson(data)
+
+
+        if item:
+            it = item.clone()
+            it.infoLabels = it_nfo.infoLabels
+            if 'library_playcounts' in it_nfo:
+                it.library_playcounts = it_nfo.library_playcounts
+            if it_nfo.path:
+                it.path = it_nfo.path
+        else:
+            it = it_nfo
+
+        if 'fanart' in it.infoLabels:
+            it.fanart = it.infoLabels['fanart']
+
+    return url_scraper, it
+
 
 def save_library_movie(item):
     """
@@ -152,8 +196,10 @@ def save_library_movie(item):
 
     else:
         # Si existe .nfo, pero estamos añadiendo un nuevo canal lo abrimos
-        url_scraper = filetools.read(nfo_path, 0, 1)
-        item_nfo = Item().fromjson(filetools.read(nfo_path, 1))
+        from channels import biblioteca
+        '''url_scraper = filetools.read(nfo_path, 0, 1)
+        item_nfo = Item().fromjson(filetools.read(nfo_path, 1))'''
+        url_scraper, item_nfo = read_nfo(nfo_path)
 
     strm_path = filetools.join(path, "%s.strm" % base_name)
     if not filetools.exists(strm_path):
@@ -211,13 +257,6 @@ def save_library_tvshow(item, episodelist):
     # logger.debug(item.tostring('\n'))
     path = ""
 
-    ''''# Itentamos obtener el titulo correcto:
-    # 1. contentSerieName: Este deberia ser el sitio correcto
-    # 2. show
-    if not item.contentSerieName:
-        # Colocamos el titulo en su sitio para que tmdb lo localize
-        item.contentSerieName = item.show'''
-
     # Si llegados a este punto no tenemos titulo o tmdb_id, salimos
     if not (item.contentSerieName or item.infoLabels['tmdb_id']) or not item.channel:
         logger.debug("NO ENCONTRADO contentSerieName NI tmdb_id")
@@ -268,8 +307,8 @@ def save_library_tvshow(item, episodelist):
     if not filetools.exists(tvshow_path):
         # Creamos tvshow.nfo, si no existe, con la url_scraper, info de la serie y marcas de episodios vistos
         logger.info("Creando tvshow.nfo: " + tvshow_path)
-        url_scraper = "https://www.themoviedb.org/tv/%s\n" % item.infoLabels['tmdb_id']
-
+        #url_scraper = "https://www.themoviedb.org/tv/%s\n" % item.infoLabels['tmdb_id']
+        url_scraper = item.infoLabels['url_scraper'] + "\n"
         item_tvshow = Item(title=item.contentTitle, channel="biblioteca", action="get_temporadas",
                            fanart=item.infoLabels['fanart'], thumbnail=item.infoLabels['thumbnail'],
                            infoLabels=item.infoLabels, path=path.replace(TVSHOWS_PATH, ""))
@@ -278,8 +317,8 @@ def save_library_tvshow(item, episodelist):
 
     else:
         # Si existe tvshow.nfo, pero estamos añadiendo un nuevo canal actualizamos el listado de urls
-        url_scraper = filetools.read(tvshow_path, 0, 1)
-        item_tvshow = Item().fromjson(filetools.read(tvshow_path, 1))
+        url_scraper, item_tvshow = read_nfo(tvshow_path)
+
         item_tvshow.library_urls[item.channel] = item.url
 
     # FILTERTOOLS
@@ -292,8 +331,9 @@ def save_library_tvshow(item, episodelist):
         else:
             item_tvshow.library_filter_show = {item.channel: item.show}
 
-    if not item_tvshow.active and item.channel != "descargas":
-        item_tvshow.active = True  # para que se actualice cuando se llame a library_service
+
+    if item.channel != "descargas":
+        item_tvshow.active = 1  # para que se actualice a diario cuando se llame a library_service
 
     filetools.write(tvshow_path, url_scraper + item_tvshow.tojson())
 
@@ -393,14 +433,22 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
 
         nfo_path = filetools.join(path, "%s.nfo" % season_episode)
         item_nfo = None
-        if not filetools.exists(nfo_path) and e.infoLabels.get("tmdb_id"):
+        if not filetools.exists(nfo_path) and e.infoLabels.get("imdb_id"):
             # Si no existe season_episode.nfo añadirlo
-            tmdb.find_and_set_infoLabels_tmdb(e)
+            if e.infoLabels["tmdb_id"]:
+                tmdb.find_and_set_infoLabels_tmdb(e)
+                url_scraper = "https://www.themoviedb.org/tv/%s/season/%s/episode/%s\n" % (
+                e.infoLabels['tmdb_id'],
+                e.contentSeason,
+                e.contentEpisodeNumber)
+
+
+            elif e.infoLabels["tvdb_id"]:
+                url_scraper = e.url_scraper
+
             item_nfo = e.clone(channel="biblioteca", url="", action='findvideos',
                                strm_path=strm_path.replace(TVSHOWS_PATH, ""))
-            url_scraper = "https://www.themoviedb.org/tv/%s/season/%s/episode/%s\n" % (item_nfo.infoLabels['tmdb_id'],
-                                                                                       item_nfo.contentSeason,
-                                                                                       item_nfo.contentEpisodeNumber)
+
             filetools.write(nfo_path, url_scraper + item_nfo.tojson())
 
         # Solo si existen season_episode.nfo y season_episode.strm continuamos
@@ -411,7 +459,8 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
             if nuevo or overwrite:
                 # Obtenemos infoLabel del episodio
                 if not item_nfo:
-                    item_nfo = Item().fromjson(filetools.read(nfo_path, 1))
+                    url_scraper, item_nfo = read_nfo(nfo_path)
+                    #item_nfo = Item().fromjson(filetools.read(nfo_path, 1))
 
                 e.infoLabels = item_nfo.infoLabels
 
@@ -447,9 +496,14 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
         # Si hay nuevos episodios los marcamos como no vistos en tvshow.nfo ...
         tvshow_path = filetools.join(path, "tvshow.nfo")
         try:
-            url_scraper = filetools.read(tvshow_path, 0, 1)
-            tvshow_item = Item().fromjson(filetools.read(tvshow_path, 1))
+            import datetime
+            url_scraper, tvshow_item = read_nfo(tvshow_path)
             tvshow_item.library_playcounts.update(news_in_playcounts)
+
+            if tvshow_item.active == 30:
+                tvshow_item.active = 1
+            next_update = datetime.date.today() + datetime.timedelta(days=int(tvshow_item.active))
+            tvshow_item.next_update = next_update.strftime('%Y-%m-%d')
 
             filetools.write(tvshow_path, url_scraper + tvshow_item.tojson())
         except:
@@ -545,6 +599,12 @@ def add_serie_to_library(item, channel=None):
 
         # Obtiene el listado de episodios
         itemlist = getattr(channel, item.action)(item)
+
+    # Eliminamos de la lista lo q no sean episodios
+    for it in itemlist:
+        if not scrapertools.get_season_and_episode(it.title):
+            itemlist.remove(it)
+
 
     if not itemlist:
         platformtools.dialog_ok("Biblioteca", "ERROR, la serie NO se ha añadido a la biblioteca",
@@ -893,8 +953,30 @@ def establecer_contenido(content_type, silent=False):
 
                     continuar = (install and xbmc.getCondVisibility('System.HasAddon(metadata.themoviedb.org)'))
 
-            else:
-                if not xbmc.getCondVisibility('System.HasAddon(metadata.tvshows.themoviedb.org)'):
+            else: # SERIES
+                # Instalar The TVDB
+                if not xbmc.getCondVisibility('System.HasAddon(metadata.tvdb.com)'):
+                    if not silent:
+                        # Preguntar si queremos instalar metadata.tvdb.com
+                        install = platformtools.dialog_yesno("The TVDB",
+                                                             "No se ha encontrado el Scraper de series de The TVDB.",
+                                                             "¿Desea instalarlo ahora?")
+                    else:
+                        install = True
+
+                    if install:
+                        try:
+                            # Instalar metadata.tvdb.com
+                            xbmc.executebuiltin('xbmc.installaddon(metadata.tvdb.com)', True)
+                            logger.info("Instalado el Scraper de series de The TVDB")
+                        except:
+                            pass
+
+                    continuar = (install and xbmc.getCondVisibility('System.HasAddon(metadata.tvdb.com)'))
+
+
+                # Instalar TheMovieDB
+                if continuar and not xbmc.getCondVisibility('System.HasAddon(metadata.tvshows.themoviedb.org)'):
                     if not silent:
                         # Preguntar si queremos instalar metadata.tvshows.themoviedb.org
                         install = platformtools.dialog_yesno("The Movie Database",
@@ -907,6 +989,12 @@ def establecer_contenido(content_type, silent=False):
                         try:
                             # Instalar metadata.tvshows.themoviedb.org
                             xbmc.executebuiltin('xbmc.installaddon(metadata.tvshows.themoviedb.org)', True)
+                            strSettings = '<settings>\n\t<setting id="fanart" value="true" />\n\t' \
+                                          '<setting id="keeporiginaltitle" value="false" />\n\t' \
+                                          '<setting id="language" value="es" />\n' \
+                                          '</settings>'
+                            path_settings = xbmc.translatePath("special://profile/addon_data/metadata.tvshows.themoviedb.org/settings.xml")
+                            install = filetools.write(path_settings,strSettings)
                             logger.info("Instalado el Scraper de series de TheMovieDB")
                         except:
                             pass
@@ -957,13 +1045,19 @@ def establecer_contenido(content_type, silent=False):
                                   "<setting id='fanart' value='true' /><setting id='keeporiginaltitle' value='false' />" \
                                   "<setting id='language' value='es' /><setting id='tmdbcertcountry' value='us' />" \
                                   "<setting id='trailer' value='true' /></settings>"
+                    strActualizar = "¿Desea configurar este Scraper en español como opción por defecto para películas?"
+
                 else:
                     strContent = 'tvshows'
-                    strScraper = 'metadata.tvshows.themoviedb.org'
+                    strScraper = 'metadata.tvdb.com'
                     scanRecursive = 0
-                    strSettings = "<settings><setting id='fanart' value='true' />" \
-                                  "<setting id='keeporiginaltitle' value='false' />" \
+                    strSettings = "<settings><setting id='RatingS' value='TheTVDB' />" \
+                                  "<setting id='absolutenumber' value='false' />" \
+                                  "<setting id='dvdorder' value='false' />" \
+                                  "<setting id='fallback' value='true' />" \
+                                  "<setting id='fanart' value='true' />" \
                                   "<setting id='language' value='es' /></settings>"
+                    strActualizar = "¿Desea configurar este Scraper en español como opción por defecto para series?"
 
                 # Fijamos strPath
                 strPath = librarypath + content_type + "/"
@@ -982,9 +1076,7 @@ def establecer_contenido(content_type, silent=False):
                 else:
                     if not silent:
                         # Preguntar si queremos configurar themoviedb.org como opcion por defecto
-                        actualizar = platformtools.dialog_yesno("The Movie Database",
-                                                             "¿Desea configurar este Scraper en español "
-                                                             "como opción por defecto?")
+                        actualizar = platformtools.dialog_yesno("The TVDB", strActualizar)
                     else:
                         actualizar = True
 
