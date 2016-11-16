@@ -905,7 +905,6 @@ class Tmdb(object):
         results = []
         total_results = 0
         total_pages = 0
-        buscando = ""
 
         # Ejemplo self.discover: {'url': 'discover/movie', 'with_cast': '1'}
         # url: Método de la api a ejecutar
@@ -932,7 +931,6 @@ class Tmdb(object):
                     total_pages = 1
                 else:
                     total_results = 0
-
 
             if total_results > 0:
                 results = resultado["results"]
@@ -963,7 +961,7 @@ class Tmdb(object):
             return len(self.results)
         else:
             # No hay resultados de la busqueda
-            logger.error("La busqueda de '%s' no dio resultados" % buscando)
+            logger.error("La busqueda de '%s' no dio resultados" % type_search)
             return 0
 
 
@@ -1087,7 +1085,7 @@ class Tmdb(object):
 
                 if "status_code" in resultado:
                     msg = "Error de tmdb: %s %s" % (resultado["status_code"], resultado["status_message"])
-                logger.debug(msg)
+                    logger.debug(msg)
 
         return ret
 
