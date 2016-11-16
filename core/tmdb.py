@@ -624,7 +624,6 @@ class ResultDictDefault(dict):
 #    get_sinopsis(idioma_alternativo): Retorna un str con la sinopsis de la serie o pelicula cargada.
 #    get_poster (tipo_respuesta,size): Obtiene el poster o un listado de posters.
 #    get_backdrop (tipo_respuesta,size): Obtiene una imagen de fondo o un listado de imagenes de fondo.
-#    get_fanart (tipo,idioma,temporada): Obtiene un listado de imagenes del tipo especificado de la web Fanart.tv
 #    get_temporada(temporada): Obtiene un diccionario con datos especificos de la temporada.
 #    get_episodio (temporada, capitulo): Obtiene un diccionario con datos especificos del episodio.
 #    get_generos(): Retorna un str con la lista de generos a los que pertenece la pelicula o serie.
@@ -726,6 +725,7 @@ class Tmdb(object):
         self.busqueda_include_adult = kwargs.get('include_adult', False)
         self.busqueda_year = kwargs.get('year', '')
         self.busqueda_filtro = kwargs.get('filtro', {})
+        self.discover = kwargs.get('discover', {})
 
         # Reellenar diccionario de generos si es necesario
         if (self.busqueda_tipo == 'movie' or self.busqueda_tipo == "tv") and \
@@ -754,6 +754,9 @@ class Tmdb(object):
                 self.busqueda_id = kwargs.get('external_id')
                 self.__by_id(source=kwargs.get('external_source'))
 
+        elif self.discover:
+            self.__discover()
+
         else:
             logger.debug("Creado objeto vacio")
 
@@ -761,6 +764,11 @@ class Tmdb(object):
     @classmethod
     def rellenar_dic_generos(cls, tipo='movie', idioma='es'):
         resultado = {}
+
+        # Si se busca en idioma catalán, se cambia a español para el diccionario de géneros
+        if idioma == "ca":
+            idioma = "es"
+
         # Rellenar diccionario de generos del tipo e idioma pasados como parametros
         if idioma not in cls.dic_generos:
             cls.dic_generos[idioma] = {}
@@ -889,6 +897,73 @@ class Tmdb(object):
             if "status_code" in resultado:
                 msg += "\nError de tmdb: %s %s" % (resultado["status_code"], resultado["status_message"])
             logger.error(msg)
+            return 0
+
+    def __discover(self, index_results=0):
+        resultado = {}
+        self.result = ResultDictDefault()
+        results = []
+        total_results = 0
+        total_pages = 0
+        buscando = ""
+
+        # Ejemplo self.discover: {'url': 'discover/movie', 'with_cast': '1'}
+        # url: Método de la api a ejecutar
+        # resto de claves: Parámetros de la búsqueda concatenados a la url
+        type_search = self.discover.get('url', '')
+        if type_search:
+            params = []
+            for key, value in self.discover.items():
+                if key != "url":
+                    params.append(key + "=" + str(value))
+            # http://api.themoviedb.org/3/discover/movie?api_key=f7f51775877e0bb6703520952b3c7840&query=superman&language=es
+            url = ('http://api.themoviedb.org/3/%s?api_key=f7f51775877e0bb6703520952b3c7840&%s'
+                  % (type_search, "&".join(params)))
+
+            logger.info("[Tmdb.py] Buscando %s:\n%s" % (type_search, url))
+
+            try:
+                resultado = jsontools.load_json(scrapertools.downloadpageWithoutCookies(url))
+                total_results = resultado["total_results"]
+                total_pages = resultado["total_pages"]
+            except:
+                if resultado and not "status_code" in resultado:
+                    total_results = -1
+                    total_pages = 1
+                else:
+                    total_results = 0
+
+
+            if total_results > 0:
+                results = resultado["results"]
+                if self.busqueda_filtro and results:
+                    # TODO documentar esta parte
+                    for key, value in dict(self.busqueda_filtro).items():
+                        for r in results[:]:
+                            if key not in r or r[key] != value:
+                                results.remove(r)
+                                total_results -= 1
+            elif total_results == -1:
+                results = resultado
+
+            if index_results >= len(results):
+                logger.error(
+                    "La busqueda de '%s' no dio %s resultados" % (type_search, index_results))
+                return 0
+
+        # Retornamos el numero de resultados de esta pagina
+        if results:
+            self.results = results
+            self.total_results = total_results
+            self.total_pages = total_pages
+            if total_results > 0:
+                self.result = ResultDictDefault(self.results[index_results])
+            else:
+                self.result = results
+            return len(self.results)
+        else:
+            # No hay resultados de la busqueda
+            logger.error("La busqueda de '%s' no dio resultados" % buscando)
             return 0
 
 
