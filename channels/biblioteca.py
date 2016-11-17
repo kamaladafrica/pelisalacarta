@@ -436,7 +436,7 @@ def mark_content_as_watched(item):
         if item.contentType == 'movie':
             name_file = os.path.splitext(os.path.basename(item.nfo))[0]
         elif item.contentType == 'episode':
-            name_file = item.contentSeason + "x" + item.contentEpisodeNumber
+            name_file = "%sx%s" % (item.contentSeason, item.contentEpisodeNumber)
         else:
             name_file = item.contentTitle
 
