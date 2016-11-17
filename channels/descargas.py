@@ -526,7 +526,7 @@ def download_from_server(item):
 
 
 def download_from_best_server(item, ask = False):
-    logger.info("contentAction: %s | contentAction: %s | url: %s" % (item.contentAction, item.contentAction, item.url))
+    logger.info("contentAction: %s | contentChannel: %s | url: %s" % (item.contentAction, item.contentChannel, item.url))
     result =  {"downloadStatus": STATUS_CODES.error}
 
     progreso = platformtools.dialog_progress("Descargas", "Obteniendo lista de servidores disponibles...")
@@ -586,7 +586,7 @@ def download_from_best_server(item, ask = False):
 
 
 def start_download(item, ask = False):
-    logger.info("contentAction: %s | conentChannel: %s | url: %s" % (item.contentAction, item.conentChannel, item.url))
+    logger.info("contentAction: %s | contentChannel: %s | url: %s" % (item.contentAction, item.contentChannel, item.url))
 
     # Ya tenemnos server, solo falta descargar
     if item.contentAction == "play":

@@ -592,7 +592,7 @@ def check_season_playcount(item, season):
     episodios_temporada = 0
     episodios_vistos_temporada = 0
     for key, value in item.library_playcounts.iteritems():
-        if key.startswith(season+"x"):
+        if key.startswith("%sx" % season):
             episodios_temporada += 1
             if value > 0:
                 episodios_vistos_temporada += 1
