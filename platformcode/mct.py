@@ -51,6 +51,14 @@ def play(url, xlistitem={}, is_view=None, subtitle=""):
 
     allocate = True
     try:
+        import platform
+        xbmc.log("XXX KODI XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+        xbmc.log("OS platform: %s %s" % (platform.system(),platform.release()))
+        xbmc.log("xbmc/kodi version: %s" % xbmc.getInfoLabel( "System.BuildVersion" ))
+        xbmc_version = int(xbmc.getInfoLabel( "System.BuildVersion" )[:2])
+        xbmc.log("xbmc/kodi version number: %s" % xbmc_version)
+        xbmc.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX KODI XXXX")
+
         _platform = get_platform()
         if str(_platform['system']) in ["android_armv7", "linux_armv6", "linux_armv7"]:
             allocate = False
@@ -306,9 +314,15 @@ def play(url, xlistitem={}, is_view=None, subtitle=""):
             playlist.clear()
 
             ren_video_file = os.path.join( save_path_videos, video_file )
-            playlist.add( ren_video_file, xlistitem )
+            try:
+                playlist.add( ren_video_file, xlistitem )
+            except:
+                playlist.add( ren_video_file )
 
-            player = play_video()
+            if xbmc_version < 17:
+                player = play_video( xbmc.PLAYER_CORE_AUTO )
+            else:
+                player = play_video()
             player.play(playlist)
 
             # -- Contador de cancelaciones para la ventana de   -
