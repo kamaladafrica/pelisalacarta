@@ -190,7 +190,7 @@ def find_and_set_infoLabels_tmdb(item):
             infoLabels.update(tmdb_result)
             item.infoLabels = infoLabels
 
-        logger.debug("item:\n" + item.tostring('\n'))
+        #logger.debug("item:\n" + item.tostring('\n'))
         return True
     else:
         item.infoLabels = infoLabels

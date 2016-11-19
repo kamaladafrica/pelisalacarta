@@ -38,24 +38,35 @@ def mainlist(item):
     logger.info("tvalacarta.channels.configuracion mainlist")
 
     itemlist = []
-    itemlist.append(Item(channel=CHANNELNAME, title="Preferencias", action="settings", folder=False))
-    itemlist.append(Item(channel=CHANNELNAME, title="", action="", folder=False))
+    itemlist.append(Item(channel=CHANNELNAME, title="Preferencias", action="settings", folder=False,
+                         thumbnail=get_thumbnail_path("thumb_configuracion.png")))
+    itemlist.append(Item(channel=CHANNELNAME, title="", action="", folder=False,
+                         thumbnail=get_thumbnail_path("thumb_configuracion.png")))
 
-    itemlist.append(Item(channel=CHANNELNAME, title="Ajustes especiales", action="", folder=False))
+    itemlist.append(Item(channel=CHANNELNAME, title="Ajustes especiales", action="", folder=False,
+                         thumbnail=get_thumbnail_path("thumb_configuracion.png")))
+    itemlist.append(Item(channel="novedades", title="   Ajustes de la sección 'Novedades'", action="menu_opciones",
+                         folder=True, thumbnail=get_thumbnail_path("thumb_novedades.png")))
+    itemlist.append(Item(channel="buscador",  title="   Ajustes del buscador global", action="opciones", folder=True,
+                         thumbnail=get_thumbnail_path("thumb_buscar.png")))
 
-    itemlist.append(Item(channel="novedades", title="   Ajustes de la sección 'Novedades'", action="menu_opciones", folder=True))
-    itemlist.append(Item(channel="buscador",  title="   Ajustes del buscador global", action="opciones", folder=True))
+    if config.get_library_support():
+        itemlist.append(Item(channel="biblioteca", title="   Ajustes de la biblioteca",
+                             action="channel_config", folder=True, thumbnail=get_thumbnail_path("thumb_biblioteca.png")))
+        itemlist.append(Item(channel="biblioteca", action="update_biblio", folder=False,
+                             thumbnail=get_thumbnail_path("thumb_biblioteca.png"),
+                             title="   Buscar nuevos episodios y actualizar biblioteca"))
 
-    if config.is_xbmc():
-        itemlist.append(Item(channel=item.channel, action="updatebiblio",
-                             title="   Buscar nuevos episodios y actualizar biblioteca", folder=False))
+    itemlist.append(Item(channel=CHANNELNAME, title="   Comprobar actualizaciones", action="check_for_updates",
+                         folder=False, thumbnail=get_thumbnail_path("Crystal_Clear_action_info.png")))
+    itemlist.append(Item(channel=CHANNELNAME, title="   Añadir o Actualizar canal/conector desde una URL",
+                         action="menu_addchannels"))
+    itemlist.append(Item(channel=item.channel, action="", title="", folder=False,
+                         thumbnail=get_thumbnail_path("thumb_configuracion.png")))
 
-    itemlist.append(Item(channel=CHANNELNAME, title="   Comprobar actualizaciones", action="check_for_updates", folder=False))
-    itemlist.append(Item(channel=CHANNELNAME, title="   Añadir o Actualizar canal/conector desde una URL", action="menu_addchannels"))
-    itemlist.append(Item(channel=item.channel, action="", title="", folder=False))
 
-
-    itemlist.append(Item(channel=CHANNELNAME, title="Ajustes por canales", action="", folder=False))
+    itemlist.append(Item(channel=CHANNELNAME, title="Ajustes por canales", action="", folder=False,
+                         thumbnail=get_thumbnail_path("thumb_configuracion.png")))
     import channelselector
     from core import channeltools
     channel_list = channelselector.filterchannels("all")
@@ -65,7 +76,9 @@ def mainlist(item):
         setting = jsonchannel["settings"]
         if type(setting) == list:
           if len([s for s in setting if "id" in s and not "include_in_" in s["id"]]):
-            itemlist.append(Item(channel=CHANNELNAME,  title="   Configuración del canal '%s'" % channel.title, action="channel_config", config=channel.channel, folder=False))
+            itemlist.append(Item(channel=CHANNELNAME,  title="   Configuración del canal '%s'" % channel.title,
+                                 action="channel_config", config=channel.channel, folder=False,
+                                 thumbnail=channel.thumbnail))
 
     return itemlist
 
@@ -74,7 +87,8 @@ def channel_config(item):
   from platformcode import platformtools
   import os
   return platformtools.show_channel_settings(channelpath=os.path.join(config.get_runtime_path(),"channels", item.config))
-  
+
+
 def check_for_updates(item):
     from core import updater
   
@@ -91,30 +105,9 @@ def check_for_updates(item):
     except:
         pass
 
+
 def settings(item):
     config.open_settings()
-
-
-def updatebiblio(item):
-    logger.info("pelisalacarta.channels.ayuda updatebiblio")
-
-    # Actualizar las series activas sobreescribiendo
-    import library_service
-    library_service.main()
-
-    # Eliminar las carpetas de peliculas que no contengan archivo strm
-    from platformcode import library
-    for raiz, subcarpetas, ficheros in filetools.walk(library.MOVIES_PATH):
-        strm = False
-        for f in ficheros:
-            if f.endswith(".strm"):
-                strm = True
-                break
-
-        if ficheros and not strm:
-            logger.debug("Borrando carpeta de pelicula eliminada: %s" % raiz)
-            filetools.rmdirtree(raiz)
-
 
 
 def menu_addchannels(item):
@@ -278,3 +271,8 @@ def backups(item):
             if dyesno:
                 import shutil
                 shutil.rmtree(ruta, ignore_errors=True)
+
+def get_thumbnail_path(thumb_name):
+    import urlparse
+    WEB_PATH = "http://media.tvalacarta.info/pelisalacarta/squares/"
+    return urlparse.urljoin(WEB_PATH, thumb_name)

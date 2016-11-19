@@ -45,13 +45,16 @@ if not addon_name or addon_name.startswith("default.py"):
     addon_name = "plugin://plugin.video.pelisalacarta/"
 
 
-modo_cliente = int(config.get_setting("library_mode"))
+modo_cliente = config.get_setting("library_mode", "biblioteca")
 # Host name where XBMC is running, leave as localhost if on this PC
 # Make sure "Allow control of XBMC via HTTP" is set to ON in Settings ->
 # Services -> Webserver
-xbmc_host = config.get_setting("xbmc_host")
+xbmc_host = config.get_setting("xbmc_host", "biblioteca")
 # Configured in Settings -> Services -> Webserver -> Port
-xbmc_port = int(config.get_setting("xbmc_port"))
+try:
+    xbmc_port = int(config.get_setting("xbmc_puerto", "biblioteca"))
+except:
+    xbmc_port = 0
 # Base URL of the json RPC calls. For GET calls we append a "request" URI
 # parameter. For POSTs, we add the payload as JSON the the HTTP request body
 xbmc_json_rpc_url = "http://" + xbmc_host + ":" + str(xbmc_port) + "/jsonrpc"
@@ -519,8 +522,8 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
             fallidos = -1
 
         # ... y actualizamos la biblioteca de Kodi
-        if config.is_xbmc():
-            update(FOLDER_TVSHOWS, filetools.basename(path) + "/")
+        if config.is_xbmc() and not silent:
+            update(FOLDER_TVSHOWS, filetools.basename(path))
 
     if fallidos == len(episodelist):
         fallidos = -1
@@ -646,7 +649,7 @@ def mark_auto_as_watched(item):
         logger.info()
         # logger.debug("item:\n" + item.tostring('\n'))
 
-        condicion = int(config.get_setting("watched_setting"))
+        condicion = config.get_setting("watched_setting", "biblioteca")
 
         xbmc.sleep(5000)
 
@@ -676,7 +679,7 @@ def mark_auto_as_watched(item):
             xbmc.sleep(30000)
 
     # Si esta configurado para marcar como visto
-    if config.get_setting("mark_as_watched") == "true":
+    if config.get_setting("mark_as_watched", "biblioteca") == True:
         Thread(target=mark_as_watched_subThread, args=[item]).start()
 
 
@@ -902,21 +905,28 @@ def update(content_type=FOLDER_TVSHOWS, folder=""):
     if librarypath == "":
         librarypath = "special://home/userdata/addon_data/plugin.video." + config.PLUGIN_NAME + "/library/" + \
                       content_type + "/"
-    else:
-        if folder == "":
-            librarypath = ""
-        else:
-            librarypath = filetools.join(librarypath, content_type, folder)
 
-    # logger.info("la ruta es " + librarypath)
-    _path = librarypath
+    # Si termina en "/" lo eliminamos
+    if librarypath.endswith("/"):
+        librarypath = librarypath[:-1]
 
-    # Se comenta la llamada normal para reutilizar 'payload' dependiendo del modo cliente
-    # xbmc.executebuiltin('UpdateLibrary(video)')
-    if _path:
-        payload = {"jsonrpc": "2.0", "method": "VideoLibrary.Scan", "params": {"directory": _path}, "id": 1}
+    if librarypath.startswith("special:"):
+        if not librarypath.endswith(content_type):
+            librarypath += "/" + content_type
+        if folder:
+            librarypath += "/" + folder
     else:
-        payload = {"jsonrpc": "2.0", "method": "VideoLibrary.Scan", "id": 1}
+        if not librarypath.endswith(content_type):
+            librarypath = filetools.join(librarypath, content_type)
+        if folder:
+            librarypath = filetools.join(librarypath, folder)
+
+
+    # Añadimos el caracter finalizador
+    if not librarypath.endswith("/"):
+        librarypath += "/"
+
+    payload = {"jsonrpc": "2.0", "method": "VideoLibrary.Scan", "params": {"directory": librarypath}, "id": 1}
     data = get_data(payload)
     logger.info("data: %s" % data)
 

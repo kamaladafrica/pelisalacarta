@@ -15,8 +15,6 @@ from core.item import Item
 from platformcode import library
 from platformcode import platformtools
 
-DEBUG = config.get_setting("debug")
-
 
 def mainlist(item):
     logger.info()
@@ -29,7 +27,14 @@ def mainlist(item):
                          category="Biblioteca de series",
                          thumbnail="http://media.tvalacarta.info/pelisalacarta/squares/thumb_biblioteca_series.png"))
 
+    #itemlist.append(Item(channel=item.channel, title="", action="", folder=False, thumbnail=item.thumbnail))
+    #itemlist.append(Item(channel=item.channel, action="channel_config", title="Opciones"))
+
     return itemlist
+
+
+def channel_config(item):
+  return platformtools.show_channel_settings(channelpath=os.path.join(config.get_runtime_path(),"channels", item.channel))
 
 
 def peliculas(item):
@@ -117,13 +122,14 @@ def series(item):
 
                 # Menu contextual: Buscar automáticamente nuevos episodios o no
                 if int(item_tvshow.active) > 0:
-                    texto_update = "No buscar automáticamente nuevos episodios"
+                    texto_update = "Buscar automáticamente nuevos episodios: Desactivar"
                     value = 0
                     item_tvshow.text_color = "green"
                 else:
-                    texto_update = "Buscar automáticamente nuevos episodios"
+                    texto_update = "Buscar automáticamente nuevos episodios: Activar"
                     value = 1
                     item_tvshow.text_color = "0xFFDF7401"
+
 
                 # Menu contextual: Eliminar serie/canal
                 num_canales = len(item_tvshow.library_urls)
@@ -147,7 +153,10 @@ def series(item):
                                        {"title": texto_eliminar,
                                         "action": "eliminar",
                                         "channel": "biblioteca",
-                                        "multicanal": multicanal}]
+                                        "multicanal": multicanal},
+                                       {"title": "Buscar nuevos episodios ahora",
+                                        "action": "update_serie",
+                                        "channel":"biblioteca"}]
                 # ,{"title": "Cambiar contenido (PENDIENTE)",
                 # "action": "",
                 # "channel": "biblioteca"}]
@@ -155,7 +164,12 @@ def series(item):
                 # logger.debug("item_tvshow:\n" + item_tvshow.tostring('\n'))
                 itemlist.append(item_tvshow)
 
-    return sorted(itemlist, key=lambda it: it.title.lower())
+    if itemlist:
+        itemlist = sorted(itemlist, key=lambda it: it.title.lower())
+
+        itemlist.append(Item(channel=item.channel, action="update_biblio", thumbnail=item.thumbnail,
+                             title="Buscar nuevos episodios y actualizar biblioteca", folder=False))
+    return itemlist
 
 
 def get_temporadas(item):
@@ -166,15 +180,15 @@ def get_temporadas(item):
 
     raiz, carpetas_series, ficheros = filetools.walk(item.path).next()
 
-    if config.get_setting("no_pile_on_seasons") == "Siempre":
+    if config.get_setting("no_pile_on_seasons", "biblioteca") == 2: # Siempre
         return get_episodios(item)
 
     for f in ficheros:
         if f.endswith('.json'):
             season = f.split('x')[0]
-            dict_temp[season] = "Temporada " + str(season)
+            dict_temp[season] = "Temporada %s" % season
 
-    if config.get_setting("no_pile_on_seasons") == "Sólo si hay una temporada" and len(dict_temp) == 1:
+    if config.get_setting("no_pile_on_seasons", "biblioteca") == 1 and len(dict_temp) == 1: # Sólo si hay una temporada
         return get_episodios(item)
     else:
         # Creamos un item por cada temporada
@@ -205,7 +219,7 @@ def get_temporadas(item):
         if len(itemlist) > 1:
             itemlist = sorted(itemlist, key=lambda it: int(it.contentSeason))
 
-        if config.get_setting("show_all_seasons") == "true":
+        if config.get_setting("show_all_seasons", "biblioteca") == True:
             new_item = item.clone(action="get_episodios", title="*Todas las temporadas")
             new_item.infoLabels["playcount"] = 0
             itemlist.insert(0, new_item)
@@ -318,7 +332,7 @@ def findvideos(item):
             num_canales -= 1
 
     filtro_canal = ''
-    if num_canales > 1 and config.get_setting("ask_channel") == "true":
+    if num_canales > 1 and config.get_setting("ask_channel", "biblioteca") == True:
         opciones = ["Mostrar solo los enlaces de %s" % k.capitalize() for k in list_canales.keys()]
         opciones.insert(0, "Mostrar todos los enlaces")
         if item_local:
@@ -424,7 +438,42 @@ def play(item):
     return itemlist
 
 
+def update_biblio(item):
+    logger.info()
+
+    # Actualizar las series activas sobreescribiendo
+    import library_service
+    library_service.check_for_update(overwrite=True)
+
+    # Eliminar las carpetas de peliculas que no contengan archivo strm
+    for raiz, subcarpetas, ficheros in filetools.walk(library.MOVIES_PATH):
+        strm = False
+        for f in ficheros:
+            if f.endswith(".strm"):
+                strm = True
+                break
+
+        if ficheros and not strm:
+            logger.debug("Borrando carpeta de pelicula eliminada: %s" % raiz)
+            filetools.rmdirtree(raiz)
+
+
 # metodos de menu contextual
+def update_serie(item):
+    logger.info()
+    #logger.debug("item:\n" + item.tostring('\n'))
+
+    heading = 'Actualizando serie....'
+    p_dialog = platformtools.dialog_progress_bg('pelisalacarta', heading)
+    p_dialog.update(0, heading, item.contentSerieName)
+
+    import library_service
+    if library_service.update(item.path, p_dialog, 1, 1, item, False) and config.is_xbmc():
+        library.update(folder=filetools.basename(item.path))
+
+    p_dialog.close()
+
+
 def mark_content_as_watched(item):
     logger.info()
     # logger.debug("item:\n" + item.tostring('\n'))

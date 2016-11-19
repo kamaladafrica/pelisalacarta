@@ -109,18 +109,6 @@
 
     <category label="Otros"><!--30503 -->
         <!--<setting type="sep" />-->
-        <setting label="Biblioteca" type="lsep"/>
-        <setting id="updatelibrary" type="bool" label="30201" default="false"/>
-        <setting id="updatelibrary_wait" type="enum" label="Esperar en el inicio antes de actualizar" values="Nada|10 seg|20 seg|30 seg|60 seg" default="0" enable="eq(-1,true)"/>
-        <setting id="library_mode" type="enum" values="Servidor|Cliente" label="Modo" default="0"/>
-        <setting id="xbmc_host" type="text" label="Nombre Servidor" enable="eq(-1,1)" default=""/>
-        <setting id="xbmc_port" type="number" label="Puerto Servidor" enable="eq(-2,1)" default="0"/>
-        <setting id="mark_as_watched" type="bool" label="Marcar automáticamente como visto" default="false"/>
-        <setting id="watched_setting" type="enum" values="5 Min|30%|50%|80%" label="Tiempo necesario del video" default="3" enable="eq(-1,true)"/>
-        <setting id="show_all_seasons" type="bool" label="Mostrar la opción &quot;Todos las temporadas&quot;" default="true"/>
-        <setting id="no_pile_on_seasons" type="select" label="No apilar temporadas de series" values="Nunca|Sólo si hay una temporada|Siempre" default="Sólo si hay una temporada"/>
-        <setting id="ask_channel" type="bool" label="Mostrar cuadro de selección de canales " default="false"/>
-        <setting type="sep"/>
         <setting label="Filtros" type="lsep"/>
         <setting id="filter_servers" type="bool" label="30068" default="false"/>
         <!--<setting type="sep" />-->

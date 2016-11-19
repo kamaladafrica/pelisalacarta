@@ -159,6 +159,7 @@ def convert_old_to_v4():
 
 def update(path, p_dialog, i, t, serie, overwrite):
     logger.info("Actualizando " + path)
+    insertados_total = 0
 
     # logger.debug("%s: %s" %(serie.contentSerieName,str(list_canales) ))
     for channel, url in serie.library_urls.items():
@@ -181,7 +182,7 @@ def update(path, p_dialog, i, t, serie, overwrite):
 
             try:
                 insertados, sobreescritos, fallidos = library.save_library_episodes(path, itemlist, serie, silent=True, overwrite=overwrite)
-                return (insertados > 0)
+                insertados_total += insertados
 
             except Exception as ex:
                 logger.info("Error al guardar los capitulos de la serie")
@@ -196,20 +197,23 @@ def update(path, p_dialog, i, t, serie, overwrite):
             message = template.format(type(ex).__name__, ex.args)
             logger.info(message)
 
-    return False
+    return (insertados_total > 0)
 
 
-def main(overwrite=True):
+def check_for_update(overwrite=True):
     logger.info("Actualizando series...")
     p_dialog = None
+    serie_actualizada = False
     hoy = datetime.date.today()
 
     try:
+        if config.get_setting("updatelibrary", "biblioteca") != 0:
+            config.set_setting("updatelibrary_last_check", hoy.strftime('%Y-%m-%d'), "biblioteca")
 
-        if config.get_setting("updatelibrary") == "true":
-            if not overwrite:  # No venimos del canal configuracion
+            if config.get_setting("updatelibrary", "biblioteca") == 1 and not overwrite:
+                # "Actualizar al inicio" y No venimos del canal configuracion
                 updatelibrary_wait = [0, 10000, 20000, 30000, 60000]
-                wait = updatelibrary_wait[int(config.get_setting("updatelibrary_wait"))]
+                wait = updatelibrary_wait[int(config.get_setting("updatelibrary_wait", "biblioteca"))]
                 if wait > 0:
                     import xbmc
                     xbmc.sleep(wait)
@@ -253,23 +257,23 @@ def main(overwrite=True):
                 else:
                     update_last = hoy
 
-
                 # si la serie esta activa ...
-                if overwrite:
+                if overwrite or config.get_setting("updatetvshows_interval", "biblioteca") == 0:
                     # ... forzar actualizacion independientemente del intervalo
-                    update(path, p_dialog, i, t, serie, overwrite)
+                    serie_actualizada = update(path, p_dialog, i, t, serie, overwrite)
 
                 elif interval == 1 and update_next <= hoy:
                     # ...actualizacion diaria
-                    if not update(path, p_dialog, i, t, serie, overwrite) \
-                            and update_last <= hoy - datetime.timedelta(days=7):
+                    serie_actualizada = update(path, p_dialog, i, t, serie, overwrite)
+                    if not serie_actualizada and update_last <= hoy - datetime.timedelta(days=7):
                         # si hace una semana q no se actualiza, pasar el intervalo a semanal
                         interval = 7
                         update_next = hoy + datetime.timedelta(days=interval)
 
                 elif interval == 7 and update_next <= hoy:
                     # ...actualizacion semanal
-                    if not update(path, p_dialog, i, t, serie, overwrite):
+                    serie_actualizada = update(path, p_dialog, i, t, serie, overwrite)
+                    if not serie_actualizada:
                         if update_last <= hoy - datetime.timedelta(days=14):
                             # si hace 2 semanas q no se actualiza, pasar el intervalo a mensual
                             interval = 30
@@ -278,7 +282,8 @@ def main(overwrite=True):
 
                 elif interval == 30 and update_next <= hoy:
                     # ...actualizacion mensual
-                    if not update(path, p_dialog, i, t, serie, overwrite):
+                    serie_actualizada = update(path, p_dialog, i, t, serie, overwrite)
+                    if not serie_actualizada:
                         update_next += datetime.timedelta(days=interval)
 
 
@@ -287,6 +292,9 @@ def main(overwrite=True):
                     serie.update_next = update_next.strftime('%Y-%m-%d')
                     filetools.write(tvshow_file, head_nfo + serie.tojson())
 
+                if serie_actualizada:
+                    # Actualizamos la biblioteca de Kodi
+                    library.update(folder=filetools.basename(path))
 
             p_dialog.close()
 
@@ -304,6 +312,7 @@ def main(overwrite=True):
 
 
 if __name__ == "__main__":
+    # Se ejecuta en cada inicio
     if config.get_setting("library_version") != 'v4':
         platformtools.dialog_ok(config.PLUGIN_NAME.capitalize(), "Se va a actualizar la biblioteca al nuevo formato",
                                 "Seleccione el nombre correcto de cada serie, si no está seguro pulse 'Cancelar'.")
@@ -312,6 +321,27 @@ if __name__ == "__main__":
             platformtools.dialog_ok(config.PLUGIN_NAME.capitalize(),
                                     "ERROR, al actualizar la biblioteca al nuevo formato")
         else:
-            main(overwrite=False)
+            check_for_update(overwrite=False)
     else:
-        main(overwrite=False)
+        check_for_update(overwrite=False)
+
+
+    # Se ejecuta ciclicamente
+    import xbmc
+    monitor = xbmc.Monitor()
+    while (True):
+        if config.get_setting("updatelibrary", "biblioteca") == 2: # "Actualizar...Cada dia
+            hoy = datetime.date.today()
+            last_check = config.get_setting("updatelibrary_last_check", "biblioteca")
+            if last_check:
+                y, m, d = last_check.split('-')
+                last_check = datetime.date(int(y), int(m), int(d))
+            else:
+                last_check = hoy - datetime.timedelta(days=1)
+
+            if last_check < hoy and datetime.datetime.now().hour >= 4:
+                logger.info("Inicio actualización programada: %s" % datetime.datetime.now())
+                check_for_update(overwrite=False)
+
+        if (monitor.waitForAbort(3600)): #cada hora
+            break

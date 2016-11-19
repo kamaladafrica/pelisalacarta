@@ -282,7 +282,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                 if c["type"] == "text":
                     control_value = c["control"].getText()
                 if c["type"] == "list":
-                    control_value = c["control"].getLabel()
+                    control_value = c["label"].getLabel()
                 if c["type"] == "label":
                     control_value = c["control"].getLabel()
 
