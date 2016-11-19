@@ -34,7 +34,7 @@ def mainlist(item):
 
 
 def channel_config(item):
-  return platformtools.show_channel_settings(channelpath=os.path.join(config.get_runtime_path(),"channels", item.channel))
+    return platformtools.show_channel_settings(channelpath=os.path.join(config.get_runtime_path(),"channels", item.channel))
 
 
 def peliculas(item):
@@ -485,7 +485,7 @@ def mark_content_as_watched(item):
         if item.contentType == 'movie':
             name_file = os.path.splitext(os.path.basename(item.nfo))[0]
         elif item.contentType == 'episode':
-            name_file = "%sx%s" % (item.contentSeason, item.contentEpisodeNumber)
+            name_file = "%dx%0.2d" % (item.contentSeason, item.contentEpisodeNumber)
         else:
             name_file = item.contentTitle
 
