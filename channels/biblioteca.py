@@ -121,7 +121,7 @@ def series(item):
                     contador = 1
 
                 # Menu contextual: Buscar automáticamente nuevos episodios o no
-                if int(item_tvshow.active) > 0:
+                if item_tvshow.active and int(item_tvshow.active) > 0:
                     texto_update = "Buscar automáticamente nuevos episodios: Desactivar"
                     value = 0
                     item_tvshow.text_color = "green"
@@ -485,7 +485,7 @@ def mark_content_as_watched(item):
         if item.contentType == 'movie':
             name_file = os.path.splitext(os.path.basename(item.nfo))[0]
         elif item.contentType == 'episode':
-            name_file = "%dx%0.2d" % (item.contentSeason, item.contentEpisodeNumber)
+            name_file = "%sx%s" % (item.contentSeason, str(item.contentEpisodeNumber).zfill(2))
         else:
             name_file = item.contentTitle
 
