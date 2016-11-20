@@ -33,21 +33,13 @@ except ImportError:
 
 
 def text2filename(text):
-    # Eliminamos o sustituimos los caracteres no validos
+    # Sustituimos los caracteres no validos
+    import unicodedata
 
-    filename = text.strip().lower()
+    if not isinstance(text, unicode):
+        text = text.decode("utf-8")
 
-    dict_char = {'á': 'a', 'à': 'a', 'ä': 'a', 'â': 'a',
-                 'é': 'e', 'è': 'e', 'ë': 'e', 'ê': 'e',
-                 'í': 'i', 'ì': 'i', 'ï': 'i', 'î': 'i',
-                 'ó': 'o', 'ò': 'o', 'ö': 'o', 'ô': 'o',
-                 'ú': 'u', 'ù': 'u', 'ü': 'u', 'û': 'u'}  # , 'ç':'c', 'ñ':'n'}
-    for i, j in dict_char.iteritems():
-        filename = filename.replace(i, j)
-
-    filename = filter(lambda c: c in "abcçdefghijklmnñopqrstuvwxyz1234567890-_()[]'. ", filename)
-
-    return filename
+    return ''.join((c for c in unicodedata.normalize('NFD', text) if unicodedata.category(c) != 'Mn'))
 
 
 def remove_chars(path):
