@@ -368,19 +368,19 @@ class InfoWindow(xbmcgui.WindowXMLDialog):
             self.close()
 
         # Boton Anterior
-        if id == 10025 and self.indexList > 0:
+        elif id == 10025 and self.indexList > 0:
             self.indexList -= 1
             self.get_tmdb_data(self.listData[self.indexList])
             self.onInit()
 
         # Boton Siguiente
-        if id == 10026 and self.indexList < len(self.listData) - 1:
+        elif id == 10026 and self.indexList < len(self.listData) - 1:
             self.indexList += 1
             self.get_tmdb_data(self.listData[self.indexList])
             self.onInit()
 
         # Boton Aceptar, Cancelar y [X]
-        if id == 10028 or id == 10003 or id == 10027:
+        elif id == 10028 or id == 10003 or id == 10027:
             self.close()
             cb_channel = None
 
@@ -410,11 +410,11 @@ class InfoWindow(xbmcgui.WindowXMLDialog):
         logger.info("pelisalacarta.platformcode.xbmc_info_window onAction action="+repr(action.getId()))
         action = action.getId()
 
+        # Obtenemos el foco
+        focus = self.getFocusId()
+
         # Accion 1: Flecha izquierda
         if action == 1:
-            # Obtenemos el foco
-            focus = self.getFocusId()
-
             # botón Aceptar
             if focus == 10028:
                 self.setFocus(self.getControl(10027))
@@ -433,10 +433,7 @@ class InfoWindow(xbmcgui.WindowXMLDialog):
                     self.setFocus(self.getControl(10025))
 
         # Accion 2: Flecha derecha
-        if action == 2:
-            # Obtenemos el foco
-            focus = self.getFocusId()
-
+        elif action == 2:
             # botón Anterior
             if focus == 10025:
                 if self.indexList + 1 != len(self.listData):
