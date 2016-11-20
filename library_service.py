@@ -28,6 +28,7 @@
 import imp
 import math
 import re
+import datetime
 
 from core import config
 from core import filetools
@@ -39,7 +40,7 @@ from platformcode import platformtools
 
 
 def convert_old_to_v4():
-    logger.info("pelisalacarta.platformcode.library_service convert_old_to_v4")
+    logger.info()
     path_series_xml = filetools.join(config.get_data_path(), "series.xml")
     path_series_json = filetools.join(config.get_data_path(), "series.json")
     series_insertadas = 0
@@ -52,7 +53,7 @@ def convert_old_to_v4():
     path_series_old = filetools.join(library.LIBRARY_PATH, new_name)
     if filetools.rename(library.TVSHOWS_PATH,  new_name):
         if not filetools.mkdir(library.TVSHOWS_PATH):
-            logger.info("ERROR, no se ha podido crear la nueva carpeta de SERIES")
+            logger.error("ERROR, no se ha podido crear la nueva carpeta de SERIES")
             return False
     else:
         logger.error("ERROR, no se ha podido renombrar la antigua carpeta de SERIES")
@@ -94,7 +95,7 @@ def convert_old_to_v4():
             version = 'v4'
 
         except EnvironmentError:
-            logger.info("ERROR al leer el archivo: %s" % path_series_xml)
+            logger.error("ERROR al leer el archivo: %s" % path_series_xml)
             return False
 
     # Convertir libreria de v2(json) a v4
@@ -123,7 +124,7 @@ def convert_old_to_v4():
             version = 'v4'
 
         except EnvironmentError:
-            logger.info("ERROR al leer el archivo: %s" % path_series_json)
+            logger.error("ERROR al leer el archivo: %s" % path_series_json)
             return False
 
     # Convertir libreria de v3 a v4
@@ -156,16 +157,63 @@ def convert_old_to_v4():
     return True
 
 
-def main(overwrite=True):
-    logger.info("pelisalacarta.library_service Actualizando series...")
+def update(path, p_dialog, i, t, serie, overwrite):
+    logger.info("Actualizando " + path)
+    insertados_total = 0
+
+    # logger.debug("%s: %s" %(serie.contentSerieName,str(list_canales) ))
+    for channel, url in serie.library_urls.items():
+        serie.channel = channel
+        serie.url = url
+
+        heading = 'Actualizando biblioteca....'
+        p_dialog.update(int(math.ceil((i + 1) * t)), heading, "%s: %s" % (serie.contentSerieName,
+                                                                          serie.channel.capitalize()))
+        try:
+            pathchannels = filetools.join(config.get_runtime_path(), "channels", serie.channel + '.py')
+            logger.info("Cargando canal: " + pathchannels + " " +
+                        serie.channel)
+
+            if serie.library_filter_show:
+                serie.show = serie.library_filter_show.get(channel, serie.contentSerieName)
+
+            obj = imp.load_source(serie.channel, pathchannels)
+            itemlist = obj.episodios(serie)
+
+            try:
+                insertados, sobreescritos, fallidos = library.save_library_episodes(path, itemlist, serie, silent=True, overwrite=overwrite)
+                insertados_total += insertados
+
+            except Exception as ex:
+                logger.info("Error al guardar los capitulos de la serie")
+                template = "An exception of type {0} occured. Arguments:\n{1!r}"
+                message = template.format(type(ex).__name__, ex.args)
+                logger.info(message)
+
+        except Exception as ex:
+            logger.error("Error al obtener los episodios de: {0}".
+                         format(serie.show))
+            template = "An exception of type {0} occured. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            logger.info(message)
+
+    return (insertados_total > 0)
+
+
+def check_for_update(overwrite=True):
+    logger.info("Actualizando series...")
     p_dialog = None
+    serie_actualizada = False
+    hoy = datetime.date.today()
 
     try:
+        if config.get_setting("updatelibrary", "biblioteca") != 0:
+            config.set_setting("updatelibrary_last_check", hoy.strftime('%Y-%m-%d'), "biblioteca")
 
-        if config.get_setting("updatelibrary") == "true":
-            if not overwrite: # No venimos del canal configuracion
+            if config.get_setting("updatelibrary", "biblioteca") == 1 and not overwrite:
+                # "Actualizar al inicio" y No venimos del canal configuracion
                 updatelibrary_wait = [0, 10000, 20000, 30000, 60000]
-                wait = updatelibrary_wait[int(config.get_setting("updatelibrary_wait"))]
+                wait = updatelibrary_wait[int(config.get_setting("updatelibrary_wait", "biblioteca"))]
                 if wait > 0:
                     import xbmc
                     xbmc.sleep(wait)
@@ -182,51 +230,71 @@ def main(overwrite=True):
             t = float(100) / len(show_list)
 
             for i, tvshow_file in enumerate(show_list):
-                serie = Item().fromjson(filetools.read(tvshow_file, 1))
+                head_nfo, serie = library.read_nfo(tvshow_file)
                 path = filetools.dirname(tvshow_file)
 
-                logger.info("pelisalacarta.library_service serie=" + serie.contentSerieName)
+                logger.info("serie=" + serie.contentSerieName)
                 p_dialog.update(int(math.ceil((i+1) * t)), heading, serie.contentSerieName)
 
+                interval = int(serie.active) # Podria ser del tipo bool
+
                 if not serie.active:
+                    # si la serie no esta activa descartar
                     continue
 
-                # si la serie esta activa se actualiza
-                logger.info("pelisalacarta.library_service Actualizando " + path)
+                # obtenemos las fecha de auctualizacion y de la proxima programada para esta serie
+                update_next = serie.update_next
+                if update_next:
+                    y, m, d = update_next.split('-')
+                    update_next = datetime.date(int(y), int(m), int(d))
+                else:
+                    update_next = hoy
 
-                # logger.debug("%s: %s" %(serie.contentSerieName,str(list_canales) ))
-                for channel, url in serie.library_urls.items():
-                    serie.channel = channel
-                    serie.url = url
+                update_last = serie.update_last
+                if update_last:
+                    y, m, d = update_last.split('-')
+                    update_last = datetime.date(int(y), int(m), int(d))
+                else:
+                    update_last = hoy
 
-                    p_dialog.update(int(math.ceil((i + 1) * t)), heading, "%s: %s" % (serie.contentSerieName,
-                                                                                      serie.channel.capitalize()))
-                    try:
-                        pathchannels = filetools.join(config.get_runtime_path(), "channels", serie.channel + '.py')
-                        logger.info("pelisalacarta.library_service Cargando canal: " + pathchannels + " " +
-                                    serie.channel)
+                # si la serie esta activa ...
+                if overwrite or config.get_setting("updatetvshows_interval", "biblioteca") == 0:
+                    # ... forzar actualizacion independientemente del intervalo
+                    serie_actualizada = update(path, p_dialog, i, t, serie, overwrite)
 
-                        if serie.library_filter_show:
-                            serie.show = serie.library_filter_show.get(channel, serie.contentSerieName)
+                elif interval == 1 and update_next <= hoy:
+                    # ...actualizacion diaria
+                    serie_actualizada = update(path, p_dialog, i, t, serie, overwrite)
+                    if not serie_actualizada and update_last <= hoy - datetime.timedelta(days=7):
+                        # si hace una semana q no se actualiza, pasar el intervalo a semanal
+                        interval = 7
+                        update_next = hoy + datetime.timedelta(days=interval)
 
-                        obj = imp.load_source(serie.channel, pathchannels)
-                        itemlist = obj.episodios(serie)
+                elif interval == 7 and update_next <= hoy:
+                    # ...actualizacion semanal
+                    serie_actualizada = update(path, p_dialog, i, t, serie, overwrite)
+                    if not serie_actualizada:
+                        if update_last <= hoy - datetime.timedelta(days=14):
+                            # si hace 2 semanas q no se actualiza, pasar el intervalo a mensual
+                            interval = 30
 
-                        try:
-                            library.save_library_episodes(path, itemlist, serie, silent=True, overwrite=overwrite)
+                        update_next += datetime.timedelta(days=interval)
 
-                        except Exception as ex:
-                            logger.info("pelisalacarta.library_service Error al guardar los capitulos de la serie")
-                            template = "An exception of type {0} occured. Arguments:\n{1!r}"
-                            message = template.format(type(ex).__name__, ex.args)
-                            logger.info(message)
+                elif interval == 30 and update_next <= hoy:
+                    # ...actualizacion mensual
+                    serie_actualizada = update(path, p_dialog, i, t, serie, overwrite)
+                    if not serie_actualizada:
+                        update_next += datetime.timedelta(days=interval)
 
-                    except Exception as ex:
-                        logger.error("Error al obtener los episodios de: {0}".
-                                     format(serie.show))
-                        template = "An exception of type {0} occured. Arguments:\n{1!r}"
-                        message = template.format(type(ex).__name__, ex.args)
-                        logger.info(message)
+
+                if interval != int(serie.active) or update_next.strftime('%Y-%m-%d') != serie.update_next:
+                    serie.active = interval
+                    serie.update_next = update_next.strftime('%Y-%m-%d')
+                    filetools.write(tvshow_file, head_nfo + serie.tojson())
+
+                if serie_actualizada:
+                    # Actualizamos la biblioteca de Kodi
+                    library.update(folder=filetools.basename(path))
 
             p_dialog.close()
 
@@ -234,16 +302,17 @@ def main(overwrite=True):
             logger.info("No actualiza la biblioteca, está desactivado en la configuración de pelisalacarta")
 
     except Exception as ex:
-        logger.info("pelisalacarta.library_service Se ha producido un error al actualizar las series")
+        logger.error("Se ha producido un error al actualizar las series")
         template = "An exception of type {0} occured. Arguments:\n{1!r}"
         message = template.format(type(ex).__name__, ex.args)
-        logger.info(message)
+        logger.error(message)
 
         if p_dialog:
             p_dialog.close()
 
 
 if __name__ == "__main__":
+    # Se ejecuta en cada inicio
     if config.get_setting("library_version") != 'v4':
         platformtools.dialog_ok(config.PLUGIN_NAME.capitalize(), "Se va a actualizar la biblioteca al nuevo formato",
                                 "Seleccione el nombre correcto de cada serie, si no está seguro pulse 'Cancelar'.")
@@ -252,6 +321,27 @@ if __name__ == "__main__":
             platformtools.dialog_ok(config.PLUGIN_NAME.capitalize(),
                                     "ERROR, al actualizar la biblioteca al nuevo formato")
         else:
-            main(overwrite=False)
+            check_for_update(overwrite=False)
     else:
-        main(overwrite=False)
+        check_for_update(overwrite=False)
+
+
+    # Se ejecuta ciclicamente
+    import xbmc
+    monitor = xbmc.Monitor()
+    while (True):
+        if config.get_setting("updatelibrary", "biblioteca") == 2: # "Actualizar...Cada dia
+            hoy = datetime.date.today()
+            last_check = config.get_setting("updatelibrary_last_check", "biblioteca")
+            if last_check:
+                y, m, d = last_check.split('-')
+                last_check = datetime.date(int(y), int(m), int(d))
+            else:
+                last_check = hoy - datetime.timedelta(days=1)
+
+            if last_check < hoy and datetime.datetime.now().hour >= 4:
+                logger.info("Inicio actualización programada: %s" % datetime.datetime.now())
+                check_for_update(overwrite=False)
+
+        if (monitor.waitForAbort(3600)): #cada hora
+            break
