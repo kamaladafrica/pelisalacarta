@@ -229,8 +229,10 @@ class InfoWindow(xbmcgui.WindowXMLDialog):
 
             # Datos comunes a todos los listados
             infoLabels = Tmdb().get_infoLabels(infoLabels=infoLabels, origen=data_in)
-            infoLabels["language"] = self.get_language(infoLabels["original_language"])
-            infoLabels["puntuacion"] = str(data_in["vote_average"]) + "/10 (" + str(data_in["vote_count"]) + ")"
+            if "original_language" in infoLabels:
+                infoLabels["language"] = self.get_language(infoLabels["original_language"])
+            if "vote_average" in data_in and "vote_count" in data_in:
+                infoLabels["puntuacion"] = str(data_in["vote_average"]) + "/10 (" + str(data_in["vote_count"]) + ")"
 
             self.from_tmdb = False
             self.result = infoLabels
@@ -269,7 +271,7 @@ class InfoWindow(xbmcgui.WindowXMLDialog):
         # Obtenemos el canal desde donde se ha echo la llamada y cargamos los settings disponibles para ese canal
         channelpath = inspect.currentframe().f_back.f_back.f_code.co_filename
         self.channel = os.path.basename(channelpath).replace(".py", "")
-
+        logger.debug(data)
         if type(data) == list:
             self.listData = data
             self.indexList = 0
@@ -380,20 +382,26 @@ class InfoWindow(xbmcgui.WindowXMLDialog):
         # Boton Aceptar, Cancelar y [X]
         if id == 10028 or id == 10003 or id == 10027:
             self.close()
+            cb_channel = None
 
             if self.callback:
-                cb_channel = None
                 try:
                     cb_channel = __import__('core.%s' % self.channel, None, None, ["core.%s" % self.channel])
                 except ImportError:
                     logger.error('Imposible importar %s' % self.channel)
 
-                if id == 10028:  # Boton Aceptar
-                    if cb_channel:
-                        self.return_value = getattr(cb_channel, self.callback)(self.item, self.listData[self.indexList])
-                else:  # Boton Cancelar y [X]
-                    if cb_channel:
-                        self.return_value = getattr(cb_channel, self.callback)(self.item, None)
+            if id == 10028:  # Boton Aceptar
+                if cb_channel:
+                    self.return_value = getattr(cb_channel, self.callback)(self.item, self.listData[self.indexList])
+                else:
+                    self.return_value = self.result
+
+            else:  # Boton Cancelar y [X]
+                if cb_channel:
+                    self.return_value = getattr(cb_channel, self.callback)(self.item, None)
+                else:
+                    self.return_value = None
+
 
     def onFocus(self, id):
       pass

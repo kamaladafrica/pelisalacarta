@@ -73,7 +73,7 @@ class Downloader:
 
     @property  
     def remaining_time(self):
-      if self.speed[0]:
+      if self.speed[0] and self._file_size:
         t = (self.size[0] - self.downloaded[0]) / self.speed[0]
       else:
         t = 0
@@ -92,6 +92,8 @@ class Downloader:
     def progress(self):
       if self._file_size:
         return float(self.downloaded[0]) * 100 / float(self._file_size)
+      elif self._state == self.states.completed:
+        return 100
       else:
         return 0
 
@@ -170,7 +172,8 @@ class Downloader:
       self._state = self.states.stopped
       self._write_lock = Lock()   
       self._download_lock = Lock()
-      self._headers = {"User-Agent":"Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.14) Gecko/20080404 Firefox/2.0.0.14"}
+      self._headers = {"User-Agent":"Kodi/15.2 (Windows NT 10.0; WOW64) App_Bitness/32 Version/15.2-Git:20151019-02e7013"}
+      self._speed = 0
       
       self._threads = [Thread(target= self.__start_part__) for x in range(self._max_connections)]
       self._speed_thread = Thread(target= self.__speed_metter__)
@@ -212,7 +215,6 @@ class Downloader:
 
     def __get_download_headers__(self):
       for x in range(3):
-        print ("Conectando con el servidor...")
         try:
           if not sys.hexversion > 0x0204FFFF:
             conn = urllib2.urlopen(urllib2.Request(self.url, headers=self._headers))
@@ -223,7 +225,6 @@ class Downloader:
         except:
           self.response_headers = dict()
           self._state = self.states.error
-          print ("Error al conectar con el servidor")
         else:
           self.response_headers = conn.headers.dict
           self._state = self.states.stopped
@@ -232,8 +233,10 @@ class Downloader:
 
     def __get_download_filename__(self):
       #Obtenemos nombre de archivo y extension
-      if "filename" in self.response_headers.get("content-disposition",""):
-        cd_filename, cd_ext = os.path.splitext(urllib.unquote_plus(re.compile("attachment; filename ?= ?[\"|']?([^\"']+)[\"|']?").match(self.response_headers.get("content-disposition")).group(1)))
+      if "filename" in self.response_headers.get("content-disposition","") and "attachment" in self.response_headers.get("content-disposition",""):
+          cd_filename, cd_ext = os.path.splitext(urllib.unquote_plus(re.compile("attachment; filename ?= ?[\"|']?([^\"']+)[\"|']?").match(self.response_headers.get("content-disposition")).group(1)))
+      if "filename" in self.response_headers.get("content-disposition","") and "inline" in self.response_headers.get("content-disposition",""):
+          cd_filename, cd_ext = os.path.splitext(urllib.unquote_plus(re.compile("inline; filename ?= ?[\"|']?([^\"']+)[\"|']?").match(self.response_headers.get("content-disposition")).group(1)))
       else:
           cd_filename, cd_ext = "",""
           
@@ -344,9 +347,8 @@ class Downloader:
           self._download_lock.release()
           break
 
-        
-        #Si comprueba si ya está completada, y si lo esta, pasa a la siguiente  
-        if self._download_info["parts"][id]["current"] > self._download_info["parts"][id]["end"]:
+        #Si comprueba si ya está completada, y si lo esta, pasa a la siguiente 
+        if self._download_info["parts"][id]["current"] > self._download_info["parts"][id]["end"] and self._download_info["parts"][id]["end"] > -1:
           self._download_info["parts"][id]["status"]  = self.states.completed
           continue
           

@@ -110,7 +110,7 @@ def findvideosbyserver(data, serverid):
 
     return devuelve
 
-def findvideos(data):
+def findvideos(data, skip=False):
     logger.info("pelisalacarta.core.servertools findvideos") # en #"+data+"#")
     encontrados = set()
     devuelve = []
@@ -124,7 +124,9 @@ def findvideos(data):
             #exec "devuelve.extend("+serverid+".find_videos(data))"
             servers_module = __import__("servers."+serverid)
             server_module = getattr(servers_module,serverid)
-            devuelve.extend( server_module.find_videos(data) )
+            result = server_module.find_videos(data)
+            if result and skip: return result
+            devuelve.extend(result)
         except ImportError:
             logger.info("No existe conector para #"+serverid+"#")
             #import traceback
@@ -154,7 +156,7 @@ def get_channel_module(channel_name):
     return channel_module
 
 def get_server_from_url(url):
-    encontrado = findvideos(url)
+    encontrado = findvideos(url, True)
     if len(encontrado)>0:
         devuelve = encontrado[0][2]
     else:

@@ -38,15 +38,24 @@ class InfoLabels(dict):
     def __str__(self):
         return self.tostring(separador=',\r\t')
 
-    def __setattr__(self, name, value):
-        if name in ['IMDBNumber', 'code', 'imdb_id']:
+    def __setitem__(self, name, value):
+        if name in ["season", "episode"]:
+            # forzamos int() en season y episode
+            try:
+                super(InfoLabels, self).__setitem__(name, int(value))
+            except:
+                pass
+            
+        elif name in ['IMDBNumber', 'imdb_id']:
             # Por compatibilidad hemos de guardar el valor en los tres campos
-            super(InfoLabels, self).__setattr__('IMDBNumber', value)
-            super(InfoLabels, self).__setattr__('code', value)
-            super(InfoLabels, self).__setattr__('imdb_id', value)
-        else:
-            super(InfoLabels, self).__setattr__(name, value)
+            super(InfoLabels, self).__setitem__('IMDBNumber', value)
+            #super(InfoLabels, self).__setitem__('code', value)
+            super(InfoLabels, self).__setitem__('imdb_id', value)
 
+        else:
+            super(InfoLabels, self).__setitem__(name, value)
+    
+      
     #Python 2.4
     def __getitem__(self, key):
         try:
@@ -62,6 +71,13 @@ class InfoLabels(dict):
         if key in ['rating']:
             # Ejemplo de clave q devuelve un str formateado como float por defecto
             return '0.0'
+
+        elif key == 'code':
+            if 'imdb_id' in super(InfoLabels,self).keys() and super(InfoLabels,self).__getitem__('imdb_id') !="":
+                return super(InfoLabels,self).__getitem__('imdb_id')
+            else:
+                return ""
+
         elif key == 'mediatype':
             # "movie", "tvshow", "season", "episode"
             if 'tvshowtitle' in super(InfoLabels,self).keys():
@@ -76,8 +92,11 @@ class InfoLabels(dict):
                 else:
                     return 'tvshow'
 
-            else:
+            elif 'title' in super(InfoLabels,self).keys() and super(InfoLabels,self).__getitem__('title') !="":
                 return 'movie'
+                
+            else:
+                return 'list'
 
         else:
             # El resto de claves devuelven cadenas vacias por defecto
@@ -209,7 +228,7 @@ class Item(object):
         # Valor por defecto para hasContentDetails
         elif name == "hasContentDetails":
             return "false"
-
+        
         elif name in ["contentTitle", "contentPlot", "contentSerieName", "show", "contentType", "contentEpisodeTitle",
                     "contentSeason", "contentEpisodeNumber", "contentThumbnail", "plot", "duration"]:
             if name == "contentTitle":
@@ -357,7 +376,8 @@ class Item(object):
         newitem = copy.deepcopy(self)
         if kwargs.has_key("infoLabels"):
             kwargs["infoLabels"] = InfoLabels(kwargs["infoLabels"])
-        newitem.__dict__.update(kwargs)
+        for kw in kwargs:
+          newitem.__setattr__(kw, kwargs[kw])
         newitem.__dict__ = newitem.toutf8(newitem.__dict__)
         return newitem
 

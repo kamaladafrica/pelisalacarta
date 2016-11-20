@@ -207,7 +207,7 @@ def listado_series(item):
 
     for scrapedurl,scrapedtitle in matches:
         url = scrapedurl + "###0;1"
-        itemlist.append( Item( channel=item.channel, action="episodios", title=scrapedtitle, fulltitle=scrapedtitle, url=url, show=scrapedtitle ) )
+        itemlist.append( Item( channel=item.channel, action="episodios", title=scrapedtitle, fulltitle=scrapedtitle, url=url, show=scrapedtitle, contentType="tvshow") )
 
     return itemlist
 
@@ -269,10 +269,12 @@ def fichas(item):
             action = "episodios"
             url+=  "###" + scrapedid + ";1"
             type = "shows"
+            contentType = "tvshow"
         else:
             action = "findvideos"
             url+=  "###" + scrapedid + ";2"
             type = "movies"
+            contentType = "movie"
 
         str = get_status(status, type, scrapedid)
         if str != "": title+= str
@@ -281,7 +283,7 @@ def fichas(item):
             tag_type = scrapertools.get_match(url,'l.tv/([^/]+)/')
             title+= bbcode_kodi2html(" - [COLOR blue]" + tag_type.capitalize() + "[/COLOR]")
 
-        itemlist.append( Item( channel=item.channel, action=action, title=title, url=url, fulltitle=title, thumbnail=thumbnail, show=show, folder=True ) )
+        itemlist.append( Item( channel=item.channel, action=action, title=title, url=url, fulltitle=title, thumbnail=thumbnail, show=show, folder=True, contentType=contentType ) )
 
     ## Paginación
     next_page_url = scrapertools.find_single_match(data,'<a href="([^"]+)">.raquo;</a>')
@@ -381,7 +383,7 @@ def episodios(item):
 
             url = urlparse.urljoin( scrapedurl, 'temporada-' + temporada +'/episodio-' + episodio ) + "###" + episode['id'] + ";3"
 
-            itemlist.append( Item( channel=item.channel, action="findvideos", title=title, fulltitle=title, url=url, thumbnail=thumbnail, show=item.show, folder=True ) )
+            itemlist.append( Item( channel=item.channel, action="findvideos", title=title, fulltitle=title, url=url, thumbnail=thumbnail, show=item.show, folder=True,contentType = "episode" ) )
 
     if config.get_library_support() and len(itemlist)>0:
         itemlist.append( Item( channel=item.channel, title="Añadir esta serie a la biblioteca de XBMC", url=url_targets, action="add_serie_to_library", extra="episodios", show=item.show ) )
@@ -450,7 +452,7 @@ def novedades_episodios(item):
 
         url = urlparse.urljoin( host, '/serie/'+ episode['permalink'] +'/temporada-' + temporada +'/episodio-' + episodio ) + "###" + episode['id'] + ";3"
 
-        itemlist.append( Item( channel=item.channel, action="findvideos", title=title, fulltitle=title, url=url, thumbnail=thumbnail, folder=True ) )
+        itemlist.append( Item( channel=item.channel, action="findvideos", title=title, fulltitle=title, url=url, thumbnail=thumbnail, folder=True,contentType = "episode" ) )
 
     if len(itemlist) == 24:
         itemlist.append( Item( channel=item.channel, action="novedades_episodios", title=">> Página siguiente", url=next_page, folder=True ) )
@@ -566,7 +568,7 @@ def findvideos(item):
 
                 url+= "###" + id + ";" + type
 
-                itemlist.append( Item( channel=item.channel, action="play", title=title, fulltitle=title, url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, show=item.show, folder=True ) )
+                itemlist.append( Item( channel=item.channel, action="play", title=title, fulltitle=title, url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, show=item.show, folder=True, server = servername ) )
             except:
                 pass
 

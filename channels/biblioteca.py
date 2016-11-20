@@ -15,11 +15,9 @@ from core.item import Item
 from platformcode import library
 from platformcode import platformtools
 
-DEBUG = config.get_setting("debug")
-
 
 def mainlist(item):
-    logger.info("pelisalacarta.channels.biblioteca mainlist")
+    logger.info()
 
     itemlist = list()
     itemlist.append(Item(channel=item.channel, action="peliculas", title="Películas",
@@ -29,41 +27,25 @@ def mainlist(item):
                          category="Biblioteca de series",
                          thumbnail="http://media.tvalacarta.info/pelisalacarta/squares/thumb_biblioteca_series.png"))
 
+    #itemlist.append(Item(channel=item.channel, title="", action="", folder=False, thumbnail=item.thumbnail))
+    #itemlist.append(Item(channel=item.channel, action="channel_config", title="Opciones"))
+
     return itemlist
 
 
-def read_nfo(path_nfo, item=None):
-    url_scraper = ""
-    it = None
-    if filetools.exists(path_nfo):
-        url_scraper = filetools.read(path_nfo, 0, 1)
-
-        if item:
-            it = item.clone()
-            it_nfo = Item().fromjson(filetools.read(path_nfo, 1))
-            it.infoLabels = it_nfo.infoLabels
-            if 'library_playcounts' in it_nfo:
-                it.library_playcounts = it_nfo.library_playcounts
-            if it_nfo.path:
-                it.path = it_nfo.path
-        else:
-            it = Item().fromjson(filetools.read(path_nfo, 1))
-
-        if 'fanart' in it.infoLabels:
-            it.fanart = it.infoLabels['fanart']
-
-    return url_scraper, it
+def channel_config(item):
+    return platformtools.show_channel_settings(channelpath=os.path.join(config.get_runtime_path(),"channels", item.channel))
 
 
 def peliculas(item):
-    logger.info("pelisalacarta.channels.biblioteca peliculas")
+    logger.info()
     itemlist = []
 
     for raiz, subcarpetas, ficheros in filetools.walk(library.MOVIES_PATH):
         for f in ficheros:
             if f.endswith(".nfo"):
                 nfo_path = filetools.join(raiz, f)
-                url_scraper, new_item = read_nfo(nfo_path)
+                head_nfo, new_item = library.read_nfo(nfo_path)
 
                 new_item.nfo = nfo_path
                 new_item.path = raiz
@@ -114,7 +96,7 @@ def peliculas(item):
 
 
 def series(item):
-    logger.info("pelisalacarta.channels.biblioteca series")
+    logger.info()
     itemlist = []
 
     # Obtenemos todos los tvshow.nfo de la biblioteca de SERIES recursivamente
@@ -123,7 +105,7 @@ def series(item):
             if f == "tvshow.nfo":
                 tvshow_path = filetools.join(raiz, f)
                 # logger.debug(tvshow_path)
-                url_scraper, item_tvshow = read_nfo(tvshow_path)
+                head_nfo, item_tvshow = library.read_nfo(tvshow_path)
                 item_tvshow.title = item_tvshow.contentTitle
                 item_tvshow.path = raiz
                 item_tvshow.nfo = tvshow_path
@@ -139,14 +121,15 @@ def series(item):
                     contador = 1
 
                 # Menu contextual: Buscar automáticamente nuevos episodios o no
-                if item_tvshow.active:
-                    texto_update = "No buscar automáticamente nuevos episodios"
-                    value = False
+                if item_tvshow.active and int(item_tvshow.active) > 0:
+                    texto_update = "Buscar automáticamente nuevos episodios: Desactivar"
+                    value = 0
                     item_tvshow.text_color = "green"
                 else:
-                    texto_update = "Buscar automáticamente nuevos episodios"
-                    value = True
+                    texto_update = "Buscar automáticamente nuevos episodios: Activar"
+                    value = 1
                     item_tvshow.text_color = "0xFFDF7401"
+
 
                 # Menu contextual: Eliminar serie/canal
                 num_canales = len(item_tvshow.library_urls)
@@ -170,7 +153,10 @@ def series(item):
                                        {"title": texto_eliminar,
                                         "action": "eliminar",
                                         "channel": "biblioteca",
-                                        "multicanal": multicanal}]
+                                        "multicanal": multicanal},
+                                       {"title": "Buscar nuevos episodios ahora",
+                                        "action": "update_serie",
+                                        "channel":"biblioteca"}]
                 # ,{"title": "Cambiar contenido (PENDIENTE)",
                 # "action": "",
                 # "channel": "biblioteca"}]
@@ -178,26 +164,31 @@ def series(item):
                 # logger.debug("item_tvshow:\n" + item_tvshow.tostring('\n'))
                 itemlist.append(item_tvshow)
 
-    return sorted(itemlist, key=lambda it: it.title.lower())
+    if itemlist:
+        itemlist = sorted(itemlist, key=lambda it: it.title.lower())
+
+        itemlist.append(Item(channel=item.channel, action="update_biblio", thumbnail=item.thumbnail,
+                             title="Buscar nuevos episodios y actualizar biblioteca", folder=False))
+    return itemlist
 
 
 def get_temporadas(item):
-    logger.info("pelisalacarta.channels.biblioteca get_temporadas")
+    logger.info()
     # logger.debug("item:\n" + item.tostring('\n'))
     itemlist = []
     dict_temp = {}
 
     raiz, carpetas_series, ficheros = filetools.walk(item.path).next()
 
-    if config.get_setting("no_pile_on_seasons") == "Siempre":
+    if config.get_setting("no_pile_on_seasons", "biblioteca") == 2: # Siempre
         return get_episodios(item)
 
     for f in ficheros:
         if f.endswith('.json'):
             season = f.split('x')[0]
-            dict_temp[season] = "Temporada " + str(season)
+            dict_temp[season] = "Temporada %s" % season
 
-    if config.get_setting("no_pile_on_seasons") == "Sólo si hay una temporada" and len(dict_temp) == 1:
+    if config.get_setting("no_pile_on_seasons", "biblioteca") == 1 and len(dict_temp) == 1: # Sólo si hay una temporada
         return get_episodios(item)
     else:
         # Creamos un item por cada temporada
@@ -206,7 +197,7 @@ def get_temporadas(item):
                                   filtrar_season=True)
 
             # Menu contextual: Releer tvshow.nfo
-            url_scraper, item_nfo = read_nfo(item.nfo)
+            head_nfo, item_nfo = library.read_nfo(item.nfo)
 
             # Menu contextual: Marcar la temporada como vista o no
             visto = item_nfo.library_playcounts.get("season %s" % season, 0)
@@ -228,7 +219,7 @@ def get_temporadas(item):
         if len(itemlist) > 1:
             itemlist = sorted(itemlist, key=lambda it: int(it.contentSeason))
 
-        if config.get_setting("show_all_seasons") == "true":
+        if config.get_setting("show_all_seasons", "biblioteca") == True:
             new_item = item.clone(action="get_episodios", title="*Todas las temporadas")
             new_item.infoLabels["playcount"] = 0
             itemlist.insert(0, new_item)
@@ -237,8 +228,8 @@ def get_temporadas(item):
 
 
 def get_episodios(item):
-    logger.info("pelisalacarta.channels.biblioteca get_episodios")
-    logger.debug("item:\n" + item.tostring('\n'))
+    logger.info()
+    #logger.debug("item:\n" + item.tostring('\n'))
     itemlist = []
 
     # Obtenemos los archivos de los episodios
@@ -258,7 +249,7 @@ def get_episodios(item):
 
             # Obtener los datos del season_episode.nfo
             nfo_path = filetools.join(raiz, i).replace('.strm', '.nfo')
-            url_scraper, epi = read_nfo(nfo_path)
+            head_nfo, epi = library.read_nfo(nfo_path)
 
             # Fijar el titulo del capitulo si es posible
             if epi.contentTitle:
@@ -271,7 +262,7 @@ def get_episodios(item):
             epi.title = "%sx%s - %s" % (epi.contentSeason, str(epi.contentEpisodeNumber).zfill(2), title_episodie)
 
             # Menu contextual: Releer tvshow.nfo
-            url_scraper, item_nfo = read_nfo(item.nfo)
+            head_nfo, item_nfo = library.read_nfo(item.nfo)
             if item_nfo.library_filter_show:
                 epi.library_filter_show = item_nfo.library_filter_show
 
@@ -293,12 +284,11 @@ def get_episodios(item):
             # logger.debug("epi:\n" + epi.tostring('\n'))
             itemlist.append(epi)
 
-
     return sorted(itemlist, key=lambda it: (int(it.contentSeason), int(it.contentEpisodeNumber)))
 
 
 def findvideos(item):
-    logger.info("pelisalacarta.channels.biblioteca findvideos")
+    logger.info()
     # logger.debug("item:\n" + item.tostring('\n'))
 
     itemlist = []
@@ -342,7 +332,7 @@ def findvideos(item):
             num_canales -= 1
 
     filtro_canal = ''
-    if num_canales > 1 and config.get_setting("ask_channel") == "true":
+    if num_canales > 1 and config.get_setting("ask_channel", "biblioteca") == True:
         opciones = ["Mostrar solo los enlaces de %s" % k.capitalize() for k in list_canales.keys()]
         opciones.insert(0, "Mostrar todos los enlaces")
         if item_local:
@@ -375,17 +365,12 @@ def findvideos(item):
         list_servers = []
 
         try:
+            # FILTERTOOLS
             # si el canal tiene filtro se le pasa el nombre que tiene guardado para que filtre correctamente.
-            if item_json.list_idiomas:
+            if "list_idiomas" in item_json:
                 # si se viene desde la biblioteca de pelisalacarta
                 if "library_filter_show" in item:
                     item_json.show = item.library_filter_show.get(nom_canal, "")
-                # si se viene desde la biblioteca de Kodi
-                else:
-                    item_json.show = item_json.contentSerieName
-
-                if item_json.show == "":
-                    logger.error("Se ha producido un error al obtener el nombre de la serie a filtrar")
 
             # Ejecutamos find_videos, del canal o común
             if hasattr(channel, 'findvideos'):
@@ -393,8 +378,11 @@ def findvideos(item):
             else:
                 from core import servertools
                 list_servers = servertools.find_video_items(item_json)
-        except:
+        except Exception as ex:
             logger.error("Ha fallado la funcion findvideos para el canal %s" % nom_canal)
+            template = "An exception of type {0} occured. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            logger.error(message)
 
         # Cambiarle el titulo a los servers añadiendoles el nombre del canal delante y
         # las infoLabels y las imagenes del item si el server no tiene
@@ -421,7 +409,7 @@ def findvideos(item):
 
 
 def play(item):
-    logger.info("pelisalacarta.channels.biblioteca play")
+    logger.info()
     # logger.debug("item:\n" + item.tostring('\n'))
 
     if not item.contentChannel == "local":
@@ -450,19 +438,54 @@ def play(item):
     return itemlist
 
 
+def update_biblio(item):
+    logger.info()
+
+    # Actualizar las series activas sobreescribiendo
+    import library_service
+    library_service.check_for_update(overwrite=True)
+
+    # Eliminar las carpetas de peliculas que no contengan archivo strm
+    for raiz, subcarpetas, ficheros in filetools.walk(library.MOVIES_PATH):
+        strm = False
+        for f in ficheros:
+            if f.endswith(".strm"):
+                strm = True
+                break
+
+        if ficheros and not strm:
+            logger.debug("Borrando carpeta de pelicula eliminada: %s" % raiz)
+            filetools.rmdirtree(raiz)
+
+
 # metodos de menu contextual
+def update_serie(item):
+    logger.info()
+    #logger.debug("item:\n" + item.tostring('\n'))
+
+    heading = 'Actualizando serie....'
+    p_dialog = platformtools.dialog_progress_bg('pelisalacarta', heading)
+    p_dialog.update(0, heading, item.contentSerieName)
+
+    import library_service
+    if library_service.update(item.path, p_dialog, 1, 1, item, False) and config.is_xbmc():
+        library.update(folder=filetools.basename(item.path))
+
+    p_dialog.close()
+
+
 def mark_content_as_watched(item):
-    logger.info("pelisalacarta.channels.biblioteca mark_content_as_watched")
+    logger.info()
     # logger.debug("item:\n" + item.tostring('\n'))
 
     if filetools.exists(item.nfo):
-        url_scraper = filetools.read(item.nfo, 0, 1)
+        head_nfo = filetools.read(item.nfo, 0, 1)
         it = Item().fromjson(filetools.read(item.nfo, 1))
 
         if item.contentType == 'movie':
             name_file = os.path.splitext(os.path.basename(item.nfo))[0]
         elif item.contentType == 'episode':
-            name_file = item.contentSeason + "x" + item.contentEpisodeNumber
+            name_file = "%sx%s" % (item.contentSeason, str(item.contentEpisodeNumber).zfill(2))
         else:
             name_file = item.contentTitle
 
@@ -475,7 +498,7 @@ def mark_content_as_watched(item):
             it = check_season_playcount(it, item.contentSeason)
 
         # Guardamos los cambios en item.nfo
-        if filetools.write(item.nfo, url_scraper + it.tojson()):
+        if filetools.write(item.nfo, head_nfo + it.tojson()):
             item.infoLabels['playcount'] = item.playcount
 
             if item.contentType == 'tvshow':
@@ -489,13 +512,12 @@ def mark_content_as_watched(item):
 
 
 def mark_season_as_watched(item):
-    logger.info("pelisalacarta.channels.biblioteca mark_season_as_watched")
+    logger.info()
     # logger.debug("item:\n" + item.tostring('\n'))
 
     # Obtener el diccionario de episodios marcados
     f = filetools.join(item.path, 'tvshow.nfo')
-    url_scraper = filetools.read(f, 0, 1)
-    it = Item().fromjson(filetools.read(f, 1))
+    head_nfo, it = library.read_nfo(f)
     if not hasattr(it, 'library_playcounts'):
         it.library_playcounts = {}
 
@@ -531,7 +553,7 @@ def mark_season_as_watched(item):
             it = check_tvshow_playcount(it, item.contentSeason)
 
         # Guardamos los cambios en tvshow.nfo
-        filetools.write(f, url_scraper + it.tojson())
+        filetools.write(f, head_nfo + it.tojson())
         item.infoLabels['playcount'] = item.playcount
 
         if config.is_xbmc():
@@ -542,11 +564,10 @@ def mark_season_as_watched(item):
 
 
 def mark_tvshow_as_updatable(item):
-    logger.info("pelisalacarta.channels.biblioteca mark_tvshow_as_updatable")
-    url_scraper = filetools.read(item.nfo, 0, 1)
-    it = Item().fromjson(filetools.read(item.nfo, 1))
+    logger.info()
+    head_nfo, it = library.read_nfo(item.nfo)
     it.active = item.active
-    filetools.write(item.nfo, url_scraper + it.tojson())
+    filetools.write(item.nfo, head_nfo + it.tojson())
 
     platformtools.itemlist_refresh()
 
@@ -598,9 +619,9 @@ def eliminar(item):
 
             if num_enlaces > 0:
                 # Actualizar .nfo
-                url_scraper, item_nfo = read_nfo(item.nfo)
+                head_nfo, item_nfo = library.read_nfo(item.nfo)
                 del item_nfo.library_urls[canal]
-                filetools.write(item.nfo, url_scraper + item_nfo.tojson())
+                filetools.write(item.nfo, head_nfo + item_nfo.tojson())
 
             msg_txt = "Eliminados %s enlaces del canal %s" % (num_enlaces, canal)
             logger.info(msg_txt)
@@ -614,13 +635,13 @@ def eliminar(item):
 
 
 def check_season_playcount(item, season):
-    logger.info("pelisalacarta.channels.biblioteca check_season_playcount")
+    logger.info()
     # logger.debug("item " + item.tostring("\n"))
 
     episodios_temporada = 0
     episodios_vistos_temporada = 0
     for key, value in item.library_playcounts.iteritems():
-        if key.startswith(season+"x"):
+        if key.startswith("%sx" % season):
             episodios_temporada += 1
             if value > 0:
                 episodios_vistos_temporada += 1
@@ -636,7 +657,7 @@ def check_season_playcount(item, season):
 
 
 def check_tvshow_playcount(item, season):
-    logger.info("pelisalacarta.channels.biblioteca check_tvshow_playcount")
+    logger.info()
     # logger.debug("item " + item.tostring("\n"))
 
     temporadas_serie = 0

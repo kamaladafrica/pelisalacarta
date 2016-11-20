@@ -51,7 +51,7 @@ def encode_log(message=None):
 
         # Objects to string
         else:
-            message = repr(message)  # or str(message)
+            message = str(message)
 
     return message
 
