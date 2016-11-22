@@ -87,9 +87,12 @@ def read_nfo(path_nfo, item=None):
     """
     head_nfo = ""
     it = None
-    if filetools.exists(path_nfo):
-        head_nfo = filetools.read(path_nfo, 0, 1)
-        data = filetools.read(path_nfo, 1)
+
+    data = filetools.read(path_nfo)
+
+    if data:
+        head_nfo = data.splitlines()[0] + "\n"
+        data = "\n".join(data.splitlines()[1:])
 
         if not head_nfo.startswith('http'):
             # url_scraper no valida, xml presente
@@ -170,8 +173,8 @@ def save_library_movie(item):
     # progress dialog
     p_dialog = platformtools.dialog_progress('pelisalacarta', 'Añadiendo película...')
 
-    base_name = filetools.text2filename(item.contentTitle)
-
+    base_name = filetools.validate_path(item.contentTitle)
+    
     for raiz, subcarpetas, ficheros in filetools.walk(MOVIES_PATH):
         for c in subcarpetas:
             if c.endswith("[%s]" % _id):
@@ -182,14 +185,19 @@ def save_library_movie(item):
         # Crear carpeta
         path = filetools.join(MOVIES_PATH, ("%s [%s]" % (base_name, _id)).strip())
         logger.info("Creando directorio pelicula:" + path)
-        try:
-            filetools.mkdir(path)
-        except OSError, exception:
-            if exception.errno != errno.EEXIST:
-                raise
-
+        if not filetools.mkdir(path):
+            logger.debug("No se ha podido crear el directorio")
+            return 0, 0, -1
+            
     nfo_path = filetools.join(path, "%s [%s].nfo" % (base_name, _id))
-    if not filetools.exists(nfo_path):
+    strm_path = filetools.join(path, "%s.strm" % base_name)
+    json_path = filetools.join(path, ("%s [%s].json" % (base_name, item.channel.lower())))
+    
+    nfo_exists = filetools.exists(nfo_path)
+    strm_exists = filetools.exists(strm_path)
+    json_exists = filetools.exists(json_path)
+    
+    if not nfo_exists:
         # Creamos .nfo si no existe
         logger.info("Creando .nfo: " + nfo_path)
         if item.infoLabels['tmdb_id']:
@@ -205,19 +213,19 @@ def save_library_movie(item):
         # Si existe .nfo, pero estamos añadiendo un nuevo canal lo abrimos
         head_nfo, item_nfo = read_nfo(nfo_path)
 
-    strm_path = filetools.join(path, "%s.strm" % base_name)
-    if not filetools.exists(strm_path):
+    
+    if not strm_exists:
         # Crear base_name.strm si no existe
         item_strm = item.clone(channel='biblioteca', action='play_from_library',
                                strm_path=strm_path.replace(MOVIES_PATH, ""), contentType='movie',
                                infoLabels={'title': item.contentTitle})
-        filetools.write(strm_path, '%s?%s' % (addon_name, item_strm.tourl()))
+        strm_exists = filetools.write(strm_path, '%s?%s' % (addon_name, item_strm.tourl()))
         item_nfo.strm_path = strm_path.replace(MOVIES_PATH, "")
 
     # Solo si existen item_nfo y .strm continuamos
-    if item_nfo and filetools.exists(strm_path):
-        json_path = filetools.join(path, ("%s [%s].json" % (base_name, item.channel)).lower())
-        if filetools.exists(json_path):
+    if item_nfo and strm_exists:
+        
+        if json_exists:
             logger.info("El fichero existe. Se sobreescribe")
             sobreescritos += 1
         else:
@@ -285,7 +293,7 @@ def save_library_tvshow(item, episodelist):
     else:
         base_name = item.contentSerieName
 
-    base_name = filetools.text2filename(base_name)
+    base_name = filetools.validate_path(base_name)
 
     for raiz, subcarpetas, ficheros in filetools.walk(TVSHOWS_PATH):
         for c in subcarpetas:
@@ -412,7 +420,14 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
             continue
 
         strm_path = filetools.join(path, "%s.strm" % season_episode)
-        if not filetools.exists(strm_path):
+        nfo_path = filetools.join(path, "%s.nfo" % season_episode)
+        json_path = filetools.join(path, ("%s [%s].json" % (season_episode, e.channel)).lower())
+        
+        strm_exists = filetools.exists(strm_path)
+        nfo_exists = filetools.exists(nfo_path)
+        json_exists = filetools.exists(json_path)
+        
+        if not strm_exists:
             # Si no existe season_episode.strm añadirlo
             item_strm = e.clone(action='play_from_library', channel='biblioteca',
                                 strm_path=strm_path.replace(TVSHOWS_PATH, ""), infoLabels={})
@@ -436,11 +451,11 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
 
             # logger.debug("item_strm" + item_strm.tostring('\n'))
             # logger.debug("serie " + serie.tostring('\n'))
-            filetools.write(strm_path, '%s?%s' % (addon_name, item_strm.tourl()))
+            strm_exists = filetools.write(strm_path, '%s?%s' % (addon_name, item_strm.tourl()))
 
-        nfo_path = filetools.join(path, "%s.nfo" % season_episode)
+        
         item_nfo = None
-        if not filetools.exists(nfo_path) and e.infoLabels.get("imdb_id"):
+        if not nfo_exists and e.infoLabels.get("imdb_id"):
             # Si no existe season_episode.nfo añadirlo
             if e.infoLabels["tmdb_id"]:
                 tmdb.find_and_set_infoLabels_tmdb(e)
@@ -458,14 +473,12 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
             item_nfo = e.clone(channel="biblioteca", url="", action='findvideos',
                                strm_path=strm_path.replace(TVSHOWS_PATH, ""))
 
-            filetools.write(nfo_path, head_nfo + item_nfo.tojson())
+            nfo_exists = filetools.write(nfo_path, head_nfo + item_nfo.tojson())
 
         # Solo si existen season_episode.nfo y season_episode.strm continuamos
-        json_path = filetools.join(path, ("%s [%s].json" % (season_episode, e.channel)).lower())
-        if filetools.exists(nfo_path) and filetools.exists(strm_path):
-            nuevo = not filetools.exists(json_path)
+        if nfo_exists and strm_exists:
 
-            if nuevo or overwrite:
+            if not json_exists or overwrite:
                 # Obtenemos infoLabel del episodio
                 if not item_nfo:
                     head_nfo, item_nfo = read_nfo(nfo_path)
@@ -474,7 +487,7 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
                 e.infoLabels = item_nfo.infoLabels
 
                 if filetools.write(json_path, e.tojson()):
-                    if nuevo:
+                    if not json_exists:
                         logger.info("Insertado: %s" % json_path)
                         insertados += 1
                         # Marcamos episodio como no visto

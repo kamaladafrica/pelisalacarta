@@ -41,6 +41,7 @@ from core import tmdb
 STATUS_COLORS = {0: "orange", 1: "orange", 2: "green", 3: "red"}
 STATUS_CODES = type("StatusCode",(), {"stoped" : 0, "canceled" : 1 , "completed" : 2, "error" : 3})
 DOWNLOAD_LIST_PATH = config.get_setting("downloadlistpath")
+DOWNLOAD_PATH = config.get_setting("downloadpath")
 STATS_FILE = os.path.join(config.get_data_path(), "servers.json")
 TITLE_FILE = "[COLOR %s][%i%%][/COLOR] %s"
 TITLE_TVSHOW = "[COLOR %s][%i%%][/COLOR] %s [%s]"
@@ -123,7 +124,7 @@ def mainlist(item):
 
 
 def clean_all(item):
-    logger.info("pelisalacarta.channels.descargas clean_all")
+    logger.info()
     
     for fichero in sorted(filetools.listdir(DOWNLOAD_LIST_PATH)):
         if fichero.endswith(".json"):
@@ -135,7 +136,7 @@ def clean_all(item):
 
 
 def clean_ready(item):
-    logger.info("pelisalacarta.channels.descargas clean_ready")
+    logger.info()
     for fichero in sorted(filetools.listdir(DOWNLOAD_LIST_PATH)):
         if fichero.endswith(".json"):
             download_item = Item().fromjson(filetools.read(os.path.join(DOWNLOAD_LIST_PATH, fichero)))
@@ -147,7 +148,7 @@ def clean_ready(item):
 
 
 def restart_error(item):
-    logger.info("pelisalacarta.channels.descargas restart_error")
+    logger.info()
     for fichero in sorted(filetools.listdir(DOWNLOAD_LIST_PATH)):
         if fichero.endswith(".json"):
             download_item = Item().fromjson(filetools.read(os.path.join(DOWNLOAD_LIST_PATH, fichero)))
@@ -178,7 +179,7 @@ def download_all(item):
 
 
 def menu(item):
-    logger.info("pelisalacarta.channels.descargas menu")
+    logger.info()
 
     # Opciones disponibles para el menu
     op = ["Descargar", "Eliminar de la lista", "Reiniciar descarga", "Descargar desde..."]
@@ -210,7 +211,7 @@ def menu(item):
     # -1 es cancelar
     if seleccion == -1: return
 
-    logger.info("pelisalacarta.channels.descargas menu opcion=%s" % (opciones[seleccion]))
+    logger.info("opcion=%s" % (opciones[seleccion]))
     # Opcion Eliminar
     if opciones[seleccion] == op[1]:
         filetools.remove(item.path)
@@ -259,12 +260,12 @@ def move_to_libray(item):
     
     if filetools.isfile(destino):
       if item.contentType == "movie" and item.infoLabels["tmdb_id"]:
-        library_item = Item(title="Descargado: %s" % item.downloadFilename, channel= "descargas", action="findvideos", infoLabels=item.infoLabels, url=destino)
+        library_item = Item(title="Descargado: %s" % item.downloadFilename, channel= "descargas", action="findvideos", infoLabels=item.infoLabels, url=item.downloadFilename)
         
         library.save_library_movie(library_item)
         
       elif item.contentType == "episode" and item.infoLabels["tmdb_id"]:
-        library_item = Item(title="Descargado: %s" % item.downloadFilename, channel= "descargas", action="findvideos", infoLabels=item.infoLabels, url=destino)
+        library_item = Item(title="Descargado: %s" % item.downloadFilename, channel= "descargas", action="findvideos", infoLabels=item.infoLabels, url=item.downloadFilename)
         
         tvshow = Item(channel= "descargas", contentType="tvshow", infoLabels = {"tmdb_id": item.infoLabels["tmdb_id"]})
         library.save_library_tvshow(tvshow, [library_item])
@@ -397,14 +398,14 @@ def sort_method(item):
         
 
 def download_from_url(url, item):
-    logger.info("pelisalacarta.channels.descargas download_from_url - Intentando descargar: %s" % (url))
+    logger.info("Intentando descargar: %s" % (url))
     if url.lower().endswith(".m3u8") or url.lower().startswith("rtmp"):
       save_server_statistics(item.server, 0, False)
       return {"downloadStatus": STATUS_CODES.error}
 
     # Obtenemos la ruta de descarga y el nombre del archivo
-    download_path = filetools.dirname(filetools.join(config.get_setting("downloadpath"), item.downloadFilename))
-    file_name = filetools.basename(filetools.join(config.get_setting("downloadpath"), item.downloadFilename))
+    download_path = filetools.dirname(filetools.join(DOWNLOAD_PATH, item.downloadFilename))
+    file_name = filetools.basename(filetools.join(DOWNLOAD_PATH, item.downloadFilename))
 
     # Creamos la carpeta si no existe
     if not filetools.exists(download_path):
@@ -414,7 +415,7 @@ def download_from_url(url, item):
     progreso = platformtools.dialog_progress("Descargas", "Iniciando descarga...")
 
     # Lanzamos la descarga
-    d = Downloader(url, filetools.encode(download_path), filetools.encode(file_name))
+    d = Downloader(url, download_path, file_name)
     d.start()
 
     # Monitorizamos la descarga hasta que se termine o se cancele
@@ -430,21 +431,21 @@ def download_from_url(url, item):
     # Descarga detenida. Obtenemos el estado:
     # Se ha producido un error en la descarga
     if d.state == d.states.error:
-        logger.info("pelisalacarta.channels.descargas download_video - Error al intentar descargar %s" % (url))
+        logger.info("Error al intentar descargar %s" % (url))
         d.stop()
         progreso.close()
         status = STATUS_CODES.error
 
     # Aun está descargando (se ha hecho click en cancelar)
     elif d.state == d.states.downloading:
-        logger.info("pelisalacarta.channels.descargas download_video - Descarga detenida")
+        logger.info("Descarga detenida")
         d.stop()
         progreso.close()
         status = STATUS_CODES.canceled
 
     # La descarga ha finalizado
     elif d.state == d.states.completed:
-        logger.info("pelisalacarta.channels.descargas download_video - Descargado correctamente")
+        logger.info("Descargado correctamente")
         progreso.close()
         status = STATUS_CODES.completed
 
@@ -458,7 +459,7 @@ def download_from_url(url, item):
       status = STATUS_CODES.canceled
       
     dir = os.path.dirname(item.downloadFilename)
-    file = filetools.join(dir, filetools.decode(d.filename))
+    file = filetools.join(dir, d.filename)
     
     if status == STATUS_CODES.completed:
         move_to_libray(item.clone(downloadFilename =  file))
@@ -472,7 +473,7 @@ def download_from_server(item):
     
     progreso = platformtools.dialog_progress("Descargas", "Probando con: %s" % item.server)        
     channel = __import__('channels.%s' % item.contentChannel, None, None, ["channels.%s" % item.contentChannel])
-    if hasattr(channel, "play"):
+    if hasattr(channel, "play") and not item.play_menu:
 
         progreso.update(50, "Probando con: %s" % item.server, "Conectando con %s..." % item.contentChannel)
         try:
@@ -652,7 +653,7 @@ def get_episodes(item):
         if not episode.contentTitle:
           episode.contentTitle = re.sub("\[[^\]]+\]|\([^\)]+\)|\d*x\d*\s*-","",episode.title).strip()
           
-        episode.downloadFilename = os.path.join(item.downloadFilename,"%dx%0.2d - %s" % (episode.contentSeason, episode.contentEpisodeNumber, episode.contentTitle.strip()))
+        episode.downloadFilename = filetools.validate_path(os.path.join(item.downloadFilename,"%dx%0.2d - %s" % (episode.contentSeason, episode.contentEpisodeNumber, episode.contentTitle.strip())))
         
         itemlist.append(episode)
       #Cualquier otro resultado no nos vale, lo ignoramos
@@ -680,7 +681,7 @@ def write_json(item):
       if item.__dict__.has_key(name):
         item.__dict__.pop(name)
 
-    path = filetools.encode(os.path.join(config.get_setting("downloadlistpath"), str(time.time()) + ".json"))
+    path = os.path.join(config.get_setting("downloadlistpath"), str(time.time()) + ".json")
     filetools.write(path, item.tojson())
     item.path = path
     time.sleep(0.1)
@@ -720,7 +721,7 @@ def save_download_video(item):
     if not item.contentTitle:
       item.contentTitle = re.sub("\[[^\]]+\]|\([^\)]+\)","",item.title).strip()
       
-    item.downloadFilename = "%s [%s]" % (item.contentTitle.strip(), item.contentChannel)
+    item.downloadFilename = filetools.validate_path("%s [%s]" % (item.contentTitle.strip(), item.contentChannel))
 
     write_json(item)
 
@@ -746,7 +747,7 @@ def save_download_movie(item):
     
     progreso.update(0, "Añadiendo pelicula...")
 
-    item.downloadFilename = "%s [%s]" % (item.contentTitle.strip(), item.contentChannel)
+    item.downloadFilename = filetools.validate_path("%s [%s]" % (item.contentTitle.strip(), item.contentChannel))
 
     write_json(item)
 
@@ -766,7 +767,7 @@ def save_download_tvshow(item):
     
     tmdb.find_and_set_infoLabels_tmdb(item)
     
-    item.downloadFilename = item.downloadFilename = "%s [%s]" % (item.contentSerieName, item.contentChannel)
+    item.downloadFilename = filetools.validate_path("%s [%s]" % (item.contentSerieName, item.contentChannel))
     
     progreso.update(0, "Obteniendo episodios...", "conectando con %s..." % item.contentChannel)
 

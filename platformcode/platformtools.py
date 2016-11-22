@@ -716,6 +716,7 @@ def set_opcion(item, seleccion, opciones, video_urls):
         from channels import descargas
         if item.contentType == "list" or item.contentType == "tvshow":
           item.contentType = "video"
+        item.play_menu = True
         descargas.save_download(item)
         salir = True
 

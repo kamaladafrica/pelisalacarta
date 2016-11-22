@@ -180,6 +180,9 @@ def get_temporadas(item):
 
     raiz, carpetas_series, ficheros = filetools.walk(item.path).next()
 
+    # Menu contextual: Releer tvshow.nfo
+    head_nfo, item_nfo = library.read_nfo(item.nfo)
+            
     if config.get_setting("no_pile_on_seasons", "biblioteca") == 2: # Siempre
         return get_episodios(item)
 
@@ -195,9 +198,6 @@ def get_temporadas(item):
         for season, title in dict_temp.items():
             new_item = item.clone(action="get_episodios", title=title, contentSeason=season,
                                   filtrar_season=True)
-
-            # Menu contextual: Releer tvshow.nfo
-            head_nfo, item_nfo = library.read_nfo(item.nfo)
 
             # Menu contextual: Marcar la temporada como vista o no
             visto = item_nfo.library_playcounts.get("season %s" % season, 0)
@@ -234,7 +234,10 @@ def get_episodios(item):
 
     # Obtenemos los archivos de los episodios
     raiz, carpetas_series, ficheros = filetools.walk(item.path).next()
-
+    
+    # Menu contextual: Releer tvshow.nfo
+    head_nfo, item_nfo = library.read_nfo(item.nfo)
+    
     # Crear un item en la lista para cada strm encontrado
     for i in ficheros:
         if i.endswith('.strm'):
@@ -261,8 +264,7 @@ def get_episodios(item):
             epi.contentTitle = "%sx%s" % (epi.contentSeason, str(epi.contentEpisodeNumber).zfill(2))
             epi.title = "%sx%s - %s" % (epi.contentSeason, str(epi.contentEpisodeNumber).zfill(2), title_episodie)
 
-            # Menu contextual: Releer tvshow.nfo
-            head_nfo, item_nfo = library.read_nfo(item.nfo)
+
             if item_nfo.library_filter_show:
                 epi.library_filter_show = item_nfo.library_filter_show
 
@@ -322,6 +324,10 @@ def findvideos(item):
     if 'descargas' in list_canales:
         json_path = list_canales['descargas']
         item_json = Item().fromjson(filetools.read(json_path))
+        #Soporte para rutas relativas en descargas
+        if filetools.is_relative(item_json.url):
+          item_json.url = filetools.join(library.LIBRARY_PATH,item_json.url)
+        
         del list_canales['descargas']
 
         # Comprobar q el video no haya sido borrado
