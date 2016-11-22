@@ -124,13 +124,31 @@ def render_items(itemlist, parent_item):
     # Recorremos el itemlist
     for item in itemlist:
 
-        # Si el item no contiene categoria,le ponemos la del item padre
+        # Si el item no contiene categoria, le ponemos la del item padre
         if item.category == "":
             item.category = parent_item.category
 
-        # Si el item no contiene fanart,le ponemos la del item padre
+        # Si el item no contiene fanart, le ponemos el del item padre
         if item.fanart == "":
             item.fanart = parent_item.fanart
+
+        # Si el item no tiene contentView...
+        logger.debug("item.contentView %s\nitem.contentType %s" % (item.contentView, item.contentType))
+        if not item.contentView:
+            # intentamos fijarlo segun el tipo de contenido...
+            if item.contentType == 'movie':
+                item.contentView = 'movies'
+
+                '''elif item.contentType in ["tvshow"]:
+                item.contentView = "seasons"'''
+
+            elif item.contentType in ["tvshow", "season", "episode"]:
+                item.contentView = "episodes"
+
+            else:
+                item.contentView = "files"
+            #logger.debug(item)
+
 
         # Formatear titulo
         if item.text_color:
@@ -177,15 +195,11 @@ def render_items(itemlist, parent_item):
                                         listitem=listitem, isFolder=item.folder,
                                         totalItems=item.totalItems)
 
-    # Vista 5x3 hasta llegar al listado de canales
-    if parent_item.channel not in ["channelselector", ""]:
-        xbmcplugin.setContent(int(sys.argv[1]), "movies")
 
-    # Fijamos el "breadcrumb"
-    xbmcplugin.setPluginCategory(handle=int(sys.argv[1]), category=parent_item.category.capitalize())
+    # Fijar la vista segun el contentView
+    logger.debug("parent_item.contentView %s" % parent_item.contentView)
+    xbmcplugin.setContent(int(sys.argv[1]), parent_item.contentView)
 
-    # No ordenar items
-    xbmcplugin.addSortMethod(handle=int(sys.argv[1]), sortMethod=xbmcplugin.SORT_METHOD_NONE)
 
     # Viewmodes:
     # Creo que es mas lógico que al item se le especifique que vista tendra al abrirlo.
@@ -198,6 +212,13 @@ def render_items(itemlist, parent_item):
             xbmc.executebuiltin("Container.SetViewMode(503)")
         elif parent_item.viewmode == "movie":
             xbmc.executebuiltin("Container.SetViewMode(500)")
+
+
+    # Fijamos el "breadcrumb"
+    xbmcplugin.setPluginCategory(handle=int(sys.argv[1]), category=parent_item.category.capitalize())
+
+    # No ordenar items
+    xbmcplugin.addSortMethod(handle=int(sys.argv[1]), sortMethod=xbmcplugin.SORT_METHOD_NONE)
 
     # Cerramos el directorio
     xbmcplugin.endOfDirectory(handle=int(sys.argv[1]), succeeded=True)
@@ -334,8 +355,6 @@ def set_context_commands(item, parent_item):
                                  (sys.argv[0], Item(channel=item.channel, action="mainlist").tourl())))
 
     # Añadir a Favoritos
-    '''if item.channel not in ["channelselector", "favoritos", "descargas", "buscador", "biblioteca", "novedades", "ayuda",
-                            "configuracion", ""] and not parent_item.channel == "favoritos":'''
     if version_xbmc < 17 and (item.channel not in ["favoritos", "biblioteca", "ayuda",
                                                    "configuracion", ""] and not parent_item.channel == "favoritos"):
         context_commands.append((config.get_localized_string(30155), "XBMC.RunPlugin(%s?%s)" %
