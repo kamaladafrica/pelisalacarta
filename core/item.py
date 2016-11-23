@@ -221,14 +221,30 @@ class Item(object):
         if name == "folder":
             return True
 
-        # valor por defecto para viewmode y contentChannel
-        elif name in ["viewmode", "contentChannel"]:
+        # valor por defecto para contentChannel
+        elif name == "contentChannel":
             return "list"
+
+        # valor por defecto para contentView
+        elif name == "contentView":
+            # intentamos fijarlo segun el tipo de contenido...
+            if self.__dict__["infoLabels"]["mediatype"] == 'movie':
+                contentView = 'movies'
+                '''elif item.contentType in ["tvshow"]:
+                contentView = "seasons"'''
+            elif self.__dict__["infoLabels"]["mediatype"] in ["tvshow", "season", "episode"]:
+                contentView = "episodes"
+            else:
+                contentView = "files"
+
+            self.__dict__["contentView"] = contentView
+            return contentView
 
         # Valor por defecto para hasContentDetails
         elif name == "hasContentDetails":
             return "false"
-        
+
+        # valores guardados en infoLabels
         elif name in ["contentTitle", "contentPlot", "contentSerieName", "show", "contentType", "contentEpisodeTitle",
                     "contentSeason", "contentEpisodeNumber", "contentThumbnail", "plot", "duration"]:
             if name == "contentTitle":

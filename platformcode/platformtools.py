@@ -121,6 +121,7 @@ def render_items(itemlist, parent_item):
     if not len(itemlist):
         itemlist.append(Item(title="No hay elementos que mostrar"))
 
+
     # Recorremos el itemlist
     for item in itemlist:
 
@@ -131,23 +132,6 @@ def render_items(itemlist, parent_item):
         # Si el item no contiene fanart, le ponemos el del item padre
         if item.fanart == "":
             item.fanart = parent_item.fanart
-
-        # Si el item no tiene contentView...
-        logger.debug("item.contentView %s\nitem.contentType %s" % (item.contentView, item.contentType))
-        if not item.contentView:
-            # intentamos fijarlo segun el tipo de contenido...
-            if item.contentType == 'movie':
-                item.contentView = 'movies'
-
-                '''elif item.contentType in ["tvshow"]:
-                item.contentView = "seasons"'''
-
-            elif item.contentType in ["tvshow", "season", "episode"]:
-                item.contentView = "episodes"
-
-            else:
-                item.contentView = "files"
-            #logger.debug(item)
 
 
         # Formatear titulo
@@ -182,7 +166,7 @@ def render_items(itemlist, parent_item):
 
         # Montamos el menu contextual
         context_commands = set_context_commands(item, parent_item)
-
+        if item.contentTitle == 'Stranger Things': logger.debug(item)
         # Añadimos el item
         if config.get_platform() == "boxee":
             xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url='%s?%s' % (sys.argv[0], item.tourl()),
@@ -196,23 +180,8 @@ def render_items(itemlist, parent_item):
                                         totalItems=item.totalItems)
 
 
-    # Fijar la vista segun el contentView
-    logger.debug("parent_item.contentView %s" % parent_item.contentView)
+    # Fijar los tipos de vistas segun el contentView
     xbmcplugin.setContent(int(sys.argv[1]), parent_item.contentView)
-
-
-    # Viewmodes:
-    # Creo que es mas lógico que al item se le especifique que vista tendra al abrirlo.
-    # El cambio puede provocar que algun canal no muestre los items en la vista deseada, pero es mejor ir corrigiendolo
-    # que arrastrar algo que no tiene sentido
-    if config.get_setting("forceview") == "true":
-        if parent_item.viewmode == "list":
-            xbmc.executebuiltin("Container.SetViewMode(50)")
-        elif parent_item.viewmode == "movie_with_plot":
-            xbmc.executebuiltin("Container.SetViewMode(503)")
-        elif parent_item.viewmode == "movie":
-            xbmc.executebuiltin("Container.SetViewMode(500)")
-
 
     # Fijamos el "breadcrumb"
     xbmcplugin.setPluginCategory(handle=int(sys.argv[1]), category=parent_item.category.capitalize())
@@ -220,9 +189,69 @@ def render_items(itemlist, parent_item):
     # No ordenar items
     xbmcplugin.addSortMethod(handle=int(sys.argv[1]), sortMethod=xbmcplugin.SORT_METHOD_NONE)
 
-    # Cerramos el directorio
-    xbmcplugin.endOfDirectory(handle=int(sys.argv[1]), succeeded=True)
 
+    # Fijar la vista:
+    skinName = xbmc.getSkinDir()
+    if config.get_setting("forceview") == "true":
+        # Fijariamos la vista q el usuario tenga configurada por defecto para cada tipo de contentView
+        viewmode_id = get_viewmode_id(skinName, "user_" + parent_item.contentView)
+
+    else:
+        # Si el parent_item tenia fijado un viewmode usamos esa vista...
+        if parent_item.viewmode == 'movie':
+            # Remplazamos el antiguo viewmode 'movie' por 'thumbnails'
+            parent_item.viewmode = 'thumbnails'
+
+        if parent_item.viewmode in ["list", "movie_with_plot", "thumbnails"]:
+            viewmode_id = get_viewmode_id(skinName, "view_" + parent_item.viewmode)
+
+        # TODO: only for debug
+        elif isinstance(parent_item.viewmode, int):
+            viewmode_id = parent_item.viewmode
+
+        #...sino ponemos la vista por defecto en funcion del contentView
+        else:
+            viewmode_id = get_viewmode_id(skinName, "default_" + parent_item.contentView)
+
+    # Cerramos el directorio
+    xbmcplugin.endOfDirectory(handle=int(sys.argv[1]), succeeded=True) # ok en jarvis y kripton
+
+    xbmc.executebuiltin("Container.SetViewMode(%s)" % viewmode_id)
+    #logger.debug("\ncontentView: %s\nviewmode: %s (%s)" % (parent_item.contentView, parent_item.viewmode, viewmode_id))
+
+
+def get_viewmode_id(skinName, viewName):
+    # viewmode_json habria q guardarlo en un archivo y crear un metodo para q el user fije sus preferencias en:
+    # user_files, user_movies, user_tvshows, user_season y user_episodes.
+    viewmode_json = {'skin.confluence': {'user_files': 51,
+                                    'user_movies': 503,
+                                    'user_tvshows': 515,
+                                    'user_seasons': 501,
+                                    'user_episodes': 504,
+                                    'default_files': 50,
+                                    'default_movies': 515,
+                                    'default_tvshows': 508,
+                                    'default_seasons': 503,
+                                    'default_episodes': 504,
+                                    'view_list': 50,
+                                    'view_thumbnails': 500,
+                                    'view_movie_with_plot': 503},
+                     'skin.estuary': {'user_files': 50,
+                                 'user_movies': 51,
+                                 'user_tvshows': 53,
+                                 'user_seasons': 54,
+                                 'user_episodes': 500,
+                                 'default_files': 50,
+                                 'default_movies': 54,
+                                 'default_tvshows': 502,
+                                 'default_seasons': 500,
+                                 'default_episodes': 53,
+                                 'view_list': 50,
+                                 'view_thumbnails': 500,
+                                 'view_movie_with_plot': 54}}
+
+    view_skin = viewmode_json.get(skinName, 'skin.confluence')
+    return view_skin.get(viewName, 50)
 
 def set_infolabels(listitem, item, player=False):
     """
