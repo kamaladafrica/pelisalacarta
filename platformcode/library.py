@@ -396,7 +396,12 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
     sobreescritos = 0
     fallidos = 0
     news_in_playcounts = {}
-
+    
+    #Listamos todos los ficheros de la serie, asi evitamos tener que comprobar si existe uno por uno
+    raiz, carpetas_series, ficheros = filetools.walk(path).next()
+    ficheros = [filetools.join(path, f) for f in ficheros]
+    
+    
     # Silent es para no mostrar progreso (para library_service)
     if not silent:
         # progress dialog
@@ -423,9 +428,9 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
         nfo_path = filetools.join(path, "%s.nfo" % season_episode)
         json_path = filetools.join(path, ("%s [%s].json" % (season_episode, e.channel)).lower())
         
-        strm_exists = filetools.exists(strm_path)
-        nfo_exists = filetools.exists(nfo_path)
-        json_exists = filetools.exists(json_path)
+        strm_exists = strm_path in ficheros
+        nfo_exists = nfo_path in ficheros
+        json_exists = json_path in ficheros
         
         if not strm_exists:
             # Si no existe season_episode.strm añadirlo
