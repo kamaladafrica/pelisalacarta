@@ -173,7 +173,7 @@ def save_library_movie(item):
     # progress dialog
     p_dialog = platformtools.dialog_progress('pelisalacarta', 'Añadiendo película...')
 
-    base_name = filetools.validate_path(item.contentTitle)
+    base_name = filetools.validate_path(item.contentTitle).lower()
     
     for raiz, subcarpetas, ficheros in filetools.walk(MOVIES_PATH):
         for c in subcarpetas:
@@ -293,7 +293,7 @@ def save_library_tvshow(item, episodelist):
     else:
         base_name = item.contentSerieName
 
-    base_name = filetools.validate_path(base_name)
+    base_name = filetools.validate_path(base_name).lower()
 
     for raiz, subcarpetas, ficheros in filetools.walk(TVSHOWS_PATH):
         for c in subcarpetas:
