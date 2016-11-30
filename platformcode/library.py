@@ -442,14 +442,10 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
             item_strm.contentTitle = season_episode
 
             # FILTERTOOLS
-            # si el canal tiene filtro se le pasa el nombre que tiene guardado para que filtre correctamente,
             if item_strm.list_idiomas:
-                # si viene de library_service se obtiene del fichero tvshow.nfo, propiedad "library_filter_show"
+                # si tvshow.nfo tiene filtro se le pasa al item_strm que se va a generar
                 if "library_filter_show" in serie:
-                    item_strm.library_filter_show = serie.library_filter_show.get(serie.channel, "")
-                # si se ha agregado la serie lo obtenemos del titulo.
-                else:
-                    item_strm.library_filter_show = {serie.channel: serie.show}
+                    item_strm.library_filter_show = serie.library_filter_show
 
                 if item_strm.library_filter_show == "":
                     logger.error("Se ha producido un error al obtener el nombre de la serie a filtrar")
