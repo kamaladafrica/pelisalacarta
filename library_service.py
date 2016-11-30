@@ -35,7 +35,7 @@ from core import filetools
 from core import jsontools
 from core import logger
 from core.item import Item
-from platformcode import library
+from core import library
 from platformcode import platformtools
 
 

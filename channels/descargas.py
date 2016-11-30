@@ -236,7 +236,7 @@ def menu(item):
 
 def move_to_libray(item):
     try:
-      from platformcode import library
+      from core import library
     except:
       return
       

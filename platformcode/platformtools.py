@@ -438,8 +438,8 @@ def play_video(item, strm=False):
 
     # si es un archivo de la biblioteca enviar a marcar como visto
     if strm or item.strm_path:
-        from platformcode import library
-        library.mark_auto_as_watched(item)
+        from platformcode import xbmc_library
+        xbmc_library.mark_auto_as_watched(item)
 
 
 def get_seleccion(default_action, opciones, seleccion, video_urls):
@@ -742,7 +742,7 @@ def set_opcion(item, seleccion, opciones, video_urls):
         new_item = item.clone(title=titulo, action="play_from_library", category="Cine",
                               fulltitle=item.fulltitle, channel=item.channel)
 
-        from platformcode import library
+        from core import library
         library.add_pelicula_to_library(new_item)
 
         salir = True

@@ -36,7 +36,7 @@ from core import downloadtools
 from core import logger
 from core import scrapertools
 from core.item import Item
-from platformcode import library
+from core import library
 from platformcode import platformtools
 
 

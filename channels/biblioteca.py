@@ -12,7 +12,7 @@ from core import filetools
 from core import logger
 from core import scrapertools
 from core.item import Item
-from platformcode import library
+from core import library
 from platformcode import platformtools
 
 
@@ -475,7 +475,8 @@ def update_serie(item):
 
     import library_service
     if library_service.update(item.path, p_dialog, 1, 1, item, False) and config.is_xbmc():
-        library.update(folder=filetools.basename(item.path))
+        from platformcode import xbmc_library
+        xbmc_library.update(folder=filetools.basename(item.path))
 
     p_dialog.close()
 
@@ -513,7 +514,8 @@ def mark_content_as_watched(item):
                 mark_season_as_watched(new_item)
 
             if config.is_xbmc():
-                library.mark_content_as_watched_on_kodi(item, item.playcount)
+                from platformcode import xbmc_library
+                xbmc_library.mark_content_as_watched_on_kodi(item, item.playcount)
                 platformtools.itemlist_refresh()
 
 
@@ -564,7 +566,8 @@ def mark_season_as_watched(item):
 
         if config.is_xbmc():
             # Actualizamos la BBDD de Kodi
-            library.mark_season_as_watched_on_kodi(item, item.playcount)
+            from platformcode import xbmc_library
+            xbmc_library.mark_season_as_watched_on_kodi(item, item.playcount)
 
     platformtools.itemlist_refresh()
 
@@ -588,7 +591,8 @@ def eliminar(item):
             xbmc.sleep(3000)
             # TODO mirar por qué no funciona al limpiar en la biblioteca de Kodi al añadirle un path
             # limpiamos la biblioteca de Kodi
-            library.clean()
+            from platformcode import xbmc_library
+            xbmc_library.clean()
 
         logger.info("Eliminados todos los enlaces")
         platformtools.itemlist_refresh()
