@@ -36,7 +36,7 @@ from core import filetools
 from platformcode import platformtools
 from core.item import Item
 import time
-from core import tmdb
+from core import scraper
 
 STATUS_COLORS = {0: "orange", 1: "orange", 2: "green", 3: "red"}
 STATUS_CODES = type("StatusCode",(), {"stoped" : 0, "canceled" : 1 , "completed" : 2, "error" : 3})
@@ -647,7 +647,7 @@ def get_episodes(item):
           
         #Buscamos en tmdb
         if item.infoLabels["tmdb_id"]:
-          tmdb.find_and_set_infoLabels_tmdb(episode)
+          scraper.find_and_set_infoLabels(episode)
                 
         #Episodio, Temporada y Titulo
         if not episode.contentTitle:
@@ -739,7 +739,7 @@ def save_download_movie(item):
     
     progreso = platformtools.dialog_progress("Descargas", "Obteniendo datos de la pelicula")
     
-    result = tmdb.find_and_set_infoLabels_tmdb(item)
+    result = scraper.find_and_set_infoLabels(item)
     if not result:
       progreso.close()
       item.contentType = "video"
@@ -765,7 +765,7 @@ def save_download_tvshow(item):
     
     progreso = platformtools.dialog_progress("Descargas", "Obteniendo datos de la serie")
     
-    tmdb.find_and_set_infoLabels_tmdb(item)
+    scraper.find_and_set_infoLabels(item)
     
     item.downloadFilename = filetools.validate_path("%s [%s]" % (item.contentSerieName, item.contentChannel))
     
