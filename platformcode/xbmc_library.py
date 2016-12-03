@@ -115,11 +115,12 @@ def mark_content_as_watched_on_kodi(item, value=1):
 
         data = get_data(payload)
         if 'result' in data and "movies" in data['result']:
-            for d in data['result']['movies']:
 
-                filename = filetools.basename(item.strm_path)
-                head, tail = filetools.split(filetools.split(item.strm_path)[0])
-                path = filetools.join(tail, filename)
+            filename = filetools.basename(item.strm_path)
+            head, tail = filetools.split(filetools.split(item.strm_path)[0])
+            path = filetools.join(tail, filename)
+
+            for d in data['result']['movies']:
                 if d['file'].replace("/", "\\").endswith(path.replace("/", "\\")):
                     # logger.debug("marco la pelicula como vista")
                     movieid = d['movieid']
@@ -136,12 +137,14 @@ def mark_content_as_watched_on_kodi(item, value=1):
                    "id": 1}
 
         data = get_data(payload)
-        if 'result' in data and "epìsodes" in data['result']:
+        if 'result' in data and "episodes" in data['result']:
+
+            filename = filetools.basename(item.strm_path)
+            head, tail = filetools.split(filetools.split(item.strm_path)[0])
+            path = filetools.join(tail, filename)
+
             for d in data['result']['episodes']:
 
-                filename = filetools.basename(item.strm_path)
-                head, tail = filetools.split(filetools.split(item.strm_path)[0])
-                path = filetools.join(tail, filename)
                 if d['file'].replace("/", "\\").endswith(path.replace("/", "\\")):
                     # logger.debug("marco el episodio como visto")
                     episodeid = d['episodeid']
