@@ -33,9 +33,9 @@ def mainlist(item):
     thumb_buscar = get_thumbnail("thumb_buscar.png")
 
     itemlist = list([])
-    itemlist.append(Item(channel=item.channel, title="Series Listado Alfabetico", action="series_listado_alfabetico",
+    itemlist.append(Item(channel=item.channel, title="Listado alfabético", action="series_listado_alfabetico",
                          thumbnail=thumb_series_az))
-    itemlist.append(Item(channel=item.channel, title="Todas las Series", action="series",
+    itemlist.append(Item(channel=item.channel, title="Todas las series", action="series",
                          url=urlparse.urljoin(HOST, "listado/"), thumbnail=thumb_series))
     itemlist.append(Item(channel=item.channel, title="Último actualizado", action="homeSection", extra="Último Actualizado",
                          url=HOST , thumbnail=thumb_series))
@@ -45,7 +45,7 @@ def mainlist(item):
                          url=HOST , thumbnail=thumb_series))
     itemlist.append(Item(channel=item.channel, title="Series menos vistas", action="homeSection", extra="Series Menos vistas",
                          url=HOST , thumbnail=thumb_series))
-    itemlist.append(Item(channel=item.channel, title="Últimas fichas", action="series",
+    itemlist.append(Item(channel=item.channel, title="Últimas fichas creadas", action="series",
                          url=urlparse.urljoin(HOST, "fichas_creadas/"), thumbnail=thumb_series))
 
     itemlist.append(Item(channel=item.channel, title="Buscar...", action="search", url=HOST, thumbnail=thumb_buscar))
