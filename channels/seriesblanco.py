@@ -37,13 +37,13 @@ def mainlist(item):
                          thumbnail=thumb_series_az))
     itemlist.append(Item(channel=item.channel, title="Todas las Series", action="series",
                          url=urlparse.urljoin(HOST, "listado/"), thumbnail=thumb_series))
-    itemlist.append(Item(channel=item.channel, title="Último Actualizado", action="homeSection", extra="Último Actualizado",
+    itemlist.append(Item(channel=item.channel, title="Último actualizado", action="homeSection", extra="Último Actualizado",
                          url=HOST , thumbnail=thumb_series))
     itemlist.append(Item(channel=item.channel, title="Capítulos de estreno", action="homeSection", extra="Capítulos de Estreno",
                          url=HOST , thumbnail=thumb_series))
-    itemlist.append(Item(channel=item.channel, title="Series Más vistas", action="homeSection", extra="Series Más vistas",
+    itemlist.append(Item(channel=item.channel, title="Series más vistas", action="homeSection", extra="Series Más vistas",
                          url=HOST , thumbnail=thumb_series))
-    itemlist.append(Item(channel=item.channel, title="Series Menos vistas", action="homeSection", extra="Series Menos vistas",
+    itemlist.append(Item(channel=item.channel, title="Series menos vistas", action="homeSection", extra="Series Menos vistas",
                          url=HOST , thumbnail=thumb_series))
     itemlist.append(Item(channel=item.channel, title="Últimas fichas", action="series",
                          url=urlparse.urljoin(HOST, "fichas_creadas/"), thumbnail=thumb_series))
