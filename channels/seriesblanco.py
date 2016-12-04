@@ -26,7 +26,7 @@ list_idiomas = [v for v in IDIOMAS.values()]
 CALIDADES = ['SD', 'HDiTunes', 'Micro-HD-720p', 'Micro-HD-1080p', '1080p', '720p']
 
 def mainlist(item):
-    logger.info("[pelisalacarta.seriesblanco] mainlist")
+    logger.info()
 
     thumb_series = get_thumbnail("thumb_canales_series.png")
     thumb_series_az = get_thumbnail("thumb_canales_series_az.png")
@@ -44,16 +44,12 @@ def mainlist(item):
 
     return itemlist
 
-
-def open_filtertools(item):
-    return filtertools.mainlist_filter(channel=item.channel, list_idiomas=list_idiomas, list_calidad=CALIDADES)
-
 def series(item):
     if not hasattr(item, 'extra') or not isinstance(item.extra, int):
         item.extra = 1
 
     pageURL = "{url}{merger}pagina={pageNo}".format(url = item.url, pageNo = item.extra, merger = '&' if '?' in item.url else '?')
-    logger.info("[pelisalacarta.seriesblanco] series: {url}".format(url = pageURL))
+    logger.info("url = {0}".format(pageURL))
 
     itemlist = []
 
@@ -62,30 +58,30 @@ def series(item):
     shows = re.findall("<li>[^<]*<[^<]*<a href=['\"](?P<url>[^'\"]+).*?<img.*?src='(?P<img>[^']+).*?title='(?P<name>[^']+)", data, re.MULTILINE | re.DOTALL)
     for url, img, name in shows:
         name = unicode(name, "iso-8859-1", errors="replace").encode("utf-8")
-        logger.debug("[pelisalacarta.seriesblanco] Show found: {name} -> {url} ({img})".format(name = name, url = url, img = img))
+        logger.debug("Show found: {name} -> {url} ({img})".format(name = name, url = url, img = img))
         itemlist.append(Item(channel=item.channel, title=name, url=urlparse.urljoin(HOST, url),
                              action="episodios", show=name, thumbnail=img,
                              list_idiomas=list_idiomas, list_calidad=CALIDADES, context=filtertools.context))
 
     morePages = re.search('pagina=([0-9]+)">>>', data)
     if morePages:
-        logger.debug("[pelisalacarta.seriesblanco] Adding next page item")
+        logger.debug("Adding next page item")
         itemlist.append(item.clone(title = "Siguiente >>", extra = item.extra + 1))
 
     if item.extra > 1:
-        logger.debug("[pelisalacarta.seriesblanco] Adding previous page item")
+        logger.debug("Adding previous page item")
         itemlist.append(item.clone(title = "<< Anterior", extra = item.extra - 1))
 
     return itemlist
 
 def series_listado_alfabetico(item):
-    logger.info("[pelisalacarta.seriesblanco] series_listado_alfabetico")
+    logger.info()
 
     return [item.clone(action="series", title=letra, url=urlparse.urljoin(HOST, "listado-{0}/".format(letra)))
                 for letra in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
 
 def search(item, texto):
-    logger.info("[pelisalacarta.seriesblanco] search: {0}".format(texto))
+    logger.info("{0}".format(texto))
 
     if texto == "":
         return []
@@ -101,7 +97,7 @@ def search(item, texto):
         return []
 
 def episodios(item):
-    logger.info("[pelisalacarta.seriesblanco] episodios: {0} - {1}".format(item.title, item.url))
+    logger.info("{0} - {1}".format(item.title, item.url))
 
     itemlist = []
 
@@ -111,15 +107,15 @@ def episodios(item):
     fanart = scrapertools.find_single_match(data, "background-image[^'\"]+['\"]([^'\"]+)")
     plot = scrapertools.find_single_match(data, "id=['\"]profile2['\"]>\s*(.*?)\s*</div>")
 
-    logger.debug("[pelisalacarta.seriesblanco] fanart: {0}".format(fanart))
-    logger.debug("[pelisalacarta.seriesblanco] plot: {0}".format(plot))
+    logger.debug("fanart: {0}".format(fanart))
+    logger.debug("plot: {0}".format(plot))
 
 
     episodes = re.findall("<tr.*?href=['\"](?P<url>[^'\"]+).+?>(?P<title>.+?)</a>.*?<td>(?P<flags>.*?)</td>", data, re.MULTILINE | re.DOTALL)
     for url, title, flags in episodes:
         idiomas = " ".join(["[{0}]".format(IDIOMAS.get(language, "OVOS")) for language in re.findall("banderas/([^\.]+)", flags, re.MULTILINE)])
         displayTitle = "{show} - {title} {languages}".format(show = item.show, title = title, languages = idiomas)
-        logger.debug("[pelisalacarta.seriesblanco] Episode found {0}: {1}".format(displayTitle, urlparse.urljoin(HOST, url)))
+        logger.debug("Episode found {0}: {1}".format(displayTitle, urlparse.urljoin(HOST, url)))
         itemlist.append(item.clone(title=displayTitle, url=urlparse.urljoin(HOST, url),
                                    action="findvideos", plot=plot, fanart=fanart, language=idiomas,
                                    list_idiomas=list_idiomas, list_calidad=CALIDADES, context=filtertools.context))
@@ -175,7 +171,7 @@ def extractVideosSection(data):
 
 
 def findvideos(item):
-    logger.info("[pelisalacarta.seriesblanco] findvideos: {0} = {1}".format(item.show, item.url))
+    logger.info("{0} = {1}".format(item.show, item.url))
 
     # Descarga la página
     data = scrapertools.cache_page(item.url)
@@ -186,7 +182,7 @@ def findvideos(item):
 
 
 def play(item):
-    logger.info("[pelisalacarta.seriesblanco] play: {0} - {1} = {2}".format(item.show, item.title, item.url))
+    logger.info("{0} - {1} = {2}".format(item.show, item.title, item.url))
 
     if item.url.startswith(HOST):
         data = scrapertools.cache_page(item.url)
