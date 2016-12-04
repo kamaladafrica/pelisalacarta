@@ -24,14 +24,6 @@ HOST = "http://seriesblanco.com/"
 IDIOMAS = {'es': 'Español', 'en': 'Inglés', 'la': 'Latino', 'vo': 'VO', 'vos': 'VOS', 'vosi': 'VOSI', 'otro': 'OVOS'}
 list_idiomas = [v for v in IDIOMAS.values()]
 CALIDADES = ['SD', 'HDiTunes', 'Micro-HD-720p', 'Micro-HD-1080p', '1080p', '720p']
-CHANNEL_HOST = 'http://seriesblanco.com'
-CHANNEL_HEADERS = [
-    ['User-Agent', 'Mozilla/5.0'],
-    ['Accept-Encoding', 'gzip, deflate'],
-    ['Referer', CHANNEL_HOST],
-    ['Connection', 'keep-alive']
-]
-
 
 def mainlist(item):
     logger.info()
@@ -41,10 +33,21 @@ def mainlist(item):
     thumb_buscar = get_thumbnail("thumb_buscar.png")
 
     itemlist = list([])
-    itemlist.append(Item(channel=item.channel, title="Series Listado Alfabetico", action="series_listado_alfabetico",
+    itemlist.append(Item(channel=item.channel, title="Listado alfabético", action="series_listado_alfabetico",
                          thumbnail=thumb_series_az))
-    itemlist.append(Item(channel=item.channel, title="Todas las Series", action="series",
-                         url=urlparse.urljoin(HOST, "lista_series/"), thumbnail=thumb_series))
+    itemlist.append(Item(channel=item.channel, title="Todas las series", action="series",
+                         url=urlparse.urljoin(HOST, "listado/"), thumbnail=thumb_series))
+    itemlist.append(Item(channel=item.channel, title="Capítulos de estreno", action="homeSection", extra="Capítulos de Estreno",
+                         url=HOST , thumbnail=thumb_series))
+    itemlist.append(Item(channel=item.channel, title="Último actualizado", action="homeSection", extra="Último Actualizado",
+                         url=HOST , thumbnail=thumb_series))
+    itemlist.append(Item(channel=item.channel, title="Series más vistas", action="homeSection", extra="Series Más vistas",
+                         url=HOST , thumbnail=thumb_series))
+    itemlist.append(Item(channel=item.channel, title="Series menos vistas", action="homeSection", extra="Series Menos vistas",
+                         url=HOST , thumbnail=thumb_series))
+    itemlist.append(Item(channel=item.channel, title="Últimas fichas creadas", action="series",
+                         url=urlparse.urljoin(HOST, "fichas_creadas/"), thumbnail=thumb_series))
+
     itemlist.append(Item(channel=item.channel, title="Buscar...", action="search", url=HOST, thumbnail=thumb_buscar))
 
     if filtertools.context:
@@ -52,63 +55,72 @@ def mainlist(item):
 
     return itemlist
 
+def homeSection(item):
+    logger.info("section = {0}".format(item.extra))
+
+    pattern = "['\"]panel-title['\"]>{0}(.*?)(?:panel-title|\Z)".format(item.extra)
+    logger.debug("pattern = {0}".format(pattern))
+
+    data = scrapertools.cache_page(item.url)
+    result = re.search(pattern, data, re.MULTILINE | re.DOTALL)
+
+    if result:
+        # logger.debug("found section: {0}".format(result.group(1)))
+        item.extra = 1
+        return extractSeriesFromData(item, result.group(1))
+    
+    logger.debug("No match")
+    return []
+
+def extractSeriesFromData(item, data):
+    itemlist = []
+    episodePattern = re.compile('/capitulo-([0-9]+)/')
+    shows = re.findall("<a.+?href=['\"](?P<url>[^'\"]+)[^<]*<img.*?src=['\"](?P<img>[^'\"]+).*?(?:alt|title)=['\"](?P<name>[^'\"]+)", data, re.MULTILINE | re.DOTALL)
+    for url, img, name in shows:
+        name = unicode(name, "iso-8859-1", errors="replace").encode("utf-8")
+        logger.debug("Show found: {name} -> {url} ({img})".format(name = name, url = url, img = img))
+        itemlist.append(Item(channel=item.channel, title=name, url=urlparse.urljoin(HOST, url),
+                             action="episodios" if not episodePattern.search(url) else "findvideos", show=name, thumbnail=img,
+                             list_idiomas=list_idiomas, list_calidad=CALIDADES, context=filtertools.context))
+
+    morePages = re.search('pagina=([0-9]+)">>>', data)
+    if morePages:
+        logger.debug("Adding next page item")
+        itemlist.append(item.clone(title = "Siguiente >>", extra = item.extra + 1))
+
+    if item.extra > 1:
+        logger.debug("Adding previous page item")
+        itemlist.append(item.clone(title = "<< Anterior", extra = item.extra - 1))
+
+    return itemlist
+
+def series(item):
+    if not hasattr(item, 'extra') or not isinstance(item.extra, int):
+        item.extra = 1
+
+    pageURL = "{url}{merger}pagina={pageNo}".format(url = item.url, pageNo = item.extra, merger = '&' if '?' in item.url else '?')
+    logger.info("url = {0}".format(pageURL))
+
+    data = scrapertools.cache_page(pageURL)
+    return extractSeriesFromData(item, data)
+
+
 
 def series_listado_alfabetico(item):
     logger.info()
 
-    itemlist = []
-
-    for letra in ['0', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S',
-                  'T', 'U', 'V', 'W', 'X', 'Y', 'Z']:
-        itemlist.append(Item(channel=item.channel, action="series_por_letra", title=letra,
-                             url=urlparse.urljoin(HOST, "series/{0}/buscar_letra.html".format(letra.upper()))))
-
-    return itemlist
-
-
-# La página de series por letra es igual que la de buscar
-def series_por_letra(item):
-    return search(item, '')
-
+    return [item.clone(action="series", title=letra, url=urlparse.urljoin(HOST, "listado-{0}/".format(letra)))
+                for letra in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
 
 def search(item, texto):
-    logger.info("texto={0}".format(texto))
+    logger.info("{0}".format(texto))
 
-    itemlist = []
-
-    if texto != "":
-        item.url = urlparse.urljoin(HOST, "/search.php?q1={0}".format(texto))
-
-    data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_HEADERS, host=CHANNEL_HOST)
-    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
-    data = re.sub(r"<!--.*?-->", "", data)
-    data = unicode(data, "iso-8859-1", errors="replace").encode("utf-8")
-
-    '''
-    <div style='float:left;width: 33%;text-align:center;'>
-        <a href='/serie/2561/acacias-38.html' '>
-            <img class='ict' src='http://seriesblanco.com/files/uploads/2561.jpg' alt='Capitulos de: Acacias 38'
-                height='184' width='120'>
-        </a>
-        <div style='text-align:center;line-height:20px;height:20px;'>
-            <a href='/serie/2561/acacias-38.html' style='font-size: 11px;'> Acacias 38</a>
-        </div>
-    </div>
-    '''
-
-    patron = "<img class='ict' src='([^']+)'[^>]+></a>" \
-             "<div style='text-align:center;line-height:20px;height:20px;'>" \
-             "<a href='([^']+)' style='font-size: 11px;'>([^<]+)</a>"
-
-    matches = re.compile(patron, re.DOTALL).findall(data)
-
-    for scrapedthumb, scrapedurl, scrapedtitle in matches:
-        itemlist.append(Item(channel=item.channel, title=scrapedtitle.strip(), url=urlparse.urljoin(HOST, scrapedurl),
-                             action="episodios", show=scrapedtitle.strip(), thumbnail=scrapedthumb,
-                             list_idiomas=list_idiomas, list_calidad=CALIDADES, context=filtertools.context))
+    if texto == "":
+        return []
 
     try:
-        return itemlist
+        item.url = urlparse.urljoin(HOST, "/search.php?q1={0}&q2={1}".format(texto, texto.lower()))
+        return series(item)
     # Se captura la excepción, para no interrumpir al buscador global si un canal falla
     except:
         import sys
@@ -116,97 +128,35 @@ def search(item, texto):
             logger.error("%s" % line)
         return []
 
-
-def series(item):
-    logger.info()
-
-    itemlist = []
-
-    # Descarga la página
-    data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_HEADERS, host=CHANNEL_HOST)
-    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
-    data = re.sub(r"<!--.*?-->", "", data)
-    data = unicode(data, "iso-8859-1", errors="replace").encode("utf-8")
-
-    patron = "<li><a href='([^']+)' title='([^']+)'>[^<]+</a></li>"
-    matches = re.compile(patron, re.DOTALL).findall(data)
-
-    # como no viene el thumbnail en esta pagina ponemos el thumbnail generico del canal
-    thumbnail = channel_xml.get("thumbnail", "")
-
-    for scrapedurl, scrapedtitle in matches:
-        itemlist.append(Item(channel=item.channel, title=scrapedtitle.strip(), url=urlparse.urljoin(HOST, scrapedurl),
-                             action="episodios", show=scrapedtitle.strip(), thumbnail=thumbnail,
-                             list_idiomas=list_idiomas, list_calidad=CALIDADES, context=filtertools.context))
-
-    return itemlist
-
-
 def episodios(item):
-    logger.info()
+    logger.info("{0} - {1}".format(item.title, item.url))
 
     itemlist = []
 
     # Descarga la página
-    data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_HEADERS, host=CHANNEL_HOST)
-    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
-    data = re.sub(r"<!--.*?-->", "", data)
-    data = unicode(data, "iso-8859-1", errors="replace").encode("utf-8")
+    data = scrapertools.cache_page(item.url)
 
-    data = re.sub(r"a></td><td> <img src=/banderas/", "a><idioma/", data)
-    data = re.sub(r"<img src=/banderas/", "|", data)
-    data = re.sub(r"\s\|", "|", data)
-    data = re.sub(r"\.png border='\d+' height='\d+' width='\d+'[^>]+><", "/idioma><", data)
-    data = re.sub(r"\.png border='\d+' height='\d+' width='\d+'[^>]+>", "", data)
+    fanart = scrapertools.find_single_match(data, "background-image[^'\"]+['\"]([^'\"]+)")
+    plot = scrapertools.find_single_match(data, "id=['\"]profile2['\"]>\s*(.*?)\s*</div>")
 
-    patron = "<img id='port_serie' src='([^']+)'.*?<li data-content=\"settings\"><p>(.*?)</p>"
-    matches = re.compile(patron, re.DOTALL).findall(data)
-    thumbnail = ""
-    plot = ""
+    logger.debug("fanart: {0}".format(fanart))
+    logger.debug("plot: {0}".format(plot))
 
-    for scrapedthumbnail, scrapedplot in matches:
-        thumbnail = scrapedthumbnail
 
-        # en algunas series aparece una tabla e información de bones, se controla el posible error
-        plot = scrapertools.entitiesfix(scrapertools.htmlclean(scrapedplot))
-        if "Informaci&oacute;n de Bones" in plot:
-            plot = plot.replace("Informaci&oacute;n de Bones", "")
-
-    '''
-    <td>
-        <a href='/serie/534/temporada-1/capitulo-00/the-big-bang-theory.html'>1x00 - Capitulo 00 </a>
-    </td>
-    <td>
-        <img src=/banderas/vo.png border='0' height='15' width='25' />
-        <img src=/banderas/vos.png border='0' height='15' width='25' />
-    </td>
-    '''
-
-    patron = "<a href='([^']+)'>([^<]+)</a><idioma/([^/]+)/idioma>"
-
-    matches = re.compile(patron, re.DOTALL).findall(data)
-
-    for scrapedurl, scrapedtitle, scrapedidioma in matches:
-        idioma = ""
-        for i in scrapedidioma.split("|"):
-            idioma += " [" + IDIOMAS.get(i, "OVOS") + "]"
-        title = item.show + " - " + scrapedtitle + idioma
-        itemlist.append(Item(channel=item.channel, title=title, url=urlparse.urljoin(HOST, scrapedurl),
-                             action="findvideos", show=item.show, thumbnail=thumbnail, plot=plot, language=idioma,
-                             list_idiomas=list_idiomas, list_calidad=CALIDADES, context=filtertools.context))
-
-    if len(itemlist) == 0 and "<title>404 Not Found</title>" in data:
-        itemlist.append(Item(channel=item.channel, title="la url '" + item.url +
-                                                         "' parece no estar disponible en la web. Iténtalo más tarde.",
-                             url=item.url, action="series"))
+    episodes = re.findall("<tr.*?href=['\"](?P<url>[^'\"]+).+?>(?P<title>.+?)</a>.*?<td>(?P<flags>.*?)</td>", data, re.MULTILINE | re.DOTALL)
+    for url, title, flags in episodes:
+        idiomas = " ".join(["[{0}]".format(IDIOMAS.get(language, "OVOS")) for language in re.findall("banderas/([^\.]+)", flags, re.MULTILINE)])
+        displayTitle = "{show} - {title} {languages}".format(show = item.show, title = title, languages = idiomas)
+        logger.debug("Episode found {0}: {1}".format(displayTitle, urlparse.urljoin(HOST, url)))
+        itemlist.append(item.clone(title=displayTitle, url=urlparse.urljoin(HOST, url),
+                                   action="findvideos", plot=plot, fanart=fanart, language=idiomas,
+                                   list_idiomas=list_idiomas, list_calidad=CALIDADES, context=filtertools.context))
 
     if len(itemlist) > 0 and filtertools.context:
         itemlist = filtertools.get_links(itemlist, item.channel)
 
-    # Opción "Añadir esta serie a la biblioteca de XBMC"
     if config.get_library_support() and len(itemlist) > 0:
-        itemlist.append(Item(channel=item.channel, title="Añadir esta serie a la biblioteca de XBMC", url=item.url,
-                             action="add_serie_to_library", extra="episodios", show=item.show))
+        itemlist.append(item.clone(title="Añadir esta serie a la biblioteca", action="add_serie_to_library", extra="episodios"))
 
     return itemlist
 
@@ -234,11 +184,10 @@ def parseVideos(item, typeStr, data):
             title = "{0} en {1} [{2}] [{3}] ({4}: {5})"\
                 .format(typeStr, vFields.get("server"), IDIOMAS.get(vFields.get("language"), "OVOS"), quality,
                         vFields.get("uploader"), vFields.get("date"))
-            itemlist.append(Item(channel=item.channel, title=title, url=urlparse.urljoin(HOST, vFields.get("link")),
-                                 action="play", show=item.show, language=IDIOMAS.get(vFields.get("language"), "OVOS"),
-                                 quality=quality, list_idiomas=list_idiomas, list_calidad=CALIDADES,
-                                 fulltitle=item.title, context=filtertools.context))
-            # context=filtertools.context+"|guardar_filtro"))
+            itemlist.append(item.clone(title=title, fulltitle=item.title, url=urlparse.urljoin(HOST, vFields.get("link")),
+                                       action="play", language=IDIOMAS.get(vFields.get("language"), "OVOS"),
+                                       quality=quality, list_idiomas=list_idiomas, list_calidad=CALIDADES,
+                                       context=filtertools.context))
 
         if len(itemlist) > 0 and filtertools.context:
             itemlist = filtertools.get_links(itemlist, item.channel)
@@ -250,36 +199,25 @@ def parseVideos(item, typeStr, data):
 
 
 def extractVideosSection(data):
-    result = re.findall('<table class="as_gridder_table">(.+?)</table>|<table class=\'zebra\'>(.+?)<[Bb][Rr]>|'
-                        'data : "(action=load[^\"]+)"', data, re.MULTILINE | re.DOTALL)
-
-    if len(result) == 1 and result[0][2]:
-        return extractVideosSection(scrapertools.cachePagePost(HOST + 'ajax.php', result[0][2]))
-
-    row = len(result) - 2
-    if result[row][1]:
-        idx = 1
-    else:
-        idx = 0
-
-    return [result[row][idx], result[row + 1][idx]]
+    return re.findall("panel-title(.+?)</div>[^<]*</div>[^<]*</div>", data, re.MULTILINE | re.DOTALL)
 
 
 def findvideos(item):
-    logger.info()
+    logger.info("{0} = {1}".format(item.show, item.url))
 
     # Descarga la página
-    data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_HEADERS, host=CHANNEL_HOST)
+    data = scrapertools.cache_page(item.url)
+    # logger.info(data)
 
     online = extractVideosSection(data)
     return parseVideos(item, "Ver", online[0]) + parseVideos(item, "Descargar", online[1])
 
 
 def play(item):
-    logger.info("play url={0}".format(item.url))
+    logger.info("{0} - {1} = {2}".format(item.show, item.title, item.url))
 
     if item.url.startswith(HOST):
-        data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_HEADERS, host=CHANNEL_HOST)
+        data = scrapertools.cache_page(item.url)
 
         patron = "<input type='button' value='Ver o Descargar' onclick='window.open\(\"([^\"]+)\"\);'/>"
         url = scrapertools.find_single_match(data, patron)
@@ -288,8 +226,15 @@ def play(item):
 
     itemlist = servertools.find_video_items(data=url)
 
+    titulo = scrapertools.find_single_match(item.fulltitle, "^(.*?)\s\[.+?$")
+    if titulo:
+        titulo += " [{language}]".format(language=item.language)
+
     for videoitem in itemlist:
-        videoitem.title = item.title
+        if titulo:
+            videoitem.title = titulo
+        else:
+            videoitem.title = item.title
         videoitem.channel = item.channel
 
     return itemlist
