@@ -391,5 +391,9 @@ def play_from_library(item):
     item.action = "findvideos"
 
     # y volvemos a lanzar kodi
-    xbmc.executebuiltin("Container.Update(" + sys.argv[0] + "?" + item.tourl() + ")")
+    if xbmc.getCondVisibility('Window.IsMedia'):
+        xbmc.executebuiltin("Container.Update(" + sys.argv[0] + "?" + item.tourl() + ")")
+    else:
+        xbmc.executebuiltin("ActivateWindow(10025," + sys.argv[0] + "?" + item.tourl() + ")")
+        
     return
