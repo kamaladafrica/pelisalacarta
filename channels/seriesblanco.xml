@@ -29,4 +29,12 @@
 		<enabled>true</enabled>
 		<visible>true</visible>
 	</settings>
+	<settings>
+		<id>include_in_newest_series</id>
+		<type>bool</type>
+		<label>Incluir en Novedades - Episodios de series</label>
+		<default>true</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
 </channel>
