@@ -394,6 +394,8 @@ def play_from_library(item):
     if xbmc.getCondVisibility('Window.IsMedia'):
         xbmc.executebuiltin("Container.Update(" + sys.argv[0] + "?" + item.tourl() + ")")
     else:
-        xbmc.executebuiltin("ActivateWindow(10025," + sys.argv[0] + "?" + item.tourl() + ")")
+        xbmc.executebuiltin("ActivateWindow(video)")
+        xbmc.executebuiltin("Container.Update(" + sys.argv[0] + "?" + item.tourl() + ")")
+
         
     return
