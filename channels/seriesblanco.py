@@ -37,6 +37,17 @@ def mainlist(item):
                          thumbnail=thumb_series_az))
     itemlist.append(Item(channel=item.channel, title="Todas las Series", action="series",
                          url=urlparse.urljoin(HOST, "listado/"), thumbnail=thumb_series))
+    itemlist.append(Item(channel=item.channel, title="Último Actualizado", action="homeSection", extra="Último Actualizado",
+                         url=HOST , thumbnail=thumb_series))
+    itemlist.append(Item(channel=item.channel, title="Capítulos de estreno", action="homeSection", extra="Capítulos de Estreno",
+                         url=HOST , thumbnail=thumb_series))
+    itemlist.append(Item(channel=item.channel, title="Series Más vistas", action="homeSection", extra="Series Más vistas",
+                         url=HOST , thumbnail=thumb_series))
+    itemlist.append(Item(channel=item.channel, title="Series Menos vistas", action="homeSection", extra="Series Menos vistas",
+                         url=HOST , thumbnail=thumb_series))
+    itemlist.append(Item(channel=item.channel, title="Últimas fichas", action="series",
+                         url=urlparse.urljoin(HOST, "fichas_creadas/"), thumbnail=thumb_series))
+
     itemlist.append(Item(channel=item.channel, title="Buscar...", action="search", url=HOST, thumbnail=thumb_buscar))
 
     if filtertools.context:
@@ -44,18 +55,27 @@ def mainlist(item):
 
     return itemlist
 
-def series(item):
-    if not hasattr(item, 'extra') or not isinstance(item.extra, int):
+def homeSection(item):
+    logger.info("section = {0}".format(item.extra))
+
+    pattern = "['\"]panel-title['\"]>{0}(.*?)(?:panel-title|\Z)".format(item.extra)
+    logger.debug("pattern = {0}".format(pattern))
+
+    data = scrapertools.cache_page(item.url)
+    result = re.search(pattern, data, re.MULTILINE | re.DOTALL)
+
+    if result:
+        # logger.debug("found section: {0}".format(result.group(1)))
         item.extra = 1
+        return extractSeriesFromData(item, result.group(1))
+    
+    logger.debug("No match")
+    return []
 
-    pageURL = "{url}{merger}pagina={pageNo}".format(url = item.url, pageNo = item.extra, merger = '&' if '?' in item.url else '?')
-    logger.info("url = {0}".format(pageURL))
-
+def extractSeriesFromData(item, data):
     itemlist = []
-
-    data = scrapertools.cache_page(pageURL)
-
-    shows = re.findall("<li>[^<]*<[^<]*<a href=['\"](?P<url>[^'\"]+).*?<img.*?src='(?P<img>[^']+).*?title='(?P<name>[^']+)", data, re.MULTILINE | re.DOTALL)
+    
+    shows = re.findall("<a.+?href=['\"](?P<url>[^'\"]+)[^<]*<img.*?src=['\"](?P<img>[^'\"]+).*?(?:alt|title)=['\"](?P<name>[^'\"]+)", data, re.MULTILINE | re.DOTALL)
     for url, img, name in shows:
         name = unicode(name, "iso-8859-1", errors="replace").encode("utf-8")
         logger.debug("Show found: {name} -> {url} ({img})".format(name = name, url = url, img = img))
@@ -73,6 +93,18 @@ def series(item):
         itemlist.append(item.clone(title = "<< Anterior", extra = item.extra - 1))
 
     return itemlist
+
+def series(item):
+    if not hasattr(item, 'extra') or not isinstance(item.extra, int):
+        item.extra = 1
+
+    pageURL = "{url}{merger}pagina={pageNo}".format(url = item.url, pageNo = item.extra, merger = '&' if '?' in item.url else '?')
+    logger.info("url = {0}".format(pageURL))
+
+    data = scrapertools.cache_page(pageURL)
+    return extractSeriesFromData(item, data)
+
+
 
 def series_listado_alfabetico(item):
     logger.info()
