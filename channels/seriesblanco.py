@@ -180,7 +180,7 @@ def episodios(item):
         itemlist = filtertools.get_links(itemlist, item.channel)
 
     if config.get_library_support() and len(itemlist) > 0:
-        itemlist.append(item.clone(title="Añadir esta serie a la biblioteca", action="add_serie_to_library"))
+        itemlist.append(item.clone(title="Añadir esta serie a la biblioteca", action="add_serie_to_library", extra="episodios"))
 
     return itemlist
 
