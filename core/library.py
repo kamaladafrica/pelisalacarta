@@ -52,14 +52,16 @@ if not filetools.exists(LIBRARY_PATH):
 if not filetools.exists(MOVIES_PATH):
     logger.info("Movies path doesn't exist:" + MOVIES_PATH)
     if filetools.mkdir(MOVIES_PATH)and config.is_xbmc():
-        from platformcode import xbmc_library
-        xbmc_library.establecer_contenido(FOLDER_MOVIES)
+        if config.is_xbmc():
+          from platformcode import xbmc_library
+          xbmc_library.establecer_contenido(FOLDER_MOVIES)
         
 if not filetools.exists(TVSHOWS_PATH):
     logger.info("Tvshows path doesn't exist:" + TVSHOWS_PATH)
     if filetools.mkdir(TVSHOWS_PATH) and config.is_xbmc():
-        from platformcode import xbmc_library
-        xbmc_library.establecer_contenido(FOLDER_TVSHOWS)
+        if config.is_xbmc():
+          from platformcode import xbmc_library
+          xbmc_library.establecer_contenido(FOLDER_TVSHOWS)
 
 
 def read_nfo(path_nfo, item=None):
