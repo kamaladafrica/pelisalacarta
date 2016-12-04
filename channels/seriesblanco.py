@@ -74,13 +74,13 @@ def homeSection(item):
 
 def extractSeriesFromData(item, data):
     itemlist = []
-    
+    episodePattern = re.compile('/capitulo-([0-9]+)/')
     shows = re.findall("<a.+?href=['\"](?P<url>[^'\"]+)[^<]*<img.*?src=['\"](?P<img>[^'\"]+).*?(?:alt|title)=['\"](?P<name>[^'\"]+)", data, re.MULTILINE | re.DOTALL)
     for url, img, name in shows:
         name = unicode(name, "iso-8859-1", errors="replace").encode("utf-8")
         logger.debug("Show found: {name} -> {url} ({img})".format(name = name, url = url, img = img))
         itemlist.append(Item(channel=item.channel, title=name, url=urlparse.urljoin(HOST, url),
-                             action="episodios", show=name, thumbnail=img,
+                             action="episodios" if not episodePattern.search(url) else "findvideos", show=name, thumbnail=img,
                              list_idiomas=list_idiomas, list_calidad=CALIDADES, context=filtertools.context))
 
     morePages = re.search('pagina=([0-9]+)">>>', data)
