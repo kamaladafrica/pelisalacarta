@@ -37,9 +37,9 @@ def mainlist(item):
                          thumbnail=thumb_series_az))
     itemlist.append(Item(channel=item.channel, title="Todas las series", action="series",
                          url=urlparse.urljoin(HOST, "listado/"), thumbnail=thumb_series))
-    itemlist.append(Item(channel=item.channel, title="Último actualizado", action="homeSection", extra="Último Actualizado",
-                         url=HOST , thumbnail=thumb_series))
     itemlist.append(Item(channel=item.channel, title="Capítulos de estreno", action="homeSection", extra="Capítulos de Estreno",
+                         url=HOST , thumbnail=thumb_series))
+    itemlist.append(Item(channel=item.channel, title="Último actualizado", action="homeSection", extra="Último Actualizado",
                          url=HOST , thumbnail=thumb_series))
     itemlist.append(Item(channel=item.channel, title="Series más vistas", action="homeSection", extra="Series Más vistas",
                          url=HOST , thumbnail=thumb_series))
