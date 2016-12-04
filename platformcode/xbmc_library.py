@@ -33,7 +33,8 @@ from core import config
 from core import filetools
 from core import jsontools
 from core import logger
-from core import library
+from core.library import TVSHOWS_PATH, FOLDER_TVSHOWS
+from platformcode import platformtools
 
 
 addon_name = sys.argv[0].strip()
@@ -185,7 +186,7 @@ def mark_season_as_watched_on_kodi(item, value=1):
     if item.contentSeason > -1:
         request_season = ' and c12= %s' % item.contentSeason
 
-    item_path1 = "%" + item.path.replace("\\\\", "\\").replace(library.TVSHOWS_PATH, "")
+    item_path1 = "%" + item.path.replace("\\\\", "\\").replace(TVSHOWS_PATH, "")
     if item_path1[:-1] != "\\":
         item_path1 += "\\"
     item_path2 = item_path1.replace("\\", "/")
@@ -305,7 +306,7 @@ def get_data(payload):
     return data
 
 
-def update(content_type=library.FOLDER_TVSHOWS, folder=""):
+def update(content_type=FOLDER_TVSHOWS, folder=""):
     """
     Actualiza la libreria dependiendo del tipo de contenido y la ruta que se le pase.
 
