@@ -227,6 +227,7 @@ def run():
             elif item.action == "add_serie_to_library":
                 library.add_serie_to_library(item, channel)
 
+
             # Special action for downloading all episodes from a serie
             elif item.action == "download_all_episodes":
                 from channels import descargas
@@ -393,9 +394,22 @@ def play_from_library(item):
     # y volvemos a lanzar kodi
     if xbmc.getCondVisibility('Window.IsMedia'):
         xbmc.executebuiltin("Container.Update(" + sys.argv[0] + "?" + item.tourl() + ")")
-    else:
-        xbmc.executebuiltin("ActivateWindow(video)")
-        xbmc.executebuiltin("Container.Update(" + sys.argv[0] + "?" + item.tourl() + ")")
 
-        
+    else:
+        from channels import biblioteca
+        from platformcode import xbmc_library
+        itemlist = biblioteca.findvideos(item)
+
+        if len(itemlist) > 0:
+            # El usuario elige el mirror
+            opciones = []
+            for item in itemlist:
+                opciones.append(item.title)
+
+            seleccion = platformtools.dialog_select(config.get_localized_string(30163), opciones)
+            if seleccion == -1:
+                return
+
+            platformtools.play_video(itemlist[seleccion])
+            xbmc_library.mark_auto_as_watched(itemlist[seleccion])
     return
