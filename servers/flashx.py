@@ -49,13 +49,19 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
         except:
             pass
 
-    match = scrapertools.find_single_match(data, "<script type='text/javascript'>(.*?)</script>")
-
-    if match.startswith("eval"):
-        try:
-            match = jsunpack.unpack(match)
-        except:
-            pass
+    matches = scrapertools.find_multiple_matches(data, "<script type='text/javascript'>(.*?)</script>")
+    for n,m in enumerate(matches):
+        if m.startswith("eval"):
+            try:
+                m = jsunpack.unpack(m)
+                fake = (scrapertools.find_single_match(m, "(\w{40,})") == "")
+                if fake:
+                    m = ""
+                else:
+                    break
+            except:
+                m = ""
+    match = m
 
     if not "sources:[{file:" in match:
         page_url = page_url.replace("playvid-", "")
@@ -134,7 +140,7 @@ def find_videos(data):
 
     for match in matches:
         titulo = "[flashx]"
-        url = "http://www.flashx.tv/playvid-%s.html" % match
+        url = "https://www.flashx.tv/playvid-%s.html" % match
         if url not in encontrados:
             logger.info("  url=" + url)
             devuelve.append([titulo, url, 'flashx'])
