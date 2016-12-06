@@ -294,7 +294,8 @@ def check_for_update(overwrite=True):
 
                 if serie_actualizada:
                     # Actualizamos la biblioteca de Kodi
-                    library.update(folder=filetools.basename(path))
+                    from platformcode import xbmc_library
+                    xbmc_library.update(folder =  filetools.basename(path))
 
             p_dialog.close()
 
