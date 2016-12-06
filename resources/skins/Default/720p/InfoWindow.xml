@@ -24,6 +24,7 @@
           <width>725</width>
           <font>font12_title</font>
           <textcolor>0xFFFFA500</textcolor>
+          <shadowcolor>black</shadowcolor>
           <align>center</align>
           <aligny>center</aligny>
           <label>Opciones</label>
@@ -58,6 +59,7 @@
           <width>100</width>
           <font>font10</font>
           <textcolor>0xFFFFA500</textcolor>
+          <shadowcolor>black</shadowcolor>
           <align>posx</align>
           <aligny>posy</aligny>
           <label></label>
@@ -71,6 +73,7 @@
           <scrollsuffix> | </scrollsuffix>
           <scroll>true</scroll>
           <textcolor>0xFFFFFFFF</textcolor>
+          <shadowcolor>black</shadowcolor>
           <align>posx</align>
           <aligny>posy</aligny>
           <label></label>
@@ -82,6 +85,7 @@
           <width>100</width>
           <font>font10</font>
           <textcolor>0xFFFFA500</textcolor>
+          <shadowcolor>black</shadowcolor>
           <align>posx</align>
           <aligny>posy</aligny>
           <label></label>
@@ -95,6 +99,7 @@
           <scrollsuffix> | </scrollsuffix>
           <scroll>true</scroll>
           <textcolor>0xFFFFFFFF</textcolor>
+          <shadowcolor>black</shadowcolor>
           <align>posx</align>
           <aligny>posy</aligny>
           <label></label>
@@ -106,6 +111,7 @@
           <width>100</width>
           <font>font10</font>
           <textcolor>0xFFFFA500</textcolor>
+          <shadowcolor>black</shadowcolor>
           <align>posx</align>
           <aligny>posy</aligny>
           <label></label>
@@ -119,6 +125,7 @@
           <scrollsuffix> | </scrollsuffix>
           <scroll>true</scroll>
           <textcolor>0xFFFFFFFF</textcolor>
+          <shadowcolor>black</shadowcolor>
           <align>posx</align>
           <aligny>posy</aligny>
           <label></label>
@@ -130,6 +137,7 @@
           <width>100</width>
           <font>font10</font>
           <textcolor>0xFFFFA500</textcolor>
+          <shadowcolor>black</shadowcolor>
           <align>posx</align>
           <aligny>posy</aligny>
           <label></label>
@@ -143,6 +151,7 @@
           <scrollsuffix> | </scrollsuffix>
           <scroll>true</scroll>
           <textcolor>0xFFFFFFFF</textcolor>
+          <shadowcolor>black</shadowcolor>
           <align>posx</align>
           <aligny>posy</aligny>
           <label></label>
@@ -154,6 +163,7 @@
           <width>100</width>
           <font>font10</font>
           <textcolor>0xFFFFA500</textcolor>
+          <shadowcolor>black</shadowcolor>
           <align>posx</align>
           <aligny>posy</aligny>
           <label></label>
@@ -167,6 +177,7 @@
           <scrollsuffix> | </scrollsuffix>
           <scroll>true</scroll>
           <textcolor>0xFFFFFFFF</textcolor>
+          <shadowcolor>black</shadowcolor>
           <align>posx</align>
           <aligny>posy</aligny>
           <label></label>
@@ -178,6 +189,7 @@
           <width>100</width>
           <font>font10</font>
           <textcolor>0xFFFFA500</textcolor>
+          <shadowcolor>black</shadowcolor>
           <align>posx</align>
           <aligny>posy</aligny>
           <label></label>
@@ -191,6 +203,7 @@
           <scrollsuffix> | </scrollsuffix>
           <scroll>true</scroll>
           <textcolor>0xFFFFFFFF</textcolor>
+          <shadowcolor>black</shadowcolor>
           <align>posx</align>
           <aligny>posy</aligny>
           <label></label>
@@ -202,6 +215,7 @@
           <width>100</width>
           <font>font10</font>
           <textcolor>0xFFFFA500</textcolor>
+          <shadowcolor>black</shadowcolor>
           <align>posx</align>
           <aligny>posy</aligny>
           <label></label>
@@ -215,6 +229,7 @@
           <scrollsuffix> | </scrollsuffix>
           <scroll>true</scroll>
           <textcolor>0xFFFFFFFF</textcolor>
+          <shadowcolor>black</shadowcolor>
           <align>posx</align>
           <aligny>posy</aligny>
           <label></label>
@@ -226,6 +241,7 @@
           <width>100</width>
           <font>font10</font>
           <textcolor>0xFFFFA500</textcolor>
+          <shadowcolor>black</shadowcolor>
           <align>posx</align>
           <aligny>posy</aligny>
           <label></label>
@@ -239,6 +255,7 @@
           <scrollsuffix> | </scrollsuffix>
           <scroll>true</scroll>
           <textcolor>0xFFFFFFFF</textcolor>
+          <shadowcolor>black</shadowcolor>
           <align>posx</align>
           <aligny>posy</aligny>
           <label></label>
@@ -250,6 +267,7 @@
           <width>505</width>
           <font>font10</font>
           <textcolor>0xFFFFA500</textcolor>
+          <shadowcolor>black</shadowcolor>
           <align>center</align>
           <aligny>posy</aligny>
           <label></label>
@@ -261,6 +279,7 @@
           <width>505</width>
           <font>font10</font>
           <textcolor>0xFFFFFFFF</textcolor>
+          <shadowcolor>black</shadowcolor>
           <wrapmultiline>true</wrapmultiline>
           <autoscroll delay="2000" time="1500" repeat="2000">true</autoscroll>
           <align>justify</align>
@@ -329,6 +348,7 @@
             <width>110</width>
             <font>font10</font>
             <textcolor>0xFFFFA500</textcolor>
+            <shadowcolor>black</shadowcolor>
             <align>right</align>
             <aligny>center</aligny>
             <label></label>

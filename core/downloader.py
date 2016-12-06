@@ -46,6 +46,7 @@ import urllib
 import urlparse
 import mimetypes
 import time
+from core import filetools
 from threading import Thread, Lock
 
 class Downloader:
@@ -103,7 +104,7 @@ class Downloader:
     
     @property  
     def fullpath(self):
-      return os.path.abspath(os.path.join(self._path, self._filename))
+      return os.path.abspath(filetools.join(self._path, self._filename))
           
     #Funciones
     def start(self):
@@ -131,7 +132,7 @@ class Downloader:
         
       self.file.close()
       
-      if erase: os.remove(os.path.join(self._path, self._filename))
+      if erase: os.remove(filetools.join(self._path, self._filename))
                                 
     def __speed_metter__(self):
       self._speed = 0
@@ -198,8 +199,8 @@ class Downloader:
       self.__get_download_filename__()
       
       #Abrimos en modo "a+" para que cree el archivo si no existe, luego en modo "r+b" para poder hacer seek()
-      self.file = open(os.path.join(self._path, self._filename), "a+")
-      self.file = open(os.path.join(self._path, self._filename), "r+b")
+      self.file = filetools.file_open(filetools.join(self._path, self._filename), "a+")
+      self.file = filetools.file_open(filetools.join(self._path, self._filename), "r+b")
       
       self.__get_download_info__()
       
@@ -240,7 +241,7 @@ class Downloader:
       else:
           cd_filename, cd_ext = "",""
           
-      url_filename, url_ext = os.path.splitext(urllib.unquote_plus(os.path.basename(urlparse.urlparse(self.url)[2])))
+      url_filename, url_ext = os.path.splitext(urllib.unquote_plus(filetools.basename(urlparse.urlparse(self.url)[2])))
       if self.response_headers.get("content-type","application/octet-stream") <> "application/octet-stream":
         mime_ext = mimetypes.guess_extension(self.response_headers.get("content-type"))
       else:

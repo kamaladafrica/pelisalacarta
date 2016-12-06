@@ -39,7 +39,7 @@ def log_enable(active):
     loggeractive = active
 
 
-def encode_log(message=None):
+def encode_log(message=""):
     if message:
         # Unicode to utf8
         if type(message) == unicode:
@@ -86,28 +86,22 @@ def get_caller(message=None):
             return module + "." + function
 
 
-def info(texto=None):
+def info(texto=""):
     if loggeractive:
         xbmc.log(get_caller(encode_log(texto)), xbmc.LOGNOTICE)
 
 
-def debug(texto=None):
+def debug(texto=""):
     if loggeractive:
-        if texto:
-            texto = "    [" + get_caller() + "] " + encode_log(texto)
-        else:
-            texto = "    [" + get_caller() + "] "
+        texto = "    [" + get_caller() + "] " + encode_log(texto)
 
         xbmc.log("######## DEBUG #########", xbmc.LOGNOTICE)
         xbmc.log(texto, xbmc.LOGNOTICE)
 
 
-def error(texto=None):
+def error(texto=""):
     if loggeractive:
-        if texto:
-            texto = "    [" + get_caller() + "] " + encode_log(texto)
-        else:
-            texto = "    [" + get_caller() + "] "
+        texto = "    [" + get_caller() + "] " + encode_log(texto)
 
         xbmc.log("######## ERROR #########", xbmc.LOGNOTICE)
         xbmc.log(texto, xbmc.LOGNOTICE)
