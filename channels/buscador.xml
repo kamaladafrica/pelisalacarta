@@ -14,9 +14,25 @@
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
 	<version>3</version>
-	<date>01/07/2016</date>
-	<changes>Eliminado código innecesario.</changes>
-	<changes>Multihilos y seleccion de canales(gracias a Divadr) </changes>
+
+	<changes>
+		<change>
+			<date>06/12/16</date>
+			<autor>super_berny</autor>
+			<description>Añadir al menu: 'Recordar última búsqueda'</description>
+		</change>
+		<change>
+			<date>01/07/16</date>
+			<autor>SeiTaN</autor>
+			<description>Eliminado código innecesario.</description>
+		</change>
+		<change>
+			<date>???</date>
+			<autor>???</autor>
+			<description>Multihilos y seleccion de canales(gracias a Divadr)</description>
+		</change>
+	</changes>
+
 
 	<categories>
 		<category>movie</category>
@@ -51,6 +67,14 @@
 		<lvalues>20</lvalues>
 		<lvalues>30</lvalues>
 		<lvalues>40</lvalues>
+	</settings>
+	<settings>
+		<id>last_search</id>
+		<type>bool</type>
+		<label>Recordar última búsqueda</label>
+		<default>true</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
 	</settings>
 
 </channel>
