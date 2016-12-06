@@ -36,7 +36,7 @@ from lib.sambatools import libsmb as samba
 
 #Windows es "mbcs" linux, osx, android es "utf8"
 if os.name == "nt":
-  fs_encoding = "mbcs"
+  fs_encoding = ""
 else:
   fs_encoding = "utf8"
 
@@ -82,7 +82,8 @@ def encode(path, _samba=False):
     if path.lower().startswith("smb://") or _samba:
         path = path.encode("utf-8", "ignore")
     else:
-        path = path.encode(fs_encoding, "ignore")
+        if fs_encoding:
+          path = path.encode(fs_encoding, "ignore")
 
     return path
 
@@ -261,7 +262,6 @@ def copy(path, dest, silent = False):
     @return: devuelve False en caso de error
     """
     import time
-    dest = encode(dest)
     try:
       fo = file_open(path, "rb")
       fd = file_open(dest, "wb")
@@ -270,10 +270,11 @@ def copy(path, dest, silent = False):
         size = getsize(path)
         copiado = 0
         while True:
-          if not silent: dialogo.update(copiado * 100 / size, path)
+          if not silent: dialogo.update(copiado * 100 / size, basename(path))
           buf=fo.read(1024*1024)
           if not buf: break
-          if dialogo.iscanceled():
+          if not silent and dialogo.iscanceled():
+            dialogo.close()
             return False
           fd.write(buf)
           copiado +=len(buf)
