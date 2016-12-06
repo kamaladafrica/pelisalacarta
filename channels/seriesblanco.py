@@ -29,9 +29,9 @@ CAPITULOS_DE_ESTRENO_STR = "Capítulos de Estreno"
 def mainlist(item):
     logger.info()
 
-    thumb_series = get_thumb("", "thumb_canales_series.png")
-    thumb_series_az = get_thumb("", "thumb_canales_series_az.png")
-    thumb_buscar = get_thumb("", "thumb_buscar.png")
+    thumb_series    = get_thumb("squares", "thumb_canales_series.png")
+    thumb_series_az = get_thumb("squares", "thumb_canales_series_az.png")
+    thumb_buscar    = get_thumb("squares", "thumb_buscar.png")
 
     itemlist = []
     itemlist.append(Item(channel=item.channel, title="Listado alfabético", action="series_listado_alfabetico",
