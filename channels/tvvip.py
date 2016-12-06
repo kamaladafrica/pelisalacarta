@@ -759,7 +759,7 @@ def listas(item):
         title = title.replace('-', ' ').replace('_', ' ').capitalize()
         infolabels['title'] = title
         try:
-            from platformcode import library
+            from core import library
             new_item = item.clone(title=title, url=url, fulltitle=title, fanart=fanart, extra="findvideos",
                                   thumbnail=thumbnail, infoLabels=infolabels, category="Cine")
             library.add_pelicula_to_library(new_item)

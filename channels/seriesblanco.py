@@ -25,6 +25,8 @@ IDIOMAS = {'es': 'Español', 'en': 'Inglés', 'la': 'Latino', 'vo': 'VO', 'vos':
 list_idiomas = [v for v in IDIOMAS.values()]
 CALIDADES = ['SD', 'HDiTunes', 'Micro-HD-720p', 'Micro-HD-1080p', '1080p', '720p']
 
+CAPITULOS_DE_ESTRENO_STR = "Capítulos de Estreno"
+
 def mainlist(item):
     logger.info()
 
@@ -37,7 +39,7 @@ def mainlist(item):
                          thumbnail=thumb_series_az))
     itemlist.append(Item(channel=item.channel, title="Todas las series", action="series",
                          url=urlparse.urljoin(HOST, "listado/"), thumbnail=thumb_series))
-    itemlist.append(Item(channel=item.channel, title="Capítulos de estreno", action="homeSection", extra="Capítulos de Estreno",
+    itemlist.append(Item(channel=item.channel, title="Capítulos de estreno", action="homeSection", extra=CAPITULOS_DE_ESTRENO_STR,
                          url=HOST , thumbnail=thumb_series))
     itemlist.append(Item(channel=item.channel, title="Último actualizado", action="homeSection", extra="Último Actualizado",
                          url=HOST , thumbnail=thumb_series))
@@ -77,11 +79,15 @@ def extractSeriesFromData(item, data):
     episodePattern = re.compile('/capitulo-([0-9]+)/')
     shows = re.findall("<a.+?href=['\"](?P<url>[^'\"]+)[^<]*<img.*?src=['\"](?P<img>[^'\"]+).*?(?:alt|title)=['\"](?P<name>[^'\"]+)", data, re.MULTILINE | re.DOTALL)
     for url, img, name in shows:
-        name = unicode(name, "iso-8859-1", errors="replace").encode("utf-8")
+        try:
+            name.decode('utf-8')
+        except UnicodeError:
+            name = unicode(name, "iso-8859-1", errors="replace").encode("utf-8")
+
         logger.debug("Show found: {name} -> {url} ({img})".format(name = name, url = url, img = img))
-        itemlist.append(Item(channel=item.channel, title=name, url=urlparse.urljoin(HOST, url),
-                             action="episodios" if not episodePattern.search(url) else "findvideos", show=name, thumbnail=img,
-                             list_idiomas=list_idiomas, list_calidad=CALIDADES, context=filtertools.context))
+        itemlist.append(item.clone(title=name, url=urlparse.urljoin(HOST, url),
+                                   action="episodios" if not episodePattern.search(url) else "findvideos", show=name, thumbnail=img,
+                                   list_idiomas=list_idiomas, list_calidad=CALIDADES, context=filtertools.context))
 
     morePages = re.search('pagina=([0-9]+)">>>', data)
     if morePages:
@@ -111,6 +117,24 @@ def series_listado_alfabetico(item):
 
     return [item.clone(action="series", title=letra, url=urlparse.urljoin(HOST, "listado-{0}/".format(letra)))
                 for letra in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
+
+
+def newest(categoria):
+    logger.info("categoria: {0}".format(categoria))
+    itemlist = []
+    try:
+        if categoria == 'series':
+            itemlist = homeSection(Item(extra = CAPITULOS_DE_ESTRENO_STR, url = HOST))
+
+    # Se captura la excepción, para no interrumpir al canal novedades si un canal falla
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error("{0}".format(line))
+        return []
+
+    return itemlist
+
 
 def search(item, texto):
     logger.info("{0}".format(texto))

@@ -40,6 +40,7 @@ import xbmcplugin
 from core import config
 from core import logger
 from core.item import Item
+from core.tmdb import Tmdb
 
 DEBUG = config.get_setting("debug")
 
@@ -438,8 +439,8 @@ def play_video(item, strm=False):
 
     # si es un archivo de la biblioteca enviar a marcar como visto
     if strm or item.strm_path:
-        from platformcode import library
-        library.mark_auto_as_watched(item)
+        from platformcode import xbmc_library
+        xbmc_library.mark_auto_as_watched(item)
 
 
 def get_seleccion(default_action, opciones, seleccion, video_urls):
@@ -489,7 +490,7 @@ def show_channel_settings(list_controls=None, dict_values=None, caption="", call
                custom_button=custom_button, channelpath=channelpath)
 
 
-def show_video_info(data, caption="", callback=None, item=None):
+def show_video_info(data, caption="", item=None, scraper=Tmdb):
     """
     Muestra una ventana con la info del vídeo. Opcionalmente se puede indicar el titulo de la ventana mendiante
     el argumento 'caption'.
@@ -557,15 +558,15 @@ def show_video_info(data, caption="", callback=None, item=None):
     @type data: item, InfoLabels, list(InfoLabels)
     @param caption: titulo de la ventana.
     @type caption: str
-    @param callback: función que se llama después de cerrarse la ventana de información
-    @type callback: str
     @param item: elemento del que se va a mostrar la ventana de información
     @type item: Item
+    @param scraper: scraper que tiene los datos de las peliculas o series a mostrar en la ventana.
+    @type scraper: Scraper
     """
 
     from xbmc_info_window import InfoWindow
-    return InfoWindow("InfoWindow.xml", config.get_runtime_path()).Start(data, caption=caption, callback=callback,
-                                                                         item=item)
+    return InfoWindow("InfoWindow.xml", config.get_runtime_path()).Start(data, caption=caption, item=item,
+                                                                         scraper=scraper)
 
 
 def alert_no_disponible_server(server):
@@ -716,6 +717,7 @@ def set_opcion(item, seleccion, opciones, video_urls):
         from channels import descargas
         if item.contentType == "list" or item.contentType == "tvshow":
           item.contentType = "video"
+        item.play_menu = True
         descargas.save_download(item)
         salir = True
 
@@ -741,7 +743,7 @@ def set_opcion(item, seleccion, opciones, video_urls):
         new_item = item.clone(title=titulo, action="play_from_library", category="Cine",
                               fulltitle=item.fulltitle, channel=item.channel)
 
-        from platformcode import library
+        from core import library
         library.add_pelicula_to_library(new_item)
 
         salir = True

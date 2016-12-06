@@ -32,7 +32,7 @@ def mainlist(item):
     itemlist.append(Item(channel=item.channel, title="Más vistas", action="mas_vistas", url=HOST))
     itemlist.append(Item(channel=item.channel, title="Listado Alfabético", action="listado_alfabetico", url=HOST))
     itemlist.append(Item(channel=item.channel, title="Todas las series", action="listado_completo", url=HOST))
-    itemlist.append(Item(channel=item.channel, title="Buscar...", action="search", url=HOST))
+    itemlist.append(Item(channel=item.channel, title="Buscar...", action="search", url=urlparse.urljoin(HOST, "all.php")))
 
     if filtertools.context:
         itemlist = filtertools.show_option(itemlist, item.channel, list_idiomas, CALIDADES)
@@ -123,17 +123,22 @@ def series_por_letra(item):
 def search(item, texto):
     logger.info("texto={0}".format(texto))
 
-    if texto != "":
-        item.url = urlparse.urljoin(HOST, "/pag_search.php?q1={0}".format(texto))
+    itemlist = []
 
     try:
-        return series(item)
+        data = scrapertools.cache_page(item.url)
+        logger.info(data)
+        shows = re.findall("<a href='(?P<url>/serie.php\?serie=[0-9]+)'[^>]*>(?P<title>[^<]*{0}[^<]*)".format(texto), data, re.IGNORECASE)
+        for url, title in shows:
+            itemlist.append(item.clone(title = title, url = urlparse.urljoin(HOST, url), action="episodios"))
+
     # Se captura la excepción, para no interrumpir al buscador global si un canal falla
     except:
         import sys
         for line in sys.exc_info():
             logger.error("%s" % line)
-        return []
+
+    return itemlist
 
 
 def series(item):
@@ -197,8 +202,7 @@ def episodios(item):
 
     # Opción "Añadir esta serie a la biblioteca de XBMC"
     if config.get_library_support() and len(itemlist) > 0:
-        itemlist.append(Item(channel=item.channel, title="Añadir esta serie a la biblioteca de XBMC", url=item.url,
-                             action="add_serie_to_library", extra="episodios", show=item.show))
+        itemlist.append(item.clone(title="Añadir esta serie a la biblioteca", action="add_serie_to_library"))
 
     return itemlist
 
