@@ -237,9 +237,22 @@ def run():
             # Special action for searching, first asks for the words then call the "search" function
             elif item.action == "search":
                 logger.info("pelisalacarta.platformcode.launcher search")
-                
-                tecleado = platformtools.dialog_input("")
+
+                last_search = ""
+                last_search_active = config.get_setting("last_search", "buscador")
+                if last_search_active:
+                    try:
+                        current_saved_searches_list = list(config.get_setting("saved_searches_list", "buscador"))
+                        last_search = current_saved_searches_list[0]
+                    except:
+                        pass
+
+                tecleado = platformtools.dialog_input(last_search)
                 if tecleado is not None:
+                    if last_search_active:
+                        from channels import buscador
+                        buscador.save_search(tecleado)
+
                     tecleado = tecleado.replace(" ", "+")
                     # TODO revisar 'personal.py' porque no tiene función search y daría problemas
                     itemlist = channel.search(item, tecleado)
