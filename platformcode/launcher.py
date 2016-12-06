@@ -412,4 +412,4 @@ def play_from_library(item):
 
             platformtools.play_video(itemlist[seleccion])
             xbmc_library.mark_auto_as_watched(itemlist[seleccion])
-    return
+
