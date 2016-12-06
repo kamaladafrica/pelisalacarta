@@ -176,5 +176,25 @@ def findvideos(item):
         partes = fichero.split("/")
         titulo = partes[ len(partes)-1 ]
         videoitem.title = titulo + " - [" + videoitem.server+"]"
+    
+    if not itemlist:
+      
+      patron = '<a href="([^"]+)" class="bbc_link" target="_blank"><span style="color: orange;" class="bbc_color">'
+      matches = re.compile(patron, re.DOTALL).findall(data)
+      if matches:
+        data = scrapertools.cache_page(matches[0])
+        logger.info(data)
+        itemlist = servertools.find_video_items(data=data)
+        for videoitem in itemlist:
+          videoitem.channel = item.channel
+          videoitem.plot = plot
+          videoitem.thumbnail = thumbnail
+          videoitem.fulltitle = item.title
 
+          parsed_url = urlparse.urlparse(videoitem.url)
+          fichero = parsed_url.path
+          partes = fichero.split("/")
+          titulo = partes[ len(partes)-1 ]
+          videoitem.title = titulo + " - [" + videoitem.server+"]"  
+    
     return itemlist

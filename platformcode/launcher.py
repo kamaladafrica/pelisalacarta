@@ -36,7 +36,7 @@ from core import downloadtools
 from core import logger
 from core import scrapertools
 from core.item import Item
-from platformcode import library
+from core import library
 from platformcode import platformtools
 
 
@@ -391,5 +391,11 @@ def play_from_library(item):
     item.action = "findvideos"
 
     # y volvemos a lanzar kodi
-    xbmc.executebuiltin("Container.Update(" + sys.argv[0] + "?" + item.tourl() + ")")
+    if xbmc.getCondVisibility('Window.IsMedia'):
+        xbmc.executebuiltin("Container.Update(" + sys.argv[0] + "?" + item.tourl() + ")")
+    else:
+        xbmc.executebuiltin("ActivateWindow(video)")
+        xbmc.executebuiltin("Container.Update(" + sys.argv[0] + "?" + item.tourl() + ")")
+
+        
     return

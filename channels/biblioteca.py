@@ -12,7 +12,7 @@ from core import filetools
 from core import logger
 from core import scrapertools
 from core.item import Item
-from platformcode import library
+from core import library
 from platformcode import platformtools
 
 
@@ -180,6 +180,9 @@ def get_temporadas(item):
 
     raiz, carpetas_series, ficheros = filetools.walk(item.path).next()
 
+    # Menu contextual: Releer tvshow.nfo
+    head_nfo, item_nfo = library.read_nfo(item.nfo)
+            
     if config.get_setting("no_pile_on_seasons", "biblioteca") == 2: # Siempre
         return get_episodios(item)
 
@@ -195,9 +198,6 @@ def get_temporadas(item):
         for season, title in dict_temp.items():
             new_item = item.clone(action="get_episodios", title=title, contentSeason=season,
                                   filtrar_season=True)
-
-            # Menu contextual: Releer tvshow.nfo
-            head_nfo, item_nfo = library.read_nfo(item.nfo)
 
             # Menu contextual: Marcar la temporada como vista o no
             visto = item_nfo.library_playcounts.get("season %s" % season, 0)
@@ -234,7 +234,10 @@ def get_episodios(item):
 
     # Obtenemos los archivos de los episodios
     raiz, carpetas_series, ficheros = filetools.walk(item.path).next()
-
+    
+    # Menu contextual: Releer tvshow.nfo
+    head_nfo, item_nfo = library.read_nfo(item.nfo)
+    
     # Crear un item en la lista para cada strm encontrado
     for i in ficheros:
         if i.endswith('.strm'):
@@ -261,8 +264,7 @@ def get_episodios(item):
             epi.contentTitle = "%sx%s" % (epi.contentSeason, str(epi.contentEpisodeNumber).zfill(2))
             epi.title = "%sx%s - %s" % (epi.contentSeason, str(epi.contentEpisodeNumber).zfill(2), title_episodie)
 
-            # Menu contextual: Releer tvshow.nfo
-            head_nfo, item_nfo = library.read_nfo(item.nfo)
+
             if item_nfo.library_filter_show:
                 epi.library_filter_show = item_nfo.library_filter_show
 
@@ -322,6 +324,10 @@ def findvideos(item):
     if 'descargas' in list_canales:
         json_path = list_canales['descargas']
         item_json = Item().fromjson(filetools.read(json_path))
+        #Soporte para rutas relativas en descargas
+        if filetools.is_relative(item_json.url):
+          item_json.url = filetools.join(library.LIBRARY_PATH,item_json.url)
+        
         del list_canales['descargas']
 
         # Comprobar q el video no haya sido borrado
@@ -469,7 +475,8 @@ def update_serie(item):
 
     import library_service
     if library_service.update(item.path, p_dialog, 1, 1, item, False) and config.is_xbmc():
-        library.update(folder=filetools.basename(item.path))
+        from platformcode import xbmc_library
+        xbmc_library.update(folder=filetools.basename(item.path))
 
     p_dialog.close()
 
@@ -507,7 +514,8 @@ def mark_content_as_watched(item):
                 mark_season_as_watched(new_item)
 
             if config.is_xbmc():
-                library.mark_content_as_watched_on_kodi(item, item.playcount)
+                from platformcode import xbmc_library
+                xbmc_library.mark_content_as_watched_on_kodi(item, item.playcount)
                 platformtools.itemlist_refresh()
 
 
@@ -558,7 +566,8 @@ def mark_season_as_watched(item):
 
         if config.is_xbmc():
             # Actualizamos la BBDD de Kodi
-            library.mark_season_as_watched_on_kodi(item, item.playcount)
+            from platformcode import xbmc_library
+            xbmc_library.mark_season_as_watched_on_kodi(item, item.playcount)
 
     platformtools.itemlist_refresh()
 
@@ -582,7 +591,8 @@ def eliminar(item):
             xbmc.sleep(3000)
             # TODO mirar por qué no funciona al limpiar en la biblioteca de Kodi al añadirle un path
             # limpiamos la biblioteca de Kodi
-            library.clean()
+            from platformcode import xbmc_library
+            xbmc_library.clean()
 
         logger.info("Eliminados todos los enlaces")
         platformtools.itemlist_refresh()
