@@ -329,20 +329,42 @@ if __name__ == "__main__":
 
     # Se ejecuta ciclicamente
     import xbmc
-    monitor = xbmc.Monitor()
-    while (True):
-        if config.get_setting("updatelibrary", "biblioteca") == 2: # "Actualizar...Cada dia
-            hoy = datetime.date.today()
-            last_check = config.get_setting("updatelibrary_last_check", "biblioteca")
-            if last_check:
-                y, m, d = last_check.split('-')
-                last_check = datetime.date(int(y), int(m), int(d))
-            else:
-                last_check = hoy - datetime.timedelta(days=1)
+    try:
+        monitor = xbmc.Monitor() # For Kodi >= 14
+    except:
+        monitor = None # For Kodi < 14
 
-            if last_check < hoy and datetime.datetime.now().hour >= 4:
-                logger.info("Inicio actualización programada: %s" % datetime.datetime.now())
-                check_for_update(overwrite=False)
+    if monitor:
+        while not monitor.abortRequested():
+            if config.get_setting("updatelibrary", "biblioteca") == 2: # "Actualizar...Cada dia
+                hoy = datetime.date.today()
+                last_check = config.get_setting("updatelibrary_last_check", "biblioteca")
+                if last_check:
+                    y, m, d = last_check.split('-')
+                    last_check = datetime.date(int(y), int(m), int(d))
+                else:
+                    last_check = hoy - datetime.timedelta(days=1)
 
-        if (monitor.waitForAbort(3600)): #cada hora
-            break
+                if last_check < hoy and datetime.datetime.now().hour >= 4:
+                    logger.info("Inicio actualización programada: %s" % datetime.datetime.now())
+                    check_for_update(overwrite=False)
+
+            if (monitor.waitForAbort(3600)): #cada hora
+                break
+
+    else:
+        while not xbmc.abortRequested:
+            if config.get_setting("updatelibrary", "biblioteca") == 2: # "Actualizar...Cada dia
+                hoy = datetime.date.today()
+                last_check = config.get_setting("updatelibrary_last_check", "biblioteca")
+                if last_check:
+                    y, m, d = last_check.split('-')
+                    last_check = datetime.date(int(y), int(m), int(d))
+                else:
+                    last_check = hoy - datetime.timedelta(days=1)
+
+                if last_check < hoy and datetime.datetime.now().hour >= 4:
+                    logger.info("Inicio actualización programada: %s" % datetime.datetime.now())
+                    check_for_update(overwrite=False)
+
+            xbmc.sleep(3600)
