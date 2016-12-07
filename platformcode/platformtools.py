@@ -297,7 +297,7 @@ def set_context_commands(item, parent_item):
         context_commands.append(("Información", "XBMC.Action(Info)"))
 
     # ExtendedInfo: Si esta instalado el addon y se cumplen una serie de condiciones
-    if xbmc.getCondVisibility('System.HasAddon(script.extendedinfo)'):
+    if xbmc.getCondVisibility('System.HasAddon(script.extendedinfo)') and config.get_setting("extended_info") == "true":
         if item.contentType == "episode" and item.contentEpisodeNumber and item.contentSeason \
                 and (item.infoLabels['tmdb_id'] or item.contentSerieName):
             param = "tvshow_id =%s, tvshow=%s, season=%s, episode=%s" \
@@ -328,10 +328,11 @@ def set_context_commands(item, parent_item):
             context_commands.append(("ExtendedInfo",
                                      "XBMC.RunScript(script.extendedinfo,info=extendedinfo,%s)" % param))
 
-    if item.infoLabels['tmdb_id'] or item.infoLabels['imdb_id'] or item.infoLabels['tvdb_id'] or item.show \
-                                  or (item.contentTitle and item.infoLabels["year"]) or item.contentSerieName:
-        context_commands.append(("InfoPlus", "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], item.clone(channel="infoplus",
-                                                                        action="start").tourl())))
+    if config.get_setting("infoplus") == "true":
+        if item.infoLabels['tmdb_id'] or item.infoLabels['imdb_id'] or item.infoLabels['tvdb_id'] or item.show \
+                                      or (item.contentTitle and item.infoLabels["year"]) or item.contentSerieName:
+            context_commands.append(("InfoPlus", "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], item.clone(channel="infoplus",
+                                                                            action="start").tourl())))
 
     # Ir al Menu Principal (channel.mainlist)
     if parent_item.channel not in ["novedades", "channelselector"] and item.action != "mainlist" \
