@@ -207,7 +207,7 @@ def check_for_update(overwrite=True):
     hoy = datetime.date.today()
 
     try:
-        if config.get_setting("updatelibrary", "biblioteca") != 0:
+        if config.get_setting("updatelibrary", "biblioteca") != 0 or overwrite:
             config.set_setting("updatelibrary_last_check", hoy.strftime('%Y-%m-%d'), "biblioteca")
 
             if config.get_setting("updatelibrary", "biblioteca") == 1 and not overwrite:
@@ -226,8 +226,8 @@ def check_for_update(overwrite=True):
             for path, folders, files in filetools.walk(library.TVSHOWS_PATH):
                 show_list.extend([filetools.join(path, f) for f in files if f == "tvshow.nfo"])
 
-            # fix float porque la division se hace mal en python 2.x
-            t = float(100) / len(show_list)
+            if show_list:
+                t = float(100) / len(show_list)
 
             for i, tvshow_file in enumerate(show_list):
                 head_nfo, serie = library.read_nfo(tvshow_file)
