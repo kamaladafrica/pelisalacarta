@@ -166,6 +166,7 @@ class main(xbmcgui.WindowDialog):
             if not self.infoLabels.get("originaltitle"):
                 self.infoLabels["originaltitle"] = otmdb.result.get("original_title", otmdb.result.get("original_name", ""))
             self.trailers = otmdb.get_videos()
+            self.infoLabels["duration"] = int(otmdb.result.get("runtime", 0))
         else:
             self.trailers = []
 
@@ -283,6 +284,11 @@ class main(xbmcgui.WindowDialog):
         self.title.setAnimations([('conditional', 'effect=fade start=0% end=100% delay=1500 time=1500 condition=true',),('WindowClose','effect=fade start=100% end=0% time=800 condition=true',)])
         self.addControl(self.tagline)
         self.tagline.setAnimations([('conditional', 'effect=fade start=0% end=100% delay=2000 time=1500 condition=true',),('WindowClose','effect=fade start=100% end=0% time=800 condition=true',)])
+        if self.item.contentType == "movie" and self.infoLabels.get("duration", 0):
+            self.duration = xbmcgui.ControlTextBox(120, 100, 420, 45, self.fonts["12"])
+            self.addControl(self.duration)
+            self.duration.setAnimations([('conditional', 'effect=fade start=0% end=100% delay=2000 time=1500 condition=true',),('WindowClose','effect=fade start=100% end=0% time=800 condition=true',)])    
+            self.duration.setText("[COLOR mediumturquoise][B]Duración: %s minutos[/B][/COLOR]" % self.infoLabels["duration"])
         self.addControl(self.rating)
         self.rating.setAnimations([('conditional', 'effect=rotatey start=100% end=0% delay=3000 time=1500 condition=true',),('WindowClose','effect=rotatey start=0% end=100% time=800 condition=true',)])
         self.addControl(self.rating_filma)
@@ -1153,9 +1159,24 @@ class Actores(xbmcgui.WindowXMLDialog):
             tipo = "tv"
         otmdb = tmdb.Tmdb(id_Tmdb=self.tmdb_id, tipo=tipo)
         actores = otmdb.result.get("credits", {}).get("cast", [])
+
+        if self.item.contentType == "movie":
+            reparto = otmdb.result.get("credits", {}).get("crew", [])
+        else:
+            reparto = otmdb.result.get("created_by", [])
+
+        for crew in reparto:
+            if crew.get('job', '') == 'Director' or self.item.contentType != "movie":
+                actores.insert(0, crew)
+
         for actor in actores:
             name_info = "[COLOR yellow][B]%s[/B][/COLOR]" % actor["name"]
-            name = "[COLOR salmon]%s[/COLOR]  [COLOR papayawhip](%s)[/COLOR]" % (actor["name"], actor["character"])
+            try:
+                name = "[COLOR salmon]%s[/COLOR]  [COLOR papayawhip](%s)[/COLOR]" % (actor["name"], actor["character"])
+                job = "actor"
+            except:
+                job = "Director"
+                name = "[COLOR salmon]%s[/COLOR]  [COLOR gold](%s)[/COLOR]" % (actor["name"], job)
             image = "https://image.tmdb.org/t/p/original"
             if actor["profile_path"]:
                 image += actor["profile_path"]
@@ -1169,6 +1190,7 @@ class Actores(xbmcgui.WindowXMLDialog):
             item.setProperty("id_actor", str(actor["id"]))
             item.setProperty("name_info", name_info)
             item.setProperty("thumbnail", image)
+            item.setProperty("job", job)
             items.append(item)
 
         self.getControl(6).addItems(items)
@@ -1177,14 +1199,15 @@ class Actores(xbmcgui.WindowXMLDialog):
 
     def onAction(self, action):
         if (action == ACTION_SELECT_ITEM or action == 100) and self.getFocusId() == 6:
-            dialog = platformtools.dialog_progress("[COLOR darkturquoise][B]Cargando nuevos datos[/B][/COLOR]", "[COLOR yellow]Obteniendo datos del actor...[/COLOR]")
             selectitem = self.getControl(6).getSelectedItem()
             id_actor = selectitem.getProperty("id_actor")
             name_info = selectitem.getProperty("name_info")
             thumbnail = selectitem.getProperty("thumbnail")
+            job = selectitem.getProperty("job")
+            dialog = platformtools.dialog_progress("[COLOR darkturquoise][B]Cargando nuevos datos[/B][/COLOR]", "[COLOR yellow]Obteniendo datos del %s...[/COLOR]" % job.lower())
 
             global ActorInfoWindow
-            ActorInfoWindow = ActorInfo(id=id_actor, name=name_info, thumbnail=thumbnail, item=self.item, fonts=self.fonts, dialog=dialog)
+            ActorInfoWindow = ActorInfo(id=id_actor, name=name_info, thumbnail=thumbnail, item=self.item, fonts=self.fonts, dialog=dialog, job=job)
             ActorInfoWindow.doModal()
             xbmc.sleep(400)
         elif (action == ACTION_SELECT_ITEM or action == 100) and self.getFocusId() == 5:
@@ -1204,6 +1227,7 @@ class ActorInfo(xbmcgui.WindowDialog):
         self.thumbnail = kwargs.get('thumbnail')
         self.item = kwargs.get('item')
         self.fonts = kwargs.get('fonts')
+        self.job = kwargs.get('job')
 
         self.dialog = kwargs.get('dialog')
         if self.item.contentType == "movie":
@@ -1276,16 +1300,24 @@ class ActorInfo(xbmcgui.WindowDialog):
         self.info_actor.setText("[COLOR coral][B]%s[/B][/COLOR]" % actor_tmdb.result.get("biography", "Sin información"))
 
         self.titulos = []
-        for entradas in actor_tmdb.result.get("%s_credits" % tipo, {}).get("cast", []):
+        tipo_busqueda = "cast"
+        if self.job != "actor":
+            tipo_busqueda = "crew"
+        ids = []
+        for entradas in actor_tmdb.result.get("%s_credits" % tipo, {}).get(tipo_busqueda, []):
+            if entradas["id"] in ids:
+                continue
+            else:
+                ids.append(entradas["id"])
             thumb = "https://image.tmdb.org/t/p/original"
             if entradas["poster_path"]:
                 thumb += entradas["poster_path"]
             else:
                 thumb = "http://s6.postimg.org/tw1vhymj5/noposter.png"
             if self.item.contentType == "movie":
-                self.titulos.append([entradas["id"], entradas["original_title"], thumb])
+                self.titulos.append([entradas["id"], entradas.get("title", entradas.get("original_title", "")), thumb])
             else:
-                self.titulos.append([entradas["id"], entradas["original_name"], thumb])
+                self.titulos.append([entradas["id"], entradas.get("title", entradas.get("original_title", "")), thumb])
 
         self.dialog.update(40, '[COLOR rosybrown]Obteniendo filmografía...[/COLOR]')
         self.mas_pelis = 8
