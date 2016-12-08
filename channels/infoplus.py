@@ -15,6 +15,7 @@ from core import tmdb
 from platformcode import platformtools
 from core.item import Item
 from core.scrapertools import decodeHtmlentities as dhe
+from threading import Thread
 
 mainWindow = list()
 ActoresWindow = None
@@ -92,6 +93,7 @@ class main(xbmcgui.WindowDialog):
             rating = self.infoLabels.get("rating")
             titulo = self.infoLabels["title"]
             self.images = []
+            thread1 = None
         else:
             info_copy = dict(self.item.infoLabels)
             self.item.infoLabels.pop("season", None)
@@ -132,7 +134,10 @@ class main(xbmcgui.WindowDialog):
                 self.infoLabels["plot"] = "[COLOR moccasin][B]%s[/B][/COLOR]" % self.infoLabels.get("plot")
 
             self.dialog.update(60, '[COLOR khaki]Indagando recomendaciones.......[/COLOR]')
-            self.recomendaciones = get_recomendations(self.item, self.infoLabels)
+            thread1 = Thread(target=get_recomendations,args=[self.item, self.infoLabels, self.recomendaciones])
+            thread1.setDaemon(True) 
+            thread1.start()
+
             if self.infoLabels.get("status") == "Ended" and tipo == "serie":
                 status = "[COLOR aquamarine][B]Finalizada %s[/B][/COLOR]"
             elif self.infoLabels.get("status") and tipo == "serie":
@@ -146,6 +151,10 @@ class main(xbmcgui.WindowDialog):
             else:
                 self.infoLabels["tagline"] = status % self.infoLabels.get("tagline", "")
 
+        self.images = {}
+        thread2 = Thread(target=fanartv,args=[self.item, self.infoLabels, self.images])
+        thread2.setDaemon(True) 
+        thread2.start()
 
         if self.infoLabels["tmdb_id"]:
             otmdb = tmdb.Tmdb(id_Tmdb=self.infoLabels["tmdb_id"], tipo=tipo_busqueda)
@@ -191,7 +200,8 @@ class main(xbmcgui.WindowDialog):
         else:
             self.dialog.update(80, '[COLOR teal]Recopilando imágenes en [/COLOR]'+ '[COLOR floralwhite][B]FAN[/B][/COLOR]'+'[COLOR slategray][B]ART.[/B][/COLOR]'+'[COLOR darkgray]TV.......[/COLOR]')
 
-        self.images = fanartv(self.item, self.infoLabels)
+        while thread2.isAlive():
+            xbmc.sleep(100)
         if not self.infoLabels.get("fanart") and self.images:
             try:
                 if self.item.contentType == "movie":
@@ -324,6 +334,9 @@ class main(xbmcgui.WindowDialog):
         self.btn_left.setAnimations([('conditional','effect=zoom start=-100 end=100 delay=5000 time=2000 condition=true tween=bounce' ,),('conditional','effect=zoom start=720,642,70,29 end=640,642,69,29 time=1000 loop=true tween=bounce condition=Control.HasFocus('+str(self.btn_left.getId())+')',),('WindowClose','effect=slide end=0,700% time=1000 condition=true',)])
         self.btn_left.setVisible(False)
         self.botones.append(self.btn_left)
+        if thread1:
+            while thread1.isAlive():
+                xbmc.sleep(100)
         for idp, peli, thumb in self.recomendaciones:
             if self.item.contentType == "movie":
                 peli = "[COLOR yellow][B]"+peli+"[/B][/COLOR]"
@@ -376,11 +389,14 @@ class main(xbmcgui.WindowDialog):
         self.botones.insert(3, self.global_search)
         self.buscar = None
         if self.from_window:
-            channel = __import__('channels.%s' % self.item.channel, None, None, ["channels.%s" % self.item.channel])
+            canal = self.item.from_channel
+            if not canal:
+                canal = self.item.channel
+            channel = __import__('channels.%s' % canal, None, None, ["channels.%s" % canal])
             if hasattr(channel, 'search'):
                 if not self.item.thumb_busqueda:
                     from core import channeltools
-                    self.item.thumb_busqueda = channeltools.get_channel_parameters(self.item.channel)["thumbnail"]
+                    self.item.thumb_busqueda = channeltools.get_channel_parameters(canal)["thumbnail"]
                 self.buscar = xbmcgui.ControlButton(1095, 320, 140, 53, '', self.item.thumb_busqueda, self.item.thumb_busqueda)
                 self.addControl(self.buscar)
                 self.botones.insert(4, self.buscar)
@@ -464,10 +480,13 @@ class main(xbmcgui.WindowDialog):
             if control == self.buscar:
                 check_busqueda = "no_global"
                 try:
-                    channel = __import__('channels.%s' % self.item.channel, None, None, ["channels.%s" % self.item.channel])
-                    itemlist = channel.search(self.item, self.infoLabels.get("title"))
+                    canal = self.item.from_channel
+                    if not canal:
+                        canal = self.item.channel
+                    channel = __import__('channels.%s' % canal, None, None, ["channels.%s" % canal])
+                    itemlist = channel.search(self.item.clone(), self.infoLabels.get("title"))
                     if not itemlist and self.infoLabels.get("originaltitle"):
-                        itemlist = channel.search(self.item, self.infoLabels.get("originaltitle", ""))
+                        itemlist = channel.search(self.item.clone(), self.infoLabels.get("originaltitle", ""))
                 except:
                     import traceback
                     logger.info(traceback.format_exc())
@@ -798,33 +817,36 @@ class related(xbmcgui.WindowDialog):
         self.botones = []
         self.trailer_r = xbmcgui.ControlButton(790, 62, 55, 55, '', 'http://i.imgur.com/cGI2fxC.png', 'http://i.imgur.com/cGI2fxC.png')
         self.addControl(self.trailer_r)
-        self.trailer_r.setAnimations([('conditional','effect=slide start=-2000 delay=4000 time=2500 condition=true',),('conditional','effect=rotate delay=4000 center=auto  start=0% end=360% time=2500  condition=true ',),('unfocus', 'effect=zoom center=auto start=70% end=100% time=700 reversible=false',),('conditional','effect=rotate center=auto start=0% end=360% reversible=false  time=2000 loop=true condition=Control.HasFocus('+str(self.trailer_r.getId())+')'),('WindowClose','effect=slide end=2000  time=700 condition=true',)])
+        self.trailer_r.setAnimations([('conditional','effect=slide start=-2000 delay=4000 time=2500 condition=true',),('conditional','effect=rotate delay=4000 center=auto  start=0% end=360% time=2500  condition=true ',),('unfocus', 'effect=zoom center=auto start=70% end=100% time=700 reversible=false',),('conditional','effect=rotate center=auto start=0% end=360% reversible=false  time=2000 loop=true condition=Control.HasFocus('+str(self.trailer_r.getId())+')'),('WindowClose','effect=slide end=2000 time=700 condition=true',)])
         self.botones.append(self.trailer_r)
 
         self.plusinfo = xbmcgui.ControlButton(1090, 20, 100, 100, '', 'http://i.imgur.com/1w5CFCL.png', 'http://i.imgur.com/1w5CFCL.png')
         self.addControl(self.plusinfo)
-        self.plusinfo.setAnimations([('conditional','effect=slide start=0,-700 delay=5600 time=700 condition=true tween=elastic easing=out',),('unfocus', 'effect=zoom center=auto start=70% end=100% time=700 reversible=false',),('conditional','effect=rotate center=auto start=0% end=360% reversible=false  time=2000 loop=true condition=Control.HasFocus('+str(self.plusinfo.getId())+')'),('WindowClose','effect=rotatey end=-300   time=1000 condition=true',)])
+        self.plusinfo.setAnimations([('conditional','effect=slide start=0,-700 delay=5600 time=700 condition=true tween=elastic easing=out',),('unfocus', 'effect=zoom center=auto start=70% end=100% time=700 reversible=false',),('conditional','effect=rotate center=auto start=0% end=360% reversible=false  time=2000 loop=true condition=Control.HasFocus('+str(self.plusinfo.getId())+')'),('WindowClose','effect=rotatey end=-300 time=1000 condition=true',)])
         self.botones.append(self.plusinfo)
 
         self.lupam = xbmcgui.ControlImage(950, 580, 60, 60, "http://imgur.com/VDdB0Uw.png")
         self.addControl(self.lupam)
-        self.lupam.setAnimations([('conditional', 'effect=slide  start=1500  delay=7020 time=200  tween=elastic condition=true',),('WindowClose','effect=zoom end=0 center=auto time=700 condition=true',)])
+        self.lupam.setAnimations([('conditional', 'effect=slide start=1500 delay=7020 time=200 tween=elastic condition=true',),('WindowClose','effect=zoom end=0 center=auto time=700 condition=true',)])
 
         self.focus = -1
         self.buscar = None
-        channel = __import__('channels.%s' % self.item.channel, None, None, ["channels.%s" % self.item.channel])
+        canal = self.item.from_channel
+        if not canal:
+            canal = self.item.channel
+        channel = __import__('channels.%s' % canal, None, None, ["channels.%s" % canal])
         if hasattr(channel, 'search'):
             if not self.item.thumb_busqueda:
                 from core import channeltools
-                self.item.thumb_busqueda = channeltools.get_channel_parameters(self.item.channel)["thumbnail"]
+                self.item.thumb_busqueda = channeltools.get_channel_parameters(canal)["thumbnail"]
             self.buscar = xbmcgui.ControlButton(1040, 550, 150, 53, '', self.item.thumb_busqueda, self.item.thumb_busqueda)
             self.addControl(self.buscar)
             self.botones.append(self.buscar)
-            self.buscar.setAnimations([('conditional', 'effect=slide start=0,700 delay=6000 time=200 condition=true',),('unfocus', 'effect=zoom center=auto start=70% end=100% time=700 reversible=false',),('conditional','effect=zoom center=auto start=100% end=120% reversible=false tween=bounce time=1000 loop=true condition=Control.HasFocus('+str(self.buscar.getId())+')'),('WindowClose','effect=rotatey end=-300  time=2700 condition=true',)])
+            self.buscar.setAnimations([('conditional', 'effect=slide start=0,700 delay=6000 time=200 condition=true',),('unfocus', 'effect=zoom center=auto start=70% end=100% time=700 reversible=false',),('conditional','effect=zoom center=auto start=100% end=120% reversible=false tween=bounce time=1000 loop=true condition=Control.HasFocus('+str(self.buscar.getId())+')'),('WindowClose','effect=rotatey end=-300 time=1500 condition=true',)])
         self.global_search = xbmcgui.ControlButton(1046, 620, 140, 53, '', 'http://imgur.com/hoOvpHV.png', 'http://imgur.com/hoOvpHV.png')
         self.addControl(self.global_search)
         self.botones.append(self.global_search)
-        self.global_search.setAnimations([('conditional', 'effect=slide start=0,700 delay=6090 time=200 condition=true',),('unfocus', 'effect=zoom center=auto start=70% end=100% time=700 reversible=false',),('conditional','effect=zoom center=auto start=120% end=100% reversible=false tween=bounce time=1000 loop=true condition=Control.HasFocus('+str(self.global_search.getId())+')'),('WindowClose','effect=rotatey end=300 time=2700 condition=true',)])
+        self.global_search.setAnimations([('conditional', 'effect=slide start=0,700 delay=6090 time=200 condition=true',),('unfocus', 'effect=zoom center=auto start=70% end=100% time=700 reversible=false',),('conditional','effect=zoom center=auto start=120% end=100% reversible=false tween=bounce time=1000 loop=true condition=Control.HasFocus('+str(self.global_search.getId())+')'),('WindowClose','effect=rotatey end=300 time=1500 condition=true',)])
         xbmc.sleep(200)
 
 
@@ -851,7 +873,7 @@ class related(xbmcgui.WindowDialog):
             global ActorInfoWindow, relatedWindow, ActoresWindow, imagesWindow, exit_loop, mainWindow
             exit_loop = True
             borrar = [relatedWindow, ActorInfoWindow, ActoresWindow, BusquedaWindow, TrailerWindow, imagesWindow]
-            item_new = Item(channel=self.item.channel, contentType=self.item.contentType, infoLabels=self.infoLabels, thumb_busqueda=self.item.thumb_busqueda)
+            item_new = Item(channel=self.item.channel, contentType=self.item.contentType, infoLabels=self.infoLabels, thumb_busqueda=self.item.thumb_busqueda, from_channel=self.item.from_channel)
             for window in borrar:
                 try:
                     window.close()
@@ -869,10 +891,13 @@ class related(xbmcgui.WindowDialog):
             if control == self.buscar:
                 try:
                     check_busqueda = "no_global"
-                    channel = __import__('channels.%s' % self.item.channel, None, None, ["channels.%s" % self.item.channel])
-                    itemlist = channel.search(self.item, self.infoLabels.get("title"))
+                    canal = self.item.from_channel
+                    if not canal:
+                        canal = self.item.channel
+                    channel = __import__('channels.%s' % canal, None, None, ["channels.%s" % canal])
+                    itemlist = channel.search(self.item.clone(), self.infoLabels.get("title"))
                     if not itemlist and self.infoLabels.get("originaltitle"):
-                        itemlist = channel.search(self.item, self.infoLabels.get("originaltitle", ""))
+                        itemlist = channel.search(self.item.clone(), self.infoLabels.get("originaltitle", ""))
                 except:
                     import traceback
                     logger.info(traceback.format_exc())
@@ -1187,29 +1212,43 @@ class ActorInfo(xbmcgui.WindowDialog):
         else:
             tipo = "tv"
             search = {'url': 'person/%s' % self.id, 'language': 'es', 'append_to_response': 'tv_credits,images'}
-        actor_tmdb = tmdb.Tmdb(discover=search)
 
+        actor_tmdb = tmdb.Tmdb(discover=search)
         if not actor_tmdb.result.get("biography") and actor_tmdb.result.get("imdb_id"):
             data = scrapertools.downloadpage("http://www.imdb.com/name/%s/bio" % actor_tmdb.result["imdb_id"])
             info = scrapertools.find_single_match(data, '<div class="soda odd">.*?<p>(.*?)</p>')
             if info:
-                info = dhe(scrapertools.htmlclean(info.strip()))
+                bio = dhe(scrapertools.htmlclean(info.strip()))
                 try:
-                    info = translate(info, "es", "en")
-                    info = re.sub(r"d>|nn", "", info)
-                    actor_tmdb.result["biography"] = dhe(info)
+                    info_list = []
+                    while bio:
+                        info_list.append(bio[:1900])
+                        bio = bio[1900:]
+                    bio = []
+                    threads = {}
+                    for i, info_ in enumerate(info_list):
+                        t = Thread(target=translate,args=[info_, "es", "en", i, bio])
+                        t.setDaemon(True)
+                        t.start()
+                        threads[i] = t
+
+                    while threads:
+                        for key, t in threads.items():
+                            if not t.isAlive():
+                                threads.pop(key)
+                        xbmc.sleep(100)
+                    if bio:
+                        bio.sort(key=lambda x:x[0])
+                        biography = ""
+                        for i, b in bio:
+                            biography += b
+                        actor_tmdb.result["biography"] = dhe(biography)
+                    else:
+                        bio = dhe(scrapertools.htmlclean(info.strip()))
+                        actor_tmdb.result["biography"] = dhe(bio)
                 except:
-                    try:
-                        firstpart, secondpart = info[:len(info)/2], info[len(info)/2:]
-                        firstpart = translate(firstpart, "es", "en")
-                        secondpart = translate(secondpart, "es", "en")
-                        info = firstpart+secondpart
-                        info = re.sub(r"d>|nn", "", info)
-                        actor_tmdb.result["biography"] = dhe(info)
-                    except:
-                        import traceback
-                        logger.info(traceback.format_exc())
-                        actor_tmdb.result["biography"] = info
+                    bio = dhe(scrapertools.htmlclean(info.strip()))
+                    actor_tmdb.result["biography"] = bio
             else:
                 actor_tmdb.result["biography"] = "Sin información"
         elif not actor_tmdb.result.get("biography"):
@@ -1308,7 +1347,6 @@ class ActorInfo(xbmcgui.WindowDialog):
             self.thumb.setAnimations([('conditional', 'effect=rotatey start=100% end=0% delay=2380 time=1500 condition=true',),('WindowClose','effect=fade end=0% time=1000 condition=true',)])
             xbmc.sleep(300)
         else:
-            from threading import Thread
             self.start_change = False
             self.th = Thread(target=self.change_image)
             self.th.setDaemon(True)
@@ -1705,7 +1743,7 @@ class Trailer(xbmcgui.WindowXMLDialog):
     def Start(self, item, trailers):
         self.item = item
         from channels import trailertools
-        self.video_url, self.windows = trailertools.buscartrailer(self.item, trailers=trailers)
+        self.video_url, self.windows = trailertools.buscartrailer(self.item.clone(), trailers=trailers)
 
         self.doModal()
 
@@ -1764,13 +1802,13 @@ class Trailer(xbmcgui.WindowXMLDialog):
             self.player.pause()
         
         
-def get_recomendations(item, infoLabels):
+def get_recomendations(item, infoLabels, recomendaciones):
     tipo = item.contentType
     if tipo != "movie":
         tipo = "tv"
     search = {'url': '%s/%s/recommendations' % (tipo, infoLabels['tmdb_id']), 'language': 'es', 'page': 1}
     reco_tmdb = tmdb.Tmdb(discover=search, tipo=tipo, idioma_busqueda="es")
-    itemlist = []
+
     for i in range(0, len(reco_tmdb.results)):
         titulo = reco_tmdb.results[i].get("title", reco_tmdb.results[i].get("original_title", ""))
         if not titulo:
@@ -1779,9 +1817,7 @@ def get_recomendations(item, infoLabels):
         thumbnail = reco_tmdb.results[i].get("poster_path", "")
         if thumbnail:
             thumbnail = 'http://image.tmdb.org/t/p/original' + thumbnail
-        itemlist.append([idtmdb, titulo, thumbnail])
-
-    return itemlist
+        recomendaciones.append([idtmdb, titulo, thumbnail])
 
 
 def get_filmaf(item, infoLabels):
@@ -1840,7 +1876,7 @@ def get_filmaf(item, infoLabels):
     return critica, rating_filma, plot
 
 
-def fanartv(item, infoLabels):
+def fanartv(item, infoLabels, images={}):
     from core import jsontools
     headers = [['Content-Type', 'application/json']]
     id_search = infoLabels.get('tvdb_id')
@@ -1851,7 +1887,6 @@ def fanartv(item, infoLabels):
     elif item.contentType == "movie":
         id_search = infoLabels.get('tmdb_id')
 
-    images = {}
     if id_search:
         if item.contentType == "movie":
             url = "http://webservice.fanart.tv/v3/movies/%s?api_key=cab16e262d72fea6a6843d679aa10300" \
@@ -1863,7 +1898,6 @@ def fanartv(item, infoLabels):
             for key, value in data.items():
                 if key not in ["name", "tmdb_id", "imdb_id", "thetvdb_id"]:
                     images[key] = value
-
     return images
 
 
@@ -1924,7 +1958,7 @@ def get_fonts(skin):
     return fonts
 
 
-def translate(to_translate, to_language="auto", language="auto"):
+def translate(to_translate, to_language="auto", language="auto", i=0, bio=[]):
     '''Return the translation using google translate
         you must shortcut the langage you define (French = fr, English = en, Spanish = es, etc...)
         if you don't define anything it will detect it or use english by default
@@ -1941,4 +1975,5 @@ def translate(to_translate, to_language="auto", language="auto"):
     page = urllib2.urlopen(request).read()
     result = page[page.find(before_trans)+len(before_trans):]
     result = result.split("<")[0]
-    return result
+    result = re.sub(r"d>|nn", "", result)
+    bio.append([i, result])
