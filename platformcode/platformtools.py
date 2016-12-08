@@ -331,8 +331,9 @@ def set_context_commands(item, parent_item):
     if config.get_setting("infoplus") == "true":
         if item.infoLabels['tmdb_id'] or item.infoLabels['imdb_id'] or item.infoLabels['tvdb_id'] or item.show \
                                       or (item.contentTitle and item.infoLabels["year"]) or item.contentSerieName:
-            context_commands.append(("InfoPlus", "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], item.clone(channel="infoplus",
-                                                                            action="start").tourl())))
+            context_commands.append(("InfoPlus",
+                                     "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], item.clone(channel="infoplus",
+                                                                action="start", from_channel=item.channel).tourl())))
 
     # Ir al Menu Principal (channel.mainlist)
     if parent_item.channel not in ["novedades", "channelselector"] and item.action != "mainlist" \
