@@ -49,6 +49,8 @@ def mainlist(item):
                          folder=True, thumbnail=get_thumbnail_path("thumb_novedades.png")))
     itemlist.append(Item(channel="buscador",  title="   Ajustes del buscador global", action="opciones", folder=True,
                          thumbnail=get_thumbnail_path("thumb_buscar.png")))
+    itemlist.append(Item(channel=CHANNELNAME,  title="   Activar/Desactivar canales", action="channels_onoff", folder=True,
+                         thumbnail=get_thumbnail_path("thumb_configuracion.png")))
 
     if config.get_library_support():
         itemlist.append(Item(channel="biblioteca", title="   Ajustes de la biblioteca",
@@ -276,3 +278,112 @@ def get_thumbnail_path(thumb_name):
     import urlparse
     WEB_PATH = "http://media.tvalacarta.info/pelisalacarta/squares/"
     return urlparse.urljoin(WEB_PATH, thumb_name)
+
+def channels_onoff(item):
+    logger.info()
+    itemlist = []
+    import channelselector
+    from core import channeltools
+    channel_list = channelselector.filterchannels("allchannelstatus")
+    excluded_channels = ['tengourl',
+                         'buscador',
+                         'libreria',
+                         'configuracion',
+                         'novedades',
+                         'personal',
+                         'ayuda']
+
+    for channel in channel_list:
+        try:
+            # Si el canal esta en la lista de exclusiones lo saltamos
+            if channel.channel not in excluded_channels:
+                # Se cargan los ajustes del archivo json del canal
+                jsonchannel = channeltools.get_channel_json(channel.channel)
+                if jsonchannel.get("settings") or jsonchannel.get("active"):
+                    channel_parameters = channeltools.get_channel_parameters(channel.channel)
+                    xml_status = None
+                    status = None
+                    xml_status = channel_parameters["active"]
+                    xmlwasfalse = "false"
+                    if config.get_setting("enabled", channel.channel):
+                        status = config.get_setting("enabled", channel.channel)
+                        logger.info(channel.channel +" | Status: " + status)
+                    else:
+                        status = xml_status
+                        logger.info(channel.channel +" | Status (XML): " + status)
+                    # Si en el xml estaba desactivado puede ser por algo
+                    if xml_status == "false":
+                        xmlwasfalse = "true"
+
+                    # Si se ha establecido el estado del canal se añade a la lista
+                    if status != None:
+                        list_status = None
+                        if xmlwasfalse == "true":
+                            if status == "true":
+                                list_status = "[COLOR green] (ACTIVADO)[/COLOR][COLOR red] (WARNING! DESACTIVADO EN XML)[/COLOR]"
+                            if status == "false":
+                                list_status = "[COLOR red] (DESACTIVADO)[/COLOR]"
+                        else:
+                            if status == "true":
+                                list_status = "[COLOR green] (ACTIVADO)[/COLOR]"
+                            if status == "false":
+                                list_status = "[COLOR red] (DESACTIVADO)[/COLOR][COLOR green] (ACTIVADO EN XML)[/COLOR]"
+
+                        if list_status != None:
+                            itemlist.append(Item(channel=CHANNELNAME, title=channel.title + list_status,
+                                                 action="channel_status", folder=False,
+                                                 thumbnail=channel.thumbnail, extra=channel.channel))
+                else:
+                    logger.info("Algo va mal con el canal " + channel.channel)
+            else:
+                continue
+        except:
+            import traceback
+            from platformcode import platformtools
+            logger.info(channel.title + " | Detalle del error: %s" % traceback.format_exc())
+            platformtools.dialog_notification("Error",
+                                              "Se ha producido un error con el canal" +
+                                              channel.title)
+
+    return itemlist
+
+
+def channel_status(item):
+    try:
+        from platformcode import platformtools
+        # Opciones para el dialogo
+        opciones = ["Activar", "Desactivar", "Por defecto"]
+
+        # Mostramos el dialogo
+        seleccion = platformtools.dialog_select("Elige una opción", opciones)
+
+        # -1 es cancelar
+        if seleccion == -1:
+            return
+
+        logger.info("opcion numero = " + str(seleccion))
+        new_status = None
+        # Opcion Activar
+        if seleccion == 0:
+            new_status = "true"
+
+        # Opcion Desactivar
+        if seleccion == 1:
+            new_status = "false"
+
+        # Opcion Por defecto
+        if seleccion == 2:
+            from core import channeltools
+            channel_parameters = channeltools.get_channel_parameters(item.extra)
+            new_status = channel_parameters["active"]
+
+        config.set_setting("enabled", new_status, item.extra)
+        platformtools.dialog_notification("pelisalacarta", "Ajuste guardado")
+        platformtools.itemlist_update(Item(channel=CHANNELNAME, action="channels_onoff"))
+
+    except:
+        import traceback
+        from platformcode import platformtools
+        logger.info("Detalle del error: %s" % traceback.format_exc())
+        platformtools.dialog_notification("Error",
+                                          "Se ha producido un error al guardar")

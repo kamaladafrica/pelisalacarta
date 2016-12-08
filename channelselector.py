@@ -186,6 +186,12 @@ def filterchannels(category,preferred_thumb=""):
 
     channelslist =[]
 
+    # Si category = "allchannelstatus" es que estamos activando/desactivando canales
+    appenddisabledchannels = "false"
+    if category == "allchannelstatus":
+        category = "all"
+        appenddisabledchannels = "true"
+
     # Lee la lista de canales
     channel_path = os.path.join( config.get_runtime_path() , "channels" , '*.xml' )
     logger.info("channelselector.filterchannels channel_path="+channel_path)
@@ -211,9 +217,16 @@ def filterchannels(category,preferred_thumb=""):
                 if preferred_thumb=="bannermenu" and "bannermenu" in channel_parameters:
                     channel_parameters["thumbnail"] = channel_parameters["bannermenu"]
 
-                # Se salta el canal si no está activo
-                if not channel_parameters["active"] == "true":
-                    continue
+                # Se salta el canal si no está activo y no estamos activando/desactivando los canales
+                channel_status = None
+                if config.get_setting("enabled", channel_parameters["channel"]):
+                    channel_status = config.get_setting("enabled", channel_parameters["channel"])
+                else:
+                    channel_status = channel_parameters["active"]
+
+                if channel_status != "true":
+                    if appenddisabledchannels != "true":
+                        continue
 
                 # Se salta el canal para adultos si el modo adultos está desactivado
                 if channel_parameters["adult"] == "true" and config.get_setting("adult_mode") != "true":
