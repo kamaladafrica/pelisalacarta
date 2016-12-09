@@ -53,7 +53,7 @@ def start(item, recomendaciones=[], from_window=False):
         global SearchWindows
         SearchWindows = list()
     
-    dialog = platformtools.dialog_progress("[COLOR darkturquoise][B]Cargando nuevos datos[/B][/COLOR]", "[COLOR lightyellow]Buscando en  [/COLOR]"+ "[COLOR springgreen][B]Tmdb.......[/B][/COLOR]")
+    dialog = platformtools.dialog_progress("[COLOR darkturquoise][B]Cargando nuevos datos[/B][/COLOR]", "[COLOR lightyellow]Buscando en  [/COLOR][COLOR springgreen][B]Tmdb.......[/B][/COLOR]")
 
     principal_window = main(item=item, recomendaciones=recomendaciones, dialog=dialog, from_window=from_window)
     try:
@@ -225,7 +225,7 @@ class main(xbmcgui.WindowDialog):
         if self.images:
             try:
                 if self.item.contentType == "movie":
-                    self.infoLabels["thumbnail"] = self.images.get("hdmovielogo", self.images.get("movielogo", self.images.get("moviethumb")))[0].get("url")
+                    self.infoLabels["thumbnail"] = self.images.get("hdmovielogo", self.images.get("movielogo"))[0].get("url")
                 elif self.infoLabels.get("season") and self.images.get("seasonthumb"):
                     find = False
                     for imagen in self.images["seasonthumb"]:
@@ -236,13 +236,13 @@ class main(xbmcgui.WindowDialog):
                     if not find:
                         self.infoLabels["thumbnail"] = self.images.get("hdtvlogo", self.images.get("clearlogo", self.images.get("tvthumb")))[0].get("url")
                 else:
-                    self.infoLabels["thumbnail"] = self.images.get("hdtvlogo", self.images.get("clearlogo", self.images.get("tvthumb")))[0].get("url")
+                    self.infoLabels["thumbnail"] = self.images.get("hdtvlogo", self.images.get("clearlogo", ))[0].get("url")
                 self.infoLabels["thumbnail"] = self.infoLabels["thumbnail"].replace(" ", "%20")
             except:
                 self.infoLabels["thumbnail"] = 'http://i.imgur.com/8K5f4Uo.png'
                 import traceback
                 logger.info(traceback.format_exc())
-        elif not self.images and (not self.item.rating_filma or not self.infoLabels.get("thumbnail")):
+        elif not self.item.rating_filma or "image.tmdb.org" in self.infoLabels.get("thumbnail", "") or not self.infoLabels.get("thumbnail"):
             self.infoLabels["thumbnail"] = 'http://i.imgur.com/8K5f4Uo.png'
 
         self.name = re.sub(r'(\[.*?\])', '', self.infoLabels["title"])
@@ -594,6 +594,7 @@ class main(xbmcgui.WindowDialog):
         else:
             for boton, peli, id, poster2 in self.idps:
                 if control == boton:
+                    dialog = platformtools.dialog_progress("[COLOR darkturquoise][B]Cargando nueva info[/B][/COLOR]", "[COLOR lightyellow]Buscando en  [/COLOR][COLOR springgreen][B]Tmdb.......[/B][/COLOR]")
                     tipo = self.item.contentType
                     if tipo != "movie":
                         tipo = "tv"
@@ -605,7 +606,7 @@ class main(xbmcgui.WindowDialog):
                     new_infolabels["crew"] = new_tmdb.result.get("credits_crew", [])
                     new_infolabels["created_by"] = new_tmdb.result.get("created_by", [])
                     global relatedWindow
-                    relatedWindow = related(item=self.item, infolabels=new_infolabels, fonts=self.fonts, trailers=trailers)
+                    relatedWindow = related(item=self.item, infolabels=new_infolabels, fonts=self.fonts, trailers=trailers, dialog=dialog)
                     relatedWindow.doModal()
 
 
@@ -615,6 +616,7 @@ class related(xbmcgui.WindowDialog):
         self.infoLabels = kwargs.get("infolabels")
         self.fonts = kwargs.get("fonts")
         self.trailers = kwargs.get("trailers")
+        self.dialog = kwargs.get("dialog")
 
         try:
             if not self.infoLabels.get("rating"):
@@ -853,6 +855,8 @@ class related(xbmcgui.WindowDialog):
         self.addControl(self.global_search)
         self.botones.append(self.global_search)
         self.global_search.setAnimations([('conditional', 'effect=slide start=0,700 delay=6090 time=200 condition=true',),('unfocus', 'effect=zoom center=auto start=70% end=100% time=700 reversible=false',),('conditional','effect=zoom center=auto start=120% end=100% reversible=false tween=bounce time=1000 loop=true condition=Control.HasFocus('+str(self.global_search.getId())+')'),('WindowClose','effect=rotatey end=300 time=1500 condition=true',)])
+
+        self.dialog.close()
         xbmc.sleep(200)
 
 
@@ -1560,6 +1564,7 @@ class ActorInfo(xbmcgui.WindowDialog):
 
         for boton, peli, id, poster2 in self.idps:
             if control == boton:
+                dialog = platformtools.dialog_progress("[COLOR darkturquoise][B]Cargando nueva info[/B][/COLOR]", "[COLOR lightyellow]Buscando en  [/COLOR][COLOR springgreen][B]Tmdb.......[/B][/COLOR]")
                 tipo = self.item.contentType
                 if tipo != "movie":
                     tipo = "tv"
@@ -1570,7 +1575,7 @@ class ActorInfo(xbmcgui.WindowDialog):
                 new_infolabels["crew"] = new_tmdb.result.get("credits_crew", [])
                 new_infolabels["created_by"] = new_tmdb.result.get("created_by", [])
                 global relatedWindow
-                relatedWindow = related(item=self.item, infolabels=new_infolabels, fonts=self.fonts)
+                relatedWindow = related(item=self.item, infolabels=new_infolabels, fonts=self.fonts, dialog=dialog)
                 relatedWindow.doModal()
 
 
