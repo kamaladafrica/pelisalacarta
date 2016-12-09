@@ -24,7 +24,7 @@ headers = [['User-Agent', 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:46.0) Gecko/2
 def test_video_exists(page_url):
     logger.info("pelisalacarta.servers.flashx test_video_exists(page_url='%s')" % page_url)
 
-    data = scrapertools.downloadpageWithoutCookies(page_url)
+    data = scrapertools.downloadpageWithoutCookies(page_url.replace("playvid-", ""))
 
     if 'File Not Found' in data:
         return False, "[FlashX] El archivo no existe o ha sido borrado"
