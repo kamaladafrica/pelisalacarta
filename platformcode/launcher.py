@@ -411,7 +411,12 @@ def play_from_library(item):
     else:
         from channels import biblioteca
         from platformcode import xbmc_library
+        p_dialog = platformtools.dialog_progress_bg('pelisalacarta', 'Cargando...')
+        p_dialog.update(0, '')
+
         itemlist = biblioteca.findvideos(item)
+
+        p_dialog.update(50, '')
 
         if len(itemlist) > 0:
             # El usuario elige el mirror
@@ -423,6 +428,10 @@ def play_from_library(item):
             if seleccion == -1:
                 return
 
-            platformtools.play_video(itemlist[seleccion])
+            item =  biblioteca.play(itemlist[seleccion])[0]
+            p_dialog.update(100, '')
+
+            platformtools.play_video(item)
+            p_dialog.close()
             xbmc_library.mark_auto_as_watched(itemlist[seleccion])
 
