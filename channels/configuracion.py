@@ -292,6 +292,10 @@ def channels_onoff(item):
                          'novedades',
                          'personal',
                          'ayuda']
+    itemlist.append(Item(channel=CHANNELNAME, title="Activar/Desactivar todos los canales",
+                         action="channel_status", folder=False,
+                         thumbnail=get_thumbnail_path("thumb_configuracion.png"),
+                         extra="onoffall"))
 
     for channel in channel_list:
         try:
@@ -307,16 +311,16 @@ def channels_onoff(item):
                     xmlwasfalse = "false"
                     if config.get_setting("enabled", channel.channel):
                         status = config.get_setting("enabled", channel.channel)
-                        logger.info(channel.channel +" | Status: " + status)
+                        # logger.info(channel.channel + " | Status: " + status)
                     else:
                         status = xml_status
-                        logger.info(channel.channel +" | Status (XML): " + status)
+                        # logger.info(channel.channel + " | Status (XML): " + status)
                     # Si en el xml estaba desactivado puede ser por algo
                     if xml_status == "false":
                         xmlwasfalse = "true"
 
                     # Si se ha establecido el estado del canal se añade a la lista
-                    if status != None:
+                    if status is not None:
                         list_status = None
                         if xmlwasfalse == "true":
                             if status == "true":
@@ -329,7 +333,7 @@ def channels_onoff(item):
                             if status == "false":
                                 list_status = "[COLOR red] (DESACTIVADO)[/COLOR][COLOR green] (ACTIVADO EN XML)[/COLOR]"
 
-                        if list_status != None:
+                        if list_status is not None:
                             itemlist.append(Item(channel=CHANNELNAME, title=channel.title + list_status,
                                                  action="channel_status", folder=False,
                                                  thumbnail=channel.thumbnail, extra=channel.channel))
@@ -351,35 +355,119 @@ def channels_onoff(item):
 def channel_status(item):
     try:
         from platformcode import platformtools
-        # Opciones para el dialogo
-        opciones = ["Activar", "Desactivar", "Por defecto"]
+        from core import channeltools
 
-        # Mostramos el dialogo
-        seleccion = platformtools.dialog_select("Elige una opción", opciones)
+        if item.extra == "onoffall":
+            op_all = ["Activar todos", "Desactivar todos", "Recuperar estado por defecto"]
+            seleccion_all = platformtools.dialog_select("Todos los canales - Elige una opción", op_all)
+            # -1 es cancelar
+            if seleccion_all == -1:
+                return
+            # logger.info("opcion numero = " + str(seleccion_all))
 
-        # -1 es cancelar
-        if seleccion == -1:
-            return
+            import channelselector
+            channel_list = channelselector.filterchannels("allchannelstatus")
+            excluded_channels = ['tengourl',
+                                 'buscador',
+                                 'libreria',
+                                 'configuracion',
+                                 'novedades',
+                                 'personal',
+                                 'ayuda']
+            for channel in channel_list:
+                if channel.channel not in excluded_channels:
+                    channel_parameters = channeltools.get_channel_parameters(channel.channel)
+                    new_status_all_default = None
+                    new_status_all = None
+                    new_status_all_default = channel_parameters["active"]
+                    if seleccion_all == 0:
+                        new_status_all = "true"
+                    if seleccion_all == 1:
+                        new_status_all = "false"
+                    if seleccion_all == 2:
+                        # Se mira si "enabled" existe en el json, sino esque el estado es del xml
+                        if config.get_setting("enabled", channel.channel):
+                            new_status_all = new_status_all_default
+                        # Si el canal no tiene "enabled" en el json no se guarda, no hace falta
+                        else:
+                            # logger.info("continue " + channel.channel)
+                            continue
+                    if config.get_setting("enabled", channel.channel) == new_status_all_default:
+                        jsonchannel = channeltools.get_channel_json(channel.channel)
+                        # Si el canal no tiene "settings" se borra el json, no es necesario
+                        if not jsonchannel.get("settings"):
+                            import os
+                            path = None
+                            path = os.path.join(config.get_data_path(),
+                                                "settings_channels",
+                                                channel.channel + "_data.json")
+                            if filetools.exists(path) and filetools.remove(path):
+                                if not filetools.exists(path):
+                                    logger.info(path + " BORRADO!")
+                                else:
+                                    logger.info(path + " No se ha BORRADO!")
+                            new_status_all = None
+                    # Se guarda el estado del canal
+                    if new_status_all is not None:
+                        config.set_setting("enabled", new_status_all, channel.channel)
 
-        logger.info("opcion numero = " + str(seleccion))
-        new_status = None
-        # Opcion Activar
-        if seleccion == 0:
-            new_status = "true"
+                else:
+                    continue
 
-        # Opcion Desactivar
-        if seleccion == 1:
-            new_status = "false"
+            platformtools.dialog_notification("pelisalacarta", "Todos los canales - Ajuste guardado")
+            platformtools.itemlist_update(Item(channel=CHANNELNAME, action="channels_onoff"))
 
-        # Opcion Por defecto
-        if seleccion == 2:
-            from core import channeltools
+        else:
+            # Opciones para el dialogo
+            opciones = ["Activar", "Desactivar", "Por defecto"]
+
+            # Mostramos el dialogo
+            seleccion = platformtools.dialog_select("Activar el canal " + item.extra, opciones)
+
+            # -1 es cancelar
+            if seleccion == -1:
+                return
+
+            # logger.info("opcion numero = " + str(seleccion))
+            new_status = None
             channel_parameters = channeltools.get_channel_parameters(item.extra)
-            new_status = channel_parameters["active"]
+            new_status_default = channel_parameters["active"]
+            # Opcion Activar
+            if seleccion == 0:
+                new_status = "true"
+            # Opcion Desactivar
+            if seleccion == 1:
+                new_status = "false"
+            # Opcion Por defecto
+            if seleccion == 2:
+                new_status = new_status_default
 
-        config.set_setting("enabled", new_status, item.extra)
-        platformtools.dialog_notification("pelisalacarta", "Ajuste guardado")
-        platformtools.itemlist_update(Item(channel=CHANNELNAME, action="channels_onoff"))
+            if config.get_setting("enabled", item.extra) == new_status_default:
+                jsonchannel = channeltools.get_channel_json(item.extra)
+                # Si el canal no tiene "settings" se borra el json, no es necesario
+                if not jsonchannel.get("settings"):
+                    import os
+                    path = None
+                    path = os.path.join(config.get_data_path(),
+                                        "settings_channels",
+                                        item.extra + "_data.json")
+                    if filetools.exists(path) and filetools.remove(path):
+                        if not filetools.exists(path):
+                            logger.info(path + " BORRADO!")
+                        else:
+                            logger.info(path + " No se ha BORRADO!")
+                    new_status = None
+
+            if new_status is not None:
+                config.set_setting("enabled", new_status, item.extra)
+                logger.info("Ajuste del canal " + item.extra + " guardado!")
+
+            #Si el canal solo tenia el ajuste "enabled" y es como el del xml se habra borrado
+            else:
+                logger.info("Ajuste del canal " + item.extra + " guardado! (borrado)")
+
+            platformtools.dialog_notification("pelisalacarta", item.extra + " - Ajuste guardado")
+            platformtools.itemlist_update(Item(channel=CHANNELNAME, action="channels_onoff"))
 
     except:
         import traceback
