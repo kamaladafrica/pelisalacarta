@@ -36,6 +36,7 @@ from core import jsontools
 from core import logger
 from core.item import Item
 from core import library
+from platformcode import xbmc_library
 from platformcode import platformtools
 
 
@@ -152,7 +153,7 @@ def convert_old_to_v4():
                                       (series_insertadas, series_fallidas), time=12000)
 
     # Por ultimo limpia la libreria, por que las rutas anteriores ya no existen
-    library.clean()
+    xbmc_library.clean()
 
     return True
 
@@ -181,7 +182,8 @@ def update(path, p_dialog, i, t, serie, overwrite):
             itemlist = obj.episodios(serie)
 
             try:
-                insertados, sobreescritos, fallidos = library.save_library_episodes(path, itemlist, serie, silent=True, overwrite=overwrite)
+                insertados, sobreescritos, fallidos = library.save_library_episodes(path, itemlist, serie, silent=True,
+                                                                                    overwrite=overwrite)
                 insertados_total += insertados
 
             except Exception as ex:
@@ -197,7 +199,7 @@ def update(path, p_dialog, i, t, serie, overwrite):
             message = template.format(type(ex).__name__, ex.args)
             logger.info(message)
 
-    return (insertados_total > 0)
+    return insertados_total > 0
 
 
 def check_for_update(overwrite=True):
@@ -207,7 +209,7 @@ def check_for_update(overwrite=True):
     hoy = datetime.date.today()
 
     try:
-        if config.get_setting("updatelibrary", "biblioteca") != 0:
+        if config.get_setting("updatelibrary", "biblioteca") != 0 or overwrite:
             config.set_setting("updatelibrary_last_check", hoy.strftime('%Y-%m-%d'), "biblioteca")
 
             if config.get_setting("updatelibrary", "biblioteca") == 1 and not overwrite:
@@ -226,8 +228,8 @@ def check_for_update(overwrite=True):
             for path, folders, files in filetools.walk(library.TVSHOWS_PATH):
                 show_list.extend([filetools.join(path, f) for f in files if f == "tvshow.nfo"])
 
-            # fix float porque la division se hace mal en python 2.x
-            t = float(100) / len(show_list)
+            if show_list:
+                t = float(100) / len(show_list)
 
             for i, tvshow_file in enumerate(show_list):
                 head_nfo, serie = library.read_nfo(tvshow_file)
@@ -236,7 +238,7 @@ def check_for_update(overwrite=True):
                 logger.info("serie=" + serie.contentSerieName)
                 p_dialog.update(int(math.ceil((i+1) * t)), heading, serie.contentSerieName)
 
-                interval = int(serie.active) # Podria ser del tipo bool
+                interval = int(serie.active)  # Podria ser del tipo bool
 
                 if not serie.active:
                     # si la serie no esta activa descartar
@@ -286,7 +288,6 @@ def check_for_update(overwrite=True):
                     if not serie_actualizada:
                         update_next += datetime.timedelta(days=interval)
 
-
                 if interval != int(serie.active) or update_next.strftime('%Y-%m-%d') != serie.update_next:
                     serie.active = interval
                     serie.update_next = update_next.strftime('%Y-%m-%d')
@@ -294,7 +295,7 @@ def check_for_update(overwrite=True):
 
                 if serie_actualizada:
                     # Actualizamos la biblioteca de Kodi
-                    library.update(folder=filetools.basename(path))
+                    xbmc_library.update(folder=filetools.basename(path))
 
             p_dialog.close()
 
@@ -325,23 +326,44 @@ if __name__ == "__main__":
     else:
         check_for_update(overwrite=False)
 
-
     # Se ejecuta ciclicamente
     import xbmc
-    monitor = xbmc.Monitor()
-    while (True):
-        if config.get_setting("updatelibrary", "biblioteca") == 2: # "Actualizar...Cada dia
-            hoy = datetime.date.today()
-            last_check = config.get_setting("updatelibrary_last_check", "biblioteca")
-            if last_check:
-                y, m, d = last_check.split('-')
-                last_check = datetime.date(int(y), int(m), int(d))
-            else:
-                last_check = hoy - datetime.timedelta(days=1)
+    try:
+        monitor = xbmc.Monitor()  # For Kodi >= 14
+    except:
+        monitor = None  # For Kodi < 14
 
-            if last_check < hoy and datetime.datetime.now().hour >= 4:
-                logger.info("Inicio actualización programada: %s" % datetime.datetime.now())
-                check_for_update(overwrite=False)
+    if monitor:
+        while not monitor.abortRequested():
+            if config.get_setting("updatelibrary", "biblioteca") == 2:  # "Actualizar...Cada dia
+                hoy = datetime.date.today()
+                last_check = config.get_setting("updatelibrary_last_check", "biblioteca")
+                if last_check:
+                    y, m, d = last_check.split('-')
+                    last_check = datetime.date(int(y), int(m), int(d))
+                else:
+                    last_check = hoy - datetime.timedelta(days=1)
 
-        if (monitor.waitForAbort(3600)): #cada hora
-            break
+                if last_check < hoy and datetime.datetime.now().hour >= 4:
+                    logger.info("Inicio actualización programada: %s" % datetime.datetime.now())
+                    check_for_update(overwrite=False)
+
+            if monitor.waitForAbort(3600):  # cada hora
+                break
+
+    else:
+        while not xbmc.abortRequested:
+            if config.get_setting("updatelibrary", "biblioteca") == 2:  # "Actualizar...Cada dia
+                hoy = datetime.date.today()
+                last_check = config.get_setting("updatelibrary_last_check", "biblioteca")
+                if last_check:
+                    y, m, d = last_check.split('-')
+                    last_check = datetime.date(int(y), int(m), int(d))
+                else:
+                    last_check = hoy - datetime.timedelta(days=1)
+
+                if last_check < hoy and datetime.datetime.now().hour >= 4:
+                    logger.info("Inicio actualización programada: %s" % datetime.datetime.now())
+                    check_for_update(overwrite=False)
+
+            xbmc.sleep(3600)

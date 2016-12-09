@@ -89,7 +89,7 @@ def peliculas(item):
                 # ,{"title": "Cambiar contenido (PENDIENTE)",
                 # "action": "",
                 # "channel": "biblioteca"}]
-                logger.debug("new_item: " + new_item.tostring('\n'))
+                #logger.debug("new_item: " + new_item.tostring('\n'))
                 itemlist.append(new_item)
 
     return sorted(itemlist, key=lambda it: it.title.lower())
@@ -407,7 +407,7 @@ def findvideos(item):
             if not server.thumbnail:
                 server.thumbnail = item.thumbnail
 
-            # logger.debug("server:\n%s" % server.tostring('\n'))
+            #logger.debug("server:\n%s" % server.tostring('\n'))
             itemlist.append(server)
 
     # return sorted(itemlist, key=lambda it: it.title.lower())
@@ -416,7 +416,7 @@ def findvideos(item):
 
 def play(item):
     logger.info()
-    # logger.debug("item:\n" + item.tostring('\n'))
+    #logger.debug("item:\n" + item.tostring('\n'))
 
     if not item.contentChannel == "local":
         channel = __import__('channels.%s' % item.contentChannel, fromlist=["channels.%s" % item.contentChannel])
