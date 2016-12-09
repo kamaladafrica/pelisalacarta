@@ -132,5 +132,12 @@
 		<label>Mostrar cuadro de selección de canales</label>
 		<default>false</default>
 	</settings>
-
+	<settings>
+		<id>original_title_folder</id>
+		<type>list</type>
+		<label>Crear directorios en el sistema usando</label>
+		<default>0</default>
+		<lvalues>Título localizado</lvalues>
+		<lvalues>Título original</lvalues>
+	</settings>
 </channel>
