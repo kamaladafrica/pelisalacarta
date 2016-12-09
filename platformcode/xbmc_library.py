@@ -33,7 +33,7 @@ from core import config
 from core import filetools
 from core import jsontools
 from core import logger
-from core.library import TVSHOWS_PATH, FOLDER_TVSHOWS
+from core.library import TVSHOWS_PATH, FOLDER_TVSHOWS, FOLDER_MOVIES
 from platformcode import platformtools
 
 

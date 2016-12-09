@@ -207,7 +207,7 @@ def check_for_update(overwrite=True):
     hoy = datetime.date.today()
 
     try:
-        if config.get_setting("updatelibrary", "biblioteca") != 0:
+        if config.get_setting("updatelibrary", "biblioteca") != 0 or overwrite:
             config.set_setting("updatelibrary_last_check", hoy.strftime('%Y-%m-%d'), "biblioteca")
 
             if config.get_setting("updatelibrary", "biblioteca") == 1 and not overwrite:
@@ -226,8 +226,8 @@ def check_for_update(overwrite=True):
             for path, folders, files in filetools.walk(library.TVSHOWS_PATH):
                 show_list.extend([filetools.join(path, f) for f in files if f == "tvshow.nfo"])
 
-            # fix float porque la division se hace mal en python 2.x
-            t = float(100) / len(show_list)
+            if show_list:
+                t = float(100) / len(show_list)
 
             for i, tvshow_file in enumerate(show_list):
                 head_nfo, serie = library.read_nfo(tvshow_file)
@@ -294,7 +294,8 @@ def check_for_update(overwrite=True):
 
                 if serie_actualizada:
                     # Actualizamos la biblioteca de Kodi
-                    library.update(folder=filetools.basename(path))
+                    from platformcode import xbmc_library
+                    xbmc_library.update(folder =  filetools.basename(path))
 
             p_dialog.close()
 
@@ -328,20 +329,42 @@ if __name__ == "__main__":
 
     # Se ejecuta ciclicamente
     import xbmc
-    monitor = xbmc.Monitor()
-    while (True):
-        if config.get_setting("updatelibrary", "biblioteca") == 2: # "Actualizar...Cada dia
-            hoy = datetime.date.today()
-            last_check = config.get_setting("updatelibrary_last_check", "biblioteca")
-            if last_check:
-                y, m, d = last_check.split('-')
-                last_check = datetime.date(int(y), int(m), int(d))
-            else:
-                last_check = hoy - datetime.timedelta(days=1)
+    try:
+        monitor = xbmc.Monitor() # For Kodi >= 14
+    except:
+        monitor = None # For Kodi < 14
 
-            if last_check < hoy and datetime.datetime.now().hour >= 4:
-                logger.info("Inicio actualización programada: %s" % datetime.datetime.now())
-                check_for_update(overwrite=False)
+    if monitor:
+        while not monitor.abortRequested():
+            if config.get_setting("updatelibrary", "biblioteca") == 2: # "Actualizar...Cada dia
+                hoy = datetime.date.today()
+                last_check = config.get_setting("updatelibrary_last_check", "biblioteca")
+                if last_check:
+                    y, m, d = last_check.split('-')
+                    last_check = datetime.date(int(y), int(m), int(d))
+                else:
+                    last_check = hoy - datetime.timedelta(days=1)
 
-        if (monitor.waitForAbort(3600)): #cada hora
-            break
+                if last_check < hoy and datetime.datetime.now().hour >= 4:
+                    logger.info("Inicio actualización programada: %s" % datetime.datetime.now())
+                    check_for_update(overwrite=False)
+
+            if (monitor.waitForAbort(3600)): #cada hora
+                break
+
+    else:
+        while not xbmc.abortRequested:
+            if config.get_setting("updatelibrary", "biblioteca") == 2: # "Actualizar...Cada dia
+                hoy = datetime.date.today()
+                last_check = config.get_setting("updatelibrary_last_check", "biblioteca")
+                if last_check:
+                    y, m, d = last_check.split('-')
+                    last_check = datetime.date(int(y), int(m), int(d))
+                else:
+                    last_check = hoy - datetime.timedelta(days=1)
+
+                if last_check < hoy and datetime.datetime.now().hour >= 4:
+                    logger.info("Inicio actualización programada: %s" % datetime.datetime.now())
+                    check_for_update(overwrite=False)
+
+            xbmc.sleep(3600)

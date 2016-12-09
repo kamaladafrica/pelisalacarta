@@ -238,9 +238,22 @@ def run():
             # Special action for searching, first asks for the words then call the "search" function
             elif item.action == "search":
                 logger.info("pelisalacarta.platformcode.launcher search")
-                
-                tecleado = platformtools.dialog_input("")
+
+                last_search = ""
+                last_search_active = config.get_setting("last_search", "buscador")
+                if last_search_active:
+                    try:
+                        current_saved_searches_list = list(config.get_setting("saved_searches_list", "buscador"))
+                        last_search = current_saved_searches_list[0]
+                    except:
+                        pass
+
+                tecleado = platformtools.dialog_input(last_search)
                 if tecleado is not None:
+                    if last_search_active:
+                        from channels import buscador
+                        buscador.save_search(tecleado)
+
                     tecleado = tecleado.replace(" ", "+")
                     # TODO revisar 'personal.py' porque no tiene función search y daría problemas
                     itemlist = channel.search(item, tecleado)
@@ -398,7 +411,12 @@ def play_from_library(item):
     else:
         from channels import biblioteca
         from platformcode import xbmc_library
+        p_dialog = platformtools.dialog_progress_bg('pelisalacarta', 'Cargando...')
+        p_dialog.update(0, '')
+
         itemlist = biblioteca.findvideos(item)
+
+        p_dialog.update(50, '')
 
         if len(itemlist) > 0:
             # El usuario elige el mirror
@@ -410,6 +428,10 @@ def play_from_library(item):
             if seleccion == -1:
                 return
 
-            platformtools.play_video(itemlist[seleccion])
+            item =  biblioteca.play(itemlist[seleccion])[0]
+            p_dialog.update(100, '')
+
+            platformtools.play_video(item)
+            p_dialog.close()
             xbmc_library.mark_auto_as_watched(itemlist[seleccion])
-    return
+

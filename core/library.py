@@ -279,7 +279,9 @@ def save_library_tvshow(item, episodelist):
         return 0, 0, -1
 
     _id = item.infoLabels['code']
-    if item.infoLabels['title']:
+    if config.get_setting("original_title_folder", "biblioteca") == 1 and item.infoLabels['originaltitle']:
+        base_name = item.infoLabels['originaltitle']
+    elif item.infoLabels['title']:
         base_name = item.infoLabels['title']
     else:
         base_name = item.contentSerieName
