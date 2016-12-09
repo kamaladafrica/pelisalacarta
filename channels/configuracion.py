@@ -292,7 +292,7 @@ def channels_onoff(item):
                          'novedades',
                          'personal',
                          'ayuda']
-    itemlist.append(Item(channel=CHANNELNAME, title="Activar/Desactivar todos los canales",
+    itemlist.append(Item(channel=CHANNELNAME, title="Modificar todos los canales",
                          action="channel_status", folder=False,
                          thumbnail=get_thumbnail_path("thumb_configuracion.png"),
                          extra="onoffall"))
