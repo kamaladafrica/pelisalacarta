@@ -659,9 +659,6 @@ def info(item):
         icon ="http://imgur.com/SenkyxF.png"
         photo= item.extra.split("|")[0].replace(" ","%20")
         foto = item.show.split("|")[1]
-        if foto == item.thumbnail:
-           foto ="http://imgur.com/5jEL62c.jpg"
-
         try:
          if tagline == "\"\"":
             tagline = " "
@@ -669,8 +666,7 @@ def info(item):
             tagline= " "
         tagline = "[COLOR aquamarine][B]"+tagline+"[/B][/COLOR]"
         check2= "pelicula"
-    xbmc.log("mi abuelo el facha")
-    xbmc.log(photo)
+    
     #Tambien te puede interesar
     peliculas = []
     if "serie" in item.url:
