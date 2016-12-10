@@ -69,14 +69,12 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
 
         file_id = scrapertools.find_single_match(data, "'file_id', '([^']+)'")
         aff = scrapertools.find_single_match(data, "'aff', '([^']+)'")
-        headers_c = [['User-Agent', 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0'],
+        headers_c = [['User-Agent', 'Mozilla/5.0'],
                      ['Referer', page_url],
                      ['Cookie', '; lang=1']]
         coding_url = "https:"+scrapertools.find_single_match(data, '(?i)src="(?:https:|)((?://www.flashx.tv|//files.fx.fastcontentdelivery.com)/\w+.js\?[^"]+)"')
         if coding_url.endswith("="):
             coding_url += file_id
-        coding = scrapertools.downloadpage(coding_url, headers=headers_c)
-        coding_url = "https://www.flashx.tv/counter.cgi?%s" % coding_url.rsplit("?", 1)[1]
         coding = scrapertools.downloadpage(coding_url, headers=headers_c)
 
         data = scrapertools.downloadpage(page_url, headers=headers)
@@ -84,20 +82,28 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
         fname = scrapertools.find_single_match(data, 'name="fname" value="([^"]+)"')
         hash_f = scrapertools.find_single_match(data, 'name="hash" value="([^"]+)"')
         post = 'op=download1&usr_login=&id=%s&fname=%s&referer=&hash=%s&imhuman=Proceed+to+video' % (flashx_id, urllib.quote(fname), hash_f)
+        wait_time = scrapertools.find_single_match(data, "<span id='xxc2'>(\d+)")
 
-        time.sleep(6)
-        headers.append(['Referer', page_url])
+        try:
+           time.sleep(int(wait_time)+1)
+        except:
+           time.sleep(6)
+        headers.append(['Referer', "https://www.flashx.tv/"])
         headers.append(['Cookie', 'lang=1; file_id=%s; aff=%s' % (file_id, aff)])
-        data = scrapertools.downloadpage('http://www.flashx.tv/dl?playthis', post=post, headers=headers)
+        data = scrapertools.downloadpage('https://www.flashx.tv/dl?playthis', post=post, headers=headers)
 
         matches = scrapertools.find_multiple_matches(data, "(eval\(function\(p,a,c,k.*?)\s+</script>")
         for match in matches:
-            try:
-                match = jsunpack.unpack(match)
-            except:
-                match = ""
-            if "file" in match:
-                break
+            if match.startswith("eval"):
+                try:
+                    match = jsunpack.unpack(match)
+                    fake = (scrapertools.find_single_match(match, "(\w{40,})") == "")
+                    if fake:
+                        match = ""
+                    else:
+                        break
+                except:
+                    match = ""
 
         if not match:
             match = data
