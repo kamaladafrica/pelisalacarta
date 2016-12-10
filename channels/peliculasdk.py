@@ -298,7 +298,7 @@ def fanart(item):
                 patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),"popularity"'
                 matches = re.compile(patron,re.DOTALL).findall(data)
                 if len(matches)==0:
-                    extra=item.thumbnail+"|"+""+"|"+""+"|"+rating_filma
+                    extra=""+"|"+""+"|"+""+"|"+rating_filma
                     show= item.fanart+"|"+item.thumbnail+"|"+sinopsis
                     posterdb = item.thumbnail
                     fanart_info = item.fanart
@@ -657,10 +657,7 @@ def info(item):
         if "%20" in critica:
             critica= "No hay críticas"
         icon ="http://imgur.com/SenkyxF.png"
-        if not ".png" in item.extra.split("|")[0] :
-           photo ="http://imgur.com/oMjtYni.png"
-        else:
-           photo= item.extra.split("|")[0].replace(" ","%20")
+        photo= item.extra.split("|")[0].replace(" ","%20")
         foto = item.show.split("|")[1]
         if foto == item.thumbnail:
            foto ="http://imgur.com/5jEL62c.jpg"
@@ -672,6 +669,8 @@ def info(item):
             tagline= " "
         tagline = "[COLOR aquamarine][B]"+tagline+"[/B][/COLOR]"
         check2= "pelicula"
+    xbmc.log("mi abuelo el facha")
+    xbmc.log(photo)
     #Tambien te puede interesar
     peliculas = []
     if "serie" in item.url:
