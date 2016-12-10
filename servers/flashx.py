@@ -72,9 +72,11 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
         headers_c = [['User-Agent', 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0'],
                      ['Referer', page_url],
                      ['Cookie', '; lang=1']]
-        coding_url = scrapertools.find_single_match(data, '(?i)src="(http://www.flashx.tv/\w+.js\?[^"]+)"')
+        coding_url = "https:"+scrapertools.find_single_match(data, '(?i)src="(?:https:|)((?://www.flashx.tv|//files.fx.fastcontentdelivery.com)/\w+.js\?[^"]+)"')
         if coding_url.endswith("="):
             coding_url += file_id
+        coding = scrapertools.downloadpage(coding_url, headers=headers_c)
+        coding_url = "https://www.flashx.tv/counter.cgi?%s" % coding_url.rsplit("?", 1)[1]
         coding = scrapertools.downloadpage(coding_url, headers=headers_c)
 
         data = scrapertools.downloadpage(page_url, headers=headers)
@@ -86,7 +88,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
         time.sleep(6)
         headers.append(['Referer', page_url])
         headers.append(['Cookie', 'lang=1; file_id=%s; aff=%s' % (file_id, aff)])
-        data = scrapertools.downloadpage('http://www.flashx.tv/dl', post=post, headers=headers)
+        data = scrapertools.downloadpage('http://www.flashx.tv/dl?playthis', post=post, headers=headers)
 
         matches = scrapertools.find_multiple_matches(data, "(eval\(function\(p,a,c,k.*?)\s+</script>")
         for match in matches:
