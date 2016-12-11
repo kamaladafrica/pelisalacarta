@@ -115,9 +115,15 @@ def listado_alfabetico(item):
     return itemlist
 
 
-# La página de series por letra es igual que la de buscar
 def series_por_letra(item):
-    return search(item, '')
+    logger.info("letra = {0}".format(item.title))
+    data = scrapertools.cache_page(item.url)
+    logger.info(data)
+    shows = re.findall("<a href='(?P<url>[^']+)' title='Capitulos de: (?P<title>.+?)'><img.+?src='(?P<img>[^']+)", data)
+    itemlist = []
+    for url, title, img in shows:
+        itemlist.append(item.clone(title = title, url = urlparse.urljoin(HOST, url), action="episodios", thumbnail=img))
+    return itemlist
 
 
 def search(item, texto):
@@ -127,7 +133,6 @@ def search(item, texto):
 
     try:
         data = scrapertools.cache_page(item.url)
-        logger.info(data)
         shows = re.findall("<a href='(?P<url>/serie.php\?serie=[0-9]+)'[^>]*>(?P<title>[^<]*{0}[^<]*)".format(texto), data, re.IGNORECASE)
         for url, title in shows:
             itemlist.append(item.clone(title = title, url = urlparse.urljoin(HOST, url), action="episodios"))
@@ -137,29 +142,6 @@ def search(item, texto):
         import sys
         for line in sys.exc_info():
             logger.error("%s" % line)
-
-    return itemlist
-
-
-def series(item):
-    logger.info()
-
-    itemlist = []
-
-    data = scrapertools.cache_page(item.url)
-    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
-    data = re.sub(r"<!--.*?-->", "", data)
-
-    patron = "<a href='([^']+)'[^>]+><img class='ict' src='([^']+)' alt='([^']+)'"
-    matches = re.compile(patron, re.DOTALL).findall(data)
-
-    for scrapedurl, scrapedthumb, scrapedtitle in matches:
-        patron = "^(?:Capitulos de: )(.*?)$"
-        match = re.compile(patron, re.DOTALL).findall(scrapedtitle)
-        title = scrapertools.decodeHtmlentities(match[0])
-        itemlist.append(Item(channel=item.channel, title=title, action="episodios", plot="", show=title.strip(),
-                             url=urlparse.urljoin(HOST, scrapedurl.replace("..", "")), thumbnail=scrapedthumb,
-                             list_idiomas=list_idiomas, list_calidad=CALIDADES, context=filtertools.context))
 
     return itemlist
 
