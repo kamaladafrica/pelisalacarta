@@ -425,8 +425,8 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
         
         if not strm_exists:
             # Si no existe season_episode.strm añadirlo
-            item_strm = e.clone(action='play_from_library', channel='biblioteca',
-                                strm_path=strm_path.replace(TVSHOWS_PATH, ""), infoLabels={})
+            item_strm = Item(action='play_from_library', channel='biblioteca',
+                             strm_path=strm_path.replace(TVSHOWS_PATH, ""), infoLabels={})
             item_strm.contentSeason = e.contentSeason
             item_strm.contentEpisodeNumber = e.contentEpisodeNumber
             item_strm.contentType = e.contentType
