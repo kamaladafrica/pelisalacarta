@@ -37,4 +37,15 @@
 		<enabled>true</enabled>
 		<visible>true</visible>
 	</settings>
+	<settings>
+		<id>filterlinks</id>
+		<type>list</type>
+		<label>Mostrar enlaces de tipo...</label>
+		<default>2</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+		<lvalues>Solo Descarga</lvalues>
+		<lvalues>Solo Online</lvalues>
+		<lvalues>No filtrar</lvalues>
+	</settings>
 </channel>
