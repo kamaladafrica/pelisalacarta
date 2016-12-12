@@ -124,7 +124,7 @@ def render_items(itemlist, parent_item):
 
     # Recorremos el itemlist
     for item in itemlist:
-
+        #logger.debug(item)
         # Si el item no contiene categoria, le ponemos la del item padre
         if item.category == "":
             item.category = parent_item.category
@@ -166,7 +166,7 @@ def render_items(itemlist, parent_item):
 
         # Montamos el menu contextual
         context_commands = set_context_commands(item, parent_item)
-        if item.contentTitle == 'Stranger Things': logger.debug(item)
+
         # Añadimos el item
         if config.get_platform() == "boxee":
             xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url='%s?%s' % (sys.argv[0], item.tourl()),
@@ -214,7 +214,7 @@ def render_items(itemlist, parent_item):
             viewmode_id = get_viewmode_id(skinName, "default_" + parent_item.contentView)
 
     # Cerramos el directorio
-    xbmcplugin.endOfDirectory(handle=int(sys.argv[1]), succeeded=True) # ok en jarvis y kripton
+    xbmcplugin.endOfDirectory(handle=int(sys.argv[1]), succeeded=True)
 
     xbmc.executebuiltin("Container.SetViewMode(%s)" % viewmode_id)
     #logger.debug("\ncontentView: %s\nviewmode: %s (%s)" % (parent_item.contentView, parent_item.viewmode, viewmode_id))

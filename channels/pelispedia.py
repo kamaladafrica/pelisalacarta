@@ -285,7 +285,7 @@ def listado(item):
     # numero de registros que se muestran por página, se fija a 28 por cada paginación
     if len(matches) >= 28:
 
-        file_php = "more"
+        file_php = "666more"
         tipo_serie = ""
 
         if item.extra == "movies":
@@ -464,7 +464,7 @@ def findvideos(item):
             new_item = item.clone(title=title, url=scrapedurl, action="play", extra=item.url)
             itemlist.append(new_item)
 
-    # Opción "Añadir esta serie a la biblioteca de XBMC"
+    # Opción "Añadir esta pelicula a la biblioteca de XBMC"
     if item.extra == "movies" and config.get_library_support() and len(itemlist) > 0:
         itemlist.append(Item(channel=__channel__, title="Añadir esta película a la biblioteca de XBMC", url=item.url,
                              infoLabels= item.infoLabels, action="add_pelicula_to_library", extra="findvideos",
