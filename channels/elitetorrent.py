@@ -37,7 +37,10 @@ def peliculas(item):
     itemlist = []
 
     # Descarga la página
-    data = scrapertools.cachePage(item.url)
+    data = scrapertools.cache_page(item.url)
+    if "http://www.bajui.com/redi.php" in data:
+        data = scrapertools.cache_page(item.url)
+
     '''
     <li>
     <a href="/torrent/23471/mandela-microhd-720p"><img src="thumb_fichas/23471.jpg" border="0" title="Mandela (microHD - 720p)" alt="IMG: Mandela (microHD - 720p)"/></a>
@@ -74,11 +77,13 @@ def peliculas(item):
     return itemlist
 
 def play(item):
-    logger.info("[elitetorrent.py] play")
+    logger.info()
     itemlist = []
 
     data = scrapertools.cache_page(item.url)
-    logger.info("data="+data)
+    if "http://www.bajui.com/redi.php" in data:
+        data = scrapertools.cache_page(item.url)
+
     #<a href="magnet:?xt=urn:btih:d6wtseg33iisp7jexpl44wfcqh7zzjuh&amp;dn=Abraham+Lincoln+Cazador+de+vampiros+%28HDRip%29+%28EliteTorrent.net%29&amp;tr=http://tracker.torrentbay.to:6969/announce" class="enlace_torrent degradado1">Descargar por magnet link</a> 
     link = scrapertools.get_match(data,'<a href="(magnet[^"]+)" class="enlace_torrent[^>]+>Descargar por magnet link</a>')
     link = urlparse.urljoin(item.url,link)

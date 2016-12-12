@@ -33,7 +33,7 @@ import urllib
 import urllib2
 
 try:
-    from lib.python_libtorrent import get_libtorrent, get_platform
+    from python_libtorrent import get_libtorrent, get_platform
     lt = get_libtorrent()
 except Exception, e:
     import libtorrent as lt

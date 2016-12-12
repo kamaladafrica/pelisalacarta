@@ -233,7 +233,22 @@ def findvideos(item):
     # logger.info(data)
 
     online = extractVideosSection(data)
-    return parseVideos(item, "Ver", online[0]) + parseVideos(item, "Descargar", online[1])
+
+
+    try:
+        filtro_enlaces = config.get_setting("filterlinks", item.channel)
+    except:
+        filtro_enlaces = 2
+
+    list_links = []
+
+    if filtro_enlaces != 0:
+        list_links.extend(parseVideos(item, "Ver", online[0]))
+
+    if filtro_enlaces != 1:
+        list_links.extend(parseVideos(item, "Descargar", online[1]))
+
+    return list_links
 
 
 def play(item):

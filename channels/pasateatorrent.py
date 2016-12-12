@@ -1212,10 +1212,8 @@ def info(item):
            critica =item.extra.split("|")[5]
         else:
            critica= "Esta serie no tiene críticas..."
-        if not ".png" in item.extra.split("|")[0] :
-            photo ="http://imgur.com/6uXGkrz.png"
-        else:
-           photo= item.extra.split("|")[0].replace(" ","%20")
+
+        photo= item.extra.split("|")[0].replace(" ","%20")
         try:
          tagline = "[COLOR aquamarine][B]"+tagline+"[/B][/COLOR]"
         except:
@@ -1227,10 +1225,8 @@ def info(item):
         if "%20" in critica:
             critica= "No hay críticas"
         icon ="http://imgur.com/SenkyxF.png"
-        if not ".png" in item.extra.split("|")[0] :
-           photo ="http://imgur.com/5jEL62c.png"
-        else:
-           photo= item.extra.split("|")[0].replace(" ","%20")
+        
+        photo= item.extra.split("|")[0].replace(" ","%20")
         foto = item.show.split("|")[1]
         if foto == item.thumbnail:
            foto ="http://imgur.com/5jEL62c.jpg"
