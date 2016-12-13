@@ -208,17 +208,17 @@ def generos(item):
 
     bloque = scrapertools.find_single_match(data, '<div class="sub_title">Géneros</div>(.*?)</ul>')
     # Extrae las entradas
-    patron = '<li><a href="([^"]+)".*?<i>(.*?)</i>.*?<b>(.*?)</b>'
+    patron = '<li><a href="([^"]+)">(.*?)</li>'
     matches = scrapertools.find_multiple_matches(bloque, patron)
 
-    for scrapedurl, scrapedtitle, cuantas in matches:
+    for scrapedurl, scrapedtitle in matches:
+        scrapedtitle = scrapertools.htmlclean(scrapedtitle)
         scrapedtitle = scrapedtitle.strip().capitalize()
         if scrapedtitle == "Erotico" and not config.get_setting("adult_mode"):
             continue
-        title = scrapedtitle + " (" + cuantas + ")"
         if DEBUG:
-            logger.info("title=[{0}], url=[{1}]".format(title, scrapedurl))
-        itemlist.append(item.clone(action="peliculas", title=title, url=scrapedurl))
+            logger.info("title=[{0}], url=[{1}]".format(scrapedtitle, scrapedurl))
+        itemlist.append(item.clone(action="peliculas", title=scrapedtitle, url=scrapedurl))
 
     return itemlist
 
