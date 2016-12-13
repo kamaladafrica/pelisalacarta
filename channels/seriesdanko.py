@@ -45,7 +45,7 @@ def novedades(item):
 
     itemlist = list()
 
-    data = scrapertools.cache_page(item.url)
+    data = scrapertools.anti_cloudflare(item.url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
     data = re.sub(r"<!--.*?-->", "", data)
 
@@ -68,7 +68,7 @@ def novedades(item):
 def mas_vistas(item):
     logger.info()
 
-    data = scrapertools.cache_page(item.url)
+    data = scrapertools.anti_cloudflare(item.url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
     data = re.sub(r"<!--.*?-->", "", data)
 
@@ -81,7 +81,7 @@ def mas_vistas(item):
 def listado_completo(item):
     logger.info()
 
-    data = scrapertools.cache_page(item.url)
+    data = scrapertools.anti_cloudflare(item.url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
     data = re.sub(r"<!--.*?-->", "", data)
     patron = '<div class="widget HTML" id="HTML10".+?<div class="widget-content">(.*?)</div>'
@@ -117,8 +117,8 @@ def listado_alfabetico(item):
 
 def series_por_letra(item):
     logger.info("letra = {0}".format(item.title))
-    data = scrapertools.cache_page(item.url)
-    logger.info(data)
+    data = scrapertools.anti_cloudflare(item.url)
+
     shows = re.findall("<a href='(?P<url>[^']+)' title='Capitulos de: (?P<title>.+?)'><img.+?src='(?P<img>[^']+)", data)
     itemlist = []
     for url, title, img in shows:
@@ -132,7 +132,7 @@ def search(item, texto):
     itemlist = []
 
     try:
-        data = scrapertools.cache_page(item.url)
+        data = scrapertools.anti_cloudflare(item.url)
         shows = re.findall("<a href='(?P<url>/serie.php\?serie=[0-9]+)'[^>]*>(?P<title>[^<]*{0}[^<]*)".format(texto), data, re.IGNORECASE)
         for url, title in shows:
             itemlist.append(item.clone(title = title, url = urlparse.urljoin(HOST, url), action="episodios"))
@@ -151,7 +151,7 @@ def episodios(item):
 
     itemlist = []
 
-    data = scrapertools.cache_page(item.url)
+    data = scrapertools.anti_cloudflare(item.url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
     data = re.sub(r"<!--.*?-->", "", data)
 
@@ -165,6 +165,8 @@ def episodios(item):
     matches = re.compile(patron, re.DOTALL).findall(data)
     if len(matches) > 0:
         thumbnail = matches[0]
+    else:
+        thumbnail = item.thumbnail
 
     patron = "<a href='([^']+)'>(.*?)</a><idioma>(.*?)</idioma>"
     matches = re.compile(patron, re.DOTALL).findall(data)
@@ -192,7 +194,7 @@ def episodios(item):
 def findvideos(item):
     logger.info()
 
-    data = scrapertools.cache_page(item.url)
+    data = scrapertools.anti_cloudflare(item.url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
     data = re.sub(r"<!--.*?-->", "", data)
 
@@ -234,7 +236,7 @@ def parse_videos(item, tipo, data):
 def play(item):
     logger.info("play url={0}".format(item.url))
 
-    data = scrapertools.cache_page(item.url)
+    data = scrapertools.anti_cloudflare(item.url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
 
     patron = '<div id="url2".*?><a href="([^"]+)">.+?</a></div>'
