@@ -181,34 +181,8 @@ def scrapeWebPageForVideoLinks(data):
         85: "1080p h264 3D",
         100: "360p vp8 3D",
         101: "480p vp8 3D",
-        102: "720p vp8 3D",
-        133: "240p h264 mp4",
-        134: "360p h264 mp4",
-        135: "480p h264 mp4",
-        136: "720p h264 mp4",
-        137: "1080p h264 mp4",
-        264: "1440p h264 mp4",
-        266: "4K h264 mp4",
-        298: "720p mp4 60fps",
-        299: "1080p mp4 60fps",
-        218: "480p vp9 webm",
-        219: "480 vp9 webm",
-        242: "240p vp9 webm",
-        243: "360p vp9 webm",
-        244: "480p vp9 webm",
-        245: "480p vp9 webm",
-        246: "480p vp9 webm",
-        247: "720p vp9 webm",
-        248: "1080p vp9 webm",
-        271: "1440p vp9 webm",
-        272: "4K webm 60fps",
-        302: "720p webm 60fps",
-        303: "1080p webm 60fps",
-        308: "1440p webm 60fps",
-        313: "4K vp9 webm",
-        315: "4K webm 60fps"
-        }
-    exclude_itags = [17, 139, 140, 141, 160, 171, 172, 249, 250, 251, 256, 258, 278]
+        102: "720p vp8 3D"
+    }
 
     video_urls=[]
 
@@ -225,11 +199,7 @@ def scrapeWebPageForVideoLinks(data):
         return video_urls
     
     js_signature = ""
-    try:
-        data_flashvars = flashvars[u"adaptive_fmts"].split(u",")
-    except:
-        data_flashvars = flashvars[u"url_encoded_fmt_stream_map"].split(u",")
-
+    data_flashvars = flashvars[u"url_encoded_fmt_stream_map"].split(u",")
     for url_desc in data_flashvars:
         url_desc_map = cgi.parse_qs(url_desc)
         logger.info(u"url_map: " + repr(url_desc_map))
@@ -238,7 +208,7 @@ def scrapeWebPageForVideoLinks(data):
 
         try:
             key = int(url_desc_map[u"itag"][0])
-            if key in exclude_itags:
+            if not fmt_value.get(key):
                 continue
             url = u""
             if url_desc_map.has_key(u"url"):
