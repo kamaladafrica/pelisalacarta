@@ -339,98 +339,98 @@ def set_context_commands(item, parent_item):
             context_commands.append(
                 (command["title"], "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], item.clone(**command).tourl())))
 
-    # Opciones segun criterios
+    # Opciones segun criterios, solo si el item no es un tag (etiqueta), ni es "Añadir a la biblioteca"
+    if item.action and item.action not in ["add_pelicula_to_library", "add_serie_to_library"]:
+        # Mostrar informacion: si el item tiene plot suponemos q es una serie, temporada, capitulo o pelicula
+        if item.infoLabels['plot']:
+            context_commands.append(("Información", "XBMC.Action(Info)"))
 
-    # Mostrar informacion: si el item tiene plot suponemos q es una serie, temporada, capitulo o pelicula
-    if item.infoLabels['plot']:
-        context_commands.append(("Información", "XBMC.Action(Info)"))
+        # ExtendedInfo: Si esta instalado el addon y se cumplen una serie de condiciones
+        if xbmc.getCondVisibility('System.HasAddon(script.extendedinfo)'):
+            if item.contentType == "episode" and item.contentEpisodeNumber and item.contentSeason \
+                    and (item.infoLabels['tmdb_id'] or item.contentSerieName):
+                param = "tvshow_id =%s, tvshow=%s, season=%s, episode=%s" \
+                        % (item.infoLabels['tmdb_id'], item.contentSerieName, item.contentSeason,
+                           item.contentEpisodeNumber)
+                context_commands.append(("ExtendedInfo",
+                                         "XBMC.RunScript(script.extendedinfo,info=extendedepisodeinfo,%s)" % param))
 
-    # ExtendedInfo: Si esta instalado el addon y se cumplen una serie de condiciones
-    if xbmc.getCondVisibility('System.HasAddon(script.extendedinfo)'):
-        if item.contentType == "episode" and item.contentEpisodeNumber and item.contentSeason \
-                and (item.infoLabels['tmdb_id'] or item.contentSerieName):
-            param = "tvshow_id =%s, tvshow=%s, season=%s, episode=%s" \
-                    % (item.infoLabels['tmdb_id'], item.contentSerieName, item.contentSeason,
-                       item.contentEpisodeNumber)
-            context_commands.append(("ExtendedInfo",
-                                     "XBMC.RunScript(script.extendedinfo,info=extendedepisodeinfo,%s)" % param))
+            elif item.contentType == "season" and item.contentSeason \
+                    and (item.infoLabels['tmdb_id'] or item.contentSerieName):
+                param = "tvshow_id =%s,tvshow=%s, season=%s" \
+                        % (item.infoLabels['tmdb_id'], item.contentSerieName, item.contentSeason)
+                context_commands.append(("ExtendedInfo",
+                                         "XBMC.RunScript(script.extendedinfo,info=seasoninfo,%s)" % param))
 
-        elif item.contentType == "season" and item.contentSeason \
-                and (item.infoLabels['tmdb_id'] or item.contentSerieName):
-            param = "tvshow_id =%s,tvshow=%s, season=%s" \
-                    % (item.infoLabels['tmdb_id'], item.contentSerieName, item.contentSeason)
-            context_commands.append(("ExtendedInfo",
-                                     "XBMC.RunScript(script.extendedinfo,info=seasoninfo,%s)" % param))
+            elif item.contentType == "tvshow" and (item.infoLabels['tmdb_id'] or item.infoLabels['tvdb_id'] or
+                                                   item.infoLabels['imdb_id'] or item.contentSerieName):
+                param = "id =%s,tvdb_id=%s,imdb_id=%s,name=%s" \
+                        % (item.infoLabels['tmdb_id'], item.infoLabels['tvdb_id'], item.infoLabels['imdb_id'],
+                           item.contentSerieName)
+                context_commands.append(("ExtendedInfo",
+                                         "XBMC.RunScript(script.extendedinfo,info=extendedtvinfo,%s)" % param))
 
-        elif item.contentType == "tvshow" and (item.infoLabels['tmdb_id'] or item.infoLabels['tvdb_id'] or
-                                               item.infoLabels['imdb_id'] or item.contentSerieName):
-            param = "id =%s,tvdb_id=%s,imdb_id=%s,name=%s" \
-                    % (item.infoLabels['tmdb_id'], item.infoLabels['tvdb_id'], item.infoLabels['imdb_id'],
-                       item.contentSerieName)
-            context_commands.append(("ExtendedInfo",
-                                     "XBMC.RunScript(script.extendedinfo,info=extendedtvinfo,%s)" % param))
+            elif item.contentType == "movie" and (item.infoLabels['tmdb_id'] or item.infoLabels['imdb_id'] or
+                                                  item.contentTitle):
+                param = "id =%s,imdb_id=%s,name=%s" \
+                        % (item.infoLabels['tmdb_id'], item.infoLabels['imdb_id'], item.contentTitle)
+                context_commands.append(("ExtendedInfo",
+                                         "XBMC.RunScript(script.extendedinfo,info=extendedinfo,%s)" % param))
 
-        elif item.contentType == "movie" and (item.infoLabels['tmdb_id'] or item.infoLabels['imdb_id'] or
-                                              item.contentTitle):
-            param = "id =%s,imdb_id=%s,name=%s" \
-                    % (item.infoLabels['tmdb_id'], item.infoLabels['imdb_id'], item.contentTitle)
-            context_commands.append(("ExtendedInfo",
-                                     "XBMC.RunScript(script.extendedinfo,info=extendedinfo,%s)" % param))
+        # Ir al Menu Principal (channel.mainlist)
+        if parent_item.channel not in ["novedades", "channelselector"] and item.action != "mainlist" \
+                and parent_item.action != "mainlist":
+            context_commands.append(("Ir al Menu Principal", "XBMC.Container.Refresh (%s?%s)" %
+                                     (sys.argv[0], Item(channel=item.channel, action="mainlist").tourl())))
 
-    # Ir al Menu Principal (channel.mainlist)
-    if parent_item.channel not in ["novedades", "channelselector"] and item.action != "mainlist" \
-            and parent_item.action != "mainlist":
-        context_commands.append(("Ir al Menu Principal", "XBMC.Container.Refresh (%s?%s)" %
-                                 (sys.argv[0], Item(channel=item.channel, action="mainlist").tourl())))
+        # Añadir a Favoritos
+        if version_xbmc < 17 and (item.channel not in ["favoritos", "biblioteca", "ayuda",
+                                                       "configuracion", ""] and not parent_item.channel == "favoritos"):
+            context_commands.append((config.get_localized_string(30155), "XBMC.RunPlugin(%s?%s)" %
+                                     (sys.argv[0], item.clone(channel="favoritos", action="addFavourite",
+                                                        from_channel=item.channel, from_action=item.action).tourl())))
 
-    # Añadir a Favoritos
-    if version_xbmc < 17 and (item.channel not in ["favoritos", "biblioteca", "ayuda",
-                                                   "configuracion", ""] and not parent_item.channel == "favoritos"):
-        context_commands.append((config.get_localized_string(30155), "XBMC.RunPlugin(%s?%s)" %
-                                 (sys.argv[0], item.clone(channel="favoritos", action="addFavourite",
-                                                          from_channel=item.channel, from_action=item.action).tourl())))
+        # Añadimos opción contextual para Añadir la serie completa a la biblioteca
+        if item.channel != "biblioteca" and item.action in ["episodios", "get_episodios"] \
+                and item.contentSerieName:
+            context_commands.append(("Añadir Serie a Biblioteca", "XBMC.RunPlugin(%s?%s)" %
+                                     (sys.argv[0], item.clone(action="add_serie_to_library",
+                                                              from_action=item.action).tourl())))
 
-    # Añadimos opción contextual para Añadir la serie completa a la biblioteca
-    if item.channel != "biblioteca" and item.action in ["episodios", "get_episodios"] \
-            and (item.contentSerieName or item.show):
-        context_commands.append(("Añadir Serie a Biblioteca", "XBMC.RunPlugin(%s?%s)" %
-                                 (sys.argv[0], item.clone(action="add_serie_to_library",
-                                                          from_action=item.action).tourl())))
+        # Añadir Pelicula a Biblioteca
+        if item.channel != "biblioteca" and item.action in ["detail", "findvideos"] \
+                and item.contentType == 'movie':
+            context_commands.append(("Añadir Pelicula a Biblioteca", "XBMC.RunPlugin(%s?%s)" %
+                                     (sys.argv[0], item.clone(action="add_pelicula_to_library",
+                                                              from_action=item.action).tourl())))
 
-    # Añadir Pelicula a Biblioteca
-    if item.channel != "biblioteca" and item.action in ["detail", "findvideos"] \
-            and item.contentType == 'movie':
-        context_commands.append(("Añadir Pelicula a Biblioteca", "XBMC.RunPlugin(%s?%s)" %
-                                 (sys.argv[0], item.clone(action="add_pelicula_to_library",
-                                                          from_action=item.action).tourl())))
+        # Descargar pelicula
+        if item.contentType == "movie" and not item.channel == "descargas":
+            context_commands.append(("Descargar Pelicula", "XBMC.RunPlugin(%s?%s)" %
+                                     (sys.argv[0], item.clone(channel="descargas", action="save_download",
+                                                        from_channel=item.channel, from_action=item.action).tourl())))
 
-    # Descargar pelicula
-    if item.contentType == "movie" and not item.channel == "descargas":
-        context_commands.append(("Descargar Pelicula", "XBMC.RunPlugin(%s?%s)" %
-                                 (sys.argv[0], item.clone(channel="descargas", action="save_download",
-                                                          from_channel=item.channel, from_action=item.action).tourl())))
+        # Descargar serie
+        if item.contentType == "tvshow" and not item.channel == "descargas":
+            context_commands.append(("Descargar Serie", "XBMC.RunPlugin(%s?%s)" %
+                                     (sys.argv[0], item.clone(channel="descargas", action="save_download",
+                                                        from_channel=item.channel, from_action=item.action).tourl())))
 
-    # Descargar serie
-    if item.contentType == "tvshow" and not item.channel == "descargas":
-        context_commands.append(("Descargar Serie", "XBMC.RunPlugin(%s?%s)" %
-                                 (sys.argv[0], item.clone(channel="descargas", action="save_download",
-                                                          from_channel=item.channel, from_action=item.action).tourl())))
+        # Descargar episodio
+        if item.contentType == "episode" and not item.channel == "descargas":
+            context_commands.append(("Descargar Episodio", "XBMC.RunPlugin(%s?%s)" %
+                                     (sys.argv[0], item.clone(channel="descargas", action="save_download",
+                                                         from_channel=item.channel, from_action=item.action).tourl())))
 
-    # Descargar episodio
-    if item.contentType == "episode" and not item.channel == "descargas":
-        context_commands.append(("Descargar Episodio", "XBMC.RunPlugin(%s?%s)" %
-                                 (sys.argv[0], item.clone(channel="descargas", action="save_download",
-                                                          from_channel=item.channel, from_action=item.action).tourl())))
-
-    # Descargar temporada
-    if item.contentType == "season" and not item.channel == "descargas":
-        context_commands.append(("Descargar Temporada", "XBMC.RunPlugin(%s?%s)" %
-                                 (sys.argv[0], item.clone(channel="descargas", action="save_download",
-                                                          from_channel=item.channel, from_action=item.action).tourl())))
-    # Abrir configuración
-    if parent_item.channel not in ["configuracion", "novedades", "buscador"]:
-        context_commands.append(("Abrir Configuración", "XBMC.Container.Update(%s?%s)" %
-                                 (sys.argv[0], Item(channel="configuracion", action="mainlist").tourl())))
+        # Descargar temporada
+        if item.contentType == "season" and not item.channel == "descargas":
+            context_commands.append(("Descargar Temporada", "XBMC.RunPlugin(%s?%s)" %
+                                     (sys.argv[0], item.clone(channel="descargas", action="save_download",
+                                                        from_channel=item.channel, from_action=item.action).tourl())))
+        # Abrir configuración
+        if parent_item.channel not in ["configuracion", "novedades", "buscador"]:
+            context_commands.append(("Abrir Configuración", "XBMC.Container.Update(%s?%s)" %
+                                     (sys.argv[0], Item(channel="configuracion", action="mainlist").tourl())))
 
     #context_commands.append((item.contentType, "XBMC.Action(Info)")) # For debug
     return sorted(context_commands, key=lambda comand: comand[0])

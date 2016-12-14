@@ -197,6 +197,7 @@ def listado_anio(item):
 
         itemlist.append(Item(channel=__channel__, action="listado", title=titulo+value, extra=item.extra,
                              url=urlparse.urljoin(CHANNEL_HOST, cadena2), text_color= color2, fanart=fanart_host,
+                             thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/Year.png",
                              contentView = contentView))
 
     return itemlist
