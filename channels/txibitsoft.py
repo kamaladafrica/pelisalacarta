@@ -193,7 +193,7 @@ def fanart(item):
     title_fan = item.extra
     title = re.sub(r'Serie Completa|Temporada.*?\d+|Fin Temporada|3D|SBS|Montaje del Director|V.Extendida|Quadrilogia','',title_fan)
     title= title.replace(' ','%20')
-    title = ''.join((c for c in unicodedata.normalize('NFD',unicode(title.decode('utf-8'))) if unicodedata.category(c) != 'Mn'))
+    title = ''.join((c for c in unicodedata.normalize('NFD',unicode(title.decode('utf-8'))) if unicodedata.category(c) != 'Mn')).encode("ascii", "ignore")
 
     try:
      sinopsis_area = scrapertools.get_match(data,'<textarea.*?">(.*?)</textarea></li>')
@@ -1244,7 +1244,7 @@ class TextBox2( xbmcgui.WindowDialog ):
             self.getFanart = kwargs.get('fanart')
             self.getRating = kwargs.get('rating')
             
-            self.background = xbmcgui.ControlImage( 70, 20, 1150, 630, 'http://s6.postimg.org/n3ph1uxn5/ventana.png')
+            self.background = xbmcgui.ControlImage( 70, 20, 1150, 630, 'http://imgur.com/H2hMPTP.jpg')
             self.title = xbmcgui.ControlTextBox(120, 60, 430, 50)
             self.rating = xbmcgui.ControlTextBox(145, 112, 1030, 45)
             self.plot = xbmcgui.ControlTextBox( 120, 150, 1056, 100 )
