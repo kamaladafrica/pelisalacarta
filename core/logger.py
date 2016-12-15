@@ -39,7 +39,7 @@ def log_enable(active):
     loggeractive = active
 
 
-def encode_log(message=None):
+def encode_log(message=""):
     if message:
         # Unicode to utf8
         if type(message) == unicode:
@@ -57,15 +57,15 @@ def encode_log(message=None):
 
 
 def get_caller(message=None):
-    module = inspect.getmodule(inspect.stack()[2][0])
+    module = inspect.getmodule(inspect.currentframe().f_back.f_back)
 
     # En boxee en ocasiones no detecta el modulo, de este modo lo hacemos manual
     if module is None:
-        module = ".".join(os.path.splitext(inspect.stack()[2][1].split("pelisalacarta")[1])[0].split(os.path.sep))[1:]
+        module = ".".join(os.path.splitext(inspect.currentframe().f_back.f_back.f_code.co_filename.split("pelisalacarta")[1])[0].split(os.path.sep))[1:]
     else:
         module = module.__name__
 
-    function = inspect.stack()[2][3]
+    function = inspect.currentframe().f_back.f_back.f_code.co_name
 
     if module == "__main__":
         module = "pelisalacarta"
@@ -86,28 +86,22 @@ def get_caller(message=None):
             return module + "." + function
 
 
-def info(texto=None):
+def info(texto=""):
     if loggeractive:
         xbmc.log(get_caller(encode_log(texto)), xbmc.LOGNOTICE)
 
 
-def debug(texto=None):
+def debug(texto=""):
     if loggeractive:
-        if texto:
-            texto = "    [" + get_caller() + "] " + encode_log(texto)
-        else:
-            texto = "    [" + get_caller() + "] "
+        texto = "    [" + get_caller() + "] " + encode_log(texto)
 
         xbmc.log("######## DEBUG #########", xbmc.LOGNOTICE)
         xbmc.log(texto, xbmc.LOGNOTICE)
 
 
-def error(texto=None):
+def error(texto=""):
     if loggeractive:
-        if texto:
-            texto = "    [" + get_caller() + "] " + encode_log(texto)
-        else:
-            texto = "    [" + get_caller() + "] "
+        texto = "    [" + get_caller() + "] " + encode_log(texto)
 
         xbmc.log("######## ERROR #########", xbmc.LOGNOTICE)
         xbmc.log(texto, xbmc.LOGNOTICE)

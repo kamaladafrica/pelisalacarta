@@ -164,7 +164,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             parámetros, el item y el dict_values
     """
     def start(self, list_controls=None, dict_values=None, title="Opciones", callback=None, item=None,
-              custom_button=None, channelpath = None):
+              custom_button=None, channelpath=None):
         logger.info("[xbmc_config_menu] start")
 
         # Ruta para las imagenes de la ventana
@@ -177,20 +177,18 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
         self.callback = callback
         self.item = item
         
-        
         if type(custom_button) == dict:
-          self.custom_button = {} 
-          self.custom_button["label"] = custom_button.get("label", "")
-          self.custom_button["function"] = custom_button.get("function", "")
-          self.custom_button["visible"] = bool(custom_button.get("visible", True))
-          self.custom_button["close"] = bool(custom_button.get("close", False))
+            self.custom_button = {}
+            self.custom_button["label"] = custom_button.get("label", "")
+            self.custom_button["function"] = custom_button.get("function", "")
+            self.custom_button["visible"] = bool(custom_button.get("visible", True))
+            self.custom_button["close"] = bool(custom_button.get("close", False))
         else:
-          self.custom_button = None
+            self.custom_button = None
           
-
         # Obtenemos el canal desde donde se ha echo la llamada y cargamos los settings disponibles para ese canal
         if not channelpath:
-          channelpath = inspect.currentframe().f_back.f_back.f_code.co_filename
+            channelpath = inspect.currentframe().f_back.f_back.f_code.co_filename
         self.channel = os.path.basename(channelpath).replace(".py", "")
 
         # Si no tenemos list_controls, hay que sacarlos del xml del canal
@@ -365,20 +363,22 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
 
     def onInit(self):
         if xbmcgui.__version__ == "1.2":
-          self.setCoordinateResolution(1)
+            self.setCoordinateResolution(1)
         else:
-          self.setCoordinateResolution(5)
+            self.setCoordinateResolution(5)
           
         # Ponemos el título
         self.getControl(10002).setLabel(self.title)
 
         if self.custom_button is not None:
-            if self.custom_button['visible'] == True:
+            if self.custom_button['visible']:
                 self.getControl(10006).setLabel(self.custom_button['label'])
             else:
                 self.getControl(10006).setVisible(False)
-                self.getControl(10004).setPosition(self.getControl(10004).getPosition()[0] + 80, self.getControl(10004).getPosition()[1])
-                self.getControl(10005).setPosition(self.getControl(10005).getPosition()[0] + 80, self.getControl(10005).getPosition()[1])
+                self.getControl(10004).setPosition(self.getControl(10004).getPosition()[0] + 80,
+                                                   self.getControl(10004).getPosition()[1])
+                self.getControl(10005).setPosition(self.getControl(10005).getPosition()[0] + 80,
+                                                   self.getControl(10005).getPosition()[1])
 
         # Obtenemos las dimensiones del area de controles
         self.controls_width = self.getControl(10007).getWidth() - 20
@@ -388,12 +388,12 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
         self.height_control = 35
         font = "font12"
         
-        #En versiones antiguas: creamos 5 controles
-        #De lo conrtario al hacer click al segundo control, automaticamente cambia el label del tercero a "Short By: Name" no se porque...
+        # En versiones antiguas: creamos 5 controles, de lo conrtario al hacer click al segundo control,
+        # automaticamente cambia el label del tercero a "Short By: Name" no se porque...
         if xbmcgui.ControlEdit == ControlEdit:
-          for x in range(5):
-            control = xbmcgui.ControlRadioButton(-500, 0, 0 , 0, "")
-            self.addControl(control)
+            for x in range(5):
+                control = xbmcgui.ControlRadioButton(-500, 0, 0, 0, "")
+                self.addControl(control)
 
         # Creamos un listado de controles, para tenerlos en todo momento localizados y posicionados en la ventana
         self.controls = []
@@ -459,12 +459,12 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             if ctype == "list":
                 lvalues = c["lvalues"]
             if ctype == "text":
-              if type(c["hidden"]) == bool:
-                hidden = c["hidden"] 
-              elif c["hidden"].lower() == 'true':
-                 hidden = True
-              else:
-                 hidden = False
+                if type(c["hidden"]) == bool:
+                    hidden = c["hidden"]
+                elif c["hidden"].lower() == 'true':
+                    hidden = True
+                else:
+                    hidden = False
 
             # Decidimos si usar el valor por defecto o el valor guardado
             if ctype in ["bool", "text", "list"]:
@@ -475,41 +475,39 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                     else:
                         self.values[id] = default
 
-                
-
             if ctype == "bool":
                 c["default"] = bool(c["default"])
                 self.values[id] = bool(self.values[id])
             
             if ctype in ["bool", "text", "list"]:
-              value = self.values[id]
+                value = self.values[id]
             
             # Control "bool"
             if ctype == "bool":
                 # Creamos el control
-                #Versiones antiguas no admite algunas texturas
-                if xbmcgui.__version__ in["1.2","2.0"]:
-                  control = xbmcgui.ControlRadioButton(self.controls_pos_x - 10, -100, self.controls_width + 10,
-                                                     self.height_control, label=label, font=font, textColor=color,
-                                                     focusTexture=os.path.join(self.mediapath, 'Controls',
-                                                                               'MenuItemFO.png'),
-                                                     noFocusTexture=os.path.join(self.mediapath, 'Controls',
-                                                                                 'MenuItemNF.png'))
+                # Versiones antiguas no admite algunas texturas
+                if xbmcgui.__version__ in["1.2", "2.0"]:
+                    control = xbmcgui.ControlRadioButton(self.controls_pos_x - 10, -100, self.controls_width + 10,
+                                                         self.height_control, label=label, font=font, textColor=color,
+                                                         focusTexture=os.path.join(self.mediapath, 'Controls',
+                                                                                   'MenuItemFO.png'),
+                                                         noFocusTexture=os.path.join(self.mediapath, 'Controls',
+                                                                                     'MenuItemNF.png'))
                 else:
-                  control = xbmcgui.ControlRadioButton(self.controls_pos_x - 10, -100, self.controls_width + 10,
-                                                     self.height_control, label=label, font=font, textColor=color,
-                                                     focusTexture=os.path.join(self.mediapath, 'Controls',
-                                                                               'MenuItemFO.png'),
-                                                     noFocusTexture=os.path.join(self.mediapath, 'Controls',
-                                                                                 'MenuItemNF.png'),
-                                                     focusOnTexture=os.path.join(self.mediapath, 'Controls',
-                                                                                 'radiobutton-focus.png'),
-                                                     noFocusOnTexture=os.path.join(self.mediapath, 'Controls',
-                                                                                   'radiobutton-focus.png'),
-                                                     focusOffTexture=os.path.join(self.mediapath, 'Controls',
-                                                                                  'radiobutton-nofocus.png'),
-                                                     noFocusOffTexture=os.path.join(self.mediapath, 'Controls',
-                                                                                    'radiobutton-nofocus.png'))
+                    control = xbmcgui.ControlRadioButton(self.controls_pos_x - 10, -100, self.controls_width + 10,
+                                                         self.height_control, label=label, font=font, textColor=color,
+                                                         focusTexture=os.path.join(self.mediapath, 'Controls',
+                                                                                   'MenuItemFO.png'),
+                                                         noFocusTexture=os.path.join(self.mediapath, 'Controls',
+                                                                                     'MenuItemNF.png'),
+                                                         focusOnTexture=os.path.join(self.mediapath, 'Controls',
+                                                                                     'radiobutton-focus.png'),
+                                                         noFocusOnTexture=os.path.join(self.mediapath, 'Controls',
+                                                                                       'radiobutton-focus.png'),
+                                                         focusOffTexture=os.path.join(self.mediapath, 'Controls',
+                                                                                      'radiobutton-nofocus.png'),
+                                                         noFocusOffTexture=os.path.join(self.mediapath, 'Controls',
+                                                                                        'radiobutton-nofocus.png'))
                 # Lo añadimos a la ventana
                 self.addControl(control)
 
@@ -527,22 +525,21 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             elif ctype == 'text':
                 # Creamos el control
                 if xbmcgui.ControlEdit == ControlEdit:
-                  control = xbmcgui.ControlEdit(self.controls_pos_x, -100, self.controls_width - 5, self.height_control,
-                                                label, font=font, isPassword=hidden, textColor=color,
-                                                focusTexture=os.path.join(self.mediapath, 'Controls',
-                                                                          'MenuItemFO.png'),
-                                                noFocusTexture=os.path.join(self.mediapath, 'Controls',
-                                                                            'MenuItemNF.png'), window=self)
-
+                    control = xbmcgui.ControlEdit(self.controls_pos_x, -100, self.controls_width - 5,
+                                                  self.height_control, label, font=font, isPassword=hidden,
+                                                  textColor=color, focusTexture=os.path.join(self.mediapath, 'Controls',
+                                                                                             'MenuItemFO.png'),
+                                                  noFocusTexture=os.path.join(self.mediapath, 'Controls',
+                                                                              'MenuItemNF.png'), window=self)
 
                 else:
 
-                  control = xbmcgui.ControlEdit(self.controls_pos_x, -100, self.controls_width - 5, self.height_control,
-                                                label, font, color,  '', 4, isPassword=hidden, 
-                                                focusTexture=os.path.join(self.mediapath, 'Controls',
-                                                                          'MenuItemFO.png'),
-                                                noFocusTexture=os.path.join(self.mediapath, 'Controls',
-                                                                            'MenuItemNF.png'))
+                    control = xbmcgui.ControlEdit(self.controls_pos_x, -100, self.controls_width - 5,
+                                                  self.height_control, label, font, color,  '', 4, isPassword=hidden,
+                                                  focusTexture=os.path.join(self.mediapath, 'Controls',
+                                                                            'MenuItemFO.png'),
+                                                  noFocusTexture=os.path.join(self.mediapath, 'Controls',
+                                                                              'MenuItemNF.png'))
 
                 # Lo añadimos a la ventana
                 self.addControl(control)
@@ -654,8 +651,10 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
         for x, control in enumerate(self.controls):
             if control["control"] == focus:
                 # Sube uno en la lista
-                if x > 0: x -= 1  
-                else: x = 0
+                if x > 0:
+                    x -= 1
+                else:
+                    x = 0
 
                 # Si es un label, sigue subiendo hasta llegar al primero o uno que nos sea label
                 while self.controls[x]["type"] == "label" and x > 0:
@@ -670,6 +669,10 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                 # hasta que este visible
                 while not self.controls[x]["show"]:
                     self.scroll(1)
+
+                # si el control no está habilitado movemos el foco al siguiente que esté habilitado
+                while not self.evaluate(x, self.controls[x]["enabled"]):
+                    x -= 1
 
                 # Pasamos el foco al control
                 self.setFocus(self.controls[x]["control"])
@@ -698,7 +701,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                 # Baja uno en la lista
                 x += 1
 
-                # Si es un label, sigue bajando hasta llegar al primero o uno que nos sea label
+                # Si es un label, sigue bajando hasta llegar al primero o uno que no sea label
                 while x < len(self.controls) and self.controls[x]["type"] == "label":
                     x += 1
 
@@ -712,6 +715,10 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                 # hasta que este visible
                 while not self.controls[x]["show"]:
                     self.scroll(-1)
+
+                # si el control no está habilitado movemos el foco al siguiente que esté habilitado
+                while not self.evaluate(x, self.controls[x]["enabled"]):
+                    x += 1
 
                 # Pasamos el foco al control
                 self.setFocus(self.controls[x]["control"])
@@ -745,9 +752,9 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                     control["control"].setPosition(control["x"], control["y"])
                     control["control"].setVisible(True)
                     if config.get_platform() == "boxee":
-                    	control["label"].setPosition(control["x"] + self.controls_width - 30, control["y"])
+                        control["label"].setPosition(control["x"] + self.controls_width - 30, control["y"])
                     else:
-                    	control["label"].setPosition(control["x"], control["y"])
+                        control["label"].setPosition(control["x"], control["y"])
                     control["label"].setVisible(True)
                     control["upBtn"].setPosition(control["x"] + control["control"].getWidth() - 25, control["y"] + 3)
                     control["upBtn"].setVisible(True)
@@ -811,9 +818,9 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                 except ImportError:
                     logger.error('Imposible importar %s' % self.channel)
                 else:
-                  self.return_value = getattr(cb_channel, self.custom_button['function'])(self.item)
-                  if self.custom_button["close"] == True:
-                    self.close()
+                    self.return_value = getattr(cb_channel, self.custom_button['function'])(self.item)
+                    if self.custom_button["close"]:
+                        self.close()
                 
                 
             else:
@@ -885,24 +892,25 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
 
             # Si esl control es un "text", guardamos el nuevo valor
             if cont["type"] == "text" and cont["control"] == control:
-              #Versiones antiguas requieren abrir el teclado manualmente
-              if xbmcgui.ControlEdit == ControlEdit:
-                import xbmc
-                keyboard = xbmc.Keyboard(cont["control"].getText(), cont["control"].getLabel(), cont["control"].isPassword)
-                keyboard.setHiddenInput(cont["control"].isPassword)
-                keyboard.doModal()
-                if keyboard.isConfirmed():
-                    cont["control"].setText(keyboard.getText())
+                # Versiones antiguas requieren abrir el teclado manualmente
+                if xbmcgui.ControlEdit == ControlEdit:
+                    import xbmc
+                    keyboard = xbmc.Keyboard(cont["control"].getText(), cont["control"].getLabel(),
+                                             cont["control"].isPassword)
+                    keyboard.setHiddenInput(cont["control"].isPassword)
+                    keyboard.doModal()
+                    if keyboard.isConfirmed():
+                        cont["control"].setText(keyboard.getText())
                 
-              self.values[cont["id"]] = cont["control"].getText()
+                self.values[cont["id"]] = cont["control"].getText()
 
         self.evaluate_conditions()
         self.check_default()
         self.check_ok()
 
-    #Versiones antiguas requieren esta funcion
-    def onFocus(self,a):
-      pass
+    # Versiones antiguas requieren esta funcion
+    def onFocus(self, a):
+        pass
 
     def onAction(self, action):
         # Obtenemos el foco
@@ -987,57 +995,57 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
 
 class ControlEdit(xbmcgui.ControlButton):
   
-  def __new__(self, *args, **kwargs):
-    del kwargs["isPassword"]
-    del kwargs["window"]
-    args = list(args)
-    return xbmcgui.ControlButton.__new__(self, *args, **kwargs)
+    def __new__(cls, *args, **kwargs):
+        del kwargs["isPassword"]
+        del kwargs["window"]
+        args = list(args)
+        return xbmcgui.ControlButton.__new__(cls, *args, **kwargs)
 
-    
-  def __init__(self, *args, **kwargs):
-    self.isPassword = kwargs["isPassword"]
-    self.window = kwargs["window"]
-    self.label = ""
-    self.text = ""
-    self.textControl = xbmcgui.ControlLabel(self.getX(), self.getY(), self.getWidth(), self.getHeight(),self.text, font=kwargs["font"],textColor=kwargs["textColor"], alignment= 4 | 1)
-    self.window.addControl(self.textControl)
+    def __init__(self, *args, **kwargs):
+        self.isPassword = kwargs["isPassword"]
+        self.window = kwargs["window"]
+        self.label = ""
+        self.text = ""
+        self.textControl = xbmcgui.ControlLabel(self.getX(), self.getY(), self.getWidth(), self.getHeight(), self.text,
+                                                font=kwargs["font"], textColor=kwargs["textColor"], alignment=4 | 1)
+        self.window.addControl(self.textControl)
       
-  def setLabel(self,val):
-    self.label = val    
-    xbmcgui.ControlButton.setLabel(self, val)
+    def setLabel(self, val):
+        self.label = val
+        xbmcgui.ControlButton.setLabel(self, val)
     
-  def getX(self):
-      return xbmcgui.ControlButton.getPosition(self)[0]
+    def getX(self):
+        return xbmcgui.ControlButton.getPosition(self)[0]
       
-  def getY(self):
-      return xbmcgui.ControlButton.getPosition(self)[1]
-      
-  def setEnabled(self, e):
-    xbmcgui.ControlButton.setEnabled(self, e)
-    self.textControl.setEnabled(e) 
-    
-  def setWidth(self, w):
-    xbmcgui.ControlButton.setWidth(self, w)
-    self.textControl.setWidth(w/2)
-    
-  def setHeight(self, w):
-    xbmcgui.ControlButton.setHeight(self, w)
-    self.textControl.setHeight(w)   
-       
-  def setPosition(self,x,y):
-    xbmcgui.ControlButton.setPosition(self,x,y)
-    self.textControl.setPosition(x+ self.getWidth()/2,y)
-      
-  def setText(self, text):
-    self.text = text
-    if self.isPassword:
-      self.textControl.setLabel("*"* len(self.text))
-    else:
-      self.textControl.setLabel(self.text)
-  
-  def getText(self):
-    return self.text
+    def getY(self):
+        return xbmcgui.ControlButton.getPosition(self)[1]
+
+    def setEnabled(self, e):
+        xbmcgui.ControlButton.setEnabled(self, e)
+        self.textControl.setEnabled(e)
+
+    def setWidth(self, w):
+        xbmcgui.ControlButton.setWidth(self, w)
+        self.textControl.setWidth(w/2)
+
+    def setHeight(self, w):
+        xbmcgui.ControlButton.setHeight(self, w)
+        self.textControl.setHeight(w)
+
+    def setPosition(self, x, y):
+        xbmcgui.ControlButton.setPosition(self, x, y)
+        self.textControl.setPosition(x + self.getWidth() / 2, y)
+
+    def setText(self, text):
+        self.text = text
+        if self.isPassword:
+            self.textControl.setLabel("*" * len(self.text))
+        else:
+            self.textControl.setLabel(self.text)
+
+    def getText(self):
+        return self.text
 
 
 if not hasattr(xbmcgui, "ControlEdit"):
-  xbmcgui.ControlEdit = ControlEdit
+    xbmcgui.ControlEdit = ControlEdit

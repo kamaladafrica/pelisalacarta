@@ -36,7 +36,7 @@ from core import downloadtools
 from core import logger
 from core import scrapertools
 from core.item import Item
-from platformcode import library
+from core import library
 from platformcode import platformtools
 
 
@@ -227,6 +227,7 @@ def run():
             elif item.action == "add_serie_to_library":
                 library.add_serie_to_library(item, channel)
 
+
             # Special action for downloading all episodes from a serie
             elif item.action == "download_all_episodes":
                 from channels import descargas
@@ -237,9 +238,22 @@ def run():
             # Special action for searching, first asks for the words then call the "search" function
             elif item.action == "search":
                 logger.info("pelisalacarta.platformcode.launcher search")
-                
-                tecleado = platformtools.dialog_input("")
+
+                last_search = ""
+                last_search_active = config.get_setting("last_search", "buscador")
+                if last_search_active:
+                    try:
+                        current_saved_searches_list = list(config.get_setting("saved_searches_list", "buscador"))
+                        last_search = current_saved_searches_list[0]
+                    except:
+                        pass
+
+                tecleado = platformtools.dialog_input(last_search)
                 if tecleado is not None:
+                    if last_search_active:
+                        from channels import buscador
+                        buscador.save_search(tecleado)
+
                     tecleado = tecleado.replace(" ", "+")
                     # TODO revisar 'personal.py' porque no tiene función search y daría problemas
                     itemlist = channel.search(item, tecleado)
@@ -391,5 +405,33 @@ def play_from_library(item):
     item.action = "findvideos"
 
     # y volvemos a lanzar kodi
-    xbmc.executebuiltin("Container.Update(" + sys.argv[0] + "?" + item.tourl() + ")")
-    return
+    if xbmc.getCondVisibility('Window.IsMedia'):
+        xbmc.executebuiltin("Container.Update(" + sys.argv[0] + "?" + item.tourl() + ")")
+
+    else:
+        from channels import biblioteca
+        from platformcode import xbmc_library
+        p_dialog = platformtools.dialog_progress_bg('pelisalacarta', 'Cargando...')
+        p_dialog.update(0, '')
+
+        itemlist = biblioteca.findvideos(item)
+
+        p_dialog.update(50, '')
+
+        if len(itemlist) > 0:
+            # El usuario elige el mirror
+            opciones = []
+            for item in itemlist:
+                opciones.append(item.title)
+
+            seleccion = platformtools.dialog_select(config.get_localized_string(30163), opciones)
+            if seleccion == -1:
+                return
+
+            item =  biblioteca.play(itemlist[seleccion])[0]
+            p_dialog.update(100, '')
+
+            platformtools.play_video(item)
+            p_dialog.close()
+            xbmc_library.mark_auto_as_watched(itemlist[seleccion])
+

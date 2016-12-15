@@ -35,9 +35,9 @@ CHANNELNAME = "configuracion"
 
 
 def mainlist(item):
-    logger.info("tvalacarta.channels.configuracion mainlist")
+    logger.info()
 
-    itemlist = []
+    itemlist = list()
     itemlist.append(Item(channel=CHANNELNAME, title="Preferencias", action="settings", folder=False,
                          thumbnail=get_thumbnail_path("thumb_configuracion.png")))
     itemlist.append(Item(channel=CHANNELNAME, title="", action="", folder=False,
@@ -52,7 +52,8 @@ def mainlist(item):
 
     if config.get_library_support():
         itemlist.append(Item(channel="biblioteca", title="   Ajustes de la biblioteca",
-                             action="channel_config", folder=True, thumbnail=get_thumbnail_path("thumb_biblioteca.png")))
+                             action="channel_config", folder=True,
+                             thumbnail=get_thumbnail_path("thumb_biblioteca.png")))
         itemlist.append(Item(channel="biblioteca", action="update_biblio", folder=False,
                              thumbnail=get_thumbnail_path("thumb_biblioteca.png"),
                              title="   Buscar nuevos episodios y actualizar biblioteca"))
@@ -64,29 +65,30 @@ def mainlist(item):
     itemlist.append(Item(channel=item.channel, action="", title="", folder=False,
                          thumbnail=get_thumbnail_path("thumb_configuracion.png")))
 
-
     itemlist.append(Item(channel=CHANNELNAME, title="Ajustes por canales", action="", folder=False,
                          thumbnail=get_thumbnail_path("thumb_configuracion.png")))
+
     import channelselector
     from core import channeltools
     channel_list = channelselector.filterchannels("all")
+
     for channel in channel_list:
-      jsonchannel = channeltools.get_channel_json(channel.channel)
-      if jsonchannel.get("settings"):
-        setting = jsonchannel["settings"]
-        if type(setting) == list:
-          if len([s for s in setting if "id" in s and not "include_in_" in s["id"]]):
-            itemlist.append(Item(channel=CHANNELNAME,  title="   Configuración del canal '%s'" % channel.title,
-                                 action="channel_config", config=channel.channel, folder=False,
-                                 thumbnail=channel.thumbnail))
+        jsonchannel = channeltools.get_channel_json(channel.channel)
+        if jsonchannel.get("settings"):
+            setting = jsonchannel["settings"]
+            if type(setting) == list:
+                if len([s for s in setting if "id" in s and "include_in_" not in s["id"]]):
+                    itemlist.append(Item(channel=CHANNELNAME,  title="   Configuración del canal '%s'" % channel.title,
+                                         action="channel_config", config=channel.channel, folder=False,
+                                         thumbnail=channel.thumbnail))
 
     return itemlist
 
 
 def channel_config(item):
-  from platformcode import platformtools
-  import os
-  return platformtools.show_channel_settings(channelpath=os.path.join(config.get_runtime_path(),"channels", item.config))
+    from platformcode import platformtools
+    return platformtools.show_channel_settings(channelpath=filetools.join(config.get_runtime_path(), "channels",
+                                                                          item.config))
 
 
 def check_for_updates(item):
@@ -95,8 +97,8 @@ def check_for_updates(item):
     try:
         version = updater.checkforupdates()
         if version:
-            import xbmcgui
-            yes_pressed = xbmcgui.Dialog().yesno( "Versión "+version+" disponible" , "¿Quieres instalarla?" )
+            from platformcode import platformtools
+            yes_pressed = platformtools.dialog_yesno("Versión "+version+" disponible", "¿Quieres instalarla?")
       
             if yes_pressed:
                 item = Item(version=version)
@@ -111,27 +113,30 @@ def settings(item):
 
 
 def menu_addchannels(item):
-    logger.info("pelisalacarta.channels.configuracion menu_addchannels")
-    itemlist = []
-    itemlist.append(Item(channel=CHANNELNAME, title="# Copia de seguridad automática en caso de sobrescritura", action="", text_color="green"))
+    logger.info()
+    itemlist = list()
+    itemlist.append(Item(channel=CHANNELNAME, title="# Copia de seguridad automática en caso de sobrescritura",
+                         action="", text_color="green"))
     itemlist.append(Item(channel=CHANNELNAME, title="Añadir o actualizar canal", action="addchannel", folder=False))
     itemlist.append(Item(channel=CHANNELNAME, title="Añadir o actualizar conector", action="addchannel", folder=False))
-    itemlist.append(Item(channel=CHANNELNAME, title="Mostrar ruta de carpeta para copias de seguridad", action="backups", folder=False))
-    itemlist.append(Item(channel=CHANNELNAME, title="Eliminar copias de seguridad guardadas", action="backups", folder=False))
+    itemlist.append(Item(channel=CHANNELNAME, title="Mostrar ruta de carpeta para copias de seguridad",
+                         action="backups", folder=False))
+    itemlist.append(Item(channel=CHANNELNAME, title="Eliminar copias de seguridad guardadas", action="backups",
+                         folder=False))
 
     return itemlist
 
 
 def addchannel(item):
     from platformcode import platformtools
-
-    import time, os
-    logger.info("pelisalacarta.channels.configuracion addchannel")
+    import os
+    import time
+    logger.info()
     
     tecleado = platformtools.dialog_input("", "Introduzca la URL")
     if not tecleado:
         return
-    logger.info("pelisalacarta.channels.configuracion url=%s" % tecleado)
+    logger.info("url=%s" % tecleado)
 
     local_folder = config.get_runtime_path()
     if "canal" in item.title:
@@ -145,14 +150,14 @@ def addchannel(item):
 
     # Detecta si es un enlace a un .py o .xml (pensado sobre todo para enlaces de github)
     try:
-        extension = tecleado.rsplit(".",1)[1]
+        extension = tecleado.rsplit(".", 1)[1]
     except:
         extension = ""
 
     files = []
     zip = False
     if extension == "py" or extension == "xml":
-        filename = tecleado.rsplit("/",1)[1]
+        filename = tecleado.rsplit("/", 1)[1]
         localfilename = filetools.join(local_folder, filename)
         files.append([tecleado, localfilename, filename])
     else:
@@ -162,7 +167,8 @@ def addchannel(item):
         if re.search(r'https://github.com/[^\s]+/'+folder_to_extract, tecleado):
             try:
                 data = scrapertools.downloadpage(tecleado)
-                matches = scrapertools.find_multiple_matches(data, '<td class="content">.*?href="([^"]+)".*?title="([^"]+)"')
+                matches = scrapertools.find_multiple_matches(data,
+                                                             '<td class="content">.*?href="([^"]+)".*?title="([^"]+)"')
                 for url, filename in matches:
                     url = "https://raw.githubusercontent.com" + url.replace("/blob/", "/")
                     localfilename = filetools.join(local_folder, filename)
@@ -178,8 +184,8 @@ def addchannel(item):
             files.append([tecleado, localfilename, filename])
             zip = True
 
-    logger.info("pelisalacarta.channels.configuracion localfilename=%s" % localfilename)
-    logger.info("pelisalacarta.channels.configuracion descarga fichero...")
+    logger.info("localfilename=%s" % localfilename)
+    logger.info("descarga fichero...")
     
     try:
         if len(files) > 1:
@@ -190,8 +196,9 @@ def addchannel(item):
             result = downloadtools.downloadfile(url, localfilename, continuar=False)
             if result == -3:
                 if len(files) == 1:
-                    dyesno = platformtools.dialog_yesno("El archivo ya existe", "Ya existe el %s %s." \
-                                                        " ¿Desea sobrescribirlo?" % (info_accion, filename))
+                    dyesno = platformtools.dialog_yesno("El archivo ya existe", "Ya existe el %s %s. "
+                                                                                "¿Desea sobrescribirlo?" %
+                                                        (info_accion, filename))
                 else:
                     if not overwrite_all:
                         dyesno = platformtools.dialog_select("El archivo %s ya existe, ¿desea sobrescribirlo?"
@@ -211,7 +218,7 @@ def addchannel(item):
                         os.makedirs(backup)
                     import shutil
                     shutil.copy2(localfilename, filetools.join(backup, filename))
-                    result = downloadtools.downloadfile(url, localfilename, continuar=True)
+                    downloadtools.downloadfile(url, localfilename, continuar=True)
                 else:
                     if len(files) == 1:
                         return
@@ -222,34 +229,33 @@ def addchannel(item):
         logger.info("Detalle del error: %s" % traceback.format_exc())
         return
 
-
     if zip:
         try:
             # Lo descomprime
-            logger.info("pelisalacarta.channels.configuracion descomprime fichero...")
+            logger.info("descomprime fichero...")
             from core import ziptools
             unzipper = ziptools.ziptools()
-            logger.info("pelisalacarta.channels.configuracion destpathname=%s" % local_folder)
+            logger.info("destpathname=%s" % local_folder)
             unzipper.extract(localfilename, local_folder, folder_to_extract, True, True)
         except:
             import traceback
-            logger.info("Detalle del error: %s" % traceback.format_exc())
+            logger.error("Detalle del error: %s" % traceback.format_exc())
             # Borra el zip descargado
             filetools.remove(localfilename)
             platformtools.dialog_ok("Error", "Se ha producido un error extrayendo el archivo")
             return
-		
+
         # Borra el zip descargado
-        logger.info("pelisalacarta.channels.configuracion borra fichero...")
+        logger.info("borra fichero...")
         filetools.remove(localfilename)
-        logger.info("pelisalacarta.channels.configuracion ...fichero borrado")
+        logger.info("...fichero borrado")
 
     platformtools.dialog_ok("Éxito", "Actualización/Instalación realizada correctamente")
 
 
 def backups(item):
     from platformcode import platformtools
-    logger.info("pelisalacarta.channel.configuracion backups")
+    logger.info()
 
     ruta = filetools.join(config.get_data_path(), 'backups')
     ruta_split = ""
@@ -272,7 +278,8 @@ def backups(item):
                 import shutil
                 shutil.rmtree(ruta, ignore_errors=True)
 
+
 def get_thumbnail_path(thumb_name):
     import urlparse
-    WEB_PATH = "http://media.tvalacarta.info/pelisalacarta/squares/"
-    return urlparse.urljoin(WEB_PATH, thumb_name)
+    web_path = "http://media.tvalacarta.info/pelisalacarta/squares/"
+    return urlparse.urljoin(web_path, thumb_name)

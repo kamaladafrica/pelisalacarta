@@ -32,7 +32,7 @@ def mainlist(item):
     itemlist.append(Item(channel=item.channel, title="Más vistas", action="mas_vistas", url=HOST))
     itemlist.append(Item(channel=item.channel, title="Listado Alfabético", action="listado_alfabetico", url=HOST))
     itemlist.append(Item(channel=item.channel, title="Todas las series", action="listado_completo", url=HOST))
-    itemlist.append(Item(channel=item.channel, title="Buscar...", action="search", url=HOST))
+    itemlist.append(Item(channel=item.channel, title="Buscar...", action="search", url=urlparse.urljoin(HOST, "all.php")))
 
     if filtertools.context:
         itemlist = filtertools.show_option(itemlist, item.channel, list_idiomas, CALIDADES)
@@ -115,46 +115,33 @@ def listado_alfabetico(item):
     return itemlist
 
 
-# La página de series por letra es igual que la de buscar
 def series_por_letra(item):
-    return search(item, '')
+    logger.info("letra = {0}".format(item.title))
+    data = scrapertools.cache_page(item.url)
+    logger.info(data)
+    shows = re.findall("<a href='(?P<url>[^']+)' title='Capitulos de: (?P<title>.+?)'><img.+?src='(?P<img>[^']+)", data)
+    itemlist = []
+    for url, title, img in shows:
+        itemlist.append(item.clone(title = title, url = urlparse.urljoin(HOST, url), action="episodios", thumbnail=img))
+    return itemlist
 
 
 def search(item, texto):
     logger.info("texto={0}".format(texto))
 
-    if texto != "":
-        item.url = urlparse.urljoin(HOST, "/pag_search.php?q1={0}".format(texto))
+    itemlist = []
 
     try:
-        return series(item)
+        data = scrapertools.cache_page(item.url)
+        shows = re.findall("<a href='(?P<url>/serie.php\?serie=[0-9]+)'[^>]*>(?P<title>[^<]*{0}[^<]*)".format(texto), data, re.IGNORECASE)
+        for url, title in shows:
+            itemlist.append(item.clone(title = title, url = urlparse.urljoin(HOST, url), action="episodios"))
+
     # Se captura la excepción, para no interrumpir al buscador global si un canal falla
     except:
         import sys
         for line in sys.exc_info():
             logger.error("%s" % line)
-        return []
-
-
-def series(item):
-    logger.info()
-
-    itemlist = []
-
-    data = scrapertools.cache_page(item.url)
-    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
-    data = re.sub(r"<!--.*?-->", "", data)
-
-    patron = "<a href='([^']+)'[^>]+><img class='ict' src='([^']+)' alt='([^']+)'"
-    matches = re.compile(patron, re.DOTALL).findall(data)
-
-    for scrapedurl, scrapedthumb, scrapedtitle in matches:
-        patron = "^(?:Capitulos de: )(.*?)$"
-        match = re.compile(patron, re.DOTALL).findall(scrapedtitle)
-        title = scrapertools.decodeHtmlentities(match[0])
-        itemlist.append(Item(channel=item.channel, title=title, action="episodios", plot="", show=title.strip(),
-                             url=urlparse.urljoin(HOST, scrapedurl.replace("..", "")), thumbnail=scrapedthumb,
-                             list_idiomas=list_idiomas, list_calidad=CALIDADES, context=filtertools.context))
 
     return itemlist
 
@@ -197,8 +184,7 @@ def episodios(item):
 
     # Opción "Añadir esta serie a la biblioteca de XBMC"
     if config.get_library_support() and len(itemlist) > 0:
-        itemlist.append(Item(channel=item.channel, title="Añadir esta serie a la biblioteca de XBMC", url=item.url,
-                             action="add_serie_to_library", extra="episodios", show=item.show))
+        itemlist.append(item.clone(title="Añadir esta serie a la biblioteca", action="add_serie_to_library"))
 
     return itemlist
 

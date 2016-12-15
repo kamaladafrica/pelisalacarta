@@ -13,16 +13,26 @@ from core import logger
 from core import scrapertools
 from core import servertools
 from core.item import Item
-
+from core.scrapertools import decodeHtmlentities as dhe
 try:
     import xbmc
     import xbmcgui
 except: pass
+import unicodedata
 
+ACTION_SHOW_FULLSCREEN = 36
+ACTION_GESTURE_SWIPE_LEFT = 511
+ACTION_SELECT_ITEM = 7
+ACTION_PREVIOUS_MENU = 10
+ACTION_MOVE_LEFT = 1
+ACTION_MOVE_RIGHT = 2
+ACTION_MOVE_DOWN = 4
+ACTION_MOVE_UP = 3
+OPTION_PANEL = 6
+OPTIONS_OK = 5
 
 DEBUG = config.get_setting("debug")
 host = "http://www.peliculasdk.com/"
-Tmdb_key ="2e2160006592024ba87ccdf78c28f49f"
 
 
 def bbcode_kodi2html(text):
@@ -102,25 +112,23 @@ def buscador(item):
         itemlist.append( Item(channel=item.channel, title=bbcode_kodi2html("[COLOR gold][B]Sin resultados...[/B][/COLOR]"), thumbnail ="http://s6.postimg.org/t8gfes7rl/pdknoisethumb.png", fanart ="http://s6.postimg.org/oy1rj72oh/pdknoisefan.jpg",folder=False) )
 
     for scrapedthumbnail,scrapedurl, scrapedtitle,  scrapedlenguaje, scrapedgenero, scrapedcalidad in matches:
+        try:
+          year =scrapertools.get_match(scrapedtitle,'\((\d+)\)')
+        except:
+          year =""
+        title_fan= re.sub(r"\[.*?\]|\(.*?\)|\d+x\d+.*?Final|-\d+|-|\d+x\d+|Temporada.*?Completa| ;","",scrapedtitle).strip()
         scrapedcalidad = re.sub(r"<a href.*?>|</a>|</span>","",scrapedcalidad).strip()
         scrapedlenguaje = re.sub(r"<a href.*?>|</a>|</span>","",scrapedlenguaje).strip()
         
         if not "Adultos" in scrapedgenero and not "Adultos" in scrapedlenguaje and not "Adultos" in scrapedcalidad:
            scrapedcalidad = scrapedcalidad.replace(scrapedcalidad,bbcode_kodi2html("[COLOR orange]"+scrapedcalidad+"[/COLOR]"))
            scrapedlenguaje = scrapedlenguaje.replace(scrapedlenguaje,bbcode_kodi2html("[COLOR orange]"+scrapedlenguaje+"[/COLOR]"))
-           try:
-               yeartrailer = scrapertools.get_match(scrapedtitle,'\((.*?)\)')
-           except:
-               yeartrailer = ""
-           try:
-               titletrailer= scrapertools.get_match(scrapedtitle,'(.*?)\(')
-           except:
-               titletrailer=""
-           trailer = titletrailer + yeartrailer + "trailer"
-           trailer = urllib.quote(trailer)
+           
            scrapedtitle = scrapedtitle + "-(Idioma: " + scrapedlenguaje + ")" + "-(Calidad: " + scrapedcalidad +")"
            scrapedtitle = scrapedtitle.replace(scrapedtitle,bbcode_kodi2html("[COLOR white]"+scrapedtitle+"[/COLOR]"))
-           itemlist.append( Item(channel=item.channel, title =scrapedtitle , url=scrapedurl, action="fanart", thumbnail=scrapedthumbnail,plot = trailer, fanart="http://s18.postimg.org/h9kb22mnt/pdkfanart.jpg", folder=True) )
+           extra = year+"|"+title_fan
+           itemlist.append( Item(channel=item.channel, title =scrapedtitle , url=scrapedurl, action="fanart", thumbnail=scrapedthumbnail,extra=extra, fanart="http://s18.postimg.org/h9kb22mnt/pdkfanart.jpg", folder=True) )
+
     try:
         next_page = scrapertools.get_match(data,'<span class="current">.*?<a href="(.*?)".*?>Siguiente &raquo;</a></div>')
 
@@ -159,6 +167,13 @@ def peliculas(item):
 
 
     for scrapedurl, scrapedtitle, scrapedthumbnail, scrapedlenguaje, scrapedcalidad , scrapedgenero in matches:
+        
+        try:
+          year =scrapertools.get_match(scrapedtitle,'\((\d+)\)')
+        except:
+          year =""
+        title_fan= re.sub(r"\[.*?\]|\(.*?\)|\d+x\d+.*?Final|-\d+|-|\d+x\d+|Temporada.*?Completa| ;","",scrapedtitle)
+        scrapedtitle=re.sub(r"\(\d+\)","",scrapedtitle).strip()
         scrapedcalidad = re.sub(r"<a href.*?>|</a>","",scrapedcalidad).strip()
         scrapedlenguaje = re.sub(r"<a href.*?>|</a>","",scrapedlenguaje).strip()
         scrapedcalidad = scrapedcalidad.replace(scrapedcalidad,bbcode_kodi2html("[COLOR orange]"+scrapedcalidad+"[/COLOR]"))
@@ -167,21 +182,12 @@ def peliculas(item):
         if not "Adultos" in scrapedgenero and not "Adultos" in scrapedlenguaje and not "Adultos" in scrapedcalidad:
         
            scrapedlenguaje = scrapedlenguaje.replace(scrapedlenguaje,bbcode_kodi2html("[COLOR orange]"+scrapedlenguaje+"[/COLOR]"))
-           try:
-              yeartrailer = scrapertools.get_match(scrapedtitle,'\((.*?)\)')
-           except:
-              yeartrailer = ""
-           try:
-              titletrailer= scrapertools.get_match(scrapedtitle,'(.*?)\(')
-           except:
-              titletrailer=""
-           trailer = titletrailer + yeartrailer + "trailer"
-           trailer = urllib.quote(trailer)
+           
           
            scrapedtitle = scrapedtitle + "-(Idioma: " + scrapedlenguaje + ")" + "-(Calidad: " + scrapedcalidad +")"
            scrapedtitle = scrapedtitle.replace(scrapedtitle,bbcode_kodi2html("[COLOR white]"+scrapedtitle+"[/COLOR]"))
-           
-           itemlist.append( Item(channel=item.channel, title =scrapedtitle , url=scrapedurl, action="fanart", thumbnail=scrapedthumbnail,plot = trailer, fanart="http://s18.postimg.org/h9kb22mnt/pdkfanart.jpg", folder=True) )
+           extra = year+"|"+title_fan
+           itemlist.append( Item(channel=item.channel, title =scrapedtitle , url=scrapedurl, action="fanart", thumbnail=scrapedthumbnail,extra=extra, fanart="http://s18.postimg.org/h9kb22mnt/pdkfanart.jpg", folder=True) )
     ## Paginación
     
     next_page = scrapertools.get_match(data,'<span class="current">.*?<a href="(.*?)".*?>Siguiente &raquo;</a></div>')
@@ -197,68 +203,160 @@ def fanart(item):
     logger.info("pelisalacarta.peliculasdk fanart")
     itemlist = []
     url = item.url
-    
     data = scrapertools.cachePage(url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-    title= scrapertools.get_match(data,'<title>Ver Película(.*?) \(')
-    title= re.sub(r"3D|SBS|-|","",title)
-    title= title.replace('á','a')
-    title= title.replace('Á','A')
-    title= title.replace('é','e')
-    title= title.replace('í','i')
-    title= title.replace('ó','o')
-    title= title.replace('ú','u')
-    title= title.replace('ñ','n')
-    title= title.replace('Crepusculo','Twilight')
+    title_fan = item.extra.split("|")[1]
+    title = re.sub(r'Serie Completa|Temporada.*?Completa','',title_fan)
     title= title.replace(' ','%20')
-    url="http://api.themoviedb.org/3/search/movie?api_key="+Tmdb_key+"&query=" + title + "&language=es&include_adult=false"
-    data = scrapertools.cachePage(url)
-    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-    patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":"\\\(.*?)"'
-    matches = re.compile(patron,re.DOTALL).findall(data)
-    if len(matches)==0:
-        extra=item.thumbnail
-        show= item.thumbnail
-        posterdb = item.thumbnail
-        fanart_info = item.thumbnail
-        fanart_trailer = item.thumbnail
-        category= item.thumbnail
-        itemlist.append( Item(channel=item.channel, title=item.title, url=item.url, action="findvideos", thumbnail=item.thumbnail, fanart=item.thumbnail ,extra=extra, show=show, category= category, folder=True) )
-    else:
+    title = ''.join((c for c in unicodedata.normalize('NFD',unicode(title.decode('utf-8'))) if unicodedata.category(c) != 'Mn'))
+    try:
+     sinopsis =scrapertools.find_single_match(data,'<span class="clms">Sinopsis: <\/span>(.*?)<\/div>')
+    except:
+     sinopsis= ""
+    year =item.extra.split("|")[0]
+   
+    if not "series" in item.url:
+        
+        #filmafinity
+        url = "http://www.filmaffinity.com/es/advsearch.php?stext={0}&stype%5B%5D=title&country=&genre=&fromyear={1}&toyear={1}".format(title, year)
+        data = scrapertools.downloadpage(url)
+
+        url_filmaf = scrapertools.find_single_match(data, '<div class="mc-poster">\s*<a title="[^"]*" href="([^"]+)"')
+        if url_filmaf:
+           url_filmaf = "http://www.filmaffinity.com%s" % url_filmaf
+           data = scrapertools.downloadpage(url_filmaf)
+        else:
+
+               try:
+                 url_bing="http://www.bing.com/search?q=%s+%s+site:filmaffinity.com" %  (title.replace(' ', '+'),  year)
+                 data = browser (url_bing)
+                 data = re.sub(r'\n|\r|\t|\s{2}|&nbsp;','',data)
+
+                 if "myaddrproxy.php" in data:
+                     subdata_bing = scrapertools.get_match(data,'li class="b_algo"><div class="b_title"><h2>(<a href="/ myaddrproxy.php/http/www.filmaffinity.com/es/film.*?)"')
+                     subdata_bing = re.sub(r'\/myaddrproxy.php\/http\/','',subdata_bing)
+                 else:
+                     subdata_bing = scrapertools.get_match(data,'li class="b_algo"><h2>(<a href="http://www.filmaffinity.com/es/film.*?)"')
+    
+                 url_filma = scrapertools.get_match(subdata_bing,'<a href="([^"]+)')
+                 
+                 if not "http" in url_filma:
+                    data = scrapertools.cachePage ("http://"+url_filma)
+                 else:
+                    data = scrapertools.cachePage (url_filma)
+                 data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
+            
+               except:
+                 pass
+    
+        if sinopsis == " ":
+           try:
+            sinopsis = scrapertools.find_single_match(data, '<dd itemprop="description">(.*?)</dd>')
+            sinopsis = sinopsis.replace("<br><br />", "\n")
+           except:
+              pass
+        try:
+            rating_filma=scrapertools.get_match(data,'itemprop="ratingValue" content="(.*?)">')
+        except:
+            rating_filma = "Sin puntuacion"
+        
+        critica=""
+        patron = '<div itemprop="reviewBody">(.*?)</div>.*?itemprop="author">(.*?)\s*<i alt="([^"]+)"'
+        matches_reviews = scrapertools.find_multiple_matches(data, patron)
+
+        if matches_reviews:
+            for review, autor, valoracion in matches_reviews:
+                review = dhe(scrapertools.htmlclean(review))
+                review += "\n" + autor +"[CR]"
+                review = re.sub(r'Puntuac.*?\)','',review)
+                if "positiva" in valoracion:
+                    critica += "[COLOR green][B]%s[/B][/COLOR]\n" % review
+                elif "neutral" in valoracion:
+                    critica += "[COLOR yellow][B]%s[/B][/COLOR]\n" % review
+                else:
+                    critica += "[COLOR red][B]%s[/B][/COLOR]\n" % review
+        else:
+             critica = "[COLOR floralwhite][B]Esta película no tiene críticas todavía...[/B][/COLOR]"
+        print "ozuu"
+        print critica
+    
+        url="http://api.themoviedb.org/3/search/movie?api_key=2e2160006592024ba87ccdf78c28f49f&query=" + title +"&year="+year+ "&language=es&include_adult=false"
+        data = scrapertools.cachePage(url)
+        data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
+        patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),"popularity"'
+        matches = re.compile(patron,re.DOTALL).findall(data)
+        
+        
+        if len(matches)==0:
+                
+                
+                title= re.sub(r":.*|\(.*?\)","",title)
+                url="http://api.themoviedb.org/3/search/movie?api_key=2e2160006592024ba87ccdf78c28f49f&query=" + title + "&language=es&include_adult=false"
+                
+                data = scrapertools.cachePage(url)
+                data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
+                patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),"popularity"'
+                matches = re.compile(patron,re.DOTALL).findall(data)
+                if len(matches)==0:
+                    extra=""+"|"+""+"|"+""+"|"+rating_filma
+                    show= item.fanart+"|"+item.thumbnail+"|"+sinopsis
+                    posterdb = item.thumbnail
+                    fanart_info = item.fanart
+                    fanart_3 = ""
+                    fanart_2 = item.fanart
+                    category= item.thumbnail
+                    id_scraper=""
+                        
+                    itemlist.append( Item(channel=item.channel, title=item.title, url=item.url, action="findvideos", thumbnail=item.thumbnail, fanart=item.fanart,extra = extra, show= show, category= category,folder=True) )
+    
         for id, fan in matches:
+            
+            fan = re.sub(r'\\|"','',fan)
+            
+            try:
+                rating = scrapertools.find_single_match(data,'"vote_average":(.*?)}')
+            except:
+                rating = "Sin puntuación"
+            
+            id_scraper =id+"|"+"peli"+"|"+rating+"|"+rating_filma+"|"+critica
             try:
                 posterdb = scrapertools.get_match(data,'"page":1,.*?"poster_path":"\\\(.*?)"')
                 posterdb =  "https://image.tmdb.org/t/p/original" + posterdb
             except:
                 posterdb = item.thumbnail
-            fanart="https://image.tmdb.org/t/p/original" + fan
+
+            if "null" in fan:
+                fanart = item.fanart
+            else:
+                fanart="https://image.tmdb.org/t/p/original" + fan
             item.extra= fanart
-            url ="http://api.themoviedb.org/3/movie/"+id+"/images?api_key="+Tmdb_key
-            data = scrapertools.cachePage( url )
+            
+            url ="http://api.themoviedb.org/3/movie/"+id+"/images?api_key=2e2160006592024ba87ccdf78c28f49f"
+            data = scrapertools.cachePage(url)
             data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
             
             patron = '"backdrops".*?"file_path":".*?",.*?"file_path":"(.*?)",.*?"file_path":"(.*?)",.*?"file_path":"(.*?)"'
             matches = re.compile(patron,re.DOTALL).findall(data)
-                    
+
             if len(matches) == 0:
-                patron = '"backdrops".*?"file_path":"(.*?)",.*?"file_path":"(.*?)",.*?"file_path":"(.*?)"'
-                matches = re.compile(patron,re.DOTALL).findall(data)
-                if len(matches) == 0:
-                    fanart_info = item.extra
-                    fanart_trailer = item.extra
-                    fanart_2 = item.extra
-            for fanart_info, fanart_trailer, fanart_2 in matches:
-                        fanart_info = "https://image.tmdb.org/t/p/original" + fanart_info
-                        fanart_trailer = "https://image.tmdb.org/t/p/original" + fanart_trailer
-                        fanart_2 = "https://image.tmdb.org/t/p/original" + fanart_2
-        
-    #fanart_2 y arts
+              patron = '"backdrops".*?"file_path":"(.*?)",.*?"file_path":"(.*?)",.*?"file_path":"(.*?)"'
+              matches = re.compile(patron,re.DOTALL).findall(data)
+              if len(matches) == 0:
+                  fanart_info = item.extra
+                  fanart_3 = ""
+                  fanart_2 = item.extra
+            for fanart_info, fanart_3, fanart_2 in matches:
+                fanart_info = "https://image.tmdb.org/t/p/original" + fanart_info
+                fanart_3 = "https://image.tmdb.org/t/p/original" + fanart_3
+                fanart_2 = "https://image.tmdb.org/t/p/original" + fanart_2
     
+            #clearart, fanart_2 y logo
             url ="http://webservice.fanart.tv/v3/movies/"+id+"?api_key=dffe90fba4d02c199ae7a9e71330c987"
             data = scrapertools.cachePage(url)
             data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
             patron = '"hdmovielogo":.*?"url": "([^"]+)"'
             matches = re.compile(patron,re.DOTALL).findall(data)
+        
             if '"moviedisc"' in data:
                 disc = scrapertools.get_match(data,'"moviedisc":.*?"url": "([^"]+)"')
             if '"movieposter"' in data:
@@ -266,63 +364,69 @@ def fanart(item):
             if '"moviethumb"' in data:
                 thumb = scrapertools.get_match(data,'"moviethumb":.*?"url": "([^"]+)"')
             if '"moviebanner"' in data:
-                 banner= scrapertools.get_match(data,'"moviebanner":.*?"url": "([^"]+)"')
+                banner= scrapertools.get_match(data,'"moviebanner":.*?"url": "([^"]+)"')
         
             if len(matches)==0:
-               extra=  posterdb
-               show = fanart_2
-               category = item.extra
-               itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=posterdb, fanart=item.extra,  extra=extra, show=show, category= category, folder=True) )
-        for logo in matches:
-            if '"hdmovieclearart"' in data:
-                clear=scrapertools.get_match(data,'"hdmovieclearart":.*?"url": "([^"]+)"')
-                if '"moviebackground"' in data:
-                     extra=clear
-                     show= fanart_2
-                     if '"moviedisc"' in data:
-                        category= disc
-                     else:
-                         category= clear
-                     itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=item.extra, extra=extra,show=show, category= category, folder=True) )
-                else:
-                    extra= clear
-                    show=fanart_2
-                    if '"moviedisc"' in data:
-                       category = disc
-                    else:
-                        category = clear
-                    itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=item.extra, extra=extra,show=show, category= category, folder=True) )
-                
-            if '"moviebackground"' in data:
-                
+                extra=  posterdb
+                #"http://es.seaicons.com/wp-content/uploads/2015/11/Editing-Overview-Pages-1-icon.png"
+                show =fanart_2+"|"+fanart_3+"|"+sinopsis
+                category = posterdb
+                        
+                itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=posterdb, fanart=item.extra, extra=extra, show=show, category= category, folder=True) )
+            for logo in matches:
                 if '"hdmovieclearart"' in data:
                     clear=scrapertools.get_match(data,'"hdmovieclearart":.*?"url": "([^"]+)"')
-                    extra=clear
-                    show= fanart_2
-                    if '"moviedisc"' in data:
-                        category= disc
-                    else:
-                        category= clear
+                    if '"moviebackground"' in data:
                     
-                else:
-                    extra=logo
-                    show= fanart_2
-                    if '"moviedisc"' in data:
-                        category= disc
+                        extra=clear
+                        show= fanart_2+"|"+fanart_3+"|"+sinopsis
+                        if '"moviedisc"' in data:
+                            category= disc
+                        else:
+                            category= clear
+                        itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=item.extra, extra=extra,show=show,  category= category,folder=True) )
                     else:
-                        category= logo
-                    itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=item.extra, extra=extra,show=show, category= category,  folder=True) )
-
-            if not '"hdmovieclearart"' in data and not '"moviebackground"' in data:
+                        extra= clear
+                        show=fanart_2+"|"+fanart_3+"|"+sinopsis
+                        if '"moviedisc"' in data:
+                            category= disc
+                        else:
+                            category= clear
+                        itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=item.extra, extra=extra,show=show,  category= category, folder=True) )
+                                                                                                
+                if '"moviebackground"' in data:
+                                                                                                    
+                    if '"hdmovieclearart"' in data:
+                        clear=scrapertools.get_match(data,'"hdmovieclearart":.*?"url": "([^"]+)"')
+                        extra=clear
+                        show= fanart_2+"|"+fanart_3+"|"+sinopsis
+                        if '"moviedisc"' in data:
+                            category= disc
+                        else:
+                            category= clear
+                    else:
+                        extra=logo
+                        show= fanart_2+"|"+fanart_3+"|"+sinopsis
+                        if '"moviedisc"' in data:
+                            category= disc
+                        else:
+                            category= logo
+                                
+                        itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=item.extra, extra=extra,show=show,  category= category, folder=True) )
+                                                                                                                                                                    
+                                                                                                                                                                    
+                                                                                                                                                                    
+                                                                                                                                                                    
+                if not '"hdmovieclearart"' in data and not '"moviebackground"' in data:
                     extra= logo
-                    show=  fanart_2
+                    show=  fanart_2+"|"+fanart_3+"|"+sinopsis
                     if '"moviedisc"' in data:
                         category= disc
                     else:
-                         category= item.extra
-                    itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=item.extra,category= category, extra=extra,show=show ,  folder=True) )
+                        category= item.extra
+                    itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=item.extra, extra=extra,show=show ,  category= category, folder=True) )
 
-    title ="Info"
+    title_info ="Info"
    
     if posterdb == item.thumbnail:
        if '"movieposter"' in data:
@@ -334,38 +438,12 @@ def fanart(item):
 
 
 
-    
+    id = id_scraper
 
-    title = title.replace(title,bbcode_kodi2html("[COLOR skyblue]"+title+"[/COLOR]"))
-    itemlist.append( Item(channel=item.channel, action="info" , title=title , url=item.url, thumbnail=posterdb, fanart=fanart_info, extra = extra, show = show,folder=False ))
+    extra = extra+"|"+id+"|"+title.encode('utf8')
 
-    title= bbcode_kodi2html("[COLOR crimson]Trailer[/COLOR]")
-    
-    if len(item.extra)==0:
-        fanart=item.thumbnail
-    else:
-        fanart = item.extra
-
-
-
-    if '"moviethumb"' in data:
-        thumbnail = thumb
-    else:
-        thumbnail = posterdb
-
-    if '"moviebanner"' in data:
-        extra= banner
-    else:
-        if 'hdmovieclearart"' in data:
-            extra = clear
-        
-        else:
-            extra = posterdb
-
-
-
-    itemlist.append( Item(channel=item.channel, action="trailer", title=title , url=item.url , thumbnail=thumbnail , fulltitle = item.title , fanart=fanart_trailer, extra=extra, plot = item.plot,folder=True) )
-
+    title_info = title_info.replace(title_info,bbcode_kodi2html("[COLOR skyblue]"+title_info+"[/COLOR]"))
+    itemlist.append( Item(channel=item.channel, action="info" , title=title_info , url=item.url, thumbnail=thumbnail, fanart=fanart_info, extra = extra, category=category, show = show,folder=False ))
 
     return itemlist
 
@@ -377,22 +455,21 @@ def findvideos(item):
     data = scrapertools.cache_page(item.url)
     data = re.sub(r"<!--.*?-->","",data)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
+    bloque_tab= scrapertools.find_single_match(data,'<div id="verpelicula">(.*?)<div class="tab_container">')
+    patron ='<li><a href="#([^<]+)"><span class="re">\d<\/span><span class="([^<]+)"><\/span><span class=.*?>([^<]+)<\/span>'
+    check= re.compile(patron,re.DOTALL).findall(bloque_tab)
     
+    servers_data_list = []
     
-    
-    servers_data_list = {}
-    
-    patron = '<div id="tab\d+" class="tab_content"><script type="text/rocketscript">(\w+)\("([^"]+)"\)</script></div>'
+    patron = '<div id="(tab\d+)" class="tab_content"><script type="text/rocketscript">(\w+)\("([^"]+)"\)</script></div>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     
     if len(matches)==0:
-        patron = '<div id="tab\d+" class="tab_content"><script>(\w+)\("([^"]+)"\)</script></div>'
+        patron = '<div id="(tab\d+)" class="tab_content"><script>(\w+)\("([^"]+)"\)</script></div>'
         matches = re.compile(patron,re.DOTALL).findall(data)
         print matches
     
-    for server, id in matches:
-        
-        
+    for check_tab ,server, id in matches:
         scrapedplot = scrapertools.get_match(data,'<span class="clms">(.*?)</div></div>')
         plotformat = re.compile('(.*?:) </span>',re.DOTALL).findall(scrapedplot)
         scrapedplot = scrapedplot.replace(scrapedplot,bbcode_kodi2html("[COLOR white]"+scrapedplot+"[/COLOR]"))
@@ -401,10 +478,12 @@ def findvideos(item):
             scrapedplot = scrapedplot.replace(plot,bbcode_kodi2html("[COLOR red][B]"+plot+"[/B][/COLOR]"))
         scrapedplot = scrapedplot.replace("</span>","[CR]")
         scrapedplot = scrapedplot.replace(":","")
-        servers_data_list.update({server:id})
+        if check_tab in str(check):
+           idioma, calidad = scrapertools.find_single_match(str(check),""+check_tab+"', '(.*?)', '(.*?)'")
+           servers_data_list.append ([server,id, idioma, calidad])
+        
 
-    
-    url = "http://www.peliculasdk.com/Js/videos.js"
+    url = "http://www.peliculasdk.com/Js/videod.js"
     data = scrapertools.cachePage(url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
     data = data.replace ('<iframe width="100%" height="400" scrolling="no" frameborder="0"','')
@@ -414,30 +493,20 @@ def findvideos(item):
     matches = re.compile(patron,re.DOTALL).findall(data)
 
     for server, url in matches:
-        
-        '''if  "carajo" in manolo:
-            print "tu viejaaaa"
-            import xbmc, time
-                    
-            timeout = time.time()+1
-            while time.time()< timeout:
-                  xbmc.executebuiltin( "Action(back)" )
-                  time.sleep(1)
-                                    
-                                    
-            xbmc.executebuiltin('Notification([COLOR crimson][B]Video[/B][/COLOR], [COLOR yellow][B]'+'No compatible'.upper()+'[/B][/COLOR],4000,"http://s29.postimg.org/wzw749oon/pldklog.jpg")')
-                      
-            break'''
-        if server in servers_data_list:
+        for enlace , id, idioma, calidad in servers_data_list:
+         if server ==enlace:
             video_url = re.sub(r"embed\-|\-630x400\.html","",url)
-            video_url = video_url.replace("'+codigo+'",servers_data_list[server])
-            servertitle = scrapertools.get_match(video_url,'http://(.*?)/')
+            video_url = video_url.replace("'+codigo+'",id)
+            if "goo.gl" in video_url:
+               video_url=scrapertools.get_header_from_response("http://anonymouse.org/cgi-bin/anon-www.cgi/"+video_url, header_to_get="location")
+            servertitle = scrapertools.get_match(video_url,'http.*?://(.*?)/')
             servertitle = servertitle.replace(servertitle,bbcode_kodi2html("[COLOR red]"+servertitle+"[/COLOR]"))
             servertitle = servertitle.replace("embed.","")
             servertitle = servertitle.replace("player.","")
             servertitle = servertitle.replace("api.video.","")
             servertitle = servertitle.replace("hqq.tv","netu.tv")
-            title = bbcode_kodi2html("[COLOR orange]Ver en --[/COLOR]") + servertitle
+            servertitle = servertitle.replace("anonymouse.org","netu.tv")
+            title = bbcode_kodi2html("[COLOR orange]Ver en --[/COLOR]") + servertitle +" "+ idioma +" "+ calidad
             itemlist.append( Item(channel=item.channel, title =title , url=video_url, action="play", thumbnail=item.category, plot=scrapedplot, fanart=item.show ) )
          
            
@@ -448,7 +517,7 @@ def findvideos(item):
 
 
 def play(item):
-    logger.info("pelisalacarta.bricocine findvideos")
+    logger.info("pelisalacarta.peliculasdk play")
     
     itemlist = servertools.find_video_items(data=item.url)
     data = scrapertools.cache_page(item.url)
@@ -469,120 +538,195 @@ def play(item):
    
 
     return itemlist
-def trailer(item):
-    logger.info("pelisalacarta.bityouth trailer")
-    itemlist = []
-    
-    youtube_trailer = "https://www.youtube.com/results?search_query=" + item.plot + "español"
-    
-    
-    data = scrapertools.cache_page(youtube_trailer)
-    
-    patron = '<a href="/watch?(.*?)".*?'
-    patron += 'title="([^"]+)"'
-    
-    matches = re.compile(patron,re.DOTALL).findall(data)
-    scrapertools.printMatches(matches)
-    if len(matches)==0 :
-        itemlist.append( Item(channel=item.channel, title=bbcode_kodi2html("[COLOR gold][B]No hay Trailer[/B][/COLOR]"), thumbnail ="http://s6.postimg.org/jp5jx97ip/bityoucancel.png", fanart ="http://s6.postimg.org/vfjhen0b5/bityounieve.jpg",folder=False) )
-    
-    for scrapedurl, scrapedtitle in matches:
-        
-        scrapedurl = "https://www.youtube.com/watch"+scrapedurl
-        scrapedtitle = scrapertools.decodeHtmlentities( scrapedtitle )
-        scrapedtitle=scrapedtitle.replace(scrapedtitle,bbcode_kodi2html("[COLOR khaki][B]"+scrapedtitle+"[/B][/COLOR]"))
-        itemlist.append( Item(channel=item.channel, title=scrapedtitle, url=scrapedurl, server="youtube", fanart="http://static1.squarespace.com/static/5502c970e4b0cec330247c32/t/5517212ee4b07ea6d281c891/1427579186693/Movie+Trailers+and+promos.JPG?format=1500w", thumbnail=item.extra, action="play", folder=False) )
-    
-    return itemlist
+
 
 def info(item):
-    logger.info("pelisalacarta.zentorrents info")
-    
+    logger.info("pelisalacarta.peliculasdk info")
+    itemlist = []
     url=item.url
-    data = scrapertools.cachePage(url)
-    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-    title= scrapertools.get_match(data,'<title>Ver Película(.*?) \(')
-    title = title.replace(title,bbcode_kodi2html("[COLOR orange][B]"+title+"[/B][/COLOR]"))
+    id = item.extra
+    if "serie" in item.url:
+     try:
+        rating_tmdba_tvdb=item.extra.split("|")[6]
+        if item.extra.split("|")[6]== "":
+            rating_tmdba_tvdb= "Sin puntuación"
+     except:
+          rating_tmdba_tvdb= "Sin puntuación"
+    else:
+        rating_tmdba_tvdb=item.extra.split("|")[3]
+    rating_filma=item.extra.split("|")[4]
+    print "eztoquee"
+    print rating_filma
+    print rating_tmdba_tvdb
+
+    filma="http://s6.postimg.org/6yhe5fgy9/filma.png"
+
     try:
-        plot = scrapertools.get_match(data,'<span class="clms">Sinopsis: </span>(.*?)</div>')
-        plot = plot.replace(plot,bbcode_kodi2html("[COLOR white][B]"+plot+"[/B][/COLOR]"))
-    except :
-        title = bbcode_kodi2html("[COLOR red][B]LO SENTIMOS...[/B][/COLOR]")
-        plot = "Esta Pelicula no tiene informacion..."
-        plot = plot.replace(plot,bbcode_kodi2html("[COLOR yellow][B]"+plot+"[/B][/COLOR]"))
-        photo="http://s6.postimg.org/nm3gk1xox/noinfosup2.png"
-        foto ="http://s6.postimg.org/ub7pb76c1/noinfo.png"
-        info =""
-        quit = "Pulsa"+bbcode_kodi2html(" [COLOR orangered][B]INTRO [/B][/COLOR]"+ "para quitar")
-    try:
-        scrapedinfo= scrapertools.get_match(data,'<div class="infopeli">(.*?)<table class="ventana2" border="0">')
-    
-        infoformat = re.compile('(.*?:) .*?<br/>',re.DOTALL).findall(scrapedinfo)
-        for info in infoformat:
-           scrapedinfo= scrapedinfo.replace(info,bbcode_kodi2html("[COLOR orange][B]"+info+"[/B][/COLOR]"))
-           info= scrapedinfo.replace(info,bbcode_kodi2html("[COLOR white][B]"+info+"[/B][/COLOR]"))
-           info = scrapedinfo
-           info = re.sub(r'<a href=".*?">|<span>|</a>|</div></td></tr></table>|<span class=".*?".*?>|<a><img src=".*?"/>','',scrapedinfo)
-           info = info.replace("</span><br/>"," ")
-           info = info.replace("</span>"," ")
-           info = info.replace("<br/>","  ")
-           info = info.replace("</B>","")
-           info = info.replace("Calificación IMDb:",bbcode_kodi2html("[COLOR orange][B]Calificación IMDb:[/B][/COLOR]"))
-           info = info.replace("Calificación IMDb:[/B]","Calificación IMDb:")
-           info = info.replace("Premios:",bbcode_kodi2html("[COLOR orange][B]Premios:[/B][/COLOR]"))
+      if "serie" in item.url:
+          title= item.extra.split("|")[8]
+      
+      else:
+         title= item.extra.split("|")[6]
+      title = title.replace("%20"," ")
+      title = "[COLOR yellow][B]"+title+"[/B][/COLOR]"
     except:
-         info = bbcode_kodi2html("[COLOR red][B]Sin informacion adicional...[/B][/COLOR]")
-    info = info
-    foto = item.show
-    photo= item.extra
-    quit = "Pulsa"+bbcode_kodi2html(" [COLOR orangered][B]INTRO [/B][/COLOR]"+ "para quitar")
+      title = item.title
+
+    try:
+       if "." in rating_tmdba_tvdb:
+          check_rat_tmdba= scrapertools.get_match(rating_tmdba_tvdb,'(\d+).')
+       else:
+          check_rat_tmdba=rating_tmdba_tvdb
+       if int(check_rat_tmdba) >= 5 and int(check_rat_tmdba) < 8:
+          rating = "[COLOR springgreen][B]"+rating_tmdba_tvdb+"[/B][/COLOR]"
+       elif int(check_rat_tmdba) >= 8 or rating_tmdba_tvdb == 10:
+            rating = "[COLOR yellow][B]"+rating_tmdba_tvdb+"[/B][/COLOR]"
+       else:
+           rating = "[COLOR crimson][B]"+rating_tmdba_tvdb+"[/B][/COLOR]"
+           print "lolaymaue"
+    except:
+        rating = "[COLOR crimson][B]"+rating_tmdba_tvdb+"[/B][/COLOR]"
+    if "10." in rating:
+        rating = re.sub(r'10\.\d+','10',rating)
+    try:
+       check_rat_filma= scrapertools.get_match(rating_filma,'(\d)')
+       print "paco"
+       print check_rat_filma
+       if int(check_rat_filma) >= 5 and int(check_rat_filma) < 8:
+          print "dios"
+          print check_rat_filma
+          rating_filma = "[COLOR springgreen][B]"+rating_filma+"[/B][/COLOR]"
+       elif int(check_rat_filma) >=8:
+          
+          print check_rat_filma
+          rating_filma = "[COLOR yellow][B]"+rating_filma+"[/B][/COLOR]"
+       else:
+          rating_filma = "[COLOR crimson][B]"+rating_filma+"[/B][/COLOR]"
+          print "rojo??"
+          print check_rat_filma
+    except:
+          rating_filma = "[COLOR crimson][B]"+rating_filma+"[/B][/COLOR]"
 
 
-    ventana2 = TextBox1(title=title, plot=plot, info=info, thumbnail=photo, fanart=foto, quit= quit)
-    ventana2.doModal()
-ACTION_GESTURE_SWIPE_LEFT = 511
-ACTION_SELECT_ITEM = 7
-class TextBox1( xbmcgui.WindowDialog ):
-        """ Create a skinned textbox window """
-        def __init__( self, *args, **kwargs):
-            
-            self.getTitle = kwargs.get('title')
-            self.getPlot = kwargs.get('plot')
-            self.getInfo = kwargs.get('info')
-            self.getThumbnail = kwargs.get('thumbnail')
-            self.getFanart = kwargs.get('fanart')
-            self.getQuit = kwargs.get('quit')
 
-            self.background = xbmcgui.ControlImage( 70, 20, 1150, 630, 'http://s6.postimg.org/58jknrvtd/backgroundventana5.png')
-            self.title = xbmcgui.ControlTextBox(140, 60, 1130, 50)
-            self.quit = xbmcgui.ControlTextBox(145, 90, 1030, 45)
-            self.plot = xbmcgui.ControlTextBox( 120, 150, 1056, 140 )
-            self.info = xbmcgui.ControlFadeLabel(120, 310, 1056, 100)
-            self.thumbnail = xbmcgui.ControlImage( 813, 43, 390, 100, self.getThumbnail )
-            self.fanart = xbmcgui.ControlImage( 120, 365, 1060, 250, self.getFanart )
-            
-            self.addControl(self.background)
-            self.addControl(self.title)
-            self.addControl(self.quit)
-            self.addControl(self.plot)
-            self.addControl(self.thumbnail)
-            self.addControl(self.fanart)
-            self.addControl(self.info)
-            
-            self.title.setText( self.getTitle )
-            self.quit.setText( self.getQuit )
-            try:
-                self.plot.autoScroll(7000,6000,30000)
-            except:
-                print "Actualice a la ultima version de kodi para mejor info"
-                import xbmc
-                xbmc.executebuiltin('Notification(bbcode_kodi2html([COLOR red][B]Actualiza Kodi a su última versión[/B][/COLOR]), bbcode_kodi2html([COLOR skyblue]para mejor info[/COLOR]),8000,"https://raw.githubusercontent.com/linuxserver/docker-templates/master/linuxserver.io/img/kodi-icon.png")')
-            self.plot.setText(  self.getPlot )
-            self.info.addLabel(self.getInfo)
+    if not "serie" in item.url:
+        url_plot = "http://api.themoviedb.org/3/movie/"+item.extra.split("|")[1]+"?api_key=2e2160006592024ba87ccdf78c28f49f&append_to_response=credits&language=es"
+        data_plot= scrapertools.cache_page( url_plot )
+        plot = scrapertools.find_single_match(data_plot, '"overview":"(.*?)",')
+        tagline =scrapertools.find_single_match(data_plot,'"tagline":(".*?")')
+        if plot== "":
+            plot = item.show.split("|")[2]
         
-        def get(self):
-            self.show()
+        plot = "[COLOR moccasin][B]"+plot+"[/B][/COLOR]"
+        plot= re.sub(r"\\","",plot)
+
+    else:
+        plot = item.show.split("|")[2]
+        plot = "[COLOR moccasin][B]"+plot+"[/B][/COLOR]"
+        plot= re.sub(r"\\","",plot)
         
-        def onAction(self, action):
-            if action == ACTION_SELECT_ITEM or action == ACTION_GESTURE_SWIPE_LEFT:
-               self.close()
+        if item.extra.split("|")[7] != "":
+           tagline = item.extra.split("|")[7]
+           #tagline= re.sub(r',','.',tagline)
+        else:
+           tagline = ""
+    
+        
+
+
+
+    if "serie" in item.url:
+        check2="serie"
+        icon ="http://s6.postimg.org/hzcjag975/tvdb.png"
+        foto= item.show.split("|")[1]
+        if item.extra.split("|")[5] !="":
+           critica =item.extra.split("|")[5]
+        else:
+           critica= "Esta serie no tiene críticas..."
+        if not ".png" in item.extra.split("|")[0] :
+            photo ="http://imgur.com/6uXGkrz.png"
+        else:
+           photo= item.extra.split("|")[0].replace(" ","%20")
+        try:
+         tagline = "[COLOR aquamarine][B]"+tagline+"[/B][/COLOR]"
+        except:
+         tagline = ""
+
+    else:
+        critica =item.extra.split("|")[5]
+        if "%20" in critica:
+            critica= "No hay críticas"
+        icon ="http://imgur.com/SenkyxF.png"
+        photo= item.extra.split("|")[0].replace(" ","%20")
+        foto = item.show.split("|")[1]
+        try:
+         if tagline == "\"\"":
+            tagline = " "
+        except:
+            tagline= " "
+        tagline = "[COLOR aquamarine][B]"+tagline+"[/B][/COLOR]"
+        check2= "pelicula"
+    
+    #Tambien te puede interesar
+    peliculas = []
+    if "serie" in item.url:
+      
+      
+      url_tpi="http://api.themoviedb.org/3/tv/"+item.show.split("|")[5]+"/recommendations?api_key=2e2160006592024ba87ccdf78c28f49f&language=es"
+      data_tpi=scrapertools.cachePage(url_tpi)
+      tpi=scrapertools.find_multiple_matches(data_tpi,'id":(.*?),.*?"original_name":"(.*?)",.*?"poster_path":(.*?),"popularity"')
+
+    else:
+      url_tpi="http://api.themoviedb.org/3/movie/"+item.extra.split("|")[1]+"/recommendations?api_key=2e2160006592024ba87ccdf78c28f49f&language=es"
+      data_tpi=scrapertools.cachePage(url_tpi)
+      tpi=scrapertools.find_multiple_matches(data_tpi,'id":(.*?),.*?"original_title":"(.*?)",.*?"poster_path":(.*?),"popularity"')
+
+            
+    for idp,peli,thumb in tpi:
+            
+        thumb =re.sub(r'"|}','',thumb)
+        if "null" in thumb:
+            thumb = "http://s6.postimg.org/tw1vhymj5/noposter.png"
+        else:
+            thumb ="https://image.tmdb.org/t/p/original"+thumb
+        peliculas.append([idp,peli,thumb])
+    
+
+
+    check2 = check2.replace("pelicula", "movie").replace("serie", "tvshow")
+    infoLabels = {'title': title, 'plot': plot, 'thumbnail': photo, 'fanart': foto, 'tagline': tagline, 'rating': rating}
+    item_info = item.clone(info=infoLabels, icon=icon, extra=id, rating=rating, rating_filma=rating_filma, critica=critica, contentType=check2, thumb_busqueda="http://imgur.com/kdfWEJ6.png")
+    from channels import infoplus
+    infoplus.start(item_info, peliculas)
+
+def browser(url):
+    import mechanize
+    
+    # Utilizamos Browser mechanize para saltar problemas con la busqueda en bing
+    br = mechanize.Browser()
+    # Browser options
+    br.set_handle_equiv(False)
+    br.set_handle_gzip(True)
+    br.set_handle_redirect(True)
+    br.set_handle_referer(False)
+    br.set_handle_robots(False)
+    # Follows refresh 0 but not hangs on refresh > 0
+    br.set_handle_refresh(mechanize._http.HTTPRefreshProcessor(), max_time=1)
+    # Want debugging messages?
+    #br.set_debug_http(True)
+    #br.set_debug_redirects(True)
+    #br.set_debug_responses(True)
+    
+    # User-Agent (this is cheating, ok?)
+    br.addheaders = [('User-agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5) AppleWebKit/600.7.12 (KHTML, like Gecko) Version/7.1.7 Safari/537.85.16')]
+    #br.addheaders =[('Cookie','SRCHD=AF=QBRE; domain=.bing.com; expires=25 de febrero de 2018 13:00:28 GMT+1; MUIDB=3B942052D204686335322894D3086911; domain=www.bing.com;expires=24 de febrero de 2018 13:00:28 GMT+1')]
+    # Open some site, let's pick a random one, the first that pops in mind
+    r = br.open(url)
+    response = r.read()
+    print response
+    if "img,divreturn" in response:
+        r = br.open("http://ssl-proxy.my-addr.org/myaddrproxy.php/"+url)
+        print "prooooxy"
+        response = r.read()
+    
+    return response

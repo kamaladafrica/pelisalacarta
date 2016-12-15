@@ -203,10 +203,10 @@ class Item(object):
         elif name == "infoLabels":
             if isinstance(value, dict):
                 value_defaultdict = InfoLabels(value)
-                if value:
+                '''if value:
                     self.__dict__["infoLabels"].update(value_defaultdict)
-                else:
-                    self.__dict__["infoLabels"] = value_defaultdict
+                else:'''
+                self.__dict__["infoLabels"] = value_defaultdict
 
         else:
             super(Item, self).__setattr__(name, value)

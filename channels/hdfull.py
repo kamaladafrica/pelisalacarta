@@ -19,6 +19,8 @@ from core import servertools
 
 
 host = "http://hdfull.tv"
+headers = [["user-agent", "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:50.0) Gecko/20100101 Firefox/50.0"]]
+
 if config.get_setting('hdfulluser', 'hdfull'):
     account = True
 else:
@@ -32,14 +34,14 @@ def settingCanal(item):
 def login():
     logger.info("pelisalacarta.channels.hdfull login")
 
-    data = agrupa_datos( scrapertools.cache_page(host) )
+    data = agrupa_datos( scrapertools.cache_page(host, headers=headers) )
 
     patron = "<input type='hidden' name='__csrf_magic' value=\"([^\"]+)\" />"
     sid = scrapertools.find_single_match(data, patron)
 
     post = urllib.urlencode({'__csrf_magic':sid})+"&username="+config.get_setting('hdfulluser', 'hdfull')+"&password="+config.get_setting('hdfullpassword', 'hdfull')+"&action=login"
 
-    data = scrapertools.cache_page(host,post=post)
+    data = scrapertools.cache_page(host,post=post, headers=headers)
 
 def mainlist(item):
     logger.info("pelisalacarta.channels.hdfull mainlist")
@@ -98,7 +100,7 @@ def menuseries(item):
 def search(item,texto):
     logger.info("pelisalacarta.channels.hdfull search")
 
-    data = agrupa_datos( scrapertools.cache_page(host) )
+    data = agrupa_datos( scrapertools.cache_page(host, headers=headers) )
 
     texto = texto.replace('+','%20')
 
@@ -134,7 +136,7 @@ def items_usuario(item):
     itemlist = []
 
     ## Carga estados
-    status = jsontools.load_json(scrapertools.cache_page(host+'/a/status/all'))
+    status = jsontools.load_json(scrapertools.cache_page(host+'/a/status/all', headers=headers))
 
     ## Fichas usuario
     url = item.url.split("?")[0]
@@ -148,7 +150,7 @@ def items_usuario(item):
     next_page = url + "?" + post
 
     ## Carga las fichas de usuario
-    data = scrapertools.cache_page(url, post=post)
+    data = scrapertools.cache_page(url, post=post, headers=headers)
     fichas_usuario = jsontools.load_json( data )
 
     for ficha in fichas_usuario:
@@ -200,7 +202,7 @@ def listado_series(item):
 
     itemlist = []
 
-    data = agrupa_datos( scrapertools.cache_page(item.url) )
+    data = agrupa_datos( scrapertools.cache_page(item.url, headers=headers) )
 
     patron = '<div class="list-item"><a href="([^"]+)"[^>]+>([^<]+)</a></div>'
     matches = re.compile(patron,re.DOTALL).findall(data)
@@ -216,10 +218,10 @@ def fichas(item):
     itemlist = []
 
     ## Carga estados
-    status = jsontools.load_json(scrapertools.cache_page(host+'/a/status/all'))
+    status = jsontools.load_json(scrapertools.cache_page(host+'/a/status/all', headers=headers))
 
     if item.title == "Buscar...":
-        data = agrupa_datos( scrapertools.cache_page(item.url,post=item.extra) )
+        data = agrupa_datos( scrapertools.cache_page(item.url,post=item.extra, headers=headers) )
 
         s_p = scrapertools.get_match(data, '<h3 class="section-title">(.*?)<div id="footer-wrapper">').split('<h3 class="section-title">')
 
@@ -230,7 +232,7 @@ def fichas(item):
         else:
             data = s_p[0]+s_p[1]
     else:
-        data = agrupa_datos( scrapertools.cache_page(item.url) )
+        data = agrupa_datos( scrapertools.cache_page(item.url, headers=headers) )
 
     data = re.sub(
         r'<div class="span-6[^<]+<div class="item"[^<]+' + \
@@ -298,7 +300,7 @@ def episodios(item):
     itemlist = []
 
     ## Carga estados
-    status = jsontools.load_json(scrapertools.cache_page(host+'/a/status/all'))
+    status = jsontools.load_json(scrapertools.cache_page(host+'/a/status/all', headers=headers))
 
     url_targets = item.url
 
@@ -308,7 +310,7 @@ def episodios(item):
         item.url = item.url.split("###")[0]
 
     ## Temporadas
-    data = agrupa_datos( scrapertools.cache_page(item.url) )
+    data = agrupa_datos( scrapertools.cache_page(item.url, headers=headers) )
 
     if id == "0":
         ## Se saca el id de la serie de la página cuando viene de listado_series
@@ -336,7 +338,7 @@ def episodios(item):
     for scrapedurl in matches:
 
         ## Episodios
-        data = agrupa_datos( scrapertools.cache_page(scrapedurl) )
+        data = agrupa_datos( scrapertools.cache_page(scrapedurl, headers=headers) )
 
         sid = scrapertools.get_match(data,"<script>var sid = '(\d+)'")
         ssid = scrapertools.get_match(scrapedurl,"temporada-(\d+)")
@@ -344,7 +346,7 @@ def episodios(item):
 
         url = host+"/a/episodes"
 
-        data = scrapertools.cache_page(url,post=post)
+        data = scrapertools.cache_page(url,post=post, headers=headers)
 
         episodes = jsontools.load_json( data )
 
@@ -397,7 +399,7 @@ def novedades_episodios(item):
     itemlist = []
 
     ## Carga estados
-    status = jsontools.load_json(scrapertools.cache_page(host+'/a/status/all'))
+    status = jsontools.load_json(scrapertools.cache_page(host+'/a/status/all', headers=headers))
 
     ## Episodios
     url = item.url.split("?")[0]
@@ -409,7 +411,7 @@ def novedades_episodios(item):
     post = post.replace("start="+old_start, "start="+start)
     next_page = url + "?" + post
 
-    data = scrapertools.cache_page(url, post=post)
+    data = scrapertools.cache_page(url, post=post, headers=headers)
 
     episodes = jsontools.load_json( data )
 
@@ -464,7 +466,7 @@ def generos(item):
 
     itemlist = []
 
-    data = agrupa_datos( scrapertools.cache_page(item.url) )
+    data = agrupa_datos( scrapertools.cache_page(item.url, headers=headers) )
     data = scrapertools.find_single_match(data,'<li class="dropdown"><a href="http://hdfull.tv/peliculas"(.*?)</ul>')
 
     patron  = '<li><a href="([^"]+)">([^<]+)</a></li>'
@@ -485,7 +487,7 @@ def generos_series(item):
 
     itemlist = []
 
-    data = agrupa_datos( scrapertools.cache_page(item.url) )
+    data = agrupa_datos( scrapertools.cache_page(item.url, headers=headers) )
     data = scrapertools.find_single_match(data,'<li class="dropdown"><a href="http://hdfull.tv/series"(.*?)</ul>')
 
     patron  = '<li><a href="([^"]+)">([^<]+)</a></li>'
@@ -507,7 +509,7 @@ def findvideos(item):
     itemlist=[]
 
     ## Carga estados
-    status = jsontools.load_json(scrapertools.cache_page(host+'/a/status/all'))
+    status = jsontools.load_json(scrapertools.cache_page(host+'/a/status/all', headers=headers))
 
     url_targets = item.url
 
@@ -531,7 +533,7 @@ def findvideos(item):
 
         itemlist.append( Item( channel=item.channel, action="set_status", title=title, fulltitle=title, url=url_targets, thumbnail=item.thumbnail, show=item.show, folder=True ) )
 
-    data = agrupa_datos( scrapertools.cache_page(item.url) )
+    data = agrupa_datos( scrapertools.cache_page(item.url, headers=headers) )
 
     patron  = '<div class="embed-selector"[^<]+'
     patron += '<h5 class="left"[^<]+'
@@ -613,7 +615,7 @@ def file_cine_library(item,url_targets):
 
 
 def add_file_cine_library(item):
-    from platformcode import library
+    from core import library
     new_item = item.clone(title=item.show, action="play_from_library")
     library.save_library_movie(new_item)
     itemlist = []
@@ -646,7 +648,7 @@ def play(item):
         videoitem.thumbnail = item.thumbnail
         videoitem.channel = item.channel
         post = "target_id=%s&target_type=%s&target_status=1" % (id, type)
-        data = scrapertools.cache_page(host+"/a/status",post=post)
+        data = scrapertools.cache_page(host+"/a/status",post=post, headers=headers)
 
     return itemlist
 
@@ -711,7 +713,7 @@ def set_status(item):
         path = "/a/favorite"
         post = "like_id=" + id + "&like_type=" + type + "&like_comment=&vote=-1"
 
-    data = scrapertools.cache_page(host + path, post=post)
+    data = scrapertools.cache_page(host + path, post=post, headers=headers)
 
     title = bbcode_kodi2html("[COLOR green][B]OK[/B][/COLOR]")
 
