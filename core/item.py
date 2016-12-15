@@ -52,6 +52,9 @@ class InfoLabels(dict):
             #super(InfoLabels, self).__setitem__('code', value)
             super(InfoLabels, self).__setitem__('imdb_id', value)
 
+        elif name == "mediatype" and value not in ["list", "movie", "tvshow", "season", "episode"]:
+            super(InfoLabels, self).__setitem__('mediatype', 'list')
+
         else:
             super(InfoLabels, self).__setitem__(name, value)
     
@@ -79,8 +82,8 @@ class InfoLabels(dict):
                 return ""
 
         elif key == 'mediatype':
-            # "movie", "tvshow", "season", "episode"
-            if 'tvshowtitle' in super(InfoLabels,self).keys():
+            # "list", "movie", "tvshow", "season", "episode"
+            if 'tvshowtitle' in super(InfoLabels,self).keys() and super(InfoLabels,self).__getitem__('tvshowtitle') !="":
                 if 'episode' in super(InfoLabels,self).keys() and super(InfoLabels,self).__getitem__('episode') !="":
                     return 'episode'
 
@@ -199,13 +202,13 @@ class Item(object):
             # String q representa la duracion del video en segundos
             self.__dict__["infoLabels"]["duration"] = str(value)
 
+        elif name == "viewcontent" and value not in ["files", "movies", "tvshows", "seasons", "episodes"]:
+            super(Item, self).__setattr__("viewcontent", "files")
+
         # Al asignar un valor a infoLables
         elif name == "infoLabels":
             if isinstance(value, dict):
                 value_defaultdict = InfoLabels(value)
-                '''if value:
-                    self.__dict__["infoLabels"].update(value_defaultdict)
-                else:'''
                 self.__dict__["infoLabels"] = value_defaultdict
 
         else:
@@ -225,20 +228,20 @@ class Item(object):
         elif name == "contentChannel":
             return "list"
 
-        # valor por defecto para contentView
-        elif name == "contentView":
+        # valor por defecto para viewcontent
+        elif name == "viewcontent":
             # intentamos fijarlo segun el tipo de contenido...
             if self.__dict__["infoLabels"]["mediatype"] == 'movie':
-                contentView = 'movies'
+                viewcontent = 'movies'
                 '''elif item.contentType in ["tvshow"]:
-                contentView = "seasons"'''
+                viewcontent = "seasons"'''
             elif self.__dict__["infoLabels"]["mediatype"] in ["tvshow", "season", "episode"]:
-                contentView = "episodes"
+                viewcontent = "episodes"
             else:
-                contentView = "files"
+                viewcontent = "files"
 
-            self.__dict__["contentView"] = contentView
-            return contentView
+            self.__dict__["viewcontent"] = viewcontent
+            return viewcontent
 
         # Valor por defecto para hasContentDetails
         elif name == "hasContentDetails":
@@ -254,7 +257,11 @@ class Item(object):
             elif name == "contentSerieName" or name == "show":
                 return self.__dict__["infoLabels"]["tvshowtitle"]
             elif name == "contentType":
-                return self.__dict__["infoLabels"]["mediatype"]
+                ret = self.__dict__["infoLabels"]["mediatype"]
+                if ret == 'list' and self.__dict__.get("fulltitle", None): # retrocompatibilidad
+                    ret = 'movie'
+                    self.__dict__["infoLabels"]["mediatype"] = ret
+                return ret
             elif name == "contentEpisodeTitle":
                 return self.__dict__["infoLabels"]["episodeName"]
             elif name == "contentSeason":

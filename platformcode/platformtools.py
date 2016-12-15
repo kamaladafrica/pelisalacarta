@@ -122,6 +122,13 @@ def render_items(itemlist, parent_item):
     if not len(itemlist):
         itemlist.append(Item(title="No hay elementos que mostrar"))
 
+    # TODO only for debug
+    # Fijar la vista:
+    viewmode_id, viewName = get_viewmode_id(parent_item)
+    itemlist.insert(0, Item(title=viewName, text_color='pink'))
+    itemlist.insert(0, Item(title=parent_item.viewmode, text_color='green'))
+    itemlist.insert(0, Item(title=parent_item.viewcontent, text_color='blue'))
+    itemlist.insert(0, Item(title=parent_item.contentType, text_color='red'))
 
     # Recorremos el itemlist
     for item in itemlist:
@@ -181,8 +188,9 @@ def render_items(itemlist, parent_item):
                                         totalItems=item.totalItems)
 
 
-    # Fijar los tipos de vistas segun el contentView
-    xbmcplugin.setContent(int(sys.argv[1]), parent_item.contentView)
+    # Fijar los tipos de vistas segun el viewcontent
+    xbmcplugin.setContent(int(sys.argv[1]), parent_item.viewcontent)
+    #logger.debug(parent_item)
 
     # Fijamos el "breadcrumb"
     xbmcplugin.setPluginCategory(handle=int(sys.argv[1]), category=parent_item.category.capitalize())
@@ -190,38 +198,17 @@ def render_items(itemlist, parent_item):
     # No ordenar items
     xbmcplugin.addSortMethod(handle=int(sys.argv[1]), sortMethod=xbmcplugin.SORT_METHOD_NONE)
 
-
-    # Fijar la vista:
-    skinName = xbmc.getSkinDir()
-    if config.get_setting("forceview") == "true":
-        # Fijariamos la vista q el usuario tenga configurada por defecto para cada tipo de contentView
-        viewmode_id = get_viewmode_id(skinName, "user_" + parent_item.contentView)
-
-    else:
-        # Si el parent_item tenia fijado un viewmode usamos esa vista...
-        if parent_item.viewmode == 'movie':
-            # Remplazamos el antiguo viewmode 'movie' por 'thumbnails'
-            parent_item.viewmode = 'thumbnails'
-
-        if parent_item.viewmode in ["list", "movie_with_plot", "thumbnails"]:
-            viewmode_id = get_viewmode_id(skinName, "view_" + parent_item.viewmode)
-
-        # TODO: only for debug
-        elif isinstance(parent_item.viewmode, int):
-            viewmode_id = parent_item.viewmode
-
-        #...sino ponemos la vista por defecto en funcion del contentView
-        else:
-            viewmode_id = get_viewmode_id(skinName, "default_" + parent_item.contentView)
-
     # Cerramos el directorio
     xbmcplugin.endOfDirectory(handle=int(sys.argv[1]), succeeded=True)
 
+    # TODO only for debug
+    # Fijar la vista:
+    #viewmode_id = get_viewmode_id(parent_item)
     xbmc.executebuiltin("Container.SetViewMode(%s)" % viewmode_id)
-    #logger.debug("\ncontentView: %s\nviewmode: %s (%s)" % (parent_item.contentView, parent_item.viewmode, viewmode_id))
+    #logger.debug("\nviewcontent: %s\nviewmode: %s (%s)" % (parent_item.viewcontent, parent_item.viewmode, viewmode_id))
 
 
-def get_viewmode_id(skinName, viewName):
+def get_viewmode_id(parent_item):
     # viewmode_json habria q guardarlo en un archivo y crear un metodo para q el user fije sus preferencias en:
     # user_files, user_movies, user_tvshows, user_season y user_episodes.
     viewmode_json = {'skin.confluence': {'user_files': 51,
@@ -251,8 +238,33 @@ def get_viewmode_id(skinName, viewName):
                                  'view_thumbnails': 500,
                                  'view_movie_with_plot': 54}}
 
+
+    if config.get_setting("forceview") == "true":
+        # Fijariamos la vista q el usuario tenga configurada por defecto para cada tipo de viewcontent
+        viewName = "user_" + parent_item.viewcontent
+
+    else:
+        # Si el parent_item tenia fijado un viewmode usamos esa vista...
+        if parent_item.viewmode == 'movie':
+            # Remplazamos el antiguo viewmode 'movie' por 'thumbnails'
+            parent_item.viewmode = 'thumbnails'
+
+        if parent_item.viewmode in ["list", "movie_with_plot", "thumbnails"]:
+            viewName = "view_" + parent_item.viewmode
+
+            '''elif isinstance(parent_item.viewmode, int):
+                # only for debug
+                viewName = parent_item.viewmode'''
+
+        #...sino ponemos la vista por defecto en funcion del viewcontent
+        else:
+            viewName = "default_" + parent_item.viewcontent
+
+    skinName = xbmc.getSkinDir()
     view_skin = viewmode_json.get(skinName, 'skin.confluence')
-    return view_skin.get(viewName, 50)
+    #return view_skin.get(viewName, 50)
+    # TODO only for debug
+    return view_skin.get(viewName, 50), viewName
 
 def set_infolabels(listitem, item, player=False):
     """
@@ -347,7 +359,7 @@ def set_context_commands(item, parent_item):
             context_commands.append(("Información", "XBMC.Action(Info)"))
 
         # ExtendedInfo: Si esta instalado el addon y se cumplen una serie de condiciones
-    	if xbmc.getCondVisibility('System.HasAddon(script.extendedinfo)') and config.get_setting("extended_info") == "true":
+        if xbmc.getCondVisibility('System.HasAddon(script.extendedinfo)') and config.get_setting("extended_info") == "true":
             if item.contentType == "episode" and item.contentEpisodeNumber and item.contentSeason \
                     and (item.infoLabels['tmdb_id'] or item.contentSerieName):
                 param = "tvshow_id =%s, tvshow=%s, season=%s, episode=%s" \
@@ -378,12 +390,12 @@ def set_context_commands(item, parent_item):
                 context_commands.append(("ExtendedInfo",
                                          "XBMC.RunScript(script.extendedinfo,info=extendedinfo,%s)" % param))
 
-	if config.get_setting("infoplus") == "true":
-        	if item.infoLabels['tmdb_id'] or item.infoLabels['imdb_id'] or item.infoLabels['tvdb_id'] or \
+        # InfoPlus
+        if config.get_setting("infoplus") == "true":
+            if item.infoLabels['tmdb_id'] or item.infoLabels['imdb_id'] or item.infoLabels['tvdb_id'] or \
                                       (item.contentTitle and item.infoLabels["year"]) or item.contentSerieName:
-				            context_commands.append(("InfoPlus",
-                                	    "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], item.clone(channel="infoplus",
-                                                                action="start", from_channel=item.channel).tourl())))
+                context_commands.append(("InfoPlus","XBMC.RunPlugin(%s?%s)" % (sys.argv[0], item.clone(
+                                            channel="infoplus", action="start", from_channel=item.channel).tourl())))
 
         # Ir al Menu Principal (channel.mainlist)
         if parent_item.channel not in ["novedades", "channelselector"] and item.action != "mainlist" \

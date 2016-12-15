@@ -191,17 +191,17 @@ def set_infoLabels_item(item, seekTmdb=True, idioma_busqueda='es', lock=None):
 
     if seekTmdb:
         # Comprobamos q tipo de contenido es...
-        if item.infoLabels['mediatype'] == 'movie':
+        if item.contentType == 'movie':
             tipo_busqueda = 'movie'
         else:
             tipo_busqueda = 'tv'
+
 
         if item.infoLabels['season']:
             try:
                 numtemporada = int(item.infoLabels['season'])
             except ValueError:
                 logger.debug("El numero de temporada no es valido")
-                # item.contentType = item.infoLabels['mediatype']
                 return -1 * len(item.infoLabels)
 
             if lock:
@@ -230,7 +230,6 @@ def set_infoLabels_item(item, seekTmdb=True, idioma_busqueda='es', lock=None):
                     episode = int(item.infoLabels['episode'])
                 except ValueError:
                     logger.debug("El número de episodio (%s) no es valido" % repr(item.infoLabels['episode']))
-                    # item.contentType = item.infoLabels['mediatype']
                     return -1 * len(item.infoLabels)
 
                 # Tenemos numero de temporada y numero de episodio validos...
@@ -327,6 +326,7 @@ def set_infoLabels_item(item, seekTmdb=True, idioma_busqueda='es', lock=None):
                             titulo_buscado = item.contentTitle
                         else:
                             titulo_buscado = item.fulltitle
+
                         otmdb = Tmdb(texto_buscado=titulo_buscado, tipo=tipo_busqueda,
                                      idioma_busqueda=idioma_busqueda,
                                      filtro=item.infoLabels.get('filtro', {}),
