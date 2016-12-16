@@ -955,7 +955,12 @@ def findvideos(item):
                 pepe = open( torrents_path+"/temp.torrent", "rb").read()
               except:
                 pepe = ""
-
+              if "used CloudFlare" in pepe:
+                 try:
+                    urllib.urlretrieve("http://anonymouse.org/cgi-bin/anon-www.cgi/"+url.strip(), torrents_path+"/temp.torrent")
+                    pepe = open( torrents_path+"/temp.torrent", "rb").read()
+                 except:
+                    pepe=""
               torrent = decode(pepe)
 
               try:
