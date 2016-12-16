@@ -122,14 +122,6 @@ def render_items(itemlist, parent_item):
     if not len(itemlist):
         itemlist.append(Item(title="No hay elementos que mostrar"))
 
-    # TODO only for debug
-    # Fijar la vista:
-    viewmode_id, viewName = get_viewmode_id(parent_item)
-    itemlist.insert(0, Item(title=viewName, text_color='pink'))
-    itemlist.insert(0, Item(title=parent_item.viewmode, text_color='green'))
-    itemlist.insert(0, Item(title=parent_item.viewcontent, text_color='blue'))
-    itemlist.insert(0, Item(title=parent_item.contentType, text_color='red'))
-
     # Recorremos el itemlist
     for item in itemlist:
         #logger.debug(item)
@@ -201,11 +193,9 @@ def render_items(itemlist, parent_item):
     # Cerramos el directorio
     xbmcplugin.endOfDirectory(handle=int(sys.argv[1]), succeeded=True)
 
-    # TODO only for debug
     # Fijar la vista:
-    #viewmode_id = get_viewmode_id(parent_item)
+    viewmode_id = get_viewmode_id(parent_item)
     xbmc.executebuiltin("Container.SetViewMode(%s)" % viewmode_id)
-    #logger.debug("\nviewcontent: %s\nviewmode: %s (%s)" % (parent_item.viewcontent, parent_item.viewmode, viewmode_id))
 
 
 def get_viewmode_id(parent_item):
@@ -262,9 +252,8 @@ def get_viewmode_id(parent_item):
 
     skinName = xbmc.getSkinDir()
     view_skin = viewmode_json.get(skinName, 'skin.confluence')
-    #return view_skin.get(viewName, 50)
-    # TODO only for debug
-    return view_skin.get(viewName, 50), viewName
+    return view_skin.get(viewName, 50)
+
 
 def set_infolabels(listitem, item, player=False):
     """
