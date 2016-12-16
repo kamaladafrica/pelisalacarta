@@ -596,7 +596,7 @@ def add_serie_to_library(item, channel=None):
     else:
         # Esta marca es porque el item tiene algo más aparte en el atributo "extra"
         item.action = item.extra
-        if "###" in item.extra:
+        if isinstance(item.extra, str) and "###" in item.extra:
             item.action = item.extra.split("###")[0]
             item.extra = item.extra.split("###")[1]
 
