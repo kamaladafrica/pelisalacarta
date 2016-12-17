@@ -189,7 +189,7 @@ def fanart(item):
     title_fan = item.extra
     title = re.sub(r'Serie Completa|3D|Temporada.*?Completa','',title_fan)
     title= title.replace(' ','%20')
-    title = ''.join((c for c in unicodedata.normalize('NFD',unicode(title.decode('utf-8'))) if unicodedata.category(c) != 'Mn'))
+    title = ''.join((c for c in unicodedata.normalize('NFD',unicode(title.decode('utf-8'))) if unicodedata.category(c) != 'Mn')).encode("ascii", "ignore")
     item.title= re.sub(r'\(.*?\)|\[.*?\]','',item.title)
     item.title = '[COLOR floralwhite]'+item.title+'[/COLOR]'
     try:
@@ -491,7 +491,7 @@ def fanart(item):
          
          if len(matches)==0:
             id_tmdb=""
-            fanart_3 = item.fanart
+            fanart_3 = ""
             extra= item.thumbnail+"|"+year+"|"+"no data"+"|"+"no data"+"|"+rating_filma+"|"+critica+"|"+""+"|"+id_tmdb
             show=  item.fanart+"|"+fanart_3+"|"+sinopsis+"|"+title_fan+"|"+item.thumbnail+"|"+id_tmdb
             fanart_info = item.fanart
@@ -570,7 +570,7 @@ def fanart(item):
               matches = re.compile(patron,re.DOTALL).findall(data)
               if len(matches) == 0:
                   fanart_info= item.extra
-                  fanart_3 = "http://imgur.com/ldWNcHm.jpg"
+                  fanart_3 = ""
                   fanart_2 = item.extra
             for fanart_info, fanart_3, fanart_2 in matches:
                 fanart_info = "https://image.tmdb.org/t/p/original" + fanart_info
@@ -1210,7 +1210,7 @@ class TextBox2( xbmcgui.WindowDialog ):
             self.getFanart = kwargs.get('fanart')
             self.getRating = kwargs.get('rating')
             
-            self.background = xbmcgui.ControlImage( 70, 20, 1150, 630, 'http://s6.postimg.org/n3ph1uxn5/ventana.png')
+            self.background = xbmcgui.ControlImage( 70, 20, 1150, 630, 'http://imgur.com/133aoMw.jpg')
             self.title = xbmcgui.ControlTextBox(120, 60, 430, 50)
             self.rating = xbmcgui.ControlTextBox(145, 112, 1030, 45)
             self.plot = xbmcgui.ControlTextBox( 120, 150, 1056, 100 )

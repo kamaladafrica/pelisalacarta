@@ -291,6 +291,8 @@ def check_for_update(overwrite=True):
                 if interval != int(serie.active) or update_next.strftime('%Y-%m-%d') != serie.update_next:
                     serie.active = interval
                     serie.update_next = update_next.strftime('%Y-%m-%d')
+                    serie.channel = "biblioteca"
+                    serie.action = "get_temporadas"
                     filetools.write(tvshow_file, head_nfo + serie.tojson())
 
                 if serie_actualizada:

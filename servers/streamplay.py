@@ -32,30 +32,36 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
     jj_patron = None
     reverse = False
     substring = False
+    splice = False
     if jj_encode:
         jj_decode = jjdecode(jj_encode)
-        logger.info(jj_decode)
     if jj_decode:
         jj_patron = scrapertools.find_single_match(jj_decode, "/([^/]+)/")
-    if not "(" in jj_patron:
-        jj_patron = "(" + jj_patron
-    if not ")" in jj_patron:
-        jj_patron += ")"
+    if not "(" in jj_patron: jj_patron = "(" + jj_patron
+    if not ")" in jj_patron: jj_patron += ")"
 
-    if "x72x65x76x65x72x73x65" in jj_decode:
-        reverse = True
-    if "x73x75x62x73x74x72x69x6Ex67" in jj_decode:
-        substring = True
+    if "x72x65x76x65x72x73x65" in jj_decode: reverse = True
+    if "x73x75x62x73x74x72x69x6Ex67" in jj_decode: substring = True
+    if "x73x70x6Cx69x63x65" in jj_decode: splice = True
 
     matches = scrapertools.find_single_match(data, "<script type=[\"']text/javascript[\"']>(eval.*?)</script>")
-    matchjs = jsunpack.unpack(matches).replace("\\", "")
+    data = jsunpack.unpack(data).replace("\\", "")
 
-    data = scrapertools.find_single_match(matchjs, "sources\s*=[^\[]*\[([^\]]+)\]")
-    matches = scrapertools.find_multiple_matches(data.replace('"', "'"), "[src|file]:'([^']+)'")
-
+    data = scrapertools.find_single_match(data.replace('"', "'"), "sources\s*=[^\[]*\[([^\]]+)\]")
+    matches = scrapertools.find_multiple_matches(data, "[src|file]:'([^']+)'")
     video_urls = []
-    for mediaurl in matches:
-        _hash = scrapertools.find_single_match(mediaurl, '\w{40,}')
+    for video_url in matches:
+        _hash = scrapertools.find_single_match(video_url, '\w{40,}')
+        if splice:
+            splice = int(scrapertools.find_single_match(jj_decode, "\((\d),\d\);"))
+            if reverse:
+                h = list(_hash)
+                h.pop(-splice-1)
+                _hash = "".join(h)
+            else:
+                h = list(_hash)
+                h.pop(splice)
+                _hash = "".join(h)
         if substring:
             substring = int(scrapertools.find_single_match(jj_decode, "_\w+.\d...(\d)...;"))
             if reverse:
@@ -63,19 +69,19 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
             else:
                 _hash = _hash[substring:]
         if reverse:
-            mediaurl = re.sub(r'\w{40,}', _hash[::-1], mediaurl)
-        filename = scrapertools.get_filename_from_url(mediaurl)[-4:]
-        if mediaurl.startswith("rtmp"):
-            rtmp, playpath = mediaurl.split("vod/", 1)
-            mediaurl = "%s playpath=%s swfUrl=%splayer6/jwplayer.flash.swf pageUrl=%s" % (rtmp + "vod/", playpath, host, page_url)
+            video_url = re.sub(r'\w{40,}', _hash[::-1], video_url)
+        filename = scrapertools.get_filename_from_url(video_url)[-4:]
+        if video_url.startswith("rtmp"):
+            rtmp, playpath = video_url.split("vod/", 1)
+            video_url = "%s playpath=%s swfUrl=%splayer6/jwplayer.flash.swf pageUrl=%s" % (rtmp + "vod/", playpath, host, page_url)
             filename = "RTMP"
-        elif "m3u8" in mediaurl:
-            mediaurl += "|User-Agent=" + headers[0][1]
-        elif mediaurl.endswith("/v.mp4"):
-            mediaurl_flv = re.sub(r'/v.mp4$', '/v.flv', mediaurl)
-            video_urls.append(["flv [streamplay]", re.sub(r'%s' % jj_patron, r'\1', mediaurl_flv)])
+        elif video_url.endswith(".m3u8"):
+            video_url += "|User-Agent=" + headers[0][1]
+        elif video_url.endswith("/v.mp4"):
+            video_url_flv = re.sub(r'/v.mp4$','/v.flv',video_url)
+            video_urls.append([".flv [streamplay]", re.sub(r'%s' % jj_patron, r'\1', video_url_flv)])
 
-        video_urls.append([filename + " [streamplay]", re.sub(r'%s' % jj_patron, r'\1', mediaurl)])
+        video_urls.append([filename + " [streamplay]", re.sub(r'%s' % jj_patron, r'\1', video_url)])
 
     video_urls.sort(key=lambda x:x[0], reverse=True)
     for video_url in video_urls:

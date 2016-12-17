@@ -293,7 +293,7 @@ def busqueda(item):
         thumbnail = scrapedthumbnail
         plot = ''
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="temporadas" , title=title , fulltitle=title, url=url, thumbnail=thumbnail, plot=plot, contentSerieName=title))
+        itemlist.append( Item(channel=item.channel, action="idioma" , title=title , fulltitle=title, url=url, thumbnail=thumbnail, plot=plot, contentSerieName=title))
    #Paginacion
     patron  = "<a rel='nofollow' class=previouspostslink' href='([^']+)'>Siguiente &rsaquo;</a>"
     next_page_url = scrapertools.find_single_match(data,"<a rel='nofollow' class=previouspostslink' href='([^']+)'>Siguiente &rsaquo;</a>")

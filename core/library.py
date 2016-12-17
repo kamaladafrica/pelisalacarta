@@ -327,7 +327,8 @@ def save_library_tvshow(item, episodelist):
     else:
         # Si existe tvshow.nfo, pero estamos añadiendo un nuevo canal actualizamos el listado de urls
         head_nfo, item_tvshow = read_nfo(tvshow_path)
-
+        item_tvshow.channel = "biblioteca"
+        item_tvshow.action = "get_temporadas"
         item_tvshow.library_urls[item.channel] = item.url
 
     # FILTERTOOLS
@@ -596,7 +597,7 @@ def add_serie_to_library(item, channel=None):
     else:
         # Esta marca es porque el item tiene algo más aparte en el atributo "extra"
         item.action = item.extra
-        if "###" in item.extra:
+        if isinstance(item.extra, str) and "###" in item.extra:
             item.action = item.extra.split("###")[0]
             item.extra = item.extra.split("###")[1]
 

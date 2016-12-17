@@ -646,14 +646,14 @@ def checkseen(item):
     if "/viewepisode/" in item:
         headers = DEFAULT_HEADERS[:]
         episode = item.split("/")[-1]
-        scrapertools.downloadpage("http://www.pordede.com/ajax/action", post="model=episode&id="+episode+"&action=seen&value=1")
+        scrapertools.downloadpage("http://www.pordede.com/ajax/action", post="model=episode&id="+episode+"&action=seen&value=1", headers=headers)
 
     if "/what/peli" in item:
         headers = DEFAULT_HEADERS[:]
         data = scrapertools.cache_page(item, headers=headers)
         # GET MOVIE ID
         movieid = scrapertools.find_single_match(data,'href="/links/create/ref_id/([0-9]+)/ref_model/')
-        scrapertools.downloadpage("http://www.pordede.com/ajax/mediaaction", post="model=peli&id="+movieid+"&action=status&value=3")
+        scrapertools.downloadpage("http://www.pordede.com/ajax/mediaaction", post="model=peli&id="+movieid+"&action=status&value=3", headers=headers)
 
 
     return True

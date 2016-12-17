@@ -164,7 +164,7 @@ def fanart(item):
     item.title = title_fan.upper()
     item.title = "[COLOR springgreen][B]"+item.title+"[/B][/COLOR]"
     title= title_fan.replace(' ','%20')
-    title = ''.join((c for c in unicodedata.normalize('NFD',unicode(title.decode('utf-8'))) if unicodedata.category(c) != 'Mn'))
+    title = ''.join((c for c in unicodedata.normalize('NFD',unicode(title.decode('utf-8'))) if unicodedata.category(c) != 'Mn')).encode("ascii", "ignore")
     item.url= item.extra.split("|")[3]
     
     try:
@@ -571,7 +571,7 @@ def fanart(item):
               matches = re.compile(patron,re.DOTALL).findall(data)
               if len(matches) == 0:
                   fanart_info= item.extra
-                  fanart_3 = item.fanart
+                  fanart_3 = ""
                   fanart_2 = item.extra
             for fanart_info, fanart_3, fanart_2 in matches:
                 fanart_info = "https://image.tmdb.org/t/p/original" + fanart_info
@@ -747,7 +747,7 @@ def findvideos(item):
     patron = '{"id".*?"file_path":"(.*?)","height"'
     matches = re.compile(patron,re.DOTALL).findall(data)
     if len(matches) == 0:
-        thumbanil= item.thumbnail
+        thumbnail= item.thumbnail
     for thumtemp in matches:
         thumbnail= "https://image.tmdb.org/t/p/original"+ thumtemp
         title = item.show.split("|")[3]+ " " + temp+"x"+epi
@@ -1048,7 +1048,7 @@ class TextBox2( xbmcgui.WindowDialog ):
             self.getFanart = kwargs.get('fanart')
             self.getRating = kwargs.get('rating')
             
-            self.background = xbmcgui.ControlImage( 70, 20, 1150, 630, 'http://s6.postimg.org/n3ph1uxn5/ventana.png')
+            self.background = xbmcgui.ControlImage( 70, 20, 1150, 630, 'http://imgur.com/btby9SG.jpg')
             self.title = xbmcgui.ControlTextBox(120, 60, 430, 50)
             self.rating = xbmcgui.ControlTextBox(145, 112, 1030, 45)
             self.plot = xbmcgui.ControlTextBox( 120, 150, 1056, 100 )

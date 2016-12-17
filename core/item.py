@@ -52,6 +52,9 @@ class InfoLabels(dict):
             #super(InfoLabels, self).__setitem__('code', value)
             super(InfoLabels, self).__setitem__('imdb_id', value)
 
+        elif name == "mediatype" and value not in ["list", "movie", "tvshow", "season", "episode"]:
+            super(InfoLabels, self).__setitem__('mediatype', 'list')
+
         else:
             super(InfoLabels, self).__setitem__(name, value)
     
@@ -79,8 +82,8 @@ class InfoLabels(dict):
                 return ""
 
         elif key == 'mediatype':
-            # "movie", "tvshow", "season", "episode"
-            if 'tvshowtitle' in super(InfoLabels,self).keys():
+            # "list", "movie", "tvshow", "season", "episode"
+            if 'tvshowtitle' in super(InfoLabels,self).keys() and super(InfoLabels,self).__getitem__('tvshowtitle') !="":
                 if 'episode' in super(InfoLabels,self).keys() and super(InfoLabels,self).__getitem__('episode') !="":
                     return 'episode'
 
@@ -199,13 +202,13 @@ class Item(object):
             # String q representa la duracion del video en segundos
             self.__dict__["infoLabels"]["duration"] = str(value)
 
+        elif name == "viewcontent" and value not in ["files", "movies", "tvshows", "seasons", "episodes"]:
+            super(Item, self).__setattr__("viewcontent", "files")
+
         # Al asignar un valor a infoLables
         elif name == "infoLabels":
             if isinstance(value, dict):
                 value_defaultdict = InfoLabels(value)
-                '''if value:
-                    self.__dict__["infoLabels"].update(value_defaultdict)
-                else:'''
                 self.__dict__["infoLabels"] = value_defaultdict
 
         else:
@@ -221,14 +224,30 @@ class Item(object):
         if name == "folder":
             return True
 
-        # valor por defecto para viewmode y contentChannel
-        elif name in ["viewmode", "contentChannel"]:
+        # valor por defecto para contentChannel
+        elif name == "contentChannel":
             return "list"
+
+        # valor por defecto para viewcontent
+        elif name == "viewcontent":
+            # intentamos fijarlo segun el tipo de contenido...
+            if self.__dict__["infoLabels"]["mediatype"] == 'movie':
+                viewcontent = 'movies'
+                '''elif item.contentType in ["tvshow"]:
+                viewcontent = "seasons"'''
+            elif self.__dict__["infoLabels"]["mediatype"] in ["tvshow", "season", "episode"]:
+                viewcontent = "episodes"
+            else:
+                viewcontent = "files"
+
+            self.__dict__["viewcontent"] = viewcontent
+            return viewcontent
 
         # Valor por defecto para hasContentDetails
         elif name == "hasContentDetails":
             return "false"
-        
+
+        # valores guardados en infoLabels
         elif name in ["contentTitle", "contentPlot", "contentSerieName", "show", "contentType", "contentEpisodeTitle",
                     "contentSeason", "contentEpisodeNumber", "contentThumbnail", "plot", "duration"]:
             if name == "contentTitle":
@@ -238,7 +257,11 @@ class Item(object):
             elif name == "contentSerieName" or name == "show":
                 return self.__dict__["infoLabels"]["tvshowtitle"]
             elif name == "contentType":
-                return self.__dict__["infoLabels"]["mediatype"]
+                ret = self.__dict__["infoLabels"]["mediatype"]
+                if ret == 'list' and self.__dict__.get("fulltitle", None): # retrocompatibilidad
+                    ret = 'movie'
+                    self.__dict__["infoLabels"]["mediatype"] = ret
+                return ret
             elif name == "contentEpisodeTitle":
                 return self.__dict__["infoLabels"]["episodeName"]
             elif name == "contentSeason":
@@ -319,11 +342,17 @@ class Item(object):
         Uso: item.fromurl("cadena")
         '''
         if "?" in url: url = url.split("?")[1]
+        decoded = False
         try:
             STRItem = base64.b64decode(urllib.unquote(url))
             JSONItem = json.load_json(STRItem, object_hook=self.toutf8)
-            self.__dict__.update(JSONItem)
+            if not JSONItem is None and len(JSONItem) > 0:
+                self.__dict__.update(JSONItem)
+                decoded = True
         except:
+            pass
+
+        if not decoded:
             url = urllib.unquote_plus(url)
             dct = dict([[param.split("=")[0], param.split("=")[1]] for param in url.split("&") if "=" in param])
             self.__dict__.update(dct)

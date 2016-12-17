@@ -191,17 +191,17 @@ def set_infoLabels_item(item, seekTmdb=True, idioma_busqueda='es', lock=None):
 
     if seekTmdb:
         # Comprobamos q tipo de contenido es...
-        if item.infoLabels['mediatype'] == 'movie':
+        if item.contentType == 'movie':
             tipo_busqueda = 'movie'
         else:
             tipo_busqueda = 'tv'
+
 
         if item.infoLabels['season']:
             try:
                 numtemporada = int(item.infoLabels['season'])
             except ValueError:
                 logger.debug("El numero de temporada no es valido")
-                item.contentType = item.infoLabels['mediatype']
                 return -1 * len(item.infoLabels)
 
             if lock:
@@ -230,7 +230,6 @@ def set_infoLabels_item(item, seekTmdb=True, idioma_busqueda='es', lock=None):
                     episode = int(item.infoLabels['episode'])
                 except ValueError:
                     logger.debug("El número de episodio (%s) no es valido" % repr(item.infoLabels['episode']))
-                    item.contentType = item.infoLabels['mediatype']
                     return -1 * len(item.infoLabels)
 
                 # Tenemos numero de temporada y numero de episodio validos...
@@ -327,10 +326,17 @@ def set_infoLabels_item(item, seekTmdb=True, idioma_busqueda='es', lock=None):
                             titulo_buscado = item.contentTitle
                         else:
                             titulo_buscado = item.fulltitle
+
                         otmdb = Tmdb(texto_buscado=titulo_buscado, tipo=tipo_busqueda,
                                      idioma_busqueda=idioma_busqueda,
                                      filtro=item.infoLabels.get('filtro', {}),
                                      year=item.infoLabels['year'])
+
+                if otmdb.get_id() and not lock:
+                    # Si la busqueda ha dado resultado y no se esta buscando una lista de items,
+                    # realizar otra busqueda para ampliar la informacion
+                    otmdb = Tmdb(id_Tmdb=otmdb.result.get("id"), tipo=tipo_busqueda,
+                                 idioma_busqueda=idioma_busqueda)
 
             if otmdb is not None and otmdb.get_id():
                 # La busqueda ha encontrado un resultado valido
@@ -338,7 +344,7 @@ def set_infoLabels_item(item, seekTmdb=True, idioma_busqueda='es', lock=None):
                 return len(item.infoLabels)
 
     # La busqueda en tmdb esta desactivada o no ha dado resultado
-    item.contentType = item.infoLabels['mediatype']
+    # item.contentType = item.infoLabels['mediatype']
     return -1 * len(item.infoLabels)
 
 

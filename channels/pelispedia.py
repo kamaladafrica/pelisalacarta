@@ -52,11 +52,11 @@ def mainlist(item):
     itemlist = list()
     itemlist.append(Item(channel=__channel__, title="Películas", text_color=color1, fanart=fanart_host, folder=False
                          , thumbnail=thumbnail_host, text_blod=True))
-    itemlist.append(Item(channel=__channel__, action="listado", title="    Novedades", text_color=color2,
-                         url=urlparse.urljoin(CHANNEL_HOST, "movies/all/"), fanart=fanart_host, extra="movies",
+    itemlist.append(Item(channel=__channel__, action="listado", title="    Novedades", text_color=color2, viewcontent = "movies",
+                         url=urlparse.urljoin(CHANNEL_HOST, "movies/all/"), fanart=fanart_host, extra="movies", viewmode="movie_with_plot",
                          thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/Directors%20Chair.png"))
     itemlist.append(Item(channel=__channel__, action="listado_alfabetico", title="     Por orden alfabético", text_color=color2,
-                         url=urlparse.urljoin(CHANNEL_HOST, "movies/all/"), extra="movies", fanart=fanart_host,
+                         url=urlparse.urljoin(CHANNEL_HOST, "movies/all/"), extra="movies", fanart=fanart_host, viewmode="thumbnails",
                          thumbnail = "https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/A-Z.png"))
     itemlist.append(Item(channel=__channel__, action="listado_genero", title="     Por género", text_color=color2,
                          url=urlparse.urljoin(CHANNEL_HOST, "movies/all/"), extra="movies", fanart=fanart_host,
@@ -69,11 +69,11 @@ def mainlist(item):
 
     itemlist.append(Item(channel=__channel__, title="Series", text_color=color1, fanart=fanart_host, folder=False
                          , thumbnail=thumbnail_host, text_blod=True))
-    itemlist.append(Item(channel=__channel__, action="listado", title="    Novedades", text_color=color2,
-                         url=urlparse.urljoin(CHANNEL_HOST, "series/all/"), extra="serie", fanart=fanart_host,
+    itemlist.append(Item(channel=__channel__, action="listado", title="    Novedades", text_color=color2, viewcontent = "tvshows",
+                         url=urlparse.urljoin(CHANNEL_HOST, "series/all/"), extra="serie", fanart=fanart_host, viewmode="movie_with_plot",
                          thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/TV%20Series.png"))
     itemlist.append(Item(channel=__channel__, action="listado_alfabetico", title="     Por orden alfabético",
-                         text_color=color2, extra="serie", fanart=fanart_host,
+                         text_color=color2, extra="serie", fanart=fanart_host, viewmode="thumbnails",
                          thumbnail = "https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/A-Z.png"))
     itemlist.append(Item(channel=__channel__, action="listado_genero", title="     Por género", extra="serie",
                          text_color=color2, fanart=fanart_host, url=urlparse.urljoin(CHANNEL_HOST, "series/all/"),
@@ -108,18 +108,20 @@ def listado_alfabetico(item):
         cadena = "series/letra/"
         if item.extra == "movies":
             cadena = 'movies/all/?letra='
+            viewcontent = "movies"
             if letra == '0-9':
                 cadena += "Num"
             else:
                 cadena += letra
         else:
+            viewcontent = "tvshows"
             if letra == '0-9':
                 cadena += "num/"
             else:
                 cadena += letra+"/"
 
         itemlist.append(Item(channel=__channel__, action="listado", title=letra, url=urlparse.urljoin(CHANNEL_HOST, cadena),
-                             extra=item.extra, text_color=color2,
+                             extra=item.extra, text_color=color2, viewcontent = viewcontent,
                              thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/A-Z.png"))
 
     return itemlist
@@ -135,12 +137,14 @@ def listado_genero(item):
 
     if item.extra == "movies":
         cadena = 'movies/all/?gender='
+        viewcontent = "movies"
         patron = '<select name="gender" id="genres" class="auxBtn1">.*?</select>'
         data = scrapertools.find_single_match(data, patron)
         patron = '<option value="([^"]+)".+?>(.*?)</option>'
 
     else:
         cadena = "series/genero/"
+        viewcontent = "tvshows"
         patron = '<select id="genres">.*?</select>'
         data = scrapertools.find_single_match(data, patron)
         patron = '<option name="([^"]+)".+?>(.*?)</option>'
@@ -154,7 +158,7 @@ def listado_genero(item):
             cadena2 += "/"
 
         itemlist.append(Item(channel=__channel__, action="listado", title=value, url=urlparse.urljoin(CHANNEL_HOST, cadena2),
-                             extra=item.extra, text_color= color2, fanart=fanart_host,
+                             extra=item.extra, text_color= color2, fanart=fanart_host, viewcontent = viewcontent,
                              thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/Genre.png"))
 
     return itemlist
@@ -170,12 +174,14 @@ def listado_anio(item):
 
     if item.extra == "movies":
         cadena = 'movies/all/?year='
+        viewcontent = "movies"
         patron = '<select name="year" id="years" class="auxBtn1">.*?</select>'
         data = scrapertools.find_single_match(data, patron)
         patron = '<option value="([^"]+)"'
         titulo = 'Películas del año '
     else:
         cadena = "series/anio/"
+        viewcontent = "tvshows"
         patron = '<select id="year">.*?</select>'
         data = scrapertools.find_single_match(data, patron)
         patron = '<option name="([^"]+)"'
@@ -190,8 +196,9 @@ def listado_anio(item):
             cadena2 += "/"
 
         itemlist.append(Item(channel=__channel__, action="listado", title=titulo+value, extra=item.extra,
-                             url=urlparse.urljoin(CHANNEL_HOST, cadena2), text_color= color2, fanart=fanart_host
-                             ))
+                             url=urlparse.urljoin(CHANNEL_HOST, cadena2), text_color= color2, fanart=fanart_host,
+                             thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/Year.png",
+                             viewcontent = viewcontent))
 
     return itemlist
 
@@ -242,9 +249,11 @@ def listado(item):
 
     action = "findvideos"
     contentType = "movie"
+
     if item.extra == 'serie':
         action = "temporadas"
         contentType = "tvshow"
+
 
     data = scrapertools.anti_cloudflare(item.url , host=CHANNEL_HOST , headers=CHANNEL_DEFAULT_HEADERS )
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
@@ -259,7 +268,8 @@ def listado(item):
         plot = scrapertools.entityunescape(scrapedplot)
 
         new_item= Item(channel=__channel__, title=title, url=urlparse.urljoin(CHANNEL_HOST, scrapedurl), action=action,
-                       thumbnail=scrapedthumbnail, plot=plot, context="", extra=item.extra, text_color= color3,contentType=contentType)
+                       thumbnail=scrapedthumbnail, plot=plot, context="", extra=item.extra, text_color= color3,
+                       contentType=contentType)
 
         if item.extra == 'serie':
             new_item.show = scrapertools.unescape(scrapedtitle.strip())
@@ -276,7 +286,7 @@ def listado(item):
     # numero de registros que se muestran por página, se fija a 28 por cada paginación
     if len(matches) >= 28:
 
-        file_php = "more"
+        file_php = "666more"
         tipo_serie = ""
 
         if item.extra == "movies":
@@ -375,7 +385,6 @@ def episodios(item):
 
 def temporadas(item):
     logger.info("pelisalacarta.channels.pelispedia episodios")
-
     itemlist = []
 
     # Descarga la página
@@ -394,7 +403,7 @@ def temporadas(item):
     if len(matches) > 1:
         for scrapedseason,scrapedthumbnail in matches:
             temporada = scrapertools.find_single_match(scrapedseason, '(\d+)')
-            newItem = item.clone(text_color=color2, action="episodios", season=temporada, thumbnail=scrapedthumbnail, contentType="season")
+            newItem = item.clone(text_color=color2, action="episodios", season=temporada, thumbnail=scrapedthumbnail)
             newItem.infoLabels['season'] = temporada
             newItem.extra=""
             itemlist.append(newItem)
@@ -456,7 +465,7 @@ def findvideos(item):
             new_item = item.clone(title=title, url=scrapedurl, action="play", extra=item.url)
             itemlist.append(new_item)
 
-    # Opción "Añadir esta serie a la biblioteca de XBMC"
+    # Opción "Añadir esta pelicula a la biblioteca de XBMC"
     if item.extra == "movies" and config.get_library_support() and len(itemlist) > 0:
         itemlist.append(Item(channel=__channel__, title="Añadir esta película a la biblioteca de XBMC", url=item.url,
                              infoLabels= item.infoLabels, action="add_pelicula_to_library", extra="findvideos",

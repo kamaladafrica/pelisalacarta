@@ -46,14 +46,14 @@ def getmainlist(preferred_thumb=""):
                          action="mainlist",
                          thumbnail=get_thumb(preferred_thumb,"thumb_novedades.png"),
                          category=config.get_localized_string(30119),
-                         viewmode="movie"))
+                         viewmode="thumbnails"))
 
     itemlist.append(Item(title=config.get_localized_string(30118),
                          channel="channelselector", 
                          action="getchanneltypes",
                          thumbnail=get_thumb(preferred_thumb,"thumb_canales.png"),
                          category= config.get_localized_string(30119),
-                         viewmode="movie"))
+                         viewmode="thumbnails"))
 
     itemlist.append(Item(title=config.get_localized_string(30103),
                          channel="buscador", 
@@ -67,7 +67,7 @@ def getmainlist(preferred_thumb=""):
                          action="mainlist",
                          thumbnail=get_thumb(preferred_thumb,"thumb_favoritos.png"),
                          category=config.get_localized_string(30102),
-                         viewmode="movie"))
+                         viewmode="thumbnails"))
 
     if config.get_library_support():
 
@@ -76,7 +76,7 @@ def getmainlist(preferred_thumb=""):
                              action="mainlist",
                              thumbnail=get_thumb(preferred_thumb,"thumb_biblioteca.png"),
                              category=config.get_localized_string(30119),
-                             viewmode="movie"))
+                             viewmode="thumbnails"))
 
     itemlist.append(Item(title=config.get_localized_string(30101), 
                          channel="descargas",
@@ -167,14 +167,14 @@ def getchanneltypes(preferred_thumb=""):
     itemlist.append(Item(title=title, channel="channelselector", action="filterchannels",
                          category=title, channel_type="all",
                          thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),
-                                                                    "thumb_canales_todos.png"), viewmode="movie"))
+                                                                    "thumb_canales_todos.png"), viewmode="thumbnails"))
     logger.info("channelselector.getchanneltypes Ordenados:")
     for channel_type in valid_types:
         logger.info("channelselector.getchanneltypes channel_type="+channel_type)
         if channel_type in channel_types:
             title = dict_cat_lang.get(channel_type, channel_type)
             itemlist.append(Item(title=title, channel="channelselector", action="filterchannels", category=title,
-                                 channel_type= channel_type, viewmode="movie",
+                                 channel_type= channel_type, viewmode="thumbnails",
                                  thumbnail=urlparse.urljoin(get_thumbnail_path(preferred_thumb),
                                                             "thumb_canales_"+channel_type+".png")))
 
