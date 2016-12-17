@@ -154,12 +154,15 @@ def play(url, xlistitem={}, is_view=None, subtitle=""):
     video_file = ""
     # -- magnet2torrent -----------------------------------------
     if torrent_file.startswith("magnet"):
-        import zlib
-        btih = hex(zlib.crc32(scrapertools.get_match(torrent_file, 'btih:([^&]+)&')) & 0xffffffff)
-        files = [f for f in os.listdir(save_path_torrents) if os.path.isfile(os.path.join(save_path_torrents, f))]
-        for file in files:
-            if btih in os.path.basename(file):
-                torrent_file = os.path.join(save_path_torrents, file)
+        try:
+            import zlib
+            btih = hex(zlib.crc32(scrapertools.get_match(torrent_file, 'magnet:\?xt=urn:(?:[A-z0-9:]+|)([A-z0-9]{32})')) & 0xffffffff)
+            files = [f for f in os.listdir(save_path_torrents) if os.path.isfile(os.path.join(save_path_torrents, f))]
+            for file in files:
+                if btih in os.path.basename(file):
+                    torrent_file = os.path.join(save_path_torrents, file)
+        except:
+            pass
 
     if torrent_file.startswith("magnet"):
         try:
