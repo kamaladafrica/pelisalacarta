@@ -491,7 +491,7 @@ def fanart(item):
          
          if len(matches)==0:
             id_tmdb=""
-            fanart_3 = item.fanart
+            fanart_3 = ""
             extra= item.thumbnail+"|"+year+"|"+"no data"+"|"+"no data"+"|"+rating_filma+"|"+critica+"|"+""+"|"+id_tmdb
             show=  item.fanart+"|"+fanart_3+"|"+sinopsis+"|"+title_fan+"|"+item.thumbnail+"|"+id_tmdb
             fanart_info = item.fanart
@@ -570,7 +570,7 @@ def fanart(item):
               matches = re.compile(patron,re.DOTALL).findall(data)
               if len(matches) == 0:
                   fanart_info= item.extra
-                  fanart_3 = "http://imgur.com/ldWNcHm.jpg"
+                  fanart_3 = ""
                   fanart_2 = item.extra
             for fanart_info, fanart_3, fanart_2 in matches:
                 fanart_info = "https://image.tmdb.org/t/p/original" + fanart_info
