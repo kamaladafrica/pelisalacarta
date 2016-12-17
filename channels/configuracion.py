@@ -302,16 +302,13 @@ def submenu_tools(item):
     itemlist.append(Item(channel=CHANNELNAME, title="      Comprobar archivos *_data.json",
                          action="conf_tools", folder=True, extra="lib_check_datajson",
                          thumbnail=get_thumbnail_path("thumb_configuracion.png")))
-    itemlist.append(Item(channel=CHANNELNAME, title="Libreria", action="", folder=False,
-                         thumbnail=get_thumbnail_path("thumb_configuracion.png")))
-    itemlist.append(Item(channel=CHANNELNAME,
-                         title="   [COLOR red]Para solucion de errores[/COLOR]",
-                         action="", folder=False,
-                         thumbnail=get_thumbnail_path("thumb_configuracion.png")))
-    itemlist.append(Item(channel=CHANNELNAME,
-                         title="      Comprobar archivos tvshow.nfo",
-                         action="conf_tools", folder=True, extra="lib_check_tvshownfo",
-                         thumbnail=get_thumbnail_path("thumb_configuracion.png")))
+    # itemlist.append(Item(channel=CHANNELNAME, title="Libreria", action="", folder=False,
+    #                      thumbnail=get_thumbnail_path("thumb_configuracion.png")))
+    # itemlist.append(Item(channel=CHANNELNAME,
+    #                      title="   [COLOR red]Para solucion de errores[/COLOR]",
+    #                      action="", folder=False,
+    #                      thumbnail=get_thumbnail_path("thumb_configuracion.png")))
+
 
     return itemlist
 
@@ -337,8 +334,8 @@ def conf_tools(item):
                              thumbnail=get_thumbnail_path("thumb_configuracion.png"),
                              extra="onoffall"))
 
-        for channel in channel_list:
-            try:
+        try:
+            for channel in channel_list:
                 # Si el canal esta en la lista de exclusiones lo saltamos
                 if channel.channel not in excluded_channels:
                     # Se cargan los ajustes del archivo json del canal
@@ -383,13 +380,13 @@ def conf_tools(item):
                         logger.info("Algo va mal con el canal " + channel.channel)
                 else:
                     continue
-            except:
-                import traceback
-                from platformcode import platformtools
-                logger.info(channel.title + " | Detalle del error: %s" % traceback.format_exc())
-                platformtools.dialog_notification("Error",
-                                                  "Se ha producido un error con el canal" +
-                                                  channel.title)
+        except:
+            import traceback
+            from platformcode import platformtools
+            logger.info(channel.title + " | Detalle del error: %s" % traceback.format_exc())
+            platformtools.dialog_notification("Error",
+                                              "Se ha producido un error con el canal" +
+                                              channel.title)
 
     # Comprobacion de archivos channel_data.json
     elif item.extra == "lib_check_datajson":
@@ -404,8 +401,8 @@ def conf_tools(item):
                              'personal',
                              'ayuda']
 
-        for channel in channel_list:
-            try:
+        try:
+            for channel in channel_list:
                 import os
                 from core import jsontools
 
@@ -523,74 +520,13 @@ def conf_tools(item):
                 # Si el canal esta en la lista de exclusiones lo saltamos
                 else:
                     continue
-            except:
-                import traceback
-                from platformcode import platformtools
-                logger.info(channel.title + " | Detalle del error: %s" % traceback.format_exc())
-                platformtools.dialog_notification("Error",
-                                                  "Se ha producido un error con el canal" +
-                                                  channel.title)
-
-    # Comprobacion de archivos "tvshow.nfo" de la libreria
-    # Actuamente solo comprueba los parametros 'action' y 'get_temporadas' y los modifica
-    elif item.extra == "lib_check_tvshownfo":
-        try:
-            from core import library
-            for raiz, subcarpetas, ficheros in filetools.walk(library.TVSHOWS_PATH):
-                for f in ficheros:
-                    if f == "tvshow.nfo":
-                        tvshow_path = filetools.join(raiz, f)
-                        # logger.debug(tvshow_path)
-                        head_nfo, item_tvshow = library.read_nfo(tvshow_path)
-
-                        tvshow_title = None
-                        nfo_error = None
-                        old_action = None
-                        new_action = None
-                        new_channel = None
-                        old_channel = None
-                        if item_tvshow.channel != "biblioteca":
-                            nfo_error = "channel"
-                            old_channel = " - OLD 'channel': " + item_tvshow.channel
-                            new_channel = " - NEW 'channel': biblioteca"
-                            item_tvshow.channel = "biblioteca"
-                        if item_tvshow.action != "get_temporadas":
-                            nfo_error = "action"
-                            old_action = " - OLD 'action': " + item_tvshow.action
-                            new_action = " - NEW 'action': get_temporadas"
-                            item_tvshow.action = "get_temporadas"
-
-                        tvshow_title = item_tvshow.title
-
-                        if nfo_error is not None:
-                            filetools.write(tvshow_path, head_nfo + item_tvshow.tojson())
-                            itemlist.append(Item(channel=CHANNELNAME,
-                                                 title=tvshow_title + " - [COLOR red]CORREGIDO![/COLOR]",
-                                                 action="", folder=False))
-                            if old_action is not None:
-                                itemlist.append(Item(channel=CHANNELNAME,
-                                                     title="    " + tvshow_title + old_action,
-                                                     action="", folder=False))
-                                itemlist.append(Item(channel=CHANNELNAME,
-                                                     title="    " + tvshow_title + new_action,
-                                                     action="", folder=False))
-                            if old_channel is not None:
-                                itemlist.append(Item(channel=CHANNELNAME,
-                                                     title="    " + tvshow_title + old_channel,
-                                                     action="", folder=False))
-                                itemlist.append(Item(channel=CHANNELNAME,
-                                                     title="    " + tvshow_title + new_channel,
-                                                     action="", folder=False))
-                        else:
-                            itemlist.append(Item(channel=CHANNELNAME,
-                                            title=tvshow_title + " - [COLOR green]CORRECTO![/COLOR]",
-                                            action="", folder=False))
-                # logger.info("Creando tvshow.nfo: " + tvshow_path)
         except:
             import traceback
             from platformcode import platformtools
-            logger.info("Detalle del error: %s" % traceback.format_exc())
-            platformtools.dialog_notification("Error", "Se ha producido un error!")
+            logger.info(channel.title + " | Detalle del error: %s" % traceback.format_exc())
+            platformtools.dialog_notification("Error",
+                                              "Se ha producido un error con el canal" +
+                                              channel.title)
 
     else:
         from platformcode import platformtools
