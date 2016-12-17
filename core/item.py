@@ -319,11 +319,17 @@ class Item(object):
         Uso: item.fromurl("cadena")
         '''
         if "?" in url: url = url.split("?")[1]
+        decoded = False
         try:
             STRItem = base64.b64decode(urllib.unquote(url))
             JSONItem = json.load_json(STRItem, object_hook=self.toutf8)
-            self.__dict__.update(JSONItem)
+            if not JSONItem is None and len(JSONItem) > 0:
+                self.__dict__.update(JSONItem)
+                decoded = True
         except:
+            pass
+
+        if not decoded:
             url = urllib.unquote_plus(url)
             dct = dict([[param.split("=")[0], param.split("=")[1]] for param in url.split("&") if "=" in param])
             self.__dict__.update(dct)
