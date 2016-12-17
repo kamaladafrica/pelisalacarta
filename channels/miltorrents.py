@@ -252,7 +252,7 @@ def fanart(item):
 
     title_fan = item.extra.split("|")[1]
     title= title_fan.replace(' ','%20')
-    title = ''.join((c for c in unicodedata.normalize('NFD',unicode(title.decode('utf-8'))) if unicodedata.category(c) != 'Mn'))
+    title = ''.join((c for c in unicodedata.normalize('NFD',unicode(title.decode('utf-8'))) if unicodedata.category(c) != 'Mn')).encode("ascii", "ignore")
     
     if not "serie" in item.url:
        item.title = re.sub(r" \[COLOR.*?\]\d+.\d+.*?.*?\[\/COLOR\]|\(Sin puntuacion\)","",item.title)
@@ -647,7 +647,7 @@ def fanart(item):
               matches = re.compile(patron,re.DOTALL).findall(data)
               if len(matches) == 0:
                   fanart_info= item.extra
-                  fanart_3 = item.fanart
+                  fanart_3 = ""
                   fanart_2 = item.extra
             for fanart_info, fanart_3, fanart_2 in matches:
                 fanart_info = "https://image.tmdb.org/t/p/original" + fanart_info
@@ -955,7 +955,12 @@ def findvideos(item):
                 pepe = open( torrents_path+"/temp.torrent", "rb").read()
               except:
                 pepe = ""
-
+              if "used CloudFlare" in pepe:
+                 try:
+                    urllib.urlretrieve("http://anonymouse.org/cgi-bin/anon-www.cgi/"+url.strip(), torrents_path+"/temp.torrent")
+                    pepe = open( torrents_path+"/temp.torrent", "rb").read()
+                 except:
+                    pepe=""
               torrent = decode(pepe)
 
               try:
@@ -1139,10 +1144,8 @@ def info(item):
            critica =item.extra.split("|")[5]
         else:
            critica= "Esta serie no tiene críticas..."
-        if not ".png" in item.extra.split("|")[0] :
-            photo ="http://imgur.com/noymGWW.png"
-        else:
-           photo= item.extra.split("|")[0].replace(" ","%20")
+        
+        photo= item.extra.split("|")[0].replace(" ","%20")
         try:
          tagline = "[COLOR aquamarine][B]"+tagline+"[/B][/COLOR]"
         except:
@@ -1320,7 +1323,7 @@ class TextBox2( xbmcgui.WindowDialog ):
             self.getFanart = kwargs.get('fanart')
             self.getRating = kwargs.get('rating')
             
-            self.background = xbmcgui.ControlImage( 70, 20, 1150, 630, 'http://s6.postimg.org/n3ph1uxn5/ventana.png')
+            self.background = xbmcgui.ControlImage( 70, 20, 1150, 630, 'http://imgur.com/Vj7pYVt.jpg')
             self.title = xbmcgui.ControlTextBox(120, 60, 430, 50)
             self.rating = xbmcgui.ControlTextBox(145, 112, 1030, 45)
             self.plot = xbmcgui.ControlTextBox( 120, 150, 1056, 100 )
