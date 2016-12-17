@@ -596,7 +596,7 @@ def fanart(item):
               matches = re.compile(patron,re.DOTALL).findall(data)
               if len(matches) == 0:
                   fanart_info= item.extra
-                  fanart_3 = "http://imgur.com/21Oty9A.jpg"
+                  fanart_3 = ""
                   fanart_2 = item.extra
             for fanart_info, fanart_3, fanart_2 in matches:
                 fanart_info = "https://image.tmdb.org/t/p/original" + fanart_info
