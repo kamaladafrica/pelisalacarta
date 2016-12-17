@@ -18,7 +18,7 @@ from channels import filtertools
 
 HOST = 'http://seriesdanko.com/'
 IDIOMAS = {'es': 'Español', 'la': 'Latino', 'vos': 'VOS', 'vo': 'VO'}
-list_idiomas = [v for v in IDIOMAS.values()]
+list_idiomas = IDIOMAS.values()
 CALIDADES = ['SD', 'MicroHD', 'HD/MKV']
 
 DEBUG = config.get_setting("debug")

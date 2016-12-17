@@ -21,7 +21,7 @@ from channels import filtertools
 channel_xml = channeltools.get_channel_parameters("seriesblanco")
 HOST = "http://seriesblanco.com/"
 IDIOMAS = {'es': 'Español', 'en': 'Inglés', 'la': 'Latino', 'vo': 'VO', 'vos': 'VOS', 'vosi': 'VOSI', 'otro': 'OVOS'}
-list_idiomas = [v for v in IDIOMAS.values()]
+list_idiomas = IDIOMAS.values()
 CALIDADES = ['SD', 'HDiTunes', 'Micro-HD-720p', 'Micro-HD-1080p', '1080p', '720p']
 
 CAPITULOS_DE_ESTRENO_STR = "Capítulos de Estreno"
