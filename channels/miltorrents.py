@@ -1144,10 +1144,8 @@ def info(item):
            critica =item.extra.split("|")[5]
         else:
            critica= "Esta serie no tiene críticas..."
-        if not ".png" in item.extra.split("|")[0] :
-            photo ="http://imgur.com/noymGWW.png"
-        else:
-           photo= item.extra.split("|")[0].replace(" ","%20")
+        
+        photo= item.extra.split("|")[0].replace(" ","%20")
         try:
          tagline = "[COLOR aquamarine][B]"+tagline+"[/B][/COLOR]"
         except:
