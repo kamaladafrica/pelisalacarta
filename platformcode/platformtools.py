@@ -243,7 +243,9 @@ def get_viewmode_id(parent_item):
         viewName = "default_" + parent_item.viewcontent
 
     skinName = xbmc.getSkinDir()
-    view_skin = viewmode_json.get(skinName, 'skin.confluence')
+    if skinName not in viewmode_json:
+        skinName = 'skin.confluence'
+    view_skin = viewmode_json[skinName]
     return view_skin.get(viewName, 50)
 
 
