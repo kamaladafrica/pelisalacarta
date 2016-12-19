@@ -286,7 +286,7 @@ def save_library_tvshow(item, episodelist):
     else:
         base_name = item.contentSerieName
 
-    base_name = filetools.validate_path(base_name).lower()
+    base_name = filetools.validate_path(base_name.replace('/','-')).lower()
 
     for raiz, subcarpetas, ficheros in filetools.walk(TVSHOWS_PATH):
         for c in subcarpetas:
