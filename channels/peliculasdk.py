@@ -151,10 +151,6 @@ def peliculas(item):
     data = scrapertools.cache_page(item.url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|&#.*?;","",data)
     
-    
-    
-
-
     patron = 'style="position:relative;"> '
     patron += '<a href="([^"]+)" '
     patron += 'title="([^<]+)">'
@@ -253,6 +249,7 @@ def fanart(item):
            try:
             sinopsis = scrapertools.find_single_match(data, '<dd itemprop="description">(.*?)</dd>')
             sinopsis = sinopsis.replace("<br><br />", "\n")
+            sinopsis=re.sub(r"\(FILMAFFINITY\)<br />","",sinopsis)
            except:
               pass
         try:
@@ -298,8 +295,8 @@ def fanart(item):
                 patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),"popularity"'
                 matches = re.compile(patron,re.DOTALL).findall(data)
                 if len(matches)==0:
-                    extra=""+"|"+""+"|"+""+"|"+rating_filma
-                    show= item.fanart+"|"+item.thumbnail+"|"+sinopsis
+                    extra=item.thumbnail+"|"+""+"|"+""+"|"+"Sin puntuación"+"|"+rating_filma+"|"+critica
+                    show= item.fanart+"|"+""+"|"+sinopsis
                     posterdb = item.thumbnail
                     fanart_info = item.fanart
                     fanart_3 = ""
@@ -349,7 +346,8 @@ def fanart(item):
                 fanart_info = "https://image.tmdb.org/t/p/original" + fanart_info
                 fanart_3 = "https://image.tmdb.org/t/p/original" + fanart_3
                 fanart_2 = "https://image.tmdb.org/t/p/original" + fanart_2
-    
+                if fanart== item.fanart:
+                   fanart= fanart_info
             #clearart, fanart_2 y logo
             url ="http://webservice.fanart.tv/v3/movies/"+id+"?api_key=dffe90fba4d02c199ae7a9e71330c987"
             data = scrapertools.cachePage(url)

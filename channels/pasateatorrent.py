@@ -80,8 +80,7 @@ def browser(url):
 
 api_key="2e2160006592024ba87ccdf78c28f49f"
 api_fankey ="dffe90fba4d02c199ae7a9e71330c987"
-def isGeneric():
-    return True
+
 
 def mainlist(item):
     logger.info("pelisalacarta.pasateatorrent mainlist")
@@ -295,7 +294,7 @@ def fanart(item):
     url = item.url
     data = get_page(url)
     title_fan = item.extra.split("|")[1]
-    title = re.sub(r'Serie Completa|Temporada.*?Completa','',title_fan)
+    title = re.sub(r'Serie Completa|Temporada.*','',title_fan)
     if "series" in item.url and not "temporada" in item.url:
        item.title = re.sub(r'\d+x\d+.*?Final|-\d+|-|\d+x\d+|\d+','',item.title)
     title= title.replace(' ','%20')
@@ -347,6 +346,7 @@ def fanart(item):
            try:
             sinopsis = scrapertools.find_single_match(data, '<dd itemprop="description">(.*?)</dd>')
             sinopsis = sinopsis.replace("<br><br />", "\n")
+            sinopsis=re.sub(r"\(FILMAFFINITY\)<br />","",sinopsis)
            except:
               pass
         try:
@@ -392,8 +392,8 @@ def fanart(item):
                 patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),"popularity"'
                 matches = re.compile(patron,re.DOTALL).findall(data)
                 if len(matches)==0:
-                    extra=item.thumbnail+"|"+""+"|"+""+"|"+rating_filma
-                    show= "http://imgur.com/c3rzL6x.jpg"+"|"+item.thumbnail+"|"+sinopsis
+                    extra=item.thumbnail+"|"+""+"|"+""+"|"+"Sin puntuacón"+"|"+rating_filma+"|"+critica
+                    show= "http://imgur.com/c3rzL6x.jpg"+"|"+""+"|"+sinopsis
                     posterdb = item.thumbnail
                     fanart_info = "http://imgur.com/c3rzL6x.jpg"
                     fanart_3 = ""
@@ -557,15 +557,14 @@ def fanart(item):
            try:
             sinopsis = scrapertools.find_single_match(data, '<dd itemprop="description">(.*?)</dd>')
             sinopsis = sinopsis.replace("<br><br />", "\n")
+            sinopsis=re.sub(r"\(FILMAFFINITY\)<br />","",sinopsis)
            except:
               pass
         try:
             rating_filma=scrapertools.get_match(data,'itemprop="ratingValue" content="(.*?)">')
         except:
             rating_filma = "Sin puntuacion"
-        print "lobeznito"
-        print rating_filma
-        
+
         critica=""
         patron = '<div itemprop="reviewBody">(.*?)</div>.*?itemprop="author">(.*?)\s*<i alt="([^"]+)"'
         matches_reviews = scrapertools.find_multiple_matches(data, patron)
@@ -594,27 +593,32 @@ def fanart(item):
         matches = re.compile(patron,re.DOTALL).findall(data_tmdb)
         ###Busqueda en bing el id de imdb de la serie
         if len(matches)==0:
-         urlbing_imdb = "http://www.bing.com/search?q=%s+%s+tv+series+site:imdb.com" % (title.replace(' ', '+'),  year)
-         
-         data = browser (urlbing_imdb)
-         data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|http://ssl-proxy.my-addr.org/myaddrproxy.php/","",data)
-         try:
+         url_tmdb="http://api.themoviedb.org/3/search/tv?api_key="+api_key+"&query=" + title +"&language=es"
+         data_tmdb = scrapertools.cachePage(url_tmdb)
+         data_tmdb = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data_tmdb)
+         patron = '"page":1.*?,"id":(.*?),"backdrop_path":(.*?),"vote_average"'
+         matches = re.compile(patron,re.DOTALL).findall(data_tmdb)
+         if len(matches)==0:
+          urlbing_imdb = "http://www.bing.com/search?q=%s+%s+tv+series+site:imdb.com" % (title.replace(' ', '+'),  year)
+          data = browser (urlbing_imdb)
+          data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|http://ssl-proxy.my-addr.org/myaddrproxy.php/","",data)
+          try:
             subdata_imdb =scrapertools.find_single_match(data,'<li class="b_algo">(.*?)h="ID.*?<strong>.*?TV Series')
-         except:
-            pass
+          except:
+             pass
         
     
-         try:
-             imdb_id = scrapertools.get_match(subdata_imdb,'<a href=.*?http.*?imdb.com/title/(.*?)/.*?"')
-         except:
-             imdb_id = ""
-         ###Busca id de tvdb y tmdb mediante imdb id
+          try:
+              imdb_id = scrapertools.get_match(subdata_imdb,'<a href=.*?http.*?imdb.com/title/(.*?)/.*?"')
+          except:
+              imdb_id = ""
+          ###Busca id de tvdb y tmdb mediante imdb id
          
-         urlremotetbdb = "https://api.themoviedb.org/3/find/"+imdb_id+"?api_key="+api_key+"&external_source=imdb_id&language=es"
-         data_tmdb= scrapertools.cachePage(urlremotetbdb)
-         matches= scrapertools.find_multiple_matches(data_tmdb,'"tv_results":.*?"id":(.*?),.*?"poster_path":(.*?),"popularity"')
+          urlremotetbdb = "https://api.themoviedb.org/3/find/"+imdb_id+"?api_key="+api_key+"&external_source=imdb_id&language=es"
+          data_tmdb= scrapertools.cachePage(urlremotetbdb)
+          matches= scrapertools.find_multiple_matches(data_tmdb,'"tv_results":.*?"id":(.*?),.*?"poster_path":(.*?),"popularity"')
          
-         if len(matches)==0:
+          if len(matches)==0:
             id_tmdb=""
             fanart_3 = ""
             extra= item.thumbnail+"|"+year+"|"+"no data"+"|"+"no data"+"|"+"Sin puntuación"+"|"+""+"|"+""+"|"+id_tmdb
@@ -716,7 +720,7 @@ def fanart(item):
                 tvposter = scrapertools.get_match(data,'"tvposter":.*?"url": "([^"]+)"')
                 tfv=tvposter
             else:
-                tfv = item.thumbnail
+                tfv = posterdb
             if '"tvthumb"' in data:
                 tvthumb = scrapertools.get_match(data,'"tvthumb":.*?"url": "([^"]+)"')
             if '"hdtvlogo"' in data:
@@ -1266,10 +1270,6 @@ def info(item):
         photo="http://s6.postimg.org/nm3gk1xox/noinfosup2.png"
         foto ="http://s6.postimg.org/ub7pb76c1/noinfo.png"
         info =""
-        rating=""
-        rating_filam=""
-        
-
 
 
     if "serie" in item.url:
