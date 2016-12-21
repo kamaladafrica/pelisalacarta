@@ -252,7 +252,7 @@ def fanart(item):
        item.title = re.sub(r" \[COLOR.*?\]\d+.\d+.*?.*?\[\/COLOR\]|\(Sin puntuacion\)","",item.title)
     item.plot =item.extra.split("|")[0]
     try:
-      sinopsis = scrapertools.get_match(data,'<b>Sinopsis:<\/b><span class="item" itemprop="description">(.*?)<\/span><\/span>')
+      sinopsis = scrapertools.get_match(data,'<b>Sinopsis:<\/b><span class="item" itemprop="description">(.*?)<\/span><\/span>').decode('latin1').encode('utf8')
     except:
       sinopsis= ""
 
