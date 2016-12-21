@@ -9,16 +9,12 @@ import os
 import re
 import time
 import urllib
+import base64
 
 from core import config
 from core import logger
 from core import jsunpack
 from core import scrapertools
-
-
-headers = [['User-Agent', 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0'],
-           ['Accept', '*/*'],
-           ['Connection', 'keep-alive']]
 
 
 def test_video_exists(page_url):
@@ -38,14 +34,14 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     logger.info("pelisalacarta.servers.flashx url=" + page_url)
 
     # Lo pide una vez
-    data = scrapertools.cache_page(page_url, headers=headers)
+    data = scrapertools.downloadpageWithoutCookies(page_url)
     # Si salta aviso, se carga la pagina de comprobacion y luego la inicial
     if "You try to access this video with Kodi" in data:
         url_reload = scrapertools.find_single_match(data, 'try to reload the page.*?href="([^"]+)"')
         url_reload = "http://www.flashx.tv" + url_reload[1:]
         try:
-            data = scrapertools.cache_page(url_reload, headers=headers)
-            data = scrapertools.cache_page(page_url, headers=headers)
+            data = scrapertools.downloadpageWithoutCookies(url_reload)
+            data = scrapertools.downloadpageWithoutCookies(page_url)
         except:
             pass
 
@@ -62,35 +58,43 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
             except:
                 m = ""
     match = m
-
     if not "sources:[{file:" in match:
         page_url = page_url.replace("playvid-", "")
-        data = scrapertools.downloadpageWithoutCookies(page_url)
 
-        file_id = scrapertools.find_single_match(data, "'file_id', '([^']+)'")
-        aff = scrapertools.find_single_match(data, "'aff', '([^']+)'")
-        headers_c = [['User-Agent', 'Mozilla/5.0'],
-                     ['Referer', page_url],
-                     ['Cookie', '; lang=1']]
-        coding_url = "https:"+scrapertools.find_single_match(data, '(?i)src="(?:https:|)((?://www.flashx.tv|//files.fx.fastcontentdelivery.com)/\w+.js\?[^"]+)"')
-        if coding_url.endswith("="):
-            coding_url += file_id
-        coding = scrapertools.downloadpage(coding_url, headers=headers_c)
-
-        data = scrapertools.downloadpage(page_url, headers=headers)
+        headers = {'Host': 'www.flashx.tv', 'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.137 Safari/537.36',
+                  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'Accept-Language': 'en-US,en;q=0.5',
+                  'Accept-Encoding': 'gzip, deflate, br', 'Connection': 'keep-alive', 'Upgrade-Insecure-Requests': '1',
+                  'Cookie': ''}
+        data = scrapertools.downloadpage(page_url, headers=headers.items())
         flashx_id = scrapertools.find_single_match(data, 'name="id" value="([^"]+)"')
         fname = scrapertools.find_single_match(data, 'name="fname" value="([^"]+)"')
         hash_f = scrapertools.find_single_match(data, 'name="hash" value="([^"]+)"')
         post = 'op=download1&usr_login=&id=%s&fname=%s&referer=&hash=%s&imhuman=Proceed+to+video' % (flashx_id, urllib.quote(fname), hash_f)
         wait_time = scrapertools.find_single_match(data, "<span id='xxc2'>(\d+)")
 
+        file_id = scrapertools.find_single_match(data, "'file_id', '([^']+)'")
+        coding_url = 'https://files.fx.fastcontentdelivery.com/jquery2.js?fx=%s' % base64.encodestring(file_id)
+        headers['Host'] = "files.fx.fastcontentdelivery.com"
+        headers['Referer'] = "https://www.flashx.tv/"
+        headers['Accept'] = "*/*"
+        coding = scrapertools.downloadpage(coding_url, headers=headers.items())
+        
+        coding_url = 'https://www.flashx.tv/counter.cgi?fx=%s' % base64.encodestring(file_id)
+        headers['Host'] = "www.flashx.tv"
+        coding = scrapertools.downloadpage(coding_url, headers=headers.items())
+
+        coding_url = 'https://www.flashx.tv/flashx.php?fxfx=3'
+        headers['X-Requested-With'] = 'XMLHttpRequest'
+        coding = scrapertools.downloadpage(coding_url, headers=headers.items())
+
         try:
            time.sleep(int(wait_time)+1)
         except:
            time.sleep(6)
-        headers.append(['Referer', "https://www.flashx.tv/"])
-        headers.append(['Cookie', 'lang=1; file_id=%s; aff=%s' % (file_id, aff)])
-        data = scrapertools.downloadpage('https://www.flashx.tv/dl?playthis', post=post, headers=headers)
+
+        headers.pop('X-Requested-With')
+        headers['Content-Type'] = 'application/x-www-form-urlencoded'
+        data = scrapertools.downloadpage('https://www.flashx.tv/dl?playthis', post=post, headers=headers.items())
 
         matches = scrapertools.find_multiple_matches(data, "(eval\(function\(p,a,c,k.*?)\s+</script>")
         for match in matches:
