@@ -58,6 +58,8 @@ def configuracion(item):
     
 def search(item, texto):
     logger.info("pelisalacarta.channels.allpeliculas search")
+    if texto != "":
+        texto = texto.replace(" ", "+")
     item.url = "http://allpeliculas.com/Search/advancedSearch?searchType=movie&movieName=" + texto + "&ajax=1"
     try:
         return busqueda(item)
@@ -271,6 +273,8 @@ def findvideos(item):
             server = servertools.get_server_from_url(url)
 
         if server != "directo":
+            if server == "vimeo":
+                url += "|" + item.url
             idioma = IDIOMAS.get(idiomas_videos.get(language))
             titulo = server.capitalize()+"  ["+idioma+"] ["+calidad_videos.get(calidad)+"]"
             itemlist.append(item.clone(action="play", title=titulo, url=url, extra=idioma))
@@ -288,6 +292,8 @@ def findvideos(item):
             server = servertools.get_server_from_url(url)
 
         if server != "directo":
+            if server == "vimeo":
+                url += "|" + item.url
             if config.get_setting("hidepremium") == "true":
                 mostrar_server = servertools.is_server_enabled(server)
             if mostrar_server:
@@ -405,6 +411,8 @@ def findvideostv(item):
             server = servertools.get_server_from_url(url)
 
         if server != "directo":
+            if server == "vimeo":
+                url += "|" + item.url
             idioma = IDIOMAS.get(idiomas_videos.get(language))
             titulo = server.capitalize()+" ["+idioma+"] ("+calidad_videos.get(quality)+")"
 
@@ -422,6 +430,8 @@ def findvideostv(item):
             server = servertools.get_server_from_url(url)
 
         if server != "directo":
+            if server == "vimeo":
+                url += "|" + item.url
             if config.get_setting("hidepremium") == "true":
                 mostrar_server = servertools.is_server_enabled(server)
             if mostrar_server:
@@ -506,4 +516,3 @@ def dict_indices():
         indice_calidad[key1] = key2
 
     return indice_genero, indice_alfa, indice_idioma, indice_year, indice_calidad
-
