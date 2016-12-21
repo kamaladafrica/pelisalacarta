@@ -127,7 +127,7 @@ def generos(item):
 def search(item,texto):
     
     logger.info("pelisalacarta.channels.peliculasrey search")
-    texto = texto.replace(" ","-")    
+    texto = texto.replace(" ", "+")
     item.url = "http://www.peliculasrey.com/?s=" + texto
     
     try:

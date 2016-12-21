@@ -69,7 +69,7 @@ def search(item,texto):
     item.url = "http://pelisadicto.com/buscar/%s?search=%s" % (texto_get,texto_post)
     '''
 
-    texto_post = texto.replace(" ","+")
+    texto = texto.replace(" ", "+")
     item.url = "http://pelisadicto.com/buscar/%s" % texto
 
     try:
@@ -81,7 +81,6 @@ def search(item,texto):
             logger.error( "%s" % line )
         return []
 
-    return busqueda(item)
 
 def agregadas(item):
     logger.info("[pelisadicto.py] agregadas")

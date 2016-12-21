@@ -142,7 +142,7 @@ def search(item,texto):
         item.url="http://bityouth.com/busqueda/"
 
     item.url = item.url+texto
-    item.url = item.url.replace("+","%20")
+    item.url = item.url.replace(" ", "%20")
 
     data = scrapertools.cache_page(item.url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)

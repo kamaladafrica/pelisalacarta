@@ -26,6 +26,7 @@ def mainlist(item):
 
 def search(item,texto):
     logger.info("[Pelisxporno.py] search:" + texto)
+    texto = texto.replace(" ", "+")
     item.url = item.url % texto
     try:
         return lista(item) 

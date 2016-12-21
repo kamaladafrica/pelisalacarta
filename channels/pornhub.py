@@ -27,6 +27,7 @@ def mainlist(item):
 def search(item,texto):
     logger.info("[pornhub.py] search")
 
+    texto = texto.replace(" ", "+")
     item.url = item.url % texto
     try:
         return peliculas(item)

@@ -102,8 +102,6 @@ def search(item,texto):
 
     data = agrupa_datos( scrapertools.cache_page(host, headers=headers) )
 
-    texto = texto.replace('+','%20')
-
     sid = scrapertools.get_match(data, '.__csrf_magic. value="(sid:[^"]+)"')
     item.extra = urllib.urlencode({'__csrf_magic':sid})+'&menu=search&query='+texto
     item.title = "Buscar..."

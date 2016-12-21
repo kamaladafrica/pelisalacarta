@@ -32,6 +32,8 @@ def mainlist(item):
 
 def search(item, texto):
     logger.info("pelisalacarta.channels.areadocumental search")
+    if texto != "":
+        texto = texto.replace(" ", "+")
     item.url = "http://www.area-documental.com/resultados.php?buscar=%s&genero=&x=0&y=0" % texto
     try:
         itemlist = entradas(item)

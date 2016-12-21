@@ -70,6 +70,7 @@ def mainlist(item):
 
 def search(item, texto):
     logger.info("pelisalacarta.channels.tvvip search")
+    texto = texto.replace(" ", "%20")
     if item.title == "Buscar...": item.extra = "local"
     item.url = "http://tv-vip.com/video-prod/s/search?q=%s&n=100" % texto
 

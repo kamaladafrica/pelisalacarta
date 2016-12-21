@@ -68,10 +68,17 @@ def search(item,texto):
     texto = texto.replace(" ","+")
     item.url = item.url+texto
 
-    if texto!='':
-        return lista(item)
-    else:
-        return []    
+    try:
+        if texto != '':
+            return lista(item)
+        else:
+            return []
+
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error("%s" % line)
+        return []
 
 def lista(item):
     logger.debug("pelisalacarta.channels.pelisplus lista")
