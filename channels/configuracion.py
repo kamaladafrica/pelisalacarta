@@ -368,10 +368,10 @@ def conf_tools(item):
 
                         if config.get_setting("enabled", channel.channel):
                             status = config.get_setting("enabled", channel.channel)
-                            logger.info(channel.channel + " | Status: " + str(status))
+                            # logger.info(channel.channel + " | Status: " + str(status))
                         else:
                             status = xml_status
-                            logger.info(channel.channel + " | Status (XML): " + str(status))
+                            # logger.info(channel.channel + " | Status (XML): " + str(status))
 
                         # Se establece el estado
                         if status == "false" or status is False:
@@ -391,8 +391,6 @@ def conf_tools(item):
                                        'visible': True}
 
                             list_controls.append(control)
-
-                            logger.info(channel.channel + " AÑADIDO! | Status: " + str(status))
 
                     else:
                         logger.info("Algo va mal con el canal " + channel.channel)
@@ -566,6 +564,8 @@ def channel_status(item, dict_values):
             if v == "all_channels":
                 import channelselector
                 from core import channeltools
+                logger.info("Todos los canales | Estado seleccionado: " +
+                            str(dict_values[v]).lower())
                 if str(dict_values[v]) != "0":
                     channel_list = channelselector.filterchannels("allchannelstatus")
                     excluded_channels = ['tengourl',
@@ -604,13 +604,12 @@ def channel_status(item, dict_values):
                             if new_status_all is not None:
                                 config.set_setting("enabled", new_status_all, channel.channel)
                     break
-
-                logger.info("Todos los canales | Estado guardado: " +
-                            str(dict_values[v]).lower())
-                continue
+                else:
+                    continue
 
             else:
-                logger.info("Canal: " + v + " | Estado guardado: " + str(dict_values[v]).lower())
+                logger.info("Canal: " + v + " | Estado seleccionado: " +
+                            str(dict_values[v]).lower())
                 config.set_setting("enabled", str(dict_values[v]).lower(), v)
 
     except:
