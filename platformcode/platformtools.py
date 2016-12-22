@@ -180,9 +180,15 @@ def render_items(itemlist, parent_item):
                                         totalItems=item.totalItems)
 
 
-    # Fijar los tipos de vistas segun el viewcontent
-    xbmcplugin.setContent(int(sys.argv[1]), parent_item.viewcontent)
-    #logger.debug(parent_item)
+    # Fijar los tipos de vistas...
+    if config.get_setting("forceview") == "true":
+        # ...forzamos segun el viewcontent
+        xbmcplugin.setContent(int(sys.argv[1]), parent_item.viewcontent)
+        #logger.debug(parent_item)
+    elif parent_item.channel not in ["channelselector", ""]:
+        # ... o segun el canal
+        xbmcplugin.setContent(int(sys.argv[1]), "movies")
+
 
     # Fijamos el "breadcrumb"
     xbmcplugin.setPluginCategory(handle=int(sys.argv[1]), category=parent_item.category.capitalize())
@@ -193,20 +199,16 @@ def render_items(itemlist, parent_item):
     # Cerramos el directorio
     xbmcplugin.endOfDirectory(handle=int(sys.argv[1]), succeeded=True)
 
-    # Fijar la vista:
-    viewmode_id = get_viewmode_id(parent_item)
-    xbmc.executebuiltin("Container.SetViewMode(%s)" % viewmode_id)
+    # Fijar la vista
+    if config.get_setting("forceview") == "true":
+        viewmode_id = get_viewmode_id(parent_item)
+        xbmc.executebuiltin("Container.SetViewMode(%s)" % viewmode_id)
 
 
 def get_viewmode_id(parent_item):
     # viewmode_json habria q guardarlo en un archivo y crear un metodo para q el user fije sus preferencias en:
     # user_files, user_movies, user_tvshows, user_season y user_episodes.
-    viewmode_json = {'skin.confluence': {'user_files': 51,
-                                    'user_movies': 503,
-                                    'user_tvshows': 515,
-                                    'user_seasons': 501,
-                                    'user_episodes': 504,
-                                    'default_files': 50,
+    viewmode_json = {'skin.confluence': {'default_files': 50,
                                     'default_movies': 515,
                                     'default_tvshows': 508,
                                     'default_seasons': 503,
@@ -214,44 +216,36 @@ def get_viewmode_id(parent_item):
                                     'view_list': 50,
                                     'view_thumbnails': 500,
                                     'view_movie_with_plot': 503},
-                     'skin.estuary': {'user_files': 50,
-                                 'user_movies': 51,
-                                 'user_tvshows': 53,
-                                 'user_seasons': 54,
-                                 'user_episodes': 500,
-                                 'default_files': 50,
-                                 'default_movies': 54,
-                                 'default_tvshows': 502,
-                                 'default_seasons': 500,
-                                 'default_episodes': 53,
-                                 'view_list': 50,
-                                 'view_thumbnails': 500,
-                                 'view_movie_with_plot': 54}}
+                     'skin.estuary': {'default_files': 50,
+                                     'default_movies': 54,
+                                     'default_tvshows': 502,
+                                     'default_seasons': 500,
+                                     'default_episodes': 53,
+                                     'view_list': 50,
+                                     'view_thumbnails': 500,
+                                     'view_movie_with_plot': 54}}
 
 
-    if config.get_setting("forceview") == "true":
-        # Fijariamos la vista q el usuario tenga configurada por defecto para cada tipo de viewcontent
-        viewName = "user_" + parent_item.viewcontent
+    # Si el parent_item tenia fijado un viewmode usamos esa vista...
+    if parent_item.viewmode == 'movie':
+        # Remplazamos el antiguo viewmode 'movie' por 'thumbnails'
+        parent_item.viewmode = 'thumbnails'
 
+    if parent_item.viewmode in ["list", "movie_with_plot", "thumbnails"]:
+        viewName = "view_" + parent_item.viewmode
+
+        '''elif isinstance(parent_item.viewmode, int):
+            # only for debug
+            viewName = parent_item.viewmode'''
+
+    #...sino ponemos la vista por defecto en funcion del viewcontent
     else:
-        # Si el parent_item tenia fijado un viewmode usamos esa vista...
-        if parent_item.viewmode == 'movie':
-            # Remplazamos el antiguo viewmode 'movie' por 'thumbnails'
-            parent_item.viewmode = 'thumbnails'
-
-        if parent_item.viewmode in ["list", "movie_with_plot", "thumbnails"]:
-            viewName = "view_" + parent_item.viewmode
-
-            '''elif isinstance(parent_item.viewmode, int):
-                # only for debug
-                viewName = parent_item.viewmode'''
-
-        #...sino ponemos la vista por defecto en funcion del viewcontent
-        else:
-            viewName = "default_" + parent_item.viewcontent
+        viewName = "default_" + parent_item.viewcontent
 
     skinName = xbmc.getSkinDir()
-    view_skin = viewmode_json.get(skinName, 'skin.confluence')
+    if skinName not in viewmode_json:
+        skinName = 'skin.confluence'
+    view_skin = viewmode_json[skinName]
     return view_skin.get(viewName, 50)
 
 
