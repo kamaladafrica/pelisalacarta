@@ -93,6 +93,7 @@ def sub_filtrar(item):
 
 def search(item,texto):
     logger.info("[pepecine.py] search:" + texto)
+    texto = texto.replace(" ", "+")
     item.url = item.url + "&query=" + texto
     try:
         return listado(item) 

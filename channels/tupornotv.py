@@ -161,10 +161,13 @@ def masVotados(item):
     itemlist.append( Item( channel=item.channel , title="Año" , action="novedades" , url="http://tuporno.tv/topVideos/todas/ano" , folder=True ) )
     return itemlist
 
-def search(item):
+def search(item, texto):
     logger.info("[tupornotv.py] search")
-    tecleado = item.extra.replace(" ", "+")
-    item.url = "http://tuporno.tv/buscador/?str=" + tecleado
+    if texto != "":
+        texto = texto.replace(" ", "+")
+    else:
+        texto = item.extra.replace(" ", "+")
+    item.url = "http://tuporno.tv/buscador/?str=" + texto
     try:
         return getsearch(item)
     # Se captura la excepción, para no interrumpir al buscador global si un canal falla
@@ -177,7 +180,8 @@ def search(item):
 def getsearch(item):
     logger.info("[tupornotv.py] getsearch")
     data = scrapertools.cachePage(item.url)
-    patronvideos  = '<td align="left"><a href="(.videos[^"]+)"><img src="([^"]+)" alt="(.+?)" (.*?)<span class="tmp">(.+?)</span></h2>'
+    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
+    patronvideos = '<div class="relative"><a href="(.videos[^"]+)"[^>]+><img.+?src="([^"]+)" alt="(.+?)" .*?<div class="duracion">(.+?)</div></div></div>'
     matches = re.compile(patronvideos,re.DOTALL).findall(data)
     
     if len(matches)>0:
@@ -189,7 +193,7 @@ def getsearch(item):
             scrapedurl = urlparse.urljoin("http://tuporno.tv/",match[0])
             scrapedthumbnail = urlparse.urljoin("http://tuporno.tv/",match[1])
             scrapedplot = ""
-            duracion = match[4]
+            duracion = match[3]
 
             itemlist.append( Item(channel=item.channel, action="play", title=scrapedtitle+" ["+duracion+"]" , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot, server="Directo", folder=False) )
     

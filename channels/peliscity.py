@@ -55,10 +55,11 @@ def porGenero(item):
 
     return itemlist	
 
+
 def search(item,texto):
 
     logger.info("[peliscity.py] search")
-    texto_post = texto.replace(" ","+")
+    texto_post = texto.replace(" ", "+")
     item.url = "http://www.peliscity.com/?s=" + texto_post
 
     try:
@@ -70,7 +71,6 @@ def search(item,texto):
             logger.error( "%s" % line )
         return []
 
-    return busqueda(item)
 
 def agregadas(item):
     logger.info("[peliscity.py] agregadas")
@@ -105,6 +105,7 @@ def listaBuscar(item):
     itemlist = []
    
     data = scrapertools.cache_page(item.url)
+    data = re.sub(r"\n", " ", data)
     logger.info("data="+data)
 
     

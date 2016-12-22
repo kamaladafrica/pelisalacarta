@@ -67,7 +67,7 @@ def search(item,texto):
     item.url = "http://pelisadicto.com/buscar/%s?search=%s" % (texto_get,texto_post)
     '''
 
-
+    texto = texto.replace(" ", "+")
     item.url = "http://www.descargacineclasico.net/?s=" + texto
 
     try:

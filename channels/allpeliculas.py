@@ -58,6 +58,8 @@ def configuracion(item):
     
 def search(item, texto):
     logger.info("pelisalacarta.channels.allpeliculas search")
+    if texto != "":
+        texto = texto.replace(" ", "+")
     item.url = "http://allpeliculas.com/Search/advancedSearch?searchType=movie&movieName=" + texto + "&ajax=1"
     try:
         return busqueda(item)
