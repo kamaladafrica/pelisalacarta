@@ -84,8 +84,8 @@ def newest(categoria):
 
 def search(item, texto):
     logger.info("pelisalacarta.inkapelis search")
-    itemlist = []
     item.extra = "Buscar"
+    texto = texto.replace(" ", "+")
     item.url = "http://www.inkapelis.com/?s=%s" % texto
 
     try:

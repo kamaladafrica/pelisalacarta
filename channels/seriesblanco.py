@@ -137,6 +137,7 @@ def newest(categoria):
 
 def search(item, texto):
     logger.info("{0}".format(texto))
+    texto = texto.replace(" ", "+")
 
     if texto == "":
         return []

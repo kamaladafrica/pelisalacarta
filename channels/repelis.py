@@ -296,7 +296,8 @@ def play(item):
 def search(item, texto):
 
    logger.info("[repelis] "+item.url)
-   item.url = 'http://www.repelis.tv/search/?s=%s' % (texto)
+   texto = texto.replace(" ", "+")
+   item.url = 'http://www.repelis.tv/buscar/?s=%s' % (texto)
    logger.info("[repelis] "+item.url)
 
    data = scrapertools.cache_page(item.url).decode('iso-8859-1').encode('utf-8')

@@ -28,7 +28,7 @@ def mainlist(item):
 
 def search(item,texto):
     logger.info("pelisalacarta.channels.seriesadicto search")
-
+    texto = texto.replace(" ", "+")
     item.url="http://seriesadicto.com/buscar/"+texto
 
     try:

@@ -57,7 +57,7 @@ def busqueda(item):
     keyboard = xbmc.Keyboard("","Busqueda")
     keyboard.doModal()
     if (keyboard.isConfirmed()):
-        myurl = keyboard.getText()         
+        myurl = keyboard.getText().replace(" ", "+")
       
         data = scrapertools.cache_page('https://www.youtube.com/results?q='+myurl)
         data = data.replace("\n","").replace("\t", "")

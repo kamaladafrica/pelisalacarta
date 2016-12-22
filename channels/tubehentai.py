@@ -25,6 +25,8 @@ def mainlist(item):
 
 def search(item,texto):
     logger.info("[tubehentai.py] search")
+
+    texto = texto.replace(" ", "%20")
  
     item.url = item.url % texto
     try:

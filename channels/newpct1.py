@@ -29,7 +29,7 @@ def mainlist(item):
 
 def search(item,texto):
     logger.info("[newpct1.py] search:" + texto)
-    
+    texto = texto.replace(" ","+")
     item.url = "http://www.newpct1.com/index.php?page=buscar&q=%27" + texto +"%27&ordenar=Fecha&inon=Descendente"
     item.extra="buscar-list"
     try:

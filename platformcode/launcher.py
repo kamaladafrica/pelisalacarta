@@ -32,11 +32,10 @@ import urllib2
 
 from core import channeltools
 from core import config
-from core import downloadtools
+from core import library
 from core import logger
 from core import scrapertools
 from core.item import Item
-from core import library
 from platformcode import platformtools
 
 
@@ -227,7 +226,6 @@ def run():
             elif item.action == "add_serie_to_library":
                 library.add_serie_to_library(item, channel)
 
-
             # Special action for downloading all episodes from a serie
             elif item.action == "download_all_episodes":
                 from channels import descargas
@@ -254,7 +252,6 @@ def run():
                         from channels import buscador
                         buscador.save_search(tecleado)
 
-                    tecleado = tecleado.replace(" ", "+")
                     # TODO revisar 'personal.py' porque no tiene función search y daría problemas
                     itemlist = channel.search(item, tecleado)
                 else:
@@ -428,10 +425,9 @@ def play_from_library(item):
             if seleccion == -1:
                 return
 
-            item =  biblioteca.play(itemlist[seleccion])[0]
+            item = biblioteca.play(itemlist[seleccion])[0]
             p_dialog.update(100, '')
 
             platformtools.play_video(item)
             p_dialog.close()
             xbmc_library.mark_auto_as_watched(itemlist[seleccion])
-
