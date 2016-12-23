@@ -17,15 +17,12 @@ from core.item import Item
 
 
 DEBUG = config.get_setting("debug")
+CHANNEL_HOST = 'http://www.yaske.ro/'
 HEADER = [
-    ["Host","www.yaske.ro"],
-    ["Connection","keep-alive"],
-    ["Accept","text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"],
-    ["User-Agent","Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:46.0) Gecko/20100101 Firefox/46.0"],
-    ["Referer","http://www.yaske.ro/"],
-    ["Accept-Encoding","gzip,deflate"],
-    ["Accept-Language","es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3"],
-    ["Cache-Control","max-age=0"]
+    ['User-Agent', 'Mozilla/5.0'],
+    ['Accept-Encoding', 'gzip, deflate'],
+    ['Referer', CHANNEL_HOST],
+    ['Connection', 'keep-alive']
 ]
 
 
@@ -48,7 +45,7 @@ def search(item,texto):
     itemlist = []
 
     try:
-        item.url = "http://www.yaske.cc/es/peliculas/search/%s"
+        item.url = "http://www.yaske.ro/search/%s"
         item.url = item.url % texto
         item.extra = ""
         itemlist.extend(peliculas(item))
@@ -68,9 +65,9 @@ def newest(categoria):
     item = Item()
     try:
         if categoria == 'peliculas':
-            item.url = "http://www.yaske.cc/"
+            item.url = "http://www.yaske.ro/"
         elif categoria == 'infantiles':
-            item.url = "http://www.yaske.cc/es/peliculas/custom/?gender=animation"
+            item.url = "http://www.yaske.ro/custom/?gender=animation"
         else:
             return []
 
@@ -89,8 +86,9 @@ def newest(categoria):
 
 def peliculas(item):
     logger.info("pelisalacarta.yaske peliculas")
+	
 
-    data = scrapertools.cache_page(item.url,headers=HEADER)
+    data = scrapertools.anti_cloudflare(item.url,headers=HEADER, host=CHANNEL_HOST)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
 
     # Extrae las entradas
@@ -98,10 +96,10 @@ def peliculas(item):
        <li class="item-movies c8">
         <div class="tooltipyk">
         <a class="image-block" href="http://www.yaske.ro/es/pelicula/0010962/ver-the-walking-dead-7x02-online.html" title="The Walking Dead 7x02">
-        <img src="http://www.yaske.cc/upload/images/b59808b9b505c15283159099ff7320c6.jpg" alt="The Walking Dead 7x02" width="140" height="200" />
+        <img src="http://www.yaske.ro/upload/images/b59808b9b505c15283159099ff7320c6.jpg" alt="The Walking Dead 7x02" width="140" height="200" />
         </a>
     <span class="tooltipm">
-        <img class="callout" src="http://www.yaske.cc/upload/tooltip/callout_black.gif" />
+        <img class="callout" src="http://www.yaske.ro/upload/tooltip/callout_black.gif" />
         <div class="moTitulo"><b>Título: </b>The Walking Dead 7x02<br><br></div>
         <div class="moSinopsis"><b>Sinopsis: </b>Array<br><br></div>
         <div class="moYear"><b>Año: </b>2016</div>
@@ -126,7 +124,7 @@ def peliculas(item):
     patron += '<div class="quality">([^<]+)</div>'
  
     matches = re.compile(patron,re.DOTALL).findall(data)
-    logger.debug(matches)
+    #logger.debug(matches)
     itemlist = []
 
     for scrapedurl, scrapedtitle, scrapedthumbnail, idiomas, calidad in matches:
@@ -166,7 +164,7 @@ def peliculas(item):
 def menu_buscar_contenido(item):
     logger.info("pelisalacarta.yaske menu_categorias")
 
-    data = scrapertools.cache_page(item.url,headers=HEADER)
+    data = scrapertools.anti_cloudflare(item.url,headers=HEADER, host=CHANNEL_HOST)
     #logger.info("data="+data)
 
     data = scrapertools.get_match(data,'<select name="'+item.extra+'"(.*?)</select>')
@@ -181,8 +179,12 @@ def menu_buscar_contenido(item):
     for scrapedurl,scrapedtitle in matches:
         scrapedthumbnail = ""
         scrapedplot = ""
-
-        url = "http://www.yaske.ro/es/peliculas/custom/?"+item.extra+"="+scrapedurl
+        
+        
+        if item.extra == 'gender':
+            url = "http://www.yaske.ro/genero/"+scrapedurl
+        else:
+            url = "http://www.yaske.ro/custom/?"+item.extra+"="+scrapedurl
 
         itemlist.append( Item(channel=item.channel, action="peliculas", title=scrapedtitle , url=url , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
 
@@ -192,7 +194,7 @@ def findvideos(item):
     logger.info("pelisalacarta.yaske findvideos url="+item.url)
 
     # Descarga la página
-    data = scrapertools.cache_page(item.url,headers=HEADER)
+    data = scrapertools.anti_cloudflare(item.url,headers=HEADER, host=CHANNEL_HOST)
 
     item.plot = scrapertools.find_single_match(data,'<meta name="sinopsis" content="([^"]+)"')
     item.plot = scrapertools.htmlclean(item.plot)
