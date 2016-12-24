@@ -17,7 +17,13 @@ from core.item import Item
 
 
 DEBUG = config.get_setting("debug")
-    
+CHANNEL_HOST = 'http://peliculasaudiolatino.com/'
+CHANNEL_HEADERS = [
+    ['User-Agent', 'Mozilla/5.0'],
+    ['Accept-Encoding', 'gzip, deflate'],
+    ['Referer', CHANNEL_HOST],
+    ['Connection', 'keep-alive']
+]    
 
 def mainlist(item):
     logger.info("channels.peliculasaudiolatino mainlist")
@@ -178,7 +184,7 @@ def findvideos(item):
     patron = '<span class="infotx">([^<]+)</span></th[^<]+'
     patron += '<th align="left"><img src="[^"]+" width="\d+" alt="([^"]+)"[^<]+</th[^<]+'
     patron += '<th align="left"><img[^>]+>([^<]+)</th[^<]+'
-    patron += '<th class="slink" align="left"><div id="btnp"><a href="([^"]+)"'
+    patron += '<th class="slink" align="left"><div id="btnp"><a href="[^"]+" onClick="[^h]+([^\']+)\''
 
     matches = re.compile(patron,re.DOTALL).findall(data)
     if (DEBUG): scrapertools.printMatches(matches)
@@ -199,7 +205,7 @@ def play(item):
     url = scrapertools.find_single_match(data,'src="(http://peliculasaudiolatino.com/show/[^"]+)"')
     logger.info("url="+url)
 
-    data2 = scrapertools.cachePage(url)
+    data2 = scrapertools.anti_cloudflare(url, headers=CHANNEL_HEADERS)
     logger.info("data2="+data2)
 
     listavideos = servertools.findvideos(data2)
@@ -213,5 +219,3 @@ def play(item):
         itemlist.append( Item(channel=item.channel, action="play", title=scrapedtitle , fulltitle=item.fulltitle, url=videourl , server=server , folder=False) )
     
     return itemlist
-
-
