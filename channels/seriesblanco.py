@@ -77,7 +77,7 @@ def homeSection(item):
 def extractSeriesFromData(item, data):
     itemlist = []
     episodePattern = re.compile('/capitulo-([0-9]+)/')
-    shows = re.findall("<a.+?href=['\"](?P<url>[^'\"]+)[^<]*<img.*?src=['\"](?P<img>[^'\"]+).*?(?:alt|title)=['\"](?P<name>[^'\"]+)", data, re.MULTILINE | re.DOTALL)
+    shows = re.findall("<a.+?href=['\"](?P<url>[^'\"]+)[^<]*<img.*?src=['\"](?P<img>http[^'\"]+).*?(?:alt|title)=['\"](?P<name>[^'\"]+)", data, re.MULTILINE | re.DOTALL)
     for url, img, name in shows:
         try:
             name.decode('utf-8')
