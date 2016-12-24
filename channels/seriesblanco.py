@@ -13,6 +13,7 @@ from core import config
 from core import logger
 from core import scrapertools
 from core import servertools
+from core import httptools
 from core.item import Item
 
 from channels import filtertools
@@ -62,7 +63,7 @@ def homeSection(item):
     pattern = "['\"]panel-title['\"]>{0}(.*?)(?:panel-title|\Z)".format(item.extra)
     logger.debug("pattern = {0}".format(pattern))
 
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
     result = re.search(pattern, data, re.MULTILINE | re.DOTALL)
 
     if result:
@@ -106,7 +107,7 @@ def series(item):
     pageURL = "{url}{merger}pagina={pageNo}".format(url = item.url, pageNo = item.extra, merger = '&' if '?' in item.url else '?')
     logger.info("url = {0}".format(pageURL))
 
-    data = scrapertools.cache_page(pageURL)
+    data = httptools.downloadpage(pageURL).data
     return extractSeriesFromData(item, data)
 
 
@@ -158,7 +159,7 @@ def episodios(item):
     itemlist = []
 
     # Descarga la página
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
 
     fanart = scrapertools.find_single_match(data, "background-image[^'\"]+['\"]([^'\"]+)")
     plot = scrapertools.find_single_match(data, "id=['\"]profile2['\"]>\s*(.*?)\s*</div>")
@@ -230,7 +231,7 @@ def findvideos(item):
     logger.info("{0} = {1}".format(item.show, item.url))
 
     # Descarga la página
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
     # logger.info(data)
 
     online = extractVideosSection(data)
@@ -256,7 +257,7 @@ def play(item):
     logger.info("{0} - {1} = {2}".format(item.show, item.title, item.url))
 
     if item.url.startswith(HOST):
-        data = scrapertools.cache_page(item.url)
+        data = httptools.downloadpage(item.url).data
 
         patron = "<input type='button' value='Ver o Descargar' onclick='window.open\(\"([^\"]+)\"\);'/>"
         url = scrapertools.find_single_match(data, patron)
