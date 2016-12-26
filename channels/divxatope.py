@@ -122,6 +122,8 @@ def lista(item):
         data = scrapertools.cachePage(item.url , post=item.extra)
     #logger.info("data="+data)
 
+    logger.info(data)
+
     patron  = '<li [^<]+'
     patron += '<a href="([^"]+)".*?'
     patron += '<img class="[^"]+" src="([^"]+)"[^<]+'
@@ -147,11 +149,14 @@ def lista(item):
         if "divxatope.com/serie" in url:
             contentTitle = re.sub('\s+-|\.{3}$', '', contentTitle)
             capitulo = ''
+            temporada  = 0
+            episodio = 0
 
             if len(matches) == 3:
                 calidad = matches[0].strip()
                 idioma = matches[1].strip()
                 capitulo = matches[2].replace('Cap','x').replace('Temp','').replace(' ','')
+                logger.info("Capitulo = {0}".forrmat(capitulo))
                 temporada, episodio = capitulo.strip().split('x')
 
             itemlist.append( Item(channel=item.channel, action="episodios", title=title , fulltitle = title, url=url ,
