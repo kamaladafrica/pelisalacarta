@@ -284,24 +284,33 @@ def get_episodios(item):
             url = scrapedurl
             if '</span>' in scrapedinfo:
                 #logger.info("[newpct1.py] get_episodios: scrapedinfo="+scrapedinfo)
-                #<h2 style="padding:0;">Serie <strong style="color:red;background:none;">The Big Bang Theory - Temporada 6 </strong> - Temporada<span style="color:red;background:none;">[ 6 ]</span>Capitulo<span style="color:red;background:none;">[ 03 ]</span><span style="color:red;background:none;padding:0px;">Español Castellano</span> Calidad <span style="color:red;background:none;">[ HDTV ]</span></h2>
-                patron = '<span style=".*?">\[\s*(.*?)\]</span>.*?' #temporada
-                patron += '<span style=".*?">\[\s*(.*?)\].*?' #capitulo
-                patron += ';([^/]+)' #idioma
-                
-                info_extra = re.compile(patron,re.DOTALL).findall(scrapedinfo)
-                (temporada,capitulo,idioma)=info_extra[0]
+                try:
+                    #<h2 style="padding:0;">Serie <strong style="color:red;background:none;">The Big Bang Theory - Temporada 6 </strong> - Temporada<span style="color:red;background:none;">[ 6 ]</span>Capitulo<span style="color:red;background:none;">[ 03 ]</span><span style="color:red;background:none;padding:0px;">Español Castellano</span> Calidad <span style="color:red;background:none;">[ HDTV ]</span></h2>
+                    patron = '<span style=".*?">\[\s*(.*?)\]</span>.*?' #temporada
+                    patron += '<span style=".*?">\[\s*(.*?)\].*?' #capitulo
+                    patron += ';([^/]+)' #idioma
+                    info_extra = re.compile(patron, re.DOTALL).findall(scrapedinfo)
+                    (temporada, capitulo, idioma) = info_extra[0]
+
+                except:
+                    # <h2 style="padding:0;">Serie <strong style="color:red;background:none;">The Affair  Temporada 3 Capitulo 5</strong> - <span style="color:red;background:none;padding:0px;">Español Castellano</span> Calidad <span style="color:red;background:none;">[ HDTV ]</span></h2>
+                    patron = '<strong style=".*?">([^<]+).*?'  # temporada y capitulo
+                    patron += '<span style=".*?">([^<]+)'
+
+                    info_extra = re.compile(patron,re.DOTALL).findall(scrapedinfo)
+                    (temporada_capitulo,idioma)=info_extra[0]
+                    temporada, capitulo = scrapertools.get_season_and_episode(temporada_capitulo).split('x')
                 
                 #logger.info("[newpct1.py] get_episodios: temporada=" + temporada)
                 #logger.info("[newpct1.py] get_episodios: capitulo=" + capitulo)
-                #logger.info("[newpct1.py] get_episodios: idioma=" + idioma)
+                logger.info("[newpct1.py] get_episodios: idioma=" + idioma)
                 if '">' in idioma: 
                     idioma= " [" + scrapertools.find_single_match(idioma,'">([^<]+)').strip() +"]"
                 elif '&nbsp' in idioma:
                     idioma= " [" + scrapertools.find_single_match(idioma,'&nbsp;([^<]+)').strip() +"]"
-                else:
-                    idioma=""
-                title =  item.title + " (" + temporada.strip() + "x" + capitulo.strip()  + ")" + idioma
+                '''else:
+                    idioma=""'''
+                title =  item.title + " (" + temporada.strip() + "x" + capitulo.strip()  + ") " + idioma
                 
             else:
                 #<h2 style="padding:0;">The Big Bang Theory - Temporada 6 [HDTV][Cap.602][Español Castellano]</h2>
