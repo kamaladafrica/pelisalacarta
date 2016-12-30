@@ -20,7 +20,7 @@ DEBUG = config.get_setting("debug")
 
 
 def mainlist(item):
-    logger.info("pelisalacarta.channels.divxatope mainlist")
+    logger.info()
 
     itemlist = []
     itemlist.append( Item(channel=item.channel, action="menu" , title="Películas" , url="http://www.divxatope.com/",extra="Peliculas",folder=True))
@@ -29,7 +29,7 @@ def mainlist(item):
     return itemlist
 
 def menu(item):
-    logger.info("pelisalacarta.channels.divxatope menu")
+    logger.info()
     itemlist=[]
 
     data = scrapertools.cache_page(item.url)
@@ -51,7 +51,7 @@ def menu(item):
     return itemlist
 
 def search(item,texto):
-    logger.info("pelisalacarta.channels.divxatope search")
+    logger.info()
     if item.url=="":
         item.url="http://www.divxatope.com/buscar/descargas"
     item.extra = urllib.urlencode({'search':texto})
@@ -103,7 +103,7 @@ def newest(categoria):
 
 
 def lista(item):
-    logger.info("pelisalacarta.channels.divxatope lista")
+    logger.info()
     itemlist = []
 
     '''
@@ -122,11 +122,11 @@ def lista(item):
         data = scrapertools.cachePage(item.url , post=item.extra)
     #logger.info("data="+data)
 
-    patron  = '<li [^<]+'
+    patron  = '<li>.*?'
     patron += '<a href="([^"]+)".*?'
-    patron += '<img class="[^"]+" src="([^"]+)"[^<]+'
-    patron += '<h2[^>]+">([^<]+)</h2[^<]+'
-    patron += '<strong[^>]+>(.*?)</strong>'
+    patron += '<img src="([^"]+)".*?'
+    patron += '<h2[^>]*>([^<]+)</h2>.*?'
+    patron += '<span[^>]*>(.*?)</span>'
 
     matches = re.compile(patron,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
@@ -137,14 +137,14 @@ def lista(item):
         url = urlparse.urljoin(item.url,scrapedurl)
         thumbnail = urlparse.urljoin(item.url,scrapedthumbnail)
         plot = ""
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+        logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
         contentTitle = scrapertools.htmlclean(scrapedtitle).strip()
         patron = '([^<]+)<br>'
         matches = re.compile(patron, re.DOTALL).findall(calidad + '<br>')
         idioma = ''
 
-        if "divxatope.com/serie" in url:
+        if "divxatope1.com/serie" in url:
             contentTitle = re.sub('\s+-|\.{3}$', '', contentTitle)
             capitulo = ''
             temporada  = 0
@@ -182,20 +182,8 @@ def lista(item):
     return itemlist
 
 def episodios(item):
-    logger.info("pelisalacarta.channels.divxatope episodios")
+    logger.info()
     itemlist = []
-
-    '''
-    <div class="chap-desc">
-    <a class="chap-title" href="http://www.divxatope.com/descargar/scorpion---temporada-2--en-hdtv-temp-2-cap-5" title="Scorpion - Temporada 2 [HDTV][Cap.205][Español Castellano]">
-    <h3>Scorpion - Temporada 2 [HDTV][Cap.205][Español Castellano]</h3>
-    </a>
-    <span>Visitas : 5700</span>
-    <span>Descargas : 2432</span>
-    <span>Tamaño: 450 MB</span>
-    <a class="btn-down" href="http://www.divxatope.com/descargar/scorpion---temporada-2--en-hdtv-temp-2-cap-5" title="Scorpion - Temporada 2 [HDTV][Cap.205][Español Castellano]">Descargar</a>
-    </div>
-    '''
 
     # Descarga la pagina
     if item.extra=="":
@@ -214,7 +202,7 @@ def episodios(item):
         url = urlparse.urljoin(item.url,scrapedurl)
         thumbnail = ""
         plot = ""
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+        logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
         itemlist.append( Item(channel=item.channel, action="findvideos", title=title , fulltitle = title, url=url , thumbnail=thumbnail , plot=plot , folder=True) )
 
     next_page_url = scrapertools.find_single_match(data,"<a class='active' href=[^<]+</a><a\s*href='([^']+)'")
@@ -224,7 +212,7 @@ def episodios(item):
     return itemlist
 
 def findvideos(item):
-    logger.info("pelisalacarta.channels.divxatope findvideos")
+    logger.info()
     itemlist=[]
 
     # Descarga la pagina
@@ -269,7 +257,7 @@ def findvideos(item):
         url = urlparse.urljoin(item.url,scrapedurl)
         thumbnail = servertools.guess_server_thumbnail(title)
         plot = ""
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+        logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
         new_item = Item(channel=item.channel, action="extract_url", title=title , fulltitle = title, url=url , thumbnail=thumbnail , plot=plot , folder=True, parentContent=item)
         if comentarios.startswith("Ver en"):
             itemlist_ver.append( new_item)
@@ -293,7 +281,7 @@ def findvideos(item):
     return itemlist
 
 def extract_url(item):
-    logger.info("pelisalacarta.channels.divxatope extract_url")
+    logger.info()
 
     itemlist = servertools.find_video_items(data=item.url)
 
