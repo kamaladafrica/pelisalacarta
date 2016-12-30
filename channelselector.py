@@ -84,19 +84,21 @@ def getmainlist(preferred_thumb=""):
                          thumbnail=get_thumb(preferred_thumb,"thumb_descargas.png"),
                          viewmode="list"))
 
+    thumb_configuracion = "thumb_configuracion_"+config.get_setting("plugin_updates_available")+".png"
+
     if "xbmceden" in config.get_platform():
 
         itemlist.append(Item(title=config.get_localized_string(30100),
                              channel="configuracion", 
                              action="mainlist",
-                             thumbnail=get_thumb(preferred_thumb,"thumb_configuracion.png"),
+                             thumbnail=get_thumb(preferred_thumb,thumb_configuracion),
                              folder=False, 
                              viewmode="list"))
     else:
         itemlist.append(Item(title=config.get_localized_string(30100),
                              channel="configuracion", 
                              action="mainlist",
-                             thumbnail=get_thumb(preferred_thumb,"thumb_configuracion.png"),
+                             thumbnail=get_thumb(preferred_thumb,thumb_configuracion),
                              category=config.get_localized_string(30100),
                              viewmode="list"))
 

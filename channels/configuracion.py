@@ -25,6 +25,9 @@
 # Configuracion
 # ------------------------------------------------------------
 
+import os
+import sys
+
 from core import config
 from core.item import Item
 from core import logger
@@ -40,6 +43,17 @@ def mainlist(item):
     itemlist = list()
     itemlist.append(Item(channel=CHANNELNAME, title="Preferencias", action="settings", folder=False,
                          thumbnail=get_thumbnail_path("thumb_configuracion.png")))
+
+    if config.get_setting("plugin_updates_available")=="0":
+        nuevas = ""
+    elif config.get_setting("plugin_updates_available")=="1":
+        nuevas = " (1 nueva)"
+    else:
+        nuevas = " ("+config.get_setting("plugin_updates_available")+" nuevas)"
+
+    itemlist.append(Item(channel=CHANNELNAME, title="Descargar e instalar otras versiones"+nuevas, action="get_all_versions",
+                             folder=True))
+
     itemlist.append(Item(channel=CHANNELNAME, title="", action="", folder=False,
                          thumbnail=get_thumbnail_path("thumb_configuracion.png")))
 
@@ -57,17 +71,16 @@ def mainlist(item):
         itemlist.append(Item(channel="biblioteca", action="update_biblio", folder=False,
                              thumbnail=get_thumbnail_path("thumb_biblioteca.png"),
                              title="   Buscar nuevos episodios y actualizar biblioteca"))
-    itemlist.append(Item(channel=CHANNELNAME, title="   Herramientas", action="submenu_tools",
-                         folder=True, thumbnail=get_thumbnail_path("thumb_configuracion.png")))
 
-    itemlist.append(Item(channel=CHANNELNAME, title="   Comprobar actualizaciones", action="check_for_updates",
-                         folder=False, thumbnail=get_thumbnail_path("Crystal_Clear_action_info.png")))
     itemlist.append(Item(channel=CHANNELNAME, title="   Añadir o Actualizar canal/conector desde una URL",
                          action="menu_addchannels"))
     itemlist.append(Item(channel=item.channel, action="", title="", folder=False,
                          thumbnail=get_thumbnail_path("thumb_configuracion.png")))
 
     itemlist.append(Item(channel=CHANNELNAME, title="Ajustes por canales", action="", folder=False,
+                         thumbnail=get_thumbnail_path("thumb_configuracion.png")))
+    itemlist.append(Item(channel=CHANNELNAME, title="  Activar/Desactivar canales",
+                         action="conf_tools", folder=True, extra="channels_onoff",
                          thumbnail=get_thumbnail_path("thumb_configuracion.png")))
 
     import channelselector
@@ -80,9 +93,24 @@ def mainlist(item):
             setting = jsonchannel["settings"]
             if type(setting) == list:
                 if len([s for s in setting if "id" in s and "include_in_" not in s["id"]]):
-                    itemlist.append(Item(channel=CHANNELNAME,  title="   Configuración del canal '%s'" % channel.title,
-                                         action="channel_config", config=channel.channel, folder=False,
-                                         thumbnail=channel.thumbnail))
+                    active_status = None
+                    if config.get_setting("enabled", channel.channel):
+                        active_status = config.get_setting("enabled", channel.channel)
+                    else:
+                        channel_parameters = channeltools.get_channel_parameters(channel.channel)
+                        active_status = channel_parameters['active']
+
+                    if active_status == "true":
+                        itemlist.append(Item(channel=CHANNELNAME,
+                                             title="   Configuración del canal '%s'" % channel.title,
+                                             action="channel_config", config=channel.channel,
+                                             folder=False,
+                                             thumbnail=channel.thumbnail))
+
+    itemlist.append(Item(channel=item.channel, action="", title="", folder=False,
+                         thumbnail=get_thumbnail_path("thumb_configuracion.png")))
+    itemlist.append(Item(channel=CHANNELNAME, title="Otras herramientas", action="submenu_tools",
+                         folder=True, thumbnail=get_thumbnail_path("thumb_configuracion.png")))
 
     return itemlist
 
@@ -92,23 +120,77 @@ def channel_config(item):
     return platformtools.show_channel_settings(channelpath=filetools.join(config.get_runtime_path(), "channels",
                                                                           item.config))
 
+def get_all_versions(item):
+    logger.info()
 
-def check_for_updates(item):
+    itemlist = []
+
+    # Lee la versión local
     from core import updater
 
-    try:
-        version = updater.checkforupdates()
-        if version:
-            from platformcode import platformtools
-            yes_pressed = platformtools.dialog_yesno("Versión "+version+" disponible", "¿Quieres instalarla?")
+    # Descarga la lista de versiones
+    from core import api
+    api_response = api.plugins_get_all_packages()
 
-            if yes_pressed:
-                item = Item(version=version)
-                updater.update(item)
+    if api_response["error"]:
+        platformtools.dialog_ok("Error", "Se ha producido un error al descargar la lista de versiones")
+        return
 
-    except:
-        pass
+    for entry in api_response["body"]:
 
+        if entry["package"]=="plugin":
+            title = "pelisalacarta "+entry["tag"]+" (Publicada "+entry["date"]+")"
+            local_version_number = updater.get_current_plugin_version()
+        elif entry["package"]=="channels":
+            title = "Canales (Publicada "+entry["date"]+")"
+            local_version_number = updater.get_current_channels_version()
+        elif entry["package"]=="servers":
+            title = "Servidores (Publicada "+entry["date"]+")"
+            local_version_number = updater.get_current_servers_version()
+        else:
+            title = entry["package"]+" (Publicada "+entry["date"]+")"
+            local_version_number = None
+
+        if local_version_number is None:
+            title = title
+
+        elif entry["version"] == local_version_number:
+            title = title + " ACTUAL"
+
+        elif entry["version"] > local_version_number:
+            title = "[COLOR yellow]"+ title + " ¡NUEVA VERSIÓN![/COLOR]"
+
+        else:
+            title = "[COLOR FF666666]"+ title + "[/COLOR]"
+
+        itemlist.append(Item(channel=CHANNELNAME, title=title, url=entry["url"], filename=entry["filename"], package=entry["package"], version=str(entry["version"]), action="download_and_install_package", folder=False))
+
+    return itemlist
+
+def download_and_install_package(item):
+    logger.info()
+
+    from core import updater
+    from platformcode import platformtools
+
+    if item.package=="plugin" and int(item.version)<updater.get_current_plugin_version():
+
+        if not platformtools.dialog_yesno("Instalando versión anterior","¿Seguro que quieres instalar una versión anterior?"):
+            return
+
+    local_file_name = os.path.join( config.get_data_path() , item.filename)
+    updater.download_and_install(item.url,local_file_name)
+
+    if item.package=="channels":
+        updater.set_current_channels_version(item.version)
+    elif item.package=="servers":
+        updater.set_current_servers_version(item.version)
+    elif item.package=="plugin":
+        updater.set_current_plugin_version(item.version)
+
+    if config.is_xbmc() and config.get_system_platform() != "xbox":
+        import xbmc
+        xbmc.executebuiltin("Container.Refresh")
 
 def settings(item):
     config.open_settings()
@@ -293,13 +375,6 @@ def submenu_tools(item):
     itemlist.append(Item(channel=CHANNELNAME, title="Herramientas de canales", action="",
                          folder=False,
                          thumbnail=get_thumbnail_path("thumb_configuracion.png")))
-    itemlist.append(Item(channel=CHANNELNAME, title="    Activar/Desactivar canales",
-                         action="conf_tools", folder=True, extra="channels_onoff",
-                         thumbnail=get_thumbnail_path("thumb_configuracion.png")))
-    itemlist.append(Item(channel=CHANNELNAME,
-                         title="    [COLOR red]Para solucion de errores[/COLOR]",
-                         action="", folder=False,
-                         thumbnail=get_thumbnail_path("thumb_configuracion.png")))
     itemlist.append(Item(channel=CHANNELNAME, title="       Comprobar archivos *_data.json",
                          action="conf_tools", folder=True, extra="lib_check_datajson",
                          thumbnail=get_thumbnail_path("thumb_configuracion.png")))
@@ -422,9 +497,9 @@ def conf_tools(item):
                              'ayuda']
 
         try:
+            import os
+            from core import jsontools
             for channel in channel_list:
-                import os
-                from core import jsontools
 
                 needsfix = None
                 list_status = None
@@ -611,6 +686,8 @@ def channel_status(item, dict_values):
                 logger.info("Canal: " + v + " | Estado seleccionado: " +
                             str(dict_values[v]).lower())
                 config.set_setting("enabled", str(dict_values[v]).lower(), v)
+
+        platformtools.itemlist_update(Item(channel=CHANNELNAME, action="mainlist"))
 
     except:
         import traceback

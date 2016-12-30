@@ -147,6 +147,8 @@ def lista(item):
         if "divxatope.com/serie" in url:
             contentTitle = re.sub('\s+-|\.{3}$', '', contentTitle)
             capitulo = ''
+            temporada  = 0
+            episodio = 0
 
             if len(matches) == 3:
                 calidad = matches[0].strip()

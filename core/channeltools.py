@@ -32,6 +32,7 @@ import jsontools
 import logger
 import scrapertools
 
+DEFAULT_UPDATE_URL = "https://raw.githubusercontent.com/tvalacarta/pelisalacarta/develop/python/main-classic/channels/"
 
 def is_adult(channel_name):
     logger.info("pelisalacarta.core.channeltools is_adult channel_name="+channel_name)
@@ -42,7 +43,7 @@ def is_adult(channel_name):
 
 
 def get_channel_parameters(channel_name):
-    # logger.info("channel_name="+channel_name)
+    #logger.info("pelisalacarta.core.channeltools get_channel_parameters channel_name="+channel_name)
 
     channel_xml = os.path.join(config.get_runtime_path(), 'channels', channel_name+".xml")
 
@@ -63,6 +64,7 @@ def get_channel_parameters(channel_name):
         channel_parameters["thumbnail"] = scrapertools.find_single_match(data, "<thumbnail>([^<]*)</thumbnail>")
         channel_parameters["bannermenu"] = scrapertools.find_single_match(data, "<bannermenu>([^<]*)</bannermenu>")
         channel_parameters["fanart"] = scrapertools.find_single_match(data, "<fanart>([^<]*)</fanart>")
+        channel_parameters["update_url"] = scrapertools.find_single_match(data, "<update_url>([^<]*)</update_url>")
 
         if channel_parameters["thumbnail"] and "://" not in channel_parameters["thumbnail"]:
             channel_parameters["thumbnail"] = os.path.join(config.get_runtime_path(), "resources", "images", "squares",
@@ -73,6 +75,10 @@ def get_channel_parameters(channel_name):
         if channel_parameters["fanart"] and "://" not in channel_parameters["fanart"]:
             channel_parameters["fanart"] = os.path.join(config.get_runtime_path(), "resources", "images", "fanart",
                                                         channel_parameters["fanart"])
+
+        if channel_parameters["update_url"]=="":
+            channel_parameters["update_url"] = DEFAULT_UPDATE_URL
+
         channel_parameters["include_in_global_search"] = scrapertools.find_single_match(
             data, "<include_in_global_search>([^<]*)</include_in_global_search>")
 
@@ -90,6 +96,7 @@ def get_channel_parameters(channel_name):
 
         channel_parameters = dict()
         channel_parameters["adult"] = "false"
+        channel_parameters["update_url"] = DEFAULT_UPDATE_URL
 
     return channel_parameters
 
@@ -263,7 +270,6 @@ def set_channel_setting(name, value, channel):
 
     return value
 
-
 def get_channel_module(channel_name, package="channels"):
     # Sustituye al que hay en servertools.py ...
     # ...pero añade la posibilidad de incluir un paquete diferente de "channels"
@@ -275,3 +281,31 @@ def get_channel_module(channel_name, package="channels"):
     logger.info("Importado " + package + channel_name)
 
     return channel_module
+
+def get_channel_remote_url(channel_name):
+
+    channel_parameters = get_channel_parameters(channel_name)
+    remote_channel_url = channel_parameters["update_url"]+channel_name+".py"
+    remote_version_url = channel_parameters["update_url"]+channel_name+".xml" 
+
+    logger.info("pelisalacarta.core.channeltools get_channel_remote_url remote_channel_url="+remote_channel_url)
+    logger.info("pelisalacarta.core.channeltools get_channel_remote_url remote_version_url="+remote_version_url)
+    
+    return remote_channel_url , remote_version_url
+
+def get_channel_local_path(channel_name):
+
+    if channel_name<>"channelselector":
+        local_channel_path = os.path.join( config.get_runtime_path() , 'channels' , channel_name+".py" )
+        local_version_path = os.path.join( config.get_runtime_path() , 'channels' , channel_name+".xml" )
+        local_compiled_path = os.path.join( config.get_runtime_path() , 'channels' , channel_name+".pyo" )
+    else:
+        local_channel_path = os.path.join( config.get_runtime_path() , channel_name+".py" )
+        local_version_path = os.path.join( config.get_runtime_path() , channel_name+".xml" )
+        local_compiled_path = os.path.join( config.get_runtime_path() , channel_name+".pyo" )
+
+    logger.info("pelisalacarta.core.channeltools get_channel_local_path local_channel_path="+local_channel_path)
+    logger.info("pelisalacarta.core.channeltools get_channel_local_path local_version_path="+local_version_path)
+    logger.info("pelisalacarta.core.channeltools get_channel_local_path local_compiled_path="+local_compiled_path)
+    
+    return local_channel_path , local_version_path , local_compiled_path

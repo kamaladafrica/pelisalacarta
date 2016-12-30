@@ -49,6 +49,8 @@ def start():
     # Test if all the required directories are created
     config.verify_directories_created()
 
+    # FIXME: Que cosa más fea... el updater nuevo lo hace, pero al actualizar de la 4.1.2 a la 4.2 no se hace
+    config.set_setting("plugin_version_number","4201")
 
 def run():
     logger.info("pelisalacarta.platformcode.launcher run")
@@ -73,31 +75,40 @@ def run():
         # Action for main menu in channelselector
         if item.action == "getmainlist":
             import channelselector
-            itemlist = channelselector.getmainlist()
 
             # Check for updates only on first screen
-            if config.get_setting("updatecheck2") == "true":
+            if config.get_setting("check_for_plugin_updates") == "true":
                 logger.info("pelisalacarta.platformcode.launcher Check for plugin updates enabled")
                 from core import updater
                 
                 try:
+                    config.set_setting("plugin_updates_available","0")
                     version = updater.checkforupdates()
+                    itemlist = channelselector.getmainlist()
 
                     if version:
+                        config.set_setting("plugin_updates_available","1")
+
                         platformtools.dialog_ok("Versión "+version+" disponible",
                                                 "Ya puedes descargar la nueva versión del plugin\n"
                                                 "desde el listado principal")
 
+                        itemlist = channelselector.getmainlist()
                         itemlist.insert(0, Item(title="Descargar version "+version, version=version, channel="updater",
-                                                action="update", thumbnail=channelselector.get_thumbnail_path() +
-                                                "Crystal_Clear_action_info.png"))
+                                                action="update", thumbnail=channelselector.get_thumb("squares","thumb_actualizar.png")))
                 except:
+                    import traceback
+                    logger.info(traceback.format_exc())
                     platformtools.dialog_ok("No se puede conectar", "No ha sido posible comprobar",
                                             "si hay actualizaciones")
                     logger.info("cpelisalacarta.platformcode.launcher Fallo al verificar la actualización")
+                    config.set_setting("plugin_updates_available","0")
+                    itemlist = channelselector.getmainlist()
 
             else:
                 logger.info("pelisalacarta.platformcode.launcher Check for plugin updates disabled")
+                config.set_setting("plugin_updates_available","0")
+                itemlist = channelselector.getmainlist()
 
             platformtools.render_items(itemlist, item)
 
@@ -106,6 +117,7 @@ def run():
 
             from core import updater
             updater.update(item)
+            config.set_setting("plugin_updates_available","0")
             if config.get_system_platform() != "xbox":
                 import xbmc
                 xbmc.executebuiltin("Container.Refresh")
@@ -152,6 +164,11 @@ def run():
 
                 if not can_open_channel:
                     return
+
+            # Actualiza el canal individual
+            if item.action == "mainlist" and item.channel!="channelselector" and config.get_setting("check_for_channel_updates")=="true":
+                from core import updater
+                updater.update_channel(item.channel)
 
             # Checks if channel exists
             channel_file = os.path.join(config.get_runtime_path(), 'channels', item.channel+".py")

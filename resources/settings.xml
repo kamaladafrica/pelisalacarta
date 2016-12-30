@@ -14,8 +14,15 @@
         <setting id="adult_pin" type="text" label="PIN para abrir canal de adultos" option="hidden" default=""/>
         <setting type="sep"/>
         <setting label="Actualizaciones" type="lsep"/>
-        <setting id="updatecheck2" type="bool" label="30001" default="true"/>
-        <setting id="updatechannels" type="bool" label="30004" default="true"/>
+
+        <setting id="plugin_updates_available" type="number" label="Number of updates available" default="0" visible="false"/>
+        <setting id="check_for_plugin_updates" type="bool" label="30001" default="true"/>
+        <setting id="check_for_channel_updates" type="bool" label="30004" default="true"/>
+
+        <setting id="plugin_version_number" type="number" label="Plugin version number" default="4201" visible="false"/>
+        <setting id="plugin_version_tag" type="text" label="Plugin version tag" default="4.2.0-beta1" visible="false"/>
+        <setting id="channels_version_number" type="number" label="Channels version number" default="20161229" visible="false"/>
+        <setting id="servers_version_number" type="number" label="Channels version number" default="20161229" visible="false"/>
     </category>
 
     <!-- Login -->
