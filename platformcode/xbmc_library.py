@@ -363,6 +363,7 @@ def clean(mostrar_dialogo=False):
 def establecer_contenido(content_type, silent=False):
     if config.is_xbmc():
         continuar = False
+        msg_text = "Ruta Biblioteca personalizada"
 
         librarypath = config.get_setting("librarypath")
         if librarypath == "":
@@ -386,6 +387,8 @@ def establecer_contenido(content_type, silent=False):
                             pass
 
                     continuar = (install and xbmc.getCondVisibility('System.HasAddon(metadata.themoviedb.org)'))
+                    if not continuar:
+                        msg_text = "The Movie Database no instalado."
 
             else: # SERIES
                 # Instalar The TVDB
@@ -407,7 +410,8 @@ def establecer_contenido(content_type, silent=False):
                             pass
 
                     continuar = (install and xbmc.getCondVisibility('System.HasAddon(metadata.tvdb.com)'))
-
+                    if not continuar:
+                        msg_text = "The TVDB no instalado."
 
                 # Instalar TheMovieDB
                 if continuar and not xbmc.getCondVisibility('System.HasAddon(metadata.tvshows.themoviedb.org)'):
@@ -434,6 +438,8 @@ def establecer_contenido(content_type, silent=False):
                             pass
 
                     continuar = (install and xbmc.getCondVisibility('System.HasAddon(metadata.tvshows.themoviedb.org)'))
+                    if not continuar:
+                        msg_text = "The Movie Database no instalado."
 
             idPath = 0
             idParentPath = 0
@@ -466,6 +472,8 @@ def establecer_contenido(content_type, silent=False):
                         continuar = True
                         idParentPath = idPath
                         idPath += 1
+                    else:
+                        msg_text = "Error al fijar librarypath en BD"
 
             if continuar:
                 continuar = False
@@ -526,8 +534,12 @@ def establecer_contenido(content_type, silent=False):
                         continuar = True
                         logger.info("Biblioteca  %s configurada" % content_type)
 
+                if not continuar:
+                    msg_text = "Error al configurar el scraper en la BD."
+
+
         if not continuar:
             heading = "Biblioteca no configurada"
-            msg_text = "Asegurese de tener instalado el scraper de The Movie Database"
+            #msg_text = "Asegurese de tener instalado el scraper de The Movie Database"
             platformtools.dialog_notification(heading, msg_text, icon=1, time=8000)
             logger.info("%s: %s" % (heading,msg_text))
