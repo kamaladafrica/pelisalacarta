@@ -33,7 +33,19 @@ def search(item,texto):
     item.url = "http://www.newpct1.com/index.php?page=buscar&q=%27" + texto +"%27&ordenar=Fecha&inon=Descendente"
     item.extra="buscar-list"
     try:
-        return completo(item)
+        itemlist = completo(item)
+
+        # Esta pagina coloca a veces contenido duplicado, intentamos descartarlo
+        dict_aux = {}
+        for i in itemlist:
+            if not i.url in dict_aux:
+                dict_aux[i.url] = i
+            else:
+                itemlist.remove(i)
+
+        return itemlist
+
+
     # Se captura la excepción, para no interrumpir al buscador global si un canal falla
     except:
         import sys

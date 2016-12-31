@@ -23,8 +23,8 @@ def mainlist(item):
     logger.info()
 
     itemlist = []
-    itemlist.append( Item(channel=item.channel, action="menu" , title="Películas" , url="http://www.divxatope.com/",extra="Peliculas",folder=True))
-    itemlist.append( Item(channel=item.channel, action="menu" , title="Series" , url="http://www.divxatope.com",extra="Series",folder=True))
+    itemlist.append( Item(channel=item.channel, action="menu" , title="Películas" , url="http://www.divxatope1.com/",extra="Peliculas",folder=True))
+    itemlist.append( Item(channel=item.channel, action="menu" , title="Series" , url="http://www.divxatope1.com",extra="Series",folder=True))
     itemlist.append( Item(channel=item.channel, action="search" , title="Buscar..."))
     return itemlist
 
@@ -52,12 +52,23 @@ def menu(item):
 
 def search(item,texto):
     logger.info()
-    if item.url=="":
-        item.url="http://www.divxatope.com/buscar/descargas"
-    item.extra = urllib.urlencode({'search':texto})
+    texto = texto.replace(" ", "+")
+    item.url = "http://www.divxatope1.com/index.php?page=buscar&q=%27" + texto + "%27&ordenar=Fecha&inon=Descendente"
+    item.extra = "buscar-list"
 
     try:
-        return lista(item)
+        itemlist = lista(item)
+
+        # Esta pagina coloca a veces contenido duplicado, intentamos descartarlo
+        dict_aux = {}
+        for i in itemlist:
+            if not i.url in dict_aux:
+                dict_aux[i.url] = i
+            else:
+                itemlist.remove(i)
+
+        return itemlist
+
     # Se captura la excepci?n, para no interrumpir al buscador global si un canal falla
     except:
         import sys
@@ -70,10 +81,10 @@ def newest(categoria):
     item = Item()
     try:
         if categoria == 'peliculas':
-            item.url = "http://www.divxatope.com/categoria/peliculas"
+            item.url = "http://www.divxatope1.com/peliculas"
 
         elif categoria == 'series':
-            item.url = "http://www.divxatope.com/categoria/series"
+            item.url = "http://www.divxatope1.com/series"
 
         else:
             return []
@@ -106,27 +117,22 @@ def lista(item):
     logger.info()
     itemlist = []
 
-    '''
-    <li style="width:136px;height:263px;margin:0px 15px 0px 0px;">
-    <a href="http://www.divxatope.com/descargar/374639_ahi-os-quedais-web-screener-r6-español-castellano-2014.html" title="Descargar Ahi Os Quedais Web  en DVD-Screener torrent gratis"><div  class='ribbon-estreno' ></div>                           <img class="torrent-image" src="http://www.divxatope.com/uploads/torrents/images/thumbnails2/6798_ahi--os--quedais.jpg" alt="Descargar Ahi Os Quedais Web  en DVD-Screener torrent gratis" style="width:130px;height:184px;" />
-    <h2 style="float:left;width:100%;margin:3px 0px 0px 0px;padding:0px 0px 3px 0px;line-height:12px;font-size:12px;height:23px;border-bottom:solid 1px #C2D6DB;">Ahi Os Quedais Web </h2>
-    <strong style="float:left;width:100%;text-align:center;color:#000;margin:0px;padding:3px 0px 0px 0px;font-size:11px;line-height:12px;">DVD-Screener<br>Español Castellano                                                       </strong>
-    </a>
-    </li>
-    '''
+    patron = '<li[^>]*>.*?'
+    patron += '<a href="([^"]+)".*?'
+    patron += 'src="([^"]+)".*?'
+    patron += '<h2[^>]*>([^<]+)</h2>.*?'
 
     # Descarga la pagina
     if item.extra=="":
         data = scrapertools.cachePage(item.url)
-    else:
+        data = scrapertools.get_match(data, '<ul class="pelilist">(.*?)</ul>')
+        patron += '<span[^>]*>(.*?)</span>'
+    else: # buscar...
         data = scrapertools.cachePage(item.url , post=item.extra)
-    #logger.info("data="+data)
+        data = scrapertools.get_match(data, '<ul class="buscar-list">(.*?)</ul>')
+        patron += '<strong[^>]*>(.*?)</strong>'
 
-    patron  = '<li>.*?'
-    patron += '<a href="([^"]+)".*?'
-    patron += '<img src="([^"]+)".*?'
-    patron += '<h2[^>]*>([^<]+)</h2>.*?'
-    patron += '<span[^>]*>(.*?)</span>'
+    #logger.info("data= " + data)
 
     matches = re.compile(patron,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
@@ -216,15 +222,8 @@ def findvideos(item):
     itemlist=[]
 
     # Descarga la pagina
-    item.url = item.url.replace("divxatope.com/descargar/","divxatope.com/ver-online/")
+    item.url = item.url.replace("divxatope1.com/descargar/","divxatope1.com/ver-online/")
 
-    '''
-    <div class="box1"><img src='http://www.divxatope.com/uploads/images/gestores/thumbs/1411605666_nowvideo.jpg' width='33' height='33'></div>
-    <div class="box2">nowvideo</div>
-    <div class="box3">Español Castel</div>
-    <div class="box4">DVD-Screene</div>
-    <div class="box5"><a href="http://www.nowvideo.ch/video/affd21b283421" rel="nofollow" target="_blank">Ver Online</a></div>
-    '''
     # Descarga la pagina
     data = scrapertools.cachePage(item.url)
 
@@ -234,7 +233,7 @@ def findvideos(item):
 
     link = scrapertools.find_single_match(data,'href="http://tumejorserie.*?link=([^"]+)"')
     if link!="":
-        link = "http://www.divxatope.com/"+link
+        link = "http://www.divxatope1.com/"+link
         logger.info("pelisalacarta.channels.divxatope torrent="+link)
         itemlist.append( Item(channel=item.channel, action="play", server="torrent", title="Vídeo en torrent" , fulltitle = item.title, url=link , thumbnail=servertools.guess_server_thumbnail("torrent") , plot=item.plot , folder=False, parentContent=item) )
 
