@@ -173,9 +173,18 @@ def download_and_install_package(item):
     from core import updater
     from platformcode import platformtools
 
-    if item.package=="plugin" and int(item.version)<updater.get_current_plugin_version():
-
-        if not platformtools.dialog_yesno("Instalando versión anterior","¿Seguro que quieres instalar una versión anterior?"):
+    if item.package=="plugin":
+        if int(item.version)<updater.get_current_plugin_version():
+            if not platformtools.dialog_yesno("Instalando versión anterior","¿Seguro que quieres instalar una versión anterior?"):
+                return
+        elif int(item.version)==updater.get_current_plugin_version():
+            if not platformtools.dialog_yesno("Reinstalando versión actual","¿Seguro que quieres reinstalar la misma versión que ya tienes?"):
+                return
+        elif int(item.version)>updater.get_current_plugin_version():
+            if not platformtools.dialog_yesno("Instalando nueva versión","¿Seguro que quieres instalar esta nueva versión?"):
+                return
+    else:
+        if not platformtools.dialog_yesno("Instalando paquete","¿Seguro que quieres instalar este paquete?"):
             return
 
     local_file_name = os.path.join( config.get_data_path() , item.filename)
