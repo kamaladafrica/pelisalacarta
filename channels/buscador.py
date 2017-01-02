@@ -243,12 +243,7 @@ def do_search(item, categories=[]):
     time.sleep(0.5)
     progreso = platformtools.dialog_progress("Buscando '%s'..." % tecleado, "")
     channel_files = sorted(glob.glob(channels_path), key=lambda x: os.path.basename(x))
-    '''channel_files = glob.glob(channels_path)
-    channel_files = sorted(channel_files, key=lambda x: os.path.basename(x))'''
     number_of_channels = len(channel_files)
-
-
-
 
     searches = []
     search_results = {}
@@ -268,23 +263,23 @@ def do_search(item, categories=[]):
 
         # No busca si es un canal inactivo
         if channel_parameters["active"] != "true":
-            logger.info("%s no incluiido" % basename_without_extension)
+            logger.info("%s no incluido" % basename_without_extension)
             continue
 
         # En caso de busqueda por categorias
         if categories:
             if not any(cat in channel_parameters["categories"] for cat in categories):
-                logger.info("%s no incluiido" % basename_without_extension)
+                logger.info("%s no incluido" % basename_without_extension)
                 continue
 
         # No busca si es un canal para adultos, y el modo adulto está desactivado
         if channel_parameters["adult"] == "true" and config.get_setting("adult_mode") == "false":
-            logger.info("%s no incluiido" % basename_without_extension)
+            logger.info("%s no incluido" % basename_without_extension)
             continue
 
         # No busca si el canal es en un idioma filtrado
         if channel_language != "all" and channel_parameters["language"] != channel_language:
-            logger.info("%s no incluiido" % basename_without_extension)
+            logger.info("%s no incluido" % basename_without_extension)
             continue
 
         # No busca si es un canal excluido de la busqueda global
@@ -293,11 +288,11 @@ def do_search(item, categories=[]):
             # Buscar en la configuracion del canal
             include_in_global_search = str(config.get_setting("include_in_global_search", basename_without_extension))
             # Si no hay valor en la configuración del canal se incluye ya que así estaba por defecto
-            if include_in_global_search == "":
-                include_in_global_search = "true"
+            '''if include_in_global_search == "":
+                include_in_global_search = "true"'''
 
         if include_in_global_search.lower() != "true":
-            logger.info("%s no incluiido" % basename_without_extension)
+            logger.info("%s no incluido" % basename_without_extension)
             continue
 
         if progreso.iscanceled():
@@ -345,6 +340,7 @@ def do_search(item, categories=[]):
 
             time.sleep(0.5)
             pendent = [a for a in searches if a.isAlive()]
+
 
     total = 0
 

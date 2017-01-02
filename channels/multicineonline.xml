@@ -2,9 +2,11 @@
 <channel>
     <id>multicineonline</id>
     <name>Multicineonline</name>
+
     <active>true</active>
     <adult>false</adult>
     <language>es</language>
+    <include_in_global_search>disabled</include_in_global_search>
     
     <fanart></fanart>
     <thumbnail>http://s6.postimg.org/7i5tnyc9d/sinluceslogo2.png</thumbnail>
