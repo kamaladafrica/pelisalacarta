@@ -10,6 +10,12 @@
 	<fanart></fanart>
 	<thumbnail>https://s32.postimg.org/gh8lhbkb9/seodiv.png</thumbnail>
 	<bannermenu>https://s31.postimg.org/klwjzp7t7/seodiv_banner.png</bannermenu>
+	
+	<update_url></update_url>
+	<version>1</version>
+	<date>06/12/2016</date>
+	<changes>Release</changes>
+
 
 	<update_url></update_url>
 	<version></version>
@@ -20,12 +26,4 @@
 		<category>series</category>
 	</categories>
 
-	<settings>
-		<id>include_in_global_search</id>
-		<type>bool</type>
-		<label>Incluir en busqueda global</label>
-		<default>false</default>
-		<enabled>false</enabled>
-		<visible>false</visible>
-	</settings>
 </channel>

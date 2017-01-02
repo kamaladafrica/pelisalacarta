@@ -10,6 +10,11 @@
 	<fanart></fanart>
 	<thumbnail>https://s31.postimg.org/5worjw2nv/locopelis.png</thumbnail>
 	<bannermenu>https://s31.postimg.org/ng87bb9jv/locopelis_banner.png</bannermenu>
+	
+	<update_url></update_url>
+	<version>1</version>
+	<date>06/12/2016</date>
+	<changes>Release</changes>
 
 	<categories>
 		<category>latino</category>

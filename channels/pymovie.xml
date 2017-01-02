@@ -10,6 +10,12 @@
 	<fanart></fanart>
 	<thumbnail>https://s27.postimg.org/hvmvz7vab/pymovie.png</thumbnail>
 	<bannermenu>https://s28.postimg.org/3k0wjnwul/pymovie_banner.png</bannermenu>
+	
+	<update_url></update_url>
+	<version>1</version>
+	<date>06/12/2016</date>
+	<changes>Release</changes>
+
 
 	<categories>
 		<category>latino</category>
