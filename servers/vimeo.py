@@ -36,6 +36,11 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
         video_urls.append([title, media_url, data_media['height']])
 
     video_urls.sort(key=lambda x:x[2])
+    try:
+        video_urls.insert(0, [".m3u8 (SD) [vimeo]", json_object['request']['files']['hls']['cdns']
+                             ["akfire_interconnect"]["url"].replace("master.m3u8", "playlist.m3u8"), 0])
+    except:
+        pass
     for video_url in video_urls:
         video_url[2] = 0
         logger.info("pelisalacarta.servers.vimeo %s - %s" % (video_url[0],video_url[1]))
