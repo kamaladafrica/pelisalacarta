@@ -49,9 +49,6 @@ def start():
     # Test if all the required directories are created
     config.verify_directories_created()
 
-    # FIXME: Que cosa más fea... el updater nuevo lo hace, pero al actualizar de la 4.1.2 a la 4.2 no se hace
-    config.set_setting("plugin_version_number","4201")
-
 def run():
     logger.info("pelisalacarta.platformcode.launcher run")
 
