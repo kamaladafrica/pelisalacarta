@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <channel>
 	<id>vidz7</id>
-	<name>vidz7</name>
+	<name>Vidz7</name>
 
 	<active>true</active>
 	<adult>true</adult>
-	<language>es</language>
+	<language>en</language>
 
 	<fanart></fanart>
 	<thumbnail>https://www.dropbox.com/s/7z31b4ixve2ge0l/thumbnail.png?dl=1</thumbnail>
