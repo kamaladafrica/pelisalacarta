@@ -77,11 +77,12 @@ def mainlist(item):
     itemlist.append(Item(channel=item.channel, action="", title="", folder=False,
                          thumbnail=get_thumbnail_path("thumb_configuracion.png")))
 
-    itemlist.append(Item(channel=CHANNELNAME, title="Ajustes por canales", action="", folder=False,
-                         thumbnail=get_thumbnail_path("thumb_configuracion.png")))
-    itemlist.append(Item(channel=CHANNELNAME, title="  Activar/Desactivar canales",
+    itemlist.append(Item(channel=CHANNELNAME, title="Activar/Desactivar canales",
                          action="conf_tools", folder=True, extra="channels_onoff",
                          thumbnail=get_thumbnail_path("thumb_configuracion.png")))
+    itemlist.append(Item(channel=CHANNELNAME, title="Ajustes por canales", action="", folder=False,
+                         thumbnail=get_thumbnail_path("thumb_configuracion.png")))
+
 
     import channelselector
     from core import channeltools

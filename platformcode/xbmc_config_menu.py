@@ -176,7 +176,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
         self.title = title
         self.callback = callback
         self.item = item
-        
+
         if type(custom_button) == dict:
             self.custom_button = {}
             self.custom_button["label"] = custom_button.get("label", "")
@@ -185,7 +185,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             self.custom_button["close"] = bool(custom_button.get("close", False))
         else:
             self.custom_button = None
-          
+
         # Obtenemos el canal desde donde se ha echo la llamada y cargamos los settings disponibles para ese canal
         if not channelpath:
             channelpath = inspect.currentframe().f_back.f_back.f_code.co_filename
@@ -366,7 +366,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             self.setCoordinateResolution(1)
         else:
             self.setCoordinateResolution(5)
-          
+
         # Ponemos el título
         self.getControl(10002).setLabel(self.title)
 
@@ -387,7 +387,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
         self.controls_pos_y = self.getControl(10007).getPosition()[1] + self.getControl(10001).getPosition()[1]
         self.height_control = 35
         font = "font12"
-        
+
         # En versiones antiguas: creamos 5 controles, de lo conrtario al hacer click al segundo control,
         # automaticamente cambia el label del tercero a "Short By: Name" no se porque...
         if xbmcgui.ControlEdit == ControlEdit:
@@ -478,10 +478,10 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             if ctype == "bool":
                 c["default"] = bool(c["default"])
                 self.values[id] = bool(self.values[id])
-            
+
             if ctype in ["bool", "text", "list"]:
                 value = self.values[id]
-            
+
             # Control "bool"
             if ctype == "bool":
                 # Creamos el control
@@ -782,8 +782,8 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
         hidden_controls = [control for control in self.controls if control["show"] == False]
         position = self.controls.index(show_controls[0])
 
-        scrollbar_height = self.getControl(10008).getHeight() - (len(hidden_controls) * 5)
-        scrollbar_y = self.getControl(10008).getPosition()[1] + (position * 5)
+        scrollbar_height = self.getControl(10008).getHeight() - (len(hidden_controls) * 3)
+        scrollbar_y = self.getControl(10008).getPosition()[1] + (position * 3)
         self.getControl(10009).setPosition(self.getControl(10008).getPosition()[0], scrollbar_y)
         self.getControl(10009).setHeight(scrollbar_height)
         self.evaluate_conditions()
@@ -821,8 +821,8 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                     self.return_value = getattr(cb_channel, self.custom_button['function'])(self.item)
                     if self.custom_button["close"]:
                         self.close()
-                
-                
+
+
             else:
                 for c in self.controls:
                     if c["type"] == "text":
@@ -901,7 +901,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                     keyboard.doModal()
                     if keyboard.isConfirmed():
                         cont["control"].setText(keyboard.getText())
-                
+
                 self.values[cont["id"]] = cont["control"].getText()
 
         self.evaluate_conditions()
@@ -994,7 +994,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
 
 
 class ControlEdit(xbmcgui.ControlButton):
-  
+
     def __new__(cls, *args, **kwargs):
         del kwargs["isPassword"]
         del kwargs["window"]
@@ -1009,14 +1009,14 @@ class ControlEdit(xbmcgui.ControlButton):
         self.textControl = xbmcgui.ControlLabel(self.getX(), self.getY(), self.getWidth(), self.getHeight(), self.text,
                                                 font=kwargs["font"], textColor=kwargs["textColor"], alignment=4 | 1)
         self.window.addControl(self.textControl)
-      
+
     def setLabel(self, val):
         self.label = val
         xbmcgui.ControlButton.setLabel(self, val)
-    
+
     def getX(self):
         return xbmcgui.ControlButton.getPosition(self)[0]
-      
+
     def getY(self):
         return xbmcgui.ControlButton.getPosition(self)[1]
 
