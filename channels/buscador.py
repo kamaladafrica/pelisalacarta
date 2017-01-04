@@ -241,8 +241,8 @@ def do_search(item, categories=[]):
     # Para Kodi es necesario esperar antes de cargar el progreso, de lo contrario
     # el cuadro de progreso queda "detras" del cuadro "cargando..." y no se le puede dar a cancelar
     time.sleep(0.5)
-    progreso = platformtools.dialog_progress("Buscando " + tecleado, "")
-    channel_files = glob.glob(channels_path)
+    progreso = platformtools.dialog_progress("Buscando '%s'..." % tecleado, "")
+    channel_files = sorted(glob.glob(channels_path), key=lambda x: os.path.basename(x))
     number_of_channels = len(channel_files)
 
     searches = []
@@ -250,31 +250,36 @@ def do_search(item, categories=[]):
     start_time = time.time()
 
     if multithread:
-        progreso.update(0, "Buscando %s..." % tecleado)
+        progreso.update(0, "Buscando '%s'..." % tecleado)
 
     for index, infile in enumerate(channel_files):
         percentage = index*100/number_of_channels
 
         basename = os.path.basename(infile)
         basename_without_extension = basename[:-4]
+        logger.info("%s..." % basename_without_extension)
 
         channel_parameters = channeltools.get_channel_parameters(basename_without_extension)
 
         # No busca si es un canal inactivo
         if channel_parameters["active"] != "true":
+            logger.info("%s no incluido" % basename_without_extension)
             continue
 
         # En caso de busqueda por categorias
         if categories:
             if not any(cat in channel_parameters["categories"] for cat in categories):
+                logger.info("%s no incluido" % basename_without_extension)
                 continue
 
         # No busca si es un canal para adultos, y el modo adulto está desactivado
         if channel_parameters["adult"] == "true" and config.get_setting("adult_mode") == "false":
+            logger.info("%s no incluido" % basename_without_extension)
             continue
 
         # No busca si el canal es en un idioma filtrado
         if channel_language != "all" and channel_parameters["language"] != channel_language:
+            logger.info("%s no incluido" % basename_without_extension)
             continue
 
         # No busca si es un canal excluido de la busqueda global
@@ -283,18 +288,22 @@ def do_search(item, categories=[]):
             # Buscar en la configuracion del canal
             include_in_global_search = str(config.get_setting("include_in_global_search", basename_without_extension))
             # Si no hay valor en la configuración del canal se incluye ya que así estaba por defecto
-            if include_in_global_search == "":
-                include_in_global_search = "true"
+            '''if include_in_global_search == "":
+                include_in_global_search = "true"'''
 
         if include_in_global_search.lower() != "true":
+            logger.info("%s no incluido" % basename_without_extension)
             continue
 
         if progreso.iscanceled():
-            break
+            progreso.close()
+            logger.info("Busqueda cancelada")
+            return itemlist
 
         # Modo Multi Thread
         if multithread:
-            t = Thread(target=channel_search, args=[search_results, channel_parameters, tecleado])
+            t = Thread(target=channel_search, args=[search_results, channel_parameters, tecleado],
+                       name= channel_parameters["title"])
             t.setDaemon(True)
             t.start()
             searches.append(t)
@@ -302,23 +311,36 @@ def do_search(item, categories=[]):
         # Modo single Thread
         else:
             logger.info("Intentado busqueda en " + basename_without_extension + " de " + tecleado)
-
-            progreso.update(percentage, "Buscando %s en %s..." % (tecleado, channel_parameters["title"]))
             channel_search(search_results, channel_parameters, tecleado)
+
+        logger.info("%s incluido en la busqueda" % basename_without_extension)
+        progreso.update(percentage/2, "Iniciada busqueda de '%s' en %s..." % (tecleado, channel_parameters["title"]))
+
 
     # Modo Multi Thread
     # Usando isAlive() no es necesario try-except,
     # ya que esta funcion (a diferencia de is_alive())
     # es compatible tanto con versiones antiguas de python como nuevas
     if multithread:
-        pendent = len([a for a in searches if a.isAlive()])
+        pendent = [a for a in searches if a.isAlive()]
         while pendent:
-            pendent = len([a for a in searches if a.isAlive()])
-            percentage = (len(searches) - pendent) * 100 / len(searches)
-            progreso.update(percentage, "Buscando %s en %d canales..." % (tecleado, len(searches)))
+            percentage = (len(searches) - len(pendent)) * 100 / len(searches)
+
+            if len(pendent) > 5:
+                progreso.update(percentage, "Buscando '%s' en %d/%d canales..." % (tecleado, len(pendent), len(searches)))
+            else:
+                list_pendent_names = [a.getName() for a in pendent]
+                mensaje = "Buscando '%s' en %s" % (tecleado, ", ".join(list_pendent_names))
+                progreso.update(percentage, mensaje)
+                logger.debug(mensaje)
+
             if progreso.iscanceled():
+                logger.info("Busqueda cancelada")
                 break
+
             time.sleep(0.5)
+            pendent = [a for a in searches if a.isAlive()]
+
 
     total = 0
 

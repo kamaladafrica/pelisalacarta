@@ -26,7 +26,7 @@ color1, color2, color3 = perfil[__perfil__]
 DEBUG = config.get_setting("debug")
 CHANNEL_HOST = "http://www.verseriesynovelas.tv"
 CHANNEL_HEADERS = [
-    ["User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:49.0) Gecko/20100101 Firefox/49.0"],
+    ["User-Agent", "Mozilla/5.0"],
     ["Accept-Encoding", "gzip, deflate"],
     ["Referer", CHANNEL_HOST]
     ]

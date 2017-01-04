@@ -11,10 +11,12 @@ from core import jsunpack
 from core import logger
 from core import scrapertools
 
+headers = [['User-Agent', 'Mozilla']]
+
 
 def test_video_exists( page_url ):
     logger.info("pelisalacarta.servers.gamovideo test_video_exists(page_url='%s')" % page_url)
-    data = scrapertools.cache_page(page_url)
+    data = scrapertools.cache_page(page_url, headers=headers)
 
     if ("File was deleted" or "Not Found") in data:
         return False, "[Gamovideo] El archivo no existe o ha sido borrado"
@@ -24,7 +26,7 @@ def test_video_exists( page_url ):
 def get_video_url( page_url , premium = False , user="" , password="", video_password="" ):
     logger.info("pelisalacarta.servers.gamovideo get_video_url(page_url='%s')" % page_url)
 
-    data = scrapertools.cache_page(page_url)
+    data = scrapertools.cache_page(page_url, headers=headers)
     packer = scrapertools.find_single_match(data,"<script type='text/javascript'>(eval.function.p,a,c,k,e,d..*?)</script>")
     if packer != "":
       unpacker = jsunpack.unpack(data)  

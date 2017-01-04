@@ -108,7 +108,7 @@ def peliculas(item):
     itemlist = []
     data = scrapertools.cache_page(item.url)
    
-    patron = '<div class="home_post_cont.*? post_box"> <a href="([^"]+)".*?src="([^"]+)".*?title="([^"]+)".*?p&gt;([^&]+)&lt;'
+    patron = '<div class="home_post_cont.*? post_box">.*?<a href="([^"]+)".*?src="([^"]+)".*?title="([^"]+)".*?p&gt;([^&]+)&lt;'
     matches = re.compile(patron,re.DOTALL).findall(data)
 
     for scrapedurl,scrapedthumbnail,scrapedtitle,scrapedplot in matches:

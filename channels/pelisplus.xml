@@ -10,6 +10,11 @@
 	<fanart></fanart>
 	<thumbnail>https://s13.postimg.org/z5dbzfasn/pelisplus.png</thumbnail>
 	<bannermenu>https://s16.postimg.org/p9xz2vlo5/pelisplus_banner.png</bannermenu>
+	
+	<update_url></update_url>
+	<version>1</version>
+	<date>06/12/2016</date>
+	<changes>Release</changes>
 
 	<categories>
 		<category>latino</category>
