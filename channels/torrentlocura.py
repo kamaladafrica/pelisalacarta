@@ -113,6 +113,10 @@ def buscador(item):
     bloque_enlaces =scrapertools.find_single_match(data, 'Resultados(.*?)end .page-box')
     result_0=scrapertools.find_multiple_matches(bloque_enlaces,'a href="([^"]+)" title="Descargar (.*?) ([^<]+)"><img src="([^"]+)".*?Descargar</a>')
     for url,tipo,title,thumb in result_0:
+        try:
+          year=scrapertools.find_single_match(title,'(\d\d\d\d)')
+        except:
+          year =""
         if tipo =="Serie":
            contentType="tv"
            title =re.sub(r'-.*','',title)
@@ -133,7 +137,7 @@ def buscador(item):
            title=title.replace("ï¿½","ñ")
         title_fan=title
         title_fan =re.sub(r"\(.*?\)|-Remastered|Black And Chrome Edition|V.extendidaHD|1080p|Screener|V.O|HdRip|.*?--|\(\d+\)|\d\d\d\d|HD","",title_fan)
-        itemlist.append( Item(channel=item.channel, title = "[COLOR firebrick][B]"+tipo+"[/B][/COLOR]--"+ "[COLOR red][B]"+title+"[/B][/COLOR]" , url=url, action="fanart", thumbnail=thumb, fanart="", contentType=contentType ,extra=title_fan+"|"+"[COLOR red][B]"+title_fan+"[/B][/COLOR]", folder=True) )
+        itemlist.append( Item(channel=item.channel, title = "[COLOR firebrick][B]"+tipo+"[/B][/COLOR]--"+ "[COLOR red][B]"+title+"[/B][/COLOR]" , url=url, action="fanart", thumbnail=thumb, fanart="", contentType=contentType ,extra=title_fan+"|"+"[COLOR red][B]"+title_fan+"[/B][/COLOR]"+"|"+year, folder=True) )
     return itemlist
 
 def scraper(item):
@@ -384,36 +388,39 @@ def fanart(item):
          fanart_4 = fanart
      images_fanarttv= fanartv(item,id_tvdb,id)
      if item.contentType!="movie":
-         
          action="findvideos"
-         try:
-          thumbnail_art = images_fanarttv.get("hdtvlogo")[0].get("url")
-         except:
-             try:
+         if images_fanarttv:
+          try:
+           thumbnail_art = images_fanarttv.get("hdtvlogo")[0].get("url")
+          except:
+            try:
               thumbnail_art= images_fanarttv.get("clearlogo")[0].get("url")
-             except:
-               thumbnail_art =posterdb
-         if images_fanarttv.get("tvbanner"):
+            except:
+              thumbnail_art =posterdb
+          if images_fanarttv.get("tvbanner"):
            tvf =images_fanarttv.get("tvbanner")[0].get("url")
-         elif images_fanarttv.get("tvthumb"):
+          elif images_fanarttv.get("tvthumb"):
            tvf =images_fanarttv.get("tvthumb")[0].get("url")
-         elif images_fanarttv.get("tvposter"):
+          elif images_fanarttv.get("tvposter"):
            tvf =images_fanarttv.get("tvposter")[0].get("url")
-         else:
+          else:
            tvf =posterdb
-         if images_fanarttv.get("tvthumb"):
+          if images_fanarttv.get("tvthumb"):
             thumb_info =images_fanarttv.get("tvthumb")[0].get("url")
-         else:
+          else:
             thumb_info =thumbnail_art
 
-         if images_fanarttv.get("hdclearart"):
+          if images_fanarttv.get("hdclearart"):
             tiw= images_fanarttv.get("hdclearart")[0].get("url")
-         elif images_fanarttv.get("characterart"):
+          elif images_fanarttv.get("characterart"):
             tiw=images_fanarttv.get("characterart")
-         elif images_fanarttv.get("hdtvlogo"):
+          elif images_fanarttv.get("hdtvlogo"):
             tiw=images_fanarttv.get("hdtvlogo")[0].get("url")
+          else:
+            tiw=""
          else:
             tiw=""
+            tvf=thumbnail_info=thumbnail_art=posterdb
      else:
          action="findvideos_enlaces"
          if images_fanarttv:
