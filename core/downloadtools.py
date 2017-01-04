@@ -564,7 +564,6 @@ def downloadfile(url, nombrefichero, headers=None, silent=False, continuar=False
                 f.seek(exist_size)
             else:
                 exist_size = 0
-                f = open(nombrefichero, 'wb')
                 grabado = 0
 
         # el fichero ya existe y no se quiere continuar, se aborta
