@@ -21,7 +21,7 @@ import xbmcgui
 from core import tmdb
 from core.scrapertools import decodeHtmlentities as dhe
 import unicodedata
-from core import jsontools
+
 
 ACTION_SHOW_FULLSCREEN = 36
 ACTION_GESTURE_SWIPE_LEFT = 511
@@ -84,9 +84,9 @@ def mainlist(item):
     itemlist.append( itemlist[-1].clone(title="[COLOR crimson][B]   Películas 3D[/B][/COLOR]", action="scraper",url="http://torrentlocura.com/peliculas-3d/",thumbnail="http://imgur.com/RfZjMBi.png", fanart="http://imgur.com/V7QZLAL.jpg",contentType= "movie"))
     itemlist.append( itemlist[-1].clone(title="   [COLOR crimson][B]Películas subtituladas[/B][/COLOR]", action="scraper",url="http://torrentlocura.com/peliculas-vo/",thumbnail="http://imgur.com/RfZjMBi.png", fanart="http://imgur.com/V7QZLAL.jpg",contentType= "movie"))
     itemlist.append( itemlist[-1].clone(title="[COLOR crimson][B]   Películas Audio Latino[/B][/COLOR]", action="scraper",url="http://torrentlocura.com/peliculas-latino/",thumbnail="http://imgur.com/RfZjMBi.png", fanart="http://imgur.com/V7QZLAL.jpg",contentType= "movie"))
-    itemlist.append( itemlist[-1].clone(title="[COLOR crimson][B]Series[/B][/COLOR]", action="scraper",url="http://torrentlocura.com/series/",thumbnail="http://imgur.com/vX2dUYl.png",contentType= "tv"))
-    itemlist.append( itemlist[-1].clone(title="   [COLOR crimson][B]Series HD[/B][/COLOR]", action="scraper",url="http://torrentlocura.com/series-hd/",thumbnail="http://imgur.com/vX2dUYl.png", fanart="http://imgur.com/V7QZLAL.jpg",contentType= "tv"))
-    itemlist.append( itemlist[-1].clone(title="[COLOR crimson][B]Buscar[/B][/COLOR]", action="search",url="",thumbnail="http://imgur.com/rSttk79.png", fanart="http://imgur.com/V7QZLAL.jpg",contentType= ""))
+    itemlist.append( itemlist[-1].clone(title="[COLOR crimson][B]Series[/B][/COLOR]", action="scraper",url="http://torrentlocura.com/series/",thumbnail="http://imgur.com/vX2dUYl.png",contentType="tvshow"))
+    itemlist.append( itemlist[-1].clone(title="   [COLOR crimson][B]Series HD[/B][/COLOR]", action="scraper",url="http://torrentlocura.com/series-hd/",thumbnail="http://imgur.com/vX2dUYl.png", fanart="http://imgur.com/V7QZLAL.jpg",contentType="tvshow"))
+    itemlist.append( itemlist[-1].clone(title="[COLOR crimson][B]Buscar[/B][/COLOR]", action="search",url="",thumbnail="http://imgur.com/rSttk79.png", fanart="http://imgur.com/V7QZLAL.jpg"))
     
     return itemlist
 
@@ -95,7 +95,7 @@ def search(item,texto):
     texto = texto.replace(" ","+")
     item.url = "http://torrentlocura.com/buscar"
     item.extra = urllib.urlencode({'q':texto})
-    item.contentType="tv"
+    item.contentType!="movie"
     try:
         return buscador(item)
     # Se captura la excepción, para no interrumpir al buscador global si un canal falla
@@ -119,13 +119,12 @@ def buscador(item):
         else:
            contentType="movie"
            title = title.replace("RIP","HdRip")
-           if not "Estrenos" or not "PC" in tipo:
-              tipo="Pelicula"
+           if not "pelicula" in url:
+              continue
+           
            else:
-              if tipo=="PC":
-                 continue
-              else:
-                 title = re.sub(r'de Cine','Screener',title)
+               tipo="Pelicula"
+               title = re.sub(r'de Cine','Screener',title)
         if title in str(check_item):
            continue
         check_item.append([title])
@@ -133,7 +132,7 @@ def buscador(item):
         if "ï¿½" in title:
            title=title.replace("ï¿½","ñ")
         title_fan=title
-        title_fan =re.sub(r"\(.*?\)|-Remastered|Black And Chrome Edition|V.extendidaHD|1080p|Screeener|V.O|Hdrip|.*?--|\(\d+\)|\d\d\d\d","",title_fan)
+        title_fan =re.sub(r"\(.*?\)|-Remastered|Black And Chrome Edition|V.extendidaHD|1080p|Screener|V.O|HdRip|.*?--|\(\d+\)|\d\d\d\d|HD","",title_fan)
         itemlist.append( Item(channel=item.channel, title = "[COLOR firebrick][B]"+tipo+"[/B][/COLOR]--"+ "[COLOR red][B]"+title+"[/B][/COLOR]" , url=url, action="fanart", thumbnail=thumb, fanart="", contentType=contentType ,extra=title_fan+"|"+"[COLOR red][B]"+title_fan+"[/B][/COLOR]", folder=True) )
     return itemlist
 
@@ -149,22 +148,26 @@ def scraper(item):
     else:
      matches = scrapertools.find_multiple_matches(bloque_enlaces,'<a href="([^"]+)".*?src="([^"]+)".*?Descargar ([^<]+) gratis">.*?<\/h2><span>([^<]+)<\/span>')
     for url,thumb,title,quality in matches:
+        try:
+          year=scrapertools.find_single_match(title,'(\d\d\d\d)')
+        except:
+          year =""
         title=title.decode('ISO-8859-1').encode('utf-8')
         if "ï¿½" in title:
            title=title.replace("ï¿½","ñ")
         title= re.sub(r'\(\d+\)|\d\d\d\d','',title)
         title_fan=title
         title_item="[COLOR red][B]"+title+"[/B][/COLOR]"
-        if "HD" in item.title and item.contentType=="tv":
+        if "HD" in item.title and item.contentType!="movie":
            title = "[COLOR red][B]"+title+"[/B][/COLOR]"
         else:
            title = "[COLOR red][B]"+title+"[/B][/COLOR]"+"[COLOR floralwhite] "+quality+"[/COLOR]"
-        itemlist.append( Item(channel=item.channel, title =title , url=url, action="fanart", thumbnail=thumb, fanart=item.fanart,extra=title_fan+"|"+title_item, contentType=item.contentType , folder=True) )
+        itemlist.append( Item(channel=item.channel, title =title , url=url, action="fanart", thumbnail=thumb, fanart=item.fanart,extra=title_fan+"|"+title_item+"|"+year, contentType=item.contentType , folder=True) )
     ## Paginación
     next=scrapertools.find_single_match(data,'href="([^"]+)">Next<\/a>')
     if len(next)>0:
         url =next
-        itemlist.append( Item(channel=item.channel, action="scraper", title="[COLOR khaki]siguiente[/COLOR]" , url=url , thumbnail="http://imgur.com/fJzoytz.png", fanart="http://imgur.com/3AqH1Zu.jpg",extra=item.extra,contentType=item.contentType,  folder=True) )
+        itemlist.append( Item(channel=item.channel, action="scraper", title="[COLOR darkred][B]siguiente[/B][/COLOR]" , url=url , thumbnail="http://imgur.com/D4ZgFri.png", fanart=item.fanart,extra=item.extra,contentType=item.contentType,  folder=True) )
 
     return itemlist
 
@@ -172,46 +175,69 @@ def scraper(item):
 def fanart(item):
     logger.info("pelisalacarta.torrentlocura fanart")
     itemlist = []
+    year=item.extra.split("|")[2]
+    if item.contentType!="movie":
+       tipo_ps="tv"
+    else:
+       tipo_ps="movie"
     url = item.url
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
     title = item.extra.split("|")[0]
+    title_o=scrapertools.find_single_match(data,'<meta name="description"[^<]+original(.*?)&')
     item.title = item.extra.split("|")[1]
-    title =re.sub(r"\(.*?\)|-Remastered|Black And Chrome Edition|V.extendidaHD|1080p|Screeener|V.O|Hdrip|.*?--","",title)
+    title_imdb=re.sub(r'\[.*?\]','',item.extra.split("|")[1])
+    title =re.sub(r"\(.*?\)|-Remastered|Black And Chrome Edition|V.extendida|Version Extendida|V.Extendida|HEVC|X\d+|x\d+|LINE|HD|1080p|Screeener|V.O|Hdrip|.*?--|3D|SBS|HOU","",title)
+    
     sinopsis=scrapertools.find_single_match(data,'Sinopsis<br \/>(.*?)<\/div>')
-    if item.contentType !="movie":
+    if sinopsis=="":
+        try:
+         sinopsis=scrapertools.find_single_match(data,'sinopsis\'>(.*?)<\/div>')
+        except:
+         sinopsis=""
+    if "Miniserie" in sinopsis:
+        tipo_ps="tv"
+        year= scrapertools.find_single_match(sinopsis,'de TV \((\d+)\)')
+    if year=="":
+     if item.contentType !="movie":
        try:
         year =scrapertools.find_single_match(data,'<strong>Estreno:<\/strong>(\d+)<\/span>')
        except:
         year=""
-    else:
+     else:
         year =scrapertools.find_single_match(data,'<br \/>A.*?(\d+)<br \/>')
         if year =="":
          try:
             year=scrapertools.find_single_match(data,'Estreno.*?\d+/\d+/(\d+)')
          except:
-            year=""
+           try:
+             year=scrapertools.find_single_match(data,'<div class=\'descripcion_top\'>.*?A&ntilde;o<br />.*?(\d\d\d\d)')
+           except:
+               try:
+                   year=scrapertools.find_single_match(data,'<meta name="description"[^<]+A&ntilde;o[^<]+\d\d\d\d')
+               except:
+                  year=""
     infoLabels = {'title': title, 'sinopsis': sinopsis, 'year': year}
     critica, rating_filma, year_f,sinopsis_f = filmaffinity(item,infoLabels)
     if sinopsis=="":
        sinopsis = sinopsis_f
     if year=="":
        year = year_f
-    otmdb = tmdb.Tmdb(texto_buscado=title, year=year,tipo=item.contentType)
+    otmdb = tmdb.Tmdb(texto_buscado=title, year=year,tipo=tipo_ps)
     id= otmdb.result.get("id")
     posterdb= otmdb.result.get("poster_path")
     if posterdb==None:
-        otmdb = tmdb.Tmdb(texto_buscado=title,tipo=item.contentType)
+        otmdb = tmdb.Tmdb(texto_buscado=title,tipo=tipo_ps)
         id= otmdb.result.get("id")
         posterdb= otmdb.result.get("poster_path")
         if posterdb==None:
-             if item.contentType== "tv":
-              urlbing_imdb = "http://www.bing.com/search?q=%s+%s+tv+series+site:imdb.com" % (item.title.replace(' ', '+'),  year)
+             if item.contentType!="movie":
+              urlbing_imdb = "http://www.bing.com/search?q=%s+%s+tv+series+site:imdb.com" % (title_imdb.replace(' ', '+'),  year)
               data = browser (urlbing_imdb)
               data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|http://ssl-proxy.my-addr.org/myaddrproxy.php/","",data)
               subdata_imdb =scrapertools.find_single_match(data,'<li class="b_algo">(.*?)h="ID.*?<strong>.*?TV Series')
              else:
-                urlbing_imdb = "http://www.bing.com/search?q=%s+%s+site:imdb.com" % (item.title.replace(' ', '+'),  year)
+                urlbing_imdb = "http://www.bing.com/search?q=%s+%s+site:imdb.com" % (title_imdb.replace(' ', '+'),  year)
                 data = browser (urlbing_imdb)
                 data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|http://ssl-proxy.my-addr.org/myaddrproxy.php/","",data)
                 subdata_imdb =scrapertools.find_single_match(data,'<li class="b_algo">(.*?)h="ID.*?<strong>')
@@ -222,19 +248,19 @@ def fanart(item):
                    imdb_id = scrapertools.get_match(subdata_imdb,'<a href=.*?http.*?imdb.com/.*?/title/(.*?)/.*?"')
                  except:
                    imdb_id=""
-             otmdb = tmdb.Tmdb(external_id=imdb_id, external_source="imdb_id",tipo=item.contentType,idioma_busqueda="es")
+             otmdb = tmdb.Tmdb(external_id=imdb_id, external_source="imdb_id",tipo=tipo_ps,idioma_busqueda="es")
              id= otmdb.result.get("id")
              posterdb= otmdb.result.get("poster_path")
              if not posterdb :
-                if "(" in item.title:
-                 title =scrapertools.find_single_match(item.title,'\(.*?\)')
-                 if item.contentType== "tv":
-                    urlbing_imdb = "http://www.bing.com/search?q=%s+%s+tv+series+site:imdb.com" % (item.title.replace(' ', '+'),  year)
+                if "(" in title_imdb:
+                 title =scrapertools.find_single_match(title_imdb,'\(.*?\)')
+                 if item.contentType!="movie":
+                    urlbing_imdb = "http://www.bing.com/search?q=%s+%s+tv+series+site:imdb.com" % (title_imdb.replace(' ', '+'),  year)
                     data = browser (urlbing_imdb)
                     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|http://ssl-proxy.my-addr.org/myaddrproxy.php/","",data)
                     subdata_imdb =scrapertools.find_single_match(data,'<li class="b_algo">(.*?)h="ID.*?<strong>.*?TV Series')
                  else:
-                      urlbing_imdb = "http://www.bing.com/search?q=%s+%s+site:imdb.com" % (item.title.replace(' ', '+'),  year)
+                      urlbing_imdb = "http://www.bing.com/search?q=%s+%s+site:imdb.com" % (title_imdb.replace(' ', '+'),  year)
                       data = browser (urlbing_imdb)
                       data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|http://ssl-proxy.my-addr.org/myaddrproxy.php/","",data)
                       subdata_imdb =scrapertools.find_single_match(data,'<li class="b_algo">(.*?)h="ID.*?<strong>')
@@ -245,7 +271,7 @@ def fanart(item):
                        imdb_id = scrapertools.get_match(subdata_imdb,'<a href=.*?http.*?imdb.com/.*?/title/(.*?)/.*?"')
                      except:
                        imdb_id=""
-                 otmdb = tmdb.Tmdb(external_id=imdb_id, external_source="imdb_id",tipo=item.contentType,idioma_busqueda="es")
+                 otmdb = tmdb.Tmdb(external_id=imdb_id, external_source="imdb_id",tipo=tipo_ps,idioma_busqueda="es")
                  id= otmdb.result.get("id")
                  posterdb= otmdb.result.get("poster_path")
                  if not posterdb:
@@ -258,6 +284,10 @@ def fanart(item):
                    extra = str(fanart_2)+"|"+str(fanart_3)+"|"+str(fanart_4)+"|"+str(id)+"|"+str(tvf)+"|"+str(id_tvdb)+"|"+str(tiw)+"|"+str(rating)
                    itemlist.append( Item(channel=item.channel, title=item.title, url=item.url, action="findvideos", thumbnail=item.thumbnail, fanart=item.fanart,extra=extra,folder=True) )
                 else:
+                 if tipo_ps !="movie":
+                    action= "findvideos"
+                 else:
+                    action= "findvideos_enlaces"
                  id=tiw=rating=tagline=id_tvdb=""
                  fanart_4=fanart_2=fanart_3= item.fanart
                  rating="Sin Puntuación"
@@ -265,7 +295,7 @@ def fanart(item):
                  fanart_info= item.fanart
                  thumbnail_art=item.thumbnail
                  extra = str(fanart_2)+"|"+str(fanart_3)+"|"+str(fanart_4)+"|"+str(id)+"|"+str(tvf)+"|"+str(id_tvdb)+"|"+str(tiw)+"|"+str(rating)
-                 itemlist.append( Item(channel=item.channel, title=item.title, url=item.url, action="findvideos", thumbnail=item.thumbnail, fanart=item.fanart,extra=extra,folder=True) )
+                 itemlist.append( Item(channel=item.channel, title=item.title, url=item.url, action=action, thumbnail=item.thumbnail, fanart=item.fanart,extra=extra,contentType=item.contentType, folder=True) )
     if  posterdb !=item.thumbnail:
      if not "null" in posterdb:
         posterdb= "https://image.tmdb.org/t/p/original"+posterdb
@@ -286,12 +316,12 @@ def fanart(item):
      else:
        rating ="Sin puntuacíon"
      imagenes=[]
-     itmdb = tmdb.Tmdb(id_Tmdb=id, tipo=item.contentType)
+     itmdb = tmdb.Tmdb(id_Tmdb=id, tipo=tipo_ps)
      images = itmdb.result.get("images")
      for key, value in images.iteritems():
         for detail in value:
             imagenes.append('https://image.tmdb.org/t/p/original' + detail["file_path"])
-     if item.contentType== "tv":
+     if item.contentType!="movie":
         if itmdb.result.get("number_of_seasons"):
            season_number=  itmdb.result.get("number_of_seasons")
         else:
@@ -353,7 +383,7 @@ def fanart(item):
          fanart_3 = fanart
          fanart_4 = fanart
      images_fanarttv= fanartv(item,id_tvdb,id)
-     if item.contentType== "tv":
+     if item.contentType!="movie":
          
          action="findvideos"
          try:
@@ -410,7 +440,7 @@ def fanart(item):
          else:
             tiw=""
             tvf=thumbnail_art=posterdb
-     extra = str(fanart_2)+"|"+str(fanart_3)+"|"+str(fanart_4)+"|"+str(id)+"|"+str(tvf)+"|"+str(id_tvdb)+"|"+str(tiw)+"|"+str(rating)
+     extra = str(fanart_2)+"|"+str(fanart_3)+"|"+str(fanart_4)+"|"+str(id)+"|"+str(tvf)+"|"+str(id_tvdb)+"|"+str(tiw)+"|"+str(rating)+"|"+tipo_ps
      itemlist.append( Item(channel=item.channel, title=item.title, url=item.url, action=action, thumbnail=thumbnail_art, fanart=fanart,extra=extra,contentType=item.contentType,folder=True) )
     title_info ="[COLOR indianred][B]Info[/B][/COLOR]"
     extra= str(rating)+"|"+str(rating_filma)+"|"+str(id)+"|"+str(item.title)+"|"+str(id_tvdb)+"|"+str(tagline)+"|"+str(sinopsis)+"|"+str(critica)+"|"+str(thumbnail_art)+"|"+str(fanart_4)
@@ -423,7 +453,7 @@ def findvideos(item):
     fanart=""
     data = scrapertools.cachePage(item.url)
     if item.contentType!="movie":
-     itmdb = tmdb.Tmdb(id_Tmdb=item.extra.split("|")[3], tipo=item.contentType)
+     itmdb = tmdb.Tmdb(id_Tmdb=item.extra.split("|")[3], tipo=item.extra.split("|")[8])
      season= itmdb.result.get("seasons")
      check="no"
      bloque_enlaces = scrapertools.find_single_match(data,'<ul class="buscar-list">(.*?)<\/ul><!-- end \.buscar-list -->')
@@ -505,7 +535,7 @@ def findvideos(item):
      if len(next)>0:
          url =next
         
-         itemlist.append( Item(channel=item.channel, action="findvideos", title="[COLOR khaki]siguiente[/COLOR]" , url=url , thumbnail="http://imgur.com/fJzoytz.png", fanart="http://imgur.com/3AqH1Zu.jpg",extra=item.extra,contentType=item.contentType,  folder=True) )
+         itemlist.append( Item(channel=item.channel, action="findvideos", title="[COLOR darkred][B]siguiente[/B][/COLOR]" , url=url , thumbnail="http://imgur.com/D4ZgFri.png", fanart=item.fanart,extra=item.extra,contentType=item.contentType,  folder=True) )
     return itemlist
 
 def findvideos_enlaces(item):
@@ -571,13 +601,13 @@ def findvideos_enlaces(item):
         ext_v= "no disponible"
     if "rar" in ext_v:
         ext_v= ext_v +" -- No reproducible"
-    if item.contentType=="tv":
+    if item.contentType!="movie":
           fanart=item.extra.split("|")[1]
     else:
         fanart=item.extra.split("|")[0]
     itemlist.append( Item(channel=item.channel, title = "[COLOR orangered][B]Torrent[/B][/COLOR] "+"[COLOR lemonchiffon]( Video [/COLOR]"+"[COLOR lemonchiffon]"+ext_v+"--"+size+" )[/COLOR]" , url=url,  action="play",server="torrent", thumbnail=item.extra.split("|")[4], fanart=fanart, folder=False) )
 
-    if item.contentType=="tv" and item.extra.split("|")[8] !="Capitulos":
+    if item.contentType!="movie" and item.extra.split("|")[9] !="Capitulos":
        title_info ="    Info"
        title_info = "[COLOR indianred]"+title_info+"[/COLOR]"
        itemlist.append( Item(channel=item.channel, action="info_capitulos" , title=title_info , url=item.url, thumbnail=item.extra.split("|")[6], fanart=item.extra.split("|")[1], extra=item.extra, folder=False ))
@@ -588,10 +618,10 @@ def findvideos_enlaces(item):
     return itemlist
 def dd_y_o(item):
     itemlist = []
-    if item.contentType!="tv":
-       data=item.extra.split("|")[8]
+    if item.contentType=="movie":
+       data=item.extra.split("|")[9]
     else:
-       data =item.extra.split("|")[11]
+       data =item.extra.split("|")[12]
     enlaces = scrapertools.find_multiple_matches(data,"class=\"box1\"><img src='([^']+)'.*?<div class=\"box2\">([^<]+)<\/div>.*?>([^<]+)<\/div>.*?>([^<]+)<\/div>.*?><a href='([^']+)'.*?Des")
     for thumb,server_name,idioma,calidad,url_d in enlaces:
         videolist = servertools.find_video_items(data=url_d)
@@ -653,7 +683,7 @@ def info(item):
         tagline = "[COLOR aquamarine][B]"+tagline+"[/B][/COLOR]"
     else:
         tagline = ""
-    if item.contentType=="tv":
+    if item.contentType!="movie":
         icon ="http://s6.postimg.org/hzcjag975/tvdb.png"
     else:
         icon ="http://imgur.com/SenkyxF.png"
@@ -671,7 +701,7 @@ def info(item):
         photo=""
     #Tambien te puede interesar
     peliculas = []
-    if item.contentType =="tv":
+    if item.contentType !="movie":
       url_tpi="http://api.themoviedb.org/3/tv/"+item.extra.split("|")[2]+"/recommendations?api_key="+api_key+"&language=es"
       data_tpi=scrapertools.cachePage(url_tpi)
       tpi=scrapertools.find_multiple_matches(data_tpi,'id":(.*?),.*?"original_name":"(.*?)",.*?"poster_path":(.*?),"popularity"')
@@ -697,9 +727,10 @@ def info(item):
 
 def info_capitulos(item,images={}):
     logger.info("pelisalacarta.torrentlocura info_capitulos")
-    url= "https://api.themoviedb.org/3/tv/"+item.extra.split("|")[3]+"/season/"+item.extra.split("|")[9]+"/episode/"+item.extra.split("|")[10]+"?api_key="+api_key+"&language=es"
+    url= "https://api.themoviedb.org/3/tv/"+item.extra.split("|")[3]+"/season/"+item.extra.split("|")[10]+"/episode/"+item.extra.split("|")[11]+"?api_key="+api_key+"&language=es"
     if "/0" in url:
         url = url.replace("/0","/")
+    from core import jsontools
     data = jsontools.load_json(scrapertools.downloadpage(url))
     foto = item.extra.split("|")[6]
     if not ".png" in foto:
@@ -804,29 +835,6 @@ class TextBox2( xbmcgui.WindowDialog ):
 def test():
     return True
 
-def translate(to_translate, to_langage="auto", langage="auto"):
-    '''Return the translation using google translate
-        you must shortcut the langage you define (French = fr, English = en, Spanish = es, etc...)
-        if you don't define anything it will detect it or use english by default
-        Example:
-        print(translate("salut tu vas bien?", "en"))
-        hello you alright?'''
-    agents = {'User-Agent':"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.04506.30)"}
-    before_trans = 'class="t0">'
-    link = "http://translate.google.com/m?hl=%s&sl=%s&q=%s" % (to_langage, langage, to_translate.replace(" ", "+"))
-    request = urllib2.Request(link, headers=agents)
-    page = urllib2.urlopen(request).read()
-    result = page[page.find(before_trans)+len(before_trans):]
-    result = result.split("<")[0]
-    return result
-
-if __name__ == '__main__':
-    to_translate = 'Hola como estas?'
-    print("%s >> %s" % (to_translate, translate(to_translate)))
-    print("%s >> %s" % (to_translate, translate(to_translate, 'fr')))
-#should print Hola como estas >> Hello how are you
-#and Hola como estas? >> Bonjour comment allez-vous?
-
 def tokenize(text, match=re.compile("([idel])|(\d+):|(-?\d+)").match):
     i = 0
     while i < len(text):
@@ -890,6 +898,7 @@ def convert_size(size):
 
 def fanartv(item, id_tvdb,id, images={}):
     headers = [['Content-Type', 'application/json']]
+    from core import jsontools
     if item.contentType == "movie":
         url = "http://webservice.fanart.tv/v3/movies/%s?api_key=cab16e262d72fea6a6843d679aa10300" \
                   % id
