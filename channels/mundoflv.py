@@ -199,27 +199,33 @@ def temporadas(item):
     for scrapedtitle in matches:
         url = 'http://mundoflv.com/wp-content/themes/wpRafael/includes/capitulos.php?serie='+serieid+'&sr=&temporada=' + scrapedtitle
         title = 'Temporada '+ scrapertools.decodeHtmlentities(scrapedtitle)
+        contentSeasonNumber = scrapedtitle
         thumbnail = item.thumbnail
         realplot = scrapertools.find_single_match(data, '\/><\/a>([^*]+)<p><\/p>.*')
         plot = scrapertools.remove_htmltags(realplot)
         fanart = ''#scrapertools.find_single_match(data,'<img src="([^"]+)"/>.*?</a>')
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="episodios" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart, extra1=item.extra1, contentSerieName=item.contentSerieName))
+        itemlist.append( Item(channel=item.channel, action="episodiosxtemp" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart, extra1=item.extra1, contentSerieName=item.contentSerieName, contentSeasonNumber = contentSeasonNumber))
     
-    if item.extra=='temporadas':
-        for tempitem in itemlist:
-    	    templist += episodios(tempitem)
-        
+            
     if config.get_library_support() and len(itemlist) > 0:
         itemlist.append(Item(channel=item.channel, title='[COLOR yellow]Añadir esta serie a la biblioteca[/COLOR]', url=item.url,
-                             action="add_serie_to_library", extra="temporadas", contentSerieName=item.contentSerieName, extra1 = item.extra1))
-    if item.extra=='temporadas':
-    	return templist
-    else:
-    	return itemlist
+                             action="add_serie_to_library", extra="episodios", contentSerieName=item.contentSerieName, extra1 = item.extra1))
+    
+    return itemlist
 
 def episodios(item):
-    logger.debug("pelisalacarta.channels.mundoflv episodios")
+    logger.debug('pelisalacarta.channels.mundoflv episodios')
+    itemlist = []
+    templist = temporadas(item)
+    for tempitem in templist:
+       logger.debug(tempitem)
+       itemlist += episodiosxtemp(tempitem) 
+
+    return itemlist
+
+def episodiosxtemp(item):
+    logger.debug("pelisalacarta.channels.mundoflv episodiosxtemp")
     itemlist = []
     data = scrapertools.cache_page(item.url)
      
@@ -230,13 +236,13 @@ def episodios(item):
         item.url=item.url.replace("&sr","")
         item.url=item.url.replace("capitulos","enlaces")
         url = item.url+'&capitulo=' + scrapedtitle
-        title=item.contentSerieName+' '+item.title.strip('Temporada')+'x'+scrapedtitle
+        title=item.contentSerieName+' '+item.contentSeasonNumber+'x'+scrapedtitle
         thumbnail = item.thumbnail
         plot = item.plot
         fanart=''
         idioma=''
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title, fulltitle=item.fulltitle, url=url, thumbnail=item.thumbnail, plot=plot, extra1=item.extra1,idioma=''))
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title, fulltitle=item.fulltitle, url=url, thumbnail=item.thumbnail, plot=plot, extra1=item.extra1,idioma='', contentSerieName = item.contentSerieName, contentSeasonNumber = item.contentSeasonNumber))
     
     return itemlist
     
