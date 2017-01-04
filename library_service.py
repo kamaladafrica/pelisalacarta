@@ -330,9 +330,11 @@ if __name__ == "__main__":
 
     # Se ejecuta ciclicamente
     import xbmc
-    try:
+    version_xbmc = int(xbmc.getInfoLabel("System.BuildVersion").split(".", 1)[0])
+
+    if version_xbmc >= 14:
         monitor = xbmc.Monitor()  # For Kodi >= 14
-    except:
+    else:
         monitor = None  # For Kodi < 14
 
     if monitor:
