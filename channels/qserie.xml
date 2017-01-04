@@ -10,6 +10,12 @@
 	<fanart></fanart>
 	<thumbnail>https://s31.postimg.org/dousrbu9n/qserie.png</thumbnail>
 	<bannermenu>https://s32.postimg.org/nk1quq1wl/qserie_banner.png</bannermenu>
+	
+	<update_url></update_url>
+	<version>1</version>
+	<date>06/12/2016</date>
+	<changes>Release</changes>
+
 
 	<categories>
 		<category>latino</category>
