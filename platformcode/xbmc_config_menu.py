@@ -786,7 +786,8 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
         scrollbar_y = self.getControl(10008).getPosition()[1] + (position * 4)
         self.getControl(10009).setPosition(self.getControl(10008).getPosition()[0], scrollbar_y)
         self.getControl(10009).setHeight(scrollbar_height)
-        self.evaluate_conditions()
+        if movimento:
+            self.evaluate_conditions()
 
     def check_ok(self, dict_values=None):
         if not self.callback:
@@ -912,11 +913,11 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
     def onFocus(self, a):
         pass
 
-    def onAction(self, action):
+    def onAction(self, raw_action):
         # Obtenemos el foco
         focus = self.getFocusId()
 
-        action = action.getId()
+        action = raw_action.getId()
         # Accion 1: Flecha derecha
         if action == 1:
             # Si el foco no está en ninguno de los tres botones inferiores, y esta en un "list" cambiamos el valor
@@ -987,7 +988,22 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
         # ACTION_NAV_BACK 92
         elif action in [10, 92]:
             self.close()
-
+            
+        elif action == 504:
+          
+          if self.xx > raw_action.getAmount2():
+            if (self.xx - int(raw_action.getAmount2())) / 35:
+              self.xx -=35
+              self.scroll(-1)
+          else:
+            if (int(raw_action.getAmount2()) - self.xx) / 35:
+              self.xx +=35
+            self.scroll(1)
+          return
+         
+        elif action == 501:
+          self.xx = int(raw_action.getAmount2())
+          
         self.evaluate_conditions()
         self.check_default()
         self.check_ok()
