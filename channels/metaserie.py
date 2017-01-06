@@ -107,7 +107,7 @@ def episodios(item):
 
 def episodiosxtemp(item):
     logger.debug("pelisalacarta.channels.metaserie episodiosxtemp")
-                   
+    itemlist =[]               
     data = scrapertools.cache_page(item.url)
     patron = '<td><h3 class=".*?href="([^"]+)".*?">([^<]+).*?td>'
     matches = re.compile(patron,re.DOTALL).findall(data)
