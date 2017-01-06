@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Conector para nowvideo
@@ -8,13 +8,10 @@
 # Unwise and main algorithm taken from Eldorado url resolver
 # https://github.com/Eldorados/script.module.urlresolver/blob/master/lib/urlresolver/plugins/nowvideo.py
 
-import urlparse,urllib2,urllib,re
-import os
+import re
 
-from core import scrapertools
 from core import logger
-from core import config
-from core import unwise
+from core import scrapertools
 
 USER_AGENT="Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:20.0) Gecko/20100101 Firefox/20.0"
 
@@ -85,42 +82,48 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
         video_urls.append( [ scrapertools.get_filename_from_url(location)[-4:] + " [premium][nowvideo]",location ] )
     else:
         # http://www.nowvideo.sx/video/xuntu4pfq0qye
-        data = scrapertools.cache_page( page_url )
+        url = page_url.replace("http://www.nowvideo.sx/video/", "http://embed.nowvideo.sx/embed/?v=")
+        data = scrapertools.cache_page(url)
         logger.debug("data="+data)
 
-        stepkey = scrapertools.find_single_match( data , '<input type="hidden" name="stepkey" value="([^"]+)"' )
-        if stepkey!="":
-            #stepkey=6cd619a0cea72a1cb45a56167c296716&submit=submit
-            #<form method="post" action="">
-            #<input type="hidden" name="stepkey" value="6cd619a0cea72a1cb45a56167c296716"><Br>
-            #<button type="submit" name="submit" class="btn" value="submit">Continue to the video</button>
-            data = scrapertools.cache_page( page_url , post="stepkey="+stepkey+"&submit=submit" )
+        videourl = scrapertools.find_single_match(data, '<source src="([^"]+)"')
+        if not videourl:
+            data = scrapertools.cache_page(page_url)
+            stepkey = scrapertools.find_single_match( data , '<input type="hidden" name="stepkey" value="([^"]+)"' )
+            if stepkey!="":
+                #stepkey=6cd619a0cea72a1cb45a56167c296716&submit=submit
+                #<form method="post" action="">
+                #<input type="hidden" name="stepkey" value="6cd619a0cea72a1cb45a56167c296716"><Br>
+                #<button type="submit" name="submit" class="btn" value="submit">Continue to the video</button>
+                data = scrapertools.cache_page( page_url , post="stepkey="+stepkey+"&submit=submit" )
+            videourl = scrapertools.find_single_match(data, '<source src="([^"]+)"')
+            if not videourl:
+                flashvar_filekey = scrapertools.get_match(data,'flashvars.filekey=([^;]+);')
+                filekey = scrapertools.get_match(data,'var '+flashvar_filekey+'="([^"]+)"')
 
-        flashvar_filekey = scrapertools.get_match(data,'flashvars.filekey=([^;]+);')
-        filekey = scrapertools.get_match(data,'var '+flashvar_filekey+'="([^"]+)"')
+                '''
+                data = unwise.unwise_process(data)
+                logger.debug("data="+data)
 
-        '''
-        data = unwise.unwise_process(data)
-        logger.debug("data="+data)
+                filekey = unwise.resolve_var(data, "flashvars.filekey")
+                '''
+                logger.debug("filekey="+filekey)
+                
+                #get stream url from api
+                url = 'http://www.nowvideo.sx/api/player.api.php?key=%s&file=%s' % (filekey, video_id)
+                data = scrapertools.cache_page(url).replace("flv&","flv?")
+                videourl = re.sub(r"^url=","",data)
+                logger.debug("data="+videourl)
+                '''
+                location = scrapertools.get_match(data,'url=(.+?)&title')
 
-        filekey = unwise.resolve_var(data, "flashvars.filekey")
-        '''
-        logger.debug("filekey="+filekey)
-        
-        #get stream url from api
-        url = 'http://www.nowvideo.sx/api/player.api.php?key=%s&file=%s' % (filekey, video_id)
-        data = scrapertools.cache_page(url).replace("flv&","flv?")
-        data = re.sub(r"^url=","",data)
-        logger.debug("data="+data)
-        '''
-        location = scrapertools.get_match(data,'url=(.+?)&title')
+                mobile="http://www.nowvideo.at/mobile/video.php?id="+ video_id+"&download=2"
+                data = scrapertools.cache_page(mobile)
+                location = scrapertools.get_match(data,'<source src="([^"]+)" type="video/flv">')
+                video_urls.append( [ "[nowvideo]",location ] )
+                '''
 
-        mobile="http://www.nowvideo.at/mobile/video.php?id="+ video_id+"&download=2"
-        data = scrapertools.cache_page(mobile)
-        location = scrapertools.get_match(data,'<source src="([^"]+)" type="video/flv">')
-        video_urls.append( [ "[nowvideo]",location ] )
-        '''
-        video_urls.append( [ scrapertools.get_filename_from_url(data)[-4:]+" [nowvideo]",data ] )
+        video_urls.append( [ scrapertools.get_filename_from_url(videourl)[-4:]+" [nowvideo]", videourl+"|User-Agent=Mozilla/5.0" ] )
 
     for video_url in video_urls:
         logger.info("[nowvideo.py] %s - %s" % (video_url[0],video_url[1]))
@@ -236,9 +239,3 @@ def find_videos(data):
     
 
     return devuelve
-
-def test():
-
-    video_urls = get_video_url("http://www.nowvideo.eu/video/xuntu4pfq0qye")
-
-    return len(video_urls)>0

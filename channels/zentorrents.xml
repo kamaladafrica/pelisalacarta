@@ -12,9 +12,9 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/zentorrents.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>12</version>
-	<date>19/02/2016</date>
-	<changes>Cambio id Tmdb</changes>
+	<version>15</version>
+	<date>07/12/2016</date>
+	<changes>Correciones código.Adaptado a infoplus</changes>
 	
 	<categories>
 		<category>torrent</category>
@@ -23,6 +23,11 @@
 	</categories>
 
 	<settings>
-		<include_in_global_search>true</include_in_global_search>
+		<id>include_in_global_search</id>
+		<type>bool</type>
+		<label>Incluir en busqueda global</label>
+		<default>true</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
 	</settings>
 </channel>

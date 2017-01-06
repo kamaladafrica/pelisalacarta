@@ -4,46 +4,38 @@
 # Canal para yaske
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os, sys
+import re
+import sys
+import urllib
+import urlparse
 
-from core import logger
 from core import config
+from core import logger
 from core import scrapertools
+from core import servertools
 from core.item import Item
-from servers import servertools
 
-__channel__ = "yaske"
-__category__ = "F"
-__type__ = "generic"
-__title__ = "yaske.net"
-__language__ = "ES"
 
 DEBUG = config.get_setting("debug")
-
+CHANNEL_HOST = 'http://www.yaske.ro/'
 HEADER = [
-    ["Host","www.yaske.cc"],
-    ["Connection","keep-alive"],
-    ["Accept","text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"],
-    ["User-Agent","Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.120 Safari/537.36"],
-    ["Referer","http://www.yaske.cc/"],
-    ["Accept-Encoding","gzip,deflate,sdch"],
-    ["Accept-Language","es-ES,es;q=0.8"],
+    ['User-Agent', 'Mozilla/5.0'],
+    ['Accept-Encoding', 'gzip, deflate'],
+    ['Referer', CHANNEL_HOST],
+    ['Connection', 'keep-alive']
 ]
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("pelisalacarta.yaske mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, title="Novedades"          , action="peliculas",       url="http://www.yaske.cc/"))
-    itemlist.append( Item(channel=__channel__, title="Por año"            , action="menu_buscar_contenido",      url="http://www.yaske.cc/", extra="year"))
-    itemlist.append( Item(channel=__channel__, title="Por género"         , action="menu_buscar_contenido", url="http://www.yaske.cc/", extra="gender"))
-    itemlist.append( Item(channel=__channel__, title="Por calidad"        , action="menu_buscar_contenido",  url="http://www.yaske.cc/", extra="quality"))
-    itemlist.append( Item(channel=__channel__, title="Por idioma"         , action="menu_buscar_contenido",    url="http://www.yaske.cc/", extra="language"))
-    itemlist.append( Item(channel=__channel__, title="Buscar"             , action="search") )
+    itemlist.append( Item(channel=item.channel, title="Novedades"          , action="peliculas",       url="http://www.yaske.ro/"))
+    itemlist.append( Item(channel=item.channel, title="Por año"            , action="menu_buscar_contenido",      url="http://www.yaske.ro/", extra="year"))
+    itemlist.append( Item(channel=item.channel, title="Por género"         , action="menu_buscar_contenido", url="http://www.yaske.ro/", extra="gender"))
+    itemlist.append( Item(channel=item.channel, title="Por calidad"        , action="menu_buscar_contenido",  url="http://www.yaske.ro/", extra="quality"))
+    itemlist.append( Item(channel=item.channel, title="Por idioma"         , action="menu_buscar_contenido",    url="http://www.yaske.ro/", extra="language"))
+    itemlist.append( Item(channel=item.channel, title="Buscar"             , action="search") )
 
     return itemlist
 
@@ -53,7 +45,7 @@ def search(item,texto):
     itemlist = []
 
     try:
-        item.url = "http://www.yaske.cc/es/peliculas/search/%s"
+        item.url = "http://www.yaske.ro/search/%s"
         item.url = item.url % texto
         item.extra = ""
         itemlist.extend(peliculas(item))
@@ -67,23 +59,72 @@ def search(item,texto):
             logger.error( "%s" % line )
         return []
 
+
+def newest(categoria):
+    itemlist = []
+    item = Item()
+    try:
+        if categoria == 'peliculas':
+            item.url = "http://www.yaske.ro/"
+        elif categoria == 'infantiles':
+            item.url = "http://www.yaske.ro/custom/?gender=animation"
+        else:
+            return []
+
+        itemlist = peliculas(item)
+        if itemlist[-1].title == ">> Página siguiente":
+            itemlist.pop()
+
+    # Se captura la excepción, para no interrumpir al canal novedades si un canal falla
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error("{0}".format(line))
+        return []
+
+    return itemlist
+
 def peliculas(item):
     logger.info("pelisalacarta.yaske peliculas")
+	
 
-    data = scrapertools.cache_page(item.url,headers=HEADER)
+    data = scrapertools.anti_cloudflare(item.url,headers=HEADER, host=CHANNEL_HOST)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
 
     # Extrae las entradas
     '''
-    <li class="item-movies c8"><a class="image-block" href="http://www.yaske.to/es/pelicula/0005346/ver-transformers-4-online.html" title="Transformers 4: La era de la extinci&oacute;n"><img src="http://www.yaske.to/upload/images/59481937cedbdd789cec00aab9f7ed8b.jpg" width="140" height="200" /></a><ul class="bottombox"><li title="Transformers 4: La era de la extinci&oacute;n"><a href="http://www.yaske.to/es/pelicula/0005346/ver-transformers-4-online.html" title="Transformers 4: La era de la extinci&oacute;n">Transformers 4: La&hellip;</a></li><li>Accion, ciencia Ficcion</li><li><img src='http://www.yaske.to/theme/01/data/images/flags/es_es.png' title='Spanish ' width='25'/> <img src='http://www.yaske.to/theme/01/data/images/flags/en_es.png' title='English SUB Spanish' width='25'/> <img src='http://www.yaske.to/theme/01/data/images/flags/la_la.png' title='Latino ' width='25'/> </li><li><a rel="lyteframe" rev="width: 600px; height: 380px; scrolling: no;" youtube="trailer" href="http://www.youtube.com/v/&amp;hl&amp;autoplay=1" target="_blank"><img src="http://2.bp.blogspot.com/-hj7moVFACQU/UBoi0HAFeyI/AAAAAAAAA9o/2I2KPisYtsk/s1600/vertrailer.png" height="22" border="0"></a></li></ul><div class="quality">Hd Real 720</div><div class="view"><span>view: 335482</span></div></li>
+       <li class="item-movies c8">
+        <div class="tooltipyk">
+        <a class="image-block" href="http://www.yaske.ro/es/pelicula/0010962/ver-the-walking-dead-7x02-online.html" title="The Walking Dead 7x02">
+        <img src="http://www.yaske.ro/upload/images/b59808b9b505c15283159099ff7320c6.jpg" alt="The Walking Dead 7x02" width="140" height="200" />
+        </a>
+    <span class="tooltipm">
+        <img class="callout" src="http://www.yaske.ro/upload/tooltip/callout_black.gif" />
+        <div class="moTitulo"><b>Título: </b>The Walking Dead 7x02<br><br></div>
+        <div class="moSinopsis"><b>Sinopsis: </b>Array<br><br></div>
+        <div class="moYear"><b>Año: </b>2016</div>
+        </span>
+       </div>
+        <ul class="bottombox">
+            <li><a href="http://www.yaske.ro/es/pelicula/0010962/ver-the-walking-dead-7x02-online.html" title="The Walking Dead 7x02">
+                The Walking Dead 7x02    	</a></li>
+            <li>Accion, Thrillers, Terror</li>
+            <li><img src='http://www.yaske.ro/theme/01/data/images/flags/en_es.png' title='English SUB Spanish' width='25'/> <img src='http://www.yaske.ro/theme/01/data/images/flags/la_la.png' title='Latino ' width='25'/> <img src='http://www.yaske.ro/theme/01/data/images/flags/es_es.png' title='Spanish ' width='25'/> </li>
+            <li>        	<img class="opa3" src="http://storage.ysk.pe/b6b5870914222d773c5b76234978e376.png" height="22" border="0">
+            </li>
+        </ul>
+        <div class="quality">Hd Real 720</div>
+        <div class="view"><span>view: 6895</span></div>
+    </li>
     '''
-    patron  = '<li class="item-movies[^"]+">'
+    patron  = '<li class="item-movies.*?'
     patron += '<a class="image-block" href="([^"]+)" title="([^"]+)">'
-    patron += '<img src="([^"]+)"[^/]+/></a>'
+    patron += '<img src="([^"]+).*?'
     patron += '<ul class="bottombox">.*?<li>(<img.*?)</li>.*?</ul>'
     patron += '<div class="quality">([^<]+)</div>'
  
     matches = re.compile(patron,re.DOTALL).findall(data)
+    #logger.debug(matches)
     itemlist = []
 
     for scrapedurl, scrapedtitle, scrapedthumbnail, idiomas, calidad in matches:
@@ -108,7 +149,7 @@ def peliculas(item):
         thumbnail = scrapedthumbnail
         scrapedplot = ""
 
-        itemlist.append( Item(channel=__channel__, action="findvideos", title=title , url=url , thumbnail=thumbnail , plot=scrapedplot , fulltitle=scrapertools.htmlclean(scrapedtitle.strip()), viewmode="movie", folder=True, hasContentDetails="true", contentTitle=contentTitle, contentThumbnail=thumbnail) )
+        itemlist.append( Item(channel=item.channel, action="findvideos", title=title , url=url , thumbnail=thumbnail , plot=scrapedplot , fulltitle=scrapertools.htmlclean(scrapedtitle.strip()), viewmode="movie", folder=True, hasContentDetails="true", contentTitle=contentTitle, contentThumbnail=thumbnail) )
 
     # Extrae el paginador
     patronvideos  = "<a href='([^']+)'>\&raquo\;</a>"
@@ -116,18 +157,18 @@ def peliculas(item):
 
     if len(matches)>0:
         scrapedurl = urlparse.urljoin(item.url,matches[0])
-        itemlist.append( Item(channel=__channel__, action="peliculas", title=">> Página siguiente" , url=scrapedurl , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="peliculas", title=">> Página siguiente" , url=scrapedurl , folder=True) )
 
     return itemlist
 
 def menu_buscar_contenido(item):
     logger.info("pelisalacarta.yaske menu_categorias")
 
-    data = scrapertools.cache_page(item.url,headers=HEADER)
-    logger.info("data="+data)
+    data = scrapertools.anti_cloudflare(item.url,headers=HEADER, host=CHANNEL_HOST)
+    #logger.info("data="+data)
 
     data = scrapertools.get_match(data,'<select name="'+item.extra+'"(.*?)</select>')
-    logger.info("data="+data)
+    #logger.info("data="+data)
 
     # Extrae las entradas
     patron  = "<option value='([^']+)'>([^<]+)</option>"
@@ -138,18 +179,22 @@ def menu_buscar_contenido(item):
     for scrapedurl,scrapedtitle in matches:
         scrapedthumbnail = ""
         scrapedplot = ""
+        
+        
+        if item.extra == 'gender':
+            url = "http://www.yaske.ro/genero/"+scrapedurl
+        else:
+            url = "http://www.yaske.ro/custom/?"+item.extra+"="+scrapedurl
 
-        url = "http://www.yaske.cc/es/peliculas/custom/?"+item.extra+"="+scrapedurl
+        itemlist.append( Item(channel=item.channel, action="peliculas", title=scrapedtitle , url=url , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
 
-        itemlist.append( Item(channel=__channel__, action="peliculas", title=scrapedtitle , url=url , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
-
-    return itemlist
+    return sorted(itemlist, key=lambda i:  i.title.lower())
 
 def findvideos(item):
     logger.info("pelisalacarta.yaske findvideos url="+item.url)
 
     # Descarga la página
-    data = scrapertools.cache_page(item.url,headers=HEADER)
+    data = scrapertools.anti_cloudflare(item.url,headers=HEADER, host=CHANNEL_HOST)
 
     item.plot = scrapertools.find_single_match(data,'<meta name="sinopsis" content="([^"]+)"')
     item.plot = scrapertools.htmlclean(item.plot)
@@ -230,8 +275,8 @@ def findvideos(item):
             scrapedthumbnail = servertools.guess_server_thumbnail(scrapedtitle)
 
             logger.info("server="+server+", scrapedurl="+scrapedurl)
-            if scrapedurl.startswith("http"):
-                itemlist.append( Item(channel=__channel__, action="play", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , folder=False, parentContent=item) )
+            if scrapedurl.startswith("http") and not "olimpo.link" in scrapedurl:
+                itemlist.append( Item(channel=item.channel, action="play", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , folder=False, parentContent=item) )
         except:
             import traceback
             logger.info("Excepcion: "+traceback.format_exc())
@@ -262,20 +307,3 @@ def play(item):
         newitem.fulltitle = item.fulltitle
     
     return itemlist
-
-
-# Verificación automática de canales: Esta función debe devolver "True" si está ok el canal.
-def test():
-    from servers import servertools
-    # mainlist
-    mainlist_items = mainlist(Item())
-    # Da por bueno el canal si alguno de los vídeos de "Novedades" devuelve mirrors
-    peliculas_items = peliculas(mainlist_items[0])
-    bien = False
-    for pelicula_item in peliculas_items:
-        mirrors = findvideos( item=pelicula_item )
-        if len(mirrors)>0:
-            bien = True
-            break
-
-    return bien

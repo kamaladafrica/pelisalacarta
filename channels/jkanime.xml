@@ -12,15 +12,20 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/jkanime.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>3</version>
-	<date>22/11/2015</date>
-	<changes>Reparado error que impedia listar episodios, arreglados thumbnails y el patron para videos alojados en jkanime.</changes>
+	<version>4</version>
+	<date>01/07/2016</date>
+	<changes>Eliminado código innecesario.</changes>
 
 	<categories>
 		<category>anime</category>
 	</categories>
 
 	<settings>
-		<include_in_global_search>false</include_in_global_search>
+		<id>include_in_global_search</id>
+		<type>bool</type>
+		<label>Incluir en busqueda global</label>
+		<default>false</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
 	</settings>
 </channel>

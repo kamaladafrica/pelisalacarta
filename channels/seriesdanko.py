@@ -8,46 +8,44 @@ import re
 import urlparse
 
 from core import config
-from core.item import Item
 from core import logger
 from core import scrapertools
-from servers import servertools
+from core import servertools
+from core.item import Item
 
-__channel__ = "seriesdanko"
-__category__ = "S"
-__type__ = "generic"
-__title__ = "Seriesdanko"
-__language__ = "ES"
+from channels import filtertools
+
 
 HOST = 'http://seriesdanko.com/'
-DEBUG = config.get_setting("debug")
-
 IDIOMAS = {'es': 'Español', 'la': 'Latino', 'vos': 'VOS', 'vo': 'VO'}
+list_idiomas = IDIOMAS.values()
+CALIDADES = ['SD', 'MicroHD', 'HD/MKV']
 
-
-def isGeneric():
-    return True
+DEBUG = config.get_setting("debug")
 
 
 def mainlist(item):
-    logger.info("pelisalacarta.seriesdanko mainlist")
+    logger.info()
 
     itemlist = list()
-    itemlist.append(Item(channel=__channel__, title="Novedades", action="novedades", url=HOST))
-    itemlist.append(Item(channel=__channel__, title="Más vistas", action="mas_vistas", url=HOST))
-    itemlist.append(Item(channel=__channel__, title="Listado Alfabético", action="listado_alfabetico", url=HOST))
-    itemlist.append(Item(channel=__channel__, title="Todas las series", action="listado_completo", url=HOST))
-    itemlist.append(Item(channel=__channel__, title="Buscar...", action="search", url=HOST))
+    itemlist.append(Item(channel=item.channel, title="Novedades", action="novedades", url=HOST))
+    itemlist.append(Item(channel=item.channel, title="Más vistas", action="mas_vistas", url=HOST))
+    itemlist.append(Item(channel=item.channel, title="Listado Alfabético", action="listado_alfabetico", url=HOST))
+    itemlist.append(Item(channel=item.channel, title="Todas las series", action="listado_completo", url=HOST))
+    itemlist.append(Item(channel=item.channel, title="Buscar...", action="search", url=urlparse.urljoin(HOST, "all.php")))
+
+    if filtertools.context:
+        itemlist = filtertools.show_option(itemlist, item.channel, list_idiomas, CALIDADES)
 
     return itemlist
 
 
 def novedades(item):
-    logger.info("pelisalacarta.seriesdanko novedades")
+    logger.info()
 
     itemlist = list()
 
-    data = scrapertools.cache_page(item.url)
+    data = scrapertools.anti_cloudflare(item.url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
     data = re.sub(r"<!--.*?-->", "", data)
 
@@ -59,113 +57,101 @@ def novedades(item):
         # patron = "^(.*?)(?:Ya Disponible|Disponible|Disponbile|disponible|\(Actualizada\))$"
         # match = re.compile(patron, re.DOTALL).findall(scrapedtitle)
         title = scrapertools.decodeHtmlentities(scrapedtitle)
+        show = scrapertools.find_single_match(title, "^(.+?) \d+[x|X]\d+")
 
-        itemlist.append(Item(channel=__channel__, title=title, url=urlparse.urljoin(HOST, scrapedurl),
-                        action="episodios", thumbnail=scrapedthumb))
+        itemlist.append(Item(channel=item.channel, title=title, url=urlparse.urljoin(HOST, scrapedurl),
+                        action="episodios", thumbnail=scrapedthumb, show=show))
 
     return itemlist
 
 
 def mas_vistas(item):
-    logger.info("pelisalacarta.seriesdanko mas_vistas")
+    logger.info()
 
-    data = scrapertools.cache_page(item.url)
+    data = scrapertools.anti_cloudflare(item.url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
     data = re.sub(r"<!--.*?-->", "", data)
 
     patron = "<div class='widget HTML' id='HTML3'.+?<div class='widget-content'>(.*?)</div>"
     data = scrapertools.get_match(data, patron)
 
-    return series_seccion(data)
+    return series_seccion(item, data)
 
 
 def listado_completo(item):
-    logger.info("pelisalacarta.seriesdanko listado_completo")
+    logger.info()
 
-    data = scrapertools.cache_page(item.url)
+    data = scrapertools.anti_cloudflare(item.url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
     data = re.sub(r"<!--.*?-->", "", data)
     patron = '<div class="widget HTML" id="HTML10".+?<div class="widget-content">(.*?)</div>'
     data = scrapertools.get_match(data, patron)
 
-    return series_seccion(data)
+    return series_seccion(item, data)
 
 
-def series_seccion(data):
-    logger.info("pelisalacarta.seriesdanko series_seccion")
+def series_seccion(item, data):
+    logger.info()
 
     itemlist = []
     patron = "<a href='([^']+)'.*?>(.*?)</a>"
     matches = re.compile(patron, re.DOTALL).findall(data)
     for scrapedurl, scrapedtitle in matches:
-        itemlist.append(Item(channel=__channel__, action="episodios", title=scrapedtitle, show=scrapedtitle,
+        itemlist.append(Item(channel=item.channel, action="episodios", title=scrapedtitle, show=scrapedtitle,
                              url=urlparse.urljoin(HOST, scrapedurl)))
 
     return itemlist
 
 
 def listado_alfabetico(item):
-    logger.info("pelisalacarta.seriesdanko listado_alfabetico")
+    logger.info()
 
     itemlist = []
 
-    for letra in ['0', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S',
-                  'T', 'U', 'V', 'W', 'X', 'Y', 'Z']:
-        itemlist.append(Item(channel=__channel__, action="series_por_letra", title=letra,
+    for letra in '0ABCDEFGHIJKLMNOPQRSTUVWXYZ':
+        itemlist.append(Item(channel=item.channel, action="series_por_letra", title=letra,
                              url=urlparse.urljoin(HOST, "series.php?id={letra}".format(letra=letra))))
 
     return itemlist
 
 
-# La página de series por letra es igual que la de buscar
 def series_por_letra(item):
-    return search(item, '')
+    logger.info("letra = {0}".format(item.title))
+    data = scrapertools.anti_cloudflare(item.url)
+
+    shows = re.findall("<a href='(?P<url>[^']+)' title='Capitulos de: (?P<title>.+?)'><img.+?src='(?P<img>[^']+)", data)
+    itemlist = []
+    for url, title, img in shows:
+        itemlist.append(item.clone(title = title, url = urlparse.urljoin(HOST, url), action="episodios", thumbnail=img))
+    return itemlist
 
 
 def search(item, texto):
-    logger.info("[pelisalacarta.seriesdanko search texto={0}".format(texto))
+    logger.info("texto={0}".format(texto))
 
-    if texto != "":
-        item.url = urlparse.urljoin(HOST, "/pag_search.php?q1={0}".format(texto))
+    itemlist = []
 
     try:
-        return series(item)
+        data = scrapertools.anti_cloudflare(item.url)
+        shows = re.findall("<a href='(?P<url>/serie.php\?serie=[0-9]+)'[^>]*>(?P<title>[^<]*{0}[^<]*)".format(texto), data, re.IGNORECASE)
+        for url, title in shows:
+            itemlist.append(item.clone(title = title, url = urlparse.urljoin(HOST, url), action="episodios"))
+
     # Se captura la excepción, para no interrumpir al buscador global si un canal falla
     except:
         import sys
         for line in sys.exc_info():
             logger.error("%s" % line)
-        return []
-
-
-def series(item):
-    logger.info("pelisalacarta.seriesdanko series")
-
-    itemlist = []
-
-    data = scrapertools.cache_page(item.url)
-    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
-    data = re.sub(r"<!--.*?-->", "", data)
-
-    patron = "<a href='([^']+)'[^>]+><img class='ict' src='([^']+)' alt='([^']+)'"
-    matches = re.compile(patron, re.DOTALL).findall(data)
-
-    for scrapedurl, scrapedthumb, scrapedtitle in matches:
-        patron = "^(?:Capitulos de: )(.*?)$"
-        match = re.compile(patron, re.DOTALL).findall(scrapedtitle)
-        title = scrapertools.decodeHtmlentities(match[0])
-        itemlist.append(Item(channel=__channel__, title=title, url=urlparse.urljoin(HOST, scrapedurl.replace("..", "")),
-                             action="episodios", show=item.show, thumbnail=scrapedthumb, plot=""))
 
     return itemlist
 
 
 def episodios(item):
-    logger.info("pelisalacarta.seriesdanko episodios")
+    logger.info()
 
     itemlist = []
 
-    data = scrapertools.cache_page(item.url)
+    data = scrapertools.anti_cloudflare(item.url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
     data = re.sub(r"<!--.*?-->", "", data)
 
@@ -179,6 +165,8 @@ def episodios(item):
     matches = re.compile(patron, re.DOTALL).findall(data)
     if len(matches) > 0:
         thumbnail = matches[0]
+    else:
+        thumbnail = item.thumbnail
 
     patron = "<a href='([^']+)'>(.*?)</a><idioma>(.*?)</idioma>"
     matches = re.compile(patron, re.DOTALL).findall(data)
@@ -189,21 +177,24 @@ def episodios(item):
             idioma += " [" + IDIOMAS.get(i, "OVOS") + "]"
         title = scrapedtitle + idioma
 
-        itemlist.append(Item(channel=__channel__, title=title, url=urlparse.urljoin(HOST, scrapedurl),
-                             action="findvideos", show=item.show, thumbnail=thumbnail, plot="", language=idioma))
+        itemlist.append(Item(channel=item.channel, title=title, url=urlparse.urljoin(HOST, scrapedurl),
+                             action="findvideos", show=item.show, thumbnail=thumbnail, plot="", language=idioma,
+                             list_idiomas=list_idiomas, list_calidad=CALIDADES, context=filtertools.context))
+
+    if len(itemlist) > 0 and filtertools.context:
+            itemlist = filtertools.get_links(itemlist, item.channel)
 
     # Opción "Añadir esta serie a la biblioteca de XBMC"
     if config.get_library_support() and len(itemlist) > 0:
-        itemlist.append(Item(channel=__channel__, title="Añadir esta serie a la biblioteca de XBMC", url=item.url,
-                             action="add_serie_to_library", extra="episodios", show=item.show))
+        itemlist.append(item.clone(title="Añadir esta serie a la biblioteca", action="add_serie_to_library"))
 
     return itemlist
 
 
 def findvideos(item):
-    logger.info("pelisalacarta.seriesdanko findvideos")
+    logger.info()
 
-    data = scrapertools.cache_page(item.url)
+    data = scrapertools.anti_cloudflare(item.url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
     data = re.sub(r"<!--.*?-->", "", data)
 
@@ -214,43 +205,53 @@ def findvideos(item):
 
 
 def parse_videos(item, tipo, data):
-    logger.info("pelisalacarta.seriesdanko parse_videos")
+    logger.info()
 
     itemlist = []
 
     pattern = "<td.+?<img src='/assets/img/banderas/([^\.]+).+?</td><td.+?>(.*?)</td><td.+?" \
               "<img src='/assets/img/servidores/([^\.]+).+?</td><td.+?href='([^']+)'.+?>.*?</a></td>" \
-              "<td.+?>(.+?)</td><td.+?>(.*?)</td>"
+              "<td.+?>(.*?)</td>"
 
     links = re.findall(pattern, data, re.MULTILINE | re.DOTALL)
 
-    for language, date, server, link, uploader, quality in links:
+    for language, date, server, link, quality in links:
         if quality == "":
             quality = "SD"
-        title = "{tipo} en {server} [{idioma}] [{quality}] ({uploader}: {fecha})".\
-            format(tipo=tipo, server=server, idioma=IDIOMAS.get(language, "OVOS"), quality=quality, uploader=uploader,
-                   fecha=date)
+        title = "{tipo} en {server} [{idioma}] [{quality}] ({fecha})".\
+            format(tipo=tipo, server=server, idioma=IDIOMAS.get(language, "OVOS"), quality=quality, fecha=date)
 
-        itemlist.append(Item(channel=__channel__, title=title, url=urlparse.urljoin(HOST, link), action="play",
-                             show=item.show, language=IDIOMAS.get(language, "OVOS"), quality=quality))
+        itemlist.append(Item(channel=item.channel, title=title, url=urlparse.urljoin(HOST, link), action="play",
+                             show=item.show, language=IDIOMAS.get(language, "OVOS"), quality=quality,
+                             list_idiomas=list_idiomas, list_calidad=CALIDADES, fulltitle=item.title,
+                             context=filtertools.context))
+        # context=CONTEXT+"|guardar_filtro"))
+
+    if len(itemlist) > 0 and filtertools.context:
+        itemlist = filtertools.get_links(itemlist, item.channel)
 
     return itemlist
 
 
 def play(item):
-    logger.info("pelisalacarta.seriesdanko play url={0}".format(item.url))
+    logger.info("play url={0}".format(item.url))
 
-    data = scrapertools.cache_page(item.url)
+    data = scrapertools.anti_cloudflare(item.url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
-    #logger.info("data -- {}".format(data))
 
-    patron = '<div id="url2"><a href="([^"]+)">.+?</a></div>'
+    patron = '<div id="url2".*?><a href="([^"]+)">.+?</a></div>'
     url = scrapertools.find_single_match(data, patron)
 
     itemlist = servertools.find_video_items(data=url)
+    titulo = scrapertools.find_single_match(item.fulltitle, "^(.*?)\s\[.+?$")
+    if titulo:
+        titulo += " [{language}]".format(language=item.language)
 
     for videoitem in itemlist:
-        videoitem.title = item.title
-        videoitem.channel = __channel__
+        if titulo:
+            videoitem.title = titulo
+        else:
+            videoitem.title = item.title
+        videoitem.channel = item.channel
 
     return itemlist

@@ -12,16 +12,40 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/yaske.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>9</version>
-	<date>31/10/2014</date>
-	<changes>Actualizado por cambios en la web</changes>
+	<version>11</version>
 
+	<changes>
+		<change>
+			<date>01/07/16</date>
+			<autor>SeiTaN</autor>
+			<description>Eliminado código innecesario.</description>
+		</change>
+		<change> 
+			<date>29/04/16</date>
+			<autor>super_berny</autor>
+			<description>Adaptar a Novedades Peliculas e Infantiles</description>
+		</change>
+	</changes>
+		
 	<categories>
 		<category>latino</category>
 		<category>movie</category>
 	</categories>
 
 	<settings>
-		<include_in_global_search>true</include_in_global_search>
+		<id>include_in_newest_peliculas</id>
+		<type>bool</type>
+		<label>Incluir en Novedades - Peliculas</label>
+		<default>true</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<id>include_in_newest_infantiles</id>
+		<type>bool</type>
+		<label>Incluir en Novedades - Infantiles</label>
+		<default>false</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
 	</settings>
 </channel>

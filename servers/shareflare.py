@@ -5,12 +5,10 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import urlparse,urllib2,urllib,re
-import os
+import re
 
-from core import scrapertools
 from core import logger
-from core import config
+
 
 def test_video_exists( page_url ):
     return True,""

@@ -1,25 +1,22 @@
-    # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os, sys
-
-from core import logger
-from core import config
-from core import scrapertools
-from core.item import Item
-from servers import servertools
+import os
+import re
+import sys
+import urllib
+import urllib2
 
 import xbmcgui
 
+from core import config
+from core import logger
+from core import scrapertools
+from core import servertools
+from core.item import Item
 
-__channel__ = "bricocine"
-__category__ = "F"
-__type__ = "generic"
-__title__ = "bricocine"
-__language__ = "ES"
 
 DEBUG = config.get_setting("debug")
 ## Cargar los datos con la librería 'requests'
@@ -60,20 +57,15 @@ def browser(url):
     return response
 
 
-
-
-def isGeneric():
-    return True
-
 def mainlist(item):
     logger.info("pelisalacarta.bricocine mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, title="[COLOR sandybrown][B]Pelis MicroHD[/B][/COLOR]"      , action="peliculas", url="http://www.bricocine.com/c/hd-microhd/", thumbnail="http://s6.postimg.org/5vgi38jf5/HD_brico10.jpg", fanart="http://s16.postimg.org/6g9tc2nyt/brico_pelifan.jpg"))
-    itemlist.append( Item(channel=__channel__, title="[COLOR sandybrown][B]Pelis Bluray-Rip[/B][/COLOR]" , action="peliculas", url="http://www.bricocine.com/c/bluray-rip/",  thumbnail="http://s6.postimg.org/5w82dorpt/blueraybrico.jpg", fanart="http://i59.tinypic.com/11rdnjm.jpg"))
-    itemlist.append( Item(channel=__channel__, title="[COLOR sandybrown][B]Pelis DVD-Rip[/B][/COLOR]" , action="peliculas", url="http://www.bricocine.com/c/dvdrip/", thumbnail="http://s6.postimg.org/d2dlld4y9/dvd2.jpg", fanart="http://s6.postimg.org/hcehbq5w1/brico_blue_fan.jpg"))
-    itemlist.append( Item(channel=__channel__, title="[COLOR sandybrown][B]Pelis 3D[/B][/COLOR]" , action="peliculas", url="http://www.bricocine.com/c/3d/", thumbnail="http://www.eias3d.com/wp-content/uploads/2011/07/3d2_5.png", fanart="http://s6.postimg.org/u18rvec0h/bric3dd.jpg"))
-    import xbmc, time
+    itemlist.append( Item(channel=item.channel, title="[COLOR sandybrown][B]Pelis MicroHD[/B][/COLOR]"      , action="peliculas", url="http://www.bricocine.com/c/hd-microhd/", thumbnail="http://s6.postimg.org/5vgi38jf5/HD_brico10.jpg", fanart="http://s16.postimg.org/6g9tc2nyt/brico_pelifan.jpg"))
+    itemlist.append( Item(channel=item.channel, title="[COLOR sandybrown][B]Pelis Bluray-Rip[/B][/COLOR]" , action="peliculas", url="http://www.bricocine.com/c/bluray-rip/",  thumbnail="http://s6.postimg.org/5w82dorpt/blueraybrico.jpg", fanart="http://i59.tinypic.com/11rdnjm.jpg"))
+    itemlist.append( Item(channel=item.channel, title="[COLOR sandybrown][B]Pelis DVD-Rip[/B][/COLOR]" , action="peliculas", url="http://www.bricocine.com/c/dvdrip/", thumbnail="http://s6.postimg.org/d2dlld4y9/dvd2.jpg", fanart="http://s6.postimg.org/hcehbq5w1/brico_blue_fan.jpg"))
+    itemlist.append( Item(channel=item.channel, title="[COLOR sandybrown][B]Pelis 3D[/B][/COLOR]" , action="peliculas", url="http://www.bricocine.com/c/3d/", thumbnail="http://www.eias3d.com/wp-content/uploads/2011/07/3d2_5.png", fanart="http://s6.postimg.org/u18rvec0h/bric3dd.jpg"))
+    import xbmc
     ###Para musica(si hay) y borra customkeys
     if xbmc.Player().isPlaying():
        xbmc.executebuiltin('xbmc.PlayMedia(Stop)')
@@ -95,8 +87,8 @@ def mainlist(item):
         xbmc.executebuiltin('Action(reloadkeymaps)')
         print "No hay customs"
     
-    itemlist.append( Item(channel=__channel__, title="[COLOR sandybrown][B]Series[/B][/COLOR]"         , action="peliculas", url="http://www.bricocine.com/c/series", thumbnail="http://img0.mxstatic.com/wallpapers/bc795faa71ba7c490fcf3961f3b803bf_large.jpeg", fanart="http://s6.postimg.org/z1ath370x/bricoseries.jpg",extra="Series"))
-    import xbmc, time
+    itemlist.append( Item(channel=item.channel, title="[COLOR sandybrown][B]Series[/B][/COLOR]"         , action="peliculas", url="http://www.bricocine.com/c/series", thumbnail="http://img0.mxstatic.com/wallpapers/bc795faa71ba7c490fcf3961f3b803bf_large.jpeg", fanart="http://s6.postimg.org/z1ath370x/bricoseries.jpg",extra="Series"))
+    import xbmc
     if xbmc.Player().isPlaying():
        print "PLAYIIING"
        xbmc.executebuiltin('xbmc.PlayMedia(Stop)')
@@ -130,41 +122,42 @@ def mainlist(item):
         print "Custom Trailer.txt borrado"
     except:
         print "No hay Trailer.txt"
-    itemlist.append( Item(channel=__channel__, title="[COLOR sandybrown][B]Buscar[/B][/COLOR]"         , action="search", url="", thumbnail="http://fc04.deviantart.net/fs70/i/2012/285/3/2/poltergeist___tv_wallpaper_by_elclon-d5hmmlp.png", fanart="http://s6.postimg.org/f44w84o5t/bricosearch.jpg", extra ="search"))
+    itemlist.append( Item(channel=item.channel, title="[COLOR sandybrown][B]Buscar[/B][/COLOR]"         , action="search", url="", thumbnail="http://fc04.deviantart.net/fs70/i/2012/285/3/2/poltergeist___tv_wallpaper_by_elclon-d5hmmlp.png", fanart="http://s6.postimg.org/f44w84o5t/bricosearch.jpg", extra ="search"))
     
 
     return itemlist
 
 
-def search(item,texto):
+def search(item, texto):
     logger.info("pelisalacarta.bricocine search")
-    texto = texto.replace(" ","+")
-    item.url = "http://www.bricocine.com/index.php/?s=%s" % (texto)
-    print"BUUUSQUEDA"
-    print item.url
-    print item.extra
+    texto = texto.replace(" ", "+")
+    item.url = "http://www.bricocine.com/index.php/?s=%s" % texto
+
     try:
-        return peliculas(item)
-    # Se captura la excepciÛn, para no interrumpir al buscador global si un canal falla
+        return peliculas(item, texto.replace("+", " "))
+    # Se captura la excepción, para no interrumpir al buscador global si un canal falla
     except:
         import sys
         for line in sys.exc_info():
-            logger.error( "%s" % line )
+            logger.error("%s" % line)
         return []
 
-def peliculas(item):
+
+def peliculas(item, texto=""):
     logger.info("pelisalacarta.bricocine peliculas")
     itemlist = []
-    ###Borra customkeys
+
+    # Borra customkeys
     import xbmc
     if xbmc.Player().isPlaying():
        xbmc.executebuiltin('xbmc.PlayMedia(Stop)')
-    
+
     TESTPYDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "test.py")
     KEYMAPDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "customkey.xml")
     REMOTEDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "remote.xml")
     APPCOMMANDDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "customapp.xml")
     TRAILERDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "trailer.txt")
+
     try:
         os.remove(KEYMAPDESTFILE)
         print "Custom Keyboard.xml borrado"
@@ -186,11 +179,43 @@ def peliculas(item):
         print "No hay Trailer.txt"
 
     # Descarga la página
-    data = get_page( item.url )
-    data = re.sub(r"amp;","",data)
+    data = get_page(item.url)
+    data = re.sub(r"amp;", "", data)
     '''
-   <div class="post-10888 post type-post status-publish format-standard hentry category-the-leftovers tag-ciencia-ficcion tag-drama tag-fantasia tag-misterio"><div class="entry"> <a href="http://www.bricocine.com/10888/leftovers-temporada-1/"> <img src="http://www.bricocine.com/wp-content/plugins/wp_movies/files/thumb_185_the_leftovers_.jpg" alt="The Leftovers " /> </a></div><div class="entry-meta"><div class="clearfix"><div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating" class="rating"  title="Puntos IMDB: 7.4"><div class="rating-stars imdb-rating"><div class="stars" style="width:74%"></div></div><div itemprop="ratingValue" class="rating-number"> 7.4</div></div><div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating" class="rating"  title="Puntos Bricocine: 6.2"><div class="rating-stars brico-rating"><div class="stars" style="width:62%"></div></div><div itemprop="ratingValue" class="rating-number"> 6.2</div></div> <span class="vcard author none"> Publicado por <a class="fn" href="" rel="author" target="_blank"></a> </span> <span class="date updated none">2014-10-07T23:36:17+00:00</span></div></div><h2 class="title2 entry-title"> <a href="http://www.bricocine.com/10888/leftovers-temporada-1/"> The Leftovers  &#8211; Temporada 1 </a></h2></div> </article> <article class="hentry item-entry"><div class="post-10088 post type-post status-publish format-standard hentry category-the-last-ship tag-accion tag-ciencia-ficcion tag-drama tag-the tag-thriller"><div class="entry"> <a href="http://www.bricocine.com/10088/last-ship-temporada-1/"> <img src="http://www.bricocine.com/wp-content/plugins/wp_movies/files/thumb_185_the_last_ship_.jpg" alt="The Last Ship " /> </a></div><div class="entry-meta"><div class="clearfix"><div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating" class="rating"  title="Puntos IMDB: 7.4"><div class="rating-stars imdb-rating"><div class="stars" style="width:74%"></div></div><div itemprop="ratingValue" class="rating-number"> 7.4</div></div><div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating" class="rating"  title="Puntos Bricocine: 7.0"><div class="rating-stars brico-rating"><div class="stars" style="width:70%"></div></div><div itemprop="ratingValue" class="rating-number"> 7.0</div></div> <span class="vcard author none"> Publicado por <a class="fn" href="" rel="author" target="_blank"></a> </span> <span class="date updated none">2014-10-07T23:32:25+00:00</span></div></div><h2 class="title2 entry-title"> <a href="http://www.bricocine.com/10088/last-ship-temporada-1/"> The Last Ship &#8211; Temporada 1 </a></h2></div> </article> <article class="hentry item-entry">
-
+    <div class="post-10888 post type-post status-publish format-standard hentry category-the-leftovers
+        tag-ciencia-ficcion tag-drama tag-fantasia tag-misterio">
+        <div class="entry">
+            <a href="http://www.bricocine.com/10888/leftovers-temporada-1/">
+                <img src="http://www.bricocine.com/wp-content/plugins/wp_movies/files/thumb_185_the_leftovers_.jpg"
+                    alt="The Leftovers " />
+            </a>
+        </div>
+        <div class="entry-meta">
+            <div class="clearfix">
+                <div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating" class="rating"
+                    title="Puntos IMDB: 7.4">
+                    <div class="rating-stars imdb-rating">
+                        <div class="stars" style="width:74%"></div>
+                    </div>
+                    <div itemprop="ratingValue" class="rating-number"> 7.4</div>
+                </div>
+                <div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating" class="rating"
+                    title="Puntos Bricocine: 6.2">
+                    <div class="rating-stars brico-rating">
+                        <div class="stars" style="width:62%"></div>
+                    </div>
+                    <div itemprop="ratingValue" class="rating-number"> 6.2</div>
+                </div>
+                <span class="vcard author none"> Publicado por
+                    <a class="fn" href="" rel="author" target="_blank"></a>
+                </span>
+                <span class="date updated none">2014-10-07T23:36:17+00:00</span>
+            </div>
+        </div>
+        <h2 class="title2 entry-title">
+            <a href="http://www.bricocine.com/10888/leftovers-temporada-1/"> The Leftovers  &#8211; Temporada 1 </a>
+        </h2>
+    </div>
     '''
     patron = 'format-standard hentry category(.*?)">.*?'
     patron += '<div class="entry"> '
@@ -199,87 +224,96 @@ def peliculas(item):
     patron += 'class="rating-number">([^<]+)</div></div>.*?'
     patron += '<h2 class="title2 entry-title">.*?"> ([^<]+).*?</a>'
     
-    matches = re.compile(patron,re.DOTALL).findall(data)
+    matches = re.compile(patron, re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
-    if len(matches)==0 :
-        itemlist.append( Item(channel=__channel__, title="[COLOR gold][B]No hay resultados...[/B][/COLOR]", thumbnail ="http://s6.postimg.org/fay99h9ox/briconoisethumb.png", fanart ="http://s6.postimg.org/uie8tu1jl/briconoisefan.jpg",folder=False) )
+    if len(matches) == 0:
+        itemlist.append(Item(channel=item.channel, title="[COLOR gold][B]No hay resultados...[/B][/COLOR]",
+                             thumbnail="http://s6.postimg.org/fay99h9ox/briconoisethumb.png",
+                             fanart="http://s6.postimg.org/uie8tu1jl/briconoisefan.jpg", folder=False))
 
     for tag, scrapedurl, scrapedthumbnail, scrapedcreatedate, scrapedtitle in matches:
+        # fix para el buscador para que no muestre entradas con texto que no es correcto
+        if texto.lower() not in scrapedtitle.lower():
+            continue
+
         if scrapedthumbnail == "":
-            scrapedthumbnail ="http://s6.postimg.org/aseij0y4x/briconoimage.png"
-        title= scrapedtitle
-        print "tus huevos"
-        print tag
-        #Separa entre series y peliculas
-        if not item.extra== "Series" and not "index" in item.url:
-           title= re.sub(r"\(.*?\) |\[.*?\] |&#.*?;","",title)
-           try:
-              scrapedyear = scrapertools.get_match(scrapedurl,'.*?www.bricocine.com/.*?/.*?(\d\d\d\d)')
-           except:
-              scrapedyear = ""
-           title_fan = title.strip()
-        if item.extra== "Series" and not "index" in item.url:
-            title= re.sub(r"&#.*?;|Temporada.*?\d+ | Todas las Temporadas |\[.*?\]|\([0-9].*?\)|¡|!","",title)
+            scrapedthumbnail = "http://s6.postimg.org/aseij0y4x/briconoimage.png"
+        title = scrapedtitle
+        # Separa entre series y peliculas
+        if not item.extra == "Series" and "index" not in item.url:
+            title = re.sub(r"\(.*?\) |\[.*?\] |&#.*?;", "", title)
+
+            try:
+                scrapedyear = scrapertools.get_match(scrapedurl, '.*?www.bricocine.com/.*?/.*?(\d\d\d\d)')
+            except:
+                scrapedyear = ""
+            title_fan = title.strip()
+
+        if item.extra == "Series" and "index" not in item.url:
+            title = re.sub(r"&#.*?;|Temporada.*?\d+ | Todas las Temporadas |\[.*?\]|\([0-9].*?\)|¡|!", "", title)
             title_fan = title.strip()
             scrapedyear = ""
-        #Diferencia si viene de la búsqueda
+        # Diferencia si viene de la búsqueda
         if "index" in item.url:
-             #Se usa tag en busqueda para diferenciar series no bien tipificadas
-             if not "3d" in tag and not "dvdrip" in tag and not "bluray-rip" in tag and not "hd-microhd" in tag and not "bdrip" in tag and not "estrenos" in tag and not "latino" in tag and not "hannibal" in tag:
-                title= re.sub(r"\n|\r|\t|\s{2}|&nbsp;|&#.*?;|\(.*?\)|\d\d\d\d","",title)
-                title_fan =re.sub(r"\n|\r|\t|\s{2}|&nbsp;|&#.*?;|Temporada.*?\d+| Todas Las Temp.*?das","",title)
-                title= title.replace("Temporada","[COLOR green]Temporada[/COLOR]")
-                title = title.replace	(title,"[COLOR white]"+title+"[/COLOR]")
+            # Se usa tag en busqueda para diferenciar series no bien tipificadas
+            if ("3d" not in tag and not "dvdrip" in tag and not "bluray-rip" in tag and not "hd-microhd" in tag and
+                    not "bdrip" in tag and not "estrenos" in tag and not "latino" in tag and not "hannibal" in tag):
+                title = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|&#.*?;|\(.*?\)|\d\d\d\d","",title)
+                title_fan = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|&#.*?;|Temporada.*?\d+| Todas Las Temp.*?das", "", title)
+                title = title.replace("Temporada", "[COLOR green]Temporada[/COLOR]")
+                title = title.replace(title, "[COLOR white]"+title+"[/COLOR]")
                 
                 import xbmc
-                #Crea el archivo search.txt.Regula el buen funcionaiento de la música y volver atras en la busqueda
-                SEARCHDESTFILE= os.path.join(xbmc.translatePath('special://userdata/keymaps'), "search.txt")
-                urllib.urlretrieve ("https://raw.githubusercontent.com/neno1978/script.palc.forcerefresh/master/search.txt", SEARCHDESTFILE )
-                item.extra= "Series"
-                scrapedyear= ""
-             else:
-                 
-                 title = scrapedtitle
-                 title= re.sub(r"\(.*?\)|\[.*?\]|&#.*?;|","",scrapedtitle)
-                 title = title.strip()
-                 try:
-                     scrapedyear = scrapertools.get_match(scrapedurl,'.*?www.bricocine.com/.*?/.*?(\d\d\d\d)')
-                 
-                 except:
-                     scrapedyear = ""
-                 print scrapedyear
-                 print item.extra
-                 print "pero quillooooo"
-                 print title
-                 print item.extra
-                 print scrapedcreatedate
-                 title_fan = title.strip()
-                 if item.extra == "Series":
-                    item.extra ="peliculas"
-                 print item.extra
-                 #Crea el archivo search.txt.Regula el buen funcionaiento de la música y volver atras en la busqueda
-                 import xbmc
-                 SEARCHDESTFILE= os.path.join(xbmc.translatePath('special://userdata/keymaps'), "search.txt")
-                 urllib.urlretrieve ("https://raw.githubusercontent.com/neno1978/script.palc.forcerefresh/master/search.txt", SEARCHDESTFILE )
-        scrapedcreatedate = scrapedcreatedate.replace(scrapedcreatedate,"[COLOR sandybrown][B]"+scrapedcreatedate+"[/B][/COLOR]")
-        title = title.replace(title,"[COLOR white]"+title+"[/COLOR]")
-        title = title +"(Puntuación:" + scrapedcreatedate + ")"
-        show = title_fan+"|"+scrapedyear    
-        itemlist.append( Item(channel=__channel__, title=title, url=scrapedurl, action="fanart", thumbnail=scrapedthumbnail, fanart="http://s15.postimg.org/id6ec47vf/bricocinefondo.jpg",show= show,extra=item.extra,  folder=True) )
+                # Crea el archivo search.txt.Regula el buen funcionaiento de la música y volver atras en la busqueda
+                SEARCHDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "search.txt")
+                urllib.urlretrieve(
+                    "https://raw.githubusercontent.com/neno1978/script.palc.forcerefresh/master/search.txt",
+                    SEARCHDESTFILE)
+                item.extra = "Series"
+                scrapedyear = ""
 
-    
-    ## Paginación
-    #<span class='current'>1</span><a href='http://www.bricocine.com/c/hd-microhd/page/2/'
+            else:
+                title = re.sub(r"\(.*?\)|\[.*?\]|&#.*?;|", "", scrapedtitle)
+                title = title.strip()
+                try:
+                    scrapedyear = scrapertools.get_match(scrapedurl, '.*?www.bricocine.com/.*?/.*?(\d\d\d\d)')
+                except:
+                    scrapedyear = ""
+
+                title_fan = title.strip()
+                if item.extra == "Series":
+                    item.extra = "peliculas"
+                # print item.extra
+                # Crea el archivo search.txt.Regula el buen funcionaiento de la música y volver atras en la busqueda
+                import xbmc
+                SEARCHDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "search.txt")
+                urllib.urlretrieve(
+                    "https://raw.githubusercontent.com/neno1978/script.palc.forcerefresh/master/search.txt",
+                    SEARCHDESTFILE)
+
+        scrapedcreatedate = scrapedcreatedate.replace(scrapedcreatedate,
+                                                      "[COLOR sandybrown][B]"+scrapedcreatedate+"[/B][/COLOR]")
+        title = title.replace(title, "[COLOR white]"+title+"[/COLOR]")
+        title = title + "(Puntuación:" + scrapedcreatedate + ")"
+        show = title_fan+"|"+scrapedyear    
+        itemlist.append(Item(channel=item.channel, title=title, url=scrapedurl, action="fanart",
+                             thumbnail=scrapedthumbnail, fanart="http://s15.postimg.org/id6ec47vf/bricocinefondo.jpg",
+                             show=show, extra=item.extra, folder=True))
+
+    # Paginación
+    # <span class='current'>1</span><a href='http://www.bricocine.com/c/hd-microhd/page/2/'
     
     # Si falla no muestra ">> Página siguiente"
     try:
-        next_page = scrapertools.get_match(data,"<span class='current'>\d+</span><a href='([^']+)'")
-        title= "[COLOR red]Pagina siguiente>>[/COLOR]"
-        itemlist.append( Item(channel=__channel__, title=title, url=next_page, action="peliculas", fanart="http://s15.postimg.org/id6ec47vf/bricocinefondo.jpg",extra= item.extra, thumbnail="http://s7.postimg.org/w2e0nr7hn/pdksiguiente.jpg", folder=True) )
-    except: pass
+        next_page = scrapertools.get_match(data, "<span class='current'>\d+</span><a href='([^']+)'")
+        title = "[COLOR red]Pagina siguiente>>[/COLOR]"
+        itemlist.append(Item(channel=item.channel, title=title, url=next_page, action="peliculas",
+                             fanart="http://s15.postimg.org/id6ec47vf/bricocinefondo.jpg", extra=item.extra,
+                             thumbnail="http://s7.postimg.org/w2e0nr7hn/pdksiguiente.jpg", folder=True))
+    except:
+        pass
     
     return itemlist
-
 
 
 def fanart(item):
@@ -345,7 +379,7 @@ def fanart(item):
         title_tunes= re.sub(r"\(.*?\)","",title)
         title_tunes= (translate(title_tunes,"en"))
         ###Prepara customkeys y borra cuando vuelve
-        import xbmc,time
+        import xbmc
         if not xbmc.Player().isPlaying() and not os.path.exists ( TRAILERDESTFILE ):
             
            TESTPYDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "test.py")
@@ -479,7 +513,7 @@ def fanart(item):
                       fanart_info = "http://s6.postimg.org/77fsghaz3/bricotvshows4.jpg"
                       fanart_trailer = "http://s6.postimg.org/77fsghaz3/bricotvshows4.jpg"
                       category= ""
-                      itemlist.append( Item(channel=__channel__, title=item.title, url=item.url, action="findvideos", thumbnail=item.thumbnail,plot=plot, fanart="http://s6.postimg.org/77fsghaz3/bricotvshows4.jpg" ,extra=extra, category= category,  show=show , folder=True) )
+                      itemlist.append( Item(channel=item.channel, title=item.title, url=item.url, action="findvideos", thumbnail=item.thumbnail,plot=plot, fanart="http://s6.postimg.org/77fsghaz3/bricotvshows4.jpg" ,extra=extra, category= category,  show=show , folder=True) )
         
             else:
                 title= title.replace(" ","%20")
@@ -495,7 +529,7 @@ def fanart(item):
                    fanart_info = "http://s6.postimg.org/77fsghaz3/bricotvshows4.jpg"
                    fanart_trailer = "http://s6.postimg.org/77fsghaz3/bricotvshows4.jpg"
                    category= ""
-                   itemlist.append( Item(channel=__channel__, title=item.title, url=item.url, action="findvideos", thumbnail=item.thumbnail,plot=plot, fanart="http://s6.postimg.org/77fsghaz3/bricotvshows4.jpg" ,extra=extra, category= category,  show=show , folder=True) )
+                   itemlist.append( Item(channel=item.channel, title=item.title, url=item.url, action="findvideos", thumbnail=item.thumbnail,plot=plot, fanart="http://s6.postimg.org/77fsghaz3/bricotvshows4.jpg" ,extra=extra, category= category,  show=show , folder=True) )
 
         #1ºfanart mediante id tvdb
         
@@ -520,7 +554,7 @@ def fanart(item):
                 show= "http://s6.postimg.org/4asrg755b/bricotvshows2.png"
                 fanart_info = "http://s6.postimg.org/77fsghaz3/bricotvshows4.jpg"
                 fanart_trailer = "http://s6.postimg.org/77fsghaz3/bricotvshows4.jpg"
-                itemlist.append( Item(channel=__channel__, title=item.title, url=item.url, action="findvideos", thumbnail=postertvdb, fanart="http://s6.postimg.org/77fsghaz3/bricotvshows4.jpg" ,plot=plot ,category = category, extra=extra, show=show,folder=True) )
+                itemlist.append( Item(channel=item.channel, title=item.title, url=item.url, action="findvideos", thumbnail=postertvdb, fanart="http://s6.postimg.org/77fsghaz3/bricotvshows4.jpg" ,plot=plot ,category = category, extra=extra, show=show,folder=True) )
 
             for fan in matches:
                 fanart="http://thetvdb.com/banners/" + fan
@@ -534,7 +568,7 @@ def fanart(item):
                     fanart_2 = fanart_1
                     show= fanart_1
                     extra=postertvdb
-                    itemlist.append( Item(channel=__channel__, title=item.title, url=item.url, action="findvideos", thumbnail=postertvdb, fanart=fanart_1 ,plot=plot ,category = category, extra=extra, show=show,folder=True) )
+                    itemlist.append( Item(channel=item.channel, title=item.title, url=item.url, action="findvideos", thumbnail=postertvdb, fanart=fanart_1 ,plot=plot ,category = category, extra=extra, show=show,folder=True) )
                 for fanart_info, fanart_trailer, fanart_2 in matches:
                     fanart_info = "http://thetvdb.com/banners/" + fanart_info
                     fanart_trailer = "http://thetvdb.com/banners/" + fanart_trailer
@@ -569,7 +603,7 @@ def fanart(item):
                                 thumbnail = hdtvlogo
                                 extra= thumbnail
                                 show = fanart_2
-                            itemlist.append( Item(channel=__channel__, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=thumbnail,plot=plot , fanart=fanart_1, category=category, extra=extra, show=show, folder=True) )
+                            itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=thumbnail,plot=plot , fanart=fanart_1, category=category, extra=extra, show=show, folder=True) )
                                 
     
                         else:
@@ -582,11 +616,11 @@ def fanart(item):
                                 extra= thumbnail
                                 show= fanart_2
                             
-                            itemlist.append( Item(channel=__channel__, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=thumbnail,plot=plot , fanart=fanart_1, extra=extra, show=show,  category= category, folder=True) )
+                            itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=thumbnail,plot=plot , fanart=fanart_1, extra=extra, show=show,  category= category, folder=True) )
                    else:
                         extra=  "http://s6.postimg.org/6flcihb69/brico1sinopsis.png"
                         show = fanart_2
-                        itemlist.append( Item(channel=__channel__, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=item.thumbnail,plot=plot , fanart=fanart_1, extra=extra, show=show, category = category, folder=True) )
+                        itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=item.thumbnail,plot=plot , fanart=fanart_1, extra=extra, show=show, category = category, folder=True) )
                 
             for logo in matches:
                 if '"hdtvlogo"' in data:
@@ -602,11 +636,11 @@ def fanart(item):
                         
                         extra=clear
                         show= fanart_2
-                        itemlist.append( Item(channel=__channel__, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=thumbnail,plot=plot , fanart=fanart_1, extra=extra,show=show, category= category, folder=True) )
+                        itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=thumbnail,plot=plot , fanart=fanart_1, extra=extra,show=show, category= category, folder=True) )
                     else:
                         extra= clear
                         show=fanart_2
-                        itemlist.append( Item(channel=__channel__, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=thumbnail,plot=plot , fanart=fanart_1, extra=extra,show=show, category= category, folder=True) )
+                        itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=thumbnail,plot=plot , fanart=fanart_1, extra=extra,show=show, category= category, folder=True) )
                 
                 if "showbackground" in data:
                     
@@ -617,7 +651,7 @@ def fanart(item):
                     else:
                         extra=logo
                         show= fanart_2
-                        itemlist.append( Item(channel=__channel__, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=thumbnail,plot=plot , fanart=fanart_1, extra=extra,show=show,  category = category, folder=True) )
+                        itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=thumbnail,plot=plot , fanart=fanart_1, extra=extra,show=show,  category = category, folder=True) )
 
                 if not '"clearart"' in data and not '"showbackground"' in data:
                         if '"hdclearart"' in data:
@@ -626,7 +660,7 @@ def fanart(item):
                         else:
                             extra= thumbnail
                             show=  fanart_2
-                        itemlist.append( Item(channel=__channel__, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=thumbnail,plot=plot , fanart=fanart_1, extra=extra,show=show , category = category, folder=True) )
+                        itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=thumbnail,plot=plot , fanart=fanart_1, extra=extra,show=show , category = category, folder=True) )
                 
     else:
         ###Películas
@@ -937,7 +971,7 @@ def fanart(item):
                 extra= "http://s6.postimg.org/6flcihb69/brico1sinopsis.png"
                 show = fanart_2
                 category = fanart_1
-                itemlist.append( Item(channel=__channel__, title = item.title , action="findvideos_peli", url=item.url, server="torrent", thumbnail=posterdb, fanart=fanart,  extra=extra, show=show, category= category, folder=True) )
+                itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos_peli", url=item.url, server="torrent", thumbnail=posterdb, fanart=fanart,  extra=extra, show=show, category= category, folder=True) )
             for logo in matches:
                 if '"hdmovieclearart"' in data:
                     clear=scrapertools.get_match(data,'"hdmovieclearart":.*?"url": "([^"]+)"')
@@ -948,7 +982,7 @@ def fanart(item):
                             category= banner
                         else:
                             category= clear
-                        itemlist.append( Item(channel=__channel__, title = item.title , action="findvideos_peli", url=item.url, server="torrent", thumbnail=logo, fanart=fanart_1, extra=extra,show=show, category= category, folder=True) )
+                        itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos_peli", url=item.url, server="torrent", thumbnail=logo, fanart=fanart_1, extra=extra,show=show, category= category, folder=True) )
                     else:
                         extra= clear
                         show=fanart_2
@@ -956,7 +990,7 @@ def fanart(item):
                             category = banner
                         else:
                             category = clear
-                        itemlist.append( Item(channel=__channel__, title = item.title , action="findvideos_peli", url=item.url, server="torrent", thumbnail=logo, fanart=fanart_1, extra=extra,show=show, category= category, folder=True) )
+                        itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos_peli", url=item.url, server="torrent", thumbnail=logo, fanart=fanart_1, extra=extra,show=show, category= category, folder=True) )
 
                 if '"moviebackground"' in data:
                         
@@ -976,7 +1010,7 @@ def fanart(item):
                             category= banner
                         else:
                             category= logo
-                        itemlist.append( Item(channel=__channel__, title = item.title , action="findvideos_peli", url=item.url, server="torrent", thumbnail=logo, fanart=fanart_1, extra=extra,show=show, category= category,  folder=True) )
+                        itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos_peli", url=item.url, server="torrent", thumbnail=logo, fanart=fanart_1, extra=extra,show=show, category= category,  folder=True) )
         
                 if not '"hdmovieclearart"' in data and not '"moviebackground"' in data:
                         extra= logo
@@ -985,7 +1019,7 @@ def fanart(item):
                             category= banner
                         else:
                             category= extra
-                        itemlist.append( Item(channel=__channel__, title = item.title , action="findvideos_peli", url=item.url, server="torrent", thumbnail=logo, fanart=fanart_1,category= category, extra=extra,show=show ,  folder=True) )
+                        itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos_peli", url=item.url, server="torrent", thumbnail=logo, fanart=fanart_1,category= category, extra=extra,show=show ,  folder=True) )
     ####Info item. Se añade item.show.split("|")[0] and item.extra != "Series" para salvar el error de cuando una serie no está perfectamente tipificada como tal en Bricocine
     title ="Info"
     title = title.replace(title,"[COLOR skyblue]"+title+"[/COLOR]")
@@ -1003,7 +1037,7 @@ def fanart(item):
             category = show
 
 
-    itemlist.append( Item(channel=__channel__, action="info" , title=title , url=item.url, thumbnail=thumbnail, fanart=fanart_info, show= show, extra= extra, category= category, folder=False ))
+    itemlist.append( Item(channel=item.channel, action="info" , title=title , url=item.url, thumbnail=thumbnail, fanart=fanart_info, show= show, extra= extra, category= category, folder=False ))
 
     ####Trailer item
     title= "[COLOR crimson]Trailer[/COLOR]"
@@ -1035,7 +1069,7 @@ def fanart(item):
 
 
 
-    itemlist.append( Item(channel=__channel__, action="trailer", title=title , url=item.url , thumbnail=thumbnail , fulltitle = item.title , fanart=fanart_trailer, extra=extra, folder=True) )
+    itemlist.append( Item(channel=item.channel, action="trailer", title=title , url=item.url , thumbnail=thumbnail , fulltitle = item.title , fanart=fanart_trailer, extra=extra, folder=True) )
     import xbmc
     xbmc.executebuiltin('Action(reloadkeymaps)')
     return itemlist
@@ -1044,7 +1078,7 @@ def findvideos(item):
     
     itemlist = []
     ###Ubicacion Customkey
-    import xbmc, time
+    import xbmc
     SEARCHDESTFILE= os.path.join(xbmc.translatePath('special://userdata/keymaps'), "search.txt")
     TESTPYDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "test.py")
     KEYMAPDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "customkey.xml")
@@ -1065,7 +1099,7 @@ def findvideos(item):
     data = get_page( item.url )
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;| - REPARADO","",data)
     ###Borra Customkey cuando no hay música
-    import xbmc, time
+    import xbmc
     if not xbmc.Player().isPlaying():
         TESTPYDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "test.py")
         KEYMAPDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "customkey.xml")
@@ -1101,7 +1135,7 @@ def findvideos(item):
                     extra = item.thumbnail
                     ###Se identifica como serie respetando en anterior item.category
                     category = item.category+"|"+"series"
-                    itemlist.append( Item(channel=__channel__, title="[COLOR gold][B]Ooops!! Algo no va bien,pulsa para ser dirigido a otra busqueda, ...[/B][/COLOR]",action="findvideos_peli", url=item.url, thumbnail ="http://s6.postimg.org/fay99h9ox/briconoisethumb.png", fanart ="http://s6.postimg.org/uie8tu1jl/briconoisefan.jpg", extra=extra, show=show, category=category,plot = item.plot, folder=True) )
+                    itemlist.append( Item(channel=item.channel, title="[COLOR gold][B]Ooops!! Algo no va bien,pulsa para ser dirigido a otra busqueda, ...[/B][/COLOR]",action="findvideos_peli", url=item.url, thumbnail ="http://s6.postimg.org/fay99h9ox/briconoisethumb.png", fanart ="http://s6.postimg.org/uie8tu1jl/briconoisefan.jpg", extra=extra, show=show, category=category,plot = item.plot, folder=True) )
                
             import base64
             for title_links, seasson, epi, calidad, title_torrent, url_torrent,title_magnet, url_magnet in matches:
@@ -1177,8 +1211,8 @@ def findvideos(item):
                 if "bricotvshows2.png" in item.show:
                     item.show = item.fanart
                     
-                itemlist.append( Item(channel=__channel__, title = title_torrent , action="episodios", url=url_torrent, thumbnail=item.extra, fanart=item.show,plot=item.plot , extra=extra, category= item.category, folder=True) )
-                itemlist.append( Item(channel=__channel__, title = title_magnet , action="episodios", url=url_magnet, thumbnail=item.extra, fanart=item.show, extra=extra,plot=item.plot , category= item.category, folder=True) )
+                itemlist.append( Item(channel=item.channel, title = title_torrent , action="episodios", url=url_torrent, thumbnail=item.extra, fanart=item.show,plot=item.plot , extra=extra, category= item.category, folder=True) )
+                itemlist.append( Item(channel=item.channel, title = title_magnet , action="episodios", url=url_magnet, thumbnail=item.extra, fanart=item.show, extra=extra,plot=item.plot , category= item.category, folder=True) )
             try:
                ###Comprueba si, aparte de cápitulos torrent/magnet hay algun torrent suelto sin magnet
                checktorrent=scrapertools.get_match(data,'id="magnet".*?Descargar .torrent<\/a><\/li><\/ul><\/td><\/tr><tr><td><span class="title">.*?rel="nofollow">(.*?)<\/a><\/li><\/ul><\/td><\/tr><tr><td>')
@@ -1200,7 +1234,7 @@ def findvideos(item):
                       extra = item.thumbnail
                       category = item.category+"|"+"series"
                       
-                      itemlist.append( Item(channel=__channel__, title="[COLOR gold][B]Ooops!! Algo no va bien,pulsa para ser dirigido a otra busqueda, ...[/B][/COLOR]",action="findvideos_peli", url=item.url, thumbnail ="http://s6.postimg.org/fay99h9ox/briconoisethumb.png", fanart ="http://s6.postimg.org/uie8tu1jl/briconoisefan.jpg", extra=extra, show=show, category=category,plot = item.plot, folder=True) )
+                      itemlist.append( Item(channel=item.channel, title="[COLOR gold][B]Ooops!! Algo no va bien,pulsa para ser dirigido a otra busqueda, ...[/B][/COLOR]",action="findvideos_peli", url=item.url, thumbnail ="http://s6.postimg.org/fay99h9ox/briconoisethumb.png", fanart ="http://s6.postimg.org/uie8tu1jl/briconoisefan.jpg", extra=extra, show=show, category=category,plot = item.plot, folder=True) )
                                                 
                import base64
                 
@@ -1261,7 +1295,7 @@ def findvideos(item):
                    title_links= title_links.replace('ú','u')
                    title_links= title_links.replace(' ','%20')
                    extra = season+"|"+title_links+"|"+epi
-                   itemlist.append( Item(channel=__channel__, title = title_torrent , action="episodios", url=url_torrent, thumbnail=item.extra, fanart=item.show, extra=extra,plot=item.plot , category= item.category, folder=True) )
+                   itemlist.append( Item(channel=item.channel, title = title_torrent , action="episodios", url=url_torrent, thumbnail=item.extra, fanart=item.show, extra=extra,plot=item.plot , category= item.category, folder=True) )
     else:
         ###Busqueda cuando hay Torrent pero no magnet en la serie
         if 'id="file"' in data and  not 'id="magnet"'in data :
@@ -1277,7 +1311,7 @@ def findvideos(item):
                   show = item.show
                   extra = item.thumbnail
                   category = item.category+"|"+"series"
-                  itemlist.append( Item(channel=__channel__, title="[COLOR gold][B]Ooops!! Algo no va bien,pulsa para ser dirigido a otra busqueda, ...[/B][/COLOR]",action="findvideos_peli", url=item.url, thumbnail ="http://s6.postimg.org/fay99h9ox/briconoisethumb.png", fanart ="http://s6.postimg.org/uie8tu1jl/briconoisefan.jpg", extra=extra, show=show, category=category,plot = item.plot, folder=True) )
+                  itemlist.append( Item(channel=item.channel, title="[COLOR gold][B]Ooops!! Algo no va bien,pulsa para ser dirigido a otra busqueda, ...[/B][/COLOR]",action="findvideos_peli", url=item.url, thumbnail ="http://s6.postimg.org/fay99h9ox/briconoisethumb.png", fanart ="http://s6.postimg.org/uie8tu1jl/briconoisefan.jpg", extra=extra, show=show, category=category,plot = item.plot, folder=True) )
            import base64
            for title_links, seasson, epi, calidad, title_torrent, url_torrent in matches:
                try:
@@ -1336,7 +1370,7 @@ def findvideos(item):
                title_links= title_links.replace('ú','u')
                title_links= title_links.replace(' ','%20')
                extra = season+"|"+title_links+"|"+epi
-               itemlist.append( Item(channel=__channel__, title = title_torrent , action="episodios", url=url_torrent, thumbnail=item.extra, fanart=item.show, extra=extra,plot=item.plot , category= item.category, folder=True) )
+               itemlist.append( Item(channel=item.channel, title = title_torrent , action="episodios", url=url_torrent, thumbnail=item.extra, fanart=item.show, extra=extra,plot=item.plot , category= item.category, folder=True) )
     ###Busqueda cuando hay Magnet pero no Torrent
     if 'id="magnet"' in data and not 'id="file"' in data:
         patron = '<span class="title">([^<]+)- (\d)(\d+)([^<]+).*?'
@@ -1349,7 +1383,7 @@ def findvideos(item):
             if len(matches)==0:
                show = item.show
                extra = item.extra
-               itemlist.append( Item(channel=__channel__, title="[COLOR gold][B]Ooops!! Algo no va bien,pulsa para ser dirigido a otra busqueda, ...[/B][/COLOR]",action="findvideos_peli", url=item.url, thumbnail ="http://s6.postimg.org/fay99h9ox/briconoisethumb.png", fanart ="http://s6.postimg.org/uie8tu1jl/briconoisefan.jpg", extra=extra, show=show, folder=True) )
+               itemlist.append( Item(channel=item.channel, title="[COLOR gold][B]Ooops!! Algo no va bien,pulsa para ser dirigido a otra busqueda, ...[/B][/COLOR]",action="findvideos_peli", url=item.url, thumbnail ="http://s6.postimg.org/fay99h9ox/briconoisethumb.png", fanart ="http://s6.postimg.org/uie8tu1jl/briconoisefan.jpg", extra=extra, show=show, folder=True) )
         import base64
         for title_links, seasson, epi, calidad, title_magnet, url_magnet in matches:
             try:
@@ -1408,12 +1442,12 @@ def findvideos(item):
             title_links= title_links.replace('ú','u')
             title_links= title_links.replace(' ','%20')
             extra = season+"|"+title_links+"|"+epi
-            itemlist.append( Item(channel=__channel__, title = title_magnet , action="episodios", url=url_magnet, thumbnail=item.extra, fanart=item.show, extra=extra,plot=item.plot , category= item.category, folder=True) )
+            itemlist.append( Item(channel=item.channel, title = title_magnet , action="episodios", url=url_magnet, thumbnail=item.extra, fanart=item.show, extra=extra,plot=item.plot , category= item.category, folder=True) )
     ###No hay video
     if not 'id="file"' in data and not 'id="magnet"' in data:
         show = item.show
         extra = item.extra
-        itemlist.append( Item(channel=__channel__, title="[COLOR gold][B]Ooops!! Algo no va bien,pulsa para ser dirigido a otra busqueda, ...[/B][/COLOR]",action="findvideos_peli", url=item.url, thumbnail ="http://s6.postimg.org/fay99h9ox/briconoisethumb.png", fanart ="http://s6.postimg.org/uie8tu1jl/briconoisefan.jpg", extra=extra, show=show, folder=True) )
+        itemlist.append( Item(channel=item.channel, title="[COLOR gold][B]Ooops!! Algo no va bien,pulsa para ser dirigido a otra busqueda, ...[/B][/COLOR]",action="findvideos_peli", url=item.url, thumbnail ="http://s6.postimg.org/fay99h9ox/briconoisethumb.png", fanart ="http://s6.postimg.org/uie8tu1jl/briconoisefan.jpg", extra=extra, show=show, folder=True) )
 
     return itemlist
 
@@ -1421,7 +1455,7 @@ def episodios(item):
     logger.info("pelisalacarta.bricocine episodios")
     itemlist = []
     ###Borra Customkey si no hay música
-    import xbmc, time
+    import xbmc
     TESTPYDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "test.py")
     if not xbmc.Player().isPlaying() and os.path.exists ( TESTPYDESTFILE ):
         TESTPYDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "test.py")
@@ -1536,13 +1570,13 @@ def episodios(item):
     if len(matches)==0:
         thumbnail = item.thumbnail
         fanart = fanart_3
-        itemlist.append( Item(channel=__channel__, title = title , action="play", url=item.url, server="torrent", thumbnail=thumbnail, fanart=fanart,  folder=False) )
+        itemlist.append( Item(channel=item.channel, title = title , action="play", url=item.url, server="torrent", thumbnail=thumbnail, fanart=fanart,  folder=False) )
 
     for foto in matches:
         thumbnail = "https://image.tmdb.org/t/p/original" + foto
             
         extra = id+"|"+season
-        itemlist.append( Item(channel=__channel__, title = title , action="play", url=item.url, thumbnail=thumbnail, fanart=fanart,  category = item.category, folder=False) )
+        itemlist.append( Item(channel=item.channel, title = title , action="play", url=item.url, thumbnail=thumbnail, fanart=fanart,  category = item.category, folder=False) )
     ###Busca poster de temporada Tmdb
     urltmdb_temp= "http://api.themoviedb.org/3/tv/"+id+"/season/"+season+"/images?api_key=2e2160006592024ba87ccdf78c28f49f"
     data = get_page( urltmdb_temp )
@@ -1569,7 +1603,7 @@ def episodios(item):
     xbmc.executebuiltin('Action(reloadkeymaps)')
     title ="Info"
     title = title.replace(title,"[COLOR skyblue]"+title+"[/COLOR]")
-    itemlist.append( Item(channel=__channel__, action="info_capitulos" , title=title , url=item.url, thumbnail=thumbnail, fanart=fanart, extra = item.extra, show = show, folder=False ))
+    itemlist.append( Item(channel=item.channel, action="info_capitulos" , title=title , url=item.url, thumbnail=thumbnail, fanart=fanart, extra = item.extra, show = show, folder=False ))
 
 
     return itemlist
@@ -1578,11 +1612,11 @@ def play(item):
     itemlist = []
     ###Opción para trailers
     if "youtube" in item.url:
-        itemlist.append( Item(channel=__channel__, action="play", server="youtube",  url=item.url ,  fulltitle = item.title , fanart="http://s23.postimg.org/84vkeq863/movietrailers.jpg", folder=False) )
+        itemlist.append( Item(channel=item.channel, action="play", server="youtube",  url=item.url ,  fulltitle = item.title , fanart="http://s23.postimg.org/84vkeq863/movietrailers.jpg", folder=False) )
     
     import xbmc
     xbmc.executebuiltin('Action(reloadkeymaps)')
-    itemlist.append( Item(channel=__channel__, title = item.title , action="play", url=item.url, server="torrent", thumbnail=item.thumbnail, fanart=item.fanart,  category = item.category, folder=False) )
+    itemlist.append( Item(channel=item.channel, title = item.title , action="play", url=item.url, server="torrent", thumbnail=item.thumbnail, fanart=item.fanart,  category = item.category, folder=False) )
 
 
     return itemlist
@@ -1605,7 +1639,7 @@ def findvideos_peli(item):
     
            matches = re.compile(patron,re.DOTALL).findall(data)
            if len(matches)==0 :
-              itemlist.append( Item(channel=__channel__, title="[COLOR gold][B]El video ya no se encuentra en la web, prueba a encontrala por busqueda...[/B][/COLOR]", thumbnail ="http://s6.postimg.org/fay99h9ox/briconoisethumb.png", fanart ="http://s6.postimg.org/uie8tu1jl/briconoisefan.jpg",folder=False) )
+              itemlist.append( Item(channel=item.channel, title="[COLOR gold][B]El video ya no se encuentra en la web, prueba a encontrala por busqueda...[/B][/COLOR]", thumbnail ="http://s6.postimg.org/fay99h9ox/briconoisethumb.png", fanart ="http://s6.postimg.org/uie8tu1jl/briconoisefan.jpg",folder=False) )
            import base64
            for title_links, title_torrent, url_torrent, title_magnet, url_magnet in matches:
               
@@ -1634,12 +1668,12 @@ def findvideos_peli(item):
                  title_links = title_link
                  action ="episodios"
                  extra = season+"|"+title_links+"|"+epi
-                 itemlist.append( Item(channel=__channel__, title = title_torrent , action=action, url=url_torrent, server="torrent", thumbnail=item.extra, fanart=item.show,extra=extra,category=item.category,plot = item.plot,  folder=True) )
-                 itemlist.append( Item(channel=__channel__, title = title_magnet , action=action, url=url_magnet, server="torrent", thumbnail=item.extra,category=item.category, fanart=item.show,extra=extra,plot= item.plot,  folder=True) )
+                 itemlist.append( Item(channel=item.channel, title = title_torrent , action=action, url=url_torrent, server="torrent", thumbnail=item.extra, fanart=item.show,extra=extra,category=item.category,plot = item.plot,  folder=True) )
+                 itemlist.append( Item(channel=item.channel, title = title_magnet , action=action, url=url_magnet, server="torrent", thumbnail=item.extra,category=item.category, fanart=item.show,extra=extra,plot= item.plot,  folder=True) )
               else:
                  action = "play"
-                 itemlist.append( Item(channel=__channel__, title = title_torrent , action=action, url=url_torrent, server="torrent", thumbnail=item.extra, fanart=item.show, folder=False) )
-                 itemlist.append( Item(channel=__channel__, title = title_magnet , action=action, url=url_magnet, server="torrent", thumbnail=item.extra, fanart=item.show, folder=False) )
+                 itemlist.append( Item(channel=item.channel, title = title_torrent , action=action, url=url_torrent, server="torrent", thumbnail=item.extra, fanart=item.show, folder=False) )
+                 itemlist.append( Item(channel=item.channel, title = title_magnet , action=action, url=url_magnet, server="torrent", thumbnail=item.extra, fanart=item.show, folder=False) )
     else:
         ###Busca video cuando hay torrent pero no magnet
         if 'id="file"' in data and  not 'id="magnet"'in data :
@@ -1648,7 +1682,7 @@ def findvideos_peli(item):
     
            matches = re.compile(patron,re.DOTALL).findall(data)
            if len(matches)==0 :
-              itemlist.append( Item(channel=__channel__, title="[COLOR gold][B]El video ya no se encuentra en la web, prueba a encontrala por busqueda...[/B][/COLOR]", thumbnail ="http://s6.postimg.org/fay99h9ox/briconoisethumb.png", fanart ="http://s6.postimg.org/uie8tu1jl/briconoisefan.jpg",folder=False) )
+              itemlist.append( Item(channel=item.channel, title="[COLOR gold][B]El video ya no se encuentra en la web, prueba a encontrala por busqueda...[/B][/COLOR]", thumbnail ="http://s6.postimg.org/fay99h9ox/briconoisethumb.png", fanart ="http://s6.postimg.org/uie8tu1jl/briconoisefan.jpg",folder=False) )
            import base64
            for title_links, title_torrent, url_torrent in matches:
                ## torrent
@@ -1674,11 +1708,11 @@ def findvideos_peli(item):
                     title_links = title_link
                     action ="episodios"
                     extra = season+"|"+title_links+"|"+epi
-                    itemlist.append( Item(channel=__channel__, title = title_torrent , action=action, url=url_torrent, server="torrent", thumbnail=item.extra, fanart=item.show,extra=extra,category=item.category,plot = item.plot,  folder=True) )
+                    itemlist.append( Item(channel=item.channel, title = title_torrent , action=action, url=url_torrent, server="torrent", thumbnail=item.extra, fanart=item.show,extra=extra,category=item.category,plot = item.plot,  folder=True) )
                         
                else:
                     action = "play"
-                    itemlist.append( Item(channel=__channel__, title = title_torrent , action=action, url=url_torrent, server="torrent", thumbnail=item.extra, fanart=item.show,  folder=False) )
+                    itemlist.append( Item(channel=item.channel, title = title_torrent , action=action, url=url_torrent, server="torrent", thumbnail=item.extra, fanart=item.show,  folder=False) )
     ###Busca video cuando solo hay magnet y no torrent
     if 'id="magnet"' in data and not 'id="file"' in data:
         patron = '<span class="title">([^"]+)</span>.*?'
@@ -1686,7 +1720,7 @@ def findvideos_peli(item):
         
         matches = re.compile(patron,re.DOTALL).findall(data)
         if len(matches)==0 :
-            itemlist.append( Item(channel=__channel__, title="[COLOR gold][B]El video ya no se encuentra en la web, prueba a encontrala por busqueda...[/B][/COLOR]", thumbnail ="http://s6.postimg.org/fay99h9ox/briconoisethumb.png", fanart ="http://s6.postimg.org/uie8tu1jl/briconoisefan.jpg",folder=False) )
+            itemlist.append( Item(channel=item.channel, title="[COLOR gold][B]El video ya no se encuentra en la web, prueba a encontrala por busqueda...[/B][/COLOR]", thumbnail ="http://s6.postimg.org/fay99h9ox/briconoisethumb.png", fanart ="http://s6.postimg.org/uie8tu1jl/briconoisefan.jpg",folder=False) )
         import base64
         for title_links, title_magnet, url_magnet in matches:
             title_magnet = "["+"magnet"+"]"
@@ -1710,15 +1744,15 @@ def findvideos_peli(item):
                     title_links = title_link
                     action ="episodios"
                     extra = season+"|"+title_links+"|"+epi
-                    itemlist.append( Item(channel=__channel__, title = title_torrent , action=action, url=url_torrent, server="torrent", thumbnail=item.extra, fanart=item.show,extra=extra,category=item.category,plot = item.plot,  folder=True) )
+                    itemlist.append( Item(channel=item.channel, title = title_torrent , action=action, url=url_torrent, server="torrent", thumbnail=item.extra, fanart=item.show,extra=extra,category=item.category,plot = item.plot,  folder=True) )
                         
             else:
                  action = "play"
         
-                 itemlist.append( Item(channel=__channel__, title = title_magnet , action=action, url=url_magnet, server="torrent", thumbnail=item.extra, fanart=item.show,  folder=False) )
+                 itemlist.append( Item(channel=item.channel, title = title_magnet , action=action, url=url_magnet, server="torrent", thumbnail=item.extra, fanart=item.show,  folder=False) )
     ###No hay torrent ni magnet
     if not 'id="file"' in data and not 'id="magnet"' in data:
-       itemlist.append( Item(channel=__channel__, title="[COLOR gold][B]El video ya no se encuentra en la web, prueba a encontrala por busqueda...[/B][/COLOR]", thumbnail ="http://s6.postimg.org/fay99h9ox/briconoisethumb.png", fanart ="http://s6.postimg.org/uie8tu1jl/briconoisefan.jpg",folder=False) )
+       itemlist.append( Item(channel=item.channel, title="[COLOR gold][B]El video ya no se encuentra en la web, prueba a encontrala por busqueda...[/B][/COLOR]", thumbnail ="http://s6.postimg.org/fay99h9ox/briconoisethumb.png", fanart ="http://s6.postimg.org/uie8tu1jl/briconoisefan.jpg",folder=False) )
     return itemlist
 def trailer(item):
     
@@ -1740,7 +1774,7 @@ def trailer(item):
     
     matches = re.compile(patron,re.DOTALL).findall(data)
     if len(matches)==0 :
-        itemlist.append( Item(channel=__channel__, title="[COLOR gold][B]Esta pelicula no tiene trailer,lo sentimos...[/B][/COLOR]", thumbnail ="http://s6.postimg.org/fay99h9ox/briconoisethumb.png", fanart ="http://s6.postimg.org/uie8tu1jl/briconoisefan.jpg",folder=False) )
+        itemlist.append( Item(channel=item.channel, title="[COLOR gold][B]Esta pelicula no tiene trailer,lo sentimos...[/B][/COLOR]", thumbnail ="http://s6.postimg.org/fay99h9ox/briconoisethumb.png", fanart ="http://s6.postimg.org/uie8tu1jl/briconoisefan.jpg",folder=False) )
     
     for url in matches:
         listavideos = servertools.findvideos(url)
@@ -1752,7 +1786,7 @@ def trailer(item):
         
         
         title= "[COLOR crimson]Trailer - [/COLOR]"
-        itemlist.append( Item(channel=__channel__, action="play", server="youtube", title=title + videotitle   , url=url , thumbnail=item.extra ,  fulltitle = item.title , fanart="http://s23.postimg.org/84vkeq863/movietrailers.jpg", folder=False) )
+        itemlist.append( Item(channel=item.channel, action="play", server="youtube", title=title + videotitle   , url=url , thumbnail=item.extra ,  fulltitle = item.title , fanart="http://s23.postimg.org/84vkeq863/movietrailers.jpg", folder=False) )
     return itemlist
 
 def info(item):
@@ -1949,10 +1983,6 @@ class TextBox1( xbmcgui.WindowDialog ):
                   pass
                self.close()
 
-def test():
-    return True
-        
-
 
 def info_capitulos(item):
 
@@ -2081,8 +2111,6 @@ class TextBox2( xbmcgui.WindowDialog ):
                except:
                    xbmc.executebuiltin('Action(reloadkeymaps)')
                self.close()
-def test():
-    return True
 
 
 def translate(to_translate, to_langage="auto", langage="auto"):

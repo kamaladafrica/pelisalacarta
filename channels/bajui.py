@@ -4,40 +4,34 @@
 # Canal para bajui
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os,sys
+import re
+import sys
+import urlparse
 
-from core import logger
 from core import config
+from core import logger
 from core import scrapertools
+from core import servertools
 from core.item import Item
-from servers import servertools
 
-__channel__ = "bajui"
-__category__ = "F,S,D"
-__type__ = "generic"
-__title__ = "Bajui"
-__language__ = "ES"
 
 DEBUG = config.get_setting("debug")
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("[bajui.py] getmainlist")
     itemlist = []
-    itemlist.append( Item(channel=__channel__, title="Películas"                , action="menupeliculas", url="http://www.bajui.com/descargas/categoria/2/peliculas",fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg"))
-    itemlist.append( Item(channel=__channel__, title="Series"                   , action="menuseries",fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg"))
-    itemlist.append( Item(channel=__channel__, title="Documentales"             , action="menudocumentales",fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg"))
-    itemlist.append( Item(channel=__channel__, title="Buscar"                   , action="search",fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg") )
+    itemlist.append( Item(channel=item.channel, title="Películas"                , action="menupeliculas", url="http://www.bajui.com/descargas/categoria/2/peliculas",fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg"))
+    itemlist.append( Item(channel=item.channel, title="Series"                   , action="menuseries",fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg"))
+    itemlist.append( Item(channel=item.channel, title="Documentales"             , action="menudocumentales",fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg"))
+    itemlist.append( Item(channel=item.channel, title="Buscar"                   , action="search",fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg") )
     return itemlist
 
 def menupeliculas(item):
     logger.info("[bajui.py] menupeliculas")
     itemlist = []
-    itemlist.append( Item(channel=__channel__, title="Películas - Novedades"        , action="peliculas"   , url=item.url,fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg"))
-    itemlist.append( Item(channel=__channel__, title="Películas - A-Z"              , action="peliculas"   , url=item.url+"/orden:nombre",fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg"))
+    itemlist.append( Item(channel=item.channel, title="Películas - Novedades"        , action="peliculas"   , url=item.url,fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, title="Películas - A-Z"              , action="peliculas"   , url=item.url+"/orden:nombre",fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg", viewmode="movie_with_plot"))
     
     #<ul class="submenu2 subcategorias"><li ><a href="/descargas/subcategoria/4/br-scr-dvdscr">BR-Scr / DVDScr</a></li><li ><a href="/descargas/subcategoria/6/dvdr-full">DVDR - Full</a></li><li ><a href="/descargas/subcategoria/1/dvdrip-vhsrip">DVDRip / VHSRip</a></li><li ><a href="/descargas/subcategoria/3/hd">HD</a></li><li ><a href="/descargas/subcategoria/2/hdrip-bdrip">HDRip / BDRip</a></li><li ><a href="/descargas/subcategoria/35/latino">Latino</a></li><li ><a href="/descargas/subcategoria/5/ts-scr-cam">TS-Scr / CAM</a></li><li ><a href="/descargas/subcategoria/7/vos">VOS</a></li></ul>
     data = scrapertools.cache_page(item.url)
@@ -46,26 +40,26 @@ def menupeliculas(item):
     matches = re.compile(patron,re.DOTALL).findall(data)
     for url,title in matches:
         scrapedurl = urlparse.urljoin(item.url,url)
-        itemlist.append( Item(channel=__channel__, title="Películas en "+title , action="peliculas", url=scrapedurl,fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg"))
+        itemlist.append( Item(channel=item.channel, title="Películas en "+title , action="peliculas", url=scrapedurl,fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg", viewmode="movie_with_plot"))
 
-    itemlist.append( Item(channel=__channel__, title="Buscar"                       , action="search"      , url="",fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg") )
+    itemlist.append( Item(channel=item.channel, title="Buscar"                       , action="search"      , url="",fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg") )
     return itemlist
 
 def menuseries(item):
     logger.info("[bajui.py] menuseries")
     itemlist = []
-    itemlist.append( Item(channel=__channel__, title="Series - Novedades"           , action="peliculas"        , url="http://www.bajui.com/descargas/categoria/3/series",fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg"))
-    itemlist.append( Item(channel=__channel__, title="Series - A-Z"                 , action="peliculas"        , url="http://www.bajui.com/descargas/categoria/3/series/orden:nombre",fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg"))
-    itemlist.append( Item(channel=__channel__, title="Series - HD"                  , action="peliculas"        , url="http://www.bajui.com/descargas/subcategoria/11/hd/orden:nombre",fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg"))
-    itemlist.append( Item(channel=__channel__, title="Buscar"                       , action="search"            , url="",fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg") )
+    itemlist.append( Item(channel=item.channel, title="Series - Novedades"           , action="peliculas"        , url="http://www.bajui.com/descargas/categoria/3/series",fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, title="Series - A-Z"                 , action="peliculas"        , url="http://www.bajui.com/descargas/categoria/3/series/orden:nombre",fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, title="Series - HD"                  , action="peliculas"        , url="http://www.bajui.com/descargas/subcategoria/11/hd/orden:nombre",fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, title="Buscar"                       , action="search"            , url="",fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg") )
     return itemlist
 
 def menudocumentales(item):
     logger.info("[bajui.py] menudocumentales")
     itemlist = []
-    itemlist.append( Item(channel=__channel__, title="Documentales - Novedades"         , action="peliculas"     , url="http://www.bajui.com/descargas/categoria/7/docus-y-tv",fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg"))
-    itemlist.append( Item(channel=__channel__, title="Documentales - A-Z"               , action="peliculas"     , url="http://www.bajui.com/descargas/categoria/7/docus-y-tv/orden:nombre",fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg"))
-    itemlist.append( Item(channel=__channel__, title="Buscar"                           , action="search"        , url="",fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg") )
+    itemlist.append( Item(channel=item.channel, title="Documentales - Novedades"         , action="peliculas"     , url="http://www.bajui.com/descargas/categoria/7/docus-y-tv",fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, title="Documentales - A-Z"               , action="peliculas"     , url="http://www.bajui.com/descargas/categoria/7/docus-y-tv/orden:nombre",fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg", viewmode="movie_with_plot"))
+    itemlist.append( Item(channel=item.channel, title="Buscar"                           , action="search"        , url="",fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg") )
     return itemlist
 
 # Al llamarse "search" la función, el launcher pide un texto a buscar y lo añade como parámetro
@@ -112,7 +106,7 @@ def peliculas(item,paginacion=True):
         if DEBUG: logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
 
         # Añade al listado de XBMC
-        itemlist.append( Item(channel=__channel__, action="enlaces", title=scrapedtitle , fulltitle=title , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , extra=scrapedtitle , context="4|5", fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg", viewmode="movie_with_plot") )
+        itemlist.append( Item(channel=item.channel, action="enlaces", title=scrapedtitle , fulltitle=title , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , extra=scrapedtitle , context="4|5", fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg", viewmode="movie_with_plot") )
 
     # Extrae el paginador
     patron = '<a href="([^"]+)" class="pagina pag_sig">Siguiente \&raquo\;</a>'
@@ -121,7 +115,7 @@ def peliculas(item,paginacion=True):
 
     if len(matches)>0:
         scrapedurl = urlparse.urljoin("http://www.bajui.com/",matches[0])
-        pagitem = Item(channel=__channel__, action="peliculas", title=">> Página siguiente" , url=scrapedurl,fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg")
+        pagitem = Item(channel=item.channel, action="peliculas", title=">> Página siguiente" , url=scrapedurl,fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg", viewmode="movie_with_plot")
         if not paginacion:
             itemlist.extend( peliculas(pagitem) )
         else:
@@ -223,7 +217,7 @@ def enlaces(item):
         scrapedplot = item.plot
         scrapedtitle="Enlaces de "+usuario+" ("+fecha+") ("+lista_servidores+")"
 
-        itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , fulltitle=item.title , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , context="4|5",fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg",viewmode="movie_with_plot") )
+        itemlist.append( Item(channel=item.channel, action="findvideos", title=scrapedtitle , fulltitle=item.title , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , context="4|5",fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg") )
 
     return itemlist
         
@@ -233,7 +227,7 @@ def findvideos(item):
     data = scrapertools.cache_page(item.url)
     itemlist = servertools.find_video_items(data=data)
     for videoitem in itemlist:
-        videoitem.channel = __channel__
+        videoitem.channel = item.channel
         videoitem.plot = item.plot
         videoitem.thumbnail = item.thumbnail
         videoitem.fulltitle = item.fulltitle
@@ -248,25 +242,3 @@ def findvideos(item):
             videoitem.title = item.title
         
     return itemlist
-
-# Verificación automática de canales: Esta función debe devolver "True" si está ok el canal.
-def test():
-    import time
-    # mainlist
-    mainlist_items = mainlist(Item())
-    
-    # Da por bueno el canal si alguno de los vídeos de "Novedades" devuelve mirrors
-    menupeliculas_items = menupeliculas(mainlist_items[0])
-    peliculas_items = peliculas(menupeliculas_items[0])
-    bien = False
-    for pelicula_item in peliculas_items:
-        lista_enlaces = enlaces(item=pelicula_item)
-        for un_enlace in lista_enlaces:
-            mirrors = findvideos(item=un_enlace)
-            if len(mirrors)>0:
-                bien = True
-                break
-        if bien:
-            break
-
-    return bien

@@ -5,14 +5,23 @@
 	<language>es</language>
 	<update_url></update_url>
 	<active>false</active>
-	<include_in_global_search>false</include_in_global_search>
-	<version>0</version>
+	
+	<version>1</version>
 	<adult>false</adult>
-	<date></date>
-	<changes></changes>
+	<date>01/07/2016</date>
+	<changes>Eliminado código innecesario.</changes>
 	<fanart></fanart>
 	<thumbnail></thumbnail>
 	<categories>
 		<category></category>
 	</categories>
+	
+	<settings>
+		<id>include_in_global_search</id>
+		<type>bool</type>
+		<label>Incluir en busqueda global</label>
+		<default>false</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
 </channel>

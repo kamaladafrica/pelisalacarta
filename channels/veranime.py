@@ -4,37 +4,30 @@
 # Canal para http://www.veranime.net/
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os
+import re
 import sys
+import urlparse
 
-from core import scrapertools
 from core import config
 from core import logger
+from core import scrapertools
+from core import servertools
 from core.item import Item
-from servers import servertools
 
-__channel__ = "veranime"
-__category__ = "A"
-__type__ = "generic"
-__title__ = "Ver-anime"
-__language__ = "ES"
 
 DEBUG = config.get_setting("debug")
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("[veranime.py] mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, title="Ultimos capítulos", action="ultimos"     , url="http://www.vanime.net/", extra="enem"))
-    itemlist.append( Item(channel=__channel__, title="Nuevos animes"    , action="series"      , url="http://www.vanime.net/", extra="estr"))
-    itemlist.append( Item(channel=__channel__, title="Top semanal"      , action="series"      , url="http://www.vanime.net/", extra="decs"))
-    itemlist.append( Item(channel=__channel__, title="+ Vistos"         , action="series"      , url="http://www.vanime.net/", extra="msvd"))
-    itemlist.append( Item(channel=__channel__, title="+ Valorados"      , action="series"      , url="http://www.vanime.net/", extra="msan"))
-    itemlist.append( Item(channel=__channel__, title="Buscar"           , action="search"))
+    itemlist.append( Item(channel=item.channel, title="Ultimos capítulos", action="ultimos"     , url="http://www.vanime.net/", extra="enem"))
+    itemlist.append( Item(channel=item.channel, title="Nuevos animes"    , action="series"      , url="http://www.vanime.net/", extra="estr"))
+    itemlist.append( Item(channel=item.channel, title="Top semanal"      , action="series"      , url="http://www.vanime.net/", extra="decs"))
+    itemlist.append( Item(channel=item.channel, title="+ Vistos"         , action="series"      , url="http://www.vanime.net/", extra="msvd"))
+    itemlist.append( Item(channel=item.channel, title="+ Valorados"      , action="series"      , url="http://www.vanime.net/", extra="msan"))
+    itemlist.append( Item(channel=item.channel, title="Buscar"           , action="search"))
 
     return itemlist
 
@@ -57,7 +50,7 @@ def ultimos(item):
         scrapedplot = ""
 
         # Añade al listado
-        itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="findvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
 
     return itemlist
 
@@ -80,7 +73,7 @@ def series(item):
         scrapedplot = ""
 
         # Añade al listado
-        itemlist.append( Item(channel=__channel__, action="episodios", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , show=scrapedtitle, folder=True) )
+        itemlist.append( Item(channel=item.channel, action="episodios", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , show=scrapedtitle, folder=True) )
 
     return itemlist
 
@@ -135,7 +128,7 @@ def episodios(item):
                 scrapedtitle = title
             
         scrapedurl = urlparse.urljoin(item.url,url)
-        itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , show=item.show, folder=True) )
+        itemlist.append( Item(channel=item.channel, action="findvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , show=item.show, folder=True) )
 
     if config.get_library_support():
         itemlist.append( Item(channel=item.channel, title="Añadir estos episodios a la biblioteca de XBMC", url=item.url, action="add_serie_to_library", extra="episodios", show=item.show) )
@@ -153,7 +146,7 @@ def findvideos(item):
     for url,title in matches:
         title = title.replace("&nbsp;","")
         url = urlparse.urljoin(item.url,url)
-        itemlist.append( Item(channel=__channel__, action="play", title=title , url=url) )
+        itemlist.append( Item(channel=item.channel, action="play", title=title , url=url) )
 
     return itemlist
 
@@ -167,7 +160,7 @@ def play(item):
     for videoitem in itemlist:
         videoitem.title = "Mirror %d%s" % (i,videoitem.title)
         videoitem.fulltitle = item.fulltitle
-        videoitem.channel=channel=__channel__
+        videoitem.channel=channel=item.channel
         i=i+1
 
     return itemlist
@@ -176,31 +169,38 @@ def search(item,texto):
     logger.info("[veranime.py] search")
     itemlist = []
     
-    # Descarga la página con la busqueda
-    data = scrapertools.cache_page( "http://www.vanime.net/core/search.php" , post="searchword="+texto )
+    try:
+        # Descarga la página con la busqueda
+        data = scrapertools.cache_page( "http://www.vanime.net/core/search.php" , post="searchword="+texto )
 
-    # Extrae las entradas de todas series
-    '''
-    <li class="rslcnt icob">
-    <div class="srcimg flol"><a href="/anime/avatar-libro-fuego.html"><img height="53" widht="41" src="http://www.vimagen.net/va/avatarfuego.gif" alt="Avatar Libro Fuego" /></a></div>
-    <div class="srctxt flor">
-    <h2><a href="/anime/avatar-libro-fuego.html">Avatar Libro Fuego</a></h2>
-    <p class="pln1"><strong>Fecha de Publicacion</strong> 2009-01-06</p>
-    <p class="pln2"><strong>Anime:</strong> <strong>Anime</strong>: Finalizado</p>    
-    </div>
-    </li>
-    '''
-    patron  = '<li class="rslcnt icob">[^<]+'
-    patron += '<div class="srcimg flol"><a href="([^"]+)"><img height="\d+" widht="\d+" src="([^"]+)" alt="([^"]+)" /></a></div>'
-    matches = re.compile(patron,re.DOTALL).findall(data)
-    for url,thumbnail,title in matches:
-        scrapedtitle = title.strip()
-        scrapedurl = urlparse.urljoin("http://www.vanime.net",url)
-        scrapedthumbnail = thumbnail
-        scrapedplot = ""
+        # Extrae las entradas de todas series
+        '''
+        <li class="rslcnt icob">
+        <div class="srcimg flol"><a href="/anime/avatar-libro-fuego.html"><img height="53" widht="41" src="http://www.vimagen.net/va/avatarfuego.gif" alt="Avatar Libro Fuego" /></a></div>
+        <div class="srctxt flor">
+        <h2><a href="/anime/avatar-libro-fuego.html">Avatar Libro Fuego</a></h2>
+        <p class="pln1"><strong>Fecha de Publicacion</strong> 2009-01-06</p>
+        <p class="pln2"><strong>Anime:</strong> <strong>Anime</strong>: Finalizado</p>    
+        </div>
+        </li>
+        '''
+        patron  = '<li class="rslcnt icob">[^<]+'
+        patron += '<div class="srcimg flol"><a href="([^"]+)"><img height="\d+" widht="\d+" src="([^"]+)" alt="([^"]+)" /></a></div>'
+        matches = re.compile(patron,re.DOTALL).findall(data)
+        for url,thumbnail,title in matches:
+            scrapedtitle = title.strip()
+            scrapedurl = urlparse.urljoin("http://www.vanime.net",url)
+            scrapedthumbnail = thumbnail
+            scrapedplot = ""
 
-        # Añade al listado
-        itemlist.append( Item(channel=__channel__, action="episodios", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , show = scrapedtitle, folder=True) )
+            # Añade al listado
+            itemlist.append( Item(channel=item.channel, action="episodios", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , show = scrapedtitle, folder=True) )
 
-    itemlist = sorted(itemlist, key=lambda Item: Item.title) 
-    return itemlist
+        itemlist = sorted(itemlist, key=lambda Item: Item.title) 
+        return itemlist
+    # Se captura la excepción, para no interrumpir al buscador global si un canal falla
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error( "%s" % line )
+        return []

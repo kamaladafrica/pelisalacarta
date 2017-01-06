@@ -1,39 +1,30 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para discoverymx
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os
-import sys
+import re
+import urlparse
 
-from core import scrapertools
 from core import config
 from core import logger
+from core import scrapertools
+from core import servertools
 from core.item import Item
-from servers import servertools
-#from pelisalacarta import buscador
 
-__channel__ = "discoverymx"
-__category__ = "D"
-__type__ = "generic"
-__title__ = "Discoverymx"
-__language__ = "ES"
 
 DEBUG = config.get_setting("debug")
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("[discoverymx.py] mainlist")
     itemlist=[]
     
-    itemlist.append( Item(channel=__channel__, title="Documentales - Novedades"  , action="listvideos" , url="http://discoverymx.blogspot.com/"))
-    itemlist.append( Item(channel=__channel__, title="Documentales - Series Disponibles"  , action="DocuSeries" , url="http://discoverymx.blogspot.com/"))
-    itemlist.append( Item(channel=__channel__, title="Documentales - Tag"  , action="DocuTag" , url="http://discoverymx.blogspot.com/"))
-    itemlist.append( Item(channel=__channel__, title="Documentales - Archivo por meses"  , action="DocuARCHIVO" , url="http://discoverymx.blogspot.com/"))
+    itemlist.append( Item(channel=item.channel, title="Documentales - Novedades"  , action="listvideos" , url="http://discoverymx.blogspot.com/"))
+    itemlist.append( Item(channel=item.channel, title="Documentales - Series Disponibles"  , action="DocuSeries" , url="http://discoverymx.blogspot.com/"))
+    itemlist.append( Item(channel=item.channel, title="Documentales - Tag"  , action="DocuTag" , url="http://discoverymx.blogspot.com/"))
+    itemlist.append( Item(channel=item.channel, title="Documentales - Archivo por meses"  , action="DocuARCHIVO" , url="http://discoverymx.blogspot.com/"))
 
     return itemlist
 
@@ -55,7 +46,7 @@ def DocuSeries(item):
         scrapedthumbnail = ""
         scrapedplot = ""
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="listvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="listvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
 
     return itemlist
 
@@ -75,7 +66,7 @@ def DocuTag(item):
         scrapedthumbnail = ""
         scrapedplot = ""
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="listvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="listvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
 
     return itemlist
 
@@ -96,7 +87,7 @@ def DocuARCHIVO(item):
         scrapedthumbnail = ""
         scrapedplot = ""
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="listvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="listvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
 
     return itemlist
     
@@ -138,7 +129,7 @@ def listvideos(item):
         if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
 
         # Añade al listado de XBMC
-        itemlist.append( Item(channel=__channel__, action="findvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="findvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
 
     # Extrae la marca de siguiente página
     patronvideos = "<a class='blog-pager-older-link' href='([^']+)'"
@@ -150,7 +141,7 @@ def listvideos(item):
         scrapedurl = urlparse.urljoin(item.url,matches[0])
         scrapedthumbnail = ""
         scrapedplot = ""
-        itemlist.append( Item(channel=__channel__, action="listvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
+        itemlist.append( Item(channel=item.channel, action="listvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
 
     return itemlist
 
@@ -169,26 +160,7 @@ def findvideos(item):
         videotitle = scrapertools.unescape(video[0])
         url = video[1]
         server = video[2]
-        #xbmctools.addnewvideo( __channel__ , "play" , category , server ,  , url , thumbnail , plot )
-        itemlist.append( Item(channel=__channel__, action="play", server=server, title=videotitle , url=url , thumbnail=item.thumbnail , plot=item.plot , fulltitle = item.title , folder=False) )
+        #xbmctools.addnewvideo( item.channel , "play" , category , server ,  , url , thumbnail , plot )
+        itemlist.append( Item(channel=item.channel, action="play", server=server, title=videotitle , url=url , thumbnail=item.thumbnail , plot=item.plot , fulltitle = item.title , folder=False) )
 
     return itemlist
-
-# Verificación automática de canales: Esta función debe devolver "True" si todo está ok en el canal.
-def test():
-    bien = True
-    
-    # mainlist
-    mainlist_items = mainlist(Item())
-    
-    # Da por bueno el canal si alguno de los vídeos de "Novedades" devuelve mirrors
-    documentales_items = listvideos(mainlist_items[0])
-    
-    bien = False
-    for documental_item in documentales_items:
-        mirrors = findvideos(documental_item)
-        if len(mirrors)>0:
-            bien = True
-            break
-    
-    return bien

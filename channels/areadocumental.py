@@ -15,31 +15,25 @@ from core.item import Item
 from lib import requests
 
 
-__channel__ = "areadocumental"
-__category__ = "D"
-__type__ = "generic"
-__title__ = "Area-Documental"
-__language__ = "ES"
-
 DEBUG = config.get_setting("debug")
 host = "http://www.area-documental.com"
 headers = [['User-Agent','Mozilla/5.0 (Windows NT 10.0; WOW64; rv:45.0) Gecko/20100101 Firefox/45.0']]
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("pelisalacarta.channels.areadocumental mainlist")
     itemlist = []
-    itemlist.append(Item(channel=__channel__, title="Novedades" , action="entradas", url="http://www.area-documental.com/resultados-reciente.php?buscar=&genero=", thumbnail= "http://i.imgur.com/Kxuf5ZS.png?1", fanart="http://i.imgur.com/Q7fsFI6.png"))
-    itemlist.append(Item(channel=__channel__, title="Destacados"      , action="entradas", url="http://www.area-documental.com/resultados-destacados.php?buscar=&genero=", thumbnail= "http://i.imgur.com/Kxuf5ZS.png?1", fanart="http://i.imgur.com/Q7fsFI6.png"))
-    itemlist.append(Item(channel=__channel__, title="Categorías"      , action="cat", url="http://www.area-documental.com/index.php", thumbnail= "http://i.imgur.com/Kxuf5ZS.png?1", fanart="http://i.imgur.com/Q7fsFI6.png"))
-    itemlist.append(Item(channel=__channel__, title="Ordenados por..."      , action="indice", thumbnail= "http://i.imgur.com/Kxuf5ZS.png?1", fanart="http://i.imgur.com/Q7fsFI6.png"))
-    itemlist.append(Item(channel=__channel__, title="Buscar..."      , action="search", thumbnail= "http://i.imgur.com/Kxuf5ZS.png?1"))
+    itemlist.append(Item(channel=item.channel, title="Novedades" , action="entradas", url="http://www.area-documental.com/resultados-reciente.php?buscar=&genero=", thumbnail= "http://i.imgur.com/Kxuf5ZS.png?1", fanart="http://i.imgur.com/Q7fsFI6.png"))
+    itemlist.append(Item(channel=item.channel, title="Destacados"      , action="entradas", url="http://www.area-documental.com/resultados-destacados.php?buscar=&genero=", thumbnail= "http://i.imgur.com/Kxuf5ZS.png?1", fanart="http://i.imgur.com/Q7fsFI6.png"))
+    itemlist.append(Item(channel=item.channel, title="Categorías"      , action="cat", url="http://www.area-documental.com/index.php", thumbnail= "http://i.imgur.com/Kxuf5ZS.png?1", fanart="http://i.imgur.com/Q7fsFI6.png"))
+    itemlist.append(Item(channel=item.channel, title="Ordenados por..."      , action="indice", thumbnail= "http://i.imgur.com/Kxuf5ZS.png?1", fanart="http://i.imgur.com/Q7fsFI6.png"))
+    itemlist.append(Item(channel=item.channel, title="Buscar..."      , action="search", thumbnail= "http://i.imgur.com/Kxuf5ZS.png?1"))
     return itemlist
 
 def search(item, texto):
     logger.info("pelisalacarta.channels.areadocumental search")
+    if texto != "":
+        texto = texto.replace(" ", "+")
     item.url = "http://www.area-documental.com/resultados.php?buscar=%s&genero=&x=0&y=0" % texto
     try:
         itemlist = entradas(item)
@@ -54,8 +48,8 @@ def search(item, texto):
 def indice(item):
     logger.info("pelisalacarta.channels.areadocumental indices")
     itemlist = []
-    itemlist.append(Item(channel=__channel__, title="Título"      , action="entradas", url="http://www.area-documental.com/resultados-titulo.php?buscar=&genero=", thumbnail=item.thumbnail , fanart=item.fanart))
-    itemlist.append(Item(channel=__channel__, title="Año"      , action="entradas", url="http://www.area-documental.com/resultados-anio.php?buscar=&genero=", thumbnail=item.thumbnail , fanart=item.fanart))
+    itemlist.append(Item(channel=item.channel, title="Título"      , action="entradas", url="http://www.area-documental.com/resultados-titulo.php?buscar=&genero=", thumbnail=item.thumbnail , fanart=item.fanart))
+    itemlist.append(Item(channel=item.channel, title="Año"      , action="entradas", url="http://www.area-documental.com/resultados-anio.php?buscar=&genero=", thumbnail=item.thumbnail , fanart=item.fanart))
     return itemlist
 
 def cat(item):
@@ -68,10 +62,10 @@ def cat(item):
         scrapedurl = host + "/" + scrapedurl
         if not "span" in scrapedtitle:
             scrapedtitle = "[COLOR gold]    **"+scrapedtitle+"**[/COLOR]"
-            itemlist.append(Item(channel=__channel__, action="entradas", title=bbcode_kodi2html(scrapedtitle), url=scrapedurl, folder=True))
+            itemlist.append(Item(channel=item.channel, action="entradas", title=bbcode_kodi2html(scrapedtitle), url=scrapedurl, folder=True))
         else:
             scrapedtitle = scrapertools.htmlclean(scrapedtitle)
-            itemlist.append(Item(channel=__channel__, action="entradas", title=scrapedtitle, url=scrapedurl, folder=True))
+            itemlist.append(Item(channel=item.channel, action="entradas", title=scrapedtitle, url=scrapedurl, folder=True))
     return itemlist
 
 def entradas(item):
@@ -108,11 +102,11 @@ def entradas(item):
             infolabels['year'] = int(year)
             scrapedtitle += "  ("+year+")"
         plot['infoLabels']=infolabels
-        itemlist.append(Item(channel=__channel__, action="findvideos", title=bbcode_kodi2html(scrapedtitle) , fulltitle = scrapedtitle, url=scrapedurl , thumbnail=scrapedthumbnail , plot=str(plot), fanart=item.fanart, folder=True) )
+        itemlist.append(Item(channel=item.channel, action="findvideos", title=bbcode_kodi2html(scrapedtitle) , fulltitle = scrapedtitle, url=scrapedurl , thumbnail=scrapedthumbnail , plot=str(plot), fanart=item.fanart, folder=True) )
 
     next_page = scrapertools.find_single_match(data2, '<a href="([^"]+)"> ></a>')
     if next_page != "":	
-        itemlist.append(Item(channel=__channel__, action="entradas", title=">> Siguiente", url=host+next_page, folder=True))
+        itemlist.append(Item(channel=item.channel, action="entradas", title=">> Siguiente", url=host+next_page, folder=True))
     return itemlist
 
 
@@ -131,7 +125,7 @@ def findvideos(item):
             url_sub = host + urllib.quote(url_sub)
             label = label.encode('iso-8859-1').decode('utf8')
             title = "Ver video en [[COLOR green]"+quality+"[/COLOR]] "+"Sub "+ label
-            itemlist.append(Item(channel=__channel__, action="play", server="directo", title=bbcode_kodi2html(title), url=url, thumbnail=item.thumbnail, plot=item.plot, subtitle=url_sub, extra=item.url, fanart=item.fanart, folder=False))
+            itemlist.append(Item(channel=item.channel, action="play", server="directo", title=bbcode_kodi2html(title), url=url, thumbnail=item.thumbnail, plot=item.plot, subtitle=url_sub, extra=item.url, fanart=item.fanart, folder=False))
 
     return itemlist
 
@@ -157,7 +151,7 @@ def play(item):
         subtitle = ""
         logger.info("Error al descargar el subtítulo")
     
-    itemlist.append(Item(channel=__channel__, action="play", server="directo", title=bbcode_kodi2html(item.title), url=item.url, thumbnail=item.thumbnail, plot=item.plot, subtitle=subtitle, folder=False))
+    itemlist.append(Item(channel=item.channel, action="play", server="directo", title=bbcode_kodi2html(item.title), url=item.url, thumbnail=item.thumbnail, plot=item.plot, subtitle=subtitle, folder=False))
 
     return itemlist
 

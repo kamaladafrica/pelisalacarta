@@ -54,16 +54,6 @@ def todas(item):
     return itemlist
 
     
-def search(item,texto):
-    logger.info("metaserie.py search")
-    texto = texto.replace(" ","+")
-    item.url = item.url+texto
-
-    if texto!='':
-        return todas(item)
-    else:
-        return []
-        
 def categorias(item):
     logger.info("pelisalacarta.channels.seodiv categoias")
     itemlist = []

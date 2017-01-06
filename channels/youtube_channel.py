@@ -4,19 +4,18 @@
 # Funciones para hacer canales a partir de un canal de YouTube
 # http://blog.tvalacarta.info/plugin-xbmc/tvalacarta/
 #------------------------------------------------------------
-import os,sys,re,urllib
+import urllib
 
-from core import logger
 from core import jsontools
+from core import logger
 from core import scrapertools
+from core import config
 from core.item import Item
 
-DEBUG = True
+DEBUG = config.get_setting("debug")
 CHANNELNAME = "youtube_channel"
 YOUTUBE_V3_API_KEY = "AIzaSyCjsmBT0JZy1RT-PLwB-Zkfba87sa2inyI"
 
-def isGeneric():
-    return True
 
 def youtube_api_call(method,parameters):
     logger.info("youtube_api_call method="+method+", parameters="+repr(parameters))

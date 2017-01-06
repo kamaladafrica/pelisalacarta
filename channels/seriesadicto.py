@@ -4,37 +4,31 @@
 # Canal para seriesadicto
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os, sys
+import re
+import sys
+import urlparse
 
-from core import logger
 from core import config
+from core import logger
 from core import scrapertools
+from core import servertools
 from core.item import Item
-from servers import servertools
 
-__channel__ = "seriesadicto"
-__category__ = "F,S,D"
-__type__ = "generic"
-__title__ = "SeriesAdicto"
-__language__ = "ES"
 
 DEBUG = config.get_setting("debug")
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info("pelisalacarta.channels.seriesadicto mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=__channel__, action="letras" , title="Todas por orden alfabético" , url="http://seriesadicto.com/" , folder=True ))
-    itemlist.append( Item(channel=__channel__, action="search" , title="Buscar..."))
+    itemlist.append( Item(channel=item.channel, action="letras" , title="Todas por orden alfabético" , url="http://seriesadicto.com/" , folder=True ))
+    itemlist.append( Item(channel=item.channel, action="search" , title="Buscar..."))
     return itemlist
 
 def search(item,texto):
     logger.info("pelisalacarta.channels.seriesadicto search")
-
+    texto = texto.replace(" ", "+")
     item.url="http://seriesadicto.com/buscar/"+texto
 
     try:
@@ -65,7 +59,7 @@ def letras(item):
         thumbnail = ""
         if DEBUG: logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
         
-        itemlist.append( Item(channel=__channel__, action='series', title=title , url=url , thumbnail=thumbnail , plot=plot) )
+        itemlist.append( Item(channel=item.channel, action='series', title=title , url=url , thumbnail=thumbnail , plot=plot) )
 
     return itemlist
 
@@ -97,7 +91,7 @@ def series(item):
         thumbnail = urlparse.urljoin(item.url,scrapedthumbnail)
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="episodios", title=title , fulltitle = title, url=url , thumbnail=thumbnail , plot=plot , show=title, folder=True) )
+        itemlist.append( Item(channel=item.channel, action="episodios", title=title , fulltitle = title, url=url , thumbnail=thumbnail , plot=plot , show=title, folder=True) )
 
     return itemlist
 
@@ -130,7 +124,7 @@ def episodios(item):
         thumbnail = ""
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="findvideos", title=title , fulltitle = title, url=url , thumbnail=thumbnail , plot=plot , show=item.show, folder=True) )
+        itemlist.append( Item(channel=item.channel, action="findvideos", title=title , fulltitle = title, url=url , thumbnail=thumbnail , plot=plot , show=item.show, folder=True) )
 
     if config.get_library_support() and len(itemlist)>0:
         itemlist.append( Item(channel=item.channel, title="Añadir esta serie a la biblioteca de XBMC", url=item.url, action="add_serie_to_library", extra="episodios", show=item.show))
@@ -198,7 +192,7 @@ def findvideos(item):
         thumbnail = ""
         plot = ""
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=__channel__, action="play", title=title , fulltitle = title, url=url , thumbnail=thumbnail , plot=plot , folder=False) )
+        itemlist.append( Item(channel=item.channel, action="play", title=title , fulltitle = title, url=url , thumbnail=thumbnail , plot=plot , folder=False) )
 
     return itemlist
 
@@ -211,6 +205,6 @@ def play(item):
         videoitem.title = "Enlace encontrado en "+videoitem.server+" ("+scrapertools.get_filename_from_url(videoitem.url)+")"
         videoitem.fulltitle = item.fulltitle
         videoitem.thumbnail = item.thumbnail
-        videoitem.channel = __channel__
+        videoitem.channel = item.channel
 
     return itemlist    

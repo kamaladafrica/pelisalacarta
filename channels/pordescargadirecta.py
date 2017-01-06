@@ -4,31 +4,24 @@
 # Canal Descarregadirecta Carles Carmona
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os
-import sys
+import re
 
-from core import scrapertools
-from core import config
 from core import logger
+from core import scrapertools
+from core import servertools
 from core.item import Item
-from servers import servertools
 
-CHANNELNAME = "pordescargadirecta"
-DEBUG = True
-
-def isGeneric():
-    return True
+DEBUG = config.get_setting("debug")
 
 
 def mainlist(item):
     logger.info("[pordescargadirecta.py] mainlist")
     itemlist=[]
 
-    itemlist.append( Item(channel=CHANNELNAME , action="subforos"   , title="Peliculas Online"      , url="http://pordescargadirecta.com/peliculas-online-f270/"))
-    itemlist.append( Item(channel=CHANNELNAME , action="subforos"   , title="Series Online"         , url="http://pordescargadirecta.com/series-online-f227/"))
-    itemlist.append( Item(channel=CHANNELNAME , action="posts"   , title="Documentales y Televisión Online"         , url="http://pordescargadirecta.com/documentales-y-television-online-f399/"))
-    itemlist.append( Item(channel=CHANNELNAME , action="posts"   , title="Anime"         , url="http://pordescargadirecta.com/anime-online-f400/"))
+    itemlist.append( Item(channel=item.channel , action="subforos"   , title="Peliculas Online"      , url="http://pordescargadirecta.com/peliculas-online-f270/"))
+    itemlist.append( Item(channel=item.channel , action="subforos"   , title="Series Online"         , url="http://pordescargadirecta.com/series-online-f227/"))
+    itemlist.append( Item(channel=item.channel , action="posts"   , title="Documentales y Televisión Online"         , url="http://pordescargadirecta.com/documentales-y-television-online-f399/"))
+    itemlist.append( Item(channel=item.channel , action="posts"   , title="Anime"         , url="http://pordescargadirecta.com/anime-online-f400/"))
    
     return itemlist
 
@@ -131,7 +124,7 @@ def detail(item):
         scrapedtitle = item.title + " [" + server + "]"
         scrapedurl = video[1]
         
-        itemlist.append( Item(channel=CHANNELNAME, action="play" , title=scrapedtitle , url=scrapedurl, thumbnail=item.thumbnail, plot=item.plot, server=server, folder=False))
+        itemlist.append( Item(channel=item.channel, action="play" , title=scrapedtitle , url=scrapedurl, thumbnail=item.thumbnail, plot=item.plot, server=server, folder=False))
 
 
 

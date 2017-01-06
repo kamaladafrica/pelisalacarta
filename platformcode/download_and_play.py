@@ -1,29 +1,48 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
+# pelisalacarta 4
+# Copyright 2015 tvalacarta@gmail.com
+# http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
+#
+# Distributed under the terms of GNU General Public License v3 (GPLv3)
+# http://www.gnu.org/licenses/gpl-3.0.html
+# ------------------------------------------------------------
+# This file is part of pelisalacarta 4.
+#
+# pelisalacarta 4 is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# pelisalacarta 4 is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with pelisalacarta 4.  If not, see <http://www.gnu.org/licenses/>.
+# ------------------------------------------------------------
 # Download and play
-#------------------------------------------------------------
-# License: GPL (http://www.gnu.org/licenses/gpl-3.0.html)
 #------------------------------------------------------------
 # Based on code from the Mega add-on (xbmchub.com)
 #---------------------------------------------------------------------------
 
 import os
-import sys
 import re
-import urlparse
-import urllib
-import urllib2
-import locale
+import socket
+import sys
 import threading
 import time
-import socket
+import urllib
+import urllib2
 
 import xbmc
 import xbmcgui
 
 from core import config
-from core import logger
 from core import downloadtools
+from core import logger
+
 
 # Download a file and start playing while downloading
 def download_and_play(url,file_name,download_path):
@@ -46,7 +65,7 @@ def download_and_play(url,file_name,download_path):
         dialog.create('Descargando...', 'Cierra esta ventana para empezar la reproducción')
         dialog.update(0)
 
-        while not cancelled and download_thread.is_alive():
+        while not cancelled and download_thread.isAlive():
             dialog.update( download_thread.get_progress() , "Cancela esta ventana para empezar la reproducción", "Velocidad: "+str(int(download_thread.get_speed()/1024))+" KB/s "+str(download_thread.get_actual_size())+"MB de "+str(download_thread.get_total_size())+"MB" , "Tiempo restante: "+str( downloadtools.sec_to_hms(download_thread.get_remaining_time())) )
             xbmc.sleep(1000)
 
@@ -70,15 +89,15 @@ def download_and_play(url,file_name,download_path):
             logger.info("[download_and_play.py] Terminado por el usuario")
             break
         else:
-            if not download_thread.is_alive():
+            if not download_thread.isAlive():
                 logger.info("[download_and_play.py] La descarga ha terminado")
                 break
             else:
                 logger.info("[download_and_play.py] Continua la descarga")
 
     # Cuando el reproductor acaba, si continúa descargando lo para ahora
-    logger.info("[download_and_play.py] Download thread alive="+str(download_thread.is_alive()))
-    if download_thread.is_alive():
+    logger.info("[download_and_play.py] Download thread alive="+str(download_thread.isAlive()))
+    if download_thread.isAlive():
         logger.info("[download_and_play.py] Killing download thread")
         download_thread.force_stop()
 
@@ -109,11 +128,11 @@ class CustomPlayer(xbmc.Player):
     def force_stop_download_thread(self):
         logger.info("CustomPlayer.force_stop_download_thread")
 
-        if self.download_thread.is_alive():
+        if self.download_thread.isAlive():
             logger.info("CustomPlayer.force_stop_download_thread Killing download thread")
             self.download_thread.force_stop()
 
-            #while self.download_thread.is_alive():
+            #while self.download_thread.isAlive():
             #    xbmc.sleep(1000)
 
     def onPlayBackStarted(self):
@@ -199,7 +218,6 @@ class DownloadThread(threading.Thread):
 
         logger.info("DownloadThread.download_file destino="+self.download_path)
 
-        import subprocess
         os.system( comando+" '"+self.url+ "' \"" + self.download_path+"\"" )
         #p = subprocess.Popen([comando , self.url , self.download_path], cwd=cwd, stdout=subprocess.PIPE , stderr=subprocess.PIPE )
         #out, err = p.communicate()
@@ -222,13 +240,6 @@ class DownloadThread(threading.Thread):
         existSize = 0
         f = open(self.file_name, 'wb')
         grabado = 0
-
-        # Login y password Filenium
-        # http://abcd%40gmail.com:mipass@filenium.com/get/Oi8vd3d3/LmZpbGVz/ZXJ2ZS5j/b20vZmls/ZS9kTnBL/dm11/b0/?.zip
-        if "filenium" in self.url:
-            from servers import filenium
-            self.url , authorization_header = filenium.extract_authorization_header(self.url)
-            headers.append( [ "Authorization", authorization_header ] )
 
         # Interpreta las cabeceras en una URL como en XBMC
         if "|" in self.url:

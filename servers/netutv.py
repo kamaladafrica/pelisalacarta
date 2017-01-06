@@ -5,13 +5,13 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import urlparse,urllib2,urllib,re
-import os
 import base64
+import re
+import urllib
 
-from core import scrapertools
 from core import logger
-from core import config
+from core import scrapertools
+
 
 def get_video_url( page_url , premium = False , user="" , password="", video_password="" ):
     logger.info("[netutv.py] url="+page_url)
@@ -154,12 +154,6 @@ def find_videos(data):
 
     return devuelve
 
-def test():
-
-    #http://www.peliculasid.net/player/netu.php?id=NA44292KD53O
-    video_urls = get_video_url("http://netu.tv/watch_video.php?v=NA44292KD53O")
-
-    return len(video_urls)>0
 
 ## --------------------------------------------------------------------------------
 ## --------------------------------------------------------------------------------

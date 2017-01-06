@@ -4,33 +4,23 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import urlparse,urllib2,urllib,re
-import os, sys
+import os
+import re
+import urlparse
 
-from core import logger
 from core import config
+from core import logger
 from core import scrapertools
-from core import jsontools
+from core import servertools
 from core.item import Item
-from servers import servertools
 
 DEBUG = config.get_setting("debug")
-
-__category__ = "F"
-__type__ = "generic"
-__title__ = "PlayMax"
-__channel__ = "playmax"
-__language__ = "ES"
-__creationdate__ = "20141217"
-
 host = "http://playmax.es/"
 
 sendHeader = [
     ['User-Agent','Mozilla/5.0 (Windows NT 6.1; WOW64; rv:34.0) Gecko/20100101 Firefox/34.0']
 ]
 
-def isGeneric():
-    return True
 
 def openconfig(item):
     if "xbmc" in config.get_platform() or "boxee" in config.get_platform():
@@ -43,9 +33,9 @@ def mainlist(item):
     itemlist = []
 
     if config.get_setting("playmaxaccount")!="true":
-        itemlist.append( Item( channel=__channel__ , title="Habilita tu cuenta en la configuración..." , action="openconfig" , url="" , folder=False ) )
+        itemlist.append( Item( channel=item.channel , title="Habilita tu cuenta en la configuración..." , action="openconfig" , url="" , folder=False ) )
     else:
-        itemlist.append( Item(channel=__channel__, action="series", title="Series", url=host + "catalogo.php?tipo=1" ))
+        itemlist.append( Item(channel=item.channel, action="series", title="Series", url=host + "catalogo.php?tipo=1" ))
 
     return itemlist
 
@@ -74,13 +64,13 @@ def series(item):
     matches = re.compile(patron,re.DOTALL).findall(data)
 
     for scrapedurl, scrapedtitle, scrapedthumbnail in matches:
-        itemlist.append( Item(channel=__channel__, title=scrapedtitle, url=urlparse.urljoin(host,scrapedurl), action="episodios", thumbnail=urlparse.urljoin(host,scrapedthumbnail), show=scrapedtitle) )
+        itemlist.append( Item(channel=item.channel, title=scrapedtitle, url=urlparse.urljoin(host,scrapedurl), action="episodios", thumbnail=urlparse.urljoin(host,scrapedthumbnail), show=scrapedtitle) )
 
     # paginación
     patron = '<a href="([^"]+)">Siguiente</a>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     if len(matches)>0:
-        itemlist.append( Item(channel=__channel__, title=">> Página siguiente", url=urlparse.urljoin(host,matches[0].replace("amp;","")), action="series") )
+        itemlist.append( Item(channel=item.channel, title=">> Página siguiente", url=urlparse.urljoin(host,matches[0].replace("amp;","")), action="series") )
 
     return itemlist
 
@@ -113,11 +103,11 @@ def episodios(item):
         for id, episodio, titulo in matches:
             title = temporada + "x" + episodio + " - " + titulo
             url = enlace + id + "&key=ZHp6ZG0="
-            itemlist.append( Item(channel=__channel__, title=title, url=urlparse.urljoin(host,url), action="findvideos", thumbnail=item.thumbnail, show=item.show) )
+            itemlist.append( Item(channel=item.channel, title=title, url=urlparse.urljoin(host,url), action="findvideos", thumbnail=item.thumbnail, show=item.show) )
 
     ## Opción "Añadir esta serie a la biblioteca de XBMC"
-    if config.add_serie_to_library() and len(itemlist)>0:
-        itemlist.append( Item(channel=__channel__, title="Añadir esta serie a la biblioteca de XBMC", url=item.url, action="add_serie_to_library", extra="episodios", show=item.show) )
+    if config.get_library_support() and len(itemlist)>0:
+        itemlist.append( Item(channel=item.channel, title="Añadir esta serie a la biblioteca de XBMC", url=item.url, action="add_serie_to_library", extra="episodios", show=item.show) )
 
     return itemlist
 
@@ -168,7 +158,7 @@ def findvideos(item):
     for scrapedurl, scrapedthumbnail, calidad, idioma, subtitulos, calidadaudio in matches:
         servidor = scrapertools.get_match(scrapedthumbnail,'imageset/([^\.]+)\.')
         title = item.title + " [" + servidor + "] [" + calidad + "] [" + idioma + "] [" + subtitulos + "] [" + calidadaudio + "]"
-        itemlist.append( Item(channel=__channel__, title =title, url=urlparse.urljoin(host,scrapedurl), action="play", thumbnail=urlparse.urljoin(host,scrapedthumbnail), fanart=item.thumbnail, show=item.show ) )
+        itemlist.append( Item(channel=item.channel, title =title, url=urlparse.urljoin(host,scrapedurl), action="play", thumbnail=urlparse.urljoin(host,scrapedthumbnail), fanart=item.thumbnail, show=item.show ) )
 
     return itemlist
 
@@ -181,7 +171,7 @@ def play(item):
 
     for videoitem in itemlist:
         videoitem.title = item.title
-        videoitem.channel = __channel__
+        videoitem.channel = item.channel
 
     return itemlist
 

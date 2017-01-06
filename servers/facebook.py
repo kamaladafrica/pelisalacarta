@@ -5,12 +5,12 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
-import urlparse,urllib2,urllib,re
-import os
+import re
+import urllib
 
-from core import scrapertools
 from core import logger
-from core import config
+from core import scrapertools
+
 
 def get_video_url( page_url , premium = False , user="" , password="", video_password="" ):
     logger.info("[facebook.py] get_video_url(page_url='%s')" % page_url)
@@ -75,8 +75,3 @@ def find_videos(data):
             logger.info("  url duplicada="+url)
             
     return devuelve
-
-def test():
-    #video_urls = get_video_url("http://www.facebook.com/v/194008590634623")
-
-    return len(video_urls)>0
