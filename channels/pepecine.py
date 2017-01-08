@@ -17,7 +17,7 @@ from core import scrapertools
 from core import servertools
 from core.item import Item
 
-__url_base__ = "http://pepecine.com"
+__url_base__ = "http://pepecine.net"
 fanart_host = "https://d12.usercdn.com/i/02278/u875vjx9c0xs.png"
 
 
@@ -55,7 +55,7 @@ def mainlist(item):
                           url=urlparse.urljoin(__url_base__,"plugins/combined_json.php?&offset=0&limit=30&type=series"),
                           thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/channels/pepecine/tv.png"))
     
-    #itemlist.append( Item( channel=item.channel, action="test", title="Test", url="http://pepecine.com/series-online/8763-breaking-bad/seasons/1/episodes/7", extra="series", fanart=fanart_host ) )
+    #itemlist.append( Item( channel=item.channel, action="test", title="Test", url="http://pepecine.net/ver-series-online/8763-breaking-bad/seasons/1/episodes/7", extra="series", fanart=fanart_host ) )
     return itemlist
  
 def sub_filtrar(item):
@@ -156,12 +156,12 @@ def listado(item):
         if item.extra=="movie":
             action="get_movie"
             title= i["title"] + ' (' + i['year'] + ')'
-            url= urlparse.urljoin(__url_base__,"peliculas-online/" + str(i["id"])) #+"-"+i["title"]).lower().replace(" ","-")))
+            url= urlparse.urljoin(__url_base__,"ver-pelicula-online/" + str(i["id"])) #+"-"+i["title"]).lower().replace(" ","-")))
         elif item.extra=="series": 
             action="get_temporadas"
             title= i["title"]
             infoLabels['tvshowtitle']= i["title"]
-            url= urlparse.urljoin(__url_base__,"series-online/" + str(i["id"])) #+"-"+i["title"]).lower().replace(" ","-")))
+            url= urlparse.urljoin(__url_base__,"episodio-online/" + str(i["id"])) #+"-"+i["title"]).lower().replace(" ","-")))
         else: #item.extra=="series_novedades": 
             action="get_only_episodio"
             infoLabels['season']=i['season']
@@ -171,7 +171,7 @@ def listado(item):
             flag= scrapertools.find_single_match(i["label"],'(\s*\<img src=.*\>)')
             idioma=i["label"].replace(flag,"")
             title=i["title"] + ' '  + item.extra + ' (' + idioma + ')'
-            url= urlparse.urljoin(__url_base__,"series-online/" + str(i["id"])) #+"-"+i["title"]).lower().replace(" ","-"))) 
+            url= urlparse.urljoin(__url_base__,"episodio-online/" + str(i["id"])) #+"-"+i["title"]).lower().replace(" ","-"))) 
         
         if i.has_key("poster") and i["poster"]: 
             thumbnail=re.compile("/w\d{3}/").sub("/w500/",i["poster"])
