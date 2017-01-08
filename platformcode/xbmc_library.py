@@ -432,11 +432,13 @@ def establecer_contenido(content_type, silent=False):
                                           '<setting id="language" value="es" />\n' \
                                           '</settings>'
                             path_settings = xbmc.translatePath("special://profile/addon_data/metadata.tvshows.themoviedb.org/settings.xml")
+                            logger.debug(path_settings)
                             install = filetools.write(path_settings,strSettings)
                             logger.info("Instalado el Scraper de series de TheMovieDB")
                         except:
                             pass
 
+                    logger.debug(str(xbmc.getCondVisibility('System.HasAddon(metadata.tvshows.themoviedb.org)')))
                     continuar = (install and xbmc.getCondVisibility('System.HasAddon(metadata.tvshows.themoviedb.org)'))
                     if not continuar:
                         msg_text = "The Movie Database no instalado."
