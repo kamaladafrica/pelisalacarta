@@ -427,12 +427,15 @@ def establecer_contenido(content_type, silent=False):
                         try:
                             # Instalar metadata.tvshows.themoviedb.org
                             xbmc.executebuiltin('xbmc.installaddon(metadata.tvshows.themoviedb.org)', True)
-                            strSettings = '<settings>\n\t<setting id="fanart" value="true" />\n\t' \
-                                          '<setting id="keeporiginaltitle" value="false" />\n\t' \
-                                          '<setting id="language" value="es" />\n' \
+                            strSettings = '<settings>\n' \
+                                          '    <setting id="fanart" value="true" />\n' \
+                                          '    <setting id="keeporiginaltitle" value="false" />\n' \
+                                          '    <setting id="language" value="es" />\n' \
                                           '</settings>'
                             path_settings = xbmc.translatePath("special://profile/addon_data/metadata.tvshows.themoviedb.org/settings.xml")
-                            logger.debug(path_settings)
+                            tv_themoviedb_addon_path = path_settings[0:path_settings.rfind("/")]
+                            if not filetools.exists(tv_themoviedb_addon_path):
+                                filetools.mkdir(tv_themoviedb_addon_path)
                             install = filetools.write(path_settings,strSettings)
                             logger.info("Instalado el Scraper de series de TheMovieDB")
                         except:
