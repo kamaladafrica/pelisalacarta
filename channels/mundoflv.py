@@ -303,13 +303,13 @@ def findvideos(item):
     itemlist = []
 
     data = scrapertools.cache_page(item.url)
-    patron ='href="([^"]+)".*?domain=([^<]+).*?gold">([^<]+)<'
+    patron ='href="([^"]+)".*?domain=.*?>([^<]+).*?gold">([^<]+)<'
     matches = re.compile(patron,re.DOTALL).findall(data)
 
     for scrapedurl, scrapedserver, scrapedidioma in matches:
     	url = scrapedurl
         idioma = audio[scrapedidioma]
-        title = item.contentSerieName+' '+str(item.contentSeasonNumber)+'x'+str(item.contentEpisodeNumber)+' '+idioma
+        title = item.contentSerieName+' '+str(item.contentSeasonNumber)+'x'+str(item.contentEpisodeNumber)+' '+idioma+' ('+scrapedserver.strip(' ')+')'
         if scrapedidioma == item.extra1 or item.extra1 == 'all':
            itemlist.append(item.clone(title=title, url=url, action="play", language=idioma, server = scrapedserver))
     for videoitem in itemlist:
@@ -324,7 +324,7 @@ def play(item):
     logger.info()
 
     data = scrapertools.cache_page(item.url)
-    url = scrapertools.find_single_match(data, '<IFRAME.+?SRC="([^"]+)"')
+    url = scrapertools.find_single_match(data, '<(?:IFRAME|iframe).+?(?:SRC|src)="([^"]+)"')
 
     itemlist = servertools.find_video_items(data=url)
 
