@@ -4,13 +4,14 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 # ------------------------------------------------------------
 
-import os
 import re
-import sys
 import urlparse
+from os import path
 
 from channels import renumbertools
 from core import config
+from core import filetools
+from core import httptools
 from core import logger
 from core import scrapertools
 from core.item import Item
@@ -21,8 +22,138 @@ CHANNEL_DEFAULT_HEADERS = [
     ["Accept-Encoding", "gzip, deflate"],
     ["Referer", CHANNEL_HOST]
 ]
-header_string = "|User-Agent=Mozilla/5.0" \
-                "&Referer=http://animeflv.me&Cookie="
+
+REGEX_NEXT_PAGE = r"class='current'>\d+?</li><li><a href=\"([^']+?)\""
+REGEX_TITLE = r'(?:bigChar" href=.+?>)(.+?)(?:</a>)'
+REGEX_THUMB = r'src="(http://animeflv\.me/uploads/thumbs/[^"]+?)"'
+REGEX_PLOT = r'<span class="info">Línea de historia:</span><p><span>(.*?)</span>'
+REGEX_URL = r'href="(http://animeflv\.me/Anime/[^"]+)">'
+REGEX_SERIE = r'{0}.+?{1}([^<]+?)</a><p>(.+?)</p>'.format(REGEX_THUMB, REGEX_URL)
+REGEX_EPISODE = r'href="(http://animeflv\.me/Ver/[^"]+?)">(?:<span.+?</script>)?(.+?)</a></td><td>(\d+/\d+/\d+)</td></tr>'
+REGEX_GENERO = r'<a href="(http://animeflv\.me/genero/[^\/]+/)">([^<]+)</a>'
+
+
+def get_url_contents(url):
+    html = httptools.downloadpage(url, headers=CHANNEL_DEFAULT_HEADERS).data
+    # Elimina los espacios antes y despues de aperturas y cierres de etiquetas
+    html = re.sub(r'>\s+<', '><', html)
+    html = re.sub(r'>\s+', '>', html)
+    html = re.sub(r'\s+<', '<', html)
+
+    return html
+
+
+def get_cookie_value():
+    """
+        Obtiene las cookies de cloudflare
+    """
+
+    cookie_file = path.join(config.get_data_path(), 'cookies.dat')
+    cookie_data = filetools.read(cookie_file)
+
+    cfduid = scrapertools.find_single_match(
+        cookie_data, r"animeflv.*?__cfduid\s+([A-Za-z0-9\+\=]+)")
+    cfduid = "__cfduid=" + cfduid + ";"
+    cf_clearance = scrapertools.find_single_match(
+        cookie_data, r"animeflv.*?cf_clearance\s+([A-Za-z0-9\+\=\-]+)")
+    cf_clearance = " cf_clearance=" + cf_clearance
+    cookies_value = cfduid + cf_clearance
+
+    return cookies_value
+
+header_string = "|User-Agent=Mozilla/5.0&Referer=http://animeflv.me&Cookie=" + \
+    get_cookie_value()
+
+
+def __find_next_page(html):
+    """
+        Busca el enlace a la pagina siguiente
+    """
+
+    return scrapertools.find_single_match(html, REGEX_NEXT_PAGE)
+
+
+def __extract_info_from_serie(html):
+    """
+        Extrae la información de una serie o pelicula desde su página
+        Util para cuando una busqueda devuelve un solo resultado y animeflv.me
+        redirecciona a la página de este.
+    """
+
+    title = scrapertools.find_single_match(html, REGEX_TITLE)
+    title = clean_title(title)
+    url = scrapertools.find_single_match(html, REGEX_URL)
+    thumbnail = scrapertools.find_single_match(
+        html, REGEX_THUMB) + header_string
+    plot = scrapertools.find_single_match(html, REGEX_PLOT)
+
+    return [title, url, thumbnail, plot]
+
+
+def __sort_by_quality(items):
+    """
+        Ordena los items por calidad en orden decreciente
+    """
+
+    def func(item):
+        return int(scrapertools.find_single_match(item.title, r'\[(.+?)\]'))
+
+    return sorted(items, key=func, reverse=True)
+
+
+def clean_title(title):
+    """
+        Elimina el año del nombre de las series o peliculas
+    """
+    year_pattern = r'\([\d -]+?\)'
+
+    return re.sub(year_pattern, '', title).strip()
+
+
+def __find_series(html):
+    """
+        Busca series en un listado, ejemplo: resultados de busqueda, categorias, etc
+    """
+    series = []
+
+    # Limitamos la busqueda al listado de series
+    list_start = html.find('<table class="listing">')
+    list_end = html.find('</table>', list_start)
+
+    list_html = html[list_start:list_end]
+
+    for serie in re.finditer(REGEX_SERIE, list_html, re.S):
+        thumbnail, url, title, plot = serie.groups()
+        title = clean_title(title)
+        thumbnail = thumbnail + header_string
+        plot = scrapertools.htmlclean(plot)
+
+        series.append([title, url, thumbnail, plot])
+
+    return series
+
+
+def resolve_redirect(url):
+    """
+        Resuelve la redirección de la api de animeflv.me (solo esta presente en algunas series)
+    """
+
+    import urllib2
+
+    request = urllib2.Request(url)
+    cookie = get_cookie_value()
+    request.add_header('Cookie', cookie)
+    request.add_header('User-Agent', 'Mozilla/5.0')
+    response = urllib2.urlopen(request)
+
+    return response.geturl()
+
+
+def play(item):
+    if item.url.find('api.animeflv.me/rd.php'):
+        item.url = resolve_redirect(item.url)
+
+    return [item]
 
 
 def mainlist(item):
@@ -30,14 +161,14 @@ def mainlist(item):
 
     itemlist = list()
 
-    itemlist.append(Item(channel=item.channel, action="letras", title="Por orden alfabético",
-                         url=urlparse.urljoin(CHANNEL_HOST, "ListadeAnime")))
+    itemlist.append(Item(channel=item.channel, action="letras",
+                         title="Por orden alfabético"))
     itemlist.append(Item(channel=item.channel, action="generos", title="Por géneros",
                          url=urlparse.urljoin(CHANNEL_HOST, "ListadeAnime")))
     itemlist.append(Item(channel=item.channel, action="series", title="Por popularidad",
                          url=urlparse.urljoin(CHANNEL_HOST, "/ListadeAnime/MasVisto")))
     itemlist.append(Item(channel=item.channel, action="series", title="Novedades",
-                         url=urlparse.urljoin(CHANNEL_HOST, "ListadeAnime/LatestUpdate")))
+                         url=urlparse.urljoin(CHANNEL_HOST, "ListadeAnime/Nuevo")))
     itemlist.append(Item(channel=item.channel, action="search", title="Buscar...",
                          url=urlparse.urljoin(CHANNEL_HOST, "Buscar?s=")))
 
@@ -50,24 +181,22 @@ def mainlist(item):
 def letras(item):
     logger.info()
 
+    base_url = 'http://animeflv.me/ListadeAnime?c='
+
     itemlist = []
+    itemlist.append(Item(channel=item.channel, action="series", title="#",
+                         url=base_url + "#", viewmode="movies_with_plot"))
 
-    data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
-    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
+    # Itera sobre las posiciones de las letras en la tabla ascii
+    # 65 = A, 90 = Z
+    for i in xrange(65, 91):
+        letter = chr(i)
 
-    data = scrapertools.get_match(data, '<div class="alphabet">(.+?)</div>')
-    patron = '<a href="([^"]+)[^>]+>([^<]+)</a>'
-    matches = re.compile(patron, re.DOTALL).findall(data)
+        logger.debug("title=[{0}], url=[{1}], thumbnail=[]".format(
+            letter, base_url + letter))
 
-    for scrapedurl, scrapedtitle in matches:
-        title = scrapertools.entityunescape(scrapedtitle)
-        url = urlparse.urljoin(item.url, scrapedurl)
-        thumbnail = ""
-        plot = ""
-        logger.debug("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
-
-        itemlist.append(Item(channel=item.channel, action="series", title=title, url=url, thumbnail=thumbnail,
-                             plot=plot, viewmode="movies_with_plot"))
+        itemlist.append(Item(channel=item.channel, action="series", title=letter,
+                             url=base_url + letter, viewmode="movies_with_plot"))
 
     return itemlist
 
@@ -76,23 +205,17 @@ def generos(item):
     logger.info()
 
     itemlist = []
-    data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
-    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
 
-    data = scrapertools.get_match(data, '<div class="barTitle">Buscar por género</div><div class="barContent">' +
-                                  '<div class="arrow-general"></div><div>(.*?)</div>')
-    patron = '<a href="([^"]+)[^>]+>([^<]+)</a>'
-    matches = re.compile(patron, re.DOTALL).findall(data)
+    html = get_url_contents(item.url)
 
-    for scrapedurl, scrapedtitle in matches:
-        title = scrapedtitle.strip()
-        url = urlparse.urljoin(item.url, scrapedurl)
-        thumbnail = ""
-        plot = ""
-        logger.debug("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
+    generos = re.findall(REGEX_GENERO, html)
 
-        itemlist.append(Item(channel=item.channel, action="series", title=title, url=url, thumbnail=thumbnail,
-                             plot=plot, viewmode="movies_with_plot"))
+    for url, genero in generos:
+        logger.debug(
+            "title=[{0}], url=[{1}], thumbnail=[]".format(genero, url))
+
+        itemlist.append(Item(channel=item.channel, action="series", title=genero, url=url,
+                             plot='', viewmode="movies_with_plot"))
 
     return itemlist
 
@@ -102,164 +225,164 @@ def search(item, texto):
 
     texto = texto.replace(" ", "%20")
     item.url = "{0}{1}".format(item.url, texto)
-    try:
-        return series(item)
-    # Se captura la excepción, para no interrumpir al buscador global si un canal falla
-    except:
-        import sys
-        for line in sys.exc_info():
-            logger.error("{0}".format(line))
-        return []
+
+    html = get_url_contents(item.url)
+
+    series = []
+
+    # Se encontro un solo resultado y se redicciono a la página de la serie
+    if html.find('<title>Ver') >= 0:
+        series = [__extract_info_from_serie(html)]
+    # Se obtuvo una lista de resultados
+    else:
+        series = __find_series(html)
+
+    items = []
+    for serie in series:
+        title, url, thumbnail, plot = serie
+
+        logger.debug("title=[{0}], url=[{1}], thumbnail=[{2}]".format(
+            title, url, thumbnail))
+
+        items.append(Item(channel=item.channel, action="episodios", title=title,
+                          url=url, thumbnail=thumbnail, plot=plot,
+                          show=title, viewmode="movies_with_plot", context=renumbertools.context))
+
+    return items
 
 
 def series(item):
     logger.info()
 
-    data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
-    head = header_string + get_cookie_value()
+    page_html = get_url_contents(item.url)
 
-    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
+    series = __find_series(page_html)
 
-    patron = "<td title='<img.+?src=\"([^\"]+)\".+?<a.+?href=\"([^\"]+)\">(.*?)</a><p>(.*?)</p>"
-    matches = re.compile(patron, re.DOTALL).findall(data)
-    itemlist = []
+    items = []
+    for serie in series:
+        title, url, thumbnail, plot = serie
 
-    for scrapedthumbnail, scrapedurl, scrapedtitle, scrapedplot in matches:
-        title = scrapedtitle.strip()  # scrapertools.unescape(scrapedtitle)
-        url = urlparse.urljoin(item.url, scrapedurl)
-        thumbnail = scrapedthumbnail
-        plot = scrapertools.htmlclean(scrapedplot).strip()
-        show = title
-        logger.debug("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
-        itemlist.append(Item(channel=item.channel, action="episodios", title=title, url=url, thumbnail=thumbnail + head,
-                             plot=plot, show=show, fanart=thumbnail + head, viewmode="movies_with_plot",
-                             context=renumbertools.context))
+        logger.debug("title=[{0}], url=[{1}], thumbnail=[{2}]".format(
+            title, url, thumbnail))
 
-    pagina = scrapertools.find_single_match(data, '<li class=\'current\'>.*?</li><li><a href="([^"]+)"')
+        items.append(Item(channel=item.channel, action="episodios", title=title, url=url,
+                          thumbnail=thumbnail, plot=plot, show=title, viewmode="movies_with_plot",
+                          context=renumbertools.context))
 
-    if pagina:
-        scrapedurl = pagina
-        scrapedtitle = ">> Página Siguiente"
-        scrapedthumbnail = ""
-        scrapedplot = ""
+    url_next_page = __find_next_page(page_html)
 
-        itemlist.append(Item(channel=item.channel, action="series", title=scrapedtitle, url=scrapedurl,
-                             thumbnail=scrapedthumbnail, plot=scrapedplot, folder=True,
-                             viewmode="movies_with_plot"))
+    if url_next_page:
+        items.append(Item(channel=item.channel, action="series", title=">> Página Siguiente",
+                          url=url_next_page, thumbnail="", plot="", folder=True,
+                          viewmode="movies_with_plot"))
 
-    return itemlist
+    return items
 
 
 def episodios(item):
     logger.info()
+
     itemlist = []
 
-    data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
-    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
+    html_serie = get_url_contents(item.url)
 
-    patron = "<p><span>(.*?)</span>"
-    aux_plot = scrapertools.find_single_match(data, patron)
+    info_serie = __extract_info_from_serie(html_serie)
+    plot = info_serie[3] if info_serie else ''
 
-    patron = '<td><ahref="([^"]+)">(.*?)</a></td><td>(.*?)</td>'
-    matches = re.compile(patron, re.DOTALL).findall(data)
+    episodes = re.findall(REGEX_EPISODE, html_serie, re.DOTALL)
 
-    pelicula = False
-    for scrapedurl, scrapedtitle, scrapeddate in matches:
-        title = scrapedtitle.strip()  # scrapertools.unescape(scrapedtitle)
-        url = scrapedurl
-        thumbnail = item.thumbnail
-        plot = aux_plot  # item.plot
-        date = scrapeddate.strip()
+    es_pelicula = False
+    for url, title, date in episodes:
+        episode = scrapertools.find_single_match(title, r'Episodio (\d+)')
 
-        # TODO crear funcion que pasandole el titulo y buscando en un array de series establezca el valor el nombre
-        # y temporada / capitulo para que funcione con trak.tv
-
-        season = 1
-        episode = 1
-        patron = "Episodio\s+(\d+)"
-        # logger.info("title {0}".format(title))
-        # logger.info("patron {0}".format(patron))
-        try:
-            episode = scrapertools.get_match(title, patron)
+        # El enlace pertenece a un episodio
+        if episode:
+            season = 1
             episode = int(episode)
-            # logger.info("episode {0}".format(episode))
-        except IndexError:
-            pelicula = True
-            pass
-        except ValueError:
-            pass
+            season, episode = renumbertools.numbered_for_tratk(
+                item.channel, item.show, season, episode)
 
-        if pelicula:
-            title = "{0} ({1})".format(title, date)
-            logger.debug("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
-            item.url = url
-            itemlist.append(Item(channel=item.channel, action="findvideos", title=title, url=url,
-                                 thumbnail=thumbnail, plot=plot, fulltitle="{0} {1}".format(item.show, title),
-                                 fanart=thumbnail, viewmode="movies_with_plot", folder=True))
+            title = "{0}x{1:02d} {2} ({3})".format(
+                season, episode, "Episodio " + str(episode), date)
+        # El enlace pertenece a una pelicula
         else:
-            season, episode = renumbertools.numbered_for_tratk(item.channel, item.show, season, episode)
+            title = "{0} ({1})".format(title, date)
+            item.url = url
+            es_pelicula = True
 
-            title = "{0}x{1:02d} {2} ({3})".format(season, episode, "Episodio " + str(episode), date)
+        logger.debug("title=[{0}], url=[{1}], thumbnail=[{2}]".format(
+            title, url, item.thumbnail))
 
-            logger.debug("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
+        itemlist.append(Item(channel=item.channel, action="findvideos", title=title, url=url,
+                             thumbnail=item.thumbnail, plot=plot, show=item.show,
+                             fulltitle="{0} {1}".format(item.show, title),
+                             viewmode="movies_with_plot", folder=True))
 
-            itemlist.append(Item(channel=item.channel, action="findvideos", title=title, url=url,
-                                 thumbnail=thumbnail, plot=plot, show=item.show, fulltitle="{0} {1}"
-                                 .format(item.show, title), fanart=thumbnail, viewmode="movies_with_plot", folder=True))
+    # El sistema soporta la biblioteca y se encontro por lo menos un episodio
+    # o pelicula
+    if config.get_library_support() and len(itemlist) > 0:
+        if es_pelicula:
+            item_title = "Añadir película a la biblioteca"
+            item_action = "add_pelicula_to_library"
+            item_extra = ""
+        else:
+            item_title = "Añadir serie a la biblioteca"
+            item_action = "add_serie_to_library"
+            item_extra = "episodios"
 
-    if config.get_library_support() and len(itemlist) > 0 and not pelicula:
-        itemlist.append(Item(channel=item.channel, title="Añadir esta serie a la biblioteca de XBMC", url=item.url,
-                             action="add_serie_to_library", extra="episodios", show=item.show))
-        itemlist.append(Item(channel=item.channel, title="Descargar todos los episodios de la serie", url=item.url,
-                             action="download_all_episodes", extra="episodios", show=item.show))
+        itemlist.append(Item(channel=item.channel, title=item_title, url=item.url,
+                             action=item_action, extra=item_extra, show=item.show))
 
-    elif config.get_library_support() and len(itemlist) == 1 and pelicula:
-        itemlist.append(Item(channel=item.channel, action="add_pelicula_to_library", url=item.url,
-                             title="Añadir película a la biblioteca", thumbnail=item.thumbnail,
-                             fulltitle=item.fulltitle))
+        if not es_pelicula:
+            itemlist.append(Item(channel=item.channel, title="Descargar todos los episodios",
+                                 url=item.url, action="download_all_episodes", extra="episodios",
+                                 show=item.show))
 
     return itemlist
 
 
+def __get_videos(url):
+    """
+        Descarga la página del iframe y busca los enlaces
+    """
+    html = get_url_contents(url)
+
+    regex_video_list = r'var part = \[([^\]]+)'
+
+    videos_html = scrapertools.find_single_match(html, regex_video_list)
+    videos = re.findall('"([^"]+)"', videos_html, re.DOTALL)
+
+    return videos
+
+
 def findvideos(item):
     logger.info()
+
     itemlist = []
 
-    data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
-    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
+    # Se realiza un primer intento de obtener los enlaces generando la url del
+    # iframe en base a la url del episodio
+    episode_id, show, episode_name = item.url.strip('/').split('/')[-3:]
+    iframe_url = "http://player.animeflv.me/?id={0}&ep_id={0}&anime={1}&episode={2}".format(
+        episode_id, show, episode_name)
+    videos = __get_videos(iframe_url)
 
-    url_api = scrapertools.find_single_match(data, "http:\/\/api\.animeflv\.me\/[^\"]+")
+    # Si no se encontraron videos se descarga la página del episodio y se
+    # obtiene de ahí la url del iframe
+    if not videos:
+        # Obtenemos la página del episodio o pelicula
+        page_html = get_url_contents(item.url)
 
-    data = scrapertools.anti_cloudflare(url_api, headers=CHANNEL_DEFAULT_HEADERS)
+        regex_api = r'http://player\.animeflv\.me/[^\"]+'
+        iframe_url = scrapertools.find_single_match(page_html, regex_api)
 
-    data = scrapertools.find_single_match(data, "var part = \[([^\]]+)")
+        videos = __get_videos(iframe_url)
 
-    patron = '"([^"]+)"'
-    matches = re.compile(patron, re.DOTALL).findall(data)
+    qualities = ["360", "480", "720", "1080"]
 
-    list_quality = ["360", "480", "720", "1080"]
+    for quality_id, video_url in enumerate(videos):
+        itemlist.append(Item(channel=item.channel, action="play", url=video_url, show=re.escape(item.show),
+                             title="Ver en calidad [{0}]".format(qualities[quality_id]), plot=item.plot,
+                             folder=True, fulltitle=item.title, viewmode="movies_with_plot"))
 
-    # eliminamos la fecha del titulo a mostrar
-    patron = "(.+?)\s\(\d{1,2}/\d{1,2}/\d{4}\)"
-    title = scrapertools.find_single_match(item.title, patron)
-
-    for _id, scrapedurl in enumerate(matches):
-        itemlist.append(Item(channel=item.channel, action="play", url=scrapedurl, show=re.escape(item.show), fanart="",
-                             title="Ver en calidad [{0}]".format(list_quality[_id]), thumbnail="", plot=item.plot,
-                             folder=True, fulltitle=title, viewmode="movies_with_plot"))
-
-    return sorted(itemlist, key=lambda it: int(scrapertools.find_single_match(it.title, "\[(.+?)\]")), reverse=True)
-
-
-def get_cookie_value():
-    cookies = os.path.join(config.get_data_path(), 'cookies', 'animeflv.me.dat')
-    cookiedatafile = open(cookies, 'r')
-    cookiedata = cookiedatafile.read()
-    cookiedatafile.close()
-    cfduid = scrapertools.find_single_match(cookiedata, "animeflv.*?__cfduid\s+([A-Za-z0-9\+\=]+)")
-    cfduid = "__cfduid=" + cfduid + ";"
-    cf_clearance = scrapertools.find_single_match(cookiedata, "animeflv.*?cf_clearance\s+([A-Za-z0-9\+\=\-]+)")
-    cf_clearance = " cf_clearance=" + cf_clearance
-    cookies_value = cfduid + cf_clearance
-
-    return cookies_value
+    return __sort_by_quality(itemlist)
