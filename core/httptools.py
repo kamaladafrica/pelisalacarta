@@ -35,11 +35,12 @@ import gzip
 from core import logger
 from core import config
 from threading import Lock
+from core.cloudflare import Cloudflare
 
 cookies_lock = Lock()
 
 
-def downloadpage(url, post=None, headers=None, timeout=None, follow_redirects=True, cookies=True, replace_headers=False, add_referer=False, only_headers=False):
+def downloadpage(url, post=None, headers=None, timeout=None, follow_redirects=True, cookies=True, replace_headers=False, add_referer=False, only_headers=False, bypass_cloudflare=True):
     """
     Abre una url y retorna los datos obtenidos
 
@@ -175,8 +176,13 @@ def downloadpage(url, post=None, headers=None, timeout=None, follow_redirects=Tr
 
     except Exception, e:
         response["sucess"] = False
-        response["code"] = e.errno
-        response["error"] = e.reason
+        if "errno" in e:
+          response["code"] = e.errno
+          response["error"] = e.reason
+        else:
+          response["code"] = e.reason[0][0]
+          response["error"] = e.reason[0][1]
+        
         response["headers"] = {}
         response["data"] = ""
         response["time"] = time.time() - inicio
@@ -217,16 +223,14 @@ def downloadpage(url, post=None, headers=None, timeout=None, follow_redirects=Tr
         except:
             logger.info("No se ha podido descomprimir")
 
-    # Anti cloudfare
-    if "cf-ray" in response["headers"] and "refresh" in response["headers"]:
-        wait_time = int(response["headers"]["refresh"][:1])
-        auth_url = "%s://%s/%s" % (urlparse.urlparse(url)[0], urlparse.urlparse(url)[1],
-                                   response["headers"]["refresh"][7:])
-
-        logger.info("cloudflare detectado, esperando %s segundos..." % wait_time)
-        time.sleep(wait_time)
+    # Anti Cloudflare
+    if bypass_cloudflare:
+      cf = Cloudflare(response, url)
+      if cf.is_cloudflare: 
+        logger.info("cloudflare detectado, esperando %s segundos..." % cf.wait_time)
+        auth_url = cf.get_url()
         logger.info("Autorizando... url: %s" % auth_url)
-        if downloadpage(auth_url, headers=headers).sucess:
+        if downloadpage(auth_url, headers=request_headers, replace_headers = True).sucess:
             logger.info("Autorización correcta, descargando página")
             resp = downloadpage(url=url, post=post, headers=headers, timeout=timeout, follow_redirects=follow_redirects,
                                 cookies=cookies, replace_headers=replace_headers, add_referer=add_referer)
@@ -238,7 +242,7 @@ def downloadpage(url, post=None, headers=None, timeout=None, follow_redirects=Tr
             response["time"] = resp.time
         else:
             logger.info("No se ha podido autorizar")
-
+            
     return type('HTTPResponse', (), response)
 
 
