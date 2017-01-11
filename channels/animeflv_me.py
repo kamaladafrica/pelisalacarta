@@ -133,29 +133,6 @@ def __find_series(html):
     return series
 
 
-def resolve_redirect(url):
-    """
-        Resuelve la redirección de la api de animeflv.me (solo esta presente en algunas series)
-    """
-
-    import urllib2
-
-    request = urllib2.Request(url)
-    cookie = get_cookie_value()
-    request.add_header('Cookie', cookie)
-    request.add_header('User-Agent', 'Mozilla/5.0')
-    response = urllib2.urlopen(request)
-
-    return response.geturl()
-
-
-def play(item):
-    if item.url.find('api.animeflv.me/rd.php'):
-        item.url = resolve_redirect(item.url)
-
-    return [item]
-
-
 def mainlist(item):
     logger.info()
 
@@ -341,42 +318,22 @@ def episodios(item):
     return itemlist
 
 
-def __get_videos(url):
-    """
-        Descarga la página del iframe y busca los enlaces
-    """
-    html = get_url_contents(url)
-
-    regex_video_list = r'var part = \[([^\]]+)'
-
-    videos_html = scrapertools.find_single_match(html, regex_video_list)
-    videos = re.findall('"([^"]+)"', videos_html, re.DOTALL)
-
-    return videos
-
-
 def findvideos(item):
     logger.info()
 
     itemlist = []
 
-    # Se realiza un primer intento de obtener los enlaces generando la url del
-    # iframe en base a la url del episodio
-    episode_id, show, episode_name = item.url.strip('/').split('/')[-3:]
-    iframe_url = "http://player.animeflv.me/?id={0}&ep_id={0}&anime={1}&episode={2}".format(
-        episode_id, show, episode_name)
-    videos = __get_videos(iframe_url)
+    page_html = get_url_contents(item.url)
 
-    # Si no se encontraron videos se descarga la página del episodio y se
-    # obtiene de ahí la url del iframe
-    if not videos:
-        # Obtenemos la página del episodio o pelicula
-        page_html = get_url_contents(item.url)
+    regex_api = r'http://player\.animeflv\.me/[^\"]+'
+    iframe_url = scrapertools.find_single_match(page_html, regex_api)
 
-        regex_api = r'http://player\.animeflv\.me/[^\"]+'
-        iframe_url = scrapertools.find_single_match(page_html, regex_api)
+    iframe_html = get_url_contents(iframe_url)
 
-        videos = __get_videos(iframe_url)
+    regex_video_list = r'var part = \[([^\]]+)'
+
+    videos_html = scrapertools.find_single_match(iframe_html, regex_video_list)
+    videos = re.findall('"([^"]+)"', videos_html, re.DOTALL)
 
     qualities = ["360", "480", "720", "1080"]
 
