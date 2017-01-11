@@ -382,12 +382,18 @@ def get_thumbnail_path(thumb_name):
 def submenu_tools(item):
     logger.info()
     itemlist = []
+
     itemlist.append(Item(channel=CHANNELNAME, title="Herramientas de canales", action="",
-                         folder=False,
-                         thumbnail=get_thumbnail_path("thumb_configuracion.png")))
-    itemlist.append(Item(channel=CHANNELNAME, title="       Comprobar archivos *_data.json",
+                         folder=False, thumbnail=get_thumbnail_path("thumb_canales.png")))
+    itemlist.append(Item(channel=CHANNELNAME, title="   Comprobar archivos *_data.json",
                          action="conf_tools", folder=True, extra="lib_check_datajson",
-                         thumbnail=get_thumbnail_path("thumb_configuracion.png")))
+                         thumbnail=get_thumbnail_path("thumb_canales.png")))
+    itemlist.append(Item(channel=CHANNELNAME, title="Herramientas de biblioteca", action="",
+                         folder=False, thumbnail=get_thumbnail_path("thumb_biblioteca.png")))
+    itemlist.append(Item(channel="biblioteca", action="update_biblio", folder=False,
+                         thumbnail=get_thumbnail_path("thumb_biblioteca.png"),
+                         extra="overwrite_everything",
+                         title="   Sobreescribir toda la biblioteca (strm, nfo y json)"))
 
     return itemlist
 

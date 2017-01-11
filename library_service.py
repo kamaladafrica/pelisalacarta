@@ -204,11 +204,18 @@ def update(path, p_dialog, i, t, serie, overwrite):
 
 def check_for_update(overwrite=True):
     logger.info("Actualizando series...")
+    logger.info("Overwrite? -> " + str(overwrite))
     p_dialog = None
     serie_actualizada = False
     hoy = datetime.date.today()
 
+    overwrite_everything = False
+
     try:
+        if overwrite == "everything":
+            overwrite = True
+            overwrite_everything = True
+
         if config.get_setting("updatelibrary", "biblioteca") != 0 or overwrite:
             config.set_setting("updatelibrary_last_check", hoy.strftime('%Y-%m-%d'), "biblioteca")
 
@@ -262,6 +269,8 @@ def check_for_update(overwrite=True):
                 # si la serie esta activa ...
                 if overwrite or config.get_setting("updatetvshows_interval", "biblioteca") == 0:
                     # ... forzar actualizacion independientemente del intervalo
+                    if overwrite_everything:
+                        overwrite = "everything"
                     serie_actualizada = update(path, p_dialog, i, t, serie, overwrite)
 
                 elif interval == 1 and update_next <= hoy:

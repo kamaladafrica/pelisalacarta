@@ -449,7 +449,10 @@ def update_biblio(item):
 
     # Actualizar las series activas sobreescribiendo
     import library_service
-    library_service.check_for_update(overwrite=True)
+    if item.extra == "overwrite_everything":
+        library_service.check_for_update(overwrite="everything")
+    else:
+        library_service.check_for_update(overwrite=True)
 
     # Eliminar las carpetas de peliculas que no contengan archivo strm
     for raiz, subcarpetas, ficheros in filetools.walk(library.MOVIES_PATH):

@@ -782,8 +782,8 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
         hidden_controls = [control for control in self.controls if control["show"] == False]
         position = self.controls.index(show_controls[0])
 
-        scrollbar_height = self.getControl(10008).getHeight() - (len(hidden_controls) * 3)
-        scrollbar_y = self.getControl(10008).getPosition()[1] + (position * 3)
+        scrollbar_height = self.getControl(10008).getHeight() - (len(hidden_controls) * 4)
+        scrollbar_y = self.getControl(10008).getPosition()[1] + (position * 4)
         self.getControl(10009).setPosition(self.getControl(10008).getPosition()[0], scrollbar_y)
         self.getControl(10009).setHeight(scrollbar_height)
         self.evaluate_conditions()

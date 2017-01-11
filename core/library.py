@@ -389,11 +389,17 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
     sobreescritos = 0
     fallidos = 0
     news_in_playcounts = {}
-    
+
+    if overwrite == "everything":
+        overwrite = True
+        overwrite_everything = True
+    else:
+        overwrite_everything = False
+
     # Listamos todos los ficheros de la serie, asi evitamos tener que comprobar si existe uno por uno
     raiz, carpetas_series, ficheros = filetools.walk(path).next()
     ficheros = [filetools.join(path, f) for f in ficheros]
-    
+
     # Silent es para no mostrar progreso (para library_service)
     if not silent:
         # progress dialog
@@ -419,12 +425,18 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
         strm_path = filetools.join(path, "%s.strm" % season_episode)
         nfo_path = filetools.join(path, "%s.nfo" % season_episode)
         json_path = filetools.join(path, ("%s [%s].json" % (season_episode, e.channel)).lower())
-        
+
         strm_exists = strm_path in ficheros
         nfo_exists = nfo_path in ficheros
         json_exists = json_path in ficheros
-        
-        if not strm_exists:
+
+        strm_exists_before = True
+        nfo_exists_before = True
+        json_exists_before = True
+
+        if not strm_exists or overwrite_everything:
+            overwrite_everything = False
+
             # Si no existe season_episode.strm añadirlo
             item_strm = Item(action='play_from_library', channel='biblioteca',
                              strm_path=strm_path.replace(TVSHOWS_PATH, ""), infoLabels={})
@@ -447,7 +459,9 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
             strm_exists = filetools.write(strm_path, '%s?%s' % (addon_name, item_strm.tourl()))
 
         item_nfo = None
-        if not nfo_exists and e.infoLabels.get("imdb_id"):
+        if (not nfo_exists or overwrite_everything) and e.infoLabels.get("imdb_id"):
+            nfo_exists_before = False
+
             # Si no existe season_episode.nfo añadirlo
             if e.infoLabels["tmdb_id"]:
                 scraper.find_and_set_infoLabels(e)
@@ -477,9 +491,10 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
                 e.infoLabels = item_nfo.infoLabels
 
                 if filetools.write(json_path, e.tojson()):
-                    if not json_exists:
+                    if not json_exists or overwrite_everything:
+                        json_exists_before = False
                         logger.info("Insertado: %s" % json_path)
-                        insertados += 1
+
                         # Marcamos episodio como no visto
                         news_in_playcounts[season_episode] = 0
                         # Marcamos la temporada como no vista
@@ -487,6 +502,8 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
                         # Marcamos la serie como no vista
                         # logger.debug("serie " + serie.tostring('\n'))
                         news_in_playcounts[serie.contentTitle] = 0
+                        if (not overwrite_everything and not json_exists):
+                            json_exists = True
                     else:
                         logger.info("Sobreescrito: %s" % json_path)
                         sobreescritos += 1
@@ -497,6 +514,12 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
         else:
             logger.info("Fallido: %s" % json_path)
             fallidos += 1
+
+        if (not strm_exists_before or not nfo_exists_before or not json_exists_before):
+            if (strm_exists and nfo_exists and json_exists):
+                insertados += 1
+            else:
+                logger.error("El archivo strm, nfo o json no existe")
 
         if not silent and p_dialog.iscanceled():
             break
