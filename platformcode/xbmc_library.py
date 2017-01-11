@@ -415,6 +415,7 @@ def establecer_contenido(content_type, silent=False):
 
                 # Instalar TheMovieDB
                 if continuar and not xbmc.getCondVisibility('System.HasAddon(metadata.tvshows.themoviedb.org)'):
+                    continuar = False
                     if not silent:
                         # Preguntar si queremos instalar metadata.tvshows.themoviedb.org
                         install = platformtools.dialog_yesno("The Movie Database",
@@ -426,23 +427,41 @@ def establecer_contenido(content_type, silent=False):
                     if install:
                         try:
                             # Instalar metadata.tvshows.themoviedb.org
+                            # 1º Probar desde el repositorio ...
                             xbmc.executebuiltin('xbmc.installaddon(metadata.tvshows.themoviedb.org)', True)
+                            if not xbmc.getCondVisibility('System.HasAddon(metadata.tvshows.themoviedb.org)'):
+                                    # ...si no funciona descargar e instalar desde la web
+                                    url = "http://mirrors.kodi.tv/addons/jarvis/metadata.tvshows.themoviedb.org/metadata.tvshows.themoviedb.org-1.3.1.zip"
+                                    path_down = xbmc.translatePath(
+                                        "special://home/addons/packages/metadata.tvshows.themoviedb.org-1.3.1.zip")
+                                    path_unzip = xbmc.translatePath("special://home/addons/")
+                                    header = ("User-Agent",
+                                              "Kodi/15.2 (Windows NT 10.0; WOW64) App_Bitness/32 Version/15.2-Git:20151019-02e7013")
+
+                                    from core import downloadtools
+                                    from core import ziptools
+
+                                    downloadtools.downloadfile(url, path_down, continuar=True, headers=[header])
+                                    unzipper = ziptools.ziptools()
+                                    unzipper.extract(path_down, path_unzip)
+                                    xbmc.executebuiltin('xbmc.UpdateLocalAddons')
+
                             strSettings = '<settings>\n' \
                                           '    <setting id="fanart" value="true" />\n' \
                                           '    <setting id="keeporiginaltitle" value="false" />\n' \
                                           '    <setting id="language" value="es" />\n' \
                                           '</settings>'
                             path_settings = xbmc.translatePath("special://profile/addon_data/metadata.tvshows.themoviedb.org/settings.xml")
-                            tv_themoviedb_addon_path = path_settings[0:path_settings.rfind("/")]
+                            tv_themoviedb_addon_path = filetools.dirname(path_settings)
                             if not filetools.exists(tv_themoviedb_addon_path):
                                 filetools.mkdir(tv_themoviedb_addon_path)
-                            install = filetools.write(path_settings,strSettings)
-                            logger.info("Instalado el Scraper de series de TheMovieDB")
+                            if filetools.write(path_settings,strSettings):
+                                continuar = True
+
                         except:
                             pass
 
-                    logger.debug(str(xbmc.getCondVisibility('System.HasAddon(metadata.tvshows.themoviedb.org)')))
-                    continuar = (install and xbmc.getCondVisibility('System.HasAddon(metadata.tvshows.themoviedb.org)'))
+                    continuar = (install and continuar)
                     if not continuar:
                         msg_text = "The Movie Database no instalado."
 
@@ -537,14 +556,19 @@ def establecer_contenido(content_type, silent=False):
                     nun_records, records = execute_sql_kodi(sql)
                     if nun_records == 1:
                         continuar = True
-                        logger.info("Biblioteca  %s configurada" % content_type)
 
                 if not continuar:
                     msg_text = "Error al configurar el scraper en la BD."
 
 
         if not continuar:
-            heading = "Biblioteca no configurada"
+            heading = "Biblioteca no %s configurada" % content_type
             #msg_text = "Asegurese de tener instalado el scraper de The Movie Database"
-            platformtools.dialog_notification(heading, msg_text, icon=1, time=8000)
-            logger.info("%s: %s" % (heading,msg_text))
+        elif content_type == FOLDER_TVSHOWS and not xbmc.getCondVisibility('System.HasAddon(metadata.tvshows.themoviedb.org)'):
+            heading = "Biblioteca %s configurada" % content_type
+            msg_text = "Es necesario reiniciar Kodi para que los cambios surtan efecto."
+        else:
+            heading = "Biblioteca %s configurada" % content_type
+            msg_text = "Felicidades la biblioteca de Kodi ha sido configurada correctamente."
+        platformtools.dialog_notification(heading, msg_text, icon=1, time=10000)
+        logger.info("%s: %s" % (heading,msg_text))
