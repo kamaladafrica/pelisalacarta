@@ -32,14 +32,14 @@ from core import logger
 import urllib
 
 class Cloudflare:
-    def __init__(self, response, url):
+    def __init__(self, response):
         self.timeout = 5
-        self.domain = urlparse.urlparse(url)[1]
-        self.protocol = urlparse.urlparse(url)[0]
+        self.domain = urlparse.urlparse(response["url"])[1]
+        self.protocol = urlparse.urlparse(response["url"])[0]
         self.js_data = {}
         self.header_data = {}
 
-        if not  "var s,t,o,p,b,r,e,a,k,i,n,g,f" in  response["data"] or "chk_jschl" in url:
+        if not  "var s,t,o,p,b,r,e,a,k,i,n,g,f" in  response["data"] or "chk_jschl" in response["url"]:
           return
 
         try:  
@@ -47,7 +47,6 @@ class Cloudflare:
           self.js_data["params"] = {}
           self.js_data["params"]["jschl_vc"] = re.compile('<input type="hidden" name="jschl_vc" value="([^"]+)"/>').findall(response["data"])[0]
           self.js_data["params"]["pass"] = re.compile('<input type="hidden" name="pass" value="([^"]+)"/>').findall(response["data"])[0]
-          self.js_data["time"] = float(self.js_data["params"]["pass"].split("-")[0])
           var, self.js_data["value"] = re.compile('var s,t,o,p,b,r,e,a,k,i,n,g,f[^:]+"([^"]+)":([^\n]+)};', re.DOTALL).findall(response["data"])[0]
           self.js_data["op"] = re.compile(var + "([\+|\-|\*|\/])=([^;]+)", re.MULTILINE).findall(response["data"])
           self.js_data["wait"] =  int(re.compile("\}, ([\d]+)\);", re.MULTILINE).findall(response["data"])[0]) / 1000
@@ -62,7 +61,6 @@ class Cloudflare:
             self.header_data["auth_url"] = response["headers"]["refresh"].split("=")[1].split("?")[0]
             self.header_data["params"] = {}
             self.header_data["params"]["pass"] = response["headers"]["refresh"].split("=")[2]
-            self.header_data["time"] = float(self.header_data["params"]["pass"].split("-")[0])
           except:
             logger.debug("Metodo #2 (headers): NO disponible")
             self.header_data = {}
@@ -91,8 +89,7 @@ class Cloudflare:
             
             response = "%s://%s%s?%s" % (self.protocol, self.domain, self.js_data["auth_url"], urllib.urlencode(self.js_data["params"]))
             
-            while self.js_data["time"] + self.js_data["wait"] > time.time():
-              time.sleep(0.1)
+            time.sleep(self.js_data["wait"])
               
             return response
         
@@ -100,8 +97,7 @@ class Cloudflare:
         if self.header_data.get("wait", 0):
             response = "%s://%s%s?%s" % (self.protocol, self.domain, self.header_data["auth_url"], urllib.urlencode(self.header_data["params"]))
             
-            while self.header_data["time"] + self.header_data["wait"] > time.time():
-              time.sleep(0.1)
+            time.sleep(self.header_data["wait"])
         
             return response
 

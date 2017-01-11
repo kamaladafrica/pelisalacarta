@@ -173,6 +173,7 @@ def downloadpage(url, post=None, headers=None, timeout=None, follow_redirects=Tr
         else:
           response["data"] = ""
         response["time"] = time.time() - inicio
+        response["url"] = handle.geturl()
 
     except Exception, e:
         response["sucess"] = False
@@ -186,6 +187,7 @@ def downloadpage(url, post=None, headers=None, timeout=None, follow_redirects=Tr
         response["headers"] = {}
         response["data"] = ""
         response["time"] = time.time() - inicio
+        response["url"] = handle.geturl()
 
     else:
         response["sucess"] = True
@@ -197,6 +199,7 @@ def downloadpage(url, post=None, headers=None, timeout=None, follow_redirects=Tr
         else:
           response["data"] = ""
         response["time"] = time.time() - inicio
+        response["url"] = handle.geturl()
 
     logger.info("Terminado en %.2f segundos" % (response["time"]))
     logger.info("Response sucess: %s" % (response["sucess"]))
@@ -225,14 +228,14 @@ def downloadpage(url, post=None, headers=None, timeout=None, follow_redirects=Tr
 
     # Anti Cloudflare
     if bypass_cloudflare:
-      cf = Cloudflare(response, url)
+      cf = Cloudflare(response)
       if cf.is_cloudflare: 
         logger.info("cloudflare detectado, esperando %s segundos..." % cf.wait_time)
         auth_url = cf.get_url()
         logger.info("Autorizando... url: %s" % auth_url)
         if downloadpage(auth_url, headers=request_headers, replace_headers = True).sucess:
             logger.info("Autorización correcta, descargando página")
-            resp = downloadpage(url=url, post=post, headers=headers, timeout=timeout, follow_redirects=follow_redirects,
+            resp = downloadpage(url=response["url"], post=post, headers=headers, timeout=timeout, follow_redirects=follow_redirects,
                                 cookies=cookies, replace_headers=replace_headers, add_referer=add_referer)
             response["sucess"] = resp.sucess
             response["code"] = resp.code
@@ -240,6 +243,7 @@ def downloadpage(url, post=None, headers=None, timeout=None, follow_redirects=Tr
             response["headers"] = resp.headers
             response["data"] = resp.data
             response["time"] = resp.time
+            response["url"] = resp.url
         else:
             logger.info("No se ha podido autorizar")
             
