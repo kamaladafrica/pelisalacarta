@@ -2,7 +2,7 @@
 <server>
 	<active>true</active>
 	<changes>Reparado por cambios en el servidor</changes>
-	<date>06/06/2016</date>
+	<date>11/01/2017</date>
 	<free>true</free>
 	<id>openload</id>
 	<name>openload</name>
@@ -11,5 +11,5 @@
 	</premium>
 	<thumbnail>http://media.tvalacarta.info/servers/server_openload.png</thumbnail>
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/servers/</update_url>
-	<version>2</version>
+	<version>3</version>
 </server>
