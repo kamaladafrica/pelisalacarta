@@ -435,7 +435,8 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
         json_exists_before = True
 
         if not strm_exists or overwrite_everything:
-            overwrite_everything = False
+            if not overwrite_everything:
+                strm_exists_before = False
 
             # Si no existe season_episode.strm añadirlo
             item_strm = Item(action='play_from_library', channel='biblioteca',
@@ -460,7 +461,8 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
 
         item_nfo = None
         if (not nfo_exists or overwrite_everything) and e.infoLabels.get("imdb_id"):
-            nfo_exists_before = False
+            if not overwrite_everything:
+                nfo_exists_before = False
 
             # Si no existe season_episode.nfo añadirlo
             if e.infoLabels["tmdb_id"]:
@@ -492,8 +494,11 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
 
                 if filetools.write(json_path, e.tojson()):
                     if not json_exists or overwrite_everything:
-                        json_exists_before = False
-                        logger.info("Insertado: %s" % json_path)
+                        if not overwrite_everything:
+                            json_exists_before = False
+                            logger.info("Insertado: %s" % json_path)
+                        else:
+                            logger.info("Sobreescritos todos los archivos!")
 
                         # Marcamos episodio como no visto
                         news_in_playcounts[season_episode] = 0

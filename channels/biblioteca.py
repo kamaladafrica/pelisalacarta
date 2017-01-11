@@ -449,8 +449,18 @@ def update_biblio(item):
 
     # Actualizar las series activas sobreescribiendo
     import library_service
+
     if item.extra == "overwrite_everything":
-        library_service.check_for_update(overwrite="everything")
+        if config.is_xbmc():
+            seleccion = platformtools.dialog_yesno(config.PLUGIN_NAME,
+                                                   "AVISO: Puede requerir mucho tiempo.",
+                                                   "Desea continuar?")
+            if seleccion == 1:
+                library_service.check_for_update(overwrite="everything")
+            else:
+                return -1
+        else:
+            library_service.check_for_update(overwrite="everything")
     else:
         library_service.check_for_update(overwrite=True)
 
