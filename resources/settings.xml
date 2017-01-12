@@ -115,6 +115,10 @@
         <setting id="downloadlistpath" type="text" label="30018" default=""/>
         <setting id="bookmarkpath" type="text" source="video" option="writeable" label="30030" default=""/>
         <setting id="librarypath" type="text" label="30067" default=""/>
+
+        <setting label="Nombre de carpetas" type="lsep"/>
+        <setting id="folder_tvshows" type="text" label="Series" default="SERIES"/>
+        <setting id="folder_movies" type="text" label="Peliculas" default="CINE"/>
     </category>
 
     <category label="Otros"><!--30503 -->

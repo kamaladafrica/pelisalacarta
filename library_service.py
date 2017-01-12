@@ -308,6 +308,11 @@ def check_for_update(overwrite=True):
                     # Actualizamos la biblioteca de Kodi
                     xbmc_library.update(folder=filetools.basename(path))
 
+                    import xbmc
+                    condicion = xbmc.getCondVisibility('Library.IsScanningVideo()')
+                    while condicion:
+                        condicion = xbmc.getCondVisibility('Library.IsScanningVideo()')
+
             p_dialog.close()
 
         else:
