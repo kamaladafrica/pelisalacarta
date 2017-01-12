@@ -287,7 +287,7 @@ def addchannel(item):
             overwrite_all = False
         from core import downloadtools
         for url, localfilename, filename in files:
-            result = downloadtools.downloadfile(url, localfilename, continuar=False)
+            result = downloadtools.downloadfile(url, localfilename, continuar=False, resumir=False)
             if result == -3:
                 if len(files) == 1:
                     dyesno = platformtools.dialog_yesno("El archivo ya existe", "Ya existe el %s %s. "
@@ -312,7 +312,7 @@ def addchannel(item):
                         os.makedirs(backup)
                     import shutil
                     shutil.copy2(localfilename, filetools.join(backup, filename))
-                    downloadtools.downloadfile(url, localfilename, continuar=True)
+                    downloadtools.downloadfile(url, localfilename, continuar=True, resumir=False)
                 else:
                     if len(files) == 1:
                         return
