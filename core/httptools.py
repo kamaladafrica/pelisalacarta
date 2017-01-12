@@ -39,6 +39,28 @@ from core.cloudflare import Cloudflare
 
 cookies_lock = Lock()
 
+cj = cookielib.MozillaCookieJar()
+ficherocookies = os.path.join(config.get_data_path(), "cookies.dat")
+
+def load_cookies():
+  cookies_lock.acquire()
+  if os.path.isfile(ficherocookies):
+      logger.info("Leyendo fichero cookies")
+      try:
+          cj.load(ficherocookies, ignore_discard=True)
+      except:
+          logger.info("El fichero de cookies existe pero es ilegible, se borra")
+          os.remove(ficherocookies)
+  cookies_lock.release()
+
+def save_cookies():
+    cookies_lock.acquire()
+    logger.info("Guardando cookies...")
+    logger.info(cj._cookies)
+    cj.save(ficherocookies, ignore_discard=True)
+    cookies_lock.release()
+
+load_cookies()
 
 def downloadpage(url, post=None, headers=None, timeout=None, follow_redirects=True, cookies=True, replace_headers=False, add_referer=False, only_headers=False, bypass_cloudflare=True):
     """
@@ -99,8 +121,6 @@ def downloadpage(url, post=None, headers=None, timeout=None, follow_redirects=Tr
     
     url = urllib.quote(url, safe="%/:=&?~#+!$,;'@()*[]")
 
-    ficherocookies = os.path.join(config.get_data_path(), "cookies.dat")
-
     logger.info("----------------------------------------------")
     logger.info("downloadpage")
     logger.info("----------------------------------------------")
@@ -124,21 +144,9 @@ def downloadpage(url, post=None, headers=None, timeout=None, follow_redirects=Tr
     if not follow_redirects:
         handlers.append(NoRedirectHandler())
 
-    cj = None
+
     if cookies:
-        cj = cookielib.MozillaCookieJar()
-
-        cookies_lock.acquire()
-        if os.path.isfile(ficherocookies):
-            logger.info("Leyendo fichero cookies")
-            try:
-                cj.load(ficherocookies, ignore_discard=True)
-            except:
-                logger.info("El fichero de cookies existe pero es ilegible, se borra")
-                os.remove(ficherocookies)
-        cookies_lock.release()
-
-        handlers.append(urllib2.HTTPCookieProcessor(cj))
+      handlers.append(urllib2.HTTPCookieProcessor(cj))
 
     opener = urllib2.build_opener(*handlers)
 
@@ -211,10 +219,7 @@ def downloadpage(url, post=None, headers=None, timeout=None, follow_redirects=Tr
         logger.info("- %s: %s" % (header, response["headers"][header]))
 
     if cookies:
-        cookies_lock.acquire()
-        logger.info("Guardando cookies...")
-        cj.save(ficherocookies, ignore_discard=True)
-        cookies_lock.release()
+        save_cookies()
 
     logger.info("Encoding: %s" % (response["headers"].get('content-encoding')))
 
