@@ -175,8 +175,13 @@ def downloadpage(url, post=None, headers=None, timeout=None, follow_redirects=Tr
 
     except Exception, e:
         response["sucess"] = False
-        response["code"] = e.errno
-        response["error"] = e.reason
+        if "errno" in e:
+          response["code"] = e.errno
+          response["error"] = e.reason
+        else:
+          response["code"] = e.reason[0][0]
+          response["error"] = e.reason[0][1]
+        
         response["headers"] = {}
         response["data"] = ""
         response["time"] = time.time() - inicio
