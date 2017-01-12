@@ -142,8 +142,9 @@ def temporadas(item):
         thumbnail = scrapertools.find_single_match(data,'<img src="([^"]+)" alt="" class="picture-movie">')
         plot = scrapertools.find_single_match(data,'<span>Sinopsis:<\/span>.([^<]+).<span class="text-detail-hide"><\/span>')
         fanart = scrapertools.find_single_match(data,'<img src="([^"]+)"/>.*?</a>')
+        contentSeasonNumber = scrapedtitle.strip(' \r\n')
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="episodios" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart, extra=scrapedtitle.rstrip('\n'), contentSerieName =item.contentSerieName))
+        itemlist.append( Item(channel=item.channel, action="episodios" , title=title, fulltitle=item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart, extra=scrapedtitle.rstrip('\n'), contentSerieName =item.contentSerieName, contentSeasonNumber = contentSeasonNumber))
     
     if item.extra == 'temporadas':
         for tempitem in itemlist:
@@ -151,7 +152,7 @@ def temporadas(item):
        
     if config.get_library_support() and len(itemlist) > 0:
         itemlist.append(Item(channel=item.channel, title='[COLOR yellow]Añadir esta serie a la biblioteca[/COLOR]', url=item.url,
-                             action="add_serie_to_library", extra="temporadas", contentSerieName=item.contentSerieName))
+                             action="add_serie_to_library", extra="temporadas", contentSerieName=item.contentSerieName, contentSeasonNumber=contentSeasonNumber))
     if item.extra == 'temporadas':
         return templist
     else:
@@ -165,14 +166,16 @@ def episodios(item):
     patron = '<span class="ico season_play"><\/span>([^<]+)<\/a>.<a href="([^"]+)" class="season-online enabled">'
     temporada = 'temporada/'+item.extra.strip(' ')
     matches = re.compile(patron,re.DOTALL).findall(data)
-    contentSeasonNumber = re.findall (r'\d+', item.title)
+    
     for scrapedtitle, scrapedurl in matches:      
 
         if temporada in scrapedurl:
            url = scrapedurl
+           contentSeasonNumber = re.findall(r'temporada.*?([\d])',url)
            capitulo = re.findall(r'Capitulo \d+', scrapedtitle)
            contentEpisodeNumber = re.findall(r'\d+', capitulo[0])
            title = contentSeasonNumber[0]+'x'+contentEpisodeNumber[0]+' - '+scrapedtitle
+           
            thumbnail = scrapertools.find_single_match(data,'<img src="([^"]+)" alt="" class="picture-movie">')
            plot = ''
            
@@ -182,7 +185,7 @@ def episodios(item):
            
            
            if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-           itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart, extra=scrapedtitle))
+           itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart, extra=scrapedtitle, contentSeasonNumber = item.contentSeasonNumber))
     
     return itemlist       
 
