@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
+    <setting id="reuse_search_active" type="bool" default="false" />
+    <setting id="reuse_search_text" type="text" default="" />
+
     <category label="General">
         <setting id="player_type" type="enum" values="Auto|MPlayer|DVDPlayer" label="30000" default="2"/>
         <setting id="player_mode" type="enum" values="Direct|SetResolvedUrl|Built-In|Download and Play" label="30044" default="0"/>
