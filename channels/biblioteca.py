@@ -458,7 +458,7 @@ def update_biblio(item):
             if seleccion == 1:
                 library_service.check_for_update(overwrite="everything")
             else:
-                return -1
+                platformtools.itemlist_update(Item(channel="configuracion", action="submenu_tools"))
         else:
             library_service.check_for_update(overwrite="everything")
     else:
