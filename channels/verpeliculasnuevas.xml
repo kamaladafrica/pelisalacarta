@@ -1,24 +1,25 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <channel>
-	<id>mundoflv</id>
-	<name>MundoFlv</name>
+	<id>verpeliculasnuevas</id>
+	<name>VerPeliculasNuevas</name>
 
 	<active>true</active>
 	<adult>false</adult>
 	<language>es</language>
 
 	<fanart></fanart>
-	<thumbnail>https://s32.postimg.org/h1ewz9hhx/mundoflv.png</thumbnail>
-	<bannermenu>https://s32.postimg.org/c54jfhckl/mundoflv_banner.png</bannermenu>
+	<thumbnail>https://s27.postimg.org/atgs5erab/verpeliculasnuevas.png</thumbnail>
+	<bannermenu>https://s23.postimg.org/4uyyz6w4b/verpeliculasnuevas_banner.png</bannermenu>
 	
 	<update_url></update_url>
-	<version>3</version>
-	<date>10/01/2017</date>
+	<version>1</version>
+	<date>06/01/2017</date>
 	<changes>Release</changes>
+
 
 	<categories>
 		<category>latino</category>
-		<category>serie</category>
+		<category>movie</category>
 	</categories>
 
 	<settings>

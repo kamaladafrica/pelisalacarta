@@ -7,13 +7,23 @@
 	<adult>false</adult>
 	<language>es</language>
 
+	<include_in_global_search>disabled</include_in_global_search>
+
 	<fanart></fanart>
 	<thumbnail>https://s31.postimg.org/dousrbu9n/qserie.png</thumbnail>
 	<bannermenu>https://s32.postimg.org/nk1quq1wl/qserie_banner.png</bannermenu>
+	
+	<update_url></update_url>
+	<version>2</version>
+	<date>04/01/2017</date>
+	<changes>Release</changes>
+
 
 	<categories>
 		<category>latino</category>
 		<category>serie</category>
 	</categories>
+	
+	
 
 </channel>

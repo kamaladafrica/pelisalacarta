@@ -7,17 +7,21 @@
 	<adult>false</adult>
 	<language>es</language>
 
+	<include_in_global_search>disabled</include_in_global_search>
+
 	<fanart></fanart>
 	<thumbnail>https://s32.postimg.org/gh8lhbkb9/seodiv.png</thumbnail>
 	<bannermenu>https://s31.postimg.org/klwjzp7t7/seodiv_banner.png</bannermenu>
-
+	
 	<update_url></update_url>
-	<version></version>
-	<date></date>
-	<changes></changes>
-
+	<version>2</version>
+	<date>04/01/2017</date>
+	<changes>Release</changes>
+	
 	<categories>
 		<category>series</category>
 	</categories>
+	
+	
 
 </channel>

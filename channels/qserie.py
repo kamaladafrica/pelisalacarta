@@ -63,7 +63,7 @@ def todas(item):
         plot = scrapedplot
         fanart = 'https://s31.postimg.org/dousrbu9n/qserie.png'
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="temporadas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, extra=idioma, contentSerieName = scrapedtitle, extra1 =''))
+        itemlist.append( Item(channel=item.channel, action="temporadas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, extra=idioma, contentSerieName = scrapedtitle))
     
 #Paginacion
     siguiente=''
@@ -89,7 +89,7 @@ def todas(item):
 def temporadas(item):
     logger.info("pelisalacarta.channels.qserie temporadas")
     itemlist = []
-    templist =[]
+    
     data = scrapertools.cache_page(item.url)
     url_base= item.url
     patron = '<a href="javascript:.*?;" class="lccn"><b>([^<]+)<\/b><\/a>'
@@ -103,54 +103,60 @@ def temporadas(item):
            plot = item.plot
            fanart = scrapertools.find_single_match(data,'<img src="([^"]+)"/>.*?</a>')
            if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-           itemlist.append( Item(channel=item.channel, action="episodios" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart, temp=str(temp), contentSerieName =item.contentSerieName, extra1 = item.extra1, extra2=item.extra2))
+           itemlist.append( Item(channel=item.channel, action="episodiosxtemp" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart, contenSeasonNumber=str(temp), contentSerieName =item.contentSerieName))
            temp = temp+1
-        if item.extra == 'temporadas':
-            for tempitem in itemlist:
-              templist += episodios(tempitem)
-       
+               
         if config.get_library_support() and len(itemlist) > 0:
             itemlist.append(Item(channel=item.channel, title='[COLOR yellow]Añadir esta serie a la biblioteca[/COLOR]', url=item.url,
-                             action="add_serie_to_library", extra="temporadas", contentSerieName=item.contentSerieName, extra1 = item.extra1, extra2='todos'))
-        if item.extra == 'temporadas':
-            item.extra2='todos'
-            return templist
-        else:
-            return itemlist
+                             action="add_serie_to_library", extra="episodios", contentSerieName=item.contentSerieName ))
+                    
+        return itemlist
     else:
-       item.title =''
-       item.extra1 = 'unico'
-       if item.extra == 'temporadas': item.extra2 = 'todos'
-       return episodios(item)
+        item.title =''
+        item.modo = 'unico'
+        return episodiosxtemp(item)
+
+def episodios(item):
+    logger.debug('pelisalacarta.channels.qserie episodios')
+    itemlist = []
+    templist = temporadas(item)
+    if item.modo == 'unico':
+      itemlist += episodiosxtemp(item)
+    else:  
+      for tempitem in templist:
+        logger.debug(tempitem)
+        itemlist += episodiosxtemp(tempitem) 
+
+    return itemlist
        
 
  
-def episodios(item):
-    logger.info("pelisalacarta.channels.qserie episodios")
+def episodiosxtemp(item):
+    logger.info("pelisalacarta.channels.qserie episodiosxtemp")
     itemlist = []
     data = scrapertools.cache_page(item.url)
+    temp = item.contenSeasonNumber
     if item.title=='':
-        item.title = 'Temporada 1'
+        temp = '1'
+        item.contenSeasonNumber = temp
         patron ='<li><a href="([^"]+)" class="lcc"><b>([^<]+)<\/b>.*?<\/a><\/li>' 
     else: 
-        patron = '<li><a href="([^"]+)" class="lcc"><b>([^<]+)<\/b> - Temp\. '+item.temp+'<\/a><\/li>'
-#    title = str(item.index(item.title))  
+        patron = '<li><a href="([^"]+)" class="lcc"><b>([^<]+)<\/b> - Temp\. '+temp+'<\/a><\/li>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     
     for scrapedurl,scrapedtitle in matches:
         url = urlparse.urljoin(item.url,scrapedurl)
         capitulo = re.findall(r'\d+',scrapedtitle)
-        title = item.title+'x'+capitulo[0]
-#        title = item.extra+item.extra2
+        title = item.contentSerieName+' '+temp+'x'+capitulo[0]
         thumbnail = item.thumbnail
         plot = item.plot
         fanart=item.fanart
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title, fulltitle=item.fulltitle, url=url, thumbnail=item.thumbnail, plot=plot, extra = item.extra, extra1 =item.extra1, extra2=item.extra2))
-    if item.extra1 == 'unico':
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title, fulltitle=item.fulltitle, url=url, thumbnail=item.thumbnail, plot=plot, contentSeasonNumber = item.contenSeasonNumber, extra = item.extra, extra1 =item.extra1, extra2=item.extra2))
+    if item.modo == 'unico':
         if config.get_library_support() and len(itemlist) > 0:
                 itemlist.append(Item(channel=item.channel, title='[COLOR yellow]Añadir esta serie a la biblioteca[/COLOR]', url=item.url,
-                             action="add_serie_to_library", extra="temporadas", contentSerieName=item.contentSerieName, extra1 =item.extra1, extra2 = item.extra2))
+                             action="add_serie_to_library", extra="episodios", contentSerieName=item.contentSerieName, modo ='unico', contentSeasonNumber = item.contenSeasonNumber))
     
     
     return itemlist
@@ -181,7 +187,7 @@ def generos(item):
                "thriller (suspenso)":"https://s31.postimg.org/4d7bl25y3/thriller.png",
                "western":"https://s31.postimg.org/nsksyt3hn/western.png"}
 
-    logger.info("pelisalacarta.channels.qserie episodios")
+    logger.info("pelisalacarta.channels.qserie episodiosxtemp")
     itemlist = []
     data = scrapertools.cache_page(item.url)
     patron ='<li><a title="([^"]+)" href="([^"]+)" onclick=.*?' 
@@ -319,9 +325,7 @@ def findvideos(item):
        videoitem.action="play"
        videoitem.folder=False
        videoitem.fanart =item.fanart
-#       videoitem.thumbnail = servertools.guess_server_thumbnail(videoite.server)
        videoitem.title = titulo+" "+videoitem.server
-#       videoitem.title = item.extra2
     if item.extra2 != 'todos':
        data = scrapertools.cache_page(anterior)
        existe = scrapertools.find_single_match(data,'<center>La pel.cula que quieres ver no existe.</center>')

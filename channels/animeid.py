@@ -274,9 +274,6 @@ def findvideos(item):
     url_anterior = scrapertools.find_single_match(data, '<li class="b"><a href="([^"]+)">« Capítulo anterior')
     url_siguiente = scrapertools.find_single_match(data, '<li class="b"><a href="([^"]+)">Siguiente capítulo »')
         
-    if 'infoLabels' in item:
-		del item.infoLabels
-    
     data = scrapertools.find_single_match(data,'<ul id="partes">(.*?)</ul>')
     data = data.replace("\\/","/")
     data = data.replace("%3A",":")

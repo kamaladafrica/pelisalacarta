@@ -10,7 +10,12 @@
 	<fanart></fanart>
 	<thumbnail>https://s32.postimg.org/7g50yo39h/metaserie.png</thumbnail>
 	<bannermenu>https://s31.postimg.org/u6yddil8r/metaserie_banner.png</bannermenu>
-
+	
+	<update_url></update_url>
+    <version>2</version>
+    <date>04/01/2017</date>
+    <changes>Release</changes>
+    
 	<categories>
 		<category>latino</category>
 		<category>serie</category>

@@ -523,7 +523,7 @@ def downloadbest(video_urls, title, continuar=False):
     return -2
 
 
-def downloadfile(url, nombrefichero, headers=None, silent=False, continuar=False):
+def downloadfile(url, nombrefichero, headers=None, silent=False, continuar=False, resumir=True):
     logger.info("pelisalacarta.core.downloadtools downloadfile: url=" + url)
     logger.info("pelisalacarta.core.downloadtools downloadfile: nombrefichero=" + nombrefichero)
 
@@ -557,11 +557,14 @@ def downloadfile(url, nombrefichero, headers=None, silent=False, continuar=False
             #    existSize = f.size(nombrefichero)
             # except:
             f = open(nombrefichero, 'r+b')
-            exist_size = os.path.getsize(nombrefichero)
-
-            logger.info("pelisalacarta.core.downloadtools downloadfile: el fichero existe, size=%d" % exist_size)
-            grabado = exist_size
-            f.seek(exist_size)
+            if resumir:
+                exist_size = os.path.getsize(nombrefichero)
+                logger.info("pelisalacarta.core.downloadtools downloadfile: el fichero existe, size=%d" % exist_size)
+                grabado = exist_size
+                f.seek(exist_size)
+            else:
+                exist_size = 0
+                grabado = 0
 
         # el fichero ya existe y no se quiere continuar, se aborta
         elif os.path.exists(nombrefichero) and not continuar:
