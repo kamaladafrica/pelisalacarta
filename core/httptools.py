@@ -226,7 +226,7 @@ def downloadpage(url, post=None, headers=None, timeout=None, follow_redirects=Tr
         logger.info("cloudflare detectado, esperando %s segundos..." % wait_time)
         time.sleep(wait_time)
         logger.info("Autorizando... url: %s" % auth_url)
-        if downloadpage(auth_url, headers=headers).sucess:
+        if downloadpage(auth_url, headers=headers, replace_headers=replace_headers).sucess:
             logger.info("Autorización correcta, descargando página")
             resp = downloadpage(url=url, post=post, headers=headers, timeout=timeout, follow_redirects=follow_redirects,
                                 cookies=cookies, replace_headers=replace_headers, add_referer=add_referer)
