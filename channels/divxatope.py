@@ -48,6 +48,14 @@ def menu(item):
         plot = ""
         itemlist.append( Item(channel=item.channel, action="lista", title=title , url=url , thumbnail=thumbnail , plot=plot , folder=True) )
 
+    if item.extra == "Peliculas":
+        title = "4k UltraHD"
+        url = "http://divxatope1.com/peliculas-hd/4kultrahd/"
+        thumbnail = ""
+        plot = ""
+        itemlist.append(Item(channel=item.channel, action="lista", title=title, url=url, thumbnail=thumbnail, plot=plot,
+                             folder=True))
+
     return itemlist
 
 def search(item,texto):
@@ -124,12 +132,12 @@ def lista(item):
 
     # Descarga la pagina
     if item.extra=="":
-        data = scrapertools.cachePage(item.url)
-        data = scrapertools.get_match(data, '<ul class="pelilist">(.*?)</ul>')
+        data1 = scrapertools.cachePage(item.url)
+        data = scrapertools.get_match(data1, '<ul class="pelilist">(.*?)</ul>')
         patron += '<span[^>]*>(.*?)</span>'
     else: # buscar...
-        data = scrapertools.cachePage(item.url , post=item.extra)
-        data = scrapertools.get_match(data, '<ul class="buscar-list">(.*?)</ul>')
+        data1 = scrapertools.cachePage(item.url , post=item.extra)
+        data = scrapertools.get_match(data1, '<ul class="buscar-list">(.*?)</ul>')
         patron += '<strong[^>]*>(.*?)</strong>'
 
     #logger.info("data= " + data)
@@ -177,11 +185,11 @@ def lista(item):
                                   contentTitle=contentTitle, language=idioma, contentThumbnail=thumbnail,
                                   contentCalidad=calidad))
 
-    next_page_url = scrapertools.find_single_match(data,'<li><a href="([^"]+)">Next</a></li>')
+    next_page_url = scrapertools.find_single_match(data1,'<li><a href="([^"]+)">Next</a></li>')
     if next_page_url!="":
         itemlist.append( Item(channel=item.channel, action="lista", title=">> Página siguiente" , url=urlparse.urljoin(item.url,next_page_url) , folder=True) )
     else:
-        next_page_url = scrapertools.find_single_match(data,'<li><input type="button" class="btn-submit" value="Siguiente" onClick="paginar..(\d+)')
+        next_page_url = scrapertools.find_single_match(data1,'<li><input type="button" class="btn-submit" value="Siguiente" onClick="paginar..(\d+)')
         if next_page_url!="":
             itemlist.append( Item(channel=item.channel, action="lista", title=">> Página siguiente" , url=item.url, extra=item.extra+"&pg="+next_page_url, folder=True) )
 
@@ -231,7 +239,7 @@ def findvideos(item):
     item.plot = scrapertools.htmlclean(item.plot).strip()
     item.contentPlot = item.plot
 
-    link = scrapertools.find_single_match(data,'href="http://tumejorserie.*?link=([^"]+)"')
+    link = scrapertools.find_single_match(data,'href="http://tumejorjuego.*?link=([^"]+)"')
     if link!="":
         link = "http://www.divxatope1.com/"+link
         logger.info("pelisalacarta.channels.divxatope torrent="+link)
