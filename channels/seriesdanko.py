@@ -21,8 +21,6 @@ IDIOMAS = {'es': 'Español', 'la': 'Latino', 'vos': 'VOS', 'vo': 'VO'}
 list_idiomas = IDIOMAS.values()
 CALIDADES = ['SD', 'MicroHD', 'HD/MKV']
 
-DEBUG = config.get_setting("debug")
-
 
 def mainlist(item):
     logger.info()
@@ -32,7 +30,8 @@ def mainlist(item):
     itemlist.append(Item(channel=item.channel, title="Más vistas", action="mas_vistas", url=HOST))
     itemlist.append(Item(channel=item.channel, title="Listado Alfabético", action="listado_alfabetico", url=HOST))
     itemlist.append(Item(channel=item.channel, title="Todas las series", action="listado_completo", url=HOST))
-    itemlist.append(Item(channel=item.channel, title="Buscar...", action="search", url=urlparse.urljoin(HOST, "all.php")))
+    itemlist.append(Item(channel=item.channel, title="Buscar...", action="search",
+                         url=urlparse.urljoin(HOST, "all.php")))
 
     if filtertools.context:
         itemlist = filtertools.show_option(itemlist, item.channel, list_idiomas, CALIDADES)
@@ -122,7 +121,7 @@ def series_por_letra(item):
     shows = re.findall("<a href='(?P<url>[^']+)' title='Capitulos de: (?P<title>.+?)'><img.+?src='(?P<img>[^']+)", data)
     itemlist = []
     for url, title, img in shows:
-        itemlist.append(item.clone(title = title, url = urlparse.urljoin(HOST, url), action="episodios", thumbnail=img))
+        itemlist.append(item.clone(title=title, url=urlparse.urljoin(HOST, url), action="episodios", thumbnail=img))
     return itemlist
 
 
@@ -133,9 +132,10 @@ def search(item, texto):
 
     try:
         data = scrapertools.anti_cloudflare(item.url)
-        shows = re.findall("<a href='(?P<url>/serie.php\?serie=[0-9]+)'[^>]*>(?P<title>[^<]*{0}[^<]*)".format(texto), data, re.IGNORECASE)
+        shows = re.findall("<a href='(?P<url>/serie.php\?serie=[0-9]+)'[^>]*>(?P<title>[^<]*{0}[^<]*)".format(texto),
+                           data, re.IGNORECASE)
         for url, title in shows:
-            itemlist.append(item.clone(title = title, url = urlparse.urljoin(HOST, url), action="episodios"))
+            itemlist.append(item.clone(title=title, url=urlparse.urljoin(HOST, url), action="episodios"))
 
     # Se captura la excepción, para no interrumpir al buscador global si un canal falla
     except:
@@ -186,7 +186,8 @@ def episodios(item):
 
     # Opción "Añadir esta serie a la biblioteca de XBMC"
     if config.get_library_support() and len(itemlist) > 0:
-        itemlist.append(item.clone(title="Añadir esta serie a la biblioteca", action="add_serie_to_library"))
+        itemlist.append(item.clone(title="Añadir esta serie a la biblioteca", action="add_serie_to_library",
+                                   extra="episodios"))
 
     return itemlist
 
