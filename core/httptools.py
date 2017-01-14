@@ -35,11 +35,34 @@ import gzip
 from core import logger
 from core import config
 from threading import Lock
+from core.cloudflare import Cloudflare
 
 cookies_lock = Lock()
 
+cj = cookielib.MozillaCookieJar()
+ficherocookies = os.path.join(config.get_data_path(), "cookies.dat")
 
-def downloadpage(url, post=None, headers=None, timeout=None, follow_redirects=True, cookies=True, replace_headers=False, add_referer=False, only_headers=False):
+def load_cookies():
+  cookies_lock.acquire()
+  if os.path.isfile(ficherocookies):
+      logger.info("Leyendo fichero cookies")
+      try:
+          cj.load(ficherocookies, ignore_discard=True)
+      except:
+          logger.info("El fichero de cookies existe pero es ilegible, se borra")
+          os.remove(ficherocookies)
+  cookies_lock.release()
+
+def save_cookies():
+    cookies_lock.acquire()
+    logger.info("Guardando cookies...")
+    logger.info(cj._cookies)
+    cj.save(ficherocookies, ignore_discard=True)
+    cookies_lock.release()
+
+load_cookies()
+
+def downloadpage(url, post=None, headers=None, timeout=None, follow_redirects=True, cookies=True, replace_headers=False, add_referer=False, only_headers=False, bypass_cloudflare=True):
     """
     Abre una url y retorna los datos obtenidos
 
@@ -98,8 +121,6 @@ def downloadpage(url, post=None, headers=None, timeout=None, follow_redirects=Tr
     
     url = urllib.quote(url, safe="%/:=&?~#+!$,;'@()*[]")
 
-    ficherocookies = os.path.join(config.get_data_path(), "cookies.dat")
-
     logger.info("----------------------------------------------")
     logger.info("downloadpage")
     logger.info("----------------------------------------------")
@@ -123,21 +144,9 @@ def downloadpage(url, post=None, headers=None, timeout=None, follow_redirects=Tr
     if not follow_redirects:
         handlers.append(NoRedirectHandler())
 
-    cj = None
+
     if cookies:
-        cj = cookielib.MozillaCookieJar()
-
-        cookies_lock.acquire()
-        if os.path.isfile(ficherocookies):
-            logger.info("Leyendo fichero cookies")
-            try:
-                cj.load(ficherocookies, ignore_discard=True)
-            except:
-                logger.info("El fichero de cookies existe pero es ilegible, se borra")
-                os.remove(ficherocookies)
-        cookies_lock.release()
-
-        handlers.append(urllib2.HTTPCookieProcessor(cj))
+      handlers.append(urllib2.HTTPCookieProcessor(cj))
 
     opener = urllib2.build_opener(*handlers)
 
@@ -172,6 +181,7 @@ def downloadpage(url, post=None, headers=None, timeout=None, follow_redirects=Tr
         else:
           response["data"] = ""
         response["time"] = time.time() - inicio
+        response["url"] = handle.geturl()
 
     except Exception, e:
         response["sucess"] = False
@@ -185,6 +195,7 @@ def downloadpage(url, post=None, headers=None, timeout=None, follow_redirects=Tr
         response["headers"] = {}
         response["data"] = ""
         response["time"] = time.time() - inicio
+        response["url"] = handle.geturl()
 
     else:
         response["sucess"] = True
@@ -196,6 +207,7 @@ def downloadpage(url, post=None, headers=None, timeout=None, follow_redirects=Tr
         else:
           response["data"] = ""
         response["time"] = time.time() - inicio
+        response["url"] = handle.geturl()
 
     logger.info("Terminado en %.2f segundos" % (response["time"]))
     logger.info("Response sucess: %s" % (response["sucess"]))
@@ -207,10 +219,7 @@ def downloadpage(url, post=None, headers=None, timeout=None, follow_redirects=Tr
         logger.info("- %s: %s" % (header, response["headers"][header]))
 
     if cookies:
-        cookies_lock.acquire()
-        logger.info("Guardando cookies...")
-        cj.save(ficherocookies, ignore_discard=True)
-        cookies_lock.release()
+        save_cookies()
 
     logger.info("Encoding: %s" % (response["headers"].get('content-encoding')))
 
@@ -222,18 +231,16 @@ def downloadpage(url, post=None, headers=None, timeout=None, follow_redirects=Tr
         except:
             logger.info("No se ha podido descomprimir")
 
-    # Anti cloudfare
-    if "cf-ray" in response["headers"] and "refresh" in response["headers"]:
-        wait_time = int(response["headers"]["refresh"][:1])
-        auth_url = "%s://%s/%s" % (urlparse.urlparse(url)[0], urlparse.urlparse(url)[1],
-                                   response["headers"]["refresh"][7:])
-
-        logger.info("cloudflare detectado, esperando %s segundos..." % wait_time)
-        time.sleep(wait_time)
+    # Anti Cloudflare
+    if bypass_cloudflare:
+      cf = Cloudflare(response)
+      if cf.is_cloudflare: 
+        logger.info("cloudflare detectado, esperando %s segundos..." % cf.wait_time)
+        auth_url = cf.get_url()
         logger.info("Autorizando... url: %s" % auth_url)
-        if downloadpage(auth_url, headers=headers, replace_headers=replace_headers).sucess:
+        if downloadpage(auth_url, headers=request_headers, replace_headers = True).sucess:
             logger.info("Autorización correcta, descargando página")
-            resp = downloadpage(url=url, post=post, headers=headers, timeout=timeout, follow_redirects=follow_redirects,
+            resp = downloadpage(url=response["url"], post=post, headers=headers, timeout=timeout, follow_redirects=follow_redirects,
                                 cookies=cookies, replace_headers=replace_headers, add_referer=add_referer)
             response["sucess"] = resp.sucess
             response["code"] = resp.code
@@ -241,9 +248,10 @@ def downloadpage(url, post=None, headers=None, timeout=None, follow_redirects=Tr
             response["headers"] = resp.headers
             response["data"] = resp.data
             response["time"] = resp.time
+            response["url"] = resp.url
         else:
             logger.info("No se ha podido autorizar")
-
+            
     return type('HTTPResponse', (), response)
 
 
