@@ -421,7 +421,7 @@ def download_from_url(url, item):
     # Monitorizamos la descarga hasta que se termine o se cancele
     while d.state == d.states.downloading and not progreso.iscanceled():
         time.sleep(0.1)
-        line1 = "%s" % (filetools.decode(d.filename))
+        line1 = "%s" % (d.filename)
         line2 = "%.2f%% - %.2f %s de %.2f %s a %.2f %s/s (%d/%d)" % (
         d.progress, d.downloaded[1], d.downloaded[2], d.size[1], d.size[2], d.speed[1], d.speed[2], d.connections[0],
         d.connections[1])
