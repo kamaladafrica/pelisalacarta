@@ -212,6 +212,17 @@ def check_for_update(overwrite=True):
     overwrite_everything = False
 
     try:
+        import xbmc
+
+        condicion = "true"
+        while condicion == "true":
+            condicion = config.get_setting("adding_content")
+            if str(condicion) == "":
+                condicion = "false"
+            xbmc.sleep(200)
+
+        config.set_setting("adding_content", "true")
+
         if overwrite == "everything":
             overwrite = True
             overwrite_everything = True
@@ -224,7 +235,6 @@ def check_for_update(overwrite=True):
                 updatelibrary_wait = [0, 10000, 20000, 30000, 60000]
                 wait = updatelibrary_wait[int(config.get_setting("updatelibrary_wait", "biblioteca"))]
                 if wait > 0:
-                    import xbmc
                     xbmc.sleep(wait)
 
             heading = 'Actualizando biblioteca....'
@@ -239,6 +249,12 @@ def check_for_update(overwrite=True):
                 t = float(100) / len(show_list)
 
             for i, tvshow_file in enumerate(show_list):
+
+                # Comprobar que no se esta buscando contenido en la biblioteca de Kodi
+                xbmc.sleep(1000)
+                while xbmc.getCondVisibility('Library.IsScanningVideo()'):
+                    xbmc.sleep(500)
+
                 head_nfo, serie = library.read_nfo(tvshow_file)
                 path = filetools.dirname(tvshow_file)
 
@@ -308,15 +324,12 @@ def check_for_update(overwrite=True):
                     # Actualizamos la biblioteca de Kodi
                     xbmc_library.update(folder=filetools.basename(path))
 
-                    import xbmc
-                    condicion = xbmc.getCondVisibility('Library.IsScanningVideo()')
-                    while condicion:
-                        condicion = xbmc.getCondVisibility('Library.IsScanningVideo()')
-
             p_dialog.close()
 
         else:
             logger.info("No actualiza la biblioteca, está desactivado en la configuración de pelisalacarta")
+
+        config.set_setting("adding_content", "false")
 
     except Exception as ex:
         logger.error("Se ha producido un error al actualizar las series")
@@ -326,6 +339,8 @@ def check_for_update(overwrite=True):
 
         if p_dialog:
             p_dialog.close()
+
+        config.set_setting("adding_content", "false")
 
 
 if __name__ == "__main__":

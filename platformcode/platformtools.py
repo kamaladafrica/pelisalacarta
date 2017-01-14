@@ -393,13 +393,6 @@ def set_context_commands(item, parent_item):
                                      (sys.argv[0], item.clone(channel="favoritos", action="addFavourite",
                                                               from_channel=item.channel, from_action=item.action).tourl())))
 
-        # Añadir SuperFavourites al menu contextual (1.0.53 o superior necesario)
-        sf_file_path = xbmc.translatePath("special://home/addons/plugin.program.super.favourites/LaunchSFMENU.py")
-        check_sf = os.path.exists(sf_file_path)
-        if check_sf and xbmc.getCondVisibility('System.HasAddon("plugin.program.super.favourites")'):
-            context_commands.append(("Super Favourites", "XBMC.RunScript(special://home/addons/plugin.program.super.favourites/LaunchSFMenu.py)"))
-
-
         # Añadimos opción contextual para Añadir la serie completa a la biblioteca
         if item.channel != "biblioteca" and item.action in ["episodios", "get_episodios"] \
                 and item.contentSerieName:
@@ -441,6 +434,13 @@ def set_context_commands(item, parent_item):
         if parent_item.channel not in ["configuracion", "novedades", "buscador"]:
             context_commands.append(("Abrir Configuración", "XBMC.Container.Update(%s?%s)" %
                                      (sys.argv[0], Item(channel="configuracion", action="mainlist").tourl())))
+
+    # Añadir SuperFavourites al menu contextual (1.0.53 o superior necesario)
+    sf_file_path = xbmc.translatePath("special://home/addons/plugin.program.super.favourites/LaunchSFMenu.py")
+    check_sf = os.path.exists(sf_file_path)
+    if check_sf and xbmc.getCondVisibility('System.HasAddon("plugin.program.super.favourites")'):
+        context_commands.append(("Super Favourites",
+                                 "XBMC.RunScript(special://home/addons/plugin.program.super.favourites/LaunchSFMenu.py)"))
 
     #context_commands.append((item.contentType, "XBMC.Action(Info)")) # For debug
     return sorted(context_commands, key=lambda comand: comand[0])
