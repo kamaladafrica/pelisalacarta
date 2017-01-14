@@ -677,8 +677,12 @@ def get_dialogo_opciones(item, default_action, strm):
     muestra_dialogo = (config.get_setting("player_mode") == "0" and not strm)
 
     # Extrae las URL de los vídeos, y si no puedes verlo te dice el motivo
-    video_urls, puedes, motivo = servertools.resolve_video_urls_for_playing(
-        item.server, item.url, item.password, muestra_dialogo)
+    #Permitir varias calidades para server "directo"
+    if item.video_urls:
+      video_urls, puedes, motivo = item.video_urls, True, ""
+    else:
+      video_urls, puedes, motivo = servertools.resolve_video_urls_for_playing(
+          item.server, item.url, item.password, muestra_dialogo)
 
     seleccion = 0
     # Si puedes ver el vídeo, presenta las opciones
