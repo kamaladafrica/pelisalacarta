@@ -342,6 +342,14 @@ def update(content_type=FOLDER_TVSHOWS, folder=""):
     if not librarypath.endswith("/"):
         librarypath += "/"
 
+    if xbmc.getCondVisibility('Library.IsScanningVideo()'):
+        #p_dialog = platformtools.dialog_progress_bg('Esperando para iniciar la actualización de la colección', "Ya había una actualización de la colección en curso")
+        # Comprobar que no se esta buscando contenido en la biblioteca de Kodi
+        while xbmc.getCondVisibility('Library.IsScanningVideo()'):
+            #p_dialog.update(0, '')
+            xbmc.sleep(500)
+        #p_dialog.close()
+
     payload = {"jsonrpc": "2.0", "method": "VideoLibrary.Scan", "params": {"directory": librarypath}, "id": 1}
     data = get_data(payload)
     logger.info("data: %s" % data)
