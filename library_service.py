@@ -212,7 +212,6 @@ def check_for_update(overwrite=True):
     overwrite_everything = False
 
     try:
-        import xbmc
         if overwrite == "everything":
             overwrite = True
             overwrite_everything = True
@@ -225,6 +224,7 @@ def check_for_update(overwrite=True):
                 updatelibrary_wait = [0, 10000, 20000, 30000, 60000]
                 wait = updatelibrary_wait[int(config.get_setting("updatelibrary_wait", "biblioteca"))]
                 if wait > 0:
+                    import xbmc
                     xbmc.sleep(wait)
 
             heading = 'Actualizando biblioteca....'

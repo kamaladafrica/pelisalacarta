@@ -595,20 +595,8 @@ def add_pelicula_to_library(item):
     """
     logger.info()
 
-    condicion = "true"
-    import time
-    while condicion == "true":
-        condicion = config.get_setting("adding_content")
-        if str(condicion) == "":
-            condicion = "false"
-        time.sleep(0.5)
-
-    config.set_setting("adding_content", "true")
-
     new_item = item.clone(action="findvideos")
     insertados, sobreescritos, fallidos = save_library_movie(new_item)
-
-    config.set_setting("adding_content", "false")
 
     if fallidos == 0:
         platformtools.dialog_ok(config.get_localized_string(30131), new_item.contentTitle,
@@ -642,14 +630,6 @@ def add_serie_to_library(item, channel=None):
     """
     logger.info("show=#" + item.show + "#")
     # logger.debug(item.tostring('\n'))
-
-    condicion = "true"
-    import time
-    while condicion == "true":
-        condicion = config.get_setting("adding_content")
-        if str(condicion) == "":
-            condicion = "false"
-        time.sleep(0.5)
 
     if item.channel == "descargas":
         itemlist = [item.clone()]
@@ -687,11 +667,7 @@ def add_serie_to_library(item, channel=None):
                      % item.show)
         return
 
-    config.set_setting("adding_content", "true")
-
     insertados, sobreescritos, fallidos = save_library_tvshow(item, itemlist)
-
-    config.set_setting("adding_content", "false")
 
     if fallidos == -1:
         platformtools.dialog_ok("Biblioteca", "ERROR, la serie NO se ha añadido a la biblioteca")
