@@ -250,11 +250,6 @@ def check_for_update(overwrite=True):
 
             for i, tvshow_file in enumerate(show_list):
 
-                # Comprobar que no se esta buscando contenido en la biblioteca de Kodi
-                xbmc.sleep(1000)
-                while xbmc.getCondVisibility('Library.IsScanningVideo()'):
-                    xbmc.sleep(500)
-
                 head_nfo, serie = library.read_nfo(tvshow_file)
                 path = filetools.dirname(tvshow_file)
 
@@ -321,6 +316,10 @@ def check_for_update(overwrite=True):
                     filetools.write(tvshow_file, head_nfo + serie.tojson())
 
                 if serie_actualizada:
+                    # Comprobar que no se esta buscando contenido en la biblioteca de Kodi
+                    while xbmc.getCondVisibility('Library.IsScanningVideo()'):
+                        xbmc.sleep(500)
+
                     # Actualizamos la biblioteca de Kodi
                     xbmc_library.update(folder=filetools.basename(path))
 
