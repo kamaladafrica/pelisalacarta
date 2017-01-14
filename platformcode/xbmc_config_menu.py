@@ -464,6 +464,8 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
         self.getControl(10004).setEnabled(False)
         self.getControl(10005).setEnabled(False)
         self.getControl(10006).setEnabled(False)
+        self.ok_enabled = False
+        self.default_enabled = False
         
         if xbmcgui.__version__ == "1.2":
             self.setCoordinateResolution(1)
@@ -589,6 +591,8 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
         self.getControl(10004).setEnabled(True)
         self.getControl(10005).setEnabled(True)
         self.getControl(10006).setEnabled(True)
+        self.ok_enabled = True
+        self.default_enabled = True
         self.check_default()
         self.check_ok(self.values)
         
@@ -658,12 +662,15 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             if dict_values:
                 self.init_values = dict_values.copy()
                 self.getControl(10004).setEnabled(False)
+                self.ok_enabled = False
 
             else:
                 if self.init_values == self.values:
                     self.getControl(10004).setEnabled(False)
+                    self.ok_enabled = False
                 else:
                     self.getControl(10004).setEnabled(True)
+                    self.ok_enabled = True
 
     def check_default(self):
         if self.custom_button is None:
@@ -671,8 +678,10 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
 
             if def_values == self.values:
                 self.getControl(10006).setEnabled(False)
+                self.default_enabled = False
             else:
                 self.getControl(10006).setEnabled(True)
+                self.default_enabled = True
 
     def onClick(self, id):
         # Valores por defecto
@@ -784,7 +793,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
         focus = self.getFocusId()
 
         action = raw_action.getId()
-        # Accion 1: Flecha derecha
+        # Accion 1: Flecha izquierda
         if action == 1:
             # Si el foco no está en ninguno de los tres botones inferiores, y esta en un "list" cambiamos el valor
             if focus not in [10004, 10005, 10006]:
@@ -807,10 +816,10 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             else:
                 if focus == 10006:
                     self.setFocusId(10005)
-                if focus == 10005:
+                if focus == 10005 and self.ok_enabled:
                     self.setFocusId(10004)
 
-        # Accion 1: Flecha izquierda
+        # Accion 1: Flecha derecha
         elif action == 2:
             # Si el foco no está en ninguno de los tres botones inferiores, y esta en un "list" cambiamos el valor
             if focus not in [10004, 10005, 10006]:
@@ -833,7 +842,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             else:
                 if focus == 10004:
                     self.setFocusId(10005)
-                if focus == 10005:
+                if focus == 10005 and self.default_enabled:
                     self.setFocusId(10006)
 
         # Accion 4: Flecha abajo
@@ -847,7 +856,9 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                   while not focus_control == len(self.list_controls) and (self.list_controls[focus_control]["type"] == "label" or not self.list_controls[focus_control]["show"]):
                     focus_control +=1
                     
-                  if focus_control >= len(self.list_controls): focus_control = len(self.list_controls) -1
+                  if focus_control >= len(self.list_controls): 
+                    self.setFocusId(10005)
+                    return
                 except:
                   focus_control = 0
                   
