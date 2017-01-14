@@ -31,7 +31,6 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
     jj_decode = None
     jj_patron = None
     reverse = False
-    substring = False
     splice = False
     if jj_encode:
         jj_decode = jjdecode(jj_encode)
@@ -41,7 +40,6 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
     if not ")" in jj_patron: jj_patron += ")"
 
     if "x72x65x76x65x72x73x65" in jj_decode: reverse = True
-    if "x73x75x62x73x74x72x69x6Ex67" in jj_decode: substring = True
     if "x73x70x6Cx69x63x65" in jj_decode: splice = True
 
     matches = scrapertools.find_single_match(data, "<script type=[\"']text/javascript[\"']>(eval.*?)</script>")
@@ -62,12 +60,7 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
                 h = list(_hash)
                 h.pop(splice)
                 _hash = "".join(h)
-        if substring:
-            substring = int(scrapertools.find_single_match(jj_decode, "_\w+.\d...(\d)...;"))
-            if reverse:
-                _hash = _hash[:-substring]
-            else:
-                _hash = _hash[substring:]
+
         if reverse:
             video_url = re.sub(r'\w{40,}', _hash[::-1], video_url)
         filename = scrapertools.get_filename_from_url(video_url)[-4:]
