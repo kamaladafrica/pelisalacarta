@@ -454,11 +454,10 @@ def update_biblio(item):
         if config.is_xbmc():
             seleccion = platformtools.dialog_yesno(config.PLUGIN_NAME,
                                                    "AVISO: Puede requerir mucho tiempo.",
-                                                   "Desea continuar?")
+                                                   "¿Desea continuar?")
             if seleccion == 1:
                 library_service.check_for_update(overwrite="everything")
-            else:
-                platformtools.itemlist_update(Item(channel="configuracion", action="submenu_tools"))
+
         else:
             library_service.check_for_update(overwrite="everything")
     else:
