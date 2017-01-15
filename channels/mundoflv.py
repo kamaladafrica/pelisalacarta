@@ -23,6 +23,9 @@ thumbtodos = 'https://s29.postimg.org/4p8j2pkdj/todos.png'
 
 audio = {'la':'[COLOR limegreen]LATINO[/COLOR]','es':'[COLOR yellow]ESPAÑOL[/COLOR]','sub':'[COLOR orange]ORIGINAL SUBTITULADO[/COLOR]', 'en':'[COLOR red]Original[/COLOR]', 'vosi':'[COLOR red]ORIGINAL SUBTITULADO INGLES[/COLOR]'}
 
+headers = [['User-Agent', 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:45.0) Gecko/20100101 Firefox/45.0'],
+          ['Referer', host]]
+
 def isGeneric():
     return True
 
@@ -194,7 +197,8 @@ def temporadas(item):
     serieid = scrapertools.find_single_match(data,"<link rel='shortlink' href='http:\/\/mundoflv.com\/\?p=([^']+)' \/>")
     item.thumbnail = item.thumbvid
     for scrapedtitle in matches:
-        url = 'http://mundoflv.com/wp-content/themes/wpRafael/includes/capitulos.php?serie='+serieid+'&sr=&temporada=' + scrapedtitle
+        #url = 'http://mundoflv.com/wp-content/themes/wpRafael/includes/capitulos.php?serie='+serieid+'&sr=&temporada=' + scrapedtitle
+        url = 'http://mundoflv.com/wp-content/themes/wpRafael/includes/capitulos.php?serie='+serieid+'&temporada=' + scrapedtitle
         title = 'Temporada '+ scrapertools.decodeHtmlentities(scrapedtitle)
         contentSeasonNumber = scrapedtitle
         thumbnail = item.thumbnail
@@ -304,6 +308,7 @@ def findvideos(item):
 
     data = scrapertools.cache_page(item.url)
     patron ='href="([^"]+)".*?domain=.*?>([^<]+).*?gold">([^<]+)<'
+    logger.debug(data)
     matches = re.compile(patron,re.DOTALL).findall(data)
 
     for scrapedurl, scrapedserver, scrapedidioma in matches:
