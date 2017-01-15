@@ -3,16 +3,111 @@
 	<id>playmax</id>
 	<name>PlayMax</name>
 	<language>es</language>
-	<update_url></update_url>
-	<active>false</active>
-	<include_in_global_search>disabled</include_in_global_search>
-	<version>1</version>
+	<active>true</active>
 	<adult>false</adult>
-	<date>01/07/2016</date>
-	<changes>Eliminado código innecesario.</changes>
+
+	<version>2</version>
+	<date>09/01/2017</date>
+	<changes>Canal renovado desde cero</changes>
+
 	<fanart></fanart>
-	<thumbnail></thumbnail>
+	<thumbnail>http://i.imgur.com/X5Z40kT.png</thumbnail>
+	<bannermenu></bannermenu>
+	<update_url></update_url>
+
 	<categories>
 		<category>movie</category>
+		<category>serie</category>
 	</categories>
+
+	<settings>
+		<id>playmaxuser</id>
+		<type>text</type>
+		<color>0xFF25AA48</color>
+		<label>@30014</label>
+		<enabled>true</enabled>
+		<visible>true</visible>
+		<default></default>
+	</settings>
+	<settings>
+		<id>playmaxpassword</id>
+		<type>text</type>
+		<color>0xFF25AA48</color>
+		<hidden>true</hidden>
+		<label>@30015</label>
+		<enabled>!eq(-1,'')</enabled>
+		<visible>true</visible>
+		<default></default>
+	</settings>
+	<settings>
+		<id>include_in_global_search</id>
+		<type>bool</type>
+		<label>Incluir en búsqueda global</label>
+		<default>false</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<id>include_in_newest_peliculas</id>
+		<type>bool</type>
+		<label>Incluir en Novedades - Películas</label>
+		<default>false</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<id>include_in_newest_series</id>
+		<type>bool</type>
+		<label>Incluir en Novedades - Series</label>
+		<default>false</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<id>include_in_newest_infantiles</id>
+		<type>bool</type>
+		<label>Incluir en Novedades - Infantiles</label>
+		<default>false</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<id>modo_grafico</id>
+		<type>bool</type>
+		<color>0xFFd50b0b</color>
+		<label>Buscar información extra</label>
+ 		<default>true</default>
+ 		<enabled>true</enabled>
+ 		<visible>true</visible>
+ 	</settings>
+	<settings>
+		<id>menu_info</id>
+		<type>bool</type>
+		<color>0xFFd50b0b</color>
+		<label>Mostrar menú intermedio película/episodio</label>
+ 		<default>true</default>
+ 		<enabled>true</enabled>
+ 		<visible>true</visible>
+ 	</settings>
+	<settings>
+		<id>perfil</id>
+		<type>list</type>
+		<label>Perfil de color</label>
+		<default>3</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+		<lvalues>Sin color</lvalues>
+		<lvalues>Perfil 3</lvalues>
+		<lvalues>Perfil 2</lvalues>
+		<lvalues>Perfil 1</lvalues>
+	</settings>
+	<settings>
+		<id>last_page</id>
+		<type>bool</type>
+		<color>0xFFd50b0b</color>
+		<label>Ocultar opción elegir página en películas (Kodi)</label>
+ 		<default>false</default>
+ 		<enabled>true</enabled>
+ 		<visible>true</visible>
+ 	</settings>
 </channel>

@@ -1,14 +1,13 @@
 <?xml version="1.0" ?>
 <server>
 	<active>true</active>
-	<changes>Reparado por cambios</changes>
+	<changes>Versión inicial</changes>
 	<date>11/01/2017</date>
 	<free>true</free>
-	<id>vk</id>
-	<name>vk</name>
-	<premium>
-	</premium>
-	<thumbnail>http://media.tvalacarta.info/servers/server_vk.png</thumbnail>
+	<id>crunchyroll</id>
+	<name>crunchyroll</name>
+	<premium></premium>
+	<thumbnail>http://i.imgur.com/SglkLAb.png?1</thumbnail>
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/servers/</update_url>
-	<version>2</version>
+	<version>1</version>
 </server>

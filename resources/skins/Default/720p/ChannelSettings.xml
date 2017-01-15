@@ -82,6 +82,17 @@
             <height>387</height>
             <texture>Windows/BackControls.png</texture>
           </control>
+          <control type="label" id="100010">
+            <posy>0</posy>
+            <posx>0</posx>
+            <width>745</width>
+            <height>387</height>
+            <font>font16</font>
+            <textcolor>0xFFFFFFFF</textcolor>
+            <align>center</align>
+            <aligny>center</aligny>
+            <label>Cargando...</label>
+          </control>
         </control>
         <control type="image" id="10008">
           <posy>45</posy>

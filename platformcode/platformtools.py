@@ -387,8 +387,8 @@ def set_context_commands(item, parent_item):
                                      (sys.argv[0], Item(channel=item.channel, action="mainlist").tourl())))
 
         # Añadir a Favoritos
-        if version_xbmc < 17 and (item.channel not in ["favoritos", "biblioteca", "ayuda",
-                                                       "configuracion", ""] and not parent_item.channel == "favoritos"):
+        if version_xbmc < 17 and ((item.channel not in ["favoritos", "biblioteca", "ayuda", ""] or
+                                    item.action in ["update_biblio"]) and not parent_item.channel == "favoritos"):
             context_commands.append((config.get_localized_string(30155), "XBMC.RunPlugin(%s?%s)" %
                                      (sys.argv[0], item.clone(channel="favoritos", action="addFavourite",
                                                               from_channel=item.channel, from_action=item.action).tourl())))
@@ -684,8 +684,12 @@ def get_dialogo_opciones(item, default_action, strm):
     muestra_dialogo = (config.get_setting("player_mode") == "0" and not strm)
 
     # Extrae las URL de los vídeos, y si no puedes verlo te dice el motivo
-    video_urls, puedes, motivo = servertools.resolve_video_urls_for_playing(
-        item.server, item.url, item.password, muestra_dialogo)
+    #Permitir varias calidades para server "directo"
+    if item.video_urls:
+      video_urls, puedes, motivo = item.video_urls, True, ""
+    else:
+      video_urls, puedes, motivo = servertools.resolve_video_urls_for_playing(
+          item.server, item.url, item.password, muestra_dialogo)
 
     seleccion = 0
     # Si puedes ver el vídeo, presenta las opciones

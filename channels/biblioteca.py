@@ -304,14 +304,16 @@ def findvideos(item):
     content_title = filter(lambda c: c not in ":*?<>|\/", item.contentTitle).strip().lower()
 
     if item.contentType == 'movie':
-        item.strm_path = filetools.join(library.MOVIES_PATH, item.strm_path.strip('\/'))
-
+        item.strm_path = filetools.join(library.MOVIES_PATH, item.strm_path.strip('\\/'))
+        item.strm_path = item.strm_path.replace('\\',os.sep).replace('/',os.sep)
         path_dir = os.path.dirname(item.strm_path)
         item.nfo = filetools.join(path_dir, os.path.basename(path_dir) + ".nfo")
     else:
-        item.strm_path = filetools.join(library.TVSHOWS_PATH, item.strm_path.strip('\/'))
+        item.strm_path = filetools.join(library.TVSHOWS_PATH, item.strm_path.strip('\\/'))
+        item.strm_path = item.strm_path.replace('\\', os.sep).replace('/', os.sep)
         path_dir = os.path.dirname(item.strm_path)
         item.nfo = filetools.join(path_dir, 'tvshow.nfo')
+
 
     for fd in filetools.listdir(path_dir):
         if fd.endswith('.json'):
@@ -321,6 +323,7 @@ def findvideos(item):
                 list_canales[nom_canal] = filetools.join(path_dir, fd)
 
     num_canales = len(list_canales)
+    logger.debug(str(list_canales))
     if 'descargas' in list_canales:
         json_path = list_canales['descargas']
         item_json = Item().fromjson(filetools.read(json_path))

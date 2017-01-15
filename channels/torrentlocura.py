@@ -498,11 +498,11 @@ def findvideos(item):
      if temp_bloque!="":
       for url,temp,capi,check_capi,calidad,peso in temp_bloque :
         if "Capitulos" in check_capi:
-            extra=item.extra+"|"+"Capitulos"
+            extra=item.extra+"|"+check_capi+"|"+temp
             title =scrapertools.find_single_match(check_capi,'-.*?(Capitulos.*)')
             title ="          [COLOR red][B]"+title+"[/B][/COLOR]"
         else:
-          extra=item.extra+"|"+"No Capitulos"+"|"+temp+"|"+capi
+          extra=item.extra+"|"+"Nocapi"+"|"+temp+"|"+capi
           title="          [COLOR red][B]Capítulo "+capi+"[/B][/COLOR]"
         if temp != check_temp:
            check_temp= temp
@@ -548,6 +548,7 @@ def findvideos(item):
 def findvideos_enlaces(item):
     logger.info("pelisalacarta.torrentlocurat findvideos")
     itemlist = []
+    check_epi2=""
     data = scrapertools.cachePage(item.url)
     url= scrapertools.find_single_match(data,'SKIP THIS AD.*?<a href="([^"]+)"')
     try:
@@ -614,10 +615,33 @@ def findvideos_enlaces(item):
         fanart=item.extra.split("|")[0]
     itemlist.append( Item(channel=item.channel, title = "[COLOR orangered][B]Torrent[/B][/COLOR] "+"[COLOR lemonchiffon]( Video [/COLOR]"+"[COLOR lemonchiffon]"+ext_v+"--"+size+" )[/COLOR]" , url=url,  action="play",server="torrent", thumbnail=item.extra.split("|")[4], fanart=fanart, folder=False) )
 
-    if item.contentType!="movie" and item.extra.split("|")[9] !="Capitulos":
-       title_info ="    Info"
-       title_info = "[COLOR indianred]"+title_info+"[/COLOR]"
-       itemlist.append( Item(channel=item.channel, action="info_capitulos" , title=title_info , url=item.url, thumbnail=item.extra.split("|")[6], fanart=item.extra.split("|")[1], extra=item.extra, folder=False ))
+    if item.contentType!="movie" :
+       if "Capitulos" in item.extra.split("|")[9]:
+          epis= scrapertools.find_multiple_matches(item.extra.split("|")[9],'Capitulos (\d+) al (\d+)')
+          for epi1, epi2 in epis:
+              len_epis= int(epi2)-int(epi1)
+              if len_epis==1:
+                 extra = item.extra+"|"+epi1
+                 check_epi2="ok"
+                 title_info ="    Info Cap."+epi1
+                 title_info = "[COLOR indianred]"+title_info+"[/COLOR]"
+                 itemlist.append( Item(channel=item.channel, action="info_capitulos" , title=title_info , url=item.url, thumbnail=item.extra.split("|")[6], fanart=item.extra.split("|")[1], extra=extra, folder=False ))
+              else:
+                  check_epi2=""
+                  epis_len=range(int(epi1),int(epi2)+1)
+                  extra = item.extra+"|"+str(epis_len)
+                  title_info ="    Info Capítulos"
+                  title_info = "[COLOR indianred]"+title_info+"[/COLOR]"
+                  itemlist.append( Item(channel=item.channel, action="capitulos" , title=title_info , url=item.url, thumbnail=item.extra.split("|")[6], fanart=item.extra.split("|")[1], extra =extra, folder=True ))
+       else:
+          title_info ="    Info"
+          title_info = "[COLOR indianred]"+title_info+"[/COLOR]"
+          itemlist.append( Item(channel=item.channel, action="info_capitulos" , title=title_info , url=item.url, thumbnail=item.extra.split("|")[6], fanart=item.extra.split("|")[1], extra=item.extra, folder=False ))
+       if check_epi2=="ok":
+          extra = item.extra+"|"+epi2
+          title_info ="    Info Cap."+epi2
+          title_info = "[COLOR indianred]"+title_info+"[/COLOR]"
+          itemlist.append( Item(channel=item.channel, action="info_capitulos" , title=title_info , url=item.url, thumbnail=item.extra.split("|")[6], fanart=item.extra.split("|")[1], extra=extra, folder=False ))
     dd=scrapertools.find_single_match(data,'DESCARGAS DIRECTA(.*?)VER ONLINE')
     if dd:
        extra = item.extra+"|"+ dd
@@ -634,6 +658,19 @@ def dd_y_o(item):
         videolist = servertools.find_video_items(data=url_d)
         for video in videolist:
            itemlist.append(Item(channel=item.channel ,url=video.url, server=video.server,title=server_name,thumbnail=thumb, fanart=item.extra.split("|")[2],action="play", folder=False) )
+    return itemlist
+def capitulos(item):
+    logger.info("pelisalacarta.pasateatorrent capitulos")
+    itemlist = []
+    url=item.url
+    Join_extras="|".join(item.extra.split("|")[0:11])
+    logger.info(item.extra)
+    capis =  item.extra.split("|")[11]
+    capis =re.sub(r'\[|\]','',capis)
+    capis=[int(k) for k in capis.split(',')]
+    for i in capis:
+        extra =Join_extras+"|"+str(i)
+        itemlist.append( Item(channel=item.channel, action="info_capitulos" , title="[COLOR indianred]Info Cap."+str(i)+"[/COLOR]" , url=item.url, thumbnail=item.thumbnail, fanart=item.fanart, extra =extra, folder=False ))
     return itemlist
 def info(item):
     logger.info("pelisalacarta.torrentlocura info")
