@@ -348,6 +348,28 @@ def set_infoLabels_item(item, seekTmdb=True, idioma_busqueda='es', lock=None):
     return -1 * len(item.infoLabels)
 
 
+def find_and_set_infoLabels(item):
+    logger.info()
+
+    if item.contentType == "movie":
+        tipo_contenido = "pelicula"
+        title = item.contentTitle
+        tipo_busqueda = "movie"
+
+    else:
+        tipo_contenido = "serie"
+        title = item.contentSerieName
+        tipo_busqueda = "tv"
+
+    # Si el titulo incluye el (año) se lo quitamos
+    year = scrapertools.find_single_match(title, "^.+?\s*(\(\d{4}\))$")
+    if year:
+        title = title.replace(year, "").strip()
+        item.infoLabels['year'] = year[1:-1]
+
+
+
+
 # Clase auxiliar
 class ResultDictDefault(dict):
     #Python 2.4

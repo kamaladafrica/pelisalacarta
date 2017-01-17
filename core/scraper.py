@@ -63,8 +63,6 @@ def find_and_set_infoLabels(item):
         # para tmdb
         tipo_busqueda = "tv"
 
-    # esto ya está en el scraper tmdb
-    # title = re.sub('\[\\\?(B|I|COLOR)\s?[^\]]*\]', '', title)
 
     # Si el titulo incluye el (año) se lo quitamos
     year = scrapertools.find_single_match(title, "^.+?\s*(\(\d{4}\))$")
@@ -223,3 +221,25 @@ def tvdb_series_by_title(title, idioma="es"):
 
     #logger.debug(list_series)
     return list_series
+
+
+def find_and_set_infoLabels2(item):
+    """
+        función que se llama para buscar y setear los infolabels
+        :param item:
+        :return:
+        """
+
+    global scraper_global
+    logger.debug("item:\n" + item.tostring('\n'))
+
+    # Obtener el Scraper por defecto de la configuracion segun el tipo de contenido
+    if item.contentType == "movie":
+        SCRAPER_DEFAULT = "tmdb" #TODO: Obtener de la configuracion
+    else:
+        SCRAPER_DEFAULT = "tmdb" #TODO: Obtener de la configuracion
+
+    # Importamos el scraper
+    scraper = __import__('core.%s' % SCRAPER_DEFAULT, fromlist=["core.%s" % SCRAPER_DEFAULT])
+
+
