@@ -1,21 +1,22 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Conector para streamplay
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 
 import re
 
-from core import jsunpack
 from core import logger
 from core import scrapertools
+from lib import jsunpack
 
-headers = [['User-Agent','Mozilla/5.0 (Windows NT 10.0; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0']]
+headers = [['User-Agent', 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0']]
 host = "http://streamplay.to/"
 
-def test_video_exists( page_url ):
-    logger.info("pelisalacarta.streamplay test_video_exists(page_url='%s')" % page_url)
+
+def test_video_exists(page_url):
+    logger.info("(page_url='%s')" % page_url)
     data = scrapertools.cache_page(page_url)
     if data == "File was deleted":
         return False, "[Streamplay] El archivo no existe o ha sido borrado"
@@ -23,8 +24,8 @@ def test_video_exists( page_url ):
     return True, ""
 
 
-def get_video_url( page_url , premium = False , user="" , password="", video_password="" ):
-    logger.info("pelisalacarta.streamplay get_video_url(page_url='%s')" % page_url)
+def get_video_url(page_url, premium=False, user="", password="", video_password=""):
+    logger.info("(page_url='%s')" % page_url)
     data = scrapertools.cache_page(page_url)
 
     jj_encode = scrapertools.find_single_match(data, "(\w+=~\[\];.*?\)\(\)\)\(\);)")
@@ -36,8 +37,8 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
         jj_decode = jjdecode(jj_encode)
     if jj_decode:
         jj_patron = scrapertools.find_single_match(jj_decode, "/([^/]+)/")
-    if not "(" in jj_patron: jj_patron = "(" + jj_patron
-    if not ")" in jj_patron: jj_patron += ")"
+    if "(" not in jj_patron: jj_patron = "(" + jj_patron
+    if ")" not in jj_patron: jj_patron += ")"
 
     if "x72x65x76x65x72x73x65" in jj_decode: reverse = True
     if "x73x70x6Cx69x63x65" in jj_decode: splice = True
@@ -54,7 +55,7 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
             splice = int(scrapertools.find_single_match(jj_decode, "\((\d),\d\);"))
             if reverse:
                 h = list(_hash)
-                h.pop(-splice-1)
+                h.pop(-splice - 1)
                 _hash = "".join(h)
             else:
                 h = list(_hash)
@@ -66,17 +67,18 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
         filename = scrapertools.get_filename_from_url(video_url)[-4:]
         if video_url.startswith("rtmp"):
             rtmp, playpath = video_url.split("vod/", 1)
-            video_url = "%s playpath=%s swfUrl=%splayer6/jwplayer.flash.swf pageUrl=%s" % (rtmp + "vod/", playpath, host, page_url)
+            video_url = "%s playpath=%s swfUrl=%splayer6/jwplayer.flash.swf pageUrl=%s" % (
+            rtmp + "vod/", playpath, host, page_url)
             filename = "RTMP"
         elif video_url.endswith(".m3u8"):
             video_url += "|User-Agent=" + headers[0][1]
         elif video_url.endswith("/v.mp4"):
-            video_url_flv = re.sub(r'/v.mp4$','/v.flv',video_url)
+            video_url_flv = re.sub(r'/v.mp4$', '/v.flv', video_url)
             video_urls.append([".flv [streamplay]", re.sub(r'%s' % jj_patron, r'\1', video_url_flv)])
 
         video_urls.append([filename + " [streamplay]", re.sub(r'%s' % jj_patron, r'\1', video_url)])
 
-    video_urls.sort(key=lambda x:x[0], reverse=True)
+    video_urls.sort(key=lambda x: x[0], reverse=True)
     for video_url in video_urls:
         logger.info(" %s - %s" % (video_url[0], video_url[1]))
 
@@ -90,18 +92,18 @@ def find_videos(data):
 
     # http://streamplay.to/ubhrqw1drwlx
     patronvideos = "streamplay.to/(?:embed-|)([a-z0-9]+)(?:.html|)"
-    logger.info("pelisalacarta.streamplay find_videos #"+patronvideos+"#")
+    logger.info("#" + patronvideos + "#")
     matches = re.compile(patronvideos, re.DOTALL).findall(data)
 
     for match in matches:
         titulo = "[streamplay]"
         url = "http://streamplay.to/embed-%s.html" % match
         if url not in encontrados:
-            logger.info("  url="+url)
+            logger.info("  url=" + url)
             devuelve.append([titulo, url, 'streamplay'])
             encontrados.add(url)
         else:
-            logger.info("  url duplicada="+url)
+            logger.info("  url duplicada=" + url)
 
     return devuelve
 
@@ -131,12 +133,12 @@ def jjdecode(t):
 
     p = scrapertools.find_multiple_matches(t, '\\"\+j\.(\d{3})\+j\.(\d{3})\+')
     for c in p:
-        t = re.sub(r'\\"\+j\.%s\+j\.%s\+' % (c[0], c[1]), chr(int("".join(c),2)) + '"+', t)
+        t = re.sub(r'\\"\+j\.%s\+j\.%s\+' % (c[0], c[1]), chr(int("".join(c), 2)) + '"+', t)
 
     p = scrapertools.find_multiple_matches(t, 'j\.(\d{3})')
     for c in p:
         t = re.sub(r'j\.%s' % c, '"' + str(int(c, 2)) + '"', t)
 
-    r = re.sub(r'"\+"|\\\\','',t[1:-1])
+    r = re.sub(r'"\+"|\\\\', '', t[1:-1])
 
     return r
