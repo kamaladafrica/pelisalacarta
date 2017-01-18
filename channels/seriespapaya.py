@@ -27,7 +27,7 @@ CALIDADES = ['360p', '480p', '720p HD', '1080p HD']
 
 
 def mainlist(item):
-    logger.info("mainlist")
+    logger.info()
 
     thumb_series    = get_thumb("squares", "thumb_canales_series.png")
     thumb_series_az = get_thumb("squares", "thumb_canales_series_az.png")
@@ -46,7 +46,7 @@ def mainlist(item):
 
 
 def listado_alfabetico(item):
-    logger.info("listado_alfabetico")
+    logger.info()
 
     itemlist = [item.clone(action = "series_por_letra", title = "0-9")]
     for letra in string.ascii_uppercase:
@@ -56,14 +56,14 @@ def listado_alfabetico(item):
 
 
 def series_por_letra(item):
-    logger.info("series por letra: {0}".format(item.title))
+    logger.info("letra: {0}".format(item.title))
     item.letter = item.title.lower()
     item.extra = 0
     return series_por_letra_y_grupo(item)
 
 
 def series_por_letra_y_grupo(item):
-    logger.info("series por letra y grupo: {0} [{1}]".format(item.letter, item.extra))
+    logger.info("letra: {0} - grupo: {1}".format(item.letter, item.extra))
     itemlist=[]
     url = urlparse.urljoin(HOST, "autoload_process.php")
 
@@ -93,6 +93,7 @@ def series_por_letra_y_grupo(item):
     return itemlist
 
 def novedades(item):
+    logger.info()
     data = httptools.downloadpage(HOST).data
     shows = re.findall('sidebarestdiv[^<]+<a[^<]+title="([^"]*)[^<]+href="([^"]*)[^<]+<img[^<]+src="([^"]+)', data, re.MULTILINE | re.DOTALL)
 
@@ -123,7 +124,7 @@ def newest(categoria):
 
 
 def episodios(item):
-    logger.info("episodios: {0}".format(item.url))
+    logger.info("url: {0}".format(item.url))
 
     data = httptools.downloadpage(item.url).data
 
@@ -150,7 +151,7 @@ def episodios(item):
 
 
 def search(item, texto):
-    logger.info("search: {0}".format(texto))
+    logger.info("texto: {0}".format(texto))
     data = httptools.downloadpage(urlparse.urljoin(HOST, "/buscar.php?term={0}".format(texto))).data
     jsonResult = jsontools.load_json(data)
     tvShows = jsonResult["myData"]
@@ -164,7 +165,7 @@ def search(item, texto):
 
 
 def findvideos(item):
-    logger.info("findvideos: {0}".format(item.url))
+    logger.info("url: {0}".format(item.url))
 
     data = httptools.downloadpage(item.url).data
 
