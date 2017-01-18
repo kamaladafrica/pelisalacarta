@@ -32,10 +32,10 @@ from core.tmdb import Tmdb
 from core import tmdb
 from platformcode import platformtools
 
-scraper_global = None
+#scraper_global = None
 
-
-def find_and_set_infoLabels(item):
+'''
+def find_and_set_infoLabels_old(item):
     """
     función que se llama para buscar y setear los infolabels
     :param item:
@@ -164,16 +164,16 @@ def find_and_set_infoLabels(item):
     else:
         item.infoLabels = infoLabels
         return False
-
-
+'''
+'''
 class Scraper(object):
     def __init__(self):
         pass
 
     def search(self):
         pass
-
-
+'''
+'''
 def tvdb_series_by_title(title, idioma="es"):
     list_series = []
     limite = 8
@@ -221,25 +221,109 @@ def tvdb_series_by_title(title, idioma="es"):
 
     #logger.debug(list_series)
     return list_series
+'''
 
+# Este modulo es una interface para poder implementar diferentes scrapers
+# contendra todos las funciones comunes
 
-def find_and_set_infoLabels2(item):
+def find_and_set_infoLabels(item):
     """
         función que se llama para buscar y setear los infolabels
         :param item:
-        :return:
-        """
+        :return: boleano que indica si se ha podido encontrar el 'code'
+    """
 
-    global scraper_global
+    scraper = None
     logger.debug("item:\n" + item.tostring('\n'))
+
+    list_opciones_cuadro = ["Introducir otro nombre", "Completar información"]
+    # Si se añaden mas scrapers hay q declararlos aqui-> "modulo_scraper": "Texto_en_cuadro"
+    scrapers_disponibles ={'tmdb':"Buscar en TheMovieDB.org",
+                           'tvdb':"Buscar en TheTvDB.com"}
+
 
     # Obtener el Scraper por defecto de la configuracion segun el tipo de contenido
     if item.contentType == "movie":
-        SCRAPER_DEFAULT = "tmdb" #TODO: Obtener de la configuracion
+        scraper_actual = "tmdb" #TODO: Obtener de la configuracion
+        tipo_contenido = "película"
+        title = item.contentTitle
+        # Completar lista de opciones para este tipo de contenido
+        list_opciones_cuadro.append(scrapers_disponibles['tmdb'])
+
     else:
-        SCRAPER_DEFAULT = "tmdb" #TODO: Obtener de la configuracion
+        scraper_actual = "tmdb" #TODO: Obtener de la configuracion
+        tipo_contenido = "serie"
+        title = item.contentSerieName
+        # Completar lista de opciones para este tipo de contenido
+        list_opciones_cuadro.append(scrapers_disponibles['tmdb'])
+        list_opciones_cuadro.append(scrapers_disponibles['tvdb'])
+
 
     # Importamos el scraper
-    scraper = __import__('core.%s' % SCRAPER_DEFAULT, fromlist=["core.%s" % SCRAPER_DEFAULT])
+    try:
+        scraper = __import__('core.%s' % scraper_actual, fromlist=["core.%s" % scraper_actual])
+    except ImportError:
+        exec "import core." + scraper_actual + " as scraper"
 
+    while scraper:
+        # Llamamos a la funcion find_and_set_infoLabels del scraper seleccionado
+        scraper_result = scraper.find_and_set_infoLabels(item)
 
+        # Verificar si existe 'code'
+        if scraper_result and item.infoLabels['code']:
+            # code correcto
+            logger.info("Identificador encontrado: %s" % item.infoLabels['code'])
+            return True
+        elif scraper_result:
+            # Contenido encontrado pero no hay 'code'
+            msg = "Identificador no encontrado para: %s" % title
+        else:
+            # Contenido no encontrado
+            msg = "No se ha encontrado informacion para: %s" % title
+
+        logger.info(msg)
+        # Mostrar cuadro con otras opciones:
+        index= -1
+        if scrapers_disponibles[scraper_actual] in list_opciones_cuadro:
+            list_opciones_cuadro.remove(scrapers_disponibles[scraper_actual])
+        index = platformtools.dialog_select(msg, list_opciones_cuadro)
+
+        if index < 0:
+            logger.debug("Se ha pulsado 'cancelar' en la ventana '%s'" % msg)
+            return False
+
+        elif index == 0:
+            # Pregunta el titulo
+            title = platformtools.dialog_input(title, "Introduzca el nombre de la %s a buscar" % tipo_contenido)
+            if title:
+                if item.contentType == "movie":
+                    item.contentTitle = title
+                else:
+                    item.contentSerieName = title
+            else:
+                logger.debug("he pulsado 'cancelar' en la ventana 'Introduzca el nombre correcto'")
+                return False
+
+        elif index == 1: 
+            # TODO "Completar información"
+            # Hay q crear un cuadro de dialogo para introducir los datos
+            logger.debug('TODO "Completar información"')
+            return False
+            
+
+        elif list_opciones_cuadro[index] in scrapers_disponibles.values():
+            # Obtener el nombre del modulo del scraper
+            for k,v in scrapers_disponibles.items():
+                if list_opciones_cuadro[index] == v:
+                    if scrapers_disponibles[scraper_actual] not in list_opciones_cuadro:
+                        list_opciones_cuadro.append(scrapers_disponibles[scraper_actual])
+                    # Importamos el scraper k
+                    scraper_actual = k
+                    try:
+                        scraper = None
+                        scraper = __import__('core.%s' % scraper_actual, fromlist=["core.%s" % scraper_actual])
+                    except ImportError:
+                        exec "import core." + scraper_actual + " as scraper"
+                    break
+
+    logger.error("Error al importar el scraper %s" % scraper_actual)

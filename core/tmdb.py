@@ -32,6 +32,7 @@ from core import logger
 from core import scrapertools
 from core.item import InfoLabels
 
+
 # -----------------------------------------------------------------------------------------------------------
 # Conjunto de funciones relacionadas con las infoLabels.
 #   version 1.0:
@@ -351,21 +352,62 @@ def set_infoLabels_item(item, seekTmdb=True, idioma_busqueda='es', lock=None):
 def find_and_set_infoLabels(item):
     logger.info()
 
+    global otmdb_global
+    tmdb_result = None
+
+
     if item.contentType == "movie":
+        tipo_busqueda = "movie"
         tipo_contenido = "pelicula"
         title = item.contentTitle
-        tipo_busqueda = "movie"
-
     else:
+        tipo_busqueda = "tv"
         tipo_contenido = "serie"
         title = item.contentSerieName
-        tipo_busqueda = "tv"
 
     # Si el titulo incluye el (año) se lo quitamos
     year = scrapertools.find_single_match(title, "^.+?\s*(\(\d{4}\))$")
     if year:
         title = title.replace(year, "").strip()
         item.infoLabels['year'] = year[1:-1]
+
+
+    if not item.infoLabels.get("tmdb_id"):
+        if not item.infoLabels.get("imdb_id"):
+            otmdb_global = Tmdb(texto_buscado=title, tipo=tipo_busqueda, year=item.infoLabels['year'])
+        else:
+            otmdb_global = Tmdb(external_id=item.infoLabels.get("imdb_id"), external_source="imdb_id",
+                                tipo=tipo_busqueda)
+    elif not otmdb_global or otmdb_global.result.get("id") != item.infoLabels['tmdb_id']:
+        otmdb_global = Tmdb(id_Tmdb=item.infoLabels['tmdb_id'], tipo=tipo_busqueda, idioma_busqueda="es")
+
+    results = otmdb_global.get_list_resultados()
+
+    if len(results) > 1:
+        from platformcode import platformtools
+        tmdb_result = platformtools.show_video_info(results, item=item,
+                                                    caption="[%s]: Selecciona la %s correcta" % (title, tipo_contenido))
+    elif len(results) > 0:
+        tmdb_result = results[0]
+
+
+    if isinstance(item.infoLabels, InfoLabels):
+        infoLabels = item.infoLabels
+    else:
+        infoLabels = InfoLabels()
+
+    if tmdb_result:
+        infoLabels['tmdb_id'] = tmdb_result['id']
+        infoLabels['url_scraper'] = "https://www.themoviedb.org/tv/%s" % infoLabels['tmdb_id']
+        item.infoLabels = infoLabels
+        set_infoLabels_item(item)
+
+        return True
+
+    else:
+        item.infoLabels = infoLabels
+        return False
+
 
 
 
