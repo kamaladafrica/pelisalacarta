@@ -43,13 +43,14 @@ def mainlist(item):
                          url=HOST , thumbnail=thumb_series))
     itemlist.append(Item(channel=item.channel, title="Último actualizado", action="homeSection", extra="Último Actualizado",
                          url=HOST , thumbnail=thumb_series))
-    itemlist.append(Item(channel=item.channel, title="Series más vistas", action="homeSection", extra="Series Más vistas",
-                         url=HOST , thumbnail=thumb_series))
+    itemlist.append(Item(channel=item.channel, title="Series más vistas", action="series", extra="Series Más vistas",
+                         url=urlparse.urljoin(HOST, "listado-visto/") , thumbnail=thumb_series))
     itemlist.append(Item(channel=item.channel, title="Series menos vistas", action="homeSection", extra="Series Menos vistas",
                          url=HOST , thumbnail=thumb_series))
     itemlist.append(Item(channel=item.channel, title="Últimas fichas creadas", action="series",
                          url=urlparse.urljoin(HOST, "fichas_creadas/"), thumbnail=thumb_series))
-
+    itemlist.append(Item(channel=item.channel, title="Series por género", action="generos",
+                         url=HOST , thumbnail=thumb_series))
     itemlist.append(Item(channel=item.channel, title="Buscar...", action="search", url=HOST, thumbnail=thumb_buscar))
 
     if filtertools.context:
@@ -117,6 +118,14 @@ def series_listado_alfabetico(item):
 
     return [item.clone(action="series", title=letra, url=urlparse.urljoin(HOST, "listado-{0}/".format(letra)))
                 for letra in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
+
+
+def generos(item):
+    logger.info()
+    data = httptools.downloadpage(item.url).data
+
+    result = re.findall("href=['\"](?P<url>/listado/[^'\"]+)['\"][^/]+/i>\s*(?P<genero>[^<]+)", data)
+    return [item.clone(action="series", title=genero, url = urlparse.urljoin(item.url, url)) for url, genero in result]
 
 
 def newest(categoria):
