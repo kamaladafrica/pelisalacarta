@@ -79,6 +79,7 @@ def series_por_letra_y_grupo(item):
         itemlist.append(item.clone(
                              action    = "episodios",
                              title     = name,
+                             show      = name,
                              url       = urlparse.urljoin(HOST, url),
                              thumbnail = urlparse.urljoin(HOST, img),
                              list_idiomas=list_idiomas, list_calidad=CALIDADES, context=filtertools.context
