@@ -61,7 +61,7 @@ def mainlist(item):
 def homeSection(item):
     logger.info("section = {0}".format(item.extra))
 
-    pattern = "['\"]panel-title['\"]>{0}(.*?)(?:panel-title|\Z)".format(item.extra)
+    pattern = "['\"]panel-title['\"]>[^/]*{0}(.*?)(?:panel-title|\Z)".format(item.extra)
     logger.debug("pattern = {0}".format(pattern))
 
     data = httptools.downloadpage(item.url).data
