@@ -159,6 +159,7 @@ def search(item, texto):
 
     return [item.clone(action      = "episodios",
                        title       = show["titulo"],
+                       show        = show["titulo"],
                        url         = urlparse.urljoin(HOST, show["urla"]),
                        thumbnail   = urlparse.urljoin(HOST, show["img"]),
                        list_idiomas=list_idiomas, list_calidad=CALIDADES, context=filtertools.context
