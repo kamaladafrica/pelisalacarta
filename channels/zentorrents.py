@@ -90,10 +90,6 @@ def buscador(item):
 
     matches = re.compile(patron, re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
-    if len(matches) == 0:
-        itemlist.append(Item(channel=item.channel, title="[COLOR gold][B]Sin resultados...[/B][/COLOR]",
-                             thumbnail="http://s6.postimg.org/55zljwr4h/sinnoisethumb.png",
-                             fanart="http://s6.postimg.org/avfu47xap/sinnoisefan.jpg", folder=False))
 
     for scrapedtitulo, scrapedurl, scrapedthumbnail, scrapedplot in matches:
         # evitamos falsos positivos en los enlaces, ya que el buscador de la web muestra de todo,
