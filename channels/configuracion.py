@@ -89,7 +89,10 @@ def mainlist(item):
     channel_list = channelselector.filterchannels("all")
 
     for channel in channel_list:
-        jsonchannel = channeltools.get_channel_json(channel.channel)
+        try:
+          jsonchannel = channeltools.get_channel_json(channel.channel)
+        except:
+          continue
         if jsonchannel.get("settings"):
             setting = jsonchannel["settings"]
             if type(setting) == list:
