@@ -142,6 +142,11 @@ def render_items(itemlist, parent_item):
         if item.text_italic:
             item.title = '[I]%s[/I]' % item.title
 
+        #Añade headers a las imagenes si estan en un servidor con cloudflare    
+        from core import httptools
+        item.thumbnail = httptools.get_url_headers(item.thumbnail)
+        item.fanart = httptools.get_url_headers(item.fanart)
+
         # IconImage para folder y video
         if item.folder:
             icon_image = "DefaultFolder.png"
