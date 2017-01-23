@@ -108,6 +108,7 @@ def search(item,texto):
 def buscador(item):
     itemlist=[]
     data = httptools.downloadpage(item.url,post=item.extra,).data
+    data =unicode(data,"latin1").encode("utf8")
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
     check_item=[]
     bloque_enlaces =scrapertools.find_single_match(data, 'Resultados(.*?)end .page-box')
@@ -120,21 +121,22 @@ def buscador(item):
         if tipo =="Serie":
            contentType="tv"
            title =re.sub(r'-.*','',title)
+           title_check=title.strip()
         else:
            contentType="movie"
+           #tipo="Pelicula"
+           title = re.sub(r'de Cine','Screener',title)
            title = title.replace("RIP","HdRip")
-           if not "pelicula" in url:
+           title_check = (title+" " +tipo).strip()
+           if "pc" in tipo or "PC" in tipo or "XBOX" in tipo or "Nintendo" in tipo or "Windows" in tipo or "varios" in url or "juego" in url :
               continue
            
-           else:
-               tipo="Pelicula"
-               title = re.sub(r'de Cine','Screener',title)
-        if title in str(check_item):
+
+        if title_check in str(check_item):
            continue
-        check_item.append([title])
-        title=title.decode('ISO-8859-1').encode('utf-8')
+        check_item.append([title_check])
         if "ï¿½" in title:
-           title=title.replace("ï¿½","ñ")
+            title=title.replace("ï¿½","ñ")
         title_fan=title
         title_fan =re.sub(r"\(.*?\)|-Remastered|Black And Chrome Edition|V.extendidaHD|1080p|Screener|V.O|HdRip|.*?--|\(\d+\)|\d\d\d\d|HD","",title_fan)
         itemlist.append( Item(channel=item.channel, title = "[COLOR firebrick][B]"+tipo+"[/B][/COLOR]--"+ "[COLOR red][B]"+title+"[/B][/COLOR]" , url=url, action="fanart", thumbnail=thumb, fanart="", contentType=contentType ,extra=title_fan+"|"+"[COLOR red][B]"+title_fan+"[/B][/COLOR]"+"|"+year, folder=True) )
@@ -156,7 +158,7 @@ def scraper(item):
           year=scrapertools.find_single_match(title,'(\d\d\d\d)')
         except:
           year =""
-        title=title.decode('ISO-8859-1').encode('utf-8')
+        title= unicode(title, "latin1").encode("utf8")
         if "ï¿½" in title:
            title=title.replace("ï¿½","ñ")
         title= re.sub(r'\(\d+\)|\d\d\d\d','',title)
@@ -211,16 +213,14 @@ def fanart(item):
      else:
         year =scrapertools.find_single_match(data,'<br \/>A.*?(\d+)<br \/>')
         if year =="":
-         try:
             year=scrapertools.find_single_match(data,'Estreno.*?\d+/\d+/(\d+)')
-         except:
-           try:
-             year=scrapertools.find_single_match(data,'<div class=\'descripcion_top\'>.*?A&ntilde;o<br />.*?(\d\d\d\d)')
-           except:
-               try:
-                   year=scrapertools.find_single_match(data,'<meta name="description"[^<]+A&ntilde;o[^<]+\d\d\d\d')
-               except:
-                  year=""
+            if year=="":
+              year=scrapertools.find_single_match(data,'<div class=\'descripcion_top\'>.*?A&ntilde;o<br />.*?(\d\d\d\d)')
+              if year=="":
+                year=scrapertools.find_single_match(data,'<meta name="description"[^<]+A&ntilde;o[^<]+\d\d\d\d')
+                if year=="":
+                   year=scrapertools.find_single_match(data,'<h1><strong>.*?(\d\d\d\d).*?<')
+
     infoLabels = {'title': title, 'sinopsis': sinopsis, 'year': year}
     critica, rating_filma, year_f,sinopsis_f = filmaffinity(item,infoLabels)
     if sinopsis=="":
@@ -413,7 +413,7 @@ def fanart(item):
           if images_fanarttv.get("hdclearart"):
             tiw= images_fanarttv.get("hdclearart")[0].get("url")
           elif images_fanarttv.get("characterart"):
-            tiw=images_fanarttv.get("characterart")
+            tiw=images_fanarttv.get("characterart")[0].get("url")
           elif images_fanarttv.get("hdtvlogo"):
             tiw=images_fanarttv.get("hdtvlogo")[0].get("url")
           else:
@@ -657,7 +657,7 @@ def dd_y_o(item):
     for thumb,server_name,idioma,calidad,url_d in enlaces:
         videolist = servertools.find_video_items(data=url_d)
         for video in videolist:
-           itemlist.append(Item(channel=item.channel ,url=video.url, server=video.server,title=server_name,thumbnail=thumb, fanart=item.extra.split("|")[2],action="play", folder=False) )
+           itemlist.append(Item(channel=item.channel ,url=video.url, server=video.server,title="[COLOR floralwhite][B]"+server_name+"[/B][/COLOR]",thumbnail=thumb, fanart=item.extra.split("|")[2],action="play", folder=False) )
     return itemlist
 def capitulos(item):
     logger.info("pelisalacarta.pasateatorrent capitulos")

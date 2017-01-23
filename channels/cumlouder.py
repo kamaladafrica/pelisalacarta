@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 #------------------------------------------------------------
-# pelisalacarta - XBMC Plugin
-# Canal para Allpeliculas by EpNiebla
+# Canal para pelisalacarta by EpNiebla
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 import re
@@ -11,12 +10,9 @@ from core import logger
 from core import httptools
 from core import scrapertools
 from core.item import Item
-from core import jsontools
-
-DEBUG = config.get_setting("debug")
 
 def mainlist(item):
-    logger.info()
+    logger.info('pelisalacarta.channels.cumlouder mainlist')
     itemlist = []
     
     itemlist.append(item.clone(title = "Últimos videos", action = "videos"        , url = "http://www.cumlouder.com/"))
@@ -26,13 +22,11 @@ def mainlist(item):
 
     return itemlist
 
-
 def search(item, texto):
-  logger.info()
+  logger.info('pelisalacarta.channels.cumlouder search')
   
   item.url = item.url % texto
   item.action = "videos"
-  
   try:
     return videos(item)
   except:
@@ -40,9 +34,8 @@ def search(item, texto):
     logger.error(traceback.format_exc())
     return []
 
-
 def pornstars_list(item):
-  logger.info()
+  logger.info('pelisalacarta.channels.cumlouder pornstars_list')
   itemlist = []
   for letra in "abcdefghijklmnopqrstuvwxyz":
     itemlist.append(item.clone(title=letra.upper(), url=urlparse.urljoin(item.url,letra), action ="pornstars"))
@@ -50,11 +43,10 @@ def pornstars_list(item):
   return itemlist
   
 def pornstars(item):
-  logger.info()
+  logger.info('pelisalacarta.channels.cumlouder pornstars')
   itemlist = []
   
   data = httptools.downloadpage(item.url).data
-  
   patron  = '<a girl-url="[^"]+" class="[^"]+" href="([^"]+)" title="([^"]+)">[^<]+'
   patron += '<img class="thumb" src="([^"]+)" [^<]+<h2[^<]+<span[^<]+</span[^<]+</h2[^<]+'
   patron += '<span[^<]+<span[^<]+<span[^<]+</span>([^<]+)</span>'
@@ -64,8 +56,7 @@ def pornstars(item):
     itemlist.append(item.clone(title="%s (%s videos)" % (title, count), url=urlparse.urljoin(item.url,url), action ="videos", thumbnail = thumbnail))
   
   #Paginador
-  patron = '<li[^<]+<a href="([^"]+)" rel="nofollow">Next[^<]+</a[^<]+</li>'
-  matches = re.compile(patron, re.DOTALL).findall(data)
+  matches = re.compile('<li[^<]+<a href="([^"]+)" rel="nofollow">Next[^<]+</a[^<]+</li>', re.DOTALL).findall(data)
   if matches:
     itemlist.append(item.clone(title="Pagina Siguiente", url=urlparse.urljoin(item.url,matches[0])))
   
@@ -73,32 +64,28 @@ def pornstars(item):
  
   
 def categorias(item):
-  logger.info()
+  logger.info('pelisalacarta.channels.cumlouder categorias')
   itemlist = []
   
   data = httptools.downloadpage(item.url).data
-
   #logger.info("channels.cumlouder data="+data)
   patron  = '<a tag-url="[^"]+" class="[^"]+" href="([^"]+)" title="([^"]+)">[^<]+'
   patron += '<img class="thumb" src="([^"]+)" [^<]+<h2[^<]+<span[^<]+</span[^<]+<span[^<]+</span[^<]+'
   patron += '<span class="cantidad">([^"]+)</span>'
   
   matches = re.compile(patron, re.DOTALL).findall(data)
-  #if (DEBUG): scrapertools.printMatches(matches)
   for url,title,thumbnail, count in matches:
     itemlist.append(item.clone(title="%s (%s videos)" % (title, count), url=urlparse.urljoin(item.url,url), action ="videos", thumbnail = thumbnail))
 
   #Paginador
-  patron = '<li[^<]+<a href="([^"]+)" rel="nofollow">Next[^<]+</a[^<]+</li>'
-  matches = re.compile(patron, re.DOTALL).findall(data)
+  matches = re.compile('<li[^<]+<a href="([^"]+)" rel="nofollow">Next[^<]+</a[^<]+</li>', re.DOTALL).findall(data)
   if matches:
     itemlist.append(item.clone(title="Pagina Siguiente", url=urlparse.urljoin(item.url,matches[0])))
 
   return itemlist
 
-
 def videos(item):
-  logger.info()
+  logger.info('pelisalacarta.channels.cumlouder videos')
   itemlist = []
   
   data = httptools.downloadpage(item.url).data
@@ -112,21 +99,24 @@ def videos(item):
                                 contentType = "movie", contentTitle = title))
   
   #Paginador
-  patron = '<li[^<]+<a href="([^"]+)" rel="nofollow">Next[^<]+</a[^<]+</li>'
-  matches = re.compile(patron, re.DOTALL).findall(data)
+  nextpage = scrapertools.find_single_match(data,'<ul class="paginador"(.*?)</ul>')
+  matches = re.compile('<a href="([^"]+)" rel="nofollow">Next »</a>', re.DOTALL).findall(nextpage)
   if matches:
     itemlist.append(item.clone(title="Pagina Siguiente", url=urlparse.urljoin(item.url,matches[0])))
+  else:
+    matches = re.compile('<li[^<]+<a href="([^"]+)">Next »</a[^<]+</li>', re.DOTALL).findall(nextpage)
+    if matches:
+      itemlist.append(item.clone(title="Pagina Siguiente", url=urlparse.urljoin(item.url,matches[0])))
  
   return itemlist
     
 def play(item):
-  logger.info()
+  logger.info('pelisalacarta.channels.cumlouder play')
   itemlist = []
   
   data = httptools.downloadpage(item.url).data
   patron = '<source src="([^"]+)" type=\'video/([^\']+)\' label=\'[^\']+\' res=\'([^\']+)\' />'
   url,type,res = re.compile(patron, re.DOTALL).findall(data)[0]
-  #vid = re.compile(patron, re.DOTALL).findall(data)[0]
-  #itemlist.append(["%s %s [directo]" % ('Video', 'MP4'), vid])
   itemlist.append( Item(channel='cumlouder', action="play" , title='Video' +res, fulltitle=type.upper()+' '+res , url=url, server="directo", folder=False))
+  
   return itemlist

@@ -42,6 +42,29 @@ cookies_lock = Lock()
 cj = cookielib.MozillaCookieJar()
 ficherocookies = os.path.join(config.get_data_path(), "cookies.dat")
 
+# Headers por defecto, si no se especifica nada
+default_headers = dict()
+default_headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:50.0) Gecko/20100101 Firefox/50.0"
+default_headers["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+default_headers["Accept-Language"] = "es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3"
+default_headers["Accept-Charset"] = "UTF-8"
+default_headers["Accept-Encoding"] = "gzip"
+
+
+def get_url_headers(url):
+  logger.info()
+  domain_cookies = cj._cookies.get("."+urlparse.urlparse(url)[1],{}).get("/",{})
+  
+  if "|" in url or not "cf_clearance" in domain_cookies:
+    return url
+
+  headers = dict()
+  headers["User-Agent"] = default_headers["User-Agent"]
+  headers["Cookie"] = "; ".join(["%s=%s" % (c.name, c.value)  for c in domain_cookies.values()])
+    
+  return url + "|"+"&".join(["%s=%s" %(h, headers[h]) for h in headers])
+
+
 def load_cookies():
   cookies_lock.acquire()
   if os.path.isfile(ficherocookies):
@@ -56,7 +79,6 @@ def load_cookies():
 def save_cookies():
     cookies_lock.acquire()
     logger.info("Guardando cookies...")
-    logger.info(cj._cookies)
     cj.save(ficherocookies, ignore_discard=True)
     cookies_lock.release()
 
@@ -102,12 +124,7 @@ def downloadpage(url, post=None, headers=None, timeout=None, follow_redirects=Tr
     response = {}
 
     # Headers por defecto, si no se especifica nada
-    request_headers = dict()
-    request_headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:50.0) Gecko/20100101 Firefox/50.0"
-    request_headers["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
-    request_headers["Accept-Language"] = "es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3"
-    request_headers["Accept-Charset"] = "UTF-8"
-    request_headers["Accept-Encoding"] = "gzip"
+    request_headers = default_headers.copy()
 
     # Headers pasados como parametros
     if headers is not None:

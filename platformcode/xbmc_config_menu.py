@@ -242,7 +242,8 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
 
     def evaluate_conditions(self):
         for c in self.list_controls:
-          self.set_enabled(c, self.evaluate(self.list_controls.index(c), c["enabled"]))
+          c["active"] = self.evaluate(self.list_controls.index(c), c["enabled"])
+          self.set_enabled(c, c["active"])
           c["show"] = self.evaluate(self.list_controls.index(c), c["visible"])
 
     def evaluate(self, index, cond):
@@ -859,16 +860,16 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                 try:
                   focus_control = [self.list_controls.index(c) for c in self.list_controls if c["control"] == self.getFocus()][0]
                   focus_control += 1
-                  
-                  while not focus_control == len(self.list_controls) and (self.list_controls[focus_control]["type"] == "label" or not self.list_controls[focus_control]["show"]):
-                    focus_control +=1
-                    
-                  if focus_control >= len(self.list_controls): 
-                    self.setFocusId(10005)
-                    return
                 except:
                   focus_control = 0
+
+                while not focus_control == len(self.list_controls) and (self.list_controls[focus_control]["type"] == "label" or not self.list_controls[focus_control]["show"] or not self.list_controls[focus_control]["active"]):
+                  focus_control +=1
                   
+                if focus_control >= len(self.list_controls): 
+                  self.setFocusId(10005)
+                  return
+                
                 self.dispose_controls(focus_control, True)
 
         # Accion 4: Flecha arriba
@@ -879,7 +880,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                   focus_control = [self.list_controls.index(c) for c in self.list_controls if c["control"] == self.getFocus()][0]
                   focus_control -= 1
                   
-                  while not focus_control == -1 and (self.list_controls[focus_control]["type"] == "label" or not self.list_controls[focus_control]["show"]):
+                  while not focus_control == -1 and (self.list_controls[focus_control]["type"] == "label" or not self.list_controls[focus_control]["show"] or not self.list_controls[focus_control]["active"]):
                     focus_control -=1
                     
                   if focus_control < 0: focus_control = 0
@@ -890,7 +891,12 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
 
             # Si el foco está en alguno de los tres botones inferiores, ponemos el foco en el ultimo ajuste.
             else:
-                self.setFocus(self.list_controls[-1]["control"])
+                focus_control = len(self.list_controls) -1
+                while not focus_control == -1 and (self.list_controls[focus_control]["type"] == "label" or not self.list_controls[focus_control]["show"] or not self.list_controls[focus_control]["active"]):
+                  focus_control -=1
+                if focus_control < 0: focus_control = 0
+                
+                self.setFocus(self.list_controls[focus_control]["control"])
 
         # Accion 104: Scroll arriba
         elif action == 104:
