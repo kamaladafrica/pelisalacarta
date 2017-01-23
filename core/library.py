@@ -318,7 +318,6 @@ def save_library_tvshow(item, episodelist):
         # Creamos tvshow.nfo, si no existe, con la head_nfo, info de la serie y marcas de episodios vistos
         logger.info("Creando tvshow.nfo: " + tvshow_path)
         if item.infoLabels['url_scraper']:
-            # head_nfo = "https://www.themoviedb.org/tv/%s\n" % item.infoLabels['tmdb_id']
             head_nfo = item.infoLabels['url_scraper'] + "\n"
         else:
             head_nfo = "Aqui ira el xml"  # TODO
@@ -465,7 +464,7 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
             strm_exists = filetools.write(strm_path, '%s?%s' % (addon_name, item_strm.tourl()))
 
         item_nfo = None
-        if (not nfo_exists or overwrite_everything) and e.infoLabels.get("imdb_id"):
+        if (not nfo_exists or overwrite_everything) and e.infoLabels["code"]:
             if not overwrite_everything:
                 nfo_exists_before = False
 
@@ -475,9 +474,8 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
                 head_nfo = "https://www.themoviedb.org/tv/%s/season/%s/episode/%s\n" % (e.infoLabels['tmdb_id'],
                                                                                         e.contentSeason,
                                                                                         e.contentEpisodeNumber)
-
             elif e.infoLabels["tvdb_id"]:
-                head_nfo = e.url_scraper
+                head_nfo = e.infoLabels['url_scraper'] + '\n'
 
             else:
                 head_nfo = "Aqui ira el xml"  # TODO
