@@ -424,7 +424,6 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
 
         self.addControl(control)
 
-
         control.setVisible(False)
         control.setLabel(c["label"])
         control.setText(self.values[c["id"]])
@@ -687,10 +686,14 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
         # Valores por defecto
         if id == 10006:
             if self.custom_button is not None:
+                if '.' in self.callback:
+                    package, self.callback = self.callback.rsplit('.', 1)
+                else:
+                    package = 'channels.%s' % self.channel
                 try:
-                    cb_channel = __import__('channels.%s' % self.channel, None, None, ["channels.%s" % self.channel])
+                    cb_channel = __import__(package, None, None, [package])
                 except ImportError:
-                    logger.error('Imposible importar %s' % self.channel)
+                    logger.error('Imposible importar %s' % package)
                 else:
                     self.return_value = getattr(cb_channel, self.custom_button['function'])(self.item)
                     if self.custom_button["close"]:
@@ -726,11 +729,15 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                 self.close()
             else:
                 self.close()
+                if '.' in self.callback:
+                    package, self.callback = self.callback.rsplit('.',1)
+                else:
+                    package = 'channels.%s' % self.channel
                 cb_channel = None
                 try:
-                    cb_channel = __import__('channels.%s' % self.channel, None, None, ["channels.%s" % self.channel])
+                    cb_channel = __import__(package, None, None, [package])
                 except ImportError:
-                    logger.error('Imposible importar %s' % self.channel)
+                    logger.error('Imposible importar %s' % package)
 
                 self.return_value = getattr(cb_channel, self.callback)(self.item, self.values)
 

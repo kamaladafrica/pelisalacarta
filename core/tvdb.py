@@ -110,7 +110,7 @@ def find_and_set_infoLabels(item):
     if tvdb_result:
         infoLabels.update(tvdb_result)
         item.infoLabels = infoLabels
-        logger.debug(item)
+        #logger.debug(item)
         return True
 
     #item.infoLabels = infoLabels

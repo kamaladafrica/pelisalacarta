@@ -156,10 +156,10 @@ def save_library_movie(item):
     if not scraper_return or not item.infoLabels['code']:
         # TODO de momento si no hay resultado no añadimos nada,
         # aunq podriamos abrir un cuadro para introducir el identificador/nombre a mano
-        logger.debug("NO ENCONTRADO EN SCRAPER O NO TIENE IMDB_ID")
+        logger.debug("NO ENCONTRADO EN SCRAPER O NO TIENE code")
         return 0, 0, -1
 
-    _id = item.infoLabels['code']
+    _id = item.infoLabels['code'][0]
 
     # progress dialog
     p_dialog = platformtools.dialog_progress('pelisalacarta', 'Añadiendo película...')
@@ -168,8 +168,10 @@ def save_library_movie(item):
     
     for raiz, subcarpetas, ficheros in filetools.walk(MOVIES_PATH):
         for c in subcarpetas:
-            if c.endswith("[%s]" % _id):
+            code = scrapertools.find_single_match(c,'\[(.*?)\]')
+            if code and code in item.infoLabels['code']:
                 path = filetools.join(raiz, c)
+                _id = code
                 break
 
     if not path:
@@ -191,8 +193,8 @@ def save_library_movie(item):
     if not nfo_exists:
         # Creamos .nfo si no existe
         logger.info("Creando .nfo: " + nfo_path)
-        if item.infoLabels['tmdb_id']:
-            head_nfo = "https://www.themoviedb.org/movie/%s\n" % item.infoLabels['tmdb_id']
+        if item.infoLabels['url_scraper']:
+            head_nfo = item.infoLabels['url_scraper']
         else:
             head_nfo = "Aqui ira el xml"  # TODO
 
@@ -275,10 +277,11 @@ def save_library_tvshow(item, episodelist):
     if not scraper_return or not item.infoLabels['code']:
         # TODO de momento si no hay resultado no añadimos nada,
         # aunq podriamos abrir un cuadro para introducir el identificador/nombre a mano
-        logger.debug("NO ENCONTRADO EN SCRAPER O NO TIENE IMDB_ID")
+        logger.debug("NO ENCONTRADO EN SCRAPER O NO TIENE code")
         return 0, 0, -1
 
-    _id = item.infoLabels['code']
+    _id = item.infoLabels['code'][0]
+
     if config.get_setting("original_title_folder", "biblioteca") == 1 and item.infoLabels['originaltitle']:
         base_name = item.infoLabels['originaltitle']
     elif item.infoLabels['title']:
@@ -290,8 +293,10 @@ def save_library_tvshow(item, episodelist):
 
     for raiz, subcarpetas, ficheros in filetools.walk(TVSHOWS_PATH):
         for c in subcarpetas:
-            if c.endswith("[%s]" % _id):
+            code = scrapertools.find_single_match(c, '\[(.*?)\]')
+            if code and code in item.infoLabels['code']:
                 path = filetools.join(raiz, c)
+                _id = code
                 break
 
     if not path:

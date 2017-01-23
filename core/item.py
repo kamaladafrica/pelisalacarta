@@ -48,13 +48,15 @@ class InfoLabels(dict):
             
         elif name in ['IMDBNumber', 'imdb_id']:
             # Por compatibilidad hemos de guardar el valor en los tres campos
-            super(InfoLabels, self).__setitem__('IMDBNumber', value)
+            super(InfoLabels, self).__setitem__('IMDBNumber', str(value))
             #super(InfoLabels, self).__setitem__('code', value)
-            super(InfoLabels, self).__setitem__('imdb_id', value)
+            super(InfoLabels, self).__setitem__('imdb_id', str(value))
 
         elif name == "mediatype" and value not in ["list", "movie", "tvshow", "season", "episode"]:
             super(InfoLabels, self).__setitem__('mediatype', 'list')
 
+        elif name in ['tmdb_id', 'tvdb_id', 'otro_id']:
+            super(InfoLabels, self).__setitem__(name, str(value))
         else:
             super(InfoLabels, self).__setitem__(name, value)
     
@@ -76,10 +78,26 @@ class InfoLabels(dict):
             return '0.0'
 
         elif key == 'code':
-            if 'imdb_id' in super(InfoLabels,self).keys() and super(InfoLabels,self).__getitem__('imdb_id') !="":
-                return super(InfoLabels,self).__getitem__('imdb_id')
-            else:
-                return ""
+            code = []
+            # Añadir imdb_id al listado de codigos
+            if 'imdb_id' in super(InfoLabels, self).keys() and super(InfoLabels, self).__getitem__('imdb_id') not in ["", "None"]:
+                code.append(super(InfoLabels, self).__getitem__('imdb_id'))
+
+            # Completar con el resto de codigos
+            for scr in ['tmdb_id', 'tvdb_id', 'otro_id']:
+                if scr in super(InfoLabels,self).keys() and super(InfoLabels,self).__getitem__(scr) not in ["", "None"]:
+                    value = scr[:-2] + super(InfoLabels,self).__getitem__(scr)
+                    code.append(value)
+
+            '''
+            #Opcion añadir un code del tipo aleatorio
+            if not code:
+                value = rnd o date valor
+                code.append(value)
+                super(InfoLabels, self).__setitem__('otro_id', value)
+            '''
+
+            return code
 
         elif key == 'mediatype':
             # "list", "movie", "tvshow", "season", "episode"
