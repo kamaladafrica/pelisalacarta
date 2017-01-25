@@ -381,10 +381,11 @@ def get_only_episodio(item):
     data = re.sub(r"\n|\r|\t|\s{2}|(<!--.*?-->)","",httptools.downloadpage(item.url).data)
     patron ='vars.title =(.*?)};'
     try:
+        logger.debug(scrapertools.get_match(data,patron) +'}')
         data_dict= jsontools.load_json(scrapertools.get_match(data,patron) +'}')
     except:
         return itemlist # Devolvemos lista vacia
-        
+
     try:
         from core.tmdb import Tmdb
         oTmdb= Tmdb(id_Tmdb= data_dict['tmdb_id'],tipo="tv")
@@ -401,13 +402,13 @@ def get_only_episodio(item):
         infoLabels['cast'] = cast
         infoLabels['castandrole'] = zip(cast, rol)
 
-    if data_dict.has_key("actor"):
+    if data_dict.has_key("writer"):
         writers_list=[]
         for writer in data_dict["writer"]:
             writers_list.append(writer['name'])
         infoLabels['writer'] = ", ".join(writers_list)
 
-    if data_dict.has_key("actor"):
+    if data_dict.has_key("director"):
         director_list=[]
         for director in data_dict["director"]:
             director_list.append(director['name'])
