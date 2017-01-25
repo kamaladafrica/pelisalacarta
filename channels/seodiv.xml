@@ -6,6 +6,7 @@
 	<active>true</active>
 	<adult>false</adult>
 	<language>es</language>
+
 	<include_in_global_search>disabled</include_in_global_search>
 
 	<fanart></fanart>
@@ -13,18 +14,14 @@
 	<bannermenu>https://s31.postimg.org/klwjzp7t7/seodiv_banner.png</bannermenu>
 	
 	<update_url></update_url>
-	<version>1</version>
-	<date>06/12/2016</date>
+	<version>2</version>
+	<date>04/01/2017</date>
 	<changes>Release</changes>
-
-
-	<update_url></update_url>
-	<version></version>
-	<date></date>
-	<changes></changes>
-
+	
 	<categories>
 		<category>series</category>
 	</categories>
+	
+	
 
 </channel>

@@ -124,7 +124,7 @@ def lista(item):
     
     
     if item.extra =='series':
-	    accion = 'episodios'
+	    accion = 'episodiosxtemp'
     elif 'series-'in item.extra:
 	    accion = 'temporadas'
     else:
@@ -191,37 +191,46 @@ def temporadas(item):
         contentSeasonNumber = scrapedtitle.replace('Temporada ','')
         
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="episodios" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart, contentSerieName = item.contentSerieName, contentSeasonNumber = contentSeasonNumber))
+        itemlist.append( Item(channel=item.channel, action="episodiosxtemp" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart, contentSerieName = item.contentSerieName, contentSeasonNumber = contentSeasonNumber))
 
     if item.extra == 'temporadas':
         for tempitem in itemlist:
-            templist += episodios(tempitem)
+            templist += episodiosxtemp(tempitem)
        
     if config.get_library_support() and len(itemlist) > 0:
         itemlist.append(Item(channel=item.channel, title='[COLOR yellow]Añadir esta serie a la biblioteca[/COLOR]', url=item.url,
-                             action="add_serie_to_library", extra="temporadas", contentSerieName=item.contentSerieName))
-    if item.extra == 'temporadas':
-        return templist
-    else:
-        return itemlist
+                             action="add_serie_to_library", extra="episodios", contentSerieName=item.contentSerieName))
     
+    return itemlist
 
 def episodios(item):
+    logger.debug('pelisalacarta.channels.pymovie episodios')
+    itemlist = []
+    templist = temporadas(item)
+    for tempitem in templist:
+       logger.debug(tempitem)
+       itemlist += episodiosxtemp(tempitem) 
 
-    logger.info("pelisalacarta.channels.pymovie episodios")
+    return itemlist
+    
+
+def episodiosxtemp(item):
+
+    logger.info("pelisalacarta.channels.pymovie episodiosxtemp")
+    logger.debug(item)
     itemlist = []
     data = scrapertools.cache_page(item.url)
     patron = '<a href="\/VerCapitulo\/([^"]+)">'
     matches = re.compile(patron,re.DOTALL).findall(data)
     
-    if item.contentSeasonNumber == '':
-       temp = 0
-    else:
-       temp = 1
+    # if item.contentSeasonNumber == '':
+    #    temp = 0
+    # else:
+    #    temp = 1
     
-    if temp == 0:
-       	  contentSeasonNumber = re.findall(r'\d',item.title)
-       	  item.contentSeasonNumber = contentSeasonNumber[0]
+    # if temp == 0:
+    #    	  contentSeasonNumber = re.findall(r'\d',item.title)
+    #    	  item.contentSeasonNumber = contentSeasonNumber[0]
 
     ep = 1
     for scrapedtitle in matches:
@@ -234,7 +243,7 @@ def episodios(item):
        plot = ''
        fanart = ''
        plot = ''
-       contentEpisodeNumber = str(ep)
+       contentEpisodeNumber = ep
               
        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart, extra='series', contentSerieName = item.contentSerieName, contentSeasonNumber = item.contentSeasonNumber, contentEpisodeNumber = contentEpisodeNumber))
        ep = ep+1
@@ -293,7 +302,7 @@ def findvideos(item):
 	   patron ='data-video="([^"]+)" class="reproductorVideo"><ul><li>([^<]+)<\/li><li>([^<]+)<\/li>'
 	   tipotitle = item.contentTitle
 	elif item.extra == 'series':
-	   tipotitle = item.contentSeasonNumber+'x'+item.contentEpisodeNumber+' '+item.contentSerieName
+	   tipotitle = str(item.contentSeasonNumber)+'x'+str(item.contentEpisodeNumber)+' '+item.contentSerieName
 	   patron = '<li class="enlaces-l"><a href="([^"]+)" target="_blank"><ul><li>([^<]+)<.*?>([^<]+)<.*?>Reproducir<'
 	
 	matches = re.compile(patron,re.DOTALL).findall(data)
@@ -330,7 +339,7 @@ def findvideos(item):
 	   videoitem.folder=False
 
 
-	if config.get_library_support() and len(itemlist) > 0 and item.extra !='findvideos':
+	if config.get_library_support() and len(itemlist) > 0 and item.extra !='series':
           itemlist.append(Item(channel=item.channel, title='[COLOR yellow]Añadir esta pelicula a la biblioteca[/COLOR]', url=item.url,
                              action="add_pelicula_to_library", extra="findvideos", contentTitle = item.contentTitle))
 	

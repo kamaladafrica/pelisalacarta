@@ -36,7 +36,7 @@ DEBUG = config.get_setting("debug")
 #Proxy para acceder a datos(Este canal usa cloudflare con https)
 def get_page(url):
     
-    data = scrapertools.cachePage("http://ssl-proxy.my-addr.org/myaddrproxy.php/"+url)
+    data = scrapertools.downloadpage("http://ssl-proxy.my-addr.org/myaddrproxy.php/"+url)
     
     
     return data
@@ -182,20 +182,21 @@ def peliculas(item):
 
 
     for scrapedurl,scrapedthumbnail, scrapedtitle in matches:
-        
         if not item.extra=="search":
           calidad =scrapertools.find_single_match(data,'class="bloque_superior">(.*?)<\/div>')
+        
+        if "search" in item.extra:
+            scrapedtitle=re.sub(r'La Saga|Saga|Tetralogía|Tetralogia|Trilogía|Triloga|Pentalogía|Pentalogia','',scrapedtitle)
         scrapedtitle=re.sub('<br>','',scrapedtitle)
         scrapedurl = "http://" + scrapedurl
         if "serie" in item.url:
            scrapedurl = re.sub(r' \d+x\d+| \d+','',scrapedurl).strip()
            scrapedurl = re.sub(r' ','-',scrapedurl).strip()
-
         scrapedthumbnail = "http://"+scrapedthumbnail
         scrapedthumbnail = re.sub(r' ','-',scrapedthumbnail)
-        title_fan= re.sub(r"\[.*?\]|\(.*?\)|\d+x\d+.*?Final|-\d+|-|\d+x\d+|Temporada.*?Completa| ;|\d+|Serie Completa","",scrapedtitle).strip()
+        title_fan= re.sub(r"\[.*?\]|\(.*?\)|\d+x\d+.*?Final|-\d+|-|\d+x\d+|Temporada.*?Completa| ;|\d+|Serie Completa|Especial.*","",scrapedtitle).strip()
         title_serie = re.sub('<br>.*','',scrapedtitle)
-        if "serie" in item.url:
+        if "serie" in item.url :
           try:
             check_temp,check_serie =scrapertools.find_single_match(title_serie,'(\d+)x\d+ (\d+)')
             if check_serie:
@@ -203,9 +204,15 @@ def peliculas(item):
             if check_temp:
                scrapedurl= scrapedurl +"-temporada-"+check_temp
           except:
-            check_serie=""
+              try:
+                check_temp,check_serie =scrapertools.find_single_match(title_serie,'(\d+)x\d+-(\d+)')
+              except:
+                  try:
+                    check_temp,check_serie =scrapertools.find_single_match(title_serie,'(\d+)-(\d+)')
+                  except:
+                     check_serie=""
 
-
+        title = scrapedtitle.title()
         if "series" in scrapedurl:
             #title_fan= re.sub(r'')
             trailer = title_fan + " " + "series" + "trailer"
@@ -217,7 +224,7 @@ def peliculas(item):
 
         trailer = urllib.quote(trailer)
         extra = trailer+"|"+title_fan+"|"+"pelicula"+"|"+item.extra
-        if "Saga Completa" in title or "Serie Completa" in title or "Tetralogia" in title:
+        if "Saga" in title or "Serie Completa" in title or "Tetralogía" in title or "Tetralogia" in title or "Trilogía" in title or "Trilogia" in title  or  "Pentalogía" in title or "Pentalogia" in title or "Pack Peliculas" in title or "Pack Películas" in title:
             if "serie" in item.url:
                 l_scrapedurl= re.sub(r"http://","http/",scrapedurl)
                 l_scrapedurl ="http://ssl-proxy.my-addr.org/myaddrproxy.php/"+scrapedurl
@@ -242,22 +249,26 @@ def peliculas(item):
             pepe=extra
         itemlist.append( Item(channel=item.channel, title =title , url=scrapedurl, action=action, thumbnail=scrapedthumbnail, fanart=item.fanart,extra=pepe, folder=True) )
 
-        if  "series" in item.url and not "Completa" in scrapedtitle and not "Final" in scrapedtitle and check_serie=="" and not "Temporada" in title_serie:
+        if  "series" in item.url and not "Completa" in scrapedtitle  and check_serie=="" and not "Temporada" in title_serie:
+            xbmc.log("pocoyoespajo")
+            xbmc.log(scrapedtitle)
             url_1 = re.compile('([^<]+) (\d+).*?(\d+)',re.DOTALL).findall(scrapedtitle)
             for title_capitulo,temp,epi in url_1:
                 xbmc.log("pocoyoespajo")
-                xbmc.log(scrapedurl)
+                xbmc.log(scrapedtitle)
             if "serie-completa" in scrapedurl:
                 title = "[COLOR cyan]        Ver capitulos de temporada[/COLOR]"
             else:
                 title= "[COLOR cyan]Ver capitulo[/COLOR]"+" "+"[COLOR slateblue]"+temp+"x"+epi+"[/COLOR]"
             #url = "http://descargaportorrent.net/series/"+url_2+"-temporada-"+temp
             extra = temp+"|"+epi+"|"+scrapedtitle
+            if "Especial" in scrapedtitle:
+                title = "[COLOR cyan]   Ver capitulo especial[/COLOR]"
+                extra= ""+"|"+"Especial"+"|"+scrapedtitle
             itemlist.append( Item(channel=item.channel, title ="        "+title  , url=scrapedurl, action="ver_capitulo", thumbnail=scrapedthumbnail, fanart=item.fanart,extra=extra, folder=True) )
         else:
-            
-            if item.extra != "search" or item.extra=="search" and not "Saga" in title and not "Serie Completa" in title and not "Tetralogia" in title:
-             if "serie"  in scrapedurl and not "Serie Completa" in title:
+            if item.extra != "search" or item.extra=="search" and not "Saga" in title and not "Serie Completa" in title and not "Tetralogia" in title and not "Tetralogia" in title and not "Trilogía" in title and not "Trilogia" in title and not "Pentalogía" in title and not "Pentalogia" in title and not "Pack Peliculas" in title and not "Pack Películas" in title:
+             if "series"  in scrapedurl and not "Serie Completa" in title :
     
                 if "Temporada" in scrapedtitle:
                    title = "[COLOR cyan]        Ver capitulos de temporada[/COLOR]"
@@ -266,7 +277,7 @@ def peliculas(item):
              
              else:
                 
-                if not "Completa" in title and not "Tetralogia" in title :
+                if not "Completa" in title and not "Tetralogía" in title and  not "Tetralogia" in title and not "Saga" in title and not "Trilogía" in title and not "Trilogia" in title and not "Pentalogía" in title and not "Pentalogia" in title and not "Pack Películas" in title and not "Pack Peliculas" in title:
                     title ="[COLOR khaki]        Ver pelicula[/COLOR]"
                 else:
                     if "Serie Completa" in title and check_url=="capitulos":
@@ -281,7 +292,7 @@ def peliculas(item):
     if len(matches)>0:
         scrapedurl = matches[0]
         title ="siguiente>>"
-        title = "[COLOR slate]"+title+"[/COLOR]"
+        title = "[COLOR slategray]"+title+"[/COLOR]"
         itemlist.append( Item(channel=item.channel, action="peliculas", title=title , url="http://"+scrapedurl , thumbnail="http://s6.postimg.org/drfhhwrtd/muarrow.png", fanart=item.fanart,  folder=True) )
     
 
@@ -297,6 +308,7 @@ def fanart(item):
     title = re.sub(r'Serie Completa|Temporada.*','',title_fan)
     if "series" in item.url and not "temporada" in item.url:
        item.title = re.sub(r'\d+x\d+.*?Final|-\d+|-|\d+x\d+|\d+','',item.title)
+       item.title = re.sub(r'Especial.*?\[','[',item.title)
     title= title.replace(' ','%20')
     title = ''.join((c for c in unicodedata.normalize('NFD',unicode(title.decode('utf-8'))) if unicodedata.category(c) != 'Mn')).encode("ascii", "ignore")
     
@@ -845,20 +857,17 @@ def fanart(item):
     return itemlist
 def ver_capitulo(item):
     logger.info("pelisalacarta.pasateatorrent ver_capitulo")
-    
-    
     itemlist = []
     data = get_page(item.url)
     data = re.sub(r"&#.*?;","x",data)
-    
-    
     patronbloque_enlaces = '<tr class="lol">(.*?)ha sido descargada'
     matchesenlaces = re.compile(patronbloque_enlaces,re.DOTALL).findall(data)
     for enlaces in matchesenlaces:
-        enlaces =re.sub(r"alt=.*?<a href=.*?rar.*?>Click|-\d+ Final|Final","",enlaces)
+        enlaces =re.sub(r"alt=.*?<a href=.*?rar.*?>Click","",enlaces)
         enlaces =re.sub(r"\(Contrase.*?\).*?","NO REPRODUCIBLE-RAR",enlaces)
         if "Serie Completa"  in item.extra.split("|")[2] or "pelicula" in item.extra.split("|")[2] :
             patron = 'alt="[^<]+".*?".*?Click'
+            
             matches = re.compile(patron,re.DOTALL).findall(enlaces)
             scrapertools.printMatches(matches)
             catchurl = re.compile('<a href="/myaddrproxy.php/http/([^"]+)"',re.DOTALL).findall(str(matches))
@@ -905,8 +914,10 @@ def ver_capitulo(item):
                         xbmc.log(str(g))
                         matches[a] = b.replace(b,"[COLOR orange][B]"+g+"[/B][/COLOR]")+"--"+b.replace(b,"[COLOR palegreen][B]"+d+"[/B][/COLOR]")
         else:
-          check =item.extra.split("|")[0]+"x"+item.extra.split("|")[1]
-       
+          if item.extra.split("|")[1]!= "Especial":
+            check =item.extra.split("|")[0]+"x"+item.extra.split("|")[1]
+          else:
+            check= item.extra.split("|")[1]
        
           patron ='icono_espaniol\.png" title="[^<]+" alt="[^<]+"><\/td>\\n<td>'+check+'.*?<\/td>\\n<td>[^<]+<\/td>.*?Click' #'icono_.*?png" alt="([^<]+)" .*?;">([^<]+)</span>.*?;">(.*?)</span>.*?<a href="/myaddrproxy.php/http/([^"]+)"'
           matches = re.compile(patron,re.DOTALL).findall(enlaces)
@@ -969,11 +980,12 @@ def ver_capitulo(item):
 
 def findvideos(item):
     logger.info("pelisalacarta.pasateatorrent findvideos")
-    
+    check_iepi2=" "
     itemlist = []
     data = get_page(item.url)
     check_calidad=""
     check_epi=""
+    check_especial=""
     if not "series" in item.url:
        thumbnail= item.category
     if "series" in item.url :
@@ -1014,14 +1026,19 @@ def findvideos(item):
             pass
     patronbloque_enlaces = '<tr class="lol">(.*?)ha sido descargada'
     matchesenlaces = re.compile(patronbloque_enlaces,re.DOTALL).findall(data)
+    
     for enlaces in matchesenlaces:
         if "serie" in item.url:
          try:
           temp_check=scrapertools.find_single_match(enlaces,'icono_.*?png".*?alt=".*?".*?<td>(\d+&#\d+;\d+)<\/td>.*?<td>.*?<\/td>')
           if temp_check=="":
-             check=""
+             temp_check=scrapertools.find_single_match(enlaces,'icono_.*?png".*?alt=".*?".*?<td>(\d+&#\d+;\d+-\d+)<\/td>.*?<td>.*?<\/td>')
+             if temp_check=="":
+                check=""
+             else:
+                check="yes"
           else:
-            check="yes"
+             check="yes"
          except:
             check = ""
     
@@ -1066,8 +1083,10 @@ def findvideos(item):
            patron = 'icono_.*?png".*?alt="(.*?)".*?<td>(.*?)<\/td>.*?<td>(.*?)<\/td>.*?href="\/myaddrproxy.php\/http\/([^"]+)"'
            matches = re.compile(patron,re.DOTALL).findall(enlaces)
            scrapertools.printMatches(matches)
-          
+           
            for calidad,idioma,peso,url in matches:
+                if not "Especial:" in idioma:
+                   check_especial=""
                 if "Temporada" in item.title:
                   try:
                     temp_check=scrapertools.find_single_match(enlaces,'icono_.*?png".*?alt=".*?".*?<td>(\d+&#\d+;\d+)<\/td>.*?<td>.*?<\/td>')
@@ -1129,9 +1148,10 @@ def findvideos(item):
 
                 if "series" in item.url and not "Completa" in item.title or check!="" and check !="pelicula"  :
                    year = item.extra.split("|")[1]
-                   idioma= re.sub(r"-.*","",idioma)
+                   #idioma= re.sub(r"-.*","",idioma)
                    check = calidad +"|"+peso+"|"+idioma
                    temp_epi = re.compile('(\d)&#.*?;(\d+)',re.DOTALL).findall(check)
+    
                    for temp, epi in temp_epi:
                         url_tmdb2= "http://api.themoviedb.org/3/tv/"+item.show.split("|")[5]+"/season/"+temp+"/images?api_key="+api_key+""
                         data = scrapertools.cachePage( url_tmdb2 )
@@ -1143,11 +1163,13 @@ def findvideos(item):
                         for thumtemp in matches:
                             thumbnail= "https://image.tmdb.org/t/p/original"+ thumtemp
                 
-                   if check_epi == epi and check_calidad != peso:
+                   if check_epi == epi and check_calidad != peso and not "Especial:" in idioma or "Especial:" in idioma and check_especial == "yes":
                       check_info= "no"
                       title ="          [COLOR mediumslateblue][B]Versión[/B][/COLOR]"+"  "+"[COLOR royalblue][B]"+peso+"[/B][/COLOR]"+"[COLOR turquoise] ( Video"+"[/COLOR]"+" "+"[COLOR turquoise]"+ext_v+"[/COLOR]"+" "+"[COLOR turquoise]"+size+" )"+"[/COLOR]"
                    else:
                       check_info = "yes"
+                      if "Especial:" in idioma:
+                          check_especial = "yes"
                       title ="[COLOR steelblue][B]"+idioma+"[/B][/COLOR]"+"-"+"[COLOR lightskyblue][B]"+calidad+"[/B][/COLOR]"+"-"+"[COLOR royalblue][B]"+peso+"[/B][/COLOR]"+"[COLOR turquoise] ( Video"+"[/COLOR]"+" "+"[COLOR turquoise]"+ext_v+"[/COLOR]"+" "+"[COLOR turquoise]"+size+" )"+"[/COLOR]"
                    
                    check_epi = epi
@@ -1157,20 +1179,51 @@ def findvideos(item):
                 itemlist.append( Item(channel=item.channel, title = title , action="play", url=url, server="torrent", thumbnail= thumbnail,extra=item.extra,show= item.show, fanart=item.show.split("|")[0],   folder=False) )
                 
                 if "series" in item.url :
-                    if check_info == "yes":
-                        
+                    if check_info == "yes" :
                        extra = item.extra+"|"+temp+"|"+epi
-                       title_info ="    Info"
-                       title_info = "[COLOR skyblue]"+title_info+"[/COLOR]"
-                       itemlist.append( Item(channel=item.channel, action="info_capitulos" , title=title_info , url=item.url, thumbnail=thumbnail, fanart=item.show.split("|")[0], extra =extra,show=item.show,category=item.category, folder=False ))
-                     
+                       if "-" in idioma:
+                         temp_epi2 = re.compile('\d&#.*?;\d+-(\d+)',re.DOTALL).findall(check)
+                         for epi2 in temp_epi2:
+                             len_epis= int(epi2)-int(epi)
+                             if len_epis==1:
+                                check_iepi2="ok"
+                                title_info ="    Info Cap."+epi
+                                title_info = "[COLOR skyblue]"+title_info+"[/COLOR]"
+                                itemlist.append( Item(channel=item.channel, action="info_capitulos" , title=title_info , url=item.url, thumbnail=thumbnail, fanart=item.show.split("|")[0], extra =extra,show=item.show,category=item.category, folder=False ))
+                             else:
+                                 epis_len=range(int(epi),int(epi2)+1)
+                                 extra = item.extra+"|"+temp+"|"+str(epis_len)
+                                 title_info ="    Info Capítulos"
+                                 title_info = "[COLOR skyblue]"+title_info+"[/COLOR]"
+                                 itemlist.append( Item(channel=item.channel, action="capitulos" , title=title_info , url=item.url, thumbnail=thumbnail, fanart=item.show.split("|")[0], extra =extra,show=item.show,category=item.category, folder=True ))
+                                 check_iepi2=""
+                       else:
+                         title_info ="    Info"
+                         title_info = "[COLOR skyblue]"+title_info+"[/COLOR]"
+                         itemlist.append( Item(channel=item.channel, action="info_capitulos" , title=title_info , url=item.url, thumbnail=thumbnail, fanart=item.show.split("|")[0], extra =extra,show=item.show,category=item.category, folder=False ))
+                       
+                       if check_iepi2=="ok":
+                          extra = item.extra+"|"+temp+"|"+epi2
+                          title_info ="    Info Cap."+epi2
+                          title_info = "[COLOR skyblue]"+title_info+"[/COLOR]"
+                          itemlist.append( Item(channel=item.channel, action="info_capitulos" , title=title_info , url=item.url, thumbnail=thumbnail, fanart=item.show.split("|")[0], extra =extra,show=item.show,category=item.category, folder=False ))
 
                     
 
                     
     return itemlist
 
-
+def capitulos(item):
+    logger.info("pelisalacarta.pasateatorrent capitulos")
+    itemlist = []
+    url=item.url
+    capis =  item.extra.split("|")[3]
+    capis =re.sub(r'\[|\]','',capis)
+    capis=[int(k) for k in capis.split(',')]
+    for i in capis:
+        extra = item.extra.split("|")[0]+"|"+item.extra.split("|")[1]+"|"+item.extra.split("|")[2]+"|"+str(i)
+        itemlist.append( Item(channel=item.channel, action="info_capitulos" , title="[COLOR skyblue]Info Cap."+str(i)+"[/COLOR]" , url=item.url, thumbnail=item.thumbnail, fanart=item.show.split("|")[0], extra =extra,show=item.show,category=item.category, folder=False ))
+    return itemlist
 
 def info(item):
     logger.info("pelisalacarta.pasateatorrent info")
@@ -1340,8 +1393,7 @@ def info(item):
     infoplus.start(item_info, peliculas)
 
 def info_capitulos(item):
-    logger.info("pelisalacarta.pasateatorrent trailer")
-    
+    logger.info("pelisalacarta.pasateatorrent info_capitulos")
     url= "https://api.themoviedb.org/3/tv/"+item.show.split("|")[5]+"/season/"+item.extra.split("|")[2]+"/episode/"+item.extra.split("|")[3]+"?api_key="+api_key+"&language=es"
 
     if "/0" in url:

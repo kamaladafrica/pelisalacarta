@@ -62,48 +62,59 @@ def todas(item):
         )
     return itemlist
 
+
 def temporadas(item):
     logger.debug("pelisalacarta.channels.metaserie temporadas")
+    logger.debug(item.extra)
     itemlist = []
     templist = []
-    data = scrapertools.cache_page(item.url)
     
+    data = scrapertools.cache_page(item.url)
     patron = '<li class=".*?="([^"]+)".*?>([^<]+)</a>'
     matches = re.compile(patron,re.DOTALL).findall(data)
 
     for scrapedurl,scrapedtitle in matches:
-        url = urlparse.urljoin(item.url,scrapedurl)
+        url = scrapedurl
+        contentSeasonNumber = re.findall (r'.*?temporada-([^-]+)-',url)
         title = scrapedtitle
         title = title.replace("&","x");
         thumbnail = item.thumbnail
         plot = item.plot
         fanart = scrapertools.find_single_match(data,'<img src="([^"]+)"/>.*?</a>')
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="episodios" , title=title ,fulltitle = item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart, contentSerieName=item.contentSerieName))
-    
-    if item.extra == 'temporadas':
-        for tempitem in itemlist:
-            templist += episodios(tempitem)
-       
+        itemlist.append( Item(channel=item.channel, action= 'episodiosxtemp' , title=title ,fulltitle = item.contentSerieName, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart, contentSerieName=item.contentSerieName, contentSeasonNumber = contentSeasonNumber))
+              
     if config.get_library_support() and len(itemlist) > 0:
-        itemlist.append(Item(channel=item.channel, title='[COLOR yellow]Añadir esta serie a la biblioteca[/COLOR]', url=item.url,
-                             action="add_serie_to_library", extra="temporadas", contentSerieName=item.contentSerieName))
-    if item.extra == 'temporadas':
-        return templist
-    else:
-        return itemlist
+       itemlist.append(Item(channel=item.channel, title='[COLOR yellow]Añadir esta serie a la biblioteca[/COLOR]', url=item.url,
+                             action="add_serie_to_library", extra='episodios', contentSerieName=item.contentSerieName))
     
+    return itemlist
+    
+     
 
 def episodios(item):
-    logger.debug("pelisalacarta.channels.metaserie episodios")
+    logger.debug('pelisalacarta.channels.metaserie episodios')
     itemlist = []
-    data = scrapertools.cache_page(item.url)
+    templist = temporadas(item)
+    for tempitem in templist:
+       logger.debug(tempitem)
+       itemlist += episodiosxtemp(tempitem) 
+
+    return itemlist
     
+     
+    
+
+def episodiosxtemp(item):
+    logger.debug("pelisalacarta.channels.metaserie episodiosxtemp")
+    itemlist =[]               
+    data = scrapertools.cache_page(item.url)
     patron = '<td><h3 class=".*?href="([^"]+)".*?">([^<]+).*?td>'
     matches = re.compile(patron,re.DOTALL).findall(data)
 
     for scrapedurl,scrapedtitle in matches:
-        url = urlparse.urljoin(item.url,scrapedurl)
+        url = scrapedurl
+        contentEpisodeNumber = re.findall(r'.*?x([^\/]+)\/',url)
         title = scrapedtitle
         title = title.replace ("&#215;","x")
         title = title.replace ("×","x")
@@ -111,8 +122,8 @@ def episodios(item):
         plot = item.plot
         fanart=item.fanart
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title, fulltitle=item.fulltitle, url=url, thumbnail=item.thumbnail, plot=plot, contentSerieName=item.contentSerieName))
-        
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title, fulltitle=item.fulltitle, url=url, thumbnail=item.thumbnail, plot=plot, contentSerieName=item.contentSerieName, contentSeasonNumber = item.contentSeasonNumber, contentEpisodeNumber = contentEpisodeNumber))
+    
     return itemlist
 
 def search(item,texto):
@@ -153,9 +164,7 @@ def findvideos(item):
     
     anterior = scrapertools.find_single_match(data,'<th scope="col"><a href="([^"]+)" rel="prev" class="local-link">Anterior</a></th>')
     siguiente = scrapertools.find_single_match(data,'<th scope="col"><a href="([^"]+)" rel="next" class="local-link">Siguiente</a></th>')
-    #titulo = scrapertools.find_single_match(data,'<h1 class="entry-title">([^<]+)</h1>		</header>')
-    #titulo = titulo.encode('utf-8')
-
+    
     for scrapedid, scrapedurl, scrapedserv in matches:
         url = scrapedurl
         title = item.title+' audio '+audio[scrapedid]+' en '+scrapedserv

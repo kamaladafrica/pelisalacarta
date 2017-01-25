@@ -32,7 +32,11 @@ import traceback
 from core import logger
 from core import scrapertools
 from platformcode import platformtools
-from lib.sambatools import libsmb as samba
+try:
+  from lib.sambatools import libsmb as samba
+except:
+  samba = None
+  #Python 2.4 No compatible con modulo samba, hay que revisar
 
 #Windows es "mbcs" linux, osx, android es "utf8"
 if os.name == "nt":

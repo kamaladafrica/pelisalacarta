@@ -91,28 +91,33 @@ def temporadas(item):
            plot = item.plot
            fanart = scrapertools.find_single_match(data,'<img src="([^"]+)"/>.*?</a>')
            if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-           itemlist.append( Item(channel=item.channel, action="episodios" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart, temp=str(temp),contentSerieName=item.contentSerieName))
+           itemlist.append( Item(channel=item.channel, action="episodiosxtemp" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart, temp=str(temp),contentSerieName=item.contentSerieName))
            temp = temp+1
-        if item.extra=='temporadas':
-           for tempitem in itemlist:
-              templist += episodios(tempitem)
+        
         if config.get_library_support() and len(itemlist) > 0:
            itemlist.append(Item(channel=item.channel, title='[COLOR yellow]Añadir esta serie a la biblioteca[/COLOR]', url=item.url,
-                             action="add_serie_to_library", extra="temporadas", contentSerieName=item.contentSerieName, extra1 = item.extra1, temp=str(temp)))
-        if item.extra=='temporadas':
-            return templist
-        else:
-            return itemlist
+                             action="add_serie_to_library", extra="episodios", contentSerieName=item.contentSerieName, extra1 = item.extra1, temp=str(temp)))
+        return itemlist
     else:
-        itemlist=episodios(item)
+        itemlist=episodiosxtemp(item)
         if config.get_library_support() and len(itemlist) > 0:
            itemlist.append(Item(channel=item.channel, title='[COLOR yellow]Añadir esta serie a la biblioteca[/COLOR]', url=item.url,
-                             action="add_serie_to_library", extra="temporadas", contentSerieName=item.contentSerieName, extra1 = item.extra1, temp=str(temp)))
+                             action="add_serie_to_library", extra="episodios", contentSerieName=item.contentSerieName, extra1 = item.extra1, temp=str(temp)))
         return itemlist
 
 def episodios(item):
+    logger.debug('pelisalacarta.channels.seodiv episodios')
+    itemlist = []
+    templist = temporadas(item)
+    for tempitem in templist:
+       logger.debug(tempitem)
+       itemlist += episodiosxtemp(tempitem) 
+
+    return itemlist
+
+def episodiosxtemp(item):
     
-    logger.debug("pelisalacarta.channels.seodiv episodios")
+    logger.debug("pelisalacarta.channels.seodiv episodiosxtemp")
     itemlist = []
     data = scrapertools.cache_page(item.url)
     tempo = item.title
@@ -121,7 +126,7 @@ def episodios(item):
         item.title = item.title.strip()
         item.title = item.title.replace(' ','-')
                 
-    #patron ='<li><a href="([^"]+)">.*?Capitulo.*?([\d\d<]+)<'
+    
     patron ='<li><a href="([^"]+)">.*?(Capitulo|Pelicula).*?([\d]+)'
         
     matches = re.compile(patron,re.DOTALL).findall(data)
@@ -149,16 +154,7 @@ def episodios(item):
         if 'temporada' not in item.title and item.title not in scrapedurl and scrapedtipo =='Pelicula':
             title = scrapedtipo +' '+scrapedtitle
             itemlist.append( Item(channel=item.channel, action="findvideos" , title=title, fulltitle=item.fulltitle, url=url, thumbnail=item.thumbnail, plot=plot))
-
-
-
-
-        #elif 'temporada' not in item.title and item.title not in scrapedurl and scrapedtipo !='Capitulo':
-        #    title = scrapedtipo +' '+scrapedtitle
-        #    itemlist.append( Item(channel=item.channel, action="findvideos" , title=title, fulltitle=item.fulltitle, url=url, thumbnail=item.thumbnail, plot=plot))
-    #if config.get_library_support() and len(itemlist) > 0:
-    #    itemlist.append(Item(channel=item.channel, title='[COLOR yellow]Añadir esta serie a la biblioteca[/COLOR]', url=item.url,
-    #                            action="add_serie_to_library", extra="episodios", contentSerieName=item.contentSerieName, extra1 = item.extra1))
+        
     return itemlist            
                                  
     

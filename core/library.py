@@ -37,25 +37,37 @@ from core.item import Item
 from platformcode import platformtools
 
 LIBRARY_PATH = config.get_library_path()
-# TODO permitir cambiar las rutas y nombres en settings para 'cine' y 'series'
-FOLDER_MOVIES = "CINE"  # config.get_localized_string(30072)
+if config.get_setting("folder_movies") != "":
+    FOLDER_MOVIES = config.get_setting("folder_movies")
+else:
+    FOLDER_MOVIES = "CINE"  # config.get_localized_string(30072)
+if config.get_setting("folder_tvshows") != "":
+    FOLDER_TVSHOWS = config.get_setting("folder_tvshows")
+else:
+    FOLDER_TVSHOWS = "SERIES"  # config.get_localized_string(30073)
 MOVIES_PATH = filetools.join(LIBRARY_PATH, FOLDER_MOVIES)
-FOLDER_TVSHOWS = "SERIES"  # config.get_localized_string(30073)
 TVSHOWS_PATH = filetools.join(LIBRARY_PATH, FOLDER_TVSHOWS)
+
+logger.info("LIBRARY_PATH (RAW): " + LIBRARY_PATH)
+# logger.info("MOVIES_PATH (RAW): " + MOVIES_PATH)
+# logger.info("TVSHOWS_PATH (RAW): " + TVSHOWS_PATH)
+logger.info("FOLDER_MOVIES (RAW): " + FOLDER_MOVIES)
+logger.info("FOLDER_TVSHOWS (RAW): " + FOLDER_TVSHOWS)
+
 addon_name = "plugin://plugin.video.pelisalacarta/"
 
 # TODO: mover todo esto a config.verify_directories_created()
 if not filetools.exists(LIBRARY_PATH):
     logger.info("Library path doesn't exist:" + LIBRARY_PATH)
     config.verify_directories_created()
-    
+
 if not filetools.exists(MOVIES_PATH):
     logger.info("Movies path doesn't exist:" + MOVIES_PATH)
     if filetools.mkdir(MOVIES_PATH)and config.is_xbmc():
         if config.is_xbmc():
           from platformcode import xbmc_library
           xbmc_library.establecer_contenido(FOLDER_MOVIES)
-        
+
 if not filetools.exists(TVSHOWS_PATH):
     logger.info("Tvshows path doesn't exist:" + TVSHOWS_PATH)
     if filetools.mkdir(TVSHOWS_PATH) and config.is_xbmc():
@@ -389,11 +401,17 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
     sobreescritos = 0
     fallidos = 0
     news_in_playcounts = {}
-    
+
+    if overwrite == "everything":
+        overwrite = True
+        overwrite_everything = True
+    else:
+        overwrite_everything = False
+
     # Listamos todos los ficheros de la serie, asi evitamos tener que comprobar si existe uno por uno
     raiz, carpetas_series, ficheros = filetools.walk(path).next()
     ficheros = [filetools.join(path, f) for f in ficheros]
-    
+
     # Silent es para no mostrar progreso (para library_service)
     if not silent:
         # progress dialog
@@ -419,12 +437,19 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
         strm_path = filetools.join(path, "%s.strm" % season_episode)
         nfo_path = filetools.join(path, "%s.nfo" % season_episode)
         json_path = filetools.join(path, ("%s [%s].json" % (season_episode, e.channel)).lower())
-        
+
         strm_exists = strm_path in ficheros
         nfo_exists = nfo_path in ficheros
         json_exists = json_path in ficheros
-        
-        if not strm_exists:
+
+        strm_exists_before = True
+        nfo_exists_before = True
+        json_exists_before = True
+
+        if not strm_exists or overwrite_everything:
+            if not overwrite_everything:
+                strm_exists_before = False
+
             # Si no existe season_episode.strm añadirlo
             item_strm = Item(action='play_from_library', channel='biblioteca',
                              strm_path=strm_path.replace(TVSHOWS_PATH, ""), infoLabels={})
@@ -447,7 +472,10 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
             strm_exists = filetools.write(strm_path, '%s?%s' % (addon_name, item_strm.tourl()))
 
         item_nfo = None
-        if not nfo_exists and e.infoLabels.get("imdb_id"):
+        if (not nfo_exists or overwrite_everything) and e.infoLabels.get("imdb_id"):
+            if not overwrite_everything:
+                nfo_exists_before = False
+
             # Si no existe season_episode.nfo añadirlo
             if e.infoLabels["tmdb_id"]:
                 scraper.find_and_set_infoLabels(e)
@@ -477,9 +505,13 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
                 e.infoLabels = item_nfo.infoLabels
 
                 if filetools.write(json_path, e.tojson()):
-                    if not json_exists:
-                        logger.info("Insertado: %s" % json_path)
-                        insertados += 1
+                    if not json_exists or overwrite_everything:
+                        if not overwrite_everything:
+                            json_exists_before = False
+                            logger.info("Insertado: %s" % json_path)
+                        else:
+                            logger.info("Sobreescritos todos los archivos!")
+
                         # Marcamos episodio como no visto
                         news_in_playcounts[season_episode] = 0
                         # Marcamos la temporada como no vista
@@ -487,6 +519,8 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
                         # Marcamos la serie como no vista
                         # logger.debug("serie " + serie.tostring('\n'))
                         news_in_playcounts[serie.contentTitle] = 0
+                        if (not overwrite_everything and not json_exists):
+                            json_exists = True
                     else:
                         logger.info("Sobreescrito: %s" % json_path)
                         sobreescritos += 1
@@ -497,6 +531,12 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
         else:
             logger.info("Fallido: %s" % json_path)
             fallidos += 1
+
+        if (not strm_exists_before or not nfo_exists_before or not json_exists_before):
+            if (strm_exists and nfo_exists and json_exists):
+                insertados += 1
+            else:
+                logger.error("El archivo strm, nfo o json no existe")
 
         if not silent and p_dialog.iscanceled():
             break

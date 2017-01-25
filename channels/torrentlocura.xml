@@ -10,12 +10,22 @@
 	<fanart></fanart>
 	<thumbnail>http://imgur.com/EWmLS3d.png</thumbnail>
 	<bannermenu></bannermenu>
-
 	<update_url></update_url>
-    <version>1</version>
-    <date>31/12/2016</date>
-    <changes>Release</changes>
-
+    
+    <version>2</version>
+    <changes>
+        <change>
+          <date>31/12/2016</date>
+          <autor>Neno1978</autor>
+          <description>Release</description>
+        </change>
+        <change>
+          <date>13/01/2017</date>
+          <autor>Neno1978</autor>
+          <description>Añadida info a cápitulos en bloque</description>
+        </change>
+    </changes>
+    
 	<categories>
 		<category>torrent</category>
 		<category>movie</category>

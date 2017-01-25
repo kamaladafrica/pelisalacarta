@@ -93,10 +93,6 @@ def buscador(item):
     
     matches = re.compile(patron,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
-    if len(matches)==0 :
-       itemlist.append( Item(channel=item.channel, title="[COLOR gold][B]No se ha encontrado nada en la busqueda...[/B][/COLOR]", thumbnail ="http://s6.postimg.org/vhczf38ep/oops.png", fanart ="http://s12.postimg.org/59o1c792l/oopstxibi.jpg",folder=False) )
-
-
     
     for scrapedurl, scrapedtitle, scrapedthumbnail, scrapedlenguage, scrapedsize in matches:
         title_fan= re.sub(r"\[.*?\]|\(.*?\)|\d+x\d+.*?Final|\d\d\d\d|-\d+|-|\d+x\d+|Temporada.*?Completa| ;","",scrapedtitle)

@@ -9,13 +9,22 @@
     <fanart></fanart>
     <thumbnail>http://imgur.com/iLeISt0.png</thumbnail>
     <bannermenu></bannermenu>
-    
-    
     <update_url></update_url>
-    <version>1</version>
-    <date>06/12/2016</date>
-    <changes>Releasec</changes>
-   
+    
+    <version>2</version>
+    <changes>
+        <change>
+          <date>06/12/2016</date>
+          <autor>Neno1978</autor>
+         <description>Release</description>
+        </change>
+        <change>
+          <date>13/01/2017</date>
+          <autor>Neno1978</autor>
+          <description>Arreglo sagas en peliculas que no se mostraban.Mejoras en series/info-capitulos</description>
+        </change>
+    </changes>
+    
     <categories>
         <category>torrent</category>
         <category>movie</category>

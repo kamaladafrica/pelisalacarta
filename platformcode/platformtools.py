@@ -142,6 +142,11 @@ def render_items(itemlist, parent_item):
         if item.text_italic:
             item.title = '[I]%s[/I]' % item.title
 
+        #Añade headers a las imagenes si estan en un servidor con cloudflare    
+        from core import httptools
+        item.thumbnail = httptools.get_url_headers(item.thumbnail)
+        item.fanart = httptools.get_url_headers(item.fanart)
+
         # IconImage para folder y video
         if item.folder:
             icon_image = "DefaultFolder.png"
@@ -387,11 +392,11 @@ def set_context_commands(item, parent_item):
                                      (sys.argv[0], Item(channel=item.channel, action="mainlist").tourl())))
 
         # Añadir a Favoritos
-        if version_xbmc < 17 and (item.channel not in ["favoritos", "biblioteca", "ayuda",
-                                                       "configuracion", ""] and not parent_item.channel == "favoritos"):
+        if version_xbmc < 17 and ((item.channel not in ["favoritos", "biblioteca", "ayuda", ""] or
+                                    item.action in ["update_biblio"]) and not parent_item.channel == "favoritos"):
             context_commands.append((config.get_localized_string(30155), "XBMC.RunPlugin(%s?%s)" %
                                      (sys.argv[0], item.clone(channel="favoritos", action="addFavourite",
-                                                        from_channel=item.channel, from_action=item.action).tourl())))
+                                                              from_channel=item.channel, from_action=item.action).tourl())))
 
         # Añadimos opción contextual para Añadir la serie completa a la biblioteca
         if item.channel != "biblioteca" and item.action in ["episodios", "get_episodios"] \
@@ -434,6 +439,13 @@ def set_context_commands(item, parent_item):
         if parent_item.channel not in ["configuracion", "novedades", "buscador"]:
             context_commands.append(("Abrir Configuración", "XBMC.Container.Update(%s?%s)" %
                                      (sys.argv[0], Item(channel="configuracion", action="mainlist").tourl())))
+
+    # Añadir SuperFavourites al menu contextual (1.0.53 o superior necesario)
+    sf_file_path = xbmc.translatePath("special://home/addons/plugin.program.super.favourites/LaunchSFMenu.py")
+    check_sf = os.path.exists(sf_file_path)
+    if check_sf and xbmc.getCondVisibility('System.HasAddon("plugin.program.super.favourites")'):
+        context_commands.append(("Super Favourites",
+                                 "XBMC.RunScript(special://home/addons/plugin.program.super.favourites/LaunchSFMenu.py)"))
 
     #context_commands.append((item.contentType, "XBMC.Action(Info)")) # For debug
     return sorted(context_commands, key=lambda comand: comand[0])
@@ -677,8 +689,12 @@ def get_dialogo_opciones(item, default_action, strm):
     muestra_dialogo = (config.get_setting("player_mode") == "0" and not strm)
 
     # Extrae las URL de los vídeos, y si no puedes verlo te dice el motivo
-    video_urls, puedes, motivo = servertools.resolve_video_urls_for_playing(
-        item.server, item.url, item.password, muestra_dialogo)
+    #Permitir varias calidades para server "directo"
+    if item.video_urls:
+      video_urls, puedes, motivo = item.video_urls, True, ""
+    else:
+      video_urls, puedes, motivo = servertools.resolve_video_urls_for_playing(
+          item.server, item.url, item.password, muestra_dialogo)
 
     seleccion = 0
     # Si puedes ver el vídeo, presenta las opciones

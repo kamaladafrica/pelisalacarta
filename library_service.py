@@ -50,15 +50,25 @@ def convert_old_to_v4():
 
     # Renombrar carpeta Series y crear una vacia
     import time
-    new_name = "SERIES_OLD_" + str(time.time())
-    path_series_old = filetools.join(library.LIBRARY_PATH, new_name)
-    if filetools.rename(library.TVSHOWS_PATH,  new_name):
+    new_name = str(time.time())
+    path_series_old = filetools.join(library.LIBRARY_PATH, "SERIES_OLD_" + new_name)
+    if filetools.rename(library.TVSHOWS_PATH,  "SERIES_OLD_" + new_name):
         if not filetools.mkdir(library.TVSHOWS_PATH):
             logger.error("ERROR, no se ha podido crear la nueva carpeta de SERIES")
             return False
     else:
         logger.error("ERROR, no se ha podido renombrar la antigua carpeta de SERIES")
         return False
+
+    path_cine_old = filetools.join(library.LIBRARY_PATH, "CINE_OLD_" + new_name)
+    if filetools.rename(library.MOVIES_PATH,  "CINE_OLD_" + new_name):
+        if not filetools.mkdir(library.MOVIES_PATH):
+            logger.error("ERROR, no se ha podido crear la nueva carpeta de CINE")
+            return False
+    else:
+        logger.error("ERROR, no se ha podido renombrar la antigua carpeta de CINE")
+        return False
+
 
     # Convertir libreria de v1(xml) a v4
     if filetools.exists(path_series_xml):
@@ -145,12 +155,30 @@ def convert_old_to_v4():
                     except:
                         series_fallidas += 1
 
+        movies_insertadas = 0
+        movies_fallidas = 0
+        for raiz, subcarpetas, ficheros in filetools.walk(path_cine_old):
+            for f in ficheros:
+                if f.endswith(".strm.json"):
+                    try:
+                        movie= Item().fromjson(filetools.read(filetools.join(raiz, f)))
+                        insertados, sobreescritos, fallidos = library.save_library_movie(movie)
+                        if fallidos == 0:
+                            movies_insertadas += 1
+                            platformtools.dialog_notification("Película actualizada", movie.infoLabels['title'])
+                        else:
+                            movies_fallidas += 1
+                    except:
+                        movies_fallidas += 1
+
+
     config.set_setting("library_version", 'v4')
 
     platformtools.dialog_notification("Biblioteca actualizada al nuevo formato",
-                                      "%s series convertidas y %s series descartadas. A continuación se va a "
-                                      "obtener la información de todos los episodios" %
-                                      (series_insertadas, series_fallidas), time=12000)
+                                      "%s series convertidas y %s series descartadas.\n"
+                                      "%s peliculas convertidas y %s peliculas descartadas."
+                                      "A continuación se va a obtener la información de todos los episodios" %
+                                      (series_insertadas, series_fallidas, movies_insertadas, movies_fallidas), time=12000)
 
     # Por ultimo limpia la libreria, por que las rutas anteriores ya no existen
     xbmc_library.clean()
@@ -204,11 +232,18 @@ def update(path, p_dialog, i, t, serie, overwrite):
 
 def check_for_update(overwrite=True):
     logger.info("Actualizando series...")
+    logger.info("Overwrite? -> " + str(overwrite))
     p_dialog = None
     serie_actualizada = False
     hoy = datetime.date.today()
 
+    overwrite_everything = False
+
     try:
+        if overwrite == "everything":
+            overwrite = True
+            overwrite_everything = True
+
         if config.get_setting("updatelibrary", "biblioteca") != 0 or overwrite:
             config.set_setting("updatelibrary_last_check", hoy.strftime('%Y-%m-%d'), "biblioteca")
 
@@ -262,6 +297,8 @@ def check_for_update(overwrite=True):
                 # si la serie esta activa ...
                 if overwrite or config.get_setting("updatetvshows_interval", "biblioteca") == 0:
                     # ... forzar actualizacion independientemente del intervalo
+                    if overwrite_everything:
+                        overwrite = "everything"
                     serie_actualizada = update(path, p_dialog, i, t, serie, overwrite)
 
                 elif interval == 1 and update_next <= hoy:
@@ -318,7 +355,7 @@ if __name__ == "__main__":
     # Se ejecuta en cada inicio
     if config.get_setting("library_version") != 'v4':
         platformtools.dialog_ok(config.PLUGIN_NAME.capitalize(), "Se va a actualizar la biblioteca al nuevo formato",
-                                "Seleccione el nombre correcto de cada serie, si no está seguro pulse 'Cancelar'.")
+                                "Seleccione el nombre correcto de cada serie o película, si no está seguro pulse 'Cancelar'.")
 
         if not convert_old_to_v4():
             platformtools.dialog_ok(config.PLUGIN_NAME.capitalize(),
@@ -330,9 +367,11 @@ if __name__ == "__main__":
 
     # Se ejecuta ciclicamente
     import xbmc
-    try:
+    version_xbmc = int(xbmc.getInfoLabel("System.BuildVersion").split(".", 1)[0])
+
+    if version_xbmc >= 14:
         monitor = xbmc.Monitor()  # For Kodi >= 14
-    except:
+    else:
         monitor = None  # For Kodi < 14
 
     if monitor:

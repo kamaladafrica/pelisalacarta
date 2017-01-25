@@ -105,16 +105,16 @@ def get_setting(name, channel=""):
     # Global setting
     else:
         # xbmc.log("config.get_setting reading main setting '"+name+"'")
-        value = __settings__.getSetting(channel+name)
-        #Translate Path if start with "special://"
-        if value.startswith("special://"):
-          value = xbmc.translatePath(value)
-          
+        value = __settings__.getSetting(channel + name)
+        # Translate Path if start with "special://"
+        if value.startswith("special://") and name != "librarypath":
+            value = xbmc.translatePath(value)
+
         # xbmc.log("config.get_setting -> '"+value+"'")
         return value
 
 
-def set_setting(name,value, channel=""):
+def set_setting(name, value, channel=""):
     """
     Fija el valor de configuracion del parametro indicado.
 
@@ -173,6 +173,9 @@ def get_library_path():
     value = get_setting("librarypath")
     if value == "":
         value = default
+
+    if value.lower().startswith("special://"):
+        value = xbmc.translatePath(value)
 
     if value.lower().startswith("smb://") and not value.endswith("/"):
         value += "/"
