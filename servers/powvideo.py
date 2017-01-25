@@ -9,6 +9,7 @@ import re
 
 from core import logger
 from core import scrapertools
+from core import httptools
 from lib import jsunpack
 
 headers = [['User-Agent', 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0']]
@@ -18,7 +19,7 @@ host = "http://powvideo.net/"
 def test_video_exists(page_url):
     logger.info("(page_url='%s')" % page_url)
 
-    data = scrapertools.cache_page(page_url)
+    data = httptools.downloadpage(page_url).data
     if "<title>watch </title>" in data.lower():
         return False, "[powvideo] El archivo no existe o  ha sido borrado"
 
@@ -29,29 +30,28 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     logger.info("(page_url='%s')" % page_url)
 
     url = page_url.replace(host, "http://powvideo.xyz/iframe-") + "-954x562.html"
-    headers.append(['Referer', url.replace("iframe", "preview")])
 
-    data = scrapertools.cache_page(url, headers=headers)
+    referer = {'Referer': url.replace("iframe","preview")}
+    data = httptools.downloadpage(url, headers=referer).data
 
     jj_encode = scrapertools.find_single_match(data, "(\w+=~\[\];.*?\)\(\)\)\(\);)")
     jj_decode = None
     jj_patron = None
     reverse = False
-    substring = False
     splice = False
     if jj_encode:
         jj_decode = jjdecode(jj_encode)
     if jj_decode:
         jj_patron = scrapertools.find_single_match(jj_decode, "/([^/]+)/")
-    if "(" not in jj_patron: jj_patron = "(" + jj_patron
-    if ")" not in jj_patron: jj_patron += ")"
+        if "(" not in jj_patron: jj_patron = "(" + jj_patron
+        if ")" not in jj_patron: jj_patron += ")"
 
-    if "x72x65x76x65x72x73x65" in jj_decode: reverse = True
-    if "x73x75x62x73x74x72x69x6Ex67" in jj_decode: substring = True
-    if "x73x70x6Cx69x63x65" in jj_decode: splice = True
+        jhex_decode = jhexdecode(jj_decode)
+        if "reverse" in jhex_decode: reverse = True
+        if "splice" in jhex_decode: splice = True
 
     matches = scrapertools.find_single_match(data, "<script type=[\"']text/javascript[\"']>(eval.*?)</script>")
-    data = jsunpack.unpack(data).replace("\\", "")
+    data = jsunpack.unpack(matches).replace("\\", "")
 
     data = scrapertools.find_single_match(data.replace('"', "'"), "sources\s*=[^\[]*\[([^\]]+)\]")
     matches = scrapertools.find_multiple_matches(data, "[src|file]:'([^']+)'")
@@ -59,7 +59,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     for video_url in matches:
         _hash = scrapertools.find_single_match(video_url, '\w{40,}')
         if splice:
-            splice = int(scrapertools.find_single_match(jj_decode, "\((\d),\d\);"))
+            splice = eval(scrapertools.find_single_match(jj_decode, "\((\d[^,]*),\d\);"))
             if reverse:
                 h = list(_hash)
                 h.pop(-splice - 1)
@@ -68,19 +68,14 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
                 h = list(_hash)
                 h.pop(splice)
                 _hash = "".join(h)
-        if substring:
-            substring = int(scrapertools.find_single_match(jj_decode, "_\w+.\d...(\d)...;"))
-            if reverse:
-                _hash = _hash[:-substring]
-            else:
-                _hash = _hash[substring:]
+
         if reverse:
             video_url = re.sub(r'\w{40,}', _hash[::-1], video_url)
         filename = scrapertools.get_filename_from_url(video_url)[-4:]
         if video_url.startswith("rtmp"):
             rtmp, playpath = video_url.split("vod/", 1)
-            video_url = "%s playpath=%s swfUrl=%splayer6/jwplayer.flash.swf pageUrl=%s" % (
-            rtmp + "vod/", playpath, host, page_url)
+            video_url = "%s playpath=%s swfUrl=%splayer6/jwplayer.flash.swf pageUrl=%s" % \
+                        (rtmp + "vod/", playpath, host, page_url)
             filename = "RTMP"
         elif video_url.endswith(".m3u8"):
             video_url += "|User-Agent=" + headers[0][1]
@@ -155,5 +150,26 @@ def jjdecode(t):
         t = re.sub(r'j\.%s' % c, '"' + str(int(c, 2)) + '"', t)
 
     r = re.sub(r'"\+"|\\\\', '', t[1:-1])
+
+    return r
+
+
+def jhexdecode(t):
+    r = re.sub(r'_\d+x\w+x(\d+)', 'var_' + r'\1', t)
+    r = re.sub(r'_\d+x\w+', 'var_0', r)
+
+    def to_hx(c):
+        h = int("%s" % c.groups(0), 16)
+        if 19 < h < 160:
+            return chr(h)
+        else:
+            return ""
+
+    r = re.sub(r'(?:\\|)x(\w{2})', to_hx, r).replace('var ', '')
+
+    f = eval(scrapertools.find_single_match(r, '\s*var_0\s*=\s*([^;]+);'))
+    for i, v in enumerate(f):
+        r = r.replace('[var_0[%s]]' % i, "." + f[i])
+        if v == "": r = r.replace('var_0[%s]' % i, '""')
 
     return r
