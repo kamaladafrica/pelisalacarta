@@ -256,25 +256,16 @@ def run():
             elif item.action == "search":
                 logger.info("pelisalacarta.platformcode.launcher search")
 
+                last_search = ""
                 last_search_active = config.get_setting("last_search", "buscador")
-                tecleado = None
+                if last_search_active:
+                    try:
+                        current_saved_searches_list = list(config.get_setting("saved_searches_list", "buscador"))
+                        last_search = current_saved_searches_list[0]
+                    except:
+                        pass
 
-                if config.get_setting("reuse_search_active") == "true":
-                    tecleado = config.get_setting("reuse_search_text")
-                else:
-                    last_search = ""
-                    if last_search_active:
-                        try:
-                            current_saved_searches_list = list(config.get_setting("saved_searches_list", "buscador"))
-                            last_search = current_saved_searches_list[0]
-                        except:
-                            pass
-
-                    tecleado = platformtools.dialog_input(last_search)
-                    config.set_setting("reuse_search_active", "true")
-                    if not tecleado is None:
-                        config.set_setting("reuse_search_text", tecleado)
-
+                tecleado = platformtools.dialog_input(last_search)
                 if tecleado is not None:
                     if last_search_active:
                         from channels import buscador
@@ -291,11 +282,6 @@ def run():
             else:
                 logger.info("pelisalacarta.platformcode.launcher executing channel '"+item.action+"' method")
                 itemlist = getattr(channel, item.action)(item)
-                if itemlist:
-                    for item in itemlist:
-                        if item.action == "search":
-                            config.set_setting("reuse_search_active", "false")
-                            break
                 platformtools.render_items(itemlist, item)
 
     except urllib2.URLError, e:

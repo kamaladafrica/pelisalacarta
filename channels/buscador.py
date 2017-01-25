@@ -102,7 +102,7 @@ def settingCanal(item):
 
     return platformtools.show_channel_settings(list_controls=list_controls,
                                                caption="Canales incluidos en la búsqueda global",
-                                               callback="save_settings", item=item)
+                                               callback="save_settings", item=item, custom_button={'visible': False})
 
 
 def save_settings(item, dict_values):

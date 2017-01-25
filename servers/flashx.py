@@ -5,20 +5,20 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 # ------------------------------------------------------------
 
+import base64
 import os
 import re
 import time
 import urllib
-import base64
 
 from core import config
 from core import logger
-from core import jsunpack
 from core import scrapertools
+from lib import jsunpack
 
 
 def test_video_exists(page_url):
-    logger.info("pelisalacarta.servers.flashx test_video_exists(page_url='%s')" % page_url)
+    logger.info("(page_url='%s')" % page_url)
 
     data = scrapertools.downloadpageWithoutCookies(page_url.replace("playvid-", ""))
 
@@ -31,7 +31,7 @@ def test_video_exists(page_url):
 
 
 def get_video_url(page_url, premium=False, user="", password="", video_password=""):
-    logger.info("pelisalacarta.servers.flashx url=" + page_url)
+    logger.info("url=" + page_url)
 
     # Lo pide una vez
     data = scrapertools.downloadpageWithoutCookies(page_url)
@@ -46,7 +46,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
             pass
 
     matches = scrapertools.find_multiple_matches(data, "<script type='text/javascript'>(.*?)</script>")
-    for n,m in enumerate(matches):
+    for n, m in enumerate(matches):
         if m.startswith("eval"):
             try:
                 m = jsunpack.unpack(m)
@@ -58,7 +58,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
             except:
                 m = ""
     match = m
-    if not "sources:[{file:" in match:
+    if "sources:[{file:" not in match:
         page_url = page_url.replace("playvid-", "")
 
         headers = {'Host': 'www.flashx.tv', 'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.137 Safari/537.36',
@@ -88,9 +88,9 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
         coding = scrapertools.downloadpage(coding_url, headers=headers.items())
 
         try:
-           time.sleep(int(wait_time)+1)
+            time.sleep(int(wait_time)+1)
         except:
-           time.sleep(6)
+            time.sleep(6)
 
         headers.pop('X-Requested-With')
         headers['Content-Type'] = 'application/x-www-form-urlencoded'
