@@ -22,7 +22,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pelisalacarta 4.  If not, see <http://www.gnu.org/licenses/>.
 # ------------------------------------------------------------
-# Herramientas de integración con xbmc subtitles
+# Herramientas de integraciÃ³n con xbmc subtitles
 # Autor: bandavi
 # Este archivo utiliza el Script XBMC SUBTITLES y el modulo "regex_tvshow()"
 # cuyos autores son: amet,mr_blobby

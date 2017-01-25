@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Conector para backin.net
@@ -20,7 +20,7 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
     media_url = scrapertools.find_single_match(data,'file: "([^"]+)",.*?type: "([^"]+)"')
     logger.info("media_url="+media_url[0])
 
-    # URL del vídeo
+    # URL del vÃ­deo
     video_urls.append( [ "."+ media_url[1] + " [cnubis]", media_url[0].replace("https","http") ] )
 
     for video_url in video_urls:
@@ -28,7 +28,7 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
 
     return video_urls
 
-# Encuentra vídeos de este servidor en el texto pasado
+# Encuentra vÃ­deos de este servidor en el texto pasado
 def find_videos(text):
     encontrados = set()
     devuelve = []

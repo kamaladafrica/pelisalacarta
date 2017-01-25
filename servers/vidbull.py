@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Conector para vidbull
@@ -17,7 +17,7 @@ def test_video_exists( page_url ):
     
     data = scrapertools.cache_page( page_url )
     if "The file was removed by administrator" in data:
-        return False,"El archivo ya no est· disponible<br/>en vidbull (ha sido borrado)"
+        return False,"El archivo ya no est√° disponible<br/>en vidbull (ha sido borrado)"
     else:
         return True,""
 
@@ -39,7 +39,7 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
 
     return video_urls
 
-# Encuentra vÌdeos de este servidor en el texto pasado
+# Encuentra v√≠deos de este servidor en el texto pasado
 def find_videos(text):
     encontrados = set()
     devuelve = []

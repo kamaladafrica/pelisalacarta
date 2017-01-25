@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Conector para Rapidtube
@@ -17,13 +17,13 @@ def get_video_url( page_url , premium = False , user="" , password="" , video_pa
 
     video_urls = []
 
-    # Descarga la p·gina
+    # Descarga la p√°gina
     headers = [ ['User-Agent','Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3'],['Referer','http://www.rapidtube.com/'] ]
     data = scrapertools.cache_page(page_url , headers = headers)
     data = data.replace('"',"'")
     print data
 
-    # Extrae el vÌdeo
+    # Extrae el v√≠deo
     patronvideos  = "file: '([^']+)'"
     matches = re.compile(patronvideos,re.DOTALL).findall(data)
     #scrapertools.printMatches(matches)
@@ -36,7 +36,7 @@ def get_video_url( page_url , premium = False , user="" , password="" , video_pa
 
     return video_urls
 
-# Encuentra vÌdeos del servidor en el texto pasado
+# Encuentra v√≠deos del servidor en el texto pasado
 def find_videos(data):
     encontrados = set()
     devuelve = []

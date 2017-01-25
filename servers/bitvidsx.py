@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Conector para bitvidsx ex videoweed
@@ -53,7 +53,7 @@ def get_video_url( page_url , premium = False , user="" , password="" , video_pa
     
     return video_urls
 
-# Encuentra vídeos del servidor en el texto pasado
+# Encuentra vÃ­deos del servidor en el texto pasado
 def find_videos(data):
     encontrados = set()
     devuelve = []    

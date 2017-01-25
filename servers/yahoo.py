@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Conector para Yahoo
@@ -17,7 +17,7 @@ from core import scrapertools
 def get_video_url( page_url , premium = False , user="" , password="", video_password="" ):
     logger.info("[yahoo.py] get_video_url(page_url='%s')" % page_url)
 
-    # Lee la p·gina del vÌdeo
+    # Lee la p√°gina del v√≠deo
     url= "http://video.yahoo.com/watch/%s" %page_url
     headers = [['User-Agent','Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3'],
                ['Referer','http://video.yahoo.com/'],
@@ -33,7 +33,7 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
                       '&tech=flash&mode=playlist&lg=' + yv_lg + '&bitrate=' + yv_bitrate + '&vidH=720'+
                   '&vidW=1280'  + '&swf=as3&rd=video.yahoo.com&tk=null&adsupported=v1,v2,&eventid=1301797')
 
-    # Lee la p·gina del vÌdeo de nuevo
+    # Lee la p√°gina del v√≠deo de nuevo
     data2 = scrapertools.cache_page(url, headers=headers)
 
     # Extract media URL from playlist XML

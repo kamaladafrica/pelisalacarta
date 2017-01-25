@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Conector para tu.tv
@@ -19,7 +19,7 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
     # Busca el ID en la URL
     id = extract_id(page_url)
     
-    # Si no lo tiene, lo extrae de la p·gina
+    # Si no lo tiene, lo extrae de la p√°gina
     if id=="":
         # La descarga
         data = scrapertools.cache_page(page_url)
@@ -37,7 +37,7 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
     url = "http://tu.tv/visualizacionExterna2.php?web=undefined&codVideo="+id
     data = scrapertools.cache_page(url)
 
-    # Obtiene el enlace al vÌdeo
+    # Obtiene el enlace al v√≠deo
     patronvideos  = 'urlVideo0=([^\&]+)\&'
     matches = re.compile(patronvideos,re.DOTALL).findall(data)
     #scrapertools.printMatches(matches)
@@ -59,7 +59,7 @@ def extract_id(text):
     
     return devuelve
 
-# Encuentra vÌdeos del servidor en el texto pasado
+# Encuentra v√≠deos del servidor en el texto pasado
 def find_videos(data):
     encontrados = set()
     devuelve = []

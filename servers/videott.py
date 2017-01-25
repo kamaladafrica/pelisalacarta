@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Conector para videott
@@ -17,7 +17,7 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
 
     video_urls = []
 
-    # URL del vídeo
+    # URL del vÃ­deo
     videoid = scrapertools.find_single_match(page_url,"video.tt/e/([A-Za-z0-9]+)")
     timestamp=str(random.randint(1000000000,9999999999))
     hexastring = scrapertools.get_sha1(page_url) + scrapertools.get_sha1(page_url) + scrapertools.get_sha1(page_url) + scrapertools.get_sha1(page_url)
@@ -31,7 +31,7 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
 
     return video_urls
 
-# Encuentra vídeos de este servidor en el texto pasado
+# Encuentra vÃ­deos de este servidor en el texto pasado
 def find_videos(text):
     encontrados = set()
     devuelve = []
