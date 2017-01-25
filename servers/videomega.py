@@ -7,13 +7,13 @@
 
 import re
 
-from core import jsunpack
 from core import logger
 from core import scrapertools
+from lib import jsunpack
 
 
 def get_video_url(page_url, premium=False, user="", password="", video_password=""):
-    logger.info("pelisalacarta.servers.videomega get_video_url(page_url='%s')" % page_url)
+    logger.info("(page_url='%s')" % page_url)
 
     data = scrapertools.cache_page(page_url)
     video_urls = []
@@ -26,7 +26,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
         video_urls.append([scrapertools.get_filename_from_url(location)[-4:] + " [videomega]", location])
 
     for video_url in video_urls:
-        logger.info("pelisalacarta.servers.videomega %s - %s" % (video_url[0], video_url[1]))
+        logger.info("%s - %s" % (video_url[0], video_url[1]))
 
     return video_urls
 
@@ -38,7 +38,7 @@ def find_videos(data):
 
     pattern = r'//(?:www.)?videomega\.tv/(?:(?:iframe|cdn|validatehash|view)\.php)?\?(?:ref|hashkey)=([a-zA-Z0-9]+)'
 
-    logger.info("[videomega.py] find_videos #" + pattern + "#")
+    logger.info("#" + pattern + "#")
     matches = re.compile(pattern, re.DOTALL).findall(data)
 
     for media_id in matches:

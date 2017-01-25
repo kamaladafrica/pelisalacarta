@@ -1,15 +1,16 @@
-# -*- coding: iso-8859-1 -*-
-#------------------------------------------------------------
+# -*- coding: utf-8 -*-
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Conector para watchers
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 
 import re
+
+from core import httptools
 from core import logger
 from core import scrapertools
-from core import httptools
-from core import jsunpack
+from lib import jsunpack
 
 
 def test_video_exists(page_url):
@@ -18,7 +19,7 @@ def test_video_exists(page_url):
     data = httptools.downloadpage(page_url).data
     if "File Not Found" in data:
         return False, "[Watchers] El archivo no existe o ha sido borrado"
-    
+
     return True, ""
 
 
@@ -35,9 +36,9 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     for media_url, calidad in matches:
         ext = scrapertools.get_filename_from_url(media_url)[-4:]
         if calidad:
-            ext += " "+calidad+"p"
-        video_urls.append([ext+' [watchers]', media_url])
-    
+            ext += " " + calidad + "p"
+        video_urls.append([ext + ' [watchers]', media_url])
+
     return video_urls
 
 
@@ -46,19 +47,19 @@ def find_videos(text):
     encontrados = set()
     devuelve = []
 
-    #http://watchers.to/kgcldj6y8l8t.html
-    patronvideos  = 'watchers.to/(?:embed-|)([A-z0-9]+)'
+    # http://watchers.to/kgcldj6y8l8t.html
+    patronvideos = 'watchers.to/(?:embed-|)([A-z0-9]+)'
     logger.info("#%s#" % patronvideos)
-    matches = re.compile(patronvideos,re.DOTALL).findall(text)
+    matches = re.compile(patronvideos, re.DOTALL).findall(text)
 
     for match in matches:
         titulo = "[watchers]"
         url = "http://watchers.to/embed-%s.html" % match
         if url not in encontrados:
-            logger.info("  url="+url)
-            devuelve.append( [ titulo , url , 'watchers' ] )
+            logger.info("  url=" + url)
+            devuelve.append([titulo, url, 'watchers'])
             encontrados.add(url)
         else:
-            logger.info("  url duplicada="+url)
-    
+            logger.info("  url duplicada=" + url)
+
     return devuelve
