@@ -26,6 +26,7 @@
 import re
 
 from core import logger
+from core import config
 from core import scrapertools
 from core.item import InfoLabels
 from core.tmdb import Tmdb
@@ -54,14 +55,14 @@ def find_and_set_infoLabels(item):
 
     # Obtener el Scraper por defecto de la configuracion segun el tipo de contenido
     if item.contentType == "movie":
-        scraper_actual = "tmdb" #TODO: Obtener de la configuracion
+        scraper_actual = ['tmdb'] [config.get_setting("scraper_movies", "biblioteca")]
         tipo_contenido = "película"
         title = item.contentTitle
         # Completar lista de opciones para este tipo de contenido
         list_opciones_cuadro.append(scrapers_disponibles['tmdb'])
 
     else:
-        scraper_actual = "tvdb" #TODO: Obtener de la configuracion
+        scraper_actual = ['tmdb', 'tvdb'] [config.get_setting("scraper_tvshows", "biblioteca")]
         tipo_contenido = "serie"
         title = item.contentSerieName
         # Completar lista de opciones para este tipo de contenido

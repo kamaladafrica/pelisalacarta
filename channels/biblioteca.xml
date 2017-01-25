@@ -140,4 +140,28 @@
 		<lvalues>Título localizado</lvalues>
 		<lvalues>Título original</lvalues>
 	</settings>
+	<settings>
+		<id>lab_1</id>
+		<type>label</type>
+		<label>Al añadir contenido, obtener información de:</label>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
+    <settings>
+		<id>scraper_movies</id>
+		<type>list</type>
+		<label>    Peliculas:</label>
+        <enabled>false</enabled>
+		<default>0</default>
+		<lvalues>TheMovieDB.org</lvalues>
+        <lvalues>None</lvalues>
+	</settings>
+    <settings>
+		<id>scraper_tvshows</id>
+		<type>list</type>
+		<label>    Series:</label>
+		<default>0</default>
+		<lvalues>TheMovieDB.org</lvalues>
+        <lvalues>TheTvDB.com</lvalues>
+	</settings>
 </channel>
