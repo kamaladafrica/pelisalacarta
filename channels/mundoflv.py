@@ -329,7 +329,7 @@ def play(item):
     logger.info()
 
     data = scrapertools.cache_page(item.url)
-    url = scrapertools.find_single_match(data, '<(?:IFRAME|iframe).+?(?:SRC|src)="([^"]+)"')
+    url = scrapertools.find_single_match(data, '<(?:IFRAME|iframe).*?(?:SRC|src)=*([^ ]+)')
 
     itemlist = servertools.find_video_items(data=url)
 
