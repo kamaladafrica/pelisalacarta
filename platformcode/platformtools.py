@@ -42,8 +42,6 @@ from core import logger
 from core.item import Item
 from core.tmdb import Tmdb
 
-DEBUG = config.get_setting("debug")
-
 
 def dialog_ok(heading, line1, line2="", line3=""):
     dialog = xbmcgui.Dialog()
