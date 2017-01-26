@@ -79,7 +79,7 @@ def tvdb_series_by_title(title, idioma="es"):
             if limite == 0:
                 break
 
-    logger.debug(list_series)
+    logger.debug(str(list_series))
     return list_series
 
 def find_and_set_infoLabels(item):
