@@ -100,10 +100,11 @@ def read_nfo(path_nfo, item=None):
 
         if not head_nfo.startswith('http'):
             # url_scraper no valida, xml presente
-            head_nfo = ''  # TODO devolver el xml en head_nfo
+            patron = "(<tvshow>|<movie>)(.*?)(</tvshow>|</movie>)"
+            head_nfo = scrapertools.find_single_match(data, patron)
             import re
             data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
-            data = re.sub("(<tvshow>|<movie>)(.*?)(</tvshow>|</movie>)", "", data)
+            data = re.sub(patron, "", data)
 
         it_nfo = Item().fromjson(data)
 
@@ -158,7 +159,6 @@ def save_library_movie(item):
         logger.debug("NO ENCONTRADO contentTitle")
         return 0, 0, -1  # Salimos sin guardar
 
-    # TODO configurar para segun el scraper se llamara a uno u otro
     scraper_return = scraper.find_and_set_infoLabels(item)
 
     # Llegados a este punto podemos tener:
@@ -252,7 +252,6 @@ def save_library_movie(item):
     logger.error("No se ha podido guardar %s en la biblioteca" % item.contentTitle)
     p_dialog.update(100, 'Fallo al añadir...', item.contentTitle)
     p_dialog.close()
-    # TODO habria q poner otra advertencia?
     return 0, 0, -1
 
 
@@ -279,7 +278,6 @@ def save_library_tvshow(item, episodelist):
         logger.debug("NO ENCONTRADO contentSerieName NI tmdb_id")
         return 0, 0, -1  # Salimos sin guardar
 
-    # TODO configurar para segun el scraper se llame a uno u otro
     scraper_return = scraper.find_and_set_infoLabels(item)
 
     # Llegados a este punto podemos tener:
@@ -368,8 +366,6 @@ def save_library_tvshow(item, episodelist):
 
     # Guardar los episodios
     insertados, sobreescritos, fallidos = save_library_episodes(path, episodelist, item)
-
-    # TODO si fallidos == -1 podriamos comprobar si es necesario eliminar la serie
 
     return insertados, sobreescritos, fallidos
 
