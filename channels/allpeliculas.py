@@ -8,6 +8,7 @@ import string
 
 from core import config
 from core import logger
+from core import httptools
 from core import scrapertools
 from core import servertools
 from core.item import Item
@@ -23,7 +24,6 @@ perfil = [['0xFFFFE6CC', '0xFFFFCE9C', '0xFF994D00'],
           ['0xFF58D3F7', '0xFF2E9AFE', '0xFF2E64FE']]
 color1, color2, color3 = perfil[__perfil__]
 
-DEBUG = config.get_setting("debug")
 IDIOMAS = {"Castellano": "CAST", "Latino": "LAT", "Subtitulado": "VOSE", "Ingles": "VO"}
 SERVERS = {"26": "powvideo", "45": "okru", "75": "openload", "12": "netutv", "65": "thevideos",
            "67": "spruto", "71": "stormo", "73": "idowatch", "48": "okru", "55": "openload",
@@ -31,7 +31,7 @@ SERVERS = {"26": "powvideo", "45": "okru", "75": "openload", "12": "netutv", "65
 
 
 def mainlist(item):
-    logger.info("pelisalacarta.channels.allpeliculas mainlist")
+    logger.info()
     itemlist = []
     item.text_color = color1
 
@@ -57,7 +57,7 @@ def configuracion(item):
 
     
 def search(item, texto):
-    logger.info("pelisalacarta.channels.allpeliculas search")
+    logger.info()
     if texto != "":
         texto = texto.replace(" ", "+")
     item.url = "http://allpeliculas.com/Search/advancedSearch?searchType=movie&movieName=" + texto + "&ajax=1"
@@ -71,7 +71,7 @@ def search(item, texto):
 
 
 def newest(categoria):
-    logger.info("pelisalacarta.channels.allpeliculas newest")
+    logger.info()
     itemlist = []
     item = Item()
     try:
@@ -93,12 +93,12 @@ def newest(categoria):
 
 
 def busqueda(item):
-    logger.info("pelisalacarta.channels.allpeliculas busqueda")
+    logger.info()
     itemlist = []
     item.infoLabels = {}
     item.text_color = color2
 
-    data = scrapertools.downloadpage(item.url)
+    data = httptools.downloadpage(item.url).data
     data = data.replace("\n", "").replace("\t", "")
     data = scrapertools.decodeHtmlentities(data)
 
@@ -131,7 +131,7 @@ def busqueda(item):
 
 
 def indices(item):
-    logger.info("pelisalacarta.channels.allpeliculas indices")
+    logger.info()
     itemlist = []
     item.text_color = color1
 
@@ -147,12 +147,12 @@ def indices(item):
 
 
 def lista(item):
-    logger.info("pelisalacarta.channels.allpeliculas lista")
+    logger.info()
     itemlist = []
     item.infoLabels = {}
     item.text_color = color2
     
-    data = scrapertools.downloadpage(item.url)
+    data = httptools.downloadpage(item.url).data
     data = data.replace("\n", "").replace("\t", "")
     data = scrapertools.decodeHtmlentities(data)
 
@@ -204,7 +204,7 @@ def lista(item):
 
 
 def subindice(item):
-    logger.info("pelisalacarta.channels.allpeliculas subindice")
+    logger.info()
     itemlist = []
     
     url_base = "http://allpeliculas.co/Movies/fullView/1/0/date:1900-2016|alphabet:all|?ajax=1&withoutFilter=1"
@@ -243,14 +243,14 @@ def subindice(item):
 
 
 def findvideos(item):
-    logger.info("pelisalacarta.channels.allpeliculas findvideos")
+    logger.info()
     itemlist = []
     item.text_color = color3
 
     #Rellena diccionarios idioma y calidad
     idiomas_videos, calidad_videos = dict_videos()
 
-    data = scrapertools.downloadpage(item.url)
+    data = httptools.downloadpage(item.url).data
     data = data.replace("\n", "").replace("\t", "")
     data = scrapertools.decodeHtmlentities(data)
 
@@ -272,9 +272,9 @@ def findvideos(item):
         except:
             server = servertools.get_server_from_url(url)
 
+        if server == "vimeo":
+            url += "|%s" % item.url
         if server != "directo":
-            if server == "vimeo":
-                url += "|" + item.url
             idioma = IDIOMAS.get(idiomas_videos.get(language))
             titulo = server.capitalize()+"  ["+idioma+"] ["+calidad_videos.get(calidad)+"]"
             itemlist.append(item.clone(action="play", title=titulo, url=url, extra=idioma))
@@ -292,8 +292,6 @@ def findvideos(item):
             server = servertools.get_server_from_url(url)
 
         if server != "directo":
-            if server == "vimeo":
-                url += "|" + item.url
             if config.get_setting("hidepremium") == "true":
                 mostrar_server = servertools.is_server_enabled(server)
             if mostrar_server:
@@ -320,9 +318,9 @@ def findvideos(item):
 
 
 def temporadas(item):
-    logger.info("pelisalacarta.channels.allpeliculas temporadas")
+    logger.info()
     itemlist = []
-    data = scrapertools.downloadpage(item.url)
+    data = httptools.downloadpage(item.url).data
     try:
         from core import tmdb
         tmdb.set_infoLabels_item(item, __modo_grafico__)
@@ -353,13 +351,13 @@ def temporadas(item):
     
     
 def episodios(item):
-    logger.info("pelisalacarta.channels.allpeliculas findvideostv")
+    logger.info()
     itemlist = []
 
     #Rellena diccionarios idioma y calidad
     idiomas_videos, calidad_videos = dict_videos()
 
-    data = scrapertools.downloadpage(item.url)
+    data = httptools.downloadpage(item.url).data
     data = data.replace("\n", "").replace("\t", "")
     data = scrapertools.decodeHtmlentities(data)
 
@@ -389,13 +387,13 @@ def episodios(item):
 
 
 def findvideostv(item):
-    logger.info("pelisalacarta.channels.allpeliculas findvideostv")
+    logger.info()
     itemlist = []
 
     #Rellena diccionarios idioma y calidad
     idiomas_videos, calidad_videos = dict_videos()
 
-    data = scrapertools.downloadpage(item.url)
+    data = httptools.downloadpage(item.url).data
     data = data.replace("\n", "").replace("\t", "")
     data = scrapertools.decodeHtmlentities(data)
 
@@ -410,9 +408,9 @@ def findvideostv(item):
         except:
             server = servertools.get_server_from_url(url)
 
+        if server == "vimeo":
+            url += "|%s" % item.url
         if server != "directo":
-            if server == "vimeo":
-                url += "|" + item.url
             idioma = IDIOMAS.get(idiomas_videos.get(language))
             titulo = server.capitalize()+" ["+idioma+"] ("+calidad_videos.get(quality)+")"
 
@@ -430,8 +428,6 @@ def findvideostv(item):
             server = servertools.get_server_from_url(url)
 
         if server != "directo":
-            if server == "vimeo":
-                url += "|" + item.url
             if config.get_setting("hidepremium") == "true":
                 mostrar_server = servertools.is_server_enabled(server)
             if mostrar_server:
@@ -450,7 +446,7 @@ def findvideostv(item):
 
 
 def play(item):
-    logger.info("pelisalacarta.channels.allpeliculas play")
+    logger.info()
     itemlist = []
     videolist = servertools.find_video_items(data=item.url)
     for video in videolist:
@@ -462,7 +458,7 @@ def play(item):
 def dict_videos():
     idiomas_videos = {}
     calidad_videos = {}
-    data = scrapertools.downloadpage("http://allpeliculas.co/Search/advancedSearch&ajax=1")
+    data = httptools.downloadpage("http://allpeliculas.co/Search/advancedSearch&ajax=1").data
     data = data.replace("\n", "").replace("\t", "")
     bloque_idioma = scrapertools.find_single_match(data,
                                                    '<select name="language".*?<option value="" selected(.*?)</select>')
@@ -485,7 +481,7 @@ def dict_indices():
     indice_idioma = {}
     indice_year = []
     indice_calidad = {}
-    data = scrapertools.downloadpage("http://allpeliculas.co/Search/advancedSearch&ajax=1")
+    data = httptools.downloadpage("http://allpeliculas.co/Search/advancedSearch&ajax=1").data
     data = data.replace("\n", "").replace("\t", "")
     data = scrapertools.decodeHtmlentities(data)
     bloque_genero = scrapertools.find_single_match(data, '<select name="movieGenre".*?<option value="" selected(.*?)'

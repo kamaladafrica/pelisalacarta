@@ -10,6 +10,7 @@ import urllib
 
 from core import config
 from core import logger
+from core import httptools
 from core import scrapertools
 from core import servertools
 from core.item import Item
@@ -24,12 +25,9 @@ perfil = [['0xFFFFE6CC', '0xFFFFCE9C', '0xFF994D00'],
           ['0xFF58D3F7', '0xFF2E9AFE', '0xFF2E64FE']]
 color1, color2, color3 = perfil[__perfil__]
 
-DEBUG = config.get_setting("debug")
-DEFAULT_HEADERS = [["User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:47.0) Gecko/20100101 Firefox/47.0"]]
-
 
 def mainlist(item):
-    logger.info("pelisalacarta.channels.descargasmix mainlist")
+    logger.info()
     itemlist = []
     item.text_color = color1
     
@@ -57,7 +55,7 @@ def configuracion(item):
 
 
 def search(item, texto):
-    logger.info("pelisalacarta.channels.descargasmix search")
+    logger.info()
     try:
         item.url= "http://desmix.net/?s=" + texto
         return busqueda(item)
@@ -70,9 +68,9 @@ def search(item, texto):
 
 
 def busqueda(item):
-    logger.info("pelisalacarta.channels.descargasmix busqueda")
+    logger.info()
     itemlist = []
-    data = scrapertools.downloadpage(item.url)
+    data = httptools.downloadpage(item.url).data
 
     contenido = ['Películas', 'Series', 'Documentales', 'Anime', 'Deportes', 'Miniseries', 'Vídeos']
     bloque = scrapertools.find_single_match(data, '<div id="content" role="main">(.*?)<div id="sidebar" '
@@ -86,7 +84,7 @@ def busqueda(item):
         if not scrapedthumbnail.startswith("http"):
                 scrapedthumbnail = "http:"+scrapedthumbnail
         scrapedthumbnail = scrapedthumbnail.replace("-129x180", "")
-        if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
+
         if ("Películas" in scrapedcat or "Documentales" in scrapedcat) and not "Series" in scrapedcat:
             titulo = scrapedtitle.split("[")[0]
             itemlist.append(item.clone(action="findvideos", title=scrapedtitle, url=scrapedurl,
@@ -104,7 +102,7 @@ def busqueda(item):
 
 
 def lista(item):
-    logger.info("pelisalacarta.channels.descargasmix lista")
+    logger.info()
     itemlist = []
 
     itemlist.append(item.clone(title="Novedades", action="entradas", url="http://desmix.net/peliculas"))
@@ -122,7 +120,7 @@ def lista(item):
 
 
 def lista_series(item):
-    logger.info("pelisalacarta.channels.descargasmix lista_series")
+    logger.info()
     itemlist = []
 
     itemlist.append(item.clone(title="Novedades", action="entradas", url="http://desmix.net/series/"))
@@ -133,10 +131,10 @@ def lista_series(item):
 
 
 def entradas(item):
-    logger.info("pelisalacarta.channels.descargasmix entradas")
+    logger.info()
     itemlist = []
     item.text_color = color2
-    data = scrapertools.downloadpage(item.url)
+    data = httptools.downloadpage(item.url).data
 
     bloque = scrapertools.find_single_match(data, '<div id="content" role="main">(.*?)<div id="sidebar" '
                                                   'role="complementary">')
@@ -157,7 +155,7 @@ def entradas(item):
                 scrapedthumbnail = "http:"+scrapedthumbnail
             scrapedthumbnail = scrapedthumbnail.replace("-129x180", "")
             scrapedthumbnail = scrapedthumbnail.rsplit("/", 1)[0]+"/"+urllib.quote(scrapedthumbnail.rsplit("/", 1)[1])
-            if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
+
             if "series" in item.url or "anime" in item.url:
                 item.show = scrapedtitle
             itemlist.append(item.clone(action="episodios", title=titulo, url=scrapedurl, thumbnail=scrapedthumbnail,
@@ -188,7 +186,7 @@ def entradas(item):
                 scrapedthumbnail = "http:"+scrapedthumbnail
             scrapedthumbnail = scrapedthumbnail.replace("-129x180", "")
             scrapedthumbnail = scrapedthumbnail.rsplit("/", 1)[0]+"/"+urllib.quote(scrapedthumbnail.rsplit("/", 1)[1])
-            if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
+
             itemlist.append(item.clone(action=action, title=titulo, url=scrapedurl, thumbnail=scrapedthumbnail,
                                        fulltitle=scrapedtitle, context=["buscar_trailer"], contentTitle=scrapedtitle,
                                        viewmode="movie_with_plot", show=show, contentType="movie"))
@@ -202,10 +200,10 @@ def entradas(item):
 
 
 def generos(item):
-    logger.info("pelisalacarta.channels.descargasmix generos")
+    logger.info()
     itemlist = []
 
-    data = scrapertools.downloadpage(item.url)
+    data = httptools.downloadpage(item.url).data
     bloque = scrapertools.find_single_match(data, '<div class="categorias">(.*?)</div>')
     matches = scrapertools.find_multiple_matches(bloque, '<a href="([^"]+)">([^<]+)</a>')
     for scrapedurl, scrapedtitle in matches:
@@ -216,10 +214,10 @@ def generos(item):
 
 
 def episodios(item):
-    logger.info("pelisalacarta.channels.descargasmix episodios")
+    logger.info()
     itemlist = []
 
-    data = scrapertools.downloadpage(item.url)
+    data = httptools.downloadpage(item.url).data
     patron = '(<ul class="menu" id="seasons-list">.*?<div class="section-box related-posts">)'
     bloque = scrapertools.find_single_match(data, patron)
     matches = scrapertools.find_multiple_matches(bloque, '<div class="cap">(.*?)</div>')
@@ -254,11 +252,11 @@ def episodios(item):
 
 
 def epienlaces(item):
-    logger.info("pelisalacarta.channels.descargasmix epienlaces")
+    logger.info()
     itemlist = []
     item.text_color = color3
     
-    data = scrapertools.downloadpage(item.url)
+    data = httptools.downloadpage(item.url).data
     data = data.replace("\n", "").replace("\t", "")
 
     #Bloque de enlaces
@@ -294,7 +292,7 @@ def epienlaces(item):
                                                    extra=item.url))
                     else:
                         enlaces = servertools.findvideos(data=scrapedurl)
-                        if len(enlaces) > 0:
+                        if enlaces:
                             titulo = "    " + enlaces[0][2].capitalize() + "  [" + scrapedcalidad + "]"
                             itemlist.append(item.clone(action="play", server=enlaces[0][2], title=titulo,
                                                        url=enlaces[0][1]))
@@ -308,12 +306,12 @@ def epienlaces(item):
 
 
 def findvideos(item):
-    logger.info("pelisalacarta.channels.descargasmix findvideos")
+    logger.info()
     if item.extra and item.extra != "findvideos":
         return epienlaces(item)
     itemlist = []
     item.text_color = color3
-    data = scrapertools.downloadpage(item.url)
+    data = httptools.downloadpage(item.url).data
 
     item.plot = scrapertools.find_single_match(data, 'SINOPSIS(?:</span>|</strong>):(.*?)</p>')
     year = scrapertools.find_single_match(data, '(?:<span class="bold">|<strong>)AÑO(?:</span>|</strong>):\s*(\d+)')
@@ -338,7 +336,7 @@ def findvideos(item):
     #Patron online
     data_online = scrapertools.find_single_match(data, 'Ver online</div>(.*?)<div class="section-box related-'
                                                        'posts">')
-    if len(data_online) > 0:
+    if data_online:
         title = "Enlaces Online"
         if '"l-latino2"' in data_online:
             title += " [LAT]"
@@ -346,13 +344,15 @@ def findvideos(item):
             title += " [ESP]"
         elif '"l-vose2"' in data_online:
             title += " [VOSE]"
-        itemlist.append(item.clone(title=title, action="", text_color=color1))
+
         patron = 'make_links.*?,[\'"]([^"\']+)["\']'
         matches = scrapertools.find_multiple_matches(data_online, patron)
-        for code in matches:
+        for i, code in enumerate(matches):
             enlace = mostrar_enlaces(code)
             enlaces = servertools.findvideos(data=enlace[0])
-            if len(enlaces) > 0:
+            if enlaces and not "peliculas.nu" in enlaces:
+                if i == 0:
+                    itemlist.append(item.clone(title=title, action="", text_color=color1))
                 title = "   Ver vídeo en " + enlaces[0][2]
                 itemlist.append(item.clone(action="play", server=enlaces[0][2], title=title, url=enlaces[0][1]))
     scriptg = scrapertools.find_single_match(data, "<script type='text/javascript'>str='([^']+)'")
@@ -400,7 +400,7 @@ def findvideos(item):
                     #Saca numero de enlaces
                     urls = mostrar_enlaces(scrapedurl)
                     numero = str(len(urls))
-                    titulo = "   "+titulo+" - Nº enlaces:"+numero
+                    titulo = "   %s - Nº enlaces:%s" % (titulo, numero)
                     itemlist.append(item.clone(action="enlaces", title=titulo, extra=scrapedurl))
                 except:
                     pass
@@ -416,29 +416,25 @@ def findvideos(item):
 
 
 def play(item):
-    logger.info("pelisalacarta.channels.descargasmix play")
+    logger.info()
     itemlist = []
     if "enlacesmix.com" in item.url:
-        DEFAULT_HEADERS.append(["Referer", item.extra])
         if not item.url.startswith("http:"):
             item.url = "http:" + item.url
-        data = scrapertools.downloadpage(item.url, headers=DEFAULT_HEADERS)
+        data = httptools.downloadpage(item.url, add_referer=True).data
         item.url = scrapertools.find_single_match(data, 'iframe src="([^"]+)"')
          
         enlaces = servertools.findvideos(data=item.url)[0]
-        if len(enlaces) > 0:
+        if enlaces:
             itemlist.append(item.clone(action="play", server=enlaces[2], url=enlaces[1]))
     elif item.server == "directo":
-        global DEFAULT_HEADERS
-        DEFAULT_HEADERS.append(["Referer", item.extra])
-        data = scrapertools.downloadpage(item.url, headers=DEFAULT_HEADERS)
+        data = httptools.downloadpage(item.url, add_referer=True).data
         subtitulo = scrapertools.find_single_match(data, "var subtitulo='([^']+)'")
-        DEFAULT_HEADERS[1][1] = item.url
         calidades = ["1080p", "720p", "480p", "360p"]
         for i in range(0, len(calidades)):
             url_redirect = scrapertools.find_single_match(data, "{file:'([^']+)',label:'"+calidades[i]+"'")
             if url_redirect:
-                url_video = scrapertools.get_header_from_response(url_redirect, header_to_get="location", headers=DEFAULT_HEADERS)
+                url_video = httptools.downloadpage(url_redirect,  follow_redirects=False, add_referer=True, only_headers=True).headers["location"]
                 if url_video:
                     url_video = url_video.replace(",", "%2C")
                     itemlist.append(item.clone(url=url_video, subtitle=subtitulo))
@@ -450,22 +446,21 @@ def play(item):
 
 
 def enlaces(item):
-    logger.info("pelisalacarta.channels.descargasmix enlaces")
+    logger.info()
     itemlist = []
-    data = scrapertools.downloadpage(item.url)
+    data = httptools.downloadpage(item.url).data
 
     urls = mostrar_enlaces(item.extra)
     numero = len(urls)
     for enlace in urls:
         enlaces = servertools.findvideos(data=enlace)
-        if len(enlaces) > 0:
-            for link in enlaces:
-                if "/folder/" in enlace:
-                    titulo = link[0]
-                else:
-                    titulo = item.title.split("-")[0]+" - Enlace "+str(numero)
-                    numero -= 1
-                itemlist.append(item.clone(action="play", server=link[2], title=titulo, url=link[1]))
+        for link in enlaces:
+            if "/folder/" in enlace:
+                titulo = link[0]
+            else:
+                titulo = item.title.split("-")[0]+" - Enlace "+str(numero)
+                numero -= 1
+            itemlist.append(item.clone(action="play", server=link[2], title=titulo, url=link[1]))
 
     itemlist.sort(key=lambda item: item.title)
     return itemlist
