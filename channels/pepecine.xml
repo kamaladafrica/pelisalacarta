@@ -11,10 +11,15 @@
 	<thumbnail>https://d12.usercdn.com/i/02278/nwm6todp6yyk.png</thumbnail>
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/pepecine.png</bannermenu>
 	
-	<update_url></update_url>
-	<version>4</version>
+	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/develop/python/main-classic/channels/</update_url>
+	<version>5</version>
 
 	<changes>
+		<change>
+			<date>26/01/17</date>
+			<autor>super_berny</autor>
+			<description>Fix por cambios en la web</description>
+		</change>
 		<change>
 			<date>01/07/16</date>
 			<autor>SeiTaN</autor>
