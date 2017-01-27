@@ -398,7 +398,7 @@ def find_and_set_infoLabels(item):
 
     if tmdb_result:
         infoLabels['tmdb_id'] = tmdb_result['id']
-        infoLabels['url_scraper'] = "https://www.themoviedb.org/tv/%s" % infoLabels['tmdb_id']
+        infoLabels['url_scraper'] = "https://www.themoviedb.org/%s/%s" % (tipo_busqueda, infoLabels['tmdb_id'])
         item.infoLabels = infoLabels
         set_infoLabels_item(item)
 

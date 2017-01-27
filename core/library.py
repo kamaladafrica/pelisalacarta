@@ -102,10 +102,11 @@ def read_nfo(path_nfo, item=None):
             # url_scraper no valida, xml presente
             patron = "(<tvshow>|<movie>)(.*?)(</tvshow>|</movie>)"
             head_nfo = scrapertools.find_single_match(data, patron)
+            head_nfo = "%s%s%s" %(head_nfo[0], head_nfo[1], head_nfo[2])
             import re
             data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
             data = re.sub(patron, "", data)
-
+        
         it_nfo = Item().fromjson(data)
 
         if item:
@@ -206,7 +207,7 @@ def save_library_movie(item):
         # Creamos .nfo si no existe
         logger.info("Creando .nfo: " + nfo_path)
         if item.infoLabels['url_scraper']:
-            head_nfo = item.infoLabels['url_scraper']
+            head_nfo = item.infoLabels['url_scraper'] + '\n'
         else:
             head_nfo = "Aqui ira el xml"  # TODO
 
