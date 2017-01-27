@@ -135,7 +135,7 @@ def search(item, texto):
         shows = re.findall("<a href='(?P<url>/serie.php\?serie=[0-9]+)'[^>]*>(?P<title>[^<]*{0}[^<]*)".format(texto),
                            data, re.IGNORECASE)
         for url, title in shows:
-            itemlist.append(item.clone(title=title, url=urlparse.urljoin(HOST, url), action="episodios"))
+            itemlist.append(item.clone(title=title, url=urlparse.urljoin(HOST, url), action="episodios", show=title))
 
     # Se captura la excepción, para no interrumpir al buscador global si un canal falla
     except:
