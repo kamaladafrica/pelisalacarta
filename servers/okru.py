@@ -8,23 +8,28 @@
 
 import re
 
+from core import httptools
 from core import logger
 from core import scrapertools
 
-headers = [
-    ['User-Agent', 'Mozilla/5.0 (Windows NT 6.1; rv:38.0) Gecko/20100101 Firefox/38.0'],
-    ['Accept-Encoding', 'gzip, deflate'],
-    ['Connection', 'keep-alive']
-]
+
+def test_video_exists(page_url):
+    logger.info("(page_url='%s')" % page_url)
+    
+    data = httptools.downloadpage(page_url).data
+    if "copyrightsRestricted" in data:
+        return False, "[Okru] El archivo ha sido eliminado por violación del copyright"
+    elif "notFound" in data:
+        return False, "[Okru] El archivo no existe o ha sido eliminado"
+
+    return True, ""
 
 
 def get_video_url(page_url, premium=False, user="", password="", video_password=""):
-    logger.info("[okru.py] url=" + page_url)
+    logger.info(" url=" + page_url)
     video_urls = []
 
-    headers.append(['Referer', page_url.split('|')[1]])
-
-    data = scrapertools.cache_page(page_url.split('|')[0], headers=headers)
+    data = httptools.downloadpage(page_url.split('%7C')[0]).data
 
     # URL del vídeo
     for type, url in re.findall(r'\{"name":"([^"]+)","url":"([^"]+)"', data, re.DOTALL):
@@ -40,7 +45,7 @@ def find_videos(text):
     devuelve = []
 
     patronvideos = '//(?:www.)?ok.../(?:videoembed|video)/(\d+)'
-    logger.info("[okru.py] find_videos #" + patronvideos + "#")
+    logger.info(" #" + patronvideos + "#")
 
     matches = re.compile(patronvideos, re.DOTALL).findall(text)
 
