@@ -973,7 +973,7 @@ def play_torrent(item, xlistitem, mediaurl):
 
         # Iniciamos el cliente:
         c = Client(url=mediaurl, is_playing_fnc=xbmc.Player().isPlaying, wait_time=None, timeout=10,
-                   temp_path=os.path.join(config.get_data_path(), "torrent"), print_status=debug)
+                   temp_path=os.path.join(config.get_setting("downloadpath"), "torrent"), print_status=debug)
 
         # Mostramos el progreso
         progreso = dialog_progress("Pelisalacarta - Torrent", "Iniciando...")
