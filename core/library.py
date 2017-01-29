@@ -209,7 +209,7 @@ def save_library_movie(item):
         if item.infoLabels['url_scraper']:
             head_nfo = item.infoLabels['url_scraper'] + '\n'
         else:
-            head_nfo = "Aqui ira el xml"  # TODO
+            head_nfo = "Aqui ira el xml\n"  # TODO
 
         item_nfo = Item(title=item.contentTitle, channel="biblioteca", action='findvideos',
                         library_playcounts={"%s [%s]" % (base_name, _id): 0}, infoLabels=item.infoLabels,
@@ -274,9 +274,9 @@ def save_library_tvshow(item, episodelist):
     # logger.debug(item.tostring('\n'))
     path = ""
 
-    # Si llegados a este punto no tenemos titulo o tmdb_id, salimos
-    if not (item.contentSerieName or item.infoLabels['tmdb_id']) or not item.channel:
-        logger.debug("NO ENCONTRADO contentSerieName NI tmdb_id")
+    # Si llegados a este punto no tenemos titulo o code, salimos
+    if not (item.contentSerieName or item.infoLabels['code']) or not item.channel:
+        logger.debug("NO ENCONTRADO contentSerieName NI code")
         return 0, 0, -1  # Salimos sin guardar
 
     scraper_return = scraper.find_and_set_infoLabels(item)
@@ -331,7 +331,7 @@ def save_library_tvshow(item, episodelist):
         if item.infoLabels['url_scraper']:
             head_nfo = item.infoLabels['url_scraper'] + "\n"
         else:
-            head_nfo = "Aqui ira el xml"  # TODO
+            head_nfo = "Aqui ira el xml\n"  # TODO
 
         item_tvshow = Item(title=item.contentTitle, channel="biblioteca", action="get_temporadas",
                            fanart=item.infoLabels['fanart'], thumbnail=item.infoLabels['thumbnail'],
@@ -487,7 +487,7 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
                 head_nfo = e.infoLabels['url_scraper'] + '\n'
 
             else:
-                head_nfo = "Aqui ira el xml"  # TODO
+                head_nfo = "Aqui ira el xml\n"   # TODO
 
             item_nfo = e.clone(channel="biblioteca", url="", action='findvideos',
                                strm_path=strm_path.replace(TVSHOWS_PATH, ""))
