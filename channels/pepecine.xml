@@ -16,6 +16,11 @@
 
 	<changes>
 		<change>
+			<date>31/01/17</date>
+			<autor>super_berny</autor>
+			<description>Solucionado bug al añadir contenido a la biblioteca</description>
+		</change>
+		<change>
 			<date>26/01/17</date>
 			<autor>super_berny</autor>
 			<description>Fix por cambios en la web</description>
