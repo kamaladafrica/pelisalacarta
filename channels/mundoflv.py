@@ -329,7 +329,10 @@ def play(item):
     logger.info()
 
     data = scrapertools.cache_page(item.url)
-    url = scrapertools.find_single_match(data, '<(?:IFRAME|iframe).*?(?:SRC|src)=*([^ ]+)')
+    if 'streamplay' not in item.server:
+       url = scrapertools.find_single_match(data, '<(?:IFRAME|iframe).*?(?:SRC|src)=*([^ ]+)')
+    else:
+       url = scrapertools.find_single_match(data, '<meta http-equiv="refresh" content="0; url=([^"]+)">')
 
     itemlist = servertools.find_video_items(data=url)
 
