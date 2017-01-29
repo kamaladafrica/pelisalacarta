@@ -13,6 +13,7 @@ from core import config
 from core import logger
 from core import scrapertools
 from core import servertools
+from core import httptools
 from core.item import Item
 
 DEBUG = config.get_setting("debug")
@@ -30,6 +31,7 @@ def mainlist(item):
 
     itemlist = list()
     itemlist.append(Item(channel=item.channel, action="menuepisodios", title="Últimos episodios..."))
+    itemlist.append(Item(channel=item.channel, action="series_listado_alfabetico", title="Listado alfabético"))
     itemlist.append(Item(channel=item.channel, action="series", title="Todas las series",
                          url="http://www.seriesflv.net/ajax/lista.php", extra="grupo_no=0&type=series&order=titulo"))
     itemlist.append(Item(channel=item.channel, action="series", title="Series más vistas",
@@ -40,6 +42,62 @@ def mainlist(item):
                          url="http://www.seriesflv.net/ajax/lista.php", extra="grupo_no=0&type=generos&order=anime"))
     itemlist.append(Item(channel=item.channel, action="search", title="Buscar...",
                          url="http://www.seriesflv.net/api/search/?q="))
+
+    return itemlist
+
+
+def series_listado_alfabetico(item):
+    logger.info("pelisalacarta.channels.seriesflv series_listado_alfabetico")
+
+    return [item.clone(action="seriesletra", title=letra, url="http://www.seriesflv.net/ajax/lista.php",
+                extra="grupo_no=0&type=letra&order={0}".format(str(letra.lower())))
+                for letra in "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"]
+
+
+def seriesletra(item):
+    logger.info("pelisalacarta.channels.seriesflv seriesletra")
+
+    # Descarga la pagina
+    post = item.extra
+    data = httptools.downloadpage(item.url, post=post, add_referer=True).data
+
+    # Extrae las entradas (carpetas)
+    '''
+    <article data-item="lista" class="item lista" id="serieItems">
+    	<a href="http://www.seriesflv.net/serie/fuuka.html">
+        <div class="image"><img src="http://http-s.ws/ysk/img/data/4928aef967b52928cb181a19c81b158c-size-90x120-a.jpg"></div>
+        <div class="info">
+        <div class="title">Fuuka</div>
+        <div class="sinopsis">Yuu Haruna acaba de mudarse a una nueva ciudad, lo que no evita que siga yendo como un zombi por la calle debido a su adicción a Twitter. Caminando por su nuevo entorno se topa con una chica llamada Fuuka Akitsuki, quien le rompe el teléfono enfadada pensando que lo que el muchacho intentaba era sacarle una foto de sus bragas. El encuentro entre ambos cambiará sus vidas?</div>
+        <div class="otros">
+        <b>Año:</b> 2017 | <b>View's:</b> 1,248 veces
+        </div>
+        </div>
+        </a>
+    </article>
+    '''
+    patron = "<article.+[^<]<a.+?href=['\"](?P<url>[^'\"]+).*[^<]<div.+?<img src=['\"](?P<img>http[^'\"]+).*[^<]<div.+?[^<]<div class=['\"]title['\"]>(?P<name>[^'\"]+)<\/div>"
+    matches = re.compile(patron).findall(data)
+    itemlist = []
+
+    for eurl, eimg, ename in matches:
+    
+        title = ename.strip()
+        thumbnail = urlparse.urljoin(item.url, eimg)
+        plot = ""
+        url = urlparse.urljoin(item.url, eurl)
+        itemlist.append(Item(channel=item.channel, action="episodios", title=title, url=url, thumbnail=thumbnail,
+                             plot=plot, show=title))
+        
+        logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+
+    if len(itemlist) >= 20: 
+        # grupo_no=0&type=letra&order=a
+        old_offset = scrapertools.find_single_match(item.extra, "grupo_no\=(\d+)")
+        new_offset = str(int(old_offset)+1)
+        newextra = item.extra.replace("grupo_no="+old_offset, "grupo_no="+new_offset)
+        itemlist.append(Item(channel=item.channel, action="seriesletra", title=">> Página siguiente", extra=newextra,
+                                 url=item.url))
 
     return itemlist
 
