@@ -57,7 +57,9 @@ def get_video_url(page_url, premium = False, user="", password="", video_passwor
 
     video_urls = []
     media = media_url + "|User-Agent=Mozilla/5.0 (iPhone; CPU iPhone OS 5_0_1 like Mac OS X)"
-    video_urls.append([scrapertools.get_filename_from_url(media_url)[-4:]+" [netu.tv]", media])
+    video_urls.append([scrapertools.get_filename_from_url(media_url)[-4:]+" Opción 1 [netu.tv]", media])
+    media = media.replace('secip/1', 'secip/1/')
+    video_urls.append([scrapertools.get_filename_from_url(media_url)[-4:]+" Opción 2 [netu.tv]", media])
 
     for video_url in video_urls:
         logger.info(" %s - %s" % (video_url[0],video_url[1]))
