@@ -17,7 +17,7 @@ from core import httptools
 from core.item import Item
 
 DEBUG = config.get_setting("debug")
-CHANNEL_HOST = 'http://www.seriesflv.net'
+CHANNEL_HOST = 'http://www.seriesflv.net/'
 CHANNEL_HEADERS = [
     ['User-Agent', 'Mozilla/5.0'],
     ['Accept-Encoding', 'gzip, deflate'],
@@ -44,6 +44,10 @@ def mainlist(item):
                          url="http://www.seriesflv.net/api/search/?q="))
 
     return itemlist
+
+
+def compara(x,y):
+    return cmp(x.title,y.title)
 
 
 def series_listado_alfabetico(item):
@@ -90,14 +94,21 @@ def seriesletra(item):
                              plot=plot, show=title))
         
         logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-
-    if len(itemlist) >= 20: 
-        # grupo_no=0&type=letra&order=a
-        old_offset = scrapertools.find_single_match(item.extra, "grupo_no\=(\d+)")
+    
+    longlist = len(itemlist)
+    itemlist.sort(compara)
+    # grupo_no=0&type=letra&order=a
+    old_offset = scrapertools.find_single_match(item.extra, "grupo_no\=(\d+)")
+    if int(old_offset) > 0:
+        atras_offset = str(int(old_offset)-1)
+        atrasextra = item.extra.replace("grupo_no="+old_offset, "grupo_no="+atras_offset)
+        itemlist.append(Item(channel=item.channel, action="seriesletra", title="<< Anterior", extra=atrasextra,
+                             url=item.url))
+    if longlist >= 20:
         new_offset = str(int(old_offset)+1)
         newextra = item.extra.replace("grupo_no="+old_offset, "grupo_no="+new_offset)
-        itemlist.append(Item(channel=item.channel, action="seriesletra", title=">> Página siguiente", extra=newextra,
-                                 url=item.url))
+        itemlist.append(Item(channel=item.channel, action="seriesletra", title=">> Siguiente", extra=newextra,
+                             url=item.url))
 
     return itemlist
 
@@ -138,7 +149,7 @@ def ultimos_episodios(item):
     logger.info("pelisalacarta.channels.seriesflv ultimos_episodios")
     itemlist = []
 
-    data = scrapertools.anti_cloudflare("http://www.seriesflv.net/", headers=CHANNEL_HEADERS, host=CHANNEL_HOST)
+    data = httptools.downloadpage(CHANNEL_HOST, add_referer=True).data
     # logger.info("data="+data)
 
     # Extrae los episodios
@@ -203,7 +214,7 @@ def buscar(item):
 
     # Descarga la pagina
     post = item.extra
-    data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_HEADERS, host=CHANNEL_HOST, post=post)
+    data = httptools.downloadpage(item.url, post=post, add_referer=True).data
     # logger.info("data="+data)
 
     # Extrae las entradas (carpetas)
@@ -260,7 +271,7 @@ def series(item):
 
     # Descarga la pagina
     post = item.extra
-    data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_HEADERS, host=CHANNEL_HOST, post=post)
+    data = httptools.downloadpage(item.url, post=post, add_referer=True).data
     # logger.info("data="+data)
 
     # Extrae las entradas (carpetas)
@@ -329,7 +340,7 @@ def episodios(item):
     itemlist = []
 
     # Descarga la pagina
-    data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_HEADERS, host=CHANNEL_HOST)
+    data = httptools.downloadpage(item.url, add_referer=True).data
     # logger.info("data="+data)
 
     # Extrae los episodios
@@ -399,7 +410,7 @@ def findvideos(item):
     logger.info("pelisalacarta.channels.seriesflv findvideos")
 
     # Descarga la pagina
-    data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_HEADERS, host=CHANNEL_HOST)
+    data = httptools.downloadpage(item.url, add_referer=True).data
     data = scrapertools.find_single_match(data, '<div id="enlaces">(.*?)<div id="comentarios">')
     # logger.info("data="+data)
 
@@ -483,7 +494,7 @@ def findvideos(item):
 def play(item):
     logger.info("pelisalacarta.channels.seriesflv play url="+item.url)
 
-    data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_HEADERS, host=CHANNEL_HOST)
+    data = httptools.downloadpage(item.url, add_referer=True).data
 
     itemlist = servertools.find_video_items(data=data)
 
