@@ -133,7 +133,7 @@ def masvistas(item):
         title = scrapertools.decodeHtmlentities(title)
         fanart = item.fanart
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="temporadas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, contentSerieName=title))
+        itemlist.append( Item(channel=item.channel, action="idioma" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, contentSerieName=title))
 
     return itemlist
 
@@ -155,7 +155,7 @@ def recomendadas(item):
         title = title = scrapertools.decodeHtmlentities(title) 
         fanart = item.fanart
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="temporadas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart,contentSerieName=title))
+        itemlist.append( Item(channel=item.channel, action="idioma" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart,contentSerieName=title))
 
     return itemlist
 
@@ -179,7 +179,7 @@ def ultimas(item):
         title = scrapertools.decodeHtmlentities(title)
         fanart = item.fanart
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="temporadas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart,contentSerieName=title))
+        itemlist.append( Item(channel=item.channel, action="idioma" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart,contentSerieName=title))
 
     return itemlist
 
