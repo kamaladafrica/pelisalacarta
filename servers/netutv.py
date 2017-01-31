@@ -21,7 +21,8 @@ def get_video_url(page_url, premium = False, user="", password="", video_passwor
     page_url_hqq = "http://hqq.tv/player/embed_player.php?vid=%s&autoplay=no" % id_video
     data_page_url_hqq = httptools.downloadpage(page_url_hqq, add_referer=True).data
 
-    data_unwise = unwise_process(data_page_url_hqq).replace("\\", "")
+    js_wise = scrapertools.find_single_match(data_page_url_hqq, "<script type=[\"']text/javascript[\"']>;?(eval.*?)</script>")
+    data_unwise = jswise(js_wise).replace("\\", "")
     at = scrapertools.find_single_match(data_unwise, 'var at\s*=\s*"([^"]+)"')
 
     url = "http://hqq.tv/sec/player/embed_player.php?iss=&vid=%s&at=%s&autoplayed=yes&referer=on" \
@@ -37,7 +38,7 @@ def get_video_url(page_url, premium = False, user="", password="", video_passwor
     params = {}
     for key, value in matches:
         if key == "adb":
-            params[key] = "1"
+            params[key] = "1/"
         elif '"' in value:
             params[key] = value.replace('"', '')
         else:
@@ -57,9 +58,7 @@ def get_video_url(page_url, premium = False, user="", password="", video_passwor
 
     video_urls = []
     media = media_url + "|User-Agent=Mozilla/5.0 (iPhone; CPU iPhone OS 5_0_1 like Mac OS X)"
-    video_urls.append([scrapertools.get_filename_from_url(media_url)[-4:]+" Opción 1 [netu.tv]", media])
-    media = media.replace('secip/1', 'secip/1/')
-    video_urls.append([scrapertools.get_filename_from_url(media_url)[-4:]+" Opción 2 [netu.tv]", media])
+    video_urls.append([scrapertools.get_filename_from_url(media_url)[-4:]+" [netu.tv]", media])
 
     for video_url in video_urls:
         logger.info(" %s - %s" % (video_url[0],video_url[1]))
@@ -121,96 +120,42 @@ def tb(b_m3u8_2):
 ## --------------------------------------------------------------------------------
 ## --------------------------------------------------------------------------------
 
-def unwise1(w):
-    int1 = 0
-    result = ""
-    while int1 < len(w):
-        result = result + chr(int(w[int1:int1 + 2], 36))
-        int1 += 2
-    return result
+def jswise(wise):
+    ## js2python
+    def js_wise(wise):
 
-def logblock(s):
-    if len(s)>12:
-        return "("+str(len(s))+") "+s[0:5]+"..."+s[-5:]
-    else:
-        return "("+str(len(s))+") "+s
+        w, i, s, e = wise
 
-def unwise(w, i, s, e, wi, ii, si, ei):
-    int1 = 0
-    int2 = 0
-    int3 = 0
-    int4 = 0
-    string1 = ""
-    string2 = ""
+        v0 = 0; v1 = 0; v2 = 0
+        v3 = []; v4 = []
+
+        while True:
+            if v0 < 5: v4.append(w[v0])
+            elif v0 < len(w): v3.append(w[v0])
+            v0+= 1
+            if v1 < 5: v4.append(i[v1])
+            elif v1 < len(i): v3.append(i[v1])
+            v1+= 1
+            if v2 < 5: v4.append(s[v2])
+            elif v2 < len(s): v3.append(s[v2])
+            v2+= 1
+            if len(w) + len(i) + len(s) + len(e) == len(v3) + len(v4) + len(e): break
+
+        v5 = "".join(v3); v6 = "".join(v4)
+        v1 = 0
+        v7 = []
+
+        for v0 in range(0, len(v3), 2):
+            v8 = -1
+            if ord(v6[v1]) % 2: v8 = 1
+            v7.append(chr(int(v5[v0:v0+2], 36) - v8))
+            v1+= 1
+            if v1 >= len(v4): v1 = 0
+        return "".join(v7)
+
+    ## loop2unobfuscated
     while True:
-        if w != "":
-            if int1 < wi:
-                string2 = string2 + w[int1:int1+1]
-            elif int1 < len(w):
-                string1 = string1 + w[int1:int1+1]
-            int1 += 1
-        if i != "":
-            if int2 < ii:
-                string2 = string2 + i[int2:int2+1]
-            elif int2 < len(i):
-                string1 = string1 + i[int2:int2+1]
-            int2 += 1
-        if s != "":
-            if int3 < si:
-                string2 = string2 + s[int3:int3+1]
-            elif int3 < len(s):
-                string1 = string1 + s[int3:int3+1]
-            int3 = int3 + 1
-        if e != "":
-            if int4 < ei:
-                string2 = string2 + e[int4:int4+1]
-            elif int4 < len(e):
-                string1 = string1 + e[int4:int4+1]
-            int4 = int4 + 1
-        if len(w) + len(i) + len(s) + len(e) == len(string1) + len(string2):
-            break
-
-    int1 = 0
-    int2 = 0
-    result = ""
-    contador = 0
-    while int1 < len(string1):
-        flag = -1
-        if ord(string2[int2:int2+1]) % 2:
-            flag = 1
-        anadir = chr(int(string1[int1:int1+2], 36) - flag)
-
-        result = result + anadir
-        int2 += 1
-        if int2 >= len(string2):
-            int2 = 0
-        int1 += 2
-        contador = contador + 1
-
-    return result
-
-def unwise_process(result):
-    while True:
-        a = re.compile(r';?eval\s*\(\s*function\s*\(\s*w\s*,\s*i\s*,\s*s\s*,\s*e\s*\).+?[\"\']\s*\)\s*\)(?:\s*;)?').search(result)
-        if not a:
-            break
-        a = a.group()
-        tmp = re.compile(r'\}\s*\(\s*[\"\'](\w*)[\"\']\s*,\s*[\"\'](\w*)[\"\']\s*,\s*[\"\'](\w*)[\"\']\s*,\s*[\"\'](\w*)[\"\']').search(a)
-        if not tmp:
-            result = result.replace(a, "")
-        else:
-            wise = ["", "", "", ""]
-            wise = tmp.groups()
-            if a.find("while") == -1:
-                result = result.replace(a, unwise1(wise[0]))
-            else:
-                c = 0
-                wisestr = ["", "", "", ""]
-                wiseint = [0, 0, 0, 0]
-                b = re.compile(r'while(.+?)var\s*\w+\s*=\s*\w+\.join\(\s*[\"\'][\"\']\s*\)').search(a).group(1)
-                for d in re.compile(r'if\s*\(\s*\w*\s*\<\s*(\d+)\)\s*\w+\.push').findall(b):
-                    wisestr[c] = wise[c]
-                    wiseint[c] = int(d)
-                    c += 1
-                result = result.replace(a, unwise(wisestr[0], wisestr[1], wisestr[2], wisestr[3], wiseint[0], wiseint[1], wiseint[2], wiseint[3]))
-    return result
+        wise = re.search("var\s.+?\('([^']+)','([^']+)','([^']+)','([^']+)'\)", wise, re.DOTALL)
+        if not wise: break
+        ret = wise = js_wise(wise.groups())
+    return ret
