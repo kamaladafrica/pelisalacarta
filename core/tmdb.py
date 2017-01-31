@@ -668,7 +668,7 @@ class Tmdb(object):
         else:
             logger.debug("Creado objeto vacio")
 
-    def __call__(self, **kwargs):
+    '''def __call__(self, **kwargs):
         self.page = kwargs.get('page', 1)
         self.index_results = 0
         self.results = []
@@ -721,7 +721,7 @@ class Tmdb(object):
         else:
             logger.debug("Creado objeto vacio")
 
-        return self
+        return self'''
 
     @classmethod
     def rellenar_dic_generos(cls, tipo='movie', idioma='es'):
