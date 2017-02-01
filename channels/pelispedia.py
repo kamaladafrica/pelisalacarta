@@ -16,78 +16,74 @@ from core import servertools
 from core import tmdb
 from core.item import Item
 from platformcode import platformtools
+from core import httptools
 
 __channel__ = "pelispedia"
 DEBUG = config.get_setting("debug")
 
 CHANNEL_HOST = "http://www.pelispedia.tv/"
-CHANNEL_DEFAULT_HEADERS = [
-    ["User-Agent", "Mozilla/5.0"],
-    ["Accept-Encoding", "gzip, deflate"],
-    ["Referer", CHANNEL_HOST]
-]
 
 # Configuracion del canal
 try:
-    __modo_grafico__ = config.get_setting('modo_grafico',__channel__)
-    __perfil__= int(config.get_setting('perfil',__channel__))
+    __modo_grafico__ = config.get_setting('modo_grafico', __channel__)
+    __perfil__ = int(config.get_setting('perfil', __channel__))
 except:
     __modo_grafico__ = True
-    __perfil__= 0
+    __perfil__ = 0
 
 # Fijar perfil de color
-perfil = [['0xFF6E2802','0xFFFAA171','0xFFE9D7940'],
-          ['0xFFA5F6AF','0xFF5FDA6D','0xFF11811E'],
-          ['0xFF58D3F7','0xFF2E64FE','0xFF0404B4']]
+perfil = [['0xFF6E2802', '0xFFFAA171', '0xFFE9D7940'],
+          ['0xFFA5F6AF', '0xFF5FDA6D', '0xFF11811E'],
+          ['0xFF58D3F7', '0xFF2E64FE', '0xFF0404B4']]
 color1, color2, color3 = perfil[__perfil__]
 
-parameters= channeltools.get_channel_parameters(__channel__)
-fanart_host= parameters['fanart']
-thumbnail_host= parameters['thumbnail']
+parameters = channeltools.get_channel_parameters(__channel__)
+fanart_host = parameters['fanart']
+thumbnail_host = parameters['thumbnail']
 
 
 def mainlist(item):
-    logger.info("pelisalacarta.channels.pelispedia mainlist")
+    logger.info()
 
     itemlist = list()
-    itemlist.append(Item(channel=__channel__, title="Películas", text_color=color1, fanart=fanart_host, folder=False
-                         , thumbnail=thumbnail_host, text_blod=True))
-    itemlist.append(Item(channel=__channel__, action="listado", title="    Novedades", text_color=color2, viewcontent = "movies",
+    itemlist.append(Item(channel=__channel__, title="Películas", text_color=color1, fanart=fanart_host, folder=False,
+                         thumbnail=thumbnail_host, text_blod=True))
+    itemlist.append(Item(channel=__channel__, action="listado", title="    Novedades", text_color=color2, viewcontent="movies",
                          url=urlparse.urljoin(CHANNEL_HOST, "movies/all/"), fanart=fanart_host, extra="movies", viewmode="movie_with_plot",
                          thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/Directors%20Chair.png"))
     itemlist.append(Item(channel=__channel__, action="listado_alfabetico", title="     Por orden alfabético", text_color=color2,
                          url=urlparse.urljoin(CHANNEL_HOST, "movies/all/"), extra="movies", fanart=fanart_host, viewmode="thumbnails",
-                         thumbnail = "https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/A-Z.png"))
+                         thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/A-Z.png"))
     itemlist.append(Item(channel=__channel__, action="listado_genero", title="     Por género", text_color=color2,
                          url=urlparse.urljoin(CHANNEL_HOST, "movies/all/"), extra="movies", fanart=fanart_host,
                          thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/Genre.png"))
     itemlist.append(Item(channel=__channel__, action="listado_anio", title="     Por año", text_color=color2,
                          url=urlparse.urljoin(CHANNEL_HOST, "movies/all/"), extra="movies", fanart=fanart_host,
                          thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/Year.png"))
-    #itemlist.append(Item(channel=__channel__, action="search", title="     Buscar...", text_color=color2,
-    #                     url=urlparse.urljoin(CHANNEL_HOST, "buscar/?s="), extra="movies", fanart=fanart_host))
+    # itemlist.append(Item(channel=__channel__, action="search", title="     Buscar...", text_color=color2,
+    #                      url=urlparse.urljoin(CHANNEL_HOST, "buscar/?s="), extra="movies", fanart=fanart_host))
 
-    itemlist.append(Item(channel=__channel__, title="Series", text_color=color1, fanart=fanart_host, folder=False
-                         , thumbnail=thumbnail_host, text_blod=True))
-    itemlist.append(Item(channel=__channel__, action="listado", title="    Novedades", text_color=color2, viewcontent = "tvshows",
+    itemlist.append(Item(channel=__channel__, title="Series", text_color=color1, fanart=fanart_host, folder=False,
+                         thumbnail=thumbnail_host, text_blod=True))
+    itemlist.append(Item(channel=__channel__, action="listado", title="    Novedades", text_color=color2, viewcontent="tvshows",
                          url=urlparse.urljoin(CHANNEL_HOST, "series/all/"), extra="serie", fanart=fanart_host, viewmode="movie_with_plot",
                          thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/TV%20Series.png"))
     itemlist.append(Item(channel=__channel__, action="listado_alfabetico", title="     Por orden alfabético",
                          text_color=color2, extra="serie", fanart=fanart_host, viewmode="thumbnails",
-                         thumbnail = "https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/A-Z.png"))
+                         thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/A-Z.png"))
     itemlist.append(Item(channel=__channel__, action="listado_genero", title="     Por género", extra="serie",
                          text_color=color2, fanart=fanart_host, url=urlparse.urljoin(CHANNEL_HOST, "series/all/"),
                          thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/Genre.png"))
     itemlist.append(Item(channel=__channel__, action="listado_anio", title="     Por año", extra="serie", text_color=color2,
                          fanart=fanart_host, url=urlparse.urljoin(CHANNEL_HOST, "series/all/"),
                          thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/Year.png"))
-    #itemlist.append(Item(channel=__channel__, action="search", title="     Buscar...", text_color=color2,
-    #                     url=urlparse.urljoin(CHANNEL_HOST, "series/buscar/?s="), extra="serie", fanart=fanart_host))
+    # itemlist.append(Item(channel=__channel__, action="search", title="     Buscar...", text_color=color2,
+    #                      url=urlparse.urljoin(CHANNEL_HOST, "series/buscar/?s="), extra="serie", fanart=fanart_host))
 
     itemlist.append(Item(channel=__channel__, title="", fanart=fanart_host, folder=False, thumbnail=thumbnail_host))
 
     itemlist.append(Item(channel=__channel__, action="settings", title="Configuración", text_color=color1,
-                         fanart=fanart_host,text_blod=True,
+                         fanart=fanart_host, text_blod=True,
                          thumbnail="http://media.tvalacarta.info/pelisalacarta/squares/thumb_configuracion.png"))
 
     return itemlist
@@ -98,41 +94,40 @@ def settings(item):
 
 
 def listado_alfabetico(item):
-    logger.info("pelisalacarta.channels.pelispedia listado_alfabetico")
+    logger.info()
 
     itemlist = []
 
-    for letra in ['0-9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S',
-                  'T', 'U', 'V', 'W', 'X', 'Y', 'Z']:
+    for letra in '0ABCDEFGHIJKLMNOPQRSTUVWXYZ':
 
         cadena = "series/letra/"
         if item.extra == "movies":
             cadena = 'movies/all/?letra='
             viewcontent = "movies"
-            if letra == '0-9':
+            if letra == '0':
                 cadena += "Num"
             else:
                 cadena += letra
         else:
             viewcontent = "tvshows"
-            if letra == '0-9':
+            if letra == '0':
                 cadena += "num/"
             else:
                 cadena += letra+"/"
 
         itemlist.append(Item(channel=__channel__, action="listado", title=letra, url=urlparse.urljoin(CHANNEL_HOST, cadena),
-                             extra=item.extra, text_color=color2, viewcontent = viewcontent,
+                             extra=item.extra, text_color=color2, viewcontent=viewcontent,
                              thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/A-Z.png"))
 
     return itemlist
 
 
 def listado_genero(item):
-    logger.info("pelisalacarta.channels.pelispedia listado_genero")
+    logger.info()
 
     itemlist = []
 
-    data = scrapertools.anti_cloudflare(item.url , host=CHANNEL_HOST , headers=CHANNEL_DEFAULT_HEADERS )
+    data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
 
     if item.extra == "movies":
@@ -149,7 +144,6 @@ def listado_genero(item):
         data = scrapertools.find_single_match(data, patron)
         patron = '<option name="([^"]+)".+?>(.*?)</option>'
 
-
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     for key, value in matches[1:]:
@@ -158,18 +152,18 @@ def listado_genero(item):
             cadena2 += "/"
 
         itemlist.append(Item(channel=__channel__, action="listado", title=value, url=urlparse.urljoin(CHANNEL_HOST, cadena2),
-                             extra=item.extra, text_color= color2, fanart=fanart_host, viewcontent = viewcontent,
+                             extra=item.extra, text_color=color2, fanart=fanart_host, viewcontent=viewcontent,
                              thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/Genre.png"))
 
     return itemlist
 
 
 def listado_anio(item):
-    logger.info("pelisalacarta.channels.pelispedia listado_anio")
+    logger.info()
 
     itemlist = []
 
-    data = scrapertools.anti_cloudflare(item.url , host=CHANNEL_HOST , headers=CHANNEL_DEFAULT_HEADERS )
+    data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
 
     if item.extra == "movies":
@@ -196,16 +190,16 @@ def listado_anio(item):
             cadena2 += "/"
 
         itemlist.append(Item(channel=__channel__, action="listado", title=titulo+value, extra=item.extra,
-                             url=urlparse.urljoin(CHANNEL_HOST, cadena2), text_color= color2, fanart=fanart_host,
+                             url=urlparse.urljoin(CHANNEL_HOST, cadena2), text_color=color2, fanart=fanart_host,
                              thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres/0/Year.png",
-                             viewcontent = viewcontent))
+                             viewcontent=viewcontent))
 
     return itemlist
 
 
 def search(item, texto):
     # Funcion de busqueda desactivada
-    logger.info("pelisalacarta.channels.pelispedia search texto={0}".format(texto))
+    logger.info("texto={0}".format(texto))
 
     item.url = item.url + "%" + texto.replace(' ', '+') + "%"
 
@@ -219,8 +213,8 @@ def search(item, texto):
             logger.error("%s" % line)
         return []
 
+
 def newest(categoria):
-    itemlist = []
     item = Item()
     try:
         if categoria == 'peliculas':
@@ -243,19 +237,19 @@ def newest(categoria):
 
     return itemlist
 
+
 def listado(item):
-    logger.info("pelisalacarta.channels.pelispedia listado")
+    logger.info()
     itemlist = []
 
     action = "findvideos"
-    contentType = "movie"
+    content_type = "movie"
 
     if item.extra == 'serie':
         action = "temporadas"
-        contentType = "tvshow"
+        content_type = "tvshow"
 
-
-    data = scrapertools.anti_cloudflare(item.url , host=CHANNEL_HOST , headers=CHANNEL_DEFAULT_HEADERS )
+    data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
     # logger.info("data -- {}".format(data))
 
@@ -267,16 +261,16 @@ def listado(item):
         title = "{title} ({year})".format(title=scrapertools.unescape(scrapedtitle.strip()), year=scrapedyear)
         plot = scrapertools.entityunescape(scrapedplot)
 
-        new_item= Item(channel=__channel__, title=title, url=urlparse.urljoin(CHANNEL_HOST, scrapedurl), action=action,
-                       thumbnail=scrapedthumbnail, plot=plot, context="", extra=item.extra, text_color= color3,
-                       contentType=contentType)
+        new_item = Item(channel=__channel__, title=title, url=urlparse.urljoin(CHANNEL_HOST, scrapedurl), action=action,
+                        thumbnail=scrapedthumbnail, plot=plot, context="", extra=item.extra, text_color=color3,
+                        contentType=content_type, fulltitle=title)
 
         if item.extra == 'serie':
             new_item.show = scrapertools.unescape(scrapedtitle.strip())
         else:
             new_item.fulltitle = scrapertools.unescape(scrapedtitle.strip())
-            new_item.infoLabels = {'year':scrapedyear}
-            #logger.debug(new_item.tostring())
+            new_item.infoLabels = {'year': scrapedyear}
+            # logger.debug(new_item.tostring())
 
         itemlist.append(new_item)
 
@@ -322,19 +316,18 @@ def listado(item):
             url = item.url.replace("rangeStart="+ant_inicio, "rangeStart="+inicio)
 
         itemlist.append(Item(channel=__channel__, action="listado", title=">> Página siguiente", extra=item.extra,
-                             url=url, thumbnail=thumbnail_host, fanart= fanart_host, text_color= color2))
+                             url=url, thumbnail=thumbnail_host, fanart=fanart_host, text_color=color2))
 
     return itemlist
 
 
 def episodios(item):
-    logger.info("pelisalacarta.channels.pelispedia episodios")
+    logger.info()
 
     itemlist = []
 
     # Descarga la página
-    data = scrapertools.anti_cloudflare(item.url , host=CHANNEL_HOST , headers=CHANNEL_DEFAULT_HEADERS )
-
+    data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
 
     patron = '<li class="clearfix gutterVertical20"><a href="([^"]+)".*?><small>(.*?)</small>.*?' \
@@ -352,16 +345,17 @@ def episodios(item):
 
         title = "{season}x{episode}: {name}".format(season=season, episode=episode.zfill(2),
                                                     name=scrapertools.unescape(scrapedname))
-        new_item = item.clone(title=title, url=scrapedurl, action="findvideos", text_color=color3, contentType="episode")
+        new_item = item.clone(title=title, url=scrapedurl, action="findvideos", text_color=color3, fulltitle=title,
+                              contentType="episode")
         if 'infoLabels' not in new_item:
-            new_item.infoLabels={}
+            new_item.infoLabels = {}
 
         new_item.infoLabels['season'] = season
         new_item.infoLabels['episode'] = episode.zfill(2)
 
         itemlist.append(new_item)
 
-    #TODO no hacer esto si estamos añadiendo a la biblioteca
+    # TODO no hacer esto si estamos añadiendo a la biblioteca
     if not item.extra:
         # Obtenemos los datos de todos los capitulos de la temporada mediante multihilos
         tmdb.set_infoLabels(itemlist, __modo_grafico__)
@@ -373,22 +367,23 @@ def episodios(item):
                 # Si el capitulo tiene imagen propia remplazar al poster
                 i.thumbnail = i.infoLabels['poster_path']
 
-    itemlist.sort(key=lambda item: item.title, reverse=config.get_setting('orden_episodios',__channel__))
+    itemlist.sort(key=lambda item: item.title, reverse=config.get_setting('orden_episodios', __channel__))
 
     # Opción "Añadir esta serie a la biblioteca de XBMC"
     if config.get_library_support() and len(itemlist) > 0:
         itemlist.append(Item(channel=__channel__, title="Añadir esta serie a la biblioteca de XBMC", url=item.url,
                              action="add_serie_to_library", extra="episodios", show=item.show, category="Series",
-                             text_color=color1,thumbnail=thumbnail_host, fanart= fanart_host))
+                             text_color=color1, thumbnail=thumbnail_host, fanart=fanart_host))
 
     return itemlist
 
+
 def temporadas(item):
-    logger.info("pelisalacarta.channels.pelispedia episodios")
+    logger.info()
     itemlist = []
 
     # Descarga la página
-    data = scrapertools.anti_cloudflare(item.url, host=CHANNEL_HOST, headers=CHANNEL_DEFAULT_HEADERS)
+    data = httptools.downloadpage(item.url).data
 
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
 
@@ -401,13 +396,12 @@ def temporadas(item):
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     if len(matches) > 1:
-        for scrapedseason,scrapedthumbnail in matches:
+        for scrapedseason, scrapedthumbnail in matches:
             temporada = scrapertools.find_single_match(scrapedseason, '(\d+)')
-            newItem = item.clone(text_color=color2, action="episodios", season=temporada, thumbnail=scrapedthumbnail)
-            newItem.infoLabels['season'] = temporada
-            newItem.extra=""
-            itemlist.append(newItem)
-
+            new_item = item.clone(text_color=color2, action="episodios", season=temporada, thumbnail=scrapedthumbnail)
+            new_item.infoLabels['season'] = temporada
+            new_item.extra = ""
+            itemlist.append(new_item)
 
         # Obtenemos los datos de todas las temporadas de la serie mediante multihilos
         tmdb.set_infoLabels(itemlist, __modo_grafico__)
@@ -433,20 +427,20 @@ def temporadas(item):
         return episodios(item)
 
 
-
 def findvideos(item):
-    logger.info("pelisalacarta.channels.pelispedia findvideos")
+    logger.info()
+    logger.info("item.url %s" % item.url)
     logger.debug(item.contentTitle)
     itemlist = []
 
     # Descarga la página
-    data = scrapertools.anti_cloudflare(item.url , host=CHANNEL_HOST , headers=CHANNEL_DEFAULT_HEADERS )
+    data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
 
     patron = '<iframe src=".+?id=(\d+)'
     key = scrapertools.find_single_match(data, patron)
-    data = scrapertools.anti_cloudflare( CHANNEL_HOST+'api/iframes.php?id={0}&update1.1'.format(key) , host=CHANNEL_HOST , headers=CHANNEL_DEFAULT_HEADERS )
-
+    referer = CHANNEL_HOST+'api/iframes.php?id={0}&update1.1'.format(key)
+    data = httptools.downloadpage(referer).data
     # Descarta la opción descarga que es de publicidad
     patron = '<a href="(?!http://go.ad2up.com)([^"]+)".+?><img src="/api/img/([^.]+)'
     matches = scrapertools.find_multiple_matches(data, patron)
@@ -454,7 +448,7 @@ def findvideos(item):
     for scrapedurl, scrapedtitle in matches:
         # En algunos vídeos hay opción flash "vip" con varias calidades
         if "api/vip.php" in scrapedurl:
-            data_vip = scrapertools.anti_cloudflare(scrapedurl , host=CHANNEL_HOST , headers=CHANNEL_DEFAULT_HEADERS )
+            data_vip = httptools.downloadpage(scrapedurl).data
             patron = '<a href="([^"]+)".+?><img src="/api/img/([^.]+).*?<span class="text">([^<]+)<'
             matches_vip = re.compile(patron, re.DOTALL).findall(data_vip)
             for url, titlevip, calidad in matches_vip:
@@ -462,63 +456,92 @@ def findvideos(item):
                 itemlist.append(item.clone(title=title, url=url, action="play"))
         else:
             title = "Ver vídeo en ["+scrapedtitle+"]"
-            new_item = item.clone(title=title, url=scrapedurl, action="play", extra=item.url)
+            new_item = item.clone(title=title, url=scrapedurl, action="play", extra=item.url, referer=referer)
             itemlist.append(new_item)
 
     # Opción "Añadir esta pelicula a la biblioteca de XBMC"
     if item.extra == "movies" and config.get_library_support() and len(itemlist) > 0:
         itemlist.append(Item(channel=__channel__, title="Añadir esta película a la biblioteca de XBMC", url=item.url,
-                             infoLabels= item.infoLabels, action="add_pelicula_to_library", extra="findvideos",
-                             fulltitle=item.title, text_color= color2))
+                             infoLabels=item.infoLabels, action="add_pelicula_to_library", extra="findvideos",
+                             fulltitle=item.title, text_color=color2))
 
     return itemlist
 
 
 def play(item):
-    logger.info("pelisalacarta.channels.pelispedia play url={0}".format(item.url))
+    logger.info("url={0}".format(item.url))
 
     itemlist = []
-    # Para videos flash y html5
-    if item.url.startswith("http://www.pelispedia.tv"):
-        key = scrapertools.find_single_match(item.url, 'index.php\?id=([^&]+)&sub=([^&]+)&.+?imagen=([^&]+)')
-        subtitle = ""
-        thumbnail = ""
+
+    subtitle = ""
+    thumbnail = ""
+
+    # html5
+    if item.url.startswith("http://www.pelispedia.vip"):
+
+        thumbnail = scrapertools.find_single_match(item.url, '&imagen=([^"]+)')
+
+        headers = dict()
+        headers["Referer"] = item.referer
+        data = httptools.downloadpage(item.url, headers=headers).data
+
+        media_urls = scrapertools.find_multiple_matches(data, "file:'(.+?)',label:'(.*?)'")
+
+        sub = scrapertools.find_single_match(data, 'file: "(.+?)",label: "Spanish"')
+        data_sub = httptools.downloadpage(sub).data
+        subtitle = save_sub(data_sub)
+
+        if len(media_urls) > 0:
+            # TODO mirar de mandar todas las calidades
+            url = media_urls[0][0]
+            itemlist.append(Item(channel=__channel__, title=item.fulltitle, url=url, server="directo", action="play",
+                                 subtitle=subtitle, thumbnail=thumbnail))
+
+    # otro html5
+    elif item.url.startswith("https://pelispedia.co"):
+
+        headers = dict()
+        headers["Referer"] = item.referer
+        data = httptools.downloadpage(item.url, headers=headers).data
+
+        sub = scrapertools.find_single_match(data, "subtitulo='([^']+)'")
+        data_sub = httptools.downloadpage(sub).data
+        subtitle = save_sub(data_sub)
+
+        from lib import jsunpack
+        match = scrapertools.find_single_match(data, '<script type="text/javascript">(.*?)</script>')
+        data = jsunpack.unpack(match)
+        data = data.replace("\\'", "'")
+
+        media_urls = scrapertools.find_multiple_matches(data, "{file:'(.+?)',label:'(.+?)'")
+
+        if len(media_urls) > 0:
+            # TODO mirar de mandar todas las calidades
+            url = media_urls[0][0]
+            itemlist.append(Item(channel=__channel__, title=item.fulltitle, url=url, server="directo",
+                                 action="play", subtitle=subtitle, thumbnail=thumbnail))
+
+    # flash
+    elif item.url.startswith("http://www.pelispedia.tv"):
+        key = scrapertools.find_single_match(item.url, 'index.php\?id=([^&]+).+?sub=([^&]+)&.+?imagen=([^&]+)')
 
         if len(key) > 2:
             thumbnail = key[2]
         if key[1] != "":
             url_sub = "http://www.pelispedia.tv/sub/%s.srt" % key[1]
-            data_sub = scrapertools.anti_cloudflare(url_sub, host=CHANNEL_HOST)
+            data_sub = httptools.downloadpage(url_sub).data
             subtitle = save_sub(data_sub)
-        if "Player_Html5" in item.url:
-            url = "http://www.pelispedia.tv/Pe_Player_Html5/pk/pk_2/plugins/protected.php"
-            post = "fv=21&url="+urllib.quote(key[0])+"&sou=pic"
-        else:
-            url = "http://www.pelispedia.tv/Pe_flsh/plugins/gkpluginsphp.php"
-            post = "link="+urllib.quote(key[0])
 
-        data = scrapertools.cache_page(url, post=post, headers=CHANNEL_DEFAULT_HEADERS)
+        url = "http://www.pelispedia.tv/gkphp_flv/plugins/gkpluginsphp.php"
+        post = "link="+urllib.quote(key[0])
+
+        data = httptools.downloadpage(url, post=post).data
         media_urls = scrapertools.find_multiple_matches(data, '(?:link|url)":"([^"]+)"')
         # Si hay varias urls se añade la última que es la de mayor calidad
         if len(media_urls) > 0:
             url = media_urls[len(media_urls)-1].replace("\\", "")
-            itemlist.append(Item(channel=__channel__, title=item.title, url=url, server="directo", action="play",
+            itemlist.append(Item(channel=__channel__, title=item.fulltitle, url=url, server="directo", action="play",
                                  subtitle=subtitle, thumbnail=thumbnail))
-
-    elif item.url.startswith("http://www.pelispedia.biz"):
-        logger.info("estoy en el otro html5")
-        key = scrapertools.find_single_match(item.url, 'v=([^&]+).+?imagen=([^&]+)')
-
-        thumbnail = ""
-        if len(key) > 1:
-            thumbnail = key[1]
-
-        data = scrapertools.anti_cloudflare(item.url , host=CHANNEL_HOST , headers=CHANNEL_DEFAULT_HEADERS )
-
-        media_url = scrapertools.find_single_match(data, '"file":"([^"]+)"').replace("\\", "")
-        sub = scrapertools.find_single_match(data, 'file:\s"([^"]+)".+?label:\s"Spanish"')
-        itemlist.append(Item(channel=__channel__, title=item.title, url=media_url, server="directo", action="play",
-                             subtitle=sub, thumbnail=thumbnail))
 
     else:
         itemlist = servertools.find_video_items(data=item.url)
@@ -532,7 +555,7 @@ def play(item):
 def save_sub(data):
     import os
     try:
-        ficherosubtitulo = os.path.join( config.get_data_path(), 'subtitulo_pelispedia.srt' )
+        ficherosubtitulo = os.path.join(config.get_data_path(), 'subtitulo_pelispedia.srt')
         if os.path.exists(ficherosubtitulo):
             try:
                 os.remove(ficherosubtitulo)
@@ -540,7 +563,7 @@ def save_sub(data):
                 logger.info("Error al eliminar el archivo "+ficherosubtitulo)
                 raise
 
-        fichero = open(ficherosubtitulo,"wb")
+        fichero = open(ficherosubtitulo, "wb")
         fichero.write(data)
         fichero.close()
         subtitle = ficherosubtitulo
@@ -548,4 +571,4 @@ def save_sub(data):
         subtitle = ""
         logger.info("Error al descargar el subtítulo")
 
-    return ficherosubtitulo
+    return subtitle
