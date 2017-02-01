@@ -19,7 +19,6 @@ from platformcode import platformtools
 from core import httptools
 
 __channel__ = "pelispedia"
-DEBUG = config.get_setting("debug")
 
 CHANNEL_HOST = "http://www.pelispedia.tv/"
 
