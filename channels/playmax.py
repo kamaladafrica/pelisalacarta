@@ -739,6 +739,9 @@ def marcar(item):
                   % (host, apikey, sid, item.ficha, "4")
         elif "Seguir" in item.title:
             url = "%s/data.php?mode=marcar_ficha&apikey=%s&sid=%s&ficha=%s&tipo=%s" \
+                  % (host, apikey, sid, item.ficha, "2")
+            data = httptools.downloadpage(url).data
+            url = "%s/data.php?mode=marcar_ficha&apikey=%s&sid=%s&ficha=%s&tipo=%s" \
                   % (host, apikey, sid, item.ficha, "1")
 
     data = httptools.downloadpage(url)
