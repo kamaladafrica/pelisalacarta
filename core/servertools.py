@@ -355,7 +355,7 @@ def xml2dict(file = None, xmldata = None):
         if type(return_dict[tag])== list:
           return_dict[tag].append(parse(xmldata=value))
         else:
-          return_dict[tag] = [dct[tags[x]]]
+          return_dict[tag] = [return_dict[tag]]
           return_dict[tag].append(parse(xmldata=value))
       else:
           return_dict[tag] = parse(xmldata=value)
