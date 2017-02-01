@@ -720,12 +720,14 @@ def marcar(item):
         url = "%s/data.php?mode=capitulo_visto&apikey=%s&sid=%s&c_id=%s" % (host, apikey, sid, item.epi_id)
         message = item.title.replace("no", "marcado como").replace("ya", "cambiado a no").replace(" ¿Cambiar?", "")
     elif "temporada" in item.title.lower():
-        url = "%s/data.php?mode=temporada_vista&apikey=%s&sid=%s&ficha=%s&t_id=%s" % (host, apikey, sid, item.ficha,
-                                                                                      item.season)
+        type_marcado = "1"
         if "como vista" in item.title:
             message = "Temporada %s marcada como vista" % item.season
         else:
+            type_marcado = "2"
             message = "Temporada %s marcada como no vista" % item.season
+        url = "%s/data.php?mode=temporada_vista&apikey=%s&sid=%s&ficha=%s&t_id=%s&type=%s" \
+              % (host, apikey, sid, item.ficha, item.season, type_marcado)
     else:
         message = item.title.replace("Marcar ", "Marcada ").replace("Seguir serie", "Serie en seguimiento")
         if "favorita" in item.title:
