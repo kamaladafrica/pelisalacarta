@@ -90,52 +90,16 @@ DICT_MPAA = {'TV-Y': 'Público pre-infantil: niños menores de 6 años', 'TV-Y7'
 
 otvdb_global = None
 
-# def set_infoLabels(source, seek_tvdb=True, idioma_busqueda='es'):
-#     """
-#     Dependiendo del tipo de dato de source obtiene y fija (item.infoLabels) los datos extras de una o varias series,
-#     capitulos o peliculas.
-#
-#     @param source: variable que contiene la información para establecer infoLabels
-#     @type source: list, item
-#     @param seek_tvdb: si es True hace una busqueda en www.themoviedb.org para obtener los datos, en caso contrario
-#         obtiene los datos del propio Item.
-#     @type seek_tvdb: bool
-#     @param idioma_busqueda: fija el valor de idioma en caso de busqueda en www.themoviedb.org
-#     @type idioma_busqueda: str
-#     @return: un numero o lista de numeros con el resultado de las llamadas a set_infoLabels_item
-#     @rtype: int, list
-#     """
-#     start_time = time.time()
-#     if type(source) == list:
-#         ret = set_infoLabels_itemlist(source, seek_tvdb, idioma_busqueda)
-#         logger.debug("Se han obtenido los datos de %i enlaces en %f segundos" % (len(source), time.time() - start_time))
-#     else:
-#         ret = set_infoLabels_item(source, seek_tvdb, idioma_busqueda)
-#         logger.debug("Se han obtenido los datos del enlace en %f segundos" % (time.time() - start_time))
-#     return ret
 
-
-def set_infoLabels_item(item, seek=True, idioma_busqueda="es", lock=None):
+def set_infoLabels_item(item):
     """
         Obtiene y fija (item.infoLabels) los datos extras de una serie, capitulo o pelicula.
         @param item: Objeto que representa un pelicula, serie o capitulo. El atributo infoLabels sera modificado
             incluyendo los datos extras localizados.
         @type item: Item
-        @param seek: Si es True hace una busqueda en www.thetvdb.com para obtener los datos, en caso contrario
-            obtiene los datos del propio Item si existen.
-        @type seek: bool
 
 
     """
-    #
-    #   Parametros:
-    #       (opcional) idioma_busqueda: (str) Codigo del idioma segun ISO 639-1, en caso de busqueda en
-    # www.themoviedb.org.
-    #   Retorna:
-    #       Un numero cuyo valor absoluto representa la cantidad de elementos incluidos en el atributo
-    # item.infoLabels.
-    #       Este numero sera positivo si los datos se han obtenido de www.themoviedb.org y negativo en caso contrario.
-    # ---------------------------------------------------------------------------------------------------------
     global otvdb_global
 
     def __leer_datos(otvdb_aux):
@@ -145,103 +109,91 @@ def set_infoLabels_item(item, seek=True, idioma_busqueda="es", lock=None):
         if 'infoLabels' in item and 'fanart' in item.infoLabels['fanart']:
             item.fanart = item.infoLabels['fanart']
 
-    if seek:
-        if 'infoLabels' in item and 'season' in item.infoLabels:
+    if 'infoLabels' in item and 'season' in item.infoLabels:
+        try:
+            int_season = int(item.infoLabels['season'])
+        except ValueError:
+            logger.debug("El numero de temporada no es valido")
+            item.contentType = item.infoLabels['mediatype']
+            return -1 * len(item.infoLabels)
+
+        if not otvdb_global or \
+                (item.infoLabels['tvdb_id'] and otvdb_global.get_id() != item.infoLabels['tvdb_id'])  \
+                or (otvdb_global.search_name and otvdb_global.search_name != item.infoLabels['tvshowtitle']):
+            if item.infoLabels['tvdb_id']:
+                otvdb_global = Tvdb(tvdb_id=item.infoLabels['tvdb_id'])
+            else:
+                otvdb_global = Tvdb(search=item.infoLabels['tvshowtitle'])
+
+            __leer_datos(otvdb_global)
+
+        if item.infoLabels['episode']:
             try:
-                int_season = int(item.infoLabels['season'])
+                int_episode = int(item.infoLabels['episode'])
             except ValueError:
-                logger.debug("El numero de temporada no es valido")
+                logger.debug("El número de episodio (%s) no es valido" % repr(item.infoLabels['episode']))
                 item.contentType = item.infoLabels['mediatype']
                 return -1 * len(item.infoLabels)
 
-            if lock:
-                lock.acquire()
+            # Tenemos numero de temporada y numero de episodio validos...
+            # ... buscar datos episodio
+            item.infoLabels['mediatype'] = 'episode'
+            data_episode = otvdb_global.get_info_episode(otvdb_global.get_id(), int_season, int_episode)
 
-            if not otvdb_global or \
-                    (item.infoLabels['tvdb_id'] and otvdb_global.get_id() != item.infoLabels['tvdb_id'])  \
-                    or (otvdb_global.search_name and otvdb_global.search_name != item.infoLabels['tvshowtitle']):
-                if item.infoLabels['tvdb_id']:
-                    otvdb_global = Tvdb(tvdb_id=item.infoLabels['tvdb_id'])
-                else:
-                    otvdb_global = Tvdb(search=item.infoLabels['tvshowtitle'])  # , tipo=tipo_busqueda, idioma_busqueda=idioma_busqueda, year=item.infoLabels['year'])
+            # todo repasar valores que hay que insertar en infoLabels
+            if data_episode:
+                # todo mirar
+                item.infoLabels['title'] = data_episode['episodeName']
 
-                __leer_datos(otvdb_global)
+                item.infoLabels['plot'] = data_episode.get("overview", "")
+                item.thumbnail = HOST_IMAGE + data_episode.get('filename', "")
 
-            if lock:
-                lock.release()
+                item.infoLabels['director'] = ', '.join(sorted(data_episode.get('directors', [])))
+                item.infoLabels['writer'] = ', '.join(sorted(data_episode.get("writers", [])))
+                item.infoLabels["rating"] = data_episode.get("siteRating", "")
 
-            if item.infoLabels['episode']:
-                try:
-                    int_episode = int(item.infoLabels['episode'])
-                except ValueError:
-                    logger.debug("El número de episodio (%s) no es valido" % repr(item.infoLabels['episode']))
-                    item.contentType = item.infoLabels['mediatype']
-                    return -1 * len(item.infoLabels)
+                if data_episode["firstAired"]:
+                    item.infoLabels['premiered'] = data_episode["firstAired"].split("-")[2] + "/" + \
+                                                   data_episode["firstAired"].split("-")[1] + "/" + \
+                                                   data_episode["firstAired"].split("-")[0]
 
-                # Tenemos numero de temporada y numero de episodio validos...
-                # ... buscar datos episodio
-                item.infoLabels['mediatype'] = 'episode'
-                data_episode = otvdb_global.get_info_episode(otvdb_global.get_id(), int_season, int_episode)
-
-                # todo repasar valores que hay que insertar en infoLabels
-                if data_episode:
-                    # todo mirar
-                    item.infoLabels['title'] = data_episode['episodeName']
-
-                    item.infoLabels['plot'] = data_episode.get("overview", "")
-                    item.thumbnail = HOST_IMAGE + data_episode.get('filename', "")
-
-                    item.infoLabels['director'] = ', '.join(sorted(data_episode.get('directors', [])))
-                    item.infoLabels['writer'] = ', '.join(sorted(data_episode.get("writers", [])))
-                    item.infoLabels["rating"] = data_episode.get("siteRating", "")
-
-                    if data_episode["firstAired"]:
-                        item.infoLabels['premiered'] = data_episode["firstAired"].split("-")[2] + "/" + \
-                                                       data_episode["firstAired"].split("-")[1] + "/" + \
-                                                       data_episode["firstAired"].split("-")[0]
-
-                    return len(item.infoLabels)
-
-            else:
-                # Tenemos numero de temporada valido pero no numero de episodio...
-                # ... buscar datos temporada
-                item.infoLabels['mediatype'] = 'season'
-                data_season = otvdb_global.get_images(otvdb_global.get_id(), "season", int_season)
-
-                # todo repasar valores que hay que insertar en infoLabels
-                if data_season and 'image_season'in data_season:
-                    item.thumbnail = HOST_IMAGE + data_season['image_season'][0]['fileName']
-
-                    return len(item.infoLabels)
-
-        # Buscar...
-        else:
-            otvdb = copy.copy(otvdb_global)
-            # Busquedas por ID...
-            if item.infoLabels['tvdb_id']:
-                otvdb = Tvdb(tvdb_id=item.infoLabels['tvdb_id'])
-
-            elif item.infoLabels['imdb_id']:
-                otvdb = Tvdb(imdb_id=item.infoLabels['imdb_id'])
-
-            # # buscar con otros codigos
-            # elif item.infoLabels['zap2it_id']:
-            #     # ...Busqueda por tvdb_id
-            #     otvdb = Tvdb(zap2it_id=item.infoLabels['zap2it_id'])
-
-            # No se ha podido buscar por ID... se hace por título
-            if otvdb is None:
-                otvdb = Tvdb(search=item.infoLabels['tvshowtitle'])  # , filtro=item.infoLabels.get('filtro', {}), year=item.infoLabels['year'])
-
-            if otvdb and otvdb.get_id():
-                # La busqueda ha encontrado un resultado valido
-                __leer_datos(otvdb)
                 return len(item.infoLabels)
 
+        else:
+            # Tenemos numero de temporada valido pero no numero de episodio...
+            # ... buscar datos temporada
+            item.infoLabels['mediatype'] = 'season'
+            data_season = otvdb_global.get_images(otvdb_global.get_id(), "season", int_season)
+
+            # todo repasar valores que hay que insertar en infoLabels
+            if data_season and 'image_season'in data_season:
+                item.thumbnail = HOST_IMAGE + data_season['image_season'][0]['fileName']
+
+                return len(item.infoLabels)
+
+    # Buscar...
     else:
-        # La busqueda en tvdb esta desactivada o no ha dado resultado
-        item.contentType = item.infoLabels['mediatype']
-        return -1 * len(item.infoLabels)
+        otvdb = copy.copy(otvdb_global)
+        # Busquedas por ID...
+        if item.infoLabels['tvdb_id']:
+            otvdb = Tvdb(tvdb_id=item.infoLabels['tvdb_id'])
+
+        elif item.infoLabels['imdb_id']:
+            otvdb = Tvdb(imdb_id=item.infoLabels['imdb_id'])
+
+        # # buscar con otros codigos
+        # elif item.infoLabels['zap2it_id']:
+        #     # ...Busqueda por tvdb_id
+        #     otvdb = Tvdb(zap2it_id=item.infoLabels['zap2it_id'])
+
+        # No se ha podido buscar por ID... se hace por título
+        if otvdb is None:
+            otvdb = Tvdb(search=item.infoLabels['tvshowtitle'])
+
+        if otvdb and otvdb.get_id():
+            # La busqueda ha encontrado un resultado valido
+            __leer_datos(otvdb)
+            return len(item.infoLabels)
 
 
 # TODO DOCSTRINGS
@@ -667,6 +619,8 @@ class Tvdb:
         obtiene el casting de una serie
         @param _id: codigo de la serie
         @type _id: str
+        @param lang: codigo idioma para buscar
+        @type lang: str
         @return: diccionario con los actores
         @rtype: dict
         """
@@ -688,10 +642,9 @@ class Tvdb:
 
     def get_id(self):
         """
-
-        :return: Devuelve el identificador Tvdb de la serie cargada o una cadena vacia en caso de que no
+        @return: Devuelve el identificador Tvdb de la serie cargada o una cadena vacia en caso de que no
             hubiese nada cargado. Se puede utilizar este metodo para saber si una busqueda ha dado resultado o no.
-        :rtype: str
+        @rtype: str
         """
         return str(self.result.get('id', ""))
 
@@ -709,13 +662,13 @@ class Tvdb:
 
     def get_infoLabels(self, infoLabels=None, origen=None):
         """
-        :param infoLabels: Informacion extra de la pelicula, serie, temporada o capitulo.
-        :type infoLabels: Dict
-        :param origen: Diccionario origen de donde se obtiene los infoLabels, por omision self.result
-        :type origen: Dict
-        :return: Devuelve la informacion extra obtenida del objeto actual. Si se paso el parametro infoLables, el valor
+        @param infoLabels: Informacion extra de la pelicula, serie, temporada o capitulo.
+        @type infoLabels: dict
+        @param origen: Diccionario origen de donde se obtiene los infoLabels, por omision self.result
+        @type origen: dict
+        @return: Devuelve la informacion extra obtenida del objeto actual. Si se paso el parametro infoLables, el valor
         devuelto sera el leido como parametro debidamente actualizado.
-        :rtype: Dict
+        @rtype: dict
         """
 
         if infoLabels:
