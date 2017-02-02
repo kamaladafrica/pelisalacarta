@@ -12,9 +12,19 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/hdfull.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>7</version>
-	<date>05/01/2017</date>
-	<changes>Corregido debido a cloudflare</changes>
+    <version>8</version>
+	<changes>
+        <change>
+            <date>02/02/2017</date>
+            <autor>robalo, Cmos</autor>
+            <description>Arreglada la extracción de enlaces por cambios en la web</description>
+        </change>
+        <change>
+            <date>05/01/2017</date>
+            <autor>Cmos</autor>
+            <description>Corregido debido a cloudflare</description>
+        </change>
+	</changes>
 
 
 	<categories>
