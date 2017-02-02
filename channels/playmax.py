@@ -56,8 +56,8 @@ def login():
         confirm_id = scrapertools.find_single_match(data, 'name="confirm_id" value="([^"]+)"')
         sid_log = scrapertools.find_single_match(data, 'name="sid" value="([^"]+)"')
         post = "username=%s&password=%s&autologin=on&agreed=true&change_lang=0&confirm_id=%s&login=&sid=%s" \
-               "&redirect=index.php&login=" % (user, password, confirm_id, sid_log)
-        data = httptools.downloadpage("https://playmax.mx/ucp.php?mode=login", post=post).data
+               "&redirect=index.php&login=Entrar" % (user, password, confirm_id, sid_log)
+        data = httptools.downloadpage("http://playmax.mx/ucp.php?mode=login", post=post).data
         if "contraseña incorrecta" in data:
             logger.info("Error en el login")
             return False, "Contraseña errónea. Comprueba tus credenciales"
@@ -238,6 +238,8 @@ def indices(item):
                                                                                     "ordenar=pop&con_dis=on"))
         itemlist.append(item.clone(title="Más vistas", action="fichas", url=host+"/catalogo.php?tipo[]=%s&ad=2&"
                                                                                  "ordenar=siempre&con_dis=on" % tipo))
+        itemlist.append(item.clone(title="Mejor valoradas", action="fichas", url=host+"/catalogo.php?tipo[]=%s&ad=2&"
+                                                                                 "ordenar=valoracion&con_dis=on" % tipo))
         itemlist.append(item.clone(title="Géneros", url=host+"/catalogo.php"))
         itemlist.append(item.clone(title="Idiomas", url=host+"/catalogo.php"))
         if item.contentType == "movie":
@@ -450,7 +452,7 @@ def findvideos(item):
                 else:
                     order = 2
 
-                itemlist.append(item.clone(channel="playmax", action="", title=k, text_color=color3, order=order))
+                itemlist.append(item.clone(action="", title=k, text_color=color3, order=order))
                 if type(v["Item"]) is str:
                     continue
                 elif type(v["Item"]) is dict:
@@ -473,13 +475,12 @@ def findvideos(item):
                     if type(it["Url"]) is dict:
                         for i, enlace in enumerate(it["Url"]["Item"]):
                             titulo = title + "  (Parte %s)" % (i + 1)
-                            itemlist.append(item.clone(channel="playmax", title=titulo, url=enlace, action="play",
-                                                       calidad=calidad, thumbnail=thumbnail, order=order, like=likes,
-                                                       folder=False))
+                            itemlist.append(item.clone(title=titulo, url=enlace, action="play", calidad=calidad,
+                                                       thumbnail=thumbnail, order=order, like=likes, folder=False))
                     else:
                         url = it["Url"]
-                        itemlist.append(item.clone(channel="playmax", title=title, url=url, action="play", order=order,
-                                                   calidad=calidad, thumbnail=thumbnail, like=likes, folder=False))
+                        itemlist.append(item.clone(title=title, url=url, action="play", calidad=calidad,
+                                                   thumbnail=thumbnail, order=order, like=likes, folder=False))
         except:
             pass
 
@@ -496,10 +497,10 @@ def findvideos(item):
         estrenos = scrapertools.find_multiple_matches(data, patron)
         for info in estrenos:
             info = "Estreno en " + scrapertools.htmlclean(info)
-            itemlist.append(item.clone(channel="playmax", action="", title=info))
+            itemlist.append(item.clone(action="", title=info))
     
     if not itemlist:
-        itemlist.append(item.clone(channel="playmax", action="", title="No hay enlaces disponibles"))
+        itemlist.append(item.clone(action="", title="No hay enlaces disponibles"))
             
     return itemlist
 
@@ -577,7 +578,7 @@ def menu_info(item):
                                text_color="magenta", context=""))
 
     itemlist.append(item.clone(action="", title=""))
-    ficha = scrapertools.find_single_match(item.url, '-f(\d+)')
+    ficha = scrapertools.find_single_match(item.url, '-f(\d+)-')
     if not ficha:
         ficha = scrapertools.find_single_match(item.url, 'f=(\d+)')
     itemlist.extend(acciones_fichas(item, sid, ficha, season=True))
@@ -594,20 +595,19 @@ def acciones_fichas(item, sid, ficha, season=False):
     data = json.Xml2Json(data).result
 
     try:
+        marked = data["Data"]["User"]["Marked"]
         if item.contentType == "episode":
             for epi in data["Data"]["Episodes"]["Season_%s" % item.infoLabels["season"]]["Item"]:
                 if int(epi["Episode"]) == item.infoLabels["episode"]:
                     epi_marked = epi["EpisodeViewed"].replace("yes", "ya")
                     epi_id = epi["Id"]
-                    marcarlist.append(item.clone(channel="playmax", action="marcar", text_color=color3,
-                                                 title="Capítulo %s visto. ¿Cambiar?" % epi_marked,
-                                                 epi_id=epi_id))
+                    marcarlist.append(item.clone(action="marcar", title="Capítulo %s visto. ¿Cambiar?" % epi_marked,
+                                                 text_color=color3, epi_id=epi_id))
                     break
     except:
         pass
 
     try:
-        marked = data["Data"]["User"]["Marked"]
         tipo = item.contentType.replace("movie", "Película").replace("episode", "Serie").replace("tvshow", "Serie")
         for status in estados:
             for k, v in status.items():
@@ -624,12 +624,12 @@ def acciones_fichas(item, sid, ficha, season=False):
                     if k != marked:
                         title = "Seguir serie"
                         action = "marcar"
-                    marcarlist.insert(1, item.clone(channel="playmax", action=action, title=title, text_color=color4,
-                                                    ficha=ficha, folder=False))
+                    marcarlist.insert(1, item.clone(action=action, title=title, text_color=color4, ficha=ficha,
+                                                    folder=False))
                     continue
 
-                marcarlist.append(item.clone(channel="playmax", action="marcar", title=title, text_color=color3,
-                                             ficha=ficha, folder=False))
+                marcarlist.append(item.clone(action="marcar", title=title, text_color=color3, ficha=ficha,
+                                             folder=False))
     except:
         pass
 
@@ -647,16 +647,14 @@ def acciones_fichas(item, sid, ficha, season=False):
                 for epi in v["Item"]:
                     if epi["EpisodeViewed"] == "no":
                         vistos = True
-                        seasonlist.append(item.clone(channel="playmax", action="marcar", text_color=color1, ficha=ficha,
-                                                     title="Marcar temporada %s como vista" % season,
-                                                     season=int(season), folder=False))
+                        seasonlist.append(item.clone(action="marcar", title="Marcar temporada %s como vista" % season,
+                                                     text_color=color1, season=int(season), ficha=ficha, folder=False))
                         break
 
                 if not vistos:
-                    seasonlist.append(item.clone(channel="playmax", action="marcar", text_color=color1, ficha=ficha,
-                                                 title="Temporada %s ya vista. ¿Revertir?" % season,
-                                                 season=int(season), folder=False))
-                    break
+                    seasonlist.append(item.clone(action="marcar", title="Temporada %s ya vista. ¿Revertir?" % season,
+                                                 text_color=color1, season=int(season), ficha=ficha, folder=False))
+
             seasonlist.sort(key=lambda it: it.season, reverse=True)
             marcarlist.extend(seasonlist)
     except:
