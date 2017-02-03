@@ -17,11 +17,15 @@ from core import scrapertools
 def get_video_url(page_url, premium = False, user="", password="", video_password=""):
     logger.info(" url="+page_url)
 
-    id_video = page_url.rsplit("=", 1)[1]
+    if "hash=" in page_url:
+        data = urllib.unquote(httptools.downloadpage(page_url).data)
+        id_video = scrapertools.find_single_match(data, "vid\s*=\s*'([^']+)'")
+    else:
+        id_video = page_url.rsplit("=", 1)[1]
     page_url_hqq = "http://hqq.tv/player/embed_player.php?vid=%s&autoplay=no" % id_video
     data_page_url_hqq = httptools.downloadpage(page_url_hqq, add_referer=True).data
 
-    js_wise = scrapertools.find_single_match(data_page_url_hqq, "<script type=[\"']text/javascript[\"']>;?(eval.*?)</script>")
+    js_wise = scrapertools.find_single_match(data_page_url_hqq, "<script type=[\"']text/javascript[\"']>\s*;?(eval.*?)</script>")
     data_unwise = jswise(js_wise).replace("\\", "")
     at = scrapertools.find_single_match(data_unwise, 'var at\s*=\s*"([^"]+)"')
 
@@ -51,10 +55,7 @@ def get_video_url(page_url, premium = False, user="", password="", video_passwor
 
     media_urls = []
     url_data = jsontools.load_json(data)
-    if url_data["html5_file"].startswith("#"):
-        media_url = tb(url_data["html5_file"][1:])
-    else:
-        media_url = tb(url_data["html5_file"])
+    media_url = tb(url_data["html5_file"].replace("#", ""))
 
     video_urls = []
     media = media_url + "|User-Agent=Mozilla/5.0 (iPhone; CPU iPhone OS 5_0_1 like Mac OS X)"
@@ -81,21 +82,23 @@ def find_videos(data):
     # http://waaw.tv/player/embed_player.php?vid=82U4BRSOB4UU&autoplay=no
     # http://waaw.tv/watch_video.php?v=96WDAAA71A8K
     patterns = [
-        '/netu/tv/embed_(.*?$)',
-        'hqq.tv/[^=]+=([a-zA-Z0-9]+)',
-        'netu.tv/[^=]+=([a-zA-Z0-9]+)',
-        'waaw.tv/[^=]+=([a-zA-Z0-9]+)',
-        'netu.php\?nt=([a-zA-Z0-9]+)'
+        '/netu/tv/(embed_)(.*?$)',
+        'hqq.tv/([^=]+)=([a-zA-Z0-9]+)',
+        'netu.tv/([^=]+)=([a-zA-Z0-9]+)',
+        'waaw.tv/([^=]+)=([a-zA-Z0-9]+)',
+        'netu.php\?(nt=)([a-zA-Z0-9]+)'
     ]
 
     url = "http://netu.tv/watch_video.php?v=%s"
     for pattern in patterns:
         logger.info(" #"+pattern+"#")
         matches = re.compile(pattern,re.DOTALL).findall(data)
-
-        for match in matches:
+        for prefix, match in matches:
             titulo = "[netu.tv]"
-            url = url % match
+            if "hash.php" in prefix:
+                url = "http://hqq.tv/player/hash.php?hash=%s" % match
+            else:
+                url = url % match
             if url not in encontrados:
                 logger.info("  url="+url)
                 devuelve.append( [ titulo , url , 'netutv' ] )
