@@ -488,13 +488,19 @@ def play_video(item, strm=False):
         return
 
     # obtenemos el video seleccionado
-    mediaurl, view = get_video_seleccionado(item, seleccion, video_urls)
+    mediaurl, view, mpd = get_video_seleccionado(item, seleccion, video_urls)
     if mediaurl == "":
         return
 
     # se obtiene la información del video.
     xlistitem = xbmcgui.ListItem(path=mediaurl, thumbnailImage=item.thumbnail)
     set_infolabels(xlistitem, item, True)
+
+    # si se trata de un vídeo en formato mpd, se configura el listitem para reproducirlo
+    # con el addon inpustreamaddon implementado en Kodi 17
+    if mpd:
+        xlistitem.setProperty('inputstreamaddon', 'inputstream.adaptive')
+        xlistitem.setProperty('inputstream.adaptive.manifest_type', 'mpd')
 
     # se lanza el reproductor
     set_player(item, xlistitem, mediaurl, view, strm)
@@ -830,11 +836,16 @@ def get_video_seleccionado(item, seleccion, video_urls):
     mediaurl = ""
     view = False
     wait_time = 0
+    mpd = False
 
     # Ha elegido uno de los vídeos
     if seleccion < len(video_urls):
         mediaurl = video_urls[seleccion][1]
-        if len(video_urls[seleccion]) > 3:
+        if len(video_urls[seleccion]) > 4:
+            wait_time = video_urls[seleccion][2]
+            item.subtitle = video_urls[seleccion][3]
+            mpd = True
+        elif len(video_urls[seleccion]) > 3:
             wait_time = video_urls[seleccion][2]
             item.subtitle = video_urls[seleccion][3]
         elif len(video_urls[seleccion]) > 2:
@@ -855,7 +866,7 @@ def get_video_seleccionado(item, seleccion, video_urls):
         if not continuar:
             mediaurl = ""
 
-    return mediaurl, view
+    return mediaurl, view, mpd
 
 
 def set_player(item, xlistitem, mediaurl, view, strm):
