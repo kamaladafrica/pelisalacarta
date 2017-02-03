@@ -490,11 +490,13 @@ def play(item):
         data_sub = httptools.downloadpage(sub).data
         subtitle = save_sub(data_sub)
 
+        # la calidad más baja tiene que ir primero
+        media_urls = sorted(media_urls, key=lambda k: k[1])
+
         if len(media_urls) > 0:
-            # TODO mirar de mandar todas las calidades
-            url = media_urls[0][0]
-            itemlist.append(Item(channel=__channel__, title=item.fulltitle, url=url, server="directo", action="play",
-                                 subtitle=subtitle, thumbnail=thumbnail))
+
+            for url, desc in media_urls:
+                itemlist.append([desc, url, 0, subtitle])
 
     # otro html5
     elif item.url.startswith("https://pelispedia.co"):
@@ -514,18 +516,20 @@ def play(item):
 
         media_urls = scrapertools.find_multiple_matches(data, "{file:'(.+?)',label:'(.+?)'")
 
+        # la calidad más baja tiene que ir primero
+        media_urls = sorted(media_urls, key=lambda k: k[1])
+
         if len(media_urls) > 0:
-            # TODO mirar de mandar todas las calidades
-            url = media_urls[0][0]
-            itemlist.append(Item(channel=__channel__, title=item.fulltitle, url=url, server="directo",
-                                 action="play", subtitle=subtitle, thumbnail=thumbnail))
+
+            for url, desc in media_urls:
+                itemlist.append([desc, url, 0, subtitle])
 
     # flash
     elif item.url.startswith("http://www.pelispedia.tv"):
         key = scrapertools.find_single_match(item.url, 'index.php\?id=([^&]+).+?sub=([^&]+)&.+?imagen=([^&]+)')
 
-        if len(key) > 2:
-            thumbnail = key[2]
+        # if len(key) > 2:
+        #     thumbnail = key[2]
         if key[1] != "":
             url_sub = "http://www.pelispedia.tv/sub/%s.srt" % key[1]
             data_sub = httptools.downloadpage(url_sub).data
@@ -535,12 +539,18 @@ def play(item):
         post = "link="+urllib.quote(key[0])
 
         data = httptools.downloadpage(url, post=post).data
-        media_urls = scrapertools.find_multiple_matches(data, '(?:link|url)":"([^"]+)"')
-        # Si hay varias urls se añade la última que es la de mayor calidad
+
+        media_urls = scrapertools.find_multiple_matches(data, 'link":"([^"]+)","type":"([^"]+)"')
+
+        # la calidad más baja tiene que ir primero
+        media_urls = sorted(media_urls, key=lambda k: k[1])
+
         if len(media_urls) > 0:
-            url = media_urls[len(media_urls)-1].replace("\\", "")
-            itemlist.append(Item(channel=__channel__, title=item.fulltitle, url=url, server="directo", action="play",
-                                 subtitle=subtitle, thumbnail=thumbnail))
+
+            for url, desc in media_urls:
+
+                url = url.replace("\\", "")
+                itemlist.append([desc, url, 0, subtitle])
 
     else:
         itemlist = servertools.find_video_items(data=item.url)
