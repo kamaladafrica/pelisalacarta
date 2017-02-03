@@ -42,7 +42,7 @@ def login():
 
     post = urllib.urlencode({'__csrf_magic':sid})+"&username="+config.get_setting('hdfulluser', 'hdfull')+"&password="+config.get_setting('hdfullpassword', 'hdfull')+"&action=login"
 
-    data = httptools.downloadpage(host, post=post).data
+    httptools.downloadpage(host, post=post)
 
 def mainlist(item):
     logger.info()
@@ -571,6 +571,8 @@ def findvideos(item):
             plot = item.title+"\n\n"+scrapertools.find_single_match(data,'<meta property="og:description" content="([^"]+)"')
             plot = scrapertools.htmlclean(plot)
             fanart = scrapertools.find_single_match(data, '<div style="background-image.url. ([^\s]+)')
+            if account:
+                url += "###" + id + ";" + type
 
             enlaces.append(Item(channel=item.channel, action="play", title=title, fulltitle=title, url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, show=item.show, folder=True, server=servername, infoLabels=infolabels, contentTitle=item.contentTitle, contentType=item.contentType, tipo=option))
 
@@ -627,6 +629,15 @@ def add_file_cine_library(item):
 
     return
 
+def play(item):
+    if "###" in item.url:
+        id = item.url.split("###")[1].split(";")[0]
+        type = item.url.split("###")[1].split(";")[1]
+        item.url = item.url.split("###")[0]
+        post = "target_id=%s&target_type=%s&target_status=1" % (id, type)
+        data = httptools.downloadpage(host+"/a/status", post=post).data
+    
+    return [item]
 
 ## --------------------------------------------------------------------------------
 ## --------------------------------------------------------------------------------
