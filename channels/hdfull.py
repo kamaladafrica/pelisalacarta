@@ -636,6 +636,15 @@ def play(item):
         item.url = item.url.split("###")[0]
         post = "target_id=%s&target_type=%s&target_status=1" % (id, type)
         data = httptools.downloadpage(host+"/a/status", post=post).data
+
+    devuelve = servertools.findvideosbyserver(item.url, item.server)
+    if devuelve:
+        item.url = devuelve[0][1]
+    else:
+        devuelve = servertools.findvideos(item.url, True)
+        if devuelve:
+            item.url = devuelve[0][1]
+            item.server = devuelve[0][2]
     
     return [item]
 
