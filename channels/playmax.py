@@ -753,11 +753,12 @@ def marcar(item):
 def play(item):
     logger.info()
     from core import servertools
-    itemlist = []
-    server = servertools.get_server_from_url(item.url)
-    itemlist.append(item.clone(server=server))
+    devuelve = servertools.findvideos(item.url, True)
+    if devuelve:
+        item.url = devuelve[0][1]
+        item.server = devuelve[0][2]
 
-    return itemlist
+    return [item]
 
 
 def select_page(item):
