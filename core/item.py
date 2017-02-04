@@ -55,24 +55,23 @@ class InfoLabels(dict):
         elif name == "mediatype" and value not in ["list", "movie", "tvshow", "season", "episode"]:
             super(InfoLabels, self).__setitem__('mediatype', 'list')
 
-        elif name in ['tmdb_id', 'tvdb_id', 'otro_id']:
+        elif name in ['tmdb_id', 'tvdb_id', 'noscrap_id']:
             super(InfoLabels, self).__setitem__(name, str(value))
         else:
             super(InfoLabels, self).__setitem__(name, value)
     
-      
-    #Python 2.4
+    # Python 2.4
     def __getitem__(self, key):
         try:
-          return super(InfoLabels, self).__getitem__(key)
+            return super(InfoLabels, self).__getitem__(key)
         except:
-          return self.__missing__(key)
+            return self.__missing__(key)
           
     def __missing__(self, key):
-        '''
+        """
         Valores por defecto en caso de que la clave solicitada no exista.
         El parametro 'default' en la funcion obj_infoLabels.get(key,default) tiene preferencia sobre los aqui definidos.
-        '''
+        """
         if key in ['rating']:
             # Ejemplo de clave q devuelve un str formateado como float por defecto
             return '0.0'
@@ -80,21 +79,21 @@ class InfoLabels(dict):
         elif key == 'code':
             code = []
             # Añadir imdb_id al listado de codigos
-            if 'imdb_id' in super(InfoLabels, self).keys() and super(InfoLabels, self).__getitem__('imdb_id') not in ["", "None"]:
+            if 'imdb_id' in super(InfoLabels, self).keys() and super(InfoLabels, self).__getitem__('imdb_id'):
                 code.append(super(InfoLabels, self).__getitem__('imdb_id'))
 
             # Completar con el resto de codigos
-            for scr in ['tmdb_id', 'tvdb_id', 'otro_id']:
-                if scr in super(InfoLabels,self).keys() and super(InfoLabels,self).__getitem__(scr) not in ["", "None"]:
-                    value = scr[:-2] + super(InfoLabels,self).__getitem__(scr)
+            for scr in ['tmdb_id', 'tvdb_id', 'noscrap_id']:
+                if scr in super(InfoLabels, self).keys() and super(InfoLabels, self).__getitem__(scr):
+                    value = "%s%s" % (scr[:-2], super(InfoLabels, self).__getitem__(scr))
                     code.append(value)
 
             '''
-            #Opcion añadir un code del tipo aleatorio
+            # Opcion añadir un code del tipo aleatorio
             if not code:
                 value = rnd o date valor
                 code.append(value)
-                super(InfoLabels, self).__setitem__('otro_id', value)
+                super(InfoLabels, self).__setitem__('noscrap_id', value)
             '''
 
             return code
