@@ -398,6 +398,7 @@ def find_and_set_infoLabels(item):
 
     if tmdb_result:
         infoLabels['tmdb_id'] = tmdb_result['id']
+        # todo mirar si se puede eliminar y obtener solo desde get_nfo()
         infoLabels['url_scraper'] = "https://www.themoviedb.org/%s/%s" % (tipo_busqueda, infoLabels['tmdb_id'])
         item.infoLabels = infoLabels
         set_infoLabels_item(item)
@@ -409,6 +410,22 @@ def find_and_set_infoLabels(item):
         return False
 
 
+def get_nfo(item):
+    """
+    Devuelve la información necesaria para que se scrapee el resultado en la biblioteca de kodi,
+    para tmdb funciona solo pasandole la url
+    @param item: elemento que contiene los datos necesarios para generar la info
+    @type item: Item
+    @rtype: str
+    @return:
+    """
+    if "season" in item.infoLabels and "episode" in item.infoLabels:
+        info_nfo = "https://www.themoviedb.org/tv/%s/season/%s/episode/%s\n" % \
+                   (item.infoLabels['tmdb_id'], item.contentSeason, item.contentEpisodeNumber)
+    else:
+        info_nfo = item.infoLabels['url_scraper']
+
+    return info_nfo
 
 
 
@@ -1434,3 +1451,5 @@ class Tmdb(object):
 
 
         return ret_infoLabels
+
+
