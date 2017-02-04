@@ -51,9 +51,8 @@ DEFAULT_HEADERS = {
         'Authorization': 'Bearer ' + TOKEN,
     }
 
-
+# Traducciones - Inicio
 DICT_STATUS = {'Continuing': 'En emisión', 'Ended': 'Finalizada'}
-
 DICT_GENRE = {
     'Action': 'Acción',
     'Adventure': 'Aventura',
@@ -83,12 +82,64 @@ DICT_GENRE = {
     'Travel': 'Viaje',
     # 'Western': 'Western'
 }
-
 DICT_MPAA = {'TV-Y': 'Público pre-infantil: niños menores de 6 años', 'TV-Y7': 'Público infantil: desde 7 años',
              'TV-G': 'Público general: sin supervisión familiar', 'TV-PG': 'Guía paterna: Supervisión paternal',
              'TV-14': 'Mayores de 14 años', 'TV-MA': 'Mayores de 17 años'}
+# Traducciones - Fin
 
 otvdb_global = None
+
+
+def find_and_set_infoLabels(item):
+    logger.info()
+
+    global otvdb_global
+    tvdb_result = None
+
+    title = item.contentSerieName
+    # Si el titulo incluye el (año) se lo quitamos
+    year = scrapertools.find_single_match(title, "^.+?\s*(\(\d{4}\))$")
+    if year:
+        title = title.replace(year, "").strip()
+        item.infoLabels['year'] = year[1:-1]
+
+    if not item.infoLabels.get("tvdb_id"):
+        if not item.infoLabels.get("imdb_id"):
+            otvdb_global = Tvdb(search=title, year=item.infoLabels['year'])
+        else:
+            otvdb_global = Tvdb(imdb_id=item.infoLabels.get("imdb_id"))
+
+    elif not otvdb_global or otvdb_global.result.get("id") != item.infoLabels['tvdb_id']:
+        otvdb_global = Tvdb(tvdb_id=item.infoLabels['tvdb_id'])  # , tipo=tipo_busqueda, idioma_busqueda="es")
+
+    results = otvdb_global.get_list_results()
+    logger.debug("results es %s" % results)
+
+    if len(results) > 1:
+        from platformcode import platformtools
+        tvdb_result = platformtools.show_video_info(results, item=item, scraper=Tvdb,
+                                                    caption="[%s]: Selecciona la serie correcta" % title)
+    elif len(results) > 0:
+        tvdb_result = results[0]
+
+    # todo revisar
+    if isinstance(item.infoLabels, InfoLabels):
+        infoLabels = item.infoLabels
+    else:
+        infoLabels = InfoLabels()
+
+    if tvdb_result:
+        infoLabels['tvdb_id'] = tvdb_result['id']
+        # todo mirar si se puede eliminar y obtener solo desde get_nfo()
+        infoLabels['url_scraper'] = "http://thetvdb.com/?tab=series&id=%s" % (infoLabels['tvdb_id'])
+        item.infoLabels = infoLabels
+        set_infoLabels_item(item)
+
+        return True
+
+    else:
+        item.infoLabels = infoLabels
+        return False
 
 
 def set_infoLabels_item(item):
@@ -138,11 +189,15 @@ def set_infoLabels_item(item):
             # Tenemos numero de temporada y numero de episodio validos...
             # ... buscar datos episodio
             item.infoLabels['mediatype'] = 'episode'
-            data_episode = otvdb_global.get_info_episode(otvdb_global.get_id(), int_season, int_episode)
+
+            lang = DEFAULT_LANG
+            if otvdb_global.lang:
+                lang = otvdb_global.lang
+
+            data_episode = otvdb_global.get_info_episode(otvdb_global.get_id(), int_season, int_episode, lang)
 
             # todo repasar valores que hay que insertar en infoLabels
             if data_episode:
-                # todo mirar
                 item.infoLabels['title'] = data_episode['episodeName']
 
                 item.infoLabels['plot'] = data_episode.get("overview", "")
@@ -157,9 +212,14 @@ def set_infoLabels_item(item):
                                                    data_episode["firstAired"].split("-")[1] + "/" + \
                                                    data_episode["firstAired"].split("-")[0]
 
+                # datos para nfo
+                item.season_id = data_episode["airedSeasonID"]
+                item.episode_id = data_episode["id"]
+
                 return len(item.infoLabels)
 
         else:
+            logger.info("estoye en el else")
             # Tenemos numero de temporada valido pero no numero de episodio...
             # ... buscar datos temporada
             item.infoLabels['mediatype'] = 'season'
@@ -196,6 +256,25 @@ def set_infoLabels_item(item):
             return len(item.infoLabels)
 
 
+def get_nfo(item):
+    """
+    Devuelve la información necesaria para que se scrapee el resultado en la biblioteca de kodi,
+
+    @param item: elemento que contiene los datos necesarios para generar la info
+    @type item: Item
+    @rtype: str
+    @return:
+    """
+
+    if "season" in item.infoLabels and "episode" in item.infoLabels:
+        info_nfo = "http://thetvdb.com/?tab=episode&seriesid=%s&seasonid=%s&id=%s\n" % \
+                   (item.infoLabels['tvdb_id'], item.season_id, item.episode_id)
+    else:
+        info_nfo = item.infoLabels['url_scraper']
+
+    return info_nfo
+
+
 # TODO DOCSTRINGS
 class Tvdb:
     # Atributo de clase
@@ -204,27 +283,30 @@ class Tvdb:
         self.__check_token()
 
         self.result = {}
-        self.results = []
+        self.list_results = []
+        self.lang = ""
         self.search_name = kwargs['search'] = \
             re.sub('\[\\\?(B|I|COLOR)\s?[^\]]*\]', '', kwargs.get('search', ''))
 
         if kwargs.get('tvdb_id', ''):
             # Busqueda por identificador tvdb
             self.__get_by_id(kwargs.get('tvdb_id', ''))
-            if not self.results:
+            if not self.list_results:
                 from platformcode import platformtools
                 platformtools.dialog_notification("No se ha encontrado en idioma '%s'" % DEFAULT_LANG,
                                                   "Se busca en idioma 'en'")
                 self.__get_by_id(kwargs.get('tvdb_id', ''), "en")
+                self.lang = "en"
 
         elif self.search_name:
             # Busqueda por texto
             self.__search(kwargs.get('search', ''), kwargs.get('imdb_id', ''), kwargs.get('zap2it_id', ''))
-            if not self.results:
+            if not self.list_results:
                 from platformcode import platformtools
                 platformtools.dialog_notification("No se ha encontrado en idioma '%s'" % DEFAULT_LANG,
                                                   "Se busca en idioma 'en'")
                 self.__search(kwargs.get('search', ''), kwargs.get('imdb_id', ''), kwargs.get('zap2it_id', ''), "en")
+                self.lang = "en"
 
         if not self.result:
             # No hay resultados de la busqueda
@@ -406,7 +488,7 @@ class Tvdb:
             dict_html = jsontools.load_json(html)
 
             if "data" in dict_html and "id" in dict_html["data"][0]:
-                return cls.__get_episode_by_id(dict_html["data"][0]["id"])
+                return cls.__get_episode_by_id(dict_html["data"][0]["id"], lang)
 
     @staticmethod
     def __get_episode_by_id(_id, lang=DEFAULT_LANG):
@@ -434,6 +516,8 @@ class Tvdb:
         else:
             dict_html = jsontools.load_json(html)
             dict_html = dict_html.pop("data")
+
+            logger.info("dict_html %s" % dict_html)
         return dict_html
 
     def __search(self, name, imdb_id, zap2it_id, lang=DEFAULT_LANG):
@@ -508,7 +592,7 @@ class Tvdb:
                     index = 0
 
                 logger.debug("resultado {}".format(resultado))
-                self.results = resultado
+                self.list_results = resultado
                 self.result = resultado[index]
 
     def __get_by_id(self, _id, lang=DEFAULT_LANG):
@@ -554,7 +638,7 @@ class Tvdb:
                 resultado.update(resultado4)
 
                 logger.debug("resultado {}".format(resultado))
-                self.results = resultado
+                self.list_results = [resultado]
                 self.result = resultado
 
         return resultado
@@ -648,17 +732,33 @@ class Tvdb:
         """
         return str(self.result.get('id', ""))
 
-    def get_list_resultados(self):
-        list_result = []
+    def get_list_results(self):
+        logger.info()
+        list_results = []
 
-        for i in self.results:
-            dict_html = self.__get_by_id(i['id'])
-            if not dict_html:
-                dict_html = self.__get_by_id(i['id'], "en")
-            # todo mirar de ordenar por el año
-            list_result.append(dict_html)
+        logger.info("long es: %s" % len(self.list_results))
+        logger.info("results es: %s" % self.list_results)
 
-        return list_result
+        # TODO revisar condicion
+        # si tenemos un resultado y tiene seriesName, ya tenemos la info de la serie, no hace falta volver a buscar
+        if len(self.list_results) == 1 and "seriesName" in self.result:
+            logger.info("if")
+            list_results.append(self.result)
+        else:
+            logger.info("else")
+            for e in self.list_results:
+                logger.info("e es: %s" % e)
+                logger.info("seriesId es: %s" % e['seriesId'])
+                logger.info("id es: %s" % e['id'])
+                dict_html = self.__get_by_id(e['id'])
+                # todo revisar si hace falta
+                if not dict_html:
+                    dict_html = self.__get_by_id(e['id'], "en")
+                # todo mirar de ordenar por el año
+                list_results.append(dict_html)
+
+
+        return list_results
 
     def get_infoLabels(self, infoLabels=None, origen=None):
         """
@@ -692,16 +792,6 @@ class Tvdb:
         #     del origen['credits']
 
         items = origen.items()
-
-        # todo revisar
-        # # Informacion Temporada/episodio
-        # if ret_infoLabels['season'] and self.temporada.get(ret_infoLabels['season']):
-        #     # Si hay datos cargados de la temporada indicada
-        #     episodio = -1
-        #     if ret_infoLabels['episode']:
-        #         episodio = ret_infoLabels['episode']
-        #
-        #     items.extend(self.get_episodio(ret_infoLabels['season'], episodio).items())
 
         for k, v in items:
             if not v:
@@ -778,58 +868,45 @@ class Tvdb:
         if l_castandrole:
             ret_infoLabels['castandrole'] = sorted(l_castandrole, key=lambda tup: tup[0])
 
+        # todo revisar
+        logger.info("llegamos a la llamada de episode")
+        # Informacion Temporada/episodio
+        if ret_infoLabels['season']:
+            logger.info("tiene season")
+            # Si hay datos cargados de la temporada indicada
+            if ret_infoLabels['episode']:
+                logger.info("tiene episode")
+
+                data_episode = self.get_info_episode(otvdb_global.get_id(), int(ret_infoLabels['season']), int(ret_infoLabels['episode']))
+                logger.info("data_episode %s" % data_episode)
+                # todo repasar valores que hay que insertar en infoLabels
+                if data_episode:
+                    # todo mirar
+                    ret_infoLabels['title'] = data_episode['episodeName']
+
+                    ret_infoLabels['plot'] = data_episode.get("overview", "")
+                    ret_infoLabels["thumbnail"] = HOST_IMAGE + data_episode.get('filename', "")
+
+                    ret_infoLabels['director'] = ', '.join(sorted(data_episode.get('directors', [])))
+                    ret_infoLabels['writer'] = ', '.join(sorted(data_episode.get("writers", [])))
+                    ret_infoLabels["rating"] = data_episode.get("siteRating", "")
+
+                    if data_episode["firstAired"]:
+                        ret_infoLabels['premiered'] = data_episode["firstAired"].split("-")[2] + "/" + \
+                                                       data_episode["firstAired"].split("-")[1] + "/" + \
+                                                       data_episode["firstAired"].split("-")[0]
+
+            else:
+                data_season = self.get_images(otvdb_global.get_id(), "season", int(ret_infoLabels['season']))
+
+                # todo repasar valores que hay que insertar en infoLabels
+                if data_season and 'image_season' in data_season:
+                    ret_infoLabels['thumbnail'] = HOST_IMAGE + data_season['image_season'][0]['fileName']
+
+
         logger.debug("ret_infoLabels %s" % ret_infoLabels)
 
         return ret_infoLabels
 
 
-def find_and_set_infoLabels(item):
-    logger.info()
 
-    global otvdb_global
-    tvdb_result = None
-
-    title = item.contentSerieName
-    # Si el titulo incluye el (año) se lo quitamos
-    year = scrapertools.find_single_match(title, "^.+?\s*(\(\d{4}\))$")
-    if year:
-        title = title.replace(year, "").strip()
-        item.infoLabels['year'] = year[1:-1]
-
-    if not item.infoLabels.get("tvdb_id"):
-        if not item.infoLabels.get("imdb_id"):
-            otvdb_global = Tvdb(search=title, year=item.infoLabels['year'])
-        else:
-            otvdb_global = Tvdb(imdb_id=item.infoLabels.get("imdb_id"))
-
-    elif not otvdb_global or otvdb_global.result.get("id") != item.infoLabels['tvdb_id']:
-        otvdb_global = Tvdb(tvdb_id=item.infoLabels['tvdb_id'])  # , tipo=tipo_busqueda, idioma_busqueda="es")
-
-    results = otvdb_global.get_list_resultados()
-
-    logger.debug("results es %s" % results)
-
-    if len(results) > 1:
-        from platformcode import platformtools
-        tvdb_result = platformtools.show_video_info(results, item=item, scraper=Tvdb,
-                                                    caption="[%s]: Selecciona la serie correcta" % title)
-    elif len(results) > 0:
-        tvdb_result = results[0]
-
-    # todo revisar
-    if isinstance(item.infoLabels, InfoLabels):
-        infoLabels = item.infoLabels
-    else:
-        infoLabels = InfoLabels()
-
-    if tvdb_result:
-        infoLabels['tvdb_id'] = tvdb_result['id']
-        infoLabels['url_scraper'] = "http://thetvdb.com/?tab=series&id=%s" % (infoLabels['tvdb_id'])
-        item.infoLabels = infoLabels
-        set_infoLabels_item(item)
-
-        return True
-
-    else:
-        item.infoLabels = infoLabels
-        return False
