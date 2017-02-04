@@ -256,5 +256,5 @@ def get_nfo(item):
     if scraper:
         return scraper.get_nfo(item)
     else:
-        logger.info("No hay modulo de scraper")
         # TODO crear el fichero xml con los datos que se obtiene de item ya que no hay ningún scraper activo
+        return "\n"
