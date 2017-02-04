@@ -668,61 +668,6 @@ class Tmdb(object):
         else:
             logger.debug("Creado objeto vacio")
 
-    '''def __call__(self, **kwargs):
-        self.page = kwargs.get('page', 1)
-        self.index_results = 0
-        self.results = []
-        self.result = ResultDictDefault()
-        self.total_pages = 0
-        self.total_results = 0
-
-        self.temporada = {}
-        self.texto_buscado = kwargs.get('texto_buscado', '')
-
-        self.busqueda_id = kwargs.get('id_Tmdb', '')
-        self.busqueda_texto = re.sub('\[\\\?(B|I|COLOR)\s?[^\]]*\]', '', self.texto_buscado)
-        self.busqueda_tipo = kwargs.get('tipo', '')
-        self.busqueda_idioma = kwargs.get('idioma_busqueda', 'es')
-        self.busqueda_include_adult = kwargs.get('include_adult', False)
-        self.busqueda_year = kwargs.get('year', '')
-        self.busqueda_filtro = kwargs.get('filtro', {})
-        self.discover = kwargs.get('discover', {})
-
-        # Reellenar diccionario de generos si es necesario
-        if (self.busqueda_tipo == 'movie' or self.busqueda_tipo == "tv") and \
-            (self.busqueda_idioma not in Tmdb.dic_generos or
-             self.busqueda_tipo not in Tmdb.dic_generos[self.busqueda_idioma]):
-                self.rellenar_dic_generos(self.busqueda_tipo, self.busqueda_idioma)
-
-        if not self.busqueda_tipo:
-            self.busqueda_tipo = 'movie'
-
-        if self.busqueda_id:
-            # Busqueda por identificador tmdb
-            self.__by_id()
-
-        elif self.busqueda_texto:
-            # Busqueda por texto
-            self.__search(page=self.page)
-
-        elif 'external_source' in kwargs and 'external_id' in kwargs:
-            # Busqueda por identificador externo segun el tipo.
-            # TV Series: imdb_id, freebase_mid, freebase_id, tvdb_id, tvrage_id
-            # Movies: imdb_id
-            if (self.busqueda_tipo == 'movie' and kwargs.get('external_source') == "imdb_id") or \
-                    (self.busqueda_tipo == 'tv' and kwargs.get('external_source') in (
-                            "imdb_id", "freebase_mid", "freebase_id", "tvdb_id", "tvrage_id")):
-                self.busqueda_id = kwargs.get('external_id')
-                self.__by_id(source=kwargs.get('external_source'))
-
-        elif self.discover:
-            self.__discover()
-
-        else:
-            logger.debug("Creado objeto vacio")
-
-        return self'''
-
     @classmethod
     def rellenar_dic_generos(cls, tipo='movie', idioma='es'):
         resultado = {}
@@ -1368,12 +1313,16 @@ class Tmdb(object):
 
             items.extend(self.get_episodio(ret_infoLabels['season'], episodio).items())
 
+        logger.info("ret_infoLabels" % ret_infoLabels)
 
         for k, v in items:
             if not v:
                 continue
             elif type(v) == str:
                 v = re.sub(r"\n|\r|\t", "", v)
+                # fix
+                if v == "None":
+                    continue
 
             if k == 'overview':
                 if origen:
