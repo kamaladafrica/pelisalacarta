@@ -23,19 +23,18 @@
 # along with pelisalacarta 4.  If not, see <http://www.gnu.org/licenses/>.
 # --------------------------------------------------------------------------------
 
-import re
-
-from core import logger
 from core import config
-from core import scrapertools
+from core import logger
 from core.item import InfoLabels
-from core.tmdb import Tmdb
-from core import tmdb
 from platformcode import platformtools
 
 
 # Este modulo es una interface para poder implementar diferentes scrapers
 # contendra todos las funciones comunes
+
+dict_default = None
+scraper = None
+
 
 def find_and_set_infoLabels(item):
     """
@@ -43,39 +42,36 @@ def find_and_set_infoLabels(item):
         :param item:
         :return: boleano que indica si se ha podido encontrar el 'code'
     """
-
+    global scraper
     scraper = None
     logger.debug("item:\n" + item.tostring('\n'))
 
     list_opciones_cuadro = ["Introducir otro nombre", "Completar información"]
-    # Si se añaden mas scrapers hay q declararlos aqui-> "modulo_scraper": "Texto_en_cuadro"
-    scrapers_disponibles ={'tmdb':"Buscar en TheMovieDB.org",
-                           'tvdb':"Buscar en TheTvDB.com"}
-
+    # Si se añaden más scrapers hay q declararlos aqui-> "modulo_scraper": "Texto_en_cuadro"
+    scrapers_disponibles = {'tmdb': "Buscar en TheMovieDB.org",
+                            'tvdb': "Buscar en TheTvDB.com"}
 
     # Obtener el Scraper por defecto de la configuracion segun el tipo de contenido
     if item.contentType == "movie":
-        scraper_actual = ['tmdb'] [config.get_setting("scraper_movies", "biblioteca")]
+        scraper_actual = ['tmdb'][config.get_setting("scraper_movies", "biblioteca")]
         tipo_contenido = "película"
         title = item.contentTitle
         # Completar lista de opciones para este tipo de contenido
         list_opciones_cuadro.append(scrapers_disponibles['tmdb'])
 
     else:
-        scraper_actual = ['tmdb', 'tvdb'] [config.get_setting("scraper_tvshows", "biblioteca")]
+        scraper_actual = ['tmdb', 'tvdb'][config.get_setting("scraper_tvshows", "biblioteca")]
         tipo_contenido = "serie"
         title = item.contentSerieName
         # Completar lista de opciones para este tipo de contenido
         list_opciones_cuadro.append(scrapers_disponibles['tmdb'])
         list_opciones_cuadro.append(scrapers_disponibles['tvdb'])
 
-
     # Importamos el scraper
     try:
         scraper = __import__('core.%s' % scraper_actual, fromlist=["core.%s" % scraper_actual])
     except ImportError:
-        exec "import core." + scraper_actual + " as scraper"
-
+        exec "import core." + scraper_actual + " as scraper_module"
 
     while scraper:
         # Llamamos a la funcion find_and_set_infoLabels del scraper seleccionado
@@ -95,7 +91,6 @@ def find_and_set_infoLabels(item):
 
         logger.info(msg)
         # Mostrar cuadro con otras opciones:
-        index= -1
         if scrapers_disponibles[scraper_actual] in list_opciones_cuadro:
             list_opciones_cuadro.remove(scrapers_disponibles[scraper_actual])
         index = platformtools.dialog_select(msg, list_opciones_cuadro)
@@ -116,7 +111,6 @@ def find_and_set_infoLabels(item):
                 logger.debug("he pulsado 'cancelar' en la ventana 'Introduzca el nombre correcto'")
                 return False
 
-
         elif index == 1:
             # Hay q crear un cuadro de dialogo para introducir los datos
             logger.info("Completar información")
@@ -124,11 +118,11 @@ def find_and_set_infoLabels(item):
                 # code correcto
                 logger.info("Identificador encontrado: %s" % str(item.infoLabels['code']))
                 return True
-            #raise
+            # raise
 
         elif list_opciones_cuadro[index] in scrapers_disponibles.values():
             # Obtener el nombre del modulo del scraper
-            for k,v in scrapers_disponibles.items():
+            for k, v in scrapers_disponibles.items():
                 if list_opciones_cuadro[index] == v:
                     if scrapers_disponibles[scraper_actual] not in list_opciones_cuadro:
                         list_opciones_cuadro.append(scrapers_disponibles[scraper_actual])
@@ -138,13 +132,12 @@ def find_and_set_infoLabels(item):
                         scraper = None
                         scraper = __import__('core.%s' % scraper_actual, fromlist=["core.%s" % scraper_actual])
                     except ImportError:
-                        exec "import core." + scraper_actual + " as scraper"
+                        exec "import core." + scraper_actual + " as scraper_module"
                     break
 
+    logger.error("Error al importar el modulo scraper %s" % scraper_actual)
 
-    logger.error("Error al importar el scraper %s" % scraper_actual)
 
-dict_default = None
 def cuadro_completar(item):
     logger.info()
 
@@ -153,19 +146,19 @@ def cuadro_completar(item):
 
     COLOR = ["0xFF8A4B08", "0xFFF7BE81"]
     # Creamos la lista de campos del infoLabel
-    controls = [    ("title", "text", "Titulo:"),
-                    ("originaltitle", "text", "Titulo original"),
-                    ("year", "text", "Año"),
-                    ("identificadores", "label", "Identificadores:"),
-                    ("tmdb_id", "text", "    The Movie Database ID"),
-                    ("url_tmdb", "text", "        URL Tmdb", "+!eq(-1,'')"),
-                    ("tvdb_id", "text", "    The TVDB ID","+eq(-7,'Serie')"),
-                    ("url_tvdb", "text", "        URL TVDB", "+!eq(-1,'')+eq(-8,'Serie')"),
-                    ("imdb_id", "text", "    IMDb ID"),
-                    ("otro_id", "text", "    Otro ID", "+eq(-1,'')"),
-                    ("urls", "label", "Imágenes (urls):"),
-                    ("fanart", "text", "    Fondo"),
-                    ("thumbnail", "text", "    Miniatura")]
+    controls = [("title", "text", "Titulo:"),
+                ("originaltitle", "text", "Titulo original"),
+                ("year", "text", "Año"),
+                ("identificadores", "label", "Identificadores:"),
+                ("tmdb_id", "text", "    The Movie Database ID"),
+                ("url_tmdb", "text", "        URL Tmdb", "+!eq(-1,'')"),
+                ("tvdb_id", "text", "    The TVDB ID", "+eq(-7,'Serie')"),
+                ("url_tvdb", "text", "        URL TVDB", "+!eq(-1,'')+eq(-8,'Serie')"),
+                ("imdb_id", "text", "    IMDb ID"),
+                ("otro_id", "text", "    Otro ID", "+eq(-1,'')"),
+                ("urls", "label", "Imágenes (urls):"),
+                ("fanart", "text", "    Fondo"),
+                ("thumbnail", "text", "    Miniatura")]
 
     if item.infoLabels["mediatype"] == "movie":
         mediatype_default = 0
@@ -184,14 +177,15 @@ def cuadro_completar(item):
 
     for i, c in enumerate(controls):
         color = COLOR[0]
-        dict_default[c[0]] = item.infoLabels.get(c[0],'')
+        dict_default[c[0]] = item.infoLabels.get(c[0], '')
 
         enabled = True
 
         if i > 0 and c[1] != 'label':
             color = COLOR[1]
             enabled = "!eq(-%s,'')" % i
-            if len(c) > 3: enabled += c[3]
+            if len(c) > 3:
+                enabled += c[3]
 
         # default para casos especiales
         if c[0] == "url_tmdb" and item.infoLabels["tmdb_id"] and 'tmdb' in item.infoLabels["url_scraper"]:
@@ -202,10 +196,9 @@ def cuadro_completar(item):
 
         if not dict_default[c[0]] or dict_default[c[0]] == 'None' or dict_default[c[0]] == 0:
             dict_default[c[0]] = ''
-        elif isinstance(dict_default[c[0]],(int, float, long)):
+        elif isinstance(dict_default[c[0]], (int, float, long)):
             # Si es numerico lo convertimos en str
             dict_default[c[0]] = str(dict_default[c[0]])
-
 
         listado_controles.append({'id': c[0],
                                   'type': c[1],
@@ -215,10 +208,10 @@ def cuadro_completar(item):
                                   'enabled': enabled,
                                   'visible': True})
 
-    #logger.debug(dict_default)
+    # logger.debug(dict_default)
     if platformtools.show_channel_settings(listado_controles, caption="Completar información", item=item,
-                                        callback="core.scraper.callback_cuadro_completar",
-                                        custom_button={"visible":False}):
+                                           callback="core.scraper.callback_cuadro_completar",
+                                           custom_button={"visible": False}):
         return True
 
     else:
@@ -226,15 +219,15 @@ def cuadro_completar(item):
 
 
 def callback_cuadro_completar(item, dict_values):
-    #logger.debug(dict_values)
+    # logger.debug(dict_values)
     global dict_default
 
-    if dict_values.get("title",None):
+    if dict_values.get("title", None):
         # Adaptar dict_values a infoLabels validos
         dict_values['mediatype'] = ['movie', 'tvshow'][dict_values['mediatype']]
         for k, v in dict_values.items():
-            if k in dict_default and dict_default[k] == dict_values[k]: del dict_values[k]
-
+            if k in dict_default and dict_default[k] == dict_values[k]:
+                del dict_values[k]
 
         if isinstance(item.infoLabels, InfoLabels):
             infoLabels = item.infoLabels
@@ -248,3 +241,20 @@ def callback_cuadro_completar(item, dict_values):
             return True
 
     return False
+
+
+def get_nfo(item):
+    """
+    Devuelve la información necesaria para que se scrapee el resultado en la biblioteca de kodi,
+
+    @param item: elemento que contiene los datos necesarios para generar la info
+    @type item: Item
+    @rtype: str
+    @return:
+    """
+    logger.info()
+    if scraper:
+        return scraper.get_nfo(item)
+    else:
+        logger.info("No hay modulo de scraper")
+        # TODO crear el fichero xml con los datos que se obtiene de item ya que no hay ningún scraper activo
