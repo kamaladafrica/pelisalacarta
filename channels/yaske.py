@@ -29,9 +29,9 @@ def mainlist(item):
     item.fanart = fanart_host
     thumbnail = "https://raw.githubusercontent.com/master-1970/resources/master/images/genres/4/verdes/%s.png"
 
-    itemlist.append(item.clone(title="Novedades", action="peliculas", text_blod= True, viewcontent='movie',
+    itemlist.append(item.clone(title="Novedades", action="peliculas", text_blod= True, viewcontent='movies',
                                 thumbnail= thumbnail % 'novedades', viewmode = "movie_with_plot"))
-    itemlist.append(item.clone(title="Estrenos", action="peliculas", text_blod=True, viewcontent='movie',
+    itemlist.append(item.clone(title="Estrenos", action="peliculas", text_blod=True,
                                 url= HOST + "/genero/premieres", thumbnail=thumbnail % 'estrenos'))
     itemlist.append(item.clone(title="", folder=False))
 
