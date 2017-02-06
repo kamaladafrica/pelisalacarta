@@ -50,6 +50,8 @@ def login():
         if re.search(r'(?i)class="hb_user_data" title="%s"' % user, data):
             if not config.get_setting("sid_playmax", "playmax"):
                 sid_ = scrapertools.find_single_match(data, 'sid=([^"]+)"')
+                if not sid_:
+                    sid_ = scrapertools.find_single_match(config.get_cookie_data(), 'playmax.*?_sid\s*([A-z0-9]+)')
                 config.set_setting("sid_playmax", sid_, "playmax")
             return True, ""
 
@@ -67,6 +69,8 @@ def login():
         else:
             logger.info("Login correcto")
             sid_ = scrapertools.find_single_match(data, 'sid=([^"]+)"')
+            if not sid_:
+                sid_ = scrapertools.find_single_match(config.get_cookie_data(), 'playmax.*?_sid\s*([A-z0-9]+)')
             config.set_setting("sid_playmax", sid_, "playmax")
             # En el primer logueo se activa la busqueda global y la seccion novedades
             if not config.get_setting("primer_log", "playmax"):
