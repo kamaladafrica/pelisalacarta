@@ -32,7 +32,7 @@ if __perfil__ - 1 >= 0:
 else:
     color1 = color2 = color3 = color4 = color5 = ""
 
-host = "http://playmax.mx"
+host = "https://playmax.mx"
 
 
 def login():
@@ -59,7 +59,7 @@ def login():
         sid_log = scrapertools.find_single_match(data, 'name="sid" value="([^"]+)"')
         post = "username=%s&password=%s&autologin=on&agreed=true&change_lang=0&confirm_id=%s&login=&sid=%s" \
                "&redirect=index.php&login=Entrar" % (user, password, confirm_id, sid_log)
-        data = httptools.downloadpage("http://playmax.mx/ucp.php?mode=login", post=post).data
+        data = httptools.downloadpage("https://playmax.mx/ucp.php?mode=login", post=post).data
         if "contraseña incorrecta" in data:
             logger.info("Error en el login")
             return False, "Contraseña errónea. Comprueba tus credenciales"
@@ -105,7 +105,7 @@ def mainlist(item):
     itemlist.append(item.clone(title="     Populares", action="fichas", url=host+"/catalogo.php?tipo[]=2&ad=2&ordenar="
                                                                                  "pop&con_dis=on"))
     itemlist.append(item.clone(title="     Índices", action="indices"))
-    
+
     itemlist.append(item.clone(title="Series", action="", text_color=color2))
     item.contentType = "tvshow"
     itemlist.append(item.clone(title="     Nuevos capítulos", action="fichas", url=host+"/catalogo.php?tipo[]=1&ad=2&"
@@ -113,7 +113,7 @@ def mainlist(item):
     itemlist.append(item.clone(title="     Nuevas series", action="fichas", url=host+"/catalogo.php?tipo[]=1&ad=2&"
                                                                                      "ordenar=año&con_dis=on"))
     itemlist.append(item.clone(title="     Índices", action="indices"))
-    
+
     item.contentType = "movie"
     itemlist.append(item.clone(title="Documentales", action="fichas", text_color=color2,
                                url=host+"/catalogo.php?&tipo[]=3&ad=2&ordenar=novedades&con_dis=on"))
@@ -362,7 +362,7 @@ def episodios(item):
         if episodio in lista_epis:
             continue
         lista_epis.append(episodio)
-        url = "http://playmax.mx/c_enlaces_n.php?ficha=%s&c_id=%s&dc=%s" % (ficha, c_id, dc)
+        url = "https://playmax.mx/c_enlaces_n.php?ficha=%s&c_id=%s&dc=%s" % (ficha, c_id, dc)
         title = "%s - %s" % (episodio, title)
         new_item = Item(channel=item.channel, action="findvideos", title=title, url=url, thumbnail=item.thumbnail,
                         fanart=item.fanart, show=item.show, infoLabels=item.infoLabels, text_color=color2,
@@ -434,7 +434,7 @@ def findvideos(item):
         if not item.infoLabels["genre"]:
             item.infoLabels["genre"] = ", ".join(scrapertools.find_multiple_matches(data, '<a itemprop="genre"[^>]+>'
                                                                                           '([^<]+)</a>'))
-        
+
         ficha = scrapertools.find_single_match(item.url, '-f(\d+)-')
         if not ficha:
             ficha = scrapertools.find_single_match(item.url, 'f=(\d+)')
@@ -442,7 +442,7 @@ def findvideos(item):
     else:
         ficha, cid = scrapertools.find_single_match(item.url, 'ficha=(\d+)&c_id=(\d+)')
 
-    url = "http://playmax.mx/c_enlaces_n.php?apikey=%s&sid=%s&ficha=%s&cid=%s" % (apikey, sid, ficha, cid)
+    url = "https://playmax.mx/c_enlaces_n.php?apikey=%s&sid=%s&ficha=%s&cid=%s" % (apikey, sid, ficha, cid)
     data = httptools.downloadpage(url).data
     data = json.Xml2Json(data).result
 
@@ -502,7 +502,7 @@ def findvideos(item):
         for info in estrenos:
             info = "Estreno en " + scrapertools.htmlclean(info)
             itemlist.append(item.clone(action="", title=info))
-    
+
     if not itemlist:
         itemlist.append(item.clone(action="", title="No hay enlaces disponibles"))
             
@@ -586,7 +586,6 @@ def menu_info(item):
     if not ficha:
         ficha = scrapertools.find_single_match(item.url, 'f=(\d+)')
     itemlist.extend(acciones_fichas(item, sid, ficha, season=True))
-    
     return itemlist
 
 
@@ -594,7 +593,7 @@ def acciones_fichas(item, sid, ficha, season=False):
     marcarlist = []
     item.infoLabels.pop("duration", None)
     estados = [{'following': 'seguir'}, {'favorite': 'favorita'}, {'view': 'vista'}, {'slope': 'pendiente'}]
-    url = "http://playmax.mx/ficha.php?apikey=%s&sid=%s&f=%s" % (apikey, sid, ficha)
+    url = "https://playmax.mx/ficha.php?apikey=%s&sid=%s&f=%s" % (apikey, sid, ficha)
     data = httptools.downloadpage(url).data
     data = json.Xml2Json(data).result
 
@@ -677,7 +676,7 @@ def acciones_cuenta(item):
         itemlist.append(item.clone(title="Documentales", url="tf_block_d"))
         return itemlist
 
-    data = httptools.downloadpage("http://playmax.mx/tusfichas.php").data
+    data = httptools.downloadpage("https://playmax.mx/tusfichas.php").data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<br>", "", data)
 
     bloque = scrapertools.find_single_match(data, item.url+'">(.*?)(?:<div class="tf_blocks|<div class="tf_o_move">)')
@@ -709,7 +708,7 @@ def acciones_cuenta(item):
                 new_item.show = scrapedtitle
                 if not __menu_info__:
                     new_item.action = "episodios"
-                
+
             itemlist.append(new_item)
 
     return itemlist
