@@ -132,6 +132,7 @@ def newest(categoria):
         else:
             return []
 
+        item.action = "listado"
         itemlist = listado(item)
         if itemlist[-1].action == "listado":
             itemlist.pop()
