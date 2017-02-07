@@ -353,17 +353,19 @@ def episodios(item):
         item.infoLabels["plot"] = scrapertools.find_single_match(data, 'itemprop="description">([^<]+)</div>')
 
     dc = scrapertools.find_single_match(data, "var dc_ic = '\?dc=([^']+)'")
-    patron = '<divd class="capitulo puntossuspensivos.*?c_name="([^"]+)" c_num="([^"]+)"' \
+    patron = 'onclick="cv(.*?)<divd class="capitulo puntossuspensivos.*?c_name="([^"]+)" c_num="([^"]+)"' \
              '.*?load_f_links\((\d+)\s*,\s*(\d+)'
     matches = scrapertools.find_multiple_matches(data, patron)
     lista_epis = []
-    for title, episodio, c_id, ficha in matches:
+    for status, title, episodio, c_id, ficha in matches:
         episodio = episodio.replace("X", "x")
         if episodio in lista_epis:
             continue
         lista_epis.append(episodio)
         url = "https://playmax.mx/c_enlaces_n.php?ficha=%s&c_id=%s&dc=%s" % (ficha, c_id, dc)
         title = "%s - %s" % (episodio, title)
+        if "cvisto" in status:
+            title = "[COLOR %s]%s[/COLOR] %s"  % (color5, u"\u0474".encode('utf-8'), title)
         new_item = Item(channel=item.channel, action="findvideos", title=title, url=url, thumbnail=item.thumbnail,
                         fanart=item.fanart, show=item.show, infoLabels=item.infoLabels, text_color=color2,
                         referer=item.url, contentType="episode")
