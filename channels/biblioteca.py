@@ -419,7 +419,7 @@ def findvideos(item):
 
 def play(item):
     logger.info()
-    #logger.debug("item:\n" + item.tostring('\n'))
+    # logger.debug("item:\n" + item.tostring('\n'))
 
     if not item.contentChannel == "local":
         channel = __import__('channels.%s' % item.contentChannel, fromlist=["channels.%s" % item.contentChannel])
@@ -433,16 +433,17 @@ def play(item):
 
     # Esto es necesario por si el play del canal elimina los datos
     for v in itemlist:
-        v.nfo = item.nfo
-        v.strm_path = item.strm_path
-        v.infoLabels = item.infoLabels
-        if item.contentTitle:
-            v.title = item.contentTitle
-        else:
-            if item.contentType == "episode":
-                v.title = "Episodio %s" % item.contentEpisodeNumber
-        v.thumbnail = item.thumbnail
-        v.contentThumbnail = item.thumbnail
+        if isinstance(v, Item):
+            v.nfo = item.nfo
+            v.strm_path = item.strm_path
+            v.infoLabels = item.infoLabels
+            if item.contentTitle:
+                v.title = item.contentTitle
+            else:
+                if item.contentType == "episode":
+                    v.title = "Episodio %s" % item.contentEpisodeNumber
+            v.thumbnail = item.thumbnail
+            v.contentThumbnail = item.thumbnail
 
     return itemlist
 
