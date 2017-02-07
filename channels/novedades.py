@@ -28,9 +28,11 @@
 import glob
 import os
 import re
+import time
 from threading import Thread
 
 from core import channeltools
+from core import scrapertools
 from core import config
 from core import logger
 from core.item import Item
@@ -39,10 +41,12 @@ from platformcode import platformtools
 DEBUG = config.get_setting("debug")
 THUMBNAILS = {'0': 'posters', '1': 'banners', '2': 'squares'}
 
+color1, color2 = ['0xFF0B7B92','0xFFACD5D4']
+
 list_newest =[]
 
 def mainlist(item,thumbnail_type="squares"):
-    logger.info("pelisalacarta.channels.novedades mainlist")
+    logger.info()
 
     itemlist = []
     list_canales = get_list_canales()
@@ -53,7 +57,9 @@ def mainlist(item,thumbnail_type="squares"):
 
     if list_canales['peliculas']:
         thumbnail = thumbnail_base + "/thumb_canales_peliculas.png"
-    new_item = Item(channel=item.channel, action="novedades", extra="peliculas", title="Películas", thumbnail=thumbnail)
+    new_item = Item(channel=item.channel, action="novedades", extra="peliculas", title="Películas",
+                    thumbnail=thumbnail, text_color=color1)
+
     new_item.context = [{"title": "Canales incluidos en: %s" %new_item.title,
                          "extra": new_item.extra,
                          "action": "settingCanal",
@@ -63,7 +69,8 @@ def mainlist(item,thumbnail_type="squares"):
 
     if list_canales['infantiles']:
         thumbnail = thumbnail_base + "/thumb_canales_infantiles.png"
-    new_item = Item(channel=item.channel, action="novedades", extra="infantiles", title="Para niños", thumbnail=thumbnail)
+    new_item = Item(channel=item.channel, action="novedades", extra="infantiles", title="Para niños",
+                    thumbnail=thumbnail, text_color=color1)
     new_item.context = [{"title": "Canales incluidos en: %s" %new_item.title,
                          "extra": new_item.extra,
                          "action": "settingCanal",
@@ -73,7 +80,8 @@ def mainlist(item,thumbnail_type="squares"):
 
     if list_canales['series']:
         thumbnail = thumbnail_base + "/thumb_canales_series.png"
-    new_item = Item(channel=item.channel, action="novedades", extra="series", title="Episodios de series", thumbnail=thumbnail)
+    new_item = Item(channel=item.channel, action="novedades", extra="series", title="Episodios de series",
+                    thumbnail=thumbnail, text_color=color1)
     new_item.context = [{"title": "Canales incluidos en: %s" %new_item.title,
                          "extra": new_item.extra,
                          "action": "settingCanal",
@@ -83,7 +91,8 @@ def mainlist(item,thumbnail_type="squares"):
 
     if list_canales['anime']:
         thumbnail = thumbnail_base + "/thumb_canales_anime.png"
-    new_item = Item(channel=item.channel, action="novedades", extra="anime", title="Episodios de anime", thumbnail=thumbnail)
+    new_item = Item(channel=item.channel, action="novedades", extra="anime", title="Episodios de anime",
+                    thumbnail=thumbnail, text_color=color1)
     new_item.context = [{"title": "Canales incluidos en: %s" %new_item.title,
                          "extra": new_item.extra,
                          "action": "settingCanal",
@@ -93,7 +102,8 @@ def mainlist(item,thumbnail_type="squares"):
 
     if list_canales['documentales']:
         thumbnail = thumbnail_base + "/thumb_canales_documentales.png"
-    new_item = Item(channel=item.channel, action="novedades", extra="documentales", title="Documentales", thumbnail=thumbnail)
+    new_item = Item(channel=item.channel, action="novedades", extra="documentales", title="Documentales",
+                    thumbnail=thumbnail, text_color=color1)
     new_item.context = [{"title": "Canales incluidos en: %s" %new_item.title,
                          "extra": new_item.extra,
                          "action": "settingCanal",
@@ -108,7 +118,7 @@ def mainlist(item,thumbnail_type="squares"):
 
 
 def get_list_canales():
-    logger.info("pelisalacarta.channels.novedades get_list_canales")
+    logger.info()
 
     list_canales = {'peliculas': [], 'infantiles': [], 'series': [], 'anime': [], 'documentales': []}
 
@@ -146,41 +156,85 @@ def get_list_canales():
 
 
 def novedades(item):
-    logger.info("pelisalacarta.channels.novedades item="+item.tostring())
+    logger.info()
 
     global list_newest
     l_hilo = []
     list_newest = []
+    start_time = time.time()
 
     multithread = config.get_setting("multithread", "novedades")
-    logger.info("pelisalacarta.channels.novedades multithread="+str(multithread))
+    logger.info("multithread= "+str(multithread))
 
+    if not multithread:
+        if platformtools.dialog_yesno("Búsqueda concurrente desactivada",
+                                      "La búsqueda concurrente de novedades proporciona",
+                                      "una mayor velocidad y su desactivación solo es aconsejable en caso de fallo.",
+                                      "¿Desea activar la búsqueda concurrente ahora?"):
+            if config.set_setting("multithread", True, "novedades"):
+                multithread = True
+
+    progreso = platformtools.dialog_progress(item.category, "Buscando canales...")
     list_canales = get_list_canales()
+    number_of_channels = len(list_canales[item.extra])
 
-    for channel_name in list_canales[item.extra]:
-        logger.info("pelisalacarta.channels.novedades obteniendo novedades de channel_name="+channel_name)
-
+    for index, channel_name in enumerate(list_canales[item.extra]):
+        percentage = index * 100 / number_of_channels
         # Modo Multi Thread
         if multithread:
-            t = Thread(target=get_newest, args=[channel_name, item.extra])
+            t = Thread(target=get_newest, args=[channel_name, item.extra], name=channel_name.capitalize())
             t.start()
             l_hilo.append(t)
+            progreso.update(percentage/2, "Buscando en '%s'..." % channel_name.capitalize())
 
         # Modo single Thread
         else:
+            logger.info("Obteniendo novedades de channel_name=" + channel_name)
+            progreso.update(percentage, "Buscando en '%s'..." % channel_name.capitalize())
             get_newest(channel_name, item.extra)
 
     # Modo Multi Thread: esperar q todos los hilos terminen
     if multithread:
-        for x in l_hilo: x.join()
+        pendent = [a for a in l_hilo if a.isAlive()]
+        while pendent:
+            percentage = (len(l_hilo) - len(pendent)) * 100 / len(l_hilo)
+
+            if len(pendent) > 5:
+                progreso.update(percentage,
+                                "Buscando '%s' en %d/%d canales..." % (item.category, len(pendent), len(l_hilo)))
+            else:
+                list_pendent_names = [a.getName() for a in pendent]
+                mensaje = "Buscando '%s' en %s" % (item.category, ", ".join(list_pendent_names))
+                progreso.update(percentage, mensaje)
+                logger.debug(mensaje)
+
+            if progreso.iscanceled():
+                logger.info("Busqueda de novedades cancelada")
+                break
+
+            time.sleep(0.5)
+            pendent = [a for a in l_hilo if a.isAlive()]
+
+    mensaje = "Resultados obtenidos: %s | Tiempo: %2.f segundos" % ( len(list_newest), time.time()-start_time)
+    progreso.update(100, mensaje)
+    logger.info(mensaje)
+    start_time = time.time()
+    #logger.debug(start_time)
 
     result_mode = config.get_setting("result_mode", "novedades")
     if result_mode == 0:  # Agrupados por contenido
-        return agruparXcontenido(list_newest, item.extra)
+        ret = agruparXcontenido(list_newest, item.extra)
     elif result_mode == 1: # Agrupados por canales
-        return agruparXcanal(list_newest, item.extra)
+        ret = agruparXcanal(list_newest, item.extra)
     else: # Sin agrupar
-        return noAgrupar(list_newest, item.extra)
+        ret = noAgrupar(list_newest, item.extra)
+
+    while time.time()-start_time < 2:
+        # mostrar cuadro de progreso con el tiempo empleado durante almenos 2 segundos
+        time.sleep(0.5)
+
+    progreso.close()
+    return ret
 
 
 def get_newest(channel_name, categoria):
@@ -223,11 +277,11 @@ def noAgrupar(list_result_canal, categoria):
     itemlist = []
 
     for i in list_result_canal:
-        i.title = re.compile("\[COLO.*?\]",re.DOTALL).sub("",i.title)
-        i.title = re.compile("\[/COLO.*?\]",re.DOTALL).sub("",i.title)
-        i.title = re.compile("\[B\]",re.DOTALL).sub("",i.title)
-        i.title = re.compile("\[/B\]",re.DOTALL).sub("",i.title)
+        i.title = re.compile("\[/*COLO.*?\]",re.DOTALL).sub("",i.title)
+        i.title = re.compile("\[/*B\]",re.DOTALL).sub("",i.title)
         i.title = i.title + " ["+i.channel+"]"
+        i.text_color=color2
+
         itemlist.append(i.clone())
 
     return sorted(itemlist, key=lambda i:  i.title.lower())
@@ -243,26 +297,28 @@ def agruparXcanal(list_result_canal, categoria):
 
         # Formatear titulo
         i.title = i.contentTitle
-        if (categoria == 'series' or categoria == 'anime') and i.contentEpisodeNumber:
-            if not i.contentSeason:
-                i.contentSeason = '1'
+        if (categoria == 'series' or categoria == 'anime'):
+            i.title = i.contentSerieName
+            if not scrapertools.get_season_and_episode(i.title) and i.contentEpisodeNumber:
+                if not i.contentSeason:
+                    i.contentSeason = '1'
 
-            try:
-                i.title += " - %sx%s" % (i.contentSeason, "{:0>2d}".format(int(i.contentEpisodeNumber)))
-            except:
-                pass
+                try:
+                    i.title += " - %sx%s" % (i.contentSeason, "{:0>2d}".format(int(i.contentEpisodeNumber)))
+                except:
+                    pass
 
-        # Añadimos el contenido a listado de cada canal
+        # Añadimos el contenido al listado de cada canal
         dict_canales[i.channel].append(i)
 
     # Añadimos el contenido encontrado en la lista list_result
     for c in sorted(dict_canales):
-        itemlist.append(Item(channel="novedades", title=c+':'))
+        itemlist.append(Item(channel="novedades", title=c.capitalize()+':', text_color=color1, text_blod=True))
         for i in dict_canales[c]:
-            if 'contentCalidad' in i:  i.title += ' (%s)' % i.contentCalidad
+            if i.contentQuality:  i.title += ' (%s)' % i.contentQuality
             if i.language: i.title += ' [%s]' % i.language
             i.title = '    %s' % i.title
-
+            i.text_color=color2
             itemlist.append(i.clone())
 
     return itemlist
@@ -275,14 +331,16 @@ def agruparXcontenido(list_result_canal, categoria):
     for i in list_result_canal:
         # Formatear titulo
         i.title = i.contentTitle
-        if (categoria == 'series' or categoria == 'anime') and i.contentEpisodeNumber:
-            if not i.contentSeason:
-                i.contentSeason = '1'
+        if (categoria == 'series' or categoria == 'anime'):
+            i.title = i.contentSerieName
+            if not scrapertools.get_season_and_episode(i.title) and i.contentEpisodeNumber:
+                if not i.contentSeason:
+                    i.contentSeason = '1'
 
-            try:
-                i.title += " - %sx%s" % (i.contentSeason, "{:0>2d}".format(int(i.contentEpisodeNumber)))
-            except:
-                pass
+                try:
+                    i.title += " - %sx%s" % (i.contentSeason, "{:0>2d}".format(int(i.contentEpisodeNumber)))
+                except:
+                    pass
 
         # Eliminar tildes y otros caracteres especiales para la key
         import unicodedata
@@ -319,6 +377,7 @@ def agruparXcontenido(list_result_canal, categoria):
         else:
             newItem = v[0].clone(title=title)
 
+        newItem.text_color = color2
         list_result.append(newItem)
 
     return sorted(list_result, key=lambda i:  i.title.lower())
@@ -330,10 +389,12 @@ def ver_canales(item):
     for i in item.sub_list:
         newItem = Item()
         newItem = newItem.fromurl(i)
-        logger.debug(newItem.tostring())
-        if 'contentCalidad' in newItem:  newItem.title += ' (%s)' % newItem.contentCalidad
+        #logger.debug(newItem.tostring())
+        if newItem.contentQuality:  newItem.title += ' (%s)' % newItem.contentQuality
         if newItem.language: newItem.title += ' [%s]' % newItem.language
         newItem.title += ' (%s)' % newItem.channel
+        newItem.text_color = color1
+
         itemlist.append(newItem.clone())
 
     return itemlist

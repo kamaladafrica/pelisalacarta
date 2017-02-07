@@ -145,7 +145,7 @@ class Item(object):
         kw = copy.copy(kwargs)
         for k in kw:
             if k in ["contentTitle", "contentPlot", "contentSerieName", "show", "contentType", "contentEpisodeTitle",
-                    "contentSeason", "contentEpisodeNumber", "contentThumbnail", "plot", "duration"]:
+                    "contentSeason", "contentEpisodeNumber", "contentThumbnail", "plot", "duration", "contentQuality"]:
                 self.__setattr__(k, kw[k])
                 del kwargs[k]
 
@@ -174,7 +174,7 @@ class Item(object):
 
        # Al modificar cualquiera de estos atributos content...
         if name in ["contentTitle", "contentPlot", "contentSerieName", "contentType", "contentEpisodeTitle",
-                    "contentSeason", "contentEpisodeNumber", "contentThumbnail", "show"]:
+                    "contentSeason", "contentEpisodeNumber", "contentThumbnail", "show", "contentQuality"]:
             #... marcamos hasContentDetails como "true"...
             self.__dict__["hasContentDetails"] = "true"
             #...y actualizamos infoLables
@@ -194,6 +194,8 @@ class Item(object):
                 self.__dict__["infoLabels"]["episode"] = value
             elif name == "contentThumbnail":
                 self.__dict__["infoLabels"]["thumbnail"] = value
+            elif name == "contentQuality":
+                self.__dict__["infoLabels"]["quality"] = value
 
         elif name == "plot":
             self.__dict__["infoLabels"]["plot"] = value
@@ -249,7 +251,7 @@ class Item(object):
 
         # valores guardados en infoLabels
         elif name in ["contentTitle", "contentPlot", "contentSerieName", "show", "contentType", "contentEpisodeTitle",
-                    "contentSeason", "contentEpisodeNumber", "contentThumbnail", "plot", "duration"]:
+                    "contentSeason", "contentEpisodeNumber", "contentThumbnail", "plot", "duration", "contentQuality"]:
             if name == "contentTitle":
                 return self.__dict__["infoLabels"]["title"]
             elif name == "contentPlot" or name == "plot":
@@ -270,6 +272,8 @@ class Item(object):
                 return self.__dict__["infoLabels"]["episode"]
             elif name == "contentThumbnail":
                 return self.__dict__["infoLabels"]["thumbnail"]
+            elif name == "contentQuality":
+                return self.__dict__["infoLabels"]["quality"]
             else:
                 return self.__dict__["infoLabels"][name]
 
