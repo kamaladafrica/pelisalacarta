@@ -148,7 +148,7 @@ def peliculas(item):
         title = "%s %s [%s]" %(contentTitle, idiomas_disponibles, calidad)
         plot = decodeHtmlentities(scrapedplot)
 
-        itemlist.append(Item(channel=item.channel, action="findvideos", title=title, url=scrapedurl, calidad=calidad,
+        itemlist.append(Item(channel=item.channel, action="findvideos", title=title, url=scrapedurl, contentQuality=calidad,
                                 thumbnail=scrapedthumbnail, plot=plot, contentTitle=contentTitle,
                                 infoLabels={"year":year}, text_color = color1))
 
@@ -268,7 +268,7 @@ def findvideos(item):
 
     # Insertar items "Buscar trailer" y "Añadir a la biblioteca"
     if itemlist and item.extra != "library":
-        title = "%s [%s]" % (item.contentTitle, item.calidad)
+        title = "%s [%s]" % (item.contentTitle, item.contentQuality)
         itemlist.insert(0, item.clone(channel = "trailertools", action="buscartrailer",
                                       text_color=color3, title=title, viewmode="list"))
 
