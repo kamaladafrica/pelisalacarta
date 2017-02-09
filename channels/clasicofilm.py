@@ -84,6 +84,7 @@ def newest(categoria):
     try:
         if categoria == 'peliculas':
             item.url = "http://www.clasicofilm.com/feeds/posts/summary?start-index=1&max-results=20&alt=json-in-script&callback=finddatepost"
+            item.action = "peliculas"
             itemlist = peliculas(item)
 
             if itemlist[-1].action == "peliculas":
