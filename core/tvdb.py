@@ -130,8 +130,6 @@ def find_and_set_infoLabels(item):
 
     if tvdb_result:
         infoLabels['tvdb_id'] = tvdb_result['id']
-        # todo mirar si se puede eliminar y obtener solo desde get_nfo()
-        infoLabels['url_scraper'] = "http://thetvdb.com/?tab=series&id=%s" % (infoLabels['tvdb_id'])
         item.infoLabels = infoLabels
         set_infoLabels_item(item)
 
@@ -265,12 +263,14 @@ def get_nfo(item):
     @rtype: str
     @return:
     """
+    info_nfo = '<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>'
 
     if "season" in item.infoLabels and "episode" in item.infoLabels:
-        info_nfo = "http://thetvdb.com/?tab=episode&seriesid=%s&seasonid=%s&id=%s\n" % \
+        info_nfo += "http://thetvdb.com/?tab=episode&seriesid=%s&seasonid=%s&id=%s\n" % \
                    (item.infoLabels['tvdb_id'], item.season_id, item.episode_id)
     else:
-        info_nfo = item.infoLabels['url_scraper']
+        info_nfo += '<tvshow><title>' + item.infoLabels['tvshowtitle'] + '</title></tvshow>'
+        info_nfo += 'http://thetvdb.com/?tab=series&id=%s\n' % (item.infoLabels['tvdb_id'])
 
     return info_nfo
 
@@ -748,7 +748,6 @@ class Tvdb:
             logger.info("else")
             for e in self.list_results:
                 logger.info("e es: %s" % e)
-                logger.info("seriesId es: %s" % e['seriesId'])
                 logger.info("id es: %s" % e['id'])
                 dict_html = self.__get_by_id(e['id'])
                 # todo revisar si hace falta
@@ -853,8 +852,9 @@ class Tvdb:
 
                 ret_infoLabels['genre'] = genre_list
 
-            elif k == 'seriesName':  # or k == 'name' or k == 'title':
-                ret_infoLabels['title'] = v
+            elif k == 'seriesName': # and items.'aliases':  # or k == 'name' or k == 'title':
+                ret_infoLabels['title'] = v #+ items['aliases'][0]
+                logger.info("el titulo es %s " % ret_infoLabels['title'])
 
             elif k == 'cast':  # or k == 'temporada_cast' or k == 'episodio_guest_stars':
                 dic_aux = dict((name, character) for (name, character) in l_castandrole)
@@ -903,10 +903,6 @@ class Tvdb:
                 if data_season and 'image_season' in data_season:
                     ret_infoLabels['thumbnail'] = HOST_IMAGE + data_season['image_season'][0]['fileName']
 
-
         logger.debug("ret_infoLabels %s" % ret_infoLabels)
 
         return ret_infoLabels
-
-
-
