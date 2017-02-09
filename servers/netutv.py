@@ -37,20 +37,26 @@ def get_video_url(page_url, premium = False, user="", password="", video_passwor
     for d in data_unescape:
         data += urllib.unquote(d)
 
+    data_unwise_player = ""
+    js_wise = scrapertools.find_single_match(data_player, "<script type=[\"']text/javascript[\"']>\s*;?(eval.*?)</script>")
+    if js_wise:
+        data_unwise_player = jswise(js_wise).replace("\\", "")
     vars_data = scrapertools.find_single_match(data, '/player/get_md5.php",\s*\{(.*?)\}')
     matches = scrapertools.find_multiple_matches(vars_data, '\s*([^:]+):\s*([^,]*)[,"]')
     params = {}
     for key, value in matches:
         if key == "adb":
-            params[key] = "1/"
+            params[key] = "0/"
         elif '"' in value:
             params[key] = value.replace('"', '')
         else:
             value_var = scrapertools.find_single_match(data, 'var\s*%s\s*=\s*"([^"]+)"' % value)
+            if not value_var and data_unwise_player:
+                value_var = scrapertools.find_single_match(data_unwise_player, 'var\s*%s\s*=\s*"([^"]+)"' % value)
             params[key] = value_var
 
     params = urllib.urlencode(params)
-    head = {'X-Requested-With': 'XMLHttpRequest'}
+    head = {'X-Requested-With': 'XMLHttpRequest', 'Referer': url}
     data = httptools.downloadpage("http://hqq.tv/player/get_md5.php?" + params, headers=head).data
 
     media_urls = []
