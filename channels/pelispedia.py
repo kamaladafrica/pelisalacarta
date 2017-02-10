@@ -334,7 +334,7 @@ def episodios(item):
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     for scrapedurl, scrapedtitle, scrapedname in matches:
-        logger.info("scrap {}".format(scrapedtitle))
+        # logger.info("scrap {}".format(scrapedtitle))
         patron = 'Season\s+(\d),\s+Episode\s+(\d+)'
         match = re.compile(patron, re.DOTALL).findall(scrapedtitle)
         season, episode = match[0]
@@ -366,7 +366,7 @@ def episodios(item):
                 # Si el capitulo tiene imagen propia remplazar al poster
                 i.thumbnail = i.infoLabels['poster_path']
 
-    itemlist.sort(key=lambda item: item.title, reverse=config.get_setting('orden_episodios', __channel__))
+    itemlist.sort(key=lambda it: it.title, reverse=config.get_setting('orden_episodios', __channel__))
 
     # Opción "Añadir esta serie a la biblioteca de XBMC"
     if config.get_library_support() and len(itemlist) > 0:
@@ -413,7 +413,7 @@ def temporadas(item):
                 # Si la temporada tiene poster propio remplazar al de la serie
                 i.thumbnail = i.infoLabels['poster_path']
 
-        itemlist.sort(key=lambda item: item.title)
+        itemlist.sort(key=lambda it: it.title)
 
         # Opción "Añadir esta serie a la biblioteca de XBMC"
         if config.get_library_support() and len(itemlist) > 0:
@@ -438,8 +438,12 @@ def findvideos(item):
 
     patron = '<iframe src=".+?id=(\d+)'
     key = scrapertools.find_single_match(data, patron)
-    referer = CHANNEL_HOST+'api/iframes.php?id={0}&update1.1'.format(key)
-    data = httptools.downloadpage(referer).data
+    url = CHANNEL_HOST+'api/iframes.php?id={0}&update1.1'.format(key)
+
+    headers = dict()
+    headers["Referer"] = item.url
+    data = httptools.downloadpage(url, headers=headers).data
+
     # Descarta la opción descarga que es de publicidad
     patron = '<a href="(?!http://go.ad2up.com)([^"]+)".+?><img src="/api/img/([^.]+)'
     matches = scrapertools.find_multiple_matches(data, patron)
@@ -455,7 +459,7 @@ def findvideos(item):
                 itemlist.append(item.clone(title=title, url=url, action="play"))
         else:
             title = "Ver vídeo en ["+scrapedtitle+"]"
-            new_item = item.clone(title=title, url=scrapedurl, action="play", extra=item.url, referer=referer)
+            new_item = item.clone(title=title, url=scrapedurl, action="play", extra=item.url, referer=url)
             itemlist.append(new_item)
 
     # Opción "Añadir esta pelicula a la biblioteca de XBMC"
@@ -473,12 +477,9 @@ def play(item):
     itemlist = []
 
     subtitle = ""
-    thumbnail = ""
 
     # html5
     if item.url.startswith("http://www.pelispedia.vip"):
-
-        thumbnail = scrapertools.find_single_match(item.url, '&imagen=([^"]+)')
 
         headers = dict()
         headers["Referer"] = item.referer
