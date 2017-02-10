@@ -429,7 +429,7 @@ def temporadas(item):
 def findvideos(item):
     logger.info()
     logger.info("item.url %s" % item.url)
-    logger.debug(item.contentTitle)
+
     itemlist = []
 
     # Descarga la página
