@@ -198,7 +198,7 @@ def listado_anio(item):
 
 def search(item, texto):
     # Funcion de busqueda desactivada
-    logger.info("texto={0}".format(texto))
+    logger.info("texto=%s" % texto)
 
     item.url = item.url + "%" + texto.replace(' ', '+') + "%"
 
@@ -231,7 +231,7 @@ def newest(categoria):
     except:
         import sys
         for line in sys.exc_info():
-            logger.error("{0}".format(line))
+            logger.error("%s" % line)
         return []
 
     return itemlist
@@ -257,7 +257,7 @@ def listado(item):
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     for scrapedurl, scrapedtitle, scrapedthumbnail, scrapedyear, scrapedplot in matches[:28]:
-        title = "{title} ({year})".format(title=scrapertools.unescape(scrapedtitle.strip()), year=scrapedyear)
+        title = "%s (%s)" % (scrapertools.unescape(scrapedtitle.strip()), scrapedyear)
         plot = scrapertools.entityunescape(scrapedplot)
 
         new_item = Item(channel=__channel__, title=title, url=urlparse.urljoin(CHANNEL_HOST, scrapedurl), action=action,
@@ -286,7 +286,7 @@ def listado(item):
             anio = scrapertools.find_single_match(item.url, "(?:year=)(\w+)")
             letra = scrapertools.find_single_match(item.url, "(?:letra=)(\w+)")
             genero = scrapertools.find_single_match(item.url, "(?:gender=|genre=)(\w+)")
-            params = "letra={letra}&year={year}&genre={genero}".format(letra=letra, year=anio, genero=genero)
+            params = "letra=%s&year=%s&genre=%s" % (letra, anio, genero)
 
         else:
             tipo2 = scrapertools.find_single_match(item.url, "(?:series/|tipo2=)(\w+)")
@@ -304,10 +304,9 @@ def listado(item):
             if tipo2 == "letra":
                 genero = scrapertools.find_single_match(item.url, "(?:letra/|genre=)(\w+)")
 
-            params = "genre={genero}".format(genero=genero)
+            params = "genre=%s" % genero
 
-        url = "http://www.pelispedia.tv/api/{file}.php?rangeStart=28&rangeEnd=28{tipo_serie}&{params}".\
-            format(file=file_php, tipo_serie=tipo_serie, params=params)
+        url = "http://www.pelispedia.tv/api/%s.php?rangeStart=28&rangeEnd=28%s&%s" % (file_php, tipo_serie, params)
 
         if "rangeStart" in item.url:
             ant_inicio = scrapertools.find_single_match(item.url, "rangeStart=(\d+)&")
@@ -342,8 +341,7 @@ def episodios(item):
         if 'season' in item.infoLabels and int(item.infoLabels['season']) != int(season):
             continue
 
-        title = "{season}x{episode}: {name}".format(season=season, episode=episode.zfill(2),
-                                                    name=scrapertools.unescape(scrapedname))
+        title = "%sx%s: %s" % (season, episode.zfill(2), scrapertools.unescape(scrapedname))
         new_item = item.clone(title=title, url=scrapedurl, action="findvideos", text_color=color3, fulltitle=title,
                               contentType="episode")
         if 'infoLabels' not in new_item:
@@ -429,7 +427,6 @@ def temporadas(item):
 def findvideos(item):
     logger.info()
     logger.info("item.url %s" % item.url)
-
     itemlist = []
 
     # Descarga la página
@@ -438,7 +435,7 @@ def findvideos(item):
 
     patron = '<iframe src=".+?id=(\d+)'
     key = scrapertools.find_single_match(data, patron)
-    url = CHANNEL_HOST+'api/iframes.php?id={0}&update1.1'.format(key)
+    url = CHANNEL_HOST+'api/iframes.php?id=%s&update1.1' % key
 
     headers = dict()
     headers["Referer"] = item.url
@@ -472,7 +469,7 @@ def findvideos(item):
 
 
 def play(item):
-    logger.info("url={0}".format(item.url))
+    logger.info("url=%s" % item.url)
 
     itemlist = []
 
