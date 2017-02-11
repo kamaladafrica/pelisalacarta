@@ -98,15 +98,6 @@ def read_nfo(path_nfo, item=None):
         head_nfo = data.splitlines()[0] + "\n"
         data = "\n".join(data.splitlines()[1:])
 
-        if not head_nfo.startswith('http'):
-            # url_scraper no valida, xml presente
-            patron = "(<tvshow>|<movie>)(.*?)(</tvshow>|</movie>)"
-            head_nfo = scrapertools.find_single_match(data, patron)
-            head_nfo = "%s%s%s" % (head_nfo[0], head_nfo[1], head_nfo[2])
-            import re
-            data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
-            data = re.sub(patron, "", data)
-        
         it_nfo = Item().fromjson(data)
 
         if item:
