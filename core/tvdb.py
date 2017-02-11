@@ -197,18 +197,26 @@ def set_infoLabels_item(item):
             # todo repasar valores que hay que insertar en infoLabels
             if data_episode:
                 item.infoLabels['title'] = data_episode['episodeName']
+                # fix en casos que el campo desde la api era null--> None
+                if data_episode["overview"] is not None:
+                    item.infoLabels['plot'] = data_episode["overview"]
 
-                item.infoLabels['plot'] = data_episode.get("overview", "")
                 item.thumbnail = HOST_IMAGE + data_episode.get('filename', "")
 
+                item.infoLabels["rating"] = data_episode.get("siteRating", "")
                 item.infoLabels['director'] = ', '.join(sorted(data_episode.get('directors', [])))
                 item.infoLabels['writer'] = ', '.join(sorted(data_episode.get("writers", [])))
-                item.infoLabels["rating"] = data_episode.get("siteRating", "")
 
                 if data_episode["firstAired"]:
                     item.infoLabels['premiered'] = data_episode["firstAired"].split("-")[2] + "/" + \
                                                    data_episode["firstAired"].split("-")[1] + "/" + \
                                                    data_episode["firstAired"].split("-")[0]
+                    item.infoLabels['aired'] = item.infoLabels['premiered']
+
+                guest_stars = data_episode.get("guestStars", [])
+                l_castandrole = item.infoLabels.get("castandrole", [])
+                l_castandrole.extend([(p, '') for p in guest_stars])
+                item.infoLabels['castandrole'] = l_castandrole
 
                 # datos para nfo
                 item.season_id = data_episode["airedSeasonID"]
@@ -217,7 +225,6 @@ def set_infoLabels_item(item):
                 return len(item.infoLabels)
 
         else:
-            logger.info("estoye en el else")
             # Tenemos numero de temporada valido pero no numero de episodio...
             # ... buscar datos temporada
             item.infoLabels['mediatype'] = 'season'
@@ -266,12 +273,240 @@ def get_nfo(item):
     info_nfo = '<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>'
 
     if "season" in item.infoLabels and "episode" in item.infoLabels:
-        info_nfo += "http://thetvdb.com/?tab=episode&seriesid=%s&seasonid=%s&id=%s\n" % \
-                   (item.infoLabels['tvdb_id'], item.season_id, item.episode_id)
-    else:
-        info_nfo += '<tvshow><title>' + item.infoLabels['tvshowtitle'] + '</title></tvshow>'
-        info_nfo += 'http://thetvdb.com/?tab=series&id=%s\n' % (item.infoLabels['tvdb_id'])
+        info_nfo += '<episodedetails><title>%s</title>' % item.infoLabels['title']
+        info_nfo += '<showtitle>%s</showtitle>' % item.infoLabels['tvshowtitle']
+        info_nfo += '<ratings><rating name="default" max="10" default="true"><value>%s</value><votes>%s</votes>' \
+                    '</rating></ratings>' % (item.infoLabels['rating'], item.infoLabels['votes'])
 
+        info_nfo += '<thumb>%s</thumb>' % item.thumbnail
+
+        info_nfo += array_to_node(item.infoLabels['director'], 'director')
+        info_nfo += array_to_node(item.infoLabels['writer'], 'credits')
+
+        info_nfo += '<aired>%s</aired>' % (item.infoLabels['aired'].split("/")[2] + "-" +
+                                           item.infoLabels['aired'].split("/")[1] + "-" +
+                                           item.infoLabels['aired'].split("/")[0])
+
+        info_nfo = set_nfo_casting(info_nfo, item.infoLabels['castandrole'])
+
+        info_nfo += '<plot>%s<plot>' % item.plot
+        info_nfo += '</episodedetails>\n'
+
+        # info_nfo += "http://thetvdb.com/?tab=episode&seriesid=%s&seasonid=%s&id=%s\n" % \
+        #            (item.infoLabels['tvdb_id'], item.season_id, item.episode_id)
+
+        # ----    <title>Capítulo 1</title>
+        # ----    <showtitle>Legión</showtitle>
+        # ---    <ratings>
+        #  ---       <rating name="default" max="10" default="true">
+        #  ---           <value>9.000000</value>
+        #  ---           <votes>5</votes>
+        #  --       </rating>
+        # ---    </ratings>
+        #     <userrating>0</userrating>
+        #     <top250>0</top250>
+        #     <season>1</season>
+        #     <episode>1</episode>
+        #     <displayseason>-1</displayseason>
+        #     <displayepisode>-1</displayepisode>
+        #     <outline></outline>
+        # ----    <plot>David comienza a considerar que las voces que escucha en su cabeza pueden ser reales.</plot>
+        #     <tagline></tagline>
+        #     <runtime>45</runtime>
+        # ----    <thumb>http://thetvdb.com/banners/episodes/320724/5869915.jpg</thumb>
+        # heredado    <mpaa></mpaa>
+        #     <playcount>0</playcount>
+        #     <lastplayed></lastplayed>
+        #     <file></file>
+        # ----    <path>special://home/userdata/addon_data/plugin.video.pelisalacarta/library/SERIES/legión [tt5114356]/</path>
+        #     <filenameandpath>special://home/userdata/addon_data/plugin.video.pelisalacarta/library/SERIES/legión [tt5114356]/1x01.strm</filenameandpath>
+        #     <basepath>special://home/userdata/addon_data/plugin.video.pelisalacarta/library/SERIES/legión [tt5114356]/1x01.strm</basepath>
+        #     <id>5869915</id>
+        #     <uniqueid type="unknown" default="true">5869915</uniqueid>
+        # heredado    <genre>Action</genre>
+        # heredado    <genre>Drama</genre>
+        #     <credits>Noah Hawley</credits>
+        #     <director>Noah Hawley</director>
+        #     <premiered>2017-02-08</premiered>
+        #     <year>2017</year>
+        # heredado    <status></status>
+        #     <code></code>
+        # ---    <aired>2017-02-08</aired>
+        # heredado    <studio>FX (US)</studio>
+        #     <trailer></trailer>
+        #  ---   <actor>
+        #   ---      <name>Dan Stevens</name>
+        #   ---      <role>David Haller</role>
+        #         <order>0</order>
+        #         <thumb>http://thetvdb.com/banners/actors/411764.jpg</thumb>
+        #  ---   </actor>
+        #  ---   <actor>
+        #  ---       <name>Rachel Keller</name>
+        #  ---       <role>Syd Barrett</role>
+        #         <order>1</order>
+        #         <thumb>http://thetvdb.com/banners/actors/411763.jpg</thumb>
+        #  ---   </actor>
+        #     <resume>
+        #         <position>0.000000</position>
+        #         <total>0.000000</total>
+        #     </resume>
+        #     <dateadded>2017-02-11 00:06:37</dateadded>
+        #     <art>
+        #         <thumb>http://thetvdb.com/banners/episodes/320724/5869915.jpg</thumb>
+        #     </art>
+
+    else:
+        info_nfo += '<tvshow><title>%s</title>' % item.infoLabels['title']
+        # info_nfo += '<rating>%s</rating>' % item.infoLabels['rating']
+
+        info_nfo += '<ratings><rating name="default" max="10" default="true"><value>%s</value><votes>%s</votes>' \
+                    '</rating></ratings>' % (item.infoLabels['rating'], item.infoLabels['votes'])
+
+        info_nfo += '<thumb aspect="poster">%s</thumb>' % item.thumbnail
+        info_nfo += '<fanart><thumb>%s</thumb></fanart>' % item.fanart
+        info_nfo += '<year>%s</year>' % item.infoLabels['year']
+        info_nfo += '<mpaa>%s</mpaa>' % item.infoLabels['mpaa']
+
+        info_nfo += array_to_node(item.infoLabels['genre'], 'genre')
+        info_nfo += '<premiered>%s</premiered>' % (item.infoLabels['premiered'].split("/")[2] + "-" +
+                                                   item.infoLabels['premiered'].split("/")[1] + "-" +
+                                                   item.infoLabels['premiered'].split("/")[0])
+
+        info_nfo += '<status>%s</status>' % item.infoLabels['status']
+        info_nfo += '<studio>%s</studio>' % item.infoLabels['studio']
+
+        # logger.info("el casting es %s " % item.infoLabels['tvdb_cast'])
+        # for e in item.infoLabels['tvdb_cast']:
+        #     info_nfo += '<actor><name>%s</name><role>%s</role><order>%s</order><thumb>%s</thumb></actor>' \
+        #               % (e.get("name", ""), e.get("role", ""), e.get("sortOrder", 0), HOST_IMAGE + e.get("image", ""))
+        info_nfo = set_nfo_casting(info_nfo, item.infoLabels['castandrole'])
+
+
+        info_nfo += '<plot>%s<plot>' % item.plot
+
+        # <title>Legión</title> ---
+        # <showtitle>Legión</showtitle>
+        # <ratings> --------
+        #     <rating name="default" max="10" default="true">---
+        #         <value>8.200000</value>---
+        #         <votes>6</votes>----
+        #     </rating>----
+        # </ratings>---
+        # <userrating>0</userrating>
+        # <top250>0</top250>
+        # <season>1</season>
+        # <episode>1</episode>
+        # <displayseason>-1</displayseason>
+        # <displayepisode>-1</displayepisode>
+        # <outline></outline>
+        # ---- <plot>Se centra en David Haller, un hombre que desde que era adolescente ha tenido que luchar contra una enfermedad mental. Diagnóstico: esquizofrenia. Durante años ha ido entrando y saliendo de diferentes hospitales psiquiátricos para tratarse, pero después de un extraño encuentro con un paciente, se tiene que enfrentar a la posibilidad de que las voces que escucha en su cabeza y las visiones que ve, podrían ser reales. Legion es hijo de Gabrielle Haller y Charles Xavier, el fundador de los X-Men y es uno de los mutantes más poderosos, pero sus diferentes poderes están divididos entre sus múltiples personalidades.</plot>
+        # <tagline></tagline>
+        # <runtime>45</runtime>
+        # <thumb aspect="banner">http://thetvdb.com/banners/graphical/320724-g3.jpg</thumb>
+        # <thumb aspect="banner">http://thetvdb.com/banners/graphical/320724-g.jpg</thumb>
+        # <thumb aspect="banner">http://thetvdb.com/banners/graphical/320724-g2.jpg</thumb>
+        # <thumb aspect="banner">http://thetvdb.com/banners/graphical/320724-g4.jpg</thumb>
+        # <thumb aspect="banner">http://thetvdb.com/banners/text/320724.jpg</thumb>
+        # <thumb aspect="poster" type="season" season="1">http://thetvdb.com/banners/seasons/320724-1.jpg</thumb>
+        # <thumb aspect="poster">http://thetvdb.com/banners/posters/320724-1.jpg</thumb>
+        # <thumb aspect="poster">http://thetvdb.com/banners/posters/320724-4.jpg</thumb>
+        # <thumb aspect="poster">http://thetvdb.com/banners/posters/320724-2.jpg</thumb>
+        # <thumb aspect="poster">http://thetvdb.com/banners/posters/320724-3.jpg</thumb>
+        # <thumb aspect="poster" type="season" season="-1">http://thetvdb.com/banners/posters/320724-1.jpg</thumb>
+        # <thumb aspect="poster" type="season" season="-1">http://thetvdb.com/banners/posters/320724-4.jpg</thumb>
+        # <thumb aspect="poster" type="season" season="-1">http://thetvdb.com/banners/posters/320724-2.jpg</thumb>
+        # <thumb aspect="poster" type="season" season="-1">http://thetvdb.com/banners/posters/320724-3.jpg</thumb>
+        # <fanart url="http://thetvdb.com/banners/">
+        #     <thumb dim="1920x1080" colors="" preview="_cache/fanart/original/320724-3.jpg">fanart/original/320724-3.jpg</thumb>
+        #     <thumb dim="1920x1080" colors="" preview="_cache/fanart/original/320724-6.jpg">fanart/original/320724-6.jpg</thumb>
+        #     <thumb dim="1280x720" colors="" preview="_cache/fanart/original/320724-2.jpg">fanart/original/320724-2.jpg</thumb>
+        #     <thumb dim="1920x1080" colors="" preview="_cache/fanart/original/320724-7.jpg">fanart/original/320724-7.jpg</thumb>
+        #     <thumb dim="1280x720" colors="" preview="_cache/fanart/original/320724-9.jpg">fanart/original/320724-9.jpg</thumb>
+        #     <thumb dim="1920x1080" colors="" preview="_cache/fanart/original/320724-1.jpg">fanart/original/320724-1.jpg</thumb>
+        #     <thumb dim="1920x1080" colors="" preview="_cache/fanart/original/320724-5.jpg">fanart/original/320724-5.jpg</thumb>
+        #     <thumb dim="1920x1080" colors="" preview="_cache/fanart/original/320724-8.jpg">fanart/original/320724-8.jpg</thumb>
+        #     <thumb dim="1920x1080" colors="" preview="_cache/fanart/original/320724-4.jpg">fanart/original/320724-4.jpg</thumb>
+        # </fanart>
+        # ----<mpaa></mpaa>
+        # <playcount>0</playcount>
+        # <lastplayed></lastplayed>
+        # <file></file>
+        # ----<path>special://home/userdata/addon_data/plugin.video.pelisalacarta/library/SERIES/legión [tt5114356]/</path>
+        # <filenameandpath></filenameandpath>
+        # <basepath>special://home/userdata/addon_data/plugin.video.pelisalacarta/library/SERIES/legión [tt5114356]/</basepath>
+        # <episodeguide>
+        #     <url cache="320724-es.xml">http://thetvdb.com/api/1D62F2F90030C444/series/320724/all/es.zip</url>
+        # </episodeguide>
+        # <id>320724</id>
+        # <uniqueid type="unknown" default="true">320724</uniqueid>
+        # ----<genre>Action</genre>
+        # ----<genre>Drama</genre>
+        # ----<genre>Fantasy</genre>
+        # -----<premiered>2017-02-08</premiered>
+        # ----<year>2017</year>
+        # ----<status></status>
+        # <code></code>
+        # <aired></aired>
+        # ----<studio>FX (US)</studio>
+        # <trailer></trailer>
+        # ---<actor>
+        # ---    <name>Dan Stevens</name>
+        #     <role>David Haller</role>
+        #     <order>0</order>
+        #     <thumb>http://thetvdb.com/banners/actors/411764.jpg</thumb>
+        # ---</actor>
+        # ---<actor>
+        # ---    <name>Rachel Keller</name>
+        # ---    <role>Syd Barrett</role>
+        #     <order>1</order>
+        #     <thumb>http://thetvdb.com/banners/actors/411763.jpg</thumb>
+        # ---</actor>
+        # <resume>
+        #     <position>0.000000</position>
+        #     <total>0.000000</total>
+        # </resume>
+        # <dateadded>2017-02-11 00:06:37</dateadded>
+        # <art>
+        #     <banner>http://thetvdb.com/banners/graphical/320724-g3.jpg</banner>
+        #     <fanart>http://thetvdb.com/banners/fanart/original/320724-3.jpg</fanart>
+        #     <poster>http://thetvdb.com/banners/posters/320724-1.jpg</poster>
+        #     <season num="-1">
+        #         <poster>http://thetvdb.com/banners/posters/320724-1.jpg</poster>
+        #     </season>
+        #     <season num="0" />
+        #     <season num="1">
+        #         <poster>http://thetvdb.com/banners/seasons/320724-1.jpg</poster>
+        #     </season>
+        # </art>
+
+
+
+
+
+
+
+
+
+
+
+
+        info_nfo += '</tvshow>\n'
+
+    return info_nfo
+
+
+def array_to_node(array, node_name):
+    list_genre = array.split(", ")
+    result = ""
+    for i in list_genre:
+        result += '<%s>%s</%s>' % (node_name, i, node_name)
+    return result
+
+
+def set_nfo_casting(info_nfo, casting):
+    for index, e in enumerate(casting):
+        info_nfo += '<actor><name>%s</name><role>%s</role><order>%s</order><thumb></thumb></actor>' % \
+                    (e[0], e[1], index)
     return info_nfo
 
 
@@ -736,16 +971,14 @@ class Tvdb:
         logger.info()
         list_results = []
 
-        logger.info("long es: %s" % len(self.list_results))
-        logger.info("results es: %s" % self.list_results)
+        # logger.info("long es: %s" % len(self.list_results))
+        # logger.info("results es: %s" % self.list_results)
 
         # TODO revisar condicion
         # si tenemos un resultado y tiene seriesName, ya tenemos la info de la serie, no hace falta volver a buscar
         if len(self.list_results) == 1 and "seriesName" in self.result:
-            logger.info("if")
             list_results.append(self.result)
         else:
-            logger.info("else")
             for e in self.list_results:
                 logger.info("e es: %s" % e)
                 logger.info("id es: %s" % e['id'])
@@ -755,7 +988,6 @@ class Tvdb:
                     dict_html = self.__get_by_id(e['id'], "en")
                 # todo mirar de ordenar por el año
                 list_results.append(dict_html)
-
 
         return list_results
 
@@ -813,9 +1045,16 @@ class Tvdb:
             elif k == 'siteRating':
                 ret_infoLabels['rating'] = float(v)
 
+            elif k == 'siteRatingCount':
+                ret_infoLabels['votes'] = v
+
             elif k == 'status':
                 # se traduce los estados de una serie
                 ret_infoLabels['status'] = DICT_STATUS.get(v, v)
+
+            # no soy partidario de poner la cadena como studio pero es como lo hace el scraper de manera genérica
+            elif k == 'network':
+                ret_infoLabels['studio'] = v
 
             elif k == 'image_poster':
                 # obtenemos la primera imagen de la lista
@@ -852,11 +1091,14 @@ class Tvdb:
 
                 ret_infoLabels['genre'] = genre_list
 
-            elif k == 'seriesName': # and items.'aliases':  # or k == 'name' or k == 'title':
-                ret_infoLabels['title'] = v #+ items['aliases'][0]
+            elif k == 'seriesName':  # or k == 'name' or k == 'title':
+                if len(origen.get('aliases', [])) > 0:
+                    ret_infoLabels['title'] = v + " " + origen.get('aliases', [''])[0]
+                else:
+                    ret_infoLabels['title'] = v
                 logger.info("el titulo es %s " % ret_infoLabels['title'])
 
-            elif k == 'cast':  # or k == 'temporada_cast' or k == 'episodio_guest_stars':
+            elif k == 'cast':
                 dic_aux = dict((name, character) for (name, character) in l_castandrole)
                 l_castandrole.extend([(p['name'], p['role']) for p in v if p['name'] not in dic_aux.keys()])
 
@@ -866,42 +1108,7 @@ class Tvdb:
 
         # Ordenar las listas y convertirlas en str si es necesario
         if l_castandrole:
-            ret_infoLabels['castandrole'] = sorted(l_castandrole, key=lambda tup: tup[0])
-
-        # todo revisar
-        logger.info("llegamos a la llamada de episode")
-        # Informacion Temporada/episodio
-        if ret_infoLabels['season']:
-            logger.info("tiene season")
-            # Si hay datos cargados de la temporada indicada
-            if ret_infoLabels['episode']:
-                logger.info("tiene episode")
-
-                data_episode = self.get_info_episode(otvdb_global.get_id(), int(ret_infoLabels['season']), int(ret_infoLabels['episode']))
-                logger.info("data_episode %s" % data_episode)
-                # todo repasar valores que hay que insertar en infoLabels
-                if data_episode:
-                    # todo mirar
-                    ret_infoLabels['title'] = data_episode['episodeName']
-
-                    ret_infoLabels['plot'] = data_episode.get("overview", "")
-                    ret_infoLabels["thumbnail"] = HOST_IMAGE + data_episode.get('filename', "")
-
-                    ret_infoLabels['director'] = ', '.join(sorted(data_episode.get('directors', [])))
-                    ret_infoLabels['writer'] = ', '.join(sorted(data_episode.get("writers", [])))
-                    ret_infoLabels["rating"] = data_episode.get("siteRating", "")
-
-                    if data_episode["firstAired"]:
-                        ret_infoLabels['premiered'] = data_episode["firstAired"].split("-")[2] + "/" + \
-                                                       data_episode["firstAired"].split("-")[1] + "/" + \
-                                                       data_episode["firstAired"].split("-")[0]
-
-            else:
-                data_season = self.get_images(otvdb_global.get_id(), "season", int(ret_infoLabels['season']))
-
-                # todo repasar valores que hay que insertar en infoLabels
-                if data_season and 'image_season' in data_season:
-                    ret_infoLabels['thumbnail'] = HOST_IMAGE + data_season['image_season'][0]['fileName']
+            ret_infoLabels['castandrole'] = l_castandrole
 
         logger.debug("ret_infoLabels %s" % ret_infoLabels)
 
