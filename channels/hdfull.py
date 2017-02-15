@@ -534,13 +534,17 @@ def findvideos(item):
     data_js = httptools.downloadpage("http://hdfull.tv/templates/hdfull/js/jquery.hdfull.view.min.js").data
     key = scrapertools.find_single_match(data_js, 'JSON.parse\(atob.*?substrings\((.*?)\)')
 
-    from lib.aadecode import decode as aadecode
-    data_js = httptools.downloadpage("http://hdfull.tv/js/providers.js").data.split(";ﾟωﾟ")
-    decode_aa = ""
-    for match in data_js:
-        decode_aa += aadecode(match)
+    data_js = httptools.downloadpage("http://hdfull.tv/js/providers.js").data
+    try:
+        data_js = jhexdecode(data_js)
+    except:
+        from lib.aadecode import decode as aadecode
+        data_js = data_js.split(";ﾟωﾟ")
+        decode_aa = ""
+        for match in data_js:
+            decode_aa += aadecode(match)
     
-    decode_aa = re.sub(r':(function.*?\})', r':"\g<1>"', decode_aa)
+        data_js = re.sub(r':(function.*?\})', r':"\g<1>"', decode_aa)
 
     data = agrupa_datos( httptools.downloadpage(item.url).data )
     data_obf = scrapertools.find_single_match(data, "var ad\s*=\s*'([^']+)'")
@@ -552,9 +556,9 @@ def findvideos(item):
 
     matches = []
     for match in data_decrypt:
-        prov = eval(scrapertools.find_single_match(decode_aa, 'p\[%s\]\s*=\s*(\{.*?\}"\})' % match["provider"]))
-        function = prov["l"].replace("code", match["code"])
-        url = scrapertools.find_single_match(function, "return ['\"](.*?);\}")
+        prov = eval(scrapertools.find_single_match(data_js, 'p\[%s\]\s*=\s*(\{.*?\}[\'"]\})' % match["provider"]))
+        function = prov["l"].replace("code", match["code"]).replace("var_1", match["code"])
+        url = scrapertools.find_single_match(function, "return ['\"](.*?)[;]*\}")
         url = re.sub(r'\'|"|\s|\+', '', url)
         matches.append([match["lang"], match["quality"], url, prov["e"]])
 
