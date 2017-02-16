@@ -3,20 +3,18 @@
 	<id>allpeliculas</id>
 	<name>Allpeliculas</name>
 	<language>es</language>
-	<update_url></update_url>
 	<active>true</active>
-	
-	<version>3</version>
 	<adult>false</adult>
 
+	<version>3</version>
 	<changes>
 		<change>
-			<date>27/01/17</date>
+			<date>16/02/2017</date>
 			<autor>Cmos</autor>
-			<description>Reparados enlaces a servidor vimeo</description>
+			<description>Añadidas nuevas opciones y servidores</description>
 		</change>
 		<change>
-			<date>19/03/16</date>
+			<date>19/03/2016</date>
 			<autor>Cmos</autor>
 			<description>Añadido soporte para la biblioteca y reparada busqueda global.</description>
 		</change>
@@ -25,6 +23,8 @@
 	<fanart></fanart>
 	<thumbnail>http://i.imgur.com/aWCDWtn.png</thumbnail>
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/allpeliculas.png</bannermenu>
+	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
+
 	<categories>
 		<category>movie</category>
 		<category>latino</category>

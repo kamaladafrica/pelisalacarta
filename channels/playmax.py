@@ -15,9 +15,8 @@ from core.item import Item
 from core import httptools
 from core import tmdb
 
-
-apikey = "0ea143087685e9e0a23f98ae"
 sid = config.get_setting("sid_playmax", "playmax")
+apikey = "0ea143087685e9e0a23f98ae"
 __modo_grafico__ = config.get_setting('modo_grafico', 'playmax')
 __perfil__ = int(config.get_setting('perfil', "playmax"))
 __menu_info__ = config.get_setting('menu_info', 'playmax')
@@ -83,7 +82,7 @@ def login():
     except:
         import traceback
         logger.info(traceback.format_exc())
-        return False, "Error durante el login. Comprueba tus credenciales"
+        return False, "Error en el login. Comprueba tus credenciales o si la web está operativa"
 
 
 def mainlist(item):
@@ -297,7 +296,9 @@ def fichas(item):
     matches = scrapertools.find_multiple_matches(data, patron)
     for scrapedurl, scrapedthumbnail, serie, episodio, scrapedtitle in matches:
         tipo = item.contentType
-        scrapedurl = host + scrapedurl
+        scrapedurl = host + scrapedurl.rsplit("-dc=")[0]
+        if not "-dc=" in scrapedurl:
+            scrapedurl += "-dc="
         scrapedthumbnail = host + scrapedthumbnail
         action = "findvideos"
         if __menu_info__:
@@ -335,9 +336,7 @@ def fichas(item):
 
 def episodios(item):
     logger.info()
-
     itemlist = []
-
     # Descarga la página
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<br>", "", data)
@@ -366,6 +365,7 @@ def episodios(item):
         title = "%s - %s" % (episodio, title)
         if "cvisto" in status:
             title = "[COLOR %s]%s[/COLOR] %s"  % (color5, u"\u0474".encode('utf-8'), title)
+
         new_item = Item(channel=item.channel, action="findvideos", title=title, url=url, thumbnail=item.thumbnail,
                         fanart=item.fanart, show=item.show, infoLabels=item.infoLabels, text_color=color2,
                         referer=item.url, contentType="episode")
@@ -490,7 +490,10 @@ def findvideos(item):
         except:
             pass
 
-    itemlist.sort(key=lambda it: (it.order, it.calidad, it.like), reverse=True)
+    if not config.get_setting("order_web", "playmax"):
+        itemlist.sort(key=lambda it: (it.order, it.calidad, it.like), reverse=True)
+    else:
+        itemlist.sort(key=lambda it: it.order, reverse=True)
     if itemlist:
         itemlist.extend(acciones_fichas(item, sid, ficha))
 
@@ -587,7 +590,9 @@ def menu_info(item):
     ficha = scrapertools.find_single_match(item.url, '-f(\d+)-')
     if not ficha:
         ficha = scrapertools.find_single_match(item.url, 'f=(\d+)')
+
     itemlist.extend(acciones_fichas(item, sid, ficha, season=True))
+    
     return itemlist
 
 
@@ -745,7 +750,7 @@ def marcar(item):
         elif "Seguir" in item.title:
             url = "%s/data.php?mode=marcar_ficha&apikey=%s&sid=%s&ficha=%s&tipo=%s" \
                   % (host, apikey, sid, item.ficha, "2")
-            data = httptools.downloadpage(url).data
+            data = httptools.downloadpage(url)
             url = "%s/data.php?mode=marcar_ficha&apikey=%s&sid=%s&ficha=%s&tipo=%s" \
                   % (host, apikey, sid, item.ficha, "1")
 
@@ -758,6 +763,7 @@ def marcar(item):
 def play(item):
     logger.info()
     from core import servertools
+
     devuelve = servertools.findvideos(item.url, True)
     if devuelve:
         item.url = devuelve[0][1]

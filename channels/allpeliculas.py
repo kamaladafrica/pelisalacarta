@@ -7,8 +7,8 @@
 import string
 
 from core import config
-from core import logger
 from core import httptools
+from core import logger
 from core import scrapertools
 from core import servertools
 from core.item import Item
@@ -16,7 +16,6 @@ from core.item import Item
 
 __modo_grafico__ = config.get_setting('modo_grafico', "allpeliculas")
 __perfil__ = int(config.get_setting('perfil', "allpeliculas"))
-
 
 # Fijar perfil de color
 perfil = [['0xFFFFE6CC', '0xFFFFCE9C', '0xFF994D00'],
@@ -27,7 +26,7 @@ color1, color2, color3 = perfil[__perfil__]
 IDIOMAS = {"Castellano": "CAST", "Latino": "LAT", "Subtitulado": "VOSE", "Ingles": "VO"}
 SERVERS = {"26": "powvideo", "45": "okru", "75": "openload", "12": "netutv", "65": "thevideos",
            "67": "spruto", "71": "stormo", "73": "idowatch", "48": "okru", "55": "openload",
-           "20": "nowvideo"}
+           "20": "nowvideo", "84": "fastplay", "96": "raptu", "94": "tusfiles"}
 
 
 def mainlist(item):
@@ -36,9 +35,9 @@ def mainlist(item):
     item.text_color = color1
 
     itemlist.append(item.clone(title="Películas", action="lista", fanart="http://i.imgur.com/c3HS8kj.png",
-                               url="http://allpeliculas.com/Movies/fullView/1/0/&ajax=1"))
+                               url="http://allpeliculas.co/Movies/fullView/1/0/&ajax=1"))
     itemlist.append(item.clone(title="Series", action="lista",  fanart="http://i.imgur.com/9loVksV.png", extra="tv",
-                               url="http://allpeliculas.com/Movies/fullView/1/86/?ajax=1&withoutFilter=1",))
+                               url="http://allpeliculas.co/Movies/fullView/1/86/?ajax=1&withoutFilter=1",))
     itemlist.append(item.clone(title="Géneros", action="subindice", fanart="http://i.imgur.com/ymazCWq.jpg"))
     itemlist.append(item.clone(title="Índices", action="indices", fanart="http://i.imgur.com/c3HS8kj.png"))
     itemlist.append(item.clone(title="", action=""))
@@ -60,7 +59,7 @@ def search(item, texto):
     logger.info()
     if texto != "":
         texto = texto.replace(" ", "+")
-    item.url = "http://allpeliculas.com/Search/advancedSearch?searchType=movie&movieName=" + texto + "&ajax=1"
+    item.url = "http://allpeliculas.co/Search/advancedSearch?searchType=movie&movieName=" + texto + "&ajax=1"
     try:
         return busqueda(item)
     except:
@@ -76,7 +75,8 @@ def newest(categoria):
     item = Item()
     try:
         if categoria == "peliculas":
-            item.url = "http://allpeliculas.com/Movies/fullView/1/0/&ajax=1"
+            item.url = "http://allpeliculas.co/Movies/fullView/1/0/&ajax=1"
+            item.action = "lista"
             itemlist = lista(item)
 
             if itemlist[-1].action == "lista":
@@ -102,13 +102,12 @@ def busqueda(item):
     data = data.replace("\n", "").replace("\t", "")
     data = scrapertools.decodeHtmlentities(data)
 
-    patron = '<img class="poster" src="([^"]+)".*?'
-    patron += '<div class="vote-div-count".*?>(.*?)/.*?'
-    patron += '<a class="movie-list-link" href="([^"]+)" title="([^"]+)".*?'
-    patron += 'Year:</b> (.*?) </p>.*?Género:</b> (.*?)</p>'
+    patron = '<img class="poster" src="([^"]+)".*?<div class="vote-div-count".*?>(.*?)/.*?' \
+             '<a class="movie-list-link" href="([^"]+)" title="([^"]+)".*?' \
+             'Year:</b> (.*?) </p>.*?Género:</b> (.*?)</p>'
     matches = scrapertools.find_multiple_matches(data, patron)
     for thumbnail, vote, url, title, year, genre in matches:
-        url = "http://allpeliculas.com" + url.replace("#", "") + "&ajax=1"
+        url = "http://allpeliculas.co" + url.replace("#", "") + "&ajax=1"
         thumbnail = thumbnail.replace("/105/", "/400/").replace("/141/", "/600/").replace(" ", "%20")
         titulo = title + " (" + year + ")"
         item.infoLabels['year'] = year
@@ -158,13 +157,13 @@ def lista(item):
 
     bloque = scrapertools.find_single_match(data, '<div class="movies-block-main"(.*?)<div class="movies-'
                                                   'long-pagination"')
-    patron = '<div class="thumb"><img src="([^"]+)".*?'
-    patron += '<a href="([^"]+)".*?class="n-movie-trailer">([^<]+)</span>.*?'
-    patron += '<div class="imdb"><span>(.*?)</span>.*?'
-    patron += '<span>Year.*?">(.*?)</a>.*?<span>(?:Género|Genre).*?<span>(.*?)</span>.*?'
-    patron += '<span>Language.*?<span>(.*?)</span>.*?'
-    patron += '<div class="info-full-text".*?>(.*?)<.*?'
-    patron += '<div class="views">(.*?)<.*?<div class="movie-block-title".*?>(.*?)<'
+    patron = '<div class="thumb"><img src="([^"]+)".*?<a href="([^"]+)".*?' \
+             '(?:class="n-movie-trailer">([^<]+)<\/span>|<div class="imdb-votes">)' \
+             '.*?<div class="imdb"><span>(.*?)</span>.*?<span>Year.*?">(.*?)</a>.*?<span>' \
+             '(?:Género|Genre).*?<span>(.*?)</span>.*?<span>Language.*?<span>(.*?)</span>.*?' \
+             '<div class="info-full-text".*?>(.*?)<.*?<div class="views">(.*?)<.*?' \
+             '<div class="movie-block-title".*?>(.*?)<'
+
     if bloque == "":
         bloque = data[:]
     matches = scrapertools.find_multiple_matches(bloque, patron)
@@ -268,16 +267,20 @@ def findvideos(item):
     for calidad, servidor_num, language, url in matches:
         try:
             server = SERVERS[servidor_num]
-            servers_module = __import__("servers."+server)
+            if server != "tusfiles":
+                servers_module = __import__("servers."+server)
         except:
             server = servertools.get_server_from_url(url)
 
-        if server == "vimeo":
-            url += "|%s" % item.url
         if server != "directo":
+            if server == "vimeo":
+                url += "|" + item.url
+            elif server == "tusfiles":
+                url = "http://tusfiles.org/?%s" % url
+                server = "directo"
             idioma = IDIOMAS.get(idiomas_videos.get(language))
             titulo = server.capitalize()+"  ["+idioma+"] ["+calidad_videos.get(calidad)+"]"
-            itemlist.append(item.clone(action="play", title=titulo, url=url, extra=idioma))
+            itemlist.append(item.clone(action="play", title=titulo, url=url, extra=idioma, server=server))
 
     #Enlace Descarga
     patron = '<span class="movie-downloadlink-list" id_movies_types="([^"]+)" id_movies_servers="([^"]+)".*?id_lang=' \
@@ -292,12 +295,14 @@ def findvideos(item):
             server = servertools.get_server_from_url(url)
 
         if server != "directo":
+            if server == "vimeo":
+                url += "|" + item.url
             if config.get_setting("hidepremium") == "true":
                 mostrar_server = servertools.is_server_enabled(server)
             if mostrar_server:
                 idioma = IDIOMAS.get(idiomas_videos.get(language))
                 titulo = "["+server.capitalize()+"]  ["+idioma+"] ["+calidad_videos.get(calidad)+"]"
-                itemlist.append(item.clone(action="play", title=titulo, url=url, extra=idioma))
+                itemlist.append(item.clone(action="play", title=titulo, url=url, extra=idioma, server=server))
 
     itemlist.sort(key=lambda item: (item.extra, item.server))
     if itemlist:
@@ -366,7 +371,6 @@ def episodios(item):
     capitulos = []
     for  title in matches:
        if not title in capitulos:
-          logger.info(title)
           episode = int(title.split(" ")[1])
           capitulos.append(title)
           itemlist.append(item.clone(action="findvideostv", title=title, contentEpisodeNumber=episode, contentType="episode"))
@@ -397,27 +401,34 @@ def findvideostv(item):
     data = data.replace("\n", "").replace("\t", "")
     data = scrapertools.decodeHtmlentities(data)
 
-    patron = '<span class="movie-online-list" id_movies_types="([^"]+)" id_movies_servers="([^"]+)".*?episode="'+str(item.infoLabels['episode']) +'" season="' + \
-             str(item.infoLabels['season']) + '" id_lang="([^"]+)".*?online-link="([^"]+)"'
-
+    patron = '<span class="movie-online-list" id_movies_types="([^"]+)" id_movies_servers="([^"]+)".*?episode="%s' \
+             '" season="%s" id_lang="([^"]+)".*?online-link="([^"]+)"' \
+             % (str(item.infoLabels['episode']), str(item.infoLabels['season']))
     matches = scrapertools.find_multiple_matches(data, patron)
     for quality, servidor_num, language, url in matches:
         try:
             server = SERVERS[servidor_num]
-            servers_module = __import__("servers."+server)
+            if server != "tusfiles":
+                servers_module = __import__("servers."+server)
         except:
             server = servertools.get_server_from_url(url)
 
-        if server == "vimeo":
-            url += "|%s" % item.url
         if server != "directo":
+            if server == "vimeo":
+                url += "|" + item.url
+            elif server == "tusfiles":
+                url = "http://tusfiles.org/?%s" % url
+                server = "directo"
             idioma = IDIOMAS.get(idiomas_videos.get(language))
             titulo = server.capitalize()+" ["+idioma+"] ("+calidad_videos.get(quality)+")"
 
-            itemlist.append(item.clone(action="play", title=titulo, url=url, contentType="episode"))
+            itemlist.append(item.clone(action="play", title=titulo, url=url, contentType="episode", server=server))
 
     #Enlace Descarga
-    patron = '<span class="movie-downloadlink-list" id_movies_types="([^"]+)" id_movies_servers="([^"]+)".*?episode="'+str(item.infoLabels['episode']) +'" season="'+str(item.infoLabels['season']) + '" id_lang="([^"]+)".*?online-link="([^"]+)"'
+    patron = '<span class="movie-downloadlink-list" id_movies_types="([^"]+)" id_movies_servers="([^"]+)".*?episode="%s' \
+             '" season="%s" id_lang="([^"]+)".*?online-link="([^"]+)"' \
+             % (str(item.infoLabels['episode']), str(item.infoLabels['season']))
+    #patron = '<span class="movie-downloadlink-list" id_movies_types="([^"]+)" id_movies_servers="([^"]+)".*?episode="'+str(item.infoLabels['episode']) +'" season="'+str(item.infoLabels['season']) + '" id_lang="([^"]+)".*?online-link="([^"]+)"'
     matches = scrapertools.find_multiple_matches(data, patron)
     for quality, servidor_num, episode, language, url in matches:
         mostrar_server = True
@@ -428,12 +439,14 @@ def findvideostv(item):
             server = servertools.get_server_from_url(url)
 
         if server != "directo":
+            if server == "vimeo":
+                url += "|" + item.url
             if config.get_setting("hidepremium") == "true":
                 mostrar_server = servertools.is_server_enabled(server)
             if mostrar_server:
                 idioma = IDIOMAS.get(idiomas_videos.get(language))
                 titulo = server.capitalize()+" ["+idioma+"] ("+calidad_videos.get(quality)+")"
-                itemlist.append(item.clone(action="play", title=titulo, url=url))
+                itemlist.append(item.clone(action="play", title=titulo, url=url, contentType="episode", server=server))
 
     itemlist.sort(key=lambda item: (int(item.infoLabels['episode']), item.title))
     try:
@@ -448,9 +461,20 @@ def findvideostv(item):
 def play(item):
     logger.info()
     itemlist = []
-    videolist = servertools.find_video_items(data=item.url)
-    for video in videolist:
-        itemlist.append(item.clone(url=video.url, server=video.server))
+    if item.server == "directo" and "tusfiles" in item.url:
+        data = httptools.downloadpage(item.url).data
+        matches = scrapertools.find_multiple_matches(data, '"file"\s*:\s*"([^"]+)","type"\s*:\s*"([^"]+)"' \
+                                                           ',"label"\s*:\s*"([^"]+)"')
+        for video_url, tipo, calidad in matches:
+            itemlist.append([".%s %s [directo]" % (tipo, calidad), video_url])
+        try:
+            itemlist.sort(key=lambda it:int(it[0].split("p ", 1)[0].rsplit(" ")[1]))
+        except:
+            pass
+    else:
+        devuelve = servertools.findvideosbyserver(item.url, item.server)
+        if devuelve:
+            itemlist.append(item.clone(url=devuelve[0][1]))
 
     return itemlist
 
@@ -464,7 +488,7 @@ def dict_videos():
                                                    '<select name="language".*?<option value="" selected(.*?)</select>')
     matches = scrapertools.find_multiple_matches(bloque_idioma, '<option value="([^"]+)" >(.*?)</option>')
     for key1, key2 in matches:
-        idiomas_videos[key1] = key2.capitalize()
+        idiomas_videos[key1] = unicode(key2, "utf8").capitalize().encode("utf8")
     bloque_calidad = scrapertools.find_single_match(data, '<select name="movieTypeId".*?<option value="" selected(.*?)'
                                                           '</select>')
     matches = scrapertools.find_multiple_matches(bloque_calidad, '<option value="([^"]+)" >(.*?)</option>')
@@ -503,7 +527,7 @@ def dict_indices():
     for key1, key2 in matches:
         if key2 == "INGLES":
             key2 = "Versión original"
-        indice_idioma[key1] = key2.capitalize()
+        indice_idioma[key1] = unicode(key2, "utf8").capitalize().encode("utf8")
 
     bloque_calidad = scrapertools.find_single_match(data, '<select name="movieTypeId".*?<option value="" selected(.*?)'
                                                           '</select>')
