@@ -139,7 +139,7 @@ def dec(item):
 
 
 def findvideos(item):
-    servidor = {"http://uptobox.com/":"uptobox","http://userscloud.com/":"userscloud","https://my.pcloud.com/publink/show?code=":"pcloud","http://thevideos.tv/":"thevideos","http://ul.to/":"uploadedto","http://turbobit.net/":"turbobit","http://www.cinecalidad.com/protect/v.html?i=":"cinecalidad","http://www.mediafire.com/download/":"mediafire","https://www.youtube.com/watch?v=":"youtube","http://thevideos.tv/embed-":"thevideos","//www.youtube.com/embed/":"youtube","http://ok.ru/video/":"okru","http://ok.ru/videoembed/":"okru","http://www.cinemaqualidade.com/protect/v.html?i=":"cinemaqualidade.com","http://usersfiles.com/":"usersfiles","https://depositfiles.com/files/":"depositfiles","http://www.nowvideo.sx/video/":"nowvideo","http://vidbull.com/":"vidbull"}
+    servidor = {"http://uptobox.com/":"uptobox","http://userscloud.com/":"userscloud","https://my.pcloud.com/publink/show?code=":"pcloud","http://thevideos.tv/":"thevideos","http://ul.to/":"uploadedto","http://turbobit.net/":"turbobit","http://www.cinecalidad.com/protect/v.html?i=":"cinecalidad","http://www.mediafire.com/download/":"mediafire","https://www.youtube.com/watch?v=":"youtube","http://thevideos.tv/embed-":"thevideos","//www.youtube.com/embed/":"youtube","http://ok.ru/video/":"okru","http://ok.ru/videoembed/":"okru","http://www.cinemaqualidade.com/protect/v.html?i=":"cinemaqualidade.com","http://usersfiles.com/":"usersfiles","https://depositfiles.com/files/":"depositfiles","http://www.nowvideo.sx/video/":"nowvideo","http://vidbull.com/":"vidbull","http://filescdn.com/":"filescdn","http://www.yourupload.com/watch/":"yourupload"}
     logger.info("pelisalacarta.channels.cinecalidad links")
     itemlist=[]
     data = scrapertools.cache_page(item.url)
@@ -149,18 +149,23 @@ def findvideos(item):
     matches = re.compile(patron,re.DOTALL).findall(data)
     recomendados = ["uptobox","thevideos","nowvideo","pcloud"]
     for scrapedurl,scrapedtitle in matches:
-        if dec(scrapedurl) in servidor: 
-           url = dec(scrapedurl)+dec(scrapedtitle)
-           title = "Ver "+item.contentTitle+" en "+servidor[dec(scrapedurl)].upper()
-           if (servidor[dec(scrapedurl)]) in recomendados:
-              title=title+"[COLOR limegreen] [I] (Recomedado) [/I] [/COLOR]"
+        if dec(scrapedurl) in servidor:
+
+          if 'yourupload' in dec(scrapedurl):
+            url = dec(scrapedurl).replace('watch','embed')+dec(scrapedtitle)
+          else:
+            url = dec(scrapedurl)+dec(scrapedtitle)
+
+          title = "Ver "+item.contentTitle+" en "+servidor[dec(scrapedurl)].upper()
+          if (servidor[dec(scrapedurl)]) in recomendados:
+            title=title+"[COLOR limegreen] [I] (Recomedado) [/I] [/COLOR]"
 #           if (servidor[dec(scrapedurl)])=='pcloud':
 #              thumbnail='https://pbs.twimg.com/profile_images/687592526694473728/bCQCZC7b.png'
 #           else:
-           thumbnail = servertools.guess_server_thumbnail(servidor[dec(scrapedurl)])
-           plot = ""
-           if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-           itemlist.append( Item(channel=item.channel, action="play" , title=title ,fulltitle = item.title, url=url, thumbnail=thumbnail, plot=plot,extra=item.thumbnail, server=servidor[dec(scrapedurl)]))
+          thumbnail = servertools.guess_server_thumbnail(servidor[dec(scrapedurl)])
+          plot = ""
+          if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
+          itemlist.append( Item(channel=item.channel, action="play" , title=title ,fulltitle = item.title, url=url, thumbnail=thumbnail, plot=plot,extra=item.thumbnail, server=servidor[dec(scrapedurl)]))
     
     if config.get_library_support() and len(itemlist) > 0 and item.extra !='findvideos' :
         itemlist.append(Item(channel=item.channel, title='[COLOR yellow]Añadir esta pelicula a la biblioteca[/COLOR]', url=item.url,
