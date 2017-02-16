@@ -260,7 +260,7 @@ def idioma(item):
     
     itemlist.append( Item(channel=item.channel, title="Original", action="temporadas", url=item.url, thumbnail=thumben, fanart='', extra1 = 'en', fulltitle = item.title, thumbvid = thumbvid, contentSerieName=item.contentSerieName))
 
-    itemlist.append( Item(channel=item.channel, title="Original Subtitlado en Ingles", action="temporadas", url=item.url, thumbnail=thumben, fanart='', extra1 = 'vosi', fulltitle = item.title, thumbvid = thumbvid, contentSerieName=item.contentSerieName))
+    itemlist.append( Item(channel=item.channel, title="Original Subtitulado en Ingles", action="temporadas", url=item.url, thumbnail=thumben, fanart='', extra1 = 'vosi', fulltitle = item.title, thumbvid = thumbvid, contentSerieName=item.contentSerieName))
 
     itemlist.append( Item(channel=item.channel, title="Todo", action="temporadas", url=item.url, thumbnail=thumbtodos, fanart='', extra1 = 'all', fulltitle = item.title, thumbvid = thumbvid, contentSerieName=item.contentSerieName))
 
@@ -326,11 +326,11 @@ def findvideos(item):
 
 
 def play(item):
-    logger.info()
+    logger.info('mundoflv.py play')
 
     data = scrapertools.cache_page(item.url)
-    if 'streamplay' not in item.server:
-       url = scrapertools.find_single_match(data, '<(?:IFRAME|iframe).*?(?:SRC|src)=*([^ ]+)')
+    if 'streamplay' not in item.server or 'streame' not in item.server:
+       url = scrapertools.find_single_match(data, '<(?:IFRAME|iframe).*?(?:SRC|src)=*([^ ]+) (?!style|STYLE)')
     else:
        url = scrapertools.find_single_match(data, '<meta http-equiv="refresh" content="0; url=([^"]+)">')
 
