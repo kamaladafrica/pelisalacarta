@@ -140,4 +140,18 @@
 		<lvalues>Título localizado</lvalues>
 		<lvalues>Título original</lvalues>
 	</settings>
+	<settings>
+		<id>search_new_content</id>
+		<type>list</type>
+		<label>Realizar búsqueda de contenido en</label>
+		<default>0</default>
+		<lvalues>La carpeta de cada serie</lvalues>
+		<lvalues>Toda la biblioteca</lvalues>
+	</settings>
+	<settings>
+		<id>clean_after_update</id>
+		<type>bool</type>
+		<label>    Limpiar la biblioteca tras la búsqueda de contenido</label>
+		<default>false</default>
+	</settings>
 </channel>

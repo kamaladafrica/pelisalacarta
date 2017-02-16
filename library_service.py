@@ -235,6 +235,8 @@ def check_for_update(overwrite=True):
     logger.info("Overwrite? -> " + str(overwrite))
     p_dialog = None
     serie_actualizada = False
+    update_when_finished = False
+    library_updated = False
     hoy = datetime.date.today()
 
     overwrite_everything = False
@@ -333,8 +335,26 @@ def check_for_update(overwrite=True):
                     filetools.write(tvshow_file, head_nfo + serie.tojson())
 
                 if serie_actualizada:
-                    # Actualizamos la biblioteca de Kodi
-                    xbmc_library.update(folder=filetools.basename(path))
+                    if config.get_setting("search_new_content", "biblioteca") == 0:
+                        # Buscamos nuevo contenido en la carpeta de la serie
+                        xbmc_library.update(folder=filetools.basename(path))
+                        library_updated = True
+                    else:
+                        update_when_finished = True
+
+            # Buscar contenido al final de la actualizacion de la biblioteca
+            if config.get_setting("search_new_content", "biblioteca") == 1:
+                if update_when_finished:
+                    # Buscamos nuevo contenido en toda la biblioteca de Kodi
+                    import xbmc
+                    xbmc.executebuiltin('UpdateLibrary(video)')
+                    library_updated = True
+
+            # Se limpia la biblioteca de Kodi
+            if config.get_setting("clean_after_update", "biblioteca") is True:
+                if library_updated:
+                    import xbmc
+                    xbmc.executebuiltin('CleanLibrary(video)')
 
             p_dialog.close()
 
