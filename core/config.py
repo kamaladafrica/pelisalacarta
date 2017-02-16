@@ -51,7 +51,6 @@ def get_library_support():
 
 def get_system_platform():
     """ fonction: pour recuperer la platform que xbmc tourne """
-    import xbmc
     platform = "unknown"
     if xbmc.getCondVisibility("system.platform.linux"):
         platform = "linux"
@@ -107,7 +106,7 @@ def get_setting(name, channel=""):
         # xbmc.log("config.get_setting reading main setting '"+name+"'")
         value = __settings__.getSetting(channel + name)
         # Translate Path if start with "special://"
-        if value.startswith("special://") and name != "librarypath":
+        if value.startswith("special://") and "librarypath" not in name:
             value = xbmc.translatePath(value)
 
         # xbmc.log("config.get_setting -> '"+value+"'")
@@ -238,16 +237,6 @@ def verify_directories_created():
 
         set_setting("downloadlistpath", download_list_path)
 
-    # Force bookmark path if empty
-    bookmark_path = get_setting("bookmarkpath")
-    if bookmark_path == "":
-        if is_xbmc():
-            bookmark_path = "special://profile/addon_data/plugin.video." + PLUGIN_NAME + "/downloads/list"
-        else:
-            bookmark_path = filetools.join(get_data_path(), "bookmarks")
-
-        set_setting("bookmarkpath", bookmark_path)
-
     # Create data_path if not exists
     if not os.path.exists(get_data_path()):
         logger.debug("Creating data_path " + get_data_path())
@@ -279,18 +268,6 @@ def verify_directories_created():
         if not download_list_path.lower().startswith("smb") and not filetools.exists(download_list_path):
             logger.debug("Creating download_list_path" + texto + ": " + download_list_path)
             filetools.mkdir(download_list_path)
-
-        if bookmark_path.startswith("special://"):
-            # Create bookmark_path if not exists
-            bookmark_path = xbmc.translatePath(bookmark_path)
-            texto = "(from special)"
-        else:
-            texto = ""
-
-        # TODO si tiene smb se debería poder dejar que cree? filetools permite crear carpetas para SMB
-        if not bookmark_path.lower().startswith("smb") and not filetools.exists(bookmark_path):
-            logger.debug("Creating bookmark_path" + texto + ": " + bookmark_path)
-            filetools.mkdir(bookmark_path)
 
     # Create library_path if not exists
     # TODO si tiene smb se debería poder dejar que cree? filetools permite crear carpetas para SMB
