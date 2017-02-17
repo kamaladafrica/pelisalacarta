@@ -182,7 +182,7 @@ def get_temporadas(item):
 
     # Menu contextual: Releer tvshow.nfo
     head_nfo, item_nfo = library.read_nfo(item.nfo)
-            
+
     if config.get_setting("no_pile_on_seasons", "biblioteca") == 2: # Siempre
         return get_episodios(item)
 
@@ -234,10 +234,10 @@ def get_episodios(item):
 
     # Obtenemos los archivos de los episodios
     raiz, carpetas_series, ficheros = filetools.walk(item.path).next()
-    
+
     # Menu contextual: Releer tvshow.nfo
     head_nfo, item_nfo = library.read_nfo(item.nfo)
-    
+
     # Crear un item en la lista para cada strm encontrado
     for i in ficheros:
         if i.endswith('.strm'):
@@ -330,7 +330,7 @@ def findvideos(item):
         #Soporte para rutas relativas en descargas
         if filetools.is_relative(item_json.url):
           item_json.url = filetools.join(library.LIBRARY_PATH,item_json.url)
-        
+
         del list_canales['descargas']
 
         # Comprobar q el video no haya sido borrado
@@ -403,14 +403,19 @@ def findvideos(item):
             server.channel = "biblioteca"
             server.nfo = item.nfo
             server.strm_path = item.strm_path
-            server.title = "%s: %s" % (nom_canal.capitalize(), server.title)
+
+            # Se añade el nombre del canal si se desea
+            if config.get_setting("quit_channel_name", "biblioteca") == 0:
+                server.title = "%s: %s" % (nom_canal.capitalize(), server.title)
+            else:
+                pass
 
             server.infoLabels = item_json.infoLabels
 
             if not server.thumbnail:
                 server.thumbnail = item.thumbnail
 
-            #logger.debug("server:\n%s" % server.tostring('\n'))
+            # logger.debug("server:\n%s" % server.tostring('\n'))
             itemlist.append(server)
 
     # return sorted(itemlist, key=lambda it: it.title.lower())

@@ -97,7 +97,9 @@ def mark_auto_as_watched(item):
         # Sincronizacion silenciosa con Trakt cuando termina la reproduccion
         if sync_with_trakt:
             condicion = config.get_setting("sync_trakt", "biblioteca")
-            if condicion == 1 or condicion == 3:
+            condicion_1 = config.get_setting("sync_trakt_watched", "biblioteca")
+            condicion_2 = config.get_setting("sync_trakt_new_tvshow", "biblioteca")
+            if condicion_1 = True or condicion_2 == True:
                 sync_trakt()
 
     # Si esta configurado para marcar como visto

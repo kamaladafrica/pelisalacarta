@@ -65,6 +65,15 @@
 	</settings>
 
 	<settings>
+		<id>quit_channel_name</id>
+		<type>bool</type>
+		<label>Lista de enlaces: Quitar el nombre del canal</label>
+		<enabled>true</enabled>
+		<visible>true</visible>
+		<default>false</default>
+	</settings>
+
+	<settings>
 		<id>library_mode</id>
 		<type>list</type>
 		<label>Ubicación de Base de datos</label>
@@ -113,15 +122,26 @@
 	</settings>
 	<settings>
 		<id>sync_trakt</id>
-		<type>list</type>
-		<label>Sincronizar con Trakt</label>
-		<default>0</default>
-		<enabled>eq(-2,true)</enabled>
+		<type>label</type>
+		<label>Sincronización con Trakt</label>
+		<enabled>true</enabled>
 		<visible>true</visible>
-		<lvalues>No</lvalues>
-		<lvalues>Tras marcar como visto un capitulo</lvalues>
-		<lvalues>Al añadir una serie a la biblioteca</lvalues>
-		<lvalues>Siempre</lvalues>
+	</settings>
+	<settings>
+		<id>sync_trakt_watched</id>
+		<type>bool</type>
+		<label>    Tras marcar como visto el episodio</label>
+		<default>false</default>
+		<enabled>true</enabled>
+		<visible>eq(-3,true)</visible>
+	</settings>
+	<settings>
+		<id>sync_trakt_new_tvshow</id>
+		<type>bool</type>
+		<label>    Al añadir una serie a la biblioteca</label>
+		<default>false</default>
+		<enabled>true</enabled>
+		<visible>eq(-4,true)</visible>
 	</settings>
 
 	<settings>

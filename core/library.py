@@ -177,7 +177,7 @@ def save_library_movie(item):
     p_dialog = platformtools.dialog_progress('pelisalacarta', 'Añadiendo película...')
 
     base_name = filetools.validate_path(item.contentTitle).lower()
-    
+
     for raiz, subcarpetas, ficheros in filetools.walk(MOVIES_PATH):
         for c in subcarpetas:
             if c.endswith("[%s]" % _id):
@@ -191,15 +191,15 @@ def save_library_movie(item):
         if not filetools.mkdir(path):
             logger.debug("No se ha podido crear el directorio")
             return 0, 0, -1
-            
+
     nfo_path = filetools.join(path, "%s [%s].nfo" % (base_name, _id))
     strm_path = filetools.join(path, "%s.strm" % base_name)
     json_path = filetools.join(path, ("%s [%s].json" % (base_name, item.channel.lower())))
-    
+
     nfo_exists = filetools.exists(nfo_path)
     strm_exists = filetools.exists(strm_path)
     json_exists = filetools.exists(json_path)
-    
+
     if not nfo_exists:
         # Creamos .nfo si no existe
         logger.info("Creando .nfo: " + nfo_path)
@@ -226,7 +226,7 @@ def save_library_movie(item):
 
     # Solo si existen item_nfo y .strm continuamos
     if item_nfo and strm_exists:
-        
+
         if json_exists:
             logger.info("El fichero existe. Se sobreescribe")
             sobreescritos += 1
@@ -680,3 +680,10 @@ def add_serie_to_library(item, channel=None):
         platformtools.dialog_ok("Biblioteca", "La serie se ha añadido a la biblioteca")
         logger.info("[launcher.py] Se han añadido %s episodios de la serie %s a la biblioteca" %
                     (insertados, item.show))
+        if config.is_xbmc():
+            from platformcode import xbmc_library
+            condicion_1 = config.get_setting("sync_trakt_watched", "biblioteca")
+            condicion_2 = config.get_setting("sync_trakt_new_tvshow", "biblioteca")
+
+            if condicion_1 == True or condicion_2 == False:
+                xbmc_library.sync_trakt()
