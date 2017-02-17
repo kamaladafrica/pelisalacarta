@@ -164,4 +164,12 @@
 		<lvalues>TheMovieDB.org</lvalues>
         <lvalues>TheTvDB.com</lvalues>
 	</settings>
+	<settings>
+		<id>tvdb_retry_eng</id>
+		<type>bool</type>
+		<label>        Si no hay resultados buscar también en Inglés</label>
+		<default>true</default>
+		<enabled>eq(-1,TheTvDB.com)</enabled>
+		<visible>true</visible>
+	</settings>
 </channel>

@@ -540,7 +540,7 @@ class Tvdb:
         if kwargs.get('tvdb_id', ''):
             # Busqueda por identificador tvdb
             self.__get_by_id(kwargs.get('tvdb_id', ''))
-            if not self.list_results:
+            if not self.list_results and config.get_setting("tvdb_retry_eng", "biblioteca"):
                 from platformcode import platformtools
                 platformtools.dialog_notification("No se ha encontrado en idioma '%s'" % DEFAULT_LANG,
                                                   "Se busca en idioma 'en'")
@@ -550,7 +550,7 @@ class Tvdb:
         elif self.search_name:
             # Busqueda por texto
             self.__search(kwargs.get('search', ''), kwargs.get('imdb_id', ''), kwargs.get('zap2it_id', ''))
-            if not self.list_results:
+            if not self.list_results and config.get_setting("tvdb_retry_eng", "biblioteca"):
                 from platformcode import platformtools
                 platformtools.dialog_notification("No se ha encontrado en idioma '%s'" % DEFAULT_LANG,
                                                   "Se busca en idioma 'en'")
