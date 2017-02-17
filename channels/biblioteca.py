@@ -304,13 +304,11 @@ def findvideos(item):
     content_title = filter(lambda c: c not in ":*?<>|\/", item.contentTitle).strip().lower()
 
     if item.contentType == 'movie':
-        item.strm_path = filetools.join(library.MOVIES_PATH, item.strm_path.strip('\\/'))
-        item.strm_path = item.strm_path.replace('\\',os.sep).replace('/',os.sep)
+        item.strm_path = filetools.join(library.MOVIES_PATH, item.strm_path)
         path_dir = os.path.dirname(item.strm_path)
         item.nfo = filetools.join(path_dir, os.path.basename(path_dir) + ".nfo")
     else:
-        item.strm_path = filetools.join(library.TVSHOWS_PATH, item.strm_path.strip('\\/'))
-        item.strm_path = item.strm_path.replace('\\', os.sep).replace('/', os.sep)
+        item.strm_path = filetools.join(library.TVSHOWS_PATH, item.strm_path)
         path_dir = os.path.dirname(item.strm_path)
         item.nfo = filetools.join(path_dir, 'tvshow.nfo')
 
@@ -407,8 +405,6 @@ def findvideos(item):
             # Se añade el nombre del canal si se desea
             if config.get_setting("quit_channel_name", "biblioteca") == 0:
                 server.title = "%s: %s" % (nom_canal.capitalize(), server.title)
-            else:
-                pass
 
             server.infoLabels = item_json.infoLabels
 
