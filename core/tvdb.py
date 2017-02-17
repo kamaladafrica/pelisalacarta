@@ -257,8 +257,7 @@ def set_infoLabels_item(item):
             item.infoLabels['mediatype'] = 'season'
             data_season = otvdb_global.get_images(otvdb_global.get_id(), "season", int_season)
 
-            # todo repasar valores que hay que insertar en infoLabels
-            if data_season and 'image_season'in data_season:
+            if data_season and 'image_season' in data_season:
                 item.thumbnail = HOST_IMAGE + data_season['image_season'][0]['fileName']
 
                 return len(item.infoLabels)
@@ -273,10 +272,8 @@ def set_infoLabels_item(item):
         elif item.infoLabels['imdb_id']:
             otvdb = Tvdb(imdb_id=item.infoLabels['imdb_id'])
 
-        # # buscar con otros codigos
-        # elif item.infoLabels['zap2it_id']:
-        #     # ...Busqueda por tvdb_id
-        #     otvdb = Tvdb(zap2it_id=item.infoLabels['zap2it_id'])
+        elif item.infoLabels['zap2it_id']:
+            otvdb = Tvdb(zap2it_id=item.infoLabels['zap2it_id'])
 
         # No se ha podido buscar por ID... se hace por título
         if otvdb is None:
@@ -524,9 +521,7 @@ def set_nfo_casting(info_nfo, casting):
     return info_nfo
 
 
-# TODO DOCSTRINGS
 class Tvdb:
-    # Atributo de clase
     def __init__(self, **kwargs):
 
         self.__check_token()
@@ -652,7 +647,7 @@ class Tvdb:
     @classmethod
     def get_info_episode(cls, _id, season=1, episode=1, lang=DEFAULT_LANG):
         """
-        devuelve los datos de un episodio
+        Devuelve los datos de un episodio.
         @param _id: identificador de la serie
         @type _id: str
         @param season: numero de temporada [por defecto = 1]
@@ -742,7 +737,7 @@ class Tvdb:
     @classmethod
     def get_list_episodes(cls, _id, page=1):
         """
-        devuelve los datos de un episodio
+        Devuelve el listado de episodios de una serie.
         @param _id: identificador de la serie
         @type _id: str
         @param page: numero de pagina a buscar [por defecto = 1]
@@ -782,12 +777,8 @@ class Tvdb:
         }
         """
         logger.info()
-        # params = {"airedSeason": "%s" % season, "airedEpisode": "%s" % episode}
 
         try:
-            # import urllib
-            # params = urllib.urlencode(params)
-
             url = HOST + "/series/{id}/episodes?page={params}".format(id=_id, page=page)
             logger.debug("url: %s, \nheaders: %s" % (url, DEFAULT_HEADERS))
 
@@ -810,6 +801,65 @@ class Tvdb:
 
     @staticmethod
     def __get_episode_by_id(_id, lang=DEFAULT_LANG):
+        """
+        Obtiene los datos de un episodio
+        @param _id: identificador del episodio
+        @type _id: str
+        @param lang: código de idioma
+        @type lang: str
+        @rtype: dict
+        @return:
+        {
+            "data": {
+                "id": 0,
+                "airedSeason": 0,
+                "airedEpisodeNumber": 0,
+                "episodeName": "string",
+                "firstAired": "string",
+                "guestStars": [
+                  "string"
+                ],
+                "director": "string",
+                "directors": [
+                  "string"
+                ],
+                "writers": [
+                  "string"
+                ],
+                "overview": "string",
+                "productionCode": "string",
+                "showUrl": "string",
+                "lastUpdated": 0,
+                "dvdDiscid": "string",
+                "dvdSeason": 0,
+                "dvdEpisodeNumber": 0,
+                "dvdChapter": 0,
+                "absoluteNumber": 0,
+                "filename": "string",
+                "seriesId": "string",
+                "lastUpdatedBy": "string",
+                "airsAfterSeason": 0,
+                "airsBeforeSeason": 0,
+                "airsBeforeEpisode": 0,
+                "thumbAuthor": 0,
+                "thumbAdded": "string",
+                "thumbWidth": "string",
+                "thumbHeight": "string",
+                "imdbId": "string",
+                "siteRating": 0,
+                "siteRatingCount": 0
+            },
+            "errors": {
+            "invalidFilters": [
+              "string"
+            ],
+            "invalidLanguage": "string",
+            "invalidQueryParams": [
+              "string"
+            ]
+            }
+        }
+        """
         logger.info()
         dict_html = {}
 
@@ -840,13 +890,15 @@ class Tvdb:
 
     def __search(self, name, imdb_id, zap2it_id, lang=DEFAULT_LANG):
         """
-        Busca una serie a través de una serie de parámetros
+        Busca una serie a través de una serie de parámetros.
         @param name: nombre a buscar
         @type name: str
         @param imdb_id: codigo identificativo de imdb
         @type imdb_id: str
         @param zap2it_id: codigo identificativo de zap2it
         @type zap2it_id: str
+        @param lang: código de idioma
+        @type lang: str
 
         data:{
           "aliases": [
@@ -914,6 +966,53 @@ class Tvdb:
                 self.result = resultado[index]
 
     def __get_by_id(self, _id, lang=DEFAULT_LANG):
+        """
+        Obtiene los datos de una serie por identificador.
+        @param _id: código de la serie
+        @type _id: str
+        @param lang: código de idioma
+        @type lang: str
+        @rtype: dict
+        @return:
+        {
+        "data": {
+            "id": 0,
+            "seriesName": "string",
+            "aliases": [
+              "string"
+            ],
+            "banner": "string",
+            "seriesId": 0,
+            "status": "string",
+            "firstAired": "string",
+            "network": "string",
+            "networkId": "string",
+            "runtime": "string",
+            "genre": [
+              "string"
+            ],
+            "overview": "string",
+            "lastUpdated": 0,
+            "airsDayOfWeek": "string",
+            "airsTime": "string",
+            "rating": "string",
+            "imdbId": "string",
+            "zap2itId": "string",
+            "added": "string",
+            "siteRating": 0,
+            "siteRatingCount": 0
+        },
+        "errors": {
+            "invalidFilters": [
+              "string"
+            ],
+            "invalidLanguage": "string",
+            "invalidQueryParams": [
+              "string"
+            ]
+            }
+        }
+        """
         logger.info()
         resultado = {}
 
@@ -964,7 +1063,7 @@ class Tvdb:
     @staticmethod
     def get_images(_id, image="poster", season=1, lang="en"):
         """
-        obtiene un tipo imagenes para una serie para un idioma.
+        Obtiene un tipo de imagen para una serie para un idioma.
         @param _id: identificador de la serie
         @type _id: str
         @param image: codigo de busqueda, ["poster" (por defecto), "fanart", "season"]
@@ -1051,11 +1150,13 @@ class Tvdb:
         return str(self.result.get('id', ""))
 
     def get_list_results(self):
+        """
+        Devuelve los resultados encontramos para una serie.
+        @rtype: list
+        @return: lista de resultados
+        """
         logger.info()
         list_results = []
-
-        # logger.info("long es: %s" % len(self.list_results))
-        # logger.info("results es: %s" % self.list_results)
 
         # TODO revisar condicion
         # si tenemos un resultado y tiene seriesName, ya tenemos la info de la serie, no hace falta volver a buscar
@@ -1063,8 +1164,8 @@ class Tvdb:
             list_results.append(self.result)
         else:
             for e in self.list_results:
-                logger.info("e es: %s" % e)
-                logger.info("id es: %s" % e['id'])
+                # logger.info("e es: %s" % e)
+                # logger.info("id es: %s" % e['id'])
                 dict_html = self.__get_by_id(e['id'])
                 # todo revisar si hace falta
                 if not dict_html:
@@ -1085,11 +1186,12 @@ class Tvdb:
         @rtype: dict
         """
 
+        # TODO revisar
         if infoLabels:
-            logger.debug("es instancia de infoLabels")
+            # logger.debug("es instancia de infoLabels")
             ret_infoLabels = InfoLabels(infoLabels)
         else:
-            logger.debug("NO ES instancia de infoLabels")
+            # logger.debug("NO ES instancia de infoLabels")
             ret_infoLabels = InfoLabels()
             # fix
             ret_infoLabels['mediatype'] = 'tvshow'
