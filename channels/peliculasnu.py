@@ -198,6 +198,7 @@ def findvideos(item):
                 server = "directo"
             elif "openload" in url:
                 server = "openload"
+                url += "|Referer=" + item.url
             else:
                 server = servertools.get_server_from_url(url)
             title = "%s - %s" % (unicode(server, "utf8").capitalize().encode("utf8"), title)
