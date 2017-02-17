@@ -682,8 +682,5 @@ def add_serie_to_library(item, channel=None):
                     (insertados, item.show))
         if config.is_xbmc():
             from platformcode import xbmc_library
-            condicion_1 = config.get_setting("sync_trakt_watched", "biblioteca")
-            condicion_2 = config.get_setting("sync_trakt_new_tvshow", "biblioteca")
-
-            if condicion_1 == True or condicion_2 == False:
+            if config.get_setting("sync_trakt_new_tvshow", "biblioteca") is True:
                 xbmc_library.sync_trakt()

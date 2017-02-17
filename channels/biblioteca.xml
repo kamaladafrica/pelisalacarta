@@ -63,15 +63,68 @@
 		<lvalues>Siempre</lvalues>
 		<lvalues>Según su emisión</lvalues>
 	</settings>
-
 	<settings>
-		<id>quit_channel_name</id>
+		<id>search_new_content</id>
+		<type>list</type>
+		<label>    Realizar búsqueda de contenido en</label>
+		<default>0</default>
+		<lvalues>La carpeta de cada serie</lvalues>
+		<lvalues>Toda la biblioteca</lvalues>
+	</settings>
+	<settings>
+		<id>clean_after_update</id>
 		<type>bool</type>
-		<label>Lista de enlaces: Quitar el nombre del canal</label>
+		<label>        Limpiar la biblioteca después</label>
+		<default>false</default>
+	</settings>
+	<settings>
+		<id>link_list</id>
+		<type>label</type>
+		<label>Lista de enlaces</label>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<id>max_links</id>
+		<type>list</type>
+		<label>    Numero máximo de enlaces a mostrar (recomendable para equipos lentos)</label>
+		<default>0</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+		<lvalues>Todos</lvalues>
+		<lvalues>30</lvalues>
+		<lvalues>60</lvalues>
+		<lvalues>90</lvalues>
+		<lvalues>120</lvalues>
+		<lvalues>150</lvalues>
+		<lvalues>180</lvalues>
+		<lvalues>210</lvalues>
+	</settings>
+	<settings>
+		<id>white_list_order</id>
+		<type>bool</type>
+		<label>    Ordenar segun el orden de la lista blanca</label>
 		<enabled>true</enabled>
 		<visible>true</visible>
 		<default>false</default>
 	</settings>
+	<settings>
+		<id>quit_channel_name</id>
+		<type>bool</type>
+		<label>    Quitar el nombre del canal del principio</label>
+		<enabled>true</enabled>
+		<visible>true</visible>
+		<default>false</default>
+	</settings>
+	<settings>
+		<id>replace_VD</id>
+		<type>bool</type>
+		<label>    Ventana emergente: Reemplazar "Ver en" por "[V]" y "Descargar en" por "[D]"</label>
+		<enabled>true</enabled>
+		<visible>true</visible>
+		<default>false</default>
+	</settings>
+
 
 	<settings>
 		<id>library_mode</id>
@@ -172,19 +225,5 @@
 		<default>0</default>
 		<lvalues>Título localizado</lvalues>
 		<lvalues>Título original</lvalues>
-	</settings>
-	<settings>
-		<id>search_new_content</id>
-		<type>list</type>
-		<label>Realizar búsqueda de contenido en</label>
-		<default>0</default>
-		<lvalues>La carpeta de cada serie</lvalues>
-		<lvalues>Toda la biblioteca</lvalues>
-	</settings>
-	<settings>
-		<id>clean_after_update</id>
-		<type>bool</type>
-		<label>Limpiar la biblioteca tras la búsqueda de contenido</label>
-		<default>false</default>
 	</settings>
 </channel>
