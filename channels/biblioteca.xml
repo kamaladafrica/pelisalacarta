@@ -79,7 +79,7 @@
 		<type>text</type>
 		<label>    Nombre Servidor</label>
 		<enabled>eq(-1,Remota)</enabled>
-		<visible>true</visible>
+		<visible>eq(-1,Remota)</visible>
 		<default></default>
 	</settings>
 	<settings>
@@ -87,7 +87,7 @@
 		<type>text</type>
 		<label>    Puerto Servidor</label>
 		<enabled>!eq(-1,'')</enabled>
-		<visible>true</visible>
+		<visible>eq(-2,Remota)</visible>
 		<default></default>
 	</settings>
 
@@ -106,11 +106,24 @@
 		<default>3</default>
 		<enabled>eq(-1,true)</enabled>
 		<visible>true</visible>
-		<lvalues>5 Min</lvalues>
+		<lvalues>5 min</lvalues>
 		<lvalues>30%</lvalues>
 		<lvalues>50%</lvalues>
 		<lvalues>80%</lvalues>
 	</settings>
+	<settings>
+		<id>sync_trakt</id>
+		<type>list</type>
+		<label>Sincronizar con Trakt</label>
+		<default>0</default>
+		<enabled>eq(-2,true)</enabled>
+		<visible>true</visible>
+		<lvalues>No</lvalues>
+		<lvalues>Tras marcar como visto un capitulo</lvalues>
+		<lvalues>Al añadir una serie a la biblioteca</lvalues>
+		<lvalues>Siempre</lvalues>
+	</settings>
+
 	<settings>
 		<id>show_all_seasons</id>
 		<type>bool</type>
@@ -151,7 +164,7 @@
 	<settings>
 		<id>clean_after_update</id>
 		<type>bool</type>
-		<label>    Limpiar la biblioteca tras la búsqueda de contenido</label>
+		<label>Limpiar la biblioteca tras la búsqueda de contenido</label>
 		<default>false</default>
 	</settings>
 </channel>

@@ -66,7 +66,9 @@ def mark_auto_as_watched(item):
 
         xbmc.sleep(5000)
 
-        while xbmc.Player().isPlaying():
+        sync_with_trakt = False
+
+        while platformtools.is_playing():
             tiempo_actual = xbmc.Player().getTime()
             totaltime = xbmc.Player().getTotalTime()
 
@@ -85,15 +87,30 @@ def mark_auto_as_watched(item):
 
             if tiempo_actual > mark_time:
                 item.playcount = 1
+                sync_with_trakt = True
                 from channels import biblioteca
                 biblioteca.mark_content_as_watched(item)
                 break
 
             xbmc.sleep(30000)
 
+        # Sincronizacion silenciosa con Trakt cuando termina la reproduccion
+        if sync_with_trakt:
+            condicion = config.get_setting("sync_trakt", "biblioteca")
+            if condicion == 1 or condicion == 3:
+                sync_trakt()
+
     # Si esta configurado para marcar como visto
     if config.get_setting("mark_as_watched", "biblioteca") == True:
         Thread(target=mark_as_watched_subThread, args=[item]).start()
+
+
+def sync_trakt(silent=True):
+
+    # Para que la sincronizacion no sea silenciosa vale con silent=False
+    if xbmc.getCondVisibility('System.HasAddon("script.trakt")'):
+        if xbmc.executebuiltin('RunScript(script.trakt,action=sync,silent=%s)' % silent):
+            logger.info("Sincronizacion con Trakt iniciada")
 
 
 def mark_content_as_watched_on_kodi(item, value=1):
@@ -448,7 +465,7 @@ def establecer_contenido(content_type, silent=False):
                                     downloadtools.downloadfile(url, path_down, continuar=True, headers=[header])
                                     unzipper = ziptools.ziptools()
                                     unzipper.extract(path_down, path_unzip)
-                                    xbmc.executebuiltin('xbmc.UpdateLocalAddons')
+                                    xbmc.executebuiltin('UpdateLocalAddons')
 
                             strSettings = '<settings>\n' \
                                           '    <setting id="fanart" value="true" />\n' \

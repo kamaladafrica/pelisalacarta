@@ -444,7 +444,7 @@ def set_context_commands(item, parent_item):
     sf_file_path = xbmc.translatePath("special://home/addons/plugin.program.super.favourites/LaunchSFMenu.py")
     check_sf = os.path.exists(sf_file_path)
     if check_sf and xbmc.getCondVisibility('System.HasAddon("plugin.program.super.favourites")'):
-        context_commands.append(("Super Favourites",
+        context_commands.append(("Super Favourites Menu",
                                  "XBMC.RunScript(special://home/addons/plugin.program.super.favourites/LaunchSFMenu.py)"))
 
     #context_commands.append((item.contentType, "XBMC.Action(Info)")) # For debug

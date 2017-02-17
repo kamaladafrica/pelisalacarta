@@ -242,9 +242,12 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
 
     def evaluate_conditions(self):
         for c in self.list_controls:
-          c["active"] = self.evaluate(self.list_controls.index(c), c["enabled"])
-          self.set_enabled(c, c["active"])
-          c["show"] = self.evaluate(self.list_controls.index(c), c["visible"])
+            c["active"] = self.evaluate(self.list_controls.index(c), c["enabled"])
+            self.set_enabled(c, c["active"])
+            c["show"] = self.evaluate(self.list_controls.index(c), c["visible"])
+            if not c["show"]:
+                self.set_visible(c, c["show"])
+        self.visible_controls = [c for c in self.list_controls if c["show"]]
 
     def evaluate(self, index, cond):
         import re
@@ -366,21 +369,21 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
         control = xbmcgui.ControlLabel(0, -100, self.controls_width, 30, "", alignment=4, font=self.font, textColor=c["color"])
 
         self.addControl(control)
-        
+
         control.setVisible(False)
         control.setLabel(c["label"])
 
         # Lo añadimos al listado
         c["control"] = control
 
-     
+
     def add_control_list(self, c):
         control = xbmcgui.ControlButton(0, -100, self.controls_width, self.height_control,
-                                        c["label"], font=self.font, textOffsetX=0, textColor=c["color"], 
+                                        c["label"], font=self.font, textOffsetX=0, textColor=c["color"],
                                         focusTexture=os.path.join(self.mediapath, 'Controls', 'MenuItemFO.png'),
                                         noFocusTexture=os.path.join(self.mediapath, 'Controls','MenuItemNF.png'))
 
-        label = xbmcgui.ControlLabel(0, -100, self.controls_width - 30, self.height_control, 
+        label = xbmcgui.ControlLabel(0, -100, self.controls_width - 30, self.height_control,
                                      "", font=self.font, textColor=c["color"], alignment=4 | 1)
 
         upBtn = xbmcgui.ControlButton(0, -100, 20, 15, "",
@@ -407,17 +410,17 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
         c["label"] = label
         c["downBtn"] = downBtn
         c["upBtn"] = upBtn
-        
+
 
     def add_control_text(self, c):
         if xbmcgui.ControlEdit == ControlEdit:
-            control = xbmcgui.ControlEdit(0 -100, self.controls_width - 5, self.height_control, 
-                                          c["label"], font=self.font, isPassword=c["hidden"], textColor=c["color"], 
+            control = xbmcgui.ControlEdit(0 -100, self.controls_width - 5, self.height_control,
+                                          c["label"], font=self.font, isPassword=c["hidden"], textColor=c["color"],
                                           focusTexture=os.path.join(self.mediapath, 'Controls', 'MenuItemFO.png'),
                                           noFocusTexture=os.path.join(self.mediapath, 'Controls', 'MenuItemNF.png'), window=self)
 
         else:
-            control = xbmcgui.ControlEdit(0, -100, self.controls_width - 5, self.height_control, 
+            control = xbmcgui.ControlEdit(0, -100, self.controls_width - 5, self.height_control,
                                           c["label"], self.font, c["color"],  '', 4, isPassword=c["hidden"],
                                           focusTexture=os.path.join(self.mediapath, 'Controls', 'MenuItemFO.png'),
                                           noFocusTexture=os.path.join(self.mediapath, 'Controls', 'MenuItemNF.png'))
@@ -437,7 +440,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
     def add_control_bool(self, c):
         # Versiones antiguas no admite algunas texturas
         if xbmcgui.__version__ in["1.2", "2.0"]:
-            control = xbmcgui.ControlRadioButton(0 - 10, -100, self.controls_width + 10, self.height_control, 
+            control = xbmcgui.ControlRadioButton(0 - 10, -100, self.controls_width + 10, self.height_control,
                                                  label=c["label"], font=self.font, textColor=c["color"],
                                                  focusTexture=os.path.join(self.mediapath, 'Controls', 'MenuItemFO.png'),
                                                  noFocusTexture=os.path.join(self.mediapath, 'Controls', 'MenuItemNF.png'))
@@ -467,7 +470,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
         self.getControl(10006).setEnabled(False)
         self.ok_enabled = False
         self.default_enabled = False
-        
+
         if xbmcgui.__version__ == "1.2":
             self.setCoordinateResolution(1)
         else:
@@ -475,8 +478,8 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
 
         # Ponemos el título
         self.getControl(10002).setLabel(self.title)
-        
-        
+
+
 
         if self.custom_button is not None:
             if self.custom_button['visible']:
@@ -551,7 +554,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             if "enabled" not in c:
                 c["enabled"] = True
 
-                
+
             if c["type"] == "text" and not type(c["hidden"]) == bool:
                 if c["hidden"].lower() == 'true':
                     c["hidden"] = True
@@ -570,21 +573,21 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                 c["default"] = bool(c["default"])
                 self.values[c["id"]] = bool(self.values[c["id"]])
 
-            
+
             if c["type"] == "bool":
                 self.add_control_bool(c)
-                
+
             elif c["type"] == 'text':
                 self.add_control_text(c)
-                
+
             elif c["type"] == 'list':
                 self.add_control_list(c)
-                
+
             elif c["type"] == 'label':
                 self.add_control_label(c)
 
         self.list_controls = [c for c in self.list_controls if "control" in c]
-        
+
         self.evaluate_conditions()
         self.index = -1
         self.dispose_controls(0)
@@ -596,13 +599,13 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
         self.default_enabled = True
         self.check_default()
         self.check_ok(self.values)
-        
-                              
+
+
     def dispose_controls(self, index, focus = False, force=False):
         show_controls = self.controls_height / self.height_control -1
 
         visible_count = 0
-        
+
         if focus:
               if not index >= self.index or not index <= self.index + show_controls:
                 if index < self.index:
@@ -612,26 +615,26 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
               else:
                 new_index = self.index
         else:
-          
-          if index + show_controls >= len(self.list_controls): index = len(self.list_controls) - show_controls -1
+
+          if index + show_controls >= len(self.visible_controls): index = len(self.visible_controls) - show_controls -1
           if index < 0 : index = 0
           new_index = index
 
 
         if self.index <> new_index or force:
-            for x, c in enumerate(self.list_controls):
+            for x, c in enumerate(self.visible_controls):
               if x < new_index or visible_count > show_controls or not c["show"]:
                   self.set_visible(c, False)
               else:
                     c["y"] = self.controls_pos_y + visible_count * self.height_control
                     visible_count += 1
-            
+
                     if c["type"] != "list":
                         if c["type"] == "bool":
                           c["control"].setPosition(self.controls_pos_x -10, c["y"])
                         else:
                           c["control"].setPosition(self.controls_pos_x, c["y"])
-                        
+
                     else:
                         c["control"].setPosition(self.controls_pos_x, c["y"])
                         if config.get_platform() == "boxee":
@@ -640,23 +643,23 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                             c["label"].setPosition(self.controls_pos_x, c["y"])
                         c["upBtn"].setPosition(self.controls_pos_x + c["control"].getWidth() - 25, c["y"] + 3)
                         c["downBtn"].setPosition(self.controls_pos_x + c["control"].getWidth() - 25, c["y"] + 18)
-                        
+
                     self.set_visible(c, True)
-                    
+
             # Calculamos la posicion y tamaño del ScrollBar
-            hidden_controls = len(self.list_controls) - show_controls -1
+            hidden_controls = len(self.visible_controls) - show_controls -1
             if hidden_controls < 0: hidden_controls = 0
 
-            scrollbar_height = self.getControl(10008).getHeight() - (hidden_controls * 4)
-            scrollbar_y = self.getControl(10008).getPosition()[1] + (new_index * 4)
+            scrollbar_height = self.getControl(10008).getHeight() - (hidden_controls * 3)
+            scrollbar_y = self.getControl(10008).getPosition()[1] + (new_index * 3)
             self.getControl(10009).setPosition(self.getControl(10008).getPosition()[0], scrollbar_y)
             self.getControl(10009).setHeight(scrollbar_height)
 
         self.index = new_index
-        
+
         if focus:
-              self.setFocus(self.list_controls[index]["control"])
-             
+              self.setFocus(self.visible_controls[index]["control"])
+
 
     def check_ok(self, dict_values=None):
         if not self.callback:
@@ -807,12 +810,12 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
 
                         # Guardamos el nuevo valor en el listado de controles
                         self.values[cont["id"]] = cont["lvalues"].index(cont["label"].getLabel())
-                        
+
                 self.evaluate_conditions()
                 self.dispose_controls(self.index, force=True)
                 self.check_default()
                 self.check_ok()
-                
+
             # Si el foco está en alguno de los tres botones inferiores, movemos al siguiente
             else:
                 if focus == 10006:
@@ -833,12 +836,12 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
 
                         # Guardamos el nuevo valor en el listado de controles
                         self.values[cont["id"]] = cont["lvalues"].index(cont["label"].getLabel())
-                        
+
                 self.evaluate_conditions()
                 self.dispose_controls(self.index, force=True)
                 self.check_default()
                 self.check_ok()
-                
+
             # Si el foco está en alguno de los tres botones inferiores, movemos al siguiente
             else:
                 if focus == 10004:
@@ -851,18 +854,18 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             # Si el foco no está en ninguno de los tres botones inferiores, bajamos el foco en los controles de ajustes
             if focus not in [10004, 10005, 10006]:
                 try:
-                  focus_control = [self.list_controls.index(c) for c in self.list_controls if c["control"] == self.getFocus()][0]
+                  focus_control = [self.visible_controls.index(c) for c in self.visible_controls if c["control"] == self.getFocus()][0]
                   focus_control += 1
                 except:
                   focus_control = 0
 
-                while not focus_control == len(self.list_controls) and (self.list_controls[focus_control]["type"] == "label" or not self.list_controls[focus_control]["show"] or not self.list_controls[focus_control]["active"]):
+                while not focus_control == len(self.visible_controls) and (self.visible_controls[focus_control]["type"] == "label" or not self.visible_controls[focus_control]["active"]):
                   focus_control +=1
-                  
-                if focus_control >= len(self.list_controls): 
+
+                if focus_control >= len(self.visible_controls):
                   self.setFocusId(10005)
                   return
-                
+
                 self.dispose_controls(focus_control, True)
 
         # Accion 4: Flecha arriba
@@ -870,26 +873,26 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             # Si el foco no está en ninguno de los tres botones inferiores, subimos el foco en los controles de ajustes
             if focus not in [10003, 10004, 10005, 10006]:
                 try:
-                  focus_control = [self.list_controls.index(c) for c in self.list_controls if c["control"] == self.getFocus()][0]
+                  focus_control = [self.visible_controls.index(c) for c in self.visible_controls if c["control"] == self.getFocus()][0]
                   focus_control -= 1
-                  
-                  while not focus_control == -1 and (self.list_controls[focus_control]["type"] == "label" or not self.list_controls[focus_control]["show"] or not self.list_controls[focus_control]["active"]):
+
+                  while not focus_control == -1 and (self.visible_controls[focus_control]["type"] == "label" or not self.visible_controls[focus_control]["active"]):
                     focus_control -=1
-                    
+
                   if focus_control < 0: focus_control = 0
                 except:
                   focus_control = 0
-                  
+
                 self.dispose_controls(focus_control, True)
 
             # Si el foco está en alguno de los tres botones inferiores, ponemos el foco en el ultimo ajuste.
             else:
-                focus_control = len(self.list_controls) -1
-                while not focus_control == -1 and (self.list_controls[focus_control]["type"] == "label" or not self.list_controls[focus_control]["show"] or not self.list_controls[focus_control]["active"]):
+                focus_control = len(self.visible_controls) -1
+                while not focus_control == -1 and (self.visible_controls[focus_control]["type"] == "label" or not self.visible_controls[focus_control]["active"]):
                   focus_control -=1
                 if focus_control < 0: focus_control = 0
-                
-                self.setFocus(self.list_controls[focus_control]["control"])
+
+                self.setFocus(self.visible_controls[focus_control]["control"])
 
         # Accion 104: Scroll arriba
         elif action == 104:
@@ -903,9 +906,9 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
         # ACTION_NAV_BACK 92
         elif action in [10, 92]:
             self.close()
-            
+
         elif action == 504:
-          
+
           if self.xx > raw_action.getAmount2():
             if (self.xx - int(raw_action.getAmount2())) / self.height_control:
               self.xx -=self.height_control
@@ -915,10 +918,10 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
               self.xx +=self.height_control
             self.dispose_controls(self.index -1)
           return
-         
+
         elif action == 501:
           self.xx = int(raw_action.getAmount2())
-         
+
 
 
 class ControlEdit(xbmcgui.ControlButton):
