@@ -19,7 +19,11 @@ headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:50.0) Gecko/20
 def test_video_exists(page_url):
     logger.info("(page_url='%s')" % page_url)
 
-    data = httptools.downloadpage(page_url, cookies=False).data
+    header = {}
+    if "|" in page_url:
+        page_url, referer = page_url.split("|", 1)
+        header = {'Referer': referer}
+    data = httptools.downloadpage(page_url, headers=header, cookies=False).data
 
     if 'We’re Sorry!' in data:
         return False, "[Openload] El archivo no existe o ha sido borrado" 
@@ -31,7 +35,11 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     logger.info("url=" + page_url)
     video_urls = []
 
-    data = httptools.downloadpage(page_url, cookies=False).data
+    header = {}
+    if "|" in page_url:
+        page_url, referer = page_url.split("|", 1)
+        header = {'Referer': referer}
+    data = httptools.downloadpage(page_url, headers=header, cookies=False).data
     subtitle = scrapertools.find_single_match(data, '<track kind="captions" src="([^"]+)" srclang="es"')
     #Header para la descarga
     header_down = "|User-Agent=" + headers['User-Agent']
@@ -107,6 +115,9 @@ def find_videos(text):
     encontrados = set()
     devuelve = []
 
+    referer = ""
+    if "|Referer=" in text:
+        referer = "|"+text.split("|Referer=", 1)[1]
     patronvideos = '(?:openload|oload).../(?:embed|f)/([0-9a-zA-Z-_]+)'
     logger.info("#" + patronvideos + "#")
 
@@ -114,7 +125,7 @@ def find_videos(text):
 
     for media_id in matches:
         titulo = "[Openload]"
-        url = 'https://openload.co/embed/%s/' % media_id
+        url = 'https://openload.co/embed/%s/%s' % (media_id, referer)
         if url not in encontrados:
             logger.info("  url=" + url)
             devuelve.append([titulo, url, 'openload'])
