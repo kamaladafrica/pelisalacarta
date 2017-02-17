@@ -233,7 +233,7 @@ def play(item):
         referer = {'Referer': "http://peliculas.nu"}
         data = httptools.downloadpage(item.url, headers=referer).data
         
-        from core import jsunpack
+        from lib import jsunpack
         packed = scrapertools.find_single_match(data, '<script type="text/javascript">(eval\(function.*?)</script>')
         data_js = jsunpack.unpack(packed)
 
