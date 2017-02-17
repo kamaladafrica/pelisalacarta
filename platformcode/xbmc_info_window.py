@@ -43,6 +43,7 @@ class InfoWindow(xbmcgui.WindowXMLDialog):
     item_episodio = 0
     result = {}
 
+    # PARA TMDB
     @staticmethod
     def get_language(lng):
         # Cambiamos el formato del Idioma
@@ -99,8 +100,7 @@ class InfoWindow(xbmcgui.WindowXMLDialog):
 
             if "original_language" in infoLabels:
                 infoLabels["language"] = self.get_language(infoLabels["original_language"])
-            if "vote_average" in data_in and "vote_count" in data_in:
-                infoLabels["puntuacion"] = str(data_in["vote_average"]) + "/10 (" + str(data_in["vote_count"]) + ")"
+            infoLabels["puntuacion"] = "%s/10 (%s)" % (infoLabels.get("rating", "?"), infoLabels.get("votes", "N/A"))
 
             self.result = infoLabels
 
