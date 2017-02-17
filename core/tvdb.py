@@ -92,6 +92,8 @@ otvdb_global = None
 
 def find_and_set_infoLabels(item):
     logger.info()
+    from platformcode import platformtools
+    p_dialog = platformtools.dialog_progress_bg("Buscando información de la serie", "Espere por favor...")
 
     global otvdb_global
     tvdb_result = None
@@ -112,11 +114,15 @@ def find_and_set_infoLabels(item):
     elif not otvdb_global or otvdb_global.result.get("id") != item.infoLabels['tvdb_id']:
         otvdb_global = Tvdb(tvdb_id=item.infoLabels['tvdb_id'])  # , tipo=tipo_busqueda, idioma_busqueda="es")
 
+    p_dialog.update(50, "Buscando información de la serie", "Obteniendo resultados...")
     results = otvdb_global.get_list_results()
     logger.debug("results es %s" % results)
 
+    p_dialog.update(100, "Buscando información de la serie", "Encontrados %s posibles coincidencias" % len(results))
+
+    p_dialog.close()
+
     if len(results) > 1:
-        from platformcode import platformtools
         tvdb_result = platformtools.show_video_info(results, item=item, scraper=Tvdb,
                                                     caption="[%s]: Selecciona la serie correcta" % title)
     elif len(results) > 0:
@@ -124,8 +130,10 @@ def find_and_set_infoLabels(item):
 
     # todo revisar
     if isinstance(item.infoLabels, InfoLabels):
+        logger.debug("es instancia de infoLabels")
         infoLabels = item.infoLabels
     else:
+        logger.debug("NO ES instancia de infoLabels")
         infoLabels = InfoLabels()
 
     if tvdb_result:
@@ -192,6 +200,29 @@ def set_infoLabels_item(item):
             if otvdb_global.lang:
                 lang = otvdb_global.lang
 
+            # page = 1
+            # _id = None
+            # while not _id:
+            #     if not list_episode:
+            #         list_episode = otvdb_global.get_list_episodes(otvdb_global.get_id(), page)
+            #
+            #     for e in list_episode['data']:
+            #         if e['airedSeason'] == int_season and e['airedEpisodeNumber'] == int_episode:
+            #             _id = e['id']
+            #             break
+            #
+            #     _next = list_episode['links']['next']
+            #     if type(_next) == int:
+            #         page = _next
+            #     else:
+            #         break
+            #
+            # data_episode = otvdb_global.__get_episode_by_id(_id, lang)
+
+
+
+
+
             data_episode = otvdb_global.get_info_episode(otvdb_global.get_id(), int_season, int_episode, lang)
 
             # todo repasar valores que hay que insertar en infoLabels
@@ -217,10 +248,6 @@ def set_infoLabels_item(item):
                 l_castandrole = item.infoLabels.get("castandrole", [])
                 l_castandrole.extend([(p, '') for p in guest_stars])
                 item.infoLabels['castandrole'] = l_castandrole
-
-                # datos para nfo
-                item.season_id = data_episode["airedSeasonID"]
-                item.episode_id = data_episode["id"]
 
                 return len(item.infoLabels)
 
@@ -283,9 +310,10 @@ def get_nfo(item):
         info_nfo += array_to_node(item.infoLabels['director'], 'director')
         info_nfo += array_to_node(item.infoLabels['writer'], 'credits')
 
-        info_nfo += '<aired>%s</aired>' % (item.infoLabels['aired'].split("/")[2] + "-" +
-                                           item.infoLabels['aired'].split("/")[1] + "-" +
-                                           item.infoLabels['aired'].split("/")[0])
+        if item.infoLabels['aired']:
+            info_nfo += '<aired>%s</aired>' % (item.infoLabels['aired'].split("/")[2] + "-" +
+                                               item.infoLabels['aired'].split("/")[1] + "-" +
+                                               item.infoLabels['aired'].split("/")[0])
 
         info_nfo = set_nfo_casting(info_nfo, item.infoLabels['castandrole'])
 
@@ -357,7 +385,6 @@ def get_nfo(item):
 
     else:
         info_nfo += '<tvshow><title>%s</title>' % item.infoLabels['title']
-        # info_nfo += '<rating>%s</rating>' % item.infoLabels['rating']
 
         info_nfo += '<ratings><rating name="default" max="10" default="true"><value>%s</value><votes>%s</votes>' \
                     '</rating></ratings>' % (item.infoLabels['rating'], item.infoLabels['votes'])
@@ -381,8 +408,8 @@ def get_nfo(item):
         #               % (e.get("name", ""), e.get("role", ""), e.get("sortOrder", 0), HOST_IMAGE + e.get("image", ""))
         info_nfo = set_nfo_casting(info_nfo, item.infoLabels['castandrole'])
 
-
         info_nfo += '<plot>%s<plot>' % item.plot
+        info_nfo += '</tvshow>\n'
 
         # <title>Legión</title> ---
         # <showtitle>Legión</showtitle>
@@ -478,19 +505,6 @@ def get_nfo(item):
         #         <poster>http://thetvdb.com/banners/seasons/320724-1.jpg</poster>
         #     </season>
         # </art>
-
-
-
-
-
-
-
-
-
-
-
-
-        info_nfo += '</tvshow>\n'
 
     return info_nfo
 
@@ -724,6 +738,75 @@ class Tvdb:
 
             if "data" in dict_html and "id" in dict_html["data"][0]:
                 return cls.__get_episode_by_id(dict_html["data"][0]["id"], lang)
+
+    @classmethod
+    def get_list_episodes(cls, _id, page=1):
+        """
+        devuelve los datos de un episodio
+        @param _id: identificador de la serie
+        @type _id: str
+        @param page: numero de pagina a buscar [por defecto = 1]
+        @type page: int
+        @rtype: dict
+        @return:
+        {
+            "links": {
+                "first": 0,
+                "last": 0,
+                "next": 0,
+                "previous": 0
+              },
+            "data": [
+                {
+                    "absoluteNumber": 0,
+                    "airedEpisodeNumber": 0,
+                    "airedSeason": 0,
+                    "dvdEpisodeNumber": 0,
+                    "dvdSeason": 0,
+                    "episodeName": "string",
+                    "id": 0,
+                    "overview": "string",
+                    "firstAired": "string",
+                    "lastUpdated": 0
+                }
+            ],
+            "errors": {
+                "invalidFilters": [
+                  "string"
+                ],
+                "invalidLanguage": "string",
+                "invalidQueryParams": [
+                  "string"
+                ]
+            }
+        }
+        """
+        logger.info()
+        # params = {"airedSeason": "%s" % season, "airedEpisode": "%s" % episode}
+
+        try:
+            # import urllib
+            # params = urllib.urlencode(params)
+
+            url = HOST + "/series/{id}/episodes?page={params}".format(id=_id, page=page)
+            logger.debug("url: %s, \nheaders: %s" % (url, DEFAULT_HEADERS))
+
+            req = urllib2.Request(url, headers=DEFAULT_HEADERS)
+            response = urllib2.urlopen(req)
+            html = response.read()
+            response.close()
+
+        except Exception, ex:
+            template = "An exception of type {0} occured. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            logger.error("error en: {0}".format(message))
+
+        else:
+            dict_html = jsontools.load_json(html)
+
+            logger.info("dict_html %s" % dict_html)
+
+            return dict_html
 
     @staticmethod
     def __get_episode_by_id(_id, lang=DEFAULT_LANG):
@@ -1003,9 +1086,13 @@ class Tvdb:
         """
 
         if infoLabels:
+            logger.debug("es instancia de infoLabels")
             ret_infoLabels = InfoLabels(infoLabels)
         else:
+            logger.debug("NO ES instancia de infoLabels")
             ret_infoLabels = InfoLabels()
+            # fix
+            ret_infoLabels['mediatype'] = 'tvshow'
 
         # Iniciar listados
         l_castandrole = ret_infoLabels.get('castandrole', [])
@@ -1092,11 +1179,12 @@ class Tvdb:
                 ret_infoLabels['genre'] = genre_list
 
             elif k == 'seriesName':  # or k == 'name' or k == 'title':
-                if len(origen.get('aliases', [])) > 0:
-                    ret_infoLabels['title'] = v + " " + origen.get('aliases', [''])[0]
-                else:
-                    ret_infoLabels['title'] = v
-                logger.info("el titulo es %s " % ret_infoLabels['title'])
+                # if len(origen.get('aliases', [])) > 0:
+                #     ret_infoLabels['title'] = v + " " + origen.get('aliases', [''])[0]
+                # else:
+                #     ret_infoLabels['title'] = v
+                # logger.info("el titulo es %s " % ret_infoLabels['title'])
+                ret_infoLabels['title'] = v
 
             elif k == 'cast':
                 dic_aux = dict((name, character) for (name, character) in l_castandrole)
