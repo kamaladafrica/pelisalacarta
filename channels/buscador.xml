@@ -7,7 +7,7 @@
 	<adult>false</adult>
 	<language>es</language>
 	<include_in_global_search>disabled</include_in_global_search>
-	
+
 	<fanart></fanart>
 	<thumbnail>http://media.tvalacarta.info/pelisalacarta/squares/buscador.png</thumbnail>
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/buscador.png</bannermenu>
@@ -16,6 +16,11 @@
 	<version>3</version>
 
 	<changes>
+		<change>
+			<date>17/02/17</date>
+			<autor>kerenmac</autor>
+			<description>Cambios de detalles visuales</description>
+		</change>
 		<change>
 			<date>06/12/16</date>
 			<autor>super_berny</autor>
@@ -37,7 +42,7 @@
 	<categories>
 		<category>movie</category>
 	</categories>
-	
+
 	<settings>
 		<id>multithread</id>
 		<type>bool</type>
