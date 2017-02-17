@@ -29,7 +29,6 @@
 
 	<include_in_global_search>disabled</include_in_global_search>
 
-
 	<settings>
 		<id>updatelibrary</id>
 		<type>list</type>
@@ -38,7 +37,20 @@
 		<visible>true</visible>
 		<lvalues>Nunca</lvalues>
 		<lvalues>Al iniciar Kodi</lvalues>
-		<lvalues>Cada día</lvalues>
+		<lvalues>Una sola vez al día</lvalues>
+		<lvalues>Al iniciar Kodi y almenos una vez al día</lvalues>
+	</settings>
+	<settings>
+		<id>everyday_delay</id>
+		<type>list</type>
+		<label>    Atraso en la hora de inicio del dia</label>
+		<default>0</default>
+		<enabled>true</enabled>
+		<visible>eq(-1,Una sola vez al día)|eq(-1,Al iniciar Kodi y almenos una vez al día)</visible>
+		<lvalues>Sin atraso (0:00)</lvalues>
+		<lvalues>4:00</lvalues>
+		<lvalues>8:00</lvalues>
+		<lvalues>12:00</lvalues>
 	</settings>
 	<settings>
 		<id>updatelibrary_wait</id>
@@ -140,7 +152,7 @@
 		<id>xbmc_host</id>
 		<type>text</type>
 		<label>    Nombre Servidor</label>
-		<enabled>eq(-1,Remota)</enabled>
+		<enabled>true</enabled>
 		<visible>eq(-1,Remota)</visible>
 		<default></default>
 	</settings>
@@ -152,7 +164,6 @@
 		<visible>eq(-2,Remota)</visible>
 		<default></default>
 	</settings>
-
 	<settings>
 		<id>mark_as_watched</id>
 		<type>bool</type>
