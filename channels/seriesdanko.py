@@ -123,7 +123,7 @@ def series_por_letra(item):
     itemlist = []
     for url, title, img in shows:
         itemlist.append(item.clone(title=title, url=urlparse.urljoin(HOST, url), action="episodios", thumbnail=img,
-                                   context=filtertools.context, list_idiomas=list_idiomas))
+                                   show=title, context=filtertools.context, list_idiomas=list_idiomas))
     return itemlist
 
 
