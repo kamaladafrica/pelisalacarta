@@ -96,14 +96,11 @@ def mark_auto_as_watched(item):
 
         # Sincronizacion silenciosa con Trakt cuando termina la reproduccion
         if sync_with_trakt:
-            condicion = config.get_setting("sync_trakt", "biblioteca")
-            condicion_1 = config.get_setting("sync_trakt_watched", "biblioteca")
-            condicion_2 = config.get_setting("sync_trakt_new_tvshow", "biblioteca")
-            if condicion_1 is True or condicion_2 is True:
+            if config.get_setting("sync_trakt_watched", "biblioteca"):
                 sync_trakt()
 
     # Si esta configurado para marcar como visto
-    if config.get_setting("mark_as_watched", "biblioteca") is True:
+    if config.get_setting("mark_as_watched", "biblioteca"):
         Thread(target=mark_as_watched_subThread, args=[item]).start()
 
 
@@ -113,6 +110,8 @@ def sync_trakt(silent=True):
     if xbmc.getCondVisibility('System.HasAddon("script.trakt")'):
         if xbmc.executebuiltin('RunScript(script.trakt,action=sync,silent=%s)' % silent):
             logger.info("Sincronizacion con Trakt iniciada")
+            platformtools.dialog_notification("pelisalacarta",
+                                              "Sincronizacion con Trakt iniciada")
 
 
 def mark_content_as_watched_on_kodi(item, value=1):
