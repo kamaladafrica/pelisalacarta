@@ -496,11 +496,15 @@ def play_from_library(item):
     # modificamos el action (actualmente la biblioteca necesita "findvideos" ya que es donde se buscan las fuentes
     item.action = "findvideos"
 
+    window_type = config.get_setting("window_type", "biblioteca")
+
     # y volvemos a lanzar kodi
-    if xbmc.getCondVisibility('Window.IsMedia'):
-            xbmc.executebuiltin("Container.Update(" + sys.argv[0] + "?" + item.tourl() + ")")
+    if xbmc.getCondVisibility('Window.IsMedia') and not window_type == 1:
+        # Ventana convencional
+        xbmc.executebuiltin("Container.Update(" + sys.argv[0] + "?" + item.tourl() + ")")
 
     else:
+        # Ventana emergente
         from channels import biblioteca
         from platformcode import xbmc_library
         p_dialog = platformtools.dialog_progress_bg('pelisalacarta', 'Cargando...')

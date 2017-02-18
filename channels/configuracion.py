@@ -462,25 +462,21 @@ def conf_tools(item):
                                 channel_parameters["language"] != channel_language):
                             continue
 
-                        xml_status = None
                         status = None
-                        xml_status = channel_parameters["active"]
-                        status_control = ""
+                        xml_status = channel_parameters["active"].replace("t", "T").replace("f", "F")
+                        xml_status = eval(xml_status)
 
                         if config.get_setting("enabled", channel.channel):
                             status = config.get_setting("enabled", channel.channel)
+                            status = status.replace("t", "T").replace("f", "F")
+                            status = eval(status)
                             # logger.info(channel.channel + " | Status: " + str(status))
                         else:
                             status = xml_status
                             # logger.info(channel.channel + " | Status (XML): " + str(status))
 
-                        # Se establece el estado
-                        if status == "false" or status is False:
-                            status = False
-                        elif status == "true" or status is True:
-                            status = True
-
-                        if xml_status == "false":
+                        status_control = ""
+                        if not xml_status:
                             status_control = " [COLOR grey](Desactivado por defecto)[/COLOR]"
 
                         if status is not None:
@@ -490,16 +486,17 @@ def conf_tools(item):
                                        'default': status,
                                        'enabled': True,
                                        'visible': True}
-
                             list_controls.append(control)
 
                     else:
                         logger.info("Algo va mal con el canal " + channel.channel)
                 else:
                     continue
+
             return platformtools.show_channel_settings(list_controls=list_controls,
                                                        caption="Canales",
-                                                       callback="channel_status")
+                                                       callback="channel_status",
+                                                       custom_button={"visible": False})
         except:
             import traceback
             logger.info(channel.title + " | Detalle del error: %s" % traceback.format_exc())

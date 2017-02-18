@@ -90,11 +90,14 @@
 		<default>false</default>
 	</settings>
 	<settings>
-		<id>link_list</id>
-		<type>label</type>
-		<label>Lista de enlaces</label>
+		<id>window_type</id>
+		<type>list</type>
+		<label>Mostrar los enlaces en</label>
+		<default>0</default>
 		<enabled>true</enabled>
 		<visible>true</visible>
+		<lvalues>Ventana convencional</lvalues>
+		<lvalues>Ventana emergente</lvalues>
 	</settings>
 	<settings>
 		<id>max_links</id>
