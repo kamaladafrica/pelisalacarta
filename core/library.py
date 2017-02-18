@@ -681,11 +681,12 @@ def add_serie_to_library(item, channel=None):
         logger.info("[launcher.py] Se han añadido %s episodios de la serie %s a la biblioteca" %
                     (insertados, item.show))
         if config.is_xbmc():
-            import xbmc
-            from platformcode import xbmc_library
-            # Comprobar que no se esta buscando contenido en la biblioteca de Kodi
-            while xbmc.getCondVisibility('Library.IsScanningVideo()'):
-                xbmc.sleep(500)
-            # Cuando se termine de buscar contenido se lanza la sincronizacion
             if config.get_setting("sync_trakt_new_tvshow", "biblioteca"):
+                import xbmc
+                from platformcode import xbmc_library
+                if config.get_setting("sync_trakt_new_tvshow_wait", "biblioteca"):
+                    # Comprobar que no se esta buscando contenido en la biblioteca de Kodi
+                    while xbmc.getCondVisibility('Library.IsScanningVideo()'):
+                        xbmc.sleep(1000)
+                # Se lanza la sincronizacion
                 xbmc_library.sync_trakt()

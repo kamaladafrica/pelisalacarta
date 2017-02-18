@@ -70,8 +70,8 @@
 		<type>list</type>
 		<label>    Buscar nuevos episodios en las series activas</label>
 		<default>0</default>
-		<enabled>!eq(-2,Nunca)</enabled>
-		<visible>true</visible>
+		<enabled>true</enabled>
+		<visible>!eq(-2,Nunca)</visible>
 		<lvalues>Siempre</lvalues>
 		<lvalues>Según su emisión</lvalues>
 	</settings>
@@ -177,8 +177,8 @@
 		<type>list</type>
 		<label>    Tiempo necesario del video</label>
 		<default>3</default>
-		<enabled>eq(-1,true)</enabled>
-		<visible>true</visible>
+		<enabled>true</enabled>
+		<visible>eq(-1,true)</visible>
 		<lvalues>5 min</lvalues>
 		<lvalues>30%</lvalues>
 		<lvalues>50%</lvalues>
@@ -205,7 +205,15 @@
 		<label>    Al añadir una serie a la biblioteca</label>
 		<default>false</default>
 		<enabled>true</enabled>
-		<visible>eq(-4,true)</visible>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<id>sync_trakt_new_tvshow_wait</id>
+		<type>bool</type>
+		<label>        Esperar a que se añada la serie a la biblioteca</label>
+		<default>true</default>
+		<enabled>true</enabled>
+		<visible>eq(-1,true)</visible>
 	</settings>
 
 	<settings>
