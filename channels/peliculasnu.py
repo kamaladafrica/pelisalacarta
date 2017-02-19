@@ -5,8 +5,11 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 
+import urllib
+
 from core import config
 from core import httptools
+from core import jsontools
 from core import logger
 from core import scrapertools
 from core import servertools
@@ -189,20 +192,24 @@ def findvideos(item):
     if not item.fanart and fanart:
         item.fanart = fanart
 
-    patron = '<li class="Button STPb.*?data-TPlayerNv="([^"]+)"><span>.*?<span>(.*?)</span>'
+    patron = '<li class="Button STPb.*?data-tipo="([^"]+)" data-playersource="([^"]+)".*?><span>.*?<span>(.*?)</span>'
     matches = scrapertools.find_multiple_matches(data, patron)
-    for id_tab, title in matches:
-        url = scrapertools.find_single_match(data, 'id="%s".*?src="([^"]+)"' % id_tab)
-        if "youtube" not in url and "//desmix.net" not in url:
-            if "online.desmix" in url or "metiscs" in url:
-                server = "directo"
-            elif "openload" in url:
-                server = "openload"
-                url += "|Referer=" + item.url
-            else:
-                server = servertools.get_server_from_url(url)
-            title = "%s - %s" % (unicode(server, "utf8").capitalize().encode("utf8"), title)
-            itemlist.append(item.clone(action="play", url=url, title=title, server=server, text_color=color3))
+    for tipo, source, title in matches:
+        if tipo == "trailer":
+            continue
+        post = "source=%s&action=obtenerurl" % urllib.quote(source)
+        headers = {'X-Requested-With': 'XMLHttpRequest', 'Referer': item.url}
+        data_url = httptools.downloadpage(host+'wp-admin/admin-ajax.php', post, headers=headers).data
+        url = jsontools.load_json(data_url).get("url")
+        if "online.desmix" in url or "metiscs" in url:
+            server = "directo"
+        elif "openload" in url:
+            server = "openload"
+            url += "|Referer=" + item.url
+        else:
+            server = servertools.get_server_from_url(url)
+        title = "%s - %s" % (unicode(server, "utf8").capitalize().encode("utf8"), title)
+        itemlist.append(item.clone(action="play", url=url, title=title, server=server, text_color=color3))
 
     if item.extra != "findvideos" and config.get_library_support():
         itemlist.append(item.clone(title="Añadir película a la biblioteca", action="add_pelicula_to_library",
