@@ -7,20 +7,16 @@
 
 import re
 import base64 as bdec
-import urllib
 
 from core import config
+from core import filetools
 from core import jsontools
 from core import logger
 from core import scrapertools
 from core.tmdb import Tmdb
 from core.item import Item
 from core import httptools
-try:
-    import xbmcgui
-    import xbmc
-except:
-    pass
+from platformcode import platformtools
 
 __perfil__ = int(config.get_setting('perfil', "tvmoviedb"))
 
@@ -43,6 +39,7 @@ langi = langs[int(config.get_setting('imdb', "tvmoviedb"))]
 adult_mal = config.get_setting('adult_mal', "tvmoviedb")
 mal_ck = "MzE1MDQ2cGQ5N2llYTY4Z2xwbGVzZjFzbTY="
 images_predef = "https://raw.githubusercontent.com/master-1970/resources/master/images/genres/"
+default_fan = filetools.join(config.get_runtime_path(), "fanart.jpg")
 
 
 def mainlist(item):
@@ -75,14 +72,13 @@ def mainlist(item):
 
 
 def openconfig(item):
-    from platformcode import platformtools
     platformtools.show_channel_settings()
     if config.is_xbmc():
+        import xbmc
         xbmc.executebuiltin("Container.Refresh")
 
 
 def search_(item):
-    from platformcode import platformtools
     texto = platformtools.dialog_input(heading=item.title)
     if texto:
         if "imdb" in item.url:
@@ -320,7 +316,7 @@ def listado_tmdb(item):
     # Listados principales de la categoría Tmdb (Más populares, más vistas, etc...)
     itemlist = []
     item.text_color = color1
-    item.fanart = None
+    item.fanart = default_fan
     if not item.pagina:
         item.pagina = 1
 
@@ -530,12 +526,22 @@ def detalles(item):
         pass
 
     try:
-        if item.contentType == "movie":
-            url = "http://theost.com/search/custom/?key=%s&year=%s&country=0&genre=0" % (item.infoLabels['originaltitle'].replace(" ", "+"), item.infoLabels["year"])
-            data_music = httptools.downloadpage(url).data
+        if item.contentType == "movie" and item.infoLabels["year"] < 2014:
+            post_url = "http://theost.com/search/custom/?key=%s&year=%s&country=0&genre=0" % (item.infoLabels['originaltitle'].replace(" ", "+"), item.infoLabels["year"])
+            url = "https://proxy-nl.hideproxy.me/includes/process.php?action=update"
+            post = "u=%s&proxy_formdata_server=nl&allowCookies=1&encodeURL=1&encodePage=0&stripObjects=0&stripJS=0&go=" % post_url
+            while True:
+                response = httptools.downloadpage(url, post, follow_redirects=False)
+                if response.headers.get("location"):
+                    url = response.headers["location"]
+                    post = ""
+                else:
+                    data_music = response.data
+                    break
+
             url_album = scrapertools.find_single_match(data_music, 'album on request.*?href="([^"]+)"')
             if url_album:
-                url_album = "http://theost.com" + url_album
+                url_album = "https://proxy-nl.hideproxy.me" + url_album
                 itemlist.append(item.clone(action="musica_movie", title="Escuchar BSO - Lista de canciones", url=url_album,
                                            text_color=color5))
     except:
@@ -587,7 +593,7 @@ def reparto(item):
         if cast:
             itemlist.append(item.clone(title="Actores/Actrices", action="", text_color=color2))
             for actor in cast:
-                new_item = item.clone(action="listado_tmdb", fanart=None)
+                new_item = item.clone(action="listado_tmdb", fanart=default_fan)
                 new_item.title = "    "+actor["name"] + " as " + actor["character"]
                 if actor["profile_path"]:
                     new_item.thumbnail = 'http://image.tmdb.org/t/p/original' + actor["profile_path"]
@@ -606,7 +612,7 @@ def reparto(item):
         if crew:
             itemlist.append(item.clone(title="Equipo de rodaje", action="", text_color=color2))
             for c in crew:
-                new_item = item.clone(action="listado_tmdb", fanart=None)
+                new_item = item.clone(action="listado_tmdb", fanart=default_fan)
                 new_item.title = "    "+c["job"] + ": " + c["name"]
                 if c["profile_path"]:
                     new_item.thumbnail = 'http://image.tmdb.org/t/p/original' + c["profile_path"]
@@ -783,7 +789,6 @@ def filtro(item):
                               'type': 'text', 'default': '', 'visible': True})
 
     item.valores = valores
-    from platformcode import platformtools
     return platformtools.show_channel_settings(list_controls=list_controls, dict_values=dict_values,
                                                caption="Filtra la búsqueda", item=item, callback='filtrado')
 
@@ -1036,7 +1041,6 @@ def filtro_imdb(item):
                           'type': 'bool', 'default': False, 'visible': True})
 
     item.valores = valores
-    from platformcode import platformtools
     return platformtools.show_channel_settings(list_controls=list_controls, dict_values=dict_values,
                                                caption="Filtra la búsqueda", item=item, callback='filtrado_imdb')
 
@@ -1100,7 +1104,7 @@ def indices_imdb(item):
         year = datetime.now().year + 3
         for i in range(year, 1899, -1):
             itemlist.append(item.clone(title=str(i), action='listado_imdb',
-                                       url='http://www.imdb.com/search/title?release_date=%s,%s' % (i, item.url)))
+                                       url='http://www.imdb.com/search/title?release_date=%s,%s%s' % (i, i, item.url)))
 
     return itemlist
 
@@ -1148,7 +1152,11 @@ def listado_fa(item):
             for url, thumb, thumb2, title, year, rating, votos in matches:
                 title = title.strip()
                 new_item = item.clone(action="detalles_fa", contentType="movie", extra="movie", contentTitle=title)
-                new_item.url = "http://m.filmaffinity.com" + url
+                if not url.startswith("http://m.filmaffinity"):
+                    new_item.url = "http://m.filmaffinity.com" + url
+                else:
+                    new_item.url = url
+
                 if not thumb:
                     thumb = thumb2
                 new_item.thumbnail = thumb.replace("msmall", "large")
@@ -1173,7 +1181,11 @@ def listado_fa(item):
             new_item = item.clone(action="detalles_fa", extra="movie")
             if not url:
                 url = url2
-            new_item.url = "http://m.filmaffinity.com" + url
+            if not url.startswith("http://m.filmaffinity"):
+                new_item.url = "http://m.filmaffinity.com" + url
+            else:
+                new_item.url = url
+
             if not thumb:
                 thumb = thumb2
             new_item.thumbnail = thumb.replace("msmall", "large")
@@ -1207,7 +1219,9 @@ def listado_fa(item):
 
     next_page = scrapertools.find_single_match(data, 'aria-label="Next" href="([^"]+)"')
     if next_page:
-        next_page = "http://m.filmaffinity.com" + next_page
+        if not next_page.startswith("http://m.filmaffinity"):
+            next_page = "http://m.filmaffinity.com" + next_page
+
         itemlist.append(Item(channel=item.channel, action=item.action, title=">> Página Siguiente", url=next_page,
                              extra=item.extra))
     elif item.page_fa:
@@ -1229,14 +1243,19 @@ def indices_fa(item):
         matches = scrapertools.find_multiple_matches(data, patron)
         for url, title, thumbnail, info in matches:
             new_item = item.clone(action="listado_fa")
-            new_item.url = "http://m.filmaffinity.com" + url
+            if not url.startswith("http://www.filmaffinity"):
+                new_item.url = "http://m.filmaffinity.com" + url
+            else:
+                new_item.url = url.replace("www.filmaffinity.com", "m.filmaffinity.com")
+
             new_item.thumbnail = thumbnail.replace("mmed", "large")
             new_item.title = title.strip() + "  [COLOR %s](%s)[/COLOR]" % (color6, info)
             itemlist.append(new_item)
 
         next_page = scrapertools.find_single_match(data, '<a href="([^"]+)">&gt;&gt;')
         if next_page:
-            next_page = "http://www.filmaffinity.com" + next_page
+            if not next_page.startswith("http://www.filmaffinity.com"):
+                next_page = "http://www.filmaffinity.com" + next_page
             itemlist.append(Item(channel=item.channel, action=item.action, title=">> Página Siguiente", url=next_page,
                                  extra=item.extra))
     elif "Géneros" in item.title:
@@ -1277,8 +1296,8 @@ def indices_fa(item):
             itemlist.append(item.clone(title=letra, text_color=color2, action=action, extra=extra, folder=folder))
             for url, titulo, numero in matches:
                 new_item = item.clone(action="temas_fa")
-                new_item.url = "http://www.filmaffinity.com" + url.replace("&nodoc", "").replace("&notvse", "") \
-                               + "&attr=all"
+                topic_id = scrapertools.find_single_match(url, "topic=(\d+)")
+                new_item.url = "http://www.filmaffinity.com/%s/%s&attr=all" % (langf, url.replace("&nodoc", "").replace("&notvse", ""))
                 new_item.title = titulo + " (%s)" % numero
                 itemlist.append(new_item)
     else:
@@ -1312,7 +1331,7 @@ def temas_fa(item):
     matches = scrapertools.find_multiple_matches(data, patron)
     for url, thumb, title, year in matches:
         title = title.strip()
-        new_item = item.clone(action="detalles_fa", contentType="movie", extra="movie")
+        new_item = item.clone(action="detalles_fa", contentType="movie", extra="movie", text_color=color2)
         new_item.url = "http://m.filmaffinity.com/%s/movie.php?id=%s" % (langf, url)
         new_item.thumbnail = thumb.replace("msmall", "large")
         if not new_item.thumbnail.startswith("http"):
@@ -1327,7 +1346,8 @@ def temas_fa(item):
 
     next_page = scrapertools.find_single_match(data, '<a href="([^"]+)">&gt;&gt;')
     if next_page:
-        next_page = "http://www.filmaffinity.com" + next_page
+        if not next_page.startswith("http://www.filmaffinity.com"):
+            next_page = "http://www.filmaffinity.com/%s/%s" % (langf, next_page)
         itemlist.append(Item(channel=item.channel, action=item.action, title=">> Página Siguiente", url=next_page))
 
     return itemlist
@@ -1440,13 +1460,13 @@ def detalles_fa(item):
 
     if config.is_xbmc():
         item.contextual = True
-    trailer_url = scrapertools.find_single_match(data, '<a href="/%s/movieTrailer\.php\?id=(\d+)"' % langf)
+    trailer_url = scrapertools.find_single_match(data, '<a href="(?:http://m.filmaffinity.com|)/%s/movieTrailer\.php\?id=(\d+)"' % langf)
     if trailer_url:
         trailer_url = "http://www.filmaffinity.com/%s/evideos.php?movie_id=%s" % (langf, trailer_url)
     itemlist.append(item.clone(channel="trailertools", action="buscartrailer", title="Buscar Tráiler",
                                text_color=color5, filmaffinity=trailer_url))
 
-    url_img = scrapertools.find_single_match(data, 'href="(/%s/movieposters[^"]+)">' % langf)
+    url_img = scrapertools.find_single_match(data, 'href="(?:http://m.filmaffinity.com|)(/%s/movieposters[^"]+)">' % langf)
     images = {}
     if ob_tmdb.result and ob_tmdb.result.get("images"):
         images['tmdb'] = ob_tmdb.result["images"]
@@ -1456,12 +1476,22 @@ def detalles_fa(item):
         itemlist.append(item.clone(action="imagenes", title="Lista de Imágenes", text_color=color5, images=images,
                                    url=url_img, extra="menu"))
     try:
-        if item.contentType == "movie":
-            url = "http://theost.com/search/custom/?key=%s&year=%s&country=0&genre=0" % (item.infoLabels['originaltitle'].replace(" ", "+"), item.infoLabels["year"])
-            data_music = httptools.downloadpage(url).data
+        if item.contentType == "movie" and item.infoLabels["year"] < 2014:
+            post_url = "http://theost.com/search/custom/?key=%s&year=%s&country=0&genre=0" % (item.infoLabels['originaltitle'].replace(" ", "+"), item.infoLabels["year"])
+            url = "https://proxy-nl.hideproxy.me/includes/process.php?action=update"
+            post = "u=%s&proxy_formdata_server=nl&allowCookies=1&encodeURL=1&encodePage=0&stripObjects=0&stripJS=0&go=" % post_url
+            while True:
+                response = httptools.downloadpage(url, post, follow_redirects=False)
+                if response.headers.get("location"):
+                    url = response.headers["location"]
+                    post = ""
+                else:
+                    data_music = response.data
+                    break
+
             url_album = scrapertools.find_single_match(data_music, 'album on request.*?href="([^"]+)"')
             if url_album:
-                url_album = "http://theost.com" + url_album
+                url_album = "https://proxy-nl.hideproxy.me" + url_album
                 itemlist.append(item.clone(action="musica_movie", title="Escuchar BSO - Lista de canciones", url=url_album,
                                            text_color=color5))
     except:
@@ -1593,7 +1623,6 @@ def filtro_fa(item):
                           'type': 'bool', 'default': False, 'visible': True})
 
     item.valores = valores
-    from platformcode import platformtools
     return platformtools.show_channel_settings(list_controls=list_controls, dict_values=dict_values,
                                                caption="Filtra la búsqueda", item=item, callback='filtrado_fa')
 
@@ -1688,7 +1717,11 @@ def acciones_fa(item):
             mivoto = scrapertools.find_single_match(bloque, 'bg-my-rating[^>]+>(?:\s*<strong>|)([^<]+)<')
             for url, thumb, title, year, rating, votos in matches:
                 new_item = item.clone(action="detalles_fa", text_color=color1)
-                new_item.url = "http://m.filmaffinity.com" + url
+                if not url.startswith("http://m.filmaffinity"):
+                    new_item.url = "http://m.filmaffinity.com" + url
+                else:
+                    new_item.url = url
+
                 new_item.infoLabels["year"] = year
                 rating = rating.replace(",", ".")
                 new_item.infoLabels["rating"] = float(rating)
@@ -1715,7 +1748,10 @@ def acciones_fa(item):
         matches = scrapertools.find_multiple_matches(data, patron)
         for url, title, content, imgs in matches:
             new_item = item.clone(accion="lista", text_color=color1)
-            new_item.url = "http://m.filmaffinity.com%s&orderby=%s" % (url, orderby)
+            if not url.startswith("http://m.filmaffinity.com"):
+                new_item.url = "http://m.filmaffinity.com%s&orderby=%s" % (url, orderby)
+            else:
+                new_item.url = "%s&orderby=%s" % (url, orderby)
             new_item.title = title + "  [COLOR %s](%s)[/COLOR]" % (color6, content)
             if imgs:
                 imagenes = scrapertools.find_multiple_matches(imgs, 'data-src="([^"]+)"')
@@ -1734,7 +1770,7 @@ def acciones_fa(item):
             new_item.infoLabels["duration"] = ""
             new_item.listid = listid
             if "checked" in chequeo:
-                new_item.title = "[COLOR %s]%s[/COLOR] %s"  % (color3, u"\u0474".encode('utf-8'), title)
+                new_item.title = "[COLOR %s]%s[/COLOR] %s"  % ("green", u"\u0474".encode('utf-8'), title)
                 new_item.accion = "removeMovieFromList"
             else:
                 new_item.title = "[COLOR %s]%s[/COLOR] %s"  % (color4, u"\u04FE".encode('utf-8'), title)
@@ -1749,6 +1785,7 @@ def acciones_fa(item):
         post = "action=%s&listId=%s&movieId=%s&itk=%s" % (item.accion, item.listid, movieid, item.itk)
         data = jsontools.load_json(httptools.downloadpage(url, post).data)
         if not item.folder:
+            import xbmc
             return xbmc.executebuiltin("Container.Refresh")
         else:
             if data["result"] == 0:
@@ -1779,7 +1816,6 @@ def votar_fa(item):
 
 
     item.valores = valores
-    from platformcode import platformtools
     return platformtools.show_channel_settings(list_controls=list_controls, dict_values=dict_values,
                                                caption="Votar %s" % item.contentTitle, item=item,
                                                callback='callback_voto')
@@ -1793,6 +1829,7 @@ def callback_voto(item, values):
     data = jsontools.load_json(httptools.downloadpage("http://filmaffinity.com/%s/ratingajax.php" % langf, post).data)
 
     if not item.folder:
+        import xbmc
         return xbmc.executebuiltin("Container.Refresh")
     else:
         if data["result"] == 0:
@@ -1881,6 +1918,7 @@ def imagenes(item):
             return itemlist
 
     if item.images:
+        from channels import infoplus
         for key, value in item.images.iteritems():
             if key == "tmdb" and "Tmdb" in item.title:
                 if item.folder:
@@ -1892,7 +1930,6 @@ def imagenes(item):
                             itemlist.append(Item(channel=item.channel, action="", thumbnail=thumb, fanart=fanart,
                                                  title=title, text_color=color1, infoLabels=item.infoLabels))
                 else:
-                    from channels import infoplus
                     imagesWindow = infoplus.images(tmdb=value).doModal()
 
             elif key == "fanart.tv":
@@ -1905,7 +1942,6 @@ def imagenes(item):
                             itemlist.append(Item(channel=item.channel, action="", thumbnail=thumb, fanart=fanart,
                                                  title=title, text_color=color1, infoLabels=item.infoLabels))
                 else:
-                    from channels import infoplus
                     imagesWindow = infoplus.images(fanartv=value).doModal()
 
             elif key == "filmaffinity" and "Filmaffinity" in item.title:
@@ -1915,7 +1951,6 @@ def imagenes(item):
                         itemlist.append(Item(channel=item.channel, action="", thumbnail=thumb, fanart=thumb,
                                              title=title, text_color=color1, infoLabels=item.infoLabels))
                 else:
-                    from channels import infoplus
                     imagesWindow = infoplus.images(fa=value).doModal()
 
             elif key == "imdb" and "Imdb" in item.title:
@@ -1927,7 +1962,6 @@ def imagenes(item):
                         itemlist.append(Item(channel=item.channel, action="", thumbnail=thumb, fanart=fanart, title=title,
                                              text_color=color1, infoLabels=item.infoLabels))
                 else:
-                    from platformcode import infoplus
                     imagesWindow = infoplus.images(imdb=value).doModal()
 
             elif key == "myanimelist" and "MyAnimeList" in item.title:
@@ -1936,7 +1970,6 @@ def imagenes(item):
                         itemlist.append(Item(channel=item.channel, action="", thumbnail=imagen, fanart=imagen, title=title,
                                              text_color=color1, infoLabels=item.infoLabels))
                 else:
-                    from channels import infoplus
                     imagesWindow = infoplus.images(mal=value).doModal()
 
     return itemlist
@@ -2022,7 +2055,6 @@ def token_trakt(item):
             data = jsontools.load_json(data)
         else:
             import time
-            from platformcode import platformtools
             dialog_auth = platformtools.dialog_progress("Autentificación. No cierres esta ventana!!",
                                                         "1. Entra en la siguiente url: %s" % item.verify_url,
                                                         "2. Ingresa este código en la página y acepta:  %s" % item.user_code,
@@ -2059,6 +2091,7 @@ def token_trakt(item):
         if not item.folder:
             platformtools.dialog_notification("Éxito", "Cuenta vinculada correctamente")
             if config.is_xbmc():
+                import xbmc
                 xbmc.executebuiltin("Container.Refresh")
             return
         
@@ -2154,7 +2187,6 @@ def acciones_trakt(item):
             return data
         else:
             data = jsontools.load_json(data)
-            from platformcode import platformtools
             if "not_found" in data:
                 return platformtools.dialog_notification("Trakt", "Acción realizada correctamente")
             else:
@@ -2285,7 +2317,6 @@ def order_list(item):
                           'type': 'list', 'default': 0, 'visible': True})
     list_controls[0]['lvalues'] = ['Por defecto', 'Añadido', 'Título', 'Estreno', 'Duración', 'Popularidad', 'Valoración', 'Votos']
     list_controls[1]['lvalues'] = ['Ascendente', 'Descendente']
-    from platformcode import platformtools
     return platformtools.show_channel_settings(list_controls=list_controls, dict_values=dict_values,
                                                caption="Filtra la búsqueda", item=item, callback='order_trakt')
 
@@ -2366,7 +2397,7 @@ def detalles_mal(item):
     data = re.sub(r"\s{2}", " ", data)
 
     item.contentTitle = item.contentTitle.replace("(TV)", "").replace("(Movie)", "")
-    item.fanart = None
+    item.fanart = default_fan
     item.infoLabels["plot"] = ""
     
     title_mal = item.contentTitle
@@ -2488,6 +2519,7 @@ def detalles_mal(item):
                                extra="menu"))
 
     try:
+        import urllib
         post = "busqueda=%s&button=Search" % urllib.quote(title_mal)
         data_music = httptools.downloadpage("http://www.freeanimemusic.org/song_search.php", post).data
         if not "NO MATCHES IN YOUR SEARCH" in data_music:
@@ -2521,7 +2553,7 @@ def detalles_mal(item):
     if prequel:
         matches = scrapertools.find_multiple_matches(prequel, 'href="([^"]+)">(.*?)</a>')
         for url, title in matches:
-            new_item = item.clone(infoLabels={'mediatype': item.contentType}, extra="", fanart=None, thumbnail="")
+            new_item = item.clone(infoLabels={'mediatype': item.contentType}, extra="", fanart=default_fan, thumbnail="")
             new_item.title = "Precuela: %s" % title
             new_item.contentTitle = title
             new_item.url = "https://myanimelist.net%s" % url
@@ -2531,7 +2563,7 @@ def detalles_mal(item):
     if sequel:
         matches = scrapertools.find_multiple_matches(sequel, 'href="([^"]+)">(.*?)</a>')
         for url, title in matches:
-            new_item = item.clone(infoLabels={'mediatype': item.contentType}, extra="", fanart=None, thumbnail="")
+            new_item = item.clone(infoLabels={'mediatype': item.contentType}, extra="", fanart=default_fan, thumbnail="")
             new_item.title = "Secuela: %s" % title
             new_item.contentTitle = title
             new_item.url = "https://myanimelist.net%s" % url
@@ -2541,7 +2573,7 @@ def detalles_mal(item):
     if alt_version:
         matches = scrapertools.find_multiple_matches(alt_version, 'href="([^"]+)">(.*?)</a>')
         for url, title in matches:
-            new_item = item.clone(infoLabels={'mediatype': item.contentType}, extra="", fanart=None, thumbnail="")
+            new_item = item.clone(infoLabels={'mediatype': item.contentType}, extra="", fanart=default_fan, thumbnail="")
             new_item.title = "Versión alternativa: %s" % title
             new_item.contentTitle = title
             new_item.url = "https://myanimelist.net%s" % url
@@ -2628,7 +2660,7 @@ def reco_mal(item):
              '<div class="spaceit_pad">(.*?)</div>'
     matches = scrapertools.find_multiple_matches(data, patron)
     for url, thumb, title, plot in matches:
-        new_item = item.clone(infoLabels={'mediatype': item.contentType}, action="detalles_mal", fanart=None, title=title, contentType="", extra="",
+        new_item = item.clone(infoLabels={'mediatype': item.contentType}, action="detalles_mal", fanart=default_fan, title=title, contentType="", extra="",
                               contentTitle=title)
         new_item.infoLabels["plot"] = scrapertools.htmlclean(plot)
         new_item.url = "https://myanimelist.net%s" % url
@@ -2726,7 +2758,7 @@ def season_mal(item):
                 itemlist.append(Item(channel=item.channel, action="detalles_mal", url=url, title=title,
                                      thumbnail=thumb, infoLabels=infoLabels, extra=extra, tipo=tipo,
                                      contentTitle=scrapedtitle, contentType=contentType, text_color=color1,
-                                     fanart=None))
+                                     fanart=default_fan))
     else:
         patron = '<a href="([^"]+)" class="link-title">(.*?)</a>.*?<span>(\? ep|\d+ ep).*?' \
                  '<div class="genres-inner js-genre-inner">(.*?)</div>.*?<div class="image".*?url\(([^\)]+).*?' \
@@ -2760,7 +2792,7 @@ def season_mal(item):
             itemlist.append(Item(channel=item.channel, action="detalles_mal", url=url, title=title,
                                  thumbnail=thumb, infoLabels=infoLabels, extra=extra, tipo=tipo,
                                  contentTitle=scrapedtitle, contentType=contentType, text_color=color1,
-                                 fanart=None))
+                                 fanart=default_fan))
         next_page = scrapertools.find_single_match(data, '<a class="link current" href.*?href="([^"]+)"')
         if next_page:
             itemlist.append(Item(channel=item.channel, action="season_mal", url=next_page, text_color="",
@@ -2786,7 +2818,7 @@ def staff_mal(item):
             nombre = "   %s   [%s]" % (nombre, rol)
             thumb = thumb.replace("r/46x64/", "")
             itemlist.append(Item(channel=item.channel, action="detail_staff", url=url, text_color=color2,
-                                 thumbnail=thumb, fanart=None, title=nombre, extra="character"))
+                                 thumbnail=thumb, fanart=default_fan, title=nombre, extra="character"))
             patron_voces = '<a href="(/people[^"]+)">([^<]+)<.*?<small>([^<]+)</small>.*?data-src="([^"]+)"'
             voces_match = scrapertools.find_multiple_matches(voces, patron_voces)
             for vurl, vnombre, vidioma, vthumb in voces_match:
@@ -2794,7 +2826,7 @@ def staff_mal(item):
                 vnombre = "        %s   [%s]" % (vnombre, vidioma)
                 vthumb = vthumb.replace("r/46x64/", "")
                 itemlist.append(Item(channel=item.channel, action="detail_staff", url=vurl, text_color=color1,
-                                     thumbnail=vthumb, fanart=None, title=vnombre))
+                                     thumbnail=vthumb, fanart=default_fan, title=vnombre))
     bloque = scrapertools.find_single_match(data, '<a name="staff">(.*?)</table>')
     patron = '<a href="(/people[^"]+)".*?data-src="([^"]+)".*?href=.*?>([^<]+)<.*?<small>([^<]+)</small>'
     matches = scrapertools.find_multiple_matches(bloque, patron)
@@ -2805,7 +2837,7 @@ def staff_mal(item):
             nombre = "   %s   [%s]" % (nombre, rol)
             thumb = thumb.replace("r/46x64/", "")
             itemlist.append(Item(channel=item.channel, action="detail_staff", url=url, text_color=color1,
-                                 thumbnail=thumb, fanart=None, title=nombre))
+                                 thumbnail=thumb, fanart=default_fan, title=nombre))
             
     
     return itemlist
@@ -2837,7 +2869,7 @@ def detail_staff(item):
                 url = "https://myanimelist.net%s" % url
                 thumb = thumb.replace("r/23x32/", "")
                 itemlist.append(Item(channel=item.channel, action="detalles_mal", url=url, text_color=color1,
-                                     thumbnail=thumb, fanart=None, title=title, contentTitle=title))
+                                     thumbnail=thumb, fanart=default_fan, title=title, contentTitle=title))
     else:
         patron_bio = '<div class="js-sns-icon-container icon-block ">.*?<div class="spaceit_pad">(.*?)</td>'
         bio = scrapertools.find_single_match(data, patron_bio)
@@ -2856,9 +2888,9 @@ def detail_staff(item):
                 thumb = thumb.replace("r/46x64/", "")
                 thumb_p = thumb_p.replace("r/46x64/", "")
                 itemlist.append(Item(channel=item.channel, action="detalles_mal", url=url, text_color=color2,
-                                     thumbnail=thumb, fanart=None, title=title, contentTitle=title))
+                                     thumbnail=thumb, fanart=default_fan, title=title, contentTitle=title))
                 itemlist.append(Item(channel=item.channel, action="detail_staff", url=url_p, text_color=color1,
-                                     thumbnail=thumb_p, fanart=None, title="   %s" % personaje, extra="character"))
+                                     thumbnail=thumb_p, fanart=default_fan, title="   %s" % personaje, extra="character"))
                 
         if not "No staff positions" in data:
             itemlist.append(Item(channel=item.channel, title="Staff en animes:", action="", text_color=color3,
@@ -2872,7 +2904,7 @@ def detail_staff(item):
                 rol = scrapertools.htmlclean(rol)
                 titulo = "%s   [COLOR %s][%s][/COLOR]" % (title, color6, rol)
                 itemlist.append(Item(channel=item.channel, action="detalles_mal", url=url, text_color=color2,
-                                     thumbnail=thumb, fanart=None, title=titulo, contentTitle=title))
+                                     thumbnail=thumb, fanart=default_fan, title=titulo, contentTitle=title))
     
     return itemlist
 
@@ -3052,7 +3084,6 @@ def filtro_mal(item):
                           'type': 'bool', 'default': False, 'visible': True})
 
     item.valores = valores
-    from platformcode import platformtools
     return platformtools.show_channel_settings(list_controls=list_controls, dict_values=dict_values,
                                                caption="Filtra la búsqueda", item=item, callback='callback_mal')
 
@@ -3244,9 +3275,8 @@ def menu_mal(item):
 
 
 def addlist_mal(item):
-    import requests, xbmc
     data = httptools.downloadpage(item.url).data
-    
+
     anime_id = scrapertools.find_single_match(data, 'id="myinfo_anime_id" value="([^"]+)"')
     if item.value == "2":
         vistos = scrapertools.find_single_match(data, 'id="myinfo_watchedeps".*?<span id="curEps">(\d+)')
@@ -3263,10 +3293,13 @@ def addlist_mal(item):
         url = "https://myanimelist.net/ownlist/anime/edit.json"
     data = httptools.downloadpage(url, post=jsontools.dump_json(post), headers=headers_mal, replace_headers=True).data
     item.title = "En tu lista"
-    xbmc.executebuiltin("Container.Refresh")
+    if config.is_xbmc():
+        import xbmc
+        xbmc.executebuiltin("Container.Refresh")
 
 
 def move(item):
+    import xbmcgui, xbmc
     item_focus = str(item.extra)
     wnd = xbmcgui.Window(xbmcgui.getCurrentWindowId())
     id = wnd.getFocusId()
