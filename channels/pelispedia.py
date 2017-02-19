@@ -366,9 +366,9 @@ def episodios(item):
 
     itemlist.sort(key=lambda it: it.title, reverse=config.get_setting('orden_episodios', __channel__))
 
-    # Opción "Añadir esta serie a la biblioteca de XBMC"
+    # Opción "Añadir esta serie a la biblioteca"
     if config.get_library_support() and len(itemlist) > 0:
-        itemlist.append(Item(channel=__channel__, title="Añadir esta serie a la biblioteca de XBMC", url=item.url,
+        itemlist.append(Item(channel=__channel__, title="Añadir esta serie a la biblioteca", url=item.url,
                              action="add_serie_to_library", extra="episodios", show=item.show, category="Series",
                              text_color=color1, thumbnail=thumbnail_host, fanart=fanart_host))
 
@@ -413,9 +413,9 @@ def temporadas(item):
 
         itemlist.sort(key=lambda it: it.title)
 
-        # Opción "Añadir esta serie a la biblioteca de XBMC"
+        # Opción "Añadir esta serie a la biblioteca"
         if config.get_library_support() and len(itemlist) > 0:
-            itemlist.append(Item(channel=__channel__, title="Añadir esta serie a la biblioteca de XBMC", url=item.url,
+            itemlist.append(Item(channel=__channel__, title="Añadir esta serie a la biblioteca", url=item.url,
                                  action="add_serie_to_library", extra="episodios", show=item.show, category="Series",
                                  text_color=color1, thumbnail=thumbnail_host, fanart=fanart_host))
 
@@ -459,9 +459,9 @@ def findvideos(item):
             new_item = item.clone(title=title, url=scrapedurl, action="play", extra=item.url, referer=url)
             itemlist.append(new_item)
 
-    # Opción "Añadir esta pelicula a la biblioteca de XBMC"
+    # Opción "Añadir esta pelicula a la biblioteca"
     if item.extra == "movies" and config.get_library_support() and len(itemlist) > 0:
-        itemlist.append(Item(channel=__channel__, title="Añadir esta película a la biblioteca de XBMC", url=item.url,
+        itemlist.append(Item(channel=__channel__, title="Añadir esta película a la biblioteca", url=item.url,
                              infoLabels=item.infoLabels, action="add_pelicula_to_library", extra="findvideos",
                              fulltitle=item.title, text_color=color2))
 
