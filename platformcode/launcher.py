@@ -362,6 +362,8 @@ def set_server_list():
 
 def filtered_servers(itemlist):
     logger.info()
+    # logger.debug("Inlet itemlist size: %i" % len(itemlist))
+
     new_list = []
     white_counter = 0
     black_counter = 0
@@ -371,17 +373,16 @@ def filtered_servers(itemlist):
     white_list_order = config.get_setting("white_list_order", "biblioteca")
 
     if len(server_white_list) > 0:
-        # logger.info("pelisalacarta.platformcode.launcher filtered_servers whiteList")
+        logger.info("WhiteList")
         if white_list_order:
             for server in server_white_list:
                 logger.info("Servidor: " + server)
                 for item in itemlist:
                     if server in unicode(item.title, "utf8").lower().encode("utf8"):
-                        # logger.info("found")
+                        logger.info("Coincidencia: " + item.title)
                         new_list.append(item)
                         white_counter += 1
-                    # else:
-                    #     logger.info("not found")
+
         else:
             for item in itemlist:
                 logger.info("item.title: " + item.title)
@@ -394,29 +395,52 @@ def filtered_servers(itemlist):
                 #     logger.info("not found")
 
     if len(server_black_list) > 0:
-        # logger.info("pelisalacarta.platformcode.launcher filtered_servers blackList")
+        logger.info("BlackList")
+
+        # Si existe 'new_list' se añade lo restante y se filtra
+        if len(new_list) != 0:
+            # Se añade al final de 'new_list' lo que no tuviera de 'itemlist'
+            if len(new_list) != len(itemlist):
+                for item_1 in itemlist:
+                    coincidencia = False
+                    for item_2 in new_list:
+                        if item_2.title == item_1.title:
+                            coincidencia = True
+                            break
+                    if not coincidencia:
+                        new_list.append(item_1)
+
+            itemlist = new_list
+            new_list = []
+
         for item in itemlist:
             logger.info("item.title: " + item.title)
-            if any(server in unicode(item.title, "utf8").lower().encode("utf8") for server in server_black_list):
+            if any(server in unicode(item.title, "utf8").lower().encode("utf8")
+                   for server in server_black_list):
                 # logger.info("found")
                 black_counter += 1
+
+            # Se pasa a 'new_list' si el servidor no estaba en la lista negra.
             else:
                 new_list.append(item)
-                # logger.info("not found")
 
     logger.info("WhiteList server %s has #%d rows" %
                 (server_white_list, white_counter))
     logger.info("BlackList server %s has #%d rows" %
                 (server_black_list, black_counter))
+    logger.info("Rest has #%d rows" % (len(new_list) - white_counter))
 
     if len(new_list) == 0:
         new_list = itemlist
 
+    # logger.debug("Outlet itemlist size: %i" % len(new_list))
     return new_list
 
 
 def reorder_itemlist(itemlist):
     logger.info()
+    # logger.debug("Inlet itemlist size: %i" % len(itemlist))
+
     new_list = []
     mod_list = []
     not_mod_list = []
@@ -430,7 +454,9 @@ def reorder_itemlist(itemlist):
     for item in itemlist:
         old_title = unicode(item.title, "utf8").lower().encode("utf8")
         for before, after in to_change:
-            item.title = item.title.replace(before, after)
+            if before in item.title:
+                item.title = item.title.replace(before, after)
+                break
 
         new_title = unicode(item.title, "utf8").lower().encode("utf8")
         if old_title != new_title:
@@ -439,6 +465,8 @@ def reorder_itemlist(itemlist):
         else:
             not_mod_list.append(item)
             not_modified += 1
+
+        # logger.debug("OLD: %s | NEW: %s" % (old_title, new_title))
 
     new_list.extend(mod_list)
     new_list.extend(not_mod_list)
@@ -449,11 +477,13 @@ def reorder_itemlist(itemlist):
     if len(new_list) == 0:
         new_list = itemlist
 
+    # logger.debug("Outlet itemlist size: %i" % len(new_list))
     return new_list
 
 
 def limit_itemlist(itemlist):
     logger.info()
+    # logger.debug("Inlet itemlist size: %i" % len(itemlist))
 
     new_list = []
 
@@ -464,6 +494,8 @@ def limit_itemlist(itemlist):
         else:
             i_max = 30 * opt
             new_list = itemlist[:i_max]
+
+        # logger.debug("Outlet itemlist size: %i" % len(new_list))
         return new_list
     except:
         return itemlist

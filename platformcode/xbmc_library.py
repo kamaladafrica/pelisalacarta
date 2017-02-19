@@ -108,10 +108,10 @@ def sync_trakt(silent=True):
 
     # Para que la sincronizacion no sea silenciosa vale con silent=False
     if xbmc.getCondVisibility('System.HasAddon("script.trakt")'):
-        if xbmc.executebuiltin('RunScript(script.trakt,action=sync,silent=%s)' % silent):
-            logger.info("Sincronizacion con Trakt iniciada")
-            platformtools.dialog_notification("pelisalacarta",
-                                              "Sincronizacion con Trakt iniciada")
+        xbmc.executebuiltin('RunScript(script.trakt,action=sync,silent=%s)' % silent)
+        logger.info("Sincronizacion con Trakt iniciada")
+        platformtools.dialog_notification("pelisalacarta",
+                                          "Sincronizacion con Trakt iniciada")
 
 
 def mark_content_as_watched_on_kodi(item, value=1):
