@@ -253,8 +253,32 @@ def get_nfo(item):
     @return:
     """
     logger.info()
-    if scraper:
-        return scraper.get_nfo(item)
-    else:
+    logger.info("mojon %s" % item)
+    if "infoLabels" in item and "noscrap_id" in item.infoLabels:
         # TODO crear el fichero xml con los datos que se obtiene de item ya que no hay ningún scraper activo
-        return "\n"
+        info_nfo = '<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>'
+
+        if "season" in item.infoLabels and "episode" in item.infoLabels:
+            info_nfo += '<episodedetails><title>%s</title>' % item.infoLabels['title']
+            info_nfo += '<showtitle>%s</showtitle>' % item.infoLabels['tvshowtitle']
+            info_nfo += '<thumb>%s</thumb>' % item.thumbnail
+
+            info_nfo += '</episodedetails>\n'
+
+        elif item.infoLabels["mediatype"] == "tvshow":
+            info_nfo += '<tvshow><title>%s</title>' % item.infoLabels['title']
+            info_nfo += '<thumb aspect="poster">%s</thumb>' % item.thumbnail
+            info_nfo += '<fanart><thumb>%s</thumb></fanart>' % item.fanart
+
+            info_nfo += '</tvshow>\n'
+
+        else:
+            info_nfo += '<movie><title>%s</title>' % item.infoLabels['title']
+            info_nfo += '<thumb aspect="poster">%s</thumb>' % item.thumbnail
+            info_nfo += '<fanart><thumb>%s</thumb></fanart>' % item.fanart
+
+            info_nfo += '</movie>\n'
+
+        return info_nfo
+    else:
+        return scraper.get_nfo(item)
