@@ -508,7 +508,7 @@ def play(item):
         subtitle = save_sub(data_sub)
 
         from lib import jsunpack
-        match = scrapertools.find_single_match(data, '<script type="text/javascript">(.*?)</script>')
+        match = scrapertools.find_single_match(data, '<script type="text/rocketscript">(.*?)</script>')
         data = jsunpack.unpack(match)
         data = data.replace("\\'", "'")
 
