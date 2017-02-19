@@ -92,8 +92,11 @@ otvdb_global = None
 
 def find_and_set_infoLabels(item):
     logger.info()
-    from platformcode import platformtools
-    p_dialog = platformtools.dialog_progress_bg("Buscando información de la serie", "Espere por favor...")
+    logger.info("item es %s" % item)
+
+    if not item.contentSeason:
+        from platformcode import platformtools
+        p_dialog = platformtools.dialog_progress_bg("Buscando información de la serie", "Espere por favor...")
 
     global otvdb_global
     tvdb_result = None
@@ -114,13 +117,14 @@ def find_and_set_infoLabels(item):
     elif not otvdb_global or otvdb_global.result.get("id") != item.infoLabels['tvdb_id']:
         otvdb_global = Tvdb(tvdb_id=item.infoLabels['tvdb_id'])  # , tipo=tipo_busqueda, idioma_busqueda="es")
 
-    p_dialog.update(50, "Buscando información de la serie", "Obteniendo resultados...")
+    if not item.contentSeason:
+        p_dialog.update(50, "Buscando información de la serie", "Obteniendo resultados...")
     results = otvdb_global.get_list_results()
     logger.debug("results es %s" % results)
 
-    p_dialog.update(100, "Buscando información de la serie", "Encontrados %s posibles coincidencias" % len(results))
-
-    p_dialog.close()
+    if not item.contentSeason:
+        p_dialog.update(100, "Buscando información de la serie", "Encontrados %s posibles coincidencias" % len(results))
+        p_dialog.close()
 
     if len(results) > 1:
         tvdb_result = platformtools.show_video_info(results, item=item, scraper=Tvdb,
