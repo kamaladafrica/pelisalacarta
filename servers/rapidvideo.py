@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Conector para rapidvideo
@@ -34,7 +34,7 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
     
     return video_urls
 
-# Encuentra vídeos de este servidor en el texto pasado
+# Encuentra vÃ­deos de este servidor en el texto pasado
 def find_videos(text):
     encontrados = set()
     devuelve = []

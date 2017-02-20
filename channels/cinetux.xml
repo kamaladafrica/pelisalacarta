@@ -7,14 +7,24 @@
 	<adult>false</adult>
 	<language>es</language>
 
+	<version>7</version>
+	<changes>
+		<change>
+			<date>16/02/2017</date>
+			<autor>Cmos</autor>
+			<description>Adaptado a httptools y añadidos enlaces directos</description>
+		</change>
+		<change>
+			<date>08/07/2016</date>
+			<autor>Cmos</autor>
+			<description>Correciones y adaptaciones a la nueva version</description>
+		</change>
+	</changes>
+
 	<fanart></fanart>
 	<thumbnail>http://media.tvalacarta.info/pelisalacarta/squares/cinetux.png</thumbnail>
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/cinetux.png</bannermenu>
-
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>6</version>
-	<date>08/07/2016</date>
-	<changes>Correciones y adaptaciones a la nueva version</changes>
 
 	<categories>
 		<category>latino</category>
@@ -41,6 +51,14 @@
 		<id>include_in_newest_documentales</id>
 		<type>bool</type>
 		<label>Incluir en Novedades - Documentales</label>
+		<default>true</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<id>include_in_newest_infantiles</id>
+		<type>bool</type>
+		<label>Incluir en Novedades - Infantiles</label>
 		<default>true</default>
 		<enabled>true</enabled>
 		<visible>true</visible>

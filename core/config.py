@@ -91,10 +91,10 @@ def get_setting(name, channel=""):
     # Specific channel setting
     if channel:
 
-        # xbmc.log("config.get_setting reading channel setting '"+name+"' from channel xml")
+        # logger.info("config.get_setting reading channel setting '"+name+"' from channel xml")
         from core import channeltools
         value = channeltools.get_channel_setting(name, channel)
-        # xbmc.log("config.get_setting -> '"+repr(value)+"'")
+        # logger.info("config.get_setting -> '"+repr(value)+"'")
 
         if value is not None:
             return value
@@ -103,13 +103,13 @@ def get_setting(name, channel=""):
 
     # Global setting
     else:
-        # xbmc.log("config.get_setting reading main setting '"+name+"'")
+        # logger.info("config.get_setting reading main setting '"+name+"'")
         value = __settings__.getSetting(channel + name)
         # Translate Path if start with "special://"
         if value.startswith("special://") and "librarypath" not in name:
             value = xbmc.translatePath(value)
 
-        # xbmc.log("config.get_setting -> '"+value+"'")
+        # logger.info("config.get_setting -> '"+value+"'")
         return value
 
 
@@ -162,24 +162,12 @@ def get_localized_string(code):
 
 
 def get_library_path():
-
-    if get_system_platform() == "xbox":
-        default = xbmc.translatePath(os.path.join(get_runtime_path(), "library"))
-    else:
-        default = xbmc.translatePath("special://profile/addon_data/plugin.video." +
-                                     PLUGIN_NAME + "/library")
-
     value = get_setting("librarypath")
     if value == "":
-        value = default
+        verify_directories_created()
+        value = get_setting("librarypath")
 
-    if value.lower().startswith("special://"):
-        value = xbmc.translatePath(value)
-
-    if value.lower().startswith("smb://") and not value.endswith("/"):
-        value += "/"
-
-    return value
+    return xbmc.translatePath(value)
 
 
 def get_temp_file(filename):
@@ -193,7 +181,7 @@ def get_runtime_path():
 def get_data_path():
     dev = xbmc.translatePath(__settings__.getAddonInfo('Profile'))
 
-    # Parche para XBMC4XBOX
+    #Crea el directorio si no existe
     if not os.path.exists(dev):
         os.makedirs(dev)
 
@@ -213,78 +201,25 @@ def get_cookie_data():
 
 # Test if all the required directories are created
 def verify_directories_created():
-    import logger
-
+    from core import logger
     from core import filetools
 
-    # Force download path if empty
-    download_path = get_setting("downloadpath")
-    if download_path == "":
-        if is_xbmc():
-            download_path = "special://profile/addon_data/plugin.video." + PLUGIN_NAME + "/downloads"
-        else:
-            download_path = filetools.join(get_data_path(), "downloads")
+    config_paths = [["librarypath",      "library"],
+                    ["downloadpath",     "downloads"],
+                    ["downloadlistpath", "downloads/list"],
+                    ["settings_path",    "settings_channels"]]
 
-        set_setting("downloadpath", download_path)
+    for path, default in config_paths:
+        saved_path = get_setting(path)
+        if not saved_path:
+            saved_path = "special://profile/addon_data/plugin.video." + PLUGIN_NAME + "/" + default
+            set_setting(path, saved_path)
 
-    # Force download list path if empty
-    download_list_path = get_setting("downloadlistpath")
-    if download_list_path == "":
-        if is_xbmc():
-            download_list_path = "special://profile/addon_data/plugin.video." + PLUGIN_NAME + "/downloads/list"
-        else:
-            download_list_path = filetools.join(get_data_path(), "downloads", "list")
+        saved_path = xbmc.translatePath(saved_path)
+        if not filetools.exists(saved_path):
+            logger.debug("Creating %s: %s" % (path, saved_path))
+            filetools.mkdir(saved_path)
 
-        set_setting("downloadlistpath", download_list_path)
-
-    # Create data_path if not exists
-    if not os.path.exists(get_data_path()):
-        logger.debug("Creating data_path " + get_data_path())
-
-        filetools.mkdir(get_data_path())
-
-    if is_xbmc():
-        # xbmc.log("Es una plataforma XBMC")
-        if download_path.startswith("special://"):
-            # Translate from special and create download_path if not exists
-            download_path = xbmc.translatePath(download_path)
-            texto = "(from special)"
-        else:
-            texto = ""
-
-        # TODO si tiene smb se debería poder dejar que cree? filetools permite crear carpetas para SMB
-        if not download_path.lower().startswith("smb") and not filetools.exists(download_path):
-            logger.debug("Creating download_path" + texto + ": " + download_path)
-            filetools.mkdir(download_path)
-
-        if download_list_path.startswith("special://"):
-            # Create download_list_path if not exists
-            download_list_path = xbmc.translatePath(download_list_path)
-            texto = "(from special)"
-        else:
-            texto = ""
-
-        # TODO si tiene smb se debería poder dejar que cree? filetools permite crear carpetas para SMB
-        if not download_list_path.lower().startswith("smb") and not filetools.exists(download_list_path):
-            logger.debug("Creating download_list_path" + texto + ": " + download_list_path)
-            filetools.mkdir(download_list_path)
-
-    # Create library_path if not exists
-    # TODO si tiene smb se debería poder dejar que cree? filetools permite crear carpetas para SMB
-    if not get_library_path().lower().startswith("smb") and not os.path.exists(get_library_path()):
-        librarypath = get_library_path()
-        logger.debug("Creating library_path " + librarypath)
-        if filetools.mkdir(librarypath):
+        # Biblioteca
+        if path == "librarypath":
             set_setting("library_version", "v4")
-
-    # Create settings_path is not exists
-    settings_path = filetools.join(get_data_path(), "settings_channels")
-    if not filetools.exists(settings_path):
-        logger.debug("Creating settings_path " + settings_path)
-        filetools.mkdir(settings_path)
-
-    # Checks that a directory "xbmc" is not present on platformcode
-    old_xbmc_directory = os.path.join(get_runtime_path(), "platformcode", "xbmc")
-    if os.path.exists(old_xbmc_directory):
-        logger.debug("Removing old platformcode.xbmc directory")
-        filetools.rmdirtree(old_xbmc_directory)

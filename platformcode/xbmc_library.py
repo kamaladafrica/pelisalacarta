@@ -388,7 +388,7 @@ def establecer_contenido(content_type, silent=False):
         msg_text = "Ruta Biblioteca personalizada"
 
         librarypath = config.get_setting("librarypath")
-        if librarypath == "":
+        if librarypath == "special://profile/addon_data/plugin.video.pelisalacarta/library":
             continuar = True
             if content_type == FOLDER_MOVIES:
                 if not xbmc.getCondVisibility('System.HasAddon(metadata.themoviedb.org)'):

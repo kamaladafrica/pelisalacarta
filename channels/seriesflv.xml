@@ -12,9 +12,14 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/seriesflv.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>4</version>
+	<version>5</version>
 
 	<changes>
+		<change>
+			<date>01/02/17</date>
+			<autor>Dragonfir3</autor>
+			<description>Añadido listado alfabético, uso de httptools y limpieza de código.</description>
+		</change>
 		<change>
 			<date>01/07/16</date>
 			<autor>SeiTaN</autor>
@@ -30,6 +35,8 @@
 	<categories>
 		<category>serie</category>
 		<category>anime</category>
+		<category>latino</category>
+		<category>vos</category>
 	</categories>
 
 	<settings>
