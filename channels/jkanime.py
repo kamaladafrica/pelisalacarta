@@ -189,6 +189,12 @@ def series(item):
         pass
     return itemlist
 
+def getPagesAndEpisodes(data):
+    results = re.findall('href="#pag([0-9]+)">[0-9]+ - ([0-9]+)', data)
+    if results:
+        return int(results[-1][0]), int(results[-1][1])
+    return 1, 0
+
 def episodios(item):
     logger.info("pelisalacarta.channels.jkanime episodios")
     itemlist = []
@@ -202,15 +208,13 @@ def episodios(item):
     
     idserie = scrapertools.get_match(data,"ajax/pagination_episodes/(\d+)/")
     logger.info("idserie="+idserie)
-    if " Eps" in item.extra:
+    if " Eps" in item.extra and not "Desc" in item.extra:
         caps_x = item.extra
         caps_x = caps_x.replace(" Eps","")
         capitulos = int(caps_x)
-        paginas = capitulos/10
-        if capitulos%10>0:
-            paginas += 1
+        paginas = capitulos/10 + (capitulos%10 > 0)
     else:
-        paginas = 1
+        paginas, capitulos = getPagesAndEpisodes(data)
     
     logger.info("idserie="+idserie)
     for numero in range(1,paginas + 1):
