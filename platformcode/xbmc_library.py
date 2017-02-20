@@ -344,10 +344,7 @@ def update(content_type=FOLDER_TVSHOWS, folder=""):
     """
     logger.info()
 
-    librarypath = config.get_setting("librarypath")
-    if librarypath == "":
-        librarypath = "special://home/userdata/addon_data/plugin.video." + config.PLUGIN_NAME + "/library/" + \
-                      content_type + "/"
+    librarypath = config.get_library_config_path()
 
     # Si termina en "/" lo eliminamos
     if librarypath.endswith("/"):
@@ -501,7 +498,9 @@ def establecer_contenido(content_type, silent=False):
             strPath = ""
             if continuar:
                 continuar = False
-                librarypath = "special://home/userdata/addon_data/plugin.video." + config.PLUGIN_NAME + "/library/"
+                librarypath = config.get_library_config_path()
+                if not librarypath.endswith("/"):
+                    librarypath = librarypath + "/"
 
                 # Buscamos el idPath
                 sql = 'SELECT MAX(idPath) FROM path'

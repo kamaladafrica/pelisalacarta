@@ -161,13 +161,15 @@ def get_localized_string(code):
     return dev
 
 
-def get_library_path():
+def get_library_config_path():
     value = get_setting("librarypath")
     if value == "":
         verify_directories_created()
         value = get_setting("librarypath")
+    return value
 
-    return xbmc.translatePath(value)
+def get_library_path():
+    return xbmc.translatePath(get_library_config_path())
 
 
 def get_temp_file(filename):
