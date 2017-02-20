@@ -379,9 +379,10 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
 
     def add_control_list(self, c):
         control = xbmcgui.ControlButton(0, -100, self.controls_width, self.height_control,
-                                        c["label"], font=self.font, textOffsetX=0, textColor=c["color"],
-                                        focusTexture=os.path.join(self.mediapath, 'Controls', 'MenuItemFO.png'),
-                                        noFocusTexture=os.path.join(self.mediapath, 'Controls','MenuItemNF.png'))
+                                        c["label"], os.path.join(self.mediapath, 'Controls', 'MenuItemFO.png'),
+                                        os.path.join(self.mediapath, 'Controls','MenuItemNF.png'),
+                                        0, textColor=c["color"], 
+                                        font=self.font)
 
         label = xbmcgui.ControlLabel(0, -100, self.controls_width - 30, self.height_control,
                                      "", font=self.font, textColor=c["color"], alignment=4 | 1)
@@ -414,10 +415,11 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
 
     def add_control_text(self, c):
         if xbmcgui.ControlEdit == ControlEdit:
-            control = xbmcgui.ControlEdit(0 -100, self.controls_width - 5, self.height_control,
-                                          c["label"], font=self.font, isPassword=c["hidden"], textColor=c["color"],
-                                          focusTexture=os.path.join(self.mediapath, 'Controls', 'MenuItemFO.png'),
-                                          noFocusTexture=os.path.join(self.mediapath, 'Controls', 'MenuItemNF.png'), window=self)
+            control = xbmcgui.ControlEdit(0, -100, self.controls_width, self.height_control,
+                                        c["label"], os.path.join(self.mediapath, 'Controls', 'MenuItemFO.png'),
+                                        os.path.join(self.mediapath, 'Controls','MenuItemNF.png'),
+                                        0, textColor=c["color"], 
+                                        font=self.font, isPassword=c["hidden"], window=self)
 
         else:
             control = xbmcgui.ControlEdit(0, -100, self.controls_width - 5, self.height_control,
@@ -636,7 +638,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
 
                     else:
                         c["control"].setPosition(self.controls_pos_x, c["y"])
-                        if config.get_platform() == "boxee":
+                        if xbmcgui.__version__ == "1.2":
                             c["label"].setPosition(self.controls_pos_x + self.controls_width - 30, c["y"])
                         else:
                             c["label"].setPosition(self.controls_pos_x, c["y"])
@@ -972,7 +974,10 @@ class ControlEdit(xbmcgui.ControlButton):
 
     def setPosition(self, x, y):
         xbmcgui.ControlButton.setPosition(self, x, y)
-        self.textControl.setPosition(x + self.getWidth() / 2, y)
+        if xbmcgui.__version__ == "1.2":
+          self.textControl.setPosition(x + self.getWidth(), y)
+        else:
+          self.textControl.setPosition(x + self.getWidth() / 2, y)
 
     def setText(self, text):
         self.text = text
