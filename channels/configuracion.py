@@ -63,7 +63,9 @@ def mainlist(item):
                          folder=True, thumbnail=get_thumbnail_path("thumb_novedades.png")))
     itemlist.append(Item(channel="buscador", title="   Ajustes del buscador global", action="opciones", folder=True,
                          thumbnail=get_thumbnail_path("thumb_buscar.png")))
-
+    itemlist.append(Item(channel=CHANNELNAME, title="   Ajustes de descargas", action="channel_config", config="descargas", folder=True,
+                         thumbnail=get_thumbnail_path("thumb_descargas.png")))
+                         
     if config.get_library_support():
         itemlist.append(Item(channel="biblioteca", title="   Ajustes de la biblioteca",
                              action="channel_config", folder=True,
