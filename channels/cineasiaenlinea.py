@@ -81,6 +81,7 @@ def newest(categoria):
     try:
         if categoria == 'peliculas':
             item.url = host+"archivos/peliculas"
+            item.action = "peliculas"
             itemlist = peliculas(item)
 
             if itemlist[-1].action == "peliculas":
