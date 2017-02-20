@@ -203,6 +203,14 @@
 		<visible>eq(-3,true)</visible>
 	</settings>
 	<settings>
+		<id>sync_trakt_notification</id>
+		<type>bool</type>
+		<label>        Mostrar notificación</label>
+		<default>true</default>
+		<enabled>true</enabled>
+		<visible>eq(-1,true)</visible>
+	</settings>
+	<settings>
 		<id>sync_trakt_new_tvshow</id>
 		<type>bool</type>
 		<label>    Al añadir una serie a la biblioteca</label>
