@@ -106,7 +106,7 @@ def listado(item):
     if "Estrenos" in item.title:
         bloque_head = "ESTRENOS CARTELERA"
     elif "Series" in item.title:
-        bloque_head = "SERIES RECIENTES"
+        bloque_head = "RECIENTE SERIES"
         item.infoLabels['mediatype'] = "tvshow"
     else:
         bloque_head = "RECIENTE PELICULAS"
