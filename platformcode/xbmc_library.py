@@ -74,7 +74,7 @@ def mark_auto_as_watched(item):
 
             mark_time = 0
             if condicion == 0:  # '5 minutos'
-                mark_time = 300000  # FOR DEBUG = 30
+                mark_time = 300
             elif condicion == 1:  # '30%'
                 mark_time = totaltime * 0.3
             elif condicion == 2:  # '50%'

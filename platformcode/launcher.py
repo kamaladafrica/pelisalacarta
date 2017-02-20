@@ -587,4 +587,3 @@ def play_from_library(item):
             else:
                 item = biblioteca.play(itemlist[seleccion])[0]
                 platformtools.play_video(item)
-                xbmc_library.mark_auto_as_watched(itemlist[seleccion])
