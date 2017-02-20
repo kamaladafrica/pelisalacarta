@@ -1,41 +1,34 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <channel>
-	<id>cineasiaenlinea</id>
-	<name>CineAsiaEnLinea</name>
-
+	<id>peliculasnu</id>
+	<name>Peliculas.Nu</name>
+	<language>es</language>
 	<active>true</active>
 	<adult>false</adult>
-	<language>es</language>
 
-	<fanart></fanart>
-	<thumbnail>http://i.imgur.com/5KOU8uy.png?3</thumbnail>
-	<bannermenu>http://i.imgur.com/k72CZD7.png?1</bannermenu>
-
-	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>2</version>
-
+	<version>1</version>
 	<changes>
 		<change>
-			<date>07/02/17</date>
-			<autor>super_berny</autor>
-			<description>Fix bug in newest</description>
-		</change>
-		<change>
-			<date>09/01/2017</date>
+			<date>16/02/2017</date>
 			<autor>Cmos</autor>
-			<description>Primera version</description>
+			<description>Versión inicial</description>
 		</change>
 	</changes>
+
+	<fanart></fanart>
+	<thumbnail>http://i.imgur.com/2iupwXE.png</thumbnail>
+	<bannermenu></bannermenu>
+	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
 
 	<categories>
 		<category>movie</category>
 		<category>vos</category>
+		<category>latino</category>
 	</categories>
-
 	<settings>
 		<id>include_in_global_search</id>
 		<type>bool</type>
-		<label>Incluir en búsqueda global</label>
+		<label>Incluir en busqueda global</label>
 		<default>true</default>
 		<enabled>true</enabled>
 		<visible>true</visible>
@@ -49,13 +42,20 @@
 		<visible>true</visible>
 	</settings>
 	<settings>
+		<id>modo_grafico</id>
+		<type>bool</type>
+		<label>Buscar información extra</label>
+ 		<default>true</default>
+ 		<enabled>true</enabled>
+ 		<visible>true</visible>
+ 	</settings>
+	<settings>
 		<id>perfil</id>
 		<type>list</type>
 		<label>Perfil de color</label>
-		<default>3</default>
+		<default>2</default>
 		<enabled>true</enabled>
 		<visible>true</visible>
-		<lvalues>Sin color</lvalues>
 		<lvalues>Perfil 3</lvalues>
 		<lvalues>Perfil 2</lvalues>
 		<lvalues>Perfil 1</lvalues>

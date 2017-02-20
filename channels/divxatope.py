@@ -173,7 +173,7 @@ def lista(item):
             itemlist.append( Item(channel=item.channel, action="episodios", title=title , fulltitle = title, url=url ,
                                   thumbnail=thumbnail , plot=plot , folder=True, hasContentDetails="true",
                                   contentTitle=contentTitle, language=idioma, contentSeason=int(temporada),
-                                  contentEpisodeNumber=int(episodio), contentCalidad=calidad))
+                                  contentEpisodeNumber=int(episodio), contentQuality=calidad))
 
         else:
             if len(matches) == 2:
@@ -183,7 +183,7 @@ def lista(item):
             itemlist.append( Item(channel=item.channel, action="findvideos", title=title , fulltitle = title, url=url ,
                                   thumbnail=thumbnail , plot=plot , folder=True, hasContentDetails="true",
                                   contentTitle=contentTitle, language=idioma, contentThumbnail=thumbnail,
-                                  contentCalidad=calidad))
+                                  contentQuality=calidad))
 
     next_page_url = scrapertools.find_single_match(data1,'<li><a href="([^"]+)">Next</a></li>')
     if next_page_url!="":

@@ -51,7 +51,6 @@ def get_library_support():
 
 def get_system_platform():
     """ fonction: pour recuperer la platform que xbmc tourne """
-    import xbmc
     platform = "unknown"
     if xbmc.getCondVisibility("system.platform.linux"):
         platform = "linux"
@@ -107,7 +106,7 @@ def get_setting(name, channel=""):
         # logger.info("config.get_setting reading main setting '"+name+"'")
         value = __settings__.getSetting(channel + name)
         # Translate Path if start with "special://"
-        if value.startswith("special://") and name != "librarypath":
+        if value.startswith("special://") and "librarypath" not in name:
             value = xbmc.translatePath(value)
 
         # logger.info("config.get_setting -> '"+value+"'")
@@ -162,13 +161,15 @@ def get_localized_string(code):
     return dev
 
 
-def get_library_path():
+def get_library_config_path():
     value = get_setting("librarypath")
     if value == "":
         verify_directories_created()
         value = get_setting("librarypath")
+    return value
 
-    return xbmc.translatePath(value)
+def get_library_path():
+    return xbmc.translatePath(get_library_config_path())
 
 
 def get_temp_file(filename):
@@ -208,21 +209,19 @@ def verify_directories_created():
     config_paths = [["librarypath",      "library"],
                     ["downloadpath",     "downloads"],
                     ["downloadlistpath", "downloads/list"],
-                    ["bookmarkpath",     "favorites"],
                     ["settings_path",    "settings_channels"]]
-    
-    
-    for path, default in config_paths:
-      saved_path = get_setting(path)
-      if not saved_path:
-        saved_path = "special://profile/addon_data/plugin.video." + PLUGIN_NAME + "/" + default
-        set_setting(path, saved_path)
 
-      saved_path = xbmc.translatePath(saved_path)
-      if not filetools.exists(saved_path): 
-        logger.debug("Creating %s: %s" % (path, saved_path))
-        filetools.mkdir(saved_path)
-        
-        #Biblioteca
+    for path, default in config_paths:
+        saved_path = get_setting(path)
+        if not saved_path:
+            saved_path = "special://profile/addon_data/plugin.video." + PLUGIN_NAME + "/" + default
+            set_setting(path, saved_path)
+
+        saved_path = xbmc.translatePath(saved_path)
+        if not filetools.exists(saved_path):
+            logger.debug("Creating %s: %s" % (path, saved_path))
+            filetools.mkdir(saved_path)
+
+        # Biblioteca
         if path == "librarypath":
-          set_setting("library_version", "v4")
+            set_setting("library_version", "v4")

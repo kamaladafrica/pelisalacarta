@@ -16,6 +16,11 @@
 	
 	<changes>
 		<change>
+			<date>07/02/17</date>
+			<autor>super_berny</autor>
+			<description>Añadir cuadro de progreso</description>
+		</change>
+		<change>
 			<date>01/07/16</date>
 			<autor>SeiTaN</autor>
 			<description>Eliminado código innecesario.</description>
@@ -34,8 +39,8 @@
 	<settings>
 		<id>multithread</id>
 		<type>bool</type>
-		<label>MultiThread</label>
-		<default>false</default>
+		<label>Buscar de manera concurrente (multiprocesos)</label>
+		<default>true</default>
 		<enabled>true</enabled>
 		<visible>true</visible>
 	</settings>
@@ -49,5 +54,18 @@
 		<lvalues>Agrupados por contenido</lvalues>
 		<lvalues>Agrupados por canales</lvalues>
 		<lvalues>Sin Agrupar</lvalues>
+	</settings>
+    <settings>
+		<id>perfil</id>
+		<type>list</type>
+		<label>Perfil de color</label>
+		<default>0</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+		<lvalues>Frio</lvalues>
+		<lvalues>Calido</lvalues>
+		<lvalues>Lila</lvalues>
+        <lvalues>Pastel</lvalues>
+        <lvalues>Vivos</lvalues>
 	</settings>
 </channel>

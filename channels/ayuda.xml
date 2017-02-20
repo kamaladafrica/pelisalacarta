@@ -13,8 +13,13 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/ayuda.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>3</version>
+	<version>4</version>
 	<changes>
+		<change>
+			<date>17/02/2017</date>
+			<autor>kerenmac</autor>
+			<description>Optimizado el sistema de modificacion y restauracion de advancedsettings.xml. Creada alerta para equipos lentos o TV-BOX sobre 'ZeroCache'. Tambien se ha creado el apartado FAQ con atajos para dudas/problemas tipicos.</description>
+		</change>
 		<change>
 			<date>13/07/2016</date>
 			<autor>kerenmac</autor>

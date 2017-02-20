@@ -141,11 +141,9 @@ def buscador(item):
         url = urlparse.urljoin(item.url,scrapedurl)
         logger.debug("title=["+title+"], url=["+url+"]")
 
-        itemlist.append( Item(channel=item.channel, action="episodios", title=title , url=url , folder=True, extra="docu", viewmode="movie_with_plot") )
-
-    if len(itemlist) == 0:
-        itemlist.append( Item(channel=item.channel, action="mainlist", title="No se han encontrado nada con ese término" ) )
-
+        itemlist.append(Item(channel=item.channel, action="episodios",
+                             title=title, url=url, folder=True, extra="docu",
+                             viewmode="movie_with_plot") )
 
     return itemlist
 
