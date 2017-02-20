@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Conector para Veoh
@@ -25,7 +25,7 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
     logger.info("[veoh.py] url="+url)
     data = scrapertools.cachePage(url)
     
-    # Extrae el vídeo
+    # Extrae el vÃ­deo
     patronvideos  = '<a href="(http://content.veoh.com.*?)"'
     matches = re.compile(patronvideos,re.DOTALL).findall(data)
     if len(matches)>0:
@@ -36,7 +36,7 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
 
     return video_urls
 
-# Encuentra vídeos del servidor en el texto pasado
+# Encuentra vÃ­deos del servidor en el texto pasado
 def find_videos(data):
     encontrados = set()
     devuelve = []

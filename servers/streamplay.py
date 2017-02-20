@@ -54,7 +54,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     for video_url in matches:
         _hash = scrapertools.find_single_match(video_url, '\w{40,}')
         if splice:
-            splice = eval(scrapertools.find_single_match(jj_decode, "\((\d[^,]*),\d\);"))
+            splice = eval(scrapertools.find_single_match(jhex_decode, "splice\((\d[^,]*),\d\);"))
             if reverse:
                 h = list(_hash)
                 h.pop(-splice - 1)

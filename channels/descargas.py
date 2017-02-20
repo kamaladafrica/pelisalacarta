@@ -48,8 +48,9 @@ TITLE_TVSHOW = "[COLOR %s][%i%%][/COLOR] %s [%s]"
 
 
 def mainlist(item):
-    logger.info("pelisalacarta.channels.descargas mainlist")
+    logger.info()
     itemlist = []
+    
     #Lista de archivos
     for file in sorted(filetools.listdir(DOWNLOAD_LIST_PATH)):
         #Saltamos todos los que no sean JSON
@@ -120,6 +121,22 @@ def mainlist(item):
         itemlist.insert(0, Item(channel=item.channel, action="clean_all", title="Eliminar todo",
                                 contentType = item.contentType, contentChannel=item.contentChannel, contentSerieName = item.contentSerieName))
 
+    if not item.contentType == "tvshow" and config.get_setting("browser", "descargas") == True:
+        itemlist.insert(0, Item(channel=item.channel, action="browser", title="Ver archivos descargados", url = DOWNLOAD_PATH))
+    
+    return itemlist
+
+
+def browser(item):
+    logger.info()
+    itemlist = []
+    
+    for file in filetools.listdir(item.url):
+      if filetools.isdir(filetools.join(item.url, file)) and not file == "list":
+        itemlist.append(Item(channel=item.channel, title=file, action=item.action, url= filetools.join(item.url, file)))
+      else:
+        itemlist.append(Item(channel=item.channel, title=file, action="play", url= filetools.join(item.url, file)))
+    
     return itemlist
 
 
@@ -235,6 +252,9 @@ def menu(item):
 
 
 def move_to_libray(item):
+    if not config.get_setting("library_move", "descargas") == True: 
+      return
+      
     try:
       from core import library
     except:
@@ -481,12 +501,14 @@ def download_from_server(item):
         except:
           logger.error("Error en el canal %s" % item.contentChannel)
         else:
-          if len(itemlist):
+          if len(itemlist) and isinstance(itemlist[0], Item):
               download_item = item.clone(**itemlist[0].__dict__)
               download_item.contentAction = download_item.action
               download_item.infoLabels = item.infoLabels
               item = download_item
-
+          elif len(itemlist) and isinstance(itemlist[0], list):
+              item.video_urls = itemlist
+              if not item.server: item.server = "directo"
           else:
               logger.info("No hay nada que reproducir")
               return {"downloadStatus": STATUS_CODES.error}
@@ -497,8 +519,11 @@ def download_from_server(item):
     if not item.server or not item.url or not item.contentAction == "play" or item.server in unsupported_servers:
       logger.error("El Item no contiene los parametros necesarios.")
       return {"downloadStatus": STATUS_CODES.error}
-      
-    video_urls, puedes, motivo = servertools.resolve_video_urls_for_playing(item.server, item.url, item.password, True)
+    
+    if not item.video_urls:   
+      video_urls, puedes, motivo = servertools.resolve_video_urls_for_playing(item.server, item.url, item.password, True)
+    else:
+      video_urls, puedes, motivo = item.video_urls, True, ""
 
      # Si no esta disponible, salimos
     if not puedes:
@@ -688,7 +713,8 @@ def write_json(item):
 
     
 def save_download(item):
-    logger.info("pelisalacarta.channels.descargas save_download")
+    logger.info()
+    
     # Menu contextual
     if item.from_action and item.from_channel:
         item.channel = item.from_channel
@@ -705,27 +731,18 @@ def save_download(item):
     elif item.contentType == "movie":
         save_download_movie(item)
     
-    elif item.contentType == "video":
-        save_download_video(item)
     else:
-        logger.error("ContentType no admitido")
+        save_download_video(item)
+
 
 def save_download_video(item):
     logger.info("contentAction: %s | contentChannel: %s | contentTitle: %s" % (item.contentAction, item.contentChannel, item.contentTitle))
-    progreso = platformtools.dialog_progress("Descargas", "Añadiendo video...")
-    
 
-    if not item.contentTitle:
-      item.contentTitle = re.sub("\[[^\]]+\]|\([^\)]+\)","",item.fulltitle).strip()
-      
-    if not item.contentTitle:
-      item.contentTitle = re.sub("\[[^\]]+\]|\([^\)]+\)","",item.title).strip()
+    set_movie_title(item)
       
     item.downloadFilename = filetools.validate_path("%s [%s]" % (item.contentTitle.strip(), item.contentChannel))
 
     write_json(item)
-
-    progreso.close()
     
     if not platformtools.dialog_yesno(config.get_localized_string(30101), "¿Iniciar la descarga ahora?"):
         platformtools.dialog_ok(config.get_localized_string(30101), item.contentTitle,
@@ -739,10 +756,11 @@ def save_download_movie(item):
     
     progreso = platformtools.dialog_progress("Descargas", "Obteniendo datos de la pelicula")
     
+    set_movie_title(item)
+      
     result = scraper.find_and_set_infoLabels(item)
     if not result:
       progreso.close()
-      item.contentType = "video"
       return save_download_video(item)
     
     progreso.update(0, "Añadiendo pelicula...")
@@ -790,3 +808,10 @@ def save_download_tvshow(item):
             if res == STATUS_CODES.canceled:
                 break
 
+
+def set_movie_title(item):
+    if not item.contentTitle:
+      item.contentTitle = re.sub("\[[^\]]+\]|\([^\)]+\)","",item.fulltitle).strip()
+      
+    if not item.contentTitle:
+      item.contentTitle = re.sub("\[[^\]]+\]|\([^\)]+\)","",item.title).strip()

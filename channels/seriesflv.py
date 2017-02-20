@@ -13,23 +13,18 @@ from core import config
 from core import logger
 from core import scrapertools
 from core import servertools
+from core import httptools
 from core.item import Item
 
-DEBUG = config.get_setting("debug")
-CHANNEL_HOST = 'http://www.seriesflv.net'
-CHANNEL_HEADERS = [
-    ['User-Agent', 'Mozilla/5.0'],
-    ['Accept-Encoding', 'gzip, deflate'],
-    ['Referer', CHANNEL_HOST],
-    ['Connection', 'keep-alive']
-]
+CHANNEL_HOST = 'http://www.seriesflv.net/'
 
 
 def mainlist(item):
-    logger.info("pelisalacarta.channels.seriesflv mainlist")
+    logger.info()
 
     itemlist = list()
     itemlist.append(Item(channel=item.channel, action="menuepisodios", title="Últimos episodios..."))
+    itemlist.append(Item(channel=item.channel, action="series_listado_alfabetico", title="Listado alfabético"))
     itemlist.append(Item(channel=item.channel, action="series", title="Todas las series",
                          url="http://www.seriesflv.net/ajax/lista.php", extra="grupo_no=0&type=series&order=titulo"))
     itemlist.append(Item(channel=item.channel, action="series", title="Series más vistas",
@@ -44,8 +39,75 @@ def mainlist(item):
     return itemlist
 
 
+def compara(x,y):
+    return cmp(x.title,y.title)
+
+
+def series_listado_alfabetico(item):
+    logger.info()
+
+    return [item.clone(action="seriesletra", title=letra, url="http://www.seriesflv.net/ajax/lista.php",
+                extra="grupo_no=0&type=letra&order={0}".format(str(letra.lower())))
+                for letra in "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"]
+
+
+def seriesletra(item):
+    logger.info()
+
+    # Descarga la pagina
+    post = item.extra
+    data = httptools.downloadpage(item.url, post=post, add_referer=True).data
+
+    # Extrae las entradas (carpetas)
+    '''
+    <article data-item="lista" class="item lista" id="serieItems">
+    	<a href="http://www.seriesflv.net/serie/fuuka.html">
+        <div class="image"><img src="http://http-s.ws/ysk/img/data/4928aef967b52928cb181a19c81b158c-size-90x120-a.jpg"></div>
+        <div class="info">
+        <div class="title">Fuuka</div>
+        <div class="sinopsis">Yuu Haruna acaba de mudarse a una nueva ciudad, lo que no evita que siga yendo como un zombi por la calle debido a su adicción a Twitter. Caminando por su nuevo entorno se topa con una chica llamada Fuuka Akitsuki, quien le rompe el teléfono enfadada pensando que lo que el muchacho intentaba era sacarle una foto de sus bragas. El encuentro entre ambos cambiará sus vidas?</div>
+        <div class="otros">
+        <b>Año:</b> 2017 | <b>View's:</b> 1,248 veces
+        </div>
+        </div>
+        </a>
+    </article>
+    '''
+    patron = "<article[^<]+<a href=['\"](?P<url>[^'\"]+)[^<]+<div[^<]+<img src=['\"](?P<img>http[^'\"]+).+[^<]+<div[^<]+<div class=['\"]title['\"]>(?P<name>[^'\"]+)</div>"
+    matches = re.compile(patron).findall(data)
+    itemlist = []
+
+    for eurl, eimg, ename in matches:
+    
+        title = ename.strip()
+        thumbnail = urlparse.urljoin(item.url, eimg)
+        plot = ""
+        url = urlparse.urljoin(item.url, eurl)
+        itemlist.append(Item(channel=item.channel, action="episodios", title=title, url=url, thumbnail=thumbnail,
+                             plot=plot, show=title))
+        
+        logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+    
+    longlist = len(itemlist)
+    itemlist.sort(compara)
+    # grupo_no=0&type=letra&order=a
+    old_offset = scrapertools.find_single_match(item.extra, "grupo_no\=(\d+)")
+    if int(old_offset) > 0:
+        atras_offset = str(int(old_offset)-1)
+        atrasextra = item.extra.replace("grupo_no="+old_offset, "grupo_no="+atras_offset)
+        itemlist.append(Item(channel=item.channel, action="seriesletra", title="<< Anterior", extra=atrasextra,
+                             url=item.url))
+    if longlist >= 20:
+        new_offset = str(int(old_offset)+1)
+        newextra = item.extra.replace("grupo_no="+old_offset, "grupo_no="+new_offset)
+        itemlist.append(Item(channel=item.channel, action="seriesletra", title=">> Siguiente", extra=newextra,
+                             url=item.url))
+
+    return itemlist
+
+
 def menuepisodios(item):
-    logger.info("pelisalacarta.channels.seriesflv menuepisodios")
+    logger.info()
 
     itemlist = list()
     itemlist.append(Item(channel=item.channel, action="ultimos_episodios", title="Subtitulados", url="sub"))
@@ -56,7 +118,7 @@ def menuepisodios(item):
 
 
 def newest(categoria):
-    logger.info("pelisalacarta.channels.seriesflv menuepisodios")
+    logger.info()
 
     item = Item()
     try:
@@ -77,10 +139,10 @@ def newest(categoria):
 
 
 def ultimos_episodios(item):
-    logger.info("pelisalacarta.channels.seriesflv ultimos_episodios")
+    logger.info()
     itemlist = []
 
-    data = scrapertools.anti_cloudflare("http://www.seriesflv.net/", headers=CHANNEL_HEADERS, host=CHANNEL_HOST)
+    data = httptools.downloadpage(CHANNEL_HOST, add_referer=True).data
     # logger.info("data="+data)
 
     # Extrae los episodios
@@ -113,14 +175,17 @@ def ultimos_episodios(item):
                              plot=plot, fulltitle=title, contentTitle=serie, language=get_nombre_idioma(idioma),
                              contentSeason=int(temporada), contentEpisodeNumber=int(episodio)))
 
-        if DEBUG:
-            logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+        logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
     return itemlist
 
 
 def search(item, texto):
-    logger.info("pelisalacarta.channels.seriesflv search")
+    logger.info()
+
+    # Evitamos hacer búsquedas en vacío
+    if texto == "":
+        return []
 
     texto = texto.replace(" ", "%20")
 
@@ -141,11 +206,11 @@ def search(item, texto):
 
 
 def buscar(item):
-    logger.info("pelisalacarta.channels.seriesflv buscar")
+    logger.info()
 
     # Descarga la pagina
     post = item.extra
-    data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_HEADERS, host=CHANNEL_HOST, post=post)
+    data = httptools.downloadpage(item.url, post=post, add_referer=True).data
     # logger.info("data="+data)
 
     # Extrae las entradas (carpetas)
@@ -191,18 +256,18 @@ def buscar(item):
         url = urlparse.urljoin(item.url, scrapedurl)
         itemlist.append(Item(channel=item.channel, action="episodios", title=title, url=url, thumbnail=thumbnail,
                              plot=plot, show=title))
-        if DEBUG:
-            logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+
+        logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
     return itemlist
 
 
 def series(item):
-    logger.info("pelisalacarta.channels.seriesflv series")
+    logger.info()
 
     # Descarga la pagina
     post = item.extra
-    data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_HEADERS, host=CHANNEL_HOST, post=post)
+    data = httptools.downloadpage(item.url, post=post, add_referer=True).data
     # logger.info("data="+data)
 
     # Extrae las entradas (carpetas)
@@ -239,8 +304,8 @@ def series(item):
         url = urlparse.urljoin(item.url, scrapedurl)
         itemlist.append(Item(channel=item.channel, action="episodios", title=title, url=url, thumbnail=thumbnail,
                              plot=plot, show=title))
-        if DEBUG:
-            logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+
+        logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
     # grupo_no=0&type=series&order=titulo
     old_offset = scrapertools.find_single_match(item.extra, "grupo_no\=(\d+)")
@@ -267,11 +332,11 @@ def get_nombre_idioma(idioma):
 
 
 def episodios(item):
-    logger.info("pelisalacarta.channels.seriesflv episodios")
+    logger.info()
     itemlist = []
 
     # Descarga la pagina
-    data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_HEADERS, host=CHANNEL_HOST)
+    data = httptools.downloadpage(item.url, add_referer=True).data
     # logger.info("data="+data)
 
     # Extrae los episodios
@@ -326,8 +391,7 @@ def episodios(item):
         itemlist.append(Item(channel=item.channel, action="findvideos", title=title, url=url, thumbnail=thumbnail,
                              plot=plot, fulltitle=title, show=show))
 
-        if DEBUG:
-            logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+        logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
     # Opción "Añadir esta serie a la biblioteca de XBMC"
     if config.get_library_support() and len(itemlist) > 0:
@@ -338,10 +402,10 @@ def episodios(item):
 
 
 def findvideos(item):
-    logger.info("pelisalacarta.channels.seriesflv findvideos")
+    logger.info()
 
     # Descarga la pagina
-    data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_HEADERS, host=CHANNEL_HOST)
+    data = httptools.downloadpage(item.url, add_referer=True).data
     data = scrapertools.find_single_match(data, '<div id="enlaces">(.*?)<div id="comentarios">')
     # logger.info("data="+data)
 
@@ -414,10 +478,11 @@ def findvideos(item):
         url = target_url
         thumbnail = ""
         plot = ""
-        if DEBUG:
-            logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+
         itemlist.append(Item(channel=item.channel, action="play", title=title, url=url, thumbnail=thumbnail, plot=plot,
                              folder=False))
+
+        logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
     return itemlist
 
@@ -425,7 +490,7 @@ def findvideos(item):
 def play(item):
     logger.info("pelisalacarta.channels.seriesflv play url="+item.url)
 
-    data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_HEADERS, host=CHANNEL_HOST)
+    data = httptools.downloadpage(item.url, add_referer=True).data
 
     itemlist = servertools.find_video_items(data=data)
 

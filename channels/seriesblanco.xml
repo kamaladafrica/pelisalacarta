@@ -12,13 +12,14 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/seriesblanco.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/develop/python/main-classic/channels/</update_url>
-	<version>14</version>
-	<date>03/12/2016</date>
+	<version>15</version>
+	<date>03/02/2017</date>
 	<changes>Cambiado canal.</changes>
 
 	<categories>
 		<category>serie</category>
 		<category>vos</category>
+		<category>latino</category>
 	</categories>
 
 	<settings>
