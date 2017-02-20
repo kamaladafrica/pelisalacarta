@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Conector para modovideo
@@ -19,13 +19,13 @@ def test_video_exists( page_url ):
 
     logger.info("[modovideo.py] test_video_exists(page_url='%s')" % page_url)
     
-    # VÌdeo borrado: http://www.modovideo.com/frame.php?v=teml3hpu3141n0lam2a04iufcsz7q7pt
+    # V√≠deo borrado: http://www.modovideo.com/frame.php?v=teml3hpu3141n0lam2a04iufcsz7q7pt
     location = scrapertools.get_header_from_response( url = page_url , header_to_get = "location")
     if location=="":
         return True,""
     #Location: http://www.modovideo.com/MakeLightBox.php?retURL=&h1=Video Has been removed&p=
     elif "Video Has been removed" in location:
-        return False,"El archivo ya no est· disponible<br/>en modovideo (ha sido borrado)"
+        return False,"El archivo ya no est√° disponible<br/>en modovideo (ha sido borrado)"
     else:
         return True,""
 
@@ -35,7 +35,7 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
 
     video_urls = []
     
-    # Descarga la p·gina
+    # Descarga la p√°gina
     headers = []
     headers.append(["User-Agent","Mozilla/5.0 (iPad; U; CPU OS 3_2 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Version/4.0.4 Mobile/7B334b Safari/531.21.10"])
     scrapertools.cache_page(page_url,headers=headers)
@@ -61,7 +61,7 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
 
     return video_urls
 
-# Encuentra vÌdeos del servidor en el texto pasado
+# Encuentra v√≠deos del servidor en el texto pasado
 def find_videos(data):
     encontrados = set()
     devuelve = []

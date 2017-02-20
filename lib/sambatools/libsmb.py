@@ -321,9 +321,10 @@ class SMBFile(object):
     def truncate(self, size = None):
         if not self.canwrite:
             raise IOError("File not open for writing")
+        data = self.read(size)
         f = self.tmpfile()
         self.pos = 0
-        f.write(self.read(size))
+        f.write(data)
         f.seek(0)
         self.remote.storeFileFromOffset(self.share, self.path, f, self.pos, truncate = True)
       

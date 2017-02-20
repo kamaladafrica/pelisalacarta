@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Conector para linkbucks
@@ -11,7 +11,7 @@ from core import logger
 from core import scrapertools
 
 
-# Obtiene la URL que hay detr·s de un enlace a linkbucks
+# Obtiene la URL que hay detr√°s de un enlace a linkbucks
 def get_long_url(short_url):
     logger.info("servers.linkbucks get_long_url(short_url='%s')" % short_url)
 

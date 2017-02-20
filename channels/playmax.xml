@@ -13,7 +13,7 @@
 	<fanart></fanart>
 	<thumbnail>http://i.imgur.com/X5Z40kT.png</thumbnail>
 	<bannermenu></bannermenu>
-	<update_url></update_url>
+	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
 
 	<categories>
 		<category>movie</category>
@@ -106,6 +106,15 @@
 		<type>bool</type>
 		<color>0xFFd50b0b</color>
 		<label>Ocultar opción elegir página en películas (Kodi)</label>
+ 		<default>false</default>
+ 		<enabled>true</enabled>
+ 		<visible>true</visible>
+ 	</settings>
+	<settings>
+		<id>order_web</id>
+		<type>bool</type>
+		<color>0xFFd50b0b</color>
+		<label>Usar el mismo orden de los enlaces que la web</label>
  		<default>false</default>
  		<enabled>true</enabled>
  		<visible>true</visible>

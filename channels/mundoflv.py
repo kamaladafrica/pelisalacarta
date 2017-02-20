@@ -133,7 +133,7 @@ def masvistas(item):
         title = scrapertools.decodeHtmlentities(title)
         fanart = item.fanart
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="temporadas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, contentSerieName=title))
+        itemlist.append( Item(channel=item.channel, action="idioma" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, contentSerieName=title))
 
     return itemlist
 
@@ -155,7 +155,7 @@ def recomendadas(item):
         title = title = scrapertools.decodeHtmlentities(title) 
         fanart = item.fanart
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="temporadas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart,contentSerieName=title))
+        itemlist.append( Item(channel=item.channel, action="idioma" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart,contentSerieName=title))
 
     return itemlist
 
@@ -179,7 +179,7 @@ def ultimas(item):
         title = scrapertools.decodeHtmlentities(title)
         fanart = item.fanart
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="temporadas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart,contentSerieName=title))
+        itemlist.append( Item(channel=item.channel, action="idioma" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart,contentSerieName=title))
 
     return itemlist
 
@@ -260,7 +260,7 @@ def idioma(item):
     
     itemlist.append( Item(channel=item.channel, title="Original", action="temporadas", url=item.url, thumbnail=thumben, fanart='', extra1 = 'en', fulltitle = item.title, thumbvid = thumbvid, contentSerieName=item.contentSerieName))
 
-    itemlist.append( Item(channel=item.channel, title="Original Subtitlado en Ingles", action="temporadas", url=item.url, thumbnail=thumben, fanart='', extra1 = 'vosi', fulltitle = item.title, thumbvid = thumbvid, contentSerieName=item.contentSerieName))
+    itemlist.append( Item(channel=item.channel, title="Original Subtitulado en Ingles", action="temporadas", url=item.url, thumbnail=thumben, fanart='', extra1 = 'vosi', fulltitle = item.title, thumbvid = thumbvid, contentSerieName=item.contentSerieName))
 
     itemlist.append( Item(channel=item.channel, title="Todo", action="temporadas", url=item.url, thumbnail=thumbtodos, fanart='', extra1 = 'all', fulltitle = item.title, thumbvid = thumbvid, contentSerieName=item.contentSerieName))
 
@@ -326,10 +326,13 @@ def findvideos(item):
 
 
 def play(item):
-    logger.info()
+    logger.info('mundoflv.py play')
 
     data = scrapertools.cache_page(item.url)
-    url = scrapertools.find_single_match(data, '<(?:IFRAME|iframe).*?(?:SRC|src)=*([^ ]+)')
+    if 'streamplay' not in item.server or 'streame' not in item.server:
+       url = scrapertools.find_single_match(data, '<(?:IFRAME|iframe).*?(?:SRC|src)=*([^ ]+) (?!style|STYLE)')
+    else:
+       url = scrapertools.find_single_match(data, '<meta http-equiv="refresh" content="0; url=([^"]+)">')
 
     itemlist = servertools.find_video_items(data=url)
 

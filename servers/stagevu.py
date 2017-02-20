@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Conector para stagevu
@@ -17,10 +17,10 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
 
     video_urls = []
 
-    # Descarga la p·gina del vÌdeo
+    # Descarga la p√°gina del v√≠deo
     data = scrapertools.cache_page( page_url )
 
-    # Busca el vÌdeo de dos formas distintas
+    # Busca el v√≠deo de dos formas distintas
     patronvideos  = '<param name="src" value="([^"]+)"'
     matches = re.compile(patronvideos,re.DOTALL).findall(data)
     
@@ -37,7 +37,7 @@ def get_video_url( page_url , premium = False , user="" , password="", video_pas
 
     return video_urls
 
-# Encuentra vÌdeos del servidor en el texto pasado
+# Encuentra v√≠deos del servidor en el texto pasado
 def find_videos(data):
     encontrados = set()
     devuelve = []

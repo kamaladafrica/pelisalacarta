@@ -3,15 +3,28 @@
 	<id>verseriesynovelas</id>
 	<name>Ver Series y Novelas</name>
 	<language>es</language>
-	<update_url></update_url>
 	<active>true</active>
-	<version>5</version>
 	<adult>false</adult>
-	<date>11/10/2016</date>
-	<changes>Reparado por cambios en la web, ahora necesita registro</changes>
+
+	<version>6</version>
+	<changes>
+		<change>
+			<date>16/02/2017</date>
+			<autor>Cmos</autor>
+			<description>Ligeros cambios para mejorar la carga de enlaces</description>
+		</change>
+		<change>
+			<date>11/10/2016</date>
+			<autor>Cmos</autor>
+			<description>Reparado por cambios en la web, ahora necesita registro</description>
+		</change>
+	</changes>
+
 	<fanart></fanart>
 	<thumbnail>http://i.imgur.com/ZhQknRE.png</thumbnail>
     <bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/verseriesynovelas.png</bannermenu>
+	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
+
 	<categories>
 		<category>latino</category>
 		<category>vos</category>
