@@ -5,7 +5,7 @@
     <!-- ======================================= -->
     <!-- 30000 to 30049: Configurazione          -->
     <!-- ======================================= -->
-    
+
     <!-- Comandi -->
     <string id="30000">Lettore predefinito (XBOX only):</string>
     <string id="30001">Controlla aggiornamenti:</string>
@@ -33,7 +33,7 @@
     <string id="30015">Password:</string>
     <string id="30031">Qualità video (FLV)</string>
     <string id="30032">Definizione standard (SD)</string>
-    <string id="30033">Alta Definizione (HD)(quando disponibile)</string>    
+    <string id="30033">Alta Definizione (HD)(quando disponibile)</string>
 
     <string id="30034">Login pagine private:</string>
     <string id="30035">Password pagine private:</string>
@@ -42,7 +42,7 @@
     <string id="30017">Percorso download:</string>
     <string id="30018">Percorso lista download:</string>
     <string id="30030">Percorso preferiti:</string>
-    <string id="30067">Percorso STRM biblioteca:</string>
+    <string id="30067">Percorso di libreria:</string>
     <string id="30020">Qualità migliore (Youtube)</string>
     <string id="30021">Abilita sottotitoli:</string>
     <string id="30022">URL JDownloader:</string>
@@ -110,7 +110,7 @@
     <string id="30102">Preferiti</string> <!-- Favoritos -->
     <string id="30103">Ricerca globale</string> <!-- Buscador -->
     <string id="30104">Aiuto</string> <!-- Ayuda -->
-    
+
     <string id="30105">Rimosso dai preferiti</string> <!-- Se ha quitado de favoritos -->
     <string id="30106">Rimosso dalla lista download</string> <!-- Se ha quitado de la lista de descargas -->
     <string id="30107">Spostato nella lista download</string> <!-- Ha pasado de nuevo a la lista de descargas -->
@@ -180,7 +180,7 @@
     <string id="30403">Favorites channels </string>
     <string id="30404">Play channel Live by ID</string>
     <string id="30405">Input channel ID code</string>
-    
+
     <!-- Stringhe menù categorie Justin.tv -->
     <string id="30406">Aggiungi ai preferiti Jtv</string>
     <string id="30407">Rimuovi dai preferiti Jtv</string>
@@ -201,7 +201,7 @@
     <string id="30422">Inserisci Login Justin tv</string>
     <string id="30423">Il canale [%s] è offline in questo momento</string>
     <string id="30424">Password Justin.tv</string>
-    
+
     <!-- =============================================================== -->
     <!--  Sottotitoli                                                    -->
     <!-- =============================================================== -->
@@ -213,19 +213,19 @@
     <string id="30435">Directory sottotitoli</string>
     <string id="30436">File sottotitoli</string>
     <string id="30437">Premi l' indirizzo</string>
-    
+
     <!-- =============================================================== -->
     <!-- Stringhe categoria impostazioni                                 -->
     <!-- =============================================================== -->
     <string id="30500">Login</string>
     <string id="30501">Percorso</string>
     <string id="30502">Altro</string>
-    
+
     <!-- Lasciatemi guardare questo -->
     <string id="40001">Film - Appena aggiunti</string>
     <string id="40002">Show televisivi - Appena aggiunti</string>
     <string id="40003">Pagina successiva</string>
-    
+
     <!-- Stringhe TVShack -->
     <string id="30900">TVShack</string>
     <string id="30901">Serie TV (VO)</string>
@@ -250,7 +250,7 @@
     <string id="30919">(Nuovi contenuti)</string>
 
     <string id="30920">Aggiungi tutti gli episodi alla libreria</string>
-    
+
     <!-- =============================================================== -->
     <!-- Configurazione RSS (IAMM, XTreamer e altri)                     -->
     <!-- =============================================================== -->

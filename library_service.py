@@ -235,6 +235,8 @@ def check_for_update(overwrite=True):
     logger.info("Overwrite? -> " + str(overwrite))
     p_dialog = None
     serie_actualizada = False
+    update_when_finished = False
+    library_updated = False
     hoy = datetime.date.today()
 
     overwrite_everything = False
@@ -333,8 +335,24 @@ def check_for_update(overwrite=True):
                     filetools.write(tvshow_file, head_nfo + serie.tojson())
 
                 if serie_actualizada:
+                    if config.get_setting("search_new_content", "biblioteca") == 0:
+                        # Actualizamos la biblioteca de Kodi
+                        xbmc_library.update(folder=filetools.basename(path))
+                        library_updated = True
+                    else:
+                        update_when_finished = True
+
+            if config.get_setting("search_new_content", "biblioteca") == 1:
+                if update_when_finished:
                     # Actualizamos la biblioteca de Kodi
-                    xbmc_library.update(folder=filetools.basename(path))
+                    import xbmc
+                    xbmc.executebuiltin('UpdateLibrary(video)')
+                    library_updated = True
+
+            if config.get_setting("clean_after_update", "biblioteca") is True:
+                if library_updated:
+                    import xbmc
+                    xbmc.executebuiltin('CleanLibrary(video)')
 
             p_dialog.close()
 
@@ -361,9 +379,12 @@ if __name__ == "__main__":
             platformtools.dialog_ok(config.PLUGIN_NAME.capitalize(),
                                     "ERROR, al actualizar la biblioteca al nuevo formato")
         else:
-            check_for_update(overwrite=False)
+            # La opcion 2 es "Una sola vez al dia"
+            if not config.get_setting("updatelibrary", "biblioteca") == 2:
+                check_for_update(overwrite=False)
     else:
-        check_for_update(overwrite=False)
+        if not config.get_setting("updatelibrary", "biblioteca") == 2:
+            check_for_update(overwrite=False)
 
     # Se ejecuta ciclicamente
     import xbmc
@@ -376,7 +397,8 @@ if __name__ == "__main__":
 
     if monitor:
         while not monitor.abortRequested():
-            if config.get_setting("updatelibrary", "biblioteca") == 2:  # "Actualizar...Cada dia
+            update_setting = config.get_setting("updatelibrary", "biblioteca")
+            if update_setting == 2 or update_setting == 3:  # "Actualizar "Cada dia" o "Una vez al dia"
                 hoy = datetime.date.today()
                 last_check = config.get_setting("updatelibrary_last_check", "biblioteca")
                 if last_check:
@@ -385,8 +407,15 @@ if __name__ == "__main__":
                 else:
                     last_check = hoy - datetime.timedelta(days=1)
 
-                if last_check < hoy and datetime.datetime.now().hour >= 4:
-                    logger.info("Inicio actualización programada: %s" % datetime.datetime.now())
+                everyday_delay = config.get_setting("everyday_delay", "biblioteca")
+                update_start = everyday_delay * 4
+
+                # logger.info("Ultima comprobacion: %s || Fecha de hoy:%s || Hora actual: %s" %
+                #             (last_check, hoy, datetime.datetime.now().hour))
+                # logger.info("Atraso del inicio del dia: %i:00" % update_start)
+
+                if last_check < hoy and datetime.datetime.now().hour >= int(update_start):
+                    logger.info("Inicio actualizacion programada: %s" % datetime.datetime.now())
                     check_for_update(overwrite=False)
 
             if monitor.waitForAbort(3600):  # cada hora
@@ -394,7 +423,8 @@ if __name__ == "__main__":
 
     else:
         while not xbmc.abortRequested:
-            if config.get_setting("updatelibrary", "biblioteca") == 2:  # "Actualizar...Cada dia
+            update_setting = config.get_setting("updatelibrary", "biblioteca")
+            if update_setting == 2 or update_setting == 3:  # "Actualizar "Cada dia" o "Una vez al dia"
                 hoy = datetime.date.today()
                 last_check = config.get_setting("updatelibrary_last_check", "biblioteca")
                 if last_check:
@@ -403,8 +433,15 @@ if __name__ == "__main__":
                 else:
                     last_check = hoy - datetime.timedelta(days=1)
 
-                if last_check < hoy and datetime.datetime.now().hour >= 4:
-                    logger.info("Inicio actualización programada: %s" % datetime.datetime.now())
+                everyday_delay = config.get_setting("everyday_delay", "biblioteca")
+                update_start = everyday_delay * 4
+
+                # logger.info("Ultima comprobacion: %s || Fecha de hoy:%s || Hora actual: %s" %
+                #             (last_check, hoy, datetime.datetime.now().hour))
+                # logger.info("Atraso del inicio del dia: %i:00" % update_start)
+
+                if last_check < hoy and datetime.datetime.now().hour >= int(update_start):
+                    logger.info("Inicio actualizacion programada: %s" % datetime.datetime.now())
                     check_for_update(overwrite=False)
 
             xbmc.sleep(3600)

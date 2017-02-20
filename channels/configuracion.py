@@ -26,12 +26,13 @@
 # ------------------------------------------------------------
 
 import os
-import sys
 
 from core import config
 from core.item import Item
 from core import logger
 from core import filetools
+
+from platformcode import platformtools
 
 DEBUG = True
 CHANNELNAME = "configuracion"
@@ -42,23 +43,26 @@ def mainlist(item):
 
     itemlist = list()
     itemlist.append(Item(channel=CHANNELNAME, title="Preferencias", action="settings", folder=False,
-                         thumbnail=get_thumbnail_path("thumb_configuracion.png")))
+                         thumbnail=get_thumbnail_path("thumb_configuracion_0.png")))
 
-    if config.get_setting("plugin_updates_available")=="0":
+    if config.get_setting("plugin_updates_available") == "0":
         nuevas = ""
-    elif config.get_setting("plugin_updates_available")=="1":
+    elif config.get_setting("plugin_updates_available") == "1":
         nuevas = " (1 nueva)"
     else:
-        nuevas = " ("+config.get_setting("plugin_updates_available")+" nuevas)"
+        nuevas = " (" + config.get_setting("plugin_updates_available") + " nuevas)"
 
-    itemlist.append(Item(channel=CHANNELNAME, title="Descargar e instalar otras versiones"+nuevas, action="get_all_versions",
-                             folder=True))
+    thumb_configuracion = "thumb_configuracion_" + config.get_setting("plugin_updates_available") + ".png"
+
+    itemlist.append(Item(channel=CHANNELNAME, title="Descargar e instalar otras versiones" + nuevas,
+                         action="get_all_versions", folder=True,
+                         thumbnail=get_thumbnail_path(thumb_configuracion)))
 
     itemlist.append(Item(channel=CHANNELNAME, title="", action="", folder=False,
-                         thumbnail=get_thumbnail_path("thumb_configuracion.png")))
+                         thumbnail=get_thumbnail_path("thumb_configuracion_0.png")))
 
     itemlist.append(Item(channel=CHANNELNAME, title="Ajustes especiales", action="", folder=False,
-                         thumbnail=get_thumbnail_path("thumb_configuracion.png")))
+                         thumbnail=get_thumbnail_path("thumb_configuracion_0.png")))
     itemlist.append(Item(channel="novedades", title="   Ajustes de la sección 'Novedades'", action="menu_opciones",
                          folder=True, thumbnail=get_thumbnail_path("thumb_novedades.png")))
     itemlist.append(Item(channel="buscador", title="   Ajustes del buscador global", action="opciones", folder=True,
@@ -76,15 +80,15 @@ def mainlist(item):
 
     itemlist.append(Item(channel=CHANNELNAME, title="   Añadir o Actualizar canal/conector desde una URL",
                          action="menu_addchannels"))
-    itemlist.append(Item(channel=item.channel, action="", title="", folder=False,
-                         thumbnail=get_thumbnail_path("thumb_configuracion.png")))
+    itemlist.append(Item(channel=CHANNELNAME, action="", title="", folder=False,
+                         thumbnail=get_thumbnail_path("thumb_configuracion_0.png")))
 
-    itemlist.append(Item(channel=CHANNELNAME, title="Activar/Desactivar canales",
-                         action="conf_tools", folder=True, extra="channels_onoff",
-                         thumbnail=get_thumbnail_path("thumb_configuracion.png")))
-    itemlist.append(Item(channel=CHANNELNAME, title="Ajustes por canales", action="", folder=False,
-                         thumbnail=get_thumbnail_path("thumb_configuracion.png")))
-
+    itemlist.append(Item(channel=CHANNELNAME, title="Activar/desactivar canales",
+                         action="conf_tools", folder=False, extra="channels_onoff",
+                         thumbnail=get_thumbnail_path("thumb_configuracion_0.png")))
+    itemlist.append(Item(channel=CHANNELNAME, title="Ajustes por canales",
+                         action="", folder=False,
+                         thumbnail=get_thumbnail_path("thumb_configuracion_0.png")))
 
     import channelselector
     from core import channeltools
@@ -92,9 +96,9 @@ def mainlist(item):
 
     for channel in channel_list:
         try:
-          jsonchannel = channeltools.get_channel_json(channel.channel)
+            jsonchannel = channeltools.get_channel_json(channel.channel)
         except:
-          continue
+            continue
         if jsonchannel.get("settings"):
             setting = jsonchannel["settings"]
             if type(setting) == list:
@@ -113,18 +117,18 @@ def mainlist(item):
                                              folder=False,
                                              thumbnail=channel.thumbnail))
 
-    itemlist.append(Item(channel=item.channel, action="", title="", folder=False,
-                         thumbnail=get_thumbnail_path("thumb_configuracion.png")))
+    itemlist.append(Item(channel=CHANNELNAME, action="", title="", folder=False,
+                         thumbnail=get_thumbnail_path("thumb_configuracion_0.png")))
     itemlist.append(Item(channel=CHANNELNAME, title="Otras herramientas", action="submenu_tools",
-                         folder=True, thumbnail=get_thumbnail_path("thumb_configuracion.png")))
+                         folder=True, thumbnail=get_thumbnail_path("thumb_configuracion_0.png")))
 
     return itemlist
 
 
 def channel_config(item):
-    from platformcode import platformtools
     return platformtools.show_channel_settings(channelpath=filetools.join(config.get_runtime_path(), "channels",
                                                                           item.config))
+
 
 def get_all_versions(item):
     logger.info()
@@ -157,6 +161,8 @@ def get_all_versions(item):
             title = entry["package"]+" (Publicada "+entry["date"]+")"
             local_version_number = None
 
+        title_color = ""
+
         if local_version_number is None:
             title = title
 
@@ -164,20 +170,23 @@ def get_all_versions(item):
             title = title + " ACTUAL"
 
         elif entry["version"] > local_version_number:
-            title = "[COLOR yellow]"+ title + " ¡NUEVA VERSIÓN![/COLOR]"
+            title_color = "yellow"
 
         else:
-            title = "[COLOR FF666666]"+ title + "[/COLOR]"
+            title_color = "0xFF666666"
 
-        itemlist.append(Item(channel=CHANNELNAME, title=title, url=entry["url"], filename=entry["filename"], package=entry["package"], version=str(entry["version"]), action="download_and_install_package", folder=False))
+        itemlist.append(Item(channel=CHANNELNAME, title=title, url=entry["url"],
+                             filename=entry["filename"], package=entry["package"],
+                             version=str(entry["version"]), text_color=title_color,
+                             action="download_and_install_package", folder=False))
 
     return itemlist
+
 
 def download_and_install_package(item):
     logger.info()
 
     from core import updater
-    from platformcode import platformtools
 
     if item.package=="plugin":
         if int(item.version)<updater.get_current_plugin_version():
@@ -207,6 +216,7 @@ def download_and_install_package(item):
         import xbmc
         xbmc.executebuiltin("Container.Refresh")
 
+
 def settings(item):
     config.open_settings()
 
@@ -227,7 +237,6 @@ def menu_addchannels(item):
 
 
 def addchannel(item):
-    from platformcode import platformtools
     import os
     import time
     logger.info()
@@ -353,7 +362,6 @@ def addchannel(item):
 
 
 def backups(item):
-    from platformcode import platformtools
     logger.info()
 
     ruta = filetools.join(config.get_data_path(), 'backups')
@@ -406,11 +414,10 @@ def submenu_tools(item):
 def conf_tools(item):
     logger.info()
 
-    # Activar/Desactivar canales
+    # Activar o desactivar canales
     if item.extra == "channels_onoff":
         import channelselector
         from core import channeltools
-        from platformcode import platformtools
 
         channel_list = channelselector.filterchannels("allchannelstatus")
 
@@ -457,25 +464,21 @@ def conf_tools(item):
                                 channel_parameters["language"] != channel_language):
                             continue
 
-                        xml_status = None
                         status = None
-                        xml_status = channel_parameters["active"]
-                        status_control = ""
+                        xml_status = channel_parameters["active"].replace("t", "T").replace("f", "F")
+                        xml_status = eval(xml_status)
 
                         if config.get_setting("enabled", channel.channel):
                             status = config.get_setting("enabled", channel.channel)
+                            status = status.replace("t", "T").replace("f", "F")
+                            status = eval(status)
                             # logger.info(channel.channel + " | Status: " + str(status))
                         else:
                             status = xml_status
                             # logger.info(channel.channel + " | Status (XML): " + str(status))
 
-                        # Se establece el estado
-                        if status == "false" or status is False:
-                            status = False
-                        elif status == "true" or status is True:
-                            status = True
-
-                        if xml_status == "false":
+                        status_control = ""
+                        if not xml_status:
                             status_control = " [COLOR grey](Desactivado por defecto)[/COLOR]"
 
                         if status is not None:
@@ -485,22 +488,22 @@ def conf_tools(item):
                                        'default': status,
                                        'enabled': True,
                                        'visible': True}
-
                             list_controls.append(control)
 
                     else:
                         logger.info("Algo va mal con el canal " + channel.channel)
                 else:
                     continue
+
             return platformtools.show_channel_settings(list_controls=list_controls,
-                                                       caption="Activar/Desactivar canales",
-                                                       callback="channel_status")
+                                                       caption="Canales",
+                                                       callback="channel_status",
+                                                       custom_button={"visible": False})
         except:
             import traceback
-            from platformcode import platformtools
             logger.info(channel.title + " | Detalle del error: %s" % traceback.format_exc())
             platformtools.dialog_notification("Error",
-                                              "Se ha producido un error con el canal" +
+                                              "Se ha producido un error con el canal %s" %
                                               channel.title)
 
     # Comprobacion de archivos channel_data.json
@@ -558,7 +561,7 @@ def conf_tools(item):
                             if isinstance(dict_file, dict) and 'settings' in dict_file:
                                 dict_settings = dict_file['settings']
                         except EnvironmentError:
-                            logger.info("ERROR al leer el archivo: {0}".format(file_settings))
+                            logger.info("ERROR al leer el archivo: %s" % file_settings)
                     else:
                         # logger.info(channel.channel + " No tiene archivo _data.json")
                         channeljson_exists = "false"
@@ -601,7 +604,7 @@ def conf_tools(item):
                                     # El channel_data.json se ha creado/modificado
                                     list_status = " - [COLOR red] CORREGIDO!![/COLOR]"
                                 except EnvironmentError:
-                                    logger.info("ERROR al salvar el archivo: {0}".format(file_settings))
+                                    logger.info("ERROR al salvar el archivo: %s" % file_settings)
                             else:
                                 if default_settings is None:
                                     list_status = " - [COLOR red] Imposible cargar los ajustes por defecto![/COLOR]"
@@ -614,62 +617,60 @@ def conf_tools(item):
                     if needsfix is not None:
                         if needsfix == "true":
                             if channeljson_exists == "false":
-                                list_status = " - [COLOR red] Ajustes creados!![/COLOR]"
+                                list_status = " - Ajustes creados"
+                                list_colour = "red"
                             else:
-                                list_status = " - [COLOR green] No necesita correccion[/COLOR]"
+                                list_status = " - No necesita correccion"
+                                list_colour = "green"
                         else:
                             # Si "needsfix" es "false" y "datjson_size" es None habra
                             # ocurrido algun error
                             if datajson_size is None:
-                                list_status = " - [COLOR red] Ha ocurrido algun error[/COLOR]"
+                                list_status = " - Ha ocurrido algun error"
+                                list_colour = "red"
                             else:
-                                list_status = " - [COLOR green] No necesita correccion[/COLOR]"
+                                list_status = " - No necesita correccion"
+                                list_colour = "green"
 
                     if list_status is not None:
                         itemlist.append(Item(channel=CHANNELNAME,
                                              title=channel.title + list_status,
                                              action="", folder=False,
-                                             thumbnail=channel.thumbnail))
+                                             thumbnail=channel.thumbnail,
+                                             text_color=list_colour))
                     else:
-                        logger.info("Algo va mal con el canal " + channel.channel)
+                        logger.info("Algo va mal con el canal %s" % channel.channel)
 
                 # Si el canal esta en la lista de exclusiones lo saltamos
                 else:
                     continue
         except:
             import traceback
-            from platformcode import platformtools
             logger.info(channel.title + " | Detalle del error: %s" % traceback.format_exc())
             platformtools.dialog_notification("Error",
-                                              "Se ha producido un error con el canal" +
+                                              "Se ha producido un error con el canal %s" %
                                               channel.title)
         return itemlist
 
     else:
-        from platformcode import platformtools
         platformtools.dialog_notification("pelisalacarta", "Error!")
         platformtools.itemlist_update(Item(channel=CHANNELNAME, action="submenu_tools"))
 
 
 def channel_status(item, dict_values):
     try:
-        from platformcode import platformtools
-
         for v in dict_values:
 
             if v == "all_channels":
                 import channelselector
                 from core import channeltools
-                logger.info("Todos los canales | Estado seleccionado: " +
+                logger.info("Todos los canales | Estado seleccionado: %s" %
                             str(dict_values[v]).lower())
                 if str(dict_values[v]) != "0":
                     channel_list = channelselector.filterchannels("allchannelstatus")
-                    excluded_channels = ['tengourl',
-                                         'buscador',
-                                         'libreria',
-                                         'configuracion',
-                                         'novedades',
-                                         'personal',
+                    excluded_channels = ['tengourl', 'buscador',
+                                         'libreria', 'configuracion',
+                                         'novedades', 'personal',
                                          'ayuda']
                     for channel in channel_list:
                         if channel.channel not in excluded_channels:
@@ -704,15 +705,14 @@ def channel_status(item, dict_values):
                     continue
 
             else:
-                logger.info("Canal: " + v + " | Estado seleccionado: " +
-                            str(dict_values[v]).lower())
+                logger.info("Canal: %s | Estado: %s" %
+                            (v, str(dict_values[v]).lower()))
                 config.set_setting("enabled", str(dict_values[v]).lower(), v)
 
         platformtools.itemlist_update(Item(channel=CHANNELNAME, action="mainlist"))
 
     except:
         import traceback
-        from platformcode import platformtools
         logger.info("Detalle del error: %s" % traceback.format_exc())
         platformtools.dialog_notification("Error",
                                           "Se ha producido un error al guardar")

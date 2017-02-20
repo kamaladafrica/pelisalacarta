@@ -5,7 +5,7 @@
     <!-- ======================================= -->
     <!-- De 30000 a 30049: Configuración         -->
     <!-- ======================================= -->
-    
+
     <!-- Comunes -->
     <string id="30000">Reproductor (solo XBOX):</string>
     <string id="30001">Comprobar actualizaciones:</string>
@@ -34,15 +34,15 @@
     <string id="30031">Calidad de videos (FLV)</string>
     <string id="30032">Calidad Normal (SD)</string>
     <string id="30033">Calidad Alta (HD)(si existe)</string>
-    
+
     <string id="30034">Usuario páginas privadas:</string>
     <string id="30035">Password páginas privadas:</string>
-    
+
     <!-- Otras -->
     <string id="30017">Directorio de descargas:</string>
     <string id="30018">Directorio de lista descargas:</string>
     <string id="30030">Directorio de favoritos:</string>
-    <string id="30067">Directorio para añadir STRM a la biblioteca:</string>
+    <string id="30067">Directorio de la biblioteca:</string>
     <string id="30020">Elegir Calidad mas alta (Youtube)</string>
     <string id="30021">Activar Subtitulo:</string>
     <string id="30022">URL de JDownloader:</string>
@@ -110,7 +110,7 @@
     <string id="30102">Favoritos</string>
     <string id="30103">Buscador</string>
     <string id="30104">Ayuda</string>
-    
+
     <string id="30105">Se ha quitado de favoritos</string>
     <string id="30106">Se ha quitado de la lista de descargas</string>
     <string id="30107">Ha pasado de nuevo a la lista de descargas</string>
@@ -171,14 +171,14 @@
     <string id="30301">Guardar este canal en favoritos</string>
     <string id="30302">Eliminar este canal de favoritos</string>
     <string id="30303">Renombrar el título de este canal</string>
-    
+
     <!-- Megalive menu strings -->
     <string id="30401">Muralla de canales</string>
     <string id="30402">Categorías</string>
     <string id="30403">Canales Favoritos</string>
     <string id="30404">Ver Canal por Codigo(ID)</string>
     <string id="30405">Introduce el còdigo del canal</string>
-    
+
     <!-- Justin.tv Category menu strings -->
     <string id="30406">Añadir a Jtv favoritos</string>
     <string id="30407">Remover de Jtv Favoritos</string>
@@ -211,12 +211,12 @@
     <string id="30435">Directorio de subtitulos</string>
     <string id="30436">Subtitulo a cargar</string>
     <string id="30437">introducir direccion</string>
-    
+
     <!-- LetMeWatchThis -->
     <string id="40001">Películas - Novedades</string>
     <string id="40002">Series - Novedades</string>
     <string id="40003">!Página siguiente</string>
-    
+
     <!-- =============================================================== -->
     <!-- Category strings                                                -->
     <!-- =============================================================== -->
@@ -224,7 +224,7 @@
     <string id="30501">Rutas</string>
     <string id="30502">Otros</string>
     <string id="30503">Filtros</string>
-    
+
     <!-- TVShack strings -->
     <string id="30900">TVShack</string>
     <string id="30901">Series TV (VO)</string>

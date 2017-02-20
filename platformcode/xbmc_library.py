@@ -66,13 +66,15 @@ def mark_auto_as_watched(item):
 
         xbmc.sleep(5000)
 
-        while xbmc.Player().isPlaying():
+        sync_with_trakt = False
+
+        while platformtools.is_playing():
             tiempo_actual = xbmc.Player().getTime()
             totaltime = xbmc.Player().getTotalTime()
 
             mark_time = 0
             if condicion == 0:  # '5 minutos'
-                mark_time = 300000  # FOR DEBUG = 30
+                mark_time = 300
             elif condicion == 1:  # '30%'
                 mark_time = totaltime * 0.3
             elif condicion == 2:  # '50%'
@@ -85,15 +87,40 @@ def mark_auto_as_watched(item):
 
             if tiempo_actual > mark_time:
                 item.playcount = 1
+                sync_with_trakt = True
                 from channels import biblioteca
                 biblioteca.mark_content_as_watched(item)
                 break
 
             xbmc.sleep(30000)
 
+        # Sincronizacion silenciosa con Trakt
+        if sync_with_trakt:
+            if config.get_setting("sync_trakt_watched", "biblioteca"):
+                sync_trakt()
+
     # Si esta configurado para marcar como visto
-    if config.get_setting("mark_as_watched", "biblioteca") == True:
+    if config.get_setting("mark_as_watched", "biblioteca"):
         Thread(target=mark_as_watched_subThread, args=[item]).start()
+
+
+def sync_trakt(silent=True):
+
+    # Para que la sincronizacion no sea silenciosa vale con silent=False
+    if xbmc.getCondVisibility('System.HasAddon("script.trakt")'):
+        notificacion = True
+        if (not config.get_setting("sync_trakt_notification", "biblioteca") and
+                platformtools.is_playing()):
+            notificacion = False
+
+        xbmc.executebuiltin('RunScript(script.trakt,action=sync,silent=%s)' % silent)
+        logger.info("Sincronizacion con Trakt iniciada")
+
+        if notificacion:
+            platformtools.dialog_notification("pelisalacarta",
+                                              "Sincronizacion con Trakt iniciada",
+                                              icon=0,
+                                              time=2000)
 
 
 def mark_content_as_watched_on_kodi(item, value=1):
@@ -448,7 +475,7 @@ def establecer_contenido(content_type, silent=False):
                                     downloadtools.downloadfile(url, path_down, continuar=True, headers=[header])
                                     unzipper = ziptools.ziptools()
                                     unzipper.extract(path_down, path_unzip)
-                                    xbmc.executebuiltin('xbmc.UpdateLocalAddons')
+                                    xbmc.executebuiltin('UpdateLocalAddons')
 
                             strSettings = '<settings>\n' \
                                           '    <setting id="fanart" value="true" />\n' \

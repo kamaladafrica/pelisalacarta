@@ -121,7 +121,7 @@ def mainlist(item,thumbnail_type="squares"):
     itemlist.append(new_item)
 
     #itemlist.append(Item(channel=item.channel, action="menu_opciones", title="Opciones", viewmode="list",
-    #                     thumbnail=thumbnail_base + "/thumb_configuracion.png"))
+    #                     thumbnail=thumbnail_base + "/thumb_configuracion_0.png"))
 
     return itemlist
 
@@ -427,7 +427,7 @@ def menu_opciones(item):
 
     itemlist = []
     itemlist.append(Item(channel=item.channel, title="Canales incluidos en:",
-                         thumbnail="http://media.tvalacarta.info/pelisalacarta/" + preferred_thumbnail + "/thumb_configuracion.png",
+                         thumbnail="http://media.tvalacarta.info/pelisalacarta/" + preferred_thumbnail + "/thumb_configuracion_0.png",
                          folder=False))
     itemlist.append(Item(channel=item.channel, action="settingCanal", extra="peliculas", title="    - Películas ",
                          thumbnail="http://media.tvalacarta.info/pelisalacarta/" + preferred_thumbnail + "/thumb_canales_peliculas.png",
@@ -445,7 +445,7 @@ def menu_opciones(item):
                          thumbnail="http://media.tvalacarta.info/pelisalacarta/" + preferred_thumbnail + "/thumb_canales_documentales.png",
                          folder=False))
     itemlist.append(Item(channel=item.channel, action="settings", title="Otros ajustes",
-                         thumbnail="http://media.tvalacarta.info/pelisalacarta/"+preferred_thumbnail+"/thumb_configuracion.png",
+                         thumbnail="http://media.tvalacarta.info/pelisalacarta/"+preferred_thumbnail+"/thumb_configuracion_0.png",
                          folder=False))
     return itemlist
 

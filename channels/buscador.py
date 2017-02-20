@@ -24,9 +24,13 @@ def mainlist(item):
     context = [{"title": "Elegir canales incluidos",
                 "action": "settingCanal",
                 "channel": item.channel}]
-    itemlist.append(Item(channel=item.channel, action="search", title="Buscar por titulo...", context=context))
-    itemlist.append(Item(channel=item.channel, action="search", title="Buscar por categorias...", extra="categorias",
-                         context=context))
+    itemlist.append(Item(channel=item.channel, action="search",
+                         title="Buscar por titulo", context=context,
+                         thumbnail=get_thumbnail_path("thumb_buscar.png")))
+    itemlist.append(Item(channel=item.channel, action="search",
+                         title="Buscar por categorias (busqueda avanzada)", extra="categorias",
+                         context=context,
+                         thumbnail=get_thumbnail_path("thumb_buscar.png")))
     # itemlist.append(Item(channel=item.channel, action="opciones", title="Opciones"))
 
     saved_searches_list = get_saved_searches()
@@ -34,21 +38,39 @@ def mainlist(item):
     context2.append({"title": "Borrar búsquedas guardadas",
                      "action": "clear_saved_searches",
                      "channel": item.channel})
-    for saved_search_text in saved_searches_list:
-        itemlist.append(Item(channel=item.channel, action="do_search", title=' "'+saved_search_text+'"',
-                             extra=saved_search_text,  context=context2, category=saved_search_text))
+    logger.info("saved_searches_list=%s" % saved_searches_list)
+    if saved_searches_list != []:
+        itemlist.append(Item(channel=item.channel, action="",
+                             title="Busquedas guardadas:", context=context2,
+                             thumbnail=get_thumbnail_path("thumb_buscar.png")))
+        for saved_search_text in saved_searches_list:
+            itemlist.append(Item(channel=item.channel, action="do_search",
+                                 title='    "' + saved_search_text + '"',
+                                 extra=saved_search_text, context=context2,
+                                 category=saved_search_text,
+                                 thumbnail=get_thumbnail_path("thumb_buscar.png")))
 
     return itemlist
 
 
 def opciones(item):
     itemlist = list()
-    itemlist.append(Item(channel=item.channel, action="settingCanal", title="Elegir canales incluidos en la búsqueda",
-                         folder=False))
-    itemlist.append(Item(channel=item.channel, action="clear_saved_searches", title="Borrar búsquedas guardadas",
-                         folder=False))
-    itemlist.append(Item(channel=item.channel, action="settings", title="Otros ajustes", folder=False))
+    itemlist.append(Item(channel=item.channel, action="settingCanal",
+                         title="Elegir canales incluidos en la búsqueda",
+                         folder=False, thumbnail=get_thumbnail_path("thumb_buscar.png")))
+    itemlist.append(Item(channel=item.channel, action="clear_saved_searches",
+                         title="Borrar búsquedas guardadas", folder=False,
+                         thumbnail=get_thumbnail_path("thumb_buscar.png")))
+    itemlist.append(Item(channel=item.channel, action="settings",
+                         title="Otros ajustes", folder=False,
+                         thumbnail=get_thumbnail_path("thumb_buscar.png")))
     return itemlist
+
+
+def get_thumbnail_path(thumb_name):
+    import urlparse
+    web_path = "http://media.tvalacarta.info/pelisalacarta/squares/"
+    return urlparse.urljoin(web_path, thumb_name)
 
 
 def settings(item):
@@ -214,7 +236,7 @@ def channel_search(search_results, channel_parameters, tecleado):
                 search_results[channel_parameters["title"]].append({"item": item, "itemlist": result})
 
     except:
-        logger.error("No se puede buscar en: " + channel_parameters["title"])
+        logger.error("No se puede buscar en: %s" % channel_parameters["title"])
         import traceback
         logger.error(traceback.format_exc())
 
@@ -230,13 +252,13 @@ def do_search(item, categories=[]):
     itemlist = []
 
     channels_path = os.path.join(config.get_runtime_path(), "channels", '*.xml')
-    logger.info("channels_path="+channels_path)
+    logger.info("channels_path=%s" % channels_path)
 
     channel_language = config.get_setting("channel_language")
-    logger.info("channel_language="+channel_language)
+    logger.info("channel_language=%s" % channel_language)
     if channel_language == "":
         channel_language = "all"
-        logger.info("channel_language="+channel_language)
+        logger.info("channel_language=%s" % channel_language)
 
     # Para Kodi es necesario esperar antes de cargar el progreso, de lo contrario
     # el cuadro de progreso queda "detras" del cuadro "cargando..." y no se le puede dar a cancelar
@@ -253,69 +275,75 @@ def do_search(item, categories=[]):
         progreso.update(0, "Buscando '%s'..." % tecleado)
 
     for index, infile in enumerate(channel_files):
-        percentage = index*100/number_of_channels
+        try:
+            percentage = (index * 100) / number_of_channels
 
-        basename = os.path.basename(infile)
-        basename_without_extension = basename[:-4]
-        logger.info("%s..." % basename_without_extension)
+            basename = os.path.basename(infile)
+            basename_without_extension = basename[:-4]
+            logger.info("%s..." % basename_without_extension)
 
-        channel_parameters = channeltools.get_channel_parameters(basename_without_extension)
+            channel_parameters = channeltools.get_channel_parameters(basename_without_extension)
 
-        # No busca si es un canal inactivo
-        if channel_parameters["active"] != "true":
-            logger.info("%s no incluido" % basename_without_extension)
-            continue
-
-        # En caso de busqueda por categorias
-        if categories:
-            if not any(cat in channel_parameters["categories"] for cat in categories):
+            # No busca si es un canal inactivo
+            if channel_parameters["active"] != "true":
                 logger.info("%s no incluido" % basename_without_extension)
                 continue
 
-        # No busca si es un canal para adultos, y el modo adulto está desactivado
-        if channel_parameters["adult"] == "true" and config.get_setting("adult_mode") == "false":
-            logger.info("%s no incluido" % basename_without_extension)
+            # En caso de busqueda por categorias
+            if categories:
+                if not any(cat in channel_parameters["categories"] for cat in categories):
+                    logger.info("%s no incluido" % basename_without_extension)
+                    continue
+
+            # No busca si es un canal para adultos, y el modo adulto está desactivado
+            if channel_parameters["adult"] == "true" and config.get_setting("adult_mode") == "false":
+                logger.info("%s no incluido" % basename_without_extension)
+                continue
+
+            # No busca si el canal es en un idioma filtrado
+            if channel_language != "all" and channel_parameters["language"] != channel_language:
+                logger.info("%s no incluido" % basename_without_extension)
+                continue
+
+            # No busca si es un canal excluido de la busqueda global
+            include_in_global_search = channel_parameters["include_in_global_search"]
+            if include_in_global_search in ["", "true"]:
+                # Buscar en la configuracion del canal
+                include_in_global_search = str(config.get_setting("include_in_global_search", basename_without_extension))
+                # Si no hay valor en la configuración del canal se incluye ya que así estaba por defecto
+                '''if include_in_global_search == "":
+                    include_in_global_search = "true"'''
+
+            if include_in_global_search.lower() != "true":
+                logger.info("%s no incluido" % basename_without_extension)
+                continue
+
+            if progreso.iscanceled():
+                progreso.close()
+                logger.info("Busqueda cancelada")
+                return itemlist
+
+            # Modo Multi Thread
+            if multithread:
+                t = Thread(target=channel_search, args=[search_results, channel_parameters, tecleado],
+                           name=channel_parameters["title"])
+                t.setDaemon(True)
+                t.start()
+                searches.append(t)
+
+            # Modo single Thread
+            else:
+                logger.info("Intentado busqueda en " + basename_without_extension + " de " + tecleado)
+                channel_search(search_results, channel_parameters, tecleado)
+
+            logger.info("%s incluido en la busqueda" % basename_without_extension)
+            progreso.update(percentage / 2, "Iniciada busqueda de '%s' en %s..." % (tecleado, channel_parameters["title"]))
+
+        except:
             continue
-
-        # No busca si el canal es en un idioma filtrado
-        if channel_language != "all" and channel_parameters["language"] != channel_language:
-            logger.info("%s no incluido" % basename_without_extension)
-            continue
-
-        # No busca si es un canal excluido de la busqueda global
-        include_in_global_search = channel_parameters["include_in_global_search"]
-        if include_in_global_search in ["", "true"]:
-            # Buscar en la configuracion del canal
-            include_in_global_search = str(config.get_setting("include_in_global_search", basename_without_extension))
-            # Si no hay valor en la configuración del canal se incluye ya que así estaba por defecto
-            '''if include_in_global_search == "":
-                include_in_global_search = "true"'''
-
-        if include_in_global_search.lower() != "true":
-            logger.info("%s no incluido" % basename_without_extension)
-            continue
-
-        if progreso.iscanceled():
-            progreso.close()
-            logger.info("Busqueda cancelada")
-            return itemlist
-
-        # Modo Multi Thread
-        if multithread:
-            t = Thread(target=channel_search, args=[search_results, channel_parameters, tecleado],
-                       name= channel_parameters["title"])
-            t.setDaemon(True)
-            t.start()
-            searches.append(t)
-
-        # Modo single Thread
-        else:
-            logger.info("Intentado busqueda en " + basename_without_extension + " de " + tecleado)
-            channel_search(search_results, channel_parameters, tecleado)
-
-        logger.info("%s incluido en la busqueda" % basename_without_extension)
-        progreso.update(percentage/2, "Iniciada busqueda de '%s' en %s..." % (tecleado, channel_parameters["title"]))
-
+            logger.error("No se puede buscar en: %s" % channel_parameters["title"])
+            import traceback
+            logger.error(traceback.format_exc())
 
     # Modo Multi Thread
     # Usando isAlive() no es necesario try-except,
@@ -325,12 +353,13 @@ def do_search(item, categories=[]):
         pendent = [a for a in searches if a.isAlive()]
         while pendent:
             percentage = (len(searches) - len(pendent)) * 100 / len(searches)
+            completed = len(searches) - len(pendent)
 
             if len(pendent) > 5:
-                progreso.update(percentage, "Buscando '%s' en %d/%d canales..." % (tecleado, len(pendent), len(searches)))
+                progreso.update(percentage, "Busqueda terminada en %d de %d canales..." % (completed, len(searches)))
             else:
                 list_pendent_names = [a.getName() for a in pendent]
-                mensaje = "Buscando '%s' en %s" % (tecleado, ", ".join(list_pendent_names))
+                mensaje = "Buscando en %s" % (", ".join(list_pendent_names))
                 progreso.update(percentage, mensaje)
                 logger.debug(mensaje)
 
@@ -341,14 +370,13 @@ def do_search(item, categories=[]):
             time.sleep(0.5)
             pendent = [a for a in searches if a.isAlive()]
 
-
     total = 0
 
     for channel in sorted(search_results.keys()):
         for search in search_results[channel]:
             total += len(search["itemlist"])
+            title = channel
             if result_mode == 0:
-                title = channel
                 if len(search_results[channel]) > 1:
                     title += " [" + search["item"].title.strip() + "]"
                 title += " (" + str(len(search["itemlist"])) + ")"
@@ -360,10 +388,14 @@ def do_search(item, categories=[]):
                 itemlist.append(Item(title=title, channel="buscador", action="channel_result", url=search["item"].url,
                                      extra=extra, folder=True))
             else:
+                title = ">> Resultados del canal %s:" % title
+                itemlist.append(Item(title=title, channel="buscador", action="",
+                                     folder=False, text_color="yellow"))
                 itemlist.extend(search["itemlist"])
+                # itemlist.append(Item(title="", channel="buscador", action="", folder=False))
 
     title = "Buscando: '%s' | Encontrado: %d vídeos | Tiempo: %2.f segundos" % (tecleado, total, time.time()-start_time)
-    itemlist.insert(0, Item(title=title, color='yellow'))
+    itemlist.insert(0, Item(title=title, text_color='yellow'))
 
     progreso.close()
 
@@ -401,5 +433,5 @@ def get_saved_searches():
         saved_searches_list = []
     else:
         saved_searches_list = list(current_saved_searches_list)
-    
+
     return saved_searches_list
