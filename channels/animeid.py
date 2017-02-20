@@ -112,7 +112,7 @@ def novedades_episodios(item):
     data = scrapertools.cache_page(item.url)
     data = scrapertools.get_match(data,'<section class="lastcap">(.*?)</section>')
 
-    patronvideos  = '<article> <a href="([^"]+)"> <header>([^<]+)</header> <figure><img[\sa-z_]+src="([^"]+)"[^<]+</figure><div[^<]+</div[^<]+<aside[^<]+<span class="p"[^<]+<strong[^<]+</strong[^<]+</span[^<]+<span[^<]+<strong[^<]+</strong[^<]+</span[^<]+</aside[^<]+</a[^<]+<p>(.*?)</p>'
+    patronvideos  = '<a href="([^"]+)">[^<]+<header>([^<]+)</header>[^<]+<figure><img[^>]+src="([^"]+)"[\s\S]+?<p>(.+?)</p>'
     matches = re.compile(patronvideos,re.DOTALL).findall(data)
     itemlist = []
     
