@@ -11,10 +11,15 @@
 	<thumbnail>https://d12.usercdn.com/i/02278/nwm6todp6yyk.png</thumbnail>
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/pepecine.png</bannermenu>
 	
-	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/develop/python/main-classic/channels/</update_url>
-	<version>5</version>
+	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
+	<version>6</version>
 
 	<changes>
+		<change>
+			<date>31/01/17</date>
+			<autor>super_berny</autor>
+			<description>Solucionado bug al añadir contenido a la biblioteca</description>
+		</change>
 		<change>
 			<date>26/01/17</date>
 			<autor>super_berny</autor>
