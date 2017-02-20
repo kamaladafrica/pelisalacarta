@@ -538,7 +538,6 @@ def play_from_library(item):
     else:
         # Ventana emergente
         from channels import biblioteca
-        from platformcode import xbmc_library
         p_dialog = platformtools.dialog_progress_bg('pelisalacarta', 'Cargando...')
         p_dialog.update(0, '')
 
