@@ -423,7 +423,7 @@ def get_nfo(item):
         info_nfo = "https://www.themoviedb.org/tv/%s/season/%s/episode/%s\n" % \
                    (item.infoLabels['tmdb_id'], item.contentSeason, item.contentEpisodeNumber)
     else:
-        info_nfo = item.infoLabels['url_scraper']
+        info_nfo = item.infoLabels['url_scraper'] + "\n"
 
     return info_nfo
 
