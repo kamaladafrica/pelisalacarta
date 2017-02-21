@@ -540,11 +540,11 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
         except:
             logger.error("Error al actualizar tvshow.nfo")
             fallidos = -1
-
-        # ... y actualizamos la biblioteca de Kodi
-        if config.is_xbmc() and not silent:
-            from platformcode import xbmc_library
-            xbmc_library.update(FOLDER_TVSHOWS, filetools.basename(path))
+        else:
+            # ... si ha sido correcto actualizamos la biblioteca de Kodi
+            if config.is_xbmc() and not silent:
+                from platformcode import xbmc_library
+                xbmc_library.update(FOLDER_TVSHOWS, filetools.basename(path))
 
     if fallidos == len(episodelist):
         fallidos = -1
