@@ -7,6 +7,7 @@
 
 import re
 
+from core import httptools
 from core import logger
 from core import scrapertools
 from lib import jsunpack
@@ -15,10 +16,10 @@ from lib import jsunpack
 def test_video_exists(page_url):
     logger.info("(page_url='%s')" % page_url)
 
-    data = scrapertools.cache_page(page_url)
+    data = httptools.downloadpage(page_url).data
 
-    if 'FILE NOT FOUND' in data:
-        return False, "[Datoporn] El archivo no existe o ha sido borrado"
+    if 'File Not Found' in data or '404 Not Found' in data:
+        return False, "[Datoporn] El archivo no existe o ha sido borrado" 
 
     return True, ""
 
@@ -26,7 +27,7 @@ def test_video_exists(page_url):
 def get_video_url(page_url, premium=False, user="", password="", video_password=""):
     logger.info("url=" + page_url)
 
-    data = scrapertools.cache_page(page_url)
+    data = httptools.downloadpage(page_url).data
 
     media_urls = scrapertools.find_multiple_matches(data, 'file\:"([^"]+\.mp4)",label:"([^"]+)"')
     if not media_urls:
@@ -35,9 +36,20 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
         media_urls = scrapertools.find_multiple_matches(data, '\[\{file\:"([^"]+)"')
 
     # Extrae la URL
+    calidades = []
     video_urls = []
-    for media_url in sorted(media_urls, key=lambda x: int(x[1])):
-        video_urls.append(["." + media_url[0].rsplit('.', 1)[1] + " " + media_url[1] + "p [datoporn]", media_url[0]])
+    for media_url in sorted(media_urls, key= lambda x:int(x[1])):
+        calidades.append(int(media_url[1]))
+        try:
+            title = ".%s %sp [datoporn]" % (media_url[0].rsplit('.',1)[1], media_url[1])
+        except:
+            title = ".%s %sp [datoporn]" % (media_url[-4:], media_url[1])
+        video_urls.append([title, media_url[0]])
+
+    sorted(calidades)
+    m3u8 = scrapertools.find_single_match(data,'file\:"([^"]+\.m3u8)"')
+    if m3u8:
+        video_urls.insert(0, [".m3u8 %s [datoporn]" % calidades[-1], m3u8])
 
     for video_url in video_urls:
         logger.info("%s - %s" % (video_url[0], video_url[1]))
