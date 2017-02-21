@@ -5,7 +5,10 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 # ------------------------------------------------------------
 import re
+import urllib
 
+from core import config
+from core import httptools
 from core import jsontools
 from core import logger
 from core import scrapertools
@@ -16,10 +19,11 @@ host = 'http://pelismag.net'
 api = host + '/api'
 api_serie = host + "/seapi"
 api_temp = host + "/sapi"
+__modo_grafico__ = config.get_setting("modo_grafico", "pelismagnet")
 
 
 def mainlist(item):
-    logger.info("pelisalacarta.pelismagnet mainlist")
+    logger.info()
 
     itemlist = list()
     itemlist.append(Item(channel=item.channel, action="pelis", title="[B]Peliculas[/B]",
@@ -43,11 +47,21 @@ def mainlist(item):
                          url=api_serie))
     itemlist.append(Item(channel=item.channel, action="search", title="     Buscar...",
                          url=api_serie + "?keywords=%s&page=0"))
+    itemlist.append(Item(channel=item.channel, action="configuracion", title="Configurar canal"))
+
     return itemlist
 
 
+def configuracion(item):
+    from platformcode import platformtools
+    platformtools.show_channel_settings()
+    if config.is_xbmc():
+        import xbmc
+        xbmc.executebuiltin("Container.Refresh")
+
+
 def menu_ord(item):
-    logger.info("pelisalacarta.pelismagnet menu_ord")
+    logger.info()
 
     itemlist = list()
     itemlist.append(Item(channel=item.channel, action="menu_alf", title="Alfabético",
@@ -59,7 +73,7 @@ def menu_ord(item):
 
 
 def menu_alf(item):
-    logger.info("pelisalacarta.pelismagnet menu_alf")
+    logger.info()
 
     itemlist = []
 
@@ -72,11 +86,17 @@ def menu_alf(item):
 
 
 def menu_genero(item):
-    logger.info("pelisalacarta.pelismagnet menu_genero")
+    logger.info()
 
     itemlist = []
 
-    data = scrapertools.cachePage(host+"/principal")
+    response = httptools.downloadpage("https://kproxy.com/")
+    url = "https://kproxy.com/doproxy.jsp"
+    post = "page=%s&x=34&y=14" % urllib.quote(host + "/principal")
+    response = httptools.downloadpage(url, post, follow_redirects=False).data
+    url = scrapertools.find_single_match(response, '<meta http-equiv="refresh".*?url=([^"]+)"')
+    data = httptools.downloadpage(url).data
+
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
 
     data = scrapertools.find_single_match(data, '<ul class="dropdown-menu.*?>(.*?)</ul>')
@@ -91,13 +111,23 @@ def menu_genero(item):
 
 
 def series(item):
-    logger.info("pelisalacarta.pelismagnet series")
+    logger.info()
     itemlist = []
 
-    data = scrapertools.cachePage(item.url)
-    lista = jsontools.load_json(data)
+    response = httptools.downloadpage("https://kproxy.com/")
+    url = "https://kproxy.com/doproxy.jsp"
+    post = "page=%s&x=34&y=14" % urllib.quote(item.url)
+    response = httptools.downloadpage(url, post, follow_redirects=False).data
+    url = scrapertools.find_single_match(response, '<meta http-equiv="refresh".*?url=([^"]+)"')
+    data = httptools.downloadpage(url).data
 
-    for i in lista:
+    lista = jsontools.load_json(data)
+    if item.extra == "next":
+        lista_ = lista[25:]
+    else:
+        lista_ = lista[:25]
+
+    for i in lista_:
 
         punt = i.get("puntuacio", "")
         valoracion = ""
@@ -118,23 +148,36 @@ def series(item):
         if plot is None:
             plot = ""
 
-        itemlist.append(Item(channel=item.channel, action="episodios", title=title, url=url, server="torrent",
-                             thumbnail=thumbnail, fanart=fanart, show=title, plot=plot, folder=True))
+        infoLabels = {'plot': plot, 'year': i.get("year"), 'tmdb_id': i.get("id"), 'mediatype': 'tvshow'}
 
-    if len(itemlist) == 50:
+        itemlist.append(Item(channel=item.channel, action="episodios", title=title, url=url, server="torrent",
+                             thumbnail=thumbnail, fanart=fanart, infoLabels=infoLabels, contentTitle=i.get("nom"),
+                             show=i.get("nom")))
+
+    from core import tmdb
+    tmdb.set_infoLabels_itemlist(itemlist, __modo_grafico__)
+
+    if len(lista_) == 25 and item.extra == "next":
         url = re.sub(r'page=(\d+)', r'page=' + str(int(re.search('\d+', item.url).group()) + 1), item.url)
         itemlist.append(Item(channel=item.channel, action="series", title=">> Página siguiente", url=url))
+    elif len(lista_) == 25:
+        itemlist.append(Item(channel=item.channel, action="series", title=">> Página siguiente", url=item.url, extra="next"))
 
     return itemlist
 
 
 def episodios(item):
-    logger.info("pelisalacarta.pelismagnet episodios")
+    logger.info()
     itemlist = []
 
-    data = scrapertools.cachePage(item.url)
-    data = jsontools.load_json(data)
+    response = httptools.downloadpage("https://kproxy.com/")
+    url = "https://kproxy.com/doproxy.jsp"
+    post = "page=%s&x=34&y=14" % urllib.quote(item.url)
+    response = httptools.downloadpage(url, post, follow_redirects=False).data
+    url = scrapertools.find_single_match(response, '<meta http-equiv="refresh".*?url=([^"]+)"')
+    data = httptools.downloadpage(url).data
 
+    data = jsontools.load_json(data)
     for i in data.get("temporadas", []):
 
         titulo = "{temporada} ({total} Episodios)".format(temporada=i.get("nomtemporada", ""),
@@ -168,21 +211,37 @@ def episodios(item):
             if plot is None:
                 plot = ""
 
-            itemlist.append(Item(channel=item.channel, action="play", title=title, url=url, server="torrent",
-                                 fanart=item.fanart, thumbnail=item.thumbnail, plot=plot, folder=False))
+            infoLabels = item.infoLabels
+            if plot:
+                infoLabels["plot"] = plot
+            infoLabels["season"] = i.get("numerotemporada")
+            infoLabels["episode"] = j.get("numerocapitul")
+            itemlist.append(Item(channel=item.channel, action="play", title=title, url=url, server="torrent", infoLabels=infoLabels,
+                                 thumbnail=item.thumbnail, fanart=item.fanart, show=item.show, contentTitle=item.contentTitle,
+                                 contentSeason=i.get("numerotemporada"), contentEpisodeNumber=j.get("numerocapitul")))
 
     return itemlist
 
 
 def pelis(item):
-    logger.info("pelisalacarta.pelismagnet pelis")
+    logger.info()
 
     itemlist = []
-    data = scrapertools.cachePage(item.url)
+
+    response = httptools.downloadpage("https://kproxy.com/")
+    url = "https://kproxy.com/doproxy.jsp"
+    post = "page=%s&x=34&y=14" % urllib.quote(item.url)
+    response = httptools.downloadpage(url, post, follow_redirects=False).data
+    url = scrapertools.find_single_match(response, '<meta http-equiv="refresh".*?url=([^"]+)"')
+    data = httptools.downloadpage(url).data
+
     lista = jsontools.load_json(data)
+    if item.extra == "next":
+        lista_ = lista[25:]
+    else:
+        lista_ = lista[:25]
 
-    for i in lista:
-
+    for i in lista_:
         punt = i.get("puntuacio", "")
         valoracion = ""
 
@@ -197,7 +256,7 @@ def pelis(item):
             calidad = "[{calidad}]".format(calidad=i.get("magnets", {}).get("M720", {}).get("quality", ""))
 
         if not url:
-            return [Item(channel=item.channel, title='No hay enlace magnet disponible para esta pelicula')]
+            continue
 
         title = "{nombre} {calidad}{val}".format(nombre=i.get("nom", ""), val=valoracion, calidad=calidad)
 
@@ -211,19 +270,25 @@ def pelis(item):
         plot = i.get("info", "")
         if plot is None:
             plot = ""
+        infoLabels = {'plot': plot, 'year': i.get("year"), 'tmdb_id': i.get("id")}
 
         itemlist.append(Item(channel=item.channel, action="play", title=title, url=url, server="torrent",
-                             thumbnail=thumbnail, plot=plot, fanart=fanart, folder=False))
+                             thumbnail=thumbnail, fanart=fanart, infoLabels=infoLabels, contentTitle=i.get("nom")))
 
-    if len(itemlist) == 50:
+    from core import tmdb
+    tmdb.set_infoLabels_itemlist(itemlist, __modo_grafico__)
+
+    if len(lista_) == 25 and item.extra == "next":
         url = re.sub(r'page=(\d+)', r'page=' + str(int(re.search('\d+', item.url).group()) + 1), item.url)
         itemlist.append(Item(channel=item.channel, action="pelis", title=">> Página siguiente", url=url))
+    elif len(lista_) == 25:
+        itemlist.append(Item(channel=item.channel, action="pelis", title=">> Página siguiente", url=item.url, extra="next"))
 
     return itemlist
 
 
 def search(item, texto):
-    logger.info("pelisalacarta.pelismagnet search")
+    logger.info()
     try:
         item.url = item.url % texto.replace(' ', '%20')
         if "/seapi" in item.url:
