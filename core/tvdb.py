@@ -318,7 +318,7 @@ def get_nfo(item):
 
         info_nfo = set_nfo_casting(info_nfo, item.infoLabels['castandrole'])
 
-        info_nfo += '<plot>%s<plot>' % item.plot
+        info_nfo += '<plot>%s<plot>' % item.plot.replace("\n", " ").strip()
         info_nfo += '</episodedetails>\n'
 
         # info_nfo += "http://thetvdb.com/?tab=episode&seriesid=%s&seasonid=%s&id=%s\n" % \
@@ -409,7 +409,7 @@ def get_nfo(item):
         #               % (e.get("name", ""), e.get("role", ""), e.get("sortOrder", 0), HOST_IMAGE + e.get("image", ""))
         info_nfo = set_nfo_casting(info_nfo, item.infoLabels['castandrole'])
 
-        info_nfo += '<plot>%s<plot>' % item.plot
+        info_nfo += '<plot>%s<plot>' % item.plot.replace("\n", " ").strip()
         info_nfo += '</tvshow>\n'
 
         # <title>Legión</title> ---
