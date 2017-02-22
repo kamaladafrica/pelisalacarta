@@ -56,16 +56,15 @@ def mainlist(item):
     itemlist.append(Item(channel=item.channel, action="search", title="Buscar en torrents", thumbnail=item.thumbnail,
                          url="https://www.nyaa.se/?page=search&cats=0_0&filter=0&term=puya+", text_color=color3))
 
-    itemlist.append(item.clone(title="Configurar canal", action="openconfig", text_color=color5, folder=False))
+    itemlist.append(item.clone(title="Configurar canal", action="configuracion", text_color=color5, folder=False))
     return itemlist
 
 
-def openconfig(item):
+def configuracion(item):
     from platformcode import platformtools
-    platformtools.show_channel_settings()
-    if config.is_xbmc():
-        import xbmc
-        xbmc.executebuiltin("Container.Refresh")
+    ret = platformtools.show_channel_settings()
+    platformtools.itemlist_refresh()
+    return ret
 
 
 def search(item, texto):
