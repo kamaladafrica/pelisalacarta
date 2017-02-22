@@ -200,6 +200,13 @@ def get_cookie_data():
 
     return cookiedata
 
+def search_library_path():
+    sql = 'SELECT strPath FROM path WHERE strPath LIKE "special://%/plugin.video.pelisalacarta/library/SERIES/"'
+    from platformcode.xbmc_helpers import execute_sql_kodi
+    nun_records, records = execute_sql_kodi(sql)
+    if nun_records >= 1:
+        return records[0][0][:-len("SERIES/")]
+    return None
 
 # Test if all the required directories are created
 def verify_directories_created():
@@ -213,6 +220,11 @@ def verify_directories_created():
 
     for path, default in config_paths:
         saved_path = get_setting(path)
+        if not saved_path and path == "librarypath":
+            saved_path = search_library_path()
+            if saved_path:
+                set_setting(path, saved_path)
+
         if not saved_path:
             saved_path = "special://profile/addon_data/plugin.video." + PLUGIN_NAME + "/" + default
             set_setting(path, saved_path)
