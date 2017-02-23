@@ -30,7 +30,6 @@ import os
 import xbmc
 import xbmcaddon
 
-PLATFORM_NAME = "kodi-krypton"
 PLUGIN_NAME = "pelisalacarta"
 
 __settings__ = xbmcaddon.Addon(id="plugin.video." + PLUGIN_NAME)
@@ -38,7 +37,14 @@ __language__ = __settings__.getLocalizedString
 
 
 def get_platform():
-    return PLATFORM_NAME
+    codename = {"10": "dharma", "11": "eden", "12": "frodo",
+                "13": "gotham", "14": "helix", "15": "isengard",
+                "16": "jarvis", "17": "krypton", "18": "leia"}
+    num_version = xbmc.getInfoLabel('System.BuildVersion').split(' ')[0]
+    if num_version < 14:
+        return "xbmc-" + codename.get(num_version.split('.')[0], num_version)
+    else:
+        return "kodi-" + codename.get(num_version.split('.')[0], num_version)
 
 
 def is_xbmc():
@@ -167,6 +173,7 @@ def get_library_config_path():
         verify_directories_created()
         value = get_setting("librarypath")
     return value
+
 
 def get_library_path():
     return xbmc.translatePath(get_library_config_path())
