@@ -209,7 +209,7 @@ def set_infoLabels_item(item, seekTmdb=True, idioma_busqueda='es', lock=None):
                 lock.acquire()
 
             if not otmdb_global or (item.infoLabels['tmdb_id'] and
-                                    otmdb_global.result.get("id") != item.infoLabels['tmdb_id']) \
+                                    str(otmdb_global.result.get("id")) != item.infoLabels['tmdb_id']) \
                                 or (otmdb_global.texto_buscado and
                                     otmdb_global.texto_buscado != item.infoLabels['tvshowtitle']):
                 if item.infoLabels['tmdb_id']:
@@ -378,7 +378,7 @@ def find_and_set_infoLabels(item):
         else:
             otmdb_global = Tmdb(external_id=item.infoLabels.get("imdb_id"), external_source="imdb_id",
                                 tipo=tipo_busqueda)
-    elif not otmdb_global or otmdb_global.result.get("id") != item.infoLabels['tmdb_id']:
+    elif not otmdb_global or str(otmdb_global.result.get("id")) != item.infoLabels['tmdb_id']:
         otmdb_global = Tmdb(id_Tmdb=item.infoLabels['tmdb_id'], tipo=tipo_busqueda, idioma_busqueda="es")
 
     results = otmdb_global.get_list_resultados()

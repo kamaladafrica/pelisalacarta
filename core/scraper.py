@@ -253,9 +253,8 @@ def get_nfo(item):
     @return:
     """
     logger.info()
-    logger.info("mojon %s" % item)
     if "infoLabels" in item and "noscrap_id" in item.infoLabels:
-        # TODO crear el fichero xml con los datos que se obtiene de item ya que no hay ningún scraper activo
+        # Crea el fichero xml con los datos que se obtiene de item ya que no hay ningún scraper activo
         info_nfo = '<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>'
 
         if "season" in item.infoLabels and "episode" in item.infoLabels:

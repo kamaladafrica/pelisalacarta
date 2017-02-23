@@ -67,15 +67,14 @@ def mainlist(item):
     itemlist.append(item.clone(title="Trakt.tv", action="trakt", text_color=color2, thumbnail="http://i.imgur.com/5sQjjuk.png"))
     itemlist.append(item.clone(title="MyAnimeList", action="mal", text_color=color2, thumbnail="http://i.imgur.com/RhsYWmd.png"))
     itemlist.append(item.clone(title="", action=""))
-    itemlist.append(item.clone(title="Ajustes motores de búsqueda", action="openconfig", text_color=color6, folder=False))
+    itemlist.append(item.clone(title="Ajustes motores de búsqueda", action="configuracion", text_color=color6, folder=False))
     return itemlist
 
 
-def openconfig(item):
-    platformtools.show_channel_settings()
-    if config.is_xbmc():
-        import xbmc
-        xbmc.executebuiltin("Container.Refresh")
+def configuracion(item):
+    ret = platformtools.show_channel_settings()
+    platformtools.itemlist_refresh()
+    return ret
 
 
 def search_(item):
