@@ -92,7 +92,7 @@ otvdb_global = None
 
 def find_and_set_infoLabels(item):
     logger.info()
-    logger.info("item es %s" % item)
+    # logger.info("item es %s" % item)
 
     if not item.contentSeason:
         from platformcode import platformtools
@@ -597,9 +597,8 @@ class Tvdb:
             response.close()
 
         except Exception, ex:
-            template = "An exception of type {0} occured. Arguments:\n{1!r}"
-            message = template.format(type(ex).__name__, ex.args)
-            logger.error("error en: {0}".format(message))
+            message = "An exception of type %s occured. Arguments:\n%s" % (type(ex).__name__, repr(ex.args))
+            logger.error("error en: %s" % message)
 
         else:
             dict_html = jsontools.load_json(html)
@@ -633,13 +632,12 @@ class Tvdb:
                 raise
 
         except Exception, ex:
-            template = "An exception of type {0} occured. Arguments:\n{1!r}"
-            message = template.format(type(ex).__name__, ex.args)
-            logger.error("error en: {0}".format(message))
+            message = "An exception of type %s occured. Arguments:\n%s" % (type(ex).__name__, repr(ex.args))
+            logger.error("error en: %s" % message)
 
         else:
             dict_html = jsontools.load_json(html)
-            # logger.error("tokencito {}".format(dict_html))
+            # logger.error("tokencito %s" % dict_html)
             if "token" in dict_html:
                 token = dict_html["token"]
                 DEFAULT_HEADERS["Authorization"] = "Bearer " + token
@@ -718,7 +716,7 @@ class Tvdb:
             import urllib
             params = urllib.urlencode(params)
 
-            url = HOST + "/series/{id}/episodes/query?{params}".format(id=_id, params=params)
+            url = HOST + "/series/%s/episodes/query?%s" % (_id, params)
             DEFAULT_HEADERS["Accept-Language"] = lang
             logger.debug("url: %s, \nheaders: %s" % (url, DEFAULT_HEADERS))
 
@@ -728,9 +726,8 @@ class Tvdb:
             response.close()
 
         except Exception, ex:
-            template = "An exception of type {0} occured. Arguments:\n{1!r}"
-            message = template.format(type(ex).__name__, ex.args)
-            logger.error("error en: {0}".format(message))
+            message = "An exception of type %s occured. Arguments:\n%s" % (type(ex).__name__, repr(ex.args))
+            logger.error("error en: %s" % message)
 
         else:
             dict_html = jsontools.load_json(html)
@@ -783,7 +780,7 @@ class Tvdb:
         logger.info()
 
         try:
-            url = HOST + "/series/{id}/episodes?page={params}".format(id=_id, page=page)
+            url = HOST + "/series/%s/episodes?page=%s" % (_id, page)
             logger.debug("url: %s, \nheaders: %s" % (url, DEFAULT_HEADERS))
 
             req = urllib2.Request(url, headers=DEFAULT_HEADERS)
@@ -792,9 +789,8 @@ class Tvdb:
             response.close()
 
         except Exception, ex:
-            template = "An exception of type {0} occured. Arguments:\n{1!r}"
-            message = template.format(type(ex).__name__, ex.args)
-            logger.error("error en: {0}".format(message))
+            message = "An exception of type %s occured. Arguments:\n%s" % (type(ex).__name__, repr(ex.args))
+            logger.error("error en: %s" % message)
 
         else:
             dict_html = jsontools.load_json(html)
@@ -867,7 +863,7 @@ class Tvdb:
         logger.info()
         dict_html = {}
 
-        url = HOST + "/episodes/{id}".format(id=_id)
+        url = HOST + "/episodes/%s" % _id
 
         try:
             DEFAULT_HEADERS["Accept-Language"] = lang
@@ -881,9 +877,8 @@ class Tvdb:
             if type(ex) == urllib2.HTTPError:
                 logger.debug("code es %s " % ex.code)
 
-            template = "An exception of type {0} occured. Arguments:\n{1!r}"
-            message = template.format(type(ex).__name__, ex.args)
-            logger.error("error en: {0}".format(message))
+            message = "An exception of type %s occured. Arguments:\n%s" % (type(ex).__name__, repr(ex.args))
+            logger.error("error en: %s" % message)
 
         else:
             dict_html = jsontools.load_json(html)
@@ -933,10 +928,11 @@ class Tvdb:
             params = urllib.urlencode(params)
 
             DEFAULT_HEADERS["Accept-Language"] = lang
-            url = HOST + "/search/series?{params}".format(params=params)
+            url = HOST + "/search/series?%s" % params
             logger.debug("url: %s, \nheaders: %s" % (url, DEFAULT_HEADERS))
 
-            req = urllib2.Request(url, headers=DEFAULT_HEADERS)
+            # req = urllib2.Request(url, headers=DEFAULT_HEADERS)
+            req = None
             response = urllib2.urlopen(req)
             html = response.read()
             response.close()
@@ -945,9 +941,8 @@ class Tvdb:
             if type(ex) == urllib2.HTTPError:
                 logger.debug("code es %s " % ex.code)
 
-            template = "An exception of type {0} occured. Arguments:\n{1!r}"
-            message = template.format(type(ex).__name__, ex.args)
-            logger.error("error en: {0}".format(message))
+            message = "An exception of type %s occured. Arguments:\n%s" % (type(ex).__name__, repr(ex.args))
+            logger.error("error en: %s" % message)
 
         else:
             dict_html = jsontools.load_json(html)
@@ -965,7 +960,7 @@ class Tvdb:
                 else:
                     index = 0
 
-                logger.debug("resultado {}".format(resultado))
+                logger.debug("resultado %s" % resultado)
                 self.list_results = resultado
                 self.result = resultado[index]
 
@@ -1020,7 +1015,7 @@ class Tvdb:
         logger.info()
         resultado = {}
 
-        url = HOST + "/series/{id}".format(id=_id)
+        url = HOST + "/series/%s" % _id
 
         try:
             DEFAULT_HEADERS["Accept-Language"] = lang
@@ -1035,9 +1030,8 @@ class Tvdb:
             if type(ex) == urllib2.HTTPError:
                 logger.debug("code es %s " % ex.code)
 
-            template = "An exception of type {0} occured. Arguments:\n{1!r}"
-            message = template.format(type(ex).__name__, ex.args)
-            logger.error("error en: {0}".format(message))
+            message = "An exception of type %s occured. Arguments:\n%s" % (type(ex).__name__, repr(ex.args))
+            logger.error("error en: %s" % message)
 
         else:
             dict_html = jsontools.load_json(html)
@@ -1047,7 +1041,7 @@ class Tvdb:
             else:
                 resultado1 = dict_html["data"]
 
-                logger.debug("resultado1 {}".format(dict_html))
+                logger.debug("resultado1 %s" % dict_html)
 
                 resultado2 = self.get_images(_id, image="poster")
                 resultado3 = self.get_images(_id, image="fanart")
@@ -1058,7 +1052,7 @@ class Tvdb:
                 resultado.update(resultado3)
                 resultado.update(resultado4)
 
-                logger.debug("resultado {}".format(resultado))
+                logger.debug("resultado %s" % resultado)
                 self.list_results = [resultado]
                 self.result = resultado
 
@@ -1096,7 +1090,7 @@ class Tvdb:
             import urllib
             params = urllib.urlencode(params)
             DEFAULT_HEADERS["Accept-Language"] = lang
-            url = HOST + "/series/{id}/images/query?{params}".format(id=_id, params=params)
+            url = HOST + "/series/%s/images/query?%s" % (_id, params)
             logger.debug("url: %s, \nheaders: %s" % (url, DEFAULT_HEADERS))
 
             req = urllib2.Request(url, headers=DEFAULT_HEADERS)
@@ -1105,9 +1099,8 @@ class Tvdb:
             response.close()
 
         except Exception, ex:
-            template = "An exception of type {0} occured. Arguments:\n{1!r}"
-            message = template.format(type(ex).__name__, ex.args)
-            logger.error("error en: {0}".format(message))
+            message = "An exception of type %s occured. Arguments:\n%s" % (type(ex).__name__, repr(ex.args))
+            logger.error("error en: %s" % message)
 
             return {}
 
@@ -1131,7 +1124,7 @@ class Tvdb:
         """
         logger.info()
 
-        url = HOST + "/series/{id}/actors".format(id=_id)
+        url = HOST + "/series/%s/actors" % _id
         DEFAULT_HEADERS["Accept-Language"] = lang
         logger.debug("url: %s, \nheaders: %s" % (url, DEFAULT_HEADERS))
 
@@ -1203,7 +1196,7 @@ class Tvdb:
         # Iniciar listados
         l_castandrole = ret_infoLabels.get('castandrole', [])
 
-        # logger.debug("self.result {}".format(self.result))
+        # logger.debug("self.result %s" % self.result)
 
         if not origen:
             origen = self.result
