@@ -46,6 +46,7 @@ def get_platform(full_version=False):
         @return: Si el paramentro full_version es True se retorna un diccionario con las siguientes claves:
             'num_version': (float) numero de version en formato XX.X
             'name_version': (str) nombre clave de cada version
+            'video_db': (str) nombre del archivo que contiene la base de datos de videos
             'plaform': (str) esta compuesto por "kodi-" o "xbmc-" mas el nombre de la version segun corresponda.
         Si el parametro full_version es False (por defecto) se retorna el valor de la clave 'plaform' del diccionario anterior.
         """
@@ -54,9 +55,13 @@ def get_platform(full_version=False):
     codename = {"10": "dharma", "11": "eden", "12": "frodo",
                 "13": "gotham", "14": "helix", "15": "isengard",
                 "16": "jarvis", "17": "krypton", "18": "leia"}
+    code_db = {'10': 'MyVideos37.db', '11': 'MyVideos60.db', '12': 'MyVideos75.db',
+               '13': 'MyVideos78.db', '14': 'MyVideos90.db', '15': 'MyVideos93.db',
+               '16': 'MyVideos99.db', '17': 'MyVideos107.db', '18': 'MyVideos108.db'}
 
     num_version = xbmc.getInfoLabel('System.BuildVersion').split(' ')[0]
     ret['name_version'] = codename.get(num_version.split('.')[0], num_version)
+    ret['video_db'] = code_db.get(num_version.split('.')[0], "")
     ret['num_version'] = float (num_version)
     if ret['num_version'] < 14:
         ret['platform'] = "xbmc-" + ret['name_version']
@@ -172,7 +177,6 @@ def set_setting(name, value, channel=""):
         try:
             __settings__.setSetting(name, value)
         except:
-            # xbmc.log("[config.py] ERROR al fijar el parametro global {0}= {1}".format(name, value))
             return None
 
         return value

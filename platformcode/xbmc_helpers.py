@@ -1,7 +1,7 @@
 import xbmc
 from core import filetools
 from core import logger
-
+from core import config
 
 def execute_sql_kodi(sql):
     """
@@ -18,11 +18,8 @@ def execute_sql_kodi(sql):
     nun_records = 0
     records = None
 
-    # Buscamos el nombre de la BBDD de videos segun la version de kodi
-    code_db = {'10': 'MyVideos37.db', '11': 'MyVideos60.db', '12': 'MyVideos75.db', '13': 'MyVideos78.db',
-               '14': 'MyVideos90.db', '15': 'MyVideos93.db', '16': 'MyVideos99.db', '17': 'MyVideos107.db'}
-
-    video_db = code_db.get(xbmc.getInfoLabel("System.BuildVersion").split(".", 1)[0], '')
+    # Buscamos el archivo de la BBDD de videos segun la version de kodi
+    video_db = config.get_platform(True)['video_db']
     if video_db:
         file_db = filetools.join(xbmc.translatePath("special://userdata/Database"), video_db)
 

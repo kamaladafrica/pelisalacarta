@@ -215,17 +215,16 @@ def update(path, p_dialog, i, t, serie, overwrite):
                 insertados_total += insertados
 
             except Exception as ex:
-                logger.info("Error al guardar los capitulos de la serie")
-                template = "An exception of type {0} occured. Arguments:\n{1!r}"
-                message = template.format(type(ex).__name__, ex.args)
-                logger.info(message)
+                logger.error("Error al guardar los capitulos de la serie")
+                template = "An exception of type %s occured. Arguments:\n%r"
+                message = template % (type(ex).__name__, ex.args)
+                logger.error(message)
 
         except Exception as ex:
-            logger.error("Error al obtener los episodios de: {0}".
-                         format(serie.show))
-            template = "An exception of type {0} occured. Arguments:\n{1!r}"
-            message = template.format(type(ex).__name__, ex.args)
-            logger.info(message)
+            logger.error("Error al obtener los episodios de: %s" % serie.show)
+            template = "An exception of type %s occured. Arguments:\n%r"
+            message = template % (type(ex).__name__, ex.args)
+            logger.error(message)
 
     return insertados_total > 0
 
@@ -361,8 +360,8 @@ def check_for_update(overwrite=True):
 
     except Exception as ex:
         logger.error("Se ha producido un error al actualizar las series")
-        template = "An exception of type {0} occured. Arguments:\n{1!r}"
-        message = template.format(type(ex).__name__, ex.args)
+        template = "An exception of type %s occured. Arguments:\n%r"
+        message = template % (type(ex).__name__, ex.args)
         logger.error(message)
 
         if p_dialog:
@@ -388,9 +387,7 @@ if __name__ == "__main__":
 
     # Se ejecuta ciclicamente
     import xbmc
-    version_xbmc = int(xbmc.getInfoLabel("System.BuildVersion").split(".", 1)[0])
-
-    if version_xbmc >= 14:
+    if config.get_platform(True)['num_version'] >= 14:
         monitor = xbmc.Monitor()  # For Kodi >= 14
     else:
         monitor = None  # For Kodi < 14

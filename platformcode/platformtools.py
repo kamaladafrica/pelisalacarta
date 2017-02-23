@@ -278,7 +278,7 @@ def set_infolabels(listitem, item, player=False):
         listitem.setInfo("video", {"Title": item.title})
         
     # Añadido para Kodi Krypton (v17)
-    if int(xbmc.getInfoLabel("System.BuildVersion").split(".", 1)[0]) > 16:
+    if config.get_platform(True)['num_version'] >= 17.0:
       listitem.setArt({"poster": item.thumbnail})
 
 
@@ -313,7 +313,7 @@ def set_context_commands(item, parent_item):
     @type parent_item: item
     """
     context_commands = []
-    version_xbmc = int(xbmc.getInfoLabel("System.BuildVersion").split(".", 1)[0])
+    num_version_xbmc = config.get_platform(True)['num_version']
 
     # Creamos un list con las diferentes opciones incluidas en item.context
     if type(item.context) == str:
@@ -399,7 +399,7 @@ def set_context_commands(item, parent_item):
                                      (sys.argv[0], Item(channel=item.channel, action="mainlist").tourl())))
 
         # Añadir a Favoritos
-        if version_xbmc < 17 and ((item.channel not in ["favoritos", "biblioteca", "ayuda", ""] or
+        if num_version_xbmc < 17.0 and ((item.channel not in ["favoritos", "biblioteca", "ayuda", ""] or
                                     item.action in ["update_biblio"]) and not parent_item.channel == "favoritos"):
             context_commands.append((config.get_localized_string(30155), "XBMC.RunPlugin(%s?%s)" %
                                      (sys.argv[0], item.clone(channel="favoritos", action="addFavourite",
