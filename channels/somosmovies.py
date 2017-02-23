@@ -281,7 +281,7 @@ def play(item):
     #adf.ly
     elif "j.gs" in item.url:
         logger.info("Acortador j.gs (adfly)")
-        from servers import adfly
+        from servers.decrypters import adfly
         location = adfly.get_long_url(item.url)
         item.url = location
         return play(item)
