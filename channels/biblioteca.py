@@ -503,8 +503,7 @@ def mark_content_as_watched(item):
     # logger.debug("item:\n" + item.tostring('\n'))
 
     if filetools.exists(item.nfo):
-        head_nfo = filetools.read(item.nfo, 0, 1)
-        it = Item().fromjson(filetools.read(item.nfo, 1))
+        head_nfo, it = library.read_nfo(item.nfo)
 
         if item.contentType == 'movie':
             name_file = os.path.splitext(os.path.basename(item.nfo))[0]
@@ -512,7 +511,7 @@ def mark_content_as_watched(item):
             name_file = "%sx%s" % (item.contentSeason, str(item.contentEpisodeNumber).zfill(2))
         else:
             name_file = item.contentTitle
-
+        
         if not hasattr(it, 'library_playcounts'):
             it.library_playcounts = {}
         it.library_playcounts.update({name_file: item.playcount})
