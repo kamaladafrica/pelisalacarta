@@ -931,8 +931,7 @@ class Tvdb:
             url = HOST + "/search/series?%s" % params
             logger.debug("url: %s, \nheaders: %s" % (url, DEFAULT_HEADERS))
 
-            # req = urllib2.Request(url, headers=DEFAULT_HEADERS)
-            req = None
+            req = urllib2.Request(url, headers=DEFAULT_HEADERS)
             response = urllib2.urlopen(req)
             html = response.read()
             response.close()
