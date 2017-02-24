@@ -15,7 +15,7 @@ from core import servertools
 from core.item import Item
 from core.tmdb import Tmdb
 from core import servertools
-from servers import expurl
+from servers.decrypters import expurl
 
 
 DEBUG = config.get_setting("debug")
