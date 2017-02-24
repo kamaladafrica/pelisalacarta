@@ -99,8 +99,7 @@ def debug(texto=""):
 
 
 def error(texto=""):
-    if loggeractive:
-        texto = "    [" + get_caller() + "] " + encode_log(texto)
+    texto = "    [" + get_caller() + "] " + encode_log(texto)
 
-        xbmc.log("######## ERROR #########", xbmc.LOGNOTICE)
-        xbmc.log(texto, xbmc.LOGNOTICE)
+    xbmc.log("######## ERROR #########", xbmc.LOGERROR)
+    xbmc.log(texto, xbmc.LOGERROR)
