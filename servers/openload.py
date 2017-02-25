@@ -62,11 +62,16 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
         for encode in var_encodes:
             text_decode = {}
             try:
-                v1 = int(encode[0:2])
-                index = 2
+                v1 = int(encode[0])
+                index = 1
                 while index < len(encode):
-                    key = int(encode[index+3:index+3+2])
-                    text_decode[key] = chr(int(encode[index:index+3]) - v1)
+                    i = ord(encode[index])
+                    key = 0
+                    if i <= 90:
+                        key = i - 65
+                    elif i >= 97:
+                        key = 25 + i - 97
+                    text_decode[key] = chr(int(encode[index+2:index+5]) // int(encode[index+1]) - v1)
                     index += 5
             except:
                 continue
