@@ -116,8 +116,8 @@ def extract_videos(video_id):
 
     if config.is_xbmc():
         import xbmc
-        xbmc_version = int(xbmc.getInfoLabel("System.BuildVersion").split(".", 1)[0])
-        if xbmc_version > 16 and xbmc.getCondVisibility('System.HasAddon(inputstream.adaptive)') \
+        xbmc_version = config.get_platform(True)['num_version']
+        if xbmc_version >= 17 and xbmc.getCondVisibility('System.HasAddon(inputstream.adaptive)') \
                              and params.get('dashmpd'):
             if params.get('use_cipher_signature', '') != 'True':
                 video_urls.append(['mpd  HD [youtube]', params['dashmpd'], 0, '', True])

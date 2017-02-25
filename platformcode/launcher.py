@@ -318,11 +318,10 @@ def run():
 
         try:
             import xbmc
-            xbmc_version = int(xbmc.getInfoLabel("System.BuildVersion").split(".", 1)[0])
-            if xbmc_version > 13:
-                log_name = "kodi.log"
-            else:
+            if config.get_platform(True)['num_version'] < 14:
                 log_name = "xbmc.log"
+            else:
+                log_name = "kodi.log"
             log_message = "Ruta: "+xbmc.translatePath("special://logpath")+log_name
         except:
             log_message = ""

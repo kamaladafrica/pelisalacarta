@@ -124,14 +124,14 @@ def play(item):
         logger.info("Es linkbucks")
         
         # Averigua el enlace
-        from servers import linkbucks
+        from servers.decrypters import linkbucks
         location = linkbucks.get_long_url(item.url)
         logger.info("location="+location)
         
         # Extrae la URL de saltar el anuncio en adf.ly
         if location.startswith("http://adf"):
             # Averigua el enlace
-            from servers import adfly
+            from servers.decrypters import adfly
             location = adfly.get_long_url(location)
             logger.info("location="+location)
 
