@@ -25,7 +25,7 @@
 # Parámetros de configuración (kodi)
 # ------------------------------------------------------------
 
-import os
+import os, re
 
 import xbmc
 import xbmcaddon
@@ -59,7 +59,8 @@ def get_platform(full_version=False):
                '13': 'MyVideos78.db', '14': 'MyVideos90.db', '15': 'MyVideos93.db',
                '16': 'MyVideos99.db', '17': 'MyVideos107.db', '18': 'MyVideos108.db'}
 
-    num_version = xbmc.getInfoLabel('System.BuildVersion').split(' ')[0]
+    num_version = xbmc.getInfoLabel('System.BuildVersion')
+    num_version = re.match("\d+\.\d+", num_version).group(0)
     ret['name_version'] = codename.get(num_version.split('.')[0], num_version)
     ret['video_db'] = code_db.get(num_version.split('.')[0], "")
     ret['num_version'] = float (num_version)
