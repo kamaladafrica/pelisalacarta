@@ -146,6 +146,8 @@ def mainlist(item):
                          url=urlparse.urljoin(CHANNEL_HOST, "/ListadeAnime/MasVisto")))
     itemlist.append(Item(channel=item.channel, action="series", title="Novedades",
                          url=urlparse.urljoin(CHANNEL_HOST, "ListadeAnime/Nuevo")))
+    itemlist.append(Item(channel=item.channel, action="series", title="Ultimos",
+                         url=urlparse.urljoin(CHANNEL_HOST, "ListadeAnime/LatestUpdate")))
     itemlist.append(Item(channel=item.channel, action="search", title="Buscar...",
                          url=urlparse.urljoin(CHANNEL_HOST, "Buscar?s=")))
 
