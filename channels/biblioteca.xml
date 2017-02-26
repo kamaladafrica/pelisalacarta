@@ -182,8 +182,8 @@
 		<type>list</type>
 		<label>    Tiempo necesario del video</label>
 		<default>3</default>
-		<enabled>true</enabled>
-		<visible>eq(-1,true)</visible>
+		<visible>true</visible>
+		<enabled>eq(-1,true)</enabled>
 		<lvalues>5 min</lvalues>
 		<lvalues>30%</lvalues>
 		<lvalues>50%</lvalues>
@@ -201,8 +201,8 @@
 		<type>bool</type>
 		<label>    Tras marcar como visto el episodio</label>
 		<default>false</default>
-		<enabled>true</enabled>
-		<visible>eq(-3,true)</visible>
+		<visible>true</visible>
+		<enabled>eq(-3,true)</enabled>
 	</settings>
 	<settings>
 		<id>sync_trakt_notification</id>
