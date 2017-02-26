@@ -168,7 +168,12 @@ def save_library_movie(item):
     # progress dialog
     p_dialog = platformtools.dialog_progress('pelisalacarta', 'Añadiendo película...')
 
-    base_name = unicode(filetools.validate_path(item.contentTitle), "utf8").lower().encode("utf8")
+    if config.get_setting("original_title_folder", "biblioteca") == 1 and item.infoLabels['originaltitle']:
+        base_name = item.infoLabels['originaltitle']
+    else:
+        base_name = item.contentTitle
+
+    base_name = unicode(filetools.validate_path(base_name.replace('/', '-')), "utf8").lower().encode("utf8")
 
     for raiz, subcarpetas, ficheros in filetools.walk(MOVIES_PATH):
         for c in subcarpetas:
