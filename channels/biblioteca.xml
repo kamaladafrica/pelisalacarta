@@ -60,9 +60,9 @@
 		<default>1</default>
 		<visible>true</visible>
 		<enabled>eq(-2,Una sola vez al día)|eq(-2,Al iniciar Kodi y al menos una vez al día)</enabled>
-		<lvalues>0:00</lvalues>
-		<lvalues>4:00</lvalues>
-		<lvalues>8:00</lvalues>
+		<lvalues>00:00</lvalues>
+		<lvalues>04:00</lvalues>
+		<lvalues>08:00</lvalues>
 		<lvalues>12:00</lvalues>
 	</settings>
 	<settings>
