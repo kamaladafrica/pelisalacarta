@@ -338,12 +338,12 @@ def bloque_enlaces(data, filtro_idioma, dict_idiomas, type, item):
 
         if filtro_idioma == 3 or item.filtro:
             lista_enlaces.append(item.clone(title=title, action="play", server=server, text_color=color2,
-                                            url=scrapedurl, idioma=language))
+                                            url=scrapedurl, idioma=language, extra=item.url))
         else:
             idioma = dict_idiomas[language]
             if idioma == filtro_idioma:
                 lista_enlaces.append(item.clone(title=title, text_color=color2, action="play",  url=scrapedurl,
-                                                server=server))
+                                                server=server, extra=item.url))
             else:
                 if language not in filtrados:
                     filtrados.append(language)
@@ -361,12 +361,11 @@ def play(item):
     logger.info()
     itemlist = []
     if "api.cinetux" in item.url:
-        data = httptools.downloadpage(item.url).data
-        logger.info(data)
+        data = httptools.downloadpage(item.url, headers={'Referer': item.extra}).data.replace("\\", "")
         matches = scrapertools.find_multiple_matches(data,
-                  "{file\s*:\s*'([^']+)'\s*,\s*label:\s*'([^']+)'\s*,\s*type:\s*'[^/]+/([^']+)'")
+                  "{file\s*:\s*'([^\"]+)\"[\}]*'\s*,\s*label:\s*'([^']+)'\s*,\s*type:\s*'[^/]+/([^']+)'")
         for url, quality, ext in matches:
-            itemlist.append([".%s %s [directo]" % (ext, quality), url])
+            itemlist.insert(0, [".%s %s [directo]" % (ext, quality), url])
     else:
         enlace = servertools.findvideosbyserver(item.url, item.server)
         url = enlace[0][1]

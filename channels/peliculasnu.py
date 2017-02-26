@@ -232,7 +232,10 @@ def play(item):
             url = url.replace(",", "%2C")
             title = ".%s %s [directo]" % (extension, calidad)
             itemlist.append([title, url, 0, subtitulo])
-        itemlist.reverse()
+        try:
+            itemlist.sort(key=lambda it:int(it[0].split(" ")[1].split("p")[0]))
+        except:
+            pass
     elif "metiscs" in item.url:
         if not item.url.startswith("http:"):
             item.url = "http:" + item.url
@@ -248,8 +251,7 @@ def play(item):
         for url, calidad, extension in matches:
             url = url.replace(",", "%2C")
             title = ".%s %s [directo]" % (extension, calidad)
-            itemlist.append([title, url])
-        itemlist.reverse()
+            itemlist.insert(0, [title, url])
     else:
         enlaces = servertools.findvideosbyserver(item.url, item.server)[0]
         if len(enlaces) > 0:
