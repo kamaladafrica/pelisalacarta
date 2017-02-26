@@ -38,27 +38,15 @@
 		<lvalues>Nunca</lvalues>
 		<lvalues>Al iniciar Kodi</lvalues>
 		<lvalues>Una sola vez al día</lvalues>
-		<lvalues>Al iniciar Kodi y almenos una vez al día</lvalues>
-	</settings>
-	<settings>
-		<id>everyday_delay</id>
-		<type>list</type>
-		<label>    Atraso en la hora de inicio del dia</label>
-		<default>0</default>
-		<enabled>true</enabled>
-		<visible>eq(-1,Una sola vez al día)|eq(-1,Al iniciar Kodi y almenos una vez al día)</visible>
-		<lvalues>Sin atraso (0:00)</lvalues>
-		<lvalues>4:00</lvalues>
-		<lvalues>8:00</lvalues>
-		<lvalues>12:00</lvalues>
+		<lvalues>Al iniciar Kodi y al menos una vez al día</lvalues>
 	</settings>
 	<settings>
 		<id>updatelibrary_wait</id>
 		<type>list</type>
-		<label>    Esperar antes de actualizar</label>
+		<label>    Esperar antes de actualizar al iniciar kodi</label>
 		<default>0</default>
-		<enabled>true</enabled>
-		<visible>!eq(-2,Nunca)</visible>
+		<visible>true</visible>
+		<enabled>eq(-1,Al iniciar Kodi)|eq(-1,Al iniciar Kodi y al menos una vez al día)</enabled>
 		<lvalues>No</lvalues>
 		<lvalues>10 seg</lvalues>
 		<lvalues>20 seg</lvalues>
@@ -66,12 +54,24 @@
 		<lvalues>60 seg</lvalues>
 	</settings>
 	<settings>
+		<id>everyday_delay</id>
+		<type>list</type>
+		<label>    Iniciar actualización programada a partir de las</label>
+		<default>1</default>
+		<visible>true</visible>
+		<enabled>eq(-2,Una sola vez al día)|eq(-2,Al iniciar Kodi y al menos una vez al día)</enabled>
+		<lvalues>00:00</lvalues>
+		<lvalues>04:00</lvalues>
+		<lvalues>08:00</lvalues>
+		<lvalues>12:00</lvalues>
+	</settings>
+	<settings>
 		<id>updatetvshows_interval</id>
 		<type>list</type>
 		<label>    Buscar nuevos episodios en las series activas</label>
 		<default>0</default>
-		<enabled>true</enabled>
-		<visible>!eq(-2,Nunca)</visible>
+		<visible>true</visible>
+		<enabled>!eq(-3,Nunca)</enabled>
 		<lvalues>Siempre</lvalues>
 		<lvalues>Según su emisión</lvalues>
 	</settings>
@@ -80,13 +80,15 @@
 		<type>list</type>
 		<label>    Realizar búsqueda de contenido en</label>
 		<default>0</default>
+		<enabled>!eq(-4,Nunca)</enabled>
 		<lvalues>La carpeta de cada serie</lvalues>
 		<lvalues>Toda la biblioteca</lvalues>
 	</settings>
 	<settings>
 		<id>clean_after_update</id>
 		<type>bool</type>
-		<label>        Limpiar la biblioteca después</label>
+		<label>    Limpiar la biblioteca después de actualizar</label>
+		<enabled>!eq(-5,Nunca)</enabled>
 		<default>false</default>
 	</settings>
 	<settings>
@@ -180,8 +182,8 @@
 		<type>list</type>
 		<label>    Tiempo necesario del video</label>
 		<default>3</default>
-		<enabled>true</enabled>
-		<visible>eq(-1,true)</visible>
+		<visible>true</visible>
+		<enabled>eq(-1,true)</enabled>
 		<lvalues>5 min</lvalues>
 		<lvalues>30%</lvalues>
 		<lvalues>50%</lvalues>
@@ -199,8 +201,8 @@
 		<type>bool</type>
 		<label>    Tras marcar como visto el episodio</label>
 		<default>false</default>
-		<enabled>true</enabled>
-		<visible>eq(-3,true)</visible>
+		<visible>true</visible>
+		<enabled>eq(-3,true)</enabled>
 	</settings>
 	<settings>
 		<id>sync_trakt_notification</id>
