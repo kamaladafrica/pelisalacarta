@@ -248,7 +248,7 @@ def check_for_update(overwrite=True):
         if config.get_setting("updatelibrary", "biblioteca") != 0 or overwrite:
             config.set_setting("updatelibrary_last_check", hoy.strftime('%Y-%m-%d'), "biblioteca")
 
-            if config.get_setting("updatelibrary", "biblioteca") == 1 and not overwrite:
+            if config.get_setting("updatelibrary", "biblioteca") in [1,3] and not overwrite:
                 # "Actualizar al inicio" y No venimos del canal configuracion
                 updatelibrary_wait = [0, 10000, 20000, 30000, 60000]
                 wait = updatelibrary_wait[int(config.get_setting("updatelibrary_wait", "biblioteca"))]
