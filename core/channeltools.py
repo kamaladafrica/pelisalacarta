@@ -89,21 +89,16 @@ def get_channel_parameters(channel_name):
 
         channel_parameters["categories"] = category_list
 
-        # Obtenemos si el canal tiene opciones de configuración y lo añadimos al contexto
-        context = ""
+        # Obtenemos si el canal tiene opciones de configuración
+        channel_parameters["has_settings"] = False
         # esta regex devuelve 2 valores por elemento <settings>, el contenido del propio nodo y un \t, por lo que hay
         # posteriormente coger solo el valor del indice 0.
         matches = scrapertools.find_multiple_matches(data, "<settings>((.|\n)*?)<\/settings>")
         for match in matches:
             _id = scrapertools.find_single_match(match[0], "<id>([^<]*)</id>")
             if _id and "include_in_" not in _id:
-                context = [{"title": "Configurar canal",
-                            "channel": "configuracion",
-                            "action": "channel_config",
-                            "config": channel_parameters["channel"]}]
+                channel_parameters["has_settings"] = True
                 break
-
-        channel_parameters["context"] = context
 
         logger.info(channel_name+" -> "+repr(channel_parameters))
 
