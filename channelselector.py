@@ -130,10 +130,10 @@ def filterchannels(category, preferred_thumb=""):
 
     # Lee la lista de canales
     channel_path = os.path.join(config.get_runtime_path(), "channels", '*.xml')
-    logger.info("channelselector.filterchannels channel_path="+channel_path)
+    logger.info("channel_path="+channel_path)
 
     channel_files = glob.glob(channel_path)
-    logger.info("channelselector.filterchannels channel_files encontrados "+str(len(channel_files)))
+    logger.info("channel_files encontrados "+str(len(channel_files)))
 
     channel_language = config.get_setting("channel_language")
     logger.info("channel_language="+channel_language)
