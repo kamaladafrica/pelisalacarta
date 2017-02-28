@@ -105,6 +105,7 @@ def get_channel_parameters(channel_name):
                             "channel": "configuracion",
                             "action": "channel_config",
                             "config": channel_parameters["channel"]}]
+                break
 
         channel_parameters["context"] = context
 
