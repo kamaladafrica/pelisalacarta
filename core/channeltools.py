@@ -91,7 +91,6 @@ def get_channel_parameters(channel_name):
 
         # Obtenemos si el canal tiene opciones de configuración y lo añadimos al contexto
         context = ""
-        settings_list = []
         # esta regex devuelve 2 valores por elemento <settings>, el contenido del propio nodo y un \t, por lo que hay
         # posteriormente coger solo el valor del indice 0.
         matches = scrapertools.find_multiple_matches(data, "<settings>((.|\n)*?)<\/settings>")
