@@ -175,12 +175,18 @@ def filterchannels(category, preferred_thumb=""):
             if category != "all" and category not in channel_parameters["categories"]:
                 continue
 
+            # Si tiene configuración añadimos un item en el contexto
+            context = []
+            if channel_parameters["has_settings"]:
+                context.append({"title": "Configurar canal", "channel": "configuracion", "action": "channel_config",
+                                "config": channel_parameters["channel"]})
+
             # Si ha llegado hasta aquí, lo añade
             channelslist.append(Item(title=channel_parameters["title"], channel=channel_parameters["channel"],
                                      action="mainlist", thumbnail=channel_parameters["thumbnail"],
                                      fanart=channel_parameters["fanart"], category=channel_parameters["title"],
                                      language=channel_parameters["language"], viewmode="list",
-                                     context=channel_parameters["context"]))
+                                     context=context))
 
         except:
             logger.error("Se ha producido un error al leer los datos del canal " + channel)
