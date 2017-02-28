@@ -81,6 +81,8 @@ def find_and_set_infoLabels(item):
         if scraper_result and item.infoLabels['code']:
             # code correcto
             logger.info("Identificador encontrado: %s" % item.infoLabels['code'])
+            if tipo_contenido == "serie":
+                completar_codigos(item)
             return True
         elif scraper_result:
             # Contenido encontrado pero no hay 'code'
@@ -136,6 +138,30 @@ def find_and_set_infoLabels(item):
                     break
 
     logger.error("Error al importar el modulo scraper %s" % scraper_actual)
+
+
+def completar_codigos(item):
+    if item.infoLabels['imdb_id']:
+        if not item.infoLabels['tmdb_id']:
+            # Lanzar busqueda por imdb_id en tmdb
+            from core.tmdb import Tmdb
+            ob = Tmdb(external_id=item.infoLabels['imdb_id'], external_source="imdb_id", tipo="tv")
+            item.infoLabels['tmdb_id'] = ob.get_id()
+            if item.infoLabels['tmdb_id']:
+                url_scraper = "https://www.themoviedb.org/tv/%s" % item.infoLabels['tmdb_id']
+                item.infoLabels['url_scraper'].append(url_scraper)
+
+        elif not item.infoLabels['tvdb_id']:
+            # Lanzar busqueda por imdb_id en tvdb
+            from core.tvdb import Tvdb
+            ob = Tvdb(imdb_id=item.infoLabels['imdb_id'])
+            item.infoLabels['tvdb_id'] = ob.get_id()
+            if item.infoLabels['tvdb_id'] :
+                url_scraper = "http://thetvdb.com/index.php?tab=series&id=%s" % item.infoLabels['tvdb_id']
+                item.infoLabels['url_scraper'].append(url_scraper)
+
+    return
+
 
 
 def cuadro_completar(item):

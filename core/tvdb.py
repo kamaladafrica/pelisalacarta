@@ -142,7 +142,7 @@ def find_and_set_infoLabels(item):
 
     if tvdb_result:
         infoLabels['tvdb_id'] = tvdb_result['id']
-        infoLabels['url_scraper'] = "http://thetvdb.com/index.php?tab=series&id=%s" % infoLabels['tvdb_id']
+        infoLabels['url_scraper'] = ["http://thetvdb.com/index.php?tab=series&id=%s" % infoLabels['tvdb_id']]
         item.infoLabels = infoLabels
         set_infoLabels_item(item)
 
@@ -316,7 +316,7 @@ def get_nfo(item):
         info_nfo = "http://thetvdb.com/?tab=episode&seriesid=%s&seasonid=%s&id=%s\n" \
                    % (item.infoLabels['tvdb_id'], item.season_id, item.episode_id)
     else:
-        info_nfo = item.infoLabels['url_scraper'] + "\n"
+        info_nfo = ', '.join(item.infoLabels['url_scraper']) + "\n"
 
     return info_nfo
 

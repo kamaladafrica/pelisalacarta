@@ -399,7 +399,9 @@ def find_and_set_infoLabels(item):
     if tmdb_result:
         infoLabels['tmdb_id'] = tmdb_result['id']
         # todo mirar si se puede eliminar y obtener solo desde get_nfo()
-        infoLabels['url_scraper'] = "https://www.themoviedb.org/%s/%s" % (tipo_busqueda, infoLabels['tmdb_id'])
+        infoLabels['url_scraper'] = ["https://www.themoviedb.org/%s/%s" % (tipo_busqueda, infoLabels['tmdb_id'])]
+        if infoLabels['tvdb_id']:
+            infoLabels['url_scraper'].append("http://thetvdb.com/index.php?tab=series&id=%s" % infoLabels['tvdb_id'])
         item.infoLabels = infoLabels
         set_infoLabels_item(item)
 
@@ -423,7 +425,7 @@ def get_nfo(item):
         info_nfo = "https://www.themoviedb.org/tv/%s/season/%s/episode/%s\n" % \
                    (item.infoLabels['tmdb_id'], item.contentSeason, item.contentEpisodeNumber)
     else:
-        info_nfo = item.infoLabels['url_scraper'] + "\n"
+        info_nfo = ', '.join(item.infoLabels['url_scraper']) + "\n"
 
     return info_nfo
 
