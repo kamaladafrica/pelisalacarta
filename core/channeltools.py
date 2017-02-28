@@ -34,8 +34,9 @@ import scrapertools
 
 DEFAULT_UPDATE_URL = "https://raw.githubusercontent.com/tvalacarta/pelisalacarta/develop/python/main-classic/channels/"
 
+
 def is_adult(channel_name):
-    logger.info("pelisalacarta.core.channeltools is_adult channel_name="+channel_name)
+    logger.info("channel_name="+channel_name)
 
     channel_parameters = get_channel_parameters(channel_name)
 
@@ -43,8 +44,7 @@ def is_adult(channel_name):
 
 
 def get_channel_parameters(channel_name):
-    #logger.info("pelisalacarta.core.channeltools get_channel_parameters channel_name="+channel_name)
-
+    # logger.info("pelisalacarta.core.channeltools get_channel_parameters channel_name="+channel_name)
     channel_xml = os.path.join(config.get_runtime_path(), 'channels', channel_name+".xml")
 
     if os.path.exists(channel_xml):
@@ -76,7 +76,7 @@ def get_channel_parameters(channel_name):
             channel_parameters["fanart"] = os.path.join(config.get_runtime_path(), "resources", "images", "fanart",
                                                         channel_parameters["fanart"])
 
-        if channel_parameters["update_url"]=="":
+        if channel_parameters["update_url"] == "":
             channel_parameters["update_url"] = DEFAULT_UPDATE_URL
 
         channel_parameters["include_in_global_search"] = scrapertools.find_single_match(
@@ -88,6 +88,25 @@ def get_channel_parameters(channel_name):
             category_list.append(match)
 
         channel_parameters["categories"] = category_list
+
+        # Obtenemos si el canal tiene opciones de configuración y lo añadimos al contexto
+        context = ""
+        settings_list = []
+        # esta regex devuelve 2 valores por elemento <settings>, el contenido del propio nodo y un \t, por lo que hay
+        # posteriormente coger solo el valor del indice 0.
+        matches = scrapertools.find_multiple_matches(data, "<settings>((.|\n)*?)<\/settings>")
+        for match in matches:
+            settings_list.append(match[0])
+
+        for setting in settings_list:
+            _id = scrapertools.find_single_match(setting, "<id>([^<]*)</id>")
+            if _id and "include_in_" not in _id:
+                context = [{"title": "Configurar canal",
+                            "channel": "configuracion",
+                            "action": "channel_config",
+                            "config": channel_parameters["channel"]}]
+
+        channel_parameters["context"] = context
 
         logger.info(channel_name+" -> "+repr(channel_parameters))
 
@@ -187,7 +206,7 @@ def get_channel_setting(name, channel):
             if isinstance(dict_file, dict) and 'settings' in dict_file:
                 dict_settings = dict_file['settings']
         except EnvironmentError:
-            logger.info("ERROR al leer el archivo: {0}".format(file_settings))
+            logger.info("ERROR al leer el archivo: %s" % file_settings)
 
     if len(dict_settings) == 0 or name not in dict_settings:
         # Obtenemos controles del archivo ../channels/channel.xml
@@ -204,7 +223,7 @@ def get_channel_setting(name, channel):
             try:
                 open(file_settings, "wb").write(json_data)
             except EnvironmentError:
-                logger.info("[config.py] ERROR al salvar el archivo: {0}".format(file_settings))
+                logger.info("ERROR al salvar el archivo: %s" % file_settings)
 
     # Devolvemos el valor del parametro local 'name' si existe
     if name in dict_settings:
@@ -250,7 +269,7 @@ def set_channel_setting(name, value, channel):
             dict_file = jsontools.load_json(open(file_settings, "r").read())
             dict_settings = dict_file.get('settings', {})
         except EnvironmentError:
-            logger.info("ERROR al leer el archivo: {0}".format(file_settings))
+            logger.info("ERROR al leer el archivo: %s" % file_settings)
 
     dict_settings[name] = value
 
@@ -265,10 +284,11 @@ def set_channel_setting(name, value, channel):
         json_data = jsontools.dump_json(dict_file)
         open(file_settings, "w").write(json_data)
     except EnvironmentError:
-        logger.info("[config.py] ERROR al salvar el archivo: {0}".format(file_settings))
+        logger.info("ERROR al salvar el archivo: %s" % file_settings)
         return None
 
     return value
+
 
 def get_channel_module(channel_name, package="channels"):
     # Sustituye al que hay en servertools.py ...
@@ -282,6 +302,7 @@ def get_channel_module(channel_name, package="channels"):
 
     return channel_module
 
+
 def get_channel_remote_url(channel_name):
 
     channel_parameters = get_channel_parameters(channel_name)
@@ -291,21 +312,22 @@ def get_channel_remote_url(channel_name):
     logger.info("pelisalacarta.core.channeltools get_channel_remote_url remote_channel_url="+remote_channel_url)
     logger.info("pelisalacarta.core.channeltools get_channel_remote_url remote_version_url="+remote_version_url)
     
-    return remote_channel_url , remote_version_url
+    return remote_channel_url, remote_version_url
+
 
 def get_channel_local_path(channel_name):
 
-    if channel_name<>"channelselector":
-        local_channel_path = os.path.join( config.get_runtime_path() , 'channels' , channel_name+".py" )
-        local_version_path = os.path.join( config.get_runtime_path() , 'channels' , channel_name+".xml" )
-        local_compiled_path = os.path.join( config.get_runtime_path() , 'channels' , channel_name+".pyo" )
+    if channel_name != "channelselector":
+        local_channel_path = os.path.join(config.get_runtime_path(), 'channels', channel_name + ".py")
+        local_version_path = os.path.join(config.get_runtime_path(), 'channels', channel_name + ".xml")
+        local_compiled_path = os.path.join(config.get_runtime_path(), 'channels', channel_name + ".pyo")
     else:
-        local_channel_path = os.path.join( config.get_runtime_path() , channel_name+".py" )
-        local_version_path = os.path.join( config.get_runtime_path() , channel_name+".xml" )
-        local_compiled_path = os.path.join( config.get_runtime_path() , channel_name+".pyo" )
+        local_channel_path = os.path.join(config.get_runtime_path(), channel_name + ".py")
+        local_version_path = os.path.join(config.get_runtime_path(), channel_name + ".xml")
+        local_compiled_path = os.path.join(config.get_runtime_path(), channel_name + ".pyo")
 
-    logger.info("pelisalacarta.core.channeltools get_channel_local_path local_channel_path="+local_channel_path)
-    logger.info("pelisalacarta.core.channeltools get_channel_local_path local_version_path="+local_version_path)
-    logger.info("pelisalacarta.core.channeltools get_channel_local_path local_compiled_path="+local_compiled_path)
-    
-    return local_channel_path , local_version_path , local_compiled_path
+    logger.info("pelisalacarta.core.channeltools get_channel_local_path local_channel_path=" + local_channel_path)
+    logger.info("pelisalacarta.core.channeltools get_channel_local_path local_version_path=" + local_version_path)
+    logger.info("pelisalacarta.core.channeltools get_channel_local_path local_compiled_path=" + local_compiled_path)
+
+    return local_channel_path, local_version_path, local_compiled_path
