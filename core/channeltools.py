@@ -96,10 +96,7 @@ def get_channel_parameters(channel_name):
         # posteriormente coger solo el valor del indice 0.
         matches = scrapertools.find_multiple_matches(data, "<settings>((.|\n)*?)<\/settings>")
         for match in matches:
-            settings_list.append(match[0])
-
-        for setting in settings_list:
-            _id = scrapertools.find_single_match(setting, "<id>([^<]*)</id>")
+            _id = scrapertools.find_single_match(match[0], "<id>([^<]*)</id>")
             if _id and "include_in_" not in _id:
                 context = [{"title": "Configurar canal",
                             "channel": "configuracion",
