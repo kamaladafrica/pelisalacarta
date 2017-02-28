@@ -114,7 +114,7 @@ def find_and_set_infoLabels(item):
         else:
             otvdb_global = Tvdb(imdb_id=item.infoLabels.get("imdb_id"))
 
-    elif not otvdb_global or otvdb_global.result.get("id") != item.infoLabels['tvdb_id']:
+    elif not otvdb_global or otvdb_global.get_id() != item.infoLabels['tvdb_id']:
         otvdb_global = Tvdb(tvdb_id=item.infoLabels['tvdb_id'])  # , tipo=tipo_busqueda, idioma_busqueda="es")
 
     if not item.contentSeason:
@@ -205,26 +205,38 @@ def set_infoLabels_item(item):
             if otvdb_global.lang:
                 lang = otvdb_global.lang
 
-            # page = 1
-            # _id = None
-            # while not _id:
-            #     if not list_episode:
-            #         list_episode = otvdb_global.get_list_episodes(otvdb_global.get_id(), page)
-            #
-            #     for e in list_episode['data']:
-            #         if e['airedSeason'] == int_season and e['airedEpisodeNumber'] == int_episode:
-            #             _id = e['id']
-            #             break
-            #
-            #     _next = list_episode['links']['next']
-            #     if type(_next) == int:
-            #         page = _next
-            #     else:
-            #         break
-            #
-            # data_episode = otvdb_global.__get_episode_by_id(_id, lang)
+            page = 1
+            _id = None
+            while not _id:
+                list_episodes = otvdb_global.list_episodes.get(page)
+                if not list_episodes:
+                    list_episodes = otvdb_global.get_list_episodes(otvdb_global, otvdb_global.get_id(), page)
+                    import threading
 
-            data_episode = otvdb_global.get_info_episode(otvdb_global.get_id(), int_season, int_episode, lang)
+                    semaforo = threading.Semaphore(20)
+                    l_hilo = list()
+
+                    for e in list_episodes["data"]:
+                        t = threading.Thread(target=otvdb_global.get_episode_by_id, args=(otvdb_global, e["id"], lang, semaforo))
+                        t.start()
+                        l_hilo.append(t)
+
+                    # esperar q todos los hilos terminen
+                    for x in l_hilo:
+                        x.join()
+            
+                for e in list_episodes['data']:
+                    if e['airedSeason'] == int_season and e['airedEpisodeNumber'] == int_episode:
+                        _id = e['id']
+                        break
+            
+                _next = list_episodes['links']['next']
+                if type(_next) == int:
+                    page = _next
+                else:
+                    break
+
+            data_episode = otvdb_global.get_info_episode(otvdb_global.get_id(), int_season, int_episode, lang, _id)
 
             # todo repasar valores que hay que insertar en infoLabels
             if data_episode:
@@ -319,6 +331,8 @@ class Tvdb:
         self.lang = ""
         self.search_name = kwargs['search'] = \
             re.sub('\[\\\?(B|I|COLOR)\s?[^\]]*\]', '', kwargs.get('search', ''))
+        self.list_episodes = {}
+        self.episodes = {}
 
         if kwargs.get('tvdb_id', ''):
             # Busqueda por identificador tvdb
@@ -430,8 +444,8 @@ class Tvdb:
 
         return is_success
 
-    @classmethod
-    def get_info_episode(cls, _id, season=1, episode=1, lang=DEFAULT_LANG):
+
+    def get_info_episode(self, _id, season=1, episode=1, lang=DEFAULT_LANG, id_episode=None):
         """
         Devuelve los datos de un episodio.
         @param _id: identificador de la serie
@@ -494,6 +508,9 @@ class Tvdb:
         }
         """
         logger.info()
+        if id_episode and self.episodes.get(id_episode):
+            return self.episodes.get(id_episode)
+
         params = {"airedSeason": "%s" % season, "airedEpisode": "%s" % episode}
 
         try:
@@ -517,10 +534,10 @@ class Tvdb:
             dict_html = jsontools.load_json(html)
 
             if "data" in dict_html and "id" in dict_html["data"][0]:
-                return cls.__get_episode_by_id(dict_html["data"][0]["id"], lang)
+                return self.get_episode_by_id(dict_html["data"][0]["id"], lang)
 
-    @classmethod
-    def get_list_episodes(cls, _id, page=1):
+    @staticmethod
+    def get_list_episodes(self, _id, page=1):
         """
         Devuelve el listado de episodios de una serie.
         @param _id: identificador de la serie
@@ -577,14 +594,14 @@ class Tvdb:
             logger.error("error en: %s" % message)
 
         else:
-            dict_html = jsontools.load_json(html)
+            self.list_episodes[page] = jsontools.load_json(html)
 
-            logger.info("dict_html %s" % dict_html)
+            #logger.info("dict_html %s" % self.list_episodes)
 
-            return dict_html
+            return self.list_episodes[page]
 
     @staticmethod
-    def __get_episode_by_id(_id, lang=DEFAULT_LANG):
+    def get_episode_by_id(self, _id, lang=DEFAULT_LANG, semaforo=None):
         """
         Obtiene los datos de un episodio
         @param _id: identificador del episodio
@@ -644,6 +661,8 @@ class Tvdb:
             }
         }
         """
+        if semaforo:
+            semaforo.acquire()
         logger.info()
         dict_html = {}
 
@@ -669,7 +688,10 @@ class Tvdb:
             dict_html = dict_html.pop("data")
 
             logger.info("dict_html %s" % dict_html)
-        return dict_html
+            self.episodes[_id] = dict_html
+
+        if semaforo:
+            semaforo.release()
 
     def __search(self, name, imdb_id, zap2it_id, lang=DEFAULT_LANG):
         """

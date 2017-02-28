@@ -44,7 +44,7 @@ def find_and_set_infoLabels(item):
     """
     global scraper
     scraper = None
-    logger.debug("item:\n" + item.tostring('\n'))
+    #logger.debug("item:\n" + item.tostring('\n'))
 
     list_opciones_cuadro = ["Introducir otro nombre", "Completar información"]
     # Si se añaden más scrapers hay q declararlos aqui-> "modulo_scraper": "Texto_en_cuadro"
@@ -281,3 +281,16 @@ def get_nfo(item):
         return info_nfo
     else:
         return scraper.get_nfo(item)
+
+
+def sort_episode_list(episodelist):
+
+    scraper_actual = ['tmdb', 'tvdb'][config.get_setting("scraper_tvshows", "biblioteca")]
+    logger.info(scraper_actual)
+    if scraper_actual == "tmdb":
+        episodelist.sort(key=lambda e: (int(e.contentSeason), int(e.contentEpisodeNumber)))
+
+    if scraper_actual == "tvdb":
+        episodelist.sort(key=lambda e: (int(e.contentEpisodeNumber), int(e.contentSeason)))
+
+    return episodelist

@@ -312,10 +312,6 @@ def save_library_tvshow(item, episodelist):
             if exception.errno != errno.EEXIST:
                 raise
 
-    # Eliminamos de la lista lo que no sean episodios
-    for it in episodelist:
-        if not scrapertools.get_season_and_episode(it.title):
-            episodelist.remove(it)
 
     tvshow_path = filetools.join(path, "tvshow.nfo")
     if not filetools.exists(tvshow_path):
@@ -355,9 +351,9 @@ def save_library_tvshow(item, episodelist):
         # La lista de episodios esta vacia
         return 0, 0, 0
 
+
     # Guardar los episodios
     insertados, sobreescritos, fallidos = save_library_episodes(path, episodelist, item)
-
     return insertados, sobreescritos, fallidos
 
 
@@ -409,22 +405,27 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
         p_dialog = platformtools.dialog_progress('pelisalacarta', 'Añadiendo episodios...')
         p_dialog.update(0, 'Añadiendo episodio...')
 
-    # fix float porque la division se hace mal en python 2.x
-    t = float(100) / len(episodelist)
-
-    for i, e in enumerate(episodelist):
-        if not silent:
-            p_dialog.update(int(math.ceil((i + 1) * t)), 'Añadiendo episodio...', e.title)
-
+    new_episodelist =[]
+    # Obtenemos el numero de temporada y episodio y descartamos los q no lo sean
+    for e in episodelist:
         try:
-            season_episode = scrapertools.get_season_and_episode(e.title.lower())
+            season_episode = scrapertools.get_season_and_episode(e.title)
 
             e.infoLabels = serie.infoLabels
             e.contentSeason, e.contentEpisodeNumber = season_episode.split("x")
-            season_episode = "%sx%s" % (e.contentSeason, str(e.contentEpisodeNumber).zfill(2))
+            new_episodelist.append(e)
         except:
             continue
 
+    # fix float porque la division se hace mal en python 2.x
+    t = float(100) / len(new_episodelist)
+
+    for i, e in enumerate(scraper.sort_episode_list(new_episodelist)):
+        if not silent:
+            p_dialog.update(int(math.ceil((i + 1) * t)), 'Añadiendo episodio...', e.title)
+
+
+        season_episode = "%sx%s" % (e.contentSeason, str(e.contentEpisodeNumber).zfill(2))
         strm_path = filetools.join(path, "%s.strm" % season_episode)
         nfo_path = filetools.join(path, "%s.nfo" % season_episode)
         json_path = filetools.join(path, ("%s [%s].json" % (season_episode, e.channel)).lower())
@@ -472,9 +473,11 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
             head_nfo = scraper.get_nfo(e)
 
             item_nfo = e.clone(channel="biblioteca", url="", action='findvideos',
+                               info_episode = False,
                                strm_path=strm_path.replace(TVSHOWS_PATH, ""))
 
             nfo_exists = filetools.write(nfo_path, head_nfo + item_nfo.tojson())
+
 
         # Solo si existen season_episode.nfo y season_episode.strm continuamos
         if nfo_exists and strm_exists:
