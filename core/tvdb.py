@@ -332,11 +332,9 @@ def completar_codigos(item):
 
         from core.tmdb import Tmdb
         ob = Tmdb()
-        ob.busqueda_tipo = 'tv'
 
         for external_id, external_source in listsources:
-            ob.busqueda_id = external_id
-            ob.by_id(source=external_source)
+            ob.search_by_id(id = external_id, source=external_source, tipo = 'tv')
 
             item.infoLabels['tmdb_id'] = ob.get_id()
             if item.infoLabels['tmdb_id']:

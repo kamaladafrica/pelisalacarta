@@ -473,7 +473,6 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
             head_nfo = scraper.get_nfo(e)
 
             item_nfo = e.clone(channel="biblioteca", url="", action='findvideos',
-                               info_episode = False,
                                strm_path=strm_path.replace(TVSHOWS_PATH, ""))
 
             nfo_exists = filetools.write(nfo_path, head_nfo + item_nfo.tojson())

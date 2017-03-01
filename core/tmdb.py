@@ -679,7 +679,7 @@ class Tmdb(object):
 
         if self.busqueda_id:
             # Busqueda por identificador tmdb
-            self.by_id()
+            self.__by_id()
 
         elif self.busqueda_texto:
             # Busqueda por texto
@@ -693,7 +693,7 @@ class Tmdb(object):
                     (self.busqueda_tipo == 'tv' and kwargs.get('external_source') in (
                             "imdb_id", "freebase_mid", "freebase_id", "tvdb_id", "tvrage_id")):
                 self.busqueda_id = kwargs.get('external_id')
-                self.by_id(source=kwargs.get('external_source'))
+                self.__by_id(source=kwargs.get('external_source'))
 
         elif self.discover:
             self.__discover()
@@ -731,7 +731,7 @@ class Tmdb(object):
                 msg = "Error de tmdb: %s %s" % (resultado["status_code"], resultado["status_message"])
                 logger.error(msg)
 
-    def by_id(self, source='tmdb'):
+    def __by_id(self, source='tmdb'):
         resultado = {}
         buscando = ""
 
@@ -981,6 +981,11 @@ class Tmdb(object):
 
         return ', '.join(genre_list)
 
+    def search_by_id(self, id, source='tmdb', tipo='movie'):
+        self.busqueda_id = id
+        self.busqueda_tipo = tipo
+        self.__by_id(source=source)
+
     def get_id(self):
         """
 
@@ -1062,7 +1067,7 @@ class Tmdb(object):
         if len(self.result['images_posters']) == 0:
             # Vamos a lanzar una busqueda por id y releer de nuevo
             self.busqueda_id = str(self.result["id"])
-            self.by_id()
+            self.__by_id()
 
         if len(self.result['images_posters']) > 0:
             for i in self.result['images_posters']:
@@ -1110,7 +1115,7 @@ class Tmdb(object):
         if len(self.result['images_backdrops']) == 0:
             # Vamos a lanzar una busqueda por id y releer de nuevo todo
             self.busqueda_id = str(self.result["id"])
-            self.by_id()
+            self.__by_id()
 
         if len(self.result['images_backdrops']) > 0:
             for i in self.result['images_backdrops']:
