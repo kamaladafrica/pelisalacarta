@@ -430,6 +430,20 @@ def get_nfo(item):
     return info_nfo
 
 
+def completar_codigos(item):
+    """
+    Si es necesario comprueba si existe el identificador de tvdb y sino existe trata de buscarlo
+    """
+    if item.contentType != "movie" and not item.infoLabels['tvdb_id']:
+        # Lanzar busqueda por imdb_id en tvdb
+        from core.tvdb import Tvdb
+        ob = Tvdb(imdb_id=item.infoLabels['imdb_id'])
+        item.infoLabels['tvdb_id'] = ob.get_id()
+        if item.infoLabels['tvdb_id']:
+            url_scraper = "http://thetvdb.com/index.php?tab=series&id=%s" % item.infoLabels['tvdb_id']
+            item.infoLabels['url_scraper'].append(url_scraper)
+
+
 
 # Clase auxiliar
 class ResultDictDefault(dict):
@@ -665,7 +679,7 @@ class Tmdb(object):
 
         if self.busqueda_id:
             # Busqueda por identificador tmdb
-            self.__by_id()
+            self.by_id()
 
         elif self.busqueda_texto:
             # Busqueda por texto
@@ -679,7 +693,7 @@ class Tmdb(object):
                     (self.busqueda_tipo == 'tv' and kwargs.get('external_source') in (
                             "imdb_id", "freebase_mid", "freebase_id", "tvdb_id", "tvrage_id")):
                 self.busqueda_id = kwargs.get('external_id')
-                self.__by_id(source=kwargs.get('external_source'))
+                self.by_id(source=kwargs.get('external_source'))
 
         elif self.discover:
             self.__discover()
@@ -717,7 +731,7 @@ class Tmdb(object):
                 msg = "Error de tmdb: %s %s" % (resultado["status_code"], resultado["status_message"])
                 logger.error(msg)
 
-    def __by_id(self, source='tmdb'):
+    def by_id(self, source='tmdb'):
         resultado = {}
         buscando = ""
 
@@ -1048,7 +1062,7 @@ class Tmdb(object):
         if len(self.result['images_posters']) == 0:
             # Vamos a lanzar una busqueda por id y releer de nuevo
             self.busqueda_id = str(self.result["id"])
-            self.__by_id()
+            self.by_id()
 
         if len(self.result['images_posters']) > 0:
             for i in self.result['images_posters']:
@@ -1096,7 +1110,7 @@ class Tmdb(object):
         if len(self.result['images_backdrops']) == 0:
             # Vamos a lanzar una busqueda por id y releer de nuevo todo
             self.busqueda_id = str(self.result["id"])
-            self.__by_id()
+            self.by_id()
 
         if len(self.result['images_backdrops']) > 0:
             for i in self.result['images_backdrops']:

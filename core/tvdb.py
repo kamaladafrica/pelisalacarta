@@ -321,6 +321,31 @@ def get_nfo(item):
     return info_nfo
 
 
+def completar_codigos(item):
+    """
+    Si es necesario comprueba si existe el identificador de tmdb y sino existe trata de buscarlo
+    """
+    if not item.infoLabels['tmdb_id']:
+        listsources = [(item.infoLabels['tvdb_id'],"tvdb_id")]
+        if item.infoLabels['imdb_id']:
+            listsources.append((item.infoLabels['imdb_id'],"imdb_id"))
+
+        from core.tmdb import Tmdb
+        ob = Tmdb()
+        ob.busqueda_tipo = 'tv'
+
+        for external_id, external_source in listsources:
+            ob.busqueda_id = external_id
+            ob.by_id(source=external_source)
+
+            item.infoLabels['tmdb_id'] = ob.get_id()
+            if item.infoLabels['tmdb_id']:
+                url_scraper = "https://www.themoviedb.org/tv/%s" % item.infoLabels['tmdb_id']
+                item.infoLabels['url_scraper'].append(url_scraper)
+                break
+
+
+
 class Tvdb:
     def __init__(self, **kwargs):
 

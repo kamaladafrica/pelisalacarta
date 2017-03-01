@@ -71,7 +71,7 @@ def find_and_set_infoLabels(item):
     try:
         scraper = __import__('core.%s' % scraper_actual, fromlist=["core.%s" % scraper_actual])
     except ImportError:
-        exec "import core." + scraper_actual + " as scraper_module"
+        exec "import core." + scraper_actual + " as scraper"
 
     while scraper:
         # Llamamos a la funcion find_and_set_infoLabels del scraper seleccionado
@@ -81,8 +81,7 @@ def find_and_set_infoLabels(item):
         if scraper_result and item.infoLabels['code']:
             # code correcto
             logger.info("Identificador encontrado: %s" % item.infoLabels['code'])
-            if tipo_contenido == "serie":
-                completar_codigos(item)
+            scraper.completar_codigos(item)
             return True
         elif scraper_result:
             # Contenido encontrado pero no hay 'code'
@@ -138,30 +137,6 @@ def find_and_set_infoLabels(item):
                     break
 
     logger.error("Error al importar el modulo scraper %s" % scraper_actual)
-
-
-def completar_codigos(item):
-    if item.infoLabels['imdb_id']:
-        if not item.infoLabels['tmdb_id']:
-            # Lanzar busqueda por imdb_id en tmdb
-            from core.tmdb import Tmdb
-            ob = Tmdb(external_id=item.infoLabels['imdb_id'], external_source="imdb_id", tipo="tv")
-            item.infoLabels['tmdb_id'] = ob.get_id()
-            if item.infoLabels['tmdb_id']:
-                url_scraper = "https://www.themoviedb.org/tv/%s" % item.infoLabels['tmdb_id']
-                item.infoLabels['url_scraper'].append(url_scraper)
-
-        elif not item.infoLabels['tvdb_id']:
-            # Lanzar busqueda por imdb_id en tvdb
-            from core.tvdb import Tvdb
-            ob = Tvdb(imdb_id=item.infoLabels['imdb_id'])
-            item.infoLabels['tvdb_id'] = ob.get_id()
-            if item.infoLabels['tvdb_id'] :
-                url_scraper = "http://thetvdb.com/index.php?tab=series&id=%s" % item.infoLabels['tvdb_id']
-                item.infoLabels['url_scraper'].append(url_scraper)
-
-    return
-
 
 
 def cuadro_completar(item):
@@ -310,13 +285,12 @@ def get_nfo(item):
 
 
 def sort_episode_list(episodelist):
-
     scraper_actual = ['tmdb', 'tvdb'][config.get_setting("scraper_tvshows", "biblioteca")]
-    logger.info(scraper_actual)
+
     if scraper_actual == "tmdb":
         episodelist.sort(key=lambda e: (int(e.contentSeason), int(e.contentEpisodeNumber)))
 
-    if scraper_actual == "tvdb":
+    elif scraper_actual == "tvdb":
         episodelist.sort(key=lambda e: (int(e.contentEpisodeNumber), int(e.contentSeason)))
 
     return episodelist
