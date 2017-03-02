@@ -1,27 +1,25 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <channel>
-	<id>pymovie</id>
-	<name>pymovie</name>
+	<id>cinefoxtv</id>
+	<name>CineFoxTV</name>
 
 	<active>true</active>
 	<adult>false</adult>
 	<language>es</language>
 
 	<fanart></fanart>
-	<thumbnail>https://s27.postimg.org/hvmvz7vab/pymovie.png</thumbnail>
-	<bannermenu>https://s28.postimg.org/3k0wjnwul/pymovie_banner.png</bannermenu>
+	<thumbnail>https://s28.postimg.org/lytn2q1tp/cinefoxtv.png</thumbnail>
+	<bannermenu>https://s27.postimg.org/mrwi9cppf/cinefoxtv_banner.png</bannermenu>
 	
 	<update_url></update_url>
-	<version>2</version>
-	<date>04/01/2017</date>
+	<version>1</version>
+	<date>09/02/2017</date>
 	<changes>Release</changes>
 
 
 	<categories>
 		<category>latino</category>
 		<category>movie</category>
-		<category>serie</category>
-		<category>documentary</category>
 	</categories>
 
 	<settings>
@@ -32,7 +30,7 @@
 		<enabled>false</enabled>
 		<visible>false</visible>
 	</settings>
-	<settings>
+	 <settings>
 		<id>include_in_newest_peliculas</id>
 		<type>bool</type>
 		<label>Incluir en Novedades - Peliculas</label>
@@ -44,14 +42,6 @@
 		<id>include_in_newest_infantiles</id>
 		<type>bool</type>
 		<label>Incluir en Novedades - Infantiles</label>
-		<default>true</default>
-		<enabled>true</enabled>
-		<visible>true</visible>
-	</settings>
-	<settings>
-		<id>include_in_newest_documentales</id>
-		<type>bool</type>
-		<label>Incluir en Novedades - Documentales</label>
 		<default>true</default>
 		<enabled>true</enabled>
 		<visible>true</visible>

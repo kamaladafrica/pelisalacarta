@@ -52,10 +52,7 @@ def mainlist(item):
     
     itemlist.append( itemlist[-1].clone(title="Series", action="menuseries",thumbnail='https://s32.postimg.org/544rx8n51/series.png', fanart='https://s32.postimg.org/544rx8n51/series.png', extra='peliculas/'))
     
-    
     itemlist.append( itemlist[-1].clone (title="Documentales", action="menudocumental",thumbnail='https://s21.postimg.org/i9clk3u6v/documental.png', fanart='https://s21.postimg.org/i9clk3u6v/documental.png', extra='documental'))
-
-    #itemlist.append( Item(channel=item.channel, title="Documentales", action="lista", url=host+'documentales/pag-1', thumbnail='https://s21.postimg.org/i9clk3u6v/documental.png', fanart='https://s21.postimg.org/i9clk3u6v/documental.png', extra='documentales/'))
     
     return itemlist
 
@@ -159,8 +156,7 @@ def lista(item):
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
         itemlist.append( Item(channel=item.channel, action=accion , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, contentSerieName = scrapedtitle, contentTitle = scrapedtitle, extra = item.extra))
        
-# #Paginacion
-
+ #Paginacion
     if itemlist !=[]:
         actual_page_url = item.url
         next_page = scrapertools.find_single_match(data,'<a href="\?page=([^"]+)" class="next">next &')
@@ -208,7 +204,6 @@ def episodios(item):
     itemlist = []
     templist = temporadas(item)
     for tempitem in templist:
-       logger.debug(tempitem)
        itemlist += episodiosxtemp(tempitem) 
 
     return itemlist
@@ -217,21 +212,10 @@ def episodios(item):
 def episodiosxtemp(item):
 
     logger.info("pelisalacarta.channels.pymovie episodiosxtemp")
-    logger.debug(item)
     itemlist = []
     data = scrapertools.cache_page(item.url)
     patron = '<a href="\/VerCapitulo\/([^"]+)">'
     matches = re.compile(patron,re.DOTALL).findall(data)
-    
-    # if item.contentSeasonNumber == '':
-    #    temp = 0
-    # else:
-    #    temp = 1
-    
-    # if temp == 0:
-    #    	  contentSeasonNumber = re.findall(r'\d',item.title)
-    #    	  item.contentSeasonNumber = contentSeasonNumber[0]
-
     ep = 1
     for scrapedtitle in matches:
        
@@ -333,7 +317,7 @@ def findvideos(item):
 
 	for videoitem in itemlist:
 	   if item.extra == 'documental':
-	   	  videoitem.title = item.title+' ('+videoitem.server+')'
+	    videoitem.title = item.title+' ('+videoitem.server+')'
 	   videoitem.channel=item.channel
 	   videoitem.action="play"
 	   videoitem.folder=False
@@ -344,6 +328,33 @@ def findvideos(item):
                              action="add_pelicula_to_library", extra="findvideos", contentTitle = item.contentTitle))
 	
 	return itemlist
+
+def newest(categoria):
+  logger.info("pelisalacarta.channels.locopelis newest")
+  itemlist = []
+  item = Item()
+  item.extra = 'Estrenos'
+  try:
+      if categoria == 'peliculas':
+          item.url = host+'/Ordenar/Estreno/?page=1'
+          
+      elif categoria == 'infantiles':
+          item.url = host+'/Categoria/Animacion/?page=1'
+
+      elif categoria == 'documentales':
+          item.url = host+'/Documentales/?page=1'
+          item.extra = 'documental'
+      
+      itemlist = lista(item)
+      if itemlist[-1].title == 'Siguiente >>>':
+              itemlist.pop()
+  except:
+      import sys
+      for line in sys.exc_info():
+          logger.error("{0}".format(line))
+      return []
+
+  return itemlist
 
 
 

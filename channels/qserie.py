@@ -8,6 +8,7 @@ import os, sys
 
 
 from core import logger
+from core import tmdb
 from core import config
 from core import scrapertools
 from core.item import Item
@@ -42,17 +43,16 @@ def todas(item):
     audio = {'Latino':'[COLOR limegreen]LATINO[/COLOR]','Español':'[COLOR yellow]ESPAÑOL[/COLOR]','Sub Español':'[COLOR red]ORIGINAL SUBTITULADO[/COLOR]'}
     itemlist = []
     data = scrapertools.cache_page(item.url)
+    data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
     
-    patron = '<h2 class=.*?><a href="([^"]+)" title="([^"]+)">.*?\/h2>.*?'
-    patron +='.*?<img src="([^"]+)".*?\/><\/a>.*?'
-    patron +='<p>([^<]+)<\/p>.*?'
-    patron +='<img src=.*?>([^<]+)<\/div> '
+    patron = '<h2 class=.*?><a href="([^"]+)" title="([^"]+)">.*?\/h2>.*?<img src="([^"]+)".*?\/><\/a>.*?<p>([^<]+)<\/p>.*?<strong>Genero<\/strong>: .*?, (.*?)<\/div>.*?<img src=.*?>([^<]+)<\/div>'
     matches = re.compile(patron,re.DOTALL).findall(data)
      
-    for scrapedurl,scrapedtitle, scrapedthumbnail, scrapedplot, scrapedidioma in matches:
+    for scrapedurl,scrapedtitle, scrapedthumbnail, scrapedplot, scrapedyear,scrapedidioma in matches:
         idioma = scrapedidioma.strip()
         idioma = scrapertools.decodeHtmlentities(idioma) 
         url = urlparse.urljoin(item.url,scrapedurl)
+        year = scrapedyear
         if idioma in audio:
            idioma=audio[idioma]
         else:
@@ -63,8 +63,8 @@ def todas(item):
         plot = scrapedplot
         fanart = 'https://s31.postimg.org/dousrbu9n/qserie.png'
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="temporadas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, extra=idioma, contentSerieName = scrapedtitle))
-    
+        itemlist.append( Item(channel=item.channel, action="temporadas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, extra=idioma, contentSerieName = scrapedtitle, infoLabels={'year':year}))
+    tmdb.set_infoLabels_itemlist(itemlist, seekTmdb = True)    
 #Paginacion
     siguiente=''
     title=''
@@ -79,7 +79,6 @@ def todas(item):
        else:
           siguiente_url =item.url+'?&page='+str(siguiente)  
     if actual and ultima and siguiente <= int(ultima):
-       #import inspect
        titlen = 'Pagina Siguiente >>> '+str(actual)+'/'+str(ultima)
        fanart = 'https://s32.postimg.org/4q1u1hxnp/qserie.png'
        thumbnail ='https://s32.postimg.org/4zppxf5j9/siguiente.png'
@@ -94,6 +93,7 @@ def temporadas(item):
     url_base= item.url
     patron = '<a href="javascript:.*?;" class="lccn"><b>([^<]+)<\/b><\/a>'
     matches = re.compile(patron,re.DOTALL).findall(data)
+    infoLabels=item.infoLabels
     temp=1
     if matches:
         for scrapedtitle in matches:
@@ -101,15 +101,18 @@ def temporadas(item):
            title = scrapedtitle
            thumbnail = item.thumbnail
            plot = item.plot
+           contentSeasonNumber=str(temp)
+
+           infoLabels['season']=contentSeasonNumber
            fanart = scrapertools.find_single_match(data,'<img src="([^"]+)"/>.*?</a>')
            if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-           itemlist.append( Item(channel=item.channel, action="episodiosxtemp" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart, contenSeasonNumber=str(temp), contentSerieName =item.contentSerieName))
+           itemlist.append( Item(channel=item.channel, action="episodiosxtemp" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart, contentSeasonNumber=contentSeasonNumber, contentSerieName =item.contentSerieName, infoLabels=infoLabels))
            temp = temp+1
                
         if config.get_library_support() and len(itemlist) > 0:
             itemlist.append(Item(channel=item.channel, title='[COLOR yellow]Añadir esta serie a la biblioteca[/COLOR]', url=item.url,
                              action="add_serie_to_library", extra="episodios", contentSerieName=item.contentSerieName ))
-                    
+        tmdb.set_infoLabels_itemlist(itemlist, seekTmdb = True)            
         return itemlist
     else:
         item.title =''
@@ -135,24 +138,32 @@ def episodiosxtemp(item):
     logger.info("pelisalacarta.channels.qserie episodiosxtemp")
     itemlist = []
     data = scrapertools.cache_page(item.url)
-    temp = item.contenSeasonNumber
+    infoLabels = item.infoLabels
+    temp = item.contentSeasonNumber
     if item.title=='':
         temp = '1'
         item.contenSeasonNumber = temp
-        patron ='<li><a href="([^"]+)" class="lcc"><b>([^<]+)<\/b>.*?<\/a><\/li>' 
+        infoLabels['season']= temp
+
+        patron ='<li><a href="([^"]+)" class="lcc"><b>([^<]+)<\/b>.*?<\/a><\/li>'
+
     else: 
         patron = '<li><a href="([^"]+)" class="lcc"><b>([^<]+)<\/b> - Temp\. '+temp+'<\/a><\/li>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     
     for scrapedurl,scrapedtitle in matches:
+        
         url = urlparse.urljoin(item.url,scrapedurl)
         capitulo = re.findall(r'\d+',scrapedtitle)
-        title = item.contentSerieName+' '+temp+'x'+capitulo[0]
+        contentEpisodeNumber = str(capitulo[0])
+        infoLabels['episode']=contentEpisodeNumber
+        title = item.contentSerieName+' '+temp+'x'+contentEpisodeNumber
         thumbnail = item.thumbnail
         plot = item.plot
         fanart=item.fanart
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title, fulltitle=item.fulltitle, url=url, thumbnail=item.thumbnail, plot=plot, contentSeasonNumber = item.contenSeasonNumber, extra = item.extra, extra1 =item.extra1, extra2=item.extra2))
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title, fulltitle=item.fulltitle, url=url, thumbnail=item.thumbnail, plot=plot, extra = item.extra, extra1 =item.extra1, extra2=item.extra2, infoLabels = infoLabels))
+    tmdb.set_infoLabels_itemlist(itemlist, seekTmdb = True)
     if item.modo == 'unico':
         if config.get_library_support() and len(itemlist) > 0:
                 itemlist.append(Item(channel=item.channel, title='[COLOR yellow]Añadir esta serie a la biblioteca[/COLOR]', url=item.url,
@@ -228,7 +239,6 @@ def ultimas(item):
         title = scrapertools.decodeHtmlentities(title)
         realtitle = scrapedtitle.replace(inutil[0],'')
         fanart = 'https://s31.postimg.org/3ua9kwg23/ultimas.png'
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
         itemlist.append( Item(channel=item.channel, action="temporadas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, contentSerieName = realtitle))
 
     return itemlist
@@ -300,7 +310,6 @@ def lasmas(item):
         else:
            fanart = ''  
    
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
         itemlist.append( Item(channel=item.channel, action=action, title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, contentSerieName = scrapedtitle))
 
     return itemlist

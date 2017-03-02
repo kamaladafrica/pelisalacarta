@@ -12,11 +12,16 @@ from core import config
 from core import scrapertools
 from core.item import Item
 from core import servertools
+from core import tmdb
+from core import httptools
+
 
 
 DEBUG = config.get_setting("debug")
 
 host='http://www.locopelis.com/'
+
+audio = {'Latino':'[COLOR limegreen]LATINO[/COLOR]','Español':'[COLOR yellow]ESPAÑOL[/COLOR]', 'Sub Español':'[COLOR red]SUB ESPAÑOL[/COLOR]'}
 
 
 def mainlist(item):
@@ -45,54 +50,56 @@ def mainlist(item):
     return itemlist
 
 def todas(item):
-    latino = 'limegreen'
-#    español = 'yellow'
-#    sub = 'white'
     logger.info("pelisalacarta.channels.locopelis todas")
     itemlist = []
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
+    data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
     
-    patron ='<h2 class="titpeli bold ico_b">.*?<\/h2>.*?'
+    patron = '<h2 class="titpeli bold ico_b">.*?<\/h2>.*?'
     patron += '<a href="([^"]+)" title="([^"]+)">.*?'
-    patron +='<img src="([^"]+)" alt=.*?><\/a>.*?'
-    patron +='<p>([^<]+)<\/p>.*?'
-    patron +='<div class=.*?>Idioma<\/strong>:.<img src=.*?>([^<]+)<\/div>'
+    patron += '<img src="([^"]+)" alt=.*?><\/a>.*?'
+    patron += '<p>([^<]+)<\/p>.*?'
+    patron += '<div class="stars f_left pdtop10px"><strong>Genero<\/strong>:.*?, (.*?)<\/div>.*?'
+    patron +='<div class=.*?>Idioma<\/strong>:.*?img src=.*?>([^<]+)<\/div>'    
        
     matches = re.compile(patron,re.DOTALL).findall(data)
     
-    for scrapedurl,scrapedtitle, scrapedthumbnail, scrapedplot, scrapedidioma in matches: 
+    for scrapedurl,scrapedtitle, scrapedthumbnail, scrapedplot, scrapedyear, scrapedidioma in matches: 
         
+        year = scrapedyear
         idioma = scrapedidioma.strip()
         idioma = scrapertools.decodeHtmlentities(idioma)
-        url = urlparse.urljoin(item.url,scrapedurl)
-        title = scrapedtitle.decode('cp1252')
-        title = title.encode('utf-8') +' ('+idioma+')'
-	
+        if idioma in audio:
+          idioma = audio[idioma]
+
+        url = scrapedurl
+        if idioma !='':
+          title = scrapedtitle+' ('+idioma+')'+' ('+year+')'
+        else:
+          title = scrapedtitle+' ('+year+')'
         thumbnail = scrapedthumbnail
         plot = scrapedplot
+        contentTitle = scrapedtitle
         fanart = 'https://s31.postimg.org/5worjw2nv/locopelis.png'
         
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="findvideos" ,title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, extra=idioma, contentTitle = scrapedtitle.decode('cp1252')))
-    
+        itemlist.append( Item(channel=item.channel, action="findvideos" ,title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, extra=idioma, contentTitle = contentTitle, infoLabels={'year':year}))
+    tmdb.set_infoLabels_itemlist(itemlist, seekTmdb=True)
 #Paginacion
     siguiente=''
     title=''
-    actual = scrapertools.find_single_match(data,'<li><a href=".*?"><span><b>([^<]+)<\/b><\/span><\/a><\/li>')
-    ultima = scrapertools.find_single_match(data,'<li><a href=".*?page=([^"]+)">Ultima<\/a><\/li>')
-    if 'page' in item.title:
-        while not item.url.endswith('='): item.url= item.url[:-1]
+    data = scrapertools.find_single_match(data,'<ul class="nav.*?\/ul>')
+    actual = scrapertools.find_single_match(data,'<a href="(\?page=\d|.*?&page=\d*)"><span><b>(.*?)<\/b>')
     if actual:
-       siguiente = int(actual)+1
-       if item.url.endswith('='):
-          siguiente_url =item.url+str(siguiente)
-       else:
-          siguiente_url =item.url+'?&page='+str(siguiente)  
-    if actual and ultima and siguiente <= int(ultima):
-       #import inspect
-       titlen = 'Pagina Siguiente >>> '+str(actual)+'/'+str(ultima)
-       fanart = 'https://s31.postimg.org/5worjw2nv/locopelis.png'
-       itemlist.append(Item(channel = item.channel, action = "todas", title =titlen, url = siguiente_url, fanart = fanart))
+      base_url = item.url+actual[0]
+      while not base_url.endswith('='): base_url= base_url[:-1]
+      siguiente = int(actual[1])+1
+      if base_url.endswith('='):
+        siguiente_url =base_url+str(siguiente)
+      titlen = 'Pagina Siguiente >>> '
+      fanart = 'https://s31.postimg.org/5worjw2nv/locopelis.png'
+      itemlist.append(Item(channel = item.channel, action = "todas", title =titlen, url = siguiente_url, fanart = fanart))
+    
     return itemlist
 
 
@@ -127,7 +134,7 @@ def generos(item):
 
     logger.info("pelisalacarta.channels.locopelis episodios")
     itemlist = []
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
     patron ='<li><a title.*?href="http:\/\/www.locopelis.com\/categoria\/([^"]+)">([^<]+)<\/a><\/li>.*?' 
     matches = re.compile(patron,re.DOTALL).findall(data)
 
@@ -151,20 +158,18 @@ def ultimas(item):
     logger.info("pelisalacarta.channels.locopelis masvistas")
     itemlist = []
     data = scrapertools.cache_page(item.url)
+    data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
+    data = data.decode('cp1252')
     realplot=''
-    patron ='<a href="([^"]+)" title="([^"]+)">.<img src="([^"]+)" alt=.*? style="width:105px; height:160px; border:1px solid #999"\/><\/a>'
+    patron ='<a href="([^"]+)" title="([^"]+)"><img src="([^"]+)" alt=.*? style="width:105px; height:160px; border:1px solid #999"\/><\/a>'
      
     matches = re.compile(patron,re.DOTALL).findall(data)
 
     for scrapedurl, scrapedtitle, scrapedthumbnail in matches:
-        url = urlparse.urljoin(item.url,scrapedurl)
-        data = scrapertools.cache_page(scrapedurl)
-        realplot = scrapertools.find_single_match(data, '<strong itemprop="reviewBody">([^<]+)</strong>')   
+        url = scrapedurl
         thumbnail = scrapedthumbnail
-        plot = realplot.decode('cp1252')
-	plot = plot.encode('utf-8')
-        title = scrapedtitle.decode('cp1252')
-	title = title.encode('utf-8') 
+        plot = ''
+        title = scrapedtitle
         fanart = 'https://s31.postimg.org/3ua9kwg23/ultimas.png'
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
         itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart))
@@ -206,45 +211,29 @@ def letras(item):
     logger.info("pelisalacarta.channels.locopelis letras")
     itemlist = []
     data = scrapertools.cache_page(item.url)
-    realplot=''
-    if item.extra == 'letras':
-         patron ='<li><a href="([^"]+)" title="Letra.*?">([^<]+)</a></li>' 
-    else:    
-         patron ='<li><a.*?href="([^"]+)" title="([^v]+)'+item.extra+'.*?">' 
-    
+    data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
+    data = data.decode('cp1252')
+    data = scrapertools.find_single_match(data, '<\/form><\/table><\/div>.*?<\/ul>')
+
+    patron ='<li><a href="(.*?)" title="Letra.*?">(.*?)<\/a><\/li>' 
     matches = re.compile(patron,re.DOTALL).findall(data)
+    
 
     for scrapedurl, scrapedtitle in matches:
-        url = urlparse.urljoin(item.url,scrapedurl)
-        if item.extra != 'letras':
-           data = scrapertools.cache_page(scrapedurl)
-           thumbnail= scrapertools.get_match(data,'<link rel="image_src" href="([^"]+)"/>')
-           realplot = scrapertools.find_single_match(data, '<p itemprop="articleBody">([^<]+)<\/p> ')
-           plot = scrapertools.remove_htmltags(realplot)
-           action='temporadas'
-        else:
-           if scrapedtitle.lower() in thumbletras:
-              thumbnail = thumbletras[scrapedtitle.lower()]
-           else:
-              thumbnail = ''
-           plot=''
-           action='todas'
-        title = scrapedtitle.replace(': ','')
-        title = scrapertools.decodeHtmlentities(title)
-        if item.extra == 'letras':
-           fanart = 'https://s31.postimg.org/c3bm9cnl7/a_z.png'
-        elif item.extra == 'Vista':
-           fanart = 'https://s32.postimg.org/466gt3ipx/vistas.png' 
-        else:
-           fanart = ''  
-   
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action=action, title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart))
+      url = scrapedurl
+      title = scrapedtitle
+      plot =''
+      if scrapedtitle.lower() in thumbletras:
+        thumbnail = thumbletras[scrapedtitle.lower()]
+      else:
+        thumbnail = ''
+      if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
+      itemlist.append( Item(channel=item.channel, action='todas', title=title , url=url, thumbnail=thumbnail, plot=plot))
 
     return itemlist
     
 def search(item,texto):
-    logger.info("metaserie.py search")
+    logger.info("locopelis.py search")
     texto = texto.replace(" ","+")
     item.url = item.url+texto
 
@@ -266,7 +255,6 @@ def findvideos(item):
         videoitem.folder = False
         videoitem.extra = item.thumbnail
         videoitem.fulltitle = item.title
-        #videoitem.title = item.title
 
     if config.get_library_support() and len(itemlist) > 0 and item.extra !='findvideos' :
         itemlist.append(Item(channel=item.channel, title='[COLOR yellow]Añadir esta pelicula a la biblioteca[/COLOR]', url=item.url,
@@ -284,5 +272,28 @@ def play(item):
         videoitem.folder = False
         videoitem.thumbnail = item.extra
         videoitem.fulltitle = item.fulltitle
+        videoitem.infoLabels=item.infoLabels
     return itemlist
-    
+
+def newest(categoria):
+    logger.info("pelisalacarta.channels.locopelis newest")
+    itemlist = []
+    item = Item()
+    #categoria='peliculas'
+    try:
+        if categoria == 'peliculas':
+            item.url = host
+            item.extra = 'peliculas'
+        elif categoria == 'infantiles':
+            item.url = host+'categoria/animacion-e-infantil/'
+            item.extra = 'peliculas'
+        itemlist = todas(item)
+        if itemlist[-1].title == 'Siguiente >>>':
+                itemlist.pop()
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error("{0}".format(line))
+        return []
+
+    return itemlist

@@ -7,16 +7,20 @@ import urlparse,urllib2,urllib,re
 import os, sys
 
 from core import logger
+from core import tmdb
 from core import config
 from core import scrapertools
+from core import httptools
 from core.item import Item
 from core import servertools
+
+
 
 
 DEBUG = config.get_setting("debug")
 host ="http://www.pelisplus.tv/"
 
-headers = [['User-Agent', 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:45.0) Gecko/20100101 Firefox/45.0'],
+headers = [['User-Agent', 'Mozilla/50.0 (Windows NT 10.0; WOW64; rv:45.0) Gecko/20100101 Firefox/45.0'],
           ['Referer', host]]
 
 
@@ -29,9 +33,8 @@ def mainlist(item):
     
     itemlist.append( Item(channel=item.channel, title="Series", action="menuseries",thumbnail='https://s32.postimg.org/544rx8n51/series.png', fanart='https://s32.postimg.org/544rx8n51/series.png', extra='peliculas/'))
     
-    
     itemlist.append( Item(channel=item.channel, title="Documentales", action="lista", url=host+'documentales/pag-1', thumbnail='https://s21.postimg.org/i9clk3u6v/documental.png', fanart='https://s21.postimg.org/i9clk3u6v/documental.png', extra='documentales/'))
-    
+
     return itemlist
 
 def menupeliculas(item):
@@ -40,7 +43,6 @@ def menupeliculas(item):
     itemlist = []
     
     itemlist.append( Item(channel=item.channel, title="Ultimas", action="lista", url=host+'estrenos/pag-1', thumbnail='https://s31.postimg.org/3ua9kwg23/ultimas.png', fanart='https://s31.postimg.org/3ua9kwg23/ultimas.png', extra='estrenos/'))
-    #itemlist.append( Item(channel=item.channel, title="Ultimas", action="lista", url=host+'busqueda/?s=doble', thumbnail='https://s31.postimg.org/3ua9kwg23/ultimas.png', fanart='https://s31.postimg.org/3ua9kwg23/ultimas.png', extra='estrenos/'))
     
     itemlist.append( Item(channel=item.channel, title="Todas", action="lista", url=host+'peliculas/pag-1', thumbnail='https://s12.postimg.org/iygbg8ip9/todas.png', fanart='https://s12.postimg.org/iygbg8ip9/todas.png', extra='peliculas/'))
     
@@ -67,34 +69,38 @@ def search(item,texto):
     logger.info("pelisplus.py search")
     texto = texto.replace(" ","+")
     item.url = item.url+texto
-
     try:
         if texto != '':
             return lista(item)
         else:
             return []
-
     except:
         import sys
         for line in sys.exc_info():
             logger.error("%s" % line)
         return []
 
+
 def lista(item):
-    logger.debug("pelisalacarta.channels.pelisplus lista")
-    if 'series/' in item.extra:
-        accion = 'temporadas'
-        
-    else:
-        accion = 'findvideos'
+    logger.debug("pelisalacarta.channels.pelisplus lista "+item.title+' '+item.extra)
     
     itemlist = []
+
+    if 'series/' in item.extra:
+        accion = 'temporadas'
+        tipo = 'tvshow'
+    else:
+        accion = 'findvideos'
+        tipo = 'movie'
+
     data = scrapertools.cache_page(item.url)
     
     if item.title != 'Buscar':
         patron ='<img.*?width="147" heigh="197".*?src="([^"]+)".*?>.*?.<i class="icon online-play"><\/i>.*?.<h2 class="title title-.*?">.*?.<a href="([^"]+)" title="([^"]+)">.*?>'
+        actual = scrapertools.find_single_match(data,'<a href="http:\/\/www.pelisplus.tv\/.*?\/pag-([^p]+)pag-2" class="page bicon last"><<\/a>')
     else:
         patron = '<img data-original="([^"]+)".*?width="147" heigh="197".*?src=.*?>.*?\n<i class="icon online-play"><\/i>.*?\n<h2 class="title title-.*?">.*?\n<a href="([^"]+)" title="([^"]+)">.*?>'
+        actual = ''
     
     matches = re.compile(patron,re.DOTALL).findall(data)
 
@@ -102,24 +108,35 @@ def lista(item):
         url = scrapedurl
         title = scrapertools.decodeHtmlentities(scrapedtitle)
         thumbnail = scrapedthumbnail
-        plot = ''
-        fanart =''
-        if item.extra != 'series/':
-           datab = scrapertools.cache_page(scrapedurl)
-           fanart = scrapertools.find_single_match(datab,'<meta property="og:image" content="([^"]+)" \/>')
-           plot = scrapertools.find_single_match(datab,'<span>Sinopsis:<\/span>.([^<]+)<span class="text-detail-hide"><\/span>.<\/p>')
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
         
+        filtro_thumb = scrapedthumbnail.replace("https://image.tmdb.org/t/p/w154", "")
+        filtro_list = {"poster_path": filtro_thumb} #Nombre del campo a filtrar y valor en los resultados de la api de tmdb
+        filtro_list = filtro_list.items()
+
         if item.title != 'Buscar':
-           itemlist.append( Item(channel=item.channel, action=accion , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, contentSerieName =scrapedtitle, contentTitle =scrapedtitle))
+          itemlist.append(Item(channel=item.channel,contentType=tipo, action=accion, title=scrapedtitle, url=scrapedurl, thumbnail=scrapedthumbnail,
+                              fulltitle=scrapedtitle, infoLabels={'filtro': filtro_list},
+                               contentTitle =scrapedtitle, contentSerieName= scrapedtitle, extra = item.extra))
         else:
-           item.extra = item.extra.rstrip('s/')
-           if item.extra in url:
-           	 itemlist.append( Item(channel=item.channel, action=accion , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, contentSerieName =scrapedtitle, contentTitle =scrapedtitle))
+          item.extra = item.extra.rstrip('s/')
+          if item.extra in url:
+            itemlist.append(Item(channel=item.channel,contentType=tipo, action=accion, title=scrapedtitle, url=scrapedurl, thumbnail=scrapedthumbnail,
+            fulltitle=scrapedtitle, infoLabels={'filtro': filtro_list}, 
+            contentTitle =scrapedtitle, contentSerieName= scrapedtitle, extra = item.extra))
         
+    tmdb.set_infoLabels_itemlist(itemlist, seekTmdb = True)
+
+    # Encuentra los elementos que no tienen plot y carga las paginas correspondientes para obtenerlo#
+    for item in itemlist:
+      if item.infoLabels['plot']=='':
+        data = httptools.downloadpage(item.url).data
+        item.fanart = scrapertools.find_single_match(data,'meta property="og:image" content="([^"]+)" \/>')
+        item.plot =scrapertools.find_single_match(data,'<span>Sinopsis:<\/span>.([^<]+)<span class="text-detail-hide"><\/span>.<\/p>')
+
+
+
 #Paginacion
-    if item.title != 'Buscar':
-       actual = scrapertools.find_single_match(data,'<a href="http:\/\/www.pelisplus.tv\/.*?\/pag-([^p]+)pag-2" class="page bicon last"><<\/a>')
+    if item.title != 'Buscar' and actual !='':
        if itemlist !=[]:
            next_page = str(int(actual)+1)
            next_page_url = host+item.extra+'pag-'+next_page
@@ -144,8 +161,8 @@ def temporadas(item):
         fanart = scrapertools.find_single_match(data,'<img src="([^"]+)"/>.*?</a>')
         contentSeasonNumber = scrapedtitle.strip(' \r\n')
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="episodios" , title=title, fulltitle=item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart, extra=scrapedtitle.rstrip('\n'), contentSerieName =item.contentSerieName, contentSeasonNumber = contentSeasonNumber))
-    
+        itemlist.append( Item(channel=item.channel, action="episodios" , title=title, fulltitle=item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart, extra=scrapedtitle.rstrip('\n'), contentSerieName =item.contentSerieName, contentSeasonNumber = contentSeasonNumber, infoLabels={'season':contentSeasonNumber}))
+    tmdb.set_infoLabels_itemlist(itemlist, seekTmdb = True)
     if item.extra == 'temporadas':
         for tempitem in itemlist:
             templist += episodios(tempitem)
@@ -157,7 +174,6 @@ def temporadas(item):
         return templist
     else:
         return itemlist
-    #return itemlist
     
 def episodios(item):
     logger.info("pelisalacarta.channels.pelisplus episodios")
@@ -174,7 +190,8 @@ def episodios(item):
            contentSeasonNumber = re.findall(r'temporada.*?([\d])',url)
            capitulo = re.findall(r'Capitulo \d+', scrapedtitle)
            contentEpisodeNumber = re.findall(r'\d+', capitulo[0])
-           title = contentSeasonNumber[0]+'x'+contentEpisodeNumber[0]+' - '+scrapedtitle
+           contentEpisodeNumber = contentEpisodeNumber[0]
+           title = contentSeasonNumber[0]+'x'+contentEpisodeNumber+' - '+scrapedtitle
            
            thumbnail = scrapertools.find_single_match(data,'<img src="([^"]+)" alt="" class="picture-movie">')
            plot = ''
@@ -185,8 +202,8 @@ def episodios(item):
            
            
            if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-           itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart, extra=scrapedtitle, contentSeasonNumber = item.contentSeasonNumber))
-    
+           itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart, extra=scrapedtitle, contentSeasonNumber = item.contentSeasonNumber, infoLabels ={'episode':contentEpisodeNumber}))
+    tmdb.set_infoLabels_itemlist(itemlist, seekTmdb = True)
     return itemlist       
 
 def generos(item):
@@ -236,8 +253,7 @@ def generos(item):
 def findvideos(item):
     logger.info ("pelisalacarta.channels.pelisplus findvideos")
     itemlist=[]
-    datas=scrapertools.cache_page(item.url)
-
+    datas=httptools.downloadpage(item.url).data
     patron ="<iframe.*?src='([^']+)' frameborder='0' allowfullscreen.*?"
     matches = re.compile(patron,re.DOTALL).findall(datas)
     
@@ -245,23 +261,23 @@ def findvideos(item):
        
        
        if 'elreyxhd' or 'pelisplus.biz'in scrapedurl:
-            data = scrapertools.cachePage(scrapedurl, headers=headers)
-            quote = scrapertools.find_single_match(data,'sources.*?file.*?http')
+            data = httptools.downloadpage(scrapedurl, headers=headers).data
             
+            quote = scrapertools.find_single_match(data,'sources.*?file.*?http')
             if quote and "'" in quote:
                patronr ="file:'([^']+)',label:'([^.*?]+)',type:.*?'.*?}"
             elif '"' in quote:
-               patronr ='file:"([^"]+)",label:"([^.*?]+)",type:.*?".*?}'
+               patronr ='{file:"(.*?)",label:"(.*?)"}'
             matchesr = re.compile(patronr,re.DOTALL).findall(data)
             
             for scrapedurl, scrapedcalidad in matchesr:
-               print scrapedurl +' '+scrapedcalidad
                url = scrapedurl 
-               title = item.contentTitle+' ('+scrapedcalidad+')'
+               
+               title = item.contentTitle+' ('+str(scrapedcalidad)+')'
                thumbnail = item.thumbnail
                fanart=item.fanart
                if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-               itemlist.append( Item(channel=item.channel, action="play" , title=title , url=url, thumbnail=thumbnail,fanart =fanart))
+               itemlist.append( Item(channel=item.channel, action="play" , title=title , url=url, thumbnail=thumbnail,fanart =fanart, extra='directo'))
 
 
     url = scrapedurl
@@ -269,7 +285,7 @@ def findvideos(item):
     itemlist.extend(servertools.find_video_items(data=datas))
     
     for videoitem in itemlist:
-
+        videoitem.infoLabels = item.infoLabels
         videoitem.channel = item.channel
         if videoitem.server != '':
            videoitem.thumbnail = servertools.guess_server_thumbnail (videoitem.server)
@@ -278,7 +294,7 @@ def findvideos(item):
         videoitem.action = 'play'
         videoitem.fulltitle = item.title
         
-        if 'redirector' not in videoitem.url and 'youtube' not in videoitem.url:
+        if videoitem.extra !='directo' and 'youtube' not in videoitem.url:
            videoitem.title = item.contentTitle+' ('+videoitem.server+')'
         
     n=0   
@@ -297,7 +313,33 @@ def findvideos(item):
                              action="add_pelicula_to_library", extra="findvideos", contentTitle = item.contentTitle))
           
     return itemlist
- 
+
+def newest(categoria):
+  logger.info("pelisalacarta.channels.locopelis newest")
+  itemlist = []
+  item = Item()
+  item.extra = 'estrenos/'
+  try:
+      if categoria == 'peliculas':
+          item.url = host+'estrenos/pag-1'
+          
+      elif categoria == 'infantiles':
+          item.url = host+'peliculas/animacion/pag-1'
+
+      elif categoria == 'documentales':
+          item.url = host+'documentales/pag-1'
+          item.extra = 'documentales/'
+      
+      itemlist = lista(item)
+      if itemlist[-1].title == 'Siguiente >>>':
+              itemlist.pop()
+  except:
+      import sys
+      for line in sys.exc_info():
+          logger.error("{0}".format(line))
+      return []
+
+  return itemlist
 
 
 

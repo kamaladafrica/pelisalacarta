@@ -11,6 +11,7 @@ from core import config
 from core import scrapertools
 from core.item import Item
 from core import servertools
+from core import tmdb
 
 
 DEBUG = config.get_setting("debug")
@@ -108,16 +109,18 @@ def peliculas(item):
     itemlist = []
     data = scrapertools.cache_page(item.url)
    
-    patron = '<div class="home_post_cont.*? post_box">.*?<a href="([^"]+)".*?src="([^"]+)".*?title="([^"]+)".*?p&gt;([^&]+)&lt;'
+    patron = '<div class="home_post_cont.*? post_box">.*?<a href="([^"]+)".*?src="([^"]+)".*?title="(.*?) \((.*?)\)".*?p&gt;([^&]+)&lt;'
     matches = re.compile(patron,re.DOTALL).findall(data)
 
-    for scrapedurl,scrapedthumbnail,scrapedtitle,scrapedplot in matches:
+    for scrapedurl,scrapedthumbnail,scrapedtitle, scrapedyear, scrapedplot  in matches:
         url = urlparse.urljoin(item.url,scrapedurl)
-        title = scrapedtitle
+        contentTitle = scrapedtitle
+        title = scrapedtitle+' ('+scrapedyear+')'
         thumbnail = scrapedthumbnail
         plot = scrapedplot
+        year = scrapedyear
         if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart='https://s31.postimg.org/puxmvsi7v/cinecalidad.png', contentTitle = title))
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart='https://s31.postimg.org/puxmvsi7v/cinecalidad.png', contentTitle = contentTitle, infoLabels={'year':year} ))
     
     try:     
         patron  = "<link rel='next' href='([^']+)' />" 
@@ -125,6 +128,7 @@ def peliculas(item):
         itemlist.append( Item(channel=item.channel, action="peliculas", title="Página siguiente >>" , url=next_page[0], fanart='https://s31.postimg.org/puxmvsi7v/cinecalidad.png') )
 
     except: pass
+    tmdb.set_infoLabels_itemlist(itemlist, seekTmdb = True)
     return itemlist
 
 
@@ -139,7 +143,7 @@ def dec(item):
 
 
 def findvideos(item):
-    servidor = {"http://uptobox.com/":"uptobox","http://userscloud.com/":"userscloud","https://my.pcloud.com/publink/show?code=":"pcloud","http://thevideos.tv/":"thevideos","http://ul.to/":"uploadedto","http://turbobit.net/":"turbobit","http://www.cinecalidad.com/protect/v.html?i=":"cinecalidad","http://www.mediafire.com/download/":"mediafire","https://www.youtube.com/watch?v=":"youtube","http://thevideos.tv/embed-":"thevideos","//www.youtube.com/embed/":"youtube","http://ok.ru/video/":"okru","http://ok.ru/videoembed/":"okru","http://www.cinemaqualidade.com/protect/v.html?i=":"cinemaqualidade.com","http://usersfiles.com/":"usersfiles","https://depositfiles.com/files/":"depositfiles","http://www.nowvideo.sx/video/":"nowvideo","http://vidbull.com/":"vidbull","http://filescdn.com/":"filescdn","http://www.yourupload.com/watch/":"yourupload"}
+    servidor = {"http://uptobox.com/":"uptobox","http://userscloud.com/":"userscloud","https://my.pcloud.com/publink/show?code=":"pcloud","http://thevideos.tv/":"thevideos","http://ul.to/":"uploadedto","http://turbobit.net/":"turbobit","http://www.cinecalidad.com/protect/v.html?i=":"cinecalidad","http://www.mediafire.com/download/":"mediafire","https://www.youtube.com/watch?v=":"youtube","http://thevideos.tv/embed-":"thevideos","//www.youtube.com/embed/":"youtube","http://ok.ru/video/":"okru","http://ok.ru/videoembed/":"okru","http://www.cinemaqualidade.com/protect/v.html?i=":"cinemaqualidade.com","http://usersfiles.com/":"usersfiles","https://depositfiles.com/files/":"depositfiles","http://www.nowvideo.sx/video/":"nowvideo","http://vidbull.com/":"vidbull","http://filescdn.com/":"filescdn","https://www.yourupload.com/watch/":"yourupload"}
     logger.info("pelisalacarta.channels.cinecalidad links")
     itemlist=[]
     data = scrapertools.cache_page(item.url)
@@ -182,5 +186,26 @@ def play(item):
         videoitem.fulltitle = item.fulltitle
         videoitem.thumbnail = item.extra
         videochannel=item.channel
+    return itemlist
+
+def newest(categoria):
+    logger.info("pelisalacarta.channels.cinecalidad newest")
+    itemlist = []
+    item = Item()
+    #categoria='peliculas'
+    try:
+        if categoria == 'peliculas':
+            item.url = 'http://www.cinecalidad.to'
+        elif categoria == 'infantiles':
+            item.url ='http://www.cinecalidad.to/genero-peliculas/infantil/'
+        itemlist = peliculas(item)
+        if itemlist[-1].title == 'Página siguiente >>':
+                itemlist.pop()
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error("{0}".format(line))
+        return []
+
     return itemlist
 
