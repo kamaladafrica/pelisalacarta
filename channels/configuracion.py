@@ -401,12 +401,13 @@ def submenu_tools(item):
     itemlist.append(Item(channel=CHANNELNAME, title="   Comprobar archivos *_data.json",
                          action="conf_tools", folder=True, extra="lib_check_datajson",
                          thumbnail=get_thumbnail_path("thumb_canales.png")))
-    itemlist.append(Item(channel=CHANNELNAME, title="Herramientas de biblioteca", action="",
-                         folder=False, thumbnail=get_thumbnail_path("thumb_biblioteca.png")))
-    itemlist.append(Item(channel="biblioteca", action="update_biblio", folder=False,
-                         thumbnail=get_thumbnail_path("thumb_biblioteca.png"),
-                         extra="overwrite_everything",
-                         title="   Sobreescribir toda la biblioteca (strm, nfo y json)"))
+
+    if config.get_library_support():
+        itemlist.append(Item(channel=CHANNELNAME, title="Herramientas de biblioteca", action="",
+                             folder=False, thumbnail=get_thumbnail_path("thumb_biblioteca.png")))
+        itemlist.append(Item(channel=CHANNELNAME, action="overwrite_tools", folder=False,
+                             thumbnail=get_thumbnail_path("thumb_biblioteca.png"),
+                             title="   Sobreescribir toda la biblioteca (strm, nfo y json)"))
 
     return itemlist
 
@@ -716,3 +717,42 @@ def channel_status(item, dict_values):
         logger.info("Detalle del error: %s" % traceback.format_exc())
         platformtools.dialog_notification("Error",
                                           "Se ha producido un error al guardar")
+
+
+def overwrite_tools(item):
+    import library_service
+    from core import library
+
+
+    seleccion = platformtools.dialog_yesno("Sobrescribir toda la biblioteca",
+                                           "Esto puede llevar algun tiempo.",
+                                           "¿Desea continuar?")
+    if seleccion == 1:
+        heading = 'Sobrescribiendo biblioteca....'
+        p_dialog = platformtools.dialog_progress_bg('pelisalacarta', heading)
+        p_dialog.update(0, '')
+        show_list = []
+
+        for path, folders, files in filetools.walk(library.TVSHOWS_PATH):
+            show_list.extend([filetools.join(path, f) for f in files if f == "tvshow.nfo"])
+
+        if show_list:
+            t = float(100) / len(show_list)
+
+
+        for i, tvshow_file in enumerate(show_list):
+            head_nfo, serie = library.read_nfo(tvshow_file)
+            path = filetools.dirname(tvshow_file)
+
+            if not serie.active:
+                # si la serie no esta activa descartar
+                continue
+
+            # Eliminamos la carpeta con la serie ...
+            filetools.rmdirtree(path)
+
+            # ... y la volvemos a añadir
+            library_service.update(path, p_dialog, i, t, serie, 3)
+
+
+        p_dialog.close()

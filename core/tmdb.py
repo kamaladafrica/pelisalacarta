@@ -441,7 +441,8 @@ def completar_codigos(item):
         item.infoLabels['tvdb_id'] = ob.get_id()
     if item.infoLabels['tvdb_id']:
         url_scraper = "http://thetvdb.com/index.php?tab=series&id=%s" % item.infoLabels['tvdb_id']
-        item.infoLabels['url_scraper'].append(url_scraper)
+        if url_scraper not in item.infoLabels['url_scraper']:
+            item.infoLabels['url_scraper'].append(url_scraper)
 
 
 

@@ -454,19 +454,7 @@ def update_biblio(item):
 
     # Actualizar las series activas sobreescribiendo
     import library_service
-
-    if item.extra == "overwrite_everything":
-        if config.is_xbmc():
-            seleccion = platformtools.dialog_yesno(config.PLUGIN_NAME,
-                                                   "AVISO: Puede requerir mucho tiempo.",
-                                                   "¿Desea continuar?")
-            if seleccion == 1:
-                library_service.check_for_update(overwrite="everything")
-
-        else:
-            library_service.check_for_update(overwrite="everything")
-    else:
-        library_service.check_for_update(overwrite=True)
+    library_service.check_for_update(overwrite=True)
 
     # Eliminar las carpetas de peliculas que no contengan archivo strm
     for raiz, subcarpetas, ficheros in filetools.walk(library.MOVIES_PATH):
