@@ -73,14 +73,19 @@ def lista (item):
     next_page_url = ''
 
     data = scrapertools.cache_page(item.url)
+    
 
     if item.extra == 'recomendadas':
-        patron = '<a href="(.*?)">\s*<div class="imgss">.*?'
-        patron +='<img src="(.*?)" alt="(.*?)(?:–.*?|\(.*?|&#8211;|") width="120" height="170"\/>.*?'
+        patron = '<a href="(.*?)">.*?'
+        patron +='<div class="imgss">.*?'
+        patron +='<img src="(.*?)" alt="(.*?)(?:–.*?|\(.*?|&#8211;|").*?'
+        patron +='<div class="imdb">.*?'
+        patron +='<\/a>.*?'
+        patron +='<span class="ttps">.*?<\/span>.*?'
         patron +='<span class="ytps">(.*?)<\/span><\/div>'
+        
     else:
         patron = '<div class="imagen">.*?'
-        #patron +='<img src="(.*?)" alt="([^"]+)".*?\/>.*?'
         patron +='<img src="(.*?)" alt="(.*?)(?:–.*?|\(.*?|&#8211;|").*?'
         patron +='<a href="([^"]+)"><(?:span) class="player"><\/span><\/a>.*?'
         patron +='h2>\s*.*?(?:year)">(.*?)<\/span>.*?<\/div>'
@@ -129,15 +134,18 @@ def seccion(item):
     itemlist = []
     duplicado = []
     data = scrapertools.cache_page(item.url)
+
+    if item.extra == 'generos':
+      data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
+
     accion ='lista'
     if item.extra == 'masvistas':
         patron = '<b>\d*<\/b>\s*<a href="(.*?)">(.*?<\/a>\s*<span>.*?<\/span>\s*<i>.*?<\/i><\/li>)'
-        #patron = '<b>\d*<\/b>\s*<a href="(.*?)">(.*?)<\/a>\s*<span>.*?<\/span>\s*<i><\/i><\/li>'
         accion = 'findvideos'
     elif item.extra == 'poraño':
         patron = '<li><a class="ito" HREF="(.*?)">(.*?)<\/a><\/li>'
     else:
-        patron = 'li class="cat-item cat-item-.*?"><a href="(.*?)\/">(.*?<\/a> <i>.*?<\/i>)'
+        patron = '<li class="cat-item cat-item-.*?"><a href="(.*?)" >(.*?)<\/li>'
 
     matches = re.compile(patron,re.DOTALL).findall(data)
 
@@ -162,8 +170,6 @@ def seccion(item):
           title = title+' ('+cantidad[0]+')'
           thumbnail = tgenero[th_title]
           fanart = thumbnail
-                          
-        #if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
 
         if url not in duplicado:
           itemlist.append( Item(channel=item.channel, action=accion , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, contentTitle=contentTitle, infoLabels={'year':year}))
@@ -196,10 +202,6 @@ def get_url(item):
       #patron = "{'label':(.*?),.*?'file':'(.*?)'}"
       
       num_patron = 0
-      # while not matches or num_patron == len(patrones):
-      #   patron = patrones[num_patron]
-      #   matches = re.compile(patron,re.DOTALL).findall(unpacked)
-      #   num_patron = num_patron+1 
       patron = "{'label':(.*?),.*?'file':'(.*?)'}"
       matches = re.compile(patron,re.DOTALL).findall(unpacked)
       if not matches:
@@ -213,7 +215,6 @@ def get_url(item):
         else:
           url = dato_b
           calidad = dato_a
-        #logger.debug(url)
         title = item.contentTitle+' ('+calidad+')'
         itemlist.append( Item(channel=item.channel, action='play' , title=title , url=url, thumbnail=item.thumbnail, plot=item.plot, fanart=item.fanart, contentTitle = item.contentTitle, calidad = calidad))
 
@@ -234,12 +235,7 @@ def getinfo(page_url):
 def findvideos (item):
     logger.info ('peliculasalacarta.channel.doomtv findvideos')
     itemlist =[]
-
- #   info = getinfo(item.url)
- #   item.plot = info[0]
- #   item.thumbnail = info[1]
- #   item.fanart = item.thumbnail
-    itemlist+= get_url(item)
+    itemlist = get_url(item)
     if config.get_library_support() and len(itemlist) > 0 and item.extra !='findvideos' :
         itemlist.append(Item(channel=item.channel, title='[COLOR yellow]Añadir esta pelicula a la biblioteca[/COLOR]', url=item.url,
                              action="add_pelicula_to_library", extra="findvideos", contentTitle = item.contentTitle))
