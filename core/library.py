@@ -353,7 +353,13 @@ def save_library_tvshow(item, episodelist):
 
 
     # Guardar los episodios
+    '''import time
+    start_time = time.time()'''
     insertados, sobreescritos, fallidos = save_library_episodes(path, episodelist, item)
+    '''msg = "Insertados: %d | Sobreescritos: %d | Fallidos: %d | Tiempo: %2.2f segundos" % \
+          (insertados, sobreescritos, fallidos, time.time() - start_time)
+    logger.debug(msg)'''
+
     return insertados, sobreescritos, fallidos
 
 

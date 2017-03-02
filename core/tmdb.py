@@ -439,9 +439,9 @@ def completar_codigos(item):
         from core.tvdb import Tvdb
         ob = Tvdb(imdb_id=item.infoLabels['imdb_id'])
         item.infoLabels['tvdb_id'] = ob.get_id()
-        if item.infoLabels['tvdb_id']:
-            url_scraper = "http://thetvdb.com/index.php?tab=series&id=%s" % item.infoLabels['tvdb_id']
-            item.infoLabels['url_scraper'].append(url_scraper)
+    if item.infoLabels['tvdb_id']:
+        url_scraper = "http://thetvdb.com/index.php?tab=series&id=%s" % item.infoLabels['tvdb_id']
+        item.infoLabels['url_scraper'].append(url_scraper)
 
 
 
@@ -926,7 +926,7 @@ class Tmdb(object):
         return True
 
     def get_list_resultados(self, num_result=20):
-        logger.info("self %s" % str(self))
+        #logger.info("self %s" % str(self))
         # TODO documentar
         res = []
 
@@ -1351,7 +1351,7 @@ class Tmdb(object):
 
             items.extend(self.get_episodio(ret_infoLabels['season'], episodio).items())
 
-        logger.info("ret_infoLabels" % ret_infoLabels)
+        #logger.info("ret_infoLabels" % ret_infoLabels)
 
         for k, v in items:
             if not v:
