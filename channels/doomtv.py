@@ -188,6 +188,7 @@ def unpack(packed):
 def get_url(item):
     logger.info('peliculasalacarta.channel.doomtv get_url')
     itemlist=[]
+    duplicado =[]
     patrones =["{'label':(.*?),.*?'file':'(.*?)'}","{file:'(.*?redirector.*?),label:'(.*?)'}"]
     data = httptools.downloadpage(item.url, headers=headers, cookies=False).data
     
@@ -216,7 +217,9 @@ def get_url(item):
           url = dato_b
           calidad = dato_a
         title = item.contentTitle+' ('+calidad+')'
-        itemlist.append( Item(channel=item.channel, action='play' , title=title , url=url, thumbnail=item.thumbnail, plot=item.plot, fanart=item.fanart, contentTitle = item.contentTitle, calidad = calidad))
+        if url not in duplicado:
+          itemlist.append( Item(channel=item.channel, action='play' , title=title , url=url, thumbnail=item.thumbnail, plot=item.plot, fanart=item.fanart, contentTitle = item.contentTitle, calidad = calidad))
+          duplicado.append(url)
 
       return itemlist
 
