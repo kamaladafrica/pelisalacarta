@@ -350,11 +350,12 @@ def set_context_commands(item, parent_item):
     # Opciones segun criterios, solo si el item no es un tag (etiqueta), ni es "Añadir a la biblioteca", etc...
     if item.action and item.action not in ["add_pelicula_to_library", "add_serie_to_library", "buscartrailer"]:
         # Mostrar informacion: si el item tiene plot suponemos q es una serie, temporada, capitulo o pelicula
-        if item.infoLabels['plot']:
+        if item.infoLabels['plot'] and not item.contentType:
             context_commands.append(("Información", "XBMC.Action(Info)"))
 
         # ExtendedInfo: Si esta instalado el addon y se cumplen una serie de condiciones
-        if xbmc.getCondVisibility('System.HasAddon(script.extendedinfo)') and config.get_setting("extended_info") == "true":
+        if xbmc.getCondVisibility('System.HasAddon(script.extendedinfo)') \
+                and config.get_setting("extended_info") == "true":
             if item.contentType == "episode" and item.contentEpisodeNumber and item.contentSeason \
                     and (item.infoLabels['tmdb_id'] or item.contentSerieName):
                 param = "tvshow_id =%s, tvshow=%s, season=%s, episode=%s" \
@@ -403,7 +404,8 @@ def set_context_commands(item, parent_item):
                                     item.action in ["update_biblio"]) and not parent_item.channel == "favoritos"):
             context_commands.append((config.get_localized_string(30155), "XBMC.RunPlugin(%s?%s)" %
                                      (sys.argv[0], item.clone(channel="favoritos", action="addFavourite",
-                                                              from_channel=item.channel, from_action=item.action).tourl())))
+                                                              from_channel=item.channel,
+                                                              from_action=item.action).tourl())))
 
         if item.channel != "biblioteca":
             # Añadir Serie a la biblioteca
@@ -422,26 +424,30 @@ def set_context_commands(item, parent_item):
             if item.contentType == "movie" and item.contentTitle:
                 context_commands.append(("Descargar Pelicula", "XBMC.RunPlugin(%s?%s)" %
                                          (sys.argv[0], item.clone(channel="descargas", action="save_download",
-                                                            from_channel=item.channel, from_action=item.action).tourl())))
+                                                                  from_channel=item.channel, from_action=item.action)
+                                          .tourl())))
 
             elif item.contentSerieName:
                 # Descargar serie
                 if item.contentType == "tvshow":
                     context_commands.append(("Descargar Serie", "XBMC.RunPlugin(%s?%s)" %
                                              (sys.argv[0], item.clone(channel="descargas", action="save_download",
-                                                                from_channel=item.channel, from_action=item.action).tourl())))
+                                                                      from_channel=item.channel,
+                                                                      from_action=item.action).tourl())))
 
                 # Descargar episodio
                 if item.contentType == "episode":
                     context_commands.append(("Descargar Episodio", "XBMC.RunPlugin(%s?%s)" %
                                              (sys.argv[0], item.clone(channel="descargas", action="save_download",
-                                                                 from_channel=item.channel, from_action=item.action).tourl())))
+                                                                      from_channel=item.channel,
+                                                                      from_action=item.action).tourl())))
 
                 # Descargar temporada
                 if item.contentType == "season":
                     context_commands.append(("Descargar Temporada", "XBMC.RunPlugin(%s?%s)" %
                                              (sys.argv[0], item.clone(channel="descargas", action="save_download",
-                                                                from_channel=item.channel, from_action=item.action).tourl())))
+                                                                      from_channel=item.channel,
+                                                                      from_action=item.action).tourl())))
 
         # Abrir configuración
         if parent_item.channel not in ["configuracion", "novedades", "buscador"]:
@@ -455,7 +461,6 @@ def set_context_commands(item, parent_item):
         context_commands.append(("Super Favourites Menu",
                                  "XBMC.RunScript(special://home/addons/plugin.program.super.favourites/LaunchSFMenu.py)"))
 
-    #context_commands.append((item.contentType, "XBMC.Action(Info)")) # For debug
     return sorted(context_commands, key=lambda comand: comand[0])
 
 
@@ -465,7 +470,7 @@ def is_playing():
 
 def play_video(item, strm=False):
     logger.info("pelisalacarta.platformcode.platformtools play_video")
-    #logger.debug(item.tostring('\n'))
+    # logger.debug(item.tostring('\n'))
 
     if item.channel == 'descargas':
         logger.info("Reproducir video local: %s [%s]" % (item.title, item.url))
