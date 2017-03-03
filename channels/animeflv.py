@@ -249,32 +249,34 @@ def findvideos(item):
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|-\s", "", data)
     list_videos = scrapertools.find_multiple_matches(data, 'video\[\d\]\s=\s\'<iframe.+?src="([^"]+)"')
-
-    logger.info("data=%s " % list_videos)
+    list_videos.extend(scrapertools.find_multiple_matches(data, 'href="http://ouo.io/s/y0d65LCP\?s=([^"]+)"'))
+    # logger.info("data=%s " % list_videos)
 
     aux_url = []
     for e in list_videos:
         if e.startswith("https://s3.animeflv.com/embed.php?server="):
             server = scrapertools.find_single_match(e, 'server=(.*?)&')
-            e = e.replace("embed", "check")
-            data = httptools.downloadpage(e).data
-            logger.info("datito %s" % data)
+            e = e.replace("embed", "check").replace("https", "http")
+            data = httptools.downloadpage(e).data.replace("\\", "")
             if '{"error": "Por favor intenta de nuevo en unos segundos", "sleep": 3}' in data:
                 import time
-                time.sleep(5)
-                data = httptools.downloadpage(e).data
-                logger.info("datito %s" % data)
+                time.sleep(3)
+                data = httptools.downloadpage(e).data.replace("\\", "")
 
+            video_urls = []
             if server == "gdrive":
-                url = ""
-                # url = scrapertools.find_multiple_matches(data, '"label":(.*?),.+?"file":"(.*?)"')
-                # # la calidad más baja tiene que ir primero
-                # url = sorted(url, key=lambda k: k[0])
+                data = jsontools.load_json(data)
+                for s in data.get("sources", []):
+                    video_urls.append([s["label"], s["type"], s["file"]])
+
+                if video_urls:
+                    video_urls.sort(key=lambda v: int(v[0]))
+                    itemlist.append(item.clone(title="Enlace encontrado en %s" % server, action="play",
+                                               video_urls=video_urls))
             else:
                 url = scrapertools.find_single_match(data, '"file":"([^"]+)"')
-                url = url.replace("\/", "/")
-
-            itemlist.append(item.clone(title="Enlace encontrado en %s" % server, action="play", url=url))
+                if url:
+                    itemlist.append(item.clone(title="Enlace encontrado en %s" % server, url=url, action="play"))
 
         else:
             aux_url.append(e)
@@ -287,3 +289,15 @@ def findvideos(item):
         videoitem.thumbnail = item.thumbnail
 
     return itemlist
+
+
+def play(item):
+    logger.info()
+    itemlist = []
+    if item.video_urls:
+        for it in item.video_urls:
+            title = ".%s %sp [directo]" % (it[1].replace("video/", ""), it[0])
+            itemlist.append([title, it[2]])
+        return itemlist
+    else:
+        return [item]
