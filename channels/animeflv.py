@@ -255,22 +255,27 @@ def findvideos(item):
     aux_url = []
     for e in list_videos:
         if e.startswith("https://s3.animeflv.com/embed.php?server="):
-            pass
-            # server = scrapertools.find_single_match(e, 'server=(.*?)&')
-            # e = e.replace("embed", "check")
-            # data = httptools.downloadpage(e).data
-            # logger.info("datito %s" % data)
-            # if '{"error": "Por favor intenta de nuevo en unos segundos", "sleep": 3}' in data:
-            #     import time
-            #     time.sleep(5)
-            #     data = httptools.downloadpage(e).data
-            #     logger.info("datito %s" % data)
-            #
-            # url = scrapertools.find_single_match(data, '"file":"([^"]+)"')
-            # url = url.replace("\/", "/")
-            #
-            # itemlist.append(item.clone(title="Enlace encontrado en %s" % server, url=url))
-            #
+            server = scrapertools.find_single_match(e, 'server=(.*?)&')
+            e = e.replace("embed", "check")
+            data = httptools.downloadpage(e).data
+            logger.info("datito %s" % data)
+            if '{"error": "Por favor intenta de nuevo en unos segundos", "sleep": 3}' in data:
+                import time
+                time.sleep(5)
+                data = httptools.downloadpage(e).data
+                logger.info("datito %s" % data)
+
+            if server == "gdrive":
+                url = ""
+                # url = scrapertools.find_multiple_matches(data, '"label":(.*?),.+?"file":"(.*?)"')
+                # # la calidad más baja tiene que ir primero
+                # url = sorted(url, key=lambda k: k[0])
+            else:
+                url = scrapertools.find_single_match(data, '"file":"([^"]+)"')
+                url = url.replace("\/", "/")
+
+            itemlist.append(item.clone(title="Enlace encontrado en %s" % server, action="play", url=url))
+
         else:
             aux_url.append(e)
 
