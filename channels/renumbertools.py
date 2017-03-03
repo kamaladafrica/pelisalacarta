@@ -306,7 +306,7 @@ def write_data(channel, show, data):
         dict_series[tvshow] = dict_renumerate
     else:
         # hemos borrado todos los elementos, por lo que se borra la serie del fichero
-        del dict_series[tvshow]
+        dict_series.pop(tvshow, None)
 
     fname, json_data = update_json_data(dict_series, channel)
     result = filetools.write(fname, json_data)
