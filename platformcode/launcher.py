@@ -282,7 +282,7 @@ def run():
                     # TODO revisar 'personal.py' porque no tiene función search y daría problemas
                     itemlist = channel.search(item, tecleado)
                 else:
-                    itemlist = []
+                    return
 
                 platformtools.render_items(itemlist, item)
 
