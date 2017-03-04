@@ -317,7 +317,10 @@ def is_server_enabled(server):
 def get_server_parameters(server):
     server=scrapertools.find_single_match(server,'([^\.]+)')
     try:
-      JSONFile =  xml2dict(os.path.join(config.get_runtime_path(),"servers", server + ".xml"))["server"]
+      if os.path.isfile(os.path.join(config.get_runtime_path(),"servers", server + ".xml")):  
+        JSONFile =  xml2dict(os.path.join(config.get_runtime_path(),"servers", server + ".xml"))["server"]
+      elif os.path.isfile(os.path.join(config.get_runtime_path(),"servers", "debriders", server + ".xml")):  
+        JSONFile =  xml2dict(os.path.join(config.get_runtime_path(),"servers", "debriders", server + ".xml"))["server"]
       if type(JSONFile["premium"]) == dict: JSONFile["premium"]=JSONFile["premium"]["value"]
       if JSONFile["premium"] == "": JSONFile["premium"]=[]
       if type(JSONFile["premium"]) == str and not JSONFile["premium"] == "": JSONFile["premium"]=[JSONFile["premium"]]
