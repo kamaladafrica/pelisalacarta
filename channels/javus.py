@@ -12,22 +12,18 @@ from core import config
 from core import scrapertools
 from core.item import Item
 from core import servertools
-
-DEBUG = config.get_setting("debug")
+from core import httptools
 
 host='http://javus.net/'
-
-def isGeneric():
-    return True
 
 def mainlist(item):
     
     if item.url=="":
         item.url = host
     
-    logger.info("pelisalacarta.channels.javus mainlist")
+    logger.info()
     itemlist = []
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
     patron ='<a href="([^"]+)" title="([^"]+)" rel="nofollow" class="post-image post-image-left".*?\s*<div class="featured-thumbnail"><img width="203" height="150" src="([^"]+)" class="attachment-featured size-featured wp-post-image" alt="" title="" \/><\/div>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     
@@ -37,7 +33,6 @@ def mainlist(item):
        thumbnail = scrapedthumbnail
        fanart = ''
         
-       if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
        itemlist.append( Item(channel= item.channel, action="findvideos" ,title=title , url=url, thumbnail=thumbnail, fanart=fanart ))
         
 #Paginacion
@@ -52,7 +47,7 @@ def mainlist(item):
 
     
 def search(item,texto):
-    logger.info("metaserie.py search")
+    logger.info()
     texto = texto.replace(" ","+")
     item.url = item.url+texto
 

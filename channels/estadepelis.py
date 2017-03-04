@@ -11,6 +11,7 @@ from core import config
 from core import scrapertools
 from core.item import Item
 from core import servertools
+from core import httptools
 
 host = 'http://www.estadepelis.com/'
 headers = [['User-Agent', 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:45.0) Gecko/20100101 Firefox/45.0'],
@@ -49,7 +50,7 @@ tgenero = {"acción":"https://s32.postimg.org/4hp7gwh9x/accion.png",
 
 
 def mainlist(item):
-	logger.info("pelisalacarta.channels.verpeliculasnuevas mainlist")
+	logger.info()
 
 	itemlist = []
 
@@ -65,7 +66,7 @@ def mainlist(item):
 
 
 def menupeliculas(item):
-	logger.info("pelisalacarta.channels.verpeliculasnuevas mainlist")
+	logger.info()
 
 	itemlist = []
 
@@ -80,11 +81,10 @@ def menupeliculas(item):
 
 def lista(item):    
 
-	logger.info ('peliculasalacarta.channel.estadepelis lista')
+	logger.info()
 
 	itemlist = []
-	data = scrapertools.cache_page(item.url)
-	#logger.debug(data)
+	data = httptools.downloadpage(item.url).data
 	contentSerieName = ''
 
 	patron = '<img src="([^"]+)" alt="([^"]+)" width="100%" height="100%"\/>\s*<a href=([^>]+)><span class="player"><\/span><\/a>'
@@ -107,7 +107,6 @@ def lista(item):
 	    	contentSerieName = scrapedtitle
 
 	    
-	    #if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
 	    itemlist.append( Item(channel=item.channel, action=accion , title=title , url=url, thumbnail=thumbnail, contentTitle = scrapedtitle, extra = item.extra, contentSerieName=contentSerieName))
 	   
 	# #Paginacion
@@ -123,16 +122,14 @@ def lista(item):
 
 def generos(item):    
 
-	logger.info ('peliculasalacarta.channel.estadepelis lista')
+	logger.info()
 
 	itemlist = []
 	norep = []
-	data = scrapertools.cache_page(item.url)
-	#logger.debug(data)
+	data = httptools.downloadpage(item.url).data
 
 	patron = '<li class="cat-item cat-item-.*?"><a href="([^"]+)">([^<]+)<\/a>'
 	matches = re.compile(patron,re.DOTALL).findall(data)
-	logger.debug(matches)
 
 	for scrapedurl, scrapedtitle in matches:
 
@@ -153,10 +150,9 @@ def generos(item):
 	return itemlist
 
 def temporadas(item):
-    logger.info("pelisalacarta.channels.estadepelis temporadas")
+    logger.info()
     itemlist = []
-    data = scrapertools.cache_page(item.url)
-    logger.debug(data)
+    data = httptools.downloadpage(item.url).data
     patron = '<li class="has-sub"><a href="([^"]+)"><span><b class="icon-bars"><\/b> ([^<]+)<\/span><\/a>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     temp = 1
@@ -174,18 +170,15 @@ def temporadas(item):
 
 def episodios(item):
     
-    logger.debug("pelisalacarta.channels.estadepelis episodios")
+    logger.info()
     itemlist = []
-    data = scrapertools.cache_page(item.url)
-    logger.info(item.contentSeasonNumber)
+    data = httptools.downloadpage(item.url).data
     temp = 'temporada-'+str(item.contentSeasonNumber)
-    logger.info(temp)
     patron = '<li>.\s*<a href="(.*?)">.\s*<span.*?datex">([^<]+)<'
         
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl, scrapedepisode in matches:
         url = host+scrapedurl
-        logger.info()
         title = item.contentSerieName+' '+scrapedepisode
         thumbnail = item.thumbnail
         fanart=''
@@ -196,18 +189,15 @@ def episodios(item):
 
 def episodiosxtemp(item):
     
-    logger.debug("pelisalacarta.channels.estadepelis episodiosxtemp")
+    logger.info()
     itemlist = []
-    data = scrapertools.cache_page(item.url)
-    logger.info(item.contentSeasonNumber)
+    data = httptools.downloadpage(item.url).data
     temp = 'temporada-'+str(item.contentSeasonNumber)
-    logger.info(temp)
     patron = '<li>.\s*<a href="(.*?-'+temp+'.*?)">.\s*<span.*?datex">([^<]+)<'
         
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl, scrapedepisode in matches:
         url = host+scrapedurl
-        logger.info()
         title = item.contentSerieName+' '+scrapedepisode
         thumbnail = item.thumbnail
         fanart=''
@@ -218,7 +208,7 @@ def episodiosxtemp(item):
 
 def dec(encurl):
 
-	logger.info ('peliculasalacarta.channel.estadepelis dec')
+	logger.info()
 	url=''
 	encurl= encurl.translate(None, "',(,),;")
 	encurl= encurl.split('+')
@@ -232,11 +222,11 @@ def dec(encurl):
 
 
 def findvideos(item):
-	logger.info ('peliculasalacarta.channel.estadepelis findvideos')
+	logger.info()
 	
 	itemlist =[]
 
-	data = scrapertools.cache_page(item.url)
+	data = httptools.downloadpage(item.url).data
 	patron = 'function play.*?servidores.*?attr.*?src.*?\+([^;]+);'
 	matches = re.compile(patron,re.DOTALL).findall(data)
 	title = item.title
@@ -282,9 +272,10 @@ def findvideos(item):
 
 
 def play(item):
-     logger.info('peliculasalacarta.channel.estadepelis play')
+     logger.info()
      itemlist = []
-     data = scrapertools.anti_cloudflare(item.url, host=host, headers=headers)
+     #data = scrapertools.anti_cloudflare(item.url, host=host, headers=headers)
+     data = httptools.downloadpage(item.url, add_referer=True).data
           
      itemlist = servertools.find_video_items(data=data)
 
@@ -296,7 +287,7 @@ def play(item):
 
 
 def newest(categoria):
-    logger.info("pelisalacarta.channels.estadepelis newest")
+    logger.info()
     itemlist = []
     item = Item()
     #categoria='peliculas'

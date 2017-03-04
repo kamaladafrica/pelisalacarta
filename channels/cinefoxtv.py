@@ -16,7 +16,6 @@ from core import tmdb
 
 
 
-DEBUG = config.get_setting("debug")
 host = 'http://cinefoxtv.net/'
 headers = [['User-Agent', 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:45.0) Gecko/20100101 Firefox/45.0'],
           ['Referer', host]]
@@ -51,7 +50,7 @@ tgenero = {"Comedia":"https://s32.postimg.org/q7g2qs90l/comedia.png",
                "Infantil":"https://s32.postimg.org/i53zwwgsl/infantil.png"}
 
 def mainlist(item):
-    logger.info("pelisalacarta.channels.cinefoxtv mainlist")
+    logger.info()
 
     itemlist = []
     
@@ -67,13 +66,13 @@ def mainlist(item):
 
 
 def lista (item):
-    logger.info ('peliculasalacarta.channel.cinefoxtv lista')
+    logger.info ()
     itemlist =[]
     duplicado = []
     max_items = 24
     next_page_url = ''
 
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
     if item.title == 'Todas':
       data = scrapertools.find_single_match(data,'<h3>Ver Últimas Peliculas Completa Online Gratis Agregadas.*?clearall')
@@ -103,8 +102,6 @@ def lista (item):
       fanart =''
       plot= ''
 
-      if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-
       if url not in duplicado:
         itemlist.append( Item(channel=item.channel, action='findvideos' , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, contentTitle = contentTitle, infoLabels ={'year':scrapedyear}))
         duplicado.append(url)
@@ -115,11 +112,11 @@ def lista (item):
     return itemlist
 
 def generos (item):
-    logger.info ('peliculasalacarta.channel.cinefoxtv generos')
+    logger.info ()
     
     itemlist = []
 
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
     patron = '<li><a href="([^"]+)"><i class="fa fa-caret-right"><\/i> <strong>Películas de (.*?)<\/strong><\/a><\/li>'
     matches = re.compile(patron,re.DOTALL).findall(data)
 
@@ -133,14 +130,13 @@ def generos (item):
         fanart =''
         plot= ''
                 
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
         if title != 'Series':
             itemlist.append( Item(channel=item.channel, action='lista' , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart))
     return itemlist
 
 def getinfo(page_url):
     
-    logger.info ('pelisalacarta.channel.cinefoxtv getinfo')
+    logger.info ()
     data = httptools.downloadpage(page_url).data
     plot = scrapertools.find_single_match(data,'<\/em>\.(?:\s*|.)(.*?)\s*<\/p>')
     info = plot
@@ -148,7 +144,7 @@ def getinfo(page_url):
     return info
 
 def findvideos(item):
-    logger.info ('peliculasalacarta.channel.cinefoxtv findvideos')
+    logger.info ()
     itemlist =[]
     info = getinfo(item.url)
     data = httptools.downloadpage(item.url, headers = headers).data
@@ -172,14 +168,14 @@ def findvideos(item):
     return itemlist
 
 def search(item,texto):
-    logger.info("cinefoxtv.py search")
+    logger.info()
     texto = texto.replace(" ","-")
     item.url = item.url+texto+'/'
     if texto!='':
        return lista(item)
 
 def newest(categoria):
-    logger.info("pelisalacarta.channels.cinefoxtv newest")
+    logger.info()
     itemlist = []
     item = Item()
     #categoria='peliculas'

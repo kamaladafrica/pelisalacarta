@@ -11,9 +11,8 @@ from core import config
 from core import scrapertools
 from core.item import Item
 from core import servertools
+from core import httptools
 
-
-DEBUG = config.get_setting("debug")
 host ="http://www.playpornx.net/list-movies/"
 
 def mainlist (item):
@@ -24,13 +23,11 @@ def mainlist (item):
     return itemlist
 
 def lista (item):
-    logger.info ('peliculasalacarta.channel.playpornx lista')
+    logger.info()
     
     itemlist = []
     if item.url =='': item.url=host
-    #data = scrapertools.cache_page(item.url)
-    data = scrapertools.downloadpageGzip(item.url)
-    logger.debug(data)
+    data = httptools.downloadpage(item.url).data
     patron = '<a class="clip-link" title="([^"]+)"  href="([^"]+)">\s*<span class="clip">\s*<img  alt=".*?" width="190" height="266" src="([^"]+)" data-qazy="true" \/><span class="vertical-align"><\/span>\s*<\/span>'
     matches = re.compile(patron,re.DOTALL).findall(data)
 
@@ -40,14 +37,12 @@ def lista (item):
         thumbnail = scrapedthumbnail
         title = scrapedtitle
                 
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
         itemlist.append( Item(channel=item.channel, action='findvideos' , title=title , url=url, thumbnail=thumbnail))
        
 # #Paginacion
 
     if itemlist !=[]:
         actual_page_url = item.url
-        #<link rel="next" href="http://playpornx.net/search/monster/page/3" />
         next_page = scrapertools.find_single_match(data,'rel="next" href="([^"]+)"')
         import inspect
         if next_page !='':
@@ -55,7 +50,7 @@ def lista (item):
     return itemlist
 
 def search (item,texto):
-    logger.info("playpornx.py search")
+    logger.info()
     texto = texto.replace(" ","+")
     item.url = item.url+texto
 

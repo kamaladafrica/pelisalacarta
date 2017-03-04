@@ -12,38 +12,29 @@ from core import config
 from core import scrapertools
 from core.item import Item
 from core import servertools
-#from core import httptools
+from core import httptools
 
-
-DEBUG = config.get_setting("debug")
 
 host='http://www.xn--hentaienespaol-1nb.net/'
 headers = [['User-Agent', 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:45.0) Gecko/20100101 Firefox/45.0'],
           ['Referer', host]]
 
 def mainlist(item):
-    logger.info("pelisalacarta.channels.hentaienespanol mainlist")
+    logger.info()
 
     itemlist = []
-    
 
     itemlist.append( Item(channel=item.channel, title="Todos", action="todas", url=host,thumbnail='', fanart=''))
     
     itemlist.append( Item(channel=item.channel, title="Sin Censura", action="todas", url=host+'hentai/sin-censura/', thumbnail='', fanart=''))
-
-    # itemlist.append( Item(channel=item.channel, title="Estrenos", action="todas", url=host+'category/estreno/', thumbnail='', fanart=''))
-    
-    # itemlist.append( Item(channel=item.channel, title="Categorias", action="categorias", url=host, thumbnail='', fanart=''))
-
    
     return itemlist
 
 def todas(item):
 
-    logger.info("pelisalacarta.channels.hentaienespanol todas")
+    logger.info()
     itemlist = []
-    data = scrapertools.cache_page(item.url)
-    logger.debug (data)
+    data = httptools.downloadpage(item.url).data
     patron ='<div class="box-peli" id="post-.*?">.<h2 class="title">.<a href="([^"]+)">([^<]+)<\/a>.*?'
     patron+='height="170px" src="([^"]+)'
            
@@ -53,7 +44,6 @@ def todas(item):
         title = scrapedtitle#.decode('utf-8')
         thumbnail = scrapedthumbnail
         fanart = ''
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
         itemlist.append( Item(channel=item.channel, action="findvideos" ,title=title , url=url, thumbnail=thumbnail, fanart=fanart ))
             
 #Paginacion
@@ -66,7 +56,7 @@ def todas(item):
 
     
 def search(item,texto):
-    logger.info("hentaienespanol.py search")
+    logger.info()
     texto = texto.replace(" ","+")
     item.url = item.url+texto
 
@@ -76,12 +66,11 @@ def search(item,texto):
         return []
         
 def findvideos(item):
-    logger.info ('peliculasalacarta.channel.estadepelis findvideos')
+    logger.info()
     
     itemlist =[]
 
-    data = scrapertools.cache_page(item.url)
-    logger.debug(data)
+    data = httptools.downloadpage(item.url).data
     patron = '<li.*?<a href="([^"]+)" target="_blank"><i class="icon-metro online"><\/i><span>Ver.*?<\/span><\/a> <\/li>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl in matches:
@@ -96,12 +85,8 @@ def play(item):
      logger.info()
      itemlist = []
      item.url = item.url.replace(' ','%20')
-     #data = scrapertools.find_single_match(item.url,'<iframe src="([^"]+)" scrolling="no" frameborder="0"')
-     #data = httptools.downloadpage(item.url, headers = headers)
-     data = scrapertools.anti_cloudflare(item.url, host=host, headers=headers)
-     logger.debug(data)
+     data = httptools.downloadpage(item.url, add_referer = True).data
      url = scrapertools.find_single_match(data,'<iframe.*?src="([^"]+)".*?frameborder="0"')
      itemlist = servertools.find_video_items(data=data)
-     logger.debug(data)
 
      return itemlist  

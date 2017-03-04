@@ -15,14 +15,12 @@ from core import servertools
 from core import httptools
 
 
-DEBUG = config.get_setting("debug")
-
 host='http://www.18hentaionline.eu/'
 headers = [['User-Agent', 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:45.0) Gecko/20100101 Firefox/45.0'],
           ['Referer', host]]
 
 def mainlist(item):
-    logger.info("pelisalacarta.channels.18hentai mainlist")
+    logger.info()
 
     itemlist = []
     
@@ -53,7 +51,6 @@ def todas(item):
         title = scrapedtitle.decode('utf-8')
         thumbnail = scrapedthumbnail
         fanart = ''
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
         itemlist.append( Item(channel=item.channel, action="episodios" ,title=title , url=url, thumbnail=thumbnail, fanart=fanart ))
             
 #Paginacion
@@ -66,7 +63,7 @@ def todas(item):
 
     
 def search(item,texto):
-    logger.info("x18hentai.py search")
+    logger.info()
     texto = texto.replace(" ","+")
     item.url = item.url+texto
 
@@ -86,7 +83,6 @@ def categorias(item):
     for scrapedurl, scrapedtitle in matches:
 	url = scrapedurl
 	title = scrapedtitle
-	if (DEBUG): logger.info("title=["+title+"], url=["+url+"])")
 	itemlist.append( Item(channel=item.channel, action="todas" , title=title, fulltitle=item.fulltitle, url=url))
         
     return itemlist            
@@ -95,7 +91,7 @@ def categorias(item):
 
 def episodios(item):
     censura = {'Si':'con censura', 'No':'sin censura'}
-    logger.info("pelisalacarta.channels.x18hentai episodios")
+    logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url, headers = headers).data
     patron ='<td>([^<]+)<\/td>.<td>([^<]+)<\/td>.<td>([^<]+)<\/td>.<td>([^<]+)<\/td>.<td><a href="([^"]+)".*?>Ver Capitulo<\/a><\/td>' 
@@ -109,18 +105,9 @@ def episodios(item):
 	thumbnail = ''
 	plot = ''
 	fanart=''
-	if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
 	itemlist.append( Item(channel=item.channel, action="findvideos" , title=title, fulltitle=item.fulltitle, url=url, thumbnail=item.thumbnail, plot=plot))
         
     return itemlist
-
-# def findvideos(item):
-#     logger.info ("pelisalacarta.channels.qserie findvideos")
-#     itemlist=[]
-#     data = httptools.downloadpage(item.url, headers = headers).data
-#     itemlist.extend(servertools.find_video_items(data=data))
-
-#     return itemlist
                              
     
 

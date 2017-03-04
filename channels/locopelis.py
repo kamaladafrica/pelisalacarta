@@ -16,16 +16,13 @@ from core import tmdb
 from core import httptools
 
 
-
-DEBUG = config.get_setting("debug")
-
 host='http://www.locopelis.com/'
 
 audio = {'Latino':'[COLOR limegreen]LATINO[/COLOR]','Español':'[COLOR yellow]ESPAÑOL[/COLOR]', 'Sub Español':'[COLOR red]SUB ESPAÑOL[/COLOR]'}
 
 
 def mainlist(item):
-    logger.info("pelisalacarta.channels.locopelis mainlist")
+    logger.info()
 
     itemlist = []
     
@@ -50,7 +47,7 @@ def mainlist(item):
     return itemlist
 
 def todas(item):
-    logger.info("pelisalacarta.channels.locopelis todas")
+    logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
@@ -82,7 +79,6 @@ def todas(item):
         contentTitle = scrapedtitle
         fanart = 'https://s31.postimg.org/5worjw2nv/locopelis.png'
         
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
         itemlist.append( Item(channel=item.channel, action="findvideos" ,title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, extra=idioma, contentTitle = contentTitle, infoLabels={'year':year}))
     tmdb.set_infoLabels_itemlist(itemlist, seekTmdb=True)
 #Paginacion
@@ -132,7 +128,7 @@ def generos(item):
                "vampiros":"https://s32.postimg.org/wt6f483j9/vampiros.png",
                "zombies":"https://s32.postimg.org/atd2jfw6t/zombies.png"}
 
-    logger.info("pelisalacarta.channels.locopelis episodios")
+    logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
     patron ='<li><a title.*?href="http:\/\/www.locopelis.com\/categoria\/([^"]+)">([^<]+)<\/a><\/li>.*?' 
@@ -149,15 +145,14 @@ def generos(item):
            thumbnail= ''
            fanart = ''
 	plot = ''
-	if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
 	itemlist.append( Item(channel=item.channel, action="todas" , title=title.lower(), fulltitle=item.fulltitle, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart))
         
     return itemlist
 
 def ultimas(item):
-    logger.info("pelisalacarta.channels.locopelis masvistas")
+    logger.info()
     itemlist = []
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
     data = data.decode('cp1252')
     realplot=''
@@ -171,7 +166,6 @@ def ultimas(item):
         plot = ''
         title = scrapedtitle
         fanart = 'https://s31.postimg.org/3ua9kwg23/ultimas.png'
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
         itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart))
 
     return itemlist
@@ -208,9 +202,9 @@ def letras(item):
     'y':'https://s32.postimg.org/um7j3zg85/image.png',
     'z':'https://s32.postimg.org/jb4vfm9d1/image.png'}
 
-    logger.info("pelisalacarta.channels.locopelis letras")
+    logger.info()
     itemlist = []
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
     data = data.decode('cp1252')
     data = scrapertools.find_single_match(data, '<\/form><\/table><\/div>.*?<\/ul>')
@@ -227,13 +221,12 @@ def letras(item):
         thumbnail = thumbletras[scrapedtitle.lower()]
       else:
         thumbnail = ''
-      if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
       itemlist.append( Item(channel=item.channel, action='todas', title=title , url=url, thumbnail=thumbnail, plot=plot))
 
     return itemlist
     
 def search(item,texto):
-    logger.info("locopelis.py search")
+    logger.info()
     texto = texto.replace(" ","+")
     item.url = item.url+texto
 
@@ -244,9 +237,9 @@ def search(item,texto):
                                  
     
 def findvideos(item):
-    logger.info ("pelisalacarta.channels.locopelis findvideos")
+    logger.info()
     itemlist=[]
-    data=scrapertools.cache_page(item.url)
+    data=httptools.downloadpage(item.url).data
      
     from core import servertools
     itemlist.extend(servertools.find_video_items(data=data))
@@ -262,7 +255,7 @@ def findvideos(item):
     return itemlist
 
 def play(item):
-    logger.info("pelisalacarta.channels.locopelis play url="+item.url)
+    logger.info()
     itemlist =[]
     from core import servertools
     itemlist.extend(servertools.find_video_items(data=item.url))
@@ -276,7 +269,7 @@ def play(item):
     return itemlist
 
 def newest(categoria):
-    logger.info("pelisalacarta.channels.locopelis newest")
+    logger.info()
     itemlist = []
     item = Item()
     #categoria='peliculas'

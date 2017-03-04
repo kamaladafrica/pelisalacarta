@@ -14,7 +14,6 @@ from core.item import Item
 from core import servertools
 from core import tmdb
 
-DEBUG = config.get_setting("debug")
 host = 'http://doomtv.net/'
 headers = [['User-Agent', 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:45.0) Gecko/20100101 Firefox/45.0'],
           ['Referer', host]]
@@ -47,7 +46,7 @@ tgenero = {"Comedia":"https://s32.postimg.org/q7g2qs90l/comedia.png",
                "LGBT":"https://s16.postimg.org/fssbi4nlh/otros.png"}
 
 def mainlist(item):
-    logger.info("pelisalacarta.channels.doomtv mainlist")
+    logger.info()
 
     itemlist = []
     
@@ -66,13 +65,13 @@ def mainlist(item):
     return itemlist
 
 def lista (item):
-    logger.info ('pelisalacarta.channel.doomtv lista')
+    logger.info()
 	
     itemlist = []
     max_items = 20
     next_page_url = ''
 
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
     
 
     if item.extra == 'recomendadas':
@@ -117,7 +116,6 @@ def lista (item):
         fanart =''
         plot= ''
                        
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
         if 'serie' not in url:
             itemlist.append( Item(channel=item.channel, action='findvideos' , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, contentTitle = title, infoLabels={'year':year}))
     
@@ -129,11 +127,11 @@ def lista (item):
 
 
 def seccion(item):
-    logger.info ('peliculasalacarta.channel.doomtv top')
+    logger.info()
     
     itemlist = []
     duplicado = []
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
 
     if item.extra == 'generos':
       data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
@@ -186,7 +184,7 @@ def unpack(packed):
     return p
 
 def get_url(item):
-    logger.info('peliculasalacarta.channel.doomtv get_url')
+    logger.info()
     itemlist=[]
     duplicado =[]
     patrones =["{'label':(.*?),.*?'file':'(.*?)'}","{file:'(.*?redirector.*?),label:'(.*?)'}"]
@@ -199,9 +197,6 @@ def get_url(item):
 
     if packed:
       unpacked=unpack(packed)
-      logger.debug('desempacado '+unpacked)
-      #patron = "{'label':(.*?),.*?'file':'(.*?)'}"
-      
       num_patron = 0
       patron = "{'label':(.*?),.*?'file':'(.*?)'}"
       matches = re.compile(patron,re.DOTALL).findall(unpacked)
@@ -226,7 +221,7 @@ def get_url(item):
 
 def getinfo(page_url):
     info =()
-    logger.info ('pelisalacarta.channel.doomtv getinfo')
+    logger.info()
     data = httptools.downloadpage(page_url).data
     thumbnail = scrapertools.find_single_match(data,'<div class="cover" style="background-image: url\((.*?)\);')
     plot = scrapertools.find_single_match(data,'<h2>Synopsis<\/h2>\s*<p>(.*?)<\/p>')
@@ -236,7 +231,7 @@ def getinfo(page_url):
 
 
 def findvideos (item):
-    logger.info ('peliculasalacarta.channel.doomtv findvideos')
+    logger.info()
     itemlist =[]
     itemlist = get_url(item)
     if config.get_library_support() and len(itemlist) > 0 and item.extra !='findvideos' :
@@ -245,14 +240,14 @@ def findvideos (item):
     return itemlist
 
 def search(item,texto):
-    logger.info("doomtv.py search")
+    logger.info()
     texto = texto.replace(" ","+")
     item.url = item.url+texto
     if texto!='':
        return lista(item)
 
 def newest(categoria):
-    logger.info("pelisalacarta.channels.doomtv newest")
+    logger.info()
     itemlist = []
     item = Item()
     #categoria='peliculas'
