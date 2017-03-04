@@ -265,21 +265,22 @@ def set_infolabels(listitem, item, player=False):
     @param item: objeto Item que representa a una pelicula, serie o capitulo
     @type item: item
     """
-    if item.infoLabels:
-      listitem.setInfo("video", item.infoLabels)
+    if 'mediatype' not in item.infoLabels:
+        item.infoLabels['mediatype'] = item.contentType
+        listitem.setInfo("video", item.infoLabels)
       
     if player and not item.contentTitle:
         if item.fulltitle:
-          listitem.setInfo("video", {"Title": item.fulltitle})
+            listitem.setInfo("video", {"Title": item.fulltitle})
         else:
-          listitem.setInfo("video", {"Title": item.title})
+            listitem.setInfo("video", {"Title": item.title})
           
     elif not player:
         listitem.setInfo("video", {"Title": item.title})
         
     # Añadido para Kodi Krypton (v17)
     if config.get_platform(True)['num_version'] >= 17.0:
-      listitem.setArt({"poster": item.thumbnail})
+        listitem.setArt({"poster": item.thumbnail})
 
 
 def set_context_commands(item, parent_item):
@@ -355,7 +356,7 @@ def set_context_commands(item, parent_item):
     # Opciones segun criterios, solo si el item no es un tag (etiqueta), ni es "Añadir a la biblioteca", etc...
     if item.action and item.action not in ["add_pelicula_to_library", "add_serie_to_library", "buscartrailer"]:
         # Mostrar informacion: si el item tiene plot suponemos q es una serie, temporada, capitulo o pelicula
-        if item.infoLabels['plot'] and not item.viewmode:
+        if item.infoLabels['plot'] and (num_version_xbmc < 17.0 or item.contentType == 'season'):
             context_commands.append(("Información", "XBMC.Action(Info)"))
 
         # ExtendedInfo: Si esta instalado el addon y se cumplen una serie de condiciones
