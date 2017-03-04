@@ -42,7 +42,9 @@ def getmainlist(preferred_thumb=""):
 
     itemlist.append(Item(title=config.get_localized_string(30130), channel="novedades", action="mainlist",
                          thumbnail=get_thumb(preferred_thumb, "thumb_novedades.png"),
-                         category=config.get_localized_string(30119), viewmode="thumbnails"))
+                         category=config.get_localized_string(30119), viewmode="thumbnails",
+                         context=[{"title": "Configurar novedades", "channel": "novedades", "action": "menu_opciones",
+                                   "goto": True}]))
 
     itemlist.append(Item(title=config.get_localized_string(30118), channel="channelselector", action="getchanneltypes",
                          thumbnail=get_thumb(preferred_thumb, "thumb_canales.png"),
@@ -50,7 +52,9 @@ def getmainlist(preferred_thumb=""):
 
     itemlist.append(Item(title=config.get_localized_string(30103), channel="buscador", action="mainlist",
                          thumbnail=get_thumb(preferred_thumb, "thumb_buscar.png"),
-                         category=config.get_localized_string(30119), viewmode="list"))
+                         category=config.get_localized_string(30119), viewmode="list",
+                         context=[{"title": "Configurar buscador", "channel": "buscador", "action": "opciones",
+                                   "goto": True}]))
 
     itemlist.append(Item(title=config.get_localized_string(30102), channel="favoritos", action="mainlist",
                          thumbnail=get_thumb(preferred_thumb, "thumb_favoritos.png"),
@@ -60,10 +64,14 @@ def getmainlist(preferred_thumb=""):
 
         itemlist.append(Item(title=config.get_localized_string(30131), channel="biblioteca", action="mainlist",
                              thumbnail=get_thumb(preferred_thumb, "thumb_biblioteca.png"),
-                             category=config.get_localized_string(30119), viewmode="thumbnails"))
+                             category=config.get_localized_string(30119), viewmode="thumbnails",
+                             context=[{"title": "Configurar biblioteca", "channel": "biblioteca",
+                                       "action": "channel_config"}]))
 
     itemlist.append(Item(title=config.get_localized_string(30101), channel="descargas", action="mainlist",
-                         thumbnail=get_thumb(preferred_thumb, "thumb_descargas.png"), viewmode="list"))
+                         thumbnail=get_thumb(preferred_thumb, "thumb_descargas.png"), viewmode="list",
+                         context=[{"title": "Configurar descargas", "channel": "descargars",
+                                   "action": "channel_config"}]))
 
     thumb_configuracion = "thumb_configuracion_"+config.get_setting("plugin_updates_available")+".png"
 

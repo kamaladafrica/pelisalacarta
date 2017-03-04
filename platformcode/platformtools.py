@@ -344,8 +344,13 @@ def set_context_commands(item, parent_item):
                 command["from_action"] = item.action
             if "channel" in command:
                 command["from_channel"] = item.channel
-            context_commands.append(
-                (command["title"], "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], item.clone(**command).tourl())))
+
+            if "goto" in command:
+                context_commands.append((command["title"], "XBMC.Container.Refresh (%s?%s)" %
+                                         (sys.argv[0], item.clone(**command).tourl())))
+            else:
+                context_commands.append(
+                    (command["title"], "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], item.clone(**command).tourl())))
 
     # Opciones segun criterios, solo si el item no es un tag (etiqueta), ni es "Añadir a la biblioteca", etc...
     if item.action and item.action not in ["add_pelicula_to_library", "add_serie_to_library", "buscartrailer"]:
