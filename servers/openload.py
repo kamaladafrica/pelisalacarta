@@ -23,10 +23,11 @@ def test_video_exists(page_url):
     if "|" in page_url:
         page_url, referer = page_url.split("|", 1)
         header = {'Referer': referer}
-    data = httptools.downloadpage(page_url.replace("/embed/", "/f/"), headers=header, cookies=False).data
-
+    data = httptools.downloadpage(page_url, headers=header, cookies=False).data
     if 'We’re Sorry!' in data:
-        return False, "[Openload] El archivo no existe o ha sido borrado" 
+        data = httptools.downloadpage(page_url.replace("/embed/", "/f/"), headers=header, cookies=False).data
+        if 'We’re Sorry!' in data:
+            return False, "[Openload] El archivo no existe o ha sido borrado" 
 
     return True, ""
 
