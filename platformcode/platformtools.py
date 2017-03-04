@@ -265,8 +265,9 @@ def set_infolabels(listitem, item, player=False):
     @param item: objeto Item que representa a una pelicula, serie o capitulo
     @type item: item
     """
-    if 'mediatype' not in item.infoLabels:
-        item.infoLabels['mediatype'] = item.contentType
+    if item.infoLabels:
+        if 'mediatype' not in item.infoLabels:
+            item.infoLabels['mediatype'] = item.contentType
         listitem.setInfo("video", item.infoLabels)
       
     if player and not item.contentTitle:
@@ -1090,7 +1091,6 @@ def play_torrent(item, xlistitem, mediaurl):
                 import traceback
                 logger.info(traceback.format_exc())
                 break
-            
 
         progreso.update(100, "Terminando y eliminando datos", " ", " ")
 
