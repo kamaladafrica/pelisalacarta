@@ -70,7 +70,7 @@ def getmainlist(preferred_thumb=""):
 
     itemlist.append(Item(title=config.get_localized_string(30101), channel="descargas", action="mainlist",
                          thumbnail=get_thumb(preferred_thumb, "thumb_descargas.png"), viewmode="list",
-                         context=[{"title": "Configurar descargas", "channel": "descargars",
+                         context=[{"title": "Configurar descargas", "channel": "configuracion", "config": "descargas",
                                    "action": "channel_config"}]))
 
     thumb_configuracion = "thumb_configuracion_"+config.get_setting("plugin_updates_available")+".png"
