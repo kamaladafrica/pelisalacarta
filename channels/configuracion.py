@@ -432,7 +432,8 @@ def conf_tools(item):
                              'configuracion',
                              'novedades',
                              'personal',
-                             'ayuda']
+                             'ayuda',
+                             'descargas']
 
         list_controls = []
         try:
@@ -672,7 +673,7 @@ def channel_status(item, dict_values):
                     excluded_channels = ['tengourl', 'buscador',
                                          'libreria', 'configuracion',
                                          'novedades', 'personal',
-                                         'ayuda']
+                                         'ayuda', 'descargas']
                     for channel in channel_list:
                         if channel.channel not in excluded_channels:
                             channel_parameters = channeltools.get_channel_parameters(channel.channel)

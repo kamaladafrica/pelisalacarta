@@ -330,7 +330,7 @@ def check_for_update(overwrite=True):
 
                 if serie_actualizada:
                     if config.get_setting("search_new_content", "biblioteca") == 0:
-                        # Actualizamos la biblioteca de Kodi
+                        # Actualizamos la biblioteca de Kodi: Buscar contenido en la carpeta de la serie
                         xbmc_library.update(folder=filetools.basename(path))
                         library_updated = True
                     else:
@@ -338,12 +338,13 @@ def check_for_update(overwrite=True):
 
             if config.get_setting("search_new_content", "biblioteca") == 1:
                 if update_when_finished:
-                    # Actualizamos la biblioteca de Kodi
+                    # Actualizamos la biblioteca de Kodi: Buscar contenido en todas las series
                     import xbmc
                     xbmc.executebuiltin('UpdateLibrary(video)')
                     library_updated = True
 
             if config.get_setting("clean_after_update", "biblioteca") is True:
+                # Limpiar la biblioteca después de actualizar
                 if library_updated:
                     import xbmc
                     xbmc.executebuiltin('CleanLibrary(video)')

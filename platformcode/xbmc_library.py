@@ -232,7 +232,7 @@ def get_data(payload):
     @param payload: data
     :return:
     """
-    logger.info("payload %s" % payload)
+    logger.info("payload: %s" % payload)
     # Required header for XBMC JSON-RPC calls, otherwise you'll get a 415 HTTP response code - Unsupported media type
     headers = {'content-type': 'application/json'}
 
@@ -260,7 +260,7 @@ def get_data(payload):
                         format(message))
             data = ["error"]
 
-    logger.info("get_data: data %s" % data)
+    logger.info("data: %s" % data)
 
     return data
 
@@ -298,13 +298,14 @@ def update(content_type=FOLDER_TVSHOWS, folder=""):
     if not librarypath.endswith("/"):
         librarypath += "/"
 
-    # Comprobar que no se esta buscando contenido en la biblioteca de Kodi
+    '''# Comprobar que no se esta buscando contenido en la biblioteca de Kodi
     while xbmc.getCondVisibility('Library.IsScanningVideo()'):
         xbmc.sleep(500)
 
     payload = {"jsonrpc": "2.0", "method": "VideoLibrary.Scan", "params": {"directory": librarypath}, "id": 1}
     data = get_data(payload)
-    logger.info("data: %s" % data)
+    logger.info("data: %s" % data)'''
+    return librarypath
 
 
 def clean(mostrar_dialogo=False):
@@ -317,7 +318,12 @@ def clean(mostrar_dialogo=False):
     payload = {"jsonrpc": "2.0", "method": "VideoLibrary.Clean", "id": 1,
                "params": {"showdialogs": mostrar_dialogo}}
     data = get_data(payload)
-    logger.info("data: %s" % data)
+
+    if data.get('result',False) == 'OK':
+        return True
+
+    return False
+
 
 
 def establecer_contenido(content_type, silent=False):
@@ -326,6 +332,7 @@ def establecer_contenido(content_type, silent=False):
         msg_text = "Ruta Biblioteca personalizada"
 
         librarypath = config.get_setting("librarypath")
+        logger.info(librarypath)
         if librarypath == "special://profile/addon_data/plugin.video.pelisalacarta/library":
             continuar = True
             if content_type == FOLDER_MOVIES:
@@ -524,7 +531,7 @@ def establecer_contenido(content_type, silent=False):
 
 
         if not continuar:
-            heading = "Biblioteca no %s configurada" % content_type
+            heading = "Biblioteca %s no configurada" % content_type
             #msg_text = "Asegurese de tener instalado el scraper de The Movie Database"
         elif content_type == FOLDER_TVSHOWS and not xbmc.getCondVisibility('System.HasAddon(metadata.tvshows.themoviedb.org)'):
             heading = "Biblioteca %s configurada" % content_type
