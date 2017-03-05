@@ -4,481 +4,300 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 # ------------------------------------------------------------
 
-import os
 import re
-import sys
 import urlparse
 
-from core import config
+from channels import renumbertools
+from core import httptools
 from core import jsontools
 from core import logger
 from core import scrapertools
 from core.item import Item
 
-DEBUG = config.get_setting("debug")
-CHANNEL_HOST = "http://animeflv.net/"
-CHANNEL_DEFAULT_HEADERS = [
-    ["User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:22.0) Gecko/20100101 Firefox/22.0"],
-    ["Accept-Encoding", "gzip, deflate"],
-    ["Referer", CHANNEL_HOST]
-]
-
-'''
-### PARA USAR CON TRATK.TV ###
-
-season: debe ir en orden descendente
-episode: la "temporada 1" siempre son "0 capitulos", la "temporada 2" es el "numero de capitulos de la temporada 1"
-
-FAIRY TAIL:
-    - SEASON 1: EPISODE 48 --> [season 1, episode: 0]
-    - SEASON 2: EPISODE 48 --> [season 2, episode: 48]
-    - SEASON 3: EPISODE 54 --> [season 3, episode: 96 ( [48=season2] +[ 48=season1] )]
-    - SEASON 4: EPISODE 175 --> [season 4: episode: 150 ( [54=season3] + [48=season2] + [48=season3] )]
-
-animeflv_data.json
-{
-    "TVSHOW_RENUMBER": {
-        "Fairy Tail": {
-            "season_episode": [
-                [4, 150],
-                [3, 96],
-                [2, 48],
-                [1, 0]
-            ]
-        },
-        "Fairy Tail (2014)": {
-            "season_episode": [
-                [6, 51],
-                [5, 0]
-            ]
-        }
-    }
-}
-'''
+HOST = "http://animeflv.net/"
 
 
 def mainlist(item):
-    logger.info("pelisalacarta.channels.animeflv mainlist")
-
-    itemlist = list([])
-    itemlist.append(Item(channel=item.channel, action="novedades_episodios", title="Últimos episodios",
-                         url=CHANNEL_HOST, viewmode="movie"))
-    itemlist.append(Item(channel=item.channel, action="menuseries", title="Series",
-                         url=urlparse.urljoin(CHANNEL_HOST, "animes/?orden=nombre&mostrar=series")))
-    itemlist.append(Item(channel=item.channel, action="menuovas", title="OVAS",
-                         url=urlparse.urljoin(CHANNEL_HOST, "animes/?orden=nombre&mostrar=ovas")))
-    itemlist.append(Item(channel=item.channel, action="menupeliculas", title="Películas",
-                         url=urlparse.urljoin(CHANNEL_HOST, "animes/?orden=nombre&mostrar=peliculas")))
-    itemlist.append(Item(channel=item.channel, action="search", title="Buscar",
-                         url=urlparse.urljoin(CHANNEL_HOST, "animes/?buscar=")))
-
-    return itemlist
-
-
-def menuseries(item):
-    logger.info("pelisalacarta.channels.animeflv menuseries")
+    logger.info()
 
     itemlist = list()
-    itemlist.append(Item(channel=item.channel, action="letras", title="Por orden alfabético",
-                         url=urlparse.urljoin(CHANNEL_HOST, "animes/?orden=nombre&mostrar=series")))
-    itemlist.append(Item(channel=item.channel, action="generos", title="Por géneros",
-                         url=urlparse.urljoin(CHANNEL_HOST, "animes/?orden=nombre&mostrar=series")))
-    itemlist.append(Item(channel=item.channel, action="series", title="En emisión",
-                         url=urlparse.urljoin(CHANNEL_HOST, "animes/en-emision/?orden=nombre&mostrar=series"),
-                         viewmode="movies_with_plot"))
 
-    return itemlist
+    itemlist.append(Item(channel=item.channel, action="novedades_episodios", title="Últimos episodios", url=HOST))
+    itemlist.append(Item(channel=item.channel, action="novedades_anime", title="Últimos animes", url=HOST))
+    itemlist.append(Item(channel=item.channel, action="listado", title="Animes", url=HOST + "browse?order=title"))
 
+    itemlist.append(Item(channel=item.channel, title="Buscar por:"))
+    itemlist.append(Item(channel=item.channel, action="search", title="    Título"))
+    itemlist.append(Item(channel=item.channel, action="search_section", title="    Género", url=HOST + "browse",
+                         extra="genre"))
+    itemlist.append(Item(channel=item.channel, action="search_section", title="    Tipo", url=HOST + "browse",
+                         extra="type"))
+    itemlist.append(Item(channel=item.channel, action="search_section", title="    Año", url=HOST + "browse",
+                         extra="year"))
+    itemlist.append(Item(channel=item.channel, action="search_section", title="    Estado", url=HOST + "browse",
+                         extra="status"))
 
-def menuovas(item):
-    logger.info("pelisalacarta.channels.animeflv menuovas")
-
-    itemlist = list()
-    itemlist.append(Item(channel=item.channel, action="letras", title="Por orden alfabético",
-                         url=urlparse.urljoin(CHANNEL_HOST, "animes/?orden=nombre&mostrar=ovas")))
-    itemlist.append(Item(channel=item.channel, action="generos", title="Por géneros",
-                         url=urlparse.urljoin(CHANNEL_HOST, "animes/?orden=nombre&mostrar=ovas")))
-    itemlist.append(Item(channel=item.channel, action="series", title="En emisión",
-                         url=urlparse.urljoin(CHANNEL_HOST, "animes/en-emision/?orden=nombre&mostrar=ovas"),
-                         viewmode="movies_with_plot"))
-
-    return itemlist
-
-
-def menupeliculas(item):
-    logger.info("pelisalacarta.channels.animeflv menupeliculas")
-
-    itemlist = list()
-    itemlist.append(Item(channel=item.channel, action="letras", title="Por orden alfabético",
-                         url=urlparse.urljoin(CHANNEL_HOST, "animes/?orden=nombre&mostrar=peliculas")))
-    itemlist.append(Item(channel=item.channel, action="generos", title="Por géneros",
-                         url=urlparse.urljoin(CHANNEL_HOST, "animes/?orden=nombre&mostrar=peliculas")))
-    itemlist.append(Item(channel=item.channel, action="series", title="En emisión",
-                         url=urlparse.urljoin(CHANNEL_HOST, "animes/en-emision/?orden=nombre&mostrar=peliculas"),
-                         viewmode="movies_with_plot"))
-
-    return itemlist
-
-
-def letras(item):
-    logger.info("pelisalacarta.channels.animeflv letras")
-
-    itemlist = []
-
-    data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
-
-    data = scrapertools.get_match(data, '<div class="alfabeto_box"(.*?)</div>')
-    patron = '<a href="([^"]+)[^>]+>([^<]+)</a>'
-    matches = re.compile(patron, re.DOTALL).findall(data)
-
-    for scrapedurl, scrapedtitle in matches:
-        title = scrapertools.entityunescape(scrapedtitle)
-        url = urlparse.urljoin(item.url, scrapedurl)
-        thumbnail = ""
-        plot = ""
-        if DEBUG:
-            logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
-
-        itemlist.append(Item(channel=item.channel, action="series", title=title, url=url, thumbnail=thumbnail,
-                             plot=plot, viewmode="movies_with_plot"))
-
-    return itemlist
-
-
-def generos(item):
-    logger.info("pelisalacarta.channels.animeflv generos")
-
-    itemlist = []
-    data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
-
-    data = scrapertools.get_match(data, '<div class="generos_box"(.*?)</div>')
-    patron = '<a href="([^"]+)[^>]+>([^<]+)</a>'
-    matches = re.compile(patron, re.DOTALL).findall(data)
-
-    for scrapedurl, scrapedtitle in matches:
-        title = scrapertools.entityunescape(scrapedtitle)
-        url = urlparse.urljoin(item.url, scrapedurl)
-        thumbnail = ""
-        plot = ""
-        if DEBUG:
-            logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
-
-        itemlist.append(Item(channel=item.channel, action="series", title=title, url=url, thumbnail=thumbnail,
-                             plot=plot, viewmode="movies_with_plot"))
+    if renumbertools.context:
+        itemlist = renumbertools.show_option(item.channel, itemlist)
 
     return itemlist
 
 
 def search(item, texto):
-    logger.info("pelisalacarta.channels.animeflv search")
-    if item.url == "":
-        item.url = urlparse.urljoin(CHANNEL_HOST, "animes/?buscar=")
+    logger.info()
+    itemlist = []
+    item.url = urlparse.urljoin(HOST, "api/animes/search")
     texto = texto.replace(" ", "+")
-    item.url = "{0}{1}".format(item.url, texto)
-    return series(item)
+    post = "value=%s" % texto
+    data = httptools.downloadpage(item.url, post=post).data
 
-def newest(categoria):
-    itemlist = []
+    dict_data = jsontools.load_json(data)
 
-    if categoria == 'anime':
-        itemlist = novedades_episodios(Item(url = "http://animeflv.net/"))
+    for e in dict_data:
+        if e["id"] != e["last_id"]:
+            _id = e["last_id"]
+        else:
+            _id = e["id"]
 
-    return itemlist
+        url = "%sanime/%s/%s" % (HOST, _id, e["slug"])
+        title = e["title"]
+        thumbnail = "%suploads/animes/covers/%s.jpg" % (HOST, e["id"])
+        new_item = item.clone(action="episodios", title=title, url=url, thumbnail=thumbnail)
 
-
-def novedades_episodios(item):
-    logger.info("pelisalacarta.channels.animeflv novedades")
-
-    data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
-
-    '''
-    <div class="not">
-        <a href="/ver/cyclops-shoujo-saipu-12.html" title="Cyclops Shoujo Saipu 12">
-        <img class="imglstsr lazy" src="http://cdn.animeflv.net/img/mini/957.jpg" border="0">
-        <span class="tit_ep"><span class="tit">Cyclops Shoujo Saipu 12</span></span>
-        </a>
-    </div>
-    '''
-
-    patronvideos = '<div class="not"[^<]+<a href="([^"]+)" title="([^"]+)"[^<]+<img class="[^"]+" ' \
-                   'src="([^"]+)"[^<]+<span class="tit_ep"><span class="tit">([^<]+)<'
-    matches = re.compile(patronvideos, re.DOTALL).findall(data)
-    itemlist = []
-
-    for match in matches:
-        scrapedtitle = scrapertools.entityunescape(match[3])
-        fulltitle = scrapedtitle
-        # directory = match[1]
-        scrapedurl = urlparse.urljoin(item.url, match[0])
-        scrapedthumbnail = urlparse.urljoin(item.url, match[2].replace("mini", "portada"))
-        scrapedplot = ""
-        #if DEBUG: logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(scrapedtitle, scrapedurl, scrapedthumbnail))
-
-        new_item = Item(channel=item.channel, action="findvideos", title=scrapedtitle, url=scrapedurl,
-                        thumbnail=scrapedthumbnail, plot=scrapedplot, fulltitle=fulltitle)
-
-        content_title = scrapertools.entityunescape(match[1])
-        if content_title:
-            episode = scrapertools.get_match(content_title, '\s+(\d+)$')
-            content_title = content_title.replace(episode, '')
-            season, episode = numbered_for_tratk(content_title, 1, episode)
-            new_item.hasContentDetails = "true"
-            new_item.contentTitle = content_title
-            new_item.contentSeason = season
-            new_item.contentEpisodeNumber = int(episode)
+        if e["type"] != "movie":
+            new_item.show = title
+            new_item.context = renumbertools.context
+        else:
+            new_item.contentType = "movie"
+            new_item.contentTitle = title
 
         itemlist.append(new_item)
 
     return itemlist
 
 
-def series(item):
-    logger.info("pelisalacarta.channels.animeflv series")
+def search_section(item):
+    logger.info()
+    itemlist = []
+    data = httptools.downloadpage(item.url).data
+    data = re.sub(r"\n|\r|\t|\s{2}|-\s", "", data)
+    patron = 'id="%s_select"[^>]+>(.*?)</select>' % item.extra
+    data = scrapertools.find_single_match(data, patron)
 
-    data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
+    matches = re.compile('<option value="([^"]+)">(.*?)</option>', re.DOTALL).findall(data)
 
-    '''
-    <div class="aboxy_lista">
-        <a href="/ova/nurarihyon-no-mago-ova.html" title="Nurarihyon no Mago OVA">
-            <img class="lazy portada" src="/img/blank.gif"
-                data-original="http://cdn.animeflv.net/img/portada/1026.jpg" alt="Nurarihyon no Mago OVA"/>
-        </a>
-        <span style="float: right; margin-top: 0px;" class="tipo_1"></span>
-        <a href="/ova/nurarihyon-no-mago-ova.html" title="Nurarihyon no Mago OVA" class="titulo">
-            Nurarihyon no Mago OVA
-        </a>
-        <div class="generos_links">
-            <b>Generos:</b>
-            <a href="/animes/genero/accion/">Acci&oacute;n</a>,
-            <a href="/animes/genero/shonen/">Shonen</a>,
-            <a href="/animes/genero/sobrenatural/">Sobrenatural</a>
-        </div>
-        <div class="sinopsis">
-            La historia empieza en alrededor de 100 a&ntilde;os despu&eacute;s de la desaparici&oacute;n de
-            Yamabuki Otome, la primera esposa Rihan Nura. Rihan por fin recobr&oacute; la compostura y la vida
-            vuelve a la normalidad. A medida que la cabeza del Clan Nura, est&aacute; ocupado trabajando en la
-            construcci&oacute;n de un mundo armonioso para los seres humanos y youkai. Un d&iacute;a, &eacute;l
-            ve a Setsura molesta por lo que decide animarla tomando el clan para ir a disfrutar de las aguas
-            termales &hellip;
-        </div>
-    </div>
-    '''
+    for _id, title in matches:
+        url = "%s?%s=%s&order=title" % (item.url, item.extra, _id)
+        itemlist.append(Item(channel=item.channel, action="listado", title=title, url=url,
+                             context=renumbertools.context))
 
-    patron = '<div class="aboxy_lista"[^<]+'
-    patron += '<a href="([^"]+)"[^<]+<img class="[^"]+" src="[^"]+" data-original="([^"]+)"[^<]+</a[^<]+'
-    patron += '<span[^<]+</span[^<]+'
-    patron += '<a[^>]+>([^<]+)</a.*?'
-    patron += '<div class="sinopsis">(.*?)</div'
-    matches = re.compile(patron, re.DOTALL).findall(data)
+    return itemlist
+
+
+def newest(categoria):
     itemlist = []
 
-    for scrapedurl, scrapedthumbnail, scrapedtitle, scrapedplot in matches:
-        title = scrapertools.unescape(scrapedtitle)
-        fulltitle = title
-        url = urlparse.urljoin(item.url, scrapedurl)
-        thumbnail = urlparse.urljoin(item.url, scrapedthumbnail)
-        plot = scrapertools.htmlclean(scrapedplot)
-        show = title
-        #if DEBUG:logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
-        itemlist.append(Item(channel=item.channel, action="episodios", title=title, url=url, thumbnail=thumbnail,
-                             plot=plot, show=show, fulltitle=fulltitle, fanart=thumbnail, folder=True))
+    if categoria == 'anime':
+        itemlist = novedades_episodios(Item(url=HOST))
 
-    patron = '<a href="([^"]+)">\&raquo\;</a>'
-    matches = re.compile(patron, re.DOTALL).findall(data)
-    for match in matches:
-        if len(matches) > 0:
-            scrapedurl = urlparse.urljoin(item.url, match)
-            scrapedtitle = ">> Pagina Siguiente"
-            scrapedthumbnail = ""
-            scrapedplot = ""
+    return itemlist
 
-            itemlist.append(Item(channel=item.channel, action="series", title=scrapedtitle, url=scrapedurl,
-                                 thumbnail=scrapedthumbnail, plot=scrapedplot, folder=True,
-                                 viewmode="movies_with_plot"))
+
+def novedades_episodios(item):
+    logger.info()
+
+    data = httptools.downloadpage(item.url).data
+    data = re.sub(r"\n|\r|\t|\s{2}|-\s", "", data)
+    data = scrapertools.find_single_match(data, '<ul class="ListEpisodios[^>]+>(.*?)</ul>')
+
+    matches = re.compile('<a href="([^"]+)"[^>]+>.+?<img src="([^"]+)".+?"Capi">(.*?)</span>'
+                         '<strong class="Title">(.*?)</strong>', re.DOTALL).findall(data)
+    itemlist = []
+
+    for url, thumbnail, str_episode, show in matches:
+
+        try:
+            episode = int(str_episode.replace("Ep. ", ""))
+        except ValueError:
+            season = 1
+            episode = 1
+        else:
+            season, episode = renumbertools.numbered_for_tratk(item.channel, item.show, 1, episode)
+
+        title = "%s: %sx%s" % (show, season, str(episode).zfill(2))
+        url = urlparse.urljoin(HOST, url)
+        thumbnail = urlparse.urljoin(HOST, thumbnail)
+
+        new_item = Item(channel=item.channel, action="findvideos", title=title, url=url, show=show, thumbnail=thumbnail,
+                        fulltitle=title)
+
+        itemlist.append(new_item)
+
+    return itemlist
+
+
+def novedades_anime(item):
+    logger.info()
+
+    data = httptools.downloadpage(item.url).data
+    data = re.sub(r"\n|\r|\t|\s{2}|-\s", "", data)
+    data = scrapertools.find_single_match(data, '<ul class="ListAnimes[^>]+>(.*?)</ul>')
+
+    matches = re.compile('<img src="([^"]+)".+?<span class=.+?>(.*?)</span>.+?<a href="([^"]+)">(.*?)</a>',
+                         re.DOTALL).findall(data)
+    itemlist = []
+
+    for thumbnail, _type, url, title in matches:
+
+        url = urlparse.urljoin(HOST, url)
+        thumbnail = urlparse.urljoin(HOST, thumbnail)
+
+        new_item = Item(channel=item.channel, action="episodios", title=title, url=url, thumbnail=thumbnail,
+                        fulltitle=title)
+        if _type != "Película":
+            new_item.show = title
+            new_item.context = renumbertools.context
+        else:
+            new_item.contentType = "movie"
+            new_item.contentTitle = title
+
+        itemlist.append(new_item)
+
+    return itemlist
+
+
+def listado(item):
+    logger.info()
+
+    data = httptools.downloadpage(item.url).data
+    data = re.sub(r"\n|\r|\t|\s{2}|-\s", "", data)
+    url_pagination = scrapertools.find_single_match(data, '<li class="active">.*?</li><li><a href="([^"]+)">')
+
+    data = scrapertools.find_multiple_matches(data, '<ul class="ListAnimes[^>]+>(.*?)</ul>')
+    data = "".join(data)
+
+    matches = re.compile('<img src="([^"]+)".+?<span class=.+?>(.*?)</span>.+?<a href="([^"]+)">(.*?)</a>.+?'
+                         'class="Desc ScrlV"><p>(.*?)</p>', re.DOTALL).findall(data)
+
+    itemlist = []
+
+    for thumbnail, _type, url, title, plot in matches:
+
+        url = urlparse.urljoin(HOST, url)
+        thumbnail = urlparse.urljoin(HOST, thumbnail)
+
+        new_item = Item(channel=item.channel, action="episodios", title=title, url=url, thumbnail=thumbnail,
+                        fulltitle=title, plot=plot)
+
+        if _type == "Anime":
+            new_item.show = title
+            new_item.context = renumbertools.context
+        else:
+            new_item.contentType = "movie"
+            new_item.contentTitle = title
+
+        itemlist.append(new_item)
+
+    if url_pagination:
+        url = urlparse.urljoin(HOST, url_pagination)
+        title = ">> Pagina Siguiente"
+
+        itemlist.append(Item(channel=item.channel, action="listado", title=title, url=url))
 
     return itemlist
 
 
 def episodios(item):
-    logger.info("pelisalacarta.channels.animeflv episodios")
+    logger.info()
     itemlist = []
 
-    data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
+    data = httptools.downloadpage(item.url).data
+    data = re.sub(r"\n|\r|\t|\s{2}|-\s", "", data)
 
-    '''
-    <div class="tit">Listado de episodios <span class="fecha_pr">Fecha Pr&oacute;ximo: 2013-06-11</span></div>
-    <ul class="anime_episodios" id="listado_epis">
-        <li><a href="/ver/aiura-9.html">Aiura 9</a></li>
-        <li><a href="/ver/aiura-8.html">Aiura 8</a></li>
-        <li><a href="/ver/aiura-7.html">Aiura 7</a></li>
-        <li><a href="/ver/aiura-6.html">Aiura 6</a></li>
-        <li><a href="/ver/aiura-5.html">Aiura 5</a></li>
-        <li><a href="/ver/aiura-4.html">Aiura 4</a></li>
-        <li><a href="/ver/aiura-3.html">Aiura 3</a></li>
-        <li><a href="/ver/aiura-2.html">Aiura 2</a></li>
-        <li><a href="/ver/aiura-1.html">Aiura 1</a></li>
-    </ul>
-    '''
+    if item.plot == "":
+        item.plot = scrapertools.find_single_match(data, 'Description[^>]+><p>(.*?)</p>')
 
-    data = scrapertools.find_single_match(data, '<div class="tit">Listado de episodios.*?</div>(.*?)</ul>')
-    patron = '<li><a href="([^"]+)">([^<]+)</a></li>'
-    matches = re.compile(patron, re.DOTALL).findall(data)
+    data = scrapertools.find_single_match(data, '<div class="Sect Episodes">(.*?)</div>')
+    matches = re.compile('<a href="([^"]+)"[^>]+>(.+?)<', re.DOTALL).findall(data)
 
-    for scrapedurl, scrapedtitle in matches:
-        title = scrapertools.unescape(scrapedtitle)
-        url = urlparse.urljoin(item.url, scrapedurl)
+    for url, title in matches:
+        title = title.strip()
+        url = urlparse.urljoin(item.url, url)
         thumbnail = item.thumbnail
-        plot = item.plot
-
-        # TODO crear funcion que pasandole el titulo y buscando en un array de series establezca el valor el nombre
-        # y temporada / capitulo para que funcione con trak.tv
-
-        season = 1
-        episode = 1
-        patron = re.escape(item.show) + "\s+(\d+)"
-        # logger.info("title {0}".format(title))
-        # logger.info("patron {0}".format(patron))
 
         try:
-            episode = scrapertools.get_match(title, patron)
-            episode = int(episode)
-            # logger.info("episode {0}".format(episode))
-        except IndexError:
-            pass
+            episode = int(scrapertools.find_single_match(title, "^.+?\s(\d+)$"))
         except ValueError:
-            pass
-
-        episode_title = scrapertools.find_single_match(title, "\d+:\s*(.*)")
-        if episode_title == "":
-            episode_title = "Episodio "+str(episode)
-
-        season, episode = numbered_for_tratk(item.show, season, episode)
-
-        if len(str(episode)) == 1:
-            title = str(season)+"x0"+str(episode)
+            season = 1
+            episode = 1
         else:
-            title = str(season)+"x"+str(episode)
+            season, episode = renumbertools.numbered_for_tratk(item.channel, item.show, 1, episode)
 
-        title = item.show+" - "+title+" "+episode_title
+        title = "%s: %sx%s" % (item.title, season, str(episode).zfill(2))
 
-        #if DEBUG: logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
-
-        itemlist.append(Item(channel=item.channel, action="findvideos", title=title, url=url,
-                             thumbnail=thumbnail, plot=plot, show=item.show, fulltitle="{0} {1}"
-                             .format(item.show, title), fanart=thumbnail, viewmode="movies_with_plot", folder=True))
-
-    if config.get_library_support() and len(itemlist) > 0:
-        itemlist.append(Item(channel=item.channel, title="Añadir esta serie a la biblioteca de XBMC", url=item.url,
-                             action="add_serie_to_library", extra="episodios", show=item.show))
-        itemlist.append(Item(channel=item.channel, title="Descargar todos los episodios de la serie", url=item.url,
-                             action="download_all_episodes", extra="episodios", show=item.show))
+        itemlist.append(item.clone(action="findvideos", title=title, url=url, thumbnail=thumbnail, fulltitle=title,
+                                   fanart=thumbnail))
 
     return itemlist
 
 
 def findvideos(item):
-    logger.info("pelisalacarta.channels.animeflv findvideos")
-
-    data = scrapertools.anti_cloudflare(item.url, headers=CHANNEL_DEFAULT_HEADERS, host=CHANNEL_HOST)
-
-    # if 'infoLabels' in item:
-    #     del item.infoLabels
-
-    url_anterior = scrapertools.find_single_match(data, '<a href="(/ver/[^"]+)".+?prev.png')
-    url_siguiente = scrapertools.find_single_match(data, '<a href="(/ver/[^"]+)"[^.]+next.png')
-
-    data = scrapertools.get_match(data, "var videos \= (.*?)$")
+    logger.info()
 
     itemlist = []
 
-    data = data.replace("\\\\", "")
-    data = data.replace("\\/", "/")
-    logger.info("data="+data)
+    data = httptools.downloadpage(item.url).data
+    data = re.sub(r"\n|\r|\t|\s{2}|-\s", "", data)
+    list_videos = scrapertools.find_multiple_matches(data, 'video\[\d\]\s=\s\'<iframe.+?src="([^"]+)"')
+    list_videos.extend(scrapertools.find_multiple_matches(data, 'href="http://ouo.io/s/y0d65LCP\?s=([^"]+)"'))
+    # logger.info("data=%s " % list_videos)
+
+    aux_url = []
+    for e in list_videos:
+        if e.startswith("https://s3.animeflv.com/embed.php?server="):
+            server = scrapertools.find_single_match(e, 'server=(.*?)&')
+            e = e.replace("embed", "check").replace("https", "http")
+            data = httptools.downloadpage(e).data.replace("\\", "")
+            if '{"error": "Por favor intenta de nuevo en unos segundos", "sleep": 3}' in data:
+                import time
+                time.sleep(3)
+                data = httptools.downloadpage(e).data.replace("\\", "")
+
+            video_urls = []
+            if server == "gdrive":
+                data = jsontools.load_json(data)
+                for s in data.get("sources", []):
+                    video_urls.append([s["label"], s["type"], s["file"]])
+
+                if video_urls:
+                    video_urls.sort(key=lambda v: int(v[0]))
+                    itemlist.append(item.clone(title="Enlace encontrado en %s" % server, action="play",
+                                               video_urls=video_urls))
+            else:
+                url = scrapertools.find_single_match(data, '"file":"([^"]+)"')
+                if url:
+                    itemlist.append(item.clone(title="Enlace encontrado en %s" % server, url=url, action="play"))
+
+        else:
+            aux_url.append(e)
 
     from core import servertools
-    itemlist.extend(servertools.find_video_items(data=data))
+    itemlist.extend(servertools.find_video_items(data=",".join(aux_url)))
     for videoitem in itemlist:
+        videoitem.fulltitle = item.fulltitle
         videoitem.channel = item.channel
-        videoitem.show = item.show
-        videoitem.folder = False
-
-    if url_anterior:
-        title_anterior = url_anterior.replace("/ver/", '').replace('-', ' ').replace('.html', '')
-        itemlist.append(Item(channel=item.channel, action="findvideos", title="Anterior: " + title_anterior,
-                        url=CHANNEL_HOST + url_anterior, thumbnail=item.thumbnail, plot=item.plot, show=item.show,
-                        fanart=item.thumbnail, folder=True))
-
-    if url_siguiente:
-        title_siguiente = url_siguiente.replace("/ver/", '').replace('-', ' ').replace('.html', '')
-        itemlist.append(Item(channel=item.channel, action="findvideos", title="Siguiente: " + title_siguiente,
-                        url=CHANNEL_HOST + url_siguiente, thumbnail=item.thumbnail, plot=item.plot, show=item.show,
-                        fanart=item.thumbnail, folder=True))
+        videoitem.thumbnail = item.thumbnail
 
     return itemlist
 
 
-def numbered_for_tratk(show, season, episode):
-    """
-    Devuelve la temporada y episodio convertido para que se marque correctamente en tratk.tv
-
-    :param show: Nombre de la serie a comprobar
-    :type show: str
-    :param season: Temporada que devuelve el scrapper
-    :type season: int
-    :param episode: Episodio que devuelve el scrapper
-    :type episode: int
-    :return: season, episode
-    :rtype: int, int
-    """
-    logger.info("pelisalacarta.channels.animeflv numbered_for_tratk")
-    show = show.lower()
-
-    new_season = season
-    new_episode = episode
-    dict_series = {}
-
-    name_file = os.path.splitext(os.path.basename(__file__))[0]
-    fname = os.path.join(config.get_data_path(), "settings_channels", name_file + "_data.json")
-
-    if os.path.isfile(fname):
-
-        data = ""
-
-        try:
-            f = open(fname, "r")
-            for line in f:
-                data += line
-            f.close()
-
-        except EnvironmentError:
-            logger.info("ERROR al leer el archivo: {0}".format(fname))
-
-        json_data = jsontools.load_json(data)
-
-        if 'TVSHOW_RENUMBER' in json_data:
-            dict_series = json_data['TVSHOW_RENUMBER']
-
-        # ponemos en minusculas el key, ya que previamente hemos hecho lo mismo con show.
-        for key in dict_series.keys():
-            new_key = key.lower()
-            if new_key != key:
-                dict_series[new_key] = dict_series[key]
-                del dict_series[key]
-
-    if show in dict_series:
-        logger.info("ha encontrado algo: "+str(dict_series[show]))
-
-        if len(dict_series[show]['season_episode']) > 1:
-            for row in dict_series[show]['season_episode']:
-
-                if new_episode > row[1]:
-                    new_episode -= row[1]
-                    new_season = row[0]
-                    break
-
-        else:
-            new_season = dict_series[show]['season_episode'][0][0]
-            new_episode += dict_series[show]['season_episode'][0][1]
-
-    logger.info("pelisalacarta.channels.animeflv numbered_for_tratk: "+str(new_season)+":"+str(new_episode))
-    return new_season, new_episode
+def play(item):
+    logger.info()
+    itemlist = []
+    if item.video_urls:
+        for it in item.video_urls:
+            title = ".%s %sp [directo]" % (it[1].replace("video/", ""), it[0])
+            itemlist.append([title, it[2]])
+        return itemlist
+    else:
+        return [item]

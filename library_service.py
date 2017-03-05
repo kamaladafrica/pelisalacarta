@@ -248,14 +248,6 @@ def check_for_update(overwrite=True):
         if config.get_setting("updatelibrary", "biblioteca") != 0 or overwrite:
             config.set_setting("updatelibrary_last_check", hoy.strftime('%Y-%m-%d'), "biblioteca")
 
-            if config.get_setting("updatelibrary", "biblioteca") in [1,3] and not overwrite:
-                # "Actualizar al inicio" y No venimos del canal configuracion
-                updatelibrary_wait = [0, 10000, 20000, 30000, 60000]
-                wait = updatelibrary_wait[int(config.get_setting("updatelibrary_wait", "biblioteca"))]
-                if wait > 0:
-                    import xbmc
-                    xbmc.sleep(wait)
-
             heading = 'Actualizando biblioteca....'
             p_dialog = platformtools.dialog_progress_bg('pelisalacarta', heading)
             p_dialog.update(0, '')
@@ -280,7 +272,7 @@ def check_for_update(overwrite=True):
                     # si la serie no esta activa descartar
                     continue
 
-                # obtenemos las fecha de auctualizacion y de la proxima programada para esta serie
+                # obtenemos las fecha de actualizacion y de la proxima programada para esta serie
                 update_next = serie.update_next
                 if update_next:
                     y, m, d = update_next.split('-')
@@ -370,6 +362,13 @@ def check_for_update(overwrite=True):
 
 if __name__ == "__main__":
     # Se ejecuta en cada inicio
+    import xbmc
+    updatelibrary_wait = [0, 10000, 20000, 30000, 60000]
+    wait = updatelibrary_wait[int(config.get_setting("updatelibrary_wait", "biblioteca"))]
+    if wait > 0:
+        xbmc.sleep(wait)
+
+    # Comprobar version de la bilbioteca y actualizar si es necesario
     if config.get_setting("library_version") != 'v4':
         platformtools.dialog_ok(config.PLUGIN_NAME.capitalize(), "Se va a actualizar la biblioteca al nuevo formato",
                                 "Seleccione el nombre correcto de cada serie o película, si no está seguro pulse 'Cancelar'.")
@@ -385,8 +384,8 @@ if __name__ == "__main__":
         if not config.get_setting("updatelibrary", "biblioteca") == 2:
             check_for_update(overwrite=False)
 
+
     # Se ejecuta ciclicamente
-    import xbmc
     if config.get_platform(True)['num_version'] >= 14:
         monitor = xbmc.Monitor()  # For Kodi >= 14
     else:

@@ -8,18 +8,20 @@ import os, sys
 
 from core import logger
 from core import config
+from core import tmdb
 from core import scrapertools
 from core.item import Item
 from core import servertools
+from core import httptools
 
 
-DEBUG = config.get_setting("debug")
 host="http://mundoflv.com"
 thumbmx ='http://flags.fmcdn.net/data/flags/normal/mx.png'
 thumbes ='http://flags.fmcdn.net/data/flags/normal/es.png'
 thumben ='http://flags.fmcdn.net/data/flags/normal/gb.png'
 thumbsub ='https://s32.postimg.org/nzstk8z11/sub.png'
 thumbtodos = 'https://s29.postimg.org/4p8j2pkdj/todos.png'
+patrones=['<<meta property="og:image" content="([^"]+)" \/>" \/>','\/><\/a>([^*]+)<p><\/p>.*']
 
 audio = {'la':'[COLOR limegreen]LATINO[/COLOR]','es':'[COLOR yellow]ESPAÑOL[/COLOR]','sub':'[COLOR orange]ORIGINAL SUBTITULADO[/COLOR]', 'en':'[COLOR red]Original[/COLOR]', 'vosi':'[COLOR red]ORIGINAL SUBTITULADO INGLES[/COLOR]'}
 
@@ -30,7 +32,7 @@ def isGeneric():
     return True
 
 def mainlist(item):
-    logger.info("pelisalacarta.channels.mundoflv mainlist")
+    logger.info()
 
     itemlist = []
     
@@ -50,43 +52,44 @@ def mainlist(item):
 
 
 def todas(item):
-    logger.info("pelisalacarta.channels.mundoflv todas")
+    logger.info()
     itemlist = []
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
+    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
 
     '''<a href="http://mundoflv.com/jessica-jones/" title="Jessica Jones (2015)">
 <div class="img">
 <img src="http://mundoflv.com/wp-content/uploads/2015/11/jessica-203x300.jpg" alt="Jessica Jones ()" />'''
 
-    patron = '<a href="([^"]+)" title="([^"]+)">.*?'
+    patron ='class="item"><a href="(.*?)" title="(.*?)(?:\|.*?|\(.*?|- )(\d{4})(?:\)|-)".*?'
     patron +='<div class="img">.*?'
     patron +='<img src="([^"]+)" alt.*?>'
-    
+
     matches = re.compile(patron,re.DOTALL).findall(data)
 
-    for scrapedurl, scrapedtitle, scrapedthumbnail in matches:
-        url = urlparse.urljoin(item.url,scrapedurl)
+    for scrapedurl, scrapedtitle, scrapedyear, scrapedthumbnail in matches:
+        url = scrapedurl
         title = scrapertools.decodeHtmlentities(scrapedtitle)
+        title = title.rstrip(' ')
         thumbnail = scrapedthumbnail
+        year = scrapedyear
         plot = ''
-        fanart = 'https://s32.postimg.org/h1ewz9hhx/mundoflv.png'
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="idioma" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, contentSerieName=title))
-    
-    #Paginacion
+        fanart = ''
 
+        fanart = 'https://s32.postimg.org/h1ewz9hhx/mundoflv.png'
+        itemlist.append( Item(channel=item.channel, action="idioma" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, contentSerieName=title, infoLabels={'year':year}))
+        
+    tmdb.set_infoLabels_itemlist(itemlist, seekTmdb = True)
+    itemlist = fail_tmdb(itemlist)
+    #Paginacion
     patron  = '<link rel="next" href="([^"]+)" />'
     next_page_url = scrapertools.find_single_match(data,'<link rel="next" href="([^"]+)" />')
+    
     if next_page_url!="":
         import inspect
-        itemlist.append(
-            Item(
-                channel = item.channel,
-                action = "todas",
-                title = ">> Página siguiente",
-                url = next_page_url
-            )
-        )
+        itemlist.append(Item(channel = item.channel, action = "todas", title = ">> Página siguiente", url = next_page_url, thumbnail='https://s32.postimg.org/4zppxf5j9/siguiente.png'))
+    
+
     return itemlist
 
 
@@ -94,9 +97,9 @@ def letras(item):
 
     thumbletras = {'0-9':'https://s32.postimg.org/drojt686d/image.png','0 - 9':'https://s32.postimg.org/drojt686d/image.png','#':'https://s32.postimg.org/drojt686d/image.png','a':'https://s32.postimg.org/llp5ekfz9/image.png','b':'https://s32.postimg.org/y1qgm1yp1/image.png','c':'https://s32.postimg.org/vlon87gmd/image.png','d':'https://s32.postimg.org/3zlvnix9h/image.png','e':'https://s32.postimg.org/bgv32qmsl/image.png','f':'https://s32.postimg.org/y6u7vq605/image.png','g':'https://s32.postimg.org/9237ib6jp/image.png','h':'https://s32.postimg.org/812yt6pk5/image.png','i':'https://s32.postimg.org/6nbbxvqat/image.png','j':'https://s32.postimg.org/axpztgvdx/image.png','k':'https://s32.postimg.org/976yrzdut/image.png','l':'https://s32.postimg.org/fmal2e9yd/image.png','m':'https://s32.postimg.org/m19lz2go5/image.png','n':'https://s32.postimg.org/b2ycgvs2t/image.png','o':'https://s32.postimg.org/c6igsucpx/image.png','p':'https://s32.postimg.org/jnro82291/image.png','q':'https://s32.postimg.org/ve5lpfv1h/image.png','r':'https://s32.postimg.org/nmovqvqw5/image.png','s':'https://s32.postimg.org/zd2t89jol/image.png','t':'https://s32.postimg.org/wk9lo8jc5/image.png','u':'https://s32.postimg.org/w8s5bh2w5/image.png','v':'https://s32.postimg.org/e7dlrey91/image.png','w':'https://s32.postimg.org/fnp49k15x/image.png','x':'https://s32.postimg.org/dkep1w1d1/image.png','y':'https://s32.postimg.org/um7j3zg85/image.png','z':'https://s32.postimg.org/jb4vfm9d1/image.png'}
 
-    logger.info("pelisalacarta.channels.mundoflv letras")
+    logger.info()
     itemlist = []
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
 
     patron = '<li><a.*?href="([^"]+)">([^<]+)<\/a><\/li>'
     matches = re.compile(patron,re.DOTALL).findall(data)
@@ -110,59 +113,72 @@ def letras(item):
             thumbnail = ''
         plot = ""
         fanart = item.fanart
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
         itemlist.append( Item(channel=item.channel, action="todas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart ,contentSerieName=title))
 
     return itemlist
 
-def masvistas(item):
-    logger.info("pelisalacarta.channels.mundoflv masvistas")
-    itemlist = []
-    data = scrapertools.cache_page(item.url)
+def fail_tmdb(itemlist):
+    logger.info()
     realplot=''
-    patron = '<li> <A HREF="([^"]+)"> <.*?>Ver ([^<]+)</A></li>'
+    for item in itemlist:
+        if item.infoLabels['plot'] =='':
+            data = httptools.downloadpage(item.url).data
+            if item.thumbnail == '':
+                item.thumbnail= scrapertools.find_single_match(data,patrones[0])
+            realplot = scrapertools.find_single_match(data, patrones[1])
+            item.plot = scrapertools.remove_htmltags(realplot)
+    return itemlist
+
+def masvistas(item):
+    logger.info()
+    itemlist = []
+    data = httptools.downloadpage(item.url).data
+    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
+    
+    patron = '<li><a href="(?!http:\/\/mundoflv\.com\/tag\/)(.*?)">.*?'
+    patron +='div class="im">.*?'
+    patron +='<img src=".*?" alt="(.*?)(?:\|.*?|\(.*?|- )(\d{4})|-" \/>'
     matches = re.compile(patron,re.DOTALL).findall(data)
 
-    for scrapedurl,scrapedtitle in matches:
-        url = urlparse.urljoin(item.url,scrapedurl)
-        data = scrapertools.cache_page(scrapedurl)
-        thumbnail= scrapertools.get_match(data,'<meta property="og:image" content="([^"]+)" />')
-        realplot = scrapertools.find_single_match(data, '\/><\/a>([^*]+)<p><\/p>.*')
-        plot = scrapertools.remove_htmltags(realplot)
-        title = scrapedtitle.replace('online','')
-        title = scrapertools.decodeHtmlentities(title)
+    for scrapedurl,scrapedtitle, scrapedyear in matches:
+        url = scrapedurl
+        title = scrapedtitle
         fanart = item.fanart
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="idioma" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, contentSerieName=title))
+        contentSerieName = scrapedtitle
+        year = scrapedyear
+        thumbnail = ''
+        plot ='nada'
+        itemlist.append( Item(channel=item.channel, action="idioma" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, contentSerieName= contentSerieName, infoLabels ={'year':year}))
 
+    tmdb.set_infoLabels_itemlist(itemlist, seekTmdb = True)
+    itemlist = fail_tmdb(itemlist)
     return itemlist
 
 def recomendadas(item):
-    logger.info("pelisalacarta.channels.mundoflv masvistas")
+    logger.info()
     itemlist = []
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
     realplot=''
     patron = '<li><A HREF="([^"]+)"><.*?>Ver ([^<]+)<\/A><\/li>'
     matches = re.compile(patron,re.DOTALL).findall(data)
 
     for scrapedurl,scrapedtitle in matches:
         url = urlparse.urljoin(item.url,scrapedurl)
-        data = scrapertools.cache_page(scrapedurl)
+        data = httptools.downloadpage(scrapedurl).data
         thumbnail= scrapertools.get_match(data,'<meta property="og:image" content="([^"]+)" />')
         realplot = scrapertools.find_single_match(data, '\/><\/a>([^*]+)<p><\/p>.*')
         plot = scrapertools.remove_htmltags(realplot)
         title = scrapedtitle.replace('online','')
         title = title = scrapertools.decodeHtmlentities(title) 
         fanart = item.fanart
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
         itemlist.append( Item(channel=item.channel, action="idioma" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart,contentSerieName=title))
 
     return itemlist
 
 def ultimas(item):
-    logger.info("pelisalacarta.channels.mundoflv masvistas")
+    logger.info()
     itemlist = []
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
     realplot=''
     patron = '<li><A HREF="([^"]+)"> <.*?>Ver ([^<]+)<\/A><\/li>'
    
@@ -170,7 +186,7 @@ def ultimas(item):
 
     for scrapedurl,scrapedtitle in matches:
         url = urlparse.urljoin(item.url,scrapedurl)
-        data = scrapertools.cache_page(scrapedurl)
+        data = httptools.downloadpage(scrapedurl).data
         thumbnail= scrapertools.get_match(data,'<meta property="og:image" content="([^"]+)" />')
         realplot = scrapertools.find_single_match(data, '\/><\/a>([^*]+)<p><\/p>.*')
         plot = scrapertools.remove_htmltags(realplot)
@@ -178,17 +194,16 @@ def ultimas(item):
         title = scrapedtitle.replace('online','')
         title = scrapertools.decodeHtmlentities(title)
         fanart = item.fanart
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
         itemlist.append( Item(channel=item.channel, action="idioma" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart,contentSerieName=title))
 
     return itemlist
 
 def temporadas(item):
-    logger.debug("pelisalacarta.channels.mundoflv temporadas")
+    logger.info()
     
     itemlist = []
     templist = []
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
     realplot = ''
     patron = "<button class='classnamer' onclick='javascript: mostrarcapitulos.*?blank'>([^<]+)</button>"
     
@@ -196,19 +211,18 @@ def temporadas(item):
     
     serieid = scrapertools.find_single_match(data,"<link rel='shortlink' href='http:\/\/mundoflv.com\/\?p=([^']+)' \/>")
     item.thumbnail = item.thumbvid
+    infoLabels=item.infoLabels
     for scrapedtitle in matches:
-        #url = 'http://mundoflv.com/wp-content/themes/wpRafael/includes/capitulos.php?serie='+serieid+'&sr=&temporada=' + scrapedtitle
         url = 'http://mundoflv.com/wp-content/themes/wpRafael/includes/capitulos.php?serie='+serieid+'&temporada=' + scrapedtitle
         title = 'Temporada '+ scrapertools.decodeHtmlentities(scrapedtitle)
         contentSeasonNumber = scrapedtitle
         thumbnail = item.thumbnail
         realplot = scrapertools.find_single_match(data, '\/><\/a>([^*]+)<p><\/p>.*')
-        plot = scrapertools.remove_htmltags(realplot)
-        fanart = ''#scrapertools.find_single_match(data,'<img src="([^"]+)"/>.*?</a>')
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="episodiosxtemp" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart, extra1=item.extra1, contentSerieName=item.contentSerieName, contentSeasonNumber = contentSeasonNumber))
+        plot =''
+        fanart = ''
+        itemlist.append( Item(channel=item.channel, action="episodiosxtemp" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart, extra1=item.extra1, contentSerieName=item.contentSerieName, contentSeasonNumber = contentSeasonNumber, infoLabels = {'season':contentSeasonNumber}))
     
-            
+    tmdb.set_infoLabels_itemlist(itemlist, seekTmdb = True)      
     if config.get_library_support() and len(itemlist) > 0:
         itemlist.append(Item(channel=item.channel, title='[COLOR yellow]Añadir esta serie a la biblioteca[/COLOR]', url=item.url,
                              action="add_serie_to_library", extra="episodios", contentSerieName=item.contentSerieName, extra1 = item.extra1))
@@ -216,20 +230,18 @@ def temporadas(item):
     return itemlist
 
 def episodios(item):
-    logger.debug('pelisalacarta.channels.mundoflv episodios')
+    logger.info()
     itemlist = []
     templist = temporadas(item)
     for tempitem in templist:
-       logger.debug(tempitem)
-       itemlist += episodiosxtemp(tempitem) 
+       itemlist += episodiosxtemp(tempitem)
 
     return itemlist
 
 def episodiosxtemp(item):
-    logger.debug("pelisalacarta.channels.mundoflv episodiosxtemp")
+    logger.info()
     itemlist = []
-    data = scrapertools.cache_page(item.url)
-     
+    data = httptools.downloadpage(item.url).data
     patron = "<button class='classnamer' onclick='javascript: mostrarenlaces\(([^\)]+)\).*?<"
     matches = re.compile(patron,re.DOTALL).findall(data)
     
@@ -237,22 +249,25 @@ def episodiosxtemp(item):
         item.url=item.url.replace("&sr","")
         item.url=item.url.replace("capitulos","enlaces")
         url = item.url+'&capitulo=' + scrapedtitle
-        title=item.contentSerieName+' '+item.contentSeasonNumber+'x'+scrapedtitle
+        contentEpisodeNumber=scrapedtitle
+        title=item.contentSerieName+' '+item.contentSeasonNumber+'x'+contentEpisodeNumber
         thumbnail = item.thumbnail
-        plot = item.plot
+        plot = ''
         fanart=''
         idioma=''
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title, fulltitle=item.fulltitle, url=url, thumbnail=item.thumbnail, plot=plot, extra1=item.extra1,idioma='', contentSerieName = item.contentSerieName, contentSeasonNumber = item.contentSeasonNumber, contentEpisodeNumber=scrapedtitle))
-    
+        infoLabels = item.infoLabels
+        infoLabels['episode']= contentEpisodeNumber
+        itemlist.append( Item(channel=item.channel, action="findvideos", title=title, fulltitle=item.fulltitle, url=url, thumbnail=item.thumbnail, plot=plot, extra1=item.extra1,idioma='', contentSerieName = item.contentSerieName, contentSeasonNumber = item.contentSeasonNumber,infoLabels= infoLabels))
+
+    tmdb.set_infoLabels_itemlist(itemlist, seekTmdb=True)
     return itemlist
     
 def idioma(item):
-    logger.info("pelisalacarta.channels.mundoflv idioma")
+    logger.info()
 
     itemlist = []
     thumbvid =item.thumbnail
-    itemlist.append( Item(channel=item.channel, title="Latino", action="temporadas", url=item.url, thumbnail=thumbmx, fanart='', extra1 = 'la', fulltitle = item.title, thumbvid = thumbvid, contentSerieName=item.contentSerieName))
+    itemlist.append( Item(channel=item.channel, title="Latino", action="temporadas", url=item.url, thumbnail=thumbmx, fanart='', extra1 = 'la', fulltitle = item.title, thumbvid = thumbvid, contentSerieName=item.contentSerieName, infoLabels=item.infoLabels))
     
     itemlist.append( Item(channel=item.channel, title="Español", action="temporadas", url=item.url, thumbnail=thumbes, fanart='', extra1 = 'es', fulltitle = item.title, thumbvid = thumbvid, contentSerieName=item.contentSerieName))
     
@@ -270,32 +285,36 @@ def idioma(item):
 
 
 def busqueda(item):
-    logger.info("mundoflv.py busqueda")
+    logger.info()
     itemlist = []
-    data = scrapertools.cache_page(item.url)
-    patron = '<img class=.*?src="([^"]+)" alt="([^"]+)">.<span><\/span>.<\/div>.<div.*?>.<!--.*?>.<span class.*?>.<span class.*?\/span>.<\/span>.<!--.*?>.<h3><a href="([^"]+)">.*?/h3>'
+    data = httptools.downloadpage(item.url).data
+    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
+
+    patron = '<img class=.*?src="([^"]+)" alt="(.*?)(?:\|.*?|\(.*?|")>.*?h3><a href="(.*?)".*?class="year">(.*?)<\/span>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
     
-    for scrapedthumbnail, scrapedtitle, scrapedurl in matches:
+    for scrapedthumbnail, scrapedtitle, scrapedurl, scrapedyear in matches:
         url = scrapedurl
         title = scrapertools.decodeHtmlentities(scrapedtitle)
         thumbnail = scrapedthumbnail
         plot = ''
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="idioma" , title=title , fulltitle=title, url=url, thumbnail=thumbnail, plot=plot, contentSerieName=title))
+        year = scrapedyear
+        itemlist.append( Item(channel=item.channel, action="idioma" , title=title , fulltitle=title, url=url, thumbnail=thumbnail, plot=plot, contentSerieName=title, infoLabels={'year':year}))
+    tmdb.set_infoLabels_itemlist(itemlist, seekTmdb = True)
+    itemlist = fail_tmdb(itemlist)
+
    #Paginacion
     patron  = "<a rel='nofollow' class=previouspostslink' href='([^']+)'>Siguiente &rsaquo;</a>"
     next_page_url = scrapertools.find_single_match(data,"<a rel='nofollow' class=previouspostslink' href='([^']+)'>Siguiente &rsaquo;</a>")
     if next_page_url!="":
         item.url=next_page_url
         import inspect
-        itemlist.append(Item(channel = item.channel,action = "busqueda",title = ">> Página siguiente", url = next_page_url))   
-
+        itemlist.append(Item(channel = item.channel,action = "busqueda",title = ">> Página siguiente", url = next_page_url, thumbnail='https://s32.postimg.org/4zppxf5j9/siguiente.png'))   
     return itemlist
 
 def search(item,texto):
-    logger.info("mundoflv.py search")
+    logger.info()
     texto = texto.replace(" ","+")
     item.url = item.url+texto
     if texto!='':
@@ -306,9 +325,8 @@ def findvideos(item):
     logger.info()
     itemlist = []
 
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
     patron ='href="([^"]+)".*?domain=.*?>([^<]+).*?gold">([^<]+)<'
-    logger.debug(data)
     matches = re.compile(patron,re.DOTALL).findall(data)
 
     for scrapedurl, scrapedserver, scrapedidioma in matches:
@@ -316,9 +334,13 @@ def findvideos(item):
         idioma = audio[scrapedidioma]
         title = item.contentSerieName+' '+str(item.contentSeasonNumber)+'x'+str(item.contentEpisodeNumber)+' '+idioma+' ('+scrapedserver.strip(' ')+')'
         if scrapedidioma == item.extra1 or item.extra1 == 'all':
-           itemlist.append(item.clone(title=title, url=url, action="play", language=idioma, server = scrapedserver))
+           itemlist.append(item.clone(title=title, url=url, action="play", language=idioma, server = scrapedserver, fulltitle = item.ContentSeriename))
+    
     for videoitem in itemlist:
+        videoitem.infoLabels = item.infoLabels
         videoitem.thumbnail = servertools.guess_server_thumbnail(videoitem.server)
+        
+
                
         
 
@@ -328,13 +350,17 @@ def findvideos(item):
 def play(item):
     logger.info('mundoflv.py play')
 
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
     if 'streamplay' not in item.server or 'streame' not in item.server:
        url = scrapertools.find_single_match(data, '<(?:IFRAME|iframe).*?(?:SRC|src)=*([^ ]+) (?!style|STYLE)')
     else:
        url = scrapertools.find_single_match(data, '<meta http-equiv="refresh" content="0; url=([^"]+)">')
 
     itemlist = servertools.find_video_items(data=url)
+    for videoitem in itemlist:
+        videoitem.infoLabels = item.infoLabels
+        videoitem.title = item.title
+        videoitem.thumbnail = videoitem.infoLabels['thumbnail']
 
     return itemlist  
 

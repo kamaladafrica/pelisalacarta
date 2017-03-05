@@ -11,9 +11,10 @@ from core import config
 from core import scrapertools
 from core.item import Item
 from core import servertools
+from core import tmdb
+from core import httptools
 
 
-DEBUG = config.get_setting("debug")
 host = 'http://verpeliculasnuevas.com'
 
 taudio = {'latino':'[COLOR limegreen]LATINO[/COLOR]','castellano':'[COLOR yellow]ESPAÑOL[/COLOR]','sub':'[COLOR red]ORIGINAL SUBTITULADO[/COLOR]', 'castellanolatinosub':'[COLOR orange]MULTI[/COLOR]','castellanolatino':'[COLOR orange]MULTI[/COLOR]'}
@@ -70,8 +71,10 @@ tgenero = {    "comedia":"https://s32.postimg.org/q7g2qs90l/comedia.png",
                "infantil":"https://s32.postimg.org/i53zwwgsl/infantil.png",
                "animacion":"https://s32.postimg.org/rbo1kypj9/animacion.png"}
 
+patrones =['','<span class="clms">Sinopsis:<\/span>([^<]+)<div class="info_movie">']
+
 def mainlist(item):
-    logger.info("pelisalacarta.channels.verpeliculasnuevas mainlist")
+    logger.info()
 
     itemlist = []
     
@@ -88,14 +91,16 @@ def mainlist(item):
     itemlist.append( itemlist[-1].clone (title="Año", action="menuseccion", thumbnail='https://s31.postimg.org/iyl5fvzqz/pora_o.png', fanart='https://s31.postimg.org/iyl5fvzqz/pora_o.png',url = host, extra='/fecha-estreno'))
 
     itemlist.append( itemlist[-1].clone (title="Buscar", action="search", url=host+'?s=', thumbnail='https://s31.postimg.org/qose4p13f/Buscar.png', fanart='https://s31.postimg.org/qose4p13f/Buscar.png'))
+
+    #itemlist.append( itemlist[-1].clone (title="newest", action="newest", url=host))
     
     return itemlist
 
 def menuseccion(item):
-    logger.info("pelisalacarta.channels.verpeliculasnuevas menuseccion")
+    logger.info()
     itemlist = []
     seccion = item.extra
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
 
     if seccion == '/audio':
         patron = "<a href='\/audio([^']+)' title='lista de películas en.*?'>(?:Español|Latino|Subtitulado)<\/a>"
@@ -133,25 +138,24 @@ def menuseccion(item):
     		else:
     		  thumbnail = ''
 
-    	if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
         itemlist.append( Item(channel=item.channel, action='lista' , title=title , url=url, thumbnail = thumbnail))
 
     return itemlist
 
 
 def lista (item):
-    logger.info ('peliculasalacarta.channel.verpeliculasnuevas lista')
+    logger.info()
 	
     itemlist = []
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
     data = re.sub(r'"|\n|\r|\t|&nbsp;|<br>', "", data)
 
-    patron = "peli><a href=([^ ]+) title=.*?><img src=([^ ]+) alt=.*?><div class=([^>]+)>.*?<p>([^<]+)<\/p>.*?flags ([^']+)'"
+    patron = "peli><a href=([^ ]+) title=(.*?)><img src=([^ ]+) alt=.*?><div class=([^>]+)>.*?<p>.*?<\/p>.*?flags ([^']+)'"
     matches = re.compile(patron,re.DOTALL).findall(data)
 
-    for scrapedurl, scrapedthumbnail,  scrapedcalidad, scrapedtitle, scrapedidioma in matches:
-        dataplot = scrapertools.cache_page(scrapedurl)
-
+    for scrapedurl, scrapedtitle, scrapedthumbnail,  scrapedcalidad, scrapedidioma in matches:
+        year = scrapertools.find_single_match(scrapedtitle,'.*?\((\d{4})\)')
+        scrapedtitle = scrapertools.find_single_match(scrapedtitle,'(.*?)\(\.*?')
         url = scrapedurl
         thumbnail = scrapedthumbnail
         scrapedcalidad = scrapedcalidad.replace("'","")
@@ -169,25 +173,39 @@ def lista (item):
         
         title = scrapedtitle+' | '+scrapedcalidad+' | '+scrapedidioma+ ' | '
         fanart =''
-        plot= scrapertools.find_single_match(dataplot, '<span class="clms">Sinopsis:<\/span>([^<]+)<div class="info_movie">')
+
+        #plot= scrapertools.find_single_match(dataplot, '<span class="clms">Sinopsis:<\/span>([^<]+)<div class="info_movie">')
+        plot =''
         
-                
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action='findvideos' , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, contentTitle = scrapedtitle, extra = item.extra))
+        itemlist.append( Item(channel=item.channel, action='findvideos' , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, contentTitle = scrapedtitle, extra = item.extra, infoLabels ={'year':year}))
        
 # #Paginacion
-
+    tmdb.set_infoLabels_itemlist(itemlist, seekTmdb=True)
+    itemlist = fail_tmdb(itemlist)
     if itemlist !=[]:
         actual_page_url = item.url
         next_page = scrapertools.find_single_match(data,"class=previouspostslink' href='([^']+)'>Siguiente &rsaquo;<\/a>")
         import inspect
         if next_page !='':
            itemlist.append(Item(channel = item.channel, action = "lista", title = 'Siguiente >>>', url = next_page, thumbnail='https://s32.postimg.org/4zppxf5j9/siguiente.png',extra=item.extra))
+    
+    return itemlist
+
+def fail_tmdb(itemlist):
+    logger.info()
+    realplot=''
+    for item in itemlist:
+        if item.infoLabels['plot'] =='':
+            data = httptools.downloadpage(item.url).data
+            if item.thumbnail == '':
+                item.thumbnail= scrapertools.find_single_match(data,patrones[0])
+            realplot = scrapertools.find_single_match(data, patrones[1])
+            item.plot = scrapertools.remove_htmltags(realplot)
     return itemlist
 
 
 def search(item,texto):
-    logger.info("verpeliculasnuevas.py search")
+    logger.info()
     texto = texto.replace(" ","+")
     item.url = item.url+texto
 
@@ -197,9 +215,9 @@ def search(item,texto):
         return []    
 
 def findvideos(item):
-    logger.info ("pelisalacarta.channels.verpeliculasnuevas findvideos")
+    logger.info()
     itemlist=[]
-    data=scrapertools.cache_page(item.url)
+    data=httptools.downloadpage(item.url).data
     data = re.sub(r"'|\n|\r|\t|&nbsp;|<br>", "", data)
 
     patron = 'class="servidor" alt=""> ([^<]+)<\/span><span style="width: 40px;">([^<]+)<\/span><a class="verLink" rel="nofollow" href="([^"]+)" target="_blank"> <img title="Ver online gratis"'
@@ -218,14 +236,38 @@ def findvideos(item):
     	itemlist.append( Item(channel=item.channel, action='play' , idioma=idioma, calidad=calidad, url=url))
 
     for videoitem in itemlist:
+        videoitem.infoLabels=item.infoLabels
         videoitem.channel = item.channel
         videoitem.folder = False
         videoitem.thumbnail = servertools.guess_server_thumbnail(videoitem.url)
         videoitem.fulltitle = item.title
-        videoitem.title = item.contentTitle+' | '+videoitem.calidad+' | '+videoitem.idioma
         videoitem.server = servertools.get_server_from_url(videoitem.url)
+        videoitem.title = item.contentTitle+' | '+videoitem.calidad+' | '+videoitem.idioma+' ('+videoitem.server+')'
+
+       
 
     if config.get_library_support() and len(itemlist) > 0 and item.extra !='findvideos' :
         itemlist.append(Item(channel=item.channel, title='[COLOR yellow]Añadir esta pelicula a la biblioteca[/COLOR]', url=item.url,
                              action="add_pelicula_to_library", extra="findvideos", contentTitle = item.contentTitle)) 
+    return itemlist
+
+def newest(categoria):
+    logger.info()
+    itemlist = []
+    item = Item()
+    #categoria='peliculas'
+    try:
+        if categoria == 'peliculas':
+            item.url = host
+        elif categoria == 'infantiles':
+            item.url = host+'/genero/infantil/'
+        itemlist = lista(item)
+        if itemlist[-1].title == 'Siguiente >>>':
+                itemlist.pop()
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error("{0}".format(line))
+        return []
+
     return itemlist

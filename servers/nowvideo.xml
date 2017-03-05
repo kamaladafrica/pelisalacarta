@@ -1,8 +1,20 @@
 <?xml version="1.0" ?>
 <server>
 	<active>true</active>
-	<changes>Versión incial</changes>
-	<date>25/03/2016</date>
+	<version>5</version>
+	<changes>
+		<change>
+			<date>03/03/2017</date>
+			<autor>Cmos</autor>
+			<description>Corregido por cambios en el servidor y limpieza de código</description>
+		</change>
+		<change>
+			<date>25/03/2016</date>
+			<autor>divadres</autor>
+			<description>Versión inicial</description>
+		</change>
+	</changes>
+
 	<free>true</free>
 	<id>nowvideo</id>
 	<name>nowvideo</name>
@@ -12,5 +24,4 @@
 	</premium>
 	<thumbnail>http://media.tvalacarta.info/servers/server_nowvideo.png</thumbnail>
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/servers/</update_url>
-	<version>1</version>
 </server>

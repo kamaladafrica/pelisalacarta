@@ -12,7 +12,7 @@
    <bannermenu>https://s32.postimg.org/kihkdpx1x/banner_cinecalidad.png</bannermenu>
 
    <update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-   <version>2</version>
+   <version>3</version>
    <date>18/06/2016</date>
    <changes>First release</changes>
 
@@ -24,4 +24,20 @@
    <settings>
       <include_in_global_search>false</include_in_global_search>
    </settings>
+   <settings>
+		<id>include_in_newest_peliculas</id>
+		<type>bool</type>
+		<label>Incluir en Novedades - Peliculas</label>
+		<default>true</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<id>include_in_newest_infantiles</id>
+		<type>bool</type>
+		<label>Incluir en Novedades - Infantiles</label>
+		<default>true</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
 </channel>
