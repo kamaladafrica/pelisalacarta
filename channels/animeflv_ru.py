@@ -14,7 +14,7 @@ from core import logger
 from core import scrapertools
 from core.item import Item
 
-HOST = "http://animeflv.net/"
+HOST = "https://animeflv.ru/"
 
 
 def mainlist(item):
@@ -24,18 +24,12 @@ def mainlist(item):
 
     itemlist.append(Item(channel=item.channel, action="novedades_episodios", title="Últimos episodios", url=HOST))
     itemlist.append(Item(channel=item.channel, action="novedades_anime", title="Últimos animes", url=HOST))
-    itemlist.append(Item(channel=item.channel, action="listado", title="Animes", url=HOST + "browse?order=title"))
+    itemlist.append(Item(channel=item.channel, action="listado", title="Animes", url=HOST + "animes/nombre/lista"))
 
     itemlist.append(Item(channel=item.channel, title="Buscar por:"))
     itemlist.append(Item(channel=item.channel, action="search", title="    Título"))
-    itemlist.append(Item(channel=item.channel, action="search_section", title="    Género", url=HOST + "browse",
+    itemlist.append(Item(channel=item.channel, action="search_section", title="    Género", url=HOST + "animes",
                          extra="genre"))
-    itemlist.append(Item(channel=item.channel, action="search_section", title="    Tipo", url=HOST + "browse",
-                         extra="type"))
-    itemlist.append(Item(channel=item.channel, action="search_section", title="    Año", url=HOST + "browse",
-                         extra="year"))
-    itemlist.append(Item(channel=item.channel, action="search_section", title="    Estado", url=HOST + "browse",
-                         extra="status"))
 
     if renumbertools.context:
         itemlist = renumbertools.show_option(item.channel, itemlist)
@@ -43,10 +37,16 @@ def mainlist(item):
     return itemlist
 
 
+def clean_title(title):
+    year_pattern = r'\([\d -]+?\)'
+
+    return re.sub(year_pattern, '', title).strip()
+
+
 def search(item, texto):
     logger.info()
     itemlist = []
-    item.url = urlparse.urljoin(HOST, "api/animes/search")
+    item.url = urlparse.urljoin(HOST, "search_suggest")
     texto = texto.replace(" ", "+")
     post = "value=%s" % texto
     data = httptools.downloadpage(item.url, post=post).data
@@ -54,40 +54,36 @@ def search(item, texto):
     dict_data = jsontools.load_json(data)
 
     for e in dict_data:
-        if e["id"] != e["last_id"]:
-            _id = e["last_id"]
-        else:
-            _id = e["id"]
+        title = clean_title(scrapertools.htmlclean(e["name"]))
+        url = e["url"]
+        plot = e["description"]
+        thumbnail = HOST + e["thumb"]
+        new_item = item.clone(action="episodios", title=title, url=url, plot=plot, thumbnail=thumbnail)
 
-        url = "%sanime/%s/%s" % (HOST, _id, e["slug"])
-        title = e["title"]
-        thumbnail = "%suploads/animes/covers/%s.jpg" % (HOST, e["id"])
-        new_item = item.clone(action="episodios", title=title, url=url, thumbnail=thumbnail)
-
-        if e["type"] != "movie":
-            new_item.show = title
-            new_item.context = renumbertools.context
-        else:
+        if "Pelicula" in e["genre"]:
             new_item.contentType = "movie"
             new_item.contentTitle = title
+        else:
+            new_item.show = title
+            new_item.context = renumbertools.context
 
         itemlist.append(new_item)
 
     return itemlist
 
-
+# TODO
 def search_section(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|-\s", "", data)
-    patron = 'id="%s_select"[^>]+>(.*?)</select>' % item.extra
+
+    patron = 'id="%s_filter"[^>]+><div class="inner">(.*?)</div></div>' % item.extra
     data = scrapertools.find_single_match(data, patron)
+    matches = re.compile('<a href="([^"]+)"[^>]+>(.*?)</a>', re.DOTALL).findall(data)
 
-    matches = re.compile('<option value="([^"]+)">(.*?)</option>', re.DOTALL).findall(data)
-
-    for _id, title in matches:
-        url = "%s?%s=%s&order=title" % (item.url, item.extra, _id)
+    for url, title in matches:
+        url = "%s/nombre/lista" % url
         itemlist.append(Item(channel=item.channel, action="listado", title=title, url=url,
                              context=renumbertools.context))
 
@@ -110,7 +106,7 @@ def novedades_episodios(item):
     data = re.sub(r"\n|\r|\t|\s{2}|-\s", "", data)
     data = scrapertools.find_single_match(data, '<ul class="ListEpisodios[^>]+>(.*?)</ul>')
 
-    matches = re.compile('<a href="([^"]+)"[^>]+>.+?<img src="([^"]+)".+?"Capi">(.*?)</span>'
+    matches = re.compile('href="([^"]+)"[^>]+>.+?<img src="([^"]+)".+?"Capi">(.*?)</span>'
                          '<strong class="Title">(.*?)</strong>', re.DOTALL).findall(data)
     itemlist = []
 
@@ -147,19 +143,17 @@ def novedades_anime(item):
                          re.DOTALL).findall(data)
     itemlist = []
 
-    for thumbnail, _type, url, title in matches:
+    for thumbnail, url, title in matches:
 
         url = urlparse.urljoin(HOST, url)
         thumbnail = urlparse.urljoin(HOST, thumbnail)
+        title = clean_title(title)
 
         new_item = Item(channel=item.channel, action="episodios", title=title, url=url, thumbnail=thumbnail,
                         fulltitle=title)
-        if _type != "Película":
-            new_item.show = title
-            new_item.context = renumbertools.context
-        else:
-            new_item.contentType = "movie"
-            new_item.contentTitle = title
+
+        new_item.show = title
+        new_item.context = renumbertools.context
 
         itemlist.append(new_item)
 
@@ -171,30 +165,32 @@ def listado(item):
 
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|-\s", "", data)
-    url_pagination = scrapertools.find_single_match(data, '<li class="active">.*?</li><li><a href="([^"]+)">')
+    logger.debug("datito %s" % data)
+    url_pagination = scrapertools.find_single_match(data, '<li class="current">.*?</li>[\s]<li><a href="([^"]+)">')
 
-    data = scrapertools.find_multiple_matches(data, '<ul class="ListAnimes[^>]+>(.*?)</ul>')
+    data = scrapertools.find_multiple_matches(data, '</div><div class="full">(.*?)<div class="pagination')
     data = "".join(data)
 
-    matches = re.compile('<img src="([^"]+)".+?<span class=.+?>(.*?)</span>.+?<a href="([^"]+)">(.*?)</a>.+?'
-                         'class="Desc ScrlV"><p>(.*?)</p>', re.DOTALL).findall(data)
+    matches = re.compile('<img src="([^"]+)".+?<a href="([^"]+)">(.*?)</a>.+?<div class="full item_info genres_info">'
+                         '(.*?)</div>.+?class="full">(.*?)</p>', re.DOTALL).findall(data)
 
     itemlist = []
 
-    for thumbnail, _type, url, title, plot in matches:
+    for thumbnail, url, title, genres, plot in matches:
 
+        title = clean_title(title)
         url = urlparse.urljoin(HOST, url)
         thumbnail = urlparse.urljoin(HOST, thumbnail)
 
         new_item = Item(channel=item.channel, action="episodios", title=title, url=url, thumbnail=thumbnail,
                         fulltitle=title, plot=plot)
 
-        if _type == "Anime":
-            new_item.show = title
-            new_item.context = renumbertools.context
-        else:
+        if "Pelicula Anime" in genres:
             new_item.contentType = "movie"
             new_item.contentTitle = title
+        else:
+            new_item.show = title
+            new_item.context = renumbertools.context
 
         itemlist.append(new_item)
 
@@ -218,7 +214,8 @@ def episodios(item):
         item.plot = scrapertools.find_single_match(data, 'Description[^>]+><p>(.*?)</p>')
 
     data = scrapertools.find_single_match(data, '<div class="Sect Episodes">(.*?)</div>')
-    matches = re.compile('<a href="([^"]+)"[^>]+>(.+?)<', re.DOTALL).findall(data)
+    logger.debug("datito %s" % data)
+    matches = re.compile('<a href="([^"]+)"[^>]+>(.+?)</a', re.DOTALL).findall(data)
 
     for url, title in matches:
         title = title.strip()
@@ -226,7 +223,7 @@ def episodios(item):
         thumbnail = item.thumbnail
 
         try:
-            episode = int(scrapertools.find_single_match(title, "^.+?\s(\d+)$"))
+            episode = int(scrapertools.find_single_match(title, "Episodio (\d+)"))
         except ValueError:
             season = 1
             episode = 1
@@ -246,58 +243,23 @@ def findvideos(item):
 
     itemlist = []
 
-    data = httptools.downloadpage(item.url).data
-    data = re.sub(r"\n|\r|\t|\s{2}|-\s", "", data)
-    list_videos = scrapertools.find_multiple_matches(data, 'video\[\d\]\s=\s\'<iframe.+?src="([^"]+)"')
-    list_videos.extend(scrapertools.find_multiple_matches(data, 'href="http://ouo.io/s/y0d65LCP\?s=([^"]+)"'))
-    # logger.info("data=%s " % list_videos)
+    _id = scrapertools.find_single_match(item.url, 'https://animeflv.ru/ver/([^/]+)/')
+    post = "embed_id=%s" % _id
+    data = httptools.downloadpage("https://animeflv.ru/get_video_info", post=post).data
+    dict_data = jsontools.load_json(data)
 
-    aux_url = []
-    for e in list_videos:
-        if e.startswith("https://s3.animeflv.com/embed.php?server="):
-            server = scrapertools.find_single_match(e, 'server=(.*?)&')
-            e = e.replace("embed", "check").replace("https", "http")
-            data = httptools.downloadpage(e).data.replace("\\", "")
-            if '{"error": "Por favor intenta de nuevo en unos segundos", "sleep": 3}' in data:
-                import time
-                time.sleep(3)
-                data = httptools.downloadpage(e).data.replace("\\", "")
+    headers = dict()
+    headers["Referer"] = item.url
 
-            video_urls = []
-            if server == "gdrive":
-                data = jsontools.load_json(data)
-                for s in data.get("sources", []):
-                    video_urls.append([s["label"], s["type"], s["file"]])
+    data = httptools.downloadpage("https:" + dict_data["value"], headers=headers).data
+    dict_data = jsontools.load_json(data)
 
-                if video_urls:
-                    video_urls.sort(key=lambda v: int(v[0]))
-                    itemlist.append(item.clone(title="Enlace encontrado en %s" % server, action="play",
-                                               video_urls=video_urls))
-            else:
-                url = scrapertools.find_single_match(data, '"file":"([^"]+)"')
-                if url:
-                    itemlist.append(item.clone(title="Enlace encontrado en %s" % server, url=url, action="play"))
+    list_videos = dict_data["playlist"][0]["sources"]
 
-        else:
-            aux_url.append(e)
+    for video in list_videos:
 
-    from core import servertools
-    itemlist.extend(servertools.find_video_items(data=",".join(aux_url)))
-    for videoitem in itemlist:
-        videoitem.fulltitle = item.fulltitle
-        videoitem.channel = item.channel
-        videoitem.thumbnail = item.thumbnail
+        itemlist.append(Item(channel=item.channel, action="play", url=video["file"], show=re.escape(item.show),
+                             title="Ver en calidad [%s]" % video["label"], plot=item.plot, fulltitle=item.title,
+                             thumbnail=item.thumbnail))
 
     return itemlist
-
-
-def play(item):
-    logger.info()
-    itemlist = []
-    if item.video_urls:
-        for it in item.video_urls:
-            title = ".%s %sp [directo]" % (it[1].replace("video/", ""), it[0])
-            itemlist.append([title, it[2]])
-        return itemlist
-    else:
-        return [item]
