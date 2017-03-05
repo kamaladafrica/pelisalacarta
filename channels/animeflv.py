@@ -27,7 +27,7 @@ def mainlist(item):
     itemlist.append(Item(channel=item.channel, action="listado", title="Animes", url=HOST + "browse?order=title"))
 
     itemlist.append(Item(channel=item.channel, title="Buscar por:"))
-    itemlist.append(Item(channel=item.channel, action="search", title="    Título", url=HOST + "browse"))
+    itemlist.append(Item(channel=item.channel, action="search", title="    Título"))
     itemlist.append(Item(channel=item.channel, action="search_section", title="    Género", url=HOST + "browse",
                          extra="genre"))
     itemlist.append(Item(channel=item.channel, action="search_section", title="    Tipo", url=HOST + "browse",
