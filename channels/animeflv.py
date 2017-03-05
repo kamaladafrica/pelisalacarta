@@ -98,7 +98,7 @@ def newest(categoria):
     itemlist = []
 
     if categoria == 'anime':
-        itemlist = novedades_episodios(Item(url="http://animeflv.net/"))
+        itemlist = novedades_episodios(Item(url=HOST))
 
     return itemlist
 
