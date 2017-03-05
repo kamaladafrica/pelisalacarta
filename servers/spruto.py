@@ -7,14 +7,15 @@
 
 import re
 
+from core import httptools
 from core import logger
 from core import scrapertools
 
 
 def test_video_exists(page_url):
-    logger.info("pelisalacarta.servers.spruto test_video_exists(page_url='%s')" % page_url)
+    logger.info("(page_url='%s')" % page_url)
 
-    data = scrapertools.cache_page(page_url)
+    data = httptools.downloadpage(page_url).data
     if "404.txt" in data:
         return False, "El video ha sido borrado"
 
@@ -22,12 +23,12 @@ def test_video_exists(page_url):
 
 
 def get_video_url(page_url, premium=False, user="", password="", video_password=""):
-    logger.info("pelisalacarta.servers.spruto url=" + page_url)
+    logger.info("url=" + page_url)
 
-    data = scrapertools.cache_page(page_url)
+    data = httptools.downloadpage(page_url).data
 
     video_urls = []
-    media_urls = scrapertools.find_multiple_matches(data, 'file":\s*"([^"]+)"')
+    media_urls = scrapertools.find_multiple_matches(data, '<source src="([^"]+)"')
 
     for media_url in media_urls:
         extension = scrapertools.get_filename_from_url(media_url)[-3:]
@@ -44,7 +45,7 @@ def find_videos(data):
 
     # http://www.spruto.tv/iframe_embed.php?video_id=141593
     patronvideos = 'spruto.tv/iframe_embed.php\?video_id=(\d+)'
-    logger.info("pelisalacarta.servers.spruto find_videos #" + patronvideos + "#")
+    logger.info("#" + patronvideos + "#")
     matches = re.compile(patronvideos, re.DOTALL).findall(data)
 
     for match in matches:
