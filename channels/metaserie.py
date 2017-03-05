@@ -11,13 +11,12 @@ from core import config
 from core import scrapertools
 from core.item import Item
 from core import servertools
+from core import httptools
 
-
-DEBUG = config.get_setting("debug")
 
 
 def mainlist(item):
-    logger.info("pelisalacarta.channels.metaserie mainlist")
+    logger.info()
 
     itemlist = []
     itemlist.append( Item(channel=item.channel, title="Series", action="todas", url="http://metaserie.com/series-agregadas", thumbnail='https://s32.postimg.org/544rx8n51/series.png', fanart='https://s32.postimg.org/544rx8n51/series.png'))
@@ -26,9 +25,9 @@ def mainlist(item):
     return itemlist
 
 def todas(item):
-    logger.info("pelisalacarta.channels.metaserie todas")
+    logger.info()
     itemlist = []
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
     
     patron = '<div class="poster">[^<]'
     patron +='<a href="([^"]+)" title="([^"]+)">[^<]'
@@ -43,7 +42,6 @@ def todas(item):
         thumbnail = scrapedthumbnail
         plot = scrapedplot
         fanart = 'https://s32.postimg.org/7g50yo39h/metaserie.png'
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
         itemlist.append( Item(channel=item.channel, action="temporadas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, contentSerieName=title))
     
     #Paginacion
@@ -64,12 +62,11 @@ def todas(item):
 
 
 def temporadas(item):
-    logger.debug("pelisalacarta.channels.metaserie temporadas")
-    logger.debug(item.extra)
+    logger.info()
     itemlist = []
     templist = []
     
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
     patron = '<li class=".*?="([^"]+)".*?>([^<]+)</a>'
     matches = re.compile(patron,re.DOTALL).findall(data)
 
@@ -81,7 +78,6 @@ def temporadas(item):
         thumbnail = item.thumbnail
         plot = item.plot
         fanart = scrapertools.find_single_match(data,'<img src="([^"]+)"/>.*?</a>')
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
         itemlist.append( Item(channel=item.channel, action= 'episodiosxtemp' , title=title ,fulltitle = item.contentSerieName, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart, contentSerieName=item.contentSerieName, contentSeasonNumber = contentSeasonNumber))
               
     if config.get_library_support() and len(itemlist) > 0:
@@ -93,11 +89,10 @@ def temporadas(item):
      
 
 def episodios(item):
-    logger.debug('pelisalacarta.channels.metaserie episodios')
+    logger.info()
     itemlist = []
     templist = temporadas(item)
     for tempitem in templist:
-       logger.debug(tempitem)
        itemlist += episodiosxtemp(tempitem) 
 
     return itemlist
@@ -106,9 +101,9 @@ def episodios(item):
     
 
 def episodiosxtemp(item):
-    logger.debug("pelisalacarta.channels.metaserie episodiosxtemp")
+    logger.info()
     itemlist =[]               
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
     patron = '<td><h3 class=".*?href="([^"]+)".*?">([^<]+).*?td>'
     matches = re.compile(patron,re.DOTALL).findall(data)
 
@@ -121,19 +116,18 @@ def episodiosxtemp(item):
         thumbnail = item.thumbnail
         plot = item.plot
         fanart=item.fanart
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
         itemlist.append( Item(channel=item.channel, action="findvideos" , title=title, fulltitle=item.fulltitle, url=url, thumbnail=item.thumbnail, plot=plot, contentSerieName=item.contentSerieName, contentSeasonNumber = item.contentSeasonNumber, contentEpisodeNumber = contentEpisodeNumber))
     
     return itemlist
 
 def search(item,texto):
-    logger.info("metaserie.py search")
+    logger.info()
     texto = texto.replace(" ","+")
     item.url = item.url+texto
     itemlist = []
     if texto!='':
              try:
-                 data = scrapertools.cache_page(item.url)
+                 data = httptools.downloadpage(item.url).data
                  patron = '<a href="([^\"]+)" rel="bookmark" class="local-link">([^<]+)<.*?'
                  matches = re.compile(patron,re.DOTALL).findall(data)
                  scrapertools.printMatches(matches)
@@ -142,7 +136,6 @@ def search(item,texto):
                      title = scrapertools.decodeHtmlentities(scrapedtitle)
                      thumbnail = ''
                      plot = ''
-                     if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
                      itemlist.append( Item(channel=item.channel, action="temporadas" , title=title , fulltitle=title, url=url, thumbnail=thumbnail, plot=plot, folder =True, contentSerieName=title ))
 
                  return itemlist
@@ -155,10 +148,10 @@ def search(item,texto):
    
 
 def findvideos(item):
-    logger.info ("pelisalacarta.channels.metaserie findvideos")
+    logger.info()
     itemlist=[]
     audio = {'la':'[COLOR limegreen]LATINO[/COLOR]','es':'[COLOR yellow]ESPAÑOL[/COLOR]','sub':'[COLOR red]ORIGINAL SUBTITULADO[/COLOR]'}
-    data=scrapertools.cache_page(item.url)
+    data=httptools.downloadpage(item.url).data
     patron ='<td><img src="http:\/\/metaserie\.com\/wp-content\/themes\/mstheme\/gt\/assets\/img\/([^\.]+).png" width="20".*?<\/td>.*?<td><img src="http:\/\/www\.google\.com\/s2\/favicons\?domain=([^"]+)" \/>&nbsp;([^<]+)<\/td>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     
@@ -170,7 +163,6 @@ def findvideos(item):
         title = item.title+' audio '+audio[scrapedid]+' en '+scrapedserv
         extra = item.thumbnail
         thumbnail = servertools.guess_server_thumbnail(scrapedserv)
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
         itemlist.append( Item(channel=item.channel, action="play" , title=title, fulltitle=item.contentSerieName, url=url, thumbnail=thumbnail, extra=extra, folder= True))
     if item.extra1 != 'capitulos':
         if anterior !='':
@@ -180,7 +172,7 @@ def findvideos(item):
     return itemlist
 
 def play(item):
-    logger.info("pelisalacarta.channels.metaserie play url="+item.url)
+    logger.info()
     itemlist =[]
     from core import servertools
     itemlist.extend(servertools.find_video_items(data=item.url))

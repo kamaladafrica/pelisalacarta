@@ -1,27 +1,25 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <channel>
-	<id>pymovie</id>
-	<name>pymovie</name>
+	<id>doomtv</id>
+	<name>doomtv</name>
 
 	<active>true</active>
 	<adult>false</adult>
 	<language>es</language>
 
 	<fanart></fanart>
-	<thumbnail>https://s27.postimg.org/hvmvz7vab/pymovie.png</thumbnail>
-	<bannermenu>https://s28.postimg.org/3k0wjnwul/pymovie_banner.png</bannermenu>
+	<thumbnail>https://s2.postimg.org/jivgi4ak9/doomtv.png</thumbnail>
+	<bannermenu>https://s32.postimg.org/6gxyripvp/doomtv_banner.png</bannermenu>
 	
 	<update_url></update_url>
-	<version>2</version>
-	<date>04/01/2017</date>
+	<version>1</version>
+	<date>10/02/2017</date>
 	<changes>Release</changes>
 
 
 	<categories>
 		<category>latino</category>
 		<category>movie</category>
-		<category>serie</category>
-		<category>documentary</category>
 	</categories>
 
 	<settings>
@@ -44,14 +42,6 @@
 		<id>include_in_newest_infantiles</id>
 		<type>bool</type>
 		<label>Incluir en Novedades - Infantiles</label>
-		<default>true</default>
-		<enabled>true</enabled>
-		<visible>true</visible>
-	</settings>
-	<settings>
-		<id>include_in_newest_documentales</id>
-		<type>bool</type>
-		<label>Incluir en Novedades - Documentales</label>
 		<default>true</default>
 		<enabled>true</enabled>
 		<visible>true</visible>

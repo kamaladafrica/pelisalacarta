@@ -12,7 +12,7 @@
 	<bannermenu>https://s16.postimg.org/p9xz2vlo5/pelisplus_banner.png</bannermenu>
 	
 	<update_url></update_url>
-	<version>1</version>
+	<version>2</version>
 	<date>06/12/2016</date>
 	<changes>Release</changes>
 
@@ -27,8 +27,32 @@
 		<id>include_in_global_search</id>
 		<type>bool</type>
 		<label>Incluir en busqueda global</label>
-		<default>false</default>
+		<default>true</default>
 		<enabled>false</enabled>
 		<visible>false</visible>
+	</settings>
+	<settings>
+		<id>include_in_newest_peliculas</id>
+		<type>bool</type>
+		<label>Incluir en Novedades - Peliculas</label>
+		<default>true</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<id>include_in_newest_infantiles</id>
+		<type>bool</type>
+		<label>Incluir en Novedades - Infantiles</label>
+		<default>true</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<id>include_in_newest_documentales</id>
+		<type>bool</type>
+		<label>Incluir en Novedades - Documentales</label>
+		<default>true</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
 	</settings>
 </channel>
