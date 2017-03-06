@@ -216,7 +216,7 @@ def save_library_movie(item):
         # Crear base_name.strm si no existe
         item_strm = Item(channel='biblioteca', action='play_from_library',
                                strm_path=strm_path.replace(MOVIES_PATH, ""), contentType='movie',
-                               contentTitle = item.contentTitle})
+                               contentTitle = item.contentTitle)
         strm_exists = filetools.write(strm_path, '%s?%s' % (addon_name, item_strm.tourl()))
         item_nfo.strm_path = strm_path.replace(MOVIES_PATH, "")
 
