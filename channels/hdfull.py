@@ -545,6 +545,7 @@ def findvideos(item):
             decode_aa += aadecode(match)
     
         data_js = re.sub(r':(function.*?\})', r':"\g<1>"', decode_aa)
+        data_js = re.sub(r':(var[^,]+),', r':"\g<1>",', data_js)
 
     data = agrupa_datos( httptools.downloadpage(item.url).data )
     data_obf = scrapertools.find_single_match(data, "var ad\s*=\s*'([^']+)'")
@@ -554,13 +555,20 @@ def findvideos(item):
     year = scrapertools.find_single_match(data, '<span>A&ntilde;o:\s*</span>.*?(\d{4})')
     infolabels["year"] = year
 
+    var0 = eval(scrapertools.find_single_match(data_js, 'var_0=(\[.*?\])'))
     matches = []
     for match in data_decrypt:
         prov = eval(scrapertools.find_single_match(data_js, 'p\[%s\]\s*=\s*(\{.*?\}[\'"]\})' % match["provider"]))
-        function = prov["l"].replace("code", match["code"]).replace("var_1", match["code"])
-        url = scrapertools.find_single_match(function, "return ['\"](.*?)[;]*\}")
+        function = prov["l"].replace("code", match["code"]).replace("var_2", match["code"])
+        index = scrapertools.find_single_match(function, 'var_1\[(\d+)\]')
+        function = function.replace("var_1[%s]" % index, var0[int(index)])
+
+        url = scrapertools.find_single_match(function, "return\s*(.*?)[;]*\}")
         url = re.sub(r'\'|"|\s|\+', '', url)
-        matches.append([match["lang"], match["quality"], url, prov["e"]])
+        index = scrapertools.find_single_match(prov["e"], 'var_1\[(\d+)\]')
+        embed = prov["e"].replace("var_1[%s]" % index, var0[int(index)])
+
+        matches.append([match["lang"], match["quality"], url, embed])
 
     enlaces = []
     for idioma, calidad, url, embed in matches:
@@ -573,7 +581,7 @@ def findvideos(item):
             mostrar_server = servertools.is_server_enabled(servername)
         if mostrar_server:
             option = "Ver"
-            if re.search(r'return [\'"]{2,}', embed):
+            if re.search(r'return ([\'"]{2,}|\})', embed):
                 option = "Descargar"
             calidad = unicode(calidad, "utf8").upper().encode("utf8")
             servername_c = unicode(servername, "utf8").capitalize().encode("utf8")
@@ -781,6 +789,7 @@ def jhexdecode(t):
         if v == "": r = r.replace('var_0[%s]' % i, '""')
 
     r = re.sub(r':(function.*?\})', r":'\g<1>'", r)
+    r = re.sub(r':(var[^,]+),', r":'\g<1>',", r)
 
     return r
 
