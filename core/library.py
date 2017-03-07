@@ -36,44 +36,18 @@ from core import scraper
 from core.item import Item
 from platformcode import platformtools
 
+
+FOLDER_MOVIES = config.get_setting("folder_movies")
+FOLDER_TVSHOWS = config.get_setting("folder_tvshows")
 LIBRARY_PATH = config.get_library_path()
-if config.get_setting("folder_movies") != "":
-    FOLDER_MOVIES = config.get_setting("folder_movies")
-else:
-    FOLDER_MOVIES = "CINE"  # config.get_localized_string(30072)
-if config.get_setting("folder_tvshows") != "":
-    FOLDER_TVSHOWS = config.get_setting("folder_tvshows")
-else:
-    FOLDER_TVSHOWS = "SERIES"  # config.get_localized_string(30073)
 MOVIES_PATH = filetools.join(LIBRARY_PATH, FOLDER_MOVIES)
 TVSHOWS_PATH = filetools.join(LIBRARY_PATH, FOLDER_TVSHOWS)
 
-logger.info("LIBRARY_PATH (RAW): " + LIBRARY_PATH)
-# logger.info("MOVIES_PATH (RAW): " + MOVIES_PATH)
-# logger.info("TVSHOWS_PATH (RAW): " + TVSHOWS_PATH)
-logger.info("FOLDER_MOVIES (RAW): " + FOLDER_MOVIES)
-logger.info("FOLDER_TVSHOWS (RAW): " + FOLDER_TVSHOWS)
-
-addon_name = "plugin://plugin.video.pelisalacarta/"
-
-# TODO: mover todo esto a config.verify_directories_created()
-if not filetools.exists(LIBRARY_PATH):
-    logger.info("Library path doesn't exist:" + LIBRARY_PATH)
+if not FOLDER_MOVIES or not FOLDER_TVSHOWS or not LIBRARY_PATH \
+        or not filetools.exists(MOVIES_PATH) or not filetools.exists(TVSHOWS_PATH):
     config.verify_directories_created()
 
-if not filetools.exists(MOVIES_PATH):
-    logger.info("Movies path doesn't exist:" + MOVIES_PATH)
-    if filetools.mkdir(MOVIES_PATH)and config.is_xbmc():
-        if config.is_xbmc():
-            from platformcode import xbmc_library
-            xbmc_library.establecer_contenido(FOLDER_MOVIES)
-
-if not filetools.exists(TVSHOWS_PATH):
-    logger.info("Tvshows path doesn't exist:" + TVSHOWS_PATH)
-    if filetools.mkdir(TVSHOWS_PATH) and config.is_xbmc():
-        if config.is_xbmc():
-            from platformcode import xbmc_library
-            xbmc_library.establecer_contenido(FOLDER_TVSHOWS)
+addon_name = "plugin://plugin.video.pelisalacarta/"
 
 
 def read_nfo(path_nfo, item=None):

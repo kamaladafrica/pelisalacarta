@@ -234,18 +234,12 @@ def get_cookie_data():
 
     return cookiedata
 
-def search_library_path():
-    sql = 'SELECT strPath FROM path WHERE strPath LIKE "special://%/plugin.video.pelisalacarta/library/SERIES/"'
-    from platformcode.xbmc_helpers import execute_sql_kodi
-    nun_records, records = execute_sql_kodi(sql)
-    if nun_records >= 1:
-        return records[0][0][:-len("SERIES/")]
-    return None
 
 # Test if all the required directories are created
 def verify_directories_created():
     from core import logger
     from core import filetools
+    from platformcode import xbmc_library
 
     config_paths = [["librarypath",      "library"],
                     ["downloadpath",     "downloads"],
@@ -254,10 +248,14 @@ def verify_directories_created():
 
     for path, default in config_paths:
         saved_path = get_setting(path)
-        if not saved_path and path == "librarypath":
-            saved_path = search_library_path()
-            if saved_path:
-                set_setting(path, saved_path)
+
+        # Biblioteca
+        if path == "librarypath":
+            set_setting("library_version", "v4")
+            if not saved_path:
+                saved_path = xbmc_library.search_library_path()
+                if saved_path:
+                    set_setting(path, saved_path)
 
         if not saved_path:
             saved_path = "special://profile/addon_data/plugin.video." + PLUGIN_NAME + "/" + default
@@ -268,6 +266,20 @@ def verify_directories_created():
             logger.debug("Creating %s: %s" % (path, saved_path))
             filetools.mkdir(saved_path)
 
-        # Biblioteca
-        if path == "librarypath":
-            set_setting("library_version", "v4")
+
+    config_paths = [["folder_movies", "CINE"],
+                    ["folder_tvshows", "SERIES"]]
+
+    for path, default in config_paths:
+        saved_path = get_setting(path)
+
+        if not saved_path:
+            saved_path = default
+            set_setting(path, saved_path)
+
+        content_path = filetools.join(get_library_path(), saved_path)
+        if not filetools.exists(content_path):
+            logger.debug("Creating %s: %s" % (path, content_path))
+            filetools.mkdir(content_path)
+            xbmc_library.establecer_contenido(default, get_setting('librarypath') + '/' + saved_path)
+

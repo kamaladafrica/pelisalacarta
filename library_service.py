@@ -336,18 +336,15 @@ def check_for_update(overwrite=True):
                     else:
                         update_when_finished = True
 
-            if config.get_setting("search_new_content", "biblioteca") == 1:
-                if update_when_finished:
+            if config.get_setting("search_new_content", "biblioteca") == 1 and update_when_finished:
                     # Actualizamos la biblioteca de Kodi: Buscar contenido en todas las series
-                    import xbmc
-                    xbmc.executebuiltin('UpdateLibrary(video)')
+                    xbmc_library.update()
                     library_updated = True
 
-            if config.get_setting("clean_after_update", "biblioteca") is True:
+            if library_updated and config.get_setting("clean_after_update", "biblioteca"):
                 # Limpiar la biblioteca después de actualizar
-                if library_updated:
-                    import xbmc
-                    xbmc.executebuiltin('CleanLibrary(video)')
+                import xbmc
+                xbmc.executebuiltin('CleanLibrary(video)')
 
             p_dialog.close()
 

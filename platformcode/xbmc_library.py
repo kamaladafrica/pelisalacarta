@@ -28,34 +28,28 @@
 import sys
 import urllib2
 import xbmc
-from threading import Thread
+import threading
 from core import config
 from core import filetools
 from core import jsontools
 from core import logger
-from core.library import TVSHOWS_PATH, FOLDER_TVSHOWS, FOLDER_MOVIES
 from platformcode import platformtools
-from platformcode.xbmc_helpers import execute_sql_kodi
 
 
 addon_name = sys.argv[0].strip()
 if not addon_name or addon_name.startswith("default.py"):
     addon_name = "plugin://plugin.video.pelisalacarta/"
 
+if config.get_setting("folder_movies") != "":
+    FOLDER_MOVIES = config.get_setting("folder_movies")
+else:
+    FOLDER_MOVIES = "CINE"  # config.get_localized_string(30072)
 
-modo_cliente = config.get_setting("library_mode", "biblioteca")
-# Host name where XBMC is running, leave as localhost if on this PC
-# Make sure "Allow control of XBMC via HTTP" is set to ON in Settings ->
-# Services -> Webserver
-xbmc_host = config.get_setting("xbmc_host", "biblioteca")
-# Configured in Settings -> Services -> Webserver -> Port
-try:
-    xbmc_port = int(config.get_setting("xbmc_puerto", "biblioteca"))
-except:
-    xbmc_port = 0
-# Base URL of the json RPC calls. For GET calls we append a "request" URI
-# parameter. For POSTs, we add the payload as JSON the the HTTP request body
-xbmc_json_rpc_url = "http://" + xbmc_host + ":" + str(xbmc_port) + "/jsonrpc"
+if config.get_setting("folder_tvshows") != "":
+    FOLDER_TVSHOWS = config.get_setting("folder_tvshows")
+else:
+    FOLDER_TVSHOWS = "SERIES"  # config.get_localized_string(30073)
+
 
 
 def mark_auto_as_watched(item):
@@ -102,7 +96,7 @@ def mark_auto_as_watched(item):
 
     # Si esta configurado para marcar como visto
     if config.get_setting("mark_as_watched", "biblioteca"):
-        Thread(target=mark_as_watched_subThread, args=[item]).start()
+        threading.Thread(target=mark_as_watched_subThread, args=[item]).start()
 
 
 def sync_trakt(silent=True):
@@ -204,7 +198,7 @@ def mark_season_as_watched_on_kodi(item, value=1):
 
     # Solo podemos marcar la temporada como vista en la BBDD de Kodi si la BBDD es local,
     # en caso de compartir BBDD esta funcionalidad no funcionara
-    if modo_cliente:
+    if config.get_setting("library_mode", "biblioteca"):
         return
 
     if value == 0:
@@ -214,7 +208,8 @@ def mark_season_as_watched_on_kodi(item, value=1):
     if item.contentSeason > -1:
         request_season = ' and c12= %s' % item.contentSeason
 
-    item_path1 = "%" + item.path.replace("\\\\", "\\").replace(TVSHOWS_PATH, "")
+    tvshows_path = filetools.join(config.get_library_path(), FOLDER_TVSHOWS)
+    item_path1 = "%" + item.path.replace("\\\\", "\\").replace(tvshows_path, "")
     if item_path1[:-1] != "\\":
         item_path1 += "\\"
     item_path2 = item_path1.replace("\\", "/")
@@ -224,6 +219,7 @@ def mark_season_as_watched_on_kodi(item, value=1):
           (value, item_path1, item_path2, request_season)
 
     execute_sql_kodi(sql)
+
 
 def get_data(payload):
     """
@@ -236,8 +232,15 @@ def get_data(payload):
     # Required header for XBMC JSON-RPC calls, otherwise you'll get a 415 HTTP response code - Unsupported media type
     headers = {'content-type': 'application/json'}
 
-    if modo_cliente:
+    if config.get_setting("library_mode", "biblioteca"):
         try:
+            try:
+                xbmc_port = int(config.get_setting("xbmc_puerto", "biblioteca"))
+            except:
+                xbmc_port = 0
+
+            xbmc_json_rpc_url = "http://" + config.get_setting("xbmc_host", "biblioteca") + ":" + str(
+                xbmc_port) + "/jsonrpc"
             req = urllib2.Request(xbmc_json_rpc_url, data=jsontools.dump_json(payload), headers=headers)
             f = urllib2.urlopen(req)
             response = f.read()
@@ -276,35 +279,52 @@ def update(content_type=FOLDER_TVSHOWS, folder=""):
     """
     logger.info()
 
-    librarypath = config.get_library_config_path()
+    if not folder:
+        # Actualizar toda la coleccion
+        while xbmc.getCondVisibility('Library.IsScanningVideo()'):
+            xbmc.sleep(500)
+        xbmc.executebuiltin('UpdateLibrary(video)')
 
-    # Si termina en "/" lo eliminamos
-    if librarypath.endswith("/"):
-        librarypath = librarypath[:-1]
-
-    if librarypath.startswith("special:"):
-        if not librarypath.endswith(content_type):
-            librarypath += "/" + content_type
-        if folder:
-            librarypath += "/" + folder
     else:
-        if not librarypath.endswith(content_type):
-            librarypath = filetools.join(librarypath, content_type)
-        if folder:
+        # Actualizar una sola carpeta en un hilo independiente
+
+        def update_multi_threads(librarypath, lock):
+            lock.acquire()
+            logger.debug("%s\nINICIO" % librarypath)
+            payload = {"jsonrpc": "2.0",
+                       "method": "VideoLibrary.Scan",
+                       "params": {"directory": librarypath}, "id": 1}
+
+            data = get_data(payload)
+            lock.release()
+            logger.debug("%s\nFIN data: %s" % (librarypath, data))
+
+
+        librarypath = config.get_library_config_path()
+
+        # Si termina en "/" lo eliminamos
+        if librarypath.endswith("/"):
+            librarypath = librarypath[:-1]
+
+        if librarypath.startswith("special:"):
+            if not librarypath.endswith(content_type):
+                librarypath += "/" + content_type
+
+            librarypath += "/" + folder
+        else:
+            if not librarypath.endswith(content_type):
+                librarypath = filetools.join(librarypath, content_type)
+
             librarypath = filetools.join(librarypath, folder)
 
+        # Añadimos el caracter finalizador
+        if not librarypath.endswith("/"):
+            librarypath += "/"
 
-    # Añadimos el caracter finalizador
-    if not librarypath.endswith("/"):
-        librarypath += "/"
+        t = threading.Thread(target=update_multi_threads, args=[librarypath, threading.Lock()])
+        t.setDaemon(True)
+        t.start()
 
-    '''# Comprobar que no se esta buscando contenido en la biblioteca de Kodi
-    while xbmc.getCondVisibility('Library.IsScanningVideo()'):
-        xbmc.sleep(500)
-
-    payload = {"jsonrpc": "2.0", "method": "VideoLibrary.Scan", "params": {"directory": librarypath}, "id": 1}
-    data = get_data(payload)
-    logger.info("data: %s" % data)'''
     return librarypath
 
 
@@ -325,8 +345,22 @@ def clean(mostrar_dialogo=False):
     return False
 
 
+def search_library_path():
+    sql = 'SELECT strPath FROM path WHERE strPath LIKE "special://%/plugin.video.pelisalacarta/library/" AND idParentPath ISNULL'
+    nun_records, records = execute_sql_kodi(sql)
+    if nun_records >= 1:
+        return records[0][0][:-len("SERIES/")]
+    return None
 
-def establecer_contenido(content_type, silent=False):
+
+def establecer_contenido(content_type, content_path, silent=False):
+    """
+    Procedimiento para auto-configurar la biblioteca de kodi con los valores por defecto
+    @type content_type: str ('CINE' o 'SERIES')
+    @param content_type: tipo de contenido para configurar, series o peliculas
+    @type content_path: str
+    @param content_path: ruta a la carpeta del content_type
+    """
     if config.is_xbmc():
         continuar = False
         msg_text = "Ruta Biblioteca personalizada"
@@ -335,7 +369,7 @@ def establecer_contenido(content_type, silent=False):
         logger.info(librarypath)
         if librarypath == "special://profile/addon_data/plugin.video.pelisalacarta/library":
             continuar = True
-            if content_type == FOLDER_MOVIES:
+            if content_type == 'CINE':
                 if not xbmc.getCondVisibility('System.HasAddon(metadata.themoviedb.org)'):
                     if not silent:
                         # Preguntar si queremos instalar metadata.themoviedb.org
@@ -437,7 +471,7 @@ def establecer_contenido(content_type, silent=False):
             strPath = ""
             if continuar:
                 continuar = False
-                librarypath = config.get_library_config_path()
+                #librarypath = config.get_library_config_path()
                 if not librarypath.endswith("/"):
                     librarypath = librarypath + "/"
 
@@ -472,7 +506,7 @@ def establecer_contenido(content_type, silent=False):
                 continuar = False
 
                 # Fijamos strContent, strScraper, scanRecursive y strSettings
-                if content_type == FOLDER_MOVIES:
+                if content_type == 'CINE':
                     strContent = 'movies'
                     strScraper = 'metadata.themoviedb.org'
                     scanRecursive = 2147483647
@@ -495,7 +529,7 @@ def establecer_contenido(content_type, silent=False):
                     strActualizar = "¿Desea configurar este Scraper en español como opción por defecto para series?"
 
                 # Fijamos strPath
-                strPath = librarypath + content_type + "/"
+                strPath = content_path + "/"
                 logger.info("%s: %s" % (content_type, strPath))
 
                 # Comprobamos si ya existe strPath en la BD para evitar duplicados
@@ -532,8 +566,7 @@ def establecer_contenido(content_type, silent=False):
 
         if not continuar:
             heading = "Biblioteca %s no configurada" % content_type
-            #msg_text = "Asegurese de tener instalado el scraper de The Movie Database"
-        elif content_type == FOLDER_TVSHOWS and not xbmc.getCondVisibility('System.HasAddon(metadata.tvshows.themoviedb.org)'):
+        elif content_type == 'SERIES' and not xbmc.getCondVisibility('System.HasAddon(metadata.tvshows.themoviedb.org)'):
             heading = "Biblioteca %s configurada" % content_type
             msg_text = "Es necesario reiniciar Kodi para que los cambios surtan efecto."
         else:
@@ -541,3 +574,68 @@ def establecer_contenido(content_type, silent=False):
             msg_text = "Felicidades la biblioteca de Kodi ha sido configurada correctamente."
         platformtools.dialog_notification(heading, msg_text, icon=1, time=10000)
         logger.info("%s: %s" % (heading,msg_text))
+
+
+def execute_sql_kodi(sql):
+    """
+    Ejecuta la consulta sql contra la base de datos de kodi
+    @param sql: Consulta sql valida
+    @type sql: str
+    @return: Numero de registros modificados o devueltos por la consulta
+    @rtype nun_records: int
+    @return: lista con el resultado de la consulta
+    @rtype records: list of tuples
+    """
+    logger.info()
+    file_db = ""
+    nun_records = 0
+    records = None
+
+    # Buscamos el archivo de la BBDD de videos segun la version de kodi
+    video_db = config.get_platform(True)['video_db']
+    if video_db:
+        file_db = filetools.join(xbmc.translatePath("special://userdata/Database"), video_db)
+
+    # metodo alternativo para localizar la BBDD
+    if not file_db or not filetools.exists(file_db):
+        file_db = ""
+        for f in filetools.listdir(xbmc.translatePath("special://userdata/Database")):
+            path_f = filetools.join(xbmc.translatePath("special://userdata/Database"), f)
+
+            if filetools.isfile(path_f) and f.lower().startswith('myvideos') and f.lower().endswith('.db'):
+                file_db = path_f
+                break
+
+    if file_db:
+        logger.info("Archivo de BD: %s" % file_db)
+        conn = None
+        try:
+            import sqlite3
+            conn = sqlite3.connect(file_db)
+            cursor = conn.cursor()
+
+            logger.info("Ejecutando sql: %s" % sql)
+            cursor.execute(sql)
+            conn.commit()
+
+            records = cursor.fetchall()
+            if sql.lower().startswith("select"):
+                nun_records = len(records)
+                if nun_records == 1 and records[0][0] is None:
+                    nun_records = 0
+                    records = []
+            else:
+                nun_records = conn.total_changes
+
+            conn.close()
+            logger.info("Consulta ejecutada. Registros: %s" % nun_records)
+
+        except:
+            logger.error("Error al ejecutar la consulta sql")
+            if conn:
+                conn.close()
+
+    else:
+        logger.debug("Base de datos no encontrada")
+
+    return nun_records, records
