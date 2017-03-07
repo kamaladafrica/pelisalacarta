@@ -555,7 +555,7 @@ def findvideos(item):
     year = scrapertools.find_single_match(data, '<span>A&ntilde;o:\s*</span>.*?(\d{4})')
     infolabels["year"] = year
 
-    var0 = eval(scrapertools.find_single_match(data_js, 'var_0=(\[.*?\])'))
+    var0 = scrapertools.find_single_match(data_js, 'var_0=\[(.*?)\]').split(",")
     matches = []
     for match in data_decrypt:
         prov = eval(scrapertools.find_single_match(data_js, 'p\[%s\]\s*=\s*(\{.*?\}[\'"]\})' % match["provider"]))
