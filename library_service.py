@@ -341,11 +341,6 @@ def check_for_update(overwrite=True):
                     xbmc_library.update()
                     library_updated = True
 
-            if library_updated and config.get_setting("clean_after_update", "biblioteca"):
-                # Limpiar la biblioteca después de actualizar
-                import xbmc
-                xbmc.executebuiltin('CleanLibrary(video)')
-
             p_dialog.close()
 
         else:

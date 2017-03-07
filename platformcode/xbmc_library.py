@@ -349,7 +349,8 @@ def search_library_path():
     sql = 'SELECT strPath FROM path WHERE strPath LIKE "special://%/plugin.video.pelisalacarta/library/" AND idParentPath ISNULL'
     nun_records, records = execute_sql_kodi(sql)
     if nun_records >= 1:
-        return records[0][0][:-len("SERIES/")]
+        logger.debug(records[0][0])
+        return records[0][0]
     return None
 
 
@@ -366,8 +367,7 @@ def establecer_contenido(content_type, content_path, silent=False):
         msg_text = "Ruta Biblioteca personalizada"
 
         librarypath = config.get_setting("librarypath")
-        logger.info(librarypath)
-        if librarypath == "special://profile/addon_data/plugin.video.pelisalacarta/library":
+        if librarypath.startswith("special://"):
             continuar = True
             if content_type == 'CINE':
                 if not xbmc.getCondVisibility('System.HasAddon(metadata.themoviedb.org)'):

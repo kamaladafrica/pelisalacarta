@@ -85,13 +85,6 @@
 		<lvalues>Toda la biblioteca</lvalues>
 	</settings>
 	<settings>
-		<id>clean_after_update</id>
-		<type>bool</type>
-		<label>    Limpiar la biblioteca después de actualizar</label>
-		<enabled>!eq(-5,Nunca)</enabled>
-		<default>false</default>
-	</settings>
-	<settings>
 		<id>window_type</id>
 		<type>list</type>
 		<label>Mostrar los enlaces en</label>
