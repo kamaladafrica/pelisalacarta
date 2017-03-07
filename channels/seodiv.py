@@ -12,18 +12,15 @@ from core import config
 from core import scrapertools
 from core.item import Item
 from core import servertools
-
-
-DEBUG = config.get_setting("debug")
+from core import httptools
 
 host='http://www.seodiv.com'
 
 
 def mainlist(item):
-    logger.info("pelisalacarta.channels.seodiv mainlist")
+    logger.info()
 
     itemlist = []
-    
 
     itemlist.append( Item(channel=item.channel, title="Todos", action="todas", url=host,thumbnail='https://s32.postimg.org/544rx8n51/series.png', fanart='https://s32.postimg.org/544rx8n51/series.png'))
    
@@ -31,9 +28,9 @@ def mainlist(item):
 
 def todas(item):
 
-    logger.info("pelisalacarta.channels.seodiv todas")
+    logger.info()
     itemlist = []
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
     
     patron ='<\/div><img src="([^"]+)".*?\/>.*?'
     patron+='<div class="title-topic">([^<]+)<\/div>.*?'
@@ -47,34 +44,16 @@ def todas(item):
         thumbnail = scrapedthumbnail
         fanart = 'https://s32.postimg.org/gh8lhbkb9/seodiv.png'
         plot = scrapedplot
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
         itemlist.append( Item(channel=item.channel, action="temporadas" ,title=title , url=url, thumbnail=thumbnail, fanart=fanart, plot= plot, contentSerieName=title, extra=''))
            
 
     return itemlist
-
-    
-def categorias(item):
-    logger.info("pelisalacarta.channels.seodiv categoias")
-    itemlist = []
-    data = scrapertools.cache_page(item.url)
-    patron ="<a href='([^']+)' class='tag-link-.*? tag-link-position-.*?' title='.*?' style='font-size: 11px;'>([^<]+)<\/a>" 
-    
-    matches = re.compile(patron,re.DOTALL).findall(data)
-
-    for scrapedurl, scrapedtitle in matches:
-	url = scrapedurl
-	title = scrapedtitle
-	if (DEBUG): logger.info("title=["+title+"], url=["+url+"])")
-	itemlist.append( Item(channel=item.channel, action="todas" , title=title, fulltitle=item.fulltitle, url=url))
-        
-    return itemlist            
         
 def temporadas(item):
-    logger.info("pelisalacarta.channels.seodiv temporadas")
+    logger.info()
     itemlist = []
     templist = []
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
     url_base= item.url
     patron = '<a class="collapsed" data-toggle="collapse" data-parent="#accordion" href=.*? aria-expanded="false" aria-controls=.*?>([^<]+)<\/a>'
     matches = re.compile(patron,re.DOTALL).findall(data)
@@ -90,7 +69,6 @@ def temporadas(item):
            thumbnail = item.thumbnail
            plot = item.plot
            fanart = scrapertools.find_single_match(data,'<img src="([^"]+)"/>.*?</a>')
-           if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
            itemlist.append( Item(channel=item.channel, action="episodiosxtemp" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart, temp=str(temp),contentSerieName=item.contentSerieName))
            temp = temp+1
         
@@ -119,7 +97,7 @@ def episodiosxtemp(item):
     
     logger.debug("pelisalacarta.channels.seodiv episodiosxtemp")
     itemlist = []
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
     tempo = item.title
     if 'Temporada'in item.title:
         item.title = item.title.replace('Temporada', 'temporada')
@@ -131,16 +109,13 @@ def episodiosxtemp(item):
         
     matches = re.compile(patron,re.DOTALL).findall(data)
     idioma = scrapertools.find_single_match(data,' <p><span class="ah-lead-tit">Idioma:</span>&nbsp;<span id="l-vipusk">([^<]+)</span></p>')
-    #if item.temp =='': item.temp='1'
     for scrapedurl, scrapedtipo, scrapedtitle in matches:
         url = host+scrapedurl
-    #    title = item.contentSerieName+' '+item.temp+'x'+scrapedtitle+' ('+idioma+')'
         title =''
         thumbnail = item.thumbnail
         plot = item.plot
         fanart=''
 
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
         if 'temporada' in item.title and item.title in scrapedurl and scrapedtipo =='Capitulo' and item.temp !='':
             title = item.contentSerieName+' '+item.temp+'x'+scrapedtitle+' ('+idioma+')'
             itemlist.append( Item(channel=item.channel, action="findvideos" , title=title, fulltitle=item.fulltitle, url=url, thumbnail=item.thumbnail, plot=plot))

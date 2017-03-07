@@ -11,21 +11,17 @@ from core import config
 from core import scrapertools
 from core.item import Item
 from core import servertools
+from core import httptools
+from core import tmdb
 
-
-DEBUG = config.get_setting("debug")
 host=''
 thumbmx='http://flags.fmcdn.net/data/flags/normal/mx.png'
 thumbes='http://flags.fmcdn.net/data/flags/normal/es.png'
 thumbbr='http://flags.fmcdn.net/data/flags/normal/br.png'
 
-
-#def isGeneric():
-#    return True
-
 def mainlist(item):
     idioma2 ="destacadas" 
-    logger.info("pelisalacarta.channels.cinecalidad mainlist")
+    logger.info()
     itemlist = []
     itemlist.append( Item(channel=item.channel, title="Audio Latino", action="submenu",host="http://cinecalidad.com/",thumbnail=thumbmx, extra = "peliculas"))
     itemlist.append( Item(channel=item.channel, title="Audio Castellano", action="submenu",host="http://cinecalidad.com/espana/",thumbnail=thumbes, extra = "peliculas"))
@@ -52,20 +48,17 @@ def submenu(item):
 
 
 def anyos(item):
-    logger.info("pelisalacarta.channels.cinecalidad generos")
+    logger.info()
     itemlist = []
-    data = scrapertools.cache_page(item.url)
-#   <a href="http://www.cinecalidad.com/peliculas/2016/">2016</a>    
+    data = httptools.downloadpage(item.url).data
     patron = '<a href="([^"]+)">([^<]+)</a> '
     matches = re.compile(patron,re.DOTALL).findall(data)
 
     for scrapedurl,scrapedtitle in matches:
         url = urlparse.urljoin(item.url,scrapedurl)
         title = scrapedtitle
-#        title = title.replace("&","x");
         thumbnail = item.thumbnail
         plot = item.plot
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
         itemlist.append( Item(channel=item.channel, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=item.thumbnail))
 
     return itemlist
@@ -86,38 +79,36 @@ def generos(item):
                "A\xc3\xa7\xc3\xa3o":"https://s32.postimg.org/4hp7gwh9x/accion.png",
                "Fantasia":"https://s32.postimg.org/pklrf01id/fantasia.png",
                "Fic\xc3\xa7\xc3\xa3o cient\xc3\xadfica":"https://s32.postimg.org/6hp3tsxsl/ciencia_ficcion.png"}
-    logger.info("pelisalacarta.channels.cinecalidad generos")
+    logger.info()
     itemlist = []
-    data = scrapertools.cache_page(item.url)
-#             <li id="menu-item-2469" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-2469"><a href="http://www.cinecalidad.com/genero-peliculas/comedia/">Comedia</a></li>    
+    data = httptools.downloadpage(item.url).data
     patron = '<li id="menu-item-.*?" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-.*?"><a href="([^"]+)">([^<]+)<\/a></li>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedtitle in matches:
         url = urlparse.urljoin(item.url,scrapedurl)
         title = scrapedtitle
-#        title = title.replace("&","x");
         thumbnail = tgenero[scrapedtitle]
         plot = item.plot
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
         itemlist.append( Item(channel=item.channel, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=item.thumbnail))
 
     return itemlist
 
 def peliculas(item):
-    logger.info("pelisalacarta.channels.cinecalidad peliculas")
+    logger.info()
     itemlist = []
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
    
-    patron = '<div class="home_post_cont.*? post_box">.*?<a href="([^"]+)".*?src="([^"]+)".*?title="([^"]+)".*?p&gt;([^&]+)&lt;'
+    patron = '<div class="home_post_cont.*? post_box">.*?<a href="([^"]+)".*?src="([^"]+)".*?title="(.*?) \((.*?)\)".*?p&gt;([^&]+)&lt;'
     matches = re.compile(patron,re.DOTALL).findall(data)
 
-    for scrapedurl,scrapedthumbnail,scrapedtitle,scrapedplot in matches:
+    for scrapedurl,scrapedthumbnail,scrapedtitle, scrapedyear, scrapedplot  in matches:
         url = urlparse.urljoin(item.url,scrapedurl)
-        title = scrapedtitle
+        contentTitle = scrapedtitle
+        title = scrapedtitle+' ('+scrapedyear+')'
         thumbnail = scrapedthumbnail
         plot = scrapedplot
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
-        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart='https://s31.postimg.org/puxmvsi7v/cinecalidad.png', contentTitle = title))
+        year = scrapedyear
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart='https://s31.postimg.org/puxmvsi7v/cinecalidad.png', contentTitle = contentTitle, infoLabels={'year':year} ))
     
     try:     
         patron  = "<link rel='next' href='([^']+)' />" 
@@ -125,6 +116,7 @@ def peliculas(item):
         itemlist.append( Item(channel=item.channel, action="peliculas", title="Página siguiente >>" , url=next_page[0], fanart='https://s31.postimg.org/puxmvsi7v/cinecalidad.png') )
 
     except: pass
+    tmdb.set_infoLabels_itemlist(itemlist, seekTmdb = True)
     return itemlist
 
 
@@ -139,12 +131,11 @@ def dec(item):
 
 
 def findvideos(item):
-    servidor = {"http://uptobox.com/":"uptobox","http://userscloud.com/":"userscloud","https://my.pcloud.com/publink/show?code=":"pcloud","http://thevideos.tv/":"thevideos","http://ul.to/":"uploadedto","http://turbobit.net/":"turbobit","http://www.cinecalidad.com/protect/v.html?i=":"cinecalidad","http://www.mediafire.com/download/":"mediafire","https://www.youtube.com/watch?v=":"youtube","http://thevideos.tv/embed-":"thevideos","//www.youtube.com/embed/":"youtube","http://ok.ru/video/":"okru","http://ok.ru/videoembed/":"okru","http://www.cinemaqualidade.com/protect/v.html?i=":"cinemaqualidade.com","http://usersfiles.com/":"usersfiles","https://depositfiles.com/files/":"depositfiles","http://www.nowvideo.sx/video/":"nowvideo","http://vidbull.com/":"vidbull","http://filescdn.com/":"filescdn","http://www.yourupload.com/watch/":"yourupload"}
-    logger.info("pelisalacarta.channels.cinecalidad links")
+    servidor = {"http://uptobox.com/":"uptobox","http://userscloud.com/":"userscloud","https://my.pcloud.com/publink/show?code=":"pcloud","http://thevideos.tv/":"thevideos","http://ul.to/":"uploadedto","http://turbobit.net/":"turbobit","http://www.cinecalidad.com/protect/v.html?i=":"cinecalidad","http://www.mediafire.com/download/":"mediafire","https://www.youtube.com/watch?v=":"youtube","http://thevideos.tv/embed-":"thevideos","//www.youtube.com/embed/":"youtube","http://ok.ru/video/":"okru","http://ok.ru/videoembed/":"okru","http://www.cinemaqualidade.com/protect/v.html?i=":"cinemaqualidade.com","http://usersfiles.com/":"usersfiles","https://depositfiles.com/files/":"depositfiles","http://www.nowvideo.sx/video/":"nowvideo","http://vidbull.com/":"vidbull","http://filescdn.com/":"filescdn","https://www.yourupload.com/watch/":"yourupload"}
+    logger.info()
     itemlist=[]
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
     
-#   {h=dec("111 123 123 119 65 54 54 124 119 123 118 105 118 127 53 106 118 116 54")+dec("114 114 110 115 110 55 121 117 64 120 120 115");}    
     patron = 'dec\("([^"]+)"\)\+dec\("([^"]+)"\)'
     matches = re.compile(patron,re.DOTALL).findall(data)
     recomendados = ["uptobox","thevideos","nowvideo","pcloud"]
@@ -159,12 +150,8 @@ def findvideos(item):
           title = "Ver "+item.contentTitle+" en "+servidor[dec(scrapedurl)].upper()
           if (servidor[dec(scrapedurl)]) in recomendados:
             title=title+"[COLOR limegreen] [I] (Recomedado) [/I] [/COLOR]"
-#           if (servidor[dec(scrapedurl)])=='pcloud':
-#              thumbnail='https://pbs.twimg.com/profile_images/687592526694473728/bCQCZC7b.png'
-#           else:
           thumbnail = servertools.guess_server_thumbnail(servidor[dec(scrapedurl)])
           plot = ""
-          if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"])")
           itemlist.append( Item(channel=item.channel, action="play" , title=title ,fulltitle = item.title, url=url, thumbnail=thumbnail, plot=plot,extra=item.thumbnail, server=servidor[dec(scrapedurl)]))
     
     if config.get_library_support() and len(itemlist) > 0 and item.extra !='findvideos' :
@@ -174,7 +161,7 @@ def findvideos(item):
 
 def play(item):
     
-    logger.info("pelisalacarta.channels.cinecalidad play url="+item.url)
+    logger.info()
     itemlist = servertools.find_video_items(data=item.url)
             
     for videoitem in itemlist:
@@ -182,5 +169,25 @@ def play(item):
         videoitem.fulltitle = item.fulltitle
         videoitem.thumbnail = item.extra
         videochannel=item.channel
+    return itemlist
+
+def newest(categoria):
+    logger.info()
+    itemlist = []
+    item = Item()
+    try:
+        if categoria == 'peliculas':
+            item.url = 'http://www.cinecalidad.to'
+        elif categoria == 'infantiles':
+            item.url ='http://www.cinecalidad.to/genero-peliculas/infantil/'
+        itemlist = peliculas(item)
+        if itemlist[-1].title == 'Página siguiente >>':
+                itemlist.pop()
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error("{0}".format(line))
+        return []
+
     return itemlist
 

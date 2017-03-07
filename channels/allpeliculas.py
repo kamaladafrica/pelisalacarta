@@ -461,11 +461,12 @@ def play(item):
     logger.info()
     itemlist = []
     if item.server == "directo" and "tusfiles" in item.url:
-        data = httptools.downloadpage(item.url).data
-        matches = scrapertools.find_multiple_matches(data, '"file"\s*:\s*"([^"]+)","type"\s*:\s*"([^"]+)"' \
-                                                           ',"label"\s*:\s*"([^"]+)"')
-        for video_url, tipo, calidad in matches:
-            itemlist.append([".%s %s [directo]" % (tipo, calidad), video_url])
+        data = httptools.downloadpage(item.url).data.replace("\\", "")
+        matches = scrapertools.find_multiple_matches(data, '"label"\s*:\s*(.*?),"type"\s*:\s*"([^"]+)","file"\s*:\s*"([^"]+)"')
+        for calidad, tipo, video_url in matches:
+            tipo = tipo.replace("video/", "")
+            video_url += "|Referer=%s" % item.url
+            itemlist.append([".%s %sp [directo]" % (tipo, calidad), video_url])
         try:
             itemlist.sort(key=lambda it:int(it[0].split("p ", 1)[0].rsplit(" ")[1]))
         except:

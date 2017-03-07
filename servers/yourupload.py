@@ -27,12 +27,14 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
 
     video_urls = []
     data = httptools.downloadpage(page_url).data
-    url = scrapertools.find_single_match(data, "file:\s*'([^']+)'")
+    url = scrapertools.find_single_match(data, '<meta property="og:video" content="([^"]+)"')
+    if not url:
+        url = scrapertools.find_single_match(data, "file:\s*'([^']+)'")
     if url:
-        url = "http://www.yourupload.com%s" % url
+        url = "https://www.yourupload.com%s" % url
         referer = {'Referer': page_url}
         location = httptools.downloadpage(url, headers=referer, follow_redirects=False, only_headers=True)
-        media_url = location.headers["location"].replace("?null&start=0", "")
+        media_url = location.headers["location"].replace("?start=0", "").replace("https", "http")
         media_url += "|Referer=%s" % url
         video_urls.append([scrapertools.get_filename_from_url(media_url)[-4:] + " [yourupload]", media_url])
 
@@ -49,21 +51,8 @@ def find_videos(data):
     devuelve = []
 
     #http://www.yourupload.com/embed/2PU6jqindD1Q
-    patronvideos = 'yourupload.com/embed/([A-z0-9]+)'
-    logger.info("#" + patronvideos + "#")
-    matches = re.compile(patronvideos, re.DOTALL).findall(data)
-    for match in matches:
-        titulo = "[yourupload]"
-        url = "http://www.yourupload.com/embed/" + match
-        if url not in encontrados and match != "embed":
-            logger.info("  url=" + url)
-            devuelve.append([titulo, url, 'yourupload'])
-            encontrados.add(url)
-        else:
-            logger.info("  url duplicada=" + url)
-
     #http://embed.yourupload.com/2PU6jqindD1Q
-    patronvideos = 'embed[./]yourupload.com(?:/|.php\?url=)([A-z0-9]+)'
+    patronvideos = 'yourupload.com/(?:watch/|embed/|)([A-z0-9]+)'
     logger.info("#" + patronvideos + "#")
     matches = re.compile(patronvideos, re.DOTALL).findall(data)
     for match in matches:

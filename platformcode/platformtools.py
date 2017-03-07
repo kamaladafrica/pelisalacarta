@@ -76,9 +76,13 @@ def dialog_progress(heading, line1, line2=" ", line3=" "):
 
 
 def dialog_progress_bg(heading, message=""):
-    dialog = xbmcgui.DialogProgressBG()
-    dialog.create(heading, message)
-    return dialog
+    try:
+      dialog = xbmcgui.DialogProgressBG()
+      dialog.create(heading, message)
+      return dialog
+    except:
+      return dialog_progress(heading, message)
+      
 
 
 def dialog_input(default="", heading="", hidden=False):

@@ -519,7 +519,7 @@ def play_from_library(item):
     import xbmc
     # Intentamos reproducir una imagen (esto no hace nada y ademas no da error)
     xbmcplugin.setResolvedUrl(int(sys.argv[1]), True,
-                              xbmcgui.ListItem(path=os.path.join(config.get_runtime_path(), "icon.png")))
+                              xbmcgui.ListItem(path=os.path.join(config.get_runtime_path(), "resources", "subtitle.mp4")))
 
     # Por si acaso la imagen hiciera (en futuras versiones) le damos a stop para detener la reproduccion
     xbmc.Player().stop()

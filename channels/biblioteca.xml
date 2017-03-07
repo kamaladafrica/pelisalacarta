@@ -150,8 +150,8 @@
 		<id>xbmc_host</id>
 		<type>text</type>
 		<label>    Nombre Servidor</label>
-		<enabled>true</enabled>
-		<visible>eq(-1,Remota)</visible>
+		<visible>true</visible>
+		<enabled>eq(-1,Remota)</enabled>
 		<default></default>
 	</settings>
 	<settings>
@@ -159,7 +159,7 @@
 		<type>text</type>
 		<label>    Puerto Servidor</label>
 		<enabled>!eq(-1,'')</enabled>
-		<visible>eq(-2,Remota)</visible>
+		<visible>true</visible>
 		<default></default>
 	</settings>
 	<settings>
@@ -202,8 +202,8 @@
 		<type>bool</type>
 		<label>        Mostrar notificación</label>
 		<default>true</default>
-		<enabled>true</enabled>
-		<visible>eq(-1,true)</visible>
+		<visible>true</visible>
+		<enabled>eq(-1,true)</enabled>
 	</settings>
 	<settings>
 		<id>sync_trakt_new_tvshow</id>
@@ -218,8 +218,8 @@
 		<type>bool</type>
 		<label>        Esperar a que se añada la serie a la biblioteca</label>
 		<default>true</default>
-		<enabled>true</enabled>
-		<visible>eq(-1,true)</visible>
+		<visible>true</visible>
+		<enabled>eq(-1,true)</enabled>
 	</settings>
 
 	<settings>
