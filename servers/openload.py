@@ -63,15 +63,15 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
         for encode in var_encodes:
             text_decode = []
             try:
-                idx1 = max(2, ord(encode[0]) - 55)
-                idx2 = min(idx1, len(encode) - 10)
-                idx3 = encode[idx2:idx2+12]
+                idx1 = max(2, ord(encode[0]) - 50)
+                idx2 = min(idx1, len(encode) - 18)
+                idx3 = encode[idx2:idx2+20]
                 decode1 = []
                 for i in range(0, len(idx3), 2):
                     decode1.append(int(idx3[i:i+2], 16))
-                idx4 = encode[0:idx2] + encode[idx2+12:]
+                idx4 = encode[0:idx2] + encode[idx2+20:]
                 for i in range(0, len(idx4), 2):
-                    value = int(idx4[i:i+2], 16) ^ decode1[(i/2) % 6]
+                    value = int(idx4[i:i+2], 16) ^ 137 ^ decode1[(i/2) % 10]
                     text_decode.append(chr(value))
 
                 text_decode = "".join(text_decode)
