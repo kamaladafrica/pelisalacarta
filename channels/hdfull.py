@@ -67,6 +67,7 @@ def menupeliculas(item):
 
     if account:
         itemlist.append( Item( channel=item.channel, action="items_usuario", title=bbcode_kodi2html("[COLOR orange][B]Favoritos[/B][/COLOR]"), url=host+"/a/my?target=movies&action=favorite&start=-28&limit=28", folder=True ) )
+        itemlist.append( Item( channel=item.channel, action="items_usuario", title=bbcode_kodi2html("[COLOR orange][B]Pendientes[/B][/COLOR]"), url=host+"/a/my?target=movies&action=pending&start=-28&limit=28", folder=True ) )
 
     itemlist.append( Item( channel=item.channel, action="fichas", title="ABC", url=host+"/peliculas/abc", folder=True ) )
     itemlist.append( Item( channel=item.channel, action="fichas", title="Últimas películas" , url=host+"/peliculas", folder=True ) )
@@ -74,6 +75,8 @@ def menupeliculas(item):
     itemlist.append( Item( channel=item.channel, action="fichas", title="Películas Actualizadas", url=host+"/peliculas-actualizadas", folder=True ) )
     itemlist.append( Item( channel=item.channel, action="fichas", title="Rating IMDB", url=host+"/peliculas/imdb_rating", folder=True ) )
     itemlist.append( Item( channel=item.channel, action="generos", title="Películas por Género", url=host, folder=True))
+    if account:
+        itemlist.append( Item( channel=item.channel, action="items_usuario", title=bbcode_kodi2html("[COLOR orange][B]Vistas[/B][/COLOR]"), url=host+"/a/my?target=movies&action=seen&start=-28&limit=28", folder=True ) )
 
     return itemlist
 
@@ -95,6 +98,10 @@ def menuseries(item):
     itemlist.append( Item(channel=item.channel, action="fichas", title="Rating IMDB", url=host+"/series/imdb_rating", folder=True ) )
     itemlist.append( Item(channel=item.channel, action="generos_series", title="Series por Género", url=host, folder=True ) )
     itemlist.append( Item( channel=item.channel, action="listado_series", title="Listado de todas las series", url=host+"/series/list", folder=True ) )
+    if account:
+        itemlist.append( Item( channel=item.channel, action="items_usuario", title=bbcode_kodi2html("[COLOR orange][B]Favoritas[/B][/COLOR]"), url=host+"/a/my?target=shows&action=favorite&start=-28&limit=28", folder=True ) )
+        itemlist.append( Item( channel=item.channel, action="items_usuario", title=bbcode_kodi2html("[COLOR orange][B]Pendientes[/B][/COLOR]"), url=host+"/a/my?target=shows&action=pending&start=-28&limit=28", folder=True ) )
+        itemlist.append( Item( channel=item.channel, action="items_usuario", title=bbcode_kodi2html("[COLOR orange][B]Vistas[/B][/COLOR]"), url=host+"/a/my?target=shows&action=seen&start=-28&limit=28", folder=True ) )
 
     return itemlist
 
