@@ -291,7 +291,7 @@ def get_episodios(item):
 
 def findvideos(item):
     logger.info()
-    # logger.debug("item:\n" + item.tostring('\n'))
+    #logger.debug("item:\n" + item.tostring('\n'))
 
     itemlist = []
     list_canales = {}
@@ -316,12 +316,12 @@ def findvideos(item):
     for fd in filetools.listdir(path_dir):
         if fd.endswith('.json'):
             contenido, nom_canal = fd[:-6].split('[')
-            if (content_title in contenido.strip() or item.contentType == 'movie') and nom_canal not in \
+            if (contenido.startswith(content_title) or item.contentType == 'movie') and nom_canal not in \
                     list_canales.keys():
                 list_canales[nom_canal] = filetools.join(path_dir, fd)
 
     num_canales = len(list_canales)
-    logger.debug(str(list_canales))
+    #logger.debug(str(list_canales))
     if 'descargas' in list_canales:
         json_path = list_canales['descargas']
         item_json = Item().fromjson(filetools.read(json_path))
