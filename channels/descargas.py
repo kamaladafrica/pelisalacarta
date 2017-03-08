@@ -35,6 +35,7 @@ from core import scraper
 from core import scrapertools
 from core import servertools
 from core.downloader import Downloader
+from core import library
 from core.item import Item
 from platformcode import platformtools
 
@@ -132,7 +133,8 @@ def browser(item):
     itemlist = []
     
     for file in filetools.listdir(item.url):
-      if filetools.isdir(filetools.join(item.url, file)) and not file == "list":
+      if file == "list": continue
+      if filetools.isdir(filetools.join(item.url, file)):
         itemlist.append(Item(channel=item.channel, title=file, action=item.action, url= filetools.join(item.url, file)))
       else:
         itemlist.append(Item(channel=item.channel, title=file, action="play", url= filetools.join(item.url, file)))
@@ -252,43 +254,35 @@ def menu(item):
 
 
 def move_to_libray(item):
-    if not config.get_setting("library_move", "descargas") == True: 
-      return
-      
-    try:
-      from core import library
-    except:
-      return
-      
-    # Copiamos el archivo a la biblioteca
-    origen = filetools.join(config.get_setting("downloadpath"), item.downloadFilename)
-    destino = filetools.join(config.get_library_path(), *filetools.split(item.downloadFilename))
-    
-    if not filetools.isdir(filetools.dirname(destino)):
-      filetools.mkdir(filetools.dirname(destino))
-    
-    if filetools.isfile(destino) and filetools.isfile(origen) :
-      filetools.remove(destino)
 
-    if filetools.isfile(origen):
-      filetools.move(origen, destino)
-      if len(filetools.listdir(filetools.dirname(origen))) == 0: 
-        filetools.rmdir(filetools.dirname(origen))
+    download_path = filetools.join(config.get_setting("downloadpath"), item.downloadFilename)
+    library_path = filetools.join(config.get_library_path(), *filetools.split(item.downloadFilename))
+    final_path = download_path
       
-    else:
-      logger.error("No se ha encontrado el archivo: %s" % origen)
+    if config.get_setting("library_add", "descargas") == True and config.get_setting("library_move", "descargas") == True:   
+      if not filetools.isdir(filetools.dirname(library_path)):
+        filetools.mkdir(filetools.dirname(library_path))
     
-    if filetools.isfile(destino):
-      if item.contentType == "movie" and item.infoLabels["tmdb_id"]:
-        library_item = Item(title="Descargado: %s" % item.downloadFilename, channel= "descargas", action="findvideos", infoLabels=item.infoLabels, url=item.downloadFilename)
-        
-        library.save_library_movie(library_item)
-        
-      elif item.contentType == "episode" and item.infoLabels["tmdb_id"]:
-        library_item = Item(title="Descargado: %s" % item.downloadFilename, channel= "descargas", action="findvideos", infoLabels=item.infoLabels, url=item.downloadFilename)
-        
-        tvshow = Item(channel= "descargas", contentType="tvshow", infoLabels = {"tmdb_id": item.infoLabels["tmdb_id"]})
-        library.save_library_tvshow(tvshow, [library_item])
+      if filetools.isfile(library_path) and filetools.isfile(download_path) :
+        filetools.remove(library_path)
+
+      if filetools.isfile(download_path):
+        if filetools.move(download_path, library_path):
+          final_path = library_path
+          
+        if len(filetools.listdir(filetools.dirname(download_path))) == 0: 
+          filetools.rmdir(filetools.dirname(download_path))
+          
+    if config.get_setting("library_add", "descargas") == True: 
+      if filetools.isfile(final_path):
+        if item.contentType == "movie" and item.infoLabels["tmdb_id"]:
+          library_item = Item(title="Descargado: %s" % item.downloadFilename, channel= "descargas", action="findvideos", infoLabels=item.infoLabels, url=final_path)
+          library.save_library_movie(library_item)
+          
+        elif item.contentType == "episode" and item.infoLabels["tmdb_id"]:
+          library_item = Item(title="Descargado: %s" % item.downloadFilename, channel= "descargas", action="findvideos", infoLabels=item.infoLabels, url=final_path)
+          tvshow = Item(channel= "descargas", contentType="tvshow", infoLabels = {"tmdb_id": item.infoLabels["tmdb_id"]})
+          library.save_library_tvshow(tvshow, [library_item])
 
 
 
@@ -592,7 +586,7 @@ def download_from_best_server(item, ask = False):
           if result["downloadStatus"] in [STATUS_CODES.canceled, STATUS_CODES.completed]:
               break
     else:
-      seleccion = platformtools.dialog_select("Selecciona el servidor", [s.title for s in play_items])
+      seleccion = platformtools.dialog_select("Selecciona el servidor", [s.server.capitalize() for s in play_items])
       if seleccion > -1:
         play_item = item.clone(**play_items[seleccion].__dict__)
         play_item.contentAction = play_item.action

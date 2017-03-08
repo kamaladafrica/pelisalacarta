@@ -46,6 +46,7 @@ import urllib
 import urlparse
 import mimetypes
 import time
+from core import logger
 from core import filetools
 from threading import Thread, Lock
 
@@ -115,6 +116,7 @@ class Downloader:
 
       for t in self._threads: t.start()
       self._speed_thread.start()
+      self._save_thread.start()
 
 
     def stop(self, erase=False):
@@ -159,25 +161,27 @@ class Downloader:
    
               
     #Funciones internas
-    def __init__(self, url, path, filename=None, headers=[], resume = True, max_connections = 10, part_size = 2097152):
+    def __init__(self, url, path, filename=None, headers=[], resume = True, max_connections = 10):
       #Parametros
       self._resume = resume
       self._path = path  
       self._filename = filename
       self._max_connections = max_connections
-      self._part_size = part_size
+      self._part_size = 2097152
       
       
-      self.states = type('states', (), {"stopped":0, "connecting": 1, "downloading": 2, "completed": 3, "error": 4})
+      self.states = type('states', (), {"stopped":0, "connecting": 1, "downloading": 2, "completed": 3, "error": 4, "saving": 5})
       self._block_size = 1024*100
       self._state = self.states.stopped
       self._write_lock = Lock()   
       self._download_lock = Lock()
       self._headers = {"User-Agent":"Kodi/15.2 (Windows NT 10.0; WOW64) App_Bitness/32 Version/15.2-Git:20151019-02e7013"}
       self._speed = 0
+      self._buffer = {}
       
       self._threads = [Thread(target= self.__start_part__) for x in range(self._max_connections)]
       self._speed_thread = Thread(target= self.__speed_metter__)
+      self._save_thread = Thread(target= self.__save_file__)
       
       #Actualizamos los headers 
       self._headers.update(dict(headers))
@@ -203,6 +207,7 @@ class Downloader:
       self.file = filetools.file_open(filetools.join(self._path, self._filename), "r+b")
       
       self.__get_download_info__()
+      logger.info("Descarga inicializada: Partes: %s | Ruta: %s | Archivo: %s | Tamaño: %s" % (len(self._download_info["parts"]), self._path, self._filename, self._download_info["size"]))
       
 
     def __url_to_headers__(self, url):
@@ -328,8 +333,26 @@ class Downloader:
       else:
         conn = urllib2.urlopen(urllib2.Request(self.url, headers=headers), timeout=5)
       return conn
-      
-      
+    
+    def __save_file__(self):
+      while True:
+        time.sleep(0.1)
+        completed = [self._download_info["parts"].index(part) for part in self._download_info["parts"] if part["status"] == self.states.saving]
+        if completed:
+          id = min(completed)
+          logger.info("Guadando parte: %s" % id)
+          self.file.seek(self._download_info["parts"][id]["start"])
+          self.file.write(self._buffer.pop(id))
+          self._download_info["parts"][id]["status"] = self.states.completed
+          
+        
+        
+        if len([x for x, a in enumerate(self._download_info["parts"]) if a["status"] in [self.states.downloading, self.states.connecting, self.states.saving]]) == 0:
+          if not self.pending_parts:
+            self._state = self.states.completed
+          self.file.close()
+          break
+        
     def __start_part__(self):
       while self._state == self.states.downloading:
 
@@ -341,17 +364,9 @@ class Downloader:
       
         #Si no, Termina el thread  
         else:
-
-          if len([x for x, a in enumerate(self._download_info["parts"]) if a["status"] in [self.states.downloading, self.states.connecting]]) == 0:
-            self._state = self.states.completed
-            self.file.close()
-          self._download_lock.release()
           break
-
-        #Si comprueba si ya está completada, y si lo esta, pasa a la siguiente 
-        if self._download_info["parts"][id]["current"] > self._download_info["parts"][id]["end"] and self._download_info["parts"][id]["end"] > -1:
-          self._download_info["parts"][id]["status"]  = self.states.completed
-          continue
+          self._download_lock.release()
+          
           
         
         #Marca el estado como conectando
@@ -359,7 +374,7 @@ class Downloader:
         
         #Intenta la conixion, en caso de error, vuelve a poner la parte en la lista de pendientes
         try:
-          connection = self.__open_connection__(self._download_info["parts"][id]["current"], self._download_info["parts"][id]["end"])
+          connection = self.__open_connection__(self._download_info["parts"][id]["start"], self._download_info["parts"][id]["end"])
         except:
           self._download_info["parts"][id]["status"]  = self.states.error
           self.pending_parts.append(id)
@@ -371,12 +386,13 @@ class Downloader:
         
         
         #Comprobamos que el trozo recibido es el que necesitamos
-        if self._download_info["parts"][id]["current"] <> int(connection.info().get("content-range","bytes 0-").split(" ")[1].split("-")[0]):
+        if self._download_info["parts"][id]["start"] <> int(connection.info().get("content-range","bytes 0-").split(" ")[1].split("-")[0]):
           self._download_info["parts"][id]["status"] = self.states.error
           self.pending_parts.append(id)
           continue
           
-          
+        self._buffer[id] = ""   
+       
         while self._state == self.states.downloading:
           try:
             buffer = connection.read(self._block_size)
@@ -387,15 +403,12 @@ class Downloader:
           else:
           
             if len(buffer):
-              self._write_lock.acquire()
-              self.file.seek(self._download_info["parts"][id]["current"])
-              self.file.write(buffer)
+              self._buffer[id] += buffer
               self._download_info["parts"][id]["current"] +=len(buffer)
-              self._write_lock.release()   
-                 
+ 
             else:
               connection.fp._sock.close()
-              self._download_info["parts"][id]["status"] = self.states.completed
+              self._download_info["parts"][id]["status"] = self.states.saving
               break
         
 
