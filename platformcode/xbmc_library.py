@@ -340,7 +340,7 @@ def search_library_path():
     return None
 
 
-def establecer_contenido(content_type, silent=False):
+def set_content(content_type, silent=False):
     """
     Procedimiento para auto-configurar la biblioteca de kodi con los valores por defecto
     @type content_type: str ('CINE' o 'SERIES')
@@ -461,10 +461,13 @@ def establecer_contenido(content_type, silent=False):
                 idPath = records[0][0] + 1
 
             sql_librarypath = librarypath
-            sep = os.sep
             if sql_librarypath.startswith("special://"):
-                sql_librarypath = librarypath.replace('/profile/', '/%/').replace('/home/userdata/', '/%/')
+                sql_librarypath = sql_librarypath.replace('/profile/', '/%/').replace('/home/userdata/', '/%/')
                 sep = '/'
+            elif sql_librarypath.startswith("smb://"):
+                sep = '/'
+            else:
+                sep = os.sep
 
             if not sql_librarypath.endswith(sep):
                 sql_librarypath += sep

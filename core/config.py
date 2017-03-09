@@ -280,6 +280,6 @@ def verify_directories_created():
         content_path = filetools.join(get_library_path(), saved_path)
         if not filetools.exists(content_path):
             logger.debug("Creating %s: %s" % (path, content_path))
-            if filetools.mkdir(content_path):
-                xbmc_library.establecer_contenido(default, saved_path)
+            if filetools.mkdir(content_path) and get_setting("set_content")== "true":
+                xbmc_library.set_content(default, saved_path)
 
