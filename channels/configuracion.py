@@ -90,32 +90,19 @@ def mainlist(item):
                          action="", folder=False,
                          thumbnail=get_thumbnail_path("thumb_configuracion_0.png")))
 
+    # Inicio - Canales configurables
     import channelselector
     from core import channeltools
     channel_list = channelselector.filterchannels("all")
 
     for channel in channel_list:
-        try:
-            jsonchannel = channeltools.get_channel_json(channel.channel)
-        except:
-            continue
-        if jsonchannel.get("settings"):
-            setting = jsonchannel["settings"]
-            if type(setting) == list:
-                if len([s for s in setting if "id" in s and "include_in_" not in s["id"]]):
-                    active_status = None
-                    if config.get_setting("enabled", channel.channel):
-                        active_status = config.get_setting("enabled", channel.channel)
-                    else:
-                        channel_parameters = channeltools.get_channel_parameters(channel.channel)
-                        active_status = channel_parameters['active']
+        channel_parameters = channeltools.get_channel_parameters(channel.channel)
 
-                    if active_status == "true":
-                        itemlist.append(Item(channel=CHANNELNAME,
-                                             title="   Configuración del canal '%s'" % channel.title,
-                                             action="channel_config", config=channel.channel,
-                                             folder=False,
-                                             thumbnail=channel.thumbnail))
+        if channel_parameters["has_settings"]:
+            itemlist.append(Item(channel=CHANNELNAME, title="   Configuración del canal '%s'" % channel.title,
+                                 action="channel_config", config=channel.channel, folder=False,
+                                 thumbnail=channel.thumbnail))
+    # Fin - Canales configurables
 
     itemlist.append(Item(channel=CHANNELNAME, action="", title="", folder=False,
                          thumbnail=get_thumbnail_path("thumb_configuracion_0.png")))
