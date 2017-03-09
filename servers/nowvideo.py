@@ -88,6 +88,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
                 id = scrapertools.find_single_match(videourl, '/dash/(.*?)/')
                 videourl = "http://www.nowvideo.sx/download.php%3Ffile=mm" + "%s.mp4" % id
 
+            videourl = re.sub(r'/dl(\d)*/', '/dl/', videourl)
             ext = scrapertools.get_filename_from_url(videourl)[-4:]
             videourl = videourl.replace("%3F", "?") + \
                    "|User-Agent=Mozilla/5.0 (Windows NT 10.0; WOW64; rv:51.0) Gecko/20100101 Firefox/51.0"
