@@ -12,6 +12,7 @@ from core import scrapertools
 from core.item import Item
 from core import servertools
 from core import httptools
+from core import tmdb
 
 host = 'http://www.estadepelis.com/'
 headers = [['User-Agent', 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:45.0) Gecko/20100101 Firefox/45.0'],
@@ -62,6 +63,8 @@ def mainlist(item):
 
 	itemlist.append( item.clone (title="Documentales", action="lista",thumbnail='https://s21.postimg.org/i9clk3u6v/documental.png', fanart='https://s21.postimg.org/i9clk3u6v/documental.png', url = host+'lista-de-documentales/', extra = 'peliculas'))
 
+	itemlist.append( itemlist[-1].clone (title="Buscar", action="search", url=host+'search?q=', thumbnail='https://s31.postimg.org/qose4p13f/Buscar.png', fanart='https://s31.postimg.org/qose4p13f/Buscar.png'))
+
 	return itemlist
 
 
@@ -85,9 +88,10 @@ def lista(item):
 
 	itemlist = []
 	data = httptools.downloadpage(item.url).data
+	data = re.sub(r'"|\n|\r|\t|&nbsp;|<br>|\s{2,}', "", data)
 	contentSerieName = ''
 
-	patron = '<img src="([^"]+)" alt="([^"]+)" width="100%" height="100%"\/>\s*<a href=([^>]+)><span class="player"><\/span><\/a>'
+	patron = '<div class=movie><div class=imagen><img src=(.*?) alt=(.*?) width=.*? height=.*?\/><a href=(.*?)><span class=player>.*?class=year>(.*?)<\/span>'
 	matches = re.compile(patron,re.DOTALL).findall(data)
 
 	if item.extra=='peliculas':
@@ -96,24 +100,25 @@ def lista(item):
 		accion = 'temporadas'
 
 
-	for scrapedthumbnail, scrapedtitle, scrapedurl in matches:
+	for scrapedthumbnail, scrapedtitle, scrapedurl, scrapedyear in matches:
 
 	    scrapedurl = scrapedurl.translate(None,'"')
 	    scrapedurl = scrapedurl.translate(None,"'")
 	    url = host+scrapedurl
 	    thumbnail = scrapedthumbnail
 	    title = scrapedtitle
+	    year = scrapedyear
 	    if item.extra == 'series':
 	    	contentSerieName = scrapedtitle
 
 	    
-	    itemlist.append( Item(channel=item.channel, action=accion , title=title , url=url, thumbnail=thumbnail, contentTitle = scrapedtitle, extra = item.extra, contentSerieName=contentSerieName))
-	   
+	    itemlist.append( Item(channel=item.channel, action=accion , title=title , url=url, thumbnail=thumbnail, contentTitle = scrapedtitle, extra = item.extra, contentSerieName=contentSerieName, infoLabels={'year':year}))
+	tmdb.set_infoLabels_itemlist(itemlist, seekTmdb= True)     
 	# #Paginacion
 
 	if itemlist !=[]:
 	    actual_page_url = item.url
-	    next_page = scrapertools.find_single_match(data,'<div class="siguiente"><a href="([^"]+)">')
+	    next_page = scrapertools.find_single_match(data,'<div class=siguiente><a href=(.*?)>')
 	    url = host+next_page
 	    import inspect
 	    if next_page !='':
@@ -156,16 +161,20 @@ def temporadas(item):
     patron = '<li class="has-sub"><a href="([^"]+)"><span><b class="icon-bars"><\/b> ([^<]+)<\/span><\/a>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     temp = 1
+    infoLabels = item.infoLabels
     for scrapedurl, scrapedtitle in matches:
         url = scrapedurl
         title = scrapedtitle.strip('')
         contentSeasonNumber = temp
+        infoLabels['season']=contentSeasonNumber
         thumbnail = item.thumbnail
         plot = scrapertools.find_single_match(data,'<p>([^<]+)<\/p>')
-        itemlist.append( Item(channel=item.channel, action="episodiosxtemp" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, contentSerieName=item.contentSerieName, contentSeasonNumber = contentSeasonNumber, plot = plot))
+        itemlist.append( Item(channel=item.channel, action="episodiosxtemp" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, contentSerieName=item.contentSerieName, contentSeasonNumber = contentSeasonNumber, plot = plot, infoLabels=infoLabels))
         temp = temp +1
+    tmdb.set_infoLabels_itemlist(itemlist, seekTmdb= True)     
     if config.get_library_support() and len(itemlist) > 0:
         itemlist.append(Item(channel=item.channel, title='[COLOR yellow]Añadir esta serie a la biblioteca[/COLOR]', url=item.url, action="add_serie_to_library", extra="episodios", contentSerieName=item.contentSerieName, extra1 = item.extra1, temp=str(temp)))
+    
     return itemlist
 
 def episodios(item):
@@ -183,7 +192,7 @@ def episodios(item):
         thumbnail = item.thumbnail
         fanart=''
         itemlist.append( Item(channel=item.channel, action="findvideos" , title=title, fulltitle=item.fulltitle, url=url, thumbnail=item.thumbnail, plot=item.plot, extra = item.extra, contentSerieName=item.contentSerieName))
-        
+	            
     return itemlist            
 
 
@@ -194,15 +203,18 @@ def episodiosxtemp(item):
     data = httptools.downloadpage(item.url).data
     temp = 'temporada-'+str(item.contentSeasonNumber)
     patron = '<li>.\s*<a href="(.*?-'+temp+'.*?)">.\s*<span.*?datex">([^<]+)<'
-        
     matches = re.compile(patron,re.DOTALL).findall(data)
+    infoLabels=item.infoLabels
     for scrapedurl, scrapedepisode in matches:
         url = host+scrapedurl
         title = item.contentSerieName+' '+scrapedepisode
+        scrapedepisode=re.sub(r'.*?x','',scrapedepisode)
+        infoLabels['episode']=scrapedepisode
         thumbnail = item.thumbnail
         fanart=''
-        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title, fulltitle=item.fulltitle, url=url, thumbnail=item.thumbnail, plot=item.plot, extra = item.extra, contentSerieName=item.contentSerieName))
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title, fulltitle=item.fulltitle, url=url, thumbnail=item.thumbnail, plot=item.plot, extra = item.extra, contentSerieName=item.contentSerieName, infoLabels=infoLabels))
         
+    tmdb.set_infoLabels_itemlist(itemlist, seekTmdb= True) 
     return itemlist            
 
 
@@ -284,6 +296,13 @@ def play(item):
                              action="add_pelicula_to_library", extra="findvideos", contentTitle = item.contentTitle))
 
      return itemlist
+
+def search(item,texto):
+    logger.info()
+    texto = texto.replace(" ","+")
+    item.url = item.url+texto
+    if texto!='':
+       return lista(item)
 
 
 def newest(categoria):
