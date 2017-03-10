@@ -26,21 +26,13 @@
 		<category>documentary</category>
 	</categories>
 
-	<!--<settings>-->
-		<!--<id>include_in_global_search</id>-->
-		<!--<type>bool</type>-->
-		<!--<label>Incluir en busqueda global</label>-->
-		<!--<default>false</default>-->
-		<!--<enabled>true</enabled>-->
-		<!--<visible>true</visible>-->
-	<!--</settings>-->
+	<settings>
+		<id>include_in_global_search</id>
+		<type>bool</type>
+		<label>Incluir en busqueda global</label>
+		<default>false</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
 
-	<!--<settings>-->
-		<!--<id>include_in_newest_anime</id>-->
-		<!--<type>bool</type>-->
-		<!--<label>Incluir en Novedades - Episodios de anime</label>-->
-		<!--<default>true</default>-->
-		<!--<enabled>true</enabled>-->
-		<!--<visible>true</visible>-->
-	<!--</settings>-->
 </channel>
