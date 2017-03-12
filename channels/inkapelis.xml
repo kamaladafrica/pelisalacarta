@@ -9,6 +9,11 @@
 
 	<changes>
 		<change>
+			<date>12/03/2017</date>
+			<autor>Cmos</autor>
+			<description>Reparados enlaces directos</description>
+		</change>
+		<change>
 			<date>27/02/2017</date>
 			<autor>Cmos</autor>
 			<description>Añadidos enlaces directos y adaptado al uso de httptools</description>
@@ -19,7 +24,7 @@
 			<description>Corregido por cambios en el enmascaramiento de enlaces</description>
 		</change>
 	</changes>
-	<version>3</version>
+	<version>4</version>
 
 	<fanart></fanart>
 	<thumbnail>http://i.imgur.com/I7MxHZI.png</thumbnail>
