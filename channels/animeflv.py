@@ -236,7 +236,7 @@ def episodios(item):
         title = "%s: %sx%s" % (item.title, season, str(episode).zfill(2))
 
         itemlist.append(item.clone(action="findvideos", title=title, url=url, thumbnail=thumbnail, fulltitle=title,
-                                   fanart=thumbnail))
+                                   fanart=thumbnail, contentType="episode"))
 
     return itemlist
 
