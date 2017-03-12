@@ -22,7 +22,8 @@ def test_video_exists(page_url):
     data = httptools.downloadpage(page_url).data
     if "<title>watch </title>" in data.lower():
         return False, "[powvideo] El archivo no existe o  ha sido borrado"
-
+    if "el archivo ha sido borrado por no respetar" in data.lower():
+        return False, "[powvideo] El archivo no existe o ha sido borrado por no respetar los Terminos de uso"
     return True, ""
 
 
@@ -92,7 +93,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     return video_urls
 
 
-# Encuentra vídeos del servidor en el texto pasado
+# Encuentra videos del servidor en el texto pasado
 def find_videos(data):
     encontrados = set()
     devuelve = []

@@ -154,7 +154,7 @@ def temporadas(item):
     for scrapedtitle in matches:
         infoLabels=item.infoLabels
         url = item.url
-        title = 'Temporada '+scrapedtitle
+        title = 'Temporada '+scrapedtitle.strip(' \r\n')
         thumbnail = scrapertools.find_single_match(data,'<img src="([^"]+)" alt="" class="picture-movie">')
         plot = scrapertools.find_single_match(data,'<span>Sinopsis:<\/span>.([^<]+).<span class="text-detail-hide"><\/span>')
         fanart = scrapertools.find_single_match(data,'<img src="([^"]+)"/>.*?</a>')
@@ -187,7 +187,7 @@ def episodios(item):
 
         if temporada in scrapedurl:
            url = scrapedurl
-           contentSeasonNumber = re.findall(r'temporada.*?([\d])',url)
+           contentSeasonNumber = re.findall(r'temporada.*?(\d+)',url)
            capitulo = re.findall(r'Capitulo \d+', scrapedtitle)
            contentEpisodeNumber = re.findall(r'\d+', capitulo[0])
            contentEpisodeNumber = contentEpisodeNumber[0]

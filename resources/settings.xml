@@ -124,6 +124,7 @@
         <setting label="Nombre de carpetas" type="lsep"/>
         <setting id="folder_tvshows" type="text" label="Series" default="SERIES"/>
         <setting id="folder_movies" type="text" label="Peliculas" default="CINE"/>
+        <setting id="set_content" type="bool" label="Autoconfigurar la biblioteca" default="true"/>
     </category>
 
     <category label="Otros"><!--30503 -->
