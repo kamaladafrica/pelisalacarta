@@ -24,7 +24,7 @@
 # ------------------------------------------------------------
 
 try:
-    from python_libtorrent import get_libtorrent
+    from python_libtorrent import get_libtorrent, get_platform
     lt = get_libtorrent()
 except Exception, e:
     import libtorrent as lt

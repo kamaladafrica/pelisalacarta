@@ -21,9 +21,9 @@ def mainlist(item):
     logger.info("pelisalacarta.channels.zpeliculas mainlist")
 
     itemlist = []
-    itemlist.append( Item(channel=item.channel, action="destacadas" , title="Destacadas", url="http://www.zpeliculas.com", fanart="http://www.zpeliculas.com/templates/mytopV2/images/background.png"))
+    #itemlist.append( Item(channel=item.channel, action="destacadas" , title="Destacadas", url="http://www.zpeliculas.com", fanart="http://www.zpeliculas.com/templates/mytopV2/images/background.png"))
     itemlist.append( Item(channel=item.channel, action="peliculas"  , title="Últimas peliculas", url="http://www.zpeliculas.com/", fanart="http://www.zpeliculas.com/templates/mytopV2/images/background.png", viewmode="movie"))
-    itemlist.append( Item(channel=item.channel, action="sugeridas"  , title="Películas sugeridas", url="http://www.zpeliculas.com", fanart="http://www.zpeliculas.com/templates/mytopV2/images/background.png", viewmode="movie"))
+    #itemlist.append( Item(channel=item.channel, action="sugeridas"  , title="Películas sugeridas", url="http://www.zpeliculas.com", fanart="http://www.zpeliculas.com/templates/mytopV2/images/background.png", viewmode="movie"))
     itemlist.append( Item(channel=item.channel, action="generos"    , title="Por género", url="http://www.zpeliculas.com", fanart="http://www.zpeliculas.com/templates/mytopV2/images/background.png"))
     itemlist.append( Item(channel=item.channel, action="alfabetico" , title="Listado alfabético", fanart="http://www.zpeliculas.com/templates/mytopV2/images/background.png"))
     itemlist.append( Item(channel=item.channel, action="search"     , title="Buscador", url="http://www.zpeliculas.com", fanart="http://www.zpeliculas.com/templates/mytopV2/images/background.png", viewmode="movie"))
