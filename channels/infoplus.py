@@ -1954,7 +1954,7 @@ def get_fonts(skin):
             data_font = filetools.read(xbmc.translatePath(filetools.join('special://skin/1080i', 'Font.xml')), "r")
         except:
             try:
-                data_font = filetoos.read(xbmc.translatePath(filetools.join('special://skin/720p', 'Font.xml')), "r")
+                data_font = filetools.read(xbmc.translatePath(filetools.join('special://skin/720p', 'Font.xml')), "r")
             except:
                 pass
 
