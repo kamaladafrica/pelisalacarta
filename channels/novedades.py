@@ -67,7 +67,7 @@ def mainlist(item,thumbnail_type="squares"):
     if list_canales['peliculas']:
         thumbnail = thumbnail_base + "/thumb_canales_peliculas.png"
     new_item = Item(channel=item.channel, action="novedades", extra="peliculas", title="Películas",
-                    thumbnail=thumbnail, text_color=color1)
+                    thumbnail=thumbnail)
 
     new_item.context = [{"title": "Canales incluidos en: %s" %new_item.title,
                          "extra": new_item.extra,
@@ -79,7 +79,7 @@ def mainlist(item,thumbnail_type="squares"):
     if list_canales['infantiles']:
         thumbnail = thumbnail_base + "/thumb_canales_infantiles.png"
     new_item = Item(channel=item.channel, action="novedades", extra="infantiles", title="Para niños",
-                    thumbnail=thumbnail, text_color=color1)
+                    thumbnail=thumbnail)
     new_item.context = [{"title": "Canales incluidos en: %s" %new_item.title,
                          "extra": new_item.extra,
                          "action": "settingCanal",
@@ -90,7 +90,7 @@ def mainlist(item,thumbnail_type="squares"):
     if list_canales['series']:
         thumbnail = thumbnail_base + "/thumb_canales_series.png"
     new_item = Item(channel=item.channel, action="novedades", extra="series", title="Episodios de series",
-                    thumbnail=thumbnail, text_color=color1)
+                    thumbnail=thumbnail)
     new_item.context = [{"title": "Canales incluidos en: %s" %new_item.title,
                          "extra": new_item.extra,
                          "action": "settingCanal",
@@ -101,7 +101,7 @@ def mainlist(item,thumbnail_type="squares"):
     if list_canales['anime']:
         thumbnail = thumbnail_base + "/thumb_canales_anime.png"
     new_item = Item(channel=item.channel, action="novedades", extra="anime", title="Episodios de anime",
-                    thumbnail=thumbnail, text_color=color1)
+                    thumbnail=thumbnail)
     new_item.context = [{"title": "Canales incluidos en: %s" %new_item.title,
                          "extra": new_item.extra,
                          "action": "settingCanal",
@@ -112,7 +112,7 @@ def mainlist(item,thumbnail_type="squares"):
     if list_canales['documentales']:
         thumbnail = thumbnail_base + "/thumb_canales_documentales.png"
     new_item = Item(channel=item.channel, action="novedades", extra="documentales", title="Documentales",
-                    thumbnail=thumbnail, text_color=color1)
+                    thumbnail=thumbnail)
     new_item.context = [{"title": "Canales incluidos en: %s" %new_item.title,
                          "extra": new_item.extra,
                          "action": "settingCanal",
