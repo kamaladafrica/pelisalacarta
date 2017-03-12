@@ -38,6 +38,8 @@ def lista(item):
     patron = '<div class="vid_block">\s*<a href="([^"]+)".*?url\(\'([^\']+)\'.*?<span>(.*?)</span>.*?<b>(.*?)</b>'
     matches = scrapertools.find_multiple_matches(data, patron)
     for scrapedurl, scrapedthumbnail, duration, scrapedtitle in matches:
+        if "/embed-" not in scrapedurl:
+            scrapedurl = scrapedurl.replace("datoporn.com/", "datoporn.com/embed-") + ".html"
         if duration:
             scrapedtitle = "%s - %s" % (duration, scrapedtitle)
 
