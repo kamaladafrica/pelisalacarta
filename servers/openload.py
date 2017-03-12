@@ -71,7 +71,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
                     decode1.append(int(idx3[i:i+2], 16))
                 idx4 = encode[0:idx2] + encode[idx2+20:]
                 for i in range(0, len(idx4), 2):
-                    value = int(idx4[i:i+2], 16) ^ 137 ^ decode1[(i/2) % 10]
+                    value = int(idx4[i:i+2], 16) ^ 96 ^ decode1[(i/2) % 10]
                     text_decode.append(chr(value))
 
                 text_decode = "".join(text_decode)
