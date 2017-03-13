@@ -33,25 +33,9 @@ import time
 import config
 import logger
 import scrapertools
+import versiontools
 
-def get_current_plugin_version():
-    return int(config.get_setting("plugin_version_number"))
-    
-def get_current_channels_version():
-    return int(config.get_setting("channels_version_number"))
-    
-def get_current_servers_version():
-    return int(config.get_setting("servers_version_number"))
-    
-def set_current_plugin_version(new_version):
-    return int(config.set_setting("plugin_version_number",str(new_version)))
-    
-def set_current_channels_version(new_version):
-    return int(config.set_setting("channels_version_number",str(new_version)))
-    
-def set_current_servers_version(new_version):
-    return int(config.set_setting("servers_version_number",str(new_version)))
-    
+# Método antiguo, muestra un popup con la versión
 def checkforupdates():
     logger.info("pelisalacarta.core.updater checkforupdates")
 
@@ -71,7 +55,7 @@ def checkforupdates():
     logger.info("pelisalacarta.core.updater checkforupdates version remota="+str(numero_version_publicada))
 
     # Lee la versión local
-    numero_version_local = get_current_plugin_version()
+    numero_version_local = versiontools.get_current_plugin_version()
     logger.info("pelisalacarta.core.updater checkforupdates version local="+str(numero_version_local))
 
     hayqueactualizar = numero_version_publicada > numero_version_local
@@ -82,6 +66,35 @@ def checkforupdates():
         return tag_version_publicada
     else:
         return None
+
+# Método nuevo, devuelve el nº de actualizaciones disponibles además de indicar si hay nueva versión del plugin
+def get_available_updates():
+    logger.info("pelisalacarta.core.updater checkforupdates")
+
+    # Cuantas actualizaciones hay?
+    number_of_updates = 0
+    new_published_version_tag = ""
+
+    # Lee la versión remota
+    from core import api
+    latest_packages = api.plugins_get_latest_packages()
+
+    for latest_package in latest_packages["body"]:
+
+        if latest_package["package"]=="plugin":
+            if latest_package["version"] > versiontools.get_current_plugin_version():
+                number_of_updates = number_of_updates + 1
+                new_published_version_tag = latest_package["tag"]
+
+        elif latest_package["package"]=="channels":
+            if latest_package["version"] > versiontools.get_current_channels_version():
+                number_of_updates = number_of_updates + 1
+
+        elif latest_package["package"]=="servers":
+            if latest_package["version"] > versiontools.get_current_servers_version():
+                number_of_updates = number_of_updates + 1
+
+    return new_published_version_tag,number_of_updates
 
 def update(item):
     logger.info("pelisalacarta.core.updater update")
@@ -105,8 +118,6 @@ def update(item):
     localfilename = os.path.join(config.get_data_path(),published_version_filename)
 
     download_and_install(remotefilename,localfilename)
-
-    set_current_plugin_version(published_version_number)
 
 def download_and_install(remote_file_name,local_file_name):
     logger.info("pelisalacarta.core.updater download_and_install from "+remote_file_name+" to "+local_file_name)

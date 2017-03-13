@@ -124,6 +124,7 @@ def get_all_versions(item):
 
     # Lee la versión local
     from core import updater
+    from core import versiontools
 
     # Descarga la lista de versiones
     from core import api
@@ -137,13 +138,13 @@ def get_all_versions(item):
 
         if entry["package"]=="plugin":
             title = "pelisalacarta "+entry["tag"]+" (Publicada "+entry["date"]+")"
-            local_version_number = updater.get_current_plugin_version()
+            local_version_number = versiontools.get_current_plugin_version()
         elif entry["package"]=="channels":
             title = "Canales (Publicada "+entry["date"]+")"
-            local_version_number = updater.get_current_channels_version()
+            local_version_number = versiontools.get_current_channels_version()
         elif entry["package"]=="servers":
             title = "Servidores (Publicada "+entry["date"]+")"
-            local_version_number = updater.get_current_servers_version()
+            local_version_number = versiontools.get_current_servers_version()
         else:
             title = entry["package"]+" (Publicada "+entry["date"]+")"
             local_version_number = None
@@ -174,15 +175,16 @@ def download_and_install_package(item):
     logger.info()
 
     from core import updater
+    from core import versiontools
 
     if item.package=="plugin":
-        if int(item.version)<updater.get_current_plugin_version():
+        if int(item.version)<versiontools.get_current_plugin_version():
             if not platformtools.dialog_yesno("Instalando versión anterior","¿Seguro que quieres instalar una versión anterior?"):
                 return
-        elif int(item.version)==updater.get_current_plugin_version():
+        elif int(item.version)==versiontools.get_current_plugin_version():
             if not platformtools.dialog_yesno("Reinstalando versión actual","¿Seguro que quieres reinstalar la misma versión que ya tienes?"):
                 return
-        elif int(item.version)>updater.get_current_plugin_version():
+        elif int(item.version)>versiontools.get_current_plugin_version():
             if not platformtools.dialog_yesno("Instalando nueva versión","¿Seguro que quieres instalar esta nueva versión?"):
                 return
     else:
@@ -191,13 +193,6 @@ def download_and_install_package(item):
 
     local_file_name = os.path.join( config.get_data_path() , item.filename)
     updater.download_and_install(item.url,local_file_name)
-
-    if item.package=="channels":
-        updater.set_current_channels_version(item.version)
-    elif item.package=="servers":
-        updater.set_current_servers_version(item.version)
-    elif item.package=="plugin":
-        updater.set_current_plugin_version(item.version)
 
     if config.is_xbmc() and config.get_system_platform() != "xbox":
         import xbmc
