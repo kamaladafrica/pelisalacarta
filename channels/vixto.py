@@ -8,6 +8,7 @@
 import re
 
 from core import config
+from core import httptools
 from core import logger
 from core import scrapertools
 from core import servertools
@@ -25,12 +26,12 @@ perfil = [['0xFFFFE6CC', '0xFFFFCE9C', '0xFF994D00'],
           ['0xFF58D3F7', '0xFF2E9AFE', '0xFF2E64FE']]
 color1, color2, color3 = perfil[__perfil__]
 
-DEBUG = config.get_setting("debug")
+
 host = "http://www.vixto.net/"
 
 
 def mainlist(item):
-    logger.info("pelisalacarta.channels.vixto mainlist")
+    logger.info()
     itemlist = list()
 
     itemlist.append(item.clone(title="Películas", text_color=color2, action="",
@@ -60,7 +61,7 @@ def configuracion(item):
 
 
 def search(item, texto):
-    logger.info("pelisalacarta.channels.vixto search")
+    logger.info()
     texto = texto.replace(" ", "+")
     item.url = item.url + texto
     try:
@@ -74,7 +75,7 @@ def search(item, texto):
 
 
 def newest(categoria):
-    logger.info("pelisalacarta.channels.vixto newest")
+    logger.info()
     itemlist = list()
     item = Item()
     try:
@@ -98,7 +99,7 @@ def newest(categoria):
 
 
 def listado(item):
-    logger.info("pelisalacarta.channels.vixto listado")
+    logger.info()
     itemlist = list()
     
     item.infoLabels['mediatype'] = "movie"
@@ -111,12 +112,11 @@ def listado(item):
         bloque_head = "RECIENTE PELICULAS"
 
     # Descarga la página
-    data = scrapertools.downloadpage(item.url)
+    data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|\s{2}", "", data)
 
     # Extrae las entradas (carpetas)
     bloque = scrapertools.find_single_match(data, bloque_head+'\s*</h2>(.*?)</section>')
-
     patron = '<div class="".*?href="([^"]+)".*?src="([^"]+)".*?<div class="calZG">(.*?)</div>' \
              '(.*?)</div>.*?href.*?>(.*?)</a>'
     matches = scrapertools.find_multiple_matches(bloque, patron)
@@ -134,9 +134,6 @@ def listado(item):
             title += "  [%s]" % "/".join(langs)
         if calidad:
             title += " %s" % calidad
-
-        if DEBUG:
-            logger.info("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, scrapedurl, scrapedthumbnail))
 
         filtro_thumb = scrapedthumbnail.replace("http://image.tmdb.org/t/p/w342", "")
         filtro_list = {"poster_path": filtro_thumb}
@@ -164,11 +161,11 @@ def listado(item):
 
 
 def busqueda(item):
-    logger.info("pelisalacarta.channels.vixto busqueda")
+    logger.info()
     itemlist = list()
 
     # Descarga la página
-    data = scrapertools.downloadpage(item.url)
+    data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|\s{2}", "", data)
 
     # Extrae las entradas (carpetas)
@@ -211,11 +208,11 @@ def busqueda(item):
 
 
 def episodios(item):
-    logger.info("pelisalacarta.channels.vixto episodios")
+    logger.info()
     itemlist = list()
 
     # Descarga la página
-    data = scrapertools.downloadpage(item.url)
+    data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|\s{2}", "", data)
 
     # Extrae las entradas (carpetas)
@@ -228,7 +225,7 @@ def episodios(item):
         new_item = item.clone(action="", title=title, text_color=color2)
         new_item.infoLabels["season"] = scrapedtitle
         new_item.infoLabels["mediatype"] = "season"
-        data_season = scrapertools.downloadpage(scrapedurl)
+        data_season = httptools.downloadpage(scrapedurl).data
         data_season = re.sub(r"\n|\r|\t|&nbsp;|\s{2}", "", data_season)
         patron = '<li class="media">.*?href="([^"]+)"(.*?)<div class="media-body">.*?href.*?>' \
                  '(.*?)</a>'
@@ -268,7 +265,7 @@ def episodios(item):
 
 
 def findvideos(item):
-    logger.info("pelisalacarta.channels.vixto findvideos")
+    logger.info()
     itemlist = list()
 
     try:
@@ -280,7 +277,7 @@ def findvideos(item):
 
     dict_idiomas = {'Castellano': 2, 'Latino': 1, 'Subtitulada': 0}
 
-    data = scrapertools.downloadpage(item.url)
+    data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|\s{2}", "", data)
 
     if not item.infoLabels["tmdb_id"]:
@@ -331,7 +328,7 @@ def findvideos(item):
 
 
 def bloque_enlaces(data, filtro_idioma, dict_idiomas, tipo, item):
-    logger.info("pelisalacarta.channels.vixto bloque_enlaces")
+    logger.info()
 
     lista_enlaces = list()
     bloque = scrapertools.find_single_match(data, tipo + '(.*?)</table>')
@@ -387,7 +384,7 @@ def bloque_enlaces(data, filtro_idioma, dict_idiomas, tipo, item):
 
 
 def play(item):
-    logger.info("pelisalacarta.channels.vixto play")
+    logger.info()
     itemlist = list()
     enlace = servertools.findvideosbyserver(item.url, item.server)
     itemlist.append(item.clone(url=enlace[0][1]))
