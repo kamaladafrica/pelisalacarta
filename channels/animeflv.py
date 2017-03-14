@@ -254,7 +254,7 @@ def findvideos(item):
 
     aux_url = []
     for e in list_videos:
-        if e.startswith("https://s3.animeflv.com/embed.php?server="):
+        if e.startswith("https://s3.animeflv.com/embed.php?"):
             server = scrapertools.find_single_match(e, 'server=(.*?)&')
             e = e.replace("embed", "check").replace("https", "http")
             data = httptools.downloadpage(e).data.replace("\\", "")
