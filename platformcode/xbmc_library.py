@@ -708,4 +708,17 @@ def add_sources(path):
     xmldoc.writexml(fichero)
 
 
+def ask_set_content():
+    # Si es la primera vez que se utiliza la biblioteca preguntar si queremos autoconfigurar
+    if config.get_setting("library_ask_set_content") == "true" and config.get_setting("library_set_content") == "false":
+        heading = "Pelisalacarta Auto-configuración"
+        linea1 = "¿Desea que Pelisalacarta auto-configure la biblioteca de Kodi?"
+        linea2 = "Si no está seguro, puede cambiarlo desde el menu 'Preferencias/Rutas'"
+        if platformtools.dialog_yesno(heading, linea1, linea2):
+            config.set_setting("library_set_content", "true")
+            config.set_setting("library_ask_set_content", "active")
+            config.verify_directories_created()
+
+        config.set_setting("library_ask_set_content", "false")
+
 

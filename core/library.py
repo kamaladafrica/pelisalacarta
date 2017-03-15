@@ -536,7 +536,9 @@ def add_pelicula_to_library(item):
         @param item: elemento que se va a guardar.
     """
     logger.info()
-    ask_set_content()
+    if config.is_xbmc():
+        from platformcode import xbmc_library
+        xbmc_library.ask_set_content()
 
     new_item = item.clone(action="findvideos")
     insertados, sobreescritos, fallidos = save_library_movie(new_item)
@@ -572,7 +574,9 @@ def add_serie_to_library(item, channel=None):
 
     """
     logger.info("show=#" + item.show + "#")
-    ask_set_content()
+    if config.is_xbmc():
+        from platformcode import xbmc_library
+        xbmc_library.ask_set_content()
 
     if item.channel == "descargas":
         itemlist = [item.clone()]
@@ -630,22 +634,3 @@ def add_serie_to_library(item, channel=None):
                         xbmc.sleep(1000)
                 # Se lanza la sincronizacion
                 xbmc_library.sync_trakt()
-
-
-def ask_set_content():
-    # Si no estamos xbmc/kodi salir
-    if not config.is_xbmc():
-        return False
-
-    # Si es la primera vez que se utiliza la biblioteca preguntar si queremos autoconfigurar
-    if config.get_setting("library_ask_set_content") == "true" and config.get_setting("library_set_content") == "false":
-        heading = "Autoconfiguración"
-        linea1 = "Permites autoconfigurar -TEXTO PROVISIONAL- "
-        linea2 = "Es posible cambiar esta configuración entrando en Preferencias / Rutas"
-        if platformtools.dialog_yesno(heading, linea1, linea2):
-            config.set_setting("library_set_content", "true")
-            config.set_setting("library_ask_set_content", "active")
-            config.verify_directories_created()
-
-
-        config.set_setting("library_ask_set_content", "false")
