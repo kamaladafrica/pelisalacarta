@@ -6,10 +6,15 @@
 	<update_url></update_url>
 	<active>true</active>
 		
-	<version>5</version>
+	<version>6</version>
 	<adult>false</adult>
 
 	<changes>
+		<change>
+			<date>15/03/17</date>
+			<autor>Cmos</autor>
+			<description>Canal reparado, ahora solo funciona a partir de Kodi 17</description>
+		</change>
 		<change>
 			<date>27/01/17</date>
 			<autor>Cmos</autor>
