@@ -1,22 +1,17 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para divxatope
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 import re
 import sys
-import urllib
 import urlparse
 
-from core import config
 from core import logger
 from core import scrapertools
 from core import servertools
 from core.item import Item
-
-
-DEBUG = config.get_setting("debug")
 
 
 def mainlist(item):
@@ -81,7 +76,7 @@ def search(item,texto):
     except:
         import sys
         for line in sys.exc_info():
-            logger.error( "%s" % line )
+            logger.error("%s" % line)
         return []
 
 def newest(categoria):
@@ -151,7 +146,7 @@ def lista(item):
         url = urlparse.urljoin(item.url,scrapedurl)
         thumbnail = urlparse.urljoin(item.url,scrapedthumbnail)
         plot = ""
-        logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+        logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
         contentTitle = scrapertools.htmlclean(scrapedtitle).strip()
         patron = '([^<]+)<br>'
@@ -216,7 +211,7 @@ def episodios(item):
         url = urlparse.urljoin(item.url,scrapedurl)
         thumbnail = ""
         plot = ""
-        logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+        logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
         itemlist.append( Item(channel=item.channel, action="findvideos", title=title , fulltitle = title, url=url , thumbnail=thumbnail , plot=plot , folder=True) )
 
     next_page_url = scrapertools.find_single_match(data,"<a class='active' href=[^<]+</a><a\s*href='([^']+)'")
@@ -242,7 +237,7 @@ def findvideos(item):
     link = scrapertools.find_single_match(data,'href="http://tumejorjuego.*?link=([^"]+)"')
     if link!="":
         link = "http://www.divxatope1.com/"+link
-        logger.info("pelisalacarta.channels.divxatope torrent="+link)
+        logger.info("torrent="+link)
         itemlist.append( Item(channel=item.channel, action="play", server="torrent", title="Vídeo en torrent" , fulltitle = item.title, url=link , thumbnail=servertools.guess_server_thumbnail("torrent") , plot=item.plot , folder=False, parentContent=item) )
 
     patron  = "<div class=\"box1\"[^<]+<img[^<]+</div[^<]+"
@@ -264,7 +259,7 @@ def findvideos(item):
         url = urlparse.urljoin(item.url,scrapedurl)
         thumbnail = servertools.guess_server_thumbnail(title)
         plot = ""
-        logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+        logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
         new_item = Item(channel=item.channel, action="extract_url", title=title , fulltitle = title, url=url , thumbnail=thumbnail , plot=plot , folder=True, parentContent=item)
         if comentarios.startswith("Ver en"):
             itemlist_ver.append( new_item)

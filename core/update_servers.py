@@ -32,8 +32,6 @@ from core import config
 from core import scrapertools
 from core import servertools
 
-DEBUG = config.get_setting("debug")
-
 remote_url = "https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/servers/"
 local_folder = os.path.join( config.get_runtime_path(), "servers" )
 

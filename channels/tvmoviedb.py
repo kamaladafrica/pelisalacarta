@@ -5,17 +5,17 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 # ------------------------------------------------------------
 
-import re
 import base64 as bdec
+import re
 
 from core import config
 from core import filetools
+from core import httptools
 from core import jsontools
 from core import logger
 from core import scrapertools
-from core.tmdb import Tmdb
 from core.item import Item
-from core import httptools
+from core.tmdb import Tmdb
 from platformcode import platformtools
 
 __perfil__ = int(config.get_setting('perfil', "tvmoviedb"))
@@ -425,7 +425,7 @@ def listado_tmdb(item):
                 itemlist.append(new_item)
         except:
             import traceback
-            logger.info(traceback.format_exc())
+            logger.error(traceback.format_exc())
 
         if orden:
             itemlist.sort(key=lambda item: item.infoLabels["year"], reverse=True)
@@ -1667,7 +1667,7 @@ def login_fa():
         data = httptools.downloadpage("https://m.filmaffinity.com/%s/account.ajax.php?action=login" % langf, post).data
         
         if "Invalid username" in data:
-            logger.info("Error en el login")
+            logger.error("Error en el login")
             return False, "Error en el usuario y/o contraseña. Comprueba tus credenciales"
         else:
             post = "name=user-menu&url=http://m.filmaffinity.com/%s/main.php" % langf
@@ -1679,7 +1679,7 @@ def login_fa():
             return True, ""
     except:
         import traceback
-        logger.info(traceback.format_exc())
+        logger.error(traceback.format_exc())
         return False, "Error durante el login. Comprueba tus credenciales"
 
 
@@ -2280,7 +2280,7 @@ def acciones_trakt(item):
                                           % (color6, ratings[i], color4, new_item.infoLabels["rating"])
         except:
             import traceback
-            logger.info(traceback.format_exc())
+            logger.error(traceback.format_exc())
             
         if "page" in item.url and len(itemlist) == 20:
             page = scrapertools.find_single_match(item.url, 'page=(\d+)')
@@ -2952,7 +2952,7 @@ def busqueda_mal(item):
                     title += "  (%s)" % year
         except:
             import traceback
-            logger.info(traceback.format_exc())
+            logger.error(traceback.format_exc())
 
         if tipo == "Movie" or tipo == "OVA":
             infolabels["mediatype"] = "movie"
@@ -3163,14 +3163,14 @@ def login_mal():
         data = httptools.downloadpage("https://myanimelist.net/login.php?from=%2F", post=post).data
         
         if not re.search(r'(?i)'+user, data):
-            logger.info("Error en el login")
+            logger.error("Error en el login")
             return False, "Error en el usuario y/o contraseña. Comprueba tus credenciales", user
         else:
             logger.info("Login correcto")
             return True, "", user
     except:
         import traceback
-        logger.info(traceback.format_exc())
+        logger.error(traceback.format_exc())
         return False, "Error durante el login. Comprueba tus credenciales"
 
 

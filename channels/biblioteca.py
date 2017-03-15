@@ -9,10 +9,10 @@ import os
 
 from core import config
 from core import filetools
+from core import library
 from core import logger
 from core import scrapertools
 from core.item import Item
-from core import library
 from platformcode import platformtools
 
 

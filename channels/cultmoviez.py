@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para cultmoviez
 # Creado por robalo
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 
 import re
 import sys
@@ -17,15 +17,13 @@ from core import scrapertools
 from core import servertools
 from core.item import Item
 
-DEBUG = config.get_setting("debug")
-
 host = "http://www.cultmoviez.info/"
 wp_plugin = "/wp-content/plugins/seriesnav/seriesajaxresp.php"
 fanart="http://robalo.esy.es/img/cultmoviez-poster.png"
 
 
 def mainlist(item):
-    logger.info("pelisalacarta.cultmoviez mainlist")
+    logger.info()
 
     itemlist = []
     itemlist.append( Item( channel=item.channel, action="submenu", title="Películas", fanart=fanart, thumbnail="http://i.imgur.com/lRuY0Ia.jpg?1" ) )
@@ -37,7 +35,7 @@ def mainlist(item):
     return itemlist
 
 def submenu(item):
-    logger.info("pelisalacarta.cultmoviez submenu")
+    logger.info()
 
     itemlist = []
     itemlist.append( Item( channel=item.channel, action="commonlists", title="Últimas Agregadas", url=urlparse.urljoin(host,"/archivos/peliculas"), fanart=fanart, thumbnail="http://i.imgur.com/lRuY0Ia.jpg?1") )
@@ -48,7 +46,7 @@ def submenu(item):
     return itemlist
 
 def indices(item):
-    logger.info("pelisalacarta.channels.cultmoviez indices")
+    logger.info()
 
     itemlist = []
     data = agrupa_datos( scrapertools.cache_page(item.url) )
@@ -68,7 +66,7 @@ def indices(item):
     return itemlist
 
 def search(item,texto):
-    logger.info("pelisalacarta.channels.cultmoviez search")
+    logger.info()
 
     item.url = urlparse.urljoin(host,"/?s=%s&cat=1") % texto
     try:
@@ -77,11 +75,11 @@ def search(item,texto):
     # Se captura la excepción, para no interrumpir al buscador global si un canal falla
     except:
         for line in sys.exc_info():
-            logger.error( "%s" % line )
+            logger.error("%s" % line)
         return []
 
 def busqueda(item):
-    logger.info("pelisalacarta.cultmoviez busqueda")
+    logger.info()
 
     itemlist=[]
     data = agrupa_datos( scrapertools.cache_page(item.url) )
@@ -111,7 +109,7 @@ def busqueda(item):
 
 
 def commonlists(item):
-    logger.info("pelisalacarta.cultmoviez commonlists")
+    logger.info()
 
     itemlist=[]
     data = agrupa_datos( scrapertools.cache_page(item.url) )
@@ -148,7 +146,7 @@ def commonlists(item):
     return itemlist
 
 def series(item):
-    logger.info("pelisalacarta.cultmoviez series")
+    logger.info()
 
     itemlist=[]
 
@@ -192,7 +190,7 @@ def series(item):
     return itemlist
 
 def episodios(item):
-    logger.info("pelisalacarta.cultmoviez episodios")
+    logger.info()
 
     itemlist=[]
 
@@ -229,7 +227,7 @@ def episodios(item):
     return itemlist
 
 def findvideos(item):
-    logger.info("pelisalacarta.cultmoviez findvideos")
+    logger.info()
     if item.fanart == "": item.fanart = fanart
     itemlist=[]
     headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:22.0) Gecko/20100101 Firefox/22.0',
@@ -297,7 +295,7 @@ def findvideos(item):
     return itemlist
 
 def play(item):
-    logger.info("pelisalacarta.cultmoviez play url="+item.url)
+    logger.info("url="+item.url)
     url_subtitle = ""
     itemlist = []
     if not item.extra.startswith("tt"):
@@ -346,7 +344,7 @@ def html2symbol(text):
     return text
 
 def info(title, year=""):
-    logger.info("pelisalacarta.cultmoviez info")
+    logger.info()
     infolabels={}
     plot={}
     try:

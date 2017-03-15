@@ -8,12 +8,12 @@
 import re
 
 from core import config
-from core import logger
-from core import jsontools as json
-from core import scrapertools
-from core.item import Item
 from core import httptools
+from core import jsontools as json
+from core import logger
+from core import scrapertools
 from core import tmdb
+from core.item import Item
 
 sid = config.get_setting("sid_playmax", "playmax")
 apikey = "0ea143087685e9e0a23f98ae"
@@ -60,10 +60,10 @@ def login():
                "&redirect=index.php&login=Entrar" % (user, password, confirm_id, sid_log)
         data = httptools.downloadpage("https://playmax.mx/ucp.php?mode=login", post=post).data
         if "contraseña incorrecta" in data:
-            logger.info("Error en el login")
+            logger.error("Error en el login")
             return False, "Contraseña errónea. Comprueba tus credenciales"
         elif "nombre de usuario incorrecto" in data:
-            logger.info("Error en el login")
+            logger.error("Error en el login")
             return False, "Nombre de usuario no válido. Comprueba tus credenciales"            
         else:
             logger.info("Login correcto")
@@ -81,7 +81,7 @@ def login():
             return True, ""
     except:
         import traceback
-        logger.info(traceback.format_exc())
+        logger.error(traceback.format_exc())
         return False, "Error en el login. Comprueba tus credenciales o si la web está operativa"
 
 
@@ -402,7 +402,7 @@ def episodios(item):
                             break
             except:
                 import traceback
-                logger.info(traceback.format_exc())
+                logger.error(traceback.format_exc())
                 pass
         
         itemlist.append(item.clone(action="add_serie_to_library", title=title, text_color=color5,
@@ -570,7 +570,7 @@ def menu_info(item):
                             break
             except:
                 import traceback
-                logger.info(traceback.format_exc())
+                logger.error(traceback.format_exc())
                 pass
 
         itemlist.append(item.clone(action=action, title=title, text_color=color5, extra=extra))

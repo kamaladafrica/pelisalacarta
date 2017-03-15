@@ -1,24 +1,23 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para hdfull
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
+import base64
 import re
 import sys
 import urllib
 import urlparse
-import base64
 
 from core import config
+from core import httptools
 from core import jsontools
 from core import logger
 from core import scrapertools
+from core import servertools
 from core.item import Item
 from platformcode import platformtools
-from core import servertools
-from core import httptools
-
 
 host = "http://hdfull.tv"
 
@@ -121,7 +120,7 @@ def search(item,texto):
     except:
         import sys
         for line in sys.exc_info():
-            logger.error( "%s" % line )
+            logger.error("%s" % line)
         return []
 
 def series_abc(item):

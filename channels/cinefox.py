@@ -15,7 +15,6 @@ from core import scrapertools
 from core import servertools
 from core.item import Item
 
-
 __modo_grafico__ = config.get_setting('modo_grafico', 'cinefox')
 __perfil__ = int(config.get_setting('perfil', "cinefox"))
 __menu_info__ = config.get_setting('menu_info', 'cinefox')
@@ -29,13 +28,12 @@ if __perfil__ < 3:
 else:
     color1 = color2 = color3 = color4 = color5 = ""
 
-DEBUG = config.get_setting("debug")
 host = "http://www.cinefox.tv"
 headers = {'User-Agent': 'Mozilla/5.0', 'Referer': host}
 
 
 def mainlist(item):
-    logger.info("pelisalacarta.channels.cinefox mainlist")
+    logger.info()
     item.text_color = color1
     itemlist = []
     
@@ -66,7 +64,7 @@ def configuracion(item):
 
 
 def search(item, texto):
-    logger.info("pelisalacarta.channels.cinefox search")
+    logger.info()
     texto = texto.replace(" ", "+")
     item.url = "http://www.cinefox.tv/search?q=%s" % texto
     try:
@@ -80,7 +78,7 @@ def search(item, texto):
 
 
 def local_search(item):
-    logger.info("pelisalacarta.channels.cinefox local_search")
+    logger.info()
     text = ""
     if config.get_setting("save_last_search", item.channel):
         text = config.get_setting("last_search", item.channel)
@@ -96,7 +94,7 @@ def local_search(item):
 
 
 def busqueda(item):
-    logger.info("pelisalacarta.channels.cinefox busqueda")
+    logger.info()
     itemlist = []
 
     data = scrapertools.downloadpage(item.url)
@@ -145,7 +143,7 @@ def busqueda(item):
 
 
 def filtro(item):
-    logger.info("pelisalacarta.channels.cinefox filtro")
+    logger.info()
     
     list_controls = []
     valores = {}
@@ -257,7 +255,7 @@ def filtrado(item, values):
 
 
 def seccion_peliculas(item):
-    logger.info("pelisalacarta.channels.cinefox seccion_peliculas")
+    logger.info()
     itemlist = []
     # Seccion peliculas
     itemlist.append(item.clone(action="peliculas", title="Novedades", fanart="http://i.imgur.com/PjJaW8o.png",
@@ -283,7 +281,7 @@ def seccion_peliculas(item):
     return itemlist
 
 def seccion_series(item):
-    logger.info("pelisalacarta.channels.cinefox seccion_series")
+    logger.info()
     itemlist = []
     # Seccion series
     itemlist.append(item.clone(action="ultimos", title="Últimos capítulos",
@@ -311,7 +309,7 @@ def seccion_series(item):
 
 
 def mapa(item):
-    logger.info("pelisalacarta.channels.cinefox seccion_series")
+    logger.info()
     itemlist = []
     
     data = scrapertools.downloadpage(item.url)
@@ -326,7 +324,7 @@ def mapa(item):
 
 
 def peliculas(item):
-    logger.info("pelisalacarta.channels.cinefox peliculas")
+    logger.info()
 
     itemlist = []
     if "valores" in item and item.valores:
@@ -381,7 +379,7 @@ def peliculas(item):
 
 
 def ultimos(item):
-    logger.info("pelisalacarta.channels.cinefox ultimos")
+    logger.info()
     item.text_color = color2
 
     if __menu_info__:
@@ -424,7 +422,7 @@ def ultimos(item):
 
 
 def series(item):
-    logger.info("pelisalacarta.channels.cinefox series")
+    logger.info()
     itemlist = []
 
     if "valores" in item:
@@ -457,7 +455,7 @@ def series(item):
 
 
 def menu_info(item):
-    logger.info("pelisalacarta.channels.cinefox menu_info")
+    logger.info()
     itemlist = []
     
     data = scrapertools.downloadpage(item.url, headers=headers.items())
@@ -496,7 +494,7 @@ def menu_info(item):
 
 
 def episodios(item):
-    logger.info("pelisalacarta.channels.cinefox episodios")
+    logger.info()
     itemlist = []
 
     if item.extra == "ultimos":
@@ -554,7 +552,7 @@ def episodios(item):
 
 
 def menu_info_episode(item):
-    logger.info("pelisalacarta.channels.cinefox menu_info_episode")
+    logger.info()
     itemlist = []
     
     data = scrapertools.downloadpage(item.url, headers=headers.items())
@@ -605,7 +603,7 @@ def menu_info_episode(item):
 
 
 def findvideos(item):
-    logger.info("pelisalacarta.channels.cinefox findvideos")
+    logger.info()
     itemlist = []
 
     if not "|" in item.extra and not __menu_info__:
@@ -687,7 +685,7 @@ def get_enlaces(item, url, type):
 
 
 def play(item):
-    logger.info("pelisalacarta.channels.cinefox play")
+    logger.info()
     itemlist = []
 
     if item.extra != "":
@@ -706,7 +704,7 @@ def play(item):
 
 
 def newest(categoria):
-    logger.info("pelisalacarta.channels.cinefox newest")
+    logger.info()
     itemlist = []
     item = Item()
     try:

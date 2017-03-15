@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Conector para Real_Debrid
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 
-import re
 import time
 import urllib
 
@@ -15,8 +14,6 @@ from core import jsontools
 from core import logger
 from core import scrapertools
 from platformcode import platformtools
-
-DEBUG = config.get_setting("debug")
 
 headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:47.0) Gecko/20100101 Firefox/47.0'}
 

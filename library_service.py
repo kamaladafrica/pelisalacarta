@@ -25,19 +25,19 @@
 # Service for updating new episodes on library series
 # ------------------------------------------------------------
 
+import datetime
 import imp
 import math
 import re
-import datetime
 
 from core import config
 from core import filetools
 from core import jsontools
+from core import library
 from core import logger
 from core.item import Item
-from core import library
-from platformcode import xbmc_library
 from platformcode import platformtools
+from platformcode import xbmc_library
 
 
 def convert_old_to_v4():

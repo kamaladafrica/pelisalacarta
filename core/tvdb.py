@@ -449,7 +449,7 @@ class Tvdb:
             response.close()
 
         except urllib2.HTTPError, err:
-            logger.info("err.code es %s" % err.code)
+            logger.error("err.code es %s" % err.code)
             # si hay error 401 es que el token se ha pasado de tiempo y tenemos que volver a llamar a login
             if err.code == 401:
                 cls.__login()

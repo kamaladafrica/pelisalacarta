@@ -51,27 +51,34 @@ def search(item, texto):
     post = "value=%s" % texto
     data = httptools.downloadpage(item.url, post=post).data
 
-    dict_data = jsontools.load_json(data)
+    try:
+        dict_data = jsontools.load_json(data)
 
-    for e in dict_data:
-        title = clean_title(scrapertools.htmlclean(e["name"]))
-        url = e["url"]
-        plot = e["description"]
-        thumbnail = HOST + e["thumb"]
-        new_item = item.clone(action="episodios", title=title, url=url, plot=plot, thumbnail=thumbnail)
+        for e in dict_data:
+            title = clean_title(scrapertools.htmlclean(e["name"]))
+            url = e["url"]
+            plot = e["description"]
+            thumbnail = HOST + e["thumb"]
+            new_item = item.clone(action="episodios", title=title, url=url, plot=plot, thumbnail=thumbnail)
 
-        if "Pelicula" in e["genre"]:
-            new_item.contentType = "movie"
-            new_item.contentTitle = title
-        else:
-            new_item.show = title
-            new_item.context = renumbertools.context
+            if "Pelicula" in e["genre"]:
+                new_item.contentType = "movie"
+                new_item.contentTitle = title
+            else:
+                new_item.show = title
+                new_item.context = renumbertools.context
 
-        itemlist.append(new_item)
+            itemlist.append(new_item)
+
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error("%s" % line)
+        return []
 
     return itemlist
 
-# TODO
+
 def search_section(item):
     logger.info()
     itemlist = []
@@ -165,7 +172,7 @@ def listado(item):
 
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|-\s", "", data)
-    logger.debug("datito %s" % data)
+    # logger.debug("datito %s" % data)
     url_pagination = scrapertools.find_single_match(data, '<li class="current">.*?</li>[\s]<li><a href="([^"]+)">')
 
     data = scrapertools.find_multiple_matches(data, '</div><div class="full">(.*?)<div class="pagination')
@@ -214,7 +221,7 @@ def episodios(item):
         item.plot = scrapertools.find_single_match(data, 'Description[^>]+><p>(.*?)</p>')
 
     data = scrapertools.find_single_match(data, '<div class="Sect Episodes">(.*?)</div>')
-    logger.debug("datito %s" % data)
+    # logger.debug("datito %s" % data)
     matches = re.compile('<a href="([^"]+)"[^>]+>(.+?)</a', re.DOTALL).findall(data)
 
     for url, title in matches:

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para personal
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 
 import re
 
@@ -12,14 +12,12 @@ from core import logger
 from core import scrapertools
 from core.item import Item
 
-DEBUG = config.get_setting("debug")
-
 
 def mainlist(item):
     return personal_channel(item)
 
 def personal_channel(item):
-    logger.info("[personal.py] personal_channel "+item.channel)
+    logger.info(item.channel)
 
     itemlist = []
     if item.url=="":
@@ -66,7 +64,7 @@ def personal_channel(item):
             url = scrapedurl
             thumbnail = scrapedthumbnail
             plot = scrapedplot
-            if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+            logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
             if scrapedurltype=="":
                 itemlist.append( Item(channel=item.channel, action="play" , title=title , fulltitle=title, url=url, thumbnail=thumbnail, fanart=fanart, plot=plot, folder=False))
@@ -99,7 +97,7 @@ def personal_channel(item):
                 url = scrapedurl
                 thumbnail = scrapedthumbnail
                 plot = scrapedplot
-                if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+                logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
         
                 itemlist.append( Item(channel=item.channel, action="play" , title=title , fulltitle=title, url=url, thumbnail=thumbnail, fanart=fanart, plot=plot, folder=False))
 
@@ -111,8 +109,7 @@ def personal_channel(item):
     return itemlist
 
 def play(item):
-    logger.info("[personal.py] play")
-    itemlist = []
+    logger.info()
 
     from core import servertools
     itemlist=servertools.find_video_items(data=item.url)

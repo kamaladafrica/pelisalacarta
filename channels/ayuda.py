@@ -560,7 +560,7 @@ def recover_advancedsettings(item):
 
 
 def realdebrid(item):
-    logger.info("pelisalacarta.channels.ayuda realdebrid")
+    logger.info()
     itemlist = []
 
     verify_url, user_code, device_code = request_access()
@@ -574,7 +574,7 @@ def realdebrid(item):
 
 
 def request_access():
-    logger.info("pelisalacarta.channels.ayuda request_access")
+    logger.info()
     from core import jsontools
     from core import scrapertools
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:47.0) Gecko/20100101 Firefox/47.0'}
@@ -597,7 +597,7 @@ def request_access():
 
 
 def authentication(item):
-    logger.info("pelisalacarta.channels.ayuda authentication")
+    logger.info()
     import urllib
     from core import channeltools
     from core import jsontools

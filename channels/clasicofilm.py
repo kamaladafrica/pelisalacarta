@@ -243,7 +243,7 @@ def findvideos(item):
                             break
             except:
                 import traceback
-                logger.info(traceback.format_exc())
+                logger.error(traceback.format_exc())
                 pass
         
         itemlist.append(item.clone(action="add_pelicula_to_library", title=title))

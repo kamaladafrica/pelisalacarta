@@ -25,7 +25,8 @@
 # Parámetros de configuración (kodi)
 # ------------------------------------------------------------
 
-import os, re
+import os
+import re
 
 import xbmc
 import xbmcaddon

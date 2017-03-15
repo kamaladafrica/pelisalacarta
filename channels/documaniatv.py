@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para documaniatv.com
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 
 import re
 import sys
-import urlparse
 import urllib
+import urlparse
 
 from core import config
 from core import jsontools
@@ -16,8 +16,6 @@ from core import logger
 from core import scrapertools
 from core.item import Item
 
-
-DEBUG = config.get_setting("debug")
 host = "http://www.documaniatv.com/"
 account = config.get_setting("documaniatvaccount", "documaniatv")
 
@@ -26,7 +24,7 @@ headers = [['User-Agent', 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:45.0) Gecko/2
 
 
 def login():
-    logger.info("pelisalacarta.channels.documaniatv login")
+    logger.info()
 
     user = config.get_setting("documaniatvuser", "documaniatv")
     password = config.get_setting("documaniatvpassword", "documaniatv")
@@ -41,14 +39,14 @@ def login():
     data = scrapertools.cachePage("http://www.documaniatv.com/login.php", headers=headers, post=post)
 
     if "Nombre de usuario o contraseña incorrectas" in data:
-        logger.info("pelisalacarta.channels.documaniatv login erróneo")
+        logger.error("login erróneo")
         return True, ""
 
     return False, user
 
 
 def mainlist(item):
-    logger.info("pelisalacarta.channels.documaniatv mainlist")
+    logger.info()
 
     itemlist = []
     itemlist.append(item.clone(action="novedades", title="Novedades", url="http://www.documaniatv.com/newvideos.html"))
@@ -112,7 +110,7 @@ def newest(categoria):
 
 
 def search(item, texto):
-    logger.info("pelisalacarta.channels.documaniatv search")
+    logger.info()
     data = scrapertools.cachePage(host, headers=headers)
     item.url = scrapertools.find_single_match(data, 'form action="([^"]+)"') + "?keywords=%s&video-id="
     texto = texto.replace(" ", "+")
@@ -123,12 +121,12 @@ def search(item, texto):
     except:
         import sys
         for line in sys.exc_info():
-            logger.error( "%s" % line )
+            logger.error("%s" % line)
         return []
 
 
 def novedades(item):
-    logger.info("pelisalacarta.channels.documaniatv novedades")
+    logger.info()
     itemlist = []
 
     # Descarga la pagina
@@ -153,7 +151,7 @@ def novedades(item):
                     scrapedthumbnail += "|"+headers[0][0]+"="+headers[0][1]
                 else:
                     scrapedthumbnail = item.thumbnail
-                if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
+                logger.debug("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
                 itemlist.append(item.clone(action="play_", title=scrapedtitle , url=scrapedurl,
                                            thumbnail=scrapedthumbnail , fanart=scrapedthumbnail, plot=scrapedplot,
                                            fulltitle=scrapedtitle, contentTitle=contentTitle, folder=False))
@@ -169,7 +167,7 @@ def novedades(item):
                     scrapedthumbnail += "|"+headers[0][0]+"="+headers[0][1]
                 else:
                     scrapedthumbnail = item.thumbnail
-                if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
+                logger.debug("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
                 itemlist.append(item.clone(action="findvideos", title=scrapedtitle , url=scrapedurl,
                                            thumbnail=scrapedthumbnail , fanart=scrapedthumbnail, plot=scrapedplot, id=video_id,
                                            fulltitle=scrapedtitle, contentTitle=contentTitle))
@@ -180,13 +178,13 @@ def novedades(item):
         next_page_url = urlparse.urljoin(host, next_page_url)
         itemlist.append(item.clone(action="novedades", title=">> Página siguiente", url=next_page_url))
     except:
-        logger.info("documaniatv.novedades Siguiente pagina no encontrada")
+        logger.error("Siguiente pagina no encontrada")
     
     return itemlist
 
 
 def categorias(item):
-    logger.info("pelisalacarta.channels.documaniatv categorias")
+    logger.info()
     itemlist = []
     data = scrapertools.cachePage(item.url, headers=headers)
 
@@ -210,7 +208,7 @@ def categorias(item):
 
 
 def viendo(item):
-    logger.info("pelisalacarta.channels.documaniatv viendo")
+    logger.info()
     itemlist = []
 
     # Descarga la pagina
@@ -225,7 +223,7 @@ def viendo(item):
             scrapedthumbnail += "|"+headers[0][0]+"="+headers[0][1]
         else:
             scrapedthumbnail = item.thumbnail
-        if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
+        logger.debug("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
         itemlist.append(item.clone(action="play_", title=scrapedtitle, url=scrapedurl, thumbnail=scrapedthumbnail,
                                    fanart=scrapedthumbnail, fulltitle=scrapedtitle))
     
@@ -233,7 +231,7 @@ def viendo(item):
 
 
 def findvideos(item):
-    logger.info("pelisalacarta.channels.documaniatv findvideos")
+    logger.info()
     itemlist = []
     
     # Se comprueba si el vídeo está ya en favoritos/ver más tarde
@@ -265,7 +263,7 @@ def findvideos(item):
 
 
 def play_(item):
-    logger.info("pelisalacarta.channels.documaniatv play_")
+    logger.info()
     itemlist = []
 
     try:
@@ -300,7 +298,7 @@ def play_(item):
 
 
 def usuario(item):
-    logger.info("pelisalacarta.channels.documaniatv usuario")
+    logger.info()
     itemlist = []
     data = scrapertools.cachePage(item.url, headers=headers)
     profile_id = scrapertools.find_single_match(data, 'data-profile-id="([^"]+)"')
@@ -328,7 +326,7 @@ def usuario(item):
 
 
 def acciones_playlist(item):
-    logger.info("pelisalacarta.channels.documaniatv acciones_playlist")
+    logger.info()
     itemlist = []
     if item.title == "Crear una nueva playlist y añadir el documental":
         from platformcode import platformtools
@@ -359,7 +357,7 @@ def acciones_playlist(item):
 
 
 def playlist(item):
-    logger.info("pelisalacarta.channels.documaniatv playlist")
+    logger.info()
     itemlist = []
     data = scrapertools.cachePage(item.url, headers=headers)
     patron = '<div class="pm-pl-list-index.*?src="([^"]+)".*?' \
@@ -367,7 +365,7 @@ def playlist(item):
     matches = scrapertools.find_multiple_matches(data, patron)
     for scrapedthumbnail, scrapedurl, scrapedtitle  in matches:
         scrapedthumbnail += "|"+headers[0][0]+"="+headers[0][1]
-        if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
+        logger.debug("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
         itemlist.append(item.clone(action="play_", title=scrapedtitle, url=scrapedurl, thumbnail=scrapedthumbnail,
                                    fanart=scrapedthumbnail, fulltitle=scrapedtitle, folder=False))
     

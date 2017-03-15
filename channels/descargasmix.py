@@ -1,20 +1,19 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para Descargasmix
 # Por SeiTaN, robalo y Cmos
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 import re
 import urllib
 
 from core import config
-from core import logger
 from core import httptools
+from core import logger
 from core import scrapertools
 from core import servertools
 from core.item import Item
-
 
 __modo_grafico__ = config.get_setting("modo_grafico", "descargasmix")
 __perfil__ = int(config.get_setting("perfil", "descargasmix"))

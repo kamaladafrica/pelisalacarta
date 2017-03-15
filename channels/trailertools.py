@@ -39,7 +39,6 @@ from platformcode import platformtools
 
 result = None
 window_select = []
-DEBUG = config.get_setting("debug")
 # Para habilitar o no la opción de búsqueda manual
 if config.get_platform() != "plex":
     keyboard = True
@@ -48,7 +47,7 @@ else:
 
 
 def buscartrailer(item, trailers=[]):
-    logger.info("pelisalacarta.channels.trailertools buscartrailer")
+    logger.info()
 
     # Lista de acciones si se ejecuta desde el menú contextual
     if item.action == "manual_search" and item.contextual:
@@ -81,8 +80,8 @@ def buscartrailer(item, trailers=[]):
 
         item.year = item.infoLabels['year']
           
-        logger.info("pelisalacarta.channels.trailertools Búsqueda: %s" % item.contentTitle)
-        logger.info("pelisalacarta.channels.trailertools Año: %s" % item.year)
+        logger.info("Búsqueda: %s" % item.contentTitle)
+        logger.info("Año: %s" % item.year)
         if item.infoLabels['trailer'] and not trailers:
             url = item.infoLabels['trailer']
             if "youtube" in url:
@@ -134,7 +133,7 @@ def buscartrailer(item, trailers=[]):
 
 
 def manual_search(item):
-    logger.info("pelisalacarta.channels.trailertools manual_search")
+    logger.info()
     texto = platformtools.dialog_input(default=item.contentTitle, heading=config.get_localized_string(30112))
     if texto is not None:
         if item.extra == "abandomoviez":
@@ -148,7 +147,7 @@ def manual_search(item):
 
 
 def tmdb_trailers(item, tipo="movie"):
-    logger.info("pelisalacarta.channels.trailertools tmdb_trailers")
+    logger.info()
 
     from core.tmdb import Tmdb
     itemlist = []
@@ -168,7 +167,7 @@ def tmdb_trailers(item, tipo="movie"):
 
 
 def youtube_search(item):
-    logger.info("pelisalacarta.channels.trailertools youtube_search")
+    logger.info()
     itemlist = []
 
     titulo = item.contentTitle
@@ -220,7 +219,7 @@ def youtube_search(item):
 
 
 def abandomoviez_search(item):
-    logger.info("pelisalacarta.channels.trailertools abandomoviez_search")
+    logger.info()
 
     # Comprueba si es una búsqueda de cero o viene de la opción Siguiente
     if item.page != "":
@@ -275,7 +274,7 @@ def abandomoviez_search(item):
 
 
 def search_links_abando(item):
-    logger.info("pelisalacarta.channels.trailertools search_links_abando")
+    logger.info()
 
     data = scrapertools.downloadpage(item.url)
     itemlist = []
@@ -334,7 +333,7 @@ def search_links_abando(item):
 
 
 def filmaffinity_search(item):
-    logger.info("pelisalacarta.channels.trailertools filmaffinity_search")
+    logger.info()
 
     if item.filmaffinity:
         item.url = item.filmaffinity
@@ -392,7 +391,7 @@ def filmaffinity_search(item):
 
 
 def search_links_filmaff(item):
-    logger.info("pelisalacarta.channels.trailertools search_links_filmaff")
+    logger.info()
     
     itemlist = []
     data = scrapertools.downloadpage(item.url)
@@ -432,7 +431,7 @@ def search_links_filmaff(item):
 
 
 def jayhap_search(item):
-    logger.info("pelisalacarta.channels.trailertools jayhap_search")
+    logger.info()
     itemlist = []
 
     if item.extra != "jayhap":
@@ -573,6 +572,6 @@ try:
                         buscartrailer(item)
             except:
                 import traceback
-                logger.info(traceback.format_exc())
+                logger.error(traceback.format_exc())
 except:
     pass

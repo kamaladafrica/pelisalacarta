@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para mejortorrent
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 
 import os
 import re
@@ -18,13 +18,11 @@ from core import scrapertools
 from core.item import Item
 from core.tmdb import Tmdb
 
-
 host = "http://www.mejortorrent.com"
-DEBUG = config.get_setting("debug")
 
 
 def mainlist(item):
-    logger.info("pelisalacarta.mejortorrent mainlist")
+    logger.info()
 
     itemlist = []
 
@@ -47,7 +45,7 @@ def mainlist(item):
     return itemlist
 
 def listalfabetico(item):
-    logger.info("pelisalacarta.mejortorrent listalfabetico")
+    logger.info()
 
     itemlist = []
 
@@ -60,7 +58,7 @@ def listalfabetico(item):
 
 
 def search(item,texto):
-    logger.info("pelisalacarta.mejortorrent search")
+    logger.info()
     texto = texto.replace(" ","+")
 
     item.url = "http://www.mejortorrent.com/secciones.php?sec=buscador&valor=%s" % (texto)
@@ -70,14 +68,12 @@ def search(item,texto):
     # Se captura la excepción, para no interrumpir al buscador global si un canal falla
     except:
         for line in sys.exc_info():
-            logger.error( "%s" % line )
+            logger.error("%s" % line)
         return []
-
-    return itemlist
 
 
 def buscador(item):
-    logger.info("pelisalacarta.mejortorrent buscador")
+    logger.info()
     itemlist = []
 
     data = scrapertools.cachePage(item.url)
@@ -149,7 +145,7 @@ def buscador(item):
 
 
 def getlist(item):
-    logger.info("pelisalacarta.mejortorrent seriesydocs")
+    logger.info()
     itemlist = []
 
     data = scrapertools.cachePage(item.url)
@@ -248,7 +244,7 @@ def getlist(item):
 
 
 def episodios(item):
-    logger.info("pelisalacarta.mejortorrent episodios")
+    logger.info()
     itemlist = []
 
     # Descarga la página
@@ -284,7 +280,7 @@ def episodios(item):
     scrapertools.printMatches(matches)
 
     tmdb_title = re.sub(r'(\s*-\s*)?\d+.*?\s*Temporada|(\s*-\s*)?\s*Miniserie\.?|\(.*\)|\[.*\]', '', item.title).strip()
-    logger.debug('pelisalacarta.mejortorrent episodios tmdb_title=' + tmdb_title)
+    logger.debug('tmdb_title=' + tmdb_title)
 
     if item.extra == "series":
         oTmdb= Tmdb(texto_buscado=tmdb_title.strip(), tipo='tv', idioma_busqueda="es")
@@ -340,12 +336,12 @@ def episodios(item):
     return itemlist
 
 def show_movie_info(item):
-    logger.info("pelisalacarta.mejortorrent show_movie_info")
+    logger.info()
 
     itemlist = []
 
     tmdb_title = re.sub(r'\(.*\)|\[.*\]', '', item.title).strip()
-    logger.debug('pelisalacarta.mejortorrent show_movie_info tmdb_title=' + tmdb_title)
+    logger.debug('tmdb_title=' + tmdb_title)
 
     try:
         oTmdb= Tmdb(texto_buscado=tmdb_title, idioma_busqueda="es")
@@ -379,7 +375,7 @@ def show_movie_info(item):
 
 
 def play(item):
-    logger.info("pelisalacarta.mejortorrent play")
+    logger.info()
     itemlist = []
 
     if item.extra=="":

@@ -340,10 +340,10 @@ def do_search(item, categories=[]):
             progreso.update(percentage / 2, "Iniciada busqueda de '%s' en %s..." % (tecleado, channel_parameters["title"]))
 
         except:
-            continue
             logger.error("No se puede buscar en: %s" % channel_parameters["title"])
             import traceback
             logger.error(traceback.format_exc())
+            continue
 
     # Modo Multi Thread
     # Usando isAlive() no es necesario try-except,

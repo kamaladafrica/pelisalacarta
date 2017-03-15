@@ -1,17 +1,20 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para yaske
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
-import re, sys, urllib, urlparse
+# ------------------------------------------------------------
+import re
+import sys
+import urllib
+import urlparse
 
+from core import channeltools
 from core import config
-from core import logger
 from core import httptools
+from core import logger
 from core import scrapertools
 from core import servertools
-from core import channeltools
 from core import tmdb
 from core.item import Item
 
@@ -73,13 +76,12 @@ def search(item,texto):
     except:
         import sys
         for line in sys.exc_info():
-            logger.error( "%s" % line )
+            logger.error("%s" % line)
         return []
 
 
 def newest(categoria):
     logger.info()
-    itemlist = []
     item = Item()
     try:
         if categoria == 'peliculas':
@@ -246,7 +248,7 @@ def findvideos(item):
 
         except:
             import traceback
-            logger.info("Excepcion: "+traceback.format_exc())
+            logger.error("Excepcion: "+traceback.format_exc())
 
     # Añadir servidores encontrados, agrupandolos por idioma
     lang_trans = {"es_es": "Español:", "la_la": "Latino:", "en_es": "Subtitulado:", "en_en": "Ingles:"}

@@ -1,18 +1,15 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Conector para longurl (acortador de url)
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 
 import re
 import urllib
 
-from core import config
 from core import logger
 from core import scrapertools
-
-DEBUG = config.get_setting("debug")
 
 
 def get_server_list():

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para megaforo
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 
 import re
 import urlparse
@@ -14,8 +14,6 @@ from core import scrapertools
 from core.item import Item
 from platformcode import platformtools
 
-
-DEBUG = config.get_setting("debug")
 MAIN_HEADERS = []
 MAIN_HEADERS.append( ["Accept","text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"] )
 MAIN_HEADERS.append( ["Accept-Encoding","gzip, deflate"] )
@@ -27,7 +25,7 @@ MAIN_HEADERS.append( ["User-Agent","Mozilla/5.0 (Windows NT 6.2; rv:23.0) Gecko/
 
 
 def login():
-    logger.info("[megaforo.py] login")
+    logger.info()
     # Calcula el hash del password
     LOGIN = config.get_setting("megaforouser", "megaforo")
     PASSWORD = config.get_setting("megaforopassword", "megaforo")
@@ -41,7 +39,7 @@ def login():
 
 
 def mainlist(item):
-    logger.info("[megaforo.py] mainlist")
+    logger.info()
     itemlist = []
     if config.get_setting("megaforouser","megaforo") == "":
         itemlist.append( Item( channel=item.channel , title="Habilita tu cuenta en la configuración..." , action="settingCanal" , url="") )
@@ -63,7 +61,7 @@ def settingCanal(item):
     return platformtools.show_channel_settings()
 
 def foro(item):
-    logger.info("[megaforo.py] foro")
+    logger.info()
     itemlist=[]
     data = scrapertools.cache_page(item.url)
 
@@ -103,7 +101,7 @@ def foro(item):
 
 def findvideos(item):
   show = item.title.replace("Añadir esta serie a la biblioteca de XBMC","")
-  logger.info("[megaforo.py] findvideos show "+ show)
+  logger.info("show " + show)
   itemlist=[]
   data = scrapertools.cache_page(item.url)
 

@@ -28,13 +28,11 @@
 import os
 
 from core import config
-from core.item import Item
-from core import logger
 from core import filetools
-
+from core import logger
+from core.item import Item
 from platformcode import platformtools
 
-DEBUG = True
 CHANNELNAME = "configuracion"
 
 
@@ -123,7 +121,6 @@ def get_all_versions(item):
     itemlist = []
 
     # Lee la versión local
-    from core import updater
     from core import versiontools
 
     # Descarga la lista de versiones
@@ -265,7 +262,7 @@ def addchannel(item):
                     files.append([url, localfilename, filename])
             except:
                 import traceback
-                logger.info("Detalle del error: %s" % traceback.format_exc())
+                logger.error("Detalle del error: %s" % traceback.format_exc())
                 platformtools.dialog_ok("Error", "La url no es correcta o no está disponible")
                 return
         else:
@@ -316,7 +313,7 @@ def addchannel(item):
                         continue
     except:
         import traceback
-        logger.info("Detalle del error: %s" % traceback.format_exc())
+        logger.error("Detalle del error: %s" % traceback.format_exc())
         return
 
     if zip:
@@ -475,7 +472,7 @@ def conf_tools(item):
                             list_controls.append(control)
 
                     else:
-                        logger.info("Algo va mal con el canal " + channel.channel)
+                        logger.error("Algo va mal con el canal " + channel.channel)
                 else:
                     continue
 
@@ -485,7 +482,7 @@ def conf_tools(item):
                                                        custom_button={"visible": False})
         except:
             import traceback
-            logger.info(channel.title + " | Detalle del error: %s" % traceback.format_exc())
+            logger.error(channel.title + " | Detalle del error: %s" % traceback.format_exc())
             platformtools.dialog_notification("Error",
                                               "Se ha producido un error con el canal %s" %
                                               channel.title)
@@ -545,7 +542,7 @@ def conf_tools(item):
                             if isinstance(dict_file, dict) and 'settings' in dict_file:
                                 dict_settings = dict_file['settings']
                         except EnvironmentError:
-                            logger.info("ERROR al leer el archivo: %s" % file_settings)
+                            logger.error("ERROR al leer el archivo: %s" % file_settings)
                     else:
                         # logger.info(channel.channel + " No tiene archivo _data.json")
                         channeljson_exists = "false"
@@ -555,8 +552,7 @@ def conf_tools(item):
                             datajson_size = filetools.getsize(file_settings)
                         except:
                             import traceback
-                            logger.info(channel.title +
-                                        " | Detalle del error: %s" % traceback.format_exc())
+                            logger.error(channel.title + " | Detalle del error: %s" % traceback.format_exc())
                     else:
                         datajson_size = None
 
@@ -570,7 +566,7 @@ def conf_tools(item):
                             # logger.info(channel.title + " | Default: %s" % default_settings)
                         except:
                             import traceback
-                            logger.info(channel.title + " | Detalle del error: %s" % traceback.format_exc())
+                            logger.error(channel.title + " | Detalle del error: %s" % traceback.format_exc())
                             # default_settings = {}
 
                         # Si _data.json necesita ser reparado o no existe...
@@ -588,7 +584,7 @@ def conf_tools(item):
                                     # El channel_data.json se ha creado/modificado
                                     list_status = " - [COLOR red] CORREGIDO!![/COLOR]"
                                 except EnvironmentError:
-                                    logger.info("ERROR al salvar el archivo: %s" % file_settings)
+                                    logger.error("ERROR al salvar el archivo: %s" % file_settings)
                             else:
                                 if default_settings is None:
                                     list_status = " - [COLOR red] Imposible cargar los ajustes por defecto![/COLOR]"
@@ -623,14 +619,14 @@ def conf_tools(item):
                                              thumbnail=channel.thumbnail,
                                              text_color=list_colour))
                     else:
-                        logger.info("Algo va mal con el canal %s" % channel.channel)
+                        logger.error("Algo va mal con el canal %s" % channel.channel)
 
                 # Si el canal esta en la lista de exclusiones lo saltamos
                 else:
                     continue
         except:
             import traceback
-            logger.info(channel.title + " | Detalle del error: %s" % traceback.format_exc())
+            logger.error(channel.title + " | Detalle del error: %s" % traceback.format_exc())
             platformtools.dialog_notification("Error",
                                               "Se ha producido un error con el canal %s" %
                                               channel.title)
@@ -689,15 +685,14 @@ def channel_status(item, dict_values):
                     continue
 
             else:
-                logger.info("Canal: %s | Estado: %s" %
-                            (v, str(dict_values[v]).lower()))
+                logger.info("Canal: %s | Estado: %s" % (v, str(dict_values[v]).lower()))
                 config.set_setting("enabled", str(dict_values[v]).lower(), v)
 
         platformtools.itemlist_update(Item(channel=CHANNELNAME, action="mainlist"))
 
     except:
         import traceback
-        logger.info("Detalle del error: %s" % traceback.format_exc())
+        logger.error("Detalle del error: %s" % traceback.format_exc())
         platformtools.dialog_notification("Error",
                                           "Se ha producido un error al guardar")
 

@@ -26,8 +26,6 @@
 # --------------------------------------------------------------------------------
 
 import os
-import re
-import sys
 import time
 
 import config
@@ -35,9 +33,10 @@ import logger
 import scrapertools
 import versiontools
 
+
 # Método antiguo, muestra un popup con la versión
 def checkforupdates():
-    logger.info("pelisalacarta.core.updater checkforupdates")
+    logger.info()
 
     # Valores por defecto
     numero_version_publicada = 0
@@ -52,14 +51,14 @@ def checkforupdates():
             tag_version_publicada = latest_package["tag"]
             break
 
-    logger.info("pelisalacarta.core.updater checkforupdates version remota="+str(numero_version_publicada))
+    logger.info("version remota="+str(numero_version_publicada))
 
     # Lee la versión local
     numero_version_local = versiontools.get_current_plugin_version()
-    logger.info("pelisalacarta.core.updater checkforupdates version local="+str(numero_version_local))
+    logger.info("version local="+str(numero_version_local))
 
     hayqueactualizar = numero_version_publicada > numero_version_local
-    logger.info("pelisalacarta.core.updater checkforupdates -> hayqueactualizar="+repr(hayqueactualizar))
+    logger.info("-> hayqueactualizar="+repr(hayqueactualizar))
 
     # Si hay actualización disponible, devuelve la Nueva versión para que cada plataforma se encargue de mostrar los avisos
     if hayqueactualizar:
@@ -69,7 +68,7 @@ def checkforupdates():
 
 # Método nuevo, devuelve el nº de actualizaciones disponibles además de indicar si hay nueva versión del plugin
 def get_available_updates():
-    logger.info("pelisalacarta.core.updater checkforupdates")
+    logger.info()
 
     # Cuantas actualizaciones hay?
     number_of_updates = 0
@@ -97,7 +96,7 @@ def get_available_updates():
     return new_published_version_tag,number_of_updates
 
 def update(item):
-    logger.info("pelisalacarta.core.updater update")
+    logger.info()
 
     # Valores por defecto
     published_version_url = ""
@@ -120,7 +119,7 @@ def update(item):
     download_and_install(remotefilename,localfilename)
 
 def download_and_install(remote_file_name,local_file_name):
-    logger.info("pelisalacarta.core.updater download_and_install from "+remote_file_name+" to "+local_file_name)
+    logger.info("from "+remote_file_name+" to "+local_file_name)
 
     if os.path.exists(local_file_name):
         os.remove(local_file_name)
@@ -130,25 +129,25 @@ def download_and_install(remote_file_name,local_file_name):
     from core import downloadtools
     downloadtools.downloadfile(remote_file_name, local_file_name, continuar=False)
     fin = time.clock()
-    logger.info("pelisalacarta.core.updater Descargado en %d segundos " % (fin-inicio+1))
+    logger.info("Descargado en %d segundos " % (fin-inicio+1))
     
-    logger.info("pelisalacarta.core.updater descomprime fichero...")
+    logger.info("descomprime fichero...")
     import ziptools
     unzipper = ziptools.ziptools()
 
     # Lo descomprime en "addons" (un nivel por encima del plugin)
     installation_target = os.path.join(config.get_runtime_path(),"..")
-    logger.info("pelisalacarta.core.updater installation_target=%s" % installation_target)
+    logger.info("installation_target=%s" % installation_target)
 
     unzipper.extract(local_file_name,installation_target)
     
     # Borra el zip descargado
-    logger.info("pelisalacarta.core.updater borra fichero...")
+    logger.info("borra fichero...")
     os.remove(local_file_name)
-    logger.info("pelisalacarta.core.updater ...fichero borrado")
+    logger.info("...fichero borrado")
 
 def update_channel(channel_name):
-    logger.info("pelisalacarta.core.updater update_channel "+channel_name)
+    logger.info(channel_name)
     
     import channeltools
     remote_channel_url , remote_version_url = channeltools.get_channel_remote_url(channel_name)
@@ -157,37 +156,37 @@ def update_channel(channel_name):
     # Version remota
     try:
         data = scrapertools.cachePage( remote_version_url )
-        logger.info("pelisalacarta.core.updater update_channel remote_data="+data)
+        logger.info("remote_data="+data)
         remote_version = int( scrapertools.find_single_match(data,'<version>([^<]+)</version>') )
     except:
         remote_version = 0
 
-    logger.info("pelisalacarta.core.updater update_channel remote_version=%d" % remote_version)
+    logger.info("remote_version=%d" % remote_version)
 
     # Version local
     if os.path.exists( local_version_path ):
         infile = open( local_version_path )
         data = infile.read()
-        infile.close();
+        infile.close()
         #logger.info("pelisalacarta.core.updater local_data="+data)
 
         local_version = int( scrapertools.find_single_match(data,'<version>([^<]+)</version>') )
     else:
         local_version = 0
 
-    logger.info("pelisalacarta.core.updater local_version=%d" % local_version)
+    logger.info("local_version=%d" % local_version)
 
     # Comprueba si ha cambiado
     updated = remote_version > local_version
 
     if updated:
-        logger.info("pelisalacarta.core.updater update_channel downloading...")
+        logger.info("downloading...")
         download_channel(channel_name)
 
     return updated
 
 def download_channel(channel_name):
-    logger.info("pelisalacarta.core.updater download_channel "+channel_name)
+    logger.info(channel_name)
 
     import channeltools
     remote_channel_url , remote_version_url = channeltools.get_channel_remote_url(channel_name)
@@ -200,10 +199,10 @@ def download_channel(channel_name):
         outfile.write(updated_channel_data)
         outfile.flush()
         outfile.close()
-        logger.info("pelisalacarta.core.updater Grabado a " + local_channel_path)
+        logger.info("Grabado a " + local_channel_path)
     except:
         import traceback
-        logger.info(traceback.format_exc())
+        logger.error(traceback.format_exc())
 
     # Descarga la version (puede no estar)
     try:
@@ -212,14 +211,14 @@ def download_channel(channel_name):
         outfile.write(updated_version_data)
         outfile.flush()
         outfile.close()
-        logger.info("pelisalacarta.core.updater Grabado a " + local_version_path)
+        logger.info("Grabado a " + local_version_path)
     except:
         import traceback
-        logger.info(traceback.format_exc())
+        logger.error(traceback.format_exc())
 
     if os.path.exists(local_compiled_path):
         os.remove(local_compiled_path)
 
     from platformcode import platformtools
-    platformtools.dialog_notification(channel_name+" actualizado","Se ha descargado una nueva versión")
+    platformtools.dialog_notification(channel_name+" actualizado", "Se ha descargado una nueva versión")
 

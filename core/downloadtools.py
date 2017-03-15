@@ -25,7 +25,6 @@
 # Download Tools - Original based from code of VideoMonkey XBMC Plugin
 # ---------------------------------------------------------------------------------
 
-import mimetypes
 import os.path
 import re
 import socket
@@ -33,8 +32,6 @@ import sys
 import time
 import urllib
 import urllib2
-import urlparse
-from threading import Thread, Lock
 
 import config
 import logger
@@ -429,11 +426,11 @@ def limpia_nombre_excepto_2(s):
 
 def getfilefromtitle(url, title):
     # Imprime en el log lo que va a descartar
-    logger.info("pelisalacarta.core.downloadtools getfilefromtitle: title=" + title)
-    logger.info("pelisalacarta.core.downloadtools getfilefromtitle: url=" + url)
+    logger.info("title=" + title)
+    logger.info("url=" + url)
     # logger.info("pelisalacarta.core.downloadtools downloadtitle: title="+urllib.quote_plus( title ))
     plataforma = config.get_system_platform()
-    logger.info("pelisalacarta.core.downloadtools getfilefromtitle: plataforma=" + plataforma)
+    logger.info("plataforma=" + plataforma)
 
     # nombrefichero = xbmc.makeLegalFilename(title + url[-4:])
     import scrapertools
@@ -442,20 +439,20 @@ def getfilefromtitle(url, title):
         nombrefichero = limpia_nombre_excepto_1(nombrefichero)
     else:
         nombrefichero = title + scrapertools.get_filename_from_url(url)[-4:]
-        logger.info("pelisalacarta.core.downloadtools getfilefromtitle: nombrefichero=%s" % nombrefichero)
+        logger.info("nombrefichero=%s" % nombrefichero)
         if "videobb" in url or "videozer" in url or "putlocker" in url:
             nombrefichero = title + ".flv"
         if "videobam" in url:
             nombrefichero = title + "." + url.rsplit(".", 1)[1][0:3]
 
-        logger.info("pelisalacarta.core.downloadtools getfilefromtitle: nombrefichero=%s" % nombrefichero)
+        logger.info("nombrefichero=%s" % nombrefichero)
 
         nombrefichero = limpia_nombre_caracteres_especiales(nombrefichero)
 
-    logger.info("pelisalacarta.core.downloadtools getfilefromtitle: nombrefichero=%s" % nombrefichero)
+    logger.info("nombrefichero=%s" % nombrefichero)
 
     fullpath = os.path.join(config.get_setting("downloadpath"), nombrefichero)
-    logger.info("pelisalacarta.core.downloadtools getfilefromtitle: fullpath=%s" % fullpath)
+    logger.info("fullpath=%s" % fullpath)
 
     if config.is_xbmc() and fullpath.startswith("special://"):
         import xbmc
@@ -470,7 +467,7 @@ def downloadtitle(url, title):
 
 
 def downloadbest(video_urls, title, continuar=False):
-    logger.info("pelisalacarta.core.downloadtools downloadbest")
+    logger.info()
 
     # Le da la vuelta, para poner el de más calidad primero ( list() es para que haga una copia )
     invertida = list(video_urls)
@@ -479,8 +476,7 @@ def downloadbest(video_urls, title, continuar=False):
     for elemento in invertida:
         # videotitle = elemento[0]
         url = elemento[1]
-        logger.info(
-            "pelisalacarta.core.downloadtools Descargando opción " + title + " " + url.encode('ascii', 'ignore'))
+        logger.info("Descargando opción " + title + " " + url.encode('ascii', 'ignore'))
 
         # Calcula el fichero donde debe grabar
         try:
@@ -488,7 +484,7 @@ def downloadbest(video_urls, title, continuar=False):
         # Si falla, es porque la URL no vale para nada
         except:
             import traceback
-            logger.info(traceback.format_exc())
+            logger.error(traceback.format_exc())
             continue
 
         # Descarga
@@ -497,7 +493,7 @@ def downloadbest(video_urls, title, continuar=False):
         # Llegados a este punto, normalmente es un timeout
         except urllib2.URLError, e:
             import traceback
-            logger.info(traceback.format_exc())
+            logger.error(traceback.format_exc())
             ret = -2
 
         # El usuario ha cancelado la descarga
@@ -506,26 +502,25 @@ def downloadbest(video_urls, title, continuar=False):
         else:
             # El fichero ni siquiera existe
             if not os.path.exists(fullpath):
-                logger.info("[downoadtools] -> No ha descargado nada, probando con la siguiente opción si existe")
+                logger.info("-> No ha descargado nada, probando con la siguiente opción si existe")
             # El fichero existe
             else:
                 tamanyo = os.path.getsize(fullpath)
 
                 # Tiene tamaño 0
                 if tamanyo == 0:
-                    logger.info("[downoadtools] -> Descargado un fichero con tamaño 0, probando con la siguiente "
-                                "opción si existe")
+                    logger.info("-> Descargado un fichero con tamaño 0, probando con la siguiente opción si existe")
                     os.remove(fullpath)
                 else:
-                    logger.info("[downoadtools] -> Descargado un fichero con tamaño %d, lo da por bueno" % tamanyo)
+                    logger.info("-> Descargado un fichero con tamaño %d, lo da por bueno" % tamanyo)
                     return 0
 
     return -2
 
 
 def downloadfile(url, nombrefichero, headers=None, silent=False, continuar=False, resumir=True):
-    logger.info("pelisalacarta.core.downloadtools downloadfile: url=" + url)
-    logger.info("pelisalacarta.core.downloadtools downloadfile: nombrefichero=" + nombrefichero)
+    logger.info("url=" + url)
+    logger.info("nombrefichero=" + nombrefichero)
 
     if headers is None:
         headers = []
@@ -547,7 +542,7 @@ def downloadfile(url, nombrefichero, headers=None, silent=False, continuar=False
             nombrefichero = xbmc.makeLegalFilename(nombrefichero)
         except:
             pass
-        logger.info("pelisalacarta.core.downloadtools downloadfile: nombrefichero=" + nombrefichero)
+        logger.info("nombrefichero=" + nombrefichero)
 
         # El fichero existe y se quiere continuar
         if os.path.exists(nombrefichero) and continuar:
@@ -559,7 +554,7 @@ def downloadfile(url, nombrefichero, headers=None, silent=False, continuar=False
             f = open(nombrefichero, 'r+b')
             if resumir:
                 exist_size = os.path.getsize(nombrefichero)
-                logger.info("pelisalacarta.core.downloadtools downloadfile: el fichero existe, size=%d" % exist_size)
+                logger.info("el fichero existe, size=%d" % exist_size)
                 grabado = exist_size
                 f.seek(exist_size)
             else:
@@ -568,13 +563,13 @@ def downloadfile(url, nombrefichero, headers=None, silent=False, continuar=False
 
         # el fichero ya existe y no se quiere continuar, se aborta
         elif os.path.exists(nombrefichero) and not continuar:
-            logger.info("pelisalacarta.core.downloadtools downloadfile: el fichero existe, no se descarga de nuevo")
+            logger.info("el fichero existe, no se descarga de nuevo")
             return -3
 
         # el fichero no existe
         else:
             exist_size = 0
-            logger.info("pelisalacarta.core.downloadtools downloadfile: el fichero no existe")
+            logger.info("el fichero no existe")
 
             # try:
             #    import xbmcvfs
@@ -599,13 +594,13 @@ def downloadfile(url, nombrefichero, headers=None, silent=False, continuar=False
                 additional_headers = [additional_headers]
 
             for additional_header in additional_headers:
-                logger.info("pelisalacarta.core.downloadtools additional_header: " + additional_header)
+                logger.info("additional_header: " + additional_header)
                 name = re.findall("(.*?)=.*?", additional_header)[0]
                 value = urllib.unquote_plus(re.findall(".*?=(.*?)$", additional_header)[0])
                 headers.append([name, value])
 
             url = url.split("|")[0]
-            logger.info("pelisalacarta.core.downloadtools downloadfile: url=" + url)
+            logger.info("url=" + url)
 
         # Timeout del socket a 60 segundos
         socket.setdefaulttimeout(60)
@@ -613,7 +608,7 @@ def downloadfile(url, nombrefichero, headers=None, silent=False, continuar=False
         h = urllib2.HTTPHandler(debuglevel=0)
         request = urllib2.Request(url)
         for header in headers:
-            logger.info("pelisalacarta.core.downloadtools Header=" + header[0] + ": " + header[1])
+            logger.info("Header=" + header[0] + ": " + header[1])
             request.add_header(header[0], header[1])
 
         if exist_size > 0:
@@ -624,7 +619,7 @@ def downloadfile(url, nombrefichero, headers=None, silent=False, continuar=False
         try:
             connexion = opener.open(request)
         except urllib2.HTTPError, e:
-            logger.info("pelisalacarta.core.downloadtools downloadfile: error %d (%s) al abrir la url %s" %
+            logger.error("error %d (%s) al abrir la url %s" %
                         (e.code, e.msg, url))
             # print e.code
             # print e.msg
@@ -793,7 +788,7 @@ def downloadfileRTMP(url,nombrefichero,silent):
   try:
     rtmpdump_args = [rtmpdump_cmd] + rtmpdump_args + ["-o", nombrefichero]
     from os import spawnv, P_NOWAIT
-    logger.info("tvalacarta.core.downloadtools Iniciando descarga del fichero: %s" % " ".join(rtmpdump_args))
+    logger.info("Iniciando descarga del fichero: %s" % " ".join(rtmpdump_args))
     rtmpdump_exit = spawnv(P_NOWAIT, rtmpdump_cmd, rtmpdump_args)
     if not silent:
       from platformcode import platformtools
@@ -805,18 +800,18 @@ def downloadfileRTMP(url,nombrefichero,silent):
 
 
 def downloadfileGzipped(url, pathfichero):
-    logger.info("pelisalacarta.core.downloadtools downloadfileGzipped: url=" + url)
+    logger.info("url=" + url)
     nombrefichero = pathfichero
-    logger.info("pelisalacarta.core.downloadtools downloadfileGzipped: nombrefichero=" + nombrefichero)
+    logger.info("nombrefichero=" + nombrefichero)
 
     import xbmc
     nombrefichero = xbmc.makeLegalFilename(nombrefichero)
-    logger.info("pelisalacarta.core.downloadtools downloadfileGzipped: nombrefichero=" + nombrefichero)
+    logger.info("nombrefichero=" + nombrefichero)
     patron = "(http://[^/]+)/.+"
     matches = re.compile(patron, re.DOTALL).findall(url)
 
     if len(matches):
-        logger.info("pelisalacarta.core.downloadtools URL principal :" + matches[0])
+        logger.info("URL principal :" + matches[0])
         url1 = matches[0]
     else:
         url1 = url
@@ -852,7 +847,7 @@ def downloadfileGzipped(url, pathfichero):
     try:
         connexion = opener.open(request)
     except urllib2.HTTPError, e:
-        logger.info("pelisalacarta.core.downloadtools downloadfile: error %d (%s) al abrir la url %s" %
+        logger.error("error %d (%s) al abrir la url %s" %
                     (e.code, e.msg, url))
         # print e.code
         # print e.msg
@@ -885,7 +880,7 @@ def downloadfileGzipped(url, pathfichero):
     # despues
     f = open(nombrefichero, 'w')
 
-    logger.info("pelisalacarta.core.downloadtools downloadfileGzipped: fichero nuevo abierto")
+    logger.info("fichero nuevo abierto")
 
     grabado = 0
     logger.info("Content-Length=%s" % totalfichero)
@@ -901,9 +896,9 @@ def downloadfileGzipped(url, pathfichero):
         gzipper = gzip.GzipFile(fileobj=compressedstream)
         bloquedata = gzipper.read()
         gzipper.close()
-        xbmc.log("Iniciando descarga del fichero, bloqueleido=%s" % len(bloqueleido))
+        logger.info("Iniciando descarga del fichero, bloqueleido=%s" % len(bloqueleido))
     except:
-        xbmc.log("ERROR : El archivo a descargar no esta comprimido con Gzip")
+        logger.error("ERROR : El archivo a descargar no esta comprimido con Gzip")
         f.close()
         progreso.close()
         return -2
@@ -983,10 +978,10 @@ def downloadfileGzipped(url, pathfichero):
 
 def GetTitleFromFile(title):
     # Imprime en el log lo que va a descartar
-    logger.info("pelisalacarta.core.downloadtools GetTitleFromFile: titulo=" + title)
+    logger.info("titulo=" + title)
     # logger.info("pelisalacarta.core.downloadtools downloadtitle: title="+urllib.quote_plus( title ))
     plataforma = config.get_system_platform()
-    logger.info("pelisalacarta.core.downloadtools GetTitleFromFile: plataforma=" + plataforma)
+    logger.info("plataforma=" + plataforma)
 
     # nombrefichero = xbmc.makeLegalFilename(title + url[-4:])
     if plataforma == "xbox":
@@ -1004,8 +999,7 @@ def sec_to_hms(seconds):
 
 
 def downloadIfNotModifiedSince(url, timestamp):
-    logger.info(
-        "pelisalacarta.core.downloadtools downloadIfNotModifiedSince(" + url + "," + time.ctime(timestamp) + ")")
+    logger.info("(" + url + "," + time.ctime(timestamp) + ")")
 
     # Convierte la fecha a GMT
     fecha_formateada = time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.gmtime(timestamp))
@@ -1050,7 +1044,7 @@ def downloadIfNotModifiedSince(url, timestamp):
 
 
 def download_all_episodes(item, channel, first_episode="", preferred_server="vidspot", filter_language=""):
-    logger.info("pelisalacarta.core.downloadtools download_all_episodes, show=" + item.show)
+    logger.info("show=" + item.show)
     show_title = item.show
 
     # Obtiene el listado desde el que se llamó
@@ -1080,12 +1074,12 @@ def download_all_episodes(item, channel, first_episode="", preferred_server="vid
 
     for episode_item in episode_itemlist:
         try:
-            logger.info("pelisalacarta.core.downloadtools download_all_episodes, episode=" + episode_item.title)
+            logger.info("episode=" + episode_item.title)
             episode_title = scrapertools.get_match(episode_item.title, "(\d+x\d+)")
-            logger.info("pelisalacarta.core.downloadtools download_all_episodes, episode=" + episode_title)
+            logger.info("episode=" + episode_title)
         except:
             import traceback
-            logger.info(traceback.format_exc())
+            logger.error(traceback.format_exc())
             continue
 
         if first_episode != "" and episode_title == first_episode:
@@ -1141,7 +1135,7 @@ def download_all_episodes(item, channel, first_episode="", preferred_server="vid
                             new_mirror_itemlist_4 + new_mirror_itemlist_5 + new_mirror_itemlist_6)
 
         for mirror_item in mirrors_itemlist:
-            logger.info("pelisalacarta.core.downloadtools download_all_episodes, mirror=" + mirror_item.title)
+            logger.info("mirror=" + mirror_item.title)
 
             if "(Español)" in mirror_item.title:
                 idioma = "(Español)"
@@ -1159,12 +1153,11 @@ def download_all_episodes(item, channel, first_episode="", preferred_server="vid
                 idioma = "(Desconocido)"
                 codigo_idioma = "desconocido"
 
-            logger.info("pelisalacarta.core.downloadtools filter_language=#" + filter_language + "#, codigo_idioma=#" +
-                        codigo_idioma + "#")
+            logger.info("filter_language=#" + filter_language + "#, codigo_idioma=#" + codigo_idioma + "#")
             if filter_language == "" or (filter_language != "" and filter_language == codigo_idioma):
-                logger.info("pelisalacarta.core.downloadtools download_all_episodes, downloading mirror")
+                logger.info("downloading mirror")
             else:
-                logger.info("pelisalacarta.core.downloadtools language " + codigo_idioma + " filtered, skipping")
+                logger.info("language " + codigo_idioma + " filtered, skipping")
                 continue
 
             if hasattr(channel, 'play'):
@@ -1183,14 +1176,14 @@ def download_all_episodes(item, channel, first_episode="", preferred_server="vid
 
                 # Lo añade a la lista de descargas
                 if puedes:
-                    logger.info("pelisalacarta.core.downloadtools download_all_episodes, downloading mirror started...")
+                    logger.info("downloading mirror started...")
                     # El vídeo de más calidad es el último
                     # mediaurl = video_urls[len(video_urls) - 1][1]
                     devuelve = downloadbest(video_urls, show_title + " " + episode_title + " " + idioma +
                                             " [" + video_item.server + "]", continuar=False)
 
                     if devuelve == 0:
-                        logger.info("pelisalacarta.core.downloadtools download_all_episodes, download ok")
+                        logger.info("download ok")
                         descargado = True
                         break
                     elif devuelve == -1:
@@ -1201,17 +1194,14 @@ def download_all_episodes(item, channel, first_episode="", preferred_server="vid
                             pass
                         return
                     else:
-                        logger.info("pelisalacarta.core.downloadtools download_all_episodes, download error, "
-                                    "try another mirror")
+                        logger.info("download error, try another mirror")
                         continue
 
                 else:
-                    logger.info("pelisalacarta.core.downloadtools download_all_episodes, downloading mirror not "
-                                "available... trying next")
+                    logger.info("downloading mirror not available... trying next")
 
         if not descargado:
-            logger.info("pelisalacarta.core.downloadtools download_all_episodes, EPISODIO NO DESCARGADO " +
-                        episode_title)
+            logger.info("EPISODIO NO DESCARGADO " + episode_title)
 
 
 def episodio_ya_descargado(show_title, episode_title):

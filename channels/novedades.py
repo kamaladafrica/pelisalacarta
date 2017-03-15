@@ -23,7 +23,7 @@
 # along with pelisalacarta 4.  If not, see <http://www.gnu.org/licenses/>.
 # ------------------------------------------------------------
 # Channel for recent videos on several channels
-#------------------------------------------------------------
+# ------------------------------------------------------------
 
 import glob
 import os
@@ -32,9 +32,9 @@ import time
 from threading import Thread
 
 from core import channeltools
-from core import scrapertools
 from core import config
 from core import logger
+from core import scrapertools
 from core.item import Item
 from platformcode import platformtools
 
@@ -269,9 +269,9 @@ def get_newest(channel_id, categoria):
         if not puede:
             return
 
-        logger.info("pelisalacarta.channels.novedades running channel "+modulo.__name__+" "+modulo.__file__)
+        logger.info("running channel "+modulo.__name__+" "+modulo.__file__)
         list_result = modulo.newest(categoria)
-        logger.info("pelisalacarta.channels.novedades.get_newest canal= %s %d resultados" %(channel_id, len(list_result)))
+        logger.info("canal= %s %d resultados" %(channel_id, len(list_result)))
 
         for item in list_result:
             #logger.info("pelisalacarta.channels.novedades.get_newest   item="+item.tostring())
@@ -279,7 +279,7 @@ def get_newest(channel_id, categoria):
             list_newest.append(item)
 
     except:
-        logger.error("No se pueden recuperar novedades de: "+ channel_id)
+        logger.error("No se pueden recuperar novedades de: " + channel_id)
         import traceback
         logger.error(traceback.format_exc())
 

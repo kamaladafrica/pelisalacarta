@@ -13,9 +13,19 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/aquitorrent.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>5</version>
-	<date>13/12/2016</date>
-	<changes>Actualización,correción y adaptacion infoplus.</changes>
+	<version>6</version>
+	<changes>
+		<change>
+			<date>15/03/2017</date>
+			<autor>SeiTaN</autor>
+			<description>limpieza código</description>
+		</change>
+		<change>
+			<date>13/12/2016</date>
+			<autor>Cmos y neno1978</autor>
+			<description>Actualización,correción y adaptacion infoplus.</description>
+		</change>
+	</changes>
 
 	<categories>
 		<category>torrent</category>

@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # Canal para pelisalacarta by EpNiebla
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 import re
 import urlparse
-from core import config
-from core import logger
+
 from core import httptools
+from core import logger
 from core import scrapertools
 from core.item import Item
 
+
 def mainlist(item):
-    logger.info('pelisalacarta.channels.cumlouder mainlist')
+    logger.info()
     itemlist = []
     
     itemlist.append(item.clone(title = "Últimos videos", action = "videos"        , url = "http://www.cumlouder.com/"))
@@ -23,8 +24,8 @@ def mainlist(item):
     return itemlist
 
 def search(item, texto):
-  logger.info('pelisalacarta.channels.cumlouder search')
-  
+  logger.info()
+
   item.url = item.url % texto
   item.action = "videos"
   try:
@@ -35,7 +36,7 @@ def search(item, texto):
     return []
 
 def pornstars_list(item):
-  logger.info('pelisalacarta.channels.cumlouder pornstars_list')
+  logger.info()
   itemlist = []
   for letra in "abcdefghijklmnopqrstuvwxyz":
     itemlist.append(item.clone(title=letra.upper(), url=urlparse.urljoin(item.url,letra), action ="pornstars"))
@@ -43,7 +44,7 @@ def pornstars_list(item):
   return itemlist
   
 def pornstars(item):
-  logger.info('pelisalacarta.channels.cumlouder pornstars')
+  logger.info()
   itemlist = []
   
   data = httptools.downloadpage(item.url).data
@@ -64,7 +65,7 @@ def pornstars(item):
  
   
 def categorias(item):
-  logger.info('pelisalacarta.channels.cumlouder categorias')
+  logger.info()
   itemlist = []
   
   data = httptools.downloadpage(item.url).data
@@ -85,7 +86,7 @@ def categorias(item):
   return itemlist
 
 def videos(item):
-  logger.info('pelisalacarta.channels.cumlouder videos')
+  logger.info()
   itemlist = []
   
   data = httptools.downloadpage(item.url).data
@@ -111,7 +112,7 @@ def videos(item):
   return itemlist
     
 def play(item):
-  logger.info('pelisalacarta.channels.cumlouder play')
+  logger.info()
   itemlist = []
   
   data = httptools.downloadpage(item.url).data

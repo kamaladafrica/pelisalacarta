@@ -12,9 +12,20 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/cinefox.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>1</version>
-	<date>18/07/2016</date>
-	<changes>Primera version</changes>
+	<version>2</version>
+
+	<changes>
+		<change>
+			<date>15/03/2017</date>
+			<autor>SeiTaN</autor>
+			<description>limpieza código</description>
+		</change>
+		<change>
+			<date>18/07/2016</date>
+			<autor>Cmos</autor>
+			<description>First release.</description>
+		</change>
+	</changes>
 
 	<categories>
 		<category>movie</category>

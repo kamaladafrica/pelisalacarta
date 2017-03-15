@@ -6,15 +6,13 @@
 import re
 import urlparse
 
-from core import config
 from core import logger
 from core import scrapertools
 from core.item import Item
 
-DEBUG = config.get_setting("debug")
 
 def mainlist(item):
-    logger.info("[erotik] mainlist")
+    logger.info()
     itemlist = []
     itemlist.append( Item(channel=item.channel, action="lista"          , title="Útimos videos"            , url="http://www.ero-tik.com/newvideos.html?&page=1"))
     itemlist.append( Item(channel=item.channel, action="categorias"          , title="Categorias"            , url="http://www.ero-tik.com/browse.html"))
@@ -40,7 +38,7 @@ def search(item, texto):
 
 
 def categorias(item):
-    logger.info("[erotik] categorias")
+    logger.info()
     itemlist = []
     data = scrapertools.cache_page(item.url)
     data = re.sub(r"\n|\r|\t|\s{2}", "", data)
@@ -53,7 +51,7 @@ def categorias(item):
 
 
 def lista(item):
-    logger.info("[erotik] lista")
+    logger.info()
     itemlist = []
     # Descarga la página
     data = scrapertools.cache_page(item.url)
@@ -63,8 +61,6 @@ def lista(item):
     patron = '<li><div class=".*?<a href="([^"]+)".*?>.*?.img src="([^"]+)".*?alt="([^"]+)".*?>'
 
     matches = re.compile(patron, re.DOTALL).findall(data)
-    if DEBUG:
-        scrapertools.printMatches(matches)
     itemlist = []
 
     for scrapedurl,scrapedthumbnail, scrapedtitle in matches:
@@ -85,7 +81,7 @@ def lista(item):
     return itemlist
 
 def listacategoria(item):
-    logger.info("[erotik] listacategoria")
+    logger.info()
     itemlist = []
     # Descarga la página
     data = scrapertools.cache_page(item.url)
@@ -95,8 +91,6 @@ def listacategoria(item):
     patron = '<li><div class=".*?<a href="([^"]+)".*?>.*?.img src="([^"]+)".*?alt="([^"]+)".*?>'
 
     matches = re.compile(patron, re.DOTALL).findall(data)
-    if DEBUG:
-        scrapertools.printMatches(matches)
     itemlist = []
 
     for scrapedurl,scrapedthumbnail, scrapedtitle in matches:
@@ -117,7 +111,7 @@ def listacategoria(item):
     return itemlist
 
 def play(item):
-    logger.info("[play] findvideos")
+    logger.info()
     itemlist=[]
     # Descarga la página
     data = scrapertools.cachePage(item.url)

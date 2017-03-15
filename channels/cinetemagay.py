@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para cinetemagay.com por sdfasd
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 import os
 import re
 
@@ -13,8 +13,6 @@ from core import scrapertools
 from core import servertools
 from core.item import Item
 
-DEBUG = config.get_setting("debug")
-
 IMAGES_PATH = os.path.join( config.get_runtime_path(), 'resources' , 'images' , 'cinetemagay' )
 
 def strip_tags(value):
@@ -22,7 +20,7 @@ def strip_tags(value):
     
 
 def mainlist(item):
-    logger.info("[cinetemagay.py] mainlist")
+    logger.info()
 
     itemlist = []     
     itemlist.append( Item(channel=item.channel, action="lista"  , title="Cine gay latinoamericano" , url="http://cinegaylatinoamericano.blogspot.com.es/feeds/posts/default/?max-results=100&start-index=1",thumbnail="http://www.americaeconomia.com/sites/default/files/imagecache/foto_nota/homosexual1.jpg"))       
@@ -35,7 +33,7 @@ def mainlist(item):
 
 
 def lista(item):
-    logger.info("[cinetemagay.py] lista")
+    logger.info()
     itemlist = []
         
     # Descarga la pagina
@@ -57,7 +55,7 @@ def lista(item):
         imagen = ""
         scrapedplot = match[1]  
         tipo = match[1]
-        if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
+        logger.debug("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
         scrapedplot = "<"+scrapedplot    
         scrapedplot = scrapedplot.replace("&gt;",">")
         scrapedplot = scrapedplot.replace("&lt;","<")
@@ -81,7 +79,7 @@ def lista(item):
 
 
 def detail(item):
-    logger.info("[cinetemagay.py] detail")
+    logger.info()
     itemlist = []
 
     # Descarga la pagina

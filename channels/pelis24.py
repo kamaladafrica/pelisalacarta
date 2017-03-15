@@ -1,24 +1,20 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para pelis24
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 import re
 import sys
 import urlparse
 
-from core import config
 from core import logger
 from core import scrapertools
 from core.item import Item
 
 
-DEBUG = config.get_setting("debug")
-
-
 def mainlist(item):
-    logger.info("pelisalacarta.channels.pelis24 mainlist")
+    logger.info()
 
     itemlist = []
     itemlist.append( Item(channel=item.channel, title="Recientes"      , action="peliculas"    , url="http://www.pelis24.com/index.php?do=lastnews", viewmode="movie_with_plot"))
@@ -31,14 +27,14 @@ def mainlist(item):
 
 
 def search(item,texto):
-    logger.info("pelisalacarta.channels.pelis24 search")
+    logger.info()
     try:
         return buscar(item,texto)
     # Se captura la excepci?n, para no interrumpir al buscador global si un canal falla
     except:
         import sys
         for line in sys.exc_info():
-            logger.error( "%s" % line )
+            logger.error("%s" % line)
         return []
         
 def buscar(item, texto=""):
@@ -74,7 +70,7 @@ def buscar(item, texto=""):
     return itemlist
 
 def pelisaz(item):
-    logger.info("pelisalacarta.channels.pelis24 pelisaz")
+    logger.info()
     data = scrapertools.cache_page(item.url)
 
     #<a href="/catalog/N" title="Art&iacuteculos: N">N</a>
@@ -87,7 +83,7 @@ def pelisaz(item):
 
 
 def episodios(item):
-    logger.info("pelisalacarta.channels.pelis24 episodios")
+    logger.info()
     data = scrapertools.cache_page(item.url)
     thumbnail = scrapertools.find_single_match(data,'<div class="image-block">\n  <img src="([^"]+)"')
     data = scrapertools.find_single_match(data,'<table (?:[^>]*)? style="border: 1px solid black;">(.*?)<div>')
@@ -110,7 +106,7 @@ def episodios(item):
  
  
 def peliculas(item):
-    logger.info("pelisalacarta.channels.pelis24 peliculas")
+    logger.info()
     itemlist = []
     data = scrapertools.cache_page(item.url)
     data = scrapertools.find_single_match(data,"<div id='dle-content'>(.*?<div class=\"navigation\">.*?)</div[^<]+</div[^<]+</div>") 
@@ -138,7 +134,7 @@ def peliculas(item):
 
 
 def categorias(item):
-    logger.info("pelisalacarta.channels.pelis24 categorias")
+    logger.info()
     itemlist = []
     data = scrapertools.cachePage(item.url)
     data = scrapertools.find_single_match(data,'<b>CATEGORIAS</b>(.*?)</ul>')
@@ -157,7 +153,7 @@ def categorias(item):
     
     
 def calidades(item):
-    logger.info("pelisalacarta.channels.pelis24 calidades")
+    logger.info()
     itemlist = []
     itemlist.append( Item(channel=item.channel, action="peliculas", title="HD 720p" , url="http://pelis24.com/hd/", thumbnail="http://pelis24.com/images/menu_03.png" , folder=True, viewmode="movie_with_plot") )
     itemlist.append( Item(channel=item.channel, action="peliculas", title="HQ 480p" , url="http://pelis24.com/peliculas480p/", thumbnail="http://pelis24.com/images/menu_04.png" , folder=True, viewmode="movie_with_plot") )
@@ -167,7 +163,7 @@ def calidades(item):
    
     
 def idiomas(item):
-    logger.info("pelisalacarta.channels.pelis24 idiomas")
+    logger.info()
     itemlist = []
     data = scrapertools.cachePage(item.url)
     data = scrapertools.find_single_match(data,'<b>IDIOMAS</b>(.*?)</ul>')

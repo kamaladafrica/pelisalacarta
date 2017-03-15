@@ -88,7 +88,7 @@ class ziptools:
                     outfile = open(outfilename, 'wb')
                     outfile.write(zf.read(name))
                 except:
-                    logger.info("Error en fichero "+name)
+                    logger.error("Error en fichero "+name)
 
     def _createstructure(self, file, dir):
         self._makedirs(self._listdirs(file), dir)

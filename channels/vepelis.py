@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para VePelis
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 
 import re
 import sys
@@ -15,11 +15,8 @@ from core import scrapertools
 from core.item import Item
 
 
-DEBUG = config.get_setting("debug")
-    
-
 def mainlist(item):
-    logger.info("[vepelis.py] mainlist")
+    logger.info()
 
     itemlist = []
     itemlist.append( Item(channel=item.channel, title="Ultimas Agregadas", action="listado2" , url="http://www.vepelis.com/pelicula/ultimas-peliculas" , extra="http://www.vepelis.com/pelicula/ultimas-peliculas"))
@@ -32,7 +29,7 @@ def mainlist(item):
     return itemlist
 
 def listarpeliculas(item):
-    logger.info("[vepelis.py] listarpeliculas")
+    logger.info()
 
     # Descarga la página
     data = scrapertools.cachePage(item.url)
@@ -44,7 +41,6 @@ def listarpeliculas(item):
     patron = '<td class=.*?<a '
     patron += 'href="([^"]+)"><img src="([^"]+)" alt="([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
-    if DEBUG: scrapertools.printMatches(matches)
     itemlist = []
     for match in matches:
         scrapedurl = match[0]
@@ -60,7 +56,6 @@ def listarpeliculas(item):
     # Extrae la marca de siguiente página
     patron = 'Anterior.*?  :: <a href="/../../.*?/page/([^"]+)">Siguiente '
     matches = re.compile(patron,re.DOTALL).findall(data)
-    if DEBUG: scrapertools.printMatches(matches)
     for match in matches:
         if len(matches)>0:
             scrapedurl = extra+match
@@ -73,7 +68,7 @@ def listarpeliculas(item):
     return itemlist
 
 def findvideos(item):
-    logger.info("[vepelis.py] videos")
+    logger.info()
     # Descarga la página
     data = scrapertools.cachePage(item.url)
     title = item.title
@@ -83,7 +78,6 @@ def findvideos(item):
     matches = re.compile(patron,re.DOTALL).findall(data)
     #itemlist.append( Item(channel=item.channel, action="play", title=title , fulltitle=item.fulltitle, url=item.url , thumbnail=scrapedthumbnail , folder=False) )
 
-    if (DEBUG): scrapertools.printMatches(matches)
     for match in matches:
         url = match[1]
         title = "SERVIDOR: " + match[0]
@@ -93,7 +87,7 @@ def findvideos(item):
     return itemlist
 
 def play(item):
-    logger.info("[vepelis.py] play")
+    logger.info()
     itemlist=[]
 
 
@@ -140,7 +134,7 @@ def play(item):
  #   return itemlist
 
 def generos(item):
-    logger.info("[vepelis.py] generos")
+    logger.info()
     itemlist = []
 
     # Descarga la página
@@ -148,8 +142,7 @@ def generos(item):
                
     patron = '>.*?<li><a title="(.*?)" href="(.*?)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
-    if (DEBUG): scrapertools.printMatches(matches)
-                                          
+
     for match in matches:
         scrapedurl = urlparse.urljoin("",match[1])
         scrapedurl = scrapedurl.replace(".html","/page/0.html")
@@ -172,7 +165,7 @@ def generos(item):
 	
     
 def alfabetico(item):
-    logger.info("[cinewow.py] listalfabetico")
+    logger.info()
 
     extra = item.url
     itemlist = []
@@ -208,7 +201,7 @@ def alfabetico(item):
 
 
 def listado2(item):
-    logger.info("[vepelis.py] listado2")
+    logger.info()
     extra = item.extra
     itemlist = []
 	
@@ -219,7 +212,6 @@ def listado2(item):
     patron = '<h2 class="titpeli.*?<a href="([^"]+)" title="([^"]+)".*?peli_img_img">.*?<img src="([^"]+)".*?<strong>Idioma</strong>:.*?/>([^"]+)</div>.*?<strong>Calidad</strong>: ([^"]+)</div>'
     
     matches = re.compile(patron,re.DOTALL).findall(data)
-    if (DEBUG): scrapertools.printMatches(matches)
     for match in matches:
         scrapedurl = match[0] #urlparse.urljoin("",match[0])
         scrapedtitle = match[1] + ' - ' + match[4]
@@ -248,7 +240,7 @@ def listado2(item):
     return itemlist
 
 def search(item,texto):
-    logger.info("[vepelis.py] search")
+    logger.info()
     itemlist = []
 
     texto = texto.replace(" ","+")
@@ -266,29 +258,5 @@ def search(item,texto):
     except:
         import sys
         for line in sys.exc_info():
-            logger.error( "%s" % line )
+            logger.error("%s" % line)
         return []
-    
-    '''url = "http://www.peliculasaudiolatino.com/series-anime"
-    data = scrapertools.cachePage(url)
-
-    # Extrae las entradas de todas series
-    patronvideos  = '<li>[^<]+'
-    patronvideos += '<a.+?href="([\D]+)([\d]+)">[^<]+'
-    patronvideos += '.*?/>(.*?)</a>'
-    matches = re.compile(patronvideos,re.DOTALL).findall(data)
-
-    for match in matches:
-        scrapedtitle = match[2].strip()
-
-        # Realiza la busqueda
-        if scrapedtitle.lower()==texto.lower() or texto.lower() in scrapedtitle.lower():
-            logger.info(scrapedtitle)
-            scrapedurl = urlparse.urljoin(url,(match[0]+match[1]))
-            scrapedthumbnail = urlparse.urljoin("http://www.peliculasaudiolatino.com/images/series/",(match[1]+".png"))
-            scrapedplot = ""
-
-            # Añade al listado
-            itemlist.append( Item(channel=item.channel, action="listacapitulos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
-
-    return itemlist'''
