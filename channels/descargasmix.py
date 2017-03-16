@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para Descargasmix
 # Por SeiTaN, robalo y Cmos
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
-
+# ------------------------------------------------------------
+import re
 import urllib
 
 from core import config
@@ -29,18 +29,6 @@ def mainlist(item):
     logger.info()
     itemlist = []
     item.text_color = color1
-
-    kodi17 = False
-    if config.is_xbmc():
-        import xbmc
-        xbmc_version = int(xbmc.getInfoLabel("System.BuildVersion").split(".", 1)[0])
-        if xbmc_version > 16:
-            kodi17 = True
-
-    if not kodi17:
-        title = "Este canal solo es compatible con Kodi y en su versión 17 (Krypton) o superior"
-        itemlist.append(item.clone(title=title, action=""))
-        return itemlist
 
     itemlist.append(item.clone(title="Películas", action="lista", fanart="http://i.imgur.com/c3HS8kj.png"))
     itemlist.append(item.clone(title="Series", action="lista_series", fanart="http://i.imgur.com/9loVksV.png"))
@@ -80,7 +68,22 @@ def search(item, texto):
 def busqueda(item):
     logger.info()
     itemlist = []
-    data = httptools.downloadpage(item.url).data
+    try:
+        data = httptools.downloadpage(item.url).data
+    except:
+        import random
+        server_random = ['nl', 'de', 'us']
+        url = "https://proxy-%s.hideproxy.me/includes/process.php?action=update" % server_random[random.randint(0, 2)]
+        post = "u=%s&proxy_formdata_server=%s&allowCookies=1&encodeURL=0&encodePage=0&stripObjects=0&stripJS=0&go=" \
+               % (item.url, server_random[random.randint(0, 2)])
+        while True:
+            response = httptools.downloadpage(url, post, follow_redirects=False)
+            if response.headers.get("location"):
+                url = response.headers["location"]
+                post = ""
+            else:
+                data = response.data
+                break
 
     contenido = ['Películas', 'Series', 'Documentales', 'Anime', 'Deportes', 'Miniseries', 'Vídeos']
     bloque = scrapertools.find_single_match(data, '<div id="content" role="main">(.*?)<div id="sidebar" '
@@ -91,8 +94,10 @@ def busqueda(item):
     for scrapedurl, scrapedtitle, scrapedthumbnail, info, scrapedcat in matches:
         if not [True for c in contenido if c in scrapedcat]:
             continue
+        scrapedurl = urllib.unquote(re.sub(r'&amp;b=4|/go\.php\?u=', '', scrapedurl))
+        scrapedthumbnail = urllib.unquote(re.sub(r'&amp;b=4|/go\.php\?u=', '', scrapedthumbnail))
         if not scrapedthumbnail.startswith("http"):
-            scrapedthumbnail = "https:" + scrapedthumbnail
+            scrapedthumbnail = "http:" + scrapedthumbnail
         scrapedthumbnail = scrapedthumbnail.replace("-129x180", "")
         if ("Películas" in scrapedcat or "Documentales" in scrapedcat) and "Series" not in scrapedcat:
             titulo = scrapedtitle.split("[")[0]
@@ -106,7 +111,8 @@ def busqueda(item):
                                        show=scrapedtitle, contentType="tvshow"))
 
     next_page = scrapertools.find_single_match(data, '<a class="nextpostslink".*?href="([^"]+)"')
-    if next_page != "":
+    if next_page:
+        next_page = urllib.unquote(re.sub(r'&amp;b=4|/go\.php\?u=', '', next_page))
         itemlist.append(item.clone(action="busqueda", title=">> Siguiente", url=next_page))
 
     return itemlist
@@ -143,7 +149,23 @@ def entradas(item):
     logger.info()
     itemlist = []
     item.text_color = color2
-    data = httptools.downloadpage(item.url).data
+
+    try:
+        data = httptools.downloadpage(item.url).data
+    except:
+        import random
+        server_random = ['nl', 'de', 'us']
+        url = "https://proxy-%s.hideproxy.me/includes/process.php?action=update" % server_random[random.randint(0, 2)]
+        post = "u=%s&proxy_formdata_server=%s&allowCookies=1&encodeURL=0&encodePage=0&stripObjects=0&stripJS=0&go=" \
+               % (item.url, server_random[random.randint(0, 2)])
+        while True:
+            response = httptools.downloadpage(url, post, follow_redirects=False)
+            if response.headers.get("location"):
+                url = response.headers["location"]
+                post = ""
+            else:
+                data = response.data
+                break
 
     bloque = scrapertools.find_single_match(data, '<div id="content" role="main">(.*?)<div id="sidebar" '
                                                   'role="complementary">')
@@ -155,6 +177,7 @@ def entradas(item):
                  '.*?<span class="overlay(|[^"]+)">'
         matches = scrapertools.find_multiple_matches(bloque, patron)
         for scrapedurl, scrapedtitle, scrapedthumbnail, scrapedinfo in matches:
+            scrapedurl = urllib.unquote(re.sub(r'&amp;b=4|/go\.php\?u=', '', scrapedurl))
             if scrapedinfo != "":
                 scrapedinfo = scrapedinfo.replace(" ", "").replace("-", " ")
 
@@ -162,8 +185,9 @@ def entradas(item):
             titulo = scrapedtitle + scrapedinfo
             titulo = scrapertools.decodeHtmlentities(titulo)
             scrapedtitle = scrapertools.decodeHtmlentities(scrapedtitle)
+            scrapedthumbnail = urllib.unquote(re.sub(r'&amp;b=4|/go\.php\?u=', '', scrapedthumbnail))
             if not scrapedthumbnail.startswith("http"):
-                scrapedthumbnail = "https:" + scrapedthumbnail
+                scrapedthumbnail = "http:" + scrapedthumbnail
             scrapedthumbnail = scrapedthumbnail.replace("-129x180", "")
             scrapedthumbnail = scrapedthumbnail.rsplit("/", 1)[0] + "/" + \
                                urllib.quote(scrapedthumbnail.rsplit("/", 1)[1])
@@ -176,6 +200,7 @@ def entradas(item):
                  '.*?<span class="overlay.*?>(.*?)<.*?<p class="stats">(.*?)</p>'
         matches = scrapertools.find_multiple_matches(bloque, patron)
         for scrapedurl, scrapedtitle, scrapedthumbnail, info, categoria in matches:
+            scrapedurl = urllib.unquote(re.sub(r'&amp;b=4|/go\.php\?u=', '', scrapedurl))
             titulo = scrapertools.decodeHtmlentities(scrapedtitle)
             scrapedtitle = scrapertools.decodeHtmlentities(scrapedtitle.split("[")[0])
             action = "findvideos"
@@ -198,11 +223,13 @@ def entradas(item):
             if info:
                 titulo += " [%s]" % unicode(info, "utf-8").capitalize().encode("utf-8")
 
+            scrapedthumbnail = urllib.unquote(re.sub(r'&amp;b=4|/go\.php\?u=', '', scrapedthumbnail))
             if not scrapedthumbnail.startswith("http"):
-                scrapedthumbnail = "https:" + scrapedthumbnail
+                scrapedthumbnail = "http:" + scrapedthumbnail
             scrapedthumbnail = scrapedthumbnail.replace("-129x180", "")
             scrapedthumbnail = scrapedthumbnail.rsplit("/", 1)[0] + "/" + \
                                urllib.quote(scrapedthumbnail.rsplit("/", 1)[1])
+
             itemlist.append(item.clone(action=action, title=titulo, url=scrapedurl, thumbnail=scrapedthumbnail,
                                        fulltitle=scrapedtitle, contentTitle=scrapedtitle, viewmode="movie_with_plot",
                                        show=show, contentType="movie"))
@@ -210,6 +237,7 @@ def entradas(item):
     # Paginación
     next_page = scrapertools.find_single_match(data, '<a class="nextpostslink".*?href="([^"]+)"')
     if next_page:
+        next_page = urllib.unquote(re.sub(r'&amp;b=4|/go\.php\?u=', '', next_page))
         itemlist.append(item.clone(title=">> Siguiente", url=next_page, text_color=color3))
 
     return itemlist
@@ -218,7 +246,23 @@ def entradas(item):
 def episodios(item):
     logger.info()
     itemlist = []
-    data = httptools.downloadpage(item.url).data
+
+    try:
+        data = httptools.downloadpage(item.url).data
+    except:
+        import random
+        server_random = ['nl', 'de', 'us']
+        url = "https://proxy-%s.hideproxy.me/includes/process.php?action=update" % server_random[random.randint(0, 2)]
+        post = "u=%s&proxy_formdata_server=%s&allowCookies=1&encodeURL=0&encodePage=0&stripObjects=0&stripJS=0&go=" \
+               % (item.url, server_random[random.randint(0, 2)])
+        while True:
+            response = httptools.downloadpage(url, post, follow_redirects=False)
+            if response.headers.get("location"):
+                url = response.headers["location"]
+                post = ""
+            else:
+                data = response.data
+                break
 
     patron = '(<ul class="menu" id="seasons-list">.*?<div class="section-box related-posts">)'
     bloque = scrapertools.find_single_match(data, patron)
@@ -259,7 +303,22 @@ def epienlaces(item):
     itemlist = []
     item.text_color = color3
 
-    data = httptools.downloadpage(item.url).data
+    try:
+        data = httptools.downloadpage(item.url).data
+    except:
+        import random
+        server_random = ['nl', 'de', 'us']
+        url = "https://proxy-%s.hideproxy.me/includes/process.php?action=update" % server_random[random.randint(0, 2)]
+        post = "u=%s&proxy_formdata_server=%s&allowCookies=1&encodeURL=0&encodePage=0&stripObjects=0&stripJS=0&go=" \
+               % (item.url, server_random[random.randint(0, 2)])
+        while True:
+            response = httptools.downloadpage(url, post, follow_redirects=False)
+            if response.headers.get("location"):
+                url = response.headers["location"]
+                post = ""
+            else:
+                data = response.data
+                break
     data = data.replace("\n", "").replace("\t", "")
 
     # Bloque de enlaces
@@ -288,6 +347,7 @@ def epienlaces(item):
                 mostrar_server = servertools.is_server_enabled(scrapedserver)
             if mostrar_server:
                 try:
+                    servers_module = __import__("servers." + scrapedserver)
                     lista_enlaces.append(item.clone(action="play", title=titulo, server=scrapedserver, url=scrapedurl,
                                                     extra=item.url))
                 except:
@@ -308,7 +368,22 @@ def findvideos(item):
     itemlist = []
     item.text_color = color3
 
-    data = httptools.downloadpage(item.url).data
+    try:
+        data = httptools.downloadpage(item.url).data
+    except:
+        import random
+        server_random = ['nl', 'de', 'us']
+        url = "https://proxy-%s.hideproxy.me/includes/process.php?action=update" % server_random[random.randint(0, 2)]
+        post = "u=%s&proxy_formdata_server=%s&allowCookies=1&encodeURL=0&encodePage=0&stripObjects=0&stripJS=0&go=" \
+               % (item.url, server_random[random.randint(0, 2)])
+        while True:
+            response = httptools.downloadpage(url, post, follow_redirects=False)
+            if response.headers.get("location"):
+                url = response.headers["location"]
+                post = ""
+            else:
+                data = response.data
+                break
 
     item.plot = scrapertools.find_single_match(data, 'SINOPSIS(?:</span>|</strong>):(.*?)</p>')
     year = scrapertools.find_single_match(data, '(?:<span class="bold">|<strong>)AÑO(?:</span>|</strong>):\s*(\d+)')
@@ -326,6 +401,8 @@ def findvideos(item):
         old_format = True
         matches = scrapertools.find_multiple_matches(data, 'class="separate3 magnet".*?href="([^"]+)"')
         for scrapedurl in matches:
+            scrapedurl = scrapertools.find_single_match(scrapedurl, '(magnet.*)')
+            scrapedurl = urllib.unquote(re.sub(r'&amp;b=4', '', scrapedurl))
             title = "[Torrent] "
             title += urllib.unquote(scrapertools.find_single_match(scrapedurl, 'dn=(.*?)(?i)WWW.DescargasMix'))
             itemlist.append(item.clone(action="play", server="torrent", title=title, url=scrapedurl,
@@ -411,6 +488,8 @@ def findvideos(item):
                 continue
             elif titulo == "Magnet" and not old_format:
                 title = "   Enlace Torrent"
+                scrapedurl = scrapertools.find_single_match(scrapedurl, '(magnet.*)')
+                scrapedurl = urllib.unquote(re.sub(r'&amp;b=4', '', scrapedurl))
                 itemlist.append(item.clone(action="play", server="torrent", title=title, url=scrapedurl,
                                            text_color="green"))
                 continue
@@ -424,7 +503,7 @@ def findvideos(item):
                     urls = mostrar_enlaces(scrapedurl)
                     numero = str(len(urls))
                     titulo = "   %s - Nº enlaces: %s" % (titulo, numero)
-                    itemlist.append(item.clone(action="enlaces", title=titulo, extra=scrapedurl))
+                    itemlist.append(item.clone(action="enlaces", title=titulo, extra=scrapedurl, server=scrapedserver))
                 except:
                     pass
 
@@ -441,35 +520,14 @@ def findvideos(item):
 def play(item):
     logger.info()
     itemlist = []
-    if "enlacesmix.com" in item.url:
-        if not item.url.startswith("http:"):
-            item.url = "https:" + item.url
-        data = httptools.downloadpage(item.url, add_referer=True).data
-        item.url = scrapertools.find_single_match(data, 'iframe src="([^"]+)"')
 
-        enlaces = servertools.findvideos(data=item.url)
-        if enlaces:
-            itemlist.append(item.clone(action="play", server=enlaces[0][2], url=enlaces[0][1]))
-    elif item.server == "directo":
-        data = httptools.downloadpage(item.url, add_referer=True).data
-        subtitulo = scrapertools.find_single_match(data, "var subtitulo='([^']+)'")
-        calidades = ["1080p", "720p", "480p", "360p"]
-        for i in range(0, len(calidades)):
-            url_redirect = scrapertools.find_single_match(data, "{file:'([^']+)',label:'" + calidades[i] + "'")
-            if url_redirect:
-                url_video = httptools.downloadpage(url_redirect, follow_redirects=False, add_referer=True,
-                                                   only_headers=True).headers["location"]
-                if url_video:
-                    url_video = url_video.replace(",", "%2C")
-                    itemlist.append(item.clone(url=url_video, subtitle=subtitulo))
-                    break
-    elif not item.url.startswith("http"):
+    if not item.url.startswith("http") and not item.url.startswith("magnet"):
         post = "source=%s&action=obtenerurl" % urllib.quote(item.url)
         headers = {'X-Requested-With': 'XMLHttpRequest'}
-        data = httptools.downloadpage("https://desmix.net/wp-admin/admin-ajax.php", post=post, headers=headers).data
+        data = httptools.downloadpage("http://desmix.net/wp-admin/admin-ajax.php", post=post, headers=headers, follow_redirects=False).data
 
         url = scrapertools.find_single_match(data, 'url":"([^"]+)"').replace("\\", "")
-        enlaces = servertools.findvideos(data=url)
+        enlaces = servertools.findvideosbyserver(url, item.server)
         if enlaces:
             itemlist.append(item.clone(action="play", server=enlaces[0][2], url=enlaces[0][1]))
     else:

@@ -13,7 +13,7 @@
 		<change>
 			<date>15/03/17</date>
 			<autor>Cmos</autor>
-			<description>Canal reparado, ahora solo funciona a partir de Kodi 17</description>
+			<description>Canal reparado, se utiliza proxy en caso de no poder cargar la url</description>
 		</change>
 		<change>
 			<date>27/01/17</date>
