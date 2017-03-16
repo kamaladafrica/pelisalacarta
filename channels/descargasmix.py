@@ -68,22 +68,8 @@ def search(item, texto):
 def busqueda(item):
     logger.info()
     itemlist = []
-    try:
-        data = httptools.downloadpage(item.url).data
-    except:
-        import random
-        server_random = ['nl', 'de', 'us']
-        url = "https://proxy-%s.hideproxy.me/includes/process.php?action=update" % server_random[random.randint(0, 2)]
-        post = "u=%s&proxy_formdata_server=%s&allowCookies=1&encodeURL=0&encodePage=0&stripObjects=0&stripJS=0&go=" \
-               % (item.url, server_random[random.randint(0, 2)])
-        while True:
-            response = httptools.downloadpage(url, post, follow_redirects=False)
-            if response.headers.get("location"):
-                url = response.headers["location"]
-                post = ""
-            else:
-                data = response.data
-                break
+
+    data = get_data(item.url)
 
     contenido = ['Películas', 'Series', 'Documentales', 'Anime', 'Deportes', 'Miniseries', 'Vídeos']
     bloque = scrapertools.find_single_match(data, '<div id="content" role="main">(.*?)<div id="sidebar" '
@@ -150,23 +136,7 @@ def entradas(item):
     itemlist = []
     item.text_color = color2
 
-    try:
-        data = httptools.downloadpage(item.url).data
-    except:
-        import random
-        server_random = ['nl', 'de', 'us']
-        url = "https://proxy-%s.hideproxy.me/includes/process.php?action=update" % server_random[random.randint(0, 2)]
-        post = "u=%s&proxy_formdata_server=%s&allowCookies=1&encodeURL=0&encodePage=0&stripObjects=0&stripJS=0&go=" \
-               % (item.url, server_random[random.randint(0, 2)])
-        while True:
-            response = httptools.downloadpage(url, post, follow_redirects=False)
-            if response.headers.get("location"):
-                url = response.headers["location"]
-                post = ""
-            else:
-                data = response.data
-                break
-
+    data = get_data(item.url)
     bloque = scrapertools.find_single_match(data, '<div id="content" role="main">(.*?)<div id="sidebar" '
                                                   'role="complementary">')
     contenido = ["series", "deportes", "anime", 'miniseries']
@@ -247,23 +217,7 @@ def episodios(item):
     logger.info()
     itemlist = []
 
-    try:
-        data = httptools.downloadpage(item.url).data
-    except:
-        import random
-        server_random = ['nl', 'de', 'us']
-        url = "https://proxy-%s.hideproxy.me/includes/process.php?action=update" % server_random[random.randint(0, 2)]
-        post = "u=%s&proxy_formdata_server=%s&allowCookies=1&encodeURL=0&encodePage=0&stripObjects=0&stripJS=0&go=" \
-               % (item.url, server_random[random.randint(0, 2)])
-        while True:
-            response = httptools.downloadpage(url, post, follow_redirects=False)
-            if response.headers.get("location"):
-                url = response.headers["location"]
-                post = ""
-            else:
-                data = response.data
-                break
-
+    data = get_data(item.url)
     patron = '(<ul class="menu" id="seasons-list">.*?<div class="section-box related-posts">)'
     bloque = scrapertools.find_single_match(data, patron)
     matches = scrapertools.find_multiple_matches(bloque, '<div class="polo".*?>(.*?)</div>')
@@ -303,24 +257,8 @@ def epienlaces(item):
     itemlist = []
     item.text_color = color3
 
-    try:
-        data = httptools.downloadpage(item.url).data
-    except:
-        import random
-        server_random = ['nl', 'de', 'us']
-        url = "https://proxy-%s.hideproxy.me/includes/process.php?action=update" % server_random[random.randint(0, 2)]
-        post = "u=%s&proxy_formdata_server=%s&allowCookies=1&encodeURL=0&encodePage=0&stripObjects=0&stripJS=0&go=" \
-               % (item.url, server_random[random.randint(0, 2)])
-        while True:
-            response = httptools.downloadpage(url, post, follow_redirects=False)
-            if response.headers.get("location"):
-                url = response.headers["location"]
-                post = ""
-            else:
-                data = response.data
-                break
+    data = get_data(item.url)
     data = data.replace("\n", "").replace("\t", "")
-
     # Bloque de enlaces
     patron = '<div class="polo".*?>%s(.*?)(?:<div class="polo"|</li>)' % item.extra.strip()
     bloque = scrapertools.find_single_match(data, patron)
@@ -368,23 +306,7 @@ def findvideos(item):
     itemlist = []
     item.text_color = color3
 
-    try:
-        data = httptools.downloadpage(item.url).data
-    except:
-        import random
-        server_random = ['nl', 'de', 'us']
-        url = "https://proxy-%s.hideproxy.me/includes/process.php?action=update" % server_random[random.randint(0, 2)]
-        post = "u=%s&proxy_formdata_server=%s&allowCookies=1&encodeURL=0&encodePage=0&stripObjects=0&stripJS=0&go=" \
-               % (item.url, server_random[random.randint(0, 2)])
-        while True:
-            response = httptools.downloadpage(url, post, follow_redirects=False)
-            if response.headers.get("location"):
-                url = response.headers["location"]
-                post = ""
-            else:
-                data = response.data
-                break
-
+    data = get_data(item.url)
     item.plot = scrapertools.find_single_match(data, 'SINOPSIS(?:</span>|</strong>):(.*?)</p>')
     year = scrapertools.find_single_match(data, '(?:<span class="bold">|<strong>)AÑO(?:</span>|</strong>):\s*(\d+)')
     if year:
@@ -572,3 +494,24 @@ def mostrar_enlaces(data):
         urls.append("".join(url))
 
     return urls
+
+
+def get_data(url_orig):
+    try:
+        data = httptools.downloadpage(url_orig).data
+    except:
+        import random
+        server_random = ['nl', 'de', 'us']
+        url = "https://proxy-%s.hideproxy.me/includes/process.php?action=update" % server_random[random.randint(0, 2)]
+        post = "u=%s&proxy_formdata_server=%s&allowCookies=1&encodeURL=0&encodePage=0&stripObjects=0&stripJS=0&go=" \
+               % (url_orig, server_random[random.randint(0, 2)])
+        while True:
+            response = httptools.downloadpage(url, post, follow_redirects=False)
+            if response.headers.get("location"):
+                url = response.headers["location"]
+                post = ""
+            else:
+                data = response.data
+                break
+
+    return data
