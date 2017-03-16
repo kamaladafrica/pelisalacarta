@@ -704,8 +704,10 @@ def add_sources(path):
     nodo_video.appendChild(nodo_source)
 
     # Guardamos los cambios
-    fichero = open(SOURCES_PATH, 'w')
-    xmldoc.writexml(fichero)
+    data = xmldoc.toprettyxml()
+    data = '\n'.join([x for x in data.splitlines() if x.strip()])
+
+    filetools.write(SOURCES_PATH,data)
 
 
 def ask_set_content():
