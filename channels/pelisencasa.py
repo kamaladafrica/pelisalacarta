@@ -13,7 +13,7 @@ from core.item import Item
 from core import servertools
 from core import httptools
 from core import tmdb
-from core import jsunpack
+from lib import jsunpack
 
 host = 'http://pelisencasa.net'
 
