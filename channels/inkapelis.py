@@ -385,7 +385,7 @@ def play(item):
     itemlist = []
     if "drive.php?v=" in item.url or "//goo.gl/" in item.url:
         data = httptools.downloadpage(item.url).data.replace("\\", "")
-        matches = scrapertools.find_multiple_matches(data, '{"label":(.*?),.*?type":"([^"]+)".*?file":"([^"]+)"')
+        matches = scrapertools.find_multiple_matches(data, '"label":(.*?),.*?type":".*?/([^"]+)".*?file":"([^"]+)"')
         for calidad, ext, url in matches:
             title = ".%s %s [directo]" % (ext, calidad)
             itemlist.insert(0, [title, url])

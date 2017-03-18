@@ -103,14 +103,25 @@ def entradas(item):
 
     data = httptools.downloadpage(item.url).data
     patron = '<li class="TPostMv">.*?href="([^"]+)".*?src="([^"]+)".*?class="Title">([^<]+)<.*?' \
-             '.*?"Date AAIco-date_range">(\d+).*?class="Qlty">([^<]+)<'
+             '.*?"Date AAIco-date_range">(\d+).*?class="Qlty">([^<]+)<.*?<p class="Idioma(.*?)</p>'
     matches = scrapertools.find_multiple_matches(data, patron)
     if item.extra == "next":
         matches_ = matches[15:]
     else:
         matches_ = matches[:15]
-    for scrapedurl, scrapedthumbnail, scrapedtitle, year, calidad in matches_:
+    for scrapedurl, scrapedthumbnail, scrapedtitle, year, calidad, data_idioma in matches_:
+        idiomas = []
+        if "/espm" in data_idioma:
+            idiomas.append("CAST")
+        if "/latinom" in data_idioma:
+            idiomas.append("LAT")
+        if "/vosemi" in data_idioma:
+            idiomas.append("VOSE")
+
         titulo = "%s  [%s]" % (scrapedtitle, calidad)
+        if idiomas:
+            titulo += " [%s]" % "/".join(idiomas)
+
         scrapedthumbnail = scrapedthumbnail.replace("-160x242", "")
         infolabels = {'year': year}
         itemlist.append(Item(channel=item.channel, action="findvideos", url=scrapedurl, title=titulo,

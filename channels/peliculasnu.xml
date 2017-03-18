@@ -6,8 +6,13 @@
 	<active>true</active>
 	<adult>false</adult>
 
-	<version>1</version>
+	<version>2</version>
 	<changes>
+		<change>
+			<date>12/03/2017</date>
+			<autor>Cmos</autor>
+			<description>Añadida info de idiomas</description>
+		</change>
 		<change>
 			<date>16/02/2017</date>
 			<autor>Cmos</autor>
