@@ -262,6 +262,10 @@ def verify_directories_created():
             saved_path = "special://profile/addon_data/plugin.video." + PLUGIN_NAME + "/" + default
             set_setting(path, saved_path)
 
+
+        if get_setting("library_set_content")== "true" and path in ["librarypath","downloadpath"]:
+            xbmc_library.add_sources(saved_path)
+
         saved_path = xbmc.translatePath(saved_path)
         if not filetools.exists(saved_path):
             logger.debug("Creating %s: %s" % (path, saved_path))
@@ -281,6 +285,8 @@ def verify_directories_created():
         content_path = filetools.join(get_library_path(), saved_path)
         if not filetools.exists(content_path):
             logger.debug("Creating %s: %s" % (path, content_path))
-            if filetools.mkdir(content_path) and get_setting("set_content")== "true":
-                xbmc_library.set_content(default, saved_path)
+            if filetools.mkdir(content_path) and get_setting("library_set_content")== "true":
+                xbmc_library.set_content(default)
 
+        elif get_setting("library_ask_set_content") == "active":
+            xbmc_library.set_content(default)

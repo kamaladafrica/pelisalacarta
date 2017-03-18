@@ -266,6 +266,8 @@ def findvideos(item):
     for calidad, servidor_num, language, url in matches:
         try:
             server = SERVERS[servidor_num]
+            if server == "tusfiles" and "stormo.tv" in url:
+                server = "stormo"
             if server != "tusfiles":
                 servers_module = __import__("servers."+server)
         except:
@@ -407,6 +409,8 @@ def findvideostv(item):
     for quality, servidor_num, language, url in matches:
         try:
             server = SERVERS[servidor_num]
+            if server == "tusfiles" and "stormo.tv" in url:
+                server = "stormo"
             if server != "tusfiles":
                 servers_module = __import__("servers."+server)
         except:

@@ -98,7 +98,7 @@ def lista (item):
     else:
       matches = matches[max_items:]
       next_page = 'a'
-      patron_next_page = '<div class="siguiente"><a href="(.*?)">Siguiente'
+      patron_next_page = '<div class="siguiente"><a href="(.*?)"|\/\?'
       matches_next_page = re.compile(patron_next_page, re.DOTALL).findall(data)
       if len(matches_next_page) > 0:
         next_page_url = urlparse.urljoin(item.url, matches_next_page[0])
@@ -135,7 +135,6 @@ def seccion(item):
 
     if item.extra == 'generos':
       data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
-
     accion ='lista'
     if item.extra == 'masvistas':
         patron = '<b>\d*<\/b>\s*<a href="(.*?)">(.*?<\/a>\s*<span>.*?<\/span>\s*<i>.*?<\/i><\/li>)'
@@ -143,7 +142,7 @@ def seccion(item):
     elif item.extra == 'poraño':
         patron = '<li><a class="ito" HREF="(.*?)">(.*?)<\/a><\/li>'
     else:
-        patron = '<li class="cat-item cat-item-.*?"><a href="(.*?)" >(.*?)<\/li>'
+        patron ='<li class="cat-item cat-item-.*?"><a href="(.*?)">(.*?)<\/i><\/li>'
 
     matches = re.compile(patron,re.DOTALL).findall(data)
 
@@ -162,8 +161,10 @@ def seccion(item):
           title = title+' ('+year[0]+')'
 
         elif item.extra == 'generos':
-          title = re.sub(r'<\/a> <i>.*?<\/i>','',scrapedtitle)
-          cantidad = re.findall(r'.*?<\/a> <i>(.*?)<\/i>',scrapedtitle)
+          title = re.sub(r'<\/a> <i>\d+','',scrapedtitle)
+          cantidad = re.findall(r'.*?<\/a> <i>(\d+)',scrapedtitle)
+          logger.debug('scrapedtitle: '+scrapedtitle)
+          logger.debug('cantidad: '+str(cantidad))
           th_title = title
           title = title+' ('+cantidad[0]+')'
           thumbnail = tgenero[th_title]

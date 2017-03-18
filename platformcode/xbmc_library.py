@@ -278,7 +278,7 @@ def update(folder_content=FOLDER_TVSHOWS, folder=""):
     @type folder: str
     @param folder: nombre de la carpeta a escanear.
     """
-    logger.info()
+    logger.info(folder)
 
     if not folder:
         # Actualizar toda la coleccion
@@ -291,19 +291,24 @@ def update(folder_content=FOLDER_TVSHOWS, folder=""):
 
         def update_multi_threads(update_path, lock):
             lock.acquire()
-            logger.debug("%s\nINICIO" % update_path)
+            #logger.debug("%s\nINICIO" % update_path)
             payload = {"jsonrpc": "2.0",
                        "method": "VideoLibrary.Scan",
                        "params": {"directory": update_path}, "id": 1}
 
             data = get_data(payload)
             lock.release()
-            logger.debug("%s\nFIN data: %s" % (update_path, data))
+            #logger.debug("%s\nFIN data: %s" % (update_path, data))
 
 
         librarypath = config.get_library_config_path()
 
+        if folder.endswith('/') or folder.endswith('\\'):
+            folder = folder[:-1]
+
         if librarypath.startswith("special:"):
+            if librarypath.endswith('/'):
+                librarypath = librarypath [:-1]
             update_path = librarypath + "/" + folder_content + "/" + folder + "/"
         else:
             update_path = filetools.join(librarypath, folder_content, folder) + "/"
@@ -509,7 +514,9 @@ def set_content(content_type, silent=False):
                               "<setting id='language' value='es' /><setting id='tmdbcertcountry' value='us' />" \
                               "<setting id='trailer' value='true' /></settings>"
                 strActualizar = "¿Desea configurar este Scraper en español como opción por defecto para películas?"
-                strPath = librarypath + sep + config.get_setting("folder_movies") + sep
+                if not librarypath.endswith(sep):
+                    librarypath += sep
+                strPath = librarypath + config.get_setting("folder_movies") + sep
             else:
                 strContent = 'tvshows'
                 strScraper = 'metadata.tvdb.com'
@@ -521,7 +528,9 @@ def set_content(content_type, silent=False):
                               "<setting id='fanart' value='true' />" \
                               "<setting id='language' value='es' /></settings>"
                 strActualizar = "¿Desea configurar este Scraper en español como opción por defecto para series?"
-                strPath = librarypath + sep + config.get_setting("folder_tvshows") + sep
+                if not librarypath.endswith(sep):
+                    librarypath += sep
+                strPath = librarypath + config.get_setting("folder_tvshows") + sep
 
             logger.info("%s: %s" % (content_type, strPath))
             # Comprobamos si ya existe strPath en la BD para evitar duplicados
@@ -631,3 +640,88 @@ def execute_sql_kodi(sql):
         logger.debug("Base de datos no encontrada")
 
     return nun_records, records
+
+def add_sources(path):
+    logger.info(path)
+    # http://elviajedelnavegante.blogspot.com.es/2010/02/xml-y-python-operaciones-basicas-i.html
+    from xml.dom import minidom
+
+    SOURCES_PATH = xbmc.translatePath("special://userdata/sources.xml")
+    xmldoc = None
+
+
+    if os.path.exists(SOURCES_PATH):
+        xmldoc = minidom.parse(SOURCES_PATH)
+    else:
+        # Crear documento
+        xmldoc = minidom.Document()
+        nodo_sources = xmldoc.createElement("sources")
+
+        for type in ['programs', 'video', 'music', 'picture', 'files']:
+            nodo_type = xmldoc.createElement(type)
+            element_default = xmldoc.createElement("default")
+            element_default.setAttribute("pathversion", "1")
+            nodo_type.appendChild(element_default)
+            nodo_sources.appendChild(nodo_type)
+        xmldoc.appendChild(nodo_sources)
+
+
+    # Buscamos el nodo video
+    nodo_video = xmldoc.childNodes[0].getElementsByTagName("video")[0]
+
+    # Buscamos el path dentro de los nodos_path incluidos en el nodo_video
+    nodos_paths = nodo_video.getElementsByTagName("path")
+    list_path = [p.firstChild.data for p in nodos_paths]
+    if path in list_path:
+        logger.debug("La ruta %s ya esta en sources.xml" % path)
+        return
+
+    # Si llegamos aqui es por q el path no esta en sources.xml, asi q lo incluimos
+    nodo_source = xmldoc.createElement("source")
+
+    # Nodo <name>
+    nodo_name = xmldoc.createElement("name")
+    sep = os.sep
+    if path.startswith("special://") or path.startswith("smb://"):
+        sep = "/"
+    name = path
+    if path.endswith(sep):
+        name = path[:-1]
+    nodo_name.appendChild(xmldoc.createTextNode(name.rsplit(sep)[-1]))
+    nodo_source.appendChild(nodo_name)
+
+    # Nodo <path>
+    nodo_path = xmldoc.createElement("path")
+    nodo_path.setAttribute("pathversion", "1")
+    nodo_path.appendChild(xmldoc.createTextNode(path))
+    nodo_source.appendChild(nodo_path)
+
+    # Nodo <allowsharing>
+    nodo_allowsharing = xmldoc.createElement("allowsharing")
+    nodo_allowsharing.appendChild(xmldoc.createTextNode('true'))
+    nodo_source.appendChild(nodo_allowsharing)
+
+    # Añadimos <source>  a <video>
+    nodo_video.appendChild(nodo_source)
+
+    # Guardamos los cambios
+    data = xmldoc.toprettyxml()
+    data = '\n'.join([x for x in data.splitlines() if x.strip()])
+
+    filetools.write(SOURCES_PATH,data)
+
+
+def ask_set_content():
+    # Si es la primera vez que se utiliza la biblioteca preguntar si queremos autoconfigurar
+    if config.get_setting("library_ask_set_content") == "true" and config.get_setting("library_set_content") == "false":
+        heading = "Pelisalacarta Auto-configuración"
+        linea1 = "¿Desea que Pelisalacarta auto-configure la biblioteca de Kodi?"
+        linea2 = "Si no está seguro, puede cambiarlo desde el menu 'Preferencias/Rutas'"
+        if platformtools.dialog_yesno(heading, linea1, linea2):
+            config.set_setting("library_set_content", "true")
+            config.set_setting("library_ask_set_content", "active")
+            config.verify_directories_created()
+
+        config.set_setting("library_ask_set_content", "false")
+
+

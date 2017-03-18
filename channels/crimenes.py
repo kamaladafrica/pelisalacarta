@@ -34,7 +34,7 @@ def listav(item):
     
     #Paginacion 
     
-    patronbloque='<div class="yt-uix-pager search-pager branded-page-box spf-link " role="navigation">(.*?)</div>'	
+    patronbloque='<div class="branded-page-box .*? spf-link ">(.*?)</div>'
     matches = re.compile(patronbloque,re.DOTALL).findall(data)    
     for bloque in matches:              
         patronvideo='<a href="([^"]+)"'
@@ -76,7 +76,7 @@ def busqueda(item):
         
         #Paginacion 
         
-        patronbloque='<div class="yt-uix-pager search-pager branded-page-box spf-link " role="navigation">(.*?)</div>'	
+        patronbloque='<div class="branded-page-box .*? spf-link ">(.*?)</div>'
         matches = re.compile(patronbloque,re.DOTALL).findall(data)    
         for bloque in matches:              
             patronvideo='<a href="([^"]+)"'

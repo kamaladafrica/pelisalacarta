@@ -243,7 +243,7 @@ def episodios(item):
         title = "%s: %sx%s" % (item.title, season, str(episode).zfill(2))
 
         itemlist.append(item.clone(action="findvideos", title=title, url=url, thumbnail=thumbnail, fulltitle=title,
-                                   fanart=thumbnail))
+                                   fanart=thumbnail, contentType="episode"))
 
     return itemlist
 
@@ -261,7 +261,7 @@ def findvideos(item):
 
     aux_url = []
     for e in list_videos:
-        if e.startswith("https://s3.animeflv.com/embed.php?server="):
+        if e.startswith("https://s3.animeflv.com/embed.php?"):
             server = scrapertools.find_single_match(e, 'server=(.*?)&')
             e = e.replace("embed", "check").replace("https", "http")
             data = httptools.downloadpage(e).data.replace("\\", "")

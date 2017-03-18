@@ -8,6 +8,7 @@
 import re
 
 from core import config
+from core import httptools
 from core import logger
 from core import scrapertools
 from core import servertools
@@ -24,6 +25,7 @@ perfil = [['0xFFFFE6CC', '0xFFFFCE9C', '0xFF994D00'],
           ['0xFFA5F6AF', '0xFF5FDA6D', '0xFF11811E'],
           ['0xFF58D3F7', '0xFF2E9AFE', '0xFF2E64FE']]
 color1, color2, color3 = perfil[__perfil__]
+
 
 host = "http://www.vixto.net/"
 
@@ -110,12 +112,11 @@ def listado(item):
         bloque_head = "RECIENTE PELICULAS"
 
     # Descarga la página
-    data = scrapertools.downloadpage(item.url)
+    data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|\s{2}", "", data)
 
     # Extrae las entradas (carpetas)
     bloque = scrapertools.find_single_match(data, bloque_head+'\s*</h2>(.*?)</section>')
-
     patron = '<div class="".*?href="([^"]+)".*?src="([^"]+)".*?<div class="calZG">(.*?)</div>' \
              '(.*?)</div>.*?href.*?>(.*?)</a>'
     matches = scrapertools.find_multiple_matches(bloque, patron)
@@ -133,8 +134,6 @@ def listado(item):
             title += "  [%s]" % "/".join(langs)
         if calidad:
             title += " %s" % calidad
-
-        logger.debug("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, scrapedurl, scrapedthumbnail))
 
         filtro_thumb = scrapedthumbnail.replace("http://image.tmdb.org/t/p/w342", "")
         filtro_list = {"poster_path": filtro_thumb}
@@ -166,7 +165,7 @@ def busqueda(item):
     itemlist = list()
 
     # Descarga la página
-    data = scrapertools.downloadpage(item.url)
+    data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|\s{2}", "", data)
 
     # Extrae las entradas (carpetas)
@@ -213,7 +212,7 @@ def episodios(item):
     itemlist = list()
 
     # Descarga la página
-    data = scrapertools.downloadpage(item.url)
+    data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|\s{2}", "", data)
 
     # Extrae las entradas (carpetas)
@@ -226,7 +225,7 @@ def episodios(item):
         new_item = item.clone(action="", title=title, text_color=color2)
         new_item.infoLabels["season"] = scrapedtitle
         new_item.infoLabels["mediatype"] = "season"
-        data_season = scrapertools.downloadpage(scrapedurl)
+        data_season = httptools.downloadpage(scrapedurl).data
         data_season = re.sub(r"\n|\r|\t|&nbsp;|\s{2}", "", data_season)
         patron = '<li class="media">.*?href="([^"]+)"(.*?)<div class="media-body">.*?href.*?>' \
                  '(.*?)</a>'
@@ -278,7 +277,7 @@ def findvideos(item):
 
     dict_idiomas = {'Castellano': 2, 'Latino': 1, 'Subtitulada': 0}
 
-    data = scrapertools.downloadpage(item.url)
+    data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|\s{2}", "", data)
 
     if not item.infoLabels["tmdb_id"]:

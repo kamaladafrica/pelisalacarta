@@ -536,6 +536,9 @@ def add_pelicula_to_library(item):
         @param item: elemento que se va a guardar.
     """
     logger.info()
+    if config.is_xbmc():
+        from platformcode import xbmc_library
+        xbmc_library.ask_set_content()
 
     new_item = item.clone(action="findvideos")
     insertados, sobreescritos, fallidos = save_library_movie(new_item)
@@ -571,7 +574,9 @@ def add_serie_to_library(item, channel=None):
 
     """
     logger.info("show=#" + item.show + "#")
-    # logger.debug(item.tostring('\n'))
+    if config.is_xbmc():
+        from platformcode import xbmc_library
+        xbmc_library.ask_set_content()
 
     if item.channel == "descargas":
         itemlist = [item.clone()]

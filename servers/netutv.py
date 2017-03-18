@@ -28,9 +28,10 @@ def get_video_url(page_url, premium = False, user="", password="", video_passwor
     js_wise = scrapertools.find_single_match(data_page_url_hqq, "<script type=[\"']text/javascript[\"']>\s*;?(eval.*?)</script>")
     data_unwise = jswise(js_wise).replace("\\", "")
     at = scrapertools.find_single_match(data_unwise, 'var at\s*=\s*"([^"]+)"')
+    http_referer = scrapertools.find_single_match(data_unwise, 'var http_referer\s*=\s*"([^"]+)"')
 
     url = "http://hqq.tv/sec/player/embed_player.php?iss=&vid=%s&at=%s&autoplayed=yes&referer=on" \
-          "&http_referer=&pass=&embed_from=&need_captcha=0" % (id_video, at)
+          "&http_referer=%s&pass=&embed_from=&need_captcha=0&hash_from=" % (id_video, at, http_referer)
     data_player = httptools.downloadpage(url, add_referer=True).data
     data_unescape = scrapertools.find_multiple_matches(data_player, 'document.write\(unescape\("([^"]+)"')
     data = ""
@@ -41,6 +42,7 @@ def get_video_url(page_url, premium = False, user="", password="", video_passwor
     js_wise = scrapertools.find_single_match(data_player, "<script type=[\"']text/javascript[\"']>\s*;?(eval.*?)</script>")
     if js_wise:
         data_unwise_player = jswise(js_wise).replace("\\", "")
+
     vars_data = scrapertools.find_single_match(data, '/player/get_md5.php",\s*\{(.*?)\}')
     matches = scrapertools.find_multiple_matches(vars_data, '\s*([^:]+):\s*([^,]*)[,"]')
     params = {}
