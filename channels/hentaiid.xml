@@ -12,9 +12,9 @@
 	<bannermenu>https://dl.dropboxusercontent.com/u/30248079/hentai_id2.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>1</version>
-	<date>05/11/2016</date>
-	<changes>Primera versión</changes>
+	<version>2</version>
+	<date>09/03/2017</date>
+	<changes>Fix web</changes>
 
 	<categories>
 		<category>adult</category>

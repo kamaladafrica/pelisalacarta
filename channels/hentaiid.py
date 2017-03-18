@@ -7,9 +7,9 @@
 import re
 import urlparse
 
+from core import httptools
 from core import logger
 from core import scrapertools
-from core import servertools
 from core.item import Item
 
 CHANNEL_HOST = "http://hentai-id.tv/"
@@ -20,7 +20,7 @@ def mainlist(item):
 
     itemlist = list()
     itemlist.append(Item(channel=item.channel, action="series", title="Novedades",
-                         url=urlparse.urljoin(CHANNEL_HOST, "archivos/h2/")))
+                         url=urlparse.urljoin(CHANNEL_HOST, "archivos/h2/"), extra="novedades"))
     itemlist.append(Item(channel=item.channel, action="letras", title="Por orden alfabético"))
     itemlist.append(Item(channel=item.channel, action="generos", title="Por géneros", url=CHANNEL_HOST))
     itemlist.append(Item(channel=item.channel, action="series", title="Sin Censura",
@@ -42,7 +42,7 @@ def letras(item):
 
     for letra in '0ABCDEFGHIJKLMNOPQRSTUVWXYZ':
         itemlist.append(Item(channel=item.channel, action="series", title=letra,
-                             url=urlparse.urljoin(CHANNEL_HOST, "/?s=letra-{0}".format(letra.replace("0", "num")))))
+                             url=urlparse.urljoin(CHANNEL_HOST, "/?s=letra-%s" % letra.replace("0", "num"))))
 
     return itemlist
 
@@ -51,7 +51,7 @@ def generos(item):
     logger.info()
 
     itemlist = []
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}", "", data)
 
     data = scrapertools.get_match(data, "<div class='cccon'>(.*?)</div><div id=\"myslides\">")
@@ -61,7 +61,7 @@ def generos(item):
     for scrapedurl, scrapedtitle in matches:
         title = scrapertools.entityunescape(scrapedtitle)
         url = urlparse.urljoin(item.url, scrapedurl)
-        logger.debug("title=[{0}], url=[{1}]".format(title, url))
+        # logger.debug("title=[{0}], url=[{1}]".format(title, url))
 
         itemlist.append(Item(channel=item.channel, action="series", title=title, url=url))
 
@@ -73,14 +73,22 @@ def search(item, texto):
     if item.url == "":
         item.url = urlparse.urljoin(CHANNEL_HOST, "animes/?buscar=")
     texto = texto.replace(" ", "+")
-    item.url = "{0}{1}".format(item.url, texto)
-    return series(item)
+    item.url = "%s%s" % (item.url, texto)
+
+    try:
+        return series(item)
+    # Se captura la excepción, para no interrumpir al buscador global si un canal falla
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error("%s" % line)
+        return []
 
 
 def series(item):
     logger.info()
 
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
 
     patron = '<div class="post" id="post"[^<]+<center><h1 class="post-title entry-title"[^<]+<a href="([^"]+)">' \
              '(.*?)</a>[^<]+</h1></center>[^<]+<div[^<]+</div>[^<]+<div[^<]+<div.+?<img src="([^"]+)"'
@@ -88,14 +96,19 @@ def series(item):
     matches = re.compile(patron, re.DOTALL).findall(data)
     itemlist = []
 
+    if item.extra == "novedades":
+        action = "findvideos"
+    else:
+        action = "episodios"
+
     for scrapedurl, scrapedtitle, scrapedthumbnail in matches:
         title = scrapertools.unescape(scrapedtitle)
         fulltitle = title
         url = urlparse.urljoin(item.url, scrapedurl)
         thumbnail = urlparse.urljoin(item.url, scrapedthumbnail)
         show = title
-        logger.debug("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
-        itemlist.append(Item(channel=item.channel, action="episodios", title=title, url=url, thumbnail=thumbnail,
+        # logger.debug("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
+        itemlist.append(Item(channel=item.channel, action=action, title=title, url=url, thumbnail=thumbnail,
                              show=show, fulltitle=fulltitle, fanart=thumbnail, folder=True))
 
     patron = '</span><a class="page larger" href="([^"]+)"'
@@ -115,7 +128,7 @@ def episodios(item):
     logger.info()
     itemlist = []
 
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
     data = scrapertools.find_single_match(data, '<div class="listanime">(.*?)</div>')
     patron = '<a href="([^"]+)">([^<]+)</a>'
     matches = re.compile(patron, re.DOTALL).findall(data)
@@ -126,11 +139,11 @@ def episodios(item):
         thumbnail = item.thumbnail
         plot = item.plot
 
-        logger.debug("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
+        # logger.debug("title=[{0}], url=[{1}], thumbnail=[{2}]".format(title, url, thumbnail))
 
         itemlist.append(Item(channel=item.channel, action="findvideos", title=title, url=url,
-                             thumbnail=thumbnail, plot=plot, show=item.show, fulltitle="{0} {1}"
-                             .format(item.show, title), fanart=thumbnail, viewmode="movies_with_plot", folder=True))
+                             thumbnail=thumbnail, plot=plot, show=item.show, fulltitle="%s %s" % (item.show, title),
+                             fanart=thumbnail, viewmode="movies_with_plot", folder=True))
 
     return itemlist
 
@@ -138,30 +151,21 @@ def episodios(item):
 def findvideos(item):
     logger.info()
 
-    data = scrapertools.cache_page(item.url)
-    patron = '<div id="tab\d".+?>[^<]+<iframe.*?src="([^"]+)"'
+    data = httptools.downloadpage(item.url).data
+    patron = '<div id="tab\d".+?>[^<]+<[iframe|IFRAME].*?[src|SRC]="([^"]+)"'
     matches = re.compile(patron, re.DOTALL).findall(data)
 
-    itemlist = []
+    for url in matches:
+        if 'goo.gl' in url:
+            video = httptools.downloadpage(url, follow_redirects=False, only_headers=True).headers["location"]
+            matches.remove(url)
+            matches.append(video)
 
-    for scrapedurl in matches:
-        title = "Ver en {0}".format(scrapertools.find_single_match(scrapedurl, 'http[s]?://([^/]+)'))
-
-        itemlist.append(Item(channel=item.channel, action="play", title=title, url=scrapedurl, show=item.show,
-                             fulltitle=item.title))
-
-    return itemlist
-
-
-def play(item):
-    logger.info()
-    itemlist = servertools.find_video_items(data=item.url)
-
+    from core import servertools
+    itemlist = servertools.find_video_items(data=",".join(matches))
     for videoitem in itemlist:
-        if item.fulltitle:
-            videoitem = item.fulltitle
-        else:
-            videoitem.title = item.title
+        videoitem.fulltitle = item.fulltitle
         videoitem.channel = item.channel
+        videoitem.thumbnail = item.thumbnail
 
     return itemlist
