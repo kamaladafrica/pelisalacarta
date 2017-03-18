@@ -433,6 +433,11 @@ def play(item):
     else:
         itemlist = [item.clone(url=item.url, server="local")]
 
+    # Para enlaces directo en formato lista
+    if isinstance(itemlist[0], list):
+        item.video_urls = itemlist
+        itemlist = [item]
+
     # Esto es necesario por si el play del canal elimina los datos
     for v in itemlist:
         if isinstance(v, Item):
