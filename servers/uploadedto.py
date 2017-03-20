@@ -89,7 +89,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
 
         except:
             import traceback
-            logger.info(traceback.format_exc())
+            logger.error(traceback.format_exc())
             extension = ""
         
         '''
