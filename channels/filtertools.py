@@ -184,7 +184,7 @@ def get_links(list_item, channel):
             new_itemlist.append(Item(channel=__channel__, action="no_filter", lista=lista, show=list_item[0].show,
                                      title="[COLOR {0}]No hay elementos con filtro [{1}] y ![{2}], pulsa para mostrar "
                                            "sin filtro[/COLOR]"
-                                     .format(COLOR.get("error", ""), _filter.language, _filter.quality_not_allowed),
+                                     .format(COLOR.get("error", "auto"), _filter.language, _filter.quality_not_allowed),
                                      context="borrar filtro", from_channel=channel))
 
     else:
