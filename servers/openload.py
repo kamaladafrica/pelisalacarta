@@ -75,15 +75,16 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
                 while i < len(idx4):
                     data_1 = int(idx4[i:i+2], 16)
                     data_2 = idx4[i:i+3]
+                    data_3 = idx4[i:i+4]
                     i += 2
                     if (j % 3) == 0:
                         data_1 = int(data_2, 8)
                         i += 1
                     elif j % 2 == 0 and j != 0 and ord(idx4[j-1]) < 60:
-                        data_1 = int(data_2, 10)
-                        i += 1
+                        data_1 = int(data_3, 10)
+                        i += 2
 
-                    value = data_1 ^ 213 ^ decode1[j % 6]
+                    value = data_1 ^ 213 ^ decode1[j % 9]
                     j += 1
                     text_decode.append(chr(value))
 
