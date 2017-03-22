@@ -1,24 +1,23 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para hdfull
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
+
+import base64
 import re
-import sys
 import urllib
 import urlparse
-import base64
 
 from core import config
+from core import httptools
 from core import jsontools
 from core import logger
 from core import scrapertools
+from core import servertools
 from core.item import Item
 from platformcode import platformtools
-from core import servertools
-from core import httptools
-
 
 host = "http://hdfull.tv"
 
@@ -26,7 +25,6 @@ if config.get_setting('hdfulluser', 'hdfull'):
     account = True
 else:
     account = False
-
 
 
 def settingCanal(item):
@@ -572,6 +570,7 @@ def findvideos(item):
 
         url = scrapertools.find_single_match(function, "return\s*(.*?)[;]*\}")
         url = re.sub(r'\'|"|\s|\+', '', url)
+        url = re.sub(r'var_\d+\[\d+\]', '', url)
         index = scrapertools.find_single_match(prov["e"], 'var_1\[(\d+)\]')
         embed = prov["e"].replace("var_1[%s]" % index, var0[int(index)])
 
