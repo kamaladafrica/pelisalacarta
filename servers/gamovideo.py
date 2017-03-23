@@ -12,10 +12,12 @@ from core import logger
 from core import scrapertools
 from lib import jsunpack
 
+headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:51.0) Gecko/20100101 Firefox/51.0'}
+
 
 def test_video_exists(page_url):
     logger.info("(page_url='%s')" % page_url)
-    data = httptools.downloadpage(page_url).data
+    data = httptools.downloadpage(page_url, headers=headers).data
 
     if ("File was deleted" or "Not Found" or "File was locked by administrator") in data:
         return False, "[Gamovideo] El archivo no existe o ha sido borrado"
@@ -25,8 +27,8 @@ def test_video_exists(page_url):
 
 def get_video_url(page_url, premium=False, user="", password="", video_password=""):
     logger.info("(page_url='%s')" % page_url)
+    data = httptools.downloadpage(page_url, headers=headers).data
 
-    data = httptools.downloadpage(page_url).data
     packer = scrapertools.find_single_match(data,
                                             "<script type='text/javascript'>(eval.function.p,a,c,k,e,d..*?)</script>")
     if packer != "":
@@ -37,13 +39,13 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
 
     data = re.sub(r'\n|\t|\s+', '', data)
 
-    host = scrapertools.get_match(data, '\[\{image:"(http://[^/]+/)')
-    mediaurl = scrapertools.get_match(data, ',\{file:"([^"]+)"')
+    host = scrapertools.find_single_match(data, '\[\{image:"(http://[^/]+/)')
+    mediaurl = scrapertools.find_single_match(data, ',\{file:"([^"]+)"')
     if not mediaurl.startswith(host):
         mediaurl = host + mediaurl
-
-    rtmp_url = scrapertools.get_match(data, 'file:"(rtmp[^"]+)"')
-    playpath = scrapertools.get_match(rtmp_url, 'vod\?h=[\w]+/(.*$)')
+   
+    rtmp_url = scrapertools.find_single_match(data, 'file:"(rtmp[^"]+)"')
+    playpath = scrapertools.find_single_match(rtmp_url, 'vod\?h=[\w]+/(.*$)')
     rtmp_url = rtmp_url.split(playpath)[
                    0] + " playpath=" + playpath + " swfUrl=http://gamovideo.com/player61/jwplayer.flash.swf"
 
