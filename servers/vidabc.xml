@@ -1,13 +1,24 @@
 <?xml version="1.0" ?>
 <server>
 	<active>true</active>
-	<changes>Versión incial</changes>
-	<date>24/12/2016</date>
+	<version>2</version>
+	<changes>
+		<change>
+			<date>24/12/2016</date>
+			<autor>Cmos, robalo</autor>
+			<description>Versión inicial</description>
+		</change>
+		<change>
+			<date>23/03/2017</date>
+			<autor>robalo</autor>
+			<description>Cambio en la web: Ahora se usa httptools, embed- en la url y se elimina el .mp4 extra</description>
+		</change>
+	</changes>
+
 	<free>true</free>
 	<id>vidabc</id>
 	<name>vidabc</name>
 	<premium></premium>
 	<thumbnail>http://media.tvalacarta.info/servers/server_vidabc.png</thumbnail>
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/servers/</update_url>
-	<version>1</version>
 </server>
