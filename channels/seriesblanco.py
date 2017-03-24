@@ -283,7 +283,6 @@ def play(item):
             ajaxData += httptools.downloadpage(HOST + '/ajax/load_enlace.php?serie=' + serie + '&temp=' + temp + '&cap=' + cap + '&id=' + linkID).data
 
         if ajaxData:
-            logger.error(ajaxData)
             data = ajaxData
 
         patron = "onclick='window.open\(\"([^\"]+)\"\);'/>"
