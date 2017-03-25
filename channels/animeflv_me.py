@@ -24,8 +24,8 @@ CHANNEL_DEFAULT_HEADERS = [
 ]
 
 REGEX_NEXT_PAGE = r"class='current'>\d+?</li><li><a href=\"([^']+?)\""
-REGEX_TITLE = r'(?:bigChar" href=.+?>)(.+?)(?:</a>)'
-REGEX_THUMB = r'src="(http://animeflv\.me/uploads/thumbs/[^"]+?)"'
+REGEX_TITLE = r'(?:bigChar_a" href=.+?>)(.+?)(?:</a>)'
+REGEX_THUMB = r'src="(http://media.animeflv\.me/uploads/thumbs/[^"]+?)"'
 REGEX_PLOT = r'<span class="info">Línea de historia:</span><p><span>(.*?)</span>'
 REGEX_URL = r'href="(http://animeflv\.me/Anime/[^"]+)">'
 REGEX_SERIE = r'{0}.+?{1}([^<]+?)</a><p>(.+?)</p>'.format(REGEX_THUMB, REGEX_URL)
@@ -146,7 +146,7 @@ def mainlist(item):
                          url=urlparse.urljoin(CHANNEL_HOST, "/ListadeAnime/MasVisto")))
     itemlist.append(Item(channel=item.channel, action="series", title="Novedades",
                          url=urlparse.urljoin(CHANNEL_HOST, "ListadeAnime/Nuevo")))
-    itemlist.append(Item(channel=item.channel, action="series", title="Ultimos",
+    itemlist.append(Item(channel=item.channel, action="series", title="Últimos",
                          url=urlparse.urljoin(CHANNEL_HOST, "ListadeAnime/LatestUpdate")))
     itemlist.append(Item(channel=item.channel, action="search", title="Buscar...",
                          url=urlparse.urljoin(CHANNEL_HOST, "Buscar?s=")))

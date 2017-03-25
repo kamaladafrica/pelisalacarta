@@ -20,6 +20,11 @@
 			<description>limpieza código</description>
 		</change>
         <change>
+            <date>21/03/2017</date>
+            <autor>Cmos</autor>
+            <description>Pequeño fix para corregir algunas urls de los vídeos que se extraían mal</description>
+        </change>
+        <change>
             <date>02/02/2017</date>
             <autor>robalo, Cmos</autor>
             <description>Arreglada la extracción de enlaces por cambios en la web</description>

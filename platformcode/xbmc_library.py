@@ -642,8 +642,7 @@ def execute_sql_kodi(sql):
     return nun_records, records
 
 def add_sources(path):
-    logger.info(path)
-    # http://elviajedelnavegante.blogspot.com.es/2010/02/xml-y-python-operaciones-basicas-i.html
+    logger.info()
     from xml.dom import minidom
 
     SOURCES_PATH = xbmc.translatePath("special://userdata/sources.xml")
@@ -705,10 +704,11 @@ def add_sources(path):
     nodo_video.appendChild(nodo_source)
 
     # Guardamos los cambios
-    data = xmldoc.toprettyxml()
+    '''data = xmldoc.toprettyxml()
     data = '\n'.join([x for x in data.splitlines() if x.strip()])
-
-    filetools.write(SOURCES_PATH,data)
+    filetools.write(SOURCES_PATH,data)'''
+    fichero = open(SOURCES_PATH, 'w')
+    xmldoc.writexml(fichero)
 
 
 def ask_set_content():

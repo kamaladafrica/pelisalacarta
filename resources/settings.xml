@@ -116,10 +116,10 @@
         <setting id="librarypath" type="folder" label="30067" default="" visible="eq(-6,1)"/>
 
         <setting type="sep"/>
-        <setting label="Nombre de carpetas" type="lsep"/>
-        <setting id="folder_tvshows" type="text" label="Series" default="SERIES"/>
-        <setting id="folder_movies" type="text" label="Peliculas" default="CINE"/>
-        <setting id="library_set_content" type="bool" label="Autoconfigurar la biblioteca" default="false"/>
+        <setting label="Biblioteca" type="lsep"/>
+        <setting id="folder_tvshows" type="text" label="Nombre de carpeta para 'Series'" default="SERIES"/>
+        <setting id="folder_movies" type="text" label="Nombre de carpeta para 'Peliculas'" default="CINE"/>
+        <setting id="library_set_content" type="bool" label="Autoconfigurar biblioteca de XBMC/Kodi para contenido de pelisalacarta" default="false"/>
         <setting id="library_ask_set_content" type="bool" label="" default="true" visible="false"/>
     </category>
 

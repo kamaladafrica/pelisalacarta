@@ -79,11 +79,17 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
         logger.info("[uploadedto.py] -------------------------------------------")
         try:
             #content-disposition=attachment; filename="El Hobbit CAM LATINO Barbie.avi"
-            content_disposition = httptools.downloadpage(location, headers=headers, follow_redirects=False, only_headers=True).headers.get("content_disposition", "")
+            content_disposition = httptools.downloadpage(location, headers=headers, follow_redirects=False, only_headers=True).headers.get("content-disposition", "")
+            logger.info("content_disposition="+repr(content_disposition))
             if content_disposition != "":
                 filename = scrapertools.get_match(content_disposition, 'filename="([^"]+)"')
                 extension = filename[-4:]
+            else:
+                extension = ""
+
         except:
+            import traceback
+            logger.error(traceback.format_exc())
             extension = ""
         
         '''

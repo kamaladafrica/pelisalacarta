@@ -301,8 +301,9 @@ def epienlaces(item):
 
 def findvideos(item):
     logger.info()
-    if item.extra and item.extra != "findvideos":
+    if (item.extra and item.extra != "findvideos") or item.path:
         return epienlaces(item)
+
     itemlist = []
     item.text_color = color3
 
@@ -502,7 +503,7 @@ def get_data(url_orig):
     except:
         import random
         server_random = ['nl', 'de', 'us']
-        url = "https://proxy-%s.hideproxy.me/includes/process.php?action=update" % server_random[random.randint(0, 2)]
+        url = "https://%s.hideproxy.me/includes/process.php?action=update" % server_random[random.randint(0, 2)]
         post = "u=%s&proxy_formdata_server=%s&allowCookies=1&encodeURL=0&encodePage=0&stripObjects=0&stripJS=0&go=" \
                % (url_orig, server_random[random.randint(0, 2)])
         while True:

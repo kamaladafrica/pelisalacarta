@@ -4,9 +4,9 @@
 # Canal para hdfull
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 # ------------------------------------------------------------
+
 import base64
 import re
-import sys
 import urllib
 import urlparse
 
@@ -25,7 +25,6 @@ if config.get_setting('hdfulluser', 'hdfull'):
     account = True
 else:
     account = False
-
 
 
 def settingCanal(item):
@@ -120,7 +119,7 @@ def search(item,texto):
     except:
         import sys
         for line in sys.exc_info():
-            logger.error("%s" % line)
+            logger.error( "%s" % line )
         return []
 
 def series_abc(item):
@@ -571,6 +570,7 @@ def findvideos(item):
 
         url = scrapertools.find_single_match(function, "return\s*(.*?)[;]*\}")
         url = re.sub(r'\'|"|\s|\+', '', url)
+        url = re.sub(r'var_\d+\[\d+\]', '', url)
         index = scrapertools.find_single_match(prov["e"], 'var_1\[(\d+)\]')
         embed = prov["e"].replace("var_1[%s]" % index, var0[int(index)])
 

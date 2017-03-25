@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
-# Conector para vidto.me
+# Conector para vidup.me
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 # ------------------------------------------------------------
 
@@ -17,8 +17,8 @@ def test_video_exists(page_url):
 
     data = httptools.downloadpage(page_url).data
     
-    if "Not Found" in data or "File Does not Exist" in data:
-        return False, "[Vidto.me] El fichero no existe o ha sido borrado"
+    if "Not Found" in data:
+        return False, "[Vidup.me] El fichero no existe o ha sido borrado"
 
     return True, ""
 
@@ -28,15 +28,18 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
 
     data = httptools.downloadpage(page_url).data
 
+    key = scrapertools.find_single_match(data, "var mpri_Key\s*=\s*'([^']+)'")
+    data_vt = httptools.downloadpage("http://vidup.me/jwv/%s" % key).data
+    vt = scrapertools.find_single_match(data_vt, 'direct\|([^\|]+)\|')
+    
     # Extrae la URL
-    #{file:"http://188.240.220.186/drjhpzy4lqqwws4phv3twywfxej5nwmi4nhxlriivuopt2pul3o4bkge5hxa/video.mp4",label:"240p"}
     video_urls = []
-    media_urls = scrapertools.find_multiple_matches(data, '\{file\s*:\s*"([^"]+)",label\s*:\s*"([^"]+)"\}')
+    media_urls = scrapertools.find_multiple_matches(data, '\{"file"\:"([^"]+)","label"\:"([^"]+)"\}')
     for media_url, label in media_urls:
         ext = scrapertools.get_filename_from_url(media_url)[-4:]
-        video_urls.append(["%s (%s) [vidto.me]" % (ext, label), media_url])
+        media_url += "?direct=false&ua=1&vt=%s" % vt
+        video_urls.append(["%s (%s) [vidup.me]" % (ext, label), media_url])
 
-    video_urls.reverse()
     for video_url in video_urls:
         logger.info("%s - %s" % (video_url[0], video_url[1]))
 
@@ -50,18 +53,18 @@ def find_videos(data):
     encontrados = set()
     devuelve = []
 
-    #http://vidto.me/z3nnqbspjyne
-    #http://vidto.me/embed-z3nnqbspjyne
-    patronvideos = 'vidto.me/(?:embed-|)([A-z0-9]+)'
+    #http://vidup.me/z3nnqbspjyne
+    #http://vidup.me/embed-z3nnqbspjyne
+    patronvideos = 'vidup.me/(?:embed-|)([A-z0-9]+)'
     logger.info("#" + patronvideos + "#")
     matches = re.compile(patronvideos, re.DOTALL).findall(data)
 
     for match in matches:
-        titulo = "[vidto.me]"
-        url = "http://vidto.me/embed-%s.html" % match
+        titulo = "[vidup.me]"
+        url = "http://vidup.me/embed-%s.html" % match
         if url not in encontrados:
             logger.info("  url=" + url)
-            devuelve.append([titulo, url, 'vidtome'])
+            devuelve.append([titulo, url, 'vidup'])
             encontrados.add(url)
         else:
             logger.info("  url duplicada=" + url)

@@ -9,6 +9,7 @@ import re
 import urlparse
 
 from core import config
+from core import httptools
 from core import jsontools
 from core import logger
 from core import scrapertools
@@ -29,7 +30,6 @@ else:
     color1 = color2 = color3 = color4 = color5 = ""
 
 host = "http://www.cinefox.tv"
-headers = {'User-Agent': 'Mozilla/5.0', 'Referer': host}
 
 
 def mainlist(item):
@@ -97,7 +97,7 @@ def busqueda(item):
     logger.info()
     itemlist = []
 
-    data = scrapertools.downloadpage(item.url)
+    data = httptools.downloadpage(item.url).data
     patron = '<div class="poster-media-card">(.*?)(?:<li class="search-results-item media-item">|<footer>)'
     bloque = scrapertools.find_multiple_matches(data, patron)
     for match in bloque:
@@ -124,7 +124,7 @@ def busqueda(item):
                 continue
             title = scrapedtitle + title + " (" + year + ")"
             itemlist.append(item.clone(action=action, title=title, url=scrapedurl, thumbnail=scrapedthumbnail,
-                                       contentTitle=scrapedtitle, fulltitle=scrapedtitle, context=["buscar_trailer"],
+                                       contentTitle=scrapedtitle, fulltitle=scrapedtitle,
                                        plot=plot, show=show, text_color=color2, contentType=contentType))
 
     try:
@@ -162,7 +162,7 @@ def filtro(item):
         dict_values["filtro_per"] = 0
     
     excluidos = ['País', 'Películas', 'Series', 'Destacar']
-    data = scrapertools.downloadpage(item.url)
+    data = httptools.downloadpage(item.url).data
     matches = scrapertools.find_multiple_matches(data, '<div class="dropdown-sub[^>]+>(\S+)(.*?)</ul>')
     i = 0
     for filtro_title, values in matches:
@@ -312,7 +312,7 @@ def mapa(item):
     logger.info()
     itemlist = []
     
-    data = scrapertools.downloadpage(item.url)
+    data = httptools.downloadpage(item.url).data
     patron = '<li class="sitemap-initial"> <a class="initial-link" href="([^"]+)">(.*?)</a>'
     matches = scrapertools.find_multiple_matches(data, patron)
     for scrapedurl, scrapedtitle in matches:
@@ -335,7 +335,7 @@ def peliculas(item):
     else:
         action = "findvideos"
 
-    data = scrapertools.downloadpage(item.url)
+    data = httptools.downloadpage(item.url).data
     bloque = scrapertools.find_multiple_matches(data,
                                                 '<div class="media-card "(.*?)<div class="hidden-info">')
     for match in bloque:
@@ -346,25 +346,30 @@ def peliculas(item):
                 url = urlparse.urljoin(host, scrapedurl)
                 itemlist.append(Item(channel=item.channel, action=action, title=scrapedtitle, url=url, extra="media",
                                      thumbnail=scrapedthumbnail, contentTitle=scrapedtitle, fulltitle=scrapedtitle,
-                                     text_color=color2, context=["buscar_trailer"], contentType="movie"))
+                                     text_color=color2, contentType="movie"))
         else:
-            patron = '<div class="audio-info">(.*?)<div class="quality-info".*?>([^<]+)</div>' \
-                     '.*?src="([^"]+)".*?href="([^"]+)">([^<]+)</a>'
+            patron = '<div class="audio-info">(.*?)</div>(.*?)' \
+                     'src="([^"]+)".*?href="([^"]+)">([^<]+)</a>'
             matches = scrapertools.find_multiple_matches(match, patron)
             
             for idiomas, calidad, scrapedthumbnail, scrapedurl, scrapedtitle in matches:
-                calidad = calidad.capitalize().replace("Hd", "HD")
+                calidad = scrapertools.find_single_match(calidad, '<div class="quality-info".*?>([^<]+)</div>')
+                if calidad:
+                    calidad = calidad.capitalize().replace("Hd", "HD")
                 audios = []
                 if "medium-es" in idiomas: audios.append('CAST')
                 if "medium-vs" in idiomas: audios.append('VOSE')
                 if "medium-la" in idiomas: audios.append('LAT')
-                if "medium-en" in idiomas: audios.append('V.O')
-                title = scrapedtitle + "  [" + "/".join(audios) + "] (" + calidad + ")"
+                if "medium-en" in idiomas or 'medium-"' in idiomas:
+                    audios.append('V.O')
+                title = "%s  [%s]" % (scrapedtitle, "/".join(audios))
+                if calidad:
+                    title += " (%s)" % calidad
                 url = urlparse.urljoin(host, scrapedurl)
 
                 itemlist.append(Item(channel=item.channel, action=action, title=title, url=url, extra="media",
                                      thumbnail=scrapedthumbnail, contentTitle=scrapedtitle, fulltitle=scrapedtitle,
-                                     text_color=color2, context=["buscar_trailer"], contentType="movie"))
+                                     text_color=color2, contentType="movie"))
 
     next_page = scrapertools.find_single_match(data, 'href="([^"]+)"[^>]+>Siguiente')
     if next_page != "" and item.title != "":
@@ -388,7 +393,7 @@ def ultimos(item):
         action = "episodios"
 
     itemlist = []
-    data = scrapertools.downloadpage(item.url)
+    data = httptools.downloadpage(item.url).data
     
     bloque = scrapertools.find_multiple_matches(data, '<div class="media-card "(.*?)<div class="info-availability '
                                                       'one-line">')
@@ -401,11 +406,14 @@ def ultimos(item):
             if "medium-es" in idiomas: audios.append('CAST')
             if "medium-vs" in idiomas: audios.append('VOSE')
             if "medium-la" in idiomas: audios.append('LAT')
-            if "medium-en" in idiomas: audios.append('V.O')
-            title = show + " - " + re.sub(show, '', scrapedtitle) + " [" + "/".join(audios) + "]"
+            if "medium-en" in idiomas or 'medium-"' in idiomas:
+                audios.append('V.O')
+            title = "%s - %s" % (show, re.sub(show, '', scrapedtitle))
+            if audios:
+                title += " [%s]" % "/".join(audios)
             url = urlparse.urljoin(host, scrapedurl)
             itemlist.append(item.clone(action=action, title=title, url=url, thumbnail=scrapedthumbnail,
-                                       contentTitle=show, fulltitle=show, show=show, context=["buscar_trailer"],
+                                       contentTitle=show, fulltitle=show, show=show,
                                        text_color=color2, extra="ultimos", contentType="tvshow"))
 
     try:
@@ -428,7 +436,7 @@ def series(item):
     if "valores" in item:
         itemlist.append(item.clone(action="", title=item.valores, text_color=color4))
 
-    data = scrapertools.downloadpage(item.url)
+    data = httptools.downloadpage(item.url).data
     bloque = scrapertools.find_multiple_matches(data, '<div class="media-card "(.*?)<div class="hidden-info">')
     for match in bloque:
         patron = '<img class.*?src="([^"]+)".*?href="([^"]+)">([^<]+)</a>'
@@ -437,7 +445,7 @@ def series(item):
             url = urlparse.urljoin(host, scrapedurl + "/episodios")
             itemlist.append(Item(channel=item.channel, action="episodios", title=scrapedtitle, url=url,
                                  thumbnail=scrapedthumbnail, contentTitle=scrapedtitle, fulltitle=scrapedtitle,
-                                 show=scrapedtitle, text_color=color2, context=["buscar_trailer"], contentType="tvshow"))
+                                 show=scrapedtitle, text_color=color2, contentType="tvshow"))
 
     try:
         from core import tmdb
@@ -458,7 +466,7 @@ def menu_info(item):
     logger.info()
     itemlist = []
     
-    data = scrapertools.downloadpage(item.url, headers=headers.items())
+    data = httptools.downloadpage(item.url).data
     year = scrapertools.find_single_match(data, '<div class="media-summary">.*?release.*?>(\d+)<')
     if year != "" and not "tmdb_id" in item.infoLabels:
         try:
@@ -473,8 +481,7 @@ def menu_info(item):
         item.infoLabels["plot"] = scrapertools.htmlclean(sinopsis)
 
     id = scrapertools.find_single_match(item.url, '/(\d+)/')
-    data_trailer = scrapertools.downloadpage("http://www.cinefox.tv/media/trailer?idm=%s&mediaType=1" % id,
-                                             headers=headers.items())
+    data_trailer = httptools.downloadpage("http://www.cinefox.tv/media/trailer?idm=%s&mediaType=1" % id).data
     trailer_url = jsontools.load_json(data_trailer)["video"]["url"]
     if trailer_url != "":
         item.infoLabels["trailer"] = trailer_url
@@ -498,16 +505,14 @@ def episodios(item):
     itemlist = []
 
     if item.extra == "ultimos":
-        data = scrapertools.downloadpage(item.url, headers=headers.items())
+        data = httptools.downloadpage(item.url).data
         item.url = scrapertools.find_single_match(data, '<a href="([^"]+)" class="h1-like media-title"')
         item.url += "/episodios"
 
-    data = scrapertools.downloadpage(item.url, headers=headers.items())
-
+    data = httptools.downloadpage(item.url).data
     data_season = data[:]
-    headers["Referer"] = item.url
 
-    if item.extra == "episodios" or not __menu_info__:
+    if "episodios" in item.extra or not __menu_info__ or item.path:
         action = "findvideos"
     else:
         action = "menu_info_episode"
@@ -515,20 +520,21 @@ def episodios(item):
     seasons = scrapertools.find_multiple_matches(data, '<a href="([^"]+)"[^>]+><span class="season-toggle')
     for i, url in enumerate(seasons):
         if i != 0:
-            data_season = scrapertools.downloadpage(url, headers=headers.items())
+            data_season = httptools.downloadpage(url, add_referer=True).data
         patron = '<div class="ep-list-number">.*?href="([^"]+)">([^<]+)</a>.*?<span class="name">([^<]+)</span>'
         matches = scrapertools.find_multiple_matches(data_season, patron)
         for scrapedurl, episode, scrapedtitle in matches:
-            item.contentSeason = episode.split("x")[0]
-            item.contentEpisodeNumber = episode.split("x")[1]
+            new_item = item.clone(action=action, url=scrapedurl, text_color=color2, contentType="episode")
+            new_item.contentSeason = episode.split("x")[0]
+            new_item.contentEpisodeNumber = episode.split("x")[1]
             
-            title = episode + " - " + scrapedtitle
-            extra = "episode"
-            if item.extra == "episodios":
-                extra = "episode|"
-            itemlist.append(item.clone(action=action, title=title, url=scrapedurl, text_color=color2, extra=extra, contentType="episode"))
+            new_item.title = episode + " - " + scrapedtitle
+            new_item.extra = "episode"
+            if "episodios" in item.extra or item.path:
+                new_item.extra = "episode|"
+            itemlist.append(new_item)
 
-    if item.extra != "episodios":
+    if "episodios" not in item.extra and not item.path:
         try:
             from core import tmdb
             tmdb.set_infoLabels_itemlist(itemlist, __modo_grafico__)
@@ -536,17 +542,17 @@ def episodios(item):
             pass
 
     itemlist.reverse()
-    if item.extra != "episodios":
+    if "episodios" not in item.extra and not item.path:
         id = scrapertools.find_single_match(item.url, '/(\d+)/')
-        data_trailer = scrapertools.downloadpage("http://www.cinefox.tv/media/trailer?idm=%s&mediaType=1" % id,
-                                                     headers=headers.items())
+        data_trailer = httptools.downloadpage("http://www.cinefox.tv/media/trailer?idm=%s&mediaType=1" % id).data
         item.infoLabels["trailer"] = jsontools.load_json(data_trailer)["video"]["url"]
         itemlist.append(item.clone(channel="trailertools", action="buscartrailer", title="Buscar Tráiler",
                                        text_color="magenta"))
         if config.get_library_support():
             itemlist.append(Item(channel=item.channel, action="add_serie_to_library", text_color=color5,
                                  title="Añadir serie a la biblioteca", show=item.show, thumbnail=item.thumbnail,
-                                 url=item.url, fulltitle=item.fulltitle, fanart=item.fanart, extra="episodios"))
+                                 url=item.url, fulltitle=item.fulltitle, fanart=item.fanart, extra="episodios###episodios",
+                                 contentTitle=item.fulltitle))
 
     return itemlist
 
@@ -555,7 +561,7 @@ def menu_info_episode(item):
     logger.info()
     itemlist = []
     
-    data = scrapertools.downloadpage(item.url, headers=headers.items())
+    data = httptools.downloadpage(item.url).data
     if item.show == "":
         item.show = scrapertools.find_single_match(data, 'class="h1-like media-title".*?>([^<]+)</a>')
 
@@ -607,7 +613,7 @@ def findvideos(item):
     itemlist = []
 
     if not "|" in item.extra and not __menu_info__:
-        data = scrapertools.downloadpage(item.url, headers=headers.items())
+        data = httptools.downloadpage(item.url, add_referer=True).data
         year = scrapertools.find_single_match(data, '<div class="media-summary">.*?release.*?>(\d+)<')
         if year != "" and not "tmdb_id" in item.infoLabels:
             try:
@@ -632,8 +638,7 @@ def findvideos(item):
         itemlist.extend(get_enlaces(item, url, "de Descarga"))
 
         if extra == "media":
-            data_trailer = scrapertools.downloadpage("http://www.cinefox.tv/media/trailer?idm=%s&mediaType=1" % id,
-                                                     headers=headers.items())
+            data_trailer = httptools.downloadpage("http://www.cinefox.tv/media/trailer?idm=%s&mediaType=1" % id).data
             trailer_url = jsontools.load_json(data_trailer)["video"]["url"]
             if trailer_url != "":
                 item.infoLabels["trailer"] = trailer_url
@@ -658,10 +663,8 @@ def findvideos(item):
 def get_enlaces(item, url, type):
     itemlist = []
     itemlist.append(item.clone(action="", title="Enlaces %s" % type, text_color=color1))
-    
-    headers["Referer"] = item.url
-    data = scrapertools.downloadpage(url, headers=headers.items())
 
+    data = httptools.downloadpage(url, add_referer=True).data
     patron = '<div class="available-source".*?data-url="([^"]+)".*?class="language.*?title="([^"]+)"' \
              '.*?class="source-name.*?>\s*([^<]+)<.*?<span class="quality-text">([^<]+)<'
     matches = scrapertools.find_multiple_matches(data, patron)
@@ -676,7 +679,7 @@ def get_enlaces(item, url, type):
             if servertools.is_server_enabled(server):
                 scrapedtitle = "    Ver en " + server.capitalize() + " [" + idioma + "/" + calidad + "]"
                 itemlist.append(item.clone(action="play", url=scrapedurl, title=scrapedtitle, text_color=color2,
-                                           extra=""))
+                                           extra="", server=server))
 
     if len(itemlist) == 1:
         itemlist.append(item.clone(title="   No hay enlaces disponibles", action="", text_color=color2))
@@ -689,15 +692,17 @@ def play(item):
     itemlist = []
 
     if item.extra != "":
-        headers["Referer"] = item.url
         post = "id=%s" % item.extra
-        data = scrapertools.downloadpage("http://www.cinefox.tv/goto/", post=post, headers=headers.items())
+        data = httptools.downloadpage("http://www.cinefox.tv/goto/", post=post, add_referer=True).data
 
         item.url = scrapertools.find_single_match(data, 'document.location\s*=\s*"([^"]+)"')
 
     url = item.url.replace("http://miracine.tv/n/?etu=", "http://hqq.tv/player/embed_player.php?vid=")
     url = url.replace("streamcloud.eu/embed-", "streamcloud.eu/")
-    enlaces = servertools.findvideos(url)[0]
+    if item.server:
+        enlaces = servertools.findvideosbyserver(url, item.server)[0]
+    else:
+        enlaces = servertools.findvideos(url)[0]
     itemlist.append(item.clone(url=enlaces[1], server=enlaces[2]))
     
     return itemlist
@@ -710,6 +715,7 @@ def newest(categoria):
     try:
         if categoria == "peliculas":
             item.url = "http://www.cinefox.tv/catalogue?type=peliculas"
+            item.action = "peliculas"
             itemlist = peliculas(item)
 
             if itemlist[-1].action == "peliculas":
@@ -717,6 +723,7 @@ def newest(categoria):
 
         if categoria == "series":
             item.url = "http://www.cinefox.tv/ultimos-capitulos"
+            item.action = "ultimos"
             itemlist = ultimos(item)
 
             if itemlist[-1].action == "ultimos":
