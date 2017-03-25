@@ -176,6 +176,14 @@ def episodios(item):
     logger.debug("fanart: {0}".format(fanart))
     logger.debug("plot: {0}".format(plot))
 
+    ajaxSeasons = re.findall("loadSeason\((\d+),(\d+),(\d+)\)", data)
+    ajaxData = ""
+    for showID, seasonNo, userID in ajaxSeasons:
+        logger.debug("Ajax seasson request: Show = {0} - Season = {1}".format(showID, seasonNo))
+        ajaxData += httptools.downloadpage(HOST + '/ajax/load_season.php?season_id=' + showID + '&season_number=' + seasonNo + '&user=' + userID).data
+
+    if ajaxData:
+        data = ajaxData
 
     episodes = re.findall("<tr.*?href=['\"](?P<url>[^'\"]+).+?>(?P<title>.+?)</a>.*?<td>(?P<flags>.*?)</td>", data, re.MULTILINE | re.DOTALL)
     for url, title, flags in episodes:
@@ -268,7 +276,16 @@ def play(item):
     if item.url.startswith(HOST):
         data = httptools.downloadpage(item.url).data
 
-        patron = "<input type='button' value='Ver o Descargar' onclick='window.open\(\"([^\"]+)\"\);'/>"
+        ajaxLink = re.findall("loadEnlace\((\d+),(\d+),(\d+),(\d+)\)", data)
+        ajaxData = ""
+        for serie, temp, cap, linkID in ajaxLink:
+            logger.debug("Ajax link request: Sherie = {0} - Temp = {1} - Cap = {2} - Link = {3}".format(serie, temp, cap, linkID))
+            ajaxData += httptools.downloadpage(HOST + '/ajax/load_enlace.php?serie=' + serie + '&temp=' + temp + '&cap=' + cap + '&id=' + linkID).data
+
+        if ajaxData:
+            data = ajaxData
+
+        patron = "onclick='window.open\(\"([^\"]+)\"\);'/>"
         url = scrapertools.find_single_match(data, patron)
     else:
         url = item.url

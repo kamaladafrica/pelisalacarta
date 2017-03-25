@@ -38,12 +38,12 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     # Extrae la URL
     calidades = []
     video_urls = []
-    for media_url in sorted(media_urls, key= lambda x:int(x[1])):
-        calidades.append(int(media_url[1]))
+    for media_url in sorted(media_urls, key= lambda x:int(x[1][-3:])):
+        calidades.append(int(media_url[1][-3:]))
         try:
-            title = ".%s %sp [datoporn]" % (media_url[0].rsplit('.',1)[1], media_url[1])
+            title = ".%s %sp [datoporn]" % (media_url[0].rsplit('.',1)[1], media_url[1][-3:])
         except:
-            title = ".%s %sp [datoporn]" % (media_url[-4:], media_url[1])
+            title = ".%s %sp [datoporn]" % (media_url[-4:], media_url[1][-3:])
         video_urls.append([title, media_url[0]])
 
     sorted(calidades)
@@ -63,13 +63,12 @@ def find_videos(data):
     encontrados = set()
     devuelve = []
 
-    patronvideos = 'datoporn.com/(?:embed-|)([A-z0-9]+)'
+    patronvideos = '(?:datoporn.com|dato.porn)/(?:embed-|)([A-z0-9]+)'
     logger.info("#" + patronvideos + "#")
     matches = re.compile(patronvideos, re.DOTALL).findall(data)
-
     for match in matches:
         titulo = "[datoporn]"
-        url = "http://datoporn.com/embed-%s.html" % match
+        url = "http://dato.porn/embed-%s.html" % match
         if url not in encontrados:
             logger.info("  url=" + url)
             devuelve.append([titulo, url, 'datoporn'])
