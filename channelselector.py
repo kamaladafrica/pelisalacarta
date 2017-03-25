@@ -98,7 +98,7 @@ def getchanneltypes(preferred_thumb=""):
                        'anime': config.get_localized_string(30124), 'documentary': config.get_localized_string(30125),
                        'vos': config.get_localized_string(30136), 'adult': config.get_localized_string(30126),
                        'latino': config.get_localized_string(30127)}
-    if config.get_setting("adult_mode") == "true":
+    if config.get_setting("adult_mode") != "0":
         channel_types.append("adult")
 
     channel_language = config.get_setting("channel_language")
@@ -169,7 +169,7 @@ def filterchannels(category, preferred_thumb=""):
                     continue
 
             # Se salta el canal para adultos si el modo adultos está desactivado
-            if channel_parameters["adult"] == "true" and config.get_setting("adult_mode") != "true":
+            if channel_parameters["adult"] == "true" and config.get_setting("adult_mode") == "0":
                 continue
 
             # Se salta el canal si está en un idioma filtrado

@@ -348,9 +348,41 @@ def check_for_update(overwrite=True):
             p_dialog.close()
 
 
+def monitor_update():
+    update_setting = config.get_setting("updatelibrary", "biblioteca")
+    if update_setting == 2 or update_setting == 3:  # "Actualizar "Cada dia" o "Una vez al dia"
+        hoy = datetime.date.today()
+        last_check = config.get_setting("updatelibrary_last_check", "biblioteca")
+        if last_check:
+            y, m, d = last_check.split('-')
+            last_check = datetime.date(int(y), int(m), int(d))
+        else:
+            last_check = hoy - datetime.timedelta(days=1)
+
+        update_start = config.get_setting("everyday_delay", "biblioteca") * 4
+
+        # logger.info("Ultima comprobacion: %s || Fecha de hoy:%s || Hora actual: %s" %
+        #             (last_check, hoy, datetime.datetime.now().hour))
+        # logger.info("Atraso del inicio del dia: %i:00" % update_start)
+
+        if last_check < hoy and datetime.datetime.now().hour >= int(update_start):
+            logger.info("Inicio actualizacion programada: %s" % datetime.datetime.now())
+            check_for_update(overwrite=False)
+
+
 if __name__ == "__main__":
     # Se ejecuta en cada inicio
     import xbmc
+
+    # modo adulto:
+    # Conversion de 'false' y 'true' al sitema actual 0: Nunca, 1:Siempre, 2:Solo hasta que se reinicie Kodi
+    # y si es == 2 lo desactivamos.
+    if config.get_setting("adult_mode") == 'false' or config.get_setting("adult_mode") == '2':
+        config.set_setting("adult_mode", '0')
+    elif config.get_setting("adult_mode") == 'true':
+        config.set_setting("adult_mode", '1')
+
+
     updatelibrary_wait = [0, 10000, 20000, 30000, 60000]
     wait = updatelibrary_wait[int(config.get_setting("updatelibrary_wait", "biblioteca"))]
     if wait > 0:
@@ -381,51 +413,10 @@ if __name__ == "__main__":
 
     if monitor:
         while not monitor.abortRequested():
-            update_setting = config.get_setting("updatelibrary", "biblioteca")
-            if update_setting == 2 or update_setting == 3:  # "Actualizar "Cada dia" o "Una vez al dia"
-                hoy = datetime.date.today()
-                last_check = config.get_setting("updatelibrary_last_check", "biblioteca")
-                if last_check:
-                    y, m, d = last_check.split('-')
-                    last_check = datetime.date(int(y), int(m), int(d))
-                else:
-                    last_check = hoy - datetime.timedelta(days=1)
-
-                everyday_delay = config.get_setting("everyday_delay", "biblioteca")
-                update_start = everyday_delay * 4
-
-                # logger.info("Ultima comprobacion: %s || Fecha de hoy:%s || Hora actual: %s" %
-                #             (last_check, hoy, datetime.datetime.now().hour))
-                # logger.info("Atraso del inicio del dia: %i:00" % update_start)
-
-                if last_check < hoy and datetime.datetime.now().hour >= int(update_start):
-                    logger.info("Inicio actualizacion programada: %s" % datetime.datetime.now())
-                    check_for_update(overwrite=False)
-
+            monitor_update()
             if monitor.waitForAbort(3600):  # cada hora
                 break
-
     else:
         while not xbmc.abortRequested:
-            update_setting = config.get_setting("updatelibrary", "biblioteca")
-            if update_setting == 2 or update_setting == 3:  # "Actualizar "Cada dia" o "Una vez al dia"
-                hoy = datetime.date.today()
-                last_check = config.get_setting("updatelibrary_last_check", "biblioteca")
-                if last_check:
-                    y, m, d = last_check.split('-')
-                    last_check = datetime.date(int(y), int(m), int(d))
-                else:
-                    last_check = hoy - datetime.timedelta(days=1)
-
-                everyday_delay = config.get_setting("everyday_delay", "biblioteca")
-                update_start = everyday_delay * 4
-
-                # logger.info("Ultima comprobacion: %s || Fecha de hoy:%s || Hora actual: %s" %
-                #             (last_check, hoy, datetime.datetime.now().hour))
-                # logger.info("Atraso del inicio del dia: %i:00" % update_start)
-
-                if last_check < hoy and datetime.datetime.now().hour >= int(update_start):
-                    logger.info("Inicio actualizacion programada: %s" % datetime.datetime.now())
-                    check_for_update(overwrite=False)
-
+            monitor_update()
             xbmc.sleep(3600)
