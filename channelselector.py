@@ -152,6 +152,9 @@ def filterchannels(category, preferred_thumb=""):
 
         try:
             channel_parameters = channeltools.get_channel_parameters(channel[:-4])
+            # Si no es un canal lo saltamos
+            if not channel_parameters["channel"]:
+                continue
             logger.info("channel_parameters="+repr(channel_parameters))
 
             # Si prefiere el bannermenu y el canal lo tiene, cambia ahora de idea
