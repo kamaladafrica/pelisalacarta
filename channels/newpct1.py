@@ -425,7 +425,7 @@ def findvideos(item):
         servidor = servidor.replace("streamin","streaminto")
         titulo = titulo+" ["+servidor+"]"
         mostrar_server= True
-        if config.get_setting("hidepremium")=="true":
+        if config.get_setting("hidepremium")==True:
             mostrar_server= servertools.is_server_enabled (servidor)
         if mostrar_server:
             try:
@@ -446,7 +446,7 @@ def findvideos(item):
             parte_titulo = titulo+" (%s/%s)" % (p,len(partes)) + " ["+servidor+"]"
             p+= 1
             mostrar_server= True
-            if config.get_setting("hidepremium")=="true":
+            if config.get_setting("hidepremium")==True:
                 mostrar_server= servertools.is_server_enabled (servidor)
             if mostrar_server:
                 try:

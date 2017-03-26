@@ -377,7 +377,7 @@ def porcateg(item):
         logger.info("[repelis] "+url)
         #si no esta permitidas categoria adultos, la filtramos
         erotica = ""
-        if config.get_setting("enableadultmode") == "false":
+        if config.get_setting("enableadultmode") == False:
             patron = '.*?/erotic.*?'
             try:
                 erotica = scrapertools.get_match(scrapedurl,patron)

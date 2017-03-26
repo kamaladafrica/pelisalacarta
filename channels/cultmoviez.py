@@ -278,7 +278,7 @@ def findvideos(item):
     for server_id, video_id in servers_data_list:
         if server_id != "oid": server = server_label(server_id)
         mostrar_server = True
-        if config.get_setting("hidepremium")=="true":
+        if config.get_setting("hidepremium")==True:
             mostrar_server= servertools.is_server_enabled (server)
         if mostrar_server:
             try:

@@ -417,7 +417,7 @@ def findvideos(item):
                                            text_color="green"))
                 continue
             mostrar_server = True
-            if config.get_setting("hidepremium") == "true":
+            if config.get_setting("hidepremium") == True:
                 mostrar_server = servertools.is_server_enabled(scrapedserver)
             if mostrar_server:
                 try:

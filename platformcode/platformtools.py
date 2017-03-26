@@ -846,7 +846,7 @@ def set_opcion(item, seleccion, opciones, video_urls):
 
     # "Buscar Trailer":
     elif opciones[seleccion] == config.get_localized_string(30162):
-        config.set_setting("subtitulo", "false")
+        config.set_setting("subtitulo", False)
         xbmc.executebuiltin("XBMC.RunPlugin(%s?%s)" %
                             (sys.argv[0], item.clone(channel="trailertools", action="buscartrailer",
                                                      contextual=True).tourl()))

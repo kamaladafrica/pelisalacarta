@@ -37,7 +37,7 @@ def mainlist(item):
     logger.info("pelisalacarta.channels.zampaseries mainlist")
 
     itemlist = []
-    #if config.get_setting("zampaseriesaccount")!="true":
+    #if config.get_setting("zampaseriesaccount")!=True:
     #    itemlist.append( Item( channel=item.channel , title="Habilita tu cuenta en la configuración..." , action="openconfig" , url="" , folder=False ) )
     #else:
     #    login()
@@ -135,7 +135,7 @@ def series(item,data=""):
     logger.info("pelisalacarta.channels.zampaseries series")
 
 
-    if config.get_setting("zampaseriesaccount")=="true":
+    if config.get_setting("zampaseriesaccount")==True:
         login()
 
     # Descarga la pagina
