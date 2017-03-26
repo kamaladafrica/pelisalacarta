@@ -484,15 +484,8 @@ def conf_tools(item):
             from core import jsontools
             for channel in channel_list:
 
-                needsfix = None
                 list_status = None
-                list_controls = None
                 default_settings = None
-                channeljson_exists = None
-
-                # Se convierte el "channel.channel" del canal biblioteca para que no de error
-                if channel.channel == "libreria":
-                    channel.channel = "biblioteca"
 
                 # Se comprueba si el canal esta en la lista de exclusiones
                 if channel.channel not in excluded_channels:
@@ -513,7 +506,7 @@ def conf_tools(item):
                     dict_file = {}
                     if filetools.exists(file_settings):
                         # logger.info(channel.channel + " Tiene archivo _data.json")
-                        channeljson_exists = "true"
+                        channeljson_exists = True
                         # Obtenemos configuracion guardada de ../settings/channel_data.json
                         try:
                             dict_file = jsontools.load_json(open(file_settings, "rb").read())
@@ -523,9 +516,9 @@ def conf_tools(item):
                             logger.info("ERROR al leer el archivo: %s" % file_settings)
                     else:
                         # logger.info(channel.channel + " No tiene archivo _data.json")
-                        channeljson_exists = "false"
+                        channeljson_exists = False
 
-                    if channeljson_exists == "true":
+                    if channeljson_exists == True:
                         try:
                             datajson_size = filetools.getsize(file_settings)
                         except:
@@ -536,9 +529,9 @@ def conf_tools(item):
                         datajson_size = None
 
                     # Si el _data.json esta vacio o no existe...
-                    if (len(dict_settings) and datajson_size) == 0 or channeljson_exists == "false":
+                    if (len(dict_settings) and datajson_size) == 0 or channeljson_exists == False:
                         # Obtenemos controles del archivo ../channels/channel.xml
-                        needsfix = "true"
+                        needsfix = True
                         try:
                             # Se cargan los ajustes por defecto
                             list_controls, default_settings = channeltools.get_channel_controls_settings(channel.channel)
@@ -549,7 +542,7 @@ def conf_tools(item):
                             # default_settings = {}
 
                         # Si _data.json necesita ser reparado o no existe...
-                        if needsfix == "true" or channeljson_exists == "false":
+                        if needsfix == True or channeljson_exists == False:
                             if default_settings is not None:
                                 # Creamos el channel_data.json
                                 default_settings.update(dict_settings)
@@ -570,16 +563,16 @@ def conf_tools(item):
 
                     else:
                         # logger.info(channel.channel + " - NO necesita correccion!")
-                        needsfix = "false"
+                        needsfix = False
 
                     # Si se ha establecido el estado del canal se añade a la lista
                     if needsfix is not None:
-                        if needsfix == "true":
-                            if channeljson_exists == "false":
+                        if needsfix == True:
+                            if channeljson_exists == False:
                                 list_status = " - Ajustes creados"
                                 list_colour = "red"
                             else:
-                                list_status = " - No necesita correccion"
+                                list_status = " - No necesita corrección"
                                 list_colour = "green"
                         else:
                             # Si "needsfix" es "false" y "datjson_size" es None habra
@@ -588,7 +581,7 @@ def conf_tools(item):
                                 list_status = " - Ha ocurrido algun error"
                                 list_colour = "red"
                             else:
-                                list_status = " - No necesita correccion"
+                                list_status = " - No necesita corrección"
                                 list_colour = "green"
 
                     if list_status is not None:
@@ -605,10 +598,7 @@ def conf_tools(item):
                     continue
         except:
             import traceback
-            logger.info(channel.title + " | Detalle del error: %s" % traceback.format_exc())
-            platformtools.dialog_notification("Error",
-                                              "Se ha producido un error con el canal %s" %
-                                              channel.title)
+            logger.info("Error: %s" % traceback.format_exc())
         return itemlist
 
     else:
@@ -628,8 +618,10 @@ def channel_status(item, dict_values):
                                          'biblioteca', 'configuracion',
                                          'novedades', 'personal',
                                          'ayuda', 'descargas']
+
                     for channel in item.channel_list:
                         if channel.channel not in excluded_channels:
+                            from core import channeltools
                             channel_parameters = channeltools.get_channel_parameters(channel.channel)
                             new_status_all = None
                             new_status_all_default = channel_parameters["active"]
