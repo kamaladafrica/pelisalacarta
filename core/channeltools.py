@@ -88,8 +88,13 @@ def get_channel_parameters(channel_name):
         if channel_parameters["update_url"] == "":
             channel_parameters["update_url"] = DEFAULT_UPDATE_URL
 
-        channel_parameters["include_in_global_search"] = scrapertools.find_single_match(
+        include_in_global_search = scrapertools.find_single_match(
             data, "<include_in_global_search>([^<]*)</include_in_global_search>")
+
+        if include_in_global_search in ["", "true"]:
+            channel_parameters["include_in_global_search"] = True
+        else:
+            channel_parameters["include_in_global_search"] = False
 
         category_list = []
         matches = scrapertools.find_multiple_matches(data, "<category>([^<]*)</category>")
