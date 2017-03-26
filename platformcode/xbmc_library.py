@@ -236,7 +236,7 @@ def get_data(payload):
     if config.get_setting("library_mode", "biblioteca"):
         try:
             try:
-                xbmc_port = int(config.get_setting("xbmc_puerto", "biblioteca"))
+                xbmc_port = config.get_setting("xbmc_puerto", "biblioteca")
             except:
                 xbmc_port = 0
 

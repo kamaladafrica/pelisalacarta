@@ -40,7 +40,7 @@ from platformcode import platformtools
 
 THUMBNAILS = {'0': 'posters', '1': 'banners', '2': 'squares'}
 
-__perfil__= int(config.get_setting('perfil',"novedades"))
+__perfil__= config.get_setting('perfil',"novedades")
 
 # Fijar perfil de color
 perfil = [['0xFF0B7B92', '0xFF89FDFB', '0xFFACD5D4'],

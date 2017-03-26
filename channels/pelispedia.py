@@ -25,7 +25,7 @@ CHANNEL_HOST = "http://www.pelispedia.tv/"
 # Configuracion del canal
 try:
     __modo_grafico__ = config.get_setting('modo_grafico', __channel__)
-    __perfil__ = int(config.get_setting('perfil', __channel__))
+    __perfil__ = config.get_setting('perfil', __channel__)
 except:
     __modo_grafico__ = True
     __perfil__ = 0

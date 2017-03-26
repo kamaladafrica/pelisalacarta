@@ -167,13 +167,13 @@ def _normalize(title,charset = 'utf-8'):
     # 
 def searchSubtitle(item):
     
-    if config.get_setting("subtitle_type") == "0":
+    if config.get_setting("subtitle_type") == 0:
         subtitlepath = config.get_setting("subtitlepath_folder")
         if subtitlepath == "":
             subtitlepath = os.path.join (config.get_data_path(),"subtitles")
             config.set_setting("subtitlepath_folder",subtitlepath)
                 
-    elif config.get_setting("subtitle_type") == "1":
+    elif config.get_setting("subtitle_type") == 1:
         subtitlepath = config.get_setting("subtitlepath_keyboard")
         if subtitlepath == "":
             subtitlepath = os.path.join (config.get_data_path(),"subtitles")

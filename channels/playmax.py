@@ -18,7 +18,7 @@ from core.item import Item
 sid = config.get_setting("sid_playmax", "playmax")
 apikey = "0ea143087685e9e0a23f98ae"
 __modo_grafico__ = config.get_setting('modo_grafico', 'playmax')
-__perfil__ = int(config.get_setting('perfil', "playmax"))
+__perfil__ = config.get_setting('perfil', "playmax")
 __menu_info__ = config.get_setting('menu_info', 'playmax')
 
 # Fijar perfil de color            
@@ -73,11 +73,11 @@ def login():
             config.set_setting("sid_playmax", sid_, "playmax")
             # En el primer logueo se activa la busqueda global y la seccion novedades
             if not config.get_setting("primer_log", "playmax"):
-                config.set_setting("include_in_global_search", "true", "playmax")
-                config.set_setting("include_in_newest_peliculas", "true", "playmax")
-                config.set_setting("include_in_newest_series", "true", "playmax")
-                config.set_setting("include_in_newest_infantiles", "true", "playmax")
-                config.set_setting("primer_log", "false", "playmax")
+                config.set_setting("include_in_global_search", True, "playmax")
+                config.set_setting("include_in_newest_peliculas", True, "playmax")
+                config.set_setting("include_in_newest_series", True, "playmax")
+                config.set_setting("include_in_newest_infantiles", True, "playmax")
+                config.set_setting("primer_log", False, "playmax")
             return True, ""
     except:
         import traceback
@@ -93,7 +93,7 @@ def mainlist(item):
     logueado, error_message = login()
 
     if not logueado:
-        config.set_setting("include_in_global_search", "playmax", "false")
+        config.set_setting("include_in_global_search", False, "playmax")
         itemlist.append(item.clone(title=error_message, action="configuracion", folder=False))
         return itemlist
 

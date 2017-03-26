@@ -18,7 +18,7 @@ from core.item import Item
 
 
 __modo_grafico__ = config.get_setting("modo_grafico", "peliculasnu")
-__perfil__ = int(config.get_setting("perfil", "peliculasnu"))
+__perfil__ = config.get_setting("perfil", "peliculasnu")
 
 # Fijar perfil de color            
 perfil = [['0xFFFFE6CC', '0xFFFFCE9C', '0xFF994D00'],

@@ -716,7 +716,7 @@ def get_dialogo_opciones(item, default_action, strm):
         item.server = "directo"
 
     # Si no es el modo normal, no muestra el diálogo porque cuelga XBMC
-    muestra_dialogo = (config.get_setting("player_mode") == "0" and not strm)
+    muestra_dialogo = (config.get_setting("player_mode") == 0 and not strm)
 
     # Extrae las URL de los vídeos, y si no puedes verlo te dice el motivo
     #Permitir varias calidades para server "directo"
@@ -912,13 +912,13 @@ def set_player(item, xlistitem, mediaurl, view, strm):
     else:
         logger.info("player_mode=" + config.get_setting("player_mode"))
         logger.info("mediaurl=" + mediaurl)
-        if config.get_setting("player_mode") == "3" or "megacrypter.com" in mediaurl:
+        if config.get_setting("player_mode") == 3 or "megacrypter.com" in mediaurl:
             import download_and_play
             download_and_play.download_and_play(mediaurl, "download_and_play.tmp", config.get_setting("downloadpath"))
             return
 
-        elif config.get_setting("player_mode") == "0" or \
-                (config.get_setting("player_mode") == "3" and mediaurl.startswith("rtmp")):
+        elif config.get_setting("player_mode") == 0 or \
+                (config.get_setting("player_mode") == 3 and mediaurl.startswith("rtmp")):
             # Añadimos el listitem a una lista de reproducción (playlist)
             playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
             playlist.clear()
@@ -946,12 +946,12 @@ def set_player(item, xlistitem, mediaurl, view, strm):
 
             xbmc_player.play(playlist, xlistitem)
 
-        elif config.get_setting("player_mode") == "1":
+        elif config.get_setting("player_mode") == 1:
             logger.info("mediaurl :" + mediaurl)
             logger.info("Tras setResolvedUrl")
             xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, xbmcgui.ListItem(path=mediaurl))
 
-        elif config.get_setting("player_mode") == "2":
+        elif config.get_setting("player_mode") == 2:
             xbmc.executebuiltin("PlayMedia(" + mediaurl + ")")
 
     # TODO MIRAR DE QUITAR VIEW

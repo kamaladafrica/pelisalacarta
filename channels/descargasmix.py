@@ -16,7 +16,7 @@ from core import servertools
 from core.item import Item
 
 __modo_grafico__ = config.get_setting("modo_grafico", "descargasmix")
-__perfil__ = int(config.get_setting("perfil", "descargasmix"))
+__perfil__ = config.get_setting("perfil", "descargasmix")
 
 # Fijar perfil de color            
 perfil = [['0xFFFFE6CC', '0xFFFFCE9C', '0xFF994D00'],

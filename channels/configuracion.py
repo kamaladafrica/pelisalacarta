@@ -43,9 +43,9 @@ def mainlist(item):
     itemlist.append(Item(channel=CHANNELNAME, title="Preferencias", action="settings", folder=False,
                          thumbnail=get_thumbnail_path("thumb_configuracion_0.png")))
 
-    if config.get_setting("plugin_updates_available") == "0":
+    if config.get_setting("plugin_updates_available") == 0:
         nuevas = ""
-    elif config.get_setting("plugin_updates_available") == "1":
+    elif config.get_setting("plugin_updates_available") == 1:
         nuevas = " (1 nueva)"
     else:
         nuevas = " (" + config.get_setting("plugin_updates_available") + " nuevas)"

@@ -80,11 +80,11 @@ def run():
                 from core import updater
 
                 try:
-                    config.set_setting("plugin_updates_available","0")
+                    config.set_setting("plugin_updates_available", 0)
                     new_published_version_tag , number_of_updates = updater.get_available_updates()
                     itemlist = channelselector.getmainlist()
 
-                    config.set_setting("plugin_updates_available",str(number_of_updates))
+                    config.set_setting("plugin_updates_available", number_of_updates)
 
                     if new_published_version_tag!="":
 
@@ -101,12 +101,12 @@ def run():
                     platformtools.dialog_ok("No se puede conectar", "No ha sido posible comprobar",
                                             "si hay actualizaciones")
                     logger.error("Fallo al verificar la actualización")
-                    config.set_setting("plugin_updates_available", "0")
+                    config.set_setting("plugin_updates_available", 0)
                     itemlist = channelselector.getmainlist()
 
             else:
                 logger.info("Check for plugin updates disabled")
-                config.set_setting("plugin_updates_available", "0")
+                config.set_setting("plugin_updates_available", 0)
                 itemlist = channelselector.getmainlist()
 
             platformtools.render_items(itemlist, item)
@@ -116,7 +116,7 @@ def run():
 
             from core import updater
             updater.update(item)
-            config.set_setting("plugin_updates_available", "0")
+            config.set_setting("plugin_updates_available", 0)
             if config.get_system_platform() != "xbox":
                 import xbmc
                 xbmc.executebuiltin("Container.Refresh")
