@@ -182,6 +182,11 @@ def set_setting(name, value, channel=""):
         return channeltools.set_channel_setting(name, value, channel)
     else:
         try:
+            if value == True:
+                value = "true"
+            elif value == False:
+                value = "false"
+
             __settings__.setSetting(name, value)
         except:
             return None
