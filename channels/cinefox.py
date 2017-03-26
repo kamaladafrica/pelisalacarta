@@ -45,7 +45,7 @@ def mainlist(item):
 
     itemlist.append(item.clone(action="peliculas", title="Documentales", fanart="http://i.imgur.com/Q7fsFI6.png",
                                url="http://www.cinefox.tv/catalogue?type=peliculas&genre=documental"))
-    if config.get_setting("adult_mode") == "true":
+    if config.get_setting("adult_mode") == True:
         itemlist.append(item.clone(action="peliculas", title="Sección Adultos +18",
                                    url="http://www.cinefox.tv/catalogue?type=adultos",
                                    fanart="http://i.imgur.com/kIvE1Zh.png"))

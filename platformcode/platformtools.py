@@ -191,7 +191,7 @@ def render_items(itemlist, parent_item):
 
 
     # Fijar los tipos de vistas...
-    if config.get_setting("forceview") == "true":
+    if config.get_setting("forceview") == True:
         # ...forzamos segun el viewcontent
         xbmcplugin.setContent(int(sys.argv[1]), parent_item.viewcontent)
         #logger.debug(parent_item)
@@ -210,7 +210,7 @@ def render_items(itemlist, parent_item):
     xbmcplugin.endOfDirectory(handle=int(sys.argv[1]), succeeded=True)
 
     # Fijar la vista
-    if config.get_setting("forceview") == "true":
+    if config.get_setting("forceview") == True:
         viewmode_id = get_viewmode_id(parent_item)
         xbmc.executebuiltin("Container.SetViewMode(%s)" % viewmode_id)
 
@@ -366,7 +366,7 @@ def set_context_commands(item, parent_item):
 
         # ExtendedInfo: Si esta instalado el addon y se cumplen una serie de condiciones
         if xbmc.getCondVisibility('System.HasAddon(script.extendedinfo)') \
-                and config.get_setting("extended_info") == "true":
+                and config.get_setting("extended_info") == True:
             if item.contentType == "episode" and item.contentEpisodeNumber and item.contentSeason \
                     and (item.infoLabels['tmdb_id'] or item.contentSerieName):
                 param = "tvshow_id =%s, tvshow=%s, season=%s, episode=%s" \
@@ -398,7 +398,7 @@ def set_context_commands(item, parent_item):
                                          "XBMC.RunScript(script.extendedinfo,info=extendedinfo,%s)" % param))
 
         # InfoPlus
-        if config.get_setting("infoplus") == "true":
+        if config.get_setting("infoplus") == True:
             if item.infoLabels['tmdb_id'] or item.infoLabels['imdb_id'] or item.infoLabels['tvdb_id'] or \
                                       (item.contentTitle and item.infoLabels["year"]) or item.contentSerieName:
                 context_commands.append(("InfoPlus","XBMC.RunPlugin(%s?%s)" % (sys.argv[0], item.clone(
@@ -750,7 +750,7 @@ def get_dialogo_opciones(item, default_action, strm):
                 # "Añadir a Biblioteca"
                 opciones.append(config.get_localized_string(30161))
 
-            if config.get_setting("jdownloader_enabled") == "true":
+            if config.get_setting("jdownloader_enabled") == True:
                 # "Enviar a JDownloader"
                 opciones.append(config.get_localized_string(30158))
 
@@ -1001,7 +1001,7 @@ def play_torrent(item, xlistitem, mediaurl):
     if seleccion == 0:
         import time
         played = False
-        debug =  (config.get_setting("debug") == "true")
+        debug =  (config.get_setting("debug") == True)
         
         # Importamos el cliente
         from btserver import Client

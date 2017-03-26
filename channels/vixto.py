@@ -346,7 +346,7 @@ def bloque_enlaces(data, filtro_idioma, dict_idiomas, tipo, item):
         if server == "waaw":
             server = "netutv"
         mostrar_server = True
-        if config.get_setting("hidepremium") == "true":
+        if config.get_setting("hidepremium")==True:
             mostrar_server = servertools.is_server_enabled(server)
         if mostrar_server:
             try:

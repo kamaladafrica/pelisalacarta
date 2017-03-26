@@ -98,7 +98,7 @@ def getchanneltypes(preferred_thumb=""):
                        'anime': config.get_localized_string(30124), 'documentary': config.get_localized_string(30125),
                        'vos': config.get_localized_string(30136), 'adult': config.get_localized_string(30126),
                        'latino': config.get_localized_string(30127)}
-    if config.get_setting("adult_mode") == "true":
+    if config.get_setting("adult_mode") == True:
         channel_types.append("adult")
 
     channel_language = config.get_setting("channel_language")
@@ -172,7 +172,7 @@ def filterchannels(category, preferred_thumb=""):
                     continue
 
             # Se salta el canal para adultos si el modo adultos está desactivado
-            if channel_parameters["adult"] == "true" and config.get_setting("adult_mode") != "true":
+            if channel_parameters["adult"] == "true" and config.get_setting("adult_mode") == False:
                 continue
 
             # Se salta el canal si está en un idioma filtrado
@@ -205,23 +205,23 @@ def filterchannels(category, preferred_thumb=""):
     channelslist.sort(key=lambda item: item.title.lower().strip())
 
     if category == "all":
-        if config.get_setting("personalchannel5") == "true":
+        if config.get_setting("personalchannel5") == True:
             channelslist.insert(0, Item(title=config.get_setting("personalchannelname5"), action="mainlist",
                                         channel="personal5", thumbnail=config.get_setting("personalchannellogo5"),
                                         type="generic", viewmode="list"))
-        if config.get_setting("personalchannel4") == "true":
+        if config.get_setting("personalchannel4") == True:
             channelslist.insert(0, Item(title=config.get_setting("personalchannelname4"), action="mainlist",
                                         channel="personal4", thumbnail=config.get_setting("personalchannellogo4"),
                                         type="generic", viewmode="list"))
-        if config.get_setting("personalchannel3") == "true":
+        if config.get_setting("personalchannel3") == True:
             channelslist.insert(0, Item(title=config.get_setting("personalchannelname3"), action="mainlist",
                                         channel="personal3", thumbnail=config.get_setting("personalchannellogo3"),
                                         type="generic", viewmode="list"))
-        if config.get_setting("personalchannel2") == "true":
+        if config.get_setting("personalchannel2") == True:
             channelslist.insert(0, Item(title=config.get_setting("personalchannelname2"), action="mainlist",
                                         channel="personal2", thumbnail=config.get_setting("personalchannellogo2"),
                                         type="generic", viewmode="list"))
-        if config.get_setting("personalchannel") == "true":
+        if config.get_setting("personalchannel") == True:
             channelslist.insert(0, Item(title=config.get_setting("personalchannelname"), action="mainlist",
                                         channel="personal", thumbnail=config.get_setting("personalchannellogo"),
                                         type="generic", viewmode="list"))

@@ -144,7 +144,13 @@ def get_setting(name, channel=""):
             value = xbmc.translatePath(value)
 
         # logger.info("config.get_setting -> '"+value+"'")
-        return value
+        # hack para devolver bool en el caso de que lo sea
+        if value == "true":
+            return True
+        elif value == "false":
+            return False
+        else:
+            return value
 
 
 def set_setting(name, value, channel=""):
@@ -262,7 +268,7 @@ def verify_directories_created():
             set_setting(path, saved_path)
 
 
-        if get_setting("library_set_content")== "true" and path in ["librarypath","downloadpath"]:
+        if get_setting("library_set_content")== True and path in ["librarypath","downloadpath"]:
             xbmc_library.add_sources(saved_path)
 
         saved_path = xbmc.translatePath(saved_path)
@@ -284,7 +290,7 @@ def verify_directories_created():
         content_path = filetools.join(get_library_path(), saved_path)
         if not filetools.exists(content_path):
             logger.debug("Creating %s: %s" % (path, content_path))
-            if filetools.mkdir(content_path) and get_setting("library_set_content")== "true":
+            if filetools.mkdir(content_path) and get_setting("library_set_content")== True:
                 xbmc_library.set_content(default)
 
         elif get_setting("library_ask_set_content") == "active":

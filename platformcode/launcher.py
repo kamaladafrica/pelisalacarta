@@ -75,7 +75,7 @@ def run():
             import channelselector
 
             # Check for updates only on first screen
-            if config.get_setting("check_for_plugin_updates") == "true":
+            if config.get_setting("check_for_plugin_updates") == True:
                 logger.info("Check for plugin updates enabled")
                 from core import updater
 
@@ -167,7 +167,7 @@ def run():
             # Actualiza el canal individual
             if (item.action == "mainlist" and
                     item.channel != "channelselector" and
-                    config.get_setting("check_for_channel_updates") == "true"):
+                    config.get_setting("check_for_channel_updates") == True):
                 from core import updater
                 updater.update_channel(item.channel)
 
@@ -235,7 +235,7 @@ def run():
                     from core import servertools
                     itemlist = servertools.find_video_items(item)
 
-                if config.get_setting('filter_servers') == 'true':
+                if config.get_setting('filter_servers') == True:
                     itemlist = filtered_servers(itemlist)
 
                 if config.get_setting("max_links", "biblioteca") != 0:
@@ -546,7 +546,7 @@ def play_from_library(item):
         p_dialog.update(50, '')
 
         # Se filtran los enlaces segun la lista blanca y negra
-        if config.get_setting('filter_servers') == 'true':
+        if config.get_setting('filter_servers') == True:
             itemlist = filtered_servers(itemlist)
 
         # Se limita la cantidad de enlaces a mostrar

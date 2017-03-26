@@ -45,7 +45,7 @@ def search(item,texto):
     logger.info("pelisalacarta.channels.vseries search")
 
     try:
-        if config.get_setting("zampaseriesaccount")=="true":
+        if config.get_setting("zampaseriesaccount")==True:
             login()
 
         if item.url=="":
@@ -93,7 +93,7 @@ def search(item,texto):
 def novedades(item):
     logger.info("pelisalacarta.channels.vseries novedades")
 
-    if config.get_setting("zampaseriesaccount")=="true":
+    if config.get_setting("zampaseriesaccount")==True:
         login()
 
     # Descarga la pagina
@@ -120,7 +120,7 @@ def series(item,data=""):
     logger.info("pelisalacarta.channels.vseries series")
 
 
-    if config.get_setting("zampaseriesaccount")=="true":
+    if config.get_setting("zampaseriesaccount")==True:
         login()
 
     # Descarga la pagina
@@ -167,7 +167,7 @@ def peliculas(item,data=""):
     logger.info("pelisalacarta.channels.vseries peliculas")
 
 
-    if config.get_setting("zampaseriesaccount")=="true":
+    if config.get_setting("zampaseriesaccount")==True:
         login()
 
     # Descarga la pagina
@@ -215,7 +215,7 @@ def episodios(item):
     logger.info("pelisalacarta.channels.vseries episodios")
 
 
-    if config.get_setting("zampaseriesaccount")=="true":
+    if config.get_setting("zampaseriesaccount")==True:
         login()
 
     # Descarga la pagina
@@ -242,7 +242,7 @@ def findvideos(item):
     logger.info("pelisalacarta.channels.vseries findvideos")
 
 
-    if config.get_setting("zampaseriesaccount")=="true":
+    if config.get_setting("zampaseriesaccount")==True:
         login()
 
     # Descarga la pagina
@@ -278,7 +278,7 @@ def findvideos(item):
 def play(item):
     logger.info("pelisalacarta.channels.vseries play url="+item.url)
 
-    if config.get_setting("zampaseriesaccount")=="true":
+    if config.get_setting("zampaseriesaccount")==True:
         login()
 
     headers=DEFAULT_HEADERS[:]

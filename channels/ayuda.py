@@ -123,7 +123,7 @@ def mainlist(item):
         title = "Activar cuenta real-debrid (No activada)"
         action = "realdebrid"
         token_auth = channeltools.get_channel_setting("realdebrid_token", "realdebrid")
-        if config.get_setting("realdebridpremium") == "false":
+        if config.get_setting("realdebridpremium") == False:
             title = "Activar cuenta real-debrid (Marca la casilla en la ventana de configuración de pelisalacarta para continuar)"
             action = ""
         elif token_auth:

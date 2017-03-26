@@ -298,7 +298,7 @@ def findvideos(item):
         if server != "directo":
             if server == "vimeo":
                 url += "|" + item.url
-            if config.get_setting("hidepremium") == "true":
+            if config.get_setting("hidepremium") == True:
                 mostrar_server = servertools.is_server_enabled(server)
             if mostrar_server:
                 idioma = IDIOMAS.get(idiomas_videos.get(language))
@@ -444,7 +444,7 @@ def findvideostv(item):
         if server != "directo":
             if server == "vimeo":
                 url += "|" + item.url
-            if config.get_setting("hidepremium") == "true":
+            if config.get_setting("hidepremium") == True:
                 mostrar_server = servertools.is_server_enabled(server)
             if mostrar_server:
                 idioma = IDIOMAS.get(idiomas_videos.get(language))

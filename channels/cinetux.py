@@ -327,7 +327,7 @@ def bloque_enlaces(data, filtro_idioma, dict_idiomas, type, item):
             elif server == "netu":
                 server = "netutv"
             mostrar_server = True
-            if config.get_setting("hidepremium") == "true":
+            if config.get_setting("hidepremium") == True:
                 mostrar_server = servertools.is_server_enabled(server)
             if mostrar_server:
                 try:

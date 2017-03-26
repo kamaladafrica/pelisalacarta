@@ -201,7 +201,7 @@ def resolve_video_urls_for_playing(server,url,video_password="",muestra_dialogo=
             opciones = []
             if server_parameters["free"] == "true":
               opciones.append("free")
-            opciones.extend([premium for premium in server_parameters["premium"] if config.get_setting(premium+"premium")=="true"])
+            opciones.extend([premium for premium in server_parameters["premium"] if config.get_setting(premium+"premium")==True])
             logger.info("pelisalacarta.core.servertools opciones disponibles para " + server + ": " + str(len(opciones)) + " "+str(opciones))
 
             # Sustituye el código por otro "Plex compatible"
@@ -240,7 +240,7 @@ def resolve_video_urls_for_playing(server,url,video_password="",muestra_dialogo=
             # Obtiene enlaces para las diferentes opciones premium
             error_message = []
             for premium in server_parameters["premium"]:
-              if config.get_setting(premium+"premium")=="true":
+              if config.get_setting(premium+"premium")==True:
                 if muestra_dialogo:
                   progreso.update((100 / len(opciones)) * opciones.index(premium)  , "Conectando con "+premium)
                 if premium == server: #Cuenta Premium propia
@@ -298,12 +298,12 @@ def is_server_enabled(server):
     try:
         server_parameters = get_server_parameters(server)
         if server_parameters["active"] == "true":
-            if not config.get_setting("hidepremium")=="true":
+            if not config.get_setting("hidepremium")==True:
                 return True
             else:
                 if server_parameters["free"] == "true":
                     return True
-                if [premium for premium in server_parameters["premium"] if config.get_setting(premium+"premium")=="true"]:
+                if [premium for premium in server_parameters["premium"] if config.get_setting(premium+"premium")==True]:
                     return True
                 else:
                     return False
