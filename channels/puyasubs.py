@@ -28,7 +28,7 @@ else:
 
 
 def mainlist(item):
-    logger.info("pelisalacarta.channels.puyasubs mainlist")
+    logger.info()
 
     itemlist = list()
 
@@ -78,7 +78,7 @@ def search(item, texto):
 
 
 def listado(item):
-    logger.info("pelisalacarta.channels.puyasubs listado")
+    logger.info()
 
     itemlist = list()
 
@@ -116,7 +116,7 @@ def listado(item):
 
 
 def descargas(item):
-    logger.info("pelisalacarta.channels.puyasubs descargas")
+    logger.info()
 
     itemlist = list()
     if not item.pagina:
@@ -158,7 +158,7 @@ def descargas(item):
 
 
 def letra(item):
-    logger.info("pelisalacarta.channels.puyasubs letra")
+    logger.info()
 
     itemlist = list()
     data = scrapertools.downloadpage(item.url)
@@ -172,7 +172,7 @@ def letra(item):
     
 
 def torrents(item):
-    logger.info("pelisalacarta.channels.puyasubs torrents")
+    logger.info()
 
     itemlist = list()
     if not item.pagina:
@@ -213,7 +213,7 @@ def torrents(item):
 
 
 def findvideos(item):
-    logger.info("pelisalacarta.channels.puyasubs findvideos")
+    logger.info()
     if item.infoLabels["tmdb_id"] and not item.infoLabels["plot"]:
         from core import tmdb
         tmdb.set_infoLabels_item(item, True, idioma_busqueda="en")
@@ -283,7 +283,7 @@ def findvideos(item):
 
 
 def carpeta(item):
-    logger.info("pelisalacarta.channels.puyasubs carpeta")
+    logger.info()
     itemlist = list()
     
     if item.server == "onefichier":
@@ -315,7 +315,7 @@ def carpeta(item):
 
 
 def extract_safe(item):
-    logger.info("pelisalacarta.channels.puyasubs extract_safe")
+    logger.info()
     if item.infoLabels["tmdb_id"] and not item.infoLabels["plot"]:
         from core import tmdb
         tmdb.set_infoLabels_item(item, True, idioma_busqueda="en")
@@ -348,7 +348,7 @@ def extract_safe(item):
 
 
 def play(item):
-    logger.info("pelisalacarta.channels.puyasubs play")
+    logger.info()
     itemlist = list()
     
     if item.server == "torrent" and "frozen" in item.url:
@@ -370,7 +370,7 @@ def play(item):
 
 
 def newest(categoria):
-    logger.info("pelisalacarta.channels.puyasubs newest")
+    logger.info()
     item = Item()
     try:
         item.url = "http://puya.se/?cat=4"

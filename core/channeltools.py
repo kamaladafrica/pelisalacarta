@@ -212,7 +212,7 @@ def get_channel_setting(name, channel):
             if isinstance(dict_file, dict) and 'settings' in dict_file:
                 dict_settings = dict_file['settings']
         except EnvironmentError:
-            logger.info("ERROR al leer el archivo: %s" % file_settings)
+            logger.error("ERROR al leer el archivo: %s" % file_settings)
 
     if len(dict_settings) == 0 or name not in dict_settings:
         # Obtenemos controles del archivo ../channels/channel.xml
@@ -230,7 +230,7 @@ def get_channel_setting(name, channel):
             try:
                 open(file_settings, "wb").write(json_data)
             except EnvironmentError:
-                logger.info("ERROR al salvar el archivo: %s" % file_settings)
+                logger.error("ERROR al salvar el archivo: %s" % file_settings)
 
     # Devolvemos el valor del parametro local 'name' si existe, si no se devuelve None
     return dict_settings.get(name, None)
@@ -273,7 +273,7 @@ def set_channel_setting(name, value, channel):
             dict_file = jsontools.load_json(open(file_settings, "r").read())
             dict_settings = dict_file.get('settings', {})
         except EnvironmentError:
-            logger.info("ERROR al leer el archivo: %s" % file_settings)
+            logger.error("ERROR al leer el archivo: %s" % file_settings)
 
     dict_settings[name] = value
 
@@ -288,7 +288,7 @@ def set_channel_setting(name, value, channel):
         json_data = jsontools.dump_json(dict_file)
         open(file_settings, "w").write(json_data)
     except EnvironmentError:
-        logger.info("ERROR al salvar el archivo: %s" % file_settings)
+        logger.error("ERROR al salvar el archivo: %s" % file_settings)
         return None
 
     return value
@@ -313,8 +313,8 @@ def get_channel_remote_url(channel_name):
     remote_channel_url = channel_parameters["update_url"]+channel_name+".py"
     remote_version_url = channel_parameters["update_url"]+channel_name+".xml" 
 
-    logger.info("pelisalacarta.core.channeltools get_channel_remote_url remote_channel_url="+remote_channel_url)
-    logger.info("pelisalacarta.core.channeltools get_channel_remote_url remote_version_url="+remote_version_url)
+    logger.info("remote_channel_url="+remote_channel_url)
+    logger.info("remote_version_url="+remote_version_url)
     
     return remote_channel_url, remote_version_url
 
@@ -330,8 +330,8 @@ def get_channel_local_path(channel_name):
         local_version_path = os.path.join(config.get_runtime_path(), channel_name + ".xml")
         local_compiled_path = os.path.join(config.get_runtime_path(), channel_name + ".pyo")
 
-    logger.info("pelisalacarta.core.channeltools get_channel_local_path local_channel_path=" + local_channel_path)
-    logger.info("pelisalacarta.core.channeltools get_channel_local_path local_version_path=" + local_version_path)
-    logger.info("pelisalacarta.core.channeltools get_channel_local_path local_compiled_path=" + local_compiled_path)
+    logger.info("local_channel_path=" + local_channel_path)
+    logger.info("local_version_path=" + local_version_path)
+    logger.info("local_compiled_path=" + local_compiled_path)
 
     return local_channel_path, local_version_path, local_compiled_path

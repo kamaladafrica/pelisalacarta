@@ -1,9 +1,8 @@
 ﻿# -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
-# Canal para cuevana
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 import re
 import sys
 import urlparse
@@ -15,11 +14,8 @@ from core import servertools
 from core.item import Item
 
 
-DEBUG = config.get_setting("debug")
-
-
 def mainlist(item):
-    logger.info("[pelisadicto.py] mainlist")
+    logger.info()
 
     itemlist = []
     itemlist.append( Item(channel=item.channel, title="Últimas agregadas"  , action="agregadas", url="http://pelisadicto.com", viewmode="movie_with_plot"))
@@ -29,7 +25,7 @@ def mainlist(item):
     return itemlist
 
 def porGenero(item):
-    logger.info("[pelisadicto.py] porGenero")
+    logger.info()
 
     itemlist = []
     itemlist.append( Item(channel=item.channel , action="agregadas" , title="Acción",url="http://pelisadicto.com/genero/Acción/1", viewmode="movie_with_plot"))
@@ -61,7 +57,7 @@ def porGenero(item):
     return itemlist	
 
 def search(item,texto):
-    logger.info("[pelisadicto.py] search")
+    logger.info()
 
     '''
     texto_get = texto.replace(" ","%20")
@@ -78,12 +74,12 @@ def search(item,texto):
     except:
         import sys
         for line in sys.exc_info():
-            logger.error( "%s" % line )
+            logger.error("%s" % line)
         return []
 
 
 def agregadas(item):
-    logger.info("[pelisadicto.py] agregadas")
+    logger.info()
     itemlist = []
     '''
     # Descarga la pagina
@@ -129,7 +125,7 @@ def agregadas(item):
     return itemlist
 
 def findvideos(item):
-    logger.info("[pelisadicto.py] findvideos")
+    logger.info()
 
     itemlist = []
     plot = ""
@@ -161,7 +157,7 @@ def findvideos(item):
     return itemlist	
 
 def play(item):
-    logger.info("[pelisadicto.py] play")
+    logger.info()
 
     itemlist = servertools.find_video_items(data=item.url)
 

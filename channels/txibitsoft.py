@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para txibitsoft
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 
+import os
 import re
 import sys
+import unicodedata
 import urllib
-import os
-import xbmcgui
+
 import xbmc
+import xbmcgui
 from core import config
 from core import logger
 from core import scrapertools
 from core.item import Item
-import unicodedata
 from core.scrapertools import decodeHtmlentities as dhe
-
 
 ACTION_SHOW_FULLSCREEN = 36
 ACTION_GESTURE_SWIPE_LEFT = 511
@@ -31,15 +31,11 @@ OPTION_PANEL = 6
 OPTIONS_OK = 5
 
 
-
 host = "http://www.txibitsoft.com/"
-
-DEBUG = config.get_setting("debug")
-
 
 
 def mainlist(item):
-    logger.info("pelisalacarta.txibitsoft mainlist")
+    logger.info()
     
     itemlist = []
     
@@ -56,7 +52,7 @@ def mainlist(item):
     return itemlist
 
 def search(item,texto):
-    logger.info("pelisalacarta.txibitsoft search")
+    logger.info()
     texto = texto.replace(" ","+")
     
     item.url = "http://www.txibitsoft.com/torrents.php?procesar=1&texto=%s" % (texto)
@@ -67,11 +63,11 @@ def search(item,texto):
     except:
         import sys
         for line in sys.exc_info():
-            logger.error( "%s" % line )
+            logger.error("%s" % line)
         return []
 
 def buscador(item):
-    logger.info("pelisalacarta.txibitsoft buscador")
+    logger.info()
     itemlist = []
 
     # Descarga la página
@@ -120,7 +116,7 @@ def buscador(item):
     return itemlist
 
 def peliculas(item):
-    logger.info("pelisalacarta.txibitsoft peliculas")
+    logger.info()
     itemlist = []
     
     # Descar<div id="catalogheader">ga la página
@@ -181,7 +177,7 @@ def peliculas(item):
     return itemlist
 
 def fanart(item):
-    logger.info("pelisalacarta.txibitsoft fanart")
+    logger.info()
     itemlist = []
     url = item.url
     data = scrapertools.cachePage(url)
@@ -746,7 +742,7 @@ def fanart(item):
     return itemlist
 
 def findvideos(item):
-    logger.info("pelisalacarta.txibitsoft findvideos")
+    logger.info()
     itemlist = []
     
     if not "serie" in item.url:
@@ -956,7 +952,7 @@ def findvideos(item):
       
     return itemlist
 def info(item):
-    logger.info("pelisalacarta.zentorrents info")
+    logger.info()
     itemlist = []
     url=item.url
     id = item.extra
@@ -1124,7 +1120,7 @@ def info(item):
 
 
 def info_capitulos(item):
-    logger.info("pelisalacarta.bricocine trailer")
+    logger.info()
     
     url= "https://api.themoviedb.org/3/tv/"+item.show.split("|")[5]+"/season/"+item.extra.split("|")[2]+"/episode/"+item.extra.split("|")[3]+"?api_key=2e2160006592024ba87ccdf78c28f49f&language=es"
 
@@ -1375,7 +1371,6 @@ def decode(text):
     return data
 def convert_size(size):
    import math
-   from os.path import getsize
    if (size == 0):
        return '0B'
    size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")

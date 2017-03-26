@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 import os
 import re
 import sys
-import urllib
 import urllib2
 
-import xbmcgui
 import xbmc
+import xbmcgui
 from core import config
 from core import logger
 from core import scrapertools
@@ -32,7 +31,7 @@ OPTIONS_OK = 5
 api_key="2e2160006592024ba87ccdf78c28f49f"
 api_fankey ="dffe90fba4d02c199ae7a9e71330c987"
 
-DEBUG = config.get_setting("debug")
+
 def browser(url):
     import mechanize
     
@@ -68,15 +67,12 @@ def browser(url):
 
 
 def mainlist(item):
-    logger.info("pelisalacarta.bricocine mainlist")
+    logger.info()
 
     itemlist = []
-    import xbmc
-    
-    
+
     itemlist.append( Item(channel=item.channel, title="[COLOR chartreuse][B]Series[/B][/COLOR]"         , action="scraper", url="http://www.verseriesonline.tv/series", thumbnail="http://s6.postimg.org/6hpa9tzgx/verseriesthumb.png", fanart="http://s6.postimg.org/71zpys3bl/verseriesfan2.jpg"))
-    import xbmc
-    
+
     itemlist.append( Item(channel=item.channel, title="[COLOR chartreuse][B]Buscar[/B][/COLOR]"         , action="search", url="", thumbnail="http://s6.postimg.org/5gp1kpihd/verseriesbuscthumb.png", fanart="http://s6.postimg.org/7vgx54yq9/verseriesbuscfan.jpg", extra = "search"))
     
 
@@ -84,7 +80,7 @@ def mainlist(item):
 
 
 def search(item,texto):
-    logger.info("pelisalacarta.verseriesonlinetv search")
+    logger.info()
     texto = texto.replace(" ","+")
     item.url = "http://www.verseriesonline.tv/series?s=" + texto
    
@@ -99,7 +95,7 @@ def search(item,texto):
 
 
 def scraper(item):
-    logger.info("pelisalacarta.verseriesonlinetv scraper")
+    logger.info()
     itemlist = []
     ###Borra customkeys
     
@@ -148,7 +144,7 @@ def scraper(item):
 
 def fanart(item):
     #Vamos a sacar todos los fanarts y arts posibles
-    logger.info("pelisalacarta.verseriesonlinetv fanart")
+    logger.info()
     itemlist = []
     url = item.url
     data = dhe( scrapertools.cachePage(item.url) )
@@ -501,7 +497,7 @@ def fanart(item):
 
     return itemlist
 def temporadas(item):
-    logger.info("pelisalacarta.verseriesonlinetv temporadas")
+    logger.info()
     
     itemlist = []
     
@@ -549,7 +545,7 @@ def temporadas(item):
     return itemlist
 
 def capitulos(item):
-    logger.info("pelisalacarta.verseriesonlinetv capitulos")
+    logger.info()
     
     itemlist = []
     
@@ -573,7 +569,7 @@ def capitulos(item):
 
     return itemlist
 def findvideos(item):
-    logger.info("pelisalacarta.verseriesonlinetv findvideos")
+    logger.info()
     itemlist = []
     
     data = scrapertools.cachePage(item.url)
@@ -603,7 +599,7 @@ def findvideos(item):
     
     return itemlist
 def play(item):
-    logger.info("pelisalacarta.verseriesonlinetv play")
+    logger.info()
     import xbmc
     xbmc.executebuiltin('Action(reloadkeymaps)')
 
@@ -623,7 +619,7 @@ def play(item):
 
 
 def info(item):
-    logger.info("pelisalacarta.pasateatorrent info")
+    logger.info()
     itemlist = []
     url=item.url
     id = item.extra
@@ -798,7 +794,7 @@ def info(item):
 
 
 def info_capitulos(item):
-    logger.info("pelisalacarta.pasateatorrent trailer")
+    logger.info()
     
     url= "https://api.themoviedb.org/3/tv/"+item.show.split("|")[5]+"/season/"+item.extra.split("|")[2]+"/episode/"+item.extra.split("|")[3]+"?api_key="+api_key+"&language=es"
 

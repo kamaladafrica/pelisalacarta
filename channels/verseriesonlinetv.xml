@@ -11,9 +11,19 @@
     <bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/verseriesonlinetv.png</bannermenu>
     
     <update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-    <version>4</version>
-    <date>17/12/2016</date>
-    <changes>Mejora código y adaptación Infoplus</changes>
+    <version>5</version>
+    <changes>
+		<change>
+			<date>15/03/2017</date>
+			<autor>SeiTaN</autor>
+			<description>limpieza código</description>
+		</change>
+		<change>
+			<date>07/12/2016</date>
+			<autor>Cmos, Neno</autor>
+			<description>Correciones código. Adaptación a Infoplus.</description>
+		</change>
+	</changes>
     
     <categories>
         <category>serie</category>

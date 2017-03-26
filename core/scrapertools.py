@@ -25,12 +25,12 @@
 # Scraper tools for reading and processing web elements
 # --------------------------------------------------------------------------------
 
-import os
 import re
 import time
-import urlparse
+
 import logger
 from core import httptools
+
 
 def cache_page(url,post=None,headers=None,modo_cache=None, timeout=None):
     return cachePage(url,post,headers,modo_cache,timeout=timeout)
@@ -101,7 +101,7 @@ def anti_cloudflare(url, host="", headers=None, post=None, location=False):
 def printMatches(matches):
     i = 0
     for match in matches:
-        logger.info("pelisalacarta.core.scrapertools %d %s" % (i , match))
+        logger.info("%d %s" % (i, match))
         i = i + 1
 
 def get_match(data,patron,index=0):
@@ -140,7 +140,7 @@ def unescape(text):
                     return unichr(int(text[2:-1])).encode("utf-8")
 
             except ValueError:
-                logger.info("error de valor")
+                logger.error("error de valor")
                 pass
         else:
             # named entity
@@ -159,7 +159,7 @@ def unescape(text):
                 import htmlentitydefs
                 text = unichr(htmlentitydefs.name2codepoint[text[1:-1]]).encode("utf-8")
             except KeyError:
-                logger.info("keyerror")
+                logger.error("keyerror")
                 pass
             except:
                 pass

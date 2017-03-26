@@ -43,10 +43,8 @@ from core import logger
 allchars = string.maketrans('', '')
 deletechars = ',\\/:*"<>|?'
 
-def isGeneric():
-    return True
 
-    # Extraemos el nombre de la serie, temporada y numero de capitulo ejemplo: 'fringe 1x01'
+# Extraemos el nombre de la serie, temporada y numero de capitulo ejemplo: 'fringe 1x01'
 def regex_tvshow(compare, file, sub = ""):
     
   regex_expressions = [ '[Ss]([0-9]+)[][._-]*[Ee]([0-9]+)([^\\\\/]*)$',
@@ -100,7 +98,7 @@ def regex_tvshow(compare, file, sub = ""):
     # Obtiene el nombre de la pelicula o capitulo de la serie guardado previamente en configuraciones del plugin 
     # y luego lo busca en el directorio de subtitulos, si los encuentra los activa.
 def set_Subtitle():
-    logger.info("[subtitletools] set_Subtitle")
+    logger.info()
     
     exts = [".srt", ".sub", ".txt", ".smi", ".ssa", ".ass" ]
     subtitle_folder_path = os.path.join (config.get_data_path(),"subtitles")
@@ -143,7 +141,7 @@ def set_Subtitle():
                     logger.info("Con subtitulo : "+os.path.split(Subname)[1])
                     xbmc.Player().setSubtitles(( Subname ) )
         except:
-             logger.info("error al cargar subtitulos")
+             logger.error("error al cargar subtitulos")
 
     # Limpia los caracteres unicode
 def _normalize(title,charset = 'utf-8'):
@@ -154,7 +152,7 @@ def _normalize(title,charset = 'utf-8'):
             title = title.encode("utf-8")
             title = normalize('NFKD',title ).encode('ASCII','ignore')
         except UnicodeEncodeError:
-            logger.info("Error de encoding")
+            logger.error("Error de encoding")
     else:
         title = string.translate(title,allchars,deletechars)
         try:
@@ -163,7 +161,7 @@ def _normalize(title,charset = 'utf-8'):
             title =  normalize('NFKD', unicode(title,'utf-8'))
             title =  title.encode('ASCII','ignore')
         except UnicodeEncodeError:
-            logger.info("Error de encoding")
+            logger.error("Error de encoding")
     return title
 
     # 
@@ -192,7 +190,7 @@ def searchSubtitle(item):
         try:
             os.mkdir(subtitlepath)
         except:
-            logger.info("error no se pudo crear path subtitulos")
+            logger.error("error no se pudo crear path subtitulos")
             return
     
     path_movie_subt = xbmc.translatePath(os.path.join(subtitlepath,"Movies"))
@@ -200,7 +198,7 @@ def searchSubtitle(item):
         try:
             os.mkdir(path_movie_subt)
         except:
-            logger.info( "error no se pudo crear el path Movies")
+            logger.error( "error no se pudo crear el path Movies")
             return
     full_path_tvshow = ""
     path_tvshow_subt = xbmc.translatePath(os.path.join(subtitlepath,"Tvshows"))
@@ -208,7 +206,7 @@ def searchSubtitle(item):
         try:
             os.mkdir(path_tvshow_subt)
         except:
-            logger.info( "error no pudo crear el path Tvshows")
+            logger.error( "error no pudo crear el path Tvshows")
             return
     if item.show in item.title:
         title_new=title = urllib.unquote_plus(item.title)
@@ -216,7 +214,7 @@ def searchSubtitle(item):
         title_new=title = urllib.unquote_plus(item.show + " - " + item.title)
     path_video_temp = xbmc.translatePath(os.path.join( config.get_runtime_path(),"resources","subtitle.mp4" ))
     if not os.path.exists(path_video_temp):
-        logger.info( "error : no existe el video temporal de subtitulos")
+        logger.error( "error : no existe el video temporal de subtitulos")
         return
     #path_video_temp = xbmc.translatePath(os.path.join( ,video_temp + ".mp4" ))
 
@@ -253,7 +251,7 @@ def searchSubtitle(item):
         #xbmctools.launchplayer(full_path_video_new,listitem)
     except:
             copy = False
-            logger.info("Error : no se pudo copiar")
+            logger.error("Error : no se pudo copiar")
             
     
     time.sleep(1)

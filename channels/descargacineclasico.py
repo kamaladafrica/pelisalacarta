@@ -1,24 +1,19 @@
 ﻿# -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
-# Canal para cuevana
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 import re
 import urlparse
 
 from channelselector import get_thumbnail_path
-from core import config
 from core import logger
 from core import scrapertools
 from core import servertools
 from core.item import Item
 from core.tmdb import Tmdb
-from core import servertools
 from servers.decrypters import expurl
 
-
-DEBUG = config.get_setting("debug")
 
 def agrupa_datos(data):
     ## Agrupa los datos
@@ -29,7 +24,7 @@ def agrupa_datos(data):
 
 
 def mainlist(item):
-    logger.info("[pelisadicto.py] mainlist")
+    logger.info()
 
     thumb_buscar = get_thumbnail_path()+ "thumb_buscar.png"
 
@@ -41,7 +36,7 @@ def mainlist(item):
     return itemlist
 
 def porGenero(item):
-    logger.info("[descargacineclasico.py] porGenero")
+    logger.info()
 
     itemlist = []
     data = scrapertools.cache_page(item.url)
@@ -56,10 +51,10 @@ def porGenero(item):
         itemlist.append( Item(channel=item.channel , action="agregadas" , title=genero,url=url, viewmode="movie_with_plot"))
     
    
-    return itemlist    
+    return itemlist
 
 def search(item,texto):
-    logger.info("[descargacineclasico.py] search")
+    logger.info()
 
     '''
     texto_get = texto.replace(" ","%20")
@@ -76,13 +71,12 @@ def search(item,texto):
     except:
         import sys
         for line in sys.exc_info():
-            logger.error( "%s" % line )
+            logger.error("%s" % line)
         return []
 
-    return agregadas(item)
 
 def agregadas(item):
-    logger.info("[descargacineclasico.py] agregadas")
+    logger.info()
     itemlist = []
     '''
     # Descarga la pagina
@@ -133,7 +127,7 @@ def agregadas(item):
     return itemlist
 
 def findvideos(item):
-    logger.info("[pelisadicto.py] findvideos")
+    logger.info()
 
     itemlist = []
 
@@ -160,7 +154,7 @@ def findvideos(item):
 
 def play(item):
     
-    logger.info("[descargacineclasico.py] play")
+    logger.info()
 
     video = expurl.expand_url(item.url)
    

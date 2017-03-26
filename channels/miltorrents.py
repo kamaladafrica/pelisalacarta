@@ -1,25 +1,24 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para peliculasdk
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
-import string
+# ------------------------------------------------------------
 import os
 import re
+import socket
 import sys
+import unicodedata
 import urllib
+
+import xbmc
+import xbmcgui
 from core import config
 from core import logger
 from core import scrapertools
-from core import servertools
-from platformcode import platformtools
 from core.item import Item
-import xbmc
-import xbmcgui
 from core.scrapertools import decodeHtmlentities as dhe
-import unicodedata
-import socket
+
 socket.setdefaulttimeout(5)
 
 ACTION_SHOW_FULLSCREEN = 36
@@ -33,8 +32,6 @@ ACTION_MOVE_UP = 3
 OPTION_PANEL = 6
 OPTIONS_OK = 5
 
-
-DEBUG = config.get_setting("debug")
 
 #Para la busqueda en bing evitando baneos
 
@@ -75,7 +72,7 @@ api_fankey ="dffe90fba4d02c199ae7a9e71330c987"
 
 
 def mainlist(item):
-    logger.info("pelisalacarta.miltorrents mainlist")
+    logger.info()
     check_bg = item.action
     
     if str(check_bg) == "":
@@ -99,7 +96,7 @@ def mainlist(item):
 
 
 def search(item,texto):
-    logger.info("pelisalacarta.miltorrent search")
+    logger.info()
     texto = texto.replace(" ","+")
     if item.extra:
      if item.extra.split("|")[0]== "series":
@@ -115,7 +112,7 @@ def search(item,texto):
      except:
         import sys
         for line in sys.exc_info():
-            logger.error( "%s" % line )
+            logger.error("%s" % line)
         return []
     else:
        if item.contentType != "movie" :
@@ -131,10 +128,10 @@ def search(item,texto):
        except:
           import sys
           for line in sys.exc_info():
-              logger.error( "%s" % line )
+              logger.error("%s" % line)
               return []
 def peliculas(item):
-    logger.info("pelisalacarta.miltorrents peliculas")
+    logger.info()
     itemlist = []
     
     # Descarga la página
@@ -238,7 +235,7 @@ def peliculas(item):
 
 
 def fanart(item):
-    logger.info("pelisalacarta.moviesultimate fanart")
+    logger.info()
     itemlist = []
     
     url = item.url
@@ -793,7 +790,7 @@ def fanart(item):
 
     return itemlist
 def capitulos(item):
-    logger.info("pelisalacarta.miltorrent ver_capitulo")
+    logger.info()
     
     
     itemlist = []
@@ -816,7 +813,7 @@ def capitulos(item):
 
 
 def findvideos(item):
-    logger.info("pelisalacarta.miltorrent findvideos")
+    logger.info()
     
     itemlist = []
     
@@ -1036,7 +1033,7 @@ def findvideos(item):
 
 
 def info(item):
-    logger.info("pelisalacarta.miltorrent info")
+    logger.info()
     itemlist = []
     url=item.url
     id = item.extra
@@ -1202,7 +1199,7 @@ def info(item):
     infoplus.start(item_info, peliculas)
 
 def info_capitulos(item):
-    logger.info("pelisalacarta.miltorrent info_capitulos")
+    logger.info()
     
     
     url= "https://api.themoviedb.org/3/tv/"+item.show.split("|")[5]+"/season/"+item.extra.split("|")[2]+"/episode/"+item.extra.split("|")[3]+"?api_key="+api_key+"&language=es"
@@ -1442,7 +1439,6 @@ def decode(text):
     return data
 def convert_size(size):
    import math
-   from os.path import getsize
    if (size == 0):
        return '0B'
    size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
@@ -1453,7 +1449,7 @@ def convert_size(size):
 
 
 def busqueda(item):
-    logger.info("pelisalacarta.channels.buscador search")
+    logger.info()
     cat = [item.extra.split("|")[0].replace("tv", "serie"), 'torrent']
     new_item = Item()
     new_item.extra = item.extra.split("|")[1].replace("+", " ")

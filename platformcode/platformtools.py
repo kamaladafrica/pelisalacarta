@@ -480,7 +480,7 @@ def is_playing():
 
 
 def play_video(item, strm=False):
-    logger.info("pelisalacarta.platformcode.platformtools play_video")
+    logger.info()
     # logger.debug(item.tostring('\n'))
 
     if item.channel == 'descargas':
@@ -700,8 +700,8 @@ def handle_wait(time_to_wait, title, text):
 
 
 def get_dialogo_opciones(item, default_action, strm):
-    logger.info("platformtools get_dialogo_opciones")
-    #logger.debug(item.tostring('\n'))
+    logger.info()
+    # logger.debug(item.tostring('\n'))
     from core import servertools
 
     opciones = []
@@ -785,7 +785,7 @@ def get_dialogo_opciones(item, default_action, strm):
 
 
 def set_opcion(item, seleccion, opciones, video_urls):
-    logger.info("platformtools set_opcion")
+    logger.info()
     # logger.debug(item.tostring('\n'))
     salir = False
     # No ha elegido nada, lo más probable porque haya dado al ESC
@@ -856,7 +856,7 @@ def set_opcion(item, seleccion, opciones, video_urls):
 
 
 def get_video_seleccionado(item, seleccion, video_urls):
-    logger.info("platformtools get_video_seleccionado")
+    logger.info()
     mediaurl = ""
     view = False
     wait_time = 0
@@ -877,7 +877,7 @@ def get_video_seleccionado(item, seleccion, video_urls):
         view = True
 
     # Si no hay mediaurl es porque el vídeo no está :)
-    logger.info("pelisalacarta.platformcode.platformstools mediaurl=" + mediaurl)
+    logger.info("mediaurl=" + mediaurl)
     if mediaurl == "":
         if item.server == "unknown":
             alert_unsopported_server()
@@ -894,7 +894,7 @@ def get_video_seleccionado(item, seleccion, video_urls):
 
 
 def set_player(item, xlistitem, mediaurl, view, strm):
-    logger.info("platformtools set_player")
+    logger.info()
     logger.debug("item:\n" + item.tostring('\n'))
 
     # Movido del conector "torrent" aqui
@@ -926,19 +926,19 @@ def set_player(item, xlistitem, mediaurl, view, strm):
 
             # Reproduce
             playersettings = config.get_setting('player_type')
-            logger.info("pelisalacarta.platformcode.platformstools playersettings=" + playersettings)
+            logger.info("playersettings=" + playersettings)
 
             if config.get_system_platform() == "xbox":
                 player_type = xbmc.PLAYER_CORE_AUTO
                 if playersettings == "0":
                     player_type = xbmc.PLAYER_CORE_AUTO
-                    logger.info("pelisalacarta.platformcode.platformstools PLAYER_CORE_AUTO")
+                    logger.debug("PLAYER_CORE_AUTO")
                 elif playersettings == "1":
                     player_type = xbmc.PLAYER_CORE_MPLAYER
-                    logger.info("pelisalacarta.platformcode.platformstools PLAYER_CORE_MPLAYER")
+                    logger.debug("PLAYER_CORE_MPLAYER")
                 elif playersettings == "2":
                     player_type = xbmc.PLAYER_CORE_DVDPLAYER
-                    logger.info("pelisalacarta.platformcode.platformstools PLAYER_CORE_DVDPLAYER")
+                    logger.debug("PLAYER_CORE_DVDPLAYER")
 
                 xbmc_player = xbmc.Player(player_type)
             else:
@@ -962,7 +962,7 @@ def set_player(item, xlistitem, mediaurl, view, strm):
 
 
 def play_torrent(item, xlistitem, mediaurl):
-    logger.info("platformtools play_torrent")
+    logger.info()
     # Opciones disponibles para Reproducir torrents
     torrent_options = list()
     torrent_options.append(["Cliente interno (necesario libtorrent)"])
@@ -1093,7 +1093,7 @@ def play_torrent(item, xlistitem, mediaurl):
 
             except:
                 import traceback
-                logger.info(traceback.format_exc())
+                logger.error(traceback.format_exc())
                 break
 
         progreso.update(100, "Terminando y eliminando datos", " ", " ")

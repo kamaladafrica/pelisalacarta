@@ -3,16 +3,16 @@
 # Canal (mundoflv) por Hernan_Ar_c
 # ------------------------------------------------------------
 
-import urlparse,urllib2,urllib,re
-import os, sys
+import re
+import urlparse
 
-from core import logger
 from core import config
-from core import tmdb
-from core import scrapertools
-from core.item import Item
-from core import servertools
 from core import httptools
+from core import logger
+from core import scrapertools
+from core import servertools
+from core import tmdb
+from core.item import Item
 
 
 host="http://mundoflv.com"
@@ -28,8 +28,6 @@ audio = {'la':'[COLOR limegreen]LATINO[/COLOR]','es':'[COLOR yellow]ESPAÑOL[/CO
 headers = [['User-Agent', 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:45.0) Gecko/20100101 Firefox/45.0'],
           ['Referer', host]]
 
-def isGeneric():
-    return True
 
 def mainlist(item):
     logger.info()
@@ -86,7 +84,6 @@ def todas(item):
     next_page_url = scrapertools.find_single_match(data,'<link rel="next" href="([^"]+)" />')
     
     if next_page_url!="":
-        import inspect
         itemlist.append(Item(channel = item.channel, action = "todas", title = ">> Página siguiente", url = next_page_url, thumbnail='https://s32.postimg.org/4zppxf5j9/siguiente.png'))
     
 
@@ -309,8 +306,7 @@ def busqueda(item):
     next_page_url = scrapertools.find_single_match(data,"<a rel='nofollow' class=previouspostslink' href='([^']+)'>Siguiente &rsaquo;</a>")
     if next_page_url!="":
         item.url=next_page_url
-        import inspect
-        itemlist.append(Item(channel = item.channel,action = "busqueda",title = ">> Página siguiente", url = next_page_url, thumbnail='https://s32.postimg.org/4zppxf5j9/siguiente.png'))   
+        itemlist.append(Item(channel = item.channel,action = "busqueda",title = ">> Página siguiente", url = next_page_url, thumbnail='https://s32.postimg.org/4zppxf5j9/siguiente.png'))
     return itemlist
 
 def search(item,texto):
@@ -348,7 +344,7 @@ def findvideos(item):
 
 
 def play(item):
-    logger.info('mundoflv.py play')
+    logger.info()
 
     data = httptools.downloadpage(item.url).data
     if 'streamplay' not in item.server or 'streame' not in item.server:

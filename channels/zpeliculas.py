@@ -1,24 +1,20 @@
 ﻿# -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para seriespepito
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 import re
 import urllib
 
-from core import config
 from core import logger
 from core import scrapertools
 from core import servertools
 from core.item import Item
 
 
-DEBUG = config.get_setting("debug")
-
-
 def mainlist(item):
-    logger.info("pelisalacarta.channels.zpeliculas mainlist")
+    logger.info()
 
     itemlist = []
     #itemlist.append( Item(channel=item.channel, action="destacadas" , title="Destacadas", url="http://www.zpeliculas.com", fanart="http://www.zpeliculas.com/templates/mytopV2/images/background.png"))
@@ -31,7 +27,7 @@ def mainlist(item):
     return itemlist
 
 def alfabetico(item):
-    logger.info("pelisalacarta.channels.zpeliculas alfabetico")
+    logger.info()
 
     itemlist = []
     itemlist.append( Item(channel=item.channel, action="peliculas" , title="A", url="http://www.zpeliculas.com/cat/a", viewmode="movie"))
@@ -73,9 +69,9 @@ def alfabetico(item):
 
     return itemlist
     
-	
+
 def generos(item):
-    logger.info("pelisalacarta.channels.zpeliculas generos")
+    logger.info()
 
     itemlist = []
     itemlist.append( Item(channel=item.channel, action="peliculas" , title="Acción", url="http://www.zpeliculas.com/peliculas/p-accion/", viewmode="movie"))
@@ -119,7 +115,7 @@ def search(item,texto):
             url = scrapedurl
             thumbnail = scrapedthumbnail
             plot = ""
-            if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+            logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
             itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, show=title, fanart=thumbnail, hasContentDetails="true", contentTitle=title, contentThumbnail=thumbnail,
                                   contentType="movie", context=["buscar_trailer"]))
 
@@ -128,7 +124,7 @@ def search(item,texto):
     except:
         import sys
         for line in sys.exc_info():
-            logger.error( "%s" % line )
+            logger.error("%s" % line)
         return []
 
 def newest(categoria):
@@ -158,7 +154,7 @@ def newest(categoria):
     return itemlist
 
 def peliculas(item):
-    logger.info("pelisalacarta.channels.zpeliculas peliculas")
+    logger.info()
 
     # Descarga la página
     body = scrapertools.cachePage(item.url)
@@ -208,7 +204,7 @@ def peliculas(item):
         url = scrapedurl
         thumbnail = scrapedthumbnail
         plot = ""
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+        logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
         
         itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, hasContentDetails="true", contentTitle=contentTitle, contentThumbnail=thumbnail, fanart=thumbnail,
                               contentType="movie", context=["buscar_trailer"]))
@@ -221,7 +217,7 @@ def peliculas(item):
 
 
 def destacadas(item):
-    logger.info("pelisalacarta.channels.zpeliculas destacadas")
+    logger.info()
 
     # Descarga la página
     data = scrapertools.cachePage(item.url)
@@ -249,7 +245,7 @@ def destacadas(item):
         thumbnail = scrapedthumbnail
         plot = ""
         plot = unicode( plot, "iso-8859-1" , errors="replace" ).encode("utf-8")
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+        logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
         
         itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, show=title, fanart=thumbnail, hasContentDetails="true", contentTitle=title, contentThumbnail=thumbnail,
                               contentType="movie", context=["buscar_trailer"]))
@@ -257,7 +253,7 @@ def destacadas(item):
     return itemlist
 
 def sugeridas(item):
-    logger.info("pelisalacarta.channels.zpeliculas sugeridas")
+    logger.info()
 
     # Descarga la página
     data = scrapertools.cachePage(item.url)
@@ -281,7 +277,7 @@ def sugeridas(item):
         thumbnail = scrapedthumbnail
         plot = ""
         plot = unicode( plot, "iso-8859-1" , errors="replace" ).encode("utf-8")
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+        logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
         
         itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, show=title, fanart=thumbnail, hasContentDetails="true", contentTitle=title, contentThumbnail=thumbnail,
                               contentType="movie", context=["buscar_trailer"]))
@@ -289,12 +285,12 @@ def sugeridas(item):
     return itemlist
 
 def findvideos(item):
-    logger.info("pelisalacarta.channels.zpeliculas findvideos item="+item.tostring())
+    logger.info("item="+item.tostring())
 
     # Descarga la página para obtener el argumento
     data = scrapertools.cachePage(item.url)
     item.plot = scrapertools.find_single_match(data,'<div class="contenttext">([^<]+)<').strip()
     item.contentPlot = item.plot
-    logger.info("pelisalacarta.channels.zpeliculas findvideos plot="+item.plot)
+    logger.info("plot="+item.plot)
 
     return servertools.find_video_items(item=item,data=data)

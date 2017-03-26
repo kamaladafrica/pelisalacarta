@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para seriesadicto
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 import re
 import sys
 import urlparse
@@ -15,11 +15,8 @@ from core import servertools
 from core.item import Item
 
 
-DEBUG = config.get_setting("debug")
-
-
 def mainlist(item):
-    logger.info("pelisalacarta.channels.seriesadicto mainlist")
+    logger.info()
 
     itemlist = []
     itemlist.append( Item(channel=item.channel, action="letras" , title="Todas por orden alfabético" , url="http://seriesadicto.com/" , folder=True ))
@@ -27,7 +24,7 @@ def mainlist(item):
     return itemlist
 
 def search(item,texto):
-    logger.info("pelisalacarta.channels.seriesadicto search")
+    logger.info()
     texto = texto.replace(" ", "+")
     item.url="http://seriesadicto.com/buscar/"+texto
 
@@ -37,11 +34,11 @@ def search(item,texto):
     except:
         import sys
         for line in sys.exc_info():
-            logger.error( "%s" % line )
+            logger.error("%s" % line)
         return []
 
 def letras(item):
-    logger.info("pelisalacarta.channels.seriesadicto letras")
+    logger.info()
     itemlist = []
 
     # Descarga la página
@@ -57,14 +54,14 @@ def letras(item):
         plot = ""
         url = urlparse.urljoin(item.url,scrapedurl)
         thumbnail = ""
-        if DEBUG: logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+        logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
         
         itemlist.append( Item(channel=item.channel, action='series', title=title , url=url , thumbnail=thumbnail , plot=plot) )
 
     return itemlist
 
 def series(item):
-    logger.info("pelisalacarta.channels.seriesadicto series")
+    logger.info()
     itemlist = []
 
     '''
@@ -90,13 +87,13 @@ def series(item):
         url = urlparse.urljoin(item.url,scrapedurl)
         thumbnail = urlparse.urljoin(item.url,scrapedthumbnail)
         plot = ""
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+        logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
         itemlist.append( Item(channel=item.channel, action="episodios", title=title , fulltitle = title, url=url , thumbnail=thumbnail , plot=plot , show=title, folder=True) )
 
     return itemlist
 
 def episodios(item):
-    logger.info("pelisalacarta.channels.seriesadicto episodios")
+    logger.info()
     itemlist = []
 
     '''
@@ -123,7 +120,7 @@ def episodios(item):
         url = urlparse.urljoin(item.url,scrapedurl)
         thumbnail = ""
         plot = ""
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+        logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
         itemlist.append( Item(channel=item.channel, action="findvideos", title=title , fulltitle = title, url=url , thumbnail=thumbnail , plot=plot , show=item.show, folder=True) )
 
     if config.get_library_support() and len(itemlist)>0:
@@ -164,7 +161,7 @@ def codigo_a_idioma(codigo):
     return idioma
 
 def findvideos(item):
-    logger.info("pelisalacarta.channels.seriesadicto findvideos")
+    logger.info()
     itemlist=[]
 
     '''
@@ -191,13 +188,13 @@ def findvideos(item):
         url = urlparse.urljoin(item.url,scrapedurl)
         thumbnail = ""
         plot = ""
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+        logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
         itemlist.append( Item(channel=item.channel, action="play", title=title , fulltitle = title, url=url , thumbnail=thumbnail , plot=plot , folder=False) )
 
     return itemlist
 
 def play(item):
-    logger.info("pelisalacarta.channels.seriesadicto extract_url")
+    logger.info()
 
     itemlist = servertools.find_video_items(data=item.url)
 

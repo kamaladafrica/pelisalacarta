@@ -3,14 +3,25 @@
 	<id>descargacineclasico</id>
 	<name>descargacineclasico</name>
 	<language>es</language>
-	<update_url></update_url>
 	<active>true</active>
 	<include_in_global_search>false</include_in_global_search>
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>6</version>
 	<adult>false</adult>
-	<date>01/07/2016</date>
-	<changes>Eliminado código innecesario.</changes>
+	<version>7</version>
+
+	<changes>
+		<change>
+			<date>15/03/2017</date>
+			<autor>SeiTaN</autor>
+			<description>limpieza código</description>
+		</change>
+		<change>
+			<date>01/07/2016</date>
+			<autor>SeiTaN</autor>
+			<description>Eliminado código innecesario.</description>
+		</change>
+	</changes>
+
 	<fanart></fanart>
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/descargacineclasico2.png</bannermenu>
 	<thumbnail>http://media.tvalacarta.info/pelisalacarta/squares/descargacineclasico2.png</thumbnail>

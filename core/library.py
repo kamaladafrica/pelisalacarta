@@ -622,7 +622,7 @@ def add_serie_to_library(item, channel=None):
 
     else:
         platformtools.dialog_ok("Biblioteca", "La serie se ha añadido a la biblioteca")
-        logger.info("[launcher.py] Se han añadido %s episodios de la serie %s a la biblioteca" %
+        logger.info("Se han añadido %s episodios de la serie %s a la biblioteca" %
                     (insertados, item.show))
         if config.is_xbmc():
             if config.get_setting("sync_trakt_new_tvshow", "biblioteca"):

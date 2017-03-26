@@ -6,15 +6,13 @@
 import re
 import urlparse
 
-from core import config
 from core import logger
 from core import scrapertools
 from core.item import Item
 
-DEBUG = config.get_setting("debug")
 
 def mainlist(item):
-    logger.info("[vidz7] mainlist")
+    logger.info()
     itemlist = []
     itemlist.append( Item(channel=item.channel, action="lista"          , title="Útimos videos"            , url="http://www.vidz7.com/"))
     itemlist.append( Item(channel=item.channel, action="categorias"          , title="Categorias"            , url="http://www.vidz7.com/category/"))
@@ -24,7 +22,7 @@ def mainlist(item):
     return itemlist
 
 def search(item, texto):
-    logger.info("[vidz7] search")
+    logger.info()
 
     texto = texto.replace(" ", "+")
     item.url = "{0}{1}".format(item.url, texto)
@@ -38,7 +36,7 @@ def search(item, texto):
         return []
 
 def categorias(item):
-    logger.info("[vidz7] categorias")
+    logger.info()
     itemlist = []
     data = scrapertools.cache_page(item.url)
     data = re.sub(r"\n|\r|\t|\s{2}", "", data)
@@ -50,7 +48,7 @@ def categorias(item):
     return itemlist
 
 def lista(item):
-    logger.info("[vidz7] lista")
+    logger.info()
 
     # Descarga la página
     data = scrapertools.cache_page(item.url)
@@ -59,8 +57,6 @@ def lista(item):
     # Extrae las entradas de la pagina seleccionada
     patron = "<a href='.*?.' class='thumb' style='background-image:url\(\"([^\"]+)\"\).*?.<h6><a class='hp' href='([^']+)'>(.*?)</a></h6>"
     matches = re.compile(patron, re.DOTALL).findall(data)
-    if DEBUG:
-        scrapertools.printMatches(matches)
     itemlist = []
 
     for scrapedthumbnail, scrapedurl, scrapedtitle  in matches:
@@ -80,7 +76,7 @@ def lista(item):
     return itemlist
 
 def play(item):
-    logger.info("[play] findvideos")
+    logger.info()
     itemlist=[]
     # Descarga la página
     data = scrapertools.cachePage(item.url)

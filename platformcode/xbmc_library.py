@@ -25,16 +25,17 @@
 # XBMC Library Tools
 # ------------------------------------------------------------
 
-import sys, os
-import urllib2
-import xbmc
+import os
+import sys
 import threading
+import urllib2
+
+import xbmc
 from core import config
 from core import filetools
 from core import jsontools
 from core import logger
 from platformcode import platformtools
-
 
 addon_name = sys.argv[0].strip()
 if not addon_name or addon_name.startswith("default.py"):
@@ -251,7 +252,7 @@ def get_data(payload):
         except Exception, ex:
             template = "An exception of type {0} occured. Arguments:\n{1!r}"
             message = template.format(type(ex).__name__, ex.args)
-            logger.info("get_data: error en xbmc_json_rpc_url: %s" % message)
+            logger.error("get_data: error en xbmc_json_rpc_url: %s" % message)
             data = ["error"]
     else:
         try:
@@ -259,7 +260,7 @@ def get_data(payload):
         except Exception, ex:
             template = "An exception of type {0} occured. Arguments:\n{1!r}"
             message = template.format(type(ex).__name__, ex.args)
-            logger.info("get_data:: error en xbmc.executeJSONRPC: {0}".
+            logger.error("get_data:: error en xbmc.executeJSONRPC: {0}".
                         format(message))
             data = ["error"]
 

@@ -1,22 +1,19 @@
 ﻿# -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para pornhub
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 import re
 import urlparse
 
-from core import config
 from core import logger
 from core import scrapertools
 from core.item import Item
 
-DEBUG = config.get_setting("debug")
-
 
 def mainlist(item):
-    logger.info("[pornhub.py] mainlist")
+    logger.info()
     itemlist = []
     itemlist.append( Item(channel=item.channel, action="peliculas", title="Novedades", fanart=item.fanart, url = "http://es.pornhub.com/video?o=cm"))
     itemlist.append( Item(channel=item.channel, action="categorias", title="Categorias", fanart=item.fanart, url = "http://es.pornhub.com/categories?o=al"))
@@ -25,7 +22,7 @@ def mainlist(item):
 
 
 def search(item,texto):
-    logger.info("[pornhub.py] search")
+    logger.info()
 
     texto = texto.replace(" ", "+")
     item.url = item.url % texto
@@ -35,11 +32,11 @@ def search(item,texto):
     except:
         import sys
         for line in sys.exc_info():
-            logger.error( "%s" % line )
+            logger.error("%s" % line)
         return []
     
 def categorias(item):
-    logger.info("[pornhub.py] categorias")
+    logger.info()
     itemlist = []
     
     # Descarga la página
@@ -66,7 +63,7 @@ def categorias(item):
     return itemlist
 
 def peliculas(item):
-    logger.info("[pornhub.py] peliculas")
+    logger.info()
     itemlist = []
        
     # Descarga la página
@@ -104,7 +101,7 @@ def peliculas(item):
 
 
 def play(item):
-    logger.info("[pornhub.py] play")
+    logger.info()
     itemlist=[]
 
     # Descarga la página

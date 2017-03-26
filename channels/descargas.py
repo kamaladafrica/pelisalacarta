@@ -25,18 +25,18 @@
 # Gestor de descargas
 # ------------------------------------------------------------
 import os
-import sys
 import re
-from core import config
-from core.downloader import Downloader
-from core import scrapertools
-from core import logger
-from core import servertools
-from core import filetools
-from platformcode import platformtools
-from core.item import Item
 import time
+
+from core import config
+from core import filetools
+from core import logger
 from core import scraper
+from core import scrapertools
+from core import servertools
+from core.downloader import Downloader
+from core.item import Item
+from platformcode import platformtools
 
 STATUS_COLORS = {0: "orange", 1: "orange", 2: "green", 3: "red"}
 STATUS_CODES = type("StatusCode",(), {"stoped" : 0, "canceled" : 1 , "completed" : 2, "error" : 3})
@@ -691,7 +691,7 @@ def get_episodes(item):
 
       
 def write_json(item):
-    logger.info("pelisalacarta.channels.descargas write_json")
+    logger.info()
   
     item.action = "menu"
     item.channel = "descargas"

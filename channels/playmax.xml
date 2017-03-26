@@ -6,9 +6,20 @@
 	<active>true</active>
 	<adult>false</adult>
 
-	<version>2</version>
-	<date>09/01/2017</date>
-	<changes>Canal renovado desde cero</changes>
+	<version>3</version>
+
+	<changes>
+		<change>
+			<date>15/03/2017</date>
+			<autor>SeiTaN</autor>
+			<description>limpieza código</description>
+		</change>
+		<change>
+			<date>09/01/2017</date>
+			<autor>Cmos</autor>
+			<description>Canal renovado desde cero.</description>
+		</change>
+	</changes>
 
 	<fanart></fanart>
 	<thumbnail>http://i.imgur.com/X5Z40kT.png</thumbnail>

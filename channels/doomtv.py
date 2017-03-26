@@ -3,16 +3,16 @@
 # Canal (doomtv) por Hernan_Ar_c
 # ------------------------------------------------------------
 
-import urlparse,urllib2,urllib,re
-import os, sys
+import re
+import sys
+import urlparse
 
-from core import logger
 from core import config
-from core import scrapertools
 from core import httptools
-from core.item import Item
-from core import servertools
+from core import logger
+from core import scrapertools
 from core import tmdb
+from core.item import Item
 
 host = 'http://doomtv.net/'
 headers = [['User-Agent', 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:45.0) Gecko/20100101 Firefox/45.0'],
@@ -231,7 +231,7 @@ def getinfo(page_url):
     return info
 
 
-def findvideos (item):
+def findvideos(item):
     logger.info()
     itemlist =[]
     itemlist = get_url(item)

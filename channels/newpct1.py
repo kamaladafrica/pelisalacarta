@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para newpct1
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 
 import re
 import sys
@@ -14,11 +14,9 @@ from core import scrapertools
 from core import servertools
 from core.item import Item
 
-DEBUG = config.get_setting("debug")
-
 
 def mainlist(item):
-    logger.info("[newpct1.py] mainlist")
+    logger.info()
     
     itemlist = []
     itemlist.append( Item(channel=item.channel, action="submenu", title="Películas", url="http://www.newpct1.com/", extra="peliculas") )
@@ -28,7 +26,7 @@ def mainlist(item):
     return itemlist
 
 def search(item,texto):
-    logger.info("[newpct1.py] search:" + texto)
+    logger.info(":" + texto)
     texto = texto.replace(" ","+")
     item.url = "http://www.newpct1.com/index.php?page=buscar&q=%27" + texto +"%27&ordenar=Fecha&inon=Descendente"
     item.extra="buscar-list"
@@ -50,11 +48,11 @@ def search(item,texto):
     except:
         import sys
         for line in sys.exc_info():
-            logger.error( "%s" % line )
+            logger.error("%s" % line)
         return []
 
 def submenu(item):
-    logger.info("[newpct1.py] submenu")
+    logger.info()
     itemlist=[]
 
     data = re.sub(r"\n|\r|\t|\s{2}|(<!--.*?-->)","",scrapertools.cache_page(item.url))
@@ -76,7 +74,7 @@ def submenu(item):
     return itemlist
 
 def alfabeto(item):
-    logger.info("[newpct1.py] alfabeto")
+    logger.info()
     itemlist = []
 
     data = re.sub(r"\n|\r|\t|\s{2}|(<!--.*?-->)","",scrapertools.cache_page(item.url))
@@ -97,7 +95,7 @@ def alfabeto(item):
     return itemlist
 
 def listado(item):
-    logger.info("[newpct1.py] listado")
+    logger.info()
     #logger.info("[newpct1.py] listado url=" + item.url)
     itemlist = []
     
@@ -105,7 +103,7 @@ def listado(item):
     data = unicode( data, "iso-8859-1" , errors="replace" ).encode("utf-8")    
         
     patron = '<ul class="'+item.extra+'">(.*?)</ul>'
-    logger.info("[newpct1.py] patron="+patron)
+    logger.info("patron="+patron)
     fichas = scrapertools.get_match(data,patron)
 
     #<li><a href="http://www.newpct1.com/pelicula/x-men-dias-del-futuro-pasado/ts-screener/" title="Descargar XMen Dias Del Futuro gratis"><img src="http://www.newpct1.com/pictures/f/58066_x-men-dias-del-futuro--blurayrip-ac3-5.1.jpg" width="130" height="180" alt="Descargar XMen Dias Del Futuro gratis"><h2>XMen Dias Del Futuro </h2><span>BluRayRip AC3 5.1</span></a></li>
@@ -183,7 +181,7 @@ def listado(item):
     return itemlist
 
 def completo(item):
-    logger.info("[newpct1.py] completo")
+    logger.info()
     itemlist = []
     categoryID=""
     
@@ -251,7 +249,7 @@ def completo(item):
             ultimo_item.extra = item_extra
             ultimo_item.show = item_show
             ultimo_item.title = item_title
-            logger.info("[newpct1.py] completo url=" + ultimo_item.url)
+            logger.info("url=" + ultimo_item.url)
             if item_extra.startswith("serie"):
                 items_programas = get_episodios(ultimo_item)
             else:
@@ -265,17 +263,17 @@ def completo(item):
       
     if (config.get_library_support() and len(itemlist)>0 and item.extra.startswith("serie")) :
         itemlist.append( Item(channel=item.channel, title="Añadir esta serie a la biblioteca", url=item.url, action="add_serie_to_library", extra="completo###serie_add" , show= item.show))
-    logger.info("[newpct1.py] completo items="+ str(len(itemlist)))
+    logger.info("items="+ str(len(itemlist)))
     return itemlist
    
 def get_episodios(item):
-    logger.info("[newpct1.py] get_episodios")
+    logger.info()
     itemlist=[]
-    logger.info("[newpct1.py] get_episodios url=" +item.url)   
+    logger.info("url=" +item.url)
     data = re.sub(r'\n|\r|\t|\s{2}|<!--.*?-->|<i class="icon[^>]+"></i>',"",scrapertools.cache_page(item.url))
     data = unicode( data, "iso-8859-1" , errors="replace" ).encode("utf-8")
     
-    logger.info("[newpct1.py] data=" +data)
+    logger.info("data=" +data)
       
     patron = '<ul class="buscar-list">(.*?)</ul>'
     #logger.info("[newpct1.py] patron=" + patron)
@@ -315,7 +313,7 @@ def get_episodios(item):
                 
                 #logger.info("[newpct1.py] get_episodios: temporada=" + temporada)
                 #logger.info("[newpct1.py] get_episodios: capitulo=" + capitulo)
-                logger.info("[newpct1.py] get_episodios: idioma=" + idioma)
+                logger.info("idioma=" + idioma)
                 if '">' in idioma: 
                     idioma= " [" + scrapertools.find_single_match(idioma,'">([^<]+)').strip() +"]"
                 elif '&nbsp' in idioma:
@@ -348,7 +346,7 @@ def get_episodios(item):
             #logger.info("[newpct1.py] get_episodios: fanart= " +item.fanart)
             itemlist.append( Item(channel=item.channel, action="findvideos", title=title, url=url, thumbnail=item.thumbnail, show=item.show, fanart=item.fanart) )
         except:
-            logger.info("[newpct1.py] ERROR al añadir un episodio")
+            logger.error("ERROR al añadir un episodio")
     if "pagination" in data:
         patron = '<ul class="pagination">(.*?)</ul>'
         paginacion = scrapertools.get_match(data,patron)
@@ -365,16 +363,16 @@ def buscar_en_subcategoria(titulo, categoria):
     data= scrapertools.cache_page("http://www.newpct1.com/pct1/library/include/ajax/get_subcategory.php", post="categoryIDR=" + categoria)
     data=data.replace("</option>"," </option>")
     patron = '<option value="(\d+)">(' + titulo.replace(" ","\s").replace("(","/(").replace(")","/)") + '\s[^<]*)</option>'
-    logger.info("[newpct1.py] buscar_en_subcategoria: data=" + data)
-    logger.info("[newpct1.py] buscar_en_subcategoria: patron=" + patron)
+    logger.info("data=" + data)
+    logger.info("patron=" + patron)
     matches = re.compile(patron,re.DOTALL | re.IGNORECASE).findall(data)
     
     if len(matches)==0: matches=[('','')]
-    logger.info("[newpct1.py] buscar_en_subcategoria: resultado=" + matches [0][0])
+    logger.info("resultado=" + matches [0][0])
     return matches [0][0]
     
 def findvideos(item):
-    logger.info("[newpct1.py] findvideos")
+    logger.info()
     itemlist=[]   
           
     ## Cualquiera de las tres opciones son válidas

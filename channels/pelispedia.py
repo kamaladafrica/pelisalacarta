@@ -567,7 +567,7 @@ def save_sub(data):
             try:
                 os.remove(ficherosubtitulo)
             except IOError:
-                logger.info("Error al eliminar el archivo "+ficherosubtitulo)
+                logger.error("Error al eliminar el archivo "+ficherosubtitulo)
                 raise
 
         fichero = open(ficherosubtitulo, "wb")
@@ -576,6 +576,6 @@ def save_sub(data):
         subtitle = ficherosubtitulo
     except:
         subtitle = ""
-        logger.info("Error al descargar el subtítulo")
+        logger.error("Error al descargar el subtítulo")
 
     return subtitle

@@ -1,24 +1,23 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para peliculasdk
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
-import string
+# ------------------------------------------------------------
 import os
 import re
 import sys
+import unicodedata
 import urllib
+
+import xbmc
+import xbmcgui
 from core import config
 from core import logger
 from core import scrapertools
-from core import servertools
-from platformcode import platformtools
 from core.item import Item
-import xbmc
-import xbmcgui
-import unicodedata
 from core.scrapertools import decodeHtmlentities as dhe
+from platformcode import platformtools
 
 ACTION_SHOW_FULLSCREEN = 36
 ACTION_GESTURE_SWIPE_LEFT = 511
@@ -30,8 +29,6 @@ ACTION_MOVE_DOWN = 4
 ACTION_MOVE_UP = 3
 OPTION_PANEL = 6
 OPTIONS_OK = 5
-
-DEBUG = config.get_setting("debug")
 
 #Proxy para acceder a datos(Este canal usa cloudflare con https)
 def get_page(url):
@@ -83,7 +80,7 @@ api_fankey ="dffe90fba4d02c199ae7a9e71330c987"
 
 
 def mainlist(item):
-    logger.info("pelisalacarta.pasateatorrent mainlist")
+    logger.info()
     check_bg = item.action
     if str(check_bg) == "":
         check_bg="bglobal"
@@ -103,7 +100,7 @@ def mainlist(item):
 
 
 def search(item,texto):
-    logger.info("pelisalacarta.peliculasdk search")
+    logger.info()
     texto = texto.replace(" ","+")
     check_bg = item.action
     if item.extra:
@@ -121,7 +118,7 @@ def search(item,texto):
        except:
            import sys
            for line in sys.exc_info():
-               logger.error( "%s" % line )
+               logger.error("%s" % line)
     else:
         if item.contentType != "movie" :
           item.url = "http://pasateatorrent.com/series/?s=%s&post_type=Buscar+serie" % (texto)
@@ -137,11 +134,11 @@ def search(item,texto):
         except:
            import sys
            for line in sys.exc_info():
-               logger.error( "%s" % line )
+               logger.error("%s" % line)
 
 
 def peliculas(item):
-    logger.info("pelisalacarta.descargaportorrent peliculas")
+    logger.info()
     itemlist = []
     check_url=""
     # Descarga la página
@@ -300,7 +297,7 @@ def peliculas(item):
 
 
 def fanart(item):
-    logger.info("pelisalacarta.pasateatorrent fanart")
+    logger.info()
     itemlist = []
     url = item.url
     data = get_page(url)
@@ -856,7 +853,7 @@ def fanart(item):
 
     return itemlist
 def ver_capitulo(item):
-    logger.info("pelisalacarta.pasateatorrent ver_capitulo")
+    logger.info()
     itemlist = []
     data = get_page(item.url)
     data = re.sub(r"&#.*?;","x",data)
@@ -979,7 +976,7 @@ def ver_capitulo(item):
 
 
 def findvideos(item):
-    logger.info("pelisalacarta.pasateatorrent findvideos")
+    logger.info()
     check_iepi2=" "
     itemlist = []
     data = get_page(item.url)
@@ -1214,7 +1211,7 @@ def findvideos(item):
     return itemlist
 
 def capitulos(item):
-    logger.info("pelisalacarta.pasateatorrent capitulos")
+    logger.info()
     itemlist = []
     url=item.url
     capis =  item.extra.split("|")[3]
@@ -1226,7 +1223,7 @@ def capitulos(item):
     return itemlist
 
 def info(item):
-    logger.info("pelisalacarta.pasateatorrent info")
+    logger.info()
     itemlist = []
     url=item.url
     id = item.extra
@@ -1393,7 +1390,7 @@ def info(item):
     infoplus.start(item_info, peliculas)
 
 def info_capitulos(item):
-    logger.info("pelisalacarta.pasateatorrent info_capitulos")
+    logger.info()
     url= "https://api.themoviedb.org/3/tv/"+item.show.split("|")[5]+"/season/"+item.extra.split("|")[2]+"/episode/"+item.extra.split("|")[3]+"?api_key="+api_key+"&language=es"
 
     if "/0" in url:
@@ -1639,7 +1636,6 @@ def decode(text):
     return data
 def convert_size(size):
    import math
-   from os.path import getsize
    if (size == 0):
        return '0B'
    size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
@@ -1650,7 +1646,7 @@ def convert_size(size):
 
 
 def busqueda(item):
-    logger.info("pelisalacarta.channels.buscador search")
+    logger.info()
     cat = [item.extra.split("|")[0].replace("tv", "serie"), 'torrent']
     new_item = Item()
     new_item.extra = item.extra.split("|")[1].replace("+", " ")

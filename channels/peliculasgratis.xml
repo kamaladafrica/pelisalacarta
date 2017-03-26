@@ -11,9 +11,15 @@
 	<thumbnail>http://imgur.com/ThH8Zmk.png</thumbnail>
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/pasateatorrent.png</bannermenu>
 
-	<update_url></update_url>
-    <version>1</version>
+	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
+    <version>2</version>
+
     <changes>
+		<change>
+			<date>15/03/2017</date>
+			<autor>SeiTaN</autor>
+			<description>limpieza código</description>
+		</change>
         <change>
           <date>13/01/2017</date>
           <autor>Neno1978</autor>
