@@ -491,7 +491,7 @@ def play_video(item, strm=False):
         return
 
     default_action = config.get_setting("default_action")
-    logger.info("default_action=" + default_action)
+    logger.info("default_action=%s" % default_action)
 
     # Abre el diálogo de selección para ver las opciones disponibles
     opciones, video_urls, seleccion, salir = get_dialogo_opciones(item, default_action, strm)
@@ -910,7 +910,7 @@ def set_player(item, xlistitem, mediaurl, view, strm):
             xbmc.Player().setSubtitles(item.subtitle)
 
     else:
-        logger.info("player_mode=" + config.get_setting("player_mode"))
+        logger.info("player_mode=%s" % config.get_setting("player_mode"))
         logger.info("mediaurl=" + mediaurl)
         if config.get_setting("player_mode") == 3 or "megacrypter.com" in mediaurl:
             import download_and_play
@@ -926,17 +926,17 @@ def set_player(item, xlistitem, mediaurl, view, strm):
 
             # Reproduce
             playersettings = config.get_setting('player_type')
-            logger.info("playersettings=" + playersettings)
+            logger.info("playersettings=%s" % playersettings)
 
             if config.get_system_platform() == "xbox":
                 player_type = xbmc.PLAYER_CORE_AUTO
-                if playersettings == "0":
+                if playersettings == 0:
                     player_type = xbmc.PLAYER_CORE_AUTO
                     logger.debug("PLAYER_CORE_AUTO")
-                elif playersettings == "1":
+                elif playersettings == 1:
                     player_type = xbmc.PLAYER_CORE_MPLAYER
                     logger.debug("PLAYER_CORE_MPLAYER")
-                elif playersettings == "2":
+                elif playersettings == 2:
                     player_type = xbmc.PLAYER_CORE_DVDPLAYER
                     logger.debug("PLAYER_CORE_DVDPLAYER")
 
