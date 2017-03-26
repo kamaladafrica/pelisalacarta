@@ -73,7 +73,7 @@ def getmainlist(preferred_thumb=""):
                          context=[{"title": "Configurar descargas", "channel": "configuracion", "config": "descargas",
                                    "action": "channel_config"}]))
 
-    thumb_configuracion = "thumb_configuracion_"+config.get_setting("plugin_updates_available")+".png"
+    thumb_configuracion = "thumb_configuracion_%s.png" % config.get_setting("plugin_updates_available")
 
     itemlist.append(Item(title=config.get_localized_string(30100), channel="configuracion", action="mainlist",
                          thumbnail=get_thumb(preferred_thumb, thumb_configuracion),
@@ -258,12 +258,12 @@ def get_thumbnail_path(preferred_thumb=""):
     if preferred_thumb == "":
         thumbnail_type = config.get_setting("thumbnail_type")
         if thumbnail_type == "":
-            thumbnail_type = "2"
-        if thumbnail_type == "0":
+            thumbnail_type = 2
+        if thumbnail_type == 0:
             web_path = "http://media.tvalacarta.info/pelisalacarta/posters/"
-        elif thumbnail_type == "1":
+        elif thumbnail_type == 1:
             web_path = "http://media.tvalacarta.info/pelisalacarta/banners/"
-        elif thumbnail_type == "2":
+        elif thumbnail_type == 2:
             web_path = "http://media.tvalacarta.info/pelisalacarta/squares/"
     else:
         web_path = "http://media.tvalacarta.info/pelisalacarta/" + preferred_thumb + "/"

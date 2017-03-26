@@ -50,7 +50,7 @@ def mainlist(item):
     else:
         nuevas = " (" + config.get_setting("plugin_updates_available") + " nuevas)"
 
-    thumb_configuracion = "thumb_configuracion_" + config.get_setting("plugin_updates_available") + ".png"
+    thumb_configuracion = "thumb_configuracion_%s.png" % config.get_setting("plugin_updates_available")
 
     itemlist.append(Item(channel=CHANNELNAME, title="Descargar e instalar otras versiones" + nuevas,
                          action="get_all_versions", folder=True,
