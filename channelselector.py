@@ -129,10 +129,10 @@ def filterchannels(category, preferred_thumb=""):
     channelslist = []
 
     # Si category = "allchannelstatus" es que estamos activando/desactivando canales
-    appenddisabledchannels = "false"
+    appenddisabledchannels = False
     if category == "allchannelstatus":
         category = "all"
-        appenddisabledchannels = "true"
+        appenddisabledchannels = True
 
     # Lee la lista de canales
     channel_path = os.path.join(config.get_runtime_path(), "channels", '*.xml')
@@ -167,12 +167,12 @@ def filterchannels(category, preferred_thumb=""):
             else:
                 channel_status = channel_parameters["active"]
 
-            if channel_status != "true":
-                if appenddisabledchannels != "true":
+            if channel_status != True:
+                if appenddisabledchannels != True:
                     continue
 
             # Se salta el canal para adultos si el modo adultos está desactivado
-            if channel_parameters["adult"] == "true" and config.get_setting("adult_mode") == False:
+            if channel_parameters["adult"] == True and config.get_setting("adult_mode") == False:
                 continue
 
             # Se salta el canal si está en un idioma filtrado

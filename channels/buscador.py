@@ -90,11 +90,11 @@ def settingCanal(item):
         channel_parameters = channeltools.get_channel_parameters(channel_name)
 
         # No incluir si es un canal inactivo
-        if channel_parameters["active"] != "true":
+        if channel_parameters["active"] != True:
             continue
 
         # No incluir si es un canal para adultos, y el modo adulto está desactivado
-        if channel_parameters["adult"] == "true" and config.get_setting("adult_mode") == False:
+        if channel_parameters["adult"] == True and config.get_setting("adult_mode") == False:
             continue
 
         # No incluir si el canal es en un idioma filtrado
@@ -285,7 +285,7 @@ def do_search(item, categories=[]):
             channel_parameters = channeltools.get_channel_parameters(basename_without_extension)
 
             # No busca si es un canal inactivo
-            if channel_parameters["active"] != "true":
+            if channel_parameters["active"] != True:
                 logger.info("%s no incluido" % basename_without_extension)
                 continue
 
@@ -296,7 +296,7 @@ def do_search(item, categories=[]):
                     continue
 
             # No busca si es un canal para adultos, y el modo adulto está desactivado
-            if channel_parameters["adult"] == "true" and config.get_setting("adult_mode") == False:
+            if channel_parameters["adult"] == True and config.get_setting("adult_mode") == False:
                 logger.info("%s no incluido" % basename_without_extension)
                 continue
 
@@ -307,14 +307,14 @@ def do_search(item, categories=[]):
 
             # No busca si es un canal excluido de la busqueda global
             include_in_global_search = channel_parameters["include_in_global_search"]
-            if include_in_global_search in ["", "true"]:
+            if include_in_global_search == True:
                 # Buscar en la configuracion del canal
-                include_in_global_search = str(config.get_setting("include_in_global_search", basename_without_extension))
+                include_in_global_search = config.get_setting("include_in_global_search", basename_without_extension)
                 # Si no hay valor en la configuración del canal se incluye ya que así estaba por defecto
                 '''if include_in_global_search == "":
                     include_in_global_search = "true"'''
 
-            if include_in_global_search.lower() != "true":
+            if include_in_global_search != True:
                 logger.info("%s no incluido" % basename_without_extension)
                 continue
 

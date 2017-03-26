@@ -35,12 +35,21 @@ import scrapertools
 DEFAULT_UPDATE_URL = "https://raw.githubusercontent.com/tvalacarta/pelisalacarta/develop/python/main-classic/channels/"
 
 
+def str_to_bool(s):
+    if s == 'true':
+        return True
+    elif s == 'false' or s == '':
+        return False
+    else:
+        raise ValueError("Cannot covert '%s' to a bool" % s)
+
+
 def is_adult(channel_name):
     logger.info("channel_name="+channel_name)
 
     channel_parameters = get_channel_parameters(channel_name)
 
-    return channel_parameters["adult"] == "true"
+    return channel_parameters["adult"]
 
 
 def get_channel_parameters(channel_name):
@@ -57,8 +66,8 @@ def get_channel_parameters(channel_name):
         channel_parameters = dict()
         channel_parameters["title"] = scrapertools.find_single_match(data, "<name>([^<]*)</name>")
         channel_parameters["channel"] = scrapertools.find_single_match(data, "<id>([^<]*)</id>")
-        channel_parameters["active"] = scrapertools.find_single_match(data, "<active>([^<]*)</active>")
-        channel_parameters["adult"] = scrapertools.find_single_match(data, "<adult>([^<]*)</adult>")
+        channel_parameters["active"] = str_to_bool(scrapertools.find_single_match(data, "<active>([^<]*)</active>"))
+        channel_parameters["adult"] = str_to_bool(scrapertools.find_single_match(data, "<adult>([^<]*)</adult>"))
         channel_parameters["language"] = scrapertools.find_single_match(data, "<language>([^<]*)</language>")
         # Imagenes: se admiten url y archivos locales dentro de "resources/images"
         channel_parameters["thumbnail"] = scrapertools.find_single_match(data, "<thumbnail>([^<]*)</thumbnail>")
@@ -106,7 +115,7 @@ def get_channel_parameters(channel_name):
         logger.info(channel_name+".xml NOT found")
 
         channel_parameters = dict()
-        channel_parameters["adult"] = "false"
+        channel_parameters["adult"] = False
         channel_parameters["update_url"] = DEFAULT_UPDATE_URL
 
     return channel_parameters
