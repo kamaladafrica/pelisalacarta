@@ -28,10 +28,9 @@
 import os
 
 from core import config
-from core.item import Item
-from core import logger
 from core import filetools
-
+from core import logger
+from core.item import Item
 from platformcode import platformtools
 
 DEBUG = True
@@ -123,7 +122,6 @@ def get_all_versions(item):
     itemlist = []
 
     # Lee la versión local
-    from core import updater
     from core import versiontools
 
     # Descarga la lista de versiones
@@ -136,13 +134,13 @@ def get_all_versions(item):
 
     for entry in api_response["body"]:
 
-        if entry["package"]=="plugin":
-            title = "pelisalacarta "+entry["tag"]+" (Publicada "+entry["date"]+")"
+        if entry["package"] == "plugin":
+            title = "pelisalacarta " + entry["tag"] + " (Publicada " + entry["date"] + ")"
             local_version_number = versiontools.get_current_plugin_version()
-        elif entry["package"]=="channels":
-            title = "Canales (Publicada "+entry["date"]+")"
+        elif entry["package"] == "channels":
+            title = "Canales (Publicada " + entry["date"] + ")"
             local_version_number = versiontools.get_current_channels_version()
-        elif entry["package"]=="servers":
+        elif entry["package"] == "servers":
             title = "Servidores (Publicada "+entry["date"]+")"
             local_version_number = versiontools.get_current_servers_version()
         else:
@@ -155,7 +153,7 @@ def get_all_versions(item):
             title = title
 
         elif entry["version"] == local_version_number:
-            title = title + " ACTUAL"
+            title += " ACTUAL"
 
         elif entry["version"] > local_version_number:
             title_color = "yellow"
@@ -177,22 +175,25 @@ def download_and_install_package(item):
     from core import updater
     from core import versiontools
 
-    if item.package=="plugin":
-        if int(item.version)<versiontools.get_current_plugin_version():
-            if not platformtools.dialog_yesno("Instalando versión anterior","¿Seguro que quieres instalar una versión anterior?"):
+    if item.package == "plugin":
+        if int(item.version) < versiontools.get_current_plugin_version():
+            if not platformtools.dialog_yesno("Instalando versión anterior",
+                                              "¿Seguro que quieres instalar una versión anterior?"):
                 return
-        elif int(item.version)==versiontools.get_current_plugin_version():
-            if not platformtools.dialog_yesno("Reinstalando versión actual","¿Seguro que quieres reinstalar la misma versión que ya tienes?"):
+        elif int(item.version) == versiontools.get_current_plugin_version():
+            if not platformtools.dialog_yesno("Reinstalando versión actual",
+                                              "¿Seguro que quieres reinstalar la misma versión que ya tienes?"):
                 return
-        elif int(item.version)>versiontools.get_current_plugin_version():
-            if not platformtools.dialog_yesno("Instalando nueva versión","¿Seguro que quieres instalar esta nueva versión?"):
+        elif int(item.version) > versiontools.get_current_plugin_version():
+            if not platformtools.dialog_yesno("Instalando nueva versión",
+                                              "¿Seguro que quieres instalar esta nueva versión?"):
                 return
     else:
-        if not platformtools.dialog_yesno("Instalando paquete","¿Seguro que quieres instalar este paquete?"):
+        if not platformtools.dialog_yesno("Instalando paquete", "¿Seguro que quieres instalar este paquete?"):
             return
 
-    local_file_name = os.path.join( config.get_data_path() , item.filename)
-    updater.download_and_install(item.url,local_file_name)
+    local_file_name = os.path.join(config.get_data_path(), item.filename)
+    updater.download_and_install(item.url, local_file_name)
 
     if config.is_xbmc() and config.get_system_platform() != "xbox":
         import xbmc
