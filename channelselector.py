@@ -164,6 +164,15 @@ def filterchannels(category, preferred_thumb=""):
             # Se salta el canal si no está activo y no estamos activando/desactivando los canales
             if config.get_setting("enabled", channel_parameters["channel"]):
                 channel_status = config.get_setting("enabled", channel_parameters["channel"])
+
+                # fix temporal para solucionar que enabled aparezca como "true/false"(str) y sea true/false(bool)
+                if isinstance(channel_status, basestring):
+                    if channel_status == "true":
+                        channel_status = True
+                    else:
+                        channel_status = False
+                    config.set_setting("enabled", channel_status, channel_parameters["channel"])
+
             else:
                 channel_status = channel_parameters["active"]
 
