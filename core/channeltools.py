@@ -220,6 +220,7 @@ def get_channel_setting(name, channel):
             list_controls, default_settings = get_channel_controls_settings(channel)
         except:
             default_settings = {}
+
         if name in default_settings:  # Si el parametro existe en el channel.xml creamos el channel_data.json
             default_settings.update(dict_settings)
             dict_settings = default_settings
@@ -231,11 +232,8 @@ def get_channel_setting(name, channel):
             except EnvironmentError:
                 logger.info("ERROR al salvar el archivo: %s" % file_settings)
 
-    # Devolvemos el valor del parametro local 'name' si existe
-    if name in dict_settings:
-        return dict_settings[name]
-    else:
-        return None
+    # Devolvemos el valor del parametro local 'name' si existe, si no se devuelve None
+    return dict_settings.get(name, None)
 
 
 def set_channel_setting(name, value, channel):
