@@ -166,6 +166,7 @@ def filterchannels(category, preferred_thumb=""):
                 channel_status = config.get_setting("enabled", channel_parameters["channel"])
 
                 # fix temporal para solucionar que enabled aparezca como "true/false"(str) y sea true/false(bool)
+                # TODO borrar este fix en la versión > 4.2.1, ya que no sería necesario
                 if isinstance(channel_status, basestring):
                     if channel_status == "true":
                         channel_status = True
