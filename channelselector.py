@@ -162,11 +162,15 @@ def filterchannels(category, preferred_thumb=""):
                 channel_parameters["thumbnail"] = channel_parameters["bannermenu"]
 
             # Se salta el canal si no está activo y no estamos activando/desactivando los canales
-            if config.get_setting("enabled", channel_parameters["channel"]):
-                channel_status = config.get_setting("enabled", channel_parameters["channel"])
+            channel_status = config.get_setting("enabled", channel_parameters["channel"])
 
-                # fix temporal para solucionar que enabled aparezca como "true/false"(str) y sea true/false(bool)
-                # TODO borrar este fix en la versión > 4.2.1, ya que no sería necesario
+            if channel_status is None:
+                # si channel_status no existe es que NO HAY valor en _data.json
+                channel_status = channel_parameters["active"]
+
+            # fix temporal para solucionar que enabled aparezca como "true/false"(str) y sea true/false(bool)
+            # TODO borrar este fix en la versión > 4.2.1, ya que no sería necesario
+            else:
                 if isinstance(channel_status, basestring):
                     if channel_status == "true":
                         channel_status = True
@@ -174,10 +178,10 @@ def filterchannels(category, preferred_thumb=""):
                         channel_status = False
                     config.set_setting("enabled", channel_status, channel_parameters["channel"])
 
-            else:
-                channel_status = channel_parameters["active"]
-
             if channel_status != True:
+                # si obtenemos el listado de canales desde "activar/desactivar canales", y el canal está desactivado
+                # lo mostramos, si estamos listando todos los canales desde el listado general y está desactivado,
+                # no se muestra
                 if appenddisabledchannels != True:
                     continue
 

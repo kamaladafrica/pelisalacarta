@@ -66,9 +66,9 @@ def mainlist(item):
                          folder=True, thumbnail=get_thumbnail_path("thumb_novedades.png")))
     itemlist.append(Item(channel="buscador", title="   Ajustes del buscador global", action="opciones", folder=True,
                          thumbnail=get_thumbnail_path("thumb_buscar.png")))
-    itemlist.append(Item(channel=CHANNELNAME, title="   Ajustes de descargas", action="channel_config", config="descargas", folder=True,
-                         thumbnail=get_thumbnail_path("thumb_descargas.png")))
-                         
+    itemlist.append(Item(channel=CHANNELNAME, title="   Ajustes de descargas", action="channel_config",
+                         config="descargas", folder=True, thumbnail=get_thumbnail_path("thumb_descargas.png")))
+
     if config.get_library_support():
         itemlist.append(Item(channel="biblioteca", title="   Ajustes de la biblioteca",
                              action="channel_config", folder=True,
@@ -405,13 +405,9 @@ def conf_tools(item):
 
         channel_list = channelselector.filterchannels("allchannelstatus")
 
-        channel_language = config.get_setting("channel_language")
-        if channel_language == "":
-            channel_language = "all"
-
         excluded_channels = ['tengourl',
                              'buscador',
-                             'libreria',
+                             'biblioteca',
                              'configuracion',
                              'novedades',
                              'personal',
@@ -434,61 +430,40 @@ def conf_tools(item):
             for channel in channel_list:
                 # Si el canal esta en la lista de exclusiones lo saltamos
                 if channel.channel not in excluded_channels:
-                    # Se cargan los ajustes del archivo json del canal
-                    jsonchannel = channeltools.get_channel_json(channel.channel)
-                    if jsonchannel.get("settings") or jsonchannel.get("active"):
-                        channel_parameters = channeltools.get_channel_parameters(channel.channel)
 
-                        # No incluir si es un canal para adultos, y el modo adulto está desactivado
-                        if channel_parameters["adult"] == "true" and config.get_setting("adult_mode") == False:
-                            continue
+                    channel_parameters = channeltools.get_channel_parameters(channel.channel)
 
-                        # No incluir si el canal es en un idioma filtrado
-                        if (channel_language != "all" and
-                                channel_parameters["language"] != channel_language):
-                            continue
-
-                        status = None
-                        xml_status = channel_parameters["active"].replace("t", "T").replace("f", "F")
-                        xml_status = eval(xml_status)
-
-                        if config.get_setting("enabled", channel.channel):
-                            status = config.get_setting("enabled", channel.channel)
-                            status = status.replace("t", "T").replace("f", "F")
-                            status = eval(status)
-                            # logger.info(channel.channel + " | Status: " + str(status))
-                        else:
-                            status = xml_status
-                            # logger.info(channel.channel + " | Status (XML): " + str(status))
-
-                        status_control = ""
-                        if not xml_status:
+                    status_control = ""
+                    status = config.get_setting("enabled", channel.channel)
+                    # si status no existe es que NO HAY valor en _data.json
+                    if status is None:
+                        status = channel_parameters["active"]
+                        logger.debug("%s | Status (XML): %s" % (channel.channel, status))
+                        if not status:
                             status_control = " [COLOR grey](Desactivado por defecto)[/COLOR]"
-
-                        if status is not None:
-                            control = {'id': channel.channel,
-                                       'type': "bool",
-                                       'label': channel_parameters["title"] + status_control,
-                                       'default': status,
-                                       'enabled': True,
-                                       'visible': True}
-                            list_controls.append(control)
-
                     else:
-                        logger.info("Algo va mal con el canal " + channel.channel)
+                        logger.debug("%s  | Status: %s" % (channel.channel, status))
+
+                    control = {'id': channel.channel,
+                               'type': "bool",
+                               'label': channel_parameters["title"] + status_control,
+                               'default': status,
+                               'enabled': True,
+                               'visible': True}
+                    list_controls.append(control)
+
                 else:
                     continue
 
+        except:
+            import traceback
+            logger.error("Error: %s" % traceback.format_exc())
+        else:
             return platformtools.show_channel_settings(list_controls=list_controls,
+                                                       item=item.clone(channel_list=channel_list),
                                                        caption="Canales",
                                                        callback="channel_status",
                                                        custom_button={"visible": False})
-        except:
-            import traceback
-            logger.info(channel.title + " | Detalle del error: %s" % traceback.format_exc())
-            platformtools.dialog_notification("Error",
-                                              "Se ha producido un error con el canal %s" %
-                                              channel.title)
 
     # Comprobacion de archivos channel_data.json
     elif item.extra == "lib_check_datajson":
@@ -642,37 +617,33 @@ def conf_tools(item):
 
 
 def channel_status(item, dict_values):
-    try:
-        for v in dict_values:
 
-            if v == "all_channels":
-                import channelselector
-                from core import channeltools
-                logger.info("Todos los canales | Estado seleccionado: %s" %
-                            str(dict_values[v]).lower())
-                if str(dict_values[v]) != "0":
-                    channel_list = channelselector.filterchannels("allchannelstatus")
+    try:
+        for k in dict_values:
+
+            if k == "all_channels":
+                logger.info("Todos los canales | Estado seleccionado: %s" % dict_values[k])
+                if dict_values[k] != 0:
                     excluded_channels = ['tengourl', 'buscador',
-                                         'libreria', 'configuracion',
+                                         'biblioteca', 'configuracion',
                                          'novedades', 'personal',
                                          'ayuda', 'descargas']
-                    for channel in channel_list:
+                    for channel in item.channel_list:
                         if channel.channel not in excluded_channels:
                             channel_parameters = channeltools.get_channel_parameters(channel.channel)
-                            new_status_all_default = None
                             new_status_all = None
                             new_status_all_default = channel_parameters["active"]
 
                             # Opcion Activar todos
-                            if str(dict_values[v]) == "1":
-                                new_status_all = "true"
+                            if dict_values[k] == 1:
+                                new_status_all = True
 
                             # Opcion Desactivar todos
-                            if str(dict_values[v]) == "2":
-                                new_status_all = "false"
+                            if dict_values[k] == 2:
+                                new_status_all = False
 
                             # Opcion Recuperar estado por defecto
-                            if str(dict_values[v]) == "3":
+                            if dict_values[k] == 3:
                                 # Si tiene "enabled" en el json es porque el estado no es el del xml
                                 if config.get_setting("enabled", channel.channel):
                                     new_status_all = new_status_all_default
@@ -689,23 +660,21 @@ def channel_status(item, dict_values):
                     continue
 
             else:
-                logger.info("Canal: %s | Estado: %s" %
-                            (v, str(dict_values[v]).lower()))
-                config.set_setting("enabled", str(dict_values[v]).lower(), v)
+                logger.info("Canal: %s | Estado: %s" % (k, dict_values[k]))
+                config.set_setting("enabled", dict_values[k], k)
+                logger.info("el valor esta como %s " % config.get_setting("enabled", k))
 
         platformtools.itemlist_update(Item(channel=CHANNELNAME, action="mainlist"))
 
     except:
         import traceback
         logger.info("Detalle del error: %s" % traceback.format_exc())
-        platformtools.dialog_notification("Error",
-                                          "Se ha producido un error al guardar")
+        platformtools.dialog_notification("Error", "Se ha producido un error al guardar")
 
 
 def overwrite_tools(item):
     import library_service
     from core import library
-
 
     seleccion = platformtools.dialog_yesno("Sobrescribir toda la biblioteca",
                                            "Esto puede llevar algun tiempo.",
@@ -722,7 +691,6 @@ def overwrite_tools(item):
         if show_list:
             t = float(100) / len(show_list)
 
-
         for i, tvshow_file in enumerate(show_list):
             head_nfo, serie = library.read_nfo(tvshow_file)
             path = filetools.dirname(tvshow_file)
@@ -736,6 +704,5 @@ def overwrite_tools(item):
 
             # ... y la volvemos a añadir
             library_service.update(path, p_dialog, i, t, serie, 3)
-
 
         p_dialog.close()
