@@ -25,19 +25,19 @@
 # Service for updating new episodes on library series
 # ------------------------------------------------------------
 
+import datetime
 import imp
 import math
 import re
-import datetime
 
 from core import config
 from core import filetools
 from core import jsontools
+from core import library
 from core import logger
 from core.item import Item
-from core import library
-from platformcode import xbmc_library
 from platformcode import platformtools
+from platformcode import xbmc_library
 
 
 def convert_old_to_v4():
@@ -52,7 +52,7 @@ def convert_old_to_v4():
     import time
     new_name = str(time.time())
     path_series_old = filetools.join(library.LIBRARY_PATH, "SERIES_OLD_" + new_name)
-    if filetools.rename(library.TVSHOWS_PATH,  "SERIES_OLD_" + new_name):
+    if filetools.rename(library.TVSHOWS_PATH, "SERIES_OLD_" + new_name):
         if not filetools.mkdir(library.TVSHOWS_PATH):
             logger.error("ERROR, no se ha podido crear la nueva carpeta de SERIES")
             return False
@@ -68,7 +68,6 @@ def convert_old_to_v4():
     else:
         logger.error("ERROR, no se ha podido renombrar la antigua carpeta de CINE")
         return False
-
 
     # Convertir libreria de v1(xml) a v4
     if filetools.exists(path_series_xml):
@@ -161,7 +160,7 @@ def convert_old_to_v4():
             for f in ficheros:
                 if f.endswith(".strm.json"):
                     try:
-                        movie= Item().fromjson(filetools.read(filetools.join(raiz, f)))
+                        movie = Item().fromjson(filetools.read(filetools.join(raiz, f)))
                         insertados, sobreescritos, fallidos = library.save_library_movie(movie)
                         if fallidos == 0:
                             movies_insertadas += 1
@@ -171,14 +170,14 @@ def convert_old_to_v4():
                     except:
                         movies_fallidas += 1
 
-
     config.set_setting("library_version", 'v4')
 
     platformtools.dialog_notification("Biblioteca actualizada al nuevo formato",
                                       "%s series convertidas y %s series descartadas.\n"
                                       "%s peliculas convertidas y %s peliculas descartadas."
                                       "A continuación se va a obtener la información de todos los episodios" %
-                                      (series_insertadas, series_fallidas, movies_insertadas, movies_fallidas), time=12000)
+                                      (series_insertadas, series_fallidas, movies_insertadas, movies_fallidas),
+                                      time=12000)
 
     # Por ultimo limpia la libreria, por que las rutas anteriores ya no existen
     xbmc_library.clean()
@@ -214,8 +213,9 @@ def update(path, p_dialog, i, t, serie, overwrite):
                     # Sobrescribir todos los archivos (tvshow.nfo, 1x01.nfo, 1x01 [canal].json, 1x01.strm, etc...)
                     insertados, sobreescritos, fallidos = library.save_library_tvshow(serie, itemlist)
                 else:
-                    insertados, sobreescritos, fallidos = library.save_library_episodes(path, itemlist, serie, silent=True,
-                                                                                    overwrite=overwrite)
+                    insertados, sobreescritos, fallidos = library.save_library_episodes(path, itemlist, serie,
+                                                                                        silent=True,
+                                                                                        overwrite=overwrite)
                 insertados_total += insertados
 
             except Exception as ex:
@@ -238,7 +238,6 @@ def check_for_update(overwrite=True):
     p_dialog = None
     serie_actualizada = False
     update_when_finished = False
-    library_updated = False
     hoy = datetime.date.today()
 
     try:
@@ -324,14 +323,12 @@ def check_for_update(overwrite=True):
                     if config.get_setting("search_new_content", "biblioteca") == 0:
                         # Actualizamos la biblioteca de Kodi: Buscar contenido en la carpeta de la serie
                         xbmc_library.update(folder=filetools.basename(path))
-                        library_updated = True
                     else:
                         update_when_finished = True
 
             if config.get_setting("search_new_content", "biblioteca") == 1 and update_when_finished:
                     # Actualizamos la biblioteca de Kodi: Buscar contenido en todas las series
                     xbmc_library.update()
-                    library_updated = True
 
             p_dialog.close()
 
@@ -371,7 +368,6 @@ if __name__ == "__main__":
     else:
         if not config.get_setting("updatelibrary", "biblioteca") == 2:
             check_for_update(overwrite=False)
-
 
     # Se ejecuta ciclicamente
     if config.get_platform(True)['num_version'] >= 14:
