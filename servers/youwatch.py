@@ -17,6 +17,7 @@ def test_video_exists(page_url):
     data = httptools.downloadpage(page_url).data
     if "File Not Found" in data:
         return False, "[Youwatch] El archivo no existe o ha sido borrado"
+
     url_redirect = scrapertools.find_single_match(data, '<iframe src="([^"]+)"')
     data = httptools.downloadpage(url_redirect).data
     if "We're sorry, this video is no longer available" in data:
@@ -55,7 +56,7 @@ def find_videos(data):
 
     for match in matches:
         titulo = "[youwatch]"
-        url = "http://voodaith7e.com/embed-%s.html" % match
+        url = "http://youwatch.org/embed-%s.html" % match
         if url not in encontrados:
             logger.info("  url=" + url)
             devuelve.append([titulo, url, 'youwatch'])
