@@ -36,7 +36,7 @@ from core import jsontools
 from core import logger
 from core.item import Item
 from core import library
-from platformcode import xbmc_library
+import threading
 from platformcode import platformtools
 
 
@@ -181,7 +181,9 @@ def convert_old_to_v4():
                                       (series_insertadas, series_fallidas, movies_insertadas, movies_fallidas), time=12000)
 
     # Por ultimo limpia la libreria, por que las rutas anteriores ya no existen
-    xbmc_library.clean()
+    if config.is_xbmc():
+      from platformcode import xbmc_library
+      xbmc_library.clean()
 
     return True
 
@@ -323,14 +325,18 @@ def check_for_update(overwrite=True):
                 if serie_actualizada:
                     if config.get_setting("search_new_content", "biblioteca") == 0:
                         # Actualizamos la biblioteca de Kodi: Buscar contenido en la carpeta de la serie
-                        xbmc_library.update(folder=filetools.basename(path))
+                        if config.is_xbmc():
+                          from platformcode import xbmc_library
+                          xbmc_library.update(folder=filetools.basename(path))
                         library_updated = True
                     else:
                         update_when_finished = True
 
             if config.get_setting("search_new_content", "biblioteca") == 1 and update_when_finished:
                     # Actualizamos la biblioteca de Kodi: Buscar contenido en todas las series
-                    xbmc_library.update()
+                    if config.is_xbmc():
+                        from platformcode import xbmc_library
+                        xbmc_library.update()
                     library_updated = True
 
             p_dialog.close()
@@ -347,6 +353,40 @@ def check_for_update(overwrite=True):
         if p_dialog:
             p_dialog.close()
 
+def start(thread = True):
+    if thread:
+      t = threading.Thread(target=start, args=[False])
+      t.setDaemon(True)
+      t.start()
+    else:
+        import time
+        
+        updatelibrary_wait = [0, 10000, 20000, 30000, 60000]
+        wait = updatelibrary_wait[int(config.get_setting("updatelibrary_wait", "biblioteca"))]
+        if wait > 0:
+            time.sleep(wait)
+            
+        # Comprobar version de la bilbioteca y actualizar si es necesario
+        if config.get_setting("library_version") != 'v4':
+            platformtools.dialog_ok(config.PLUGIN_NAME.capitalize(), "Se va a actualizar la biblioteca al nuevo formato",
+                                    "Seleccione el nombre correcto de cada serie o película, si no está seguro pulse 'Cancelar'.")
+
+            if not convert_old_to_v4():
+                platformtools.dialog_ok(config.PLUGIN_NAME.capitalize(),
+                                        "ERROR, al actualizar la biblioteca al nuevo formato")
+            else:
+                # La opcion 2 es "Una sola vez al dia"
+                if not config.get_setting("updatelibrary", "biblioteca") == 2:
+                    check_for_update(overwrite=False)
+        else:
+            if not config.get_setting("updatelibrary", "biblioteca") == 2:
+                check_for_update(overwrite=False)
+
+
+        # Se ejecuta ciclicamente
+        while True:
+            monitor_update()
+            time.sleep(3600)  # cada hora
 
 def monitor_update():
     update_setting = config.get_setting("updatelibrary", "biblioteca")
