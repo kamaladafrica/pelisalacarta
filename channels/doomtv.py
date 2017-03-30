@@ -74,7 +74,6 @@ def lista(item):
 
     data = httptools.downloadpage(item.url).data
     data = re.sub(r'"|\n|\r|\t|&nbsp;|<br>|\s{2,}', "", data)
-    logger.debug(data)
 
     if item.extra == 'recomendadas':
         patron = '<a href=(.*?)><div class=imgss><img src=(.*?) alt=(.*?)(?:–.*?|\(.*?|) width=120.*?icon-grade.*?' \
