@@ -26,6 +26,7 @@
 # ------------------------------------------------------------
 
 import os
+import sys
 import threading
 import urllib2
 
@@ -35,16 +36,6 @@ from core import filetools
 from core import jsontools
 from core import logger
 from platformcode import platformtools
-
-if config.get_setting("folder_movies") != "":
-    FOLDER_MOVIES = config.get_setting("folder_movies")
-else:
-    FOLDER_MOVIES = "CINE"  # config.get_localized_string(30072)
-
-if config.get_setting("folder_tvshows") != "":
-    FOLDER_TVSHOWS = config.get_setting("folder_tvshows")
-else:
-    FOLDER_TVSHOWS = "SERIES"  # config.get_localized_string(30073)
 
 
 def mark_auto_as_watched(item):
@@ -203,7 +194,7 @@ def mark_season_as_watched_on_kodi(item, value=1):
     if item.contentSeason > -1:
         request_season = ' and c12= %s' % item.contentSeason
 
-    tvshows_path = filetools.join(config.get_library_path(), FOLDER_TVSHOWS)
+    tvshows_path = filetools.join(config.get_library_path(), config.get_setting("folder_tvshows"))
     item_path1 = "%" + item.path.replace("\\\\", "\\").replace(tvshows_path, "")
     if item_path1[:-1] != "\\":
         item_path1 += "\\"
@@ -263,7 +254,7 @@ def get_data(payload):
     return data
 
 
-def update(folder_content=FOLDER_TVSHOWS, folder=""):
+def update(folder_content=config.get_setting("folder_tvshows"), folder=""):
     """
     Actualiza la libreria dependiendo del tipo de contenido y la ruta que se le pase.
 
@@ -450,7 +441,6 @@ def set_content(content_type, silent=False):
 
         idPath = 0
         idParentPath = 0
-        strPath = ""
         if continuar:
             continuar = False
 
@@ -510,7 +500,7 @@ def set_content(content_type, silent=False):
                 strActualizar = "¿Desea configurar este Scraper en español como opción por defecto para películas?"
                 if not librarypath.endswith(sep):
                     librarypath += sep
-                strPath = librarypath + FOLDER_MOVIES + sep
+                strPath = librarypath + config.get_setting("folder_movies") + sep
             else:
                 strContent = 'tvshows'
                 strScraper = 'metadata.tvdb.com'
@@ -524,7 +514,7 @@ def set_content(content_type, silent=False):
                 strActualizar = "¿Desea configurar este Scraper en español como opción por defecto para series?"
                 if not librarypath.endswith(sep):
                     librarypath += sep
-                strPath = librarypath + FOLDER_TVSHOWS + sep
+                strPath = librarypath + config.get_setting("folder_tvshows") + sep
 
             logger.info("%s: %s" % (content_type, strPath))
             # Comprobamos si ya existe strPath en la BD para evitar duplicados
@@ -640,8 +630,6 @@ def add_sources(path):
     from xml.dom import minidom
 
     SOURCES_PATH = xbmc.translatePath("special://userdata/sources.xml")
-    xmldoc = None
-
 
     if os.path.exists(SOURCES_PATH):
         xmldoc = minidom.parse(SOURCES_PATH)
