@@ -596,13 +596,9 @@ def conf_tools(item):
                     continue
         except:
             import traceback
-            logger.info("Error: %s" % traceback.format_exc())
+            logger.error("Error: %s" % traceback.format_exc())
 
         return itemlist
-
-    else:
-        platformtools.dialog_notification("pelisalacarta", "Error!")
-        platformtools.itemlist_update(Item(channel=CHANNELNAME, action="submenu_tools"))
 
 
 def channel_status(item, dict_values):
