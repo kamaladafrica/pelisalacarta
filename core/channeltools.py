@@ -69,11 +69,11 @@ def get_channel_parameters(channel_name):
         channel_parameters["active"] = str_to_bool(scrapertools.find_single_match(data, "<active>([^<]*)</active>"))
         channel_parameters["adult"] = str_to_bool(scrapertools.find_single_match(data, "<adult>([^<]*)</adult>"))
         channel_parameters["language"] = scrapertools.find_single_match(data, "<language>([^<]*)</language>")
+
         # Imagenes: se admiten url y archivos locales dentro de "resources/images"
         channel_parameters["thumbnail"] = scrapertools.find_single_match(data, "<thumbnail>([^<]*)</thumbnail>")
         channel_parameters["bannermenu"] = scrapertools.find_single_match(data, "<bannermenu>([^<]*)</bannermenu>")
         channel_parameters["fanart"] = scrapertools.find_single_match(data, "<fanart>([^<]*)</fanart>")
-        channel_parameters["update_url"] = scrapertools.find_single_match(data, "<update_url>([^<]*)</update_url>")
 
         if channel_parameters["thumbnail"] and "://" not in channel_parameters["thumbnail"]:
             channel_parameters["thumbnail"] = os.path.join(config.get_runtime_path(), "resources", "images", "squares",
@@ -85,6 +85,7 @@ def get_channel_parameters(channel_name):
             channel_parameters["fanart"] = os.path.join(config.get_runtime_path(), "resources", "images", "fanart",
                                                         channel_parameters["fanart"])
 
+        channel_parameters["update_url"] = scrapertools.find_single_match(data, "<update_url>([^<]*)</update_url>")
         if channel_parameters["update_url"] == "":
             channel_parameters["update_url"] = DEFAULT_UPDATE_URL
 
@@ -214,7 +215,7 @@ def get_channel_setting(name, channel):
         except EnvironmentError:
             logger.error("ERROR al leer el archivo: %s" % file_settings)
 
-    if len(dict_settings) == 0 or name not in dict_settings:
+    if not dict_settings or name not in dict_settings:
         # Obtenemos controles del archivo ../channels/channel.xml
         try:
             list_controls, default_settings = get_channel_controls_settings(channel)
