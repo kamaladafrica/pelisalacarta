@@ -26,7 +26,6 @@
 # ------------------------------------------------------------
 
 import os
-import sys
 import threading
 import urllib2
 
@@ -37,10 +36,6 @@ from core import jsontools
 from core import logger
 from platformcode import platformtools
 
-addon_name = sys.argv[0].strip()
-if not addon_name or addon_name.startswith("default.py"):
-    addon_name = "plugin://plugin.video.pelisalacarta/"
-
 if config.get_setting("folder_movies") != "":
     FOLDER_MOVIES = config.get_setting("folder_movies")
 else:
@@ -50,7 +45,6 @@ if config.get_setting("folder_tvshows") != "":
     FOLDER_TVSHOWS = config.get_setting("folder_tvshows")
 else:
     FOLDER_TVSHOWS = "SERIES"  # config.get_localized_string(30073)
-
 
 
 def mark_auto_as_watched(item):
@@ -516,7 +510,7 @@ def set_content(content_type, silent=False):
                 strActualizar = "¿Desea configurar este Scraper en español como opción por defecto para películas?"
                 if not librarypath.endswith(sep):
                     librarypath += sep
-                strPath = librarypath + config.get_setting("folder_movies") + sep
+                strPath = librarypath + FOLDER_MOVIES + sep
             else:
                 strContent = 'tvshows'
                 strScraper = 'metadata.tvdb.com'
@@ -530,7 +524,7 @@ def set_content(content_type, silent=False):
                 strActualizar = "¿Desea configurar este Scraper en español como opción por defecto para series?"
                 if not librarypath.endswith(sep):
                     librarypath += sep
-                strPath = librarypath + config.get_setting("folder_tvshows") + sep
+                strPath = librarypath + FOLDER_TVSHOWS + sep
 
             logger.info("%s: %s" % (content_type, strPath))
             # Comprobamos si ya existe strPath en la BD para evitar duplicados
