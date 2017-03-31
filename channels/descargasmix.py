@@ -32,11 +32,11 @@ def mainlist(item):
 
     itemlist.append(item.clone(title="Películas", action="lista", fanart="http://i.imgur.com/c3HS8kj.png"))
     itemlist.append(item.clone(title="Series", action="lista_series", fanart="http://i.imgur.com/9loVksV.png"))
-    itemlist.append(item.clone(title="Documentales", action="entradas", url="http://desmix.net/documentales/",
+    itemlist.append(item.clone(title="Documentales", action="entradas", url="https://desmix.net/documentales/",
                                fanart="http://i.imgur.com/Q7fsFI6.png"))
-    itemlist.append(item.clone(title="Anime", action="entradas", url="http://desmix.net/anime/",
+    itemlist.append(item.clone(title="Anime", action="entradas", url="https://desmix.net/anime/",
                                fanart="http://i.imgur.com/whhzo8f.png"))
-    itemlist.append(item.clone(title="Deportes", action="entradas", url="http://desmix.net/deportes/",
+    itemlist.append(item.clone(title="Deportes", action="entradas", url="https://desmix.net/deportes/",
                                fanart="http://i.imgur.com/ggFFR8o.png"))
     itemlist.append(item.clone(title="", action=""))
     itemlist.append(item.clone(title="Buscar...", action="search"))
@@ -55,7 +55,7 @@ def configuracion(item):
 def search(item, texto):
     logger.info()
     try:
-        item.url = "http://desmix.net/?s=" + texto
+        item.url = "https://desmix.net/?s=" + texto
         return busqueda(item)
     # Se captura la excepción, para no interrumpir al buscador global si un canal falla
     except:
@@ -108,15 +108,15 @@ def lista(item):
     logger.info()
     itemlist = []
 
-    itemlist.append(item.clone(title="Novedades", action="entradas", url="http://desmix.net/peliculas"))
-    itemlist.append(item.clone(title="Estrenos", action="entradas", url="http://desmix.net/peliculas/estrenos"))
-    itemlist.append(item.clone(title="Dvdrip", action="entradas", url="http://desmix.net/peliculas/dvdrip"))
-    itemlist.append(item.clone(title="HD (720p/1080p)", action="entradas", url="http://desmix.net/peliculas/hd"))
-    itemlist.append(item.clone(title="HDRIP", action="entradas", url="http://desmix.net/peliculas/hdrip"))
+    itemlist.append(item.clone(title="Novedades", action="entradas", url="https://desmix.net/peliculas"))
+    itemlist.append(item.clone(title="Estrenos", action="entradas", url="https://desmix.net/peliculas/estrenos"))
+    itemlist.append(item.clone(title="Dvdrip", action="entradas", url="https://desmix.net/peliculas/dvdrip"))
+    itemlist.append(item.clone(title="HD (720p/1080p)", action="entradas", url="https://desmix.net/peliculas/hd"))
+    itemlist.append(item.clone(title="HDRIP", action="entradas", url="https://desmix.net/peliculas/hdrip"))
     itemlist.append(item.clone(title="Latino", action="entradas",
-                               url="http://desmix.net/peliculas/latino-peliculas"))
-    itemlist.append(item.clone(title="VOSE", action="entradas", url="http://desmix.net/peliculas/subtituladas"))
-    itemlist.append(item.clone(title="3D", action="entradas", url="http://desmix.net/peliculas/3d"))
+                               url="https://desmix.net/peliculas/latino-peliculas"))
+    itemlist.append(item.clone(title="VOSE", action="entradas", url="https://desmix.net/peliculas/subtituladas"))
+    itemlist.append(item.clone(title="3D", action="entradas", url="https://desmix.net/peliculas/3d"))
 
     return itemlist
 
@@ -125,8 +125,8 @@ def lista_series(item):
     logger.info()
     itemlist = []
 
-    itemlist.append(item.clone(title="Novedades", action="entradas", url="http://desmix.net/series/"))
-    itemlist.append(item.clone(title="Miniseries", action="entradas", url="http://desmix.net/series/miniseries"))
+    itemlist.append(item.clone(title="Novedades", action="entradas", url="https://desmix.net/series/"))
+    itemlist.append(item.clone(title="Miniseries", action="entradas", url="https://desmix.net/series/miniseries"))
 
     return itemlist
 
