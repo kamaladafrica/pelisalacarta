@@ -47,7 +47,7 @@ if not FOLDER_MOVIES or not FOLDER_TVSHOWS or not LIBRARY_PATH \
         or not filetools.exists(MOVIES_PATH) or not filetools.exists(TVSHOWS_PATH):
     config.verify_directories_created()
 
-addon_name = "plugin://plugin.video.pelisalacarta/"
+addon_name = "plugin://plugin.video.%s/" % config.PLUGIN_NAME
 
 
 def read_nfo(path_nfo, item=None):
