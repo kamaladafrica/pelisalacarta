@@ -124,26 +124,31 @@ def open_settings():
     if settings_post.get('adult_aux_intro_password', None):
         # Hemos accedido a la seccion de Canales para adultos
         from platformcode import platformtools
-        if settings_post['adult_aux_intro_password'] == settings_pre.get('adult_password','1111'):
+        if not 'adult_password' in settings_pre:
+            adult_password = set_setting('adult_password', '1111')
+        else:
+            adult_password = settings_pre['adult_password']
+
+        if settings_post['adult_aux_intro_password'] == adult_password:
             # La contraseña de acceso es correcta
 
             # Cambio de contraseña
             if settings_post['adult_aux_new_password1']:
                 if settings_post['adult_aux_new_password1'] == settings_post['adult_aux_new_password2']:
-                    set_setting('adult_password', settings_post['adult_aux_new_password1'])
+                    adult_password = set_setting('adult_password', settings_post['adult_aux_new_password1'])
                 else:
-                    platformtools.dialog_ok("Canales para adultos", "'Nuevo password' y 'Confirmar nuevo password' no coinciden.",
-                                            "Entre de nuevo en 'Preferencias' para cambiar el password")
+                    platformtools.dialog_ok("Canales para adultos", "Los campos 'Nueva contraseña' y 'Confirmar nueva contraseña' no coinciden.",
+                                            "Entre de nuevo en 'Preferencias' para cambiar la contraseña")
 
             # Fijar adult_pin
             adult_pin = ""
             if settings_post["adult_request_password"] == "true":
-                adult_pin = settings_post["adult_password"]
+                adult_pin = adult_password
             set_setting("adult_pin", adult_pin)
 
         else:
-            platformtools.dialog_ok("Canales para adultos", "El password introducido no es correcto.",
-                                    "Los cambios realizados en esta sección no se confirmaran.")
+            platformtools.dialog_ok("Canales para adultos", "La contraseña no es correcta.",
+                                    "Los cambios realizados en esta sección no se guardaran.")
             # Deshacer cambios
             set_setting("adult_mode", settings_pre.get("adult_mode","0"))
             set_setting("adult_request_password", settings_pre.get("adult_request_password", "true"))
