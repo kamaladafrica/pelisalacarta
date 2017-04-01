@@ -26,15 +26,10 @@ def login():
     if config.get_setting("pordedeuser", "pordede") in data:
         return True
     
-    api_js = httptools.downloadpage("http://www.google.com/recaptcha/api.js?hl=es").data
-    a = scrapertools.find_single_match(api_js, 'po.src = \'(.*?)\';')
-    version = a.split("/")[5]
-
     key = scrapertools.find_single_match(data, 'data-sitekey="([^"]+)"')
     sess_check = scrapertools.find_single_match(data, ' SESS\s*=\s*"([^"]+)"')
 
-    from platformcode import recaptcha
-    result = recaptcha.start(key, version, url_origen)
+    result = platformtools.show_recaptcha(key, url_origen)
     if result:
         post = "LoginForm[username]="+config.get_setting("pordedeuser", "pordede")+"&LoginForm[password]="+config.get_setting("pordedepassword", "pordede")
         post += "&LoginForm[verifyCode]=&g-recaptcha-response=%s&popup=1&sesscheck=%s" % (result, sess_check)
@@ -54,8 +49,6 @@ def mainlist(item):
 
     if config.get_setting("pordedeuser", "pordede") == "":
         itemlist.append( Item( channel=item.channel , title="Habilita tu cuenta en la configuración..." , action="settingCanal" , url="") )
-    elif not config.is_xbmc():
-        itemlist.append(Item(channel=item.channel, title="El canal por ahora solo es funcional en Kodi", action=""))
     else:
         result = login()
         if not result:
@@ -756,3 +749,4 @@ def valora_idioma(idioma_0, idioma_1):
 
 def pordede_check(item):
     httptools.downloadpage("http://www.pordede.com/ajax/mediaaction", post="model="+item.tipo+"&id="+item.idtemp+"&action=status&value="+item.valor)
+

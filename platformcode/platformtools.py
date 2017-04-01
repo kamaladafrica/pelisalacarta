@@ -661,6 +661,11 @@ def show_video_info(data, caption="", item=None, scraper=Tmdb):
                                                                          scraper=scraper)
 
 
+def show_recaptcha(key, referer):
+    from recaptcha import Recaptcha
+    return Recaptcha("Recaptcha.xml", config.get_runtime_path()).Start(key, referer)
+
+
 def alert_no_disponible_server(server):
     # 'El vídeo ya no está en %s' , 'Prueba en otro servidor o en otro canal'
     dialog_ok(config.get_localized_string(30055), (config.get_localized_string(30057) % server),

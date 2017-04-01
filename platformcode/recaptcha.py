@@ -1,91 +1,94 @@
 # -*- coding: utf-8 -*-
 # ------------------------------------------------------------
-# pelisalacarta - XBMC Plugin
+# pelisalacarta 4
+# Copyright 2015 tvalacarta@gmail.com
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
+#
+# Distributed under the terms of GNU General Public License v3 (GPLv3)
+# http://www.gnu.org/licenses/gpl-3.0.html
 # ------------------------------------------------------------
-
-import re
-import xbmc
+# This file is part of pelisalacarta 4.
+#
+# pelisalacarta 4 is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# pelisalacarta 4 is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with pelisalacarta 4.  If not, see <http://www.gnu.org/licenses/>.
+# ------------------------------------------------------------
 import xbmcgui
-
-from core import config
 from core import httptools
 from core import scrapertools
+from core import config
+from core import logger
 from platformcode import platformtools
 
-resultado = []
-
-
-def start(key, version, referer):
-    global resultado
-    headers = {'Referer': referer,
-               'User-Agent': 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0; WOW64; Trident/4.0; SLCC1)'}
-    params = "k=%s&hl=es&v=%s&t=2&ff=true" % (key, version)
-    url = "https://www.google.com/recaptcha/api/fallback?%s" % params
-    data = httptools.downloadpage(url, headers=headers, replace_headers=True).data
-
-    mensaje = scrapertools.find_single_match(data, '<div class="rc-imageselect-desc-no-canonical">(.*?)(?:</label>|</div>)')
-    mensaje = unicode(scrapertools.htmlclean(mensaje), "utf-8")
-    token = scrapertools.find_single_match(data, 'name="c" value="([^"]+)"')
-    headers["Referer"] = url
-    while True:
-        params2 = "k=%s&c=%s" % (key, token)
-        imagen = "https://www.google.com/recaptcha/api2/payload?%s" % params2
-
-        mainWindow = Recaptcha('Recaptcha.xml', config.get_runtime_path(), imagen=imagen, mensaje=mensaje)
-        mainWindow.doModal()
-
-        post = "c=%s" % token
-        if resultado is None:
-            return None
-
-        for r in resultado:
-            post += "&response=%s" % r
-
-        data = httptools.downloadpage(url, post, headers=headers, replace_headers=True).data
-        result = scrapertools.find_single_match(data, '<div class="fbc-verification-token">.*?>([^<]+)<')
-        if not result:
-            mensaje = scrapertools.find_single_match(data, '<div class="rc-imageselect-desc-no-canonical">(.*?)(?:</label>|</div>)')
-            mensaje = unicode(scrapertools.htmlclean(mensaje), "utf-8")
-            token = scrapertools.find_single_match(data, 'name="c" value="([^"]+)"')
-        else:
-            platformtools.dialog_notification("Captcha Correcto", "La verificación ha concluido")
-            return result
-
-
 class Recaptcha(xbmcgui.WindowXMLDialog):
-
+    def Start(self, key, referer):
+        self.referer = referer
+        self.key = key
+        self.headers = {'Referer': self.referer}
+        
+        api_js = httptools.downloadpage("http://www.google.com/recaptcha/api.js?hl=es").data
+        version = scrapertools.find_single_match(api_js, 'po.src = \'(.*?)\';').split("/")[5]
+        self.url = "https://www.google.com/recaptcha/api/fallback?k=%s&hl=es&v=%s&t=2&ff=true" % (self.key, version)
+        self.doModal()
+        #Reload
+        if self.result == {}:
+            self.result = Recaptcha("Recaptcha.xml", config.get_runtime_path()).Start(self.key, self.referer)
+            
+        return self.result
+                
+    def update_window(self):
+        data = httptools.downloadpage(self.url, headers=self.headers).data
+        self.message = scrapertools.find_single_match(data, '<div class="rc-imageselect-desc-no-canonical">(.*?)(?:</label>|</div>)').replace("<strong>", "[B]").replace("</strong>","[/B]")
+        self.token = scrapertools.find_single_match(data, 'name="c" value="([^"]+)"')
+        self.image = "https://www.google.com/recaptcha/api2/payload?k=%s&c=%s" % (self.key, self.token)
+        self.result = {}
+        self.getControl(10020).setImage(self.image)
+        self.getControl(10000).setText(self.message)
+        self.setFocusId(10005)
+        
+    
     def __init__(self, *args, **kwargs):
         self.mensaje = kwargs.get("mensaje")
         self.imagen = kwargs.get("imagen")
 
     def onInit(self):
-        global resultado
-        self.botones = {}
-        for i in range(10005, 10014):
-            self.botones[i] = 0
-
         self.setCoordinateResolution(2)
-        self.getControl(10020).setImage(self.imagen)
-        self.getControl(10000).setLabel(self.mensaje)
-        self.setFocusId(10005)
+        self.update_window()
 
-
+        
     def onClick(self, control):
-        global resultado
         if control == 10003:
-            resultado = None
+            self.result = None
             self.close()
+            
         elif control == 10004:
-            resultado = []
+            self.result = {}
             self.close()
+            
         elif control == 10002:
-            for k, v in self.botones.items():
-                if v == 1:
-                    resultado.append(k - 10005)
-            self.close()
-        else:
-            if self.botones.get(control) == 0:
-                self.botones[control] = 1
+            self.result = [int(k) for k in range(9) if self.result.get(k, False) == True]
+            post = "c=%s" % self.token
+
+            for r in self.result:
+                post += "&response=%s" % r
+
+            data = httptools.downloadpage(self.url, post, headers=self.headers).data
+            self.result = scrapertools.find_single_match(data, '<div class="fbc-verification-token">.*?>([^<]+)<')
+            if self.result:
+                platformtools.dialog_notification("Captcha Correcto", "La verificación ha concluido")
+                self.close()
             else:
-                self.botones[control] = 0
+                self.result = {}
+                self.close()
+        else:
+            self.result[control - 10005] = not self.result.get(control - 10005, False)
+
