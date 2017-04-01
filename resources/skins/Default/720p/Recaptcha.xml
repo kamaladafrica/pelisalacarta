@@ -12,18 +12,18 @@
 			<height>600</height>
 			<texture>Windows/DialogBack.png</texture>
         </control>
-		<control type="label" id="10000">
-			<posy>20</posy>
-			<posx>30</posx>
-			<height>30</height>
-			<width>630</width>
-			<textcolor>0xFFFFA500</textcolor>
-			<align>center</align>
-			<label></label>
-			<scroll>true</scroll>
-	  </control>
+		<control type="textbox" id="10000">
+          <posy>20</posy>
+          <posx>30</posx>
+          <height>60</height>
+          <width>630</width>
+          <textcolor>0xFFFFA500</textcolor>
+          <wrapmultiline>true</wrapmultiline>
+          <align>center</align>
+          <label></label>
+        </control>
         <control type="button" id="10002">
-            <posy>530</posy>
+            <posy>540</posy>
             <posx>110</posx>
             <width>140</width>
             <height>30</height>
@@ -39,7 +39,7 @@
 			<onright>10003</onright>
 		</control>
         <control type="button" id="10003">
-            <posy>530</posy>
+            <posy>540</posy>
             <posx>280</posx>
             <width>140</width>
             <height>30</height>
@@ -55,7 +55,7 @@
 			<onright>10004</onright>
         </control>
         <control type="button" id="10004">
-            <posy>530</posy>
+            <posy>540</posy>
             <posx>450</posx>
             <width>140</width>
             <height>30</height>
@@ -71,13 +71,13 @@
 			<onright>10005</onright>
 		</control>
         <control type="image" id="10020">
-            <posy>70</posy>
+            <posy>80</posy>
             <posx>120</posx>
             <width>450</width>
             <height>450</height>
         </control>
         <control type="togglebutton" id="10005">
-            <posy>70</posy>
+            <posy>80</posy>
             <posx>120</posx>
             <width>150</width>
             <height>150</height>
@@ -91,7 +91,7 @@
 			<onright>10006</onright>
 		</control>
         <control type="togglebutton" id="10006">
-            <posy>70</posy>
+            <posy>80</posy>
             <posx>270</posx>
             <width>150</width>
             <height>150</height>
@@ -105,7 +105,7 @@
 			<onright>10007</onright>
 		</control>
         <control type="togglebutton" id="10007">
-            <posy>70</posy>
+            <posy>80</posy>
             <posx>420</posx>
             <width>150</width>
             <height>150</height>
@@ -119,7 +119,7 @@
 			<onright>10008</onright>
 		</control>
         <control type="togglebutton" id="10008">
-            <posy>220</posy>
+            <posy>230</posy>
             <posx>120</posx>
             <width>150</width>
             <height>150</height>
@@ -133,7 +133,7 @@
 			<onright>10009</onright>
 		</control>
         <control type="togglebutton" id="10009">
-            <posy>220</posy>
+            <posy>230</posy>
             <posx>270</posx>
             <width>150</width>
             <height>150</height>
@@ -147,7 +147,7 @@
 			<onright>10010</onright>
 		</control>
         <control type="togglebutton" id="10010">
-            <posy>220</posy>
+            <posy>230</posy>
             <posx>420</posx>
             <width>150</width>
             <height>150</height>
@@ -161,7 +161,7 @@
 			<onright>10011</onright>
 		</control>
         <control type="togglebutton" id="10011">
-            <posy>370</posy>
+            <posy>380</posy>
             <posx>120</posx>
             <width>150</width>
             <height>150</height>
@@ -175,7 +175,7 @@
 			<onright>10012</onright>
 		</control>
         <control type="togglebutton" id="10012">
-            <posy>370</posy>
+            <posy>380</posy>
             <posx>270</posx>
             <width>150</width>
             <height>150</height>
@@ -189,7 +189,7 @@
 			<onright>10013</onright>
 		</control>
         <control type="togglebutton" id="10013">
-            <posy>370</posy>
+            <posy>380</posy>
             <posx>420</posx>
             <width>150</width>
             <height>150</height>
