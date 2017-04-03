@@ -58,6 +58,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
 
         var_r = scrapertools.find_single_match(text_decode, "window.p\s*=\s*['\"]([^'\"]+)['\"]")
         var_encodes = scrapertools.find_multiple_matches(data, 'id="%s[^"]*">([^<]+)<' % var_r)
+        numeros = scrapertools.find_multiple_matches(data, '_0x[0-9a-f]+\s*=\s*([0-9]{4,}|0x[0-9a-f]{4,});')
 
         videourl = ""
         for encode in var_encodes:
@@ -87,7 +88,10 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
                             break
 
                     value4 = value2 ^ decode1[j % 3]
-                    value4 ^= 418522784
+                    for n in numeros:
+                        if not n.isdigit():
+                            n = int(n, 16)
+                        value4 ^= int(n)
                     value5 = index1 + 127 
                     for h in range(4):
                         valorfinal = (value4 >> 8 * h) & (value5)
