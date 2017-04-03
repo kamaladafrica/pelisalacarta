@@ -30,16 +30,16 @@ def mainlist(item):
 
     item.thumbnail = "https://github.com/master-1970/resources/raw/master/images/genres/0/Directors%20Chair.png"
     itemlist.append(item.clone(title="Películas:", folder=False, text_color = color3, text_blod= True))
-    itemlist.append(item.clone(title="    Cartelera", action="listado", url= HOST + "/descarga-0-58126-0-0-fx-1-1-.fx"))
-    itemlist.append(item.clone(title="    DVD-RIP", action="listado", url=HOST + "/descarga-0-581210-0-0-fx-1-1.fx"))
-    itemlist.append(item.clone(title="    HD-RIP", action="listado", url=HOST + "/descarga-0-58128-0-0-fx-1-1-.fx"))
+    itemlist.append(item.clone(title="    Cartelera", action="listado", url= HOST + "descarga-0-58126-0-0-fx-1-1-.fx"))
+    itemlist.append(item.clone(title="    DVD-RIP", action="listado", url=HOST + "descarga-0-581210-0-0-fx-1-1.fx"))
+    itemlist.append(item.clone(title="    HD-RIP", action="listado", url=HOST + "descarga-0-58128-0-0-fx-1-1-.fx"))
 
     itemlist.append(item.clone(title="", folder=False, thumbnail = thumbnail_host))
 
     item.thumbnail = "https://github.com/master-1970/resources/raw/master/images/genres/0/TV%20Series.png"
     itemlist.append(item.clone(title="Series:", folder=False, text_color = color3, text_blod=True))
     itemlist.append(item.clone(title="    Nuevos episodios", action="listado",
-                               url=HOST + "/descarga-0-58122-0-0-fx-1-1.fx"))
+                               url=HOST + "descarga-0-58122-0-0-fx-1-1.fx"))
 
     return itemlist
 
@@ -60,6 +60,7 @@ def listado(item):
     matches = re.compile(patron,re.DOTALL).findall(data)
 
     for thumbnail, title, cat_padres, cat_hijos, opciones in matches:
+        #logger.debug(thumbnail + "\n" + title + "\n" + cat_padres + "\n" + cat_hijos + "\n" + opciones)
         # Obtenemos el año del titulo y eliminamos lo q sobre
         patron = '\d{4}$'
         year = scrapertools.find_single_match(title,patron)
@@ -72,7 +73,7 @@ def listado(item):
         thumbnail = HOST + thumbnail[:-5] + 'b' + thumbnail[-4:]
 
         # Buscamos opcion de ver online
-        patron = '<a href="http://estrenosli.org/ver-online-([^"]+)'
+        patron = '<a href="http://estrenosly.org/ver-online-([^"]+)'
         url_ver = scrapertools.find_single_match(opciones, patron)
         if url_ver:
             new_item = Item(channel=item.channel, action="findvideos", title=title,

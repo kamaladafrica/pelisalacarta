@@ -15,6 +15,11 @@
 	<version>1</version>
 
 	<changes>
+		<change>
+			<date>03/05/16</date>
+			<autor>super_berny</autor>
+			<description>Modificado por cambios en la web</description>
+		</change>
 		<change> 
 			<date>29/04/16</date>
 			<autor>super_berny</autor>
