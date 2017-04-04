@@ -618,9 +618,6 @@ def get_node_from_data_json(name_file, node):
     from core import config
     from core import jsontools
 
-    if not exists(join(config.get_data_path(), "settings_channels")):
-        mkdir(join(config.get_data_path(), "settings_channels"))
-
     fname = join(config.get_data_path(), "settings_channels", name_file + "_data.json")
 
     if isfile(fname):
@@ -681,8 +678,6 @@ def update_json_data(dict_node, filename, node):
     from core import config
     from core import jsontools
 
-    if not exists(join(config.get_data_path(), "settings_channels")):
-        mkdir(join(config.get_data_path(), "settings_channels"))
     fname = join(config.get_data_path(), "settings_channels", filename + "_data.json")
     data = read(fname)
     dict_data = jsontools.load_json(data)
