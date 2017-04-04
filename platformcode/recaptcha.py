@@ -37,7 +37,7 @@ class Recaptcha(xbmcgui.WindowXMLDialog):
         
         api_js = httptools.downloadpage("http://www.google.com/recaptcha/api.js?hl=es").data
         version = scrapertools.find_single_match(api_js, 'po.src = \'(.*?)\';').split("/")[5]
-        self.url = "https://www.google.com/recaptcha/api/fallback?k=%s&hl=es&v=%s&t=2&ff=true" % (self.key, version)
+        self.url = "http://www.google.com/recaptcha/api/fallback?k=%s&hl=es&v=%s&t=2&ff=true" % (self.key, version)
         self.doModal()
         #Reload
         if self.result == {}:
@@ -49,7 +49,7 @@ class Recaptcha(xbmcgui.WindowXMLDialog):
         data = httptools.downloadpage(self.url, headers=self.headers).data
         self.message = scrapertools.find_single_match(data, '<div class="rc-imageselect-desc-no-canonical">(.*?)(?:</label>|</div>)').replace("<strong>", "[B]").replace("</strong>","[/B]")
         self.token = scrapertools.find_single_match(data, 'name="c" value="([^"]+)"')
-        self.image = "https://www.google.com/recaptcha/api2/payload?k=%s&c=%s" % (self.key, self.token)
+        self.image = "http://www.google.com/recaptcha/api2/payload?k=%s&c=%s" % (self.key, self.token)
         self.result = {}
         self.getControl(10020).setImage(self.image)
         self.getControl(10000).setText(self.message)
