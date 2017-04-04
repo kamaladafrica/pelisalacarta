@@ -591,7 +591,7 @@ def remove_tags(title):
     @rtype: str
     @return: cadena sin tags
     """
-    logger.info("pelisalacarta.core.filetools remove_tags")
+    logger.info()
 
     title_without_tags = scrapertools.find_single_match(title, '\[color .+?\](.+)\[\/color\]')
 
@@ -618,12 +618,12 @@ def get_node_from_data_json(name_file, node):
     from core import config
     from core import jsontools
 
-    if not os.path.exists(os.path.join(config.get_data_path(), "settings_channels")):
-        os.mkdir(os.path.join(config.get_data_path(), "settings_channels"))
+    if not exists(join(config.get_data_path(), "settings_channels")):
+        mkdir(join(config.get_data_path(), "settings_channels"))
 
-    fname = os.path.join(config.get_data_path(), "settings_channels", name_file + "_data.json")
+    fname = join(config.get_data_path(), "settings_channels", name_file + "_data.json")
 
-    if os.path.isfile(fname):
+    if isfile(fname):
         data = read(fname)
         dict_data = jsontools.load_json(data)
 
@@ -681,9 +681,9 @@ def update_json_data(dict_node, filename, node):
     from core import config
     from core import jsontools
 
-    if not os.path.exists(os.path.join(config.get_data_path(), "settings_channels")):
-        os.mkdir(os.path.join(config.get_data_path(), "settings_channels"))
-    fname = os.path.join(config.get_data_path(), "settings_channels", filename + "_data.json")
+    if not exists(join(config.get_data_path(), "settings_channels")):
+        mkdir(join(config.get_data_path(), "settings_channels"))
+    fname = join(config.get_data_path(), "settings_channels", filename + "_data.json")
     data = read(fname)
     dict_data = jsontools.load_json(data)
     # es un dict
