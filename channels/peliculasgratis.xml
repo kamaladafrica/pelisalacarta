@@ -12,12 +12,17 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/pasateatorrent.png</bannermenu>
 
 	<update_url></update_url>
-    <version>1</version>
+    <version>2</version>
     <changes>
         <change>
           <date>13/01/2017</date>
           <autor>Neno1978</autor>
          <description>Release</description>
+        </change>
+        <change>
+            <date>04/04/2017</date>
+            <autor>Neno1978</autor>
+            <description>Reparación cambios web</description>
         </change>
     </changes>
 	<categories>

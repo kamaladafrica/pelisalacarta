@@ -14,6 +14,7 @@ import xbmc
 from core import config
 from core import logger
 from core import scrapertools
+from core import httptools
 from core.item import Item
 import unicodedata
 from core.scrapertools import decodeHtmlentities as dhe
@@ -44,13 +45,17 @@ def mainlist(item):
     itemlist = []
     
     
+    itemlist.append( Item(channel=item.channel, title="[COLOR white][B]Peliculas[/B][/COLOR]" , action="peliculas"           , url="http://www.txibitsoft.com/torrents.php?procesar=1&categorias='Peliculas'&pagina=1", thumbnail="http://imgur.com/v6iC6Er.jpg", fanart="http://imgur.com/tJUbfeC.jpg"))
+    itemlist.append( Item(channel=item.channel, title="[COLOR orange][B]Alta Calidad[/B][/COLOR]" , action=""           , url="", thumbnail="http://imgur.com/KXhvWIc.jpg", fanart="http://imgur.com/4kTqOKE.jpg"))
     
-    title="[COLOR white][B]Peliculas[/B][/COLOR]"
-    itemlist.append( Item(channel=item.channel, title=title , action="peliculas"           , url="http://www.txibitsoft.com/torrents.php?procesar=1&categorias='Peliculas'&pagina=1", thumbnail="http://imgur.com/v6iC6Er.jpg", fanart="http://imgur.com/tJUbfeC.jpg"))
-    title="[COLOR white][B]1080[/B][/COLOR]"
-    itemlist.append( Item(channel=item.channel, title=title , action="peliculas"           , url="http://www.txibitsoft.com/torrents.php?procesar=1&categorias='Cine%20Alta%20Definicion%20HD'&subcategoria=1080p&pagina=1", thumbnail="http://imgur.com/KXhvWIc.jpg", fanart="http://imgur.com/4kTqOKE.jpg"))
+    itemlist.append( Item(channel=item.channel, title="         [COLOR white][B]1080[/B][/COLOR]" , action="peliculas"           , url="http://www.txibitsoft.com/torrents.php?procesar=1&categorias='Cine%20Alta%20Definicion%20HD'&subcategoria=1080p&pagina=1", thumbnail="http://imgur.com/KXhvWIc.jpg", fanart="http://imgur.com/4kTqOKE.jpg"))
+    itemlist.append( Item(channel=item.channel, title="          [COLOR white][B]4k[/B][/COLOR]" , action="peliculas"           , url="http://www.txibitsoft.com/torrents.php?procesar=1&categorias=%27Cine%20Alta%20Definicion%20HD%27&subcategoria=4KULTRAHD&pagina=1", thumbnail="http://imgur.com/KXhvWIc.jpg", fanart="http://imgur.com/4kTqOKE.jpg"))
     title="[COLOR white][B]Series[/B][/COLOR]"
-    itemlist.append( Item(channel=item.channel, title=title , action="peliculas"           , url="http://www.txibitsoft.com/torrents.php?procesar=1&categorias='Series'&pagina=1", thumbnail="http://imgur.com/qTqX9nU.jpg", fanart="http://imgur.com/rwjtkYj.jpg"))
+    itemlist.append( Item(channel=item.channel, title="          [COLOR white][B]BdRemux[/B][/COLOR]" , action="peliculas"           , url="http://www.txibitsoft.com/torrents.php?procesar=1&categorias=%27Cine%20Alta%20Definicion%20HD%27&subcategoria=BdRemux%201080p&pagina=1", thumbnail="http://imgur.com/KXhvWIc.jpg", fanart="http://imgur.com/4kTqOKE.jpg"))
+    
+    itemlist.append( Item(channel=item.channel, title="           [COLOR white][B]FullBluRay[/B][/COLOR]" , action="peliculas"           , url="http://www.txibitsoft.com/torrents.php?procesar=1&categorias=%27Cine%20Alta%20Definicion%20HD%27&subcategoria=FULLBluRay&pagina=1", thumbnail="http://imgur.com/KXhvWIc.jpg", fanart="http://imgur.com/4kTqOKE.jpg"))
+    
+    itemlist.append( Item(channel=item.channel, title="[COLOR white][B]Series[/B][/COLOR]" , action="peliculas"           , url="http://www.txibitsoft.com/torrents.php?procesar=1&categorias='Series'&pagina=1", thumbnail="http://imgur.com/qTqX9nU.jpg", fanart="http://imgur.com/rwjtkYj.jpg"))
     title="[COLOR white][B]Buscar...[/B][/COLOR]"
     itemlist.append( Item(channel=item.channel, title=title      , action="search", url="", fanart="http://imgur.com/wmkgcCC.jpg", thumbnail="http://imgur.com/b9xCys8.png"))
     return itemlist
@@ -75,7 +80,7 @@ def buscador(item):
     itemlist = []
 
     # Descarga la página
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|&amp;","",data)
     item.url = re.sub(r"&amp;","",item.url)
     # corrige la falta de imagen
@@ -124,7 +129,7 @@ def peliculas(item):
     itemlist = []
     
     # Descar<div id="catalogheader">ga la página
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|&amp;|</span>|</li>|<li>","",data)
     item.url = re.sub(r"&amp;","",item.url)
     # corrige la falta de imagen
@@ -183,11 +188,10 @@ def peliculas(item):
 def fanart(item):
     logger.info("pelisalacarta.txibitsoft fanart")
     itemlist = []
-    url = item.url
-    data = scrapertools.cachePage(url)
+    data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
     title_fan = item.extra
-    title = re.sub(r'Serie Completa|Temporada.*?\d+|Fin Temporada|3D|SBS|Montaje del Director|V.Extendida|Quadrilogia','',title_fan)
+    title = re.sub(r'Serie Completa|Temporada.*?\d+|Fin Temporada|3D|SBS|Montaje del Director|V.Extendida|Quadrilogia|E.Coleccionista','',title_fan)
     title= title.replace(' ','%20')
     title = ''.join((c for c in unicodedata.normalize('NFD',unicode(title.decode('utf-8'))) if unicodedata.category(c) != 'Mn')).encode("ascii", "ignore")
 
@@ -216,12 +220,12 @@ def fanart(item):
           year =scrapertools.find_single_match(data,'<textarea.*?A.*?(\d+)')
         #filmafinity
         url = "http://www.filmaffinity.com/es/advsearch.php?stext={0}&stype%5B%5D=title&country=&genre=&fromyear={1}&toyear={1}".format(title, year)
-        data = scrapertools.downloadpage(url)
+        data = httptools.downloadpage(url).data
 
         url_filmaf = scrapertools.find_single_match(data, '<div class="mc-poster">\s*<a title="[^"]*" href="([^"]+)"')
         if url_filmaf:
            url_filmaf = "http://www.filmaffinity.com%s" % url_filmaf
-           data = scrapertools.downloadpage(url_filmaf)
+           data = httptools.downloadpage(url_filmaf).data
         else:
 
                try:
@@ -238,9 +242,9 @@ def fanart(item):
                  url_filma = scrapertools.get_match(subdata_bing,'<a href="([^"]+)')
                  
                  if not "http" in url_filma:
-                    data = scrapertools.cachePage ("http://"+url_filma)
+                    data = httptools.downloadpage("http://"+url_filma).data
                  else:
-                    data = scrapertools.cachePage (url_filma)
+                    data = httptools.downloadpage(url_filma).data
                  data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
             
                except:
@@ -278,7 +282,7 @@ def fanart(item):
         print critica
     
         url="http://api.themoviedb.org/3/search/movie?api_key=2e2160006592024ba87ccdf78c28f49f&query=" + title +"&year="+year+ "&language=es&include_adult=false"
-        data = scrapertools.cachePage(url)
+        data = httptools.downloadpage(url).data
         data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
         patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),"popularity"'
         matches = re.compile(patron,re.DOTALL).findall(data)
@@ -290,7 +294,7 @@ def fanart(item):
                 title= re.sub(r":.*|\(.*?\)","",title)
                 url="http://api.themoviedb.org/3/search/movie?api_key=2e2160006592024ba87ccdf78c28f49f&query=" + title + "&language=es&include_adult=false"
                 
-                data = scrapertools.cachePage(url)
+                data = httptools.downloadpage(url).data
                 data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
                 patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),"popularity"'
                 matches = re.compile(patron,re.DOTALL).findall(data)
@@ -329,7 +333,7 @@ def fanart(item):
             item.extra= fanart
             
             url ="http://api.themoviedb.org/3/movie/"+id+"/images?api_key=2e2160006592024ba87ccdf78c28f49f"
-            data = scrapertools.cachePage(url)
+            data = httptools.downloadpage(url).data
             data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
             
             patron = '"backdrops".*?"file_path":".*?",.*?"file_path":"(.*?)",.*?"file_path":"(.*?)",.*?"file_path":"(.*?)"'
@@ -350,7 +354,7 @@ def fanart(item):
                    fanart=fanart_info
             #clearart, fanart_2 y logo
             url ="http://webservice.fanart.tv/v3/movies/"+id+"?api_key=dffe90fba4d02c199ae7a9e71330c987"
-            data = scrapertools.cachePage(url)
+            data = httptools.downloadpage(url).data
             data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
             patron = '"hdmovielogo":.*?"url": "([^"]+)"'
             matches = re.compile(patron,re.DOTALL).findall(data)
@@ -444,9 +448,9 @@ def fanart(item):
         try:
           url_filma = scrapertools.get_match(subdata_bing,'<a href="([^"]+)')
           if not "http" in url_filma:
-            data = scrapertools.cachePage ("http://"+url_filma)
+            data = httptools.downloadpage("http://"+url_filma).data
           else:
-            data = scrapertools.cachePage (url_filma)
+            data = httptools.downloadpage(url_filma).data
           data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
           year = scrapertools.get_match(data,'<dt>Año</dt>.*?>(.*?)</dd>')
         except:
@@ -560,7 +564,7 @@ def fanart(item):
              url_rating_tvdb = "http://thetvdb.com/api/1D62F2F90030C444/series/"+id+"/es.xml"
              print "pepote"
              print url_rating_tvdb
-             data = scrapertools.cachePage(url_rating_tvdb)
+             data = httptools.downloadpage(url_rating_tvdb).data
              rating =scrapertools.find_single_match(data,'<Rating>(.*?)<')
             except:
               ratintg_tvdb = ""
@@ -586,7 +590,7 @@ def fanart(item):
             item.extra= fanart
             
             url ="http://api.themoviedb.org/3/tv/"+id_tmdb+"/images?api_key=2e2160006592024ba87ccdf78c28f49f"
-            data = scrapertools.cachePage(url)
+            data = httptools.downloadpage(url).data
             data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
             
             patron = '"backdrops".*?"file_path":".*?",.*?"file_path":"(.*?)",.*?"file_path":"(.*?)",.*?"file_path":"(.*?)"'
@@ -606,7 +610,7 @@ def fanart(item):
                 if fanart== "http://imgur.com/21Oty9A.jpg":
                     fanart=  fanart_info
             url ="http://webservice.fanart.tv/v3/tv/"+id+"?api_key=dffe90fba4d02c199ae7a9e71330c987"
-            data = scrapertools.cachePage(url)
+            data = httptools.downloadpage(url).data
             data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
             patron = '"clearlogo":.*?"url": "([^"]+)"'
             matches = re.compile(patron,re.DOTALL).findall(data)
@@ -753,7 +757,7 @@ def findvideos(item):
         thumbnail= item.category
     else:
         thumbnail= item.show.split("|")[4]
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
     
     patron = '<form name="frm" id="frm" method="get" action="torrent.php">.*?'
@@ -874,7 +878,7 @@ def findvideos(item):
             itemlist.append( Item(channel=item.channel, title=scrapedtitle, url=scrapedurl, action="play", server="torrent", thumbnail=thumbnail, category = item.category, fanart=item.show.split("|")[0], folder=False) )
             ###thumb temporada###
             url= "http://api.themoviedb.org/3/tv/"+item.show.split("|")[5]+"/season/"+temp+"/images?api_key=2e2160006592024ba87ccdf78c28f49f"
-            data = scrapertools.cachePage(url)
+            data = httptools.downloadpage(url).data
             data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
             patron = '{"id".*?"file_path":"(.*?)","height"'
             matches = re.compile(patron,re.DOTALL).findall(data)
@@ -899,7 +903,7 @@ def findvideos(item):
               if not os.path.exists(torrents_path):
                   os.mkdir(torrents_path)
                 
-              urllib.urlretrieve (url, torrents_path+"/temp.torrent")
+              urllib.urlretrieve ("http://ssl-proxy.my-addr.org/myaddrproxy.php/"+url, torrents_path+"/temp.torrent")
               pepe = open( torrents_path+"/temp.torrent", "rb").read()
                 
               if "used CloudFlare" in pepe:
@@ -1131,7 +1135,7 @@ def info_capitulos(item):
     if "/0" in url:
         url = url.replace("/0","/")
 
-    data = scrapertools.cachePage(url)
+    data = httptools.downloadpage(url).data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
     
     patron = '],"name":"(.*?)","overview":"(.*?)".*?"still_path":(.*?),"vote_average":(\d+\.\d).*?,"'
@@ -1143,7 +1147,7 @@ def info_capitulos(item):
       url="http://thetvdb.com/api/1D62F2F90030C444/series/"+item.category+"/default/"+item.extra.split("|")[2]+"/"+item.extra.split("|")[3]+"/es.xml"
       if "/0" in url:
          url = url.replace("/0","/")
-      data = scrapertools.cachePage(url)
+      data = httptools.downloadpage(url).data
       data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
     
       patron = '<Data>.*?<EpisodeName>([^<]+)</EpisodeName>.*?<Overview>(.*?)</Overview>.*?<Rating>(.*?)</Rating>'

@@ -11,7 +11,7 @@
     <bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/pasateatorrent.png</bannermenu>
     <update_url></update_url>
     
-    <version>2</version>
+    <version>3</version>
     <changes>
         <change>
           <date>06/12/2016</date>
@@ -22,6 +22,11 @@
           <date>13/01/2017</date>
           <autor>Neno1978</autor>
           <description>Arreglo sagas en peliculas que no se mostraban.Mejoras en series/info-capitulos</description>
+        </change>
+        <change>
+          <date>04/04/2017</date>
+          <autor>Neno1978</autor>
+          <description>Migración httptools.Adaptación proxy según Kodi sea igual o menor v.17.Pequeñas mejoras código</description>
         </change>
     </changes>
     
