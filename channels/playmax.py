@@ -617,7 +617,8 @@ def menu_info(item):
 
 def acciones_fichas(item, sid, ficha, season=False):
     marcarlist = []
-    item.infoLabels.pop("duration", None)
+    new_item = item.clone()
+    new_item.infoLabels.pop("duration", None)
     estados = [{'following': 'seguir'}, {'favorite': 'favorita'}, {'view': 'vista'}, {'slope': 'pendiente'}]
     url = "https://playmax.mx/ficha.php?apikey=%s&sid=%s&f=%s" % (apikey, sid, ficha)
     data = httptools.downloadpage(url).data
@@ -625,19 +626,19 @@ def acciones_fichas(item, sid, ficha, season=False):
 
     try:
         marked = data["Data"]["User"]["Marked"]
-        if item.contentType == "episode":
-            for epi in data["Data"]["Episodes"]["Season_%s" % item.infoLabels["season"]]["Item"]:
-                if int(epi["Episode"]) == item.infoLabels["episode"]:
+        if new_item.contentType == "episode":
+            for epi in data["Data"]["Episodes"]["Season_%s" % new_item.infoLabels["season"]]["Item"]:
+                if int(epi["Episode"]) == new_item.infoLabels["episode"]:
                     epi_marked = epi["EpisodeViewed"].replace("yes", "ya")
                     epi_id = epi["Id"]
-                    marcarlist.append(item.clone(action="marcar", title="Capítulo %s visto. ¿Cambiar?" % epi_marked,
+                    marcarlist.append(new_item.clone(action="marcar", title="Capítulo %s visto. ¿Cambiar?" % epi_marked,
                                                  text_color=color3, epi_id=epi_id))
                     break
     except:
         pass
 
     try:
-        tipo = item.contentType.replace("movie", "Película").replace("episode", "Serie").replace("tvshow", "Serie")
+        tipo = new_item.contentType.replace("movie", "Película").replace("episode", "Serie").replace("tvshow", "Serie")
         for status in estados:
             for k, v in status.items():
                 if k != marked:
@@ -653,11 +654,11 @@ def acciones_fichas(item, sid, ficha, season=False):
                     if k != marked:
                         title = "Seguir serie"
                         action = "marcar"
-                    marcarlist.insert(1, item.clone(action=action, title=title, text_color=color4, ficha=ficha,
+                    marcarlist.insert(1, new_item.clone(action=action, title=title, text_color=color4, ficha=ficha,
                                                     folder=False))
                     continue
 
-                marcarlist.append(item.clone(action="marcar", title=title, text_color=color3, ficha=ficha,
+                marcarlist.append(new_item.clone(action="marcar", title=title, text_color=color3, ficha=ficha,
                                              folder=False))
     except:
         pass
@@ -676,12 +677,12 @@ def acciones_fichas(item, sid, ficha, season=False):
                 for epi in v["Item"]:
                     if epi["EpisodeViewed"] == "no":
                         vistos = True
-                        seasonlist.append(item.clone(action="marcar", title="Marcar temporada %s como vista" % season,
+                        seasonlist.append(new_item.clone(action="marcar", title="Marcar temporada %s como vista" % season,
                                                      text_color=color1, season=int(season), ficha=ficha, folder=False))
                         break
 
                 if not vistos:
-                    seasonlist.append(item.clone(action="marcar", title="Temporada %s ya vista. ¿Revertir?" % season,
+                    seasonlist.append(new_item.clone(action="marcar", title="Temporada %s ya vista. ¿Revertir?" % season,
                                                  text_color=color1, season=int(season), ficha=ficha, folder=False))
 
             seasonlist.sort(key=lambda it: it.season, reverse=True)
