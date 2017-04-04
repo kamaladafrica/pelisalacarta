@@ -281,7 +281,7 @@ def epienlaces(item):
             itemlist.insert(0, item.clone(action="play", title=titulo, server="torrent", url=scrapedurl))
         else:
             mostrar_server = True
-            if config.get_setting("hidepremium") == True:
+            if config.get_setting("hidepremium") == "true":
                 mostrar_server = servertools.is_server_enabled(scrapedserver)
             if mostrar_server:
                 try:
@@ -417,7 +417,7 @@ def findvideos(item):
                                            text_color="green"))
                 continue
             mostrar_server = True
-            if config.get_setting("hidepremium") == True:
+            if config.get_setting("hidepremium") == "true":
                 mostrar_server = servertools.is_server_enabled(scrapedserver)
             if mostrar_server:
                 try:
