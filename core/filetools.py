@@ -623,13 +623,14 @@ def get_node_from_data_json(name_file, node):
 
     fname = os.path.join(config.get_data_path(), "settings_channels", name_file + "_data.json")
 
-    data = read(fname)
-    dict_data = jsontools.load_json(data)
+    if os.path.isfile(fname):
+        data = read(fname)
+        dict_data = jsontools.load_json(data)
 
-    check_json_file(data, fname, dict_data)
+        check_json_file(data, fname, dict_data)
 
-    if node in dict_data:
-        dict_node = dict_data[node]
+        if node in dict_data:
+            dict_node = dict_data[node]
 
     logger.debug("dict_node: %s" % dict_node)
 
