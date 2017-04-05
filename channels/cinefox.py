@@ -673,9 +673,7 @@ def get_enlaces(item, url, type):
             if server == "streamin": server = "streaminto"
             if server == "waaw" or server == "miracine": server = "netutv"
             if server == "ul": server = "uploadedto"
-            if server == "videogk":
-                server = "vk"
-                scrapedurl = scrapedurl.replace("http://videogk.com/", "https://vk.com/video_ext.php")
+            if server == "player": server = "vimpleru"
             if servertools.is_server_enabled(server):
                 scrapedtitle = "    Ver en " + server.capitalize() + " [" + idioma + "/" + calidad + "]"
                 itemlist.append(item.clone(action="play", url=scrapedurl, title=scrapedtitle, text_color=color2,

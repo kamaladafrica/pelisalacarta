@@ -574,6 +574,7 @@ def add_serie_to_library(item, channel=None):
 
     """
     logger.info("show=#" + item.show + "#")
+
     if config.is_xbmc():
         from platformcode import xbmc_library
         xbmc_library.ask_set_content()
@@ -601,7 +602,6 @@ def add_serie_to_library(item, channel=None):
 
         # Obtiene el listado de episodios
         itemlist = getattr(channel, item.action)(item)
-
 
 
     insertados, sobreescritos, fallidos = save_library_tvshow(item, itemlist)

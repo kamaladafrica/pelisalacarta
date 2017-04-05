@@ -64,31 +64,24 @@ def mainlist(item):
 
     return itemlist
 
-def lista (item):
+
+def lista(item):
     logger.info()
-	
+
     itemlist = []
     max_items = 20
     next_page_url = ''
 
     data = httptools.downloadpage(item.url).data
-    
+    data = re.sub(r'"|\n|\r|\t|&nbsp;|<br>|\s{2,}', "", data)
 
     if item.extra == 'recomendadas':
-        patron = '<a href="(.*?)">.*?'
-        patron +='<div class="imgss">.*?'
-        patron +='<img src="(.*?)" alt="(.*?)(?:–.*?|\(.*?|&#8211;|").*?'
-        patron +='<div class="imdb">.*?'
-        patron +='<\/a>.*?'
-        patron +='<span class="ttps">.*?<\/span>.*?'
-        patron +='<span class="ytps">(.*?)<\/span><\/div>'
-        
+        patron = '<a href=(.*?)><div class=imgss><img src=(.*?) alt=(.*?)(?:–.*?|\(.*?|) width=120.*?icon-grade.*?' \
+                 'ttps>.*?ytps>(.*?)<\/span>'
     else:
-        patron = '<div class="imagen">.*?'
-        patron +='<img src="(.*?)" alt="(.*?)(?:–.*?|\(.*?|&#8211;|").*?'
-        patron +='<a href="([^"]+)"><(?:span) class="player"><\/span><\/a>.*?'
-        patron +='h2>\s*.*?(?:year)">(.*?)<\/span>.*?<\/div>'
-    matches = re.compile(patron,re.DOTALL).findall(data)
+        patron = '<div class=movie>.*?img src=(.*?) alt=(.*?)(?:–.*?|\(.*?|) width=.*?<a href=(.*?)>.*?<\/h2>.*?' \
+                 '(?:year.)(.*?)<\/span>'
+    matches = re.compile(patron, re.DOTALL).findall(data)
 
     if item.next_page != 'b':
       if len(matches) > max_items:
@@ -98,7 +91,7 @@ def lista (item):
     else:
       matches = matches[max_items:]
       next_page = 'a'
-      patron_next_page = '<div class="siguiente"><a href="(.*?)"|\/\?'
+      patron_next_page = '<div class=siguiente><a href=(.*?)\?'
       matches_next_page = re.compile(patron_next_page, re.DOTALL).findall(data)
       if len(matches_next_page) > 0:
         next_page_url = urlparse.urljoin(item.url, matches_next_page[0])
@@ -117,12 +110,16 @@ def lista (item):
         plot= ''
                        
         if 'serie' not in url:
-            itemlist.append( Item(channel=item.channel, action='findvideos' , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, contentTitle = title, infoLabels={'year':year}))
+            itemlist.append( Item(channel=item.channel, action='findvideos' , title=title , url=url,
+                                  thumbnail=thumbnail, plot=plot, fanart=fanart, contentTitle = title,
+                                  infoLabels={'year':year}))
     
     tmdb.set_infoLabels_itemlist(itemlist, seekTmdb = True)
     #Paginacion
     if next_page_url !='':
-      itemlist.append(Item(channel = item.channel, action = "lista", title = 'Siguiente >>>', url = next_page_url, thumbnail='https://s32.postimg.org/4zppxf5j9/siguiente.png',extra=item.extra, next_page = next_page))
+      itemlist.append(Item(channel = item.channel, action = "lista", title = 'Siguiente >>>', url = next_page_url,
+                           thumbnail='https://s32.postimg.org/4zppxf5j9/siguiente.png',extra=item.extra,
+                           next_page = next_page))
     return itemlist
 
 
@@ -171,7 +168,8 @@ def seccion(item):
           fanart = thumbnail
 
         if url not in duplicado:
-          itemlist.append( Item(channel=item.channel, action=accion , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart, contentTitle=contentTitle, infoLabels={'year':year}))
+          itemlist.append( Item(channel=item.channel, action=accion , title=title , url=url, thumbnail=thumbnail,
+                                plot=plot, fanart=fanart, contentTitle=contentTitle, infoLabels={'year':year}))
           duplicado.append(url)
     tmdb.set_infoLabels_itemlist(itemlist, seekTmdb = True)
     return itemlist
@@ -214,7 +212,9 @@ def get_url(item):
           calidad = dato_a
         title = item.contentTitle+' ('+calidad+')'
         if url not in duplicado:
-          itemlist.append( Item(channel=item.channel, action='play' , title=title , url=url, thumbnail=item.thumbnail, plot=item.plot, fanart=item.fanart, contentTitle = item.contentTitle, calidad = calidad))
+          itemlist.append( Item(channel=item.channel, action='play' , title=title , url=url, thumbnail=item.thumbnail,
+                                plot=item.plot, fanart=item.fanart, contentTitle = item.contentTitle,
+                                calidad = calidad))
           duplicado.append(url)
 
       return itemlist
@@ -236,8 +236,9 @@ def findvideos(item):
     itemlist =[]
     itemlist = get_url(item)
     if config.get_library_support() and len(itemlist) > 0 and item.extra !='findvideos' :
-        itemlist.append(Item(channel=item.channel, title='[COLOR yellow]Añadir esta pelicula a la biblioteca[/COLOR]', url=item.url,
-                             action="add_pelicula_to_library", extra="findvideos", contentTitle = item.contentTitle))
+        itemlist.append(Item(channel=item.channel, title='[COLOR yellow]Añadir esta pelicula a la biblioteca[/COLOR]',
+                             url=item.url, action="add_pelicula_to_library", extra="findvideos",
+                             contentTitle = item.contentTitle))
     return itemlist
 
 def search(item,texto):

@@ -6,9 +6,14 @@
 	<active>true</active>
 	<adult>false</adult>
 
-	<version>3</version>
+	<version>4</version>
 
 	<changes>
+		<change>
+			<date>28/03/2017</date>
+			<autor>Cmos</autor>
+			<description>Añadidas opciones listas y corregidos capitulos de series</description>
+		</change>
 		<change>
 			<date>15/03/2017</date>
 			<autor>SeiTaN</autor>

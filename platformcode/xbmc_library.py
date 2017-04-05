@@ -698,7 +698,7 @@ def ask_set_content():
     if config.get_setting("library_ask_set_content") == True and config.get_setting("library_set_content") == False:
         heading = "Pelisalacarta Auto-configuración"
         linea1 = "¿Desea que Pelisalacarta auto-configure la biblioteca de Kodi?"
-        linea2 = "Si no está seguro, puede cambiarlo desde el menu 'Preferencias/Rutas'"
+        linea2 = "Si pulsa 'no' y luego desea dicha integración deberá hacerlo manualmente."
         if platformtools.dialog_yesno(heading, linea1, linea2):
             config.set_setting("library_set_content", True)
             config.set_setting("library_ask_set_content", "active")

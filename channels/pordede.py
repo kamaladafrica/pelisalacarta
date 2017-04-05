@@ -11,6 +11,7 @@ import sys
 import urlparse
 
 from core import config
+from core import httptools
 from core import jsontools
 from core import logger
 from core import scrapertools
@@ -18,16 +19,28 @@ from core import servertools
 from core.item import Item
 from platformcode import platformtools
 
-DEFAULT_HEADERS = []
-DEFAULT_HEADERS.append( ["User-Agent","Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; es-ES; rv:1.9.2.12) Gecko/20101026 Firefox/3.6.12"] )
-DEFAULT_HEADERS.append( ["Referer","http://www.pordede.com"] )
-
 
 def login():
-    url = "http://www.pordede.com/site/login"
-    post = "LoginForm[username]="+config.get_setting("pordedeuser", "pordede")+"&LoginForm[password]="+config.get_setting("pordedepassword", "pordede")
-    headers = DEFAULT_HEADERS[:]
-    data = scrapertools.cache_page(url,headers=headers,post=post)
+    url_origen = "http://www.pordede.com"
+    data = httptools.downloadpage(url_origen).data
+    if config.get_setting("pordedeuser", "pordede") in data:
+        return True
+    
+    key = scrapertools.find_single_match(data, 'data-sitekey="([^"]+)"')
+    sess_check = scrapertools.find_single_match(data, ' SESS\s*=\s*"([^"]+)"')
+
+    result = platformtools.show_recaptcha(key, url_origen)
+    if result:
+        post = "LoginForm[username]="+config.get_setting("pordedeuser", "pordede")+"&LoginForm[password]="+config.get_setting("pordedepassword", "pordede")
+        post += "&LoginForm[verifyCode]=&g-recaptcha-response=%s&popup=1&sesscheck=%s" % (result, sess_check)
+
+        headers = {"Referer": url_origen, "X-Requested-With": "XMLHttpRequest"}
+        data = httptools.downloadpage("http://www.pordede.com/site/login", post, headers=headers, replace_headers=True).data
+        if "Login correcto, entrando" in data:
+            return True
+
+    return False
+
 
 def mainlist(item):
     logger.info()
@@ -37,7 +50,10 @@ def mainlist(item):
     if config.get_setting("pordedeuser", "pordede") == "":
         itemlist.append( Item( channel=item.channel , title="Habilita tu cuenta en la configuración..." , action="settingCanal" , url="") )
     else:
-        login()
+        result = login()
+        if not result:
+            itemlist.append(Item(channel=item.channel, action="mainlist", title="Login fallido. Volver a intentar..."))
+            return itemlist
         itemlist.append( Item(channel=item.channel, action="menuseries"    , title="Series"                   , url="" ))
         itemlist.append( Item(channel=item.channel, action="menupeliculas" , title="Películas y documentales" , url="" ))
         itemlist.append( Item(channel=item.channel, action="listas_sigues" , title="Listas que sigues"        , url="http://www.pordede.com/lists/following" ))
@@ -82,10 +98,8 @@ def menupeliculas(item):
 def generos(item):
     logger.info()
 
-    headers = DEFAULT_HEADERS[:]
-
     # Descarga la pagina
-    data = scrapertools.cache_page(item.url, headers=headers)
+    data = httptools.downloadpage(item.url).data
     logger.debug("data="+data)
 
     # Extrae las entradas (carpetas)
@@ -132,10 +146,8 @@ def buscar(item):
     logger.info()
 
     # Descarga la pagina
-    headers = DEFAULT_HEADERS[:]
-    #headers.append(["Referer",item.extra])
-    headers.append(["X-Requested-With","XMLHttpRequest"])
-    data = scrapertools.cache_page(item.url,headers=headers)
+    headers = {"X-Requested-With": "XMLHttpRequest"}
+    data = httptools.downloadpage(item.url, headers=headers).data
     logger.debug("data="+data)
 
     # Extrae las entradas (carpetas)
@@ -208,11 +220,8 @@ def siguientes(item):
     logger.info()
 
     # Descarga la pagina
-    headers = DEFAULT_HEADERS[:]
-    #headers.append(["Referer",item.extra])
-    headers.append(["X-Requested-With","XMLHttpRequest"])
-
-    data = scrapertools.cache_page(item.url,headers=headers)
+    headers = {"X-Requested-With": "XMLHttpRequest"}
+    data = httptools.downloadpage(item.url, headers=headers).data
     logger.debug("data="+data)
 
     # Extrae las entradas (carpetas)
@@ -257,10 +266,8 @@ def episodio(item):
     logger.info()
     itemlist = []
 
-    headers = DEFAULT_HEADERS[:]
-
     # Descarga la pagina
-    data = scrapertools.cache_page(item.url, headers=headers)
+    data = httptools.downloadpage(item.url).data
     logger.debug("data="+data)
 
     session = str(int(item.extra.split("|")[0]))
@@ -303,10 +310,8 @@ def peliculas(item):
     logger.info()
 
     # Descarga la pagina
-    headers = DEFAULT_HEADERS[:]
-    #headers.append(["Referer",item.extra])
-    headers.append(["X-Requested-With","XMLHttpRequest"])
-    data = scrapertools.cache_page(item.url,headers=headers)
+    headers = {"X-Requested-With": "XMLHttpRequest"}
+    data = httptools.downloadpage(item.url, headers=headers).data
     logger.debug("data="+data)
 
     # Extrae las entradas (carpetas)
@@ -319,11 +324,10 @@ def peliculas(item):
 def episodios(item):
     logger.info()
     itemlist = []
-    headers = DEFAULT_HEADERS[:]
 
     # Descarga la pagina
     idserie = ''
-    data = scrapertools.cache_page(item.url, headers=headers)
+    data = httptools.downloadpage(item.url).data
     logger.debug("data="+data)
 
     patrontemporada = '<div class="checkSeason"[^>]+>([^<]+)<div class="right" onclick="controller.checkSeason(.*?)\s+</div></div>'
@@ -381,10 +385,8 @@ def parse_listas(item, patron):
     logger.info()
 
     # Descarga la pagina
-    headers = DEFAULT_HEADERS[:]
-    #headers.append(["Referer",item.extra])
-    headers.append(["X-Requested-With","XMLHttpRequest"])
-    data = scrapertools.cache_page(item.url,headers=headers)
+    headers = {"X-Requested-With": "XMLHttpRequest"}
+    data = httptools.downloadpage(item.url, headers=headers).data
     logger.debug("data="+data)
 
     # Extrae las entradas (carpetas)
@@ -442,10 +444,8 @@ def lista(item):
     logger.info()
 
     # Descarga la pagina
-    headers = DEFAULT_HEADERS[:]
-    #headers.append(["Referer",item.extra])
-    headers.append(["X-Requested-With","XMLHttpRequest"])
-    data = scrapertools.cache_page(item.url,headers=headers)
+    headers = {"X-Requested-With": "XMLHttpRequest"}
+    data = httptools.downloadpage(item.url, headers=headers).data
     logger.debug("data="+data)
 
     # Extrae las entradas (carpetas)
@@ -460,16 +460,13 @@ def findvideos(item, verTodos=False):
     #logger.debug(item.tostring('\n'))
 
     # Descarga la pagina
-    headers = DEFAULT_HEADERS[:]
-    #headers.append(["Referer",item.extra])
-    #headers.append(["X-Requested-With","XMLHttpRequest"])
-    data = scrapertools.cache_page(item.url,headers=headers)
+    data = httptools.downloadpage(item.url).data
     logger.info(data)
-    #if (DEBUG): logger.info("data="+data)
+    #logger.debug("data="+data)
 
     # Extrae las entradas (carpetas)
     #json_object = jsontools.load_json(data)
-    #if (DEBUG): logger.info("html="+json_object["html"])
+    #logger.debug("html="+json_object["html"])
     #data = json_object["html"]
 
     sesion = scrapertools.find_single_match(data,'SESS = "([^"]+)";')
@@ -600,33 +597,20 @@ def findallvideos(item):
     return findvideos(item, True)
 
 def play(item):
-    logger.info("url="+item.url)
+    logger.info("url=" + item.url)
 
     # Marcar como visto
     checkseen(item.extra.split("|")[1])
 
     # Hace la llamada
-    headers = DEFAULT_HEADERS[:]
-    headers.append( ["Referer" , item.extra.split("|")[1] ])
+    headers = {'Referer': item.extra.split("|")[1]}
 
-    data = scrapertools.cache_page(item.url,post="_s="+item.extra.split("|")[0],headers=headers)
-    #if (DEBUG): logger.info("data="+data)
-    #url = scrapertools.find_single_match(data,'<a href="([^"]+)" target="_blank"><button>Visitar enlace</button>')
+    data = httptools.downloadpage(item.url, post="_s="+item.extra.split("|")[0], headers=headers).data
     url = scrapertools.find_single_match(data,'<p class="nicetry links">\s+<a href="([^"]+)" target="_blank"')
     url = urlparse.urljoin(item.url,url)
 
-    headers = DEFAULT_HEADERS[:]
-    headers.append( ["Referer" , item.url ])
-
-    #data2 = scrapertools.cache_page(url,headers=headers)
-    #logger.info("pelisalacarta.channels.pordede play (interstitial) url="+url)
-    #logger.info("data2="+data2)
-    #url2 = scrapertools.find_single_match(data2,'<a href="([^"]+)"><button disabled>Ir al vídeo</button>')
-    #url2 = urlparse.urljoin(item.url,url2)
-    #headers = DEFAULT_HEADERS[:]
-    #headers.append( ["Referer" , url2 ])
-
-    media_url = scrapertools.downloadpage(url,headers=headers,header_to_get="location",follow_redirects=False)
+    headers = {'Referer': item.url}
+    media_url = httptools.downloadpage(url, headers=headers, follow_redirects=False).headers.get("location")
     logger.info("media_url="+media_url)
 
     itemlist = servertools.find_video_items(data=media_url)
@@ -643,16 +627,14 @@ def checkseen(item):
     logger.info(item)
 
     if "/viewepisode/" in item:
-        headers = DEFAULT_HEADERS[:]
         episode = item.split("/")[-1]
-        scrapertools.downloadpage("http://www.pordede.com/ajax/action", post="model=episode&id="+episode+"&action=seen&value=1", headers=headers)
+        httptools.downloadpage("http://www.pordede.com/ajax/action", post="model=episode&id="+episode+"&action=seen&value=1")
 
     if "/what/peli" in item:
-        headers = DEFAULT_HEADERS[:]
-        data = scrapertools.cache_page(item, headers=headers)
+        data = httptools.downloadpage(item).data
         # GET MOVIE ID
         movieid = scrapertools.find_single_match(data,'href="/links/create/ref_id/([0-9]+)/ref_model/')
-        scrapertools.downloadpage("http://www.pordede.com/ajax/mediaaction", post="model=peli&id="+movieid+"&action=status&value=3", headers=headers)
+        httptools.downloadpage("http://www.pordede.com/ajax/mediaaction", post="model=peli&id="+movieid+"&action=status&value=3")
 
 
     return True
@@ -662,10 +644,8 @@ def infosinopsis(item):
 
     url_aux = item.url.replace("/links/view/slug/", "/peli/").replace("/what/peli", "")
     # Descarga la pagina
-    headers = DEFAULT_HEADERS[:]
-    #headers.append(["Referer",item.extra])
-    #headers.append(["X-Requested-With","XMLHttpRequest"])
-    data = scrapertools.cache_page(url_aux,headers=headers)
+
+    data = httptools.downloadpage(url_aux).data
     logger.debug("data="+data)
 
     scrapedtitle = scrapertools.find_single_match(data,'<h1>([^<]+)</h1>')
@@ -768,5 +748,5 @@ def valora_idioma(idioma_0, idioma_1):
     return pts
 
 def pordede_check(item):
-    headers = DEFAULT_HEADERS[:]
-    scrapertools.downloadpage("http://www.pordede.com/ajax/mediaaction", post="model="+item.tipo+"&id="+item.idtemp+"&action=status&value="+item.valor)
+    httptools.downloadpage("http://www.pordede.com/ajax/mediaaction", post="model="+item.tipo+"&id="+item.idtemp+"&action=status&value="+item.valor)
+

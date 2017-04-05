@@ -12,13 +12,14 @@ from core import scrapertools
 from core import httptools
 from lib import jsunpack
 
-headers = [['User-Agent', 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0']]
+headers = [['User-Agent', 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:51.0) Gecko/20100101 Firefox/51.0']]
 host = "http://streamplay.to/"
 
 
 def test_video_exists(page_url):
     logger.info("(page_url='%s')" % page_url)
-    data = httptools.downloadpage(page_url).data
+    referer = page_url.replace("embed-", "")[:-5]
+    data = httptools.downloadpage(page_url, headers={'Referer': referer}).data
     if data == "File was deleted":
         return False, "[Streamplay] El archivo no existe o ha sido borrado"
 
@@ -27,7 +28,8 @@ def test_video_exists(page_url):
 
 def get_video_url(page_url, premium=False, user="", password="", video_password=""):
     logger.info("(page_url='%s')" % page_url)
-    data = httptools.downloadpage(page_url).data
+    referer = page_url.replace("embed-", "")[:-5]
+    data = httptools.downloadpage(page_url, headers={'Referer': referer}).data
 
     jj_encode = scrapertools.find_single_match(data, "(\w+=~\[\];.*?\)\(\)\)\(\);)")
     jj_decode = None
@@ -73,10 +75,11 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
             rtmp + "vod/", playpath, host, page_url)
             filename = "RTMP"
         elif video_url.endswith(".m3u8"):
-            video_url += "|User-Agent=" + headers[0][1]
+            video_url += "|User-Agent=%s&Referer=%s" % (headers[0][1], page_url)
         elif video_url.endswith("/v.mp4"):
-            video_url_flv = re.sub(r'/v.mp4$', '/v.flv', video_url)
-            video_urls.append([".flv [streamplay]", re.sub(r'%s' % jj_patron, r'\1', video_url_flv)])
+            video_url += "|User-Agent=%s&Referer=%s" % (headers[0][1], page_url)
+            video_url_flv = re.sub(r'/v.mp4\|', '/v.flv|', video_url)
+            video_urls.append(["flv [streamplay]", re.sub(r'%s' % jj_patron, r'\1', video_url_flv)])
 
         video_urls.append([filename + " [streamplay]", re.sub(r'%s' % jj_patron, r'\1', video_url)])
 
