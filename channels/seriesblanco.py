@@ -176,11 +176,11 @@ def episodios(item):
     logger.debug("fanart: {0}".format(fanart))
     logger.debug("plot: {0}".format(plot))
 
-    ajaxSeasons = re.findall("loadSeason\((\d+),(\d+),(\d+)\)", data)
+    ajaxSeasons = re.findall("['\"]loadSeason\((\d+),(\d+)\)", data)
     ajaxData = ""
-    for showID, seasonNo, userID in ajaxSeasons:
+    for showID, seasonNo in ajaxSeasons:
         logger.debug("Ajax seasson request: Show = {0} - Season = {1}".format(showID, seasonNo))
-        ajaxData += httptools.downloadpage(HOST + '/ajax/load_season.php?season_id=' + showID + '&season_number=' + seasonNo + '&user=' + userID).data
+        ajaxData += httptools.downloadpage(HOST + '/ajax/load_season.php?season_id=' + showID + '&season_number=' + seasonNo).data
 
     if ajaxData:
         data = ajaxData
