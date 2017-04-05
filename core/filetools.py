@@ -607,7 +607,7 @@ def get_node_from_data_json(name_file, node):
 
     @param name_file: canal
     @type name_file: str
-    @param node: nombre del nod a obtener
+    @param node: nombre del nodo a obtener
     @type node: str
     @return: dict con el nodo a devolver
     @rtype: dict
@@ -665,7 +665,7 @@ def update_json_data(dict_node, filename, node):
     """
     actualiza el json_data de un fichero con el diccionario pasado
 
-    @param dict_node: diccionario con las series
+    @param dict_node: diccionario con el nodo
     @type dict_node: dict
     @param filename: nombre del fichero para guardar
     @type filename: str
