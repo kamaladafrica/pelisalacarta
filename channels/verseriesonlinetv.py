@@ -13,7 +13,7 @@ import xbmcgui
 import xbmc
 from core import config
 from core import logger
-from core import scrapertools
+from core import scrapertools,httptools
 from core import servertools
 from core.item import Item
 from core.scrapertools import decodeHtmlentities as dhe
@@ -105,7 +105,7 @@ def scraper(item):
     
 
     # Descarga la página
-    data = dhe( scrapertools.cachePage(item.url) )
+    data = dhe( httptools.downloadpage(item.url).data)
 
     patron = '<li class="item">.*?<a class="poster" href="([^"]+)".*?<img src="([^"]+)" alt="([^<]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
@@ -116,7 +116,7 @@ def scraper(item):
         
         #Busqueda del año y puntuacion
         urlyear =scrapedurl
-        data2 =  scrapertools.cachePage( scrapedurl )
+        data2 =  httptools.downloadpage(scrapedurl).data
         year= scrapertools.get_match(data2,'<h1>.*?<span>\((.*?)\)</span></h1>')
         points= scrapertools.get_match(data2,'<div class="number">.*?<b>(.*?)</b>')
         if points=="":
@@ -151,7 +151,7 @@ def fanart(item):
     logger.info("pelisalacarta.verseriesonlinetv fanart")
     itemlist = []
     url = item.url
-    data = dhe( scrapertools.cachePage(item.url) )
+    data = dhe(httptools.downloadpage(item.url).data)
     data = re.sub(r"\n|\r|\t|\s{2}|\(.*?\)|\[.*?\]|&nbsp;","",data)
     try:
      sinopsis= scrapertools.get_match(data,'<div class="sinopsis">.*?</b>(.*?)</div>')
@@ -169,12 +169,12 @@ def fanart(item):
     year = item.show.split("|")[1]
     
     url = "http://www.filmaffinity.com/es/advsearch.php?stext={0}&stype%5B%5D=title&country=&ggenre=TV_SE&fromyear={1}&toyear={1}".format(title, year)
-    data = scrapertools.downloadpage(url)
+    data = httptools.downloadpage(url).data
 
     url_filmaf = scrapertools.find_single_match(data, '<div class="mc-poster">\s*<a title="[^"]*" href="([^"]+)"')
     if url_filmaf:
         url_filmaf = "http://www.filmaffinity.com%s" % url_filmaf
-        data = scrapertools.downloadpage(url_filmaf)
+        data = httptools.downloadpage(url_filmaf).data
     else:
 
                try:
@@ -190,9 +190,9 @@ def fanart(item):
     
                  url_filma = scrapertools.get_match(subdata_bing,'<a href="([^"]+)')
                  if not "http" in url_filma:
-                    data = scrapertools.cachePage ("http://"+url_filma)
+                    data =httptools.downloadpage("http://"+url_filma).data
                  else:
-                    data = scrapertools.cachePage (url_filma)
+                    data = httptools.downloadpage(url_filma).data
                  data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
             
                except:
@@ -233,7 +233,7 @@ def fanart(item):
     ###Busqueda en tmdb
         
     url_tmdb="http://api.themoviedb.org/3/search/tv?api_key="+api_key+"&query=" + title +"&language=es&include_adult=false&first_air_date_year="+year
-    data_tmdb = scrapertools.cachePage(url_tmdb)
+    data_tmdb = httptools.downloadpage(url_tmdb).data
     data_tmdb = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data_tmdb)
     patron = '"page":1.*?,"id":(.*?),"backdrop_path":(.*?),"vote_average"'
     matches = re.compile(patron,re.DOTALL).findall(data_tmdb)
@@ -241,7 +241,7 @@ def fanart(item):
     ###Busqueda en bing el id de imdb de la serie
     if len(matches)==0:
          url_tmdb="http://api.themoviedb.org/3/search/tv?api_key="+api_key+"&query=" + title +"&language=es"
-         data_tmdb = scrapertools.cachePage(url_tmdb)
+         data_tmdb =httptools.downloadpage(url_tmdb).data
          data_tmdb = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data_tmdb)
          patron = '"page":1.*?,"id":(.*?),"backdrop_path":(.*?),"vote_average"'
          matches = re.compile(patron,re.DOTALL).findall(data_tmdb)
@@ -262,7 +262,7 @@ def fanart(item):
           ###Busca id de tvdb y tmdb mediante imdb id
          
           urlremotetbdb = "https://api.themoviedb.org/3/find/"+imdb_id+"?api_key="+api_key+"&external_source=imdb_id&language=es"
-          data_tmdb= scrapertools.cachePage(urlremotetbdb)
+          data_tmdb= httptools.downloadpage(urlremotetbdb).data
           matches= scrapertools.find_multiple_matches(data_tmdb,'"tv_results":.*?"id":(.*?),.*?"poster_path":(.*?),"popularity"')
          
           if len(matches)==0:
@@ -281,14 +281,14 @@ def fanart(item):
     for id_tmdb, fan in matches:
             ###Busca id tvdb
             urlid_tvdb="https://api.themoviedb.org/3/tv/"+id_tmdb+"/external_ids?api_key="+api_key+"&language=es"
-            data_tvdb = scrapertools.cachePage(urlid_tvdb)
+            data_tvdb = httptools.downloadpage(urlid_tvdb).data
             id= scrapertools.find_single_match(data_tvdb,'tvdb_id":(.*?),"tvrage_id"')
             if id == "null":
                id = ""
             category = id
             ###Busqueda nºepisodios y temporadas,status
             url_status ="http://api.themoviedb.org/3/tv/"+id_tmdb+"?api_key="+api_key+"&append_to_response=credits&language=es"
-            data_status= scrapertools.cachePage(url_status)
+            data_status= httptools.downloadpage(url_status).data
             season_episodes=scrapertools.find_single_match(data_status,'"(number_of_episodes":\d+,"number_of_seasons":\d+,)"')
             season_episodes=re.sub(r'"','',season_episodes)
             season_episodes=re.sub(r'number_of_episodes','Episodios ',season_episodes)
@@ -310,7 +310,7 @@ def fanart(item):
              url_rating_tvdb = "http://thetvdb.com/api/1D62F2F90030C444/series/"+id+"/es.xml"
              print "pepote"
              print url_rating_tvdb
-             data = scrapertools.cachePage(url_rating_tvdb)
+             data = httptools.downloadpage(url_rating_tvdb).data
              rating =scrapertools.find_single_match(data,'<Rating>(.*?)<')
             except:
               ratintg_tvdb = ""
@@ -341,7 +341,7 @@ def fanart(item):
             else:
              url ="http://api.themoviedb.org/3/tv/"+id_tmdb+"/images?api_key="+api_key
 
-             data = scrapertools.cachePage(url)
+             data = httptools.downloadpage(url).data
              data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
 
              file_path= scrapertools.find_multiple_matches(data, '"file_path":"(.*?)"')
@@ -381,7 +381,7 @@ def fanart(item):
 
 
             url ="http://webservice.fanart.tv/v3/tv/"+id+"?api_key="+api_fankey
-            data = scrapertools.cachePage(url)
+            data = httptools.downloadpage(url).data
             data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
             patron = '"clearlogo":.*?"url": "([^"]+)"'
             matches = re.compile(patron,re.DOTALL).findall(data)
@@ -506,7 +506,7 @@ def temporadas(item):
     itemlist = []
     
 
-    data = dhe( scrapertools.cachePage(item.url) )
+    data = dhe( httptools.downloadpage(item.url).data )
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
     
     
@@ -534,7 +534,7 @@ def temporadas(item):
 
         ###Busca poster de temporada Tmdb
         urltmdb_temp= "http://api.themoviedb.org/3/tv/"+item.show.split("|")[5]+"/season/"+temporada+"/images?api_key="+api_key
-        data = scrapertools.cachePage( urltmdb_temp )
+        data = httptools.downloadpage(urltmdb_temp).data
         data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
         patron = '{"id".*?"file_path":"(.*?)","height"'
         matches = re.compile(patron,re.DOTALL).findall(data)
@@ -553,7 +553,7 @@ def capitulos(item):
     
     itemlist = []
     
-    data = dhe( scrapertools.cachePage(item.url) )
+    data = dhe( httptools.downloadpage(item.url).data )
     patron = '<div class="item_episodio col-xs-3 ">.*?href="([^"]+)" title="([^<]+)".*?<img src="([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
     if len(matches)==0 :
@@ -576,7 +576,7 @@ def findvideos(item):
     logger.info("pelisalacarta.verseriesonlinetv findvideos")
     itemlist = []
     
-    data = scrapertools.cachePage(item.url)
+    data = httptools.downloadpage(item.url).data
     
     patron = '<td><a href="([^"]+)".*?<img src="([^"]+)" title="([^<]+)" .*?<td>([^<]+)</td>.*?<td>([^<]+)</td>'
     matches = re.compile(patron,re.DOTALL).findall(data)
@@ -695,7 +695,7 @@ def info(item):
     try:
       if not "serie" in item.url:
         url_plot = "http://api.themoviedb.org/3/movie/"+item.extra.split("|")[1]+"?api_key="+api_key+"&append_to_response=credits&language=es"
-        data_plot= scrapertools.cache_page( url_plot )
+        data_plot= httptools.downloadpage(url_plot).data
         plot,tagline = scrapertools.find_single_match(data_plot, '"overview":"(.*?)",.*?"tagline":(".*?")')
         if plot== "":
             plot = item.show.split("|")[2]
@@ -770,12 +770,12 @@ def info(item):
       
       
       url_tpi="http://api.themoviedb.org/3/tv/"+item.show.split("|")[5]+"/recommendations?api_key="+api_key+"&language=es"
-      data_tpi=scrapertools.cachePage(url_tpi)
+      data_tpi=httptools.downloadpage(url_tpi).data
       tpi=scrapertools.find_multiple_matches(data_tpi,'id":(.*?),.*?"original_name":"(.*?)",.*?"poster_path":(.*?),"popularity"')
 
     else:
       url_tpi="http://api.themoviedb.org/3/movie/"+item.extra.split("|")[1]+"/recommendations?api_key="+api_key+"&language=es"
-      data_tpi=scrapertools.cachePage(url_tpi)
+      data_tpi=httptools.downloadpage(url_tpi).data
       tpi=scrapertools.find_multiple_matches(data_tpi,'id":(.*?),.*?"original_title":"(.*?)",.*?"poster_path":(.*?),"popularity"')
 
             
@@ -805,7 +805,7 @@ def info_capitulos(item):
     if "/0" in url:
         url = url.replace("/0","/")
 
-    data = scrapertools.cachePage(url)
+    data =httptools.downloadpage(url).data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
     
     patron = '],"name":"(.*?)","overview":"(.*?)".*?"still_path":(.*?),"vote_average":(\d+\.\d).*?,"'
@@ -817,7 +817,7 @@ def info_capitulos(item):
       url="http://thetvdb.com/api/1D62F2F90030C444/series/"+item.category+"/default/"+item.extra.split("|")[2]+"/"+item.extra.split("|")[3]+"/es.xml"
       if "/0" in url:
          url = url.replace("/0","/")
-      data = scrapertools.cachePage(url)
+      data = httptools.downloadpage(url).data
       data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
     
       patron = '<Data>.*?<EpisodeName>([^<]+)</EpisodeName>.*?<Overview>(.*?)</Overview>.*?<Rating>(.*?)</Rating>'

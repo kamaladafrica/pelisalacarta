@@ -19,8 +19,8 @@ import xbmc
 import xbmcgui
 from core.scrapertools import decodeHtmlentities as dhe
 import unicodedata
-import socket
-socket.setdefaulttimeout(5)
+from core import httptools
+
 
 ACTION_SHOW_FULLSCREEN = 36
 ACTION_GESTURE_SWIPE_LEFT = 511
@@ -138,7 +138,7 @@ def peliculas(item):
     itemlist = []
     
     # Descarga la página
-    data = scrapertools.downloadpage(item.url, timeout=100)
+    data = httptools.downloadpage(item.url).data
     data=re.sub(r"Independance","Independence",data)
     if "serie" in item.url:
      patron = '<div class="corner-episode">(.*?)<\/div>.*?<a href="([^"]+)".*?image:url\(\'([^"]+)\'.*?"tooltipbox">(.*?)<br'
@@ -241,8 +241,7 @@ def fanart(item):
     logger.info("pelisalacarta.moviesultimate fanart")
     itemlist = []
     
-    url = item.url
-    data = scrapertools.downloadpage(url,timeout=100)
+    data = httptools.downloadpage(item.url).data
 
     title_fan = item.extra.split("|")[1]
     title= title_fan.replace(' ','%20')
@@ -266,12 +265,12 @@ def fanart(item):
 
 
         url = "http://www.filmaffinity.com/es/advsearch.php?stext={0}&stype%5B%5D=title&country=&genre=&fromyear={1}&toyear={1}".format(title, year)
-        data = scrapertools.downloadpage(url)
+        data = httptools.downloadpage(url).data
 
         url_filmaf = scrapertools.find_single_match(data, '<div class="mc-poster">\s*<a title="[^"]*" href="([^"]+)"')
         if url_filmaf:
            url_filmaf = "http://www.filmaffinity.com%s" % url_filmaf
-           data = scrapertools.downloadpage(url_filmaf)
+           data = httptools.downloadpage(url_filmaf).data
         else:
 
                try:
@@ -288,9 +287,9 @@ def fanart(item):
                  url_filma = scrapertools.get_match(subdata_bing,'<a href="([^"]+)')
                  
                  if not "http" in url_filma:
-                    data = scrapertools.cachePage ("http://"+url_filma)
+                    data = httptools.downloadpage("http://"+url_filma).data 
                  else:
-                    data = scrapertools.cachePage (url_filma)
+                    data = httptools.downloadpage (url_filma).data
                  data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
             
                except:
@@ -329,7 +328,7 @@ def fanart(item):
         print critica
     
         url="http://api.themoviedb.org/3/search/movie?api_key="+api_key+"&query=" + title +"&year="+year+ "&language=es&include_adult=false"
-        data = scrapertools.cachePage(url)
+        data = httptools.downloadpage(url).data
         data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
         patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),"popularity"'
         matches = re.compile(patron,re.DOTALL).findall(data)
@@ -341,7 +340,7 @@ def fanart(item):
                 title= re.sub(r":.*|\(.*?\)","",title)
                 url="http://api.themoviedb.org/3/search/movie?api_key="+api_key+"&query=" + title + "&language=es&include_adult=false"
                 
-                data = scrapertools.cachePage(url)
+                data = httptools.downloadpage(url).data
                 data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
                 patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),"popularity"'
                 matches = re.compile(patron,re.DOTALL).findall(data)
@@ -380,7 +379,7 @@ def fanart(item):
             item.extra= fanart
             
             url ="http://api.themoviedb.org/3/movie/"+id+"/images?api_key="+api_key
-            data = scrapertools.cachePage(url)
+            data = httptools.downloadpage(url).data
             data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
             
             patron = '"backdrops".*?"file_path":".*?",.*?"file_path":"(.*?)",.*?"file_path":"(.*?)",.*?"file_path":"(.*?)"'
@@ -400,7 +399,7 @@ def fanart(item):
     
             #clearart, fanart_2 y logo
             url ="http://webservice.fanart.tv/v3/movies/"+id+"?api_key="+api_fankey
-            data = scrapertools.cachePage(url)
+            data = httptools.downloadpage(url).data
             data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
             patron = '"hdmovielogo":.*?"url": "([^"]+)"'
             matches = re.compile(patron,re.DOTALL).findall(data)
@@ -492,9 +491,9 @@ def fanart(item):
         try:
           url_filma = scrapertools.get_match(subdata_bing,'<a href="([^"]+)')
           if not "http" in url_filma:
-            data = scrapertools.cachePage ("http://"+url_filma)
+            data = httptools.downloadpage ("http://"+url_filma).data
           else:
-            data = scrapertools.cachePage (url_filma)
+            data = httptools.downloadpage (url_filma).data
           data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
           year = scrapertools.get_match(data,'<dt>Año</dt>.*?>(.*?)</dd>')
         except:
@@ -609,7 +608,7 @@ def fanart(item):
              url_rating_tvdb = "http://thetvdb.com/api/1D62F2F90030C444/series/"+id+"/es.xml"
              print "pepote"
              print url_rating_tvdb
-             data = scrapertools.cachePage(url_rating_tvdb)
+             data = httptools.downloadpage(url_rating_tvdb).data
              rating =scrapertools.find_single_match(data,'<Rating>(.*?)<')
             except:
               ratintg_tvdb = ""
@@ -637,7 +636,7 @@ def fanart(item):
             item.extra= fanart
             
             url ="http://api.themoviedb.org/3/tv/"+id_tmdb+"/images?api_key="+api_key
-            data = scrapertools.cachePage(url)
+            data = httptools.downloadpage(url).data
             data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
             
             patron = '"backdrops".*?"file_path":".*?",.*?"file_path":"(.*?)",.*?"file_path":"(.*?)",.*?"file_path":"(.*?)"'
@@ -657,7 +656,7 @@ def fanart(item):
                 if fanart== item.fanart:
                     fanart= fanart_info
             url ="http://webservice.fanart.tv/v3/tv/"+id+"?api_key="+api_fankey
-            data = scrapertools.cachePage(url)
+            data = httptools.downloadpage(url).data
             data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
             patron = '"clearlogo":.*?"url": "([^"]+)"'
             matches = re.compile(patron,re.DOTALL).findall(data)
@@ -819,15 +818,18 @@ def findvideos(item):
     logger.info("pelisalacarta.miltorrent findvideos")
     
     itemlist = []
-    
-    data = scrapertools.cachePage(item.url, timeout=100 )
-    
+    data = httptools.downloadpage(item.url).data
     if not "serie" in item.url:
        thumbnail= item.category
     else:
       thumbnail= item.show.split("|")[4]
     patronbloque_enlaces = '<div class="detail_content_subtitle">(.*?)<\/div>(.*?)<div class="torrent_sep">'
     matchesenlaces = re.compile(patronbloque_enlaces,re.DOTALL).findall(data)
+    
+    if len(matchesenlaces)==0:
+        thumb=""
+        check=""
+        itemlist.append( Item(channel=item.channel, title = "[COLOR crimson][B]No hay Torrent[/B][/COLOR]" , action="mainlist", url="",  fanart=item.show.split("|")[0], thumbnail= thumbnail,  folder=False) )
     
     for calidad_bloque ,bloque_enlaces in matchesenlaces:
         
@@ -850,7 +852,6 @@ def findvideos(item):
         
         if "serie" in item.url:
             thumb = scrapertools.get_match(data,'<div class="detail_background2".*?url\(([^"]+)\)')
-            
             patron= '<a href=.*?(http.*?)\'\).*?<i>(.*?)<\/i>'
             matches=re.compile(patron,re.DOTALL).findall(bloque_enlaces)
             for url,calidad in matches:
@@ -858,18 +859,26 @@ def findvideos(item):
                 try:
                  if not url.endswith(".torrent") and not "elitetorrent" in url:
                     if url.endswith("fx") and url.startswith("http://estrenosli.org"):
-                       url=scrapertools.get_header_from_response(url, header_to_get="location")
+                       url= httptools.downloadpage(url,follow_redirects=False)
+                       url=url.headers.get("location")
+                       
                        if url.endswith(".fx"):
-                          url = scrapertools.get_header_from_response(url, header_to_get="location")
+                          url= httptools.downloadpage(url,follow_redirects=False)
+                          url=url.headers.get("location")
+                          
+                    
                        url=" http://estrenosli.org"+url
                     else:
                      if not url.endswith(".mkv"):
-                        url=scrapertools.get_header_from_response(url, header_to_get="location")
+                         url= httptools.downloadpage(url,follow_redirects=False)
+                         url=url.headers.get("location")
+                         
                  torrents_path = config.get_library_path()+'/torrents'
                 
                  if not os.path.exists(torrents_path):
                     os.mkdir(torrents_path)
                  try:
+                  urllib.URLopener.version = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36 SE 2.X MetaSr 1.0'   
                   urllib.urlretrieve (url, torrents_path+"/temp.torrent")
                   pepe = open( torrents_path+"/temp.torrent", "rb").read()
                  except:
@@ -939,25 +948,33 @@ def findvideos(item):
          patron= '<a href=.*?(http.*?)\'\).*?<i>(.*?)<i>(.*?)<\/i>'
          matches=re.compile(patron,re.DOTALL).findall(bloque_enlaces)
          for url,calidad,peso in matches:
+             
              try:
               if not url.endswith(".torrent") and not "elitetorrent" in url:
                 if url.endswith("fx") and url.startswith("http://estrenosli.org"):
-                    url=scrapertools.get_header_from_response(url, header_to_get="location")
+                    url= httptools.downloadpage(url,follow_redirects=False)
+                    url=url.headers.get("location")
+                    
                     if url.endswith(".fx"):
-                        url = scrapertools.get_header_from_response(url, header_to_get="location")
+                       url= httptools.downloadpage(url,follow_redirects=False)
+                       url=url.headers.get("location")
+                       
                     url=" http://estrenosli.org"+url
                 else:
                     if not url.endswith(".mkv"):
-                        url=scrapertools.get_header_from_response(url, header_to_get="location")
+                       url= httptools.downloadpage(url,follow_redirects=False)
+                       url=url.headers.get("location")
+                       
+              
               torrents_path = config.get_library_path()+'/torrents'
                 
               if not os.path.exists(torrents_path):
                 os.mkdir(torrents_path)
-              try:
-                urllib.urlretrieve (url, torrents_path+"/temp.torrent")
-                pepe = open( torrents_path+"/temp.torrent", "rb").read()
-              except:
-                pepe = ""
+              
+              urllib.URLopener.version = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36 SE 2.X MetaSr 1.0'   
+              urllib.urlretrieve (url, torrents_path+"/temp.torrent")
+              pepe = open( torrents_path+"/temp.torrent", "rb").read()
+            
               if "used CloudFlare" in pepe:
                  try:
                     urllib.urlretrieve("http://anonymouse.org/cgi-bin/anon-www.cgi/"+url.strip(), torrents_path+"/temp.torrent")
@@ -966,10 +983,10 @@ def findvideos(item):
                     pepe=""
               torrent = decode(pepe)
 
-              try:
-                 name = torrent["info"]["name"]
-              except:
-                 name = "no disponible"
+              try: 
+               name = torrent["info"]["name"]
+              except:   
+               name= "no disponible"    
               try:
                 check_video = scrapertools.find_multiple_matches(str(torrent["info"]["files"]),"'length': (\d+)}")
                 
@@ -1027,7 +1044,9 @@ def findvideos(item):
                 
                 
                 thumbnail =scrapertools.get_match(bloque_capitulos,'background-image:url\(\'([^"]+)\'')
+                
                 thumbnail = re.sub(r"w185","original",thumbnail)
+                
                 itemlist.append( Item(channel=item.channel, title = "[COLOR chartreuse][B]"+temporadas+"[/B][/COLOR]" , action="capitulos", url=item.url,  thumbnail= thumbnail,extra= "fv2"+"|"+bloque_capitulos+"|"+thumb+"|"+item.extra+"|"+check,show= item.show, fanart=item.show.split("|")[0],category=item.category,   folder=True) )
     
 
@@ -1210,7 +1229,7 @@ def info_capitulos(item):
     if "/0" in url:
         url = url.replace("/0","/")
 
-    data = scrapertools.cachePage(url)
+    data = httptools.downloadpage(url).data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
     
     patron = '],"name":"(.*?)","overview":"(.*?)".*?"still_path":(.*?),"vote_average":(\d+\.\d).*?,"'
@@ -1222,7 +1241,7 @@ def info_capitulos(item):
       url="http://thetvdb.com/api/1D62F2F90030C444/series/"+item.category+"/default/"+item.extra.split("|")[2]+"/"+item.extra.split("|")[3]+"/es.xml"
       if "/0" in url:
          url = url.replace("/0","/")
-      data = scrapertools.cachePage(url)
+      data = httptools.downloadpage(url).data
       data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
     
       patron = '<Data>.*?<EpisodeName>([^<]+)</EpisodeName>.*?<Overview>(.*?)</Overview>.*?<Rating>(.*?)</Rating>'
