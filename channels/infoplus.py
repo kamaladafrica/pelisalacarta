@@ -912,7 +912,7 @@ class related(xbmcgui.WindowDialog):
                         itemlist = channel.search(self.item.clone(), self.infoLabels.get("originaltitle", ""))
                 except:
                     import traceback
-                    logger.info(traceback.format_exc())
+                    logger.error(traceback.format_exc())
 
             elif control == self.global_search:
                 check_busqueda = "global"
