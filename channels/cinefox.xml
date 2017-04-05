@@ -7,8 +7,13 @@
 	<adult>false</adult>
 	<language>es</language>
 
-	<version>2</version>
+	<version>3</version>
 	<changes>
+		<change>
+			<date>05/04/2017</date>
+			<autor>Intel1</autor>
+			<description>Cambio en los servidores</description>
+		</change>
 		<change>
 			<date>21/03/2017</date>
 			<autor>Cmos</autor>
