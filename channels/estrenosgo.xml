@@ -12,13 +12,13 @@
 	<bannermenu>https://github.com/master-1970/resources/raw/master/images/bannermenu/estrenosgo.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>2</version>
+	<version>1</version>
 
 	<changes>
 		<change>
-			<date>15/03/2017</date>
-			<autor>SeiTaN</autor>
-			<description>limpieza código</description>
+			<date>03/05/16</date>
+			<autor>super_berny</autor>
+			<description>Modificado por cambios en la web</description>
 		</change>
 		<change> 
 			<date>29/04/16</date>

@@ -1,23 +1,25 @@
 # -*- coding: utf-8 -*-
-# ------------------------------------------------------------
+#------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para peliculasdk
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-# ------------------------------------------------------------
+#------------------------------------------------------------
+import string
 import os
 import re
 import sys
-import unicodedata
 import urllib
-
-import xbmc
-import xbmcgui
 from core import config
 from core import logger
 from core import scrapertools
-from core.item import Item
-from core.scrapertools import decodeHtmlentities as dhe
+from core import servertools
+from core import httptools
 from platformcode import platformtools
+from core.item import Item
+import xbmc
+import xbmcgui
+import unicodedata
+from core.scrapertools import decodeHtmlentities as dhe
 
 ACTION_SHOW_FULLSCREEN = 36
 ACTION_GESTURE_SWIPE_LEFT = 511
@@ -30,10 +32,20 @@ ACTION_MOVE_UP = 3
 OPTION_PANEL = 6
 OPTIONS_OK = 5
 
+krypton=False 
+DEBUG = config.get_setting("debug")
+
 #Proxy para acceder a datos(Este canal usa cloudflare con https)
 def get_page(url):
+    global krypton
+    xbmc_version =xbmc.getInfoLabel( "System.BuildVersion" )
+    check_xbmc_version = scrapertools.get_match(xbmc_version,'(\d+).')
     
-    data = scrapertools.downloadpage("http://ssl-proxy.my-addr.org/myaddrproxy.php/"+url)
+    if check_xbmc_version >=17:
+       krypton=True   
+       data = httptools.downloadpage(url).data
+    else:
+       data = httptools.downloadpage("http://ssl-proxy.my-addr.org/myaddrproxy.php/"+url).data
     
     
     return data
@@ -118,7 +130,7 @@ def search(item,texto):
        except:
            import sys
            for line in sys.exc_info():
-               logger.error("%s" % line)
+               logger.error( "%s" % line )
     else:
         if item.contentType != "movie" :
           item.url = "http://pasateatorrent.com/series/?s=%s&post_type=Buscar+serie" % (texto)
@@ -134,12 +146,13 @@ def search(item,texto):
         except:
            import sys
            for line in sys.exc_info():
-               logger.error("%s" % line)
+               logger.error( "%s" % line )
 
 
 def peliculas(item):
     logger.info()
     itemlist = []
+    global krypton
     check_url=""
     # Descarga la página
     data = get_page(item.url)
@@ -170,11 +183,14 @@ def peliculas(item):
                 xbmc.sleep(500)
     else:
        bloque_enlaces= scrapertools.find_single_match(data, '<div class="contenedor_imagenes">(.*?)<center><div class="navigation">')
-
-    patron = '<a href="\/myaddrproxy.php\/https\/([^"]+)/".*?src="\/myaddrproxy.php\/https\/([^"]+)".*?class="bloque_inferior">(.*?)<\/div>'
+    if krypton:
+       patron = '<a href="https://([^"]+)/".*?src="https://([^"]+)".*?class="bloque_inferior">(.*?)<\/div>'
+       matches = re.compile(patron,re.DOTALL).findall(bloque_enlaces) 
+       
+    else:      
         
-    
-    matches = re.compile(patron,re.DOTALL).findall(bloque_enlaces)
+       patron = '<a href="\/myaddrproxy.php\/https\/([^"]+)/".*?src="\/myaddrproxy.php\/https\/([^"]+)".*?class="bloque_inferior">(.*?)<\/div>'
+       matches = re.compile(patron,re.DOTALL).findall(bloque_enlaces)
 
 
 
@@ -191,7 +207,9 @@ def peliculas(item):
            scrapedurl = re.sub(r' ','-',scrapedurl).strip()
         scrapedthumbnail = "http://"+scrapedthumbnail
         scrapedthumbnail = re.sub(r' ','-',scrapedthumbnail)
-        title_fan= re.sub(r"\[.*?\]|\(.*?\)|\d+x\d+.*?Final|-\d+|-|\d+x\d+|Temporada.*?Completa| ;|\d+|Serie Completa|Especial.*","",scrapedtitle).strip()
+        title_fan= re.sub(r"\[.*?\]|\(.*?\)|\d+x\d+.*?Final|-\d+|-|\d+x\d+|Temporada.*?Completa| ;|Serie Completa|Especial.*","",scrapedtitle).strip()
+        if not "100" in scrapedtitle:
+              title_fan= re.sub(r"\d+","",title_fan)
         title_serie = re.sub('<br>.*','',scrapedtitle)
         if "serie" in item.url :
           try:
@@ -221,10 +239,13 @@ def peliculas(item):
 
         trailer = urllib.quote(trailer)
         extra = trailer+"|"+title_fan+"|"+"pelicula"+"|"+item.extra
-        if "Saga" in title or "Serie Completa" in title or "Tetralogía" in title or "Tetralogia" in title or "Trilogía" in title or "Trilogia" in title  or  "Pentalogía" in title or "Pentalogia" in title or "Pack Peliculas" in title or "Pack Películas" in title:
+        if "Saga" in title or "Serie Completa" in title or "Tetralogía" in title or "Tetralogia" in title or "Trilogía" in title or "Trilogia" in title  or  "Pentalogía" in title or "Pentalogia" in title or "Pack Peliculas" in title or "Pack Películas" in title or "Duología" in title or "Duologia" in title:
             if "serie" in item.url:
-                l_scrapedurl= re.sub(r"http://","http/",scrapedurl)
-                l_scrapedurl ="http://ssl-proxy.my-addr.org/myaddrproxy.php/"+scrapedurl
+                if krypton:
+                  l_scrapedurl= re.sub(r"http://","http/",scrapedurl)
+                  l_scrapedurl ="http://ssl-proxy.my-addr.org/myaddrproxy.php/"+scrapedurl
+                else:
+                  l_scrapedurl=scrapedurl
                 url = scrapertools.get_header_from_response(l_scrapedurl, header_to_get="location")
                 check_url=scrapertools.get_header_from_response(url, header_to_get="location")
                 if "series/?s" in check_url:
@@ -264,7 +285,7 @@ def peliculas(item):
                 extra= ""+"|"+"Especial"+"|"+scrapedtitle
             itemlist.append( Item(channel=item.channel, title ="        "+title  , url=scrapedurl, action="ver_capitulo", thumbnail=scrapedthumbnail, fanart=item.fanart,extra=extra, folder=True) )
         else:
-            if item.extra != "search" or item.extra=="search" and not "Saga" in title and not "Serie Completa" in title and not "Tetralogia" in title and not "Tetralogia" in title and not "Trilogía" in title and not "Trilogia" in title and not "Pentalogía" in title and not "Pentalogia" in title and not "Pack Peliculas" in title and not "Pack Películas" in title:
+            if item.extra != "search" or item.extra=="search" and not "Saga" in title and not "Serie Completa" in title and not "Tetralogia" in title and not "Tetralogia" in title and not "Trilogía" in title and not "Trilogia" in title and not "Pentalogía" in title and not "Pentalogia" in title and not "Pack Peliculas" in title and not "Pack Películas" in title or not "Duología" in title or not "Duologia" in title:
              if "series"  in scrapedurl and not "Serie Completa" in title :
     
                 if "Temporada" in scrapedtitle:
@@ -274,7 +295,7 @@ def peliculas(item):
              
              else:
                 
-                if not "Completa" in title and not "Tetralogía" in title and  not "Tetralogia" in title and not "Saga" in title and not "Trilogía" in title and not "Trilogia" in title and not "Pentalogía" in title and not "Pentalogia" in title and not "Pack Películas" in title and not "Pack Peliculas" in title:
+                if not "Completa" in title and not "Tetralogía" in title and  not "Tetralogia" in title and not "Saga" in title and not "Trilogía" in title and not "Trilogia" in title and not "Pentalogía" in title and not "Pentalogia" in title and not "Pack Películas" in title and not "Pack Peliculas" in title and not "Duología" in title and not "Duologia" in title:
                     title ="[COLOR khaki]        Ver pelicula[/COLOR]"
                 else:
                     if "Serie Completa" in title and check_url=="capitulos":
@@ -283,14 +304,23 @@ def peliculas(item):
                       continue
              itemlist.append( Item(channel=item.channel, title = title , url=scrapedurl, action="ver_capitulo", thumbnail=scrapedthumbnail, fanart=item.fanart,extra=extra, folder=True) )
     ## Paginación
-    patronvideos  = '<li class="barranav">.*?<a href="/myaddrproxy.php/https/([^"]+)" >Página siguiente '
-    matches = re.compile(patronvideos,re.DOTALL).findall(data)
+    if krypton:
+       patronvideos  = '<li class="barranav"><a href="([^"]+)" >P'
+       matches = re.compile(patronvideos,re.DOTALL).findall(data)
+       
+    else:
+       patronvideos  = '<li class="barranav">.*?<a href="/myaddrproxy.php/https/([^"]+)" >Página siguiente '
+       matches = re.compile(patronvideos,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
     if len(matches)>0:
         scrapedurl = matches[0]
+        if krypton:
+           url = scrapedurl
+        else:
+           url="http://"+scrapedurl
         title ="siguiente>>"
         title = "[COLOR slategray]"+title+"[/COLOR]"
-        itemlist.append( Item(channel=item.channel, action="peliculas", title=title , url="http://"+scrapedurl , thumbnail="http://s6.postimg.org/drfhhwrtd/muarrow.png", fanart=item.fanart,  folder=True) )
+        itemlist.append( Item(channel=item.channel, action="peliculas", title=title , url=url , thumbnail="http://s6.postimg.org/drfhhwrtd/muarrow.png", fanart=item.fanart,  folder=True) )
     
 
     return itemlist
@@ -322,12 +352,12 @@ def fanart(item):
         
         #filmafinity
         url = "http://www.filmaffinity.com/es/advsearch.php?stext={0}&stype%5B%5D=title&country=&genre=&fromyear={1}&toyear={1}".format(title, year)
-        data = scrapertools.downloadpage(url)
+        data = httptools.downloadpage(url).data
 
         url_filmaf = scrapertools.find_single_match(data, '<div class="mc-poster">\s*<a title="[^"]*" href="([^"]+)"')
         if url_filmaf:
            url_filmaf = "http://www.filmaffinity.com%s" % url_filmaf
-           data = scrapertools.downloadpage(url_filmaf)
+           data = httptools.downloadpage(url_filmaf).data
         else:
 
                try:
@@ -344,9 +374,9 @@ def fanart(item):
                  url_filma = scrapertools.get_match(subdata_bing,'<a href="([^"]+)')
     
                  if not "http" in url_filma:
-                    data = scrapertools.cachePage ("http://"+url_filma)
+                    data = httptools.downloadpage ("http://"+url_filma).data
                  else:
-                    data = scrapertools.cachePage (url_filma)
+                    data = httptools.downloadpage(url_filma).data
                  data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
             
                except:
@@ -384,7 +414,7 @@ def fanart(item):
         print critica
     
         url="http://api.themoviedb.org/3/search/movie?api_key="+api_key+"&query=" + title +"&year="+year+ "&language=es&include_adult=false"
-        data = scrapertools.cachePage(url)
+        data = httptools.downloadpage(url).data
         data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
         patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),"popularity"'
         matches = re.compile(patron,re.DOTALL).findall(data)
@@ -396,7 +426,7 @@ def fanart(item):
                 title= re.sub(r":.*|\(.*?\)","",title)
                 url="http://api.themoviedb.org/3/search/movie?api_key="+api_key+"&query=" + title + "&language=es&include_adult=false"
                 
-                data = scrapertools.cachePage(url)
+                data = httptools.downloadpage(url).data
                 data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
                 patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),"popularity"'
                 matches = re.compile(patron,re.DOTALL).findall(data)
@@ -435,7 +465,7 @@ def fanart(item):
             item.extra= fanart
             
             url ="http://api.themoviedb.org/3/movie/"+id+"/images?api_key="+api_key+""
-            data = scrapertools.cachePage(url)
+            data = httptools.downloadpage(url).data
             data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
             
             patron = '"backdrops".*?"file_path":".*?",.*?"file_path":"(.*?)",.*?"file_path":"(.*?)",.*?"file_path":"(.*?)"'
@@ -455,7 +485,7 @@ def fanart(item):
     
             #clearart, fanart_2 y logo
             url ="http://webservice.fanart.tv/v3/movies/"+id+"?api_key="+api_fankey
-            data = scrapertools.cachePage(url)
+            data = httptools.downloadpage(url).data
             data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
             patron = '"hdmovielogo":.*?"url": "([^"]+)"'
             matches = re.compile(patron,re.DOTALL).findall(data)
@@ -534,12 +564,12 @@ def fanart(item):
         
         #filmafinity
         url = "http://www.filmaffinity.com/es/advsearch.php?stext={0}&stype%5B%5D=title&country=&ggenre=TV_SE&fromyear={1}&toyear={1}".format(title, year)
-        data = scrapertools.downloadpage(url)
+        data = httptools.downloadpage(url).data
 
         url_filmaf = scrapertools.find_single_match(data, '<div class="mc-poster">\s*<a title="[^"]*" href="([^"]+)"')
         if url_filmaf:
            url_filmaf = "http://www.filmaffinity.com%s" % url_filmaf
-           data = scrapertools.downloadpage(url_filmaf)
+           data = httptools.downloadpage(url_filmaf).data
         else:
 
                try:
@@ -555,9 +585,9 @@ def fanart(item):
     
                  url_filma = scrapertools.get_match(subdata_bing,'<a href="([^"]+)')
                  if not "http" in url_filma:
-                    data = scrapertools.cachePage ("http://"+url_filma)
+                    data = httptools.downloadpage("http://"+url_filma).data
                  else:
-                    data = scrapertools.cachePage (url_filma)
+                    data = httptools.downloadpage(url_filma).data
                  data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
             
                except:
@@ -671,7 +701,7 @@ def fanart(item):
              url_rating_tvdb = "http://thetvdb.com/api/1D62F2F90030C444/series/"+id+"/es.xml"
              print "pepote"
              print url_rating_tvdb
-             data = scrapertools.cachePage(url_rating_tvdb)
+             data = httptools.downloadpage(url_rating_tvdb).data
              rating =scrapertools.find_single_match(data,'<Rating>(.*?)<')
             except:
               ratintg_tvdb = ""
@@ -698,7 +728,7 @@ def fanart(item):
             
             url ="http://api.themoviedb.org/3/tv/"+id_tmdb+"/images?api_key="+api_key
 
-            data = scrapertools.cachePage(url)
+            data = httptools.downloadpage(url).data
             data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
             
             patron = '"backdrops".*?"file_path":".*?",.*?"file_path":"(.*?)",.*?"file_path":"(.*?)",.*?"file_path":"(.*?)"'
@@ -718,7 +748,7 @@ def fanart(item):
                 fanart_3 = "https://image.tmdb.org/t/p/original" + fanart_3
                 fanart_2 = "https://image.tmdb.org/t/p/original" + fanart_2
             url ="http://webservice.fanart.tv/v3/tv/"+id+"?api_key="+api_fankey
-            data = scrapertools.cachePage(url)
+            data = httptools.downloadpage(url).data
             data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
             patron = '"clearlogo":.*?"url": "([^"]+)"'
             matches = re.compile(patron,re.DOTALL).findall(data)
@@ -866,8 +896,12 @@ def ver_capitulo(item):
             patron = 'alt="[^<]+".*?".*?Click'
             
             matches = re.compile(patron,re.DOTALL).findall(enlaces)
+            
             scrapertools.printMatches(matches)
-            catchurl = re.compile('<a href="/myaddrproxy.php/http/([^"]+)"',re.DOTALL).findall(str(matches))
+            if krypton:
+               catchurl = re.compile('<a href="([^"]+)"',re.DOTALL).findall(str(matches))
+            else:
+               catchurl = re.compile('<a href="/myaddrproxy.php/http/([^"]+)"',re.DOTALL).findall(str(matches))
             
             for datos in matches:
                 
@@ -922,8 +956,10 @@ def ver_capitulo(item):
           matches = re.compile(patron,re.DOTALL).findall(enlaces)'''
     
           scrapertools.printMatches(matches)
-          
-          catchurl = re.compile('<a href="/myaddrproxy.php/http/([^"]+)"',re.DOTALL).findall(str(matches))
+          if krypton:
+             catchurl = re.compile('<a href="([^"]+)"',re.DOTALL).findall(str(matches))
+          else:
+             catchurl = re.compile('<a href="/myaddrproxy.php/http/([^"]+)"',re.DOTALL).findall(str(matches))
           
           for datos in matches:
             
@@ -963,7 +999,10 @@ def ver_capitulo(item):
     if index != -1:
         index =str(index)
         url = scrapertools.get_match(get_url,'\('+index+', \'(.*?)\'')
-        item.url= "http://"+url
+        if krypton:
+           item.url=url
+        else:
+           item.url= "http://"+url
         item.server = "torrent"
         platformtools.play_video(item)
         xbmc.executebuiltin('Action(Back)')
@@ -987,8 +1026,11 @@ def findvideos(item):
        thumbnail= item.category
     if "series" in item.url :
         try:
-            url =scrapertools.get_match(data,'<a style="float:left;" href="/myaddrproxy.php/https/([^"]+)">Temporada Anterior')
-            url_a = "http://"+url
+            if krypton:
+              url =scrapertools.get_match(data,'<a style="float:left;" href="([^"]+)">Temporada Anterior')
+            else:
+                url =scrapertools.get_match(data,'<a style="float:left;" href="/myaddrproxy.php/https/([^"]+)">Temporada Anterior')
+                url_a = "http://"+url
             temp_a=scrapertools.get_match(url,'temporada-(\d+)')
             year = item.extra.split("|")[1]
             
@@ -1043,7 +1085,10 @@ def findvideos(item):
            check="pelicula"
 
         if "Completa" in item.title and check == "" or not "Completa" in item.title and check == "" :
-            patron = 'icono_.*?png" title="(.*?)".*?<td>.*?<.*?<td>(.*?)<.*?<a href="/myaddrproxy.php/http/([^"]+)"'
+            if krypton:
+               patron = 'icono_.*?png" title="(.*?)".*?<td>.*?<.*?<td>(.*?)<.*?<a href="([^"]+)"'
+            else:
+               patron = 'icono_.*?png" title="(.*?)".*?<td>.*?<.*?<td>(.*?)<.*?<a href="/myaddrproxy.php/http/([^"]+)"'
             matches = re.compile(patron,re.DOTALL).findall(enlaces)
             scrapertools.printMatches(matches)
 
@@ -1055,7 +1100,7 @@ def findvideos(item):
                 except:
                  temp="0"
                 url_tmdb2= "http://api.themoviedb.org/3/tv/"+item.show.split("|")[5]+"/season/"+temp+"/images?api_key="+api_key+""
-                data = scrapertools.cachePage( url_tmdb2 )
+                data = httptools.downloadpage( url_tmdb2 ).data
                 data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
                 patron = '{"id".*?"file_path":"(.*?)","height"'
                 matches = re.compile(patron,re.DOTALL).findall(data)
@@ -1077,7 +1122,10 @@ def findvideos(item):
                        url = "http://"+url
                     itemlist.append( Item(channel=item.channel, title = title , action="play", url=url, server="torrent", thumbnail= thumbnail,extra=item.extra,show= item.show, fanart=item.show.split("|")[0],   folder=False) )
         else:
-           patron = 'icono_.*?png".*?alt="(.*?)".*?<td>(.*?)<\/td>.*?<td>(.*?)<\/td>.*?href="\/myaddrproxy.php\/http\/([^"]+)"'
+           if krypton:
+              patron = 'icono_.*?png".*?alt="(.*?)".*?<td>(.*?)<\/td>.*?<td>(.*?)<\/td>.*?href="([^"]+)"'
+           else:   
+              patron = 'icono_.*?png".*?alt="(.*?)".*?<td>(.*?)<\/td>.*?<td>(.*?)<\/td>.*?href="\/myaddrproxy.php\/http\/([^"]+)"'
            matches = re.compile(patron,re.DOTALL).findall(enlaces)
            scrapertools.printMatches(matches)
            
@@ -1097,7 +1145,10 @@ def findvideos(item):
                 idioma = re.sub(r'\(Contra.*?\)','',idioma)
                 if "Completa" in peso and check == "":
                    continue
-                url="http://"+url
+                if krypton:
+                   url=url
+                else:
+                   url="http://"+url
                 torrents_path = config.get_library_path()+'/torrents'
                 if not os.path.exists(torrents_path):
                     os.mkdir(torrents_path)
@@ -1151,7 +1202,7 @@ def findvideos(item):
     
                    for temp, epi in temp_epi:
                         url_tmdb2= "http://api.themoviedb.org/3/tv/"+item.show.split("|")[5]+"/season/"+temp+"/images?api_key="+api_key+""
-                        data = scrapertools.cachePage( url_tmdb2 )
+                        data = httptools.downloadpage( url_tmdb2 ).data
                         data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
                         patron = '{"id".*?"file_path":"(.*?)","height"'
                         matches = re.compile(patron,re.DOTALL).findall(data)
@@ -1396,7 +1447,7 @@ def info_capitulos(item):
     if "/0" in url:
         url = url.replace("/0","/")
 
-    data = scrapertools.cachePage(url)
+    data = httptools.downloadpage(url).data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
     
     patron = '],"name":"(.*?)","overview":"(.*?)".*?"still_path":(.*?),"vote_average":(\d+\.\d).*?,"'
@@ -1408,7 +1459,7 @@ def info_capitulos(item):
       url="http://thetvdb.com/api/1D62F2F90030C444/series/"+item.category+"/default/"+item.extra.split("|")[2]+"/"+item.extra.split("|")[3]+"/es.xml"
       if "/0" in url:
          url = url.replace("/0","/")
-      data = scrapertools.cachePage(url)
+      data = httptools.downloadpage(url).data
       data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
     
       patron = '<Data>.*?<EpisodeName>([^<]+)</EpisodeName>.*?<Overview>(.*?)</Overview>.*?<Rating>(.*?)</Rating>'
@@ -1636,6 +1687,7 @@ def decode(text):
     return data
 def convert_size(size):
    import math
+   from os.path import getsize
    if (size == 0):
        return '0B'
    size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")

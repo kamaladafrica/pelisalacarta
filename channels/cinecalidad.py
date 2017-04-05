@@ -40,7 +40,7 @@ def submenu(item):
     if item.host == "http://cinemaqualidade.com/" : 
        idioma = "filmes"
        idioma2 = "destacado"
-    logger.info("pelisalacarta.channels.cinecalidad submenu")
+    logger.info()
     itemlist = []
     itemlist.append( Item(channel=item.channel, title=idioma.capitalize(), action="peliculas", url=host,thumbnail='https://s31.postimg.org/4g4lytrqj/peliculas.png', fanart='https://s31.postimg.org/4g4lytrqj/peliculas.png'))
     itemlist.append( Item(channel=item.channel, title="Destacadas", action="peliculas", url=host+"/genero-"+idioma+"/"+idioma2+"/", thumbnail='https://s32.postimg.org/wzyinepsl/destacadas.png', fanart='https://s32.postimg.org/wzyinepsl/destacadas.png'))

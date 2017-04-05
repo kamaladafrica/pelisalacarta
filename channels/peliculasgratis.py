@@ -39,9 +39,9 @@ CALIDADES= {"micro1080p":"[COLOR plum]Micro1080p[/COLOR]","dvds":"[COLOR lime]Dv
             "hdts":"[COLOR aqua]Hdts[/COLOR]","bluray-line":"[COLOR lightslategray]Bluray-line[/COLOR]",
             "hdtv-rip":"[COLOR black]Hdtv-rip[/COLOR]","micro720p":"[COLOR yellow]Micro720p[/COLOR]","ts-hq":"[COLOR mediumspringgreen]Ts-Hq[/COLOR]","camrip":"[COLOR royalblue]Camp-Rip[/COLOR]","webs":"[COLOR lightsalmon]Webs[/COLOR]","hd":"[COLOR mediumseagreen]HD[/COLOR]"}
 IDIOMAS = {"castellano": "[COLOR yellow]Castelllano[/COLOR]", "latino":"[COLOR orange]Latino[/COLOR]",
-           "vose": "[COLOR lightsalmon]Subtitulada[/COLOR]", "vo": "[COLOR crimson]Ingles[/COLOR]"}
+           "vose": "[COLOR lightsalmon]Subtitulada[/COLOR]", "vo": "[COLOR crimson]Ingles[/COLOR]", "en": "[COLOR crimson]Ingles[/COLOR]"}
 IDIOMASP={"es": "[COLOR yellow]CAST[/COLOR]", "la":"[COLOR orange]LAT[/COLOR]",
-           "vs": "[COLOR lightsalmon]SUB[/COLOR]", "vo": "[COLOR crimson]Ingles[/COLOR]"}
+           "vs": "[COLOR lightsalmon]SUB[/COLOR]", "vo": "[COLOR crimson]Ingles[/COLOR]", "en": "[COLOR crimson]INGL[/COLOR]"}
 
 #Para la busqueda en bing evitando baneos
 
@@ -152,7 +152,14 @@ def scraper(item):
                   idioma2=IDIOMASP.get(idioma2)
                   idioma3=IDIOMASP.get(idioma3)
                   idiomas = "-"+idioma1+"|"+ idioma2+"|"+idioma3
-
+            elif len(idiomas)>=4:
+                  idioma1,idioma2,idioma3,idioma4=idiomas[0],idiomas[1],idiomas[2],idiomas[3]
+                  idioma1=IDIOMASP.get(idioma1)
+                  idioma2=IDIOMASP.get(idioma2)
+                  idioma3=IDIOMASP.get(idioma3)
+                  idioma4=IDIOMASP.get(idioma4)
+                  idiomas = "-"+idioma1+"|"+ idioma2+"|"+idioma3+"|"+idioma4 
+        
             title = "[COLOR cornflowerblue][B]"+title+"[/B][/COLOR]"+" "+ quality + " "+idiomas
         
         itemlist.append( Item(channel=item.channel, title =title , url=urlparse.urljoin(host, url), action="fanart", thumbnail=thumb, fanart="http://imgur.com/nqmJozd.jpg",extra=title_fan+"|"+title_item+"|"+check_year.strip(), contentType=item.contentType , folder=True) )
@@ -702,11 +709,11 @@ def info(item):
     peliculas = []
     if item.contentType !="movie":
       url_tpi="http://api.themoviedb.org/3/tv/"+item.extra.split("|")[2]+"/recommendations?api_key="+api_key+"&language=es"
-      data_tpi=scrapertools.cachePage(url_tpi)
+      data_tpi=httptools.downloadpage(url_tpi).data
       tpi=scrapertools.find_multiple_matches(data_tpi,'id":(.*?),.*?"original_name":"(.*?)",.*?"poster_path":(.*?),"popularity"')
     else:
       url_tpi="http://api.themoviedb.org/3/movie/"+item.extra.split("|")[2]+"/recommendations?api_key="+api_key+"&language=es"
-      data_tpi=scrapertools.cachePage(url_tpi)
+      data_tpi= httptools.downloadpage(url_tpi).data
       tpi=scrapertools.find_multiple_matches(data_tpi,'id":(.*?),.*?"original_title":"(.*?)",.*?"poster_path":(.*?),"popularity"')
 
     for idp,peli,thumb in tpi:

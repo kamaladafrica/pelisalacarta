@@ -452,7 +452,7 @@ def findvideos(item):
     logger.info()
     itemlist = []
     fanart=""
-    data = scrapertools.cachePage(item.url)
+    data = httptools.downloadpage(item.url).data
     if item.contentType!="movie":
      itmdb = tmdb.Tmdb(id_Tmdb=item.extra.split("|")[3], tipo=item.extra.split("|")[8])
      season= itmdb.result.get("seasons")
@@ -543,21 +543,28 @@ def findvideos_enlaces(item):
     logger.info()
     itemlist = []
     check_epi2=""
-    data = scrapertools.cachePage(item.url)
-    url= scrapertools.find_single_match(data,'SKIP THIS AD.*?<a href="([^"]+)"')
+    data = httptools.downloadpage(item.url).data
+    
+    url= scrapertools.find_single_match(data,'window.location.href = "([^"]+)"').strip()
+        
     try:
+     
      if not url.endswith(".torrent") :
-        url=scrapertools.get_header_from_response(url, header_to_get="location")
-        if not url.endswith(".torrent") :
-            url = scrapertools.get_header_from_response(url, header_to_get="location")
-                
+         url= httptools.downloadpage(url,follow_redirects=False)
+         url=url.headers.get("location")
+         
+         if not url.endswith(".torrent") :
+            url= httptools.downloadpage(url,follow_redirects=False)
+            url=url.headers.get("location")
      else:
-        url=scrapertools.get_header_from_response(url, header_to_get="location")
+         url= httptools.downloadpage(url,follow_redirects=False)
+         url=url.headers.get("location") 	
      torrents_path = config.get_library_path()+'/torrents'
             
      if not os.path.exists(torrents_path):
         os.mkdir(torrents_path)
      try:
+        urllib.URLopener.version = 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:51.0) Gecko/20100101 Firefox/51.0' 
         urllib.urlretrieve (url, torrents_path+"/temp.torrent")
         pepe = open( torrents_path+"/temp.torrent", "rb").read()
      except:
@@ -658,7 +665,6 @@ def capitulos(item):
     itemlist = []
     url=item.url
     Join_extras="|".join(item.extra.split("|")[0:11])
-    logger.info(item.extra)
     capis =  item.extra.split("|")[11]
     capis =re.sub(r'\[|\]','',capis)
     capis=[int(k) for k in capis.split(',')]
@@ -741,11 +747,11 @@ def info(item):
     peliculas = []
     if item.contentType !="movie":
       url_tpi="http://api.themoviedb.org/3/tv/"+item.extra.split("|")[2]+"/recommendations?api_key="+api_key+"&language=es"
-      data_tpi=scrapertools.cachePage(url_tpi)
+      data_tpi=httptools.downloadpage(url_tpi).data
       tpi=scrapertools.find_multiple_matches(data_tpi,'id":(.*?),.*?"original_name":"(.*?)",.*?"poster_path":(.*?),"popularity"')
     else:
       url_tpi="http://api.themoviedb.org/3/movie/"+item.extra.split("|")[2]+"/recommendations?api_key="+api_key+"&language=es"
-      data_tpi=scrapertools.cachePage(url_tpi)
+      data_tpi=httptools.downloadpage(url_tpi).data
       tpi=scrapertools.find_multiple_matches(data_tpi,'id":(.*?),.*?"original_title":"(.*?)",.*?"poster_path":(.*?),"popularity"')
 
     for idp,peli,thumb in tpi:
@@ -888,6 +894,7 @@ def tokenize(text, match=re.compile("([idel])|(\d+):|(-?\d+)").match):
 
 
 def decode_item(next, token):
+    
     if token == "i":
         # integer: "i" value "e"
         data = int(next())
