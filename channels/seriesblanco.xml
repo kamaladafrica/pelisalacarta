@@ -12,9 +12,19 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/seriesblanco.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/develop/python/main-classic/channels/</update_url>
-	<version>17</version>
-	<date>01/04/2017</date>
-	<changes>Cambiado canal.</changes>
+	<version>18</version>
+	<changes>
+		<change>
+			<date>06/04/2017</date>
+			<autor>SeiTaN</autor>
+			<description>Mejoras en filtertools</description>
+		</change>
+		<change>
+			<date>01/04/2017</date>
+			<autor>Palatosino</autor>
+			<description>Cambiado canal.</description>
+		</change>
+	</changes>
 
 	<categories>
 		<category>serie</category>
@@ -37,6 +47,23 @@
 		<default>true</default>
 		<enabled>true</enabled>
 		<visible>true</visible>
+	</settings>
+
+	<settings>
+		<id>filter_languages</id>
+		<type>list</type>
+		<label>Mostrar enlaces en idioma...</label>
+		<default>0</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+		<lvalues>No filtrar</lvalues>
+		<lvalues>Español</lvalues>
+		<lvalues>Inglés</lvalues>
+		<lvalues>Latino</lvalues>
+		<lvalues>VO</lvalues>
+		<lvalues>VOS</lvalues>
+		<lvalues>VOSI</lvalues>
+		<lvalues>OVOS</lvalues>
 	</settings>
 	<settings>
 		<id>filterlinks</id>

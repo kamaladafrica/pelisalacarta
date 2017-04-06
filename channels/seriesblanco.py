@@ -53,8 +53,7 @@ def mainlist(item):
                          url=HOST , thumbnail=thumb_series))
     itemlist.append(Item(channel=item.channel, title="Buscar...", action="search", url=HOST, thumbnail=thumb_buscar))
 
-    if filtertools.context:
-        itemlist = filtertools.show_option(itemlist, item.channel, list_idiomas, CALIDADES)
+    itemlist = filtertools.show_option(itemlist, item.channel, list_idiomas, CALIDADES)
 
     return itemlist
 
@@ -88,7 +87,7 @@ def extractSeriesFromData(item, data):
         logger.debug("Show found: {name} -> {url} ({img})".format(name = name, url = url, img = img))
         itemlist.append(item.clone(title=name, url=urlparse.urljoin(HOST, url),
                                    action="episodios" if not episodePattern.search(url) else "findvideos", show=name, thumbnail=img,
-                                   list_idiomas=list_idiomas, list_calidad=CALIDADES, context=filtertools.context))
+                                   list_language=list_idiomas, list_quality=CALIDADES, context=filtertools.context))
 
     morePages = re.search('pagina=([0-9]+)">>>', data)
     if morePages:
@@ -192,10 +191,9 @@ def episodios(item):
         logger.debug("Episode found {0}: {1}".format(displayTitle, urlparse.urljoin(HOST, url)))
         itemlist.append(item.clone(title=displayTitle, url=urlparse.urljoin(HOST, url),
                                    action="findvideos", plot=plot, fanart=fanart, language=idiomas,
-                                   list_idiomas=list_idiomas, list_calidad=CALIDADES, context=filtertools.context))
+                                   list_language=list_idiomas, list_quality=CALIDADES, context=filtertools.context))
 
-    if len(itemlist) > 0 and filtertools.context:
-        itemlist = filtertools.get_links(itemlist, item.channel)
+    itemlist = filtertools.get_links(itemlist, item.channel)
 
     if config.get_library_support() and len(itemlist) > 0:
         itemlist.append(item.clone(title="Añadir esta serie a la biblioteca", action="add_serie_to_library", extra="episodios"))
@@ -228,11 +226,10 @@ def parseVideos(item, typeStr, data):
                         vFields.get("uploader"), vFields.get("date"))
             itemlist.append(item.clone(title=title, fulltitle=item.title, url=urlparse.urljoin(HOST, vFields.get("link")),
                                        action="play", language=IDIOMAS.get(vFields.get("language"), "OVOS"),
-                                       quality=quality, list_idiomas=list_idiomas, list_calidad=CALIDADES,
+                                       quality=quality, list_language=list_idiomas, list_quality=CALIDADES,
                                        context=filtertools.context))
 
-        if len(itemlist) > 0 and filtertools.context:
-            itemlist = filtertools.get_links(itemlist, item.channel)
+        itemlist = filtertools.get_links(itemlist, item.channel)
 
         if len(itemlist) > 0:
             return itemlist

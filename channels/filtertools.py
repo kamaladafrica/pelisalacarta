@@ -133,9 +133,10 @@ context = context()
 
 def show_option(itemlist, channel, list_language, list_quality):
 
-    itemlist.append(Item(channel=__channel__, title="[COLOR {0}]Configurar filtro para series...[/COLOR]".
-                         format(COLOR.get("parent_item", "auto")),
-                         action="load", list_language=list_language, list_quality=list_quality, from_channel=channel))
+    if context:
+        itemlist.append(Item(channel=__channel__, title="[COLOR {0}]Configurar filtro para series...[/COLOR]".
+                             format(COLOR.get("parent_item", "auto")), action="load", list_language=list_language,
+                             list_quality=list_quality, from_channel=channel))
 
     return itemlist
 
@@ -159,13 +160,17 @@ def get_link(list_item, item, global_filter_lang_id="filter_languages"):
     """
     logger.info()
 
+    # si no existe elementos en item_list o si es una plataforma que no permite filtrar, salimos
+    if len(list_item) == 0 or not context:
+        return list_item
+
     logger.debug("total de items : {0}".format(len(list_item)))
 
     quality_count = 0
     language_count = 0
     # global filter_global
     _filter = Filter(item, global_filter_lang_id).result
-    logger.debug("filter datos: {0}".format(_filter))
+    logger.debug("filter: '{0}' datos: '{1}'".format(item.show, _filter))
 
     if _filter and _filter.active:
 
@@ -232,7 +237,7 @@ def get_links(list_item, channel, global_filter_lang_id="filter_languages"):
     language_count = 0
 
     _filter = Filter(list_item[0], global_filter_lang_id).result
-    logger.debug("filter datos: {0}".format(_filter))
+    logger.debug("filter: '{0}' datos: '{1}'".format(list_item[0].show, _filter))
 
     if _filter and _filter.active:
 
@@ -411,14 +416,14 @@ def config_item(item):
         "type": "list",
         "label": "Idioma",
         "color": "0xFFee66CC",
-        "default": item.list_idiomas.index(lang_selected),
+        "default": item.list_language.index(lang_selected),
         "enabled": True,
         "visible": True,
-        "lvalues": item.list_idiomas
+        "lvalues": item.list_language
     }
     list_controls.append(language_option)
 
-    if item.list_calidad:
+    if item.list_quality:
         list_controls_calidad = [
             {
                 "id": "textoCalidad",
@@ -429,7 +434,7 @@ def config_item(item):
                 "visible": True,
             },
         ]
-        for element in sorted(item.list_calidad, key=str.lower):
+        for element in sorted(item.list_quality, key=str.lower):
             list_controls_calidad.append({
                 "id": element,
                 "type": "bool",
@@ -466,13 +471,15 @@ def borrar_filtro(item):
             fname, json_data = filetools.update_json_data(dict_series, item.from_channel, TAG_TVSHOW_FILTER)
             result = filetools.write(fname, json_data)
 
+            sound = False
             if result:
                 message = "FILTRO ELIMINADO"
             else:
                 message = "Error al guardar en disco"
+                sound = True
 
             heading = "{0} [{1}]".format(item.show.strip(), lang_selected)
-            platformtools.dialog_notification(heading, message)
+            platformtools.dialog_notification(heading, message, sound=sound)
 
             if config.get_platform() == "mediaserver":
                 platformtools.itemlist_refresh()
@@ -502,10 +509,10 @@ def guardar_valores(item, dict_data_saved):
 
         list_quality = []
         for _id, value in dict_data_saved.items():
-            if _id in item.list_calidad and value:
+            if _id in item.list_quality and value:
                     list_quality.append(_id.lower())
 
-        lang_selected = item.list_idiomas[dict_data_saved[TAG_LANGUAGE]]
+        lang_selected = item.list_language[dict_data_saved[TAG_LANGUAGE]]
         dict_filter = {TAG_NAME: item.show, TAG_ACTIVE: dict_data_saved.get(TAG_ACTIVE, True),
                        TAG_LANGUAGE: lang_selected, TAG_QUALITY_NOT_ALLOWED: list_quality}
         dict_series[tvshow] = dict_filter
@@ -513,13 +520,15 @@ def guardar_valores(item, dict_data_saved):
         fname, json_data = filetools.update_json_data(dict_series, item.from_channel, TAG_TVSHOW_FILTER)
         result = filetools.write(fname, json_data)
 
+        sound = False
         if result:
             message = "FILTRO GUARDADO"
         else:
             message = "Error al guardar en disco"
+            sound = True
 
         heading = "{0} [{1}]".format(item.show.strip(), lang_selected)
-        platformtools.dialog_notification(heading, message)
+        platformtools.dialog_notification(heading, message, sound=sound)
 
         if config.get_platform() == "mediaserver":
             platformtools.itemlist_refresh()
@@ -554,9 +563,9 @@ def guardar_valores(item, dict_data_saved):
 #     # if idioma != "":
 #     #     filter_idioma = [key for key, value in dict_idiomas.iteritems() if value == idioma][0]
 #
-#     list_calidad = list()
+#     list_quality = list()
 #
-#     dict_filter = {TAG_NAME: item.show, TAG_ACTIVE: True, TAG_LANGUAGE: idioma, TAG_QUALITY_NOT_ALLOWED: list_calidad}
+#     dict_filter = {TAG_NAME: item.show, TAG_ACTIVE: True, TAG_LANGUAGE: idioma, TAG_QUALITY_NOT_ALLOWED: list_quality}
 #     dict_series[name] = dict_filter
 #
 #     # filter_list = item.extra.split("##")
@@ -568,13 +577,15 @@ def guardar_valores(item, dict_data_saved):
 #     fname, json_data = update_json_data(dict_series, item.from_channel)
 #     result = filetools.write(fname, json_data)
 #
+#     sound = False
 #     if result:
 #         message = "FILTRO GUARDADO"
 #     else:
 #         message = "Error al guardar en disco"
+#         sound = True
 #
 #     heading = "{0} [1]".format(item.show.strip(), idioma)
-#     platformtools.dialog_notification(heading, message)
+#     platformtools.dialog_notification(heading, message, sound=sound)
 #
 #
 # def del_filter(item):
@@ -592,10 +603,12 @@ def guardar_valores(item, dict_data_saved):
 #     fname, json_data = update_json_data(dict_series, item.from_channel)
 #     result = filetools.write(fname, json_data)
 #
+#     sound = False
 #     if result:
 #         message = "FILTRO ELIMINADO"
 #     else:
 #         message = "Error al guardar en disco"
+#         sound = True
 #
 #     heading = "{0}".format(item.show.strip())
-#     platformtools.dialog_notification(heading, message)
+#     platformtools.dialog_notification(heading, message, sound=sound)

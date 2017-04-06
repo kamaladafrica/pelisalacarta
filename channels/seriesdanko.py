@@ -32,8 +32,7 @@ def mainlist(item):
     itemlist.append(Item(channel=item.channel, title="Buscar...", action="search",
                          url=urlparse.urljoin(HOST, "all.php")))
 
-    if filtertools.context:
-        itemlist = filtertools.show_option(itemlist, item.channel, list_idiomas, CALIDADES)
+    itemlist = filtertools.show_option(itemlist, item.channel, list_idiomas, CALIDADES)
 
     return itemlist
 
@@ -59,7 +58,7 @@ def novedades(item):
 
         itemlist.append(Item(channel=item.channel, title=title, url=urlparse.urljoin(HOST, scrapedurl),
                         action="episodios", thumbnail=scrapedthumb, show=show, context=filtertools.context,
-                             list_idiomas=list_idiomas))
+                             list_language=list_idiomas))
 
     return itemlist
 
