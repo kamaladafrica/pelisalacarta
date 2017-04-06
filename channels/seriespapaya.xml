@@ -16,6 +16,11 @@
 
     <changes>
         <change>
+			<date>06/04/2017</date>
+			<autor>SeiTaN</autor>
+			<description>Mejoras en filtertools</description>
+		</change>
+        <change>
 			<date>15/03/2017</date>
 			<autor>SeiTaN</autor>
 			<description>limpieza código</description>
@@ -31,6 +36,20 @@
         <category>anime</category>
     </categories>
 
+    <settings>
+		<id>filter_languages</id>
+		<type>list</type>
+		<label>Mostrar enlaces en idioma...</label>
+		<default>0</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+		<lvalues>No filtrar</lvalues>
+		<lvalues>Español</lvalues>
+		<lvalues>Inglés</lvalues>
+		<lvalues>Latino</lvalues>
+		<lvalues>Catalán</lvalues>
+		<lvalues>VOS</lvalues>
+	</settings>
     <settings>
         <id>include_in_global_search</id>
         <type>bool</type>
