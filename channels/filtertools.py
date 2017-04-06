@@ -160,8 +160,8 @@ def get_link(list_item, item, global_filter_lang_id="filter_languages"):
     """
     logger.info()
 
-    # si no existe elementos en item_list o si es una plataforma que no permite filtrar, salimos
-    if len(list_item) == 0 or not context:
+    # si list_item está vacío volvemos, no se añade validación de plataforma para que Plex pueda hacer filtro global
+    if len(list_item) > 0:
         return list_item
 
     logger.debug("total de items : {0}".format(len(list_item)))
@@ -229,6 +229,10 @@ def get_links(list_item, channel, global_filter_lang_id="filter_languages"):
     @rtype: list[Item]
     """
     logger.info()
+
+    # si list_item está vacío volvemos, no se añade validación de plataforma para que Plex pueda hacer filtro global
+    if len(list_item) > 0:
+        return list_item
 
     logger.debug("total de items : {0}".format(len(list_item)))
 
