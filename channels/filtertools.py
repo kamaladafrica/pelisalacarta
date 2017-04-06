@@ -42,24 +42,63 @@ COLOR = {"parent_item": "yellow", "error": "red", "striped_even_active": "blue",
          "striped_odd_inactive": "0xff00fa9a", "selected": "blue"
          }
 
+# filter_global = None
 
-class Filter:
-    active = False
-    language = ""
-    quality_not_allowed = ""
+__channel__ = "filtertools"
+# TODO echar un ojo a https://pyformat.info/, se puede formatear el estilo y hacer referencias directamente a elementos
 
+
+class ResultFilter:
     def __init__(self, dict_filter):
         self.active = dict_filter[TAG_ACTIVE]
         self.language = dict_filter[TAG_LANGUAGE]
         self.quality_not_allowed = dict_filter[TAG_QUALITY_NOT_ALLOWED]
 
     def __str__(self):
-        return "{active:'%s', \nlanguage: '%s', \nquality_not_allowed: '%s'}" % \
+        return "{active: '%s', language: '%s', quality_not_allowed: '%s'}" % \
                (self.active, self.language, self.quality_not_allowed)
 
-# TODO echar un ojo a https://pyformat.info/, se puede formatear el estilo y hacer referencias directamente a elementos
 
-__channel__ = "filtertools"
+class Filter:
+
+    def __init__(self, item, global_filter_lang_id):
+        self.result = None
+        self.__get_data(item, global_filter_lang_id)
+
+    def __get_data(self, item, global_filter_lang_id):
+
+        dict_filtered_shows = filetools.get_node_from_data_json(item.channel, TAG_TVSHOW_FILTER)
+        tvshow = item.show.lower().strip()
+
+        global_filter_language = config.get_setting(global_filter_lang_id, item.channel)
+
+        if tvshow in dict_filtered_shows.keys():
+
+            self.result = ResultFilter({TAG_ACTIVE: dict_filtered_shows[tvshow][TAG_ACTIVE],
+                                        TAG_LANGUAGE: dict_filtered_shows[tvshow][TAG_LANGUAGE],
+                                        TAG_QUALITY_NOT_ALLOWED: dict_filtered_shows[tvshow][TAG_QUALITY_NOT_ALLOWED]})
+
+        # opcion general "no filtrar"
+        elif global_filter_language != 0:
+            from core import channeltools
+            list_controls, dict_settings = channeltools.get_channel_controls_settings(item.channel)
+
+            for control in list_controls:
+                if control["id"] == global_filter_lang_id:
+
+                    try:
+                        language = control["lvalues"][global_filter_language]
+                        # logger.debug("language %s" % language)
+                    except:
+                        logger.error("No se ha encontrado el valor asociado al codigo '%s': %s" %
+                                     (global_filter_lang_id, global_filter_language))
+                        break
+
+                    self.result = ResultFilter({TAG_ACTIVE: True, TAG_LANGUAGE: language, TAG_QUALITY_NOT_ALLOWED: []})
+                    break
+
+    def __str__(self):
+        return "{'%s'}" % self.result
 
 
 def context():
@@ -105,7 +144,7 @@ def load(item):
     return mainlist(channel=item.from_channel, list_language=item.list_language, list_quality=item.list_quality)
 
 
-def get_link(list_item, item):
+def get_link(list_item, item, global_filter_lang_id="filter_languages"):
     """
     Devuelve una lista de enlaces filtrados, si el item es correcto se agrega a la lista recibida.
 
@@ -113,6 +152,8 @@ def get_link(list_item, item):
     @type list_item: list[Item]
     @param item: elemento a filtrar
     @type item: Item
+    @param global_filter_lang_id: id de la variable de filtrado por idioma que está en settings
+    @type global_filter_lang_id: str
     @return: lista de Item
     @rtype: list[Item]
     """
@@ -122,41 +163,11 @@ def get_link(list_item, item):
 
     quality_count = 0
     language_count = 0
-    _filter = None
-
-    dict_filtered_shows = filetools.get_node_from_data_json(item.from_channel, TAG_TVSHOW_FILTER)
-    tvshow = item.show.lower().strip()
-
-    global_filter_language = config.get_setting("filter_languages", item.channel)
-    # logger.debug("filterlanguages : %s " % global_filter_language)
-
-    if tvshow in dict_filtered_shows.keys():
-        _filter = Filter(dict_filtered_shows[tvshow])
-    # opcion general "no filtrar"
-    elif global_filter_language != 0:
-        from core import channeltools
-        list_controls, dict_settings = channeltools.get_channel_controls_settings(item.channel)
-
-        for control in list_controls:
-            if control["id"] == "filter_languages":
-
-                try:
-                    language = control["lvalues"][global_filter_language]
-                    # logger.debug("language %s" % language)
-                except:
-                    logger.error("No se ha encontrado el valor asociado al codigo 'filter_languages': %s" %
-                                 global_filter_language)
-                    break
-
-                dict_filter = dict()
-                dict_filter[TAG_ACTIVE] = True
-                dict_filter[TAG_LANGUAGE] = language
-                dict_filter[TAG_QUALITY_NOT_ALLOWED] = []
-                _filter = Filter(dict_filter=dict_filter)
-                break
+    # global filter_global
+    _filter = Filter(item, global_filter_lang_id).result
+    logger.debug("filter datos: {0}".format(_filter))
 
     if _filter and _filter.active:
-        logger.debug("filter datos: {0}".format(_filter))
 
         is_language_valid = True
         if _filter.language:
@@ -199,7 +210,7 @@ def get_link(list_item, item):
     return list_item
 
 
-def get_links(list_item, channel):
+def get_links(list_item, channel, global_filter_lang_id="filter_languages"):
     """
     Devuelve una lista de enlaces filtrados.
 
@@ -207,6 +218,8 @@ def get_links(list_item, channel):
     @type list_item: list[Item]
     @param channel: nombre del canal a filtrar
     @type channel: str
+    @param global_filter_lang_id: id de la variable de filtrado por idioma que está en settings
+    @type global_filter_lang_id: str
     @return: lista de Item
     @rtype: list[Item]
     """
@@ -217,41 +230,11 @@ def get_links(list_item, channel):
     new_itemlist = []
     quality_count = 0
     language_count = 0
-    _filter = None
 
-    dict_filtered_shows = filetools.get_node_from_data_json(channel, TAG_TVSHOW_FILTER)
-    tvshow = list_item[0].show.lower().strip()
-
-    global_filter_language = config.get_setting("filter_languages", channel)
-    # logger.debug("filterlanguages : %s " % global_filter_language)
-
-    if tvshow in dict_filtered_shows.keys():
-        _filter = Filter(dict_filtered_shows[tvshow])
-    # opcion general "no filtrar"
-    elif global_filter_language != 0:
-        from core import channeltools
-        list_controls, dict_settings = channeltools.get_channel_controls_settings(channel)
-
-        for control in list_controls:
-            if control["id"] == "filter_languages":
-
-                try:
-                    language = control["lvalues"][global_filter_language]
-                    # logger.debug("language %s" % language)
-                except:
-                    logger.error("No se ha encontrado el valor asociado al codigo 'filter_languages': %s" %
-                                 global_filter_language)
-                    break
-
-                dict_filter = dict()
-                dict_filter[TAG_ACTIVE] = True
-                dict_filter[TAG_LANGUAGE] = language
-                dict_filter[TAG_QUALITY_NOT_ALLOWED] = []
-                _filter = Filter(dict_filter=dict_filter)
-                break
+    _filter = Filter(list_item[0], global_filter_lang_id).result
+    logger.debug("filter datos: {0}".format(_filter))
 
     if _filter and _filter.active:
-        logger.debug("filter datos: {0}".format(_filter))
 
         for item in list_item:
 
@@ -294,7 +277,7 @@ def get_links(list_item, channel):
             logger.debug(" calidad valida?: {0}, item.quality: {1}, filter.quality_not_allowed: {2}"
                          .format(is_quality_valid, quality, _filter.quality_not_allowed))
 
-        logger.info("ITEMS FILTRADOS: {0}/{1}, idioma[{2}]:{3}, calidad_no_permitida{4}:{5}"
+        logger.info("ITEMS FILTRADOS: {0}/{1}, idioma[{2}]: {3}, calidad_no_permitida{4}: {5}"
                     .format(len(new_itemlist), len(list_item), _filter.language, language_count,
                             _filter.quality_not_allowed, quality_count))
 
