@@ -34,7 +34,11 @@ except:
 perfil = [['0xFF6E2802', '0xFFFAA171', '0xFFE9D7940'],
           ['0xFFA5F6AF', '0xFF5FDA6D', '0xFF11811E'],
           ['0xFF58D3F7', '0xFF2E64FE', '0xFF0404B4']]
-color1, color2, color3 = perfil[__perfil__]
+
+if __perfil__ - 1 >= 0:
+    color1, color2, color3 = perfil[__perfil__-1]
+else:
+    color1 = color2 = color3 = ""
 
 parameters = channeltools.get_channel_parameters(__channel__)
 fanart_host = parameters['fanart']
