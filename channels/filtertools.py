@@ -42,7 +42,7 @@ COLOR = {"parent_item": "yellow", "error": "red", "striped_even_active": "blue",
          "striped_odd_inactive": "0xff00fa9a", "selected": "blue"
          }
 
-# filter_global = None
+filter_global = None
 
 __channel__ = "filtertools"
 # TODO echar un ojo a https://pyformat.info/, se puede formatear el estilo y hacer referencias directamente a elementos
@@ -160,33 +160,31 @@ def get_link(list_item, item, global_filter_lang_id="filter_languages"):
     """
     logger.info()
 
-    # si list_item está vacío volvemos, no se añade validación de plataforma para que Plex pueda hacer filtro global
-    if len(list_item) > 0:
-        return list_item
-
     logger.debug("total de items : {0}".format(len(list_item)))
 
     quality_count = 0
     language_count = 0
-    # global filter_global
-    _filter = Filter(item, global_filter_lang_id).result
-    logger.debug("filter: '{0}' datos: '{1}'".format(item.show, _filter))
+    global filter_global
 
-    if _filter and _filter.active:
+    if not filter_global:
+        filter_global = Filter(item, global_filter_lang_id).result
+    logger.debug("filter: '{0}' datos: '{1}'".format(item.show, filter_global))
+
+    if filter_global and filter_global.active:
 
         is_language_valid = True
-        if _filter.language:
+        if filter_global.language:
 
             # viene de episodios
             if "[" in item.language:
                 list_language = item.language.replace("[", "").replace("]", "").split(" ")
-                if _filter.language in list_language:
+                if filter_global.language in list_language:
                     language_count += 1
                 else:
                     is_language_valid = False
             # viene de findvideos
             else:
-                if item.language.lower() == _filter.language.lower():
+                if item.language.lower() == filter_global.language.lower():
                     language_count += 1
                 else:
                     is_language_valid = False
@@ -194,9 +192,9 @@ def get_link(list_item, item, global_filter_lang_id="filter_languages"):
         is_quality_valid = True
         quality = ""
 
-        if _filter.quality_not_allowed:
+        if filter_global.quality_not_allowed:
             if hasattr(item, 'quality'):
-                if item.quality.lower() not in _filter.quality_not_allowed:
+                if item.quality.lower() not in filter_global.quality_not_allowed:
                     quality = item.quality.lower()
                     quality_count += 1
                 else:
@@ -208,9 +206,9 @@ def get_link(list_item, item, global_filter_lang_id="filter_languages"):
             logger.debug(" -Enlace añadido")
 
         logger.debug(" idioma valido?: {0}, item.language: {1}, filter.language: {2}"
-                     .format(is_language_valid, item.language, _filter.language))
+                     .format(is_language_valid, item.language, filter_global.language))
         logger.debug(" calidad valida?: {0}, item.quality: {1}, filter.quality_not_allowed: {2}"
-                     .format(is_quality_valid, quality, _filter.quality_not_allowed))
+                     .format(is_quality_valid, quality, filter_global.quality_not_allowed))
 
     return list_item
 
@@ -231,7 +229,7 @@ def get_links(list_item, channel, global_filter_lang_id="filter_languages"):
     logger.info()
 
     # si list_item está vacío volvemos, no se añade validación de plataforma para que Plex pueda hacer filtro global
-    if len(list_item) > 0:
+    if len(list_item) == 0:
         return list_item
 
     logger.debug("total de items : {0}".format(len(list_item)))
