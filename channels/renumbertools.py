@@ -57,8 +57,10 @@ context = context()
 
 
 def show_option(channel, itemlist):
-    itemlist.append(Item(channel=__channel__, title="[COLOR yellow]Configurar renumeración en series...[/COLOR]",
-                         action="load", from_channel=channel))
+
+    if context:
+        itemlist.append(Item(channel=__channel__, title="[COLOR yellow]Configurar renumeración en series...[/COLOR]",
+                             action="load", from_channel=channel))
 
     return itemlist
 

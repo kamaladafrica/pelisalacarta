@@ -37,8 +37,7 @@ def mainlist(item):
     itemlist.append(Item(channel=item.channel, action="search_section", title="    Estado", url=HOST + "browse",
                          extra="status"))
 
-    if renumbertools.context:
-        itemlist = renumbertools.show_option(item.channel, itemlist)
+    itemlist = renumbertools.show_option(item.channel, itemlist)
 
     return itemlist
 

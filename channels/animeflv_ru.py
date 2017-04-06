@@ -31,8 +31,7 @@ def mainlist(item):
     itemlist.append(Item(channel=item.channel, action="search_section", title="    Género", url=HOST + "animes",
                          extra="genre"))
 
-    if renumbertools.context:
-        itemlist = renumbertools.show_option(item.channel, itemlist)
+    itemlist = renumbertools.show_option(item.channel, itemlist)
 
     return itemlist
 
