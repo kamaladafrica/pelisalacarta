@@ -369,7 +369,7 @@ def findvideos(item):
         try:
             # FILTERTOOLS
             # si el canal tiene filtro se le pasa el nombre que tiene guardado para que filtre correctamente.
-            if "list_idiomas" in item_json:
+            if "list_language" in item_json:
                 # si se viene desde la biblioteca de pelisalacarta
                 if "library_filter_show" in item:
                     item_json.show = item.library_filter_show.get(nom_canal, "")
