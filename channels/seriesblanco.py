@@ -187,10 +187,11 @@ def episodios(item):
     episodes = re.findall("<tr.*?href=['\"](?P<url>[^'\"]+).+?>(?P<title>.+?)</a>.*?<td>(?P<flags>.*?)</td>", data, re.MULTILINE | re.DOTALL)
     for url, title, flags in episodes:
         idiomas = " ".join(["[{0}]".format(IDIOMAS.get(language, "OVOS")) for language in re.findall("banderas/([^\.]+)", flags, re.MULTILINE)])
+        filter_lang = idiomas.replace("[", "").replace("]", "").split(" ")
         displayTitle = "{show} - {title} {languages}".format(show = item.show, title = title, languages = idiomas)
         logger.debug("Episode found {0}: {1}".format(displayTitle, urlparse.urljoin(HOST, url)))
         itemlist.append(item.clone(title=displayTitle, url=urlparse.urljoin(HOST, url),
-                                   action="findvideos", plot=plot, fanart=fanart, language=idiomas,
+                                   action="findvideos", plot=plot, fanart=fanart, language=filter_lang,
                                    list_language=list_idiomas, list_quality=CALIDADES, context=filtertools.context))
 
     itemlist = filtertools.get_links(itemlist, item.channel)

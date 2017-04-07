@@ -175,12 +175,14 @@ def episodios(item):
 
     for scrapedurl, scrapedtitle, scrapedidioma in matches:
         idioma = ""
+        filter_langs = []
         for i in scrapedidioma.split("|"):
             idioma += " [" + IDIOMAS.get(i, "OVOS") + "]"
+            filter_langs.append(IDIOMAS.get(i, "OVOS"))
         title = scrapedtitle + idioma
 
         itemlist.append(Item(channel=item.channel, title=title, url=urlparse.urljoin(HOST, scrapedurl),
-                             action="findvideos", show=item.show, thumbnail=thumbnail, plot="", language=idioma,
+                             action="findvideos", show=item.show, thumbnail=thumbnail, plot="", language=filter_langs,
                              list_idiomas=list_idiomas, list_calidad=CALIDADES, context=filtertools.context))
 
     if len(itemlist) > 0 and filtertools.context:

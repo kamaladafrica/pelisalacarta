@@ -145,6 +145,48 @@ def load(item):
     return mainlist(channel=item.from_channel, list_language=item.list_language, list_quality=item.list_quality)
 
 
+def check_conditions(_filter, list_item, item, quality_count=0, language_count=0):
+
+    is_language_valid = True
+    if _filter.language:
+
+        # viene de episodios
+        if isinstance(item.language, list):
+            if _filter.language in item.language:
+                language_count += 1
+            else:
+                is_language_valid = False
+        # viene de findvideos
+        else:
+            if item.language.lower() == _filter.language.lower():
+                language_count += 1
+            else:
+                is_language_valid = False
+
+        is_quality_valid = True
+        quality = ""
+
+        if _filter.quality_not_allowed:
+            if hasattr(item, 'quality'):
+                if item.quality.lower() not in _filter.quality_not_allowed:
+                    quality = item.quality.lower()
+                    quality_count += 1
+                else:
+                    is_quality_valid = False
+
+        if is_language_valid and is_quality_valid:
+            list_item.append(item)
+            logger.debug("{0} | context: {1}".format(item.title, item.context))
+            logger.debug(" -Enlace añadido")
+
+        logger.debug(" idioma valido?: {0}, item.language: {1}, filter.language: {2}"
+                     .format(is_language_valid, item.language, _filter.language))
+        logger.debug(" calidad valida?: {0}, item.quality: {1}, filter.quality_not_allowed: {2}"
+                     .format(is_quality_valid, quality, _filter.quality_not_allowed))
+
+    return list_item, quality_count, language_count
+
+
 def get_link(list_item, item, global_filter_lang_id="filter_languages"):
     """
     Devuelve una lista de enlaces filtrados, si el item es correcto se agrega a la lista recibida.
@@ -159,11 +201,8 @@ def get_link(list_item, item, global_filter_lang_id="filter_languages"):
     @rtype: list[Item]
     """
     logger.info()
-
     logger.debug("total de items : {0}".format(len(list_item)))
 
-    quality_count = 0
-    language_count = 0
     global filter_global
 
     if not filter_global:
@@ -171,44 +210,7 @@ def get_link(list_item, item, global_filter_lang_id="filter_languages"):
     logger.debug("filter: '{0}' datos: '{1}'".format(item.show, filter_global))
 
     if filter_global and filter_global.active:
-
-        is_language_valid = True
-        if filter_global.language:
-
-            # viene de episodios
-            if "[" in item.language:
-                list_language = item.language.replace("[", "").replace("]", "").split(" ")
-                if filter_global.language in list_language:
-                    language_count += 1
-                else:
-                    is_language_valid = False
-            # viene de findvideos
-            else:
-                if item.language.lower() == filter_global.language.lower():
-                    language_count += 1
-                else:
-                    is_language_valid = False
-
-        is_quality_valid = True
-        quality = ""
-
-        if filter_global.quality_not_allowed:
-            if hasattr(item, 'quality'):
-                if item.quality.lower() not in filter_global.quality_not_allowed:
-                    quality = item.quality.lower()
-                    quality_count += 1
-                else:
-                    is_quality_valid = False
-
-        if is_language_valid and is_quality_valid:
-            list_item.append(item)
-            logger.debug("{0} | context: {1}".format(item.title, item.context))
-            logger.debug(" -Enlace añadido")
-
-        logger.debug(" idioma valido?: {0}, item.language: {1}, filter.language: {2}"
-                     .format(is_language_valid, item.language, filter_global.language))
-        logger.debug(" calidad valida?: {0}, item.quality: {1}, filter.quality_not_allowed: {2}"
-                     .format(is_quality_valid, quality, filter_global.quality_not_allowed))
+        list_item, quality_count, language_count = check_conditions(filter_global, list_item, item)
 
     return list_item
 
@@ -244,45 +246,8 @@ def get_links(list_item, channel, global_filter_lang_id="filter_languages"):
     if _filter and _filter.active:
 
         for item in list_item:
-
-            is_language_valid = True
-            if _filter.language:
-
-                # viene de episodios
-                if "[" in item.language:
-                    list_language = item.language.replace("[", "").replace("]", "").split(" ")
-                    if _filter.language in list_language:
-                        language_count += 1
-                    else:
-                        is_language_valid = False
-                # viene de findvideos
-                else:
-                    if item.language.lower() == _filter.language.lower():
-                        language_count += 1
-                    else:
-                        is_language_valid = False
-
-            is_quality_valid = True
-            quality = ""
-
-            if _filter.quality_not_allowed:
-                if hasattr(item, 'quality'):
-                    if item.quality.lower() not in _filter.quality_not_allowed:
-                        quality = item.quality.lower()
-                        quality_count += 1
-                    else:
-                        is_quality_valid = False
-
-            if is_language_valid and is_quality_valid:
-                new_item = item.clone(channel=channel)
-                new_itemlist.append(new_item)
-                logger.debug("{0} | context: {1}".format(item.title, item.context))
-                logger.debug(" -Enlace añadido")
-
-            logger.debug(" idioma valido?: {0}, item.language: {1}, filter.language: {2}"
-                         .format(is_language_valid, item.language, _filter.language))
-            logger.debug(" calidad valida?: {0}, item.quality: {1}, filter.quality_not_allowed: {2}"
-                         .format(is_quality_valid, quality, _filter.quality_not_allowed))
+            new_itemlist, quality_count, language_count = \
+                check_conditions(_filter, new_itemlist, item, quality_count, language_count)
 
         logger.info("ITEMS FILTRADOS: {0}/{1}, idioma[{2}]: {3}, calidad_no_permitida{4}: {5}"
                     .format(len(new_itemlist), len(list_item), _filter.language, language_count,

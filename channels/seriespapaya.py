@@ -131,11 +131,13 @@ def episodios(item):
 
     itemlist = []
     for url, title, langs in episodes:
+        logger.debug("langs %s" % langs)
         languages = " ".join(["[{0}]".format(IDIOMAS.get(lang, lang)) for lang in re.findall('images/s-([^\.]+)', langs)])
+        filter_lang = languages.replace("[", "").replace("]", "").split(" ")
         itemlist.append(item.clone(action      = "findvideos",
                                    title       = "{0} {1} {2}".format(item.title, title, languages),
                                    url         = urlparse.urljoin(HOST, url),
-                                   language    = languages,
+                                   language    = filter_lang,
                                    list_language=list_idiomas, list_quality=CALIDADES, context=filtertools.context
                             ))
 
