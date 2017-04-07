@@ -211,6 +211,8 @@ def get_link(list_item, item, global_filter_lang_id="filter_languages"):
 
     if filter_global and filter_global.active:
         list_item, quality_count, language_count = check_conditions(filter_global, list_item, item)
+    else:
+        list_item.append(item)
 
     return list_item
 
