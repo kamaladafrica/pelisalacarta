@@ -6,8 +6,13 @@
 	<active>true</active>
 	<adult>false</adult>
 
-	<version>2</version>
+	<version>3</version>
 	<changes>
+		<change>
+			<date>07/04/2017</date>
+			<autor>Cmos</autor>
+			<description>Subtitulos en videos directos</description>
+		</change>
 		<change>
 			<date>12/03/2017</date>
 			<autor>Cmos</autor>
