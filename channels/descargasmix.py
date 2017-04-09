@@ -503,7 +503,7 @@ def get_data(url_orig):
     try:
         if config.get_setting("url_error", "descargasmix"):
             raise Exception
-        data = httptools.downloadpage(url_orig)
+        response = httptools.downloadpage(url_orig)
         if not response.data or "urlopen error [Errno 1]" in str(response.code):
             raise Exception
     except:
