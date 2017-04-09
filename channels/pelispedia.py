@@ -34,7 +34,11 @@ except:
 perfil = [['0xFF6E2802', '0xFFFAA171', '0xFFE9D7940'],
           ['0xFFA5F6AF', '0xFF5FDA6D', '0xFF11811E'],
           ['0xFF58D3F7', '0xFF2E64FE', '0xFF0404B4']]
-color1, color2, color3 = perfil[__perfil__]
+
+if __perfil__ - 1 >= 0:
+    color1, color2, color3 = perfil[__perfil__-1]
+else:
+    color1 = color2 = color3 = ""
 
 parameters = channeltools.get_channel_parameters(__channel__)
 fanart_host = parameters['fanart']
@@ -252,7 +256,7 @@ def listado(item):
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|<Br>|<BR>|<br>|<br/>|<br />|-\s", "", data)
     # logger.info("data -- {}".format(data))
 
-    patron = '<li[^>]+><a href="([^"]+)" alt="([^<]+).*?<img src="([^"]+).*?>.*?<span>\(([^)]+).*?' \
+    patron = '<li[^>]+><a href="([^"]+)" alt="([^<|\(]+).*?<img src="([^"]+).*?>.*?<span>\(([^)]+).*?' \
              '<p class="font12">(.*?)</p>'
     matches = re.compile(patron, re.DOTALL).findall(data)
 
@@ -266,6 +270,8 @@ def listado(item):
 
         if item.extra == 'serie':
             new_item.show = scrapertools.unescape(scrapedtitle.strip())
+            # fix en algunos casos la url está mal
+            new_item.url = new_item.url.replace(CHANNEL_HOST + "pelicula", CHANNEL_HOST + "serie")
         else:
             new_item.fulltitle = scrapertools.unescape(scrapedtitle.strip())
             new_item.infoLabels = {'year': scrapedyear}
@@ -481,23 +487,25 @@ def play(item):
         headers = dict()
         headers["Referer"] = item.referer
         data = httptools.downloadpage(item.url, headers=headers).data
+        data = re.sub(r"\n|\r|\t|\s{2}|-\s", "", data)
 
-        media_urls = scrapertools.find_multiple_matches(data, "file:'(.+?)',label:'(.*?)'")
+        from lib import jsunpack
+        match = scrapertools.find_single_match(data, '\.</div><script type="text/rocketscript">(.*?)</script>')
+        data = jsunpack.unpack(match)
+        data = data.replace("\\'", "'")
 
-        sub = scrapertools.find_single_match(data, 'file: "(.+?)",label: "Spanish"')
-        data_sub = httptools.downloadpage(sub).data
-        subtitle = save_sub(data_sub)
+        subtitle = scrapertools.find_single_match(data, "tracks:\[{file:'([^']+)',label:'Spanish'")
+        media_urls = scrapertools.find_multiple_matches(data, "{file:'(.+?)',label:'(.+?)',type:'video/mp4'")
 
         # la calidad más baja tiene que ir primero
         media_urls = sorted(media_urls, key=lambda k: k[1])
 
         if len(media_urls) > 0:
-
             for url, desc in media_urls:
                 itemlist.append([desc, url, 0, subtitle])
 
     # otro html5
-    elif item.url.startswith("https://pelispedia.co"):
+    elif item.url.startswith("https://pelispedia.co/ver/f.php"):
 
         headers = dict()
         headers["Referer"] = item.referer
@@ -518,9 +526,16 @@ def play(item):
         media_urls = sorted(media_urls, key=lambda k: k[1])
 
         if len(media_urls) > 0:
-
             for url, desc in media_urls:
                 itemlist.append([desc, url, 0, subtitle])
+
+    # netu
+    elif item.url.startswith("http://www.pelispedia.tv/netu.html?"):
+        url = item.url.replace("http://www.pelispedia.tv/netu.html?url=", "")
+
+        from servers import netutv
+        media_urls = netutv.get_video_url(urllib.unquote(url))
+        itemlist.append(media_urls[0])
 
     # flash
     elif item.url.startswith("http://www.pelispedia.tv"):
@@ -544,11 +559,20 @@ def play(item):
         media_urls = sorted(media_urls, key=lambda k: k[1])
 
         if len(media_urls) > 0:
-
             for url, desc in media_urls:
-
                 url = url.replace("\\", "")
                 itemlist.append([desc, url, 0, subtitle])
+
+    # openload
+    elif item.url.startswith("https://load.pelispedia.co/embed/openload.co"):
+
+        url = item.url.replace("/embed/", "/stream/")
+        data = httptools.downloadpage(url).data
+        url = scrapertools.find_single_match(data, '<meta name="og:url" content="([^"]+)"')
+
+        from servers import openload
+        media_urls = openload.get_video_url(url)
+        itemlist.append(media_urls[0])
 
     else:
         itemlist = servertools.find_video_items(data=item.url)

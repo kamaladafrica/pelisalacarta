@@ -16,9 +16,9 @@
 
 	<changes>
 		<change>
-			<date>15/03/2017</date>
+			<date>06/04/17</date>
 			<autor>SeiTaN</autor>
-			<description>limpieza código</description>
+			<description>Se permite configurar sin color, varias correcciones</description>
 		</change>
 		<change>
 			<date>01/02/17</date>
@@ -63,12 +63,13 @@
 		<id>perfil</id>
 		<type>list</type>
 		<label>Perfil de color</label>
-		<default>0</default>
+		<default>3</default>
 		<enabled>true</enabled>
 		<visible>true</visible>
-		<lvalues>Perfil 1</lvalues>
-		<lvalues>Perfil 2</lvalues>
+		<lvalues>Sin color</lvalues>
 		<lvalues>Perfil 3</lvalues>
+		<lvalues>Perfil 2</lvalues>
+		<lvalues>Perfil 1</lvalues>
 	</settings>
 	<settings>
 		<id>orden_episodios</id>

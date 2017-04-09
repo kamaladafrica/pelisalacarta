@@ -146,8 +146,7 @@ def novedades_anime(item):
     data = re.sub(r"\n|\r|\t|\s{2}|-\s", "", data)
     data = scrapertools.find_single_match(data, '<ul class="ListAnimes[^>]+>(.*?)</ul>')
 
-    matches = re.compile('<img src="([^"]+)".+?<span class=.+?>(.*?)</span>.+?<a href="([^"]+)">(.*?)</a>',
-                         re.DOTALL).findall(data)
+    matches = re.compile('<img src="([^"]+)".+?<a href="([^"]+)">(.*?)</a>', re.DOTALL).findall(data)
     itemlist = []
 
     for thumbnail, url, title in matches:
@@ -173,13 +172,14 @@ def listado(item):
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|-\s", "", data)
     # logger.debug("datito %s" % data)
+
     url_pagination = scrapertools.find_single_match(data, '<li class="current">.*?</li>[\s]<li><a href="([^"]+)">')
 
-    data = scrapertools.find_multiple_matches(data, '</div><div class="full">(.*?)<div class="pagination')
-    data = "".join(data)
+    data = scrapertools.find_single_match(data, '</div><div class="full">(.*?)<div class="pagination')
 
-    matches = re.compile('<img src="([^"]+)".+?<a href="([^"]+)">(.*?)</a>.+?<div class="full item_info genres_info">'
-                         '(.*?)</div>.+?class="full">(.*?)</p>', re.DOTALL).findall(data)
+    matches = re.compile('<img.+?src="([^"]+)".+?<a href="([^"]+)">(.*?)</a>.+?'
+                         '<div class="full item_info genres_info">(.*?)</div>.+?class="full">(.*?)</p>',
+                         re.DOTALL).findall(data)
 
     itemlist = []
 
@@ -220,8 +220,7 @@ def episodios(item):
     if item.plot == "":
         item.plot = scrapertools.find_single_match(data, 'Description[^>]+><p>(.*?)</p>')
 
-    data = scrapertools.find_single_match(data, '<div class="Sect Episodes">(.*?)</div>')
-    # logger.debug("datito %s" % data)
+    data = scrapertools.find_single_match(data, '<div class="Sect Episodes full">(.*?)</div>')
     matches = re.compile('<a href="([^"]+)"[^>]+>(.+?)</a', re.DOTALL).findall(data)
 
     for url, title in matches:
@@ -257,16 +256,21 @@ def findvideos(item):
 
     headers = dict()
     headers["Referer"] = item.url
-
     data = httptools.downloadpage("https:" + dict_data["value"], headers=headers).data
     dict_data = jsontools.load_json(data)
 
     list_videos = dict_data["playlist"][0]["sources"]
 
-    for video in list_videos:
+    if isinstance(list_videos, list):
+        for video in list_videos:
+            itemlist.append(Item(channel=item.channel, action="play", url=video["file"], show=re.escape(item.show),
+                                 title="Ver en calidad [%s]" % video["label"], plot=item.plot, fulltitle=item.title,
+                                 thumbnail=item.thumbnail))
 
-        itemlist.append(Item(channel=item.channel, action="play", url=video["file"], show=re.escape(item.show),
-                             title="Ver en calidad [%s]" % video["label"], plot=item.plot, fulltitle=item.title,
-                             thumbnail=item.thumbnail))
+    else:
+        for video in list_videos.values():
+            itemlist.append(Item(channel=item.channel, action="play", url=video["file"], show=re.escape(item.show),
+                                 title="Ver en calidad [%s]" % video["label"], plot=item.plot, fulltitle=item.title,
+                                 thumbnail=item.thumbnail))
 
     return itemlist
