@@ -101,39 +101,58 @@ class Filter:
         return "{'%s'}" % self.result
 
 
-def context():
+def access():
+    """
+    Devuelve si se puede usar o no filtertools
+    """
+    allow = False
+    if config.is_xbmc() or config.get_platform() == "mediaserver":
+        allow = True
+
+    return allow
+
+
+def context(item, list_language=None, list_quality=None, exist=False):
     """
     Para xbmc/kodi y mediaserver ya que pueden mostrar el menú contextual, se añade un menu para configuración
-    la opción de filtro.
-    """
-    _context = ""
-    if config.is_xbmc() or config.get_platform() == "mediaserver":
-        _context = [{"title": "Menu Filtro",
-                     "action": "config_item",
-                     "channel": "filtertools"}]
+    la opción de filtro, sólo si es para series.
+    Dependiendo del lugar y si existe filtro se añadirán más opciones a mostrar.
 
-    # elif command == "guardar_filtro":
-    # context_commands.append(("Guardar Filtro Serie", "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], item.clone(
-    #     channel="filtertools",
-    #     action="save_filter",
-    #     from_channel=item.channel
-    # ).tourl())))
-    #
-    # elif command == "borrar_filtro":
-    #     context_commands.append(("Eliminar Filtro", "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], item.clone(
-    #         channel="filtertools",
-    #         action="del_filter",
-    #         from_channel=item.channel
-    #     ).tourl())))
+    @param item: elemento para obtener la información y ver que contexto añadir
+    @type item: item
+    param list_language: listado de idiomas posibles
+    @type list_language: list[str]
+    @param list_quality: listado de calidades posibles
+    @type list_quality: list[str]
+    @param exist: si existe el filtro
+    @type exist: bool
+    @return: lista de opciones a mostrar en el menú contextual
+    @rtype: list
+    """
+    _context = []
+    if config.is_xbmc() or config.get_platform() == "mediaserver" and item.show != "":
+        dict_data = {"title": "FILTRO: Configurar", "action": "config_item", "channel": "filtertools"}
+        if list_language:
+            dict_data["list_language"] = list_language
+        if list_quality:
+            dict_data["list_quality"] = list_quality
+
+        _context.append(dict_data)
+
+        if item.action == "play":
+            if not exist:
+                _context.append({"title": "FILTRO: Añadir '%s'" % item.language, "action": "save_from_context",
+                                 "channel": "filtertools", "from_channel": item.channel})
+            else:
+                _context.append({"title": "FILTRO: Borrar '%s'" % item.language, "action": "delete_from_context",
+                                 "channel": "filtertools", "from_channel": item.channel})
 
     return _context
-
-context = context()
 
 
 def show_option(itemlist, channel, list_language, list_quality):
 
-    if context:
+    if access():
         itemlist.append(Item(channel=__channel__, title="[COLOR {0}]Configurar filtro para series...[/COLOR]".
                              format(COLOR.get("parent_item", "auto")), action="load", list_language=list_language,
                              list_quality=list_quality, from_channel=channel))
@@ -145,7 +164,7 @@ def load(item):
     return mainlist(channel=item.from_channel, list_language=item.list_language, list_quality=item.list_quality)
 
 
-def check_conditions(_filter, list_item, item, quality_count=0, language_count=0):
+def check_conditions(_filter, list_item, item, list_language, list_quality, quality_count=0, language_count=0):
 
     is_language_valid = True
     if _filter.language:
@@ -167,17 +186,20 @@ def check_conditions(_filter, list_item, item, quality_count=0, language_count=0
         quality = ""
 
         if _filter.quality_not_allowed:
-            if hasattr(item, 'quality'):
-                if item.quality.lower() not in _filter.quality_not_allowed:
-                    quality = item.quality.lower()
-                    quality_count += 1
-                else:
-                    is_quality_valid = False
+            # if hasattr(item, 'quality'): # esta validación no hace falta por que SIEMPRE se devuelve el atributo vacío
+            if item.quality.lower() not in _filter.quality_not_allowed:
+                quality = item.quality.lower()
+                quality_count += 1
+            else:
+                is_quality_valid = False
 
         if is_language_valid and is_quality_valid:
+            item.list_language = list_language
+            item.list_quality = list_quality
+            item.context = context(item, exist=True)
             list_item.append(item)
-            logger.debug("{0} | context: {1}".format(item.title, item.context))
-            logger.debug(" -Enlace añadido")
+            # logger.debug("{0} | context: {1}".format(item.title, item.context))
+            # logger.debug(" -Enlace añadido")
 
         logger.debug(" idioma valido?: {0}, item.language: {1}, filter.language: {2}"
                      .format(is_language_valid, item.language, _filter.language))
@@ -187,14 +209,18 @@ def check_conditions(_filter, list_item, item, quality_count=0, language_count=0
     return list_item, quality_count, language_count
 
 
-def get_link(list_item, item, global_filter_lang_id="filter_languages"):
+def get_link(list_item, item, list_language, list_quality, global_filter_lang_id="filter_languages"):
     """
-    Devuelve una lista de enlaces filtrados, si el item es correcto se agrega a la lista recibida.
+    Devuelve una lista de enlaces, si el item está filtrado correctamente se agrega a la lista recibida.
 
     @param list_item: lista de enlaces
     @type list_item: list[Item]
     @param item: elemento a filtrar
     @type item: Item
+    @param list_language: listado de idiomas posibles
+    @type list_language: list[str]
+    @param list_quality: listado de calidades posibles
+    @type list_quality: list[str]
     @param global_filter_lang_id: id de la variable de filtrado por idioma que está en settings
     @type global_filter_lang_id: str
     @return: lista de Item
@@ -210,21 +236,26 @@ def get_link(list_item, item, global_filter_lang_id="filter_languages"):
     logger.debug("filter: '{0}' datos: '{1}'".format(item.show, filter_global))
 
     if filter_global and filter_global.active:
-        list_item, quality_count, language_count = check_conditions(filter_global, list_item, item)
+        list_item, quality_count, language_count = \
+            check_conditions(filter_global, list_item, item, list_language, list_quality)
     else:
         list_item.append(item)
 
     return list_item
 
 
-def get_links(list_item, channel, global_filter_lang_id="filter_languages"):
+def get_links(list_item, item, list_language, list_quality, global_filter_lang_id="filter_languages"):
     """
     Devuelve una lista de enlaces filtrados.
 
     @param list_item: lista de enlaces
     @type list_item: list[Item]
-    @param channel: nombre del canal a filtrar
-    @type channel: str
+    @param item: elemento a filtrar
+    @type item: item
+    @param list_language: listado de idiomas posibles
+    @type list_language: list[str]
+    @param list_quality: listado de calidades posibles
+    @type list_quality: list[str]
     @param global_filter_lang_id: id de la variable de filtrado por idioma que está en settings
     @type global_filter_lang_id: str
     @return: lista de Item
@@ -242,31 +273,44 @@ def get_links(list_item, channel, global_filter_lang_id="filter_languages"):
     quality_count = 0
     language_count = 0
 
-    _filter = Filter(list_item[0], global_filter_lang_id).result
-    logger.debug("filter: '{0}' datos: '{1}'".format(list_item[0].show, _filter))
+    _filter = Filter(item, global_filter_lang_id).result
+    logger.debug("filter: '{0}' datos: '{1}'".format(item.show, _filter))
 
     if _filter and _filter.active:
 
         for item in list_item:
-            new_itemlist, quality_count, language_count = \
-                check_conditions(_filter, new_itemlist, item, quality_count, language_count)
+            new_itemlist, quality_count, language_count = check_conditions(_filter, new_itemlist, item, list_language,
+                                                                           list_quality, quality_count, language_count)
 
         logger.info("ITEMS FILTRADOS: {0}/{1}, idioma[{2}]: {3}, calidad_no_permitida{4}: {5}"
                     .format(len(new_itemlist), len(list_item), _filter.language, language_count,
                             _filter.quality_not_allowed, quality_count))
 
         if len(new_itemlist) == 0:
-            lista = []
+            list_item_all = []
             for i in list_item:
-                lista.append(i.tourl())
+                list_item_all.append(i.tourl())
 
-            new_itemlist.append(Item(channel=__channel__, action="no_filter", lista=lista, show=list_item[0].show,
-                                     title="[COLOR {0}]No hay elementos con filtro [{1}] y ![{2}], pulsa para mostrar "
+            _context = [{"title": "FILTRO: Borrar '%s'" % _filter.language, "action": "delete_from_context",
+                         "channel": "filtertools", "to_channel": "seriesdanko"}]
+
+            if _filter.quality_not_allowed:
+                msg_quality_not_allowed = " y calidad distinta {0}".format(_filter.quality_not_allowed)
+            else:
+                msg_quality_not_allowed = ""
+
+            new_itemlist.append(Item(channel=__channel__, action="no_filter", list_item_all=list_item_all,
+                                     show=item.show,
+                                     title="[COLOR {0}]No hay elementos con idioma '{1}'{2}, pulsa para mostrar "
                                            "sin filtro[/COLOR]"
-                                     .format(COLOR.get("error", "auto"), _filter.language, _filter.quality_not_allowed),
-                                     context="borrar filtro", from_channel=channel))
+                                     .format(COLOR.get("error", "auto"), _filter.language, msg_quality_not_allowed),
+                                     context=_context))
 
     else:
+        for item in list_item:
+            item.list_language = list_language
+            item.list_quality = list_quality
+            item.context = context(item)
         new_itemlist = list_item
 
     return new_itemlist
@@ -278,16 +322,16 @@ def no_filter(item):
 
     @param item: item
     @type item: Item
-    @return: liasta de enlaces
+    @return: lista de enlaces
     @rtype: list[Item]
     """
     logger.info()
 
-    lista = []
-    for i in item.lista:
-        lista.append(Item().fromurl(i))
+    itemlist = []
+    for i in item.list_item_all:
+        itemlist.append(Item().fromurl(i))
 
-    return lista
+    return itemlist
 
 
 def mainlist(channel, list_language, list_quality):
@@ -297,9 +341,9 @@ def mainlist(channel, list_language, list_quality):
     @param channel: nombre del canal para obtener las series filtradas
     @type channel: str
     @param list_language: lista de idiomas del canal
-    @type list_language: list
+    @type list_language: list[str]
     @param list_quality: lista de calidades del canal
-    @type list_quality: list
+    @type list_quality: list[str]
     @return: lista de Item
     @rtype: list[Item]
     """
@@ -332,8 +376,8 @@ def mainlist(channel, list_language, list_quality):
                              list_language=list_language, list_quality=list_quality, from_channel=channel))
 
     if len(itemlist) == 0:
-        itemlist.append(Item(channel=channel, action="mainlist",
-                             title="No existen filtros, busca una serie y pulsa en menú contextual 'Menu Filtro'"))
+        itemlist.append(Item(channel=channel, action="mainlist", title="No existen filtros, busca una serie y "
+                                                                       "pulsa en menú contextual 'FILTRO: Configurar'"))
 
     return itemlist
 
@@ -364,7 +408,7 @@ def config_item(item):
     if item.show.lower().strip() in dict_series:
         allow_option = True
         active = dict_series.get(item.show.lower().strip(), {}).get(TAG_ACTIVE, False)
-        custom_button = {'label': 'Borrar', 'function': 'borrar_filtro', 'visible': True, 'close': True}
+        custom_button = {'label': 'Borrar', 'function': 'delete', 'visible': True, 'close': True}
 
     list_controls = []
 
@@ -418,14 +462,14 @@ def config_item(item):
 
     title = "Filtrado de enlaces para: [COLOR {0}]{1}[/COLOR]".format(COLOR.get("selected", "auto"), item.show)
 
-    platformtools.show_channel_settings(list_controls=list_controls, callback='guardar_valores', item=item,
+    platformtools.show_channel_settings(list_controls=list_controls, callback='save', item=item,
                                         caption=title, custom_button=custom_button)
 
 
-def borrar_filtro(item):
+def delete(item):
     logger.info()
+
     if item:
-        # OBTENEMOS LOS DATOS DEL JSON
         dict_series = filetools.get_node_from_data_json(item.from_channel, TAG_TVSHOW_FILTER)
         tvshow = item.show.strip().lower()
 
@@ -450,11 +494,11 @@ def borrar_filtro(item):
             heading = "{0} [{1}]".format(item.show.strip(), lang_selected)
             platformtools.dialog_notification(heading, message, sound=sound)
 
-            if config.get_platform() == "mediaserver":
+            if item.action in ["findvideos", "play"]:
                 platformtools.itemlist_refresh()
 
 
-def guardar_valores(item, dict_data_saved):
+def save(item, dict_data_saved):
     """
     Guarda los valores configurados en la ventana
 
@@ -464,11 +508,10 @@ def guardar_valores(item, dict_data_saved):
     @type dict_data_saved: dict
     """
     logger.info()
-    # Aqui tienes q gestionar los datos obtenidos del cuadro de dialogo
+
     if item and dict_data_saved:
         logger.debug('item: {0}\ndatos: {1}'.format(item.tostring(), dict_data_saved))
 
-        # OBTENEMOS LOS DATOS DEL JSON
         if item.from_channel == "biblioteca":
             item.from_channel = item.contentChannel
         dict_series = filetools.get_node_from_data_json(item.from_channel, TAG_TVSHOW_FILTER)
@@ -499,85 +542,73 @@ def guardar_valores(item, dict_data_saved):
         heading = "{0} [{1}]".format(item.show.strip(), lang_selected)
         platformtools.dialog_notification(heading, message, sound=sound)
 
-        if config.get_platform() == "mediaserver":
+        if item.from_action in ["findvideos", "play"]:
             platformtools.itemlist_refresh()
 
 
-# TODO PENDIENTE DE ARREGLAR
+def save_from_context(item):
+    """
+    Salva el filtro a través del menú contextual
 
-# def save_filter(item):
-#     """
-#     salva el filtro a través del menú contextual
-#
-#     :param item: item
-#     :type item: item
-#     """
-#     logger.info("[filtertools.py] save_filter")
-#
-#     dict_series = get_filtered_tvshows(item.from_channel)
-#
-#     name = item.show.lower().strip()
-#     logger.info("[filtertools.py] config_item name {0}".format(name))
-#
-#     open_tag_idioma = (0, item.title.find("[")+1)[item.title.find("[") >= 0]
-#     close_tag_idioma = (0, item.title.find("]"))[item.title.find("]") >= 0]
-#     idioma = item.title[open_tag_idioma: close_tag_idioma]
-#
-#     open_tag_calidad = (0, item.title.find("[", item.title.find("[") + 1)+1)[item.title.find("[", item.title.find("[") + 1) >= 0]
-#     close_tag_calidad = (0, item.title.find("]", item.title.find("]") + 1))[item.title.find("]", item.title.find("]") + 1) >= 0]
-#     calidad_no_permitida = ""  # item.title[open_tag_calidad: close_tag_calidad]
-#
-#     # filter_idioma = ""
-#     # logger.info("idioma {0}".format(idioma))
-#     # if idioma != "":
-#     #     filter_idioma = [key for key, value in dict_idiomas.iteritems() if value == idioma][0]
-#
-#     list_quality = list()
-#
-#     dict_filter = {TAG_NAME: item.show, TAG_ACTIVE: True, TAG_LANGUAGE: idioma, TAG_QUALITY_NOT_ALLOWED: list_quality}
-#     dict_series[name] = dict_filter
-#
-#     # filter_list = item.extra.split("##")
-#     # dict_series = eval(filter_list[0])
-#     # dict_filter = eval(filter_list[2])
-#     # dict_series[filter_list[1].strip().lower()] = dict_filter
-#     # logger.info("categoria {0}".format(item.from_channel))
-#
-#     fname, json_data = update_json_data(dict_series, item.from_channel)
-#     result = filetools.write(fname, json_data)
-#
-#     sound = False
-#     if result:
-#         message = "FILTRO GUARDADO"
-#     else:
-#         message = "Error al guardar en disco"
-#         sound = True
-#
-#     heading = "{0} [1]".format(item.show.strip(), idioma)
-#     platformtools.dialog_notification(heading, message, sound=sound)
-#
-#
-# def del_filter(item):
-#     """
-#     elimina el filtro a través del menú contextual
-#
-#     :param item: item
-#     :type item: item
-#     """
-#     logger.info("[filtertools.py] del_filter")
-#
-#     dict_series = get_filtered_tvshows(item.from_channel)
-#     dict_series.pop(item.show.lower().strip(), None)
-#
-#     fname, json_data = update_json_data(dict_series, item.from_channel)
-#     result = filetools.write(fname, json_data)
-#
-#     sound = False
-#     if result:
-#         message = "FILTRO ELIMINADO"
-#     else:
-#         message = "Error al guardar en disco"
-#         sound = True
-#
-#     heading = "{0}".format(item.show.strip())
-#     platformtools.dialog_notification(heading, message, sound=sound)
+    @param item: item
+    @type item: item
+    """
+    logger.info()
+
+    dict_series = filetools.get_node_from_data_json(item.from_channel, TAG_TVSHOW_FILTER)
+    tvshow = item.show.strip().lower()
+
+    dict_filter = {TAG_NAME: item.show, TAG_ACTIVE: True, TAG_LANGUAGE: item.language, TAG_QUALITY_NOT_ALLOWED: []}
+    dict_series[tvshow] = dict_filter
+
+    fname, json_data = filetools.update_json_data(dict_series, item.from_channel, TAG_TVSHOW_FILTER)
+    result = filetools.write(fname, json_data)
+
+    sound = False
+    if result:
+        message = "FILTRO GUARDADO"
+    else:
+        message = "Error al guardar en disco"
+        sound = True
+
+    heading = "{0} [{1}]".format(item.show.strip(), item.language)
+    platformtools.dialog_notification(heading, message, sound=sound)
+
+    if item.from_action in ["findvideos", "play"]:
+        platformtools.itemlist_refresh()
+
+
+def delete_from_context(item):
+    """
+    Elimina el filtro a través del menú contextual
+
+    @param item: item
+    @type item: item
+    """
+    logger.info()
+
+    # venimos desde get_links y no se ha obtenido ningún resultado, en menu contextual y damos a borrar
+    if item.to_channel != "":
+        item.from_channel = item.to_channel
+
+    dict_series = filetools.get_node_from_data_json(item.from_channel, TAG_TVSHOW_FILTER)
+    tvshow = item.show.strip().lower()
+
+    lang_selected = dict_series.get(tvshow, {}).get(TAG_LANGUAGE, "")
+    dict_series.pop(tvshow, None)
+
+    fname, json_data = filetools.update_json_data(dict_series, item.from_channel, TAG_TVSHOW_FILTER)
+    result = filetools.write(fname, json_data)
+
+    sound = False
+    if result:
+        message = "FILTRO ELIMINADO"
+    else:
+        message = "Error al guardar en disco"
+        sound = True
+
+    heading = "{0} [{1}]".format(item.show.strip(), lang_selected)
+    platformtools.dialog_notification(heading, message, sound=sound)
+
+    if item.from_action in ["findvideos", "play", "no_filter"]:  # 'no_filter' es el mismo caso que L#601
+        platformtools.itemlist_refresh()
