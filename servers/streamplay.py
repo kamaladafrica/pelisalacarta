@@ -7,9 +7,9 @@
 
 import re
 
+from core import httptools
 from core import logger
 from core import scrapertools
-from core import httptools
 from lib import jsunpack
 
 headers = [['User-Agent', 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:51.0) Gecko/20100101 Firefox/51.0']]
@@ -72,7 +72,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
         if video_url.startswith("rtmp"):
             rtmp, playpath = video_url.split("vod/", 1)
             video_url = "%s playpath=%s swfUrl=%splayer6/jwplayer.flash.swf pageUrl=%s" % (
-            rtmp + "vod/", playpath, host, page_url)
+                rtmp + "vod/", playpath, host, page_url)
             filename = "RTMP"
         elif video_url.endswith(".m3u8"):
             video_url += "|User-Agent=%s&Referer=%s" % (headers[0][1], page_url)

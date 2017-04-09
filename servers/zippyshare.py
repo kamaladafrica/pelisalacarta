@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Conector para zippyshare
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 
 import re
 
@@ -20,7 +20,7 @@ def test_video_exists(page_url):
         error_message_file_deleted = 'File has expired and does not exist anymore on this server'
 
         data = httptools.downloadpage(page_url).data
-        
+
         if error_message_file_not_exists in data:
             message = 'File does not exist.'
         elif error_message_file_deleted in data:
@@ -42,12 +42,12 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     domain = match.group(1)
     file_id = match.group(2)
     filename = re.search('\](.+)\[\/url\]', data).group(1)
-    
-    #Extract magic number
+
+    # Extract magic number
     a = int(scrapertools.find_single_match(data, 'var a\s*=\s*(\d+);'))
     b = int(scrapertools.find_single_match(data, 'var b\s*=\s*(\d+);'))
-    magic_number = int(a/3) + a % b
-        
+    magic_number = int(a / 3) + a % b
+
     mediaurl = '%s/d/%s/%s/%s' % (domain, file_id, magic_number, filename)
     extension = "." + mediaurl.split('.')[-1]
     video_urls.append([extension + " [zippyshare]", mediaurl])
@@ -60,8 +60,8 @@ def find_videos(data):
     encontrados = set()
     devuelve = []
 
-    #http://www5.zippyshare.com/v/11178679/file.html
-    #http://www52.zippyshare.com/v/hPYzJSWA/file.html
+    # http://www5.zippyshare.com/v/11178679/file.html
+    # http://www52.zippyshare.com/v/hPYzJSWA/file.html
     patronvideos = '([a-z0-9]+\.zippyshare.com/v/[A-z0-9]+/file.html)'
     logger.info("#" + patronvideos + "#")
     matches = re.compile(patronvideos, re.DOTALL).findall(data)
