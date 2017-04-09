@@ -53,7 +53,7 @@ def mainlist(item):
         thumbnail = scrapedthumbnail
         plot = ""
         logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=item.channel , action="findvideos"   , title=title , url=url , thumbnail=thumbnail, fanart=thumbnail, plot=plot , hasContentDetails="true", contentTitle=title, contentThumbnail=thumbnail))
+        itemlist.append( Item(channel=item.channel , action="findvideos"   , title=title , url=url , thumbnail=thumbnail, fanart=thumbnail, plot=plot , hasContentDetails=True, contentTitle=title, contentThumbnail=thumbnail))
 
     # Extrae la pagina siguiente
     next_page_url = scrapertools.find_single_match(data,'<a href="([^"]+)"><i class="glyphicon glyphicon-chevron-right')
