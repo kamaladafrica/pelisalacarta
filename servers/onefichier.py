@@ -18,7 +18,7 @@ def test_video_exists( page_url ):
 def get_video_url( page_url , premium = False , user="" , password="", video_password="" ):
     logger.info("pelisalacarta.servers.onefichier get_video_url(page_url='%s')" % page_url)
 
-    if config.get_setting("onefichierpremium")=="true":
+    if config.get_setting("onefichierpremium")==True:
 
         user = config.get_setting("onefichieruser")
         password = config.get_setting("onefichierpassword")

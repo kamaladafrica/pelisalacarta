@@ -26,7 +26,7 @@ def test_video_exists( page_url ):
     logger.info("(page_url='%s')" % page_url)
 
     premium = config.get_setting("crunchyrollpremium")
-    if premium == "true":
+    if premium == True:
         return login(page_url)
     data = httptools.downloadpage(page_url, headers=GLOBAL_HEADER, replace_headers=True).data
     if "Este es un clip de muestra" in data and premium == "false":
