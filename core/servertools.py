@@ -199,7 +199,7 @@ def resolve_video_urls_for_playing(server,url,video_password="",muestra_dialogo=
 
             #Cuenta las opciones disponibles, para calcular el porcentaje
             opciones = []
-            if server_parameters["free"] == "true":
+            if server_parameters["free"] == True:
               opciones.append("free")
 
             opciones.extend([premium for premium in server_parameters["premium"] if config.get_setting(premium+"premium")==True])
@@ -226,7 +226,7 @@ def resolve_video_urls_for_playing(server,url,video_password="",muestra_dialogo=
                     logger.info("test_video_exists dice que el video SI existe")
 
             # Obtiene enlaces free
-            if server_parameters["free"]=="true":
+            if server_parameters["free"]==True:
                 if muestra_dialogo:
                     progreso.update((100 / len(opciones)) * opciones.index("free")  , "Conectando con "+server)
 
@@ -298,11 +298,11 @@ def resolve_video_urls_for_playing(server,url,video_password="",muestra_dialogo=
 def is_server_enabled(server):
     try:
         server_parameters = get_server_parameters(server)
-        if server_parameters["active"] == "true":
+        if server_parameters["active"] == True:
             if not config.get_setting("hidepremium")==True:
                 return True
             else:
-                if server_parameters["free"] == "true":
+                if server_parameters["free"] == True:
                     return True
                 if [premium for premium in server_parameters["premium"] if config.get_setting(premium+"premium")==True]:
                     return True
@@ -344,37 +344,43 @@ def get_servers_list():
 
   return ServerList
 
-def xml2dict(file = None, xmldata = None):
-  import re, sys, os
-  parse = globals().get(sys._getframe().f_code.co_name)
 
-  if xmldata == None and file == None:  raise Exception("No hay nada que convertir!")
-  if xmldata == None:
-    if not os.path.exists(file): raise Exception("El archivo no existe!")
-    xmldata = open(file, "rb").read()
+def xml2dict(file=None, xmldata=None):
+    import re, sys, os
+    parse = globals().get(sys._getframe().f_code.co_name)
 
-  matches = re.compile("<(?P<tag>[^>]+)>[\n]*[\s]*[\t]*(?P<value>.*?)[\n]*[\s]*[\t]*<\/(?P=tag)\s*>",re.DOTALL).findall(xmldata)
+    if xmldata == None and file == None:  raise Exception("No hay nada que convertir!")
+    if xmldata == None:
+        if not os.path.exists(file): raise Exception("El archivo no existe!")
+        xmldata = open(file, "rb").read()
 
-  return_dict = {}
-  for tag, value in matches:
-    #Si tiene elementos
-    if "<" and "</" in value:
-      if tag in return_dict:
-        if type(return_dict[tag])== list:
-          return_dict[tag].append(parse(xmldata=value))
+    matches = re.compile("<(?P<tag>[^>]+)>[\n]*[\s]*[\t]*(?P<value>.*?)[\n]*[\s]*[\t]*<\/(?P=tag)\s*>",
+                         re.DOTALL).findall(xmldata)
+
+    return_dict = {}
+    for tag, value in matches:
+        # Si tiene elementos
+        if "<" and "</" in value:
+            if tag in return_dict:
+                if type(return_dict[tag]) == list:
+                    return_dict[tag].append(parse(xmldata=value))
+                else:
+                    return_dict[tag] = [return_dict[tag]]
+                    return_dict[tag].append(parse(xmldata=value))
+            else:
+                return_dict[tag] = parse(xmldata=value)
         else:
-          return_dict[tag] = [return_dict[tag]]
-          return_dict[tag].append(parse(xmldata=value))
-      else:
-          return_dict[tag] = parse(xmldata=value)
-
-    else:
-      if tag in return_dict:
-        if type(return_dict[tag])== list:
-          return_dict[tag].append(value)
-        else:
-          return_dict[tag] = [return_dict[tag]]
-          return_dict[tag].append(value)
-      else:
-        return_dict[tag] = value
-  return return_dict
+            if tag in return_dict:
+                if type(return_dict[tag]) == list:
+                    return_dict[tag].append(value)
+                elif value in ["true", "false"]:
+                    if value == "true":
+                        return_dict[tag] = True
+                    else:
+                        return_dict[tag] = False
+                else:
+                    return_dict[tag] = [return_dict[tag]]
+                    return_dict[tag].append(value)
+            else:
+                return_dict[tag] = value
+    return return_dict

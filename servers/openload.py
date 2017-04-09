@@ -12,7 +12,6 @@ from core import httptools
 from core import logger
 from core import scrapertools
 
-
 headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:51.0) Gecko/20100101 Firefox/51.0'}
 
 
@@ -27,7 +26,7 @@ def test_video_exists(page_url):
     if 'We’re Sorry!' in data:
         data = httptools.downloadpage(page_url.replace("/embed/", "/f/"), headers=header, cookies=False).data
         if 'We’re Sorry!' in data:
-            return False, "[Openload] El archivo no existe o ha sido borrado" 
+            return False, "[Openload] El archivo no existe o ha sido borrado"
 
     return True, ""
 
@@ -42,7 +41,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
         header = {'Referer': referer}
     data = httptools.downloadpage(page_url, headers=header, cookies=False).data
     subtitle = scrapertools.find_single_match(data, '<track kind="captions" src="([^"]+)" srclang="es"')
-    #Header para la descarga
+    # Header para la descarga
     header_down = "|User-Agent=" + headers['User-Agent']
 
     try:
@@ -67,7 +66,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
                 rango1 = encode[:56]
                 decode1 = []
                 for i in range(0, len(rango1), 8):
-                    decode1.append(int(rango1[i:i+8], 16))
+                    decode1.append(int(rango1[i:i + 8], 16))
                 rango1 = encode[56:]
                 j = 0
                 i = 0
@@ -79,7 +78,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
                     while True:
                         if (i + 1) >= len(rango1):
                             index1 = 143
-                        value3 = int(rango1[i:i+2], 16)
+                        value3 = int(rango1[i:i + 2], 16)
                         i += 2
                         data = value3 & 63
                         value2 += data << value1
@@ -92,7 +91,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
                         if not n.isdigit():
                             n = int(n, 16)
                         value4 ^= int(n)
-                    value5 = index1 * 2 + 127 
+                    value5 = index1 * 2 + 127
                     for h in range(4):
                         valorfinal = (value4 >> 8 * h) & (value5)
                         valorfinal = chr(valorfinal)
@@ -166,7 +165,8 @@ def get_link_api(page_url):
     file_id = scrapertools.find_single_match(page_url, '(?:embed|f)/([0-9a-zA-Z-_]+)')
     login = "97b2326d7db81f0f"
     key = "AQFO3QJQ"
-    data = httptools.downloadpage("https://api.openload.co/1/file/dlticket?file=%s&login=%s&key=%s" % (file_id, login, key)).data
+    data = httptools.downloadpage(
+        "https://api.openload.co/1/file/dlticket?file=%s&login=%s&key=%s" % (file_id, login, key)).data
     data = jsontools.load_json(data)
 
     if data["status"] == 200:

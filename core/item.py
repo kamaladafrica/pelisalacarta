@@ -192,7 +192,7 @@ class Item(object):
         if name in ["contentTitle", "contentPlot", "plot", "contentSerieName", "contentType", "contentEpisodeTitle",
                     "contentSeason", "contentEpisodeNumber", "contentThumbnail", "show", "contentQuality"]:
             # ... marcamos hasContentDetails como "true"...
-            self.__dict__["hasContentDetails"] = "true"
+            self.__dict__["hasContentDetails"] = True
             # ...y actualizamos infoLables
             if name == "contentTitle":
                 self.__dict__["infoLabels"]["title"] = value
@@ -259,7 +259,7 @@ class Item(object):
 
         # Valor por defecto para hasContentDetails
         elif name == "hasContentDetails":
-            return "false"
+            return False
 
         # valores guardados en infoLabels
         elif name in ["contentTitle", "contentPlot", "contentSerieName", "show", "contentType", "contentEpisodeTitle",

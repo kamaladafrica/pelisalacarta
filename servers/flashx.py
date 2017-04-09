@@ -62,15 +62,18 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     if "sources:[{file:" not in match:
         page_url = page_url.replace("playvid-", "")
 
-        headers = {'Host': 'www.flashx.tv', 'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.137 Safari/537.36',
-                  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'Accept-Language': 'en-US,en;q=0.5',
-                  'Accept-Encoding': 'gzip, deflate, br', 'Connection': 'keep-alive', 'Upgrade-Insecure-Requests': '1',
-                  'Cookie': ''}
+        headers = {'Host': 'www.flashx.tv',
+                   'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.137 Safari/537.36',
+                   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                   'Accept-Language': 'en-US,en;q=0.5',
+                   'Accept-Encoding': 'gzip, deflate, br', 'Connection': 'keep-alive', 'Upgrade-Insecure-Requests': '1',
+                   'Cookie': ''}
         data = httptools.downloadpage(page_url, headers=headers, replace_headers=True).data
         flashx_id = scrapertools.find_single_match(data, 'name="id" value="([^"]+)"')
         fname = scrapertools.find_single_match(data, 'name="fname" value="([^"]+)"')
         hash_f = scrapertools.find_single_match(data, 'name="hash" value="([^"]+)"')
-        post = 'op=download1&usr_login=&id=%s&fname=%s&referer=&hash=%s&imhuman=Proceed+to+video' % (flashx_id, urllib.quote(fname), hash_f)
+        post = 'op=download1&usr_login=&id=%s&fname=%s&referer=&hash=%s&imhuman=Proceed+to+video' % (
+        flashx_id, urllib.quote(fname), hash_f)
         wait_time = scrapertools.find_single_match(data, "<span id='xxc2'>(\d+)")
 
         file_id = scrapertools.find_single_match(data, "'file_id', '([^']+)'")
@@ -79,7 +82,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
         headers['Referer'] = "https://www.flashx.tv/"
         headers['Accept'] = "*/*"
         coding = httptools.downloadpage(coding_url, headers=headers, replace_headers=True).data
-        
+
         coding_url = 'https://www.flashx.tv/counter.cgi?fx=%s' % base64.encodestring(file_id)
         headers['Host'] = "www.flashx.tv"
         coding = httptools.downloadpage(coding_url, headers=headers, replace_headers=True).data
@@ -127,8 +130,8 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
                 filetools.write(subtitle, data)
             except:
                 import traceback
-                logger.info("pelisalacarta.servers.flashx Error al descargar el subtítulo: "+traceback.format_exc())
-            
+                logger.info("Error al descargar el subtítulo: " + traceback.format_exc())
+
     for media_url, label in media_urls:
         if not media_url.endswith("png") and not media_url.endswith(".srt"):
             video_urls.append(["." + media_url.rsplit('.', 1)[1] + " [flashx]", media_url, 0, subtitle])

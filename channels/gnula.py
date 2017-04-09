@@ -72,7 +72,7 @@ def peliculas(item):
         url = urlparse.urljoin(item.url,scrapedurl)
         thumbnail = urlparse.urljoin(item.url,scrapedthumbnail)
         logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        itemlist.append( Item(channel=item.channel, action='findvideos', title=title , fulltitle=fulltitle , url=url , thumbnail=thumbnail , plot=plot , extra=title, hasContentDetails="true", contentTitle=contentTitle, contentThumbnail=thumbnail,
+        itemlist.append( Item(channel=item.channel, action='findvideos', title=title , fulltitle=fulltitle , url=url , thumbnail=thumbnail , plot=plot , extra=title, hasContentDetails=True, contentTitle=contentTitle, contentThumbnail=thumbnail,
                               contentType="movie", context=["buscar_trailer"]) )
 
     return itemlist

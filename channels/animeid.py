@@ -127,7 +127,7 @@ def novedades_episodios(item):
 
         itemlist.append( Item(channel=item.channel, action="findvideos" , title=scrapedtitle , url=scrapedurl,
                               thumbnail=scrapedthumbnail, plot=scrapedplot,
-                              hasContentDetails="true", contentSeason=1, contentTitle=contentTitle,
+                              hasContentDetails=True, contentSeason=1, contentTitle=contentTitle,
                               contentEpisodeNumber=int(episodio)))
 
     return itemlist

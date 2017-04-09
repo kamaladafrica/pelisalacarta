@@ -166,7 +166,7 @@ def lista(item):
                 temporada, episodio = capitulo.strip().split('x')
 
             itemlist.append( Item(channel=item.channel, action="episodios", title=title , fulltitle = title, url=url ,
-                                  thumbnail=thumbnail , plot=plot , folder=True, hasContentDetails="true",
+                                  thumbnail=thumbnail , plot=plot , folder=True, hasContentDetails=True,
                                   contentTitle=contentTitle, language=idioma, contentSeason=int(temporada),
                                   contentEpisodeNumber=int(episodio), contentQuality=calidad))
 
@@ -176,7 +176,7 @@ def lista(item):
                 idioma = matches[1].strip()
 
             itemlist.append( Item(channel=item.channel, action="findvideos", title=title , fulltitle = title, url=url ,
-                                  thumbnail=thumbnail , plot=plot , folder=True, hasContentDetails="true",
+                                  thumbnail=thumbnail , plot=plot , folder=True, hasContentDetails=True,
                                   contentTitle=contentTitle, language=idioma, contentThumbnail=thumbnail,
                                   contentQuality=calidad))
 

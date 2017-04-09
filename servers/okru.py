@@ -10,12 +10,11 @@ import re
 
 from core import httptools
 from core import logger
-from core import scrapertools
 
 
 def test_video_exists(page_url):
     logger.info("(page_url='%s')" % page_url)
-    
+
     referer = 'http://ok.ru/videoembed/%s' % page_url.split("mid=")[1]
     data = httptools.downloadpage(page_url, headers={'Referer': referer}).data
     if "copyrightsRestricted" in data:

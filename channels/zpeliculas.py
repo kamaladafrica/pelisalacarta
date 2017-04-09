@@ -116,7 +116,7 @@ def search(item,texto):
             thumbnail = scrapedthumbnail
             plot = ""
             logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-            itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, show=title, fanart=thumbnail, hasContentDetails="true", contentTitle=title, contentThumbnail=thumbnail,
+            itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, show=title, fanart=thumbnail, hasContentDetails=True, contentTitle=title, contentThumbnail=thumbnail,
                                   contentType="movie", context=["buscar_trailer"]))
 
         return itemlist
@@ -206,7 +206,7 @@ def peliculas(item):
         plot = ""
         logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
         
-        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, hasContentDetails="true", contentTitle=contentTitle, contentThumbnail=thumbnail, fanart=thumbnail,
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, hasContentDetails=True, contentTitle=contentTitle, contentThumbnail=thumbnail, fanart=thumbnail,
                               contentType="movie", context=["buscar_trailer"]))
 
     next_page = scrapertools.find_single_match(body,'<a href="([^"]+)">Siguiente')
@@ -247,7 +247,7 @@ def destacadas(item):
         plot = unicode( plot, "iso-8859-1" , errors="replace" ).encode("utf-8")
         logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
         
-        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, show=title, fanart=thumbnail, hasContentDetails="true", contentTitle=title, contentThumbnail=thumbnail,
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, show=title, fanart=thumbnail, hasContentDetails=True, contentTitle=title, contentThumbnail=thumbnail,
                               contentType="movie", context=["buscar_trailer"]))
         
     return itemlist
@@ -279,7 +279,7 @@ def sugeridas(item):
         plot = unicode( plot, "iso-8859-1" , errors="replace" ).encode("utf-8")
         logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
         
-        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, show=title, fanart=thumbnail, hasContentDetails="true", contentTitle=title, contentThumbnail=thumbnail,
+        itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, show=title, fanart=thumbnail, hasContentDetails=True, contentTitle=title, contentThumbnail=thumbnail,
                               contentType="movie", context=["buscar_trailer"]))
         
     return itemlist
