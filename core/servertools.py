@@ -373,14 +373,14 @@ def xml2dict(file=None, xmldata=None):
             if tag in return_dict:
                 if type(return_dict[tag]) == list:
                     return_dict[tag].append(value)
-                elif value in ["true", "false"]:
-                    if value == "true":
-                        return_dict[tag] = True
-                    else:
-                        return_dict[tag] = False
                 else:
                     return_dict[tag] = [return_dict[tag]]
                     return_dict[tag].append(value)
             else:
+                if value in ["true", "false"]:
+                    if value == "true":
+                        value = True
+                    else:
+                        value = False
                 return_dict[tag] = value
     return return_dict
