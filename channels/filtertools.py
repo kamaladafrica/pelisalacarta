@@ -195,7 +195,8 @@ def check_conditions(_filter, list_item, item, list_language, list_quality, qual
 
         if is_language_valid and is_quality_valid:
             item.list_language = list_language
-            item.list_quality = list_quality
+            if list_quality:
+                item.list_quality = list_quality
             item.context = context(item, exist=True)
             list_item.append(item)
             # logger.debug("{0} | context: {1}".format(item.title, item.context))
@@ -244,7 +245,7 @@ def get_link(list_item, item, list_language, list_quality, global_filter_lang_id
     return list_item
 
 
-def get_links(list_item, item, list_language, list_quality, global_filter_lang_id="filter_languages"):
+def get_links(list_item, item, list_language, list_quality=None, global_filter_lang_id="filter_languages"):
     """
     Devuelve una lista de enlaces filtrados.
 
@@ -309,7 +310,8 @@ def get_links(list_item, item, list_language, list_quality, global_filter_lang_i
     else:
         for item in list_item:
             item.list_language = list_language
-            item.list_quality = list_quality
+            if list_quality:
+                item.list_quality = list_quality
             item.context = context(item)
         new_itemlist = list_item
 
