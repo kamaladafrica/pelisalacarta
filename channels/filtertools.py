@@ -210,7 +210,7 @@ def check_conditions(_filter, list_item, item, list_language, list_quality, qual
     return list_item, quality_count, language_count
 
 
-def get_link(list_item, item, list_language, list_quality, global_filter_lang_id="filter_languages"):
+def get_link(list_item, item, list_language, list_quality=None, global_filter_lang_id="filter_languages"):
     """
     Devuelve una lista de enlaces, si el item está filtrado correctamente se agrega a la lista recibida.
 
