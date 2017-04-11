@@ -23,7 +23,7 @@ perfil = [['0xFFFFE6CC', '0xFFFFCE9C', '0xFF994D00'],
           ['0xFFA5F6AF', '0xFF5FDA6D', '0xFF11811E'],
           ['0xFF58D3F7', '0xFF2E9AFE', '0xFF2E64FE']]
 color1, color2, color3 = perfil[__perfil__]
-host = "https://desmix.net"
+host = "https://descargasmix.com"
 
 
 def mainlist(item):
@@ -452,6 +452,9 @@ def play(item):
         data = httptools.downloadpage("http://descargasmix.com/wp-admin/admin-ajax.php", post=post, headers=headers, follow_redirects=False).data
 
         url = scrapertools.find_single_match(data, 'url":"([^"]+)"').replace("\\", "")
+        if "enlacesmix" in url:
+            data = httptools.downloadpage(url, headers={'Referer': item.extra}, follow_redirects=False).data
+            url = scrapertools.find_single_match(data, '<iframe.*?src="([^"]+)"')
         enlaces = servertools.findvideosbyserver(url, item.server)
         if enlaces:
             itemlist.append(item.clone(action="play", server=enlaces[0][2], url=enlaces[0][1]))
