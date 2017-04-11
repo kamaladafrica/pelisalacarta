@@ -152,6 +152,11 @@ def filterchannels(category, preferred_thumb=""):
 
         try:
             channel_parameters = channeltools.get_channel_parameters(channel[:-4])
+
+            # si el canal no es compatible, no se muestra
+            if not channel_parameters["compatible"]:
+                continue
+
             # Si no es un canal lo saltamos
             if not channel_parameters["channel"]:
                 continue
