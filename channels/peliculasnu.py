@@ -218,6 +218,8 @@ def findvideos(item):
             url += "|Referer=" + item.url
         else:
             server = servertools.get_server_from_url(url)
+            if server == "directo":
+                continue
         title = "%s - %s" % (unicode(server, "utf8").capitalize().encode("utf8"), title)
         itemlist.append(item.clone(action="play", url=url, title=title, server=server, text_color=color3))
 
@@ -232,12 +234,12 @@ def play(item):
     logger.info()
     itemlist = []
     if "drive.php?v=" in item.url:
-        if not item.url.startswith("http:"):
+        if not item.url.startswith("http:") and not item.url.startswith("https:"):
             item.url = "http:" + item.url
-        data = httptools.downloadpage(item.url).data
+        data = httptools.downloadpage(item.url, add_referer=True).data.replace("\\", "")
 
         subtitulo = scrapertools.find_single_match(data, "var subtitulo='([^']+)'")
-        patron = '{"label":\s*"([^"]+)","type":\s*"video/([^"]+)","src":\s*"([^"]+)"'
+        patron = '"label":\s*"([^"]+)","type":\s*"video/([^"]+)","(?:src|file)":\s*"([^"]+)"'
         matches = scrapertools.find_multiple_matches(data, patron)
         for calidad, extension, url in matches:
             url = url.replace(",", "%2C")
@@ -248,13 +250,18 @@ def play(item):
         except:
             pass
     elif "metiscs" in item.url:
-        if not item.url.startswith("http:"):
-            item.url = "http:" + item.url
-        referer = {'Referer': "http://peliculas.nu"}
-        data = httptools.downloadpage(item.url, headers=referer).data
-        
+        import base64
         from lib import jsunpack
-        packed = scrapertools.find_single_match(data, '<script type="text/javascript">(eval\(function.*?)</script>')
+
+        if not item.url.startswith("http:") and not item.url.startswith("https:"):
+            item.url = "http:" + item.url
+
+        data = httptools.downloadpage(item.url, add_referer=True).data
+        str_encode = scrapertools.find_multiple_matches(data, '(?:\+|\()"([^"]+)"')
+        data = base64.b64decode("".join(str_encode))
+        packed = scrapertools.find_single_match(data, '(eval\(function.*?)(?:</script>|\}\)\))')
+        if not packed:
+            packed = data
         data_js = jsunpack.unpack(packed)
 
         subtitle = scrapertools.find_single_match(data_js, 'tracks:\[\{"file":"([^"]+)"')
