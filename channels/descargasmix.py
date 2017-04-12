@@ -280,7 +280,7 @@ def epienlaces(item):
         titulo = "    %s [%s]" % (unicode(scrapedserver, "utf-8").capitalize().encode("utf-8"), scrapedcalidad)
         # Enlaces descarga
         if scrapedserver == "magnet":
-            itemlist.insert(0, item.clone(action="play", title=titulo, server="torrent", url=scrapedurl))
+            itemlist.insert(0, item.clone(action="play", title=titulo, server="torrent", url=scrapedurl, extra=item.url))
         else:
             mostrar_server = True
             if config.get_setting("hidepremium") == "true":
