@@ -257,7 +257,7 @@ def indices(item):
         patron = '<div class="sel gen" value="([^"]+)">([^<]+)</div>'
         matches = scrapertools.find_multiple_matches(data, patron)
         for value, genero in matches:
-            url = item.url + "?tipo[]=%s&genero[]=%s&ad=2&ordenar=novedades&con_dis=on" % (tipo, value)
+            url = item.url + "?tipo[]=%s&generos[]=%s&ad=2&ordenar=novedades&con_dis=on" % (tipo, value)
             itemlist.append(item.clone(action="fichas", title=genero, url=url))
     elif "Idiomas" in item.title:
         data = httptools.downloadpage(item.url).data
