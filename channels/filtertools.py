@@ -469,7 +469,7 @@ def config_item(item):
     tvshow = item.show.lower().strip()
 
     lang_selected = dict_series.get(tvshow, {}).get(TAG_LANGUAGE, 'Español')
-    list_quality = dict_series.get(tvshow, {}).get(TAG_QUALITY_ALLOWED, "")
+    list_quality = dict_series.get(tvshow, {}).get(TAG_QUALITY_ALLOWED, [x.lower() for x in item.list_quality])
     # logger.info("lang selected {}".format(lang_selected))
     # logger.info("list quality {}".format(list_quality))
 
