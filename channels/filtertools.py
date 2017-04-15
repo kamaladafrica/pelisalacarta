@@ -131,6 +131,8 @@ def context(item, list_language=None, list_quality=None, exist=False):
     @rtype: list
     """
     _context = []
+    # TODO hay que mirar si el contexto ya tiene valores para no eliminar las anteriores opciones
+
     if access() and item.show != "":
         dict_data = {"title": "FILTRO: Configurar", "action": "config_item", "channel": "filtertools"}
         if list_language:
@@ -241,6 +243,7 @@ def get_link(list_item, item, list_language, list_quality=None, global_filter_la
         list_item, quality_count, language_count = \
             check_conditions(filter_global, list_item, item, list_language, list_quality)
     else:
+        item.context = context(item)
         list_item.append(item)
 
     return list_item
