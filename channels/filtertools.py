@@ -35,7 +35,7 @@ TAG_TVSHOW_FILTER = "TVSHOW_FILTER"
 TAG_NAME = "name"
 TAG_ACTIVE = "active"
 TAG_LANGUAGE = "language"
-TAG_QUALITY_NOT_ALLOWED = "quality_not_allowed"
+TAG_QUALITY_ALLOWED = "quality_allowed"
 
 COLOR = {"parent_item": "yellow", "error": "red", "striped_even_active": "blue",
          "striped_even_inactive": "0xff00bfff", "striped_odd_active": "0xff008000",
@@ -52,11 +52,11 @@ class ResultFilter:
     def __init__(self, dict_filter):
         self.active = dict_filter[TAG_ACTIVE]
         self.language = dict_filter[TAG_LANGUAGE]
-        self.quality_not_allowed = dict_filter[TAG_QUALITY_NOT_ALLOWED]
+        self.quality_allowed = dict_filter[TAG_QUALITY_ALLOWED]
 
     def __str__(self):
-        return "{active: '%s', language: '%s', quality_not_allowed: '%s'}" % \
-               (self.active, self.language, self.quality_not_allowed)
+        return "{active: '%s', language: '%s', quality_allowed: '%s'}" % \
+               (self.active, self.language, self.quality_allowed)
 
 
 class Filter:
@@ -76,7 +76,7 @@ class Filter:
 
             self.result = ResultFilter({TAG_ACTIVE: dict_filtered_shows[tvshow][TAG_ACTIVE],
                                         TAG_LANGUAGE: dict_filtered_shows[tvshow][TAG_LANGUAGE],
-                                        TAG_QUALITY_NOT_ALLOWED: dict_filtered_shows[tvshow][TAG_QUALITY_NOT_ALLOWED]})
+                                        TAG_QUALITY_ALLOWED: dict_filtered_shows[tvshow][TAG_QUALITY_ALLOWED]})
 
         # opcion general "no filtrar"
         elif global_filter_language != 0:
@@ -94,11 +94,66 @@ class Filter:
                                      (global_filter_lang_id, global_filter_language))
                         break
 
-                    self.result = ResultFilter({TAG_ACTIVE: True, TAG_LANGUAGE: language, TAG_QUALITY_NOT_ALLOWED: []})
+                    self.result = ResultFilter({TAG_ACTIVE: True, TAG_LANGUAGE: language, TAG_QUALITY_ALLOWED: []})
                     break
 
     def __str__(self):
         return "{'%s'}" % self.result
+
+
+# TODO ELIMINAR METODO EN FUTURA VERSION
+def upgrade_version(channel, list_quality):
+
+    if channel in ['seriesblanco', 'seriesdanko', 'seriespapaya']:
+        if not config.get_setting("var_temp_filtertools_v2_%s" % channel):
+            dict_series = filetools.get_node_from_data_json(channel, TAG_TVSHOW_FILTER)
+
+            if dict_series:
+                # Informamos al usuario
+                platformtools.dialog_notification("Espere por favor", "Actualizando filtros al nuevo formato")
+
+                # Hacemos backup del fichero
+                original = filetools.join(config.get_data_path(), "settings_channels", channel + "_data.json")
+                backup = filetools.join(config.get_data_path(), "settings_channels", channel + "_data.bk_ft")
+                filetools.copy(original, backup)
+
+                try:
+                    for serie in dict_series.keys():
+
+                        logger.debug("serie %s" % serie)
+                        quality_not_allowed = dict_series[serie]["quality_not_allowed"]
+                        # Eliminamos el nodo antiguo
+                        dict_series[serie].pop("quality_not_allowed", None)
+
+                        # ponemos en minúsculas
+                        quality_allowed = [x.lower() for x in list_quality]
+
+                        for quality in quality_not_allowed:
+                            if quality in quality_allowed:
+                                quality_allowed.remove(quality)
+
+                        # añadimos el nuevo nodo con los datos correctos
+                        dict_series[serie][TAG_QUALITY_ALLOWED] = quality_allowed
+
+                    fname, json_data = filetools.update_json_data(dict_series, channel, TAG_TVSHOW_FILTER)
+                    result = filetools.write(fname, json_data)
+
+                except:
+                    logger.error("Se ha producido un error al convertir los filtros")
+                    logger.error("Debe suministrar el fichero '%s'" % backup)
+                    result = False
+
+                if result:
+                    message = "Conversión correcta"
+                    config.set_setting("var_temp_filtertools_v2_%s" % channel, "s")
+                else:
+                    message = "Error, reporte en el foro"
+
+                heading = "Proceso terminado"
+                platformtools.dialog_notification(heading, message)
+
+            else:
+                config.set_setting("var_temp_filtertools_v2_%s" % channel, "s")
 
 
 def access():
@@ -106,6 +161,7 @@ def access():
     Devuelve si se puede usar o no filtertools
     """
     allow = False
+
     if config.is_xbmc() or config.get_platform() == "mediaserver":
         allow = True
 
@@ -161,6 +217,8 @@ def context(item, list_language=None, list_quality=None, exist=False):
 
 def show_option(itemlist, channel, list_language, list_quality):
 
+    # TODO eliminar referencia en futura versión
+    upgrade_version(channel, list_quality)
     if access():
         itemlist.append(Item(channel=__channel__, title="[COLOR {0}]Configurar filtro para series...[/COLOR]".
                              format(COLOR.get("parent_item", "auto")), action="load", list_language=list_language,
@@ -177,6 +235,7 @@ def check_conditions(_filter, list_item, item, list_language, list_quality, qual
 
     is_language_valid = True
     if _filter.language:
+        # logger.debug("title es %s" % item.title)
 
         # viene de episodios
         if isinstance(item.language, list):
@@ -194,9 +253,9 @@ def check_conditions(_filter, list_item, item, list_language, list_quality, qual
         is_quality_valid = True
         quality = ""
 
-        if _filter.quality_not_allowed:
+        if _filter.quality_allowed and item.quality != "":
             # if hasattr(item, 'quality'): # esta validación no hace falta por que SIEMPRE se devuelve el atributo vacío
-            if item.quality.lower() not in _filter.quality_not_allowed:
+            if item.quality.lower() in _filter.quality_allowed:
                 quality = item.quality.lower()
                 quality_count += 1
             else:
@@ -213,8 +272,8 @@ def check_conditions(_filter, list_item, item, list_language, list_quality, qual
 
         logger.debug(" idioma valido?: {0}, item.language: {1}, filter.language: {2}"
                      .format(is_language_valid, item.language, _filter.language))
-        logger.debug(" calidad valida?: {0}, item.quality: {1}, filter.quality_not_allowed: {2}"
-                     .format(is_quality_valid, quality, _filter.quality_not_allowed))
+        logger.debug(" calidad valida?: {0}, item.quality: {1}, filter.quality_allowed: {2}"
+                     .format(is_quality_valid, quality, _filter.quality_allowed))
 
     return list_item, quality_count, language_count
 
@@ -293,9 +352,9 @@ def get_links(list_item, item, list_language, list_quality=None, global_filter_l
             new_itemlist, quality_count, language_count = check_conditions(_filter, new_itemlist, item, list_language,
                                                                            list_quality, quality_count, language_count)
 
-        logger.info("ITEMS FILTRADOS: {0}/{1}, idioma[{2}]: {3}, calidad_no_permitida{4}: {5}"
+        logger.info("ITEMS FILTRADOS: {0}/{1}, idioma [{2}]: {3}, calidad_permitida {4}: {5}"
                     .format(len(new_itemlist), len(list_item), _filter.language, language_count,
-                            _filter.quality_not_allowed, quality_count))
+                            _filter.quality_allowed, quality_count))
 
         if len(new_itemlist) == 0:
             list_item_all = []
@@ -305,16 +364,16 @@ def get_links(list_item, item, list_language, list_quality=None, global_filter_l
             _context = [{"title": "FILTRO: Borrar '%s'" % _filter.language, "action": "delete_from_context",
                          "channel": "filtertools", "to_channel": "seriesdanko"}]
 
-            if _filter.quality_not_allowed:
-                msg_quality_not_allowed = " y calidad distinta {0}".format(_filter.quality_not_allowed)
+            if _filter.quality_allowed:
+                msg_quality_allowed = " y calidad {0}".format(_filter.quality_allowed)
             else:
-                msg_quality_not_allowed = ""
+                msg_quality_allowed = ""
 
             new_itemlist.append(Item(channel=__channel__, action="no_filter", list_item_all=list_item_all,
                                      show=item.show,
                                      title="[COLOR {0}]No hay elementos con idioma '{1}'{2}, pulsa para mostrar "
                                            "sin filtro[/COLOR]"
-                                     .format(COLOR.get("error", "auto"), _filter.language, msg_quality_not_allowed),
+                                     .format(COLOR.get("error", "auto"), _filter.language, msg_quality_allowed),
                                      context=_context))
 
     else:
@@ -410,7 +469,7 @@ def config_item(item):
     tvshow = item.show.lower().strip()
 
     lang_selected = dict_series.get(tvshow, {}).get(TAG_LANGUAGE, 'Español')
-    list_quality = dict_series.get(tvshow, {}).get(TAG_QUALITY_NOT_ALLOWED, "")
+    list_quality = dict_series.get(tvshow, {}).get(TAG_QUALITY_ALLOWED, "")
     # logger.info("lang selected {}".format(lang_selected))
     # logger.info("list quality {}".format(list_quality))
 
@@ -453,7 +512,7 @@ def config_item(item):
             {
                 "id": "textoCalidad",
                 "type": "label",
-                "label": "Calidad NO permitida",
+                "label": "Calidad permitida",
                 "color": "0xffC6C384",
                 "enabled": True,
                 "visible": True,
@@ -538,7 +597,7 @@ def save(item, dict_data_saved):
 
         lang_selected = item.list_language[dict_data_saved[TAG_LANGUAGE]]
         dict_filter = {TAG_NAME: item.show, TAG_ACTIVE: dict_data_saved.get(TAG_ACTIVE, True),
-                       TAG_LANGUAGE: lang_selected, TAG_QUALITY_NOT_ALLOWED: list_quality}
+                       TAG_LANGUAGE: lang_selected, TAG_QUALITY_ALLOWED: list_quality}
         dict_series[tvshow] = dict_filter
 
         fname, json_data = filetools.update_json_data(dict_series, item.from_channel, TAG_TVSHOW_FILTER)
@@ -570,7 +629,7 @@ def save_from_context(item):
     dict_series = filetools.get_node_from_data_json(item.from_channel, TAG_TVSHOW_FILTER)
     tvshow = item.show.strip().lower()
 
-    dict_filter = {TAG_NAME: item.show, TAG_ACTIVE: True, TAG_LANGUAGE: item.language, TAG_QUALITY_NOT_ALLOWED: []}
+    dict_filter = {TAG_NAME: item.show, TAG_ACTIVE: True, TAG_LANGUAGE: item.language, TAG_QUALITY_ALLOWED: []}
     dict_series[tvshow] = dict_filter
 
     fname, json_data = filetools.update_json_data(dict_series, item.from_channel, TAG_TVSHOW_FILTER)
