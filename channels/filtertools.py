@@ -130,8 +130,14 @@ def context(item, list_language=None, list_quality=None, exist=False):
     @return: lista de opciones a mostrar en el menú contextual
     @rtype: list
     """
-    _context = []
-    # TODO hay que mirar si el contexto ya tiene valores para no eliminar las anteriores opciones
+
+    # Dependiendo de como sea el contexto lo guardamos y añadimos las opciones de filtertools.
+    if type(item.context) == str:
+        _context = item.context.split("|")
+    elif type(item.context) == list:
+        _context = item.context
+    else:
+        _context = []
 
     if access() and item.show != "":
         dict_data = {"title": "FILTRO: Configurar", "action": "config_item", "channel": "filtertools"}
