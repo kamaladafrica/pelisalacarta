@@ -4,6 +4,11 @@
 	<version>3</version>
 	<changes>
 		<change>
+			<date>16/04/2017</date>
+			<autor>Intel1</autor>
+			<description>Detectar servidor caído</description>
+		</change>
+		<change>
 			<date>27/02/2017</date>
 			<autor>Cmos</autor>
 			<description>Reparado conector</description>
