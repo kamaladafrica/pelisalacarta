@@ -195,7 +195,7 @@ def context(item, list_language=None, list_quality=None, exist=False):
     else:
         _context = []
 
-    if access() and item.show != "":
+    if access():
         dict_data = {"title": "FILTRO: Configurar", "action": "config_item", "channel": "filtertools"}
         if list_language:
             dict_data["list_language"] = list_language
