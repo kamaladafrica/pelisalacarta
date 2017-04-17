@@ -13,18 +13,17 @@ import urlparse
 
 from channelselector import get_thumbnail_path
 from core import config
+from core import httptools
 from core import logger
 from core import scrapertools
 from core.item import Item
 from core.tmdb import Tmdb
 
-
 host = "http://www.mejortorrent.com"
-DEBUG = config.get_setting("debug")
 
 
 def mainlist(item):
-    logger.info("pelisalacarta.mejortorrent mainlist")
+    logger.info()
 
     itemlist = []
 
@@ -47,7 +46,7 @@ def mainlist(item):
     return itemlist
 
 def listalfabetico(item):
-    logger.info("pelisalacarta.mejortorrent listalfabetico")
+    logger.info()
 
     itemlist = []
 
@@ -60,7 +59,7 @@ def listalfabetico(item):
 
 
 def search(item,texto):
-    logger.info("pelisalacarta.mejortorrent search")
+    logger.info()
     texto = texto.replace(" ","+")
 
     item.url = "http://www.mejortorrent.com/secciones.php?sec=buscador&valor=%s" % (texto)
@@ -77,10 +76,10 @@ def search(item,texto):
 
 
 def buscador(item):
-    logger.info("pelisalacarta.mejortorrent buscador")
+    logger.info()
     itemlist = []
 
-    data = scrapertools.cachePage(item.url)
+    data = httptools.downloadpage(item.url).data
 
     # pelis
     # <a href="/peli-descargar-torrent-9578-Presentimientos.html">
@@ -149,10 +148,10 @@ def buscador(item):
 
 
 def getlist(item):
-    logger.info("pelisalacarta.mejortorrent seriesydocs")
+    logger.info()
     itemlist = []
 
-    data = scrapertools.cachePage(item.url)
+    data = httptools.downloadpage(item.url).data
 
     # pelis
     # <a href="/peli-descargar-torrent-9578-Presentimientos.html">
@@ -231,6 +230,8 @@ def getlist(item):
 
         itemlist[cnt].title = title
         cnt += 1
+        if cnt == len(itemlist) - 1:
+            break
 
     if len(itemlist) == 0:
         itemlist.append( Item(channel=item.channel, action="mainlist", title="No se ha podido cargar el listado" ) )
@@ -248,11 +249,11 @@ def getlist(item):
 
 
 def episodios(item):
-    logger.info("pelisalacarta.mejortorrent episodios")
+    logger.info()
     itemlist = []
 
     # Descarga la página
-    data = scrapertools.cachePage(item.url)
+    data = httptools.downloadpage(item.url).data
 
     total_capis = scrapertools.get_match(data,"<input type='hidden' name='total_capis' value='(\d+)'>")
     tabla = scrapertools.get_match(data,"<input type='hidden' name='tabla' value='([^']+)'>")
@@ -284,7 +285,7 @@ def episodios(item):
     scrapertools.printMatches(matches)
 
     tmdb_title = re.sub(r'(\s*-\s*)?\d+.*?\s*Temporada|(\s*-\s*)?\s*Miniserie\.?|\(.*\)|\[.*\]', '', item.title).strip()
-    logger.debug('pelisalacarta.mejortorrent episodios tmdb_title=' + tmdb_title)
+    logger.debug('tmdb_title=' + tmdb_title)
 
     if item.extra == "series":
         oTmdb= Tmdb(texto_buscado=tmdb_title.strip(), tipo='tv', idioma_busqueda="es")
@@ -340,12 +341,12 @@ def episodios(item):
     return itemlist
 
 def show_movie_info(item):
-    logger.info("pelisalacarta.mejortorrent show_movie_info")
+    logger.info()
 
     itemlist = []
 
     tmdb_title = re.sub(r'\(.*\)|\[.*\]', '', item.title).strip()
-    logger.debug('pelisalacarta.mejortorrent show_movie_info tmdb_title=' + tmdb_title)
+    logger.debug('tmdb_title=' + tmdb_title)
 
     try:
         oTmdb= Tmdb(texto_buscado=tmdb_title, idioma_busqueda="es")
@@ -354,7 +355,7 @@ def show_movie_info(item):
     except:
         pass
 
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
     logger.debug("data="+data)
 
     patron  = "<a href='(secciones.php\?sec\=descargas[^']+)'"
@@ -365,7 +366,7 @@ def show_movie_info(item):
         url = urlparse.urljoin(item.url, scrapedurl)
         logger.debug("title=["+item.title+"], url=["+url+"], thumbnail=["+item.thumbnail+"]")
 
-        torrent_data = scrapertools.cache_page(url)
+        torrent_data = httptools.downloadpage(url).data
         logger.debug("torrent_data="+torrent_data)
         #<a href='/uploads/torrents/peliculas/los-juegos-del-hambre-brrip.torrent'>
         link = scrapertools.get_match(torrent_data,"<a href='(/uploads/torrents/peliculas/.*?\.torrent)'>")
@@ -379,15 +380,15 @@ def show_movie_info(item):
 
 
 def play(item):
-    logger.info("pelisalacarta.mejortorrent play")
+    logger.info()
     itemlist = []
 
     if item.extra=="":
         itemlist.append( Item(channel=item.channel, action="play", server="torrent", title=item.title , url=item.url, thumbnail=item.thumbnail , plot=item.plot, fanart=item.fanart, folder=False) )
 
     else:
-        data = scrapertools.cache_page(item.url, post=item.extra)
-        logger.info("data="+data)
+        data = httptools.downloadpage(item.url, post=item.extra).data
+        logger.debug("data="+data)
 
         # series
         #
