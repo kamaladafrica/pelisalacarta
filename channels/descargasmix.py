@@ -33,7 +33,7 @@ def mainlist(item):
 
     # Resetear host y comprobacion de error en https (por si se actualiza Kodi)
     config.set_setting("url_error", False, "descargasmix")
-    config.set_setting("host", "https://descargasmix.com", "descargasmix")
+    host = config.set_setting("host", "https://descargasmix.com", "descargasmix")
     host_check = get_data(host, True)
     if host_check:
         config.set_setting("host", host_check, "descargasmix")
@@ -515,6 +515,10 @@ def get_data(url_orig, get_host=False):
         response = httptools.downloadpage(url_orig)
         if not response.data or "urlopen error [Errno 1]" in str(response.code):
             raise Exception
+        if get_host:
+            if response.url.endswith("/"):
+                response.url = response.url[:-1]
+            return response.url
     except:
         config.set_setting("url_error", True, "descargasmix")
         import random
