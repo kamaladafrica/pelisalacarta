@@ -80,8 +80,8 @@ def start (itemlist, item):
         channel_node = autoplay_node.get(item.channel, {})
         settings_node = channel_node.get('settings', {})
 
-        logger.debug('channel_node: %s' % channel_node)
-        logger.debug('settings_node: %s' % settings_node)
+        #logger.debug('channel_node: %s' % channel_node)
+        #logger.debug('settings_node: %s' % settings_node)
 
         if settings_node['active']:
             url_list_valid = []
@@ -104,7 +104,7 @@ def start (itemlist, item):
 
             # Obtenemos si tenemos configuración personalizada
             autoplay_settings = settings_node.get('custom', False)
-            # logger.debug ('autoplay_settings: '+str(autoplay_settings))
+            #logger.debug ('autoplay_settings: '+str(autoplay_settings))
 
             if autoplay_settings:
                 # Ordena los enlaces por la prioridad Servidor/Calidad la lista de favoritos
@@ -118,13 +118,13 @@ def start (itemlist, item):
             server_list = channel_node.get('servers', [])
             quality_list = channel_node.get('quality', [])
 
-            logger.debug('server_list: %s' % server_list)
-            logger.debug('quality_list: %s' % quality_list)
+            #logger.debug('server_list: %s' % server_list)
+            #logger.debug('quality_list: %s' % quality_list)
 
             # Se guardan los textos de cada servidor y calidad en listas p.e. favorite_servers = ['openload',
             # 'streamcloud']
             for num in range(1, 4):
-                logger.debug('server_list: %s ' % server_list[settings_node.get("server_%s" % num, 0)])
+                #logger.debug('server_list: %s ' % server_list[settings_node.get("server_%s" % num, 0)])
                 # logger.debug('config_get_settings: %s ' % config.get_setting("server_%s" % num, item.channel))
 
                 favorite_servers.append(server_list[settings_node.get("server_%s" % num, 0)])
@@ -139,12 +139,9 @@ def start (itemlist, item):
                                      "from_channel": item.channel
                                      }
                                     )
-                logger.debug('tiene: %s %s'%(hasattr(item, 'quality'),item.quality))
                 if item.quality == '':
                     item.quality = 'default'
                     setattr(item,'quality','default')
-                    logger.debug ('item hernan: %s'%item)
-                logger.debug('tiene: %s %s' % (hasattr(item, 'quality'), item.quality))
                 # Se crea la lista para configuracion personalizada
                 if autoplay_settings:
                     # si el servidor no se encuentra en la lista de favoritos o la url no es correcta, avanzamos en
@@ -202,7 +199,7 @@ def start (itemlist, item):
                 ordered_list = sorted(autoplay_list, key=lambda priority: priority[0])
                 autoplay_list = ordered_list
 
-            logger.debug('autoplay_list: ' + str(autoplay_list) + ' favorite priority: ' + str(favorite_priority))
+            #logger.debug('autoplay_list: ' + str(autoplay_list) + ' favorite priority: ' + str(favorite_priority))
 
             # Si hay elementos en la lista de autoplay se intenta reproducir cada elemento, hasta encontrar uno
             # funcional
@@ -216,7 +213,7 @@ def start (itemlist, item):
                 for indice in autoplay_list:
                     if not xbmc.Player().isPlaying() and not played:
                         videoitem = indice[1]
-                        logger.debug('item.language: ' + videoitem.language)
+                        #logger.debug('item.language: ' + videoitem.language)
                         lang = " "
                         if hasattr(videoitem, 'language') and videoitem.language != "":
                             lang = " '%s' " % videoitem.language
@@ -235,7 +232,7 @@ def start (itemlist, item):
                                 videoitem = resolved_item[0]
 
                         # si no directamente reproduce
-                        logger.debug('videoitem: ' + str(videoitem))
+                        #logger.debug('videoitem: ' + str(videoitem))
                         platformtools.play_video(videoitem)
 
                         try:
