@@ -139,9 +139,9 @@ def start (itemlist, item):
                                      "from_channel": item.channel
                                      }
                                     )
+                # Si no tiene calidad definida le asigna calidad 'default'
                 if item.quality == '':
                     item.quality = 'default'
-                    setattr(item,'quality','default')
                 # Se crea la lista para configuracion personalizada
                 if autoplay_settings:
                     # si el servidor no se encuentra en la lista de favoritos o la url no es correcta, avanzamos en

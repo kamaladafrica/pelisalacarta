@@ -11,10 +11,21 @@
 	<thumbnail>https://s32.postimg.org/h1ewz9hhx/mundoflv.png</thumbnail>
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/mundoflv.png</bannermenu>
 	
-	<update_url></update_url>
-	<version>8</version>
-	<date>28/01/2017</date>
-	<changes>Release</changes>
+	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
+	<version>9</version>
+
+	<changes>
+		<change>
+			<date>15/03/2017</date>
+			<autor>SeiTaN</autor>
+			<description>limpieza código</description>
+		</change>
+		<change>
+			<date>28/01/2017</date>
+			<autor>Hernan_Ar_c</autor>
+			<description>Release.</description>
+		</change>
+	</changes>
 
 	<categories>
 		<category>latino</category>
@@ -29,4 +40,20 @@
 		<enabled>false</enabled>
 		<visible>false</visible>
 	</settings>
+
+	<settings>
+		<id>filter_languages</id>
+		<type>list</type>
+		<label>Mostrar enlaces en idioma...</label>
+		<default>0</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+		<lvalues>No filtrar</lvalues>
+		<lvalues>Latino</lvalues>
+		<lvalues>Español</lvalues>
+		<lvalues>VOS</lvalues>
+		<lvalues>VOSE</lvalues>
+		<lvalues>VO</lvalues>
+	</settings>
+	
 </channel>
