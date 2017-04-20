@@ -370,7 +370,7 @@ def episodios(item):
                 # Si el capitulo tiene imagen propia remplazar al poster
                 i.thumbnail = i.infoLabels['poster_path']
 
-    itemlist.sort(key=lambda it: it.title, reverse=config.get_setting('orden_episodios', __channel__))
+    itemlist.sort(key=lambda it: int(it.infoLabels['episode']), reverse=config.get_setting('orden_episodios', __channel__))
 
     # Opción "Añadir esta serie a la biblioteca"
     if config.get_library_support() and len(itemlist) > 0:
@@ -554,11 +554,10 @@ def play(item):
         media_urls = scrapertools.find_multiple_matches(data, '"url":"([^"]+)".*?"width":([^,]+),')
 
         # la calidad más baja tiene que ir primero
-        media_urls = sorted(media_urls, key=lambda k: k[1])
+        media_urls = sorted(media_urls, key=lambda k: int(k[1]))
 
         if len(media_urls) > 0:
             for url, desc in media_urls:
-                logger.debug("desc %s" % desc)
                 itemlist.append([desc, url, 0, subtitle])
 
     # netu
