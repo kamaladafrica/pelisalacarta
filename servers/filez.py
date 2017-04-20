@@ -32,6 +32,16 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     for media_url, ext in media_urls:
         video_urls.append([".%s [filez]" % ext, media_url])
 
+    if not video_urls:
+        media_urls = scrapertools.find_multiple_matches(data, '<embed.*?src="([^"]+)"')    
+        for media_url in media_urls:
+            media_url = media_url.replace("https:", "http:")
+            ext = httptools.downloadpage(media_url, only_headers=True).headers.get("content-disposition", "")
+            ext = scrapertools.find_single_match(ext, 'filename="([^"]+)"')
+            if ext:
+                ext = ext[-4:]
+            video_urls.append(["%s [filez]" % ext, media_url])
+
     return video_urls
 
 
@@ -46,7 +56,7 @@ def find_videos(data):
     matches = re.compile(patronvideos, re.DOTALL).findall(data)
     for match in matches:
         titulo = "[filez]"
-        url = "http://filez.tv/embed/u=" + match
+        url = "https://filez.tv/embed/u=" + match
         if url not in encontrados:
             logger.info("  url=" + url)
             devuelve.append([titulo, url, 'filez'])

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para pordede
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 
 import os
 import re
@@ -11,34 +11,49 @@ import sys
 import urlparse
 
 from core import config
+from core import httptools
 from core import jsontools
 from core import logger
 from core import scrapertools
+from core import servertools
 from core.item import Item
 from platformcode import platformtools
-from core import servertools
-
-DEBUG = config.get_setting("debug")
-DEFAULT_HEADERS = []
-DEFAULT_HEADERS.append( ["User-Agent","Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; es-ES; rv:1.9.2.12) Gecko/20101026 Firefox/3.6.12"] )
-DEFAULT_HEADERS.append( ["Referer","http://www.pordede.com"] )
 
 
 def login():
-    url = "http://www.pordede.com/site/login"
-    post = "LoginForm[username]="+config.get_setting("pordedeuser", "pordede")+"&LoginForm[password]="+config.get_setting("pordedepassword", "pordede")
-    headers = DEFAULT_HEADERS[:]
-    data = scrapertools.cache_page(url,headers=headers,post=post)
+    url_origen = "http://www.pordede.com"
+    data = httptools.downloadpage(url_origen).data
+    if config.get_setting("pordedeuser", "pordede") in data:
+        return True
+    
+    key = scrapertools.find_single_match(data, 'data-sitekey="([^"]+)"')
+    sess_check = scrapertools.find_single_match(data, ' SESS\s*=\s*"([^"]+)"')
+
+    result = platformtools.show_recaptcha(key, url_origen)
+    if result:
+        post = "LoginForm[username]="+config.get_setting("pordedeuser", "pordede")+"&LoginForm[password]="+config.get_setting("pordedepassword", "pordede")
+        post += "&LoginForm[verifyCode]=&g-recaptcha-response=%s&popup=1&sesscheck=%s" % (result, sess_check)
+
+        headers = {"Referer": url_origen, "X-Requested-With": "XMLHttpRequest"}
+        data = httptools.downloadpage("http://www.pordede.com/site/login", post, headers=headers, replace_headers=True).data
+        if "Login correcto, entrando" in data:
+            return True
+
+    return False
+
 
 def mainlist(item):
-    logger.info("pelisalacarta.channels.pordede mainlist")
+    logger.info()
 
     itemlist = []
 
     if config.get_setting("pordedeuser", "pordede") == "":
         itemlist.append( Item( channel=item.channel , title="Habilita tu cuenta en la configuración..." , action="settingCanal" , url="") )
     else:
-        login()
+        result = login()
+        if not result:
+            itemlist.append(Item(channel=item.channel, action="mainlist", title="Login fallido. Volver a intentar..."))
+            return itemlist
         itemlist.append( Item(channel=item.channel, action="menuseries"    , title="Series"                   , url="" ))
         itemlist.append( Item(channel=item.channel, action="menupeliculas" , title="Películas y documentales" , url="" ))
         itemlist.append( Item(channel=item.channel, action="listas_sigues" , title="Listas que sigues"        , url="http://www.pordede.com/lists/following" ))
@@ -51,7 +66,7 @@ def settingCanal(item):
     return platformtools.show_channel_settings()
 
 def menuseries(item):
-    logger.info("pelisalacarta.channels.pordede menuseries")
+    logger.info()
 
     itemlist = []
     itemlist.append( Item(channel=item.channel, action="peliculas" , title="Novedades"            , url="http://www.pordede.com/series/loadmedia/offset/0/showlist/hot" ))
@@ -67,7 +82,7 @@ def menuseries(item):
     return itemlist
 
 def menupeliculas(item):
-    logger.info("pelisalacarta.channels.pordede menupeliculas")
+    logger.info()
 
     itemlist = []
     itemlist.append( Item(channel=item.channel, action="peliculas" , title="Novedades"            , url="http://www.pordede.com/pelis/loadmedia/offset/0/showlist/hot" ))
@@ -81,13 +96,11 @@ def menupeliculas(item):
     return itemlist
 
 def generos(item):
-    logger.info("pelisalacarta.channels.pordede generos")
-
-    headers = DEFAULT_HEADERS[:]
+    logger.info()
 
     # Descarga la pagina
-    data = scrapertools.cache_page(item.url, headers=headers)
-    if (DEBUG): logger.info("data="+data)
+    data = httptools.downloadpage(item.url).data
+    logger.debug("data="+data)
 
     # Extrae las entradas (carpetas)
     data = scrapertools.find_single_match(data,'<div class="section genre">(.*?)</div>')
@@ -104,13 +117,13 @@ def generos(item):
             url = "http://www.pordede.com/pelis/loadmedia/offset/0/genre/"+textid.replace(" ","%20")+"/showlist/all"
         else:
             url = "http://www.pordede.com/series/loadmedia/offset/0/genre/"+textid.replace(" ","%20")+"/showlist/all"
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+        logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
         itemlist.append( Item(channel=item.channel, action="peliculas" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title))
 
     return itemlist
 
 def search(item,texto):
-    logger.info("pelisalacarta.channels.pordede search")
+    logger.info()
 
     if item.url=="":
         item.url="http://www.pordede.com/pelis"
@@ -126,22 +139,20 @@ def search(item,texto):
     except:
         import sys
         for line in sys.exc_info():
-            logger.error( "%s" % line )
+            logger.error("%s" % line)
         return []
 
 def buscar(item):
-    logger.info("pelisalacarta.channels.pordede buscar")
+    logger.info()
 
     # Descarga la pagina
-    headers = DEFAULT_HEADERS[:]
-    #headers.append(["Referer",item.extra])
-    headers.append(["X-Requested-With","XMLHttpRequest"])
-    data = scrapertools.cache_page(item.url,headers=headers)
-    if (DEBUG): logger.info("data="+data)
+    headers = {"X-Requested-With": "XMLHttpRequest"}
+    data = httptools.downloadpage(item.url, headers=headers).data
+    logger.debug("data="+data)
 
     # Extrae las entradas (carpetas)
     json_object = jsontools.load_json(data)
-    if (DEBUG): logger.info("html="+json_object["html"])
+    logger.debug("html="+json_object["html"])
     data = json_object["html"]
 
     return parse_mixed_results(item,data)
@@ -179,7 +190,7 @@ def parse_mixed_results(item,data):
 
             referer = urlparse.urljoin(item.url,scrapedurl)
             url = referer.replace("/{0}/".format(sectionStr),"/links/view/slug/")+"/what/{0}".format(sectionStr)
-            if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+            logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
             itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , extra=referer, url=url, thumbnail=thumbnail, plot=plot, fulltitle=fulltitle, fanart=fanart,
                                   contentTitle=scrapedtitle, contentType="movie", context=["buscar_trailer"]))
         else:
@@ -206,19 +217,16 @@ def parse_mixed_results(item,data):
     return itemlist
 
 def siguientes(item):
-    logger.info("pelisalacarta.channels.pordede siguientes")
+    logger.info()
 
     # Descarga la pagina
-    headers = DEFAULT_HEADERS[:]
-    #headers.append(["Referer",item.extra])
-    headers.append(["X-Requested-With","XMLHttpRequest"])
-
-    data = scrapertools.cache_page(item.url,headers=headers)
-    if (DEBUG): logger.info("data="+data)
+    headers = {"X-Requested-With": "XMLHttpRequest"}
+    data = httptools.downloadpage(item.url, headers=headers).data
+    logger.debug("data="+data)
 
     # Extrae las entradas (carpetas)
     json_object = jsontools.load_json(data)
-    if (DEBUG): logger.info("html2="+json_object["html"])
+    logger.debug("html2="+json_object["html"])
     data = json_object["html"]
     patron = ''
     patron += '<div class="coverMini     shadow tiptip" title="([^"]+)">[^<]+'
@@ -250,19 +258,17 @@ def siguientes(item):
         #itemlist.append( Item(channel=item.channel, action="episodios" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=title))
         itemlist.append( Item(channel=item.channel, action="episodio" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, show=title, fanart=fanart, extra=session+"|"+episode))
 
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+        logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
     return itemlist
 
 def episodio(item):
-    logger.info("pelisalacarta.channels.pordede episodio")
+    logger.info()
     itemlist = []
 
-    headers = DEFAULT_HEADERS[:]
-
     # Descarga la pagina
-    data = scrapertools.cache_page(item.url, headers=headers)
-    if (DEBUG): logger.info("data="+data)
+    data = httptools.downloadpage(item.url).data
+    logger.debug("data="+data)
 
     session = str(int(item.extra.split("|")[0]))
     episode = str(int(item.extra.split("|")[1]))
@@ -271,7 +277,7 @@ def episodio(item):
 
 
     for bloque_episodios in matchestemporadas:
-        if (DEBUG): logger.info("bloque_episodios="+bloque_episodios)
+        logger.debug("bloque_episodios="+bloque_episodios)
 
         # Extrae los episodios
         patron  = '<span class="title defaultPopup" href="([^"]+)"><span class="number">'+episode+' </span>([^<]+)</span>(\s*</div>\s*<span[^>]*><span[^>]*>[^<]*</span><span[^>]*>[^<]*</span></span><div[^>]*><button[^>]*><span[^>]*>[^<]*</span><span[^>]*>[^<]*</span></button><div class="action([^"]*)" data-action="seen">)?'
@@ -293,7 +299,7 @@ def episodio(item):
             epid = scrapertools.find_single_match(scrapedurl,"id/(\d+)")
             url = "http://www.pordede.com/links/viewepisode/id/"+epid
             itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, fanart=item.fanart, show=item.show))
-            if (DEBUG): logger.info("Abrimos title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+            logger.debug("Abrimos title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
     itemlist2 = []
     for capitulo in itemlist:
@@ -301,31 +307,28 @@ def episodio(item):
     return itemlist2
 
 def peliculas(item):
-    logger.info("pelisalacarta.channels.pordede peliculas")
+    logger.info()
 
     # Descarga la pagina
-    headers = DEFAULT_HEADERS[:]
-    #headers.append(["Referer",item.extra])
-    headers.append(["X-Requested-With","XMLHttpRequest"])
-    data = scrapertools.cache_page(item.url,headers=headers)
-    if (DEBUG): logger.info("data="+data)
+    headers = {"X-Requested-With": "XMLHttpRequest"}
+    data = httptools.downloadpage(item.url, headers=headers).data
+    logger.debug("data="+data)
 
     # Extrae las entradas (carpetas)
     json_object = jsontools.load_json(data)
-    if (DEBUG): logger.info("html="+json_object["html"])
+    logger.debug("html="+json_object["html"])
     data = json_object["html"]
 
     return parse_mixed_results(item,data)
 
 def episodios(item):
-    logger.info("pelisalacarta.channels.pordede episodios")
+    logger.info()
     itemlist = []
-    headers = DEFAULT_HEADERS[:]
 
     # Descarga la pagina
     idserie = ''
-    data = scrapertools.cache_page(item.url, headers=headers)
-    if (DEBUG): logger.info("data="+data)
+    data = httptools.downloadpage(item.url).data
+    logger.debug("data="+data)
 
     patrontemporada = '<div class="checkSeason"[^>]+>([^<]+)<div class="right" onclick="controller.checkSeason(.*?)\s+</div></div>'
     matchestemporadas = re.compile(patrontemporada,re.DOTALL).findall(data)
@@ -333,8 +336,8 @@ def episodios(item):
     idserie = scrapertools.find_single_match(data,'<div id="layout4" class="itemProfile modelContainer" data-model="serie" data-id="(\d+)"')
 
     for nombre_temporada,bloque_episodios in matchestemporadas:
-        if (DEBUG): logger.info("nombre_temporada="+nombre_temporada)
-        if (DEBUG): logger.info("bloque_episodios="+bloque_episodios)
+        logger.debug("nombre_temporada="+nombre_temporada)
+        logger.debug("bloque_episodios="+bloque_episodios)
 
         # Extrae los episodios
         patron  = '<span class="title defaultPopup" href="([^"]+)"><span class="number">([^<]+)</span>([^<]+)</span>(\s*</div>\s*<span[^>]*><span[^>]*>[^<]*</span><span[^>]*>[^<]*</span></span><div[^>]*><button[^>]*><span[^>]*>[^<]*</span><span[^>]*>[^<]*</span></button><div class="action([^"]*)" data-action="seen">)?'
@@ -358,7 +361,7 @@ def episodios(item):
             url = "http://www.pordede.com/links/viewepisode/id/"+epid
             itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fulltitle=title, fanart= fanart, show=item.show))
 
-            if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+            logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
     if config.get_library_support():
         # con año y valoracion la serie no se puede actualizar correctamente, si ademas cambia la valoracion, creara otra carpeta
@@ -379,18 +382,16 @@ def episodios(item):
     return itemlist
 
 def parse_listas(item, patron):
-    logger.info("pelisalacarta.channels.pordede parse_listas")
+    logger.info()
 
     # Descarga la pagina
-    headers = DEFAULT_HEADERS[:]
-    #headers.append(["Referer",item.extra])
-    headers.append(["X-Requested-With","XMLHttpRequest"])
-    data = scrapertools.cache_page(item.url,headers=headers)
-    if (DEBUG): logger.info("data="+data)
+    headers = {"X-Requested-With": "XMLHttpRequest"}
+    data = httptools.downloadpage(item.url, headers=headers).data
+    logger.debug("data="+data)
 
     # Extrae las entradas (carpetas)
     json_object = jsontools.load_json(data)
-    if (DEBUG): logger.info("html="+json_object["html"])
+    logger.debug("html="+json_object["html"])
     data = json_object["html"]
 
     matches = re.compile(patron,re.DOTALL).findall(data)
@@ -401,7 +402,7 @@ def parse_listas(item, patron):
         url = urlparse.urljoin(item.url,scrapedurl) + "/offset/0/loadmedia"
         thumbnail = ""
         itemlist.append( Item(channel=item.channel, action="lista" , title=title , url=url))
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+        logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
     nextpage = scrapertools.find_single_match(data,'data-url="(/lists/loadlists/offset/[^"]+)"')
     if nextpage != '':
@@ -418,7 +419,7 @@ def parse_listas(item, patron):
     return itemlist
 
 def listas_sigues(item):
-    logger.info("pelisalacarta.channels.pordede listas_sigues")
+    logger.info()
 
     patron  = '<div class="clearfix modelContainer" data-model="lista"[^<]+'
     patron += '<span class="title"><span class="name"><a class="defaultLink" href="([^"]+)">([^<]+)</a>'
@@ -427,7 +428,7 @@ def listas_sigues(item):
     return parse_listas(item, patron)
 
 def tus_listas(item):
-    logger.info("pelisalacarta.channels.pordede tus_listas")
+    logger.info()
 
     patron  = '<div class="clearfix modelContainer" data-model="lista"[^<]+'
     patron += '<div class="right"[^<]+'
@@ -440,41 +441,36 @@ def tus_listas(item):
     return parse_listas(item, patron)
 
 def lista(item):
-    logger.info("pelisalacarta.channels.pordede lista")
+    logger.info()
 
     # Descarga la pagina
-    headers = DEFAULT_HEADERS[:]
-    #headers.append(["Referer",item.extra])
-    headers.append(["X-Requested-With","XMLHttpRequest"])
-    data = scrapertools.cache_page(item.url,headers=headers)
-    if (DEBUG): logger.info("data="+data)
+    headers = {"X-Requested-With": "XMLHttpRequest"}
+    data = httptools.downloadpage(item.url, headers=headers).data
+    logger.debug("data="+data)
 
     # Extrae las entradas (carpetas)
     json_object = jsontools.load_json(data)
-    if (DEBUG): logger.info("html="+json_object["html"])
+    logger.debug("html="+json_object["html"])
     data = json_object["html"]
 
     return parse_mixed_results(item,data)
 
 def findvideos(item, verTodos=False):
-    logger.info("pelisalacarta.channels.pordede findvideos")
+    logger.info()
     #logger.debug(item.tostring('\n'))
 
     # Descarga la pagina
-    headers = DEFAULT_HEADERS[:]
-    #headers.append(["Referer",item.extra])
-    #headers.append(["X-Requested-With","XMLHttpRequest"])
-    data = scrapertools.cache_page(item.url,headers=headers)
+    data = httptools.downloadpage(item.url).data
     logger.info(data)
-    #if (DEBUG): logger.info("data="+data)
+    #logger.debug("data="+data)
 
     # Extrae las entradas (carpetas)
     #json_object = jsontools.load_json(data)
-    #if (DEBUG): logger.info("html="+json_object["html"])
+    #logger.debug("html="+json_object["html"])
     #data = json_object["html"]
 
     sesion = scrapertools.find_single_match(data,'SESS = "([^"]+)";')
-    if (DEBUG): logger.info("sesion="+sesion)
+    logger.debug("sesion="+sesion)
 
     patron  = '<a target="_blank" class="a aporteLink(.*?)</a>'
     matches = re.compile(patron,re.DOTALL).findall(data)
@@ -503,7 +499,7 @@ def findvideos(item, verTodos=False):
         showlinks = 0
 
     for match in matches:
-        if (DEBUG): logger.info("match="+match)
+        logger.debug("match="+match)
 
         jdown = scrapertools.find_single_match(match,'<div class="jdownloader">[^<]+</div>')
         if (showlinks == 1 and jdown != '') or (showlinks == 2 and jdown == ''): # Descartar enlaces veronline/descargar
@@ -519,14 +515,14 @@ def findvideos(item, verTodos=False):
             idioma = idioma_0
 
         calidad_video = scrapertools.find_single_match(match,'<div class="linkInfo quality"><i class="icon-facetime-video"></i>([^<]+)</div>')
-        if (DEBUG): logger.info("calidad_video="+calidad_video)
+        logger.debug("calidad_video="+calidad_video)
         calidad_audio = scrapertools.find_single_match(match,'<div class="linkInfo qualityaudio"><i class="icon-headphones"></i>([^<]+)</div>')
-        if (DEBUG): logger.info("calidad_audio="+calidad_audio)
+        logger.debug("calidad_audio="+calidad_audio)
 
         thumb_servidor = scrapertools.find_single_match(match,'<div class="hostimage"[^<]+<img\s*src="([^"]+)">')
-        if (DEBUG): logger.info("thumb_servidor="+thumb_servidor)
+        logger.debug("thumb_servidor="+thumb_servidor)
         nombre_servidor = scrapertools.find_single_match(thumb_servidor,"popup_([^\.]+)\.png")
-        if (DEBUG): logger.info("nombre_servidor="+nombre_servidor)
+        logger.debug("nombre_servidor="+nombre_servidor)
 
         #title = ("Download " if jdown != '' else "Ver en ")+nombre_servidor+" ("+idioma+") (Calidad "+calidad_video.strip()+", audio "+calidad_audio.strip()+")"
         if jdown != '':
@@ -552,7 +548,7 @@ def findvideos(item, verTodos=False):
         url = urlparse.urljoin( item.url , scrapertools.find_single_match(match,'href="([^"]+)"') )
         thumbnail = thumb_servidor
         plot = ""
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+        logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
         if sortlinks > 0:
             # orden1 para dejar los "downloads" detras de los "ver" al ordenar
             # orden2 segun configuración
@@ -601,33 +597,20 @@ def findallvideos(item):
     return findvideos(item, True)
 
 def play(item):
-    logger.info("pelisalacarta.channels.pordede play url="+item.url)
+    logger.info("url=" + item.url)
 
     # Marcar como visto
     checkseen(item.extra.split("|")[1])
 
     # Hace la llamada
-    headers = DEFAULT_HEADERS[:]
-    headers.append( ["Referer" , item.extra.split("|")[1] ])
+    headers = {'Referer': item.extra.split("|")[1]}
 
-    data = scrapertools.cache_page(item.url,post="_s="+item.extra.split("|")[0],headers=headers)
-    #if (DEBUG): logger.info("data="+data)
-    #url = scrapertools.find_single_match(data,'<a href="([^"]+)" target="_blank"><button>Visitar enlace</button>')
+    data = httptools.downloadpage(item.url, post="_s="+item.extra.split("|")[0], headers=headers).data
     url = scrapertools.find_single_match(data,'<p class="nicetry links">\s+<a href="([^"]+)" target="_blank"')
     url = urlparse.urljoin(item.url,url)
 
-    headers = DEFAULT_HEADERS[:]
-    headers.append( ["Referer" , item.url ])
-
-    #data2 = scrapertools.cache_page(url,headers=headers)
-    #logger.info("pelisalacarta.channels.pordede play (interstitial) url="+url)
-    #logger.info("data2="+data2)
-    #url2 = scrapertools.find_single_match(data2,'<a href="([^"]+)"><button disabled>Ir al vídeo</button>')
-    #url2 = urlparse.urljoin(item.url,url2)
-    #headers = DEFAULT_HEADERS[:]
-    #headers.append( ["Referer" , url2 ])
-
-    media_url = scrapertools.downloadpage(url,headers=headers,header_to_get="location",follow_redirects=False)
+    headers = {'Referer': item.url}
+    media_url = httptools.downloadpage(url, headers=headers, follow_redirects=False).headers.get("location")
     logger.info("media_url="+media_url)
 
     itemlist = servertools.find_video_items(data=media_url)
@@ -641,33 +624,29 @@ def play(item):
     return itemlist
 
 def checkseen(item):
-    logger.info("pelisalacarta.channels.pordede checkseen "+item)
+    logger.info(item)
 
     if "/viewepisode/" in item:
-        headers = DEFAULT_HEADERS[:]
         episode = item.split("/")[-1]
-        scrapertools.downloadpage("http://www.pordede.com/ajax/action", post="model=episode&id="+episode+"&action=seen&value=1", headers=headers)
+        httptools.downloadpage("http://www.pordede.com/ajax/action", post="model=episode&id="+episode+"&action=seen&value=1")
 
     if "/what/peli" in item:
-        headers = DEFAULT_HEADERS[:]
-        data = scrapertools.cache_page(item, headers=headers)
+        data = httptools.downloadpage(item).data
         # GET MOVIE ID
         movieid = scrapertools.find_single_match(data,'href="/links/create/ref_id/([0-9]+)/ref_model/')
-        scrapertools.downloadpage("http://www.pordede.com/ajax/mediaaction", post="model=peli&id="+movieid+"&action=status&value=3", headers=headers)
+        httptools.downloadpage("http://www.pordede.com/ajax/mediaaction", post="model=peli&id="+movieid+"&action=status&value=3")
 
 
     return True
 
 def infosinopsis(item):
-    logger.info("pelisalacarta.channels.pordede infosinopsis")
+    logger.info()
 
     url_aux = item.url.replace("/links/view/slug/", "/peli/").replace("/what/peli", "")
     # Descarga la pagina
-    headers = DEFAULT_HEADERS[:]
-    #headers.append(["Referer",item.extra])
-    #headers.append(["X-Requested-With","XMLHttpRequest"])
-    data = scrapertools.cache_page(url_aux,headers=headers)
-    if (DEBUG): logger.info("data="+data)
+
+    data = httptools.downloadpage(url_aux).data
+    logger.debug("data="+data)
 
     scrapedtitle = scrapertools.find_single_match(data,'<h1>([^<]+)</h1>')
     scrapedvalue = scrapertools.find_single_match(data,'<span class="puntuationValue" data-value="([^"]+)"')
@@ -769,5 +748,5 @@ def valora_idioma(idioma_0, idioma_1):
     return pts
 
 def pordede_check(item):
-    headers = DEFAULT_HEADERS[:]
-    scrapertools.downloadpage("http://www.pordede.com/ajax/mediaaction", post="model="+item.tipo+"&id="+item.idtemp+"&action=status&value="+item.valor)
+    httptools.downloadpage("http://www.pordede.com/ajax/mediaaction", post="model="+item.tipo+"&id="+item.idtemp+"&action=status&value="+item.valor)
+

@@ -1,10 +1,10 @@
 <?xml version="1.0" ?>
 <server>
 	<active>true</active>
-	<version>6</version>
+	<version>9</version>
 	<changes>
 		<change>
-			<date>20/03/2017</date>
+			<date>12/04/2017</date>
 			<autor>Cmos</autor>
 			<description>Corregido por cambios en el servidor</description>
 		</change>

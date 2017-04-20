@@ -128,7 +128,7 @@ def mainlist(item):
             action = ""
         elif token_auth:
             title = "Activar cuenta real-debrid (Activada correctamente)"
-        itemlist.append(Item(channel=item.channel, action=action, title=title))
+        itemlist.append(Item(channel="ayuda", action=action, title=title))
 
     return itemlist
 

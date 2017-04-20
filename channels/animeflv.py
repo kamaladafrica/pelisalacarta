@@ -108,7 +108,7 @@ def novedades_episodios(item):
 
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|-\s", "", data)
-    data = scrapertools.find_single_match(data, '<ul class="ListEpisodios[^>]+>(.*?)</ul>')
+    data = scrapertools.find_single_match(data, '<h2>Últimos episodios</h2>.+?<ul class="ListEpisodios[^>]+>(.*?)</ul>')
 
     matches = re.compile('<a href="([^"]+)"[^>]+>.+?<img src="([^"]+)".+?"Capi">(.*?)</span>'
                          '<strong class="Title">(.*?)</strong>', re.DOTALL).findall(data)
@@ -117,7 +117,7 @@ def novedades_episodios(item):
     for url, thumbnail, str_episode, show in matches:
 
         try:
-            episode = int(str_episode.replace("Ep. ", ""))
+            episode = int(str_episode.replace("Episodio ", ""))
         except ValueError:
             season = 1
             episode = 1
@@ -143,17 +143,17 @@ def novedades_anime(item):
     data = re.sub(r"\n|\r|\t|\s{2}|-\s", "", data)
     data = scrapertools.find_single_match(data, '<ul class="ListAnimes[^>]+>(.*?)</ul>')
 
-    matches = re.compile('<img src="([^"]+)".+?<span class=.+?>(.*?)</span>.+?<a href="([^"]+)">(.*?)</a>',
-                         re.DOTALL).findall(data)
+    matches = re.compile('<img src="([^"]+)".+?<span class=.+?>(.*?)</span>.+?<p>(.*?)</p>.+?'
+                         '<a href="([^"]+)">(.*?)</a>', re.DOTALL).findall(data)
     itemlist = []
 
-    for thumbnail, _type, url, title in matches:
+    for thumbnail, _type, plot, url, title in matches:
 
         url = urlparse.urljoin(HOST, url)
         thumbnail = urlparse.urljoin(HOST, thumbnail)
 
         new_item = Item(channel=item.channel, action="episodios", title=title, url=url, thumbnail=thumbnail,
-                        fulltitle=title)
+                        fulltitle=title, plot=plot)
         if _type != "Película":
             new_item.show = title
             new_item.context = renumbertools.context

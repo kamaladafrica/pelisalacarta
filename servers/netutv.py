@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Conector para yaske-netutv, netutv, hqqtv waawtv
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 
 import re
 import urllib
@@ -14,8 +14,8 @@ from core import logger
 from core import scrapertools
 
 
-def get_video_url(page_url, premium = False, user="", password="", video_password=""):
-    logger.info(" url="+page_url)
+def get_video_url(page_url, premium=False, user="", password="", video_password=""):
+    logger.info("url=" + page_url)
 
     if "hash=" in page_url:
         data = urllib.unquote(httptools.downloadpage(page_url).data)
@@ -38,6 +38,9 @@ def get_video_url(page_url, premium = False, user="", password="", video_passwor
     for d in data_unescape:
         data += urllib.unquote(d)
 
+    subtitle = scrapertools.find_single_match(data, 'value="sublangs=Spanish.*?sub=([^&]+)&')
+    if not subtitle:
+        subtitle = scrapertools.find_single_match(data, 'value="sublangs=English.*?sub=([^&]+)&')
     data_unwise_player = ""
     js_wise = scrapertools.find_single_match(data_player, "<script type=[\"']text/javascript[\"']>\s*;?(eval.*?)</script>")
     if js_wise:
@@ -67,10 +70,10 @@ def get_video_url(page_url, premium = False, user="", password="", video_passwor
 
     video_urls = []
     media = media_url + "|User-Agent=Mozilla/5.0 (iPhone; CPU iPhone OS 5_0_1 like Mac OS X)"
-    video_urls.append([scrapertools.get_filename_from_url(media_url)[-4:]+" [netu.tv]", media])
+    video_urls.append([scrapertools.get_filename_from_url(media_url)[-4:] + " [netu.tv]", media, 0, subtitle])
 
     for video_url in video_urls:
-        logger.info(" %s - %s" % (video_url[0],video_url[1]))
+        logger.info("%s - %s" % (video_url[0], video_url[1]))
 
     return video_urls
 
@@ -99,7 +102,7 @@ def find_videos(data):
 
     url = "http://netu.tv/watch_video.php?v=%s"
     for pattern in patterns:
-        logger.info(" #"+pattern+"#")
+        logger.info("#" + pattern + "#")
         matches = re.compile(pattern,re.DOTALL).findall(data)
         for prefix, match in matches:
             titulo = "[netu.tv]"
@@ -108,12 +111,12 @@ def find_videos(data):
             else:
                 url = url % match
             if url not in encontrados:
-                logger.info("  url="+url)
-                devuelve.append( [ titulo , url , 'netutv' ] )
+                logger.info(" url=" + url)
+                devuelve.append([titulo, url, 'netutv'])
                 encontrados.add(url)
                 break
             else:
-                logger.info("  url duplicada="+url)
+                logger.info(" url duplicada=" + url)
 
     return devuelve
 
