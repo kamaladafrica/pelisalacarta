@@ -6,9 +6,14 @@
 	<active>true</active>
 	<adult>false</adult>
 
-	<version>4</version>
+	<version>5</version>
 
 	<changes>
+		<change>
+			<date>17/04/2017</date>
+			<autor>Cmos</autor>
+			<description>Corregidos indices de series y peliculas</description>
+		</change>
 		<change>
 			<date>28/03/2017</date>
 			<autor>Cmos</autor>
