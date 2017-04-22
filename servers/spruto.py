@@ -15,9 +15,11 @@ from core import scrapertools
 def test_video_exists(page_url):
     logger.info("(page_url='%s')" % page_url)
 
-    data = httptools.downloadpage(page_url).data
-    if "404.txt" in data:
+    data = httptools.downloadpage(page_url)
+    if "404.txt" in data.data:
         return False, "El video ha sido borrado"
+    if data.code == 503:
+	    return False, "El servidor está fuera de servicio"
 
     return True, ""
 
