@@ -26,7 +26,6 @@
 # ------------------------------------------------------------
 
 import os
-import sys
 import threading
 import urllib2
 
@@ -78,14 +77,131 @@ def mark_auto_as_watched(item):
         # Sincronizacion silenciosa con Trakt
         if sync_with_trakt:
             if config.get_setting("sync_trakt_watched", "biblioteca"):
-                sync_trakt()
+                sync_trakt_kodi()
 
     # Si esta configurado para marcar como visto
     if config.get_setting("mark_as_watched", "biblioteca"):
         threading.Thread(target=mark_as_watched_subThread, args=[item]).start()
 
 
-def sync_trakt(silent=True):
+def sync_trakt_pelisalacarta(path_folder):
+    """
+       Actualiza los valores de episodios vistos si  
+    """
+    logger.info()
+    # si existe el addon hacemos la busqueda
+    if xbmc.getCondVisibility('System.HasAddon("script.trakt")'):
+        # importamos dependencias
+        paths = ["special://home/addons/script.module.dateutil/lib/", "special://home/addons/script.module.six/lib/",
+                 "special://home/addons/script.module.arrow/lib/", "special://home/addons/script.module.trakt/lib/",
+                 "special://home/addons/script.trakt/"]
+
+        for path in paths:
+            import sys
+            sys.path.append(xbmc.translatePath(path))
+
+        # se obtiene las series vistas
+        from resources.lib.traktapi import traktAPI
+        traktapi = traktAPI()
+
+        shows = traktapi.getShowsWatched({})
+        shows = shows.items()
+
+        # obtenemos el id de la serie para comparar
+        import re
+        _id = re.findall("\[(.*?)\]", path_folder, flags=re.DOTALL)[0]
+        logger.debug("el id es %s" % _id)
+
+        if "tt" in _id:
+            type_id = "imdb"
+        elif "tvdb_" in _id:
+            _id = _id.strip("tvdb_")
+            type_id = "tvdb"
+        elif "tmdb_" in _id:
+            type_id = "tmdb"
+            _id = _id.strip("tmdb_")
+        else:
+            logger.error("No hay _id de la serie")
+            return
+
+        # obtenemos los valores de la serie de pelisalacarta
+        from core import library
+        tvshow_file = filetools.join(path_folder, "tvshow.nfo")
+        head_nfo, serie = library.read_nfo(tvshow_file)
+
+        # buscamos en las series de trakt
+        for show in shows:
+            show_aux = show[1].to_dict()
+
+            try:
+                _id_trakt = show_aux['ids'].get(type_id, None)
+                # logger.debug("ID ES %s" % _id_trakt)
+                if _id_trakt:
+                    if _id == _id_trakt:
+                        logger.debug("ENCONTRADO!! %s" % show_aux)
+
+                        # obtenemos los keys que son episodios
+                        regex_epi = re.compile('\d+x\d+')
+                        keys_episodes = [key for key in serie.library_playcounts if regex_epi.match(key)]
+
+                        for k in keys_episodes:
+                            season, episode = re.findall("(\d+)x(\d+)", k, flags=re.DOTALL)[0]
+                            try:
+                                # todo comprobar el valor de number por si hay alguna temporada special
+                                value = show_aux['seasons'][int(season)-1]['episodes'][int(episode)-1]["watched"]
+                                serie.library_playcounts[k] = value
+                            except:
+                                import traceback
+                                logger.error(traceback.format_exc())
+
+                        # obtenemos las temporadas disponibles
+                        seasons = [key.strip('season ') for key in serie.library_playcounts if 'season ' in key]
+
+                        for season in seasons:
+                            episodios_temporada = 0
+                            episodios_vistos_temporada = 0
+
+                            # obtenemos los episodios de una determinada temporada
+                            keys_season_episodes = [key for key in serie.library_playcounts
+                                                    if key.startswith("%sx" % season)]
+
+                            for k in keys_season_episodes:
+                                episodios_temporada += 1
+                                if serie.library_playcounts[k] > 0:
+                                    episodios_vistos_temporada += 1
+
+                            if episodios_temporada == episodios_vistos_temporada:
+                                # se comprueba que si todas las temporadas están vistas, se marque la serie como vista
+                                serie.library_playcounts.update({"season %s" % season: 1})
+
+                        temporada = 0
+                        temporada_vista = 0
+                        keys_seasons = [key for key in serie.library_playcounts if 'season ' in key]
+
+                        for k in keys_seasons:
+                            temporada += 1
+                            if serie.library_playcounts[k] > 0:
+                                temporada_vista += 1
+
+                        if temporada == temporada_vista:
+                            serie.library_playcounts.update({serie.title: 1})
+
+                        logger.debug("los valores nuevos %s " % serie.library_playcounts)
+                        filetools.write(tvshow_file, head_nfo + serie.tojson())
+
+                        break
+                    else:
+                        continue
+
+                else:
+                    logger.error("no se ha podido obtener el id, trakt tiene: %s" % show_aux['ids'])
+
+            except:
+                import traceback
+                logger.error(traceback.format_exc())
+
+
+def sync_trakt_kodi(silent=True):
 
     # Para que la sincronizacion no sea silenciosa vale con silent=False
     if xbmc.getCondVisibility('System.HasAddon("script.trakt")'):

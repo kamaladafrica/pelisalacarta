@@ -334,7 +334,7 @@ def save_library_tvshow(item, episodelist):
           (insertados, sobreescritos, fallidos, time.time() - start_time)
     logger.debug(msg)'''
 
-    return insertados, sobreescritos, fallidos
+    return insertados, sobreescritos, fallidos, path
 
 
 def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True):
@@ -603,8 +603,7 @@ def add_serie_to_library(item, channel=None):
         # Obtiene el listado de episodios
         itemlist = getattr(channel, item.action)(item)
 
-
-    insertados, sobreescritos, fallidos = save_library_tvshow(item, itemlist)
+    insertados, sobreescritos, fallidos, path = save_library_tvshow(item, itemlist)
 
     if not insertados and not sobreescritos and not fallidos:
         platformtools.dialog_ok("Biblioteca", "ERROR, la serie NO se ha añadido a la biblioteca",
@@ -632,5 +631,7 @@ def add_serie_to_library(item, channel=None):
                     # Comprobar que no se esta buscando contenido en la biblioteca de Kodi
                     while xbmc.getCondVisibility('Library.IsScanningVideo()'):
                         xbmc.sleep(1000)
-                # Se lanza la sincronizacion
-                xbmc_library.sync_trakt()
+                # Se lanza la sincronizacion para la biblioteca de Kodi
+                xbmc_library.sync_trakt_kodi()
+                # Se lanza la sincronización para la biblioteca de pelisalacarta
+                xbmc_library.sync_trakt_pelisalacarta(path)
