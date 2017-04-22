@@ -78,10 +78,10 @@ def listado(item):
     patron = '<ul class="sp-grid">(.*?)</ul>'
     data = scrapertools.find_single_match(data, patron)
 
-    matches = re.compile('<a href="([^"]+)">(.*?)</a>', re.DOTALL).findall(data)
+    matches = re.compile('<a href="([^"]+)">(.*?)</a>.*?<img.*?src="([^"]+)"', re.DOTALL).findall(data)
 
-    for url, title in matches:
-        itemlist.append(item.clone(title=title, url=url, action="findvideos", fulltitle=title))
+    for url, title, thumb in matches:
+        itemlist.append(item.clone(title=title, url=url, action="findvideos", fulltitle=title, thumbnail=thumb))
 
     if pagination:
         itemlist.append(item.clone(title=">> Página siguiente", url=pagination))

@@ -370,7 +370,7 @@ def episodios(item):
                 # Si el capitulo tiene imagen propia remplazar al poster
                 i.thumbnail = i.infoLabels['poster_path']
 
-    itemlist.sort(key=lambda it: it.title, reverse=config.get_setting('orden_episodios', __channel__))
+    itemlist.sort(key=lambda it: int(it.infoLabels['episode']), reverse=config.get_setting('orden_episodios', __channel__))
 
     # Opción "Añadir esta serie a la biblioteca"
     if config.get_library_support() and len(itemlist) > 0:
@@ -460,6 +460,9 @@ def findvideos(item):
             for url, titlevip, calidad in matches_vip:
                 title = "Ver vídeo en ["+titlevip+"] "+calidad
                 itemlist.append(item.clone(title=title, url=url, action="play"))
+        # fix se ignora esta url ya que no devuelve videos
+        elif "http://www.pelispedia.tv/Pe_Player_Html6/index.php?" in scrapedurl:
+            continue
         else:
             title = "Ver vídeo en ["+scrapedtitle+"]"
             new_item = item.clone(title=title, url=scrapedurl, action="play", extra=item.url, referer=url)
@@ -481,7 +484,7 @@ def play(item):
 
     subtitle = ""
 
-    # html5
+    # html5 - http://www.pelispedia.vip
     if item.url.startswith("http://www.pelispedia.vip"):
 
         headers = dict()
@@ -504,7 +507,7 @@ def play(item):
             for url, desc in media_urls:
                 itemlist.append([desc, url, 0, subtitle])
 
-    # otro html5
+    # otro html5 - https://pelispedia.co/ver/f.php
     elif item.url.startswith("https://pelispedia.co/ver/f.php"):
 
         headers = dict()
@@ -524,6 +527,34 @@ def play(item):
 
         # la calidad más baja tiene que ir primero
         media_urls = sorted(media_urls, key=lambda k: k[1])
+
+        if len(media_urls) > 0:
+            for url, desc in media_urls:
+                itemlist.append([desc, url, 0, subtitle])
+
+    # NUEVO
+    # otro html5 - http://player.pelispedia.tv/ver?v=
+    elif item.url.startswith("http://player.pelispedia.tv/ver?v="):
+        _id = scrapertools.find_single_match(item.url, 'ver\?v=(.+?)$')
+
+        headers = dict()
+        headers["Referer"] = item.referer
+        data = httptools.downloadpage(item.url, headers=headers).data
+
+        sub = scrapertools.find_single_match(data, 'var parametros = "\?pic=20&id=([^&]+)&sub=ES";')
+        sub = "http://player.pelispedia.tv/cdn" + sub
+        data_sub = httptools.downloadpage(sub).data
+        subtitle = save_sub(data_sub)
+
+        url = "http://player.pelispedia.tv/template/protected.php"
+        post = "fv=%s&url=%s&sou=%s&token=%s" % ("0", _id, "pic",
+        "eyJjdCI6Ilo0NkgzSmRSZ3JrcnBKNW5xVjB2c0E9PSIsIml2IjoiNzMyMTdkMTU0NzU2ZTkzOTJmMGZhNWUxMjJhMWEyMmUiLCJzIjoiZjZhN2Y5ZjkxZjEyYWFiNSJ9")
+        data = httptools.downloadpage(url, post=post).data
+
+        media_urls = scrapertools.find_multiple_matches(data, '"url":"([^"]+)".*?"width":([^,]+),')
+
+        # la calidad más baja tiene que ir primero
+        media_urls = sorted(media_urls, key=lambda k: int(k[1]))
 
         if len(media_urls) > 0:
             for url, desc in media_urls:

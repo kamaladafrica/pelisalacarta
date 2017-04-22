@@ -6,10 +6,15 @@
 	<update_url></update_url>
 	<active>true</active>
 		
-	<version>9</version>
+	<version>10</version>
 	<adult>false</adult>
 
 	<changes>
+		<change>
+			<date>17/04/17</date>
+			<autor>Cmos</autor>
+			<description>Mejorado en la deteccion del dominio para futuros cambios</description>
+		</change>
 		<change>
 			<date>09/04/17</date>
 			<autor>Cmos</autor>

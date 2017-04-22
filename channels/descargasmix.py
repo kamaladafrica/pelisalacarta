@@ -23,14 +23,20 @@ perfil = [['0xFFFFE6CC', '0xFFFFCE9C', '0xFF994D00'],
           ['0xFFA5F6AF', '0xFF5FDA6D', '0xFF11811E'],
           ['0xFF58D3F7', '0xFF2E9AFE', '0xFF2E64FE']]
 color1, color2, color3 = perfil[__perfil__]
-host = "https://descargasmix.com"
+host = config.get_setting("host", "descargasmix")
 
 
 def mainlist(item):
     logger.info()
     itemlist = []
     item.text_color = color1
+
+    # Resetear host y comprobacion de error en https (por si se actualiza Kodi)
     config.set_setting("url_error", False, "descargasmix")
+    host = config.set_setting("host", "https://descargasmix.com", "descargasmix")
+    host_check = get_data(host, True)
+    if host_check:
+        config.set_setting("host", host_check, "descargasmix")
 
     itemlist.append(item.clone(title="Películas", action="lista", fanart="http://i.imgur.com/c3HS8kj.png"))
     itemlist.append(item.clone(title="Series", action="lista_series", fanart="http://i.imgur.com/9loVksV.png"))
@@ -449,7 +455,7 @@ def play(item):
     if not item.url.startswith("http") and not item.url.startswith("magnet"):
         post = "source=%s&action=obtenerurl" % urllib.quote(item.url)
         headers = {'X-Requested-With': 'XMLHttpRequest'}
-        data = httptools.downloadpage("http://descargasmix.com/wp-admin/admin-ajax.php", post=post, headers=headers, follow_redirects=False).data
+        data = httptools.downloadpage("%s/wp-admin/admin-ajax.php" % host.replace("https", "http"), post=post, headers=headers, follow_redirects=False).data
 
         url = scrapertools.find_single_match(data, 'url":"([^"]+)"').replace("\\", "")
         if "enlacesmix" in url:
@@ -502,13 +508,17 @@ def mostrar_enlaces(data):
     return urls
 
 
-def get_data(url_orig):
+def get_data(url_orig, get_host=False):
     try:
         if config.get_setting("url_error", "descargasmix"):
             raise Exception
         response = httptools.downloadpage(url_orig)
         if not response.data or "urlopen error [Errno 1]" in str(response.code):
             raise Exception
+        if get_host:
+            if response.url.endswith("/"):
+                response.url = response.url[:-1]
+            return response.url
     except:
         config.set_setting("url_error", True, "descargasmix")
         import random
@@ -523,6 +533,14 @@ def get_data(url_orig):
                 url = response.headers["location"]
                 post = ""
             else:
+                if get_host:
+                    target = urllib.unquote(scrapertools.find_single_match(url, 'u=([^&]+)&'))
+                    if target.endswith("/"):
+                        target = target[:-1]
+                    if target and target != host:
+                        return target
+                    else:
+                        return ""
                 break
 
     return response.data
