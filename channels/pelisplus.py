@@ -263,7 +263,7 @@ def findvideos(item):
     itemlist=[]
     duplicados=[]
     datas=httptools.downloadpage(item.url).data
-    patron ="<iframe.*?src='([^']+)' frameborder='0' allowfullscreen.*?"
+    patron ="<iframe.*?src='(.*?)' frameborder.*?"
     matches = re.compile(patron,re.DOTALL).findall(datas)
     
     for scrapedurl in matches:
