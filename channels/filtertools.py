@@ -202,7 +202,16 @@ def context(item, list_language=None, list_quality=None, exist=False):
         if list_quality:
             dict_data["list_quality"] = list_quality
 
-        _context.append(dict_data)
+        added = False
+        if type(_context) == list:
+            for x in _context:
+                if x:
+                    if x["channel"] == "filtertools":
+                        added = True
+                        break
+
+        if not added:
+            _context.append(dict_data)
 
         if item.action == "play":
             if not exist:
