@@ -140,36 +140,35 @@ def sync_trakt_pelisalacarta(path_folder):
                     if _id == _id_trakt:
                         logger.debug("ENCONTRADO!! %s" % show_aux)
 
-                        # creamos el diccionario con las posiciones en la lista de season y episode
-                        dict_trakt_show_index = {}
+                        # creamos el diccionario de trakt para la serie encontrada con el valor que tiene "visto"
+                        dict_trakt_show = {}
 
                         for idx_season, season in enumerate(show_aux['seasons']):
                             for idx_episode, episode in enumerate(show_aux['seasons'][idx_season]['episodes']):
                                 sea_epi = "%sx%s" % (show_aux['seasons'][idx_season]['number'],
                                                      str(show_aux['seasons'][idx_season]['episodes'][idx_episode]['number']).zfill(2))
 
-                                dict_trakt_show_index[sea_epi] = show_aux['seasons'][idx_season]['episodes'][idx_episode]['watched']
+                                dict_trakt_show[sea_epi] = show_aux['seasons'][idx_season]['episodes'][idx_episode]['watched']
+                        logger.debug("dict_trakt_show %s " % dict_trakt_show)
 
-                        logger.debug("dict_trakt_show_index %s " % dict_trakt_show_index)
-
-                        # obtenemos los keys que son episodios
+                        # obtenemos las keys que son episodios
                         regex_epi = re.compile('\d+x\d+')
                         keys_episodes = [key for key in serie.library_playcounts if regex_epi.match(key)]
+                        # obtenemos las keys que son temporadas
+                        keys_seasons = [key for key in serie.library_playcounts if 'season ' in key]
+                        # obtenemos los numeros de las keys temporadas
+                        seasons = [key.strip('season ') for key in keys_seasons]
 
                         # marcamos los episodios vistos
                         for k in keys_episodes:
-                            serie.library_playcounts[k] = dict_trakt_show_index.get(k, 0)
-
-                        # obtenemos las temporadas disponibles
-                        seasons = [key.strip('season ') for key in serie.library_playcounts if 'season ' in key]
+                            serie.library_playcounts[k] = dict_trakt_show.get(k, 0)
 
                         for season in seasons:
                             episodios_temporada = 0
                             episodios_vistos_temporada = 0
 
-                            # obtenemos los episodios de una determinada temporada
-                            keys_season_episodes = [key for key in serie.library_playcounts
-                                                    if key.startswith("%sx" % season)]
+                            # obtenemos las keys de los episodios de una determinada temporada
+                            keys_season_episodes = [key for key in keys_episodes if key.startswith("%sx" % season)]
 
                             for k in keys_season_episodes:
                                 episodios_temporada += 1
@@ -182,7 +181,6 @@ def sync_trakt_pelisalacarta(path_folder):
 
                         temporada = 0
                         temporada_vista = 0
-                        keys_seasons = [key for key in serie.library_playcounts if 'season ' in key]
 
                         for k in keys_seasons:
                             temporada += 1
