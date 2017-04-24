@@ -21,6 +21,8 @@ def test_video_exists(page_url):
 
     if ("File was deleted" or "Not Found" or "File was locked by administrator") in data:
         return False, "[Gamovideo] El archivo no existe o ha sido borrado"
+    if "Video is processing now" in data:
+        return False, "[Gamovideo] El video está procesándose en estos momentos. Inténtelo mas tarde."
 
     return True, ""
 
