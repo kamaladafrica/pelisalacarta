@@ -351,7 +351,7 @@ def play(item):
     logger.info('mundoflv.py play')
 
     data = httptools.downloadpage(item.url).data
-    if 'streamplay' not in item.server or 'streame' not in item.server:
+    if 'streamplay' not in item.server and 'streame' not in item.server:
        url = scrapertools.find_single_match(data, '<(?:IFRAME|iframe).*?(?:SRC|src)=*([^ ]+) (?!style|STYLE)')
     else:
        url = scrapertools.find_single_match(data, '<meta http-equiv="refresh" content="0; url=([^"]+)">')
