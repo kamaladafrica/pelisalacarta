@@ -334,7 +334,8 @@ def findvideos(item):
         idioma = audio[scrapedidioma]
         title = item.contentSerieName+' '+str(item.contentSeasonNumber)+'x'+str(item.contentEpisodeNumber)+' '+idioma+' ('+scrapedserver.strip(' ')+')'
         if scrapedidioma == item.extra1 or item.extra1 == 'all':
-           itemlist.append(item.clone(title=title, url=url, action="play", language=idioma, server = scrapedserver, fulltitle = item.ContentSeriename))
+           itemlist.append(item.clone(title=title, url=url, action="play", language=idioma,
+                                      server = scrapedserver.strip(), fulltitle = item.ContentSeriename))
     
     for videoitem in itemlist:
         videoitem.infoLabels = item.infoLabels
@@ -350,8 +351,11 @@ def findvideos(item):
 def play(item):
     logger.info('mundoflv.py play')
 
+    special_servers = ['streamplay', 'streame', 'idowatch']
+
     data = httptools.downloadpage(item.url).data
-    if 'streamplay' not in item.server and 'streame' not in item.server:
+
+    if item.server not in special_servers:
        url = scrapertools.find_single_match(data, '<(?:IFRAME|iframe).*?(?:SRC|src)=*([^ ]+) (?!style|STYLE)')
     else:
        url = scrapertools.find_single_match(data, '<meta http-equiv="refresh" content="0; url=([^"]+)">')
