@@ -269,7 +269,7 @@ def findvideos(item):
     for scrapedurl in matches:
        
        
-       if 'elreyxhd' or 'pelisplus.biz'in scrapedurl:
+       if 'elreyxhd' in scrapedurl or 'pelisplus.biz'in scrapedurl:
             data = httptools.downloadpage(scrapedurl, headers=headers).data
             
             quote = scrapertools.find_single_match(data,'sources.*?file.*?http')
