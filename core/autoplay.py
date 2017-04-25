@@ -205,16 +205,15 @@ def start (itemlist, item):
             # funcional
             # o fallen todos
             if autoplay_list:
-                import xbmc
                 played = False
                 max_intentos = 5 # TODO: Este numero podria ser configurable
                 max_intentos_servers = {}
 
                 # Si se esta reproduciendo algo detiene la reproduccion
-                if xbmc.Player().isPlaying():
-                    xbmc.Player().stop()
+                if platformtools.is_playing():
+                    platformtools.stop_video()
                 for indice in autoplay_list:
-                    if not xbmc.Player().isPlaying() and not played:
+                    if not platformtools.is_playing() and not played:
                         videoitem = indice[1]
 
                         if not videoitem.server in max_intentos_servers:
@@ -247,7 +246,7 @@ def start (itemlist, item):
                         platformtools.play_video(videoitem)
 
                         try:
-                            xbmc.Player().getTotalTime()
+                            platformtools.video_total_time()
                             played = True
                             break
                         except:  # TODO evitar el informe de que el conector fallo o el video no se encuentra

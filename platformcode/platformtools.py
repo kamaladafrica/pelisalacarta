@@ -535,6 +535,14 @@ def play_video(item, strm=False):
         xbmc_library.mark_auto_as_watched(item)
 
 
+def stop_video():
+    xbmc.Player().stop()
+
+
+def video_total_time():
+    return xbmc.Player().getTotalTime()
+
+
 def get_seleccion(default_action, opciones, seleccion, video_urls):
     # preguntar
     if default_action == "0":
