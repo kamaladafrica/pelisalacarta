@@ -207,12 +207,23 @@ def start (itemlist, item):
             if autoplay_list:
                 import xbmc
                 played = False
+                max_intentos = 5 # TODO: Este numero podria ser configurable
+                max_intentos_servers = {}
+
                 # Si se esta reproduciendo algo detiene la reproduccion
                 if xbmc.Player().isPlaying():
                     xbmc.Player().stop()
                 for indice in autoplay_list:
                     if not xbmc.Player().isPlaying() and not played:
                         videoitem = indice[1]
+
+                        if not videoitem.server in max_intentos_servers:
+                            max_intentos_servers[videoitem.server] = max_intentos
+
+                        # Si se han alcanzado el numero maximo de intentos de este servidor saltamos al siguiente
+                        if max_intentos_servers[videoitem.server] == 0:
+                            continue
+
                         #logger.debug('item.language: ' + videoitem.language)
                         lang = " "
                         if hasattr(videoitem, 'language') and videoitem.language != "":
@@ -241,6 +252,18 @@ def start (itemlist, item):
                             break
                         except:  # TODO evitar el informe de que el conector fallo o el video no se encuentra
                             logger.debug(str(len(autoplay_list)))
+
+                        # Si hemos llegado hasta aqui es por q no se ha podido reproducir
+                        max_intentos_servers[videoitem.server] -= 1
+
+                        # Si se han alcanzado el numero maximo de intentos de este servidor
+                        # preguntar si queremos seguir probando o lo ignoramos
+                        if max_intentos_servers[videoitem.server] == 0:
+                            text = "Parece que los enlaces de %s no estan funcionando." % videoitem.server.upper()
+                            if not platformtools.dialog_yesno("AutoPlay", text,
+                                                             "¿Desea ignorar todos los enlaces de este servidor?"):
+                                max_intentos_servers[videoitem.server] = max_intentos
+
             else:
                 platformtools.dialog_notification('AutoPlay No Fue Posible', 'No Hubo Coincidencias')
 
