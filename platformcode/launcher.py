@@ -276,7 +276,7 @@ def run():
 
                 tecleado = platformtools.dialog_input(last_search)
                 if tecleado is not None:
-                    if last_search_active:
+                    if last_search_active and not tecleado.startswith("http"):
                         from channels import buscador
                         buscador.save_search(tecleado)
 
