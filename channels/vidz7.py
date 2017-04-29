@@ -75,7 +75,7 @@ def lista(item):
     paginacion = scrapertools.find_single_match(data, '<a class="active".*?.>\d+</a><a class="inactive" href ="([^"]+)">')
 
     if paginacion:
-        itemlist.append(Item(channel=item.channel, action="mainlist", title=">> Página Siguiente", url=paginacion))
+        itemlist.append(Item(channel=item.channel, action="lista", title=">> Página Siguiente", url=paginacion))
 
     return itemlist
 
