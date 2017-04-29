@@ -41,7 +41,7 @@ def configuracion(item):
 
 def search(item, texto):
     logger.info()
-    item.url = "%ssearch?search_query=%s&search_type=videos" % (host, texto)
+    item.url = "%s/search?search_query=%s&search_type=videos" % (host, texto)
     item.extra = texto
     try:
         return lista(item)
