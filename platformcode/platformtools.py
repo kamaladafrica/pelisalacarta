@@ -996,7 +996,7 @@ def play_torrent(item, xlistitem, mediaurl):
 
     if seleccion == 1:
         from platformcode import mct
-        mct.play(mediaurl, xlistitem, subtitle=item.subtitle)
+        mct.play(mediaurl, xlistitem, subtitle=item.subtitle, item=item)
 
     # Reproductor propio (libtorrent)
     if seleccion == 0:
