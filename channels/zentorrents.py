@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
-# ------------------------------------------------------------
+#------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para zentorrents
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-# ------------------------------------------------------------
-import os
+#------------------------------------------------------------
 import re
+import os
 import sys
-import unicodedata
 import urllib
 import urlparse
-
-import xbmc
-import xbmcgui
+import string
 from core import config
 from core import logger
 from core import scrapertools
 from core import httptools
 from core.item import Item
+import xbmc
+import xbmcgui
+import unicodedata
 from core.scrapertools import decodeHtmlentities as dhe
 
 ACTION_SHOW_FULLSCREEN = 36
@@ -31,13 +31,14 @@ ACTION_MOVE_UP = 3
 OPTION_PANEL = 6
 OPTIONS_OK = 5
 
+DEBUG = config.get_setting("debug")
 host = "http://www.zentorrents.com/"
 
 api_key="2e2160006592024ba87ccdf78c28f49f"
 api_fankey ="dffe90fba4d02c199ae7a9e71330c987"
 
 def mainlist(item):
-    logger.info()
+    logger.info("pelisalacarta.zentorrents mainlist")
     
     itemlist = []
     itemlist.append( Item(channel=item.channel, title="Películas"      , action="peliculas", url="http://www.zentorrents.com/peliculas" ,thumbnail="http://www.navymwr.org/assets/movies/images/img-popcorn.png", fanart="http://s18.postimg.org/u9wyvm809/zen_peliculas.jpg"))
@@ -52,7 +53,7 @@ def mainlist(item):
 
 
 def search(item, texto):
-    logger.info()
+    logger.info("pelisalacarta.zentorrent search")
     
     texto = texto.replace(" ", "+")
     item.url = "http://www.zentorrents.com//buscar?searchword=%s&ordering=&searchphrase=all&limit=\d+" % (texto)
@@ -65,12 +66,12 @@ def search(item, texto):
     except:
         import sys
         for line in sys.exc_info():
-            logger.error("%s" % line)
+            logger.error( "%s" % line )
         return []
 
 
 def buscador(item):
-    logger.info()
+    logger.info("pelisalacarta.zentorrents buscador")
     itemlist = []
     # Descarga la página
     data = httptools.downloadpage(item.url).data
@@ -110,9 +111,9 @@ def buscador(item):
 
 
 def peliculas(item):
-    logger.info()
+    logger.info("pelisalacarta.zentorrents peliculas")
     itemlist = []
-    
+
     # Descarga la página
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|</p>|<p>|&amp;|amp;","",data)
@@ -177,7 +178,7 @@ def peliculas(item):
     return itemlist
 
 def fanart(item):
-    logger.info()
+    logger.info("pelisalacarta.zentorrent fanart")
     itemlist = []
     url = item.url
     data = httptools.downloadpage(url).data
@@ -671,7 +672,7 @@ def fanart(item):
                             extra= thumbnail+"|"+year
                             show=  fanart_2+"|"+fanart_3+"|"+sinopsis+"|"+title_fan+"|"+tfv+"|"+id_tmdb
                         itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=thumbnail, fanart=item.extra, extra=extra,show=show , category = category, folder=True) )
-    
+
 
     title_info ="Info"
     title_info = "[COLOR skyblue]"+title_info+"[/COLOR]"
@@ -722,7 +723,7 @@ def fanart(item):
     return itemlist
 
 def findvideos(item):
-    logger.info()
+    logger.info("pelisalacarta.zentorrents findvideos")
     
     if not "serie" in item.url:
         thumbnail= item.category
@@ -736,7 +737,7 @@ def findvideos(item):
     
     patron = '<h1>(.*?)</h1>.*?'
     patron += 'src="([^"]+)".*?'
-    patron += '</a></p><p><a href="([^"]+)"'
+    patron += '</p><p><a href="([^"]+)"'
     
     
     matches = re.compile(patron,re.DOTALL).findall(data)
@@ -760,7 +761,7 @@ def findvideos(item):
                 
                  if not os.path.exists(torrents_path):
                     os.mkdir(torrents_path)
-                 urllib.urlretrieve (url, torrents_path+"/temp.torrent")
+                 urllib.URLopener.version = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36 SE 2.X MetaSr 1.0'
                  urllib.urlretrieve (url, torrents_path+"/temp.torrent")
                  pepe = open( torrents_path+"/temp.torrent", "rb").read()
                 
@@ -844,7 +845,7 @@ def findvideos(item):
                 
                  if not os.path.exists(torrents_path):
                     os.mkdir(torrents_path)
-                
+                 urllib.URLopener.version = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36 SE 2.X MetaSr 1.0'
                  urllib.urlretrieve (url, torrents_path+"/temp.torrent")
                  pepe = open( torrents_path+"/temp.torrent", "rb").read()
                 
@@ -931,7 +932,7 @@ def play(item):
 
 
 def info(item):
-    logger.info()
+    logger.info("pelisalacarta.zentorrents info")
     itemlist = []
     url=item.url
     id = item.extra
@@ -1098,7 +1099,7 @@ def info(item):
 
 
 def info_capitulos(item):
-    logger.info()
+    logger.info("pelisalacarta.zentorrent info_capitulos")
     
     url= "https://api.themoviedb.org/3/tv/"+item.show.split("|")[5]+"/season/"+item.extra.split("|")[2]+"/episode/"+item.extra.split("|")[3]+"?api_key="+api_key+"&language=es"
 
@@ -1346,6 +1347,7 @@ def decode(text):
     return data
 def convert_size(size):
    import math
+   from os.path import getsize
    if (size == 0):
        return '0B'
    size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")

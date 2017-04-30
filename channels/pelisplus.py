@@ -260,13 +260,13 @@ def findvideos(item):
     itemlist=[]
     duplicados=[]
     datas=httptools.downloadpage(item.url).data
-    patron ="<iframe.*?src='([^']+)' frameborder='0' allowfullscreen.*?"
+    patron ="<iframe.*?src='(.*?)' frameborder.*?"
     matches = re.compile(patron,re.DOTALL).findall(datas)
     
     for scrapedurl in matches:
        
        
-       if 'elreyxhd' or 'pelisplus.biz'in scrapedurl:
+       if 'elreyxhd' in scrapedurl or 'pelisplus.biz'in scrapedurl:
             data = httptools.downloadpage(scrapedurl, headers=headers).data
             
             quote = scrapertools.find_single_match(data,'sources.*?file.*?http')

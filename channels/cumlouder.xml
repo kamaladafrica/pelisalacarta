@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<!--- By EpNiebla -->
 <channel>
 	<id>cumlouder</id>
 	<name>Cumlouder</name>
@@ -17,13 +16,13 @@
 
 	<changes>
 		<change>
-			<date>15/03/2017</date>
-			<autor>SeiTaN</autor>
-			<description>limpieza código</description>
+			<date>29/04/17</date>
+			<autor>Cmos</autor>
+			<description>Corregido, usa proxy en caso de error con https</description>
 		</change>
 		<change>
 			<date>13/01/17</date>
-			<autor>-</autor>
+			<autor>EpNiebla</autor>
 			<description>First version</description>
 		</change>
 	</changes>

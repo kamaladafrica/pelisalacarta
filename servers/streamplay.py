@@ -18,7 +18,7 @@ host = "http://streamplay.to/"
 
 def test_video_exists(page_url):
     logger.info("(page_url='%s')" % page_url)
-    referer = page_url.replace("embed-", "")[:-5]
+    referer = re.sub(r"embed-|player-", "", page_url)[:-5]
     data = httptools.downloadpage(page_url, headers={'Referer': referer}).data
     if data == "File was deleted":
         return False, "[Streamplay] El archivo no existe o ha sido borrado"
@@ -28,7 +28,7 @@ def test_video_exists(page_url):
 
 def get_video_url(page_url, premium=False, user="", password="", video_password=""):
     logger.info("(page_url='%s')" % page_url)
-    referer = page_url.replace("embed-", "")[:-5]
+    referer = re.sub(r"embed-|player-", "", page_url)[:-5]
     data = httptools.downloadpage(page_url, headers={'Referer': referer}).data
 
     jj_encode = scrapertools.find_single_match(data, "(\w+=~\[\];.*?\)\(\)\)\(\);)")
@@ -96,13 +96,13 @@ def find_videos(data):
     devuelve = []
 
     # http://streamplay.to/ubhrqw1drwlx
-    patronvideos = "streamplay.to/(?:embed-|)([a-z0-9]+)(?:.html|)"
+    patronvideos = "streamplay.to/(?:embed-|player-|)([a-z0-9]+)(?:.html|)"
     logger.info("#" + patronvideos + "#")
     matches = re.compile(patronvideos, re.DOTALL).findall(data)
 
     for match in matches:
         titulo = "[streamplay]"
-        url = "http://streamplay.to/embed-%s.html" % match
+        url = "http://streamplay.to/player-%s.html" % match
         if url not in encontrados:
             logger.info("  url=" + url)
             devuelve.append([titulo, url, 'streamplay'])
