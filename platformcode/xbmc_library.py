@@ -101,8 +101,11 @@ def sync_trakt_pelisalacarta(path_folder):
             sys.path.append(xbmc.translatePath(path))
 
         # se obtiene las series vistas
-        from resources.lib.traktapi import traktAPI
-        traktapi = traktAPI()
+        try:
+            from resources.lib.traktapi import traktAPI
+            traktapi = traktAPI()
+        except:
+            return
 
         shows = traktapi.getShowsWatched({})
         shows = shows.items()
