@@ -11,10 +11,26 @@
 	<thumbnail>https://s13.postimg.org/z5dbzfasn/pelisplus.png</thumbnail>
 	<bannermenu>https://s16.postimg.org/p9xz2vlo5/pelisplus_banner.png</bannermenu>
 	
-	<update_url></update_url>
-	<version>4</version>
-	<date>06/12/2016</date>
-	<changes>Release</changes>
+	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
+	<version>5</version>
+
+	<changes>
+		<change>
+			<date>15/04/2017</date>
+			<autor>Hernan_Ar_c</autor>
+			<description>Fix</description>
+		</change>
+		<change>
+			<date>15/03/2017</date>
+			<autor>SeiTaN</autor>
+			<description>limpieza código</description>
+		</change>
+		<change>
+			<date>06/12/2016</date>
+			<autor>Hernan_Ar_c</autor>
+			<description>Release.</description>
+		</change>
+	</changes>
 
 	<categories>
 		<category>latino</category>
