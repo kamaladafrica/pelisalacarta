@@ -113,7 +113,7 @@ def buscador(item):
 def peliculas(item):
     logger.info("pelisalacarta.zentorrents peliculas")
     itemlist = []
-    
+
     # Descarga la página
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|</p>|<p>|&amp;|amp;","",data)
@@ -672,7 +672,7 @@ def fanart(item):
                             extra= thumbnail+"|"+year
                             show=  fanart_2+"|"+fanart_3+"|"+sinopsis+"|"+title_fan+"|"+tfv+"|"+id_tmdb
                         itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=thumbnail, fanart=item.extra, extra=extra,show=show , category = category, folder=True) )
-    
+
 
     title_info ="Info"
     title_info = "[COLOR skyblue]"+title_info+"[/COLOR]"
@@ -737,7 +737,7 @@ def findvideos(item):
     
     patron = '<h1>(.*?)</h1>.*?'
     patron += 'src="([^"]+)".*?'
-    patron += '</a></p><p><a href="([^"]+)"'
+    patron += '</p><p><a href="([^"]+)"'
     
     
     matches = re.compile(patron,re.DOTALL).findall(data)
@@ -761,7 +761,7 @@ def findvideos(item):
                 
                  if not os.path.exists(torrents_path):
                     os.mkdir(torrents_path)
-                 urllib.urlretrieve (url, torrents_path+"/temp.torrent")
+                 urllib.URLopener.version = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36 SE 2.X MetaSr 1.0'
                  urllib.urlretrieve (url, torrents_path+"/temp.torrent")
                  pepe = open( torrents_path+"/temp.torrent", "rb").read()
                 
@@ -845,7 +845,7 @@ def findvideos(item):
                 
                  if not os.path.exists(torrents_path):
                     os.mkdir(torrents_path)
-                
+                 urllib.URLopener.version = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36 SE 2.X MetaSr 1.0'
                  urllib.urlretrieve (url, torrents_path+"/temp.torrent")
                  pepe = open( torrents_path+"/temp.torrent", "rb").read()
                 
