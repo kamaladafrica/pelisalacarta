@@ -82,9 +82,9 @@ def run():
                 try:
                     config.set_setting("plugin_updates_available", 0)
                     new_published_version_tag , number_of_updates = updater.get_available_updates()
-                    itemlist = channelselector.getmainlist()
 
                     config.set_setting("plugin_updates_available", number_of_updates)
+                    itemlist = channelselector.getmainlist()
 
                     if new_published_version_tag!="":
 
