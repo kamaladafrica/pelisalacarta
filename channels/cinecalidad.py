@@ -228,8 +228,8 @@ def get_urls(item, link):
     logger.info()
     url = 'http://www.cinecalidad.to/ccstream/ccstream.php'
     headers = dict()
-    headers["Referer"] = 'http://www.cinecalidad.to/pelicula/bailarina-online-descarga/'
-    post = 'link=Ar-4ide9u-HdF8vzcqx0MvJtppJfP1TtvhFQmg=='
+    headers["Referer"] = item.url
+    post = 'link=%s'%link
 
     data = httptools.downloadpage(url, post= post ,headers = headers).data
     dict_data = jsontools.load_json(data)
