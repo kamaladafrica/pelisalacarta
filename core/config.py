@@ -280,6 +280,7 @@ def verify_directories_created():
 
 
         if get_setting("library_set_content")== True and path in ["librarypath","downloadpath"]:
+            logger.debug("library_set_content %s" % get_setting("library_set_content"))
             xbmc_library.add_sources(saved_path)
 
         saved_path = xbmc.translatePath(saved_path)
