@@ -152,7 +152,7 @@ def run():
                 # If it is an adult channel, and user has configured pin, asks for it
                 if channeltools.is_adult(item.channel) and config.get_setting("adult_pin") != "":
 
-                    tecleado = platformtools.dialog_input("", "PIN para canales de adultos", True)
+                    tecleado = platformtools.dialog_input("", "Contraseña para canales de adultos", True)
                     if tecleado is not None:
                         if tecleado == config.get_setting("adult_pin"):
                             can_open_channel = True

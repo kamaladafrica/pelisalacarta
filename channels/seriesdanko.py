@@ -15,7 +15,7 @@ from core import scrapertools
 from core import servertools
 from core.item import Item
 
-HOST = 'http://seriesdanko.com/'
+HOST = 'http://seriesdanko.to/'
 IDIOMAS = {'es': 'Español', 'la': 'Latino', 'vos': 'VOS', 'vo': 'VO'}
 list_idiomas = IDIOMAS.values()
 CALIDADES = ['SD', 'MicroHD', 'HD/MKV']

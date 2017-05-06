@@ -33,7 +33,7 @@ def mainlist(item):
 
     # Resetear host y comprobacion de error en https (por si se actualiza Kodi)
     config.set_setting("url_error", False, "descargasmix")
-    host = config.set_setting("host", "https://descargasmix.com", "descargasmix")
+    host = config.set_setting("host", "https://ddmix.net", "descargasmix")
     host_check = get_data(host, True)
     if host_check:
         config.set_setting("host", host_check, "descargasmix")
