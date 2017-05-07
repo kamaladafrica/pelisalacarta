@@ -246,9 +246,9 @@ def start (itemlist, item):
                         platformtools.play_video(videoitem)
 
                         try:
-                            platformtools.video_total_time()
-                            played = True
-                            break
+                            if platformtools.is_playing():
+                                played = True
+                                break
                         except:  # TODO evitar el informe de que el conector fallo o el video no se encuentra
                             logger.debug(str(len(autoplay_list)))
 
