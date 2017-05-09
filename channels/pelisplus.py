@@ -441,45 +441,36 @@ def generos(item):
 
 
 def findvideos(item):
-    logger.info()
-    itemlist = []
-    duplicados = []
-    datas = httptools.downloadpage(item.url).data
-    patron = "<iframe.*?src='([^']+)' frameborder='0' allowfullscreen.*?"
-    matches = re.compile(patron, re.DOTALL).findall(datas)
-
+    logger.info ()
+    itemlist=[]
+    duplicados=[]
+    datas=httptools.downloadpage(item.url).data
+    patron ="<iframe.*?src='(.*?)' frameborder.*?"
+    matches = re.compile(patron,re.DOTALL).findall(datas)
+    
     for scrapedurl in matches:
-
-        if 'elreyxhd' or 'pelisplus.biz' in scrapedurl:
+       
+       
+       if 'elreyxhd' in scrapedurl or 'pelisplus.biz'in scrapedurl:
+            patronr = ''
             data = httptools.downloadpage(scrapedurl, headers=headers).data
 
             quote = scrapertools.find_single_match(data, 'sources.*?file.*?http')
             if quote and "'" in quote:
                 patronr = "file:'([^']+)',label:'([^.*?]+)',type:.*?'.*?}"
             elif '"' in quote:
-                patronr = '{file:"(.*?)",label:"(.*?)"}'
-            matchesr = re.compile(patronr, re.DOTALL).findall(data)
+               patronr ='{file:"(.*?)",label:"(.*?)"}'
+            if patronr != '':
+                matchesr = re.compile(patronr,re.DOTALL).findall(data)
 
-            for scrapedurl, scrapedcalidad in matchesr:
-                url = scrapedurl
-                language = 'latino'
-                quality = scrapedcalidad.decode('cp1252').encode('utf8')
-                title = item.contentTitle + ' (' + str(scrapedcalidad) + ')'
-                thumbnail = item.thumbnail
-                fanart = item.fanart
-                if url not in duplicados:
-                    itemlist.append(Item(channel=item.channel,
-                                         action="play",
-                                         title=title,
-                                         url=url,
-                                         thumbnail=thumbnail,
-                                         fanart=fanart,
-                                         show= title,
-                                         extra='directo',
-                                         language=language,
-                                         quality=quality,
-                                         server='directo',
-                                         ))
+                for scrapedurl, scrapedcalidad in matchesr:
+                   url = scrapedurl
+
+                   title = item.contentTitle+' ('+str(scrapedcalidad)+')'
+                   thumbnail = item.thumbnail
+                   fanart=item.fanart
+                   if url not in duplicados:
+                    itemlist.append( Item(channel=item.channel, action="play" , title=title , url=url, thumbnail=thumbnail,fanart =fanart, extra='directo'))
                     duplicados.append(url)
 
     url = scrapedurl

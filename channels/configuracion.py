@@ -440,7 +440,7 @@ def conf_tools(item):
 
                         # No incluir si es un canal para adultos, y el modo adulto está desactivado
                         if (channel_parameters["adult"] == "true" and
-                                config.get_setting("adult_mode") == "false"):
+                                config.get_setting("adult_mode") == "0"):
                             continue
 
                         # No incluir si el canal es en un idioma filtrado

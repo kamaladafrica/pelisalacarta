@@ -1,8 +1,18 @@
 <?xml version="1.0" ?>
 <server>
 	<active>true</active>
-	<version>3</version>
+	<version>5</version>
 	<changes>
+		<change>
+			<date>09/05/17</date>
+			<autor>Cmos</autor>
+			<description>Arreglado con el cambio de user agent</description>
+		</change>
+		<change>
+			<date>24/04/17</date>
+			<autor>Intel1</autor>
+			<description>Detectado mensaje:video se está procesando</description>
+		</change>
 		<change>
 			<date>23/03/17</date>
 			<autor>Cmos</autor>

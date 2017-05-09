@@ -248,19 +248,20 @@ def indices(item):
         if item.contentType == "movie":
             itemlist.append(item.clone(title="Por calidad", url=host+"/catalogo.php"))
         itemlist.append(item.clone(title="Por año"))
+        itemlist.append(item.clone(title="Por país", url=host+"/catalogo.php"))
 
         return itemlist
 
     if "Géneros" in item.title:
         data = httptools.downloadpage(item.url).data
-        patron = '<div class="sel men" value="([^"]+)">([^<]+)</div>'
+        patron = '<div class="sel gen" value="([^"]+)">([^<]+)</div>'
         matches = scrapertools.find_multiple_matches(data, patron)
         for value, genero in matches:
-            url = item.url + "?tipo[]=%s&genero[]=%s&ad=2&ordenar=novedades&con_dis=on" % (tipo, value)
+            url = item.url + "?tipo[]=%s&generos[]=%s&ad=2&ordenar=novedades&con_dis=on" % (tipo, value)
             itemlist.append(item.clone(action="fichas", title=genero, url=url))
     elif "Idiomas" in item.title:
         data = httptools.downloadpage(item.url).data
-        bloque = scrapertools.find_single_match(data, 'oname="Idioma">Cualquiera(.*?)<div class="c_select d">')
+        bloque = scrapertools.find_single_match(data, 'oname="Idioma">Cualquier(.*?)<input')
         patron = '<div class="sel" value="([^"]+)">([^<]+)</div>'
         matches = scrapertools.find_multiple_matches(bloque, patron)
         for value, idioma in matches:
@@ -268,12 +269,20 @@ def indices(item):
             itemlist.append(item.clone(action="fichas", title=idioma, url=url))
     elif "calidad" in item.title:
         data = httptools.downloadpage(item.url).data
-        bloque = scrapertools.find_single_match(data, 'oname="Calidad">Cualquiera(.*?)<div class="c_select d">')
+        bloque = scrapertools.find_single_match(data, 'oname="Calidad">Cualquier(.*?)<input')
         patron = '<div class="sel" value="([^"]+)">([^<]+)</div>'
         matches = scrapertools.find_multiple_matches(bloque, patron)
         for value, calidad in matches:
             url = item.url + "?tipo[]=%s&ad=2&ordenar=novedades&con_dis=on&e_calidad=%s" % (tipo, value)
             itemlist.append(item.clone(action="fichas", title=calidad, url=url))
+    elif "país" in item.title:
+        data = httptools.downloadpage(item.url).data
+        bloque = scrapertools.find_single_match(data, 'oname="País">Todos(.*?)<input')
+        patron = '<div class="sel" value="([^"]+)">([^<]+)</div>'
+        matches = scrapertools.find_multiple_matches(bloque, patron)
+        for value, pais in matches:
+            url = item.url + "?tipo[]=%s&ad=2&ordenar=novedades&con_dis=on&pais=%s" % (tipo, value)
+            itemlist.append(item.clone(action="fichas", title=pais, url=url))
     else:
         from datetime import datetime
         year = datetime.now().year
@@ -340,7 +349,10 @@ def fichas(item):
         next_page = host + next_page.replace("&amp;", "&")
         itemlist.append(Item(channel=item.channel, action="fichas", title=">> Página Siguiente", url=next_page))
 
-        total = int(scrapertools.find_single_match(data, '<span class="page-dots">.*href.*?>(\d+)'))
+        try:
+            total = int(scrapertools.find_single_match(data, '<span class="page-dots">.*href.*?>(\d+)'))
+        except:
+            total = 0
         if not config.get_setting("last_page", item.channel) and config.is_xbmc() and total > 2 \
                 and item.extra != "newest":
             itemlist.append(item.clone(action="select_page", title="Ir a página... (Total:%s)" % total, url=next_page,

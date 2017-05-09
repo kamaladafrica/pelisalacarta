@@ -30,6 +30,8 @@ import os, re
 import xbmc
 import xbmcaddon
 
+
+
 PLUGIN_NAME = "pelisalacarta"
 
 __settings__ = xbmcaddon.Addon(id="plugin.video." + PLUGIN_NAME)
@@ -97,8 +99,72 @@ def get_system_platform():
     return platform
 
 
+def get_all_settings_addon():
+    # Lee el archivo settings.xml y retorna un diccionario con {id: value}
+    import scrapertools
+
+    infile = open(os.path.join(get_data_path(),"settings.xml"), "r")
+    data = infile.read()
+    infile.close()
+
+    ret = {}
+    matches = scrapertools.find_multiple_matches(data, '<setting id="([^"]*)" value="([^"]*)')
+    for id, value in matches:
+        ret[id] = value
+
+    return ret
+
+
 def open_settings():
+    settings_pre = get_all_settings_addon()
     __settings__.openSettings()
+    settings_post = get_all_settings_addon()
+
+    # cb_validate_config (util para validar cambios realizados en el cuadro de dialogo)
+    if settings_post.get('adult_aux_intro_password', None):
+        # Hemos accedido a la seccion de Canales para adultos
+        from platformcode import platformtools
+        if not 'adult_password' in settings_pre:
+            adult_password = set_setting('adult_password', '1111')
+        else:
+            adult_password = settings_pre['adult_password']
+
+        if settings_post['adult_aux_intro_password'] == adult_password:
+            # La contraseña de acceso es correcta
+
+            # Cambio de contraseña
+            if settings_post['adult_aux_new_password1']:
+                if settings_post['adult_aux_new_password1'] == settings_post['adult_aux_new_password2']:
+                    adult_password = set_setting('adult_password', settings_post['adult_aux_new_password1'])
+                else:
+                    platformtools.dialog_ok("Canales para adultos", "Los campos 'Nueva contraseña' y 'Confirmar nueva contraseña' no coinciden.",
+                                            "Entre de nuevo en 'Preferencias' para cambiar la contraseña")
+
+            # Fijar adult_pin
+            adult_pin = ""
+            if settings_post["adult_request_password"] == "true":
+                adult_pin = adult_password
+            set_setting("adult_pin", adult_pin)
+
+        else:
+            platformtools.dialog_ok("Canales para adultos", "La contraseña no es correcta.",
+                                    "Los cambios realizados en esta sección no se guardaran.")
+            # Deshacer cambios
+            set_setting("adult_mode", settings_pre.get("adult_mode","0"))
+            set_setting("adult_request_password", settings_pre.get("adult_request_password", "true"))
+
+
+        # Borramos settings auxiliares
+        set_setting('adult_aux_intro_password', '')
+        set_setting('adult_aux_new_password1', '')
+        set_setting('adult_aux_new_password2', '')
+                
+            
+                    
+
+
+
+
 
 
 def get_setting(name, channel=""):
@@ -138,7 +204,7 @@ def get_setting(name, channel=""):
     # Global setting
     else:
         # logger.info("config.get_setting reading main setting '"+name+"'")
-        value = __settings__.getSetting(channel + name)
+        value = __settings__.getSetting(name)
         # Translate Path if start with "special://"
         if value.startswith("special://") and "librarypath" not in name:
             value = xbmc.translatePath(value)

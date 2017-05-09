@@ -12,14 +12,23 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/peliculasdk.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>7</version>
-	<date>07/12/2016</date>
-	<changes>Corrección código. Adaptación Infoplus</changes>
-
+	<version>8</version>
+	<date>25/04/2017</date>
+    <changes>
+        <change>
+          <date>06/12/2016</date>
+          <autor>Neno1978</autor>
+         <description>Corrección código. Adaptación Infoplus</description>
+        </change>
+        <change>
+          <date>26/04/2017</date>
+          <autor>Neno1978</autor>
+          <description>Adaptación biblioteca</description>
+        </change>
+    </changes>
 	<categories>
 		<category>torrent</category>
         <category>movie</category>
-        <category>serie</category>
 	</categories>
 
 	<settings>

@@ -23,6 +23,7 @@ perfil = [['0xFFFFE6CC', '0xFFFFCE9C', '0xFF994D00'],
           ['0xFFA5F6AF', '0xFF5FDA6D', '0xFF11811E'],
           ['0xFF58D3F7', '0xFF2E9AFE', '0xFF2E64FE']]
 color1, color2, color3 = perfil[__perfil__]
+host = config.get_setting("host", "descargasmix")
 
 
 def mainlist(item):
@@ -30,13 +31,20 @@ def mainlist(item):
     itemlist = []
     item.text_color = color1
 
+    # Resetear host y comprobacion de error en https (por si se actualiza Kodi)
+    config.set_setting("url_error", False, "descargasmix")
+    host = config.set_setting("host", "https://ddmix.net", "descargasmix")
+    host_check = get_data(host, True)
+    if host_check and host_check.startswith("http"):
+        config.set_setting("host", host_check, "descargasmix")
+
     itemlist.append(item.clone(title="Películas", action="lista", fanart="http://i.imgur.com/c3HS8kj.png"))
     itemlist.append(item.clone(title="Series", action="lista_series", fanart="http://i.imgur.com/9loVksV.png"))
-    itemlist.append(item.clone(title="Documentales", action="entradas", url="https://desmix.net/documentales/",
+    itemlist.append(item.clone(title="Documentales", action="entradas", url="%s/documentales/" % host,
                                fanart="http://i.imgur.com/Q7fsFI6.png"))
-    itemlist.append(item.clone(title="Anime", action="entradas", url="https://desmix.net/anime/",
+    itemlist.append(item.clone(title="Anime", action="entradas", url="%s/anime/"  % host,
                                fanart="http://i.imgur.com/whhzo8f.png"))
-    itemlist.append(item.clone(title="Deportes", action="entradas", url="https://desmix.net/deportes/",
+    itemlist.append(item.clone(title="Deportes", action="entradas", url="%s/deportes/" % host,
                                fanart="http://i.imgur.com/ggFFR8o.png"))
     itemlist.append(item.clone(title="", action=""))
     itemlist.append(item.clone(title="Buscar...", action="search"))
@@ -55,7 +63,7 @@ def configuracion(item):
 def search(item, texto):
     logger.info()
     try:
-        item.url = "https://desmix.net/?s=" + texto
+        item.url = "%s/?s=%s"  % (host, texto)
         return busqueda(item)
     # Se captura la excepción, para no interrumpir al buscador global si un canal falla
     except:
@@ -108,15 +116,15 @@ def lista(item):
     logger.info()
     itemlist = []
 
-    itemlist.append(item.clone(title="Novedades", action="entradas", url="https://desmix.net/peliculas"))
-    itemlist.append(item.clone(title="Estrenos", action="entradas", url="https://desmix.net/peliculas/estrenos"))
-    itemlist.append(item.clone(title="Dvdrip", action="entradas", url="https://desmix.net/peliculas/dvdrip"))
-    itemlist.append(item.clone(title="HD (720p/1080p)", action="entradas", url="https://desmix.net/peliculas/hd"))
-    itemlist.append(item.clone(title="HDRIP", action="entradas", url="https://desmix.net/peliculas/hdrip"))
+    itemlist.append(item.clone(title="Novedades", action="entradas", url="%s/peliculas" % host))
+    itemlist.append(item.clone(title="Estrenos", action="entradas", url="%s/peliculas/estrenos" % host))
+    itemlist.append(item.clone(title="Dvdrip", action="entradas", url="%s/peliculas/dvdrip" % host))
+    itemlist.append(item.clone(title="HD (720p/1080p)", action="entradas", url="%s/peliculas/hd" % host))
+    itemlist.append(item.clone(title="HDRIP", action="entradas", url="%s/peliculas/hdrip" % host))
     itemlist.append(item.clone(title="Latino", action="entradas",
-                               url="https://desmix.net/peliculas/latino-peliculas"))
-    itemlist.append(item.clone(title="VOSE", action="entradas", url="https://desmix.net/peliculas/subtituladas"))
-    itemlist.append(item.clone(title="3D", action="entradas", url="https://desmix.net/peliculas/3d"))
+                               url="%s/peliculas/latino-peliculas" % host))
+    itemlist.append(item.clone(title="VOSE", action="entradas", url="%s/peliculas/subtituladas" % host))
+    itemlist.append(item.clone(title="3D", action="entradas", url="%s/peliculas/3d" % host))
 
     return itemlist
 
@@ -125,8 +133,8 @@ def lista_series(item):
     logger.info()
     itemlist = []
 
-    itemlist.append(item.clone(title="Novedades", action="entradas", url="https://desmix.net/series/"))
-    itemlist.append(item.clone(title="Miniseries", action="entradas", url="https://desmix.net/series/miniseries"))
+    itemlist.append(item.clone(title="Novedades", action="entradas", url="%s/series/" % host))
+    itemlist.append(item.clone(title="Miniseries", action="entradas", url="%s/series/miniseries" % host))
 
     return itemlist
 
@@ -278,7 +286,7 @@ def epienlaces(item):
         titulo = "    %s [%s]" % (unicode(scrapedserver, "utf-8").capitalize().encode("utf-8"), scrapedcalidad)
         # Enlaces descarga
         if scrapedserver == "magnet":
-            itemlist.insert(0, item.clone(action="play", title=titulo, server="torrent", url=scrapedurl))
+            itemlist.insert(0, item.clone(action="play", title=titulo, server="torrent", url=scrapedurl, extra=item.url))
         else:
             mostrar_server = True
             if config.get_setting("hidepremium") == "true":
@@ -447,9 +455,12 @@ def play(item):
     if not item.url.startswith("http") and not item.url.startswith("magnet"):
         post = "source=%s&action=obtenerurl" % urllib.quote(item.url)
         headers = {'X-Requested-With': 'XMLHttpRequest'}
-        data = httptools.downloadpage("http://desmix.net/wp-admin/admin-ajax.php", post=post, headers=headers, follow_redirects=False).data
+        data = httptools.downloadpage("%s/wp-admin/admin-ajax.php" % host.replace("https", "http"), post=post, headers=headers, follow_redirects=False).data
 
         url = scrapertools.find_single_match(data, 'url":"([^"]+)"').replace("\\", "")
+        if "enlacesmix" in url:
+            data = httptools.downloadpage(url, headers={'Referer': item.extra}, follow_redirects=False).data
+            url = scrapertools.find_single_match(data, '<iframe.*?src="([^"]+)"')
         enlaces = servertools.findvideosbyserver(url, item.server)
         if enlaces:
             itemlist.append(item.clone(action="play", server=enlaces[0][2], url=enlaces[0][1]))
@@ -497,22 +508,39 @@ def mostrar_enlaces(data):
     return urls
 
 
-def get_data(url_orig):
+def get_data(url_orig, get_host=False):
     try:
-        data = httptools.downloadpage(url_orig).data
+        if config.get_setting("url_error", "descargasmix"):
+            raise Exception
+        response = httptools.downloadpage(url_orig)
+        if not response.data or "urlopen error [Errno 1]" in str(response.code):
+            raise Exception
+        if get_host:
+            if response.url.endswith("/"):
+                response.url = response.url[:-1]
+            return response.url
     except:
+        config.set_setting("url_error", True, "descargasmix")
         import random
         server_random = ['nl', 'de', 'us']
-        url = "https://%s.hideproxy.me/includes/process.php?action=update" % server_random[random.randint(0, 2)]
+        server = server_random[random.randint(0, 2)]
+        url = "https://%s.hideproxy.me/includes/process.php?action=update" % server
         post = "u=%s&proxy_formdata_server=%s&allowCookies=1&encodeURL=0&encodePage=0&stripObjects=0&stripJS=0&go=" \
-               % (url_orig, server_random[random.randint(0, 2)])
+               % (url_orig, server)
         while True:
             response = httptools.downloadpage(url, post, follow_redirects=False)
             if response.headers.get("location"):
                 url = response.headers["location"]
                 post = ""
             else:
-                data = response.data
+                if get_host:
+                    target = urllib.unquote(scrapertools.find_single_match(url, 'u=([^&]+)&'))
+                    if target.endswith("/"):
+                        target = target[:-1]
+                    if target and target != host:
+                        return target
+                    else:
+                        return ""
                 break
 
-    return data
+    return response.data

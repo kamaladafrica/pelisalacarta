@@ -4,21 +4,18 @@
 # Canal para newpct1
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-
 import re
-import sys
 
 from core import config
+from core import httptools
 from core import logger
 from core import scrapertools
 from core import servertools
 from core.item import Item
 
-DEBUG = config.get_setting("debug")
-
 
 def mainlist(item):
-    logger.info("[newpct1.py] mainlist")
+    logger.info()
     
     itemlist = []
     itemlist.append( Item(channel=item.channel, action="submenu", title="Películas", url="http://www.newpct1.com/", extra="peliculas") )
@@ -28,7 +25,7 @@ def mainlist(item):
     return itemlist
 
 def search(item,texto):
-    logger.info("[newpct1.py] search:" + texto)
+    logger.info("search:" + texto)
     texto = texto.replace(" ","+")
     item.url = "http://www.newpct1.com/index.php?page=buscar&q=%27" + texto +"%27&ordenar=Fecha&inon=Descendente"
     item.extra="buscar-list"
@@ -54,10 +51,10 @@ def search(item,texto):
         return []
 
 def submenu(item):
-    logger.info("[newpct1.py] submenu")
+    logger.info()
     itemlist=[]
 
-    data = re.sub(r"\n|\r|\t|\s{2}|(<!--.*?-->)","",scrapertools.cache_page(item.url))
+    data = re.sub(r"\n|\r|\t|\s{2}|(<!--.*?-->)","",httptools.downloadpage(item.url).data)
     data = unicode( data, "iso-8859-1" , errors="replace" ).encode("utf-8")
 
     patron = '<li><a href="http://www.newpct1.com/'+item.extra+'/">.*?<ul>(.*?)</ul>'
@@ -76,10 +73,10 @@ def submenu(item):
     return itemlist
 
 def alfabeto(item):
-    logger.info("[newpct1.py] alfabeto")
+    logger.info()
     itemlist = []
 
-    data = re.sub(r"\n|\r|\t|\s{2}|(<!--.*?-->)","",scrapertools.cache_page(item.url))
+    data = re.sub(r"\n|\r|\t|\s{2}|(<!--.*?-->)","",httptools.downloadpage(item.url).data)
     data = unicode( data, "iso-8859-1" , errors="replace" ).encode("utf-8")
 
     patron = '<ul class="alfabeto">(.*?)</ul>'
@@ -97,15 +94,15 @@ def alfabeto(item):
     return itemlist
 
 def listado(item):
-    logger.info("[newpct1.py] listado")
+    logger.info()
     #logger.info("[newpct1.py] listado url=" + item.url)
     itemlist = []
     
-    data = re.sub(r"\n|\r|\t|\s{2}|(<!--.*?-->)","",scrapertools.cache_page(item.url))
+    data = re.sub(r"\n|\r|\t|\s{2}|(<!--.*?-->)","",httptools.downloadpage(item.url).data)
     data = unicode( data, "iso-8859-1" , errors="replace" ).encode("utf-8")    
         
     patron = '<ul class="'+item.extra+'">(.*?)</ul>'
-    logger.info("[newpct1.py] patron="+patron)
+    logger.debug("patron="+patron)
     fichas = scrapertools.get_match(data,patron)
 
     #<li><a href="http://www.newpct1.com/pelicula/x-men-dias-del-futuro-pasado/ts-screener/" title="Descargar XMen Dias Del Futuro gratis"><img src="http://www.newpct1.com/pictures/f/58066_x-men-dias-del-futuro--blurayrip-ac3-5.1.jpg" width="130" height="180" alt="Descargar XMen Dias Del Futuro gratis"><h2>XMen Dias Del Futuro </h2><span>BluRayRip AC3 5.1</span></a></li>
@@ -183,7 +180,7 @@ def listado(item):
     return itemlist
 
 def completo(item):
-    logger.info("[newpct1.py] completo")
+    logger.info()
     itemlist = []
     categoryID=""
     
@@ -251,7 +248,7 @@ def completo(item):
             ultimo_item.extra = item_extra
             ultimo_item.show = item_show
             ultimo_item.title = item_title
-            logger.info("[newpct1.py] completo url=" + ultimo_item.url)
+            logger.debug("url=" + ultimo_item.url)
             if item_extra.startswith("serie"):
                 items_programas = get_episodios(ultimo_item)
             else:
@@ -265,17 +262,16 @@ def completo(item):
       
     if (config.get_library_support() and len(itemlist)>0 and item.extra.startswith("serie")) :
         itemlist.append( Item(channel=item.channel, title="Añadir esta serie a la biblioteca", url=item.url, action="add_serie_to_library", extra="completo###serie_add" , show= item.show))
-    logger.info("[newpct1.py] completo items="+ str(len(itemlist)))
+    logger.debug("items="+ str(len(itemlist)))
     return itemlist
    
 def get_episodios(item):
-    logger.info("[newpct1.py] get_episodios")
+    logger.info("url=" +item.url)   
     itemlist=[]
-    logger.info("[newpct1.py] get_episodios url=" +item.url)   
-    data = re.sub(r'\n|\r|\t|\s{2}|<!--.*?-->|<i class="icon[^>]+"></i>',"",scrapertools.cache_page(item.url))
+    data = re.sub(r'\n|\r|\t|\s{2}|<!--.*?-->|<i class="icon[^>]+"></i>',"",httptools.downloadpage(item.url).data)
     data = unicode( data, "iso-8859-1" , errors="replace" ).encode("utf-8")
     
-    logger.info("[newpct1.py] data=" +data)
+    logger.debug("data=" +data)
       
     patron = '<ul class="buscar-list">(.*?)</ul>'
     #logger.info("[newpct1.py] patron=" + patron)
@@ -285,7 +281,7 @@ def get_episodios(item):
     
     #<li><a href="http://www.newpct1.com/serie/forever/capitulo-101/" title="Serie Forever 1x01"><img src="http://www.newpct1.com/pictures/c/minis/1880_forever.jpg" alt="Serie Forever 1x01"></a> <div class="info"> <a href="http://www.newpct1.com/serie/forever/capitulo-101/" title="Serie Forever 1x01"><h2 style="padding:0;">Serie <strong style="color:red;background:none;">Forever - Temporada 1 </strong> - Temporada<span style="color:red;background:none;">[ 1 ]</span>Capitulo<span style="color:red;background:none;">[ 01 ]</span><span style="color:red;background:none;padding:0px;">Espa�ol Castellano</span> Calidad <span style="color:red;background:none;">[ HDTV ]</span></h2></a> <span>27-10-2014</span> <span>450 MB</span> <span class="color"><ahref="http://www.newpct1.com/serie/forever/capitulo-101/" title="Serie Forever 1x01"> Descargar</a> </div></li>
     #logger.info("[newpct1.py] get_episodios: " + fichas)
-    patron  = '<li><a href="([^"]+).*?' #url
+    patron  = '<li[^>]*><a href="([^"]+).*?' #url
     patron += '<img src="([^"]+)".*?' #thumbnail
     patron += '<h2 style="padding(.*?)/h2>' #titulo, idioma y calidad
     
@@ -311,19 +307,26 @@ def get_episodios(item):
 
                     info_extra = re.compile(patron,re.DOTALL).findall(scrapedinfo)
                     (temporada_capitulo,idioma)=info_extra[0]
-                    temporada, capitulo = scrapertools.get_season_and_episode(temporada_capitulo).split('x')
+                    if re.search(r'(?i)Capitulos', temporada_capitulo):
+                        temporada = scrapertools.find_single_match(temporada_capitulo, 'Temp.*?\s*([\d]+)')
+                        cap1, cap2 = scrapertools.find_single_match(temporada_capitulo, 'Cap.*?\s*(\d+).*?(\d+)')
+                        capitulo = ""
+                    else:
+                        temporada, capitulo = scrapertools.get_season_and_episode(temporada_capitulo).split('x')
                 
                 #logger.info("[newpct1.py] get_episodios: temporada=" + temporada)
                 #logger.info("[newpct1.py] get_episodios: capitulo=" + capitulo)
-                logger.info("[newpct1.py] get_episodios: idioma=" + idioma)
+                logger.debug("idioma=" + idioma)
                 if '">' in idioma: 
                     idioma= " [" + scrapertools.find_single_match(idioma,'">([^<]+)').strip() +"]"
                 elif '&nbsp' in idioma:
                     idioma= " [" + scrapertools.find_single_match(idioma,'&nbsp;([^<]+)').strip() +"]"
                 '''else:
                     idioma=""'''
-                title =  item.title + " (" + temporada.strip() + "x" + capitulo.strip()  + ") " + idioma
-                
+                if capitulo:
+                    title =  item.title + " (" + temporada.strip() + "x" + capitulo.strip()  + ") " + idioma
+                else:
+                    title = item.title + " (Del %sx%s al %sx%s) %s" % (temporada, cap1, temporada, cap2, idioma)
             else:
                 #<h2 style="padding:0;">The Big Bang Theory - Temporada 6 [HDTV][Cap.602][Español Castellano]</h2>
                 #<h2 style="padding:0;">The Beast - Temporada 1 [HDTV] [Capítulo 13] [Español]</h2
@@ -348,7 +351,7 @@ def get_episodios(item):
             #logger.info("[newpct1.py] get_episodios: fanart= " +item.fanart)
             itemlist.append( Item(channel=item.channel, action="findvideos", title=title, url=url, thumbnail=item.thumbnail, show=item.show, fanart=item.fanart) )
         except:
-            logger.info("[newpct1.py] ERROR al añadir un episodio")
+            logger.error("ERROR al añadir un episodio")
     if "pagination" in data:
         patron = '<ul class="pagination">(.*?)</ul>'
         paginacion = scrapertools.get_match(data,patron)
@@ -362,19 +365,19 @@ def get_episodios(item):
     return itemlist
 
 def buscar_en_subcategoria(titulo, categoria):
-    data= scrapertools.cache_page("http://www.newpct1.com/pct1/library/include/ajax/get_subcategory.php", post="categoryIDR=" + categoria)
+    data= httptools.downloadpage("http://www.newpct1.com/pct1/library/include/ajax/get_subcategory.php", post="categoryIDR=" + categoria).data
     data=data.replace("</option>"," </option>")
     patron = '<option value="(\d+)">(' + titulo.replace(" ","\s").replace("(","/(").replace(")","/)") + '\s[^<]*)</option>'
-    logger.info("[newpct1.py] buscar_en_subcategoria: data=" + data)
-    logger.info("[newpct1.py] buscar_en_subcategoria: patron=" + patron)
+    logger.debug("data=" + data)
+    logger.debug("patron=" + patron)
     matches = re.compile(patron,re.DOTALL | re.IGNORECASE).findall(data)
     
     if len(matches)==0: matches=[('','')]
-    logger.info("[newpct1.py] buscar_en_subcategoria: resultado=" + matches [0][0])
+    logger.debug("resultado=" + matches [0][0])
     return matches [0][0]
     
 def findvideos(item):
-    logger.info("[newpct1.py] findvideos")
+    logger.info()
     itemlist=[]   
           
     ## Cualquiera de las tres opciones son válidas
@@ -383,7 +386,7 @@ def findvideos(item):
     item.url = item.url.replace("1.com/","1.com/descarga-torrent/")
 
     # Descarga la página
-    data = re.sub(r"\n|\r|\t|\s{2}|(<!--.*?-->)","",scrapertools.cache_page(item.url))
+    data = re.sub(r"\n|\r|\t|\s{2}|(<!--.*?-->)","",httptools.downloadpage(item.url).data)
     data = unicode( data, "iso-8859-1" , errors="replace" ).encode("utf-8")
     
     title = scrapertools.find_single_match(data,"<h1><strong>([^<]+)</strong>[^<]+</h1>")

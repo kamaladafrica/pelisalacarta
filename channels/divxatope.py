@@ -5,18 +5,15 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
 import re
-import sys
 import urllib
 import urlparse
 
 from core import config
+from core import httptools
 from core import logger
 from core import scrapertools
 from core import servertools
 from core.item import Item
-
-
-DEBUG = config.get_setting("debug")
 
 
 def mainlist(item):
@@ -32,7 +29,7 @@ def menu(item):
     logger.info()
     itemlist=[]
 
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
     #logger.info("data="+data)
 
     data = scrapertools.find_single_match(data,item.extra+"</a[^<]+<ul(.*?)</ul>")
@@ -47,6 +44,8 @@ def menu(item):
         thumbnail = ""
         plot = ""
         itemlist.append( Item(channel=item.channel, action="lista", title=title , url=url , thumbnail=thumbnail , plot=plot , folder=True) )
+        if title != "Todas las Peliculas":
+            itemlist.append( Item(channel=item.channel, action="alfabetico", title=title + " [A-Z]" , url=url , thumbnail=thumbnail , plot=plot , folder=True) )
 
     if item.extra == "Peliculas":
         title = "4k UltraHD"
@@ -55,14 +54,16 @@ def menu(item):
         plot = ""
         itemlist.append(Item(channel=item.channel, action="lista", title=title, url=url, thumbnail=thumbnail, plot=plot,
                              folder=True))
+        itemlist.append(Item(channel=item.channel, action="alfabetico", title=title + " [A-Z]", url=url, thumbnail=thumbnail, plot=plot,
+                             folder=True))
 
     return itemlist
 
 def search(item,texto):
     logger.info()
     texto = texto.replace(" ", "+")
-    item.url = "http://www.divxatope1.com/index.php?page=buscar&q=%27" + texto + "%27&ordenar=Fecha&inon=Descendente"
-    item.extra = "buscar-list"
+    item.url = "http://www.divxatope1.com/buscar/descargas"
+    item.extra = urllib.urlencode({'q':texto})
 
     try:
         itemlist = lista(item)
@@ -76,7 +77,6 @@ def search(item,texto):
                 itemlist.remove(i)
 
         return itemlist
-
     # Se captura la excepci?n, para no interrumpir al buscador global si un canal falla
     except:
         import sys
@@ -121,37 +121,55 @@ def newest(categoria):
     return itemlist
 
 
+def alfabetico(item):
+    logger.info()
+    itemlist = []
+
+    data = re.sub(r"\n|\r|\t|\s{2}|(<!--.*?-->)","",httptools.downloadpage(item.url).data)
+    data = unicode( data, "iso-8859-1" , errors="replace" ).encode("utf-8")
+
+    patron = '<ul class="alfabeto">(.*?)</ul>'
+    data = scrapertools.get_match(data,patron)
+
+    patron = '<a href="([^"]+)"[^>]+>([^>]+)</a>'
+    matches = re.compile(patron,re.DOTALL).findall(data)
+
+    for scrapedurl,scrapedtitle in matches:
+        title = scrapedtitle.upper()
+        url = scrapedurl
+
+        itemlist.append( Item(channel=item.channel, action="lista" ,title=title, url=url) )
+
+    return itemlist
+
+
 def lista(item):
     logger.info()
     itemlist = []
 
-    patron = '<li[^>]*>.*?'
+    # Descarga la pagina
+    data = httptools.downloadpage(item.url , post=item.extra).data
+    #logger.info("data="+data)
+
+    bloque = scrapertools.find_single_match(data, '(?:<ul class="pelilist">|<ul class="buscar-list">)(.*?)</ul>')
+    patron  = '<li[^<]+'
     patron += '<a href="([^"]+)".*?'
     patron += 'src="([^"]+)".*?'
-    patron += '<h2[^>]*>([^<]+)</h2>.*?'
+    patron += '<h2[^>]*>(.*?)</h2.*?'
+    patron += '(?:<strong[^>]*>|<span[^>]*>)(.*?)(?:</strong>|</span>)'
 
-    # Descarga la pagina
-    if item.extra=="":
-        data1 = scrapertools.cachePage(item.url)
-        data = scrapertools.get_match(data1, '<ul class="pelilist">(.*?)</ul>')
-        patron += '<span[^>]*>(.*?)</span>'
-    else: # buscar...
-        data1 = scrapertools.cachePage(item.url , post=item.extra)
-        data = scrapertools.get_match(data1, '<ul class="buscar-list">(.*?)</ul>')
-        patron += '<strong[^>]*>(.*?)</strong>'
-
-    #logger.info("data= " + data)
-
-    matches = re.compile(patron,re.DOTALL).findall(data)
+    matches = re.compile(patron,re.DOTALL).findall(bloque)
     scrapertools.printMatches(matches)
 
     for scrapedurl,scrapedthumbnail,scrapedtitle,calidad in matches:
-
-        title = scrapedtitle.strip()+" ("+scrapertools.htmlclean(calidad)+")"
+        scrapedtitle = scrapertools.htmlclean(scrapedtitle)
+        title = scrapedtitle.strip()
+        if scrapertools.htmlclean(calidad):
+            title += " ("+scrapertools.htmlclean(calidad)+")"
         url = urlparse.urljoin(item.url,scrapedurl)
         thumbnail = urlparse.urljoin(item.url,scrapedthumbnail)
         plot = ""
-        logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+        logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
         contentTitle = scrapertools.htmlclean(scrapedtitle).strip()
         patron = '([^<]+)<br>'
@@ -185,11 +203,11 @@ def lista(item):
                                   contentTitle=contentTitle, language=idioma, contentThumbnail=thumbnail,
                                   contentQuality=calidad))
 
-    next_page_url = scrapertools.find_single_match(data1,'<li><a href="([^"]+)">Next</a></li>')
+    next_page_url = scrapertools.find_single_match(data,'<li><a href="([^"]+)">Next</a></li>')
     if next_page_url!="":
         itemlist.append( Item(channel=item.channel, action="lista", title=">> Página siguiente" , url=urlparse.urljoin(item.url,next_page_url) , folder=True) )
     else:
-        next_page_url = scrapertools.find_single_match(data1,'<li><input type="button" class="btn-submit" value="Siguiente" onClick="paginar..(\d+)')
+        next_page_url = scrapertools.find_single_match(data,'<li><input type="button" class="btn-submit" value="Siguiente" onClick="paginar..(\d+)')
         if next_page_url!="":
             itemlist.append( Item(channel=item.channel, action="lista", title=">> Página siguiente" , url=item.url, extra=item.extra+"&pg="+next_page_url, folder=True) )
 
@@ -200,14 +218,11 @@ def episodios(item):
     itemlist = []
 
     # Descarga la pagina
-    if item.extra=="":
-        data = scrapertools.cachePage(item.url)
-    else:
-        data = scrapertools.cachePage(item.url , post=item.extra)
+    data = httptools.downloadpage(item.url , post=item.extra).data
     #logger.info("data="+data)
 
     patron  = '<div class="chap-desc"[^<]+'
-    patron += '<a class="chap-title" href="([^"]+)" title="([^"]+)"[^<]+'
+    patron += '<a class="chap-title".*?href="([^"]+)" title="([^"]+)"[^<]+'
     matches = re.compile(patron,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
 
@@ -216,7 +231,7 @@ def episodios(item):
         url = urlparse.urljoin(item.url,scrapedurl)
         thumbnail = ""
         plot = ""
-        logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+        logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
         itemlist.append( Item(channel=item.channel, action="findvideos", title=title , fulltitle = title, url=url , thumbnail=thumbnail , plot=plot , folder=True) )
 
     next_page_url = scrapertools.find_single_match(data,"<a class='active' href=[^<]+</a><a\s*href='([^']+)'")
@@ -230,19 +245,16 @@ def findvideos(item):
     itemlist=[]
 
     # Descarga la pagina
-    item.url = item.url.replace("divxatope1.com/descargar/","divxatope1.com/ver-online/")
-
-    # Descarga la pagina
-    data = scrapertools.cachePage(item.url)
+    data = httptools.downloadpage(item.url).data
 
     item.plot = scrapertools.find_single_match(data,'<div class="post-entry" style="height:300px;">(.*?)</div>')
     item.plot = scrapertools.htmlclean(item.plot).strip()
     item.contentPlot = item.plot
 
-    link = scrapertools.find_single_match(data,'href="http://tumejorjuego.*?link=([^"]+)"')
+    link = scrapertools.find_single_match(data,'href="http://(?:tumejorserie|tumejorjuego).*?link=([^"]+)"')
     if link!="":
         link = "http://www.divxatope1.com/"+link
-        logger.info("pelisalacarta.channels.divxatope torrent="+link)
+        logger.info("torrent="+link)
         itemlist.append( Item(channel=item.channel, action="play", server="torrent", title="Vídeo en torrent" , fulltitle = item.title, url=link , thumbnail=servertools.guess_server_thumbnail("torrent") , plot=item.plot , folder=False, parentContent=item) )
 
     patron  = "<div class=\"box1\"[^<]+<img[^<]+</div[^<]+"
@@ -259,31 +271,29 @@ def findvideos(item):
 
     for servername,idioma,calidad,scrapedurl,comentarios in matches:
         title = "Mirror en "+servername+" ("+calidad+")"+" ("+idioma+")"
+        servername = servername.replace("uploaded", "uploadedto").replace("1fichier", "onefichier")
         if comentarios.strip()!="":
             title = title + " ("+comentarios.strip()+")"
         url = urlparse.urljoin(item.url,scrapedurl)
-        thumbnail = servertools.guess_server_thumbnail(title)
-        plot = ""
-        logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
-        new_item = Item(channel=item.channel, action="extract_url", title=title , fulltitle = title, url=url , thumbnail=thumbnail , plot=plot , folder=True, parentContent=item)
-        if comentarios.startswith("Ver en"):
-            itemlist_ver.append( new_item)
-        else:
-            itemlist_descargar.append( new_item )
+        mostrar_server = servertools.is_server_enabled(servername)
+        if mostrar_server:
+            thumbnail = servertools.guess_server_thumbnail(title)
+            plot = ""
+            logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+            action = "play"
+            if "partes" in title:
+                action = "extract_url"
+            new_item = Item(channel=item.channel, action=action, title=title , fulltitle = title, url=url , thumbnail=thumbnail , plot=plot , parentContent=item)
+            if comentarios.startswith("Ver en"):
+                itemlist_ver.append( new_item)
+            else:
+                itemlist_descargar.append( new_item )
 
     for new_item in itemlist_ver:
         itemlist.append(new_item)
     
     for new_item in itemlist_descargar:
         itemlist.append(new_item)
-
-    if len(itemlist)==0:
-        itemlist = servertools.find_video_items(item=item,data=data)
-        for videoitem in itemlist:
-            videoitem.title = "Enlace encontrado en "+videoitem.server+" ("+scrapertools.get_filename_from_url(videoitem.url)+")"
-            videoitem.fulltitle = item.fulltitle
-            videoitem.thumbnail = item.thumbnail
-            videoitem.channel = item.channel
 
     return itemlist
 
@@ -297,5 +307,21 @@ def extract_url(item):
         videoitem.fulltitle = item.fulltitle
         videoitem.thumbnail = item.thumbnail
         videoitem.channel = item.channel
+
+    return itemlist    
+
+def play(item):
+    logger.info()
+
+    if item.server != "torrent":
+        itemlist = servertools.find_video_items(data=item.url)
+
+        for videoitem in itemlist:
+            videoitem.title = "Enlace encontrado en "+videoitem.server+" ("+scrapertools.get_filename_from_url(videoitem.url)+")"
+            videoitem.fulltitle = item.fulltitle
+            videoitem.thumbnail = item.thumbnail
+            videoitem.channel = item.channel
+    else:
+        itemlist = [item]
 
     return itemlist    

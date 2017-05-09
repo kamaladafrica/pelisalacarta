@@ -330,11 +330,9 @@ def temporadas(item):
     data = httptools.downloadpage(item.url).data
     realplot = ''
     patron = "<button class='classnamer' onclick='javascript: mostrarcapitulos.*?blank'>([^<]+)</button>"
-
-    matches = re.compile(patron, re.DOTALL).findall(data)
-
-    serieid = scrapertools.find_single_match(data,
-                                             "<link rel='shortlink' href='http:\/\/mundoflv.com\/\?p=([^']+)' \/>")
+    
+    matches = re.compile(patron,re.DOTALL).findall(data)
+    serieid = scrapertools.find_single_match(data, 'data-nonce="(.*?)"')
     item.thumbnail = item.thumbvid
     infoLabels = item.infoLabels
     for scrapedtitle in matches:
@@ -585,23 +583,11 @@ def findvideos(item):
     for scrapedurl, scrapedserver, scrapedidioma in matches:
         url = scrapedurl
         idioma = audio[scrapedidioma]
-        server = scrapedserver.strip(' ')
-        title = item.contentSerieName + ' ' + str(item.contentSeasonNumber) + 'x' + str(
-            item.contentEpisodeNumber) + ' ' + idioma + ' (' + server + ')'
-
-        new_item = item.clone(title=title,
-                              url=url,
-                              action="play",
-                              language=IDIOMAS[scrapedidioma],
-                              server=server,
-                              fulltitle=item.ContentSeriename,
-                              quality='default',
-                              )
-
-        # Requerido para FilterTools
-
-        itemlist = filtertools.get_link(itemlist, new_item, list_language)
-
+        title = item.contentSerieName+' '+str(item.contentSeasonNumber)+'x'+str(item.contentEpisodeNumber)+' '+idioma+' ('+scrapedserver.strip(' ')+')'
+        if scrapedidioma == item.extra1 or item.extra1 == 'all':
+           itemlist.append(item.clone(title=title, url=url, action="play", language=idioma,
+                                      server = scrapedserver.strip(), fulltitle = item.ContentSeriename))
+    
     for videoitem in itemlist:
         videoitem.infoLabels = item.infoLabels
         videoitem.thumbnail = "http://media.tvalacarta.info/servers/server_%s.png" % videoitem.server
@@ -616,9 +602,12 @@ def findvideos(item):
 def play(item):
     logger.info()
 
+    special_servers = ['streamplay', 'streame', 'idowatch']
+
     data = httptools.downloadpage(item.url).data
-    if 'streamplay' not in item.server or 'streame' not in item.server:
-        url = scrapertools.find_single_match(data, '<(?:IFRAME|iframe).*?(?:SRC|src)=*([^ ]+) (?!style|STYLE)')
+
+    if item.server not in special_servers:
+       url = scrapertools.find_single_match(data, '<(?:IFRAME|iframe).*?(?:SRC|src)=*([^ ]+) (?!style|STYLE)')
     else:
         url = scrapertools.find_single_match(data, '<meta http-equiv="refresh" content="0; url=([^"]+)">')
 
