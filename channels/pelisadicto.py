@@ -29,7 +29,7 @@ def porGenero(item):
 
     itemlist = []
     itemlist.append( Item(channel=item.channel , action="agregadas" , title="Acción",url="http://pelisadicto.com/genero/Acción/1", viewmode="movie_with_plot"))
-    if config.get_setting("adult_mode") == True:
+    if config.get_setting("adult_mode") != 0:
         itemlist.append( Item(channel=item.channel , action="agregadas" , title="Adulto",url="http://pelisadicto.com/genero/Adulto/1", viewmode="movie_with_plot"))
     itemlist.append( Item(channel=item.channel , action="agregadas" , title="Animación",url="http://pelisadicto.com/genero/Animación/1", viewmode="movie_with_plot"))
     itemlist.append( Item(channel=item.channel , action="agregadas" , title="Aventura",url="http://pelisadicto.com/genero/Aventura/1", viewmode="movie_with_plot"))

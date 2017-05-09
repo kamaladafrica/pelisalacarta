@@ -260,13 +260,14 @@ def findvideos(item):
     itemlist=[]
     duplicados=[]
     datas=httptools.downloadpage(item.url).data
-    patron ="<iframe.*?src='([^']+)' frameborder='0' allowfullscreen.*?"
+    patron ="<iframe.*?src='(.*?)' frameborder.*?"
     matches = re.compile(patron,re.DOTALL).findall(datas)
     
     for scrapedurl in matches:
        
        
-       if 'elreyxhd' or 'pelisplus.biz'in scrapedurl:
+       if 'elreyxhd' in scrapedurl or 'pelisplus.biz'in scrapedurl:
+            patronr = ''
             data = httptools.downloadpage(scrapedurl, headers=headers).data
             
             quote = scrapertools.find_single_match(data,'sources.*?file.*?http')
@@ -274,17 +275,18 @@ def findvideos(item):
                patronr ="file:'([^']+)',label:'([^.*?]+)',type:.*?'.*?}"
             elif '"' in quote:
                patronr ='{file:"(.*?)",label:"(.*?)"}'
-            matchesr = re.compile(patronr,re.DOTALL).findall(data)
-            
-            for scrapedurl, scrapedcalidad in matchesr:
-               url = scrapedurl 
-               
-               title = item.contentTitle+' ('+str(scrapedcalidad)+')'
-               thumbnail = item.thumbnail
-               fanart=item.fanart
-               if url not in duplicados:
-               	itemlist.append( Item(channel=item.channel, action="play" , title=title , url=url, thumbnail=thumbnail,fanart =fanart, extra='directo'))
-               	duplicados.append(url)
+            if patronr != '':
+                matchesr = re.compile(patronr,re.DOTALL).findall(data)
+
+                for scrapedurl, scrapedcalidad in matchesr:
+                   url = scrapedurl
+
+                   title = item.contentTitle+' ('+str(scrapedcalidad)+')'
+                   thumbnail = item.thumbnail
+                   fanart=item.fanart
+                   if url not in duplicados:
+                    itemlist.append( Item(channel=item.channel, action="play" , title=title , url=url, thumbnail=thumbnail,fanart =fanart, extra='directo'))
+                    duplicados.append(url)
 
     url = scrapedurl
     from core import servertools

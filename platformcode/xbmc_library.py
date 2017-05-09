@@ -818,6 +818,9 @@ def add_sources(path):
 
 
 def ask_set_content():
+    logger.info()
+    logger.debug("library_ask_set_content %s" % config.get_setting("library_ask_set_content"))
+    logger.debug("library_set_content %s" % config.get_setting("library_set_content"))
     # Si es la primera vez que se utiliza la biblioteca preguntar si queremos autoconfigurar
     if config.get_setting("library_ask_set_content") == True and config.get_setting("library_set_content") == False:
         heading = "Pelisalacarta Auto-configuración"

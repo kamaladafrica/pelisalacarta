@@ -14,11 +14,16 @@
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
 	<version>2</version>
 	<changes>
-		<change>
-			<date>15/03/2017</date>
-			<autor>SeiTaN</autor>
-			<description>limpieza código</description>
-		</change>
+        <change>
+            <date>29/04/2017</date>
+            <autor>Cmos</autor>
+            <description>Pequeña correción en la paginación</description>
+        </change>
+        <change>
+            <date>03/01/2017</date>
+            <autor>jvc99</autor>
+            <description>Versión inicial</description>
+        </change>
 	</changes>
 
 	<categories>
@@ -29,7 +34,7 @@
 		<id>include_in_global_search</id>
 		<type>bool</type>
 		<label>Incluir en busqueda global</label>
-		<default>true</default>
+		<default>false</default>
 		<enabled>true</enabled>
 		<visible>true</visible>
 	</settings>

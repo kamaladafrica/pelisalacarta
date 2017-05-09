@@ -181,7 +181,7 @@ def menu_buscar_contenido(item):
         thumbnail = ""
         
         if item.extra == 'gender':
-            if scrapedtitle in ['Proximos', 'Series', 'Noticia'] or (scrapedtitle == 'Adultos' and adult_mode == False):
+            if scrapedtitle in ['Proximos', 'Series', 'Noticia'] or (scrapedtitle == 'Adultos' and adult_mode == 0):
                 continue
 
             url = HOST + "/genero/" + scrapedurl

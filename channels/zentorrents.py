@@ -4,9 +4,9 @@
 # Canal para zentorrents
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 # ------------------------------------------------------------
+
 import os
 import re
-import sys
 import unicodedata
 import urllib
 import urlparse
@@ -14,9 +14,9 @@ import urlparse
 import xbmc
 import xbmcgui
 from core import config
+from core import httptools
 from core import logger
 from core import scrapertools
-from core import httptools
 from core.item import Item
 from core.scrapertools import decodeHtmlentities as dhe
 
@@ -36,6 +36,7 @@ host = "http://www.zentorrents.com/"
 api_key="2e2160006592024ba87ccdf78c28f49f"
 api_fankey ="dffe90fba4d02c199ae7a9e71330c987"
 
+
 def mainlist(item):
     logger.info()
     
@@ -48,7 +49,6 @@ def mainlist(item):
     
     
     return itemlist
-
 
 
 def search(item, texto):
@@ -65,7 +65,7 @@ def search(item, texto):
     except:
         import sys
         for line in sys.exc_info():
-            logger.error("%s" % line)
+            logger.error( "%s" % line )
         return []
 
 
@@ -112,7 +112,7 @@ def buscador(item):
 def peliculas(item):
     logger.info()
     itemlist = []
-    
+
     # Descarga la página
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|</p>|<p>|&amp;|amp;","",data)
@@ -175,6 +175,7 @@ def peliculas(item):
         itemlist.append( Item(channel=item.channel, action="peliculas", title= title , url=scrapedurl , thumbnail="http://s6.postimg.org/9iwpso8k1/ztarrow2.png", fanart="http://s6.postimg.org/4j8vdzy6p/zenwallbasic.jpg", folder=True) )
     
     return itemlist
+
 
 def fanart(item):
     logger.info()
@@ -671,7 +672,7 @@ def fanart(item):
                             extra= thumbnail+"|"+year
                             show=  fanart_2+"|"+fanart_3+"|"+sinopsis+"|"+title_fan+"|"+tfv+"|"+id_tmdb
                         itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=thumbnail, fanart=item.extra, extra=extra,show=show , category = category, folder=True) )
-    
+
 
     title_info ="Info"
     title_info = "[COLOR skyblue]"+title_info+"[/COLOR]"
@@ -721,6 +722,7 @@ def fanart(item):
 
     return itemlist
 
+
 def findvideos(item):
     logger.info()
     
@@ -736,7 +738,7 @@ def findvideos(item):
     
     patron = '<h1>(.*?)</h1>.*?'
     patron += 'src="([^"]+)".*?'
-    patron += '</a></p><p><a href="([^"]+)"'
+    patron += '</p><p><a href="([^"]+)"'
     
     
     matches = re.compile(patron,re.DOTALL).findall(data)
@@ -760,7 +762,7 @@ def findvideos(item):
                 
                  if not os.path.exists(torrents_path):
                     os.mkdir(torrents_path)
-                 urllib.urlretrieve (url, torrents_path+"/temp.torrent")
+                 urllib.URLopener.version = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36 SE 2.X MetaSr 1.0'
                  urllib.urlretrieve (url, torrents_path+"/temp.torrent")
                  pepe = open( torrents_path+"/temp.torrent", "rb").read()
                 
@@ -844,7 +846,7 @@ def findvideos(item):
                 
                  if not os.path.exists(torrents_path):
                     os.mkdir(torrents_path)
-                
+                 urllib.URLopener.version = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36 SE 2.X MetaSr 1.0'
                  urllib.urlretrieve (url, torrents_path+"/temp.torrent")
                  pepe = open( torrents_path+"/temp.torrent", "rb").read()
                 
@@ -908,6 +910,7 @@ def findvideos(item):
     
     return itemlist
 
+
 def play(item):
     
     data = httptools.downloadpage(item.url).data
@@ -927,7 +930,6 @@ def play(item):
 
 
     return itemlist
-
 
 
 def info(item):
@@ -1259,8 +1261,7 @@ class TextBox2( xbmcgui.WindowDialog ):
         def onAction(self, action):
             if action == ACTION_PREVIOUS_MENU or action.getId() == ACTION_GESTURE_SWIPE_LEFT or action == 110 or action == 92:
                self.close()
-def test():
-    return True
+
 
 def browser(url):
     import mechanize
@@ -1293,6 +1294,7 @@ def browser(url):
         response = r.read()
     
     return response
+
 
 def tokenize(text, match=re.compile("([idel])|(\d+):|(-?\d+)").match):
     i = 0
@@ -1330,6 +1332,7 @@ def decode_item(next, token):
         raise ValueError
     return data
 
+
 def decode(text):
     try:
         src = tokenize(text)
@@ -1344,6 +1347,8 @@ def decode(text):
     
 
     return data
+
+
 def convert_size(size):
    import math
    if (size == 0):

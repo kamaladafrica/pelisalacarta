@@ -35,13 +35,13 @@ import logger
 import scrapertools
 
 def get_current_plugin_version():
-    return 4203
+    return 4204
 
 def get_current_plugin_version_tag():
-    return "4.2.0-beta3"
+    return "4.2.0-final"
 
 def get_current_plugin_date():
-    return "18/03/2017"
+    return "30/04/2017"
     
 def get_current_channels_version():
 
