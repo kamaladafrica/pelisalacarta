@@ -35,7 +35,7 @@ def mainlist(item):
     config.set_setting("url_error", False, "descargasmix")
     host = config.set_setting("host", "https://ddmix.net", "descargasmix")
     host_check = get_data(host, True)
-    if host_check:
+    if host_check and host_check.startswith("http"):
         config.set_setting("host", host_check, "descargasmix")
 
     itemlist.append(item.clone(title="Películas", action="lista", fanart="http://i.imgur.com/c3HS8kj.png"))
