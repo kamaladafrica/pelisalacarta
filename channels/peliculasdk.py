@@ -107,7 +107,7 @@ def buscador(item):
 
     matches = re.compile(patron,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
-
+    
     for scrapedthumbnail,scrapedurl, scrapedtitle,  scrapedlenguaje, scrapedgenero, scrapedcalidad in matches:
         try:
           year =scrapertools.get_match(scrapedtitle,'\((\d+)\)')
@@ -124,7 +124,7 @@ def buscador(item):
            scrapedtitle = scrapedtitle + "-(Idioma: " + scrapedlenguaje + ")" + "-(Calidad: " + scrapedcalidad +")"
            scrapedtitle = scrapedtitle.replace(scrapedtitle,bbcode_kodi2html("[COLOR white]"+scrapedtitle+"[/COLOR]"))
            extra = year+"|"+title_fan
-           itemlist.append( Item(channel=item.channel, title =scrapedtitle , url=scrapedurl, action="fanart", thumbnail=scrapedthumbnail,extra=extra, fanart="http://s18.postimg.org/h9kb22mnt/pdkfanart.jpg", folder=True) )
+           itemlist.append( Item(channel=item.channel, title =scrapedtitle , url=scrapedurl, action="fanart", thumbnail=scrapedthumbnail,extra=extra, fanart="http://s18.postimg.org/h9kb22mnt/pdkfanart.jpg", library=True,folder=True) )
 
     try:
         next_page = scrapertools.get_match(data,'<span class="current">.*?<a href="(.*?)".*?>Siguiente &raquo;</a></div>')
@@ -180,7 +180,7 @@ def peliculas(item):
            scrapedtitle = scrapedtitle + "-(Idioma: " + scrapedlenguaje + ")" + "-(Calidad: " + scrapedcalidad +")"
            scrapedtitle = scrapedtitle.replace(scrapedtitle,bbcode_kodi2html("[COLOR white]"+scrapedtitle+"[/COLOR]"))
            extra = year+"|"+title_fan
-           itemlist.append( Item(channel=item.channel, title =scrapedtitle , url=scrapedurl, action="fanart", thumbnail=scrapedthumbnail,extra=extra, fanart="http://s18.postimg.org/h9kb22mnt/pdkfanart.jpg", folder=True) )
+           itemlist.append( Item(channel=item.channel, title =scrapedtitle , url=scrapedurl, action="fanart", thumbnail=scrapedthumbnail,extra=extra, fanart="http://s18.postimg.org/h9kb22mnt/pdkfanart.jpg", library= True,folder=True) )
     ## Paginación
     
     next_page = scrapertools.get_match(data,'<span class="current">.*?<a href="(.*?)".*?>Siguiente &raquo;</a></div>')
@@ -200,6 +200,7 @@ def fanart(item):
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
     title_fan = item.extra.split("|")[1]
     title = re.sub(r'Serie Completa|Temporada.*?Completa','',title_fan)
+    fulltitle=title
     title= title.replace(' ','%20')
     title = ''.join((c for c in unicodedata.normalize('NFD',unicode(title.decode('utf-8'))) if unicodedata.category(c) != 'Mn'))
     try:
@@ -301,7 +302,7 @@ def fanart(item):
                     category= item.thumbnail
                     id_scraper=""
                         
-                    itemlist.append( Item(channel=item.channel, title=item.title, url=item.url, action="findvideos", thumbnail=item.thumbnail, fanart=item.fanart,extra = extra, show= show, category= category,folder=True) )
+                    itemlist.append( Item(channel=item.channel, title=item.title, url=item.url, action="findvideos", thumbnail=item.thumbnail, fanart=item.fanart,extra = extra, show= show, category= category,library=item.library,fulltitle=fulltitle,folder=True) )
     
         for id, fan in matches:
             
@@ -367,7 +368,7 @@ def fanart(item):
                 show =fanart_2+"|"+fanart_3+"|"+sinopsis
                 category = posterdb
                         
-                itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=posterdb, fanart=item.extra, extra=extra, show=show, category= category, folder=True) )
+                itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=posterdb, fanart=item.extra, extra=extra, show=show, category= category, library=item.library,fulltitle=fulltitle,folder=True) )
             for logo in matches:
                 if '"hdmovieclearart"' in data:
                     clear=scrapertools.get_match(data,'"hdmovieclearart":.*?"url": "([^"]+)"')
@@ -379,7 +380,7 @@ def fanart(item):
                             category= disc
                         else:
                             category= clear
-                        itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=item.extra, extra=extra,show=show,  category= category,folder=True) )
+                        itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=item.extra, extra=extra,show=show,  category= category,library=item.library,fulltitle=fulltitle,folder=True) )
                     else:
                         extra= clear
                         show=fanart_2+"|"+fanart_3+"|"+sinopsis
@@ -387,7 +388,7 @@ def fanart(item):
                             category= disc
                         else:
                             category= clear
-                        itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=item.extra, extra=extra,show=show,  category= category, folder=True) )
+                        itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=item.extra, extra=extra,show=show,  category= category,library=item.library, fulltitle=fulltitle,folder=True) )
                                                                                                 
                 if '"moviebackground"' in data:
                                                                                                     
@@ -407,7 +408,7 @@ def fanart(item):
                         else:
                             category= logo
                                 
-                        itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=item.extra, extra=extra,show=show,  category= category, folder=True) )
+                        itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=item.extra, extra=extra,show=show,  category= category,library=item.library,fulltitle=fulltitle, folder=True) )
                                                                                                                                                                     
                                                                                                                                                                     
                                                                                                                                                                     
@@ -419,7 +420,7 @@ def fanart(item):
                         category= disc
                     else:
                         category= item.extra
-                    itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=item.extra, extra=extra,show=show ,  category= category, folder=True) )
+                    itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=item.extra, extra=extra,show=show ,  category= category, library=item.library,fulltitle=fulltitle,folder=True) )
 
     title_info ="Info"
    
@@ -450,10 +451,11 @@ def findvideos(item):
     data = scrapertools.cache_page(item.url)
     data = re.sub(r"<!--.*?-->","",data)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
+    
     bloque_tab= scrapertools.find_single_match(data,'<div id="verpelicula">(.*?)<div class="tab_container">')
     patron ='<li><a href="#([^<]+)"><span class="re">\d<\/span><span class="([^<]+)"><\/span><span class=.*?>([^<]+)<\/span>'
     check= re.compile(patron,re.DOTALL).findall(bloque_tab)
-    
+
     servers_data_list = []
     
     patron = '<div id="(tab\d+)" class="tab_content"><script type="text/rocketscript">(\w+)\("([^"]+)"\)</script></div>'
@@ -462,7 +464,7 @@ def findvideos(item):
     if len(matches)==0:
         patron = '<div id="(tab\d+)" class="tab_content"><script>(\w+)\("([^"]+)"\)</script></div>'
         matches = re.compile(patron,re.DOTALL).findall(data)
-        print matches
+        
     
     for check_tab ,server, id in matches:
         scrapedplot = scrapertools.get_match(data,'<span class="clms">(.*?)</div></div>')
@@ -475,25 +477,37 @@ def findvideos(item):
         scrapedplot = scrapedplot.replace(":","")
         if check_tab in str(check):
            idioma, calidad = scrapertools.find_single_match(str(check),""+check_tab+"', '(.*?)', '(.*?)'")
+           
            servers_data_list.append ([server,id, idioma, calidad])
-        
+           
 
     url = "http://www.peliculasdk.com/Js/videod.js"
     data = scrapertools.cachePage(url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
     data = data.replace ('<iframe width="100%" height="400" scrolling="no" frameborder="0"','')
-
+    
     patron = 'function (\w+)\(id\).*?'
-    patron+= '"([^"]+)"'
+    patron+= 'data-src="([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
-
+    
     for server, url in matches:
+        
         for enlace , id, idioma, calidad in servers_data_list:
+         
          if server ==enlace:
-            video_url = re.sub(r"embed\-|\-630x400\.html","",url)
-            video_url = video_url.replace("'+codigo+'",id)
+            
+            video_url = re.sub(r"embed\-|\-.*?x.*?\.html|u\'|\'\(","",str(url))
+            video_url = re.sub(r"'\+codigo\+'","",video_url)
+            video_url= video_url.replace('embed//','embed/')
+            video_url= video_url + id
             if "goo.gl" in video_url:
-               video_url=scrapertools.get_header_from_response("http://anonymouse.org/cgi-bin/anon-www.cgi/"+video_url, header_to_get="location")
+              try:  
+               from unshortenit import unshorten
+               url =unshorten(video_url)
+               video_url = scrapertools.get_match(str(url),"u'([^']+)'")
+              except:
+                  continue 
+            
             servertitle = scrapertools.get_match(video_url,'http.*?://(.*?)/')
             servertitle = servertitle.replace(servertitle,bbcode_kodi2html("[COLOR red]"+servertitle+"[/COLOR]"))
             servertitle = servertitle.replace("embed.","")
@@ -503,7 +517,12 @@ def findvideos(item):
             servertitle = servertitle.replace("anonymouse.org","netu.tv")
             title = bbcode_kodi2html("[COLOR orange]Ver en --[/COLOR]") + servertitle +" "+ idioma +" "+ calidad
             itemlist.append( Item(channel=item.channel, title =title , url=video_url, action="play", thumbnail=item.category, plot=scrapedplot, fanart=item.show ) )
-         
+    if item.library  and config.get_library_support() and len(itemlist) > 0 :
+        infoLabels = {'tmdb_id': item.infoLabels['tmdb_id'],
+                      'title': item.fulltitle}
+        itemlist.append(Item(channel=item.channel, title="Añadir esta película a la biblioteca",
+            action="add_pelicula_to_library", url=item.url, infoLabels=infoLabels, text_color="0xFFff6666",
+            thumbnail='http://imgur.com/0gyYvuC.png'))      
            
            
 

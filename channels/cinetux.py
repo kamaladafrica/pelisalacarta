@@ -216,7 +216,7 @@ def generos(item):
     for scrapedurl, scrapedtitle in matches:
         scrapedtitle = scrapertools.htmlclean(scrapedtitle).strip()
         scrapedtitle = unicode(scrapedtitle, "utf8").capitalize().encode("utf8")
-        if scrapedtitle == "Erotico" and not config.get_setting("adult_mode"):
+        if scrapedtitle == "Erotico" and config.get_setting("adult_mode") == '0':
             continue
 
         itemlist.append(item.clone(action="peliculas", title=scrapedtitle, url=scrapedurl))

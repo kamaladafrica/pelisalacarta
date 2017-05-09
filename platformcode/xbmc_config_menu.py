@@ -146,10 +146,12 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                 (opcional) title: (str) Titulo de la ventana de configuracion. Se puede localizar mediante un numero
                 precedido de '@'
                 (opcional) callback (str) Nombre de la funcion, del canal desde el que se realiza la llamada, que sera
-                invocada al pulsar
-                    el boton aceptar de la ventana. A esta funcion se le pasara como parametros el objeto 'item' y el
-                    dicionario 'dict_values'
-            Retorno: Si se especifica 'callback' se devolvera lo que devuelva esta funcion. Si no devolvera None
+                invocada al pulsar el boton aceptar de la ventana. A esta funcion se le pasara como parametros el
+                objeto 'item' y el dicionario 'dict_values'. Si este parametro no existe, se busca en el canal una
+                funcion llamada 'cb_validate_config' y si existe se utiliza como callback.
+
+            Retorno: Si se especifica 'callback' o el canal incluye 'cb_validate_config' se devolvera lo que devuelva
+                esa funcion. Si no devolvera None
 
     Ejemplos de uso:
         platformtools.show_channel_settings(): Así tal cual, sin pasar ningún argumento, la ventana detecta de que canal
@@ -729,7 +731,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
 
         # Boton Aceptar
         if id == 10004:
-            if not self.callback:
+            '''if not self.callback:
                 for v in self.values:
                     config.set_setting(v, self.values[v], self.channel)
                 self.close()
@@ -745,7 +747,32 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                 except ImportError:
                     logger.error('Imposible importar %s' % package)
 
+                self.return_value = getattr(cb_channel, self.callback)(self.item, self.values)'''
+            self.close()
+            if self.callback and '.' in self.callback:
+                package, self.callback = self.callback.rsplit('.', 1)
+            else:
+                package = 'channels.%s' % self.channel
+
+            cb_channel = None
+            try:
+                cb_channel = __import__(package, None, None, [package])
+            except ImportError:
+                logger.error('Imposible importar %s' % package)
+
+            if self.callback:
+                # Si existe una funcion callback la invocamos ...
                 self.return_value = getattr(cb_channel, self.callback)(self.item, self.values)
+            else:
+                # si no, probamos si en el canal existe una funcion 'cb_validate_config' ...
+                try:
+                    self.return_value = getattr(cb_channel, 'cb_validate_config')(self.item, self.values)
+                except AttributeError:
+                    # ... si tampoco existe 'cb_validate_config'...
+                    for v in self.values:
+                        config.set_setting(v, self.values[v], self.channel)
+
+
 
         # Controles de ajustes, si se cambia el valor de un ajuste, cambiamos el valor guardado en el diccionario de
         # valores

@@ -82,9 +82,9 @@ def run():
                 try:
                     config.set_setting("plugin_updates_available", 0)
                     new_published_version_tag , number_of_updates = updater.get_available_updates()
-                    itemlist = channelselector.getmainlist()
 
                     config.set_setting("plugin_updates_available", number_of_updates)
+                    itemlist = channelselector.getmainlist()
 
                     if new_published_version_tag!="":
 
@@ -152,7 +152,7 @@ def run():
                 # If it is an adult channel, and user has configured pin, asks for it
                 if channeltools.is_adult(item.channel) and config.get_setting("adult_pin") != "":
 
-                    tecleado = platformtools.dialog_input("", "PIN para canales de adultos", True)
+                    tecleado = platformtools.dialog_input("", "Contraseña para canales de adultos", True)
                     if tecleado is not None:
                         if tecleado == config.get_setting("adult_pin"):
                             can_open_channel = True
@@ -276,7 +276,7 @@ def run():
 
                 tecleado = platformtools.dialog_input(last_search)
                 if tecleado is not None:
-                    if last_search_active:
+                    if last_search_active and not tecleado.startswith("http"):
                         from channels import buscador
                         buscador.save_search(tecleado)
 

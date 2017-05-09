@@ -349,7 +349,10 @@ def fichas(item):
         next_page = host + next_page.replace("&amp;", "&")
         itemlist.append(Item(channel=item.channel, action="fichas", title=">> Página Siguiente", url=next_page))
 
-        total = int(scrapertools.find_single_match(data, '<span class="page-dots">.*href.*?>(\d+)'))
+        try:
+            total = int(scrapertools.find_single_match(data, '<span class="page-dots">.*href.*?>(\d+)'))
+        except:
+            total = 0
         if not config.get_setting("last_page", item.channel) and config.is_xbmc() and total > 2 \
                 and item.extra != "newest":
             itemlist.append(item.clone(action="select_page", title="Ir a página... (Total:%s)" % total, url=next_page,

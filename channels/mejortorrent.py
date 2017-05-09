@@ -13,6 +13,7 @@ import urlparse
 
 from channelselector import get_thumbnail_path
 from core import config
+from core import httptools
 from core import logger
 from core import scrapertools
 from core.item import Item
@@ -76,7 +77,7 @@ def buscador(item):
     logger.info()
     itemlist = []
 
-    data = scrapertools.cachePage(item.url)
+    data = httptools.downloadpage(item.url).data
 
     # pelis
     # <a href="/peli-descargar-torrent-9578-Presentimientos.html">
@@ -148,7 +149,7 @@ def getlist(item):
     logger.info()
     itemlist = []
 
-    data = scrapertools.cachePage(item.url)
+    data = httptools.downloadpage(item.url).data
 
     # pelis
     # <a href="/peli-descargar-torrent-9578-Presentimientos.html">
@@ -227,6 +228,8 @@ def getlist(item):
 
         itemlist[cnt].title = title
         cnt += 1
+        if cnt == len(itemlist) - 1:
+            break
 
     if len(itemlist) == 0:
         itemlist.append( Item(channel=item.channel, action="mainlist", title="No se ha podido cargar el listado" ) )
@@ -248,7 +251,7 @@ def episodios(item):
     itemlist = []
 
     # Descarga la página
-    data = scrapertools.cachePage(item.url)
+    data = httptools.downloadpage(item.url).data
 
     total_capis = scrapertools.get_match(data,"<input type='hidden' name='total_capis' value='(\d+)'>")
     tabla = scrapertools.get_match(data,"<input type='hidden' name='tabla' value='([^']+)'>")
@@ -350,7 +353,7 @@ def show_movie_info(item):
     except:
         pass
 
-    data = scrapertools.cache_page(item.url)
+    data = httptools.downloadpage(item.url).data
     logger.debug("data="+data)
 
     patron  = "<a href='(secciones.php\?sec\=descargas[^']+)'"
@@ -361,7 +364,7 @@ def show_movie_info(item):
         url = urlparse.urljoin(item.url, scrapedurl)
         logger.debug("title=["+item.title+"], url=["+url+"], thumbnail=["+item.thumbnail+"]")
 
-        torrent_data = scrapertools.cache_page(url)
+        torrent_data = httptools.downloadpage(url).data
         logger.debug("torrent_data="+torrent_data)
         #<a href='/uploads/torrents/peliculas/los-juegos-del-hambre-brrip.torrent'>
         link = scrapertools.get_match(torrent_data,"<a href='(/uploads/torrents/peliculas/.*?\.torrent)'>")
@@ -382,8 +385,8 @@ def play(item):
         itemlist.append( Item(channel=item.channel, action="play", server="torrent", title=item.title , url=item.url, thumbnail=item.thumbnail , plot=item.plot, fanart=item.fanart, folder=False) )
 
     else:
-        data = scrapertools.cache_page(item.url, post=item.extra)
-        logger.info("data="+data)
+        data = httptools.downloadpage(item.url, post=item.extra).data
+        logger.debug("data="+data)
 
         # series
         #
