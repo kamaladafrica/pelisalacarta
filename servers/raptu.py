@@ -50,7 +50,8 @@ def find_videos(data):
 
     # https://www.raptu.com/?v=ZapZwMMA
     # https://www.raptu.com/embed/ZupZwMML
-    patronvideos = 'raptu.com/(?:\?v=|embed/)([A-z0-9]+)'
+    # https://www.raptu.com/e/FF8L2P8V26
+    patronvideos = 'raptu.com/(?:\?v=|embed/|e/)([A-z0-9]+)'
     logger.info("#" + patronvideos + "#")
     matches = re.compile(patronvideos, re.DOTALL).findall(data)
 
