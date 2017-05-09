@@ -60,8 +60,7 @@ def temporadas(item):
     templist = []
     data = httptools.downloadpage(item.url).data
     url_base = item.url
-    patron = '<a class="collapsed" data-toggle="collapse" data-parent="#accordion" href=.*? aria-expanded="false" ' \
-             'aria-controls=.*?>([^<]+)<\/a>'
+    patron = '<li class="item\d+"><a href="#">(.*?)<\/a>'
     matches = re.compile(patron, re.DOTALL).findall(data)
     temp = 1
     if 'Temporada' in str(matches):
