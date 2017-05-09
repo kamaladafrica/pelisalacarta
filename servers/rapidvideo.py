@@ -6,34 +6,23 @@
 # ------------------------------------------------------------
 
 import re
+import urllib
 
+from core import httptools
 from core import logger
 from core import scrapertools
 
-USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:18.0) Gecko/20100101 Firefox/18.0"
-
 
 def get_video_url(page_url, premium=False, user="", password="", video_password=""):
-    logger.info("url=" + page_url)
+    logger.info("url="+page_url)
     video_urls = []
-    from lib import mechanize
-    br = mechanize.Browser()
-    br.addheaders = [('User-agent',
-                      'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.1) Gecko/2008071615 Fedora/3.0.1-1.fc9 Firefox/3.0.1')]
-    br.set_handle_robots(False)
-    res = br.open(page_url)
-    print res.read()
-    for form in br.forms():
-        br.form = form
-    res = br.submit(name='imhuman')
-    page = res.read()
-    page = page.split('mp4|')
-    idLink = page[1].split('|')
-    ip2 = idLink[2]
-    ip3 = idLink[3]
 
-    video_urls.append(["[rapidvideo]", "http://50.7." + ip3 + "." + ip2 + ":8777/" + idLink[0] + "/v.mp4"])
-
+    data = get_data(page_url)
+    urls = scrapertools.find_multiple_matches(data, '"file":"([^"]+)".*?"res":"([^"]+)"')
+    for mediaurl, res in urls:
+        ext = scrapertools.get_filename_from_url(mediaurl)[-4:]
+        video_urls.append(['%s %sp [rapidvideo]' % (ext, res), mediaurl.replace("\\", "")])
+    
     return video_urls
 
 
@@ -41,24 +30,44 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
 def find_videos(text):
     encontrados = set()
     devuelve = []
-
-    # http://www.rapidvideo.com/view/YK7A0L7FU3A
-    patronvideos = 'rapidvideo.org/([A-Za-z0-9]+)/'
+            
+    #http://www.rapidvideo.com/e/YK7A0L7FU3A
+    patronvideos = 'rapidvideo.(?:org|com)/(?:\?v=|e/|embed/)([A-z0-9]+)'
     logger.info("#" + patronvideos + "#")
     matches = re.compile(patronvideos, re.DOTALL).findall(text)
 
     for match in matches:
         titulo = "[rapidvideo]"
-        url = "http://www.rapidvideo.org/" + match
-        d = scrapertools.cache_page(url)
-        ma = scrapertools.find_single_match(d, '"fname" value="([^<]+)"')
-        ma = titulo + " " + ma
+        url = "https://www.rapidvideo.com/e/" + match
         if url not in encontrados:
             logger.info("  url=" + url)
-            devuelve.append([ma, url, 'rapidvideo'])
-
+            devuelve.append([titulo, url, 'rapidvideo'])
             encontrados.add(url)
         else:
             logger.info("  url duplicada=" + url)
 
+
     return devuelve
+
+
+def get_data(url_orig):
+    try:
+        response = httptools.downloadpage(url_orig)
+        if not response.data or "urlopen error [Errno 1]" in str(response.code):
+            raise Exception
+    except:
+        import random
+        server_random = ['nl', 'de', 'us']
+        server = server_random[random.randint(0, 2)]
+        url = "https://%s.hideproxy.me/includes/process.php?action=update" % server
+        post = "u=%s&proxy_formdata_server=%s&allowCookies=1&encodeURL=0&encodePage=0&stripObjects=0&stripJS=0&go=" \
+               % (urllib.quote(url_orig), server)
+        while True:
+            response = httptools.downloadpage(url, post, follow_redirects=False)
+            if response.headers.get("location"):
+                url = response.headers["location"]
+                post = ""
+            else:
+                break
+
+    return response.data
