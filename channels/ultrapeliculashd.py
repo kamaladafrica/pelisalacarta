@@ -109,7 +109,6 @@ def lista (item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r'"|\n|\r|\t|&nbsp;|<br>|\s{2,}', "", data)
-    logger.debug('data: %s'%data)
     if item.extra != 'buscar':
         patron = '<article id=post-.*? class=item movies><div class=poster><a href=(.*?)><img src=(.*?) '
         patron += 'alt=(.*?)>.*?quality>.*?<.*?<\/h3><span>(.*?)<\/span>'
@@ -144,8 +143,6 @@ def generos(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r'"|\n|\r|\t|&nbsp;|<br>|\s{2,}', "", data)
-    logger.debug('data: %s' % data)
-    
     patron = '<li class=cat-item cat-item-.*?><a href=(.*?) >(.*?)<\/a> <i>(.*?)<\/i><\/li>'
     matches = re.compile(patron,re.DOTALL).findall(data)
 
@@ -194,8 +191,7 @@ def findvideos(item):
     itemlist=[]
     data = httptools.downloadpage(item.url).data
     data = re.sub(r'"|\n|\r|\t|&nbsp;|<br>|\s{2,}', "", data)
-    logger.debug('data: %s'%data)
-    
+
     patron = '<iframe class=metaframe rptss src=(.*?) frameborder=0 allowfullscreen><\/iframe>'
     matches = matches = re.compile(patron,re.DOTALL).findall(data)
     for videoitem in matches:
