@@ -115,6 +115,20 @@ def get_channel_parameters(channel_name):
                 channel_parameters["has_settings"] = True
                 break
 
+        python_condition = scrapertools.find_single_match(data, "<python>([^<]*)</python>")
+        if python_condition:
+            import sys
+
+            def versiontuple(v):
+                return tuple(map(int, (v.split("."))))
+
+            if sys.version_info < versiontuple(python_condition):
+                channel_parameters["compatible"] = False
+            else:
+                channel_parameters["compatible"] = True
+        else:
+            channel_parameters["compatible"] = True
+
         logger.info(channel_name+" -> "+repr(channel_parameters))
 
     else:
