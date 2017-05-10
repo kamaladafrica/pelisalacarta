@@ -1,13 +1,23 @@
 <?xml version="1.0" ?>
 <server>
 	<active>true</active>
-	<changes>Versión incial</changes>
-	<date>24/12/2016</date>
+	<version>2</version>
+	<changes>
+		<change>
+			<date>10/05/17</date>
+			<autor>Intel1</autor>
+			<description>Reparado por robalo, yo solo lo subí al github</description>
+		</change>
+		<change>
+			<date>24/12/2016</date>
+			<autor>Cmos</autor>
+			<description>Versión incial</description>
+		</change>
+	</changes>
 	<free>true</free>
 	<id>vidabc</id>
 	<name>vidabc</name>
 	<premium></premium>
 	<thumbnail>http://media.tvalacarta.info/servers/server_vidabc.png</thumbnail>
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/servers/</update_url>
-	<version>1</version>
 </server>
