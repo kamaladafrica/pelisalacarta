@@ -1,22 +1,23 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 import os
 import re
 import sys
+import unicodedata
 import urllib2
 import urlparse
+
+import xbmc
+import xbmcgui
 from core import config
 from core import logger
 from core import scrapertools
 from core.item import Item
-import xbmc
-import xbmcgui
-import unicodedata
 from core.scrapertools import decodeHtmlentities as dhe
-import unshortenit
+
 host = "http://www.aquitorrent.com/"
 
 ACTION_SHOW_FULLSCREEN = 36
@@ -30,13 +31,11 @@ ACTION_MOVE_UP = 3
 OPTION_PANEL = 6
 OPTIONS_OK = 5
 
-DEBUG = config.get_setting("debug")
-
 api_key="2e2160006592024ba87ccdf78c28f49f"
 api_fankey ="dffe90fba4d02c199ae7a9e71330c987"
 
 def mainlist(item):
-    logger.info("pelisalacarta.aquitorrent mainlist")
+    logger.info()
 
     itemlist = []
     itemlist.append( Item(channel=item.channel, title="Peliculas"      , action="peliculas", url="http://www.aquitorrent.com/torr.asp?pagina=1&tipo=PELICULAS", thumbnail="http://imgc.allpostersimages.com/images/P-473-488-90/37/3710/L3YAF00Z/posters/conrad-knutsen-cinema.jpg", fanart="http://s6.postimg.org/m8dipognl/aquitorrentfanart2.jpg"))
@@ -57,7 +56,7 @@ def mainlist(item):
                 
 
 def search(item,texto):
-    logger.info("[pelisalacarta.aquitorrent search texto="+texto)
+    logger.info("texto="+texto)
     texto = texto.replace(" ","+")
     item.url = "http://www.aquitorrent.com/buscar.asp?q=%s" % (texto)
     try:
@@ -67,12 +66,12 @@ def search(item,texto):
     except:
         import sys
         for line in sys.exc_info():
-            logger.error( "%s" % line )
+            logger.error("%s" % line)
         return []
 
 
 def buscador(item):
-    logger.info("pelisalacarta.aquitorrent buscador")
+    logger.info()
     
     itemlist = []
     
@@ -122,7 +121,7 @@ def buscador(item):
 
 
 def peliculas(item):
-    logger.info("pelisalacarta.aquitorrent peliculas")
+    logger.info()
 
     itemlist = []
 
@@ -184,7 +183,7 @@ def peliculas(item):
     return itemlist
 
 def fanart(item):
-    logger.info("pelisalacarta.aquitorrent fanart")
+    logger.info()
     itemlist = []
     url = item.url
     data = scrapertools.cache_page(url)
@@ -759,7 +758,7 @@ def fanart(item):
     return itemlist
 
 def findvideos(item):
-    logger.info("pelisalacarta.aquitorrent findvideos")
+    logger.info()
     itemlist = []
     data = scrapertools.cache_page(item.url)
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
@@ -921,7 +920,7 @@ def unzip(url):
 
 
 def info(item):
-    logger.info("pelisalacarta.pasateatorrent info")
+    logger.info()
     itemlist = []
     url=item.url
     id = item.extra
@@ -1094,7 +1093,7 @@ def info(item):
     infoplus.start(item_info, peliculas)
 
 def info_capitulos(item):
-    logger.info("pelisalacarta.cuelgame info_capitulos")
+    logger.info()
     
     url= "https://api.themoviedb.org/3/tv/"+item.show.split("|")[5]+"/season/"+item.extra.split("|")[2]+"/episode/"+item.extra.split("|")[3]+"?api_key="+api_key+"&language=es"
 

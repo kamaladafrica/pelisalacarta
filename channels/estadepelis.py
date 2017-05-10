@@ -3,16 +3,16 @@
 # Canal (EstaDePelis) por Hernan_Ar_c
 # ------------------------------------------------------------
 
-import urlparse,urllib2,urllib,re
-import os, sys
+import re
+import sys
 
-from core import logger
 from core import config
-from core import scrapertools
-from core.item import Item
-from core import servertools
 from core import httptools
+from core import logger
+from core import scrapertools
+from core import servertools
 from core import tmdb
+from core.item import Item
 
 host = 'http://www.estadepelis.com/'
 headers = [['User-Agent', 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:45.0) Gecko/20100101 Firefox/45.0'],

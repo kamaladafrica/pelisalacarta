@@ -3,18 +3,17 @@
 # Canal (cinefoxtv) por Hernan_Ar_c
 # ------------------------------------------------------------
 
-import urlparse,urllib2,urllib,re, time
-import os, sys, threading
+import re
+import sys
+import urlparse
 
-from core import logger
 from core import config
-from core import scrapertools
 from core import httptools
-from core.item import Item
+from core import logger
+from core import scrapertools
 from core import servertools
 from core import tmdb
-
-
+from core.item import Item
 
 host = 'http://cinefoxtv.net/'
 headers = [['User-Agent', 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:45.0) Gecko/20100101 Firefox/45.0'],
@@ -66,7 +65,7 @@ def mainlist(item):
 
 
 def lista (item):
-    logger.info ()
+    logger.info()
     itemlist =[]
     duplicado = []
     max_items = 24
@@ -112,7 +111,7 @@ def lista (item):
     return itemlist
 
 def generos (item):
-    logger.info ()
+    logger.info()
     
     itemlist = []
 
@@ -136,7 +135,7 @@ def generos (item):
 
 def getinfo(page_url):
     
-    logger.info ()
+    logger.info()
     data = httptools.downloadpage(page_url).data
     plot = scrapertools.find_single_match(data,'<\/em>\.(?:\s*|.)(.*?)\s*<\/p>')
     info = plot
@@ -144,7 +143,7 @@ def getinfo(page_url):
     return info
 
 def findvideos(item):
-    logger.info ()
+    logger.info()
     itemlist =[]
     info = getinfo(item.url)
     data = httptools.downloadpage(item.url, headers = headers).data

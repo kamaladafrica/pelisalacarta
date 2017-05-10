@@ -194,7 +194,7 @@ def numbered_for_tratk(channel, show, season, episode):
                 data += line
             f.close()
         except EnvironmentError:
-            logger.info("ERROR al leer el archivo: {0}".format(fname))
+            logger.error("ERROR al leer el archivo: {0}".format(fname))
 
         json_data = jsontools.load_json(data)
 
@@ -209,7 +209,7 @@ def numbered_for_tratk(channel, show, season, episode):
                 del dict_series[key]
 
     if show in dict_series:
-        logger.info("ha encontrado algo: {0}".format(dict_series[show]))
+        logger.debug("ha encontrado algo: {0}".format(dict_series[show]))
 
         if len(dict_series[show]['season_episode']) > 1:
             for row in dict_series[show]['season_episode']:
@@ -223,7 +223,7 @@ def numbered_for_tratk(channel, show, season, episode):
             new_season = dict_series[show]['season_episode'][0][0]
             new_episode += dict_series[show]['season_episode'][0][1]
 
-    logger.info("{0}:{1}".format(new_season, new_episode))
+    logger.debug("{0}:{1}".format(new_season, new_episode))
     return new_season, new_episode
 
 

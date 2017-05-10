@@ -1,9 +1,9 @@
 ﻿# -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para megahd
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 import re
 import urlparse
 
@@ -13,8 +13,6 @@ from core import scrapertools
 from core.item import Item
 from platformcode import platformtools
 
-
-DEBUG = config.get_setting("debug")
 MAIN_HEADERS = []
 MAIN_HEADERS.append( ["Accept","text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"] )
 MAIN_HEADERS.append( ["Accept-Encoding","gzip, deflate"] )
@@ -26,34 +24,34 @@ MAIN_HEADERS.append( ["User-Agent","Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_
 
 
 def login():
-    logger.info("channels.megahd login")
+    logger.info()
 
     # Averigua el id de sesión
     data = scrapertools.cache_page("http://megahd.me/login/", headers=MAIN_HEADERS)
     #<form action="http://megahd.me/login2/" name="frmLogin" id="frmLogin" method="post" accept-charset="UTF-8"  onsubmit="hashLoginPassword(this, 'd3c3d7467c05a4058e9361996daeaed4');">
     cur_session_id = scrapertools.get_match(data,'onsubmit\="hashLoginPassword\(this, \'([a-z0-9]+)\'')
-    logger.info("channels.megahd cur_session_id="+cur_session_id)
+    logger.info("cur_session_id="+cur_session_id)
 
     # Calcula el hash del password
     LOGIN = config.get_setting("megahduser", "megahd")
     PASSWORD = config.get_setting("megahdpassword", "megahd")
-    logger.info("channels.megahd LOGIN="+LOGIN)
-    logger.info("channels.megahd PASSWORD="+PASSWORD)
+    logger.info("LOGIN="+LOGIN)
+    logger.info("PASSWORD="+PASSWORD)
 
     #doForm.hash_passwrd.value = hex_sha1(hex_sha1(doForm.user.value.php_to8bit().php_strtolower() + doForm.passwrd.value.php_to8bit()) + cur_session_id);
     hash_passwrd = scrapertools.get_sha1( scrapertools.get_sha1( LOGIN.lower() + PASSWORD.lower() ) + cur_session_id)
-    logger.info("channels.megahd hash_passwrd="+hash_passwrd)
+    logger.info("hash_passwrd="+hash_passwrd)
 
     # Hace el submit del login
     post = "user="+LOGIN+"&passwrd=&cookieneverexp=on&hash_passwrd="+hash_passwrd
-    logger.info("channels.megahd post="+post)
+    logger.info("post="+post)
 
     data = scrapertools.cache_page("http://megahd.me/login2/" , post=post, headers=MAIN_HEADERS)
 
     return True
 
 def mainlist(item):
-    logger.info("channels.megahd mainlist")
+    logger.info()
     itemlist = []
 
     if config.get_setting("megahduser", "megahd") == "":
@@ -74,7 +72,7 @@ def settingCanal(item):
     return platformtools.show_channel_settings()
 
 def foro(item):
-    logger.info("channels.megahd foro")
+    logger.info()
     itemlist=[]
     data = scrapertools.cache_page(item.url)
 
@@ -112,7 +110,7 @@ def foro(item):
 
 
 def findvideos(item):
-  logger.info("channels.megahd findvideos url="+item.url+", title="+item.title)
+  logger.info("url="+item.url+", title="+item.title)
 
   show = item.title.replace("Añadir esta serie a la biblioteca de XBMC","")
   data = scrapertools.cache_page(item.url)
@@ -120,7 +118,7 @@ def findvideos(item):
   itemlist=[]
 
   if '?action=thankyou;'+item.plot in data:
-    logger.info("channels.megahd findvideos thankyou needed")
+    logger.info("thankyou needed")
     item.plot = item.plot.replace("msg=","?action=thankyou;msg=")
     item.url = item.url + item.plot
     data = scrapertools.cache_page(item.url)

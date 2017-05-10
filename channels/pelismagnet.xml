@@ -14,6 +14,11 @@
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
 	<changes>
 		<change>
+			<date>15/03/2017</date>
+			<autor>SeiTaN</autor>
+			<description>limpieza código</description>
+		</change>
+		<change>
 			<date>21/02/2017</date>
 			<autor>Cmos</autor>
 			<description>Reparado a causa del cambio a https y añadida opcion para buscar info en tmdb</description>
@@ -24,7 +29,7 @@
 			<description>Eliminado código innecesario.</description>
 		</change>
 	</changes>
-	<version>4</version>
+	<version>5</version>
 
 	<categories>
 		<category>torrent</category>

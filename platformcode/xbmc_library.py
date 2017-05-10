@@ -25,31 +25,17 @@
 # XBMC Library Tools
 # ------------------------------------------------------------
 
-import sys, os
-import urllib2
-import xbmc
+import os
+import sys
 import threading
+import urllib2
+
+import xbmc
 from core import config
 from core import filetools
 from core import jsontools
 from core import logger
 from platformcode import platformtools
-
-
-addon_name = sys.argv[0].strip()
-if not addon_name or addon_name.startswith("default.py"):
-    addon_name = "plugin://plugin.video.pelisalacarta/"
-
-if config.get_setting("folder_movies") != "":
-    FOLDER_MOVIES = config.get_setting("folder_movies")
-else:
-    FOLDER_MOVIES = "CINE"  # config.get_localized_string(30072)
-
-if config.get_setting("folder_tvshows") != "":
-    FOLDER_TVSHOWS = config.get_setting("folder_tvshows")
-else:
-    FOLDER_TVSHOWS = "SERIES"  # config.get_localized_string(30073)
-
 
 
 def mark_auto_as_watched(item):
@@ -208,7 +194,7 @@ def mark_season_as_watched_on_kodi(item, value=1):
     if item.contentSeason > -1:
         request_season = ' and c12= %s' % item.contentSeason
 
-    tvshows_path = filetools.join(config.get_library_path(), FOLDER_TVSHOWS)
+    tvshows_path = filetools.join(config.get_library_path(), config.get_setting("folder_tvshows"))
     item_path1 = "%" + item.path.replace("\\\\", "\\").replace(tvshows_path, "")
     if item_path1[:-1] != "\\":
         item_path1 += "\\"
@@ -235,7 +221,7 @@ def get_data(payload):
     if config.get_setting("library_mode", "biblioteca"):
         try:
             try:
-                xbmc_port = int(config.get_setting("xbmc_puerto", "biblioteca"))
+                xbmc_port = config.get_setting("xbmc_puerto", "biblioteca")
             except:
                 xbmc_port = 0
 
@@ -251,7 +237,7 @@ def get_data(payload):
         except Exception, ex:
             template = "An exception of type {0} occured. Arguments:\n{1!r}"
             message = template.format(type(ex).__name__, ex.args)
-            logger.info("get_data: error en xbmc_json_rpc_url: %s" % message)
+            logger.error("get_data: error en xbmc_json_rpc_url: %s" % message)
             data = ["error"]
     else:
         try:
@@ -259,7 +245,7 @@ def get_data(payload):
         except Exception, ex:
             template = "An exception of type {0} occured. Arguments:\n{1!r}"
             message = template.format(type(ex).__name__, ex.args)
-            logger.info("get_data:: error en xbmc.executeJSONRPC: {0}".
+            logger.error("get_data:: error en xbmc.executeJSONRPC: {0}".
                         format(message))
             data = ["error"]
 
@@ -268,7 +254,7 @@ def get_data(payload):
     return data
 
 
-def update(folder_content=FOLDER_TVSHOWS, folder=""):
+def update(folder_content=config.get_setting("folder_tvshows"), folder=""):
     """
     Actualiza la libreria dependiendo del tipo de contenido y la ruta que se le pase.
 
@@ -455,7 +441,6 @@ def set_content(content_type, silent=False):
 
         idPath = 0
         idParentPath = 0
-        strPath = ""
         if continuar:
             continuar = False
 
@@ -645,8 +630,6 @@ def add_sources(path):
     from xml.dom import minidom
 
     SOURCES_PATH = xbmc.translatePath("special://userdata/sources.xml")
-    xmldoc = None
-
 
     if os.path.exists(SOURCES_PATH):
         xmldoc = minidom.parse(SOURCES_PATH)
@@ -711,16 +694,19 @@ def add_sources(path):
 
 
 def ask_set_content():
+    logger.info()
+    logger.debug("library_ask_set_content %s" % config.get_setting("library_ask_set_content"))
+    logger.debug("library_set_content %s" % config.get_setting("library_set_content"))
     # Si es la primera vez que se utiliza la biblioteca preguntar si queremos autoconfigurar
-    if config.get_setting("library_ask_set_content") == "true" and config.get_setting("library_set_content") == "false":
+    if config.get_setting("library_ask_set_content") == True and config.get_setting("library_set_content") == False:
         heading = "Pelisalacarta Auto-configuración"
         linea1 = "¿Desea que Pelisalacarta auto-configure la biblioteca de Kodi?"
         linea2 = "Si pulsa 'no' y luego desea dicha integración deberá hacerlo manualmente."
         if platformtools.dialog_yesno(heading, linea1, linea2):
-            config.set_setting("library_set_content", "true")
+            config.set_setting("library_set_content", True)
             config.set_setting("library_ask_set_content", "active")
             config.verify_directories_created()
 
-        config.set_setting("library_ask_set_content", "false")
+        config.set_setting("library_ask_set_content", False)
 
 

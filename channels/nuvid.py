@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para Nuvid
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
-import urlparse, hashlib, base64
+# ------------------------------------------------------------
+import base64
+import hashlib
+import urlparse
 
-from core import logger
-from core import config
 from core import httptools
+from core import logger
 from core import scrapertools
 
 host = "https://www.nuvid.com"

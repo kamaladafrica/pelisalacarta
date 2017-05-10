@@ -1,25 +1,21 @@
 ﻿# -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para peliscity
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 import re
 import sys
 import urlparse
 
-from core import config
 from core import logger
 from core import scrapertools
 from core import servertools
 from core.item import Item
 
 
-DEBUG = config.get_setting("debug")
-
-
 def mainlist(item):
-    logger.info("[peliscity.py] mainlist")
+    logger.info()
 
     itemlist = []
     itemlist.append( Item(channel=item.channel, title="Últimas agregadas"  , action="agregadas", url="http://peliscity.com", viewmode="movie_with_plot"))
@@ -40,7 +36,7 @@ def porIdioma(item):
     return itemlist
 
 def porGenero(item):
-    logger.info("[peliscity.py] porGenero")
+    logger.info()
 
     itemlist = []
     data = scrapertools.cache_page(item.url)
@@ -58,7 +54,7 @@ def porGenero(item):
 
 def search(item,texto):
 
-    logger.info("[peliscity.py] search")
+    logger.info()
     texto_post = texto.replace(" ", "+")
     item.url = "http://www.peliscity.com/?s=" + texto_post
 
@@ -68,12 +64,12 @@ def search(item,texto):
     except:
         import sys
         for line in sys.exc_info():
-            logger.error( "%s" % line )
+            logger.error("%s" % line)
         return []
 
 
 def agregadas(item):
-    logger.info("[peliscity.py] agregadas")
+    logger.info()
     itemlist = []
    
     data = scrapertools.cache_page(item.url)
@@ -101,7 +97,7 @@ def agregadas(item):
     return itemlist
 
 def listaBuscar(item):
-    logger.info("[peliscity.py] listaBuscar")
+    logger.info()
     itemlist = []
    
     data = scrapertools.cache_page(item.url)
@@ -121,7 +117,7 @@ def listaBuscar(item):
 
 
 def findvideos(item):
-    logger.info("[peliscity.py] findvideos")
+    logger.info()
 
     itemlist = []
     plot = item.plot
@@ -140,7 +136,7 @@ def findvideos(item):
     return itemlist	
 
 def play(item):
-    logger.info("[peliscity.py] play")
+    logger.info()
 
     itemlist = servertools.find_video_items(data=item.url)
 

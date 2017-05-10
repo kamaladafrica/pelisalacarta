@@ -39,7 +39,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
 
     ext = scrapertools.get_filename_from_url(media_url)[-4:]
     video_urls.append(["%s [userscloud]" % ext, media_url])
-        
+
     for video_url in video_urls:
         logger.info("%s - %s" % (video_url[0], video_url[1]))
 
@@ -48,13 +48,12 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
 
 # Encuentra vídeos del servidor en el texto pasado
 def find_videos(data):
-
     # Añade manualmente algunos erróneos para evitarlos
     encontrados = set()
     devuelve = []
 
-    #http://userscloud.com/z3nnqbspjyne
-    #http://userscloud.com/embed-z3nnqbspjyne.html
+    # http://userscloud.com/z3nnqbspjyne
+    # http://userscloud.com/embed-z3nnqbspjyne.html
     patronvideos = 'userscloud.com/(?:embed-|)([A-z0-9]+)'
     logger.info("#" + patronvideos + "#")
     matches = re.compile(patronvideos, re.DOTALL).findall(data)

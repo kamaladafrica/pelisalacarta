@@ -13,16 +13,14 @@ from core import logger
 from core import scrapertools
 from core.item import Item
 
-
 __modo_grafico__ = config.get_setting('modo_grafico', 'pelisdanko')
 
-DEBUG = config.get_setting("debug")
 host = "http://pelisdanko.com"
 art = "http://pelisdanko.com/img/background.jpg"
 
 
 def mainlist(item):
-    logger.info("pelisalacarta.channels.pelisdanko mainlist")
+    logger.info()
 
     itemlist = []
     itemlist.append(item.clone(action="novedades", title="Novedades", url=host + "/novedades",
@@ -51,7 +49,7 @@ def configuracion(item):
 
 
 def search(item, texto):
-    logger.info("pelisalacarta.channels.pelisdanko search")
+    logger.info()
     texto = texto.replace(" ", "+")
     item.url = "http://pelisdanko.com/busqueda?terms=%s" % texto
     try:
@@ -65,7 +63,7 @@ def search(item, texto):
 
 
 def newest(categoria):
-    logger.info("pelisalacarta.channels.pelisdanko newest")
+    logger.info()
     itemlist = []
     item = Item()
     try:
@@ -87,7 +85,7 @@ def newest(categoria):
 
 
 def novedades(item):
-    logger.info("pelisalacarta.channels.pelisdanko novedades")
+    logger.info()
     itemlist = []
 
     # Descarga la pagina
@@ -106,8 +104,7 @@ def novedades(item):
         for scrapedtitle, scrapedurl, scrapedthumbnail in matches:
             contentTitle = scrapedtitle[:]
             scrapedtitle = "[COLOR darkorange][B]" + scrapedtitle + "[/B][/COLOR]" + calidad + "[/COLOR]"
-            if (DEBUG): logger.info(
-                    "title=[" + scrapedtitle + "], url=[" + scrapedurl + "], thumbnail=[" + scrapedthumbnail + "]")
+            logger.debug("title=[" + scrapedtitle + "], url=[" + scrapedurl + "], thumbnail=[" + scrapedthumbnail + "]")
             itemlist.append(item.clone(action="enlaces", title=bbcode_kodi2html(scrapedtitle),
                                        url=scrapedurl, thumbnail=scrapedthumbnail, fanart=scrapedthumbnail,
                                        fulltitle=contentTitle, filtro=False, contentTitle=contentTitle,
@@ -122,7 +119,7 @@ def novedades(item):
 
 
 def actualizadas(item):
-    logger.info("pelisalacarta.channels.pelisdanko actualizadas")
+    logger.info()
     itemlist = []
 
     # Descarga la pagina
@@ -151,8 +148,7 @@ def actualizadas(item):
             contentTitle = scrapedtitle[:]
             scrapedtitle = "[COLOR darkorange][B]" + scrapedtitle + "[/B][/COLOR]" + calidad + idiomas[
                                                                                                :-1] + ")[/COLOR]"
-            if (DEBUG): logger.info(
-                    "title=[" + scrapedtitle + "], url=[" + scrapedurl + "], thumbnail=[" + scrapedthumbnail + "]")
+            logger.debug("title=[" + scrapedtitle + "], url=[" + scrapedurl + "], thumbnail=[" + scrapedthumbnail + "]")
             itemlist.append(item.clone(action="enlaces", title=bbcode_kodi2html(scrapedtitle),
                                        url=scrapedurl, thumbnail=scrapedthumbnail, fanart=scrapedthumbnail,
                                        fulltitle=contentTitle, filtro=False, contentTitle=contentTitle,
@@ -162,7 +158,7 @@ def actualizadas(item):
 
 
 def indices(item):
-    logger.info("pelisalacarta.channels.pelisdanko indices")
+    logger.info()
     itemlist = []
 
     item.text_color = "orchid"
@@ -176,7 +172,7 @@ def indices(item):
 
 
 def indice_list(item):
-    logger.info("pelisalacarta.channels.pelisdanko indice_list")
+    logger.info()
     itemlist = []
     # Descarga la pagina
     data = scrapertools.downloadpage(item.url)
@@ -191,7 +187,7 @@ def indice_list(item):
 
 
 def enlaces(item):
-    logger.info("pelisalacarta.channels.pelisdanko enlaces")
+    logger.info()
     item.extra = ""
     item.text_color = ""
     itemlist = []
@@ -235,7 +231,7 @@ def enlaces(item):
 
 
 def bloque_enlaces(data, filtro_idioma, dict_idiomas, itemlist, type, item):
-    logger.info("pelisalacarta.channels.pelisdanko bloque_enlaces")
+    logger.info()
     bloque = scrapertools.find_single_match(data, '<div role="tabpanel" class="tab-pane fade" id="tab-' +
                                             type + '">(.*?)</table>')
     patron = '<tr class="rip hover".*?data-slug="([^"]+)".*?src="http://pelisdanko.com/img/flags/(.*?).png"' \
@@ -271,7 +267,7 @@ def bloque_enlaces(data, filtro_idioma, dict_idiomas, itemlist, type, item):
 
 
 def findvideos(item):
-    logger.info("pelisalacarta.channels.pelisdanko findvideos")
+    logger.info()
     itemlist = []
 
     if item.url[-2:] == "ss":

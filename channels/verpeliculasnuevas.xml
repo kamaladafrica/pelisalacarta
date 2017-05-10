@@ -11,10 +11,20 @@
 	<thumbnail>https://s27.postimg.org/atgs5erab/verpeliculasnuevas.png</thumbnail>
 	<bannermenu>https://s23.postimg.org/4uyyz6w4b/verpeliculasnuevas_banner.png</bannermenu>
 	
-	<update_url></update_url>
-	<version>2</version>
-	<date>06/01/2017</date>
-	<changes>Release</changes>
+	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
+	<version>3</version>
+	<changes>
+		<change>
+			<date>15/03/2017</date>
+			<autor>SeiTaN</autor>
+			<description>limpieza código</description>
+		</change>
+		<change>
+			<date>06/01/2017</date>
+			<autor>Hernan_Ar_c</autor>
+			<description>Release.</description>
+		</change>
+	</changes>
 
 
 	<categories>

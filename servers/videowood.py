@@ -7,12 +7,13 @@
 # ------------------------------------------------------------
 
 import re
+
 from core import logger
 from core import scrapertools
 
 
 def test_video_exists(page_url):
-    logger.info("pelisalacarta.servers.videowood test_video_exists(page_url='%s')" % page_url)
+    logger.info("(page_url='%s')" % page_url)
 
     data = scrapertools.cache_page(page_url)
 
@@ -23,7 +24,7 @@ def test_video_exists(page_url):
 
 
 def get_video_url(page_url, premium=False, user="", password="", video_password=""):
-    logger.info("pelisalacarta.servers.videowood url=" + page_url)
+    logger.info("url=" + page_url)
     video_urls = []
 
     data = scrapertools.cache_page(page_url)
@@ -47,7 +48,7 @@ def find_videos(data):
     devuelve = []
 
     patronvideos = r"https?://(?:www.)?videowood.tv/(?:embed/|video/)[0-9a-z]+"
-    logger.info("pelisalacarta.servers.videowood find_videos #" + patronvideos + "#")
+    logger.info("#" + patronvideos + "#")
 
     matches = re.compile(patronvideos, re.DOTALL).findall(data)
 

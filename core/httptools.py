@@ -24,17 +24,18 @@
 # --------------------------------------------------------------------------------
 # httptools
 # --------------------------------------------------------------------------------
+import cookielib
+import gzip
+import os
+import time
 import urllib
 import urllib2
 import urlparse
-import cookielib
-import os
-import time
 from StringIO import StringIO
-import gzip
-from core import logger
-from core import config
 from threading import Lock
+
+from core import config
+from core import logger
 from core.cloudflare import Cloudflare
 
 cookies_lock = Lock()

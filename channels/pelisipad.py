@@ -18,7 +18,7 @@ from core.item import Item
 host = "http://pelisipad.com/black_json/%s"
 ext = "/list.js"
 
-__perfil__ = int(config.get_setting('perfil', "pelisipad"))
+__perfil__ = config.get_setting('perfil', "pelisipad")
 
 # Fijar perfil de color
 perfil = [['0xFFFFE6CC', '0xFFFFCE9C', '0xFF994D00', '0xFFFE2E2E', '0xFF088A08', '0xFFFFD700'],

@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-#-----------------------------------------------------------------
+# -----------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para Repelis - Por Kampanita-2015 
 # ( con ayuda de neno1978, DrZ3r0, y robalo )
 # 4/9/2015
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#-----------------------------------------------------------------
+# -----------------------------------------------------------------
 import re
 import urlparse
 
@@ -16,13 +16,10 @@ from core import servertools
 from core.item import Item
 
 
-DEBUG = config.get_setting("debug")
-
-
 # Main list manual
 def mainlist(item):
 
-    logger.info("[repelis] mainlist")
+    logger.info()
     itemlist = []
 
     item.url = "http://www.repelis.tv/pag/1"
@@ -34,10 +31,12 @@ def mainlist(item):
     itemlist.append( Item(channel=item.channel, action="menudesta", title="Destacadas",  url="http://www.repelis.tv/pag/1" , thumbnail="http://img.irtve.es/v/1074982/", fanart=mifan) )
     itemlist.append( Item(channel=item.channel, action="todaspelis", title="Proximos estrenos", url="http://www.repelis.tv/archivos/proximos-estrenos/pag/1", thumbnail="https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTpsRC-GTYzCqhor2gIDfAB61XeymwgXWSVBHoRAKs2c5HAn29f&reload=on", fanart=mifan))
     itemlist.append( Item(channel=item.channel, action="todaspelis", title="Todas las Peliculas",  url="http://www.repelis.tv/pag/1" , thumbnail="https://freaksociety.files.wordpress.com/2012/02/logos-cine.jpg", fanart=mifan) )
-    if config.get_setting("adult_mode") != "0":
+
+    if config.get_setting("adult_mode") != 0:
         itemlist.append( Item(channel=item.channel, action="todaspelis", title="Eroticas +18",  url="http://www.repelis.tv/genero/eroticas/pag/1" , thumbnail="http://www.topkamisetas.com/catalogo/images/TB0005.gif", fanart="http://www.topkamisetas.com/catalogo/images/TB0005.gif") )
         #Quito la busqueda por aÃ±o si no esta enabled el adultmode, porque no hay manera de filtrar los enlaces eroticos72
         itemlist.append( Item(channel=item.channel, action="poranyo", title="Por Año", url="http://www.repelis.tv/anio/2016", thumbnail="http://t3.gstatic.com/images?q=tbn:ANd9GcSkxiYXdBcI0cvBLsb_nNlz_dWXHRl2Q-ER9dPnP1gNUudhrqlR", fanart=mifan))
+
     #Por categoria si que filtra la categoria de eroticos
     itemlist.append( Item(channel=item.channel, action="porcateg", title="Por Categoria", url="http://www.repelis.tv/genero/accion/pag/1", thumbnail="http://www.logopro.it/blog/wp-content/uploads/2013/07/categoria-sigaretta-elettronica.png", fanart=mifan))
     itemlist.append( Item(channel=item.channel, action="search", title="Buscar...", url="http://www.repelis.tv/search/?s=", thumbnail="http://thumbs.dreamstime.com/x/buscar-pistas-13159747.jpg", fanart=mifan))
@@ -48,8 +47,7 @@ def mainlist(item):
 #Peliculas recien agregadas ( quitamos las de estreno del slide-bar en el top
 def menupelis(item):
 
-    logger.info("[repelis] menupelis")
-    logger.info("[repelis] "+item.url)
+    logger.info(item.url)
 
     itemlist = []
 
@@ -93,8 +91,7 @@ def menupelis(item):
 #Todas las peliculas
 def todaspelis(item):
 
-    logger.info("[repelis] menupelis")
-    logger.info("[repelis] "+item.url)
+    logger.info(item.url)
 
     itemlist = []
 
@@ -134,8 +131,7 @@ def todaspelis(item):
 #Peliculas Destacadas
 def menudesta(item):
 
-    logger.info("[repelis] menupelis")
-    logger.info("[repelis] "+item.url)
+    logger.info(item.url)
 
     itemlist = []
 
@@ -166,8 +162,7 @@ def menudesta(item):
 #Peliculas de Estreno
 def menuestre(item):
 
-    logger.info("[repelis] menupelis")
-    logger.info("[repelis] "+item.url)
+    logger.info(item.url)
 
     itemlist = []
 
@@ -206,8 +201,7 @@ def menuestre(item):
 
 def findvideos(item):
 
-   logger.info("[repelis] menupelis")
-   logger.info("[repelis] "+item.url)
+   logger.info(item.url)
 
    itemlist = []
 
@@ -271,7 +265,7 @@ def findvideos(item):
 
    for scrapedurl,scrapedserver,scrapedlang,scrapedquality in matches:
       url = urlparse.urljoin(item.url,scrapedurl)
-      logger.info("[repelis] Lang:["+scrapedlang+"] Quality["+scrapedquality+"] URL["+url+"]")
+      logger.info("Lang:["+scrapedlang+"] Quality["+scrapedquality+"] URL["+url+"]")
       patronenlaces= '.*?://(.*?)/'
       matchesenlaces = re.compile(patronenlaces,re.DOTALL).findall(scrapedurl)
       scrapertools.printMatches(matchesenlaces)
@@ -284,7 +278,7 @@ def findvideos(item):
 
 
 def play(item):
-   logger.info("[repelis] play url="+item.url)
+   logger.info("url="+item.url)
 
    #itemlist = servertools.find_video_items(data=item.url)
 
@@ -296,14 +290,14 @@ def play(item):
 
 def search(item, texto):
 
-   logger.info("[repelis] "+item.url)
+   logger.info(item.url)
    texto = texto.replace(" ", "+")
    item.url = 'http://www.repelis.tv/buscar/?s=%s' % (texto)
-   logger.info("[repelis] "+item.url)
+   logger.info(item.url)
 
    data = scrapertools.cache_page(item.url).decode('iso-8859-1').encode('utf-8')
 
-   logger.info("repelis data: "+data)
+   logger.info("data: "+data)
 
    '''
    <div class="col-xs-2">
@@ -317,7 +311,7 @@ def search(item, texto):
    patron+= '<a href="(.*?)" title="(.*?)">.*?'
    patron+= '<img src="(.*?)"'
 
-   logger.info("repelis:"+ patron )
+   logger.info(patron)
 
    matches = re.compile(patron,re.DOTALL).findall(data)
 
@@ -330,7 +324,7 @@ def search(item, texto):
       title = title.replace("Online","")
       url = urlparse.urljoin(item.url,scrapedurl)
       thumbnail = urlparse.urljoin(item.url,scrapedthumbnail)
-      logger.info("[repelis] "+url)
+      logger.info(url)
       itemlist.append( Item(channel=item.channel, action="findvideos", title=title, fulltitle=title , url=url , thumbnail=thumbnail, fanart=thumbnail) )
 
    return itemlist
@@ -339,8 +333,7 @@ def search(item, texto):
 #Por aÃ±o, aquÃ­ estÃ¡ difÃ­cil filtrar las "eroticas" asÃ­ que quito la opcion si no esta el adultmode enabled
 def poranyo(item):
 
-    logger.info("[repelis] poranyo")
-    logger.info("[repelis] "+item.url)
+    logger.info(item.url)
 
     itemlist = []
 
@@ -361,8 +354,7 @@ def poranyo(item):
 #Aqui si que se filtran las eroticas
 def porcateg(item):
 
-    logger.info("[repelis] poranyo")
-    logger.info("[repelis] " + item.url )
+    logger.info(item.url)
     itemlist = []
 
     data = scrapertools.cache_page(item.url).decode('iso-8859-1').encode('utf-8')
@@ -375,10 +367,10 @@ def porcateg(item):
         title = scrapertools.remove_show_from_title(scrapedtitle,"Ver Película")
         title = title.replace("Online","")
         url = urlparse.urljoin(item.url,scrapedurl)
-        logger.info("[repelis] "+url)
+        logger.info(url)
         #si no esta permitidas categoria adultos, la filtramos
         erotica = ""
-        if config.get_setting("adult_mode") == "0":
+        if config.get_setting("adult_mode") == 0:
             patron = '.*?/erotic.*?'
             try:
                 erotica = scrapertools.get_match(scrapedurl,patron)

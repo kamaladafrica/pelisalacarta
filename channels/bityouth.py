@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para bityouth
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 import os
 import re
 import urllib
 import urllib2
 import urlparse
 
-from core import config
 from core import logger
 from core import scrapertools
 from core.item import Item
@@ -21,7 +20,6 @@ try:
 except: pass
 
 
-DEBUG = config.get_setting("debug")
 host="http://bityouth.com/"
 def browser(url):
     import mechanize
@@ -67,7 +65,7 @@ def browser(url):
 
 
 def mainlist(item):
-    logger.info("pelisalacarta.bityouth mainlist")
+    logger.info()
     itemlist = []
     itemlist.append( Item(channel=item.channel, title="[COLOR skyblue][B]Generos[/B][/COLOR]"      , action="generos", url="http://bityouth.com", thumbnail="http://s6.postimg.org/ybey4gxu9/bityougenerosthum3.png", fanart="http://s18.postimg.org/l4judlx09/bityougenerosfan.jpg"))
     itemlist.append( Item(channel=item.channel, title="[COLOR skyblue][B]Puntuacion[/B][/COLOR]"      , action="scraper", url="http://bityouth.com/more_elements/0/?o=pd", thumbnail="http://s6.postimg.org/n1qtn9i6p/bityoupuntothum4.png", fanart="http://s6.postimg.org/qrh9oof9t/bityoupuntofan.jpg"))
@@ -134,7 +132,7 @@ def mainlist(item):
 
 
 def search(item,texto):
-    logger.info("pelisalacarta.bityouth search")
+    logger.info()
     
     itemlist = []
 
@@ -193,8 +191,10 @@ def search(item,texto):
         itemlist.append( Item(channel=item.channel, action="fanart" , title=title , url=url, thumbnail=thumbnail, fanart="http://s6.postimg.org/y1uehu24x/bityougeneralfan.jpg",plot= trailer,show= show,extra = extra, folder=True))
         
     return itemlist
+
+
 def generos(item):
-    logger.info("pelisalacarta.bityouth search")
+    logger.info()
     itemlist = []
     
     data = scrapertools.cache_page(item.url)
@@ -270,7 +270,7 @@ def generos(item):
 
 
 def scraper(item):
-    logger.info("pelisalacarta.bityouth search")
+    logger.info()
     itemlist = []
     import xbmc
     if xbmc.Player().isPlaying():
@@ -359,11 +359,10 @@ def scraper(item):
 
     return itemlist
 
+
 def fanart(item):
-    
-    
-    #Vamos a sacar todos los fanarts y arts posibles
-    logger.info("pelisalacarta.bityouth fanart")
+    # Vamos a sacar todos los fanarts y arts posibles
+    logger.info()
     itemlist = []
     url = item.url
     data = scrapertools.cachePage(url)
@@ -1077,7 +1076,7 @@ def fanart(item):
 
 
 def findvideos(item):
-    logger.info("pelisalacarta.bityouth search")
+    logger.info()
     itemlist = []
     import xbmc
     SEARCHDESTFILE= os.path.join(xbmc.translatePath('special://userdata/keymaps'), "search.txt")
@@ -1163,7 +1162,7 @@ def findvideos(item):
 
 
 def episodios(item):
-    logger.info("pelisalacarta.bityouth episodios")
+    logger.info()
     itemlist = []
     import xbmc
     if not xbmc.Player().isPlaying():
@@ -1280,7 +1279,7 @@ def episodios(item):
 
 
 def findvideos_pelis(item):
-    logger.info("pelisalacarta.bityouth findvideos_pelis")
+    logger.info()
     itemlist = []
     
     data = scrapertools.cache_page(item.url)
@@ -1321,7 +1320,7 @@ def findvideos_pelis(item):
     return itemlist
 
 def trailer(item):
-    logger.info("pelisalacarta.bityouth trailer")
+    logger.info()
     itemlist = []
     import xbmc
     xbmc.executebuiltin('Action(reloadkeymaps)')
@@ -1351,7 +1350,7 @@ def trailer(item):
     return itemlist
 
 def play(item):
-    logger.info("pelisalacarta.bityouth play")
+    logger.info()
     itemlist = []
     
     if item.server == "youtube":
@@ -1376,7 +1375,7 @@ def play(item):
     return itemlist
 
 def info(item):
-    logger.info("pelisalacarta.sinluces trailer")
+    logger.info()
     url=item.url
     if "_serie_de_tv" in item.url:
         import xbmc
@@ -1516,7 +1515,7 @@ class TextBox1( xbmcgui.WindowDialog ):
 
 
 def info_capitulos(item):
-    logger.info("pelisalacarta.Bityouth info_capitulos")
+    logger.info()
     import xbmc
     APPCOMMANDDESTFILE = os.path.join(xbmc.translatePath('special://userdata/keymaps'), "customapp.xml")
     try:

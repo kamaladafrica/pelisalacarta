@@ -45,7 +45,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     mediaurl = scrapertools.find_single_match(data, ',\{file:"([^"]+)"')
     if not mediaurl.startswith(host):
         mediaurl = host + mediaurl
-   
+
     rtmp_url = scrapertools.find_single_match(data, 'file:"(rtmp[^"]+)"')
     playpath = scrapertools.find_single_match(rtmp_url, 'vod\?h=[\w]+/(.*$)')
     rtmp_url = rtmp_url.split(playpath)[

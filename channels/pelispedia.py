@@ -25,7 +25,7 @@ CHANNEL_HOST = "http://www.pelispedia.tv/"
 # Configuracion del canal
 try:
     __modo_grafico__ = config.get_setting('modo_grafico', __channel__)
-    __perfil__ = int(config.get_setting('perfil', __channel__))
+    __perfil__ = config.get_setting('perfil', __channel__)
 except:
     __modo_grafico__ = True
     __perfil__ = 0
@@ -622,7 +622,7 @@ def save_sub(data):
             try:
                 os.remove(ficherosubtitulo)
             except IOError:
-                logger.info("Error al eliminar el archivo "+ficherosubtitulo)
+                logger.error("Error al eliminar el archivo "+ficherosubtitulo)
                 raise
 
         fichero = open(ficherosubtitulo, "wb")
@@ -631,6 +631,6 @@ def save_sub(data):
         subtitle = ficherosubtitulo
     except:
         subtitle = ""
-        logger.info("Error al descargar el subtítulo")
+        logger.error("Error al descargar el subtítulo")
 
     return subtitle

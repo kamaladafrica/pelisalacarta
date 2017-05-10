@@ -47,7 +47,7 @@ if not FOLDER_MOVIES or not FOLDER_TVSHOWS or not LIBRARY_PATH \
         or not filetools.exists(MOVIES_PATH) or not filetools.exists(TVSHOWS_PATH):
     config.verify_directories_created()
 
-addon_name = "plugin://plugin.video.pelisalacarta/"
+addon_name = "plugin://plugin.video.%s/" % config.PLUGIN_NAME
 
 
 def read_nfo(path_nfo, item=None):
@@ -622,7 +622,7 @@ def add_serie_to_library(item, channel=None):
 
     else:
         platformtools.dialog_ok("Biblioteca", "La serie se ha añadido a la biblioteca")
-        logger.info("[launcher.py] Se han añadido %s episodios de la serie %s a la biblioteca" %
+        logger.info("Se han añadido %s episodios de la serie %s a la biblioteca" %
                     (insertados, item.show))
         if config.is_xbmc():
             if config.get_setting("sync_trakt_new_tvshow", "biblioteca"):

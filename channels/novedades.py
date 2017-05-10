@@ -23,7 +23,7 @@
 # along with pelisalacarta 4.  If not, see <http://www.gnu.org/licenses/>.
 # ------------------------------------------------------------
 # Channel for recent videos on several channels
-#------------------------------------------------------------
+# ------------------------------------------------------------
 
 import glob
 import os
@@ -32,15 +32,15 @@ import time
 from threading import Thread
 
 from core import channeltools
-from core import scrapertools
 from core import config
 from core import logger
+from core import scrapertools
 from core.item import Item
 from platformcode import platformtools
 
 THUMBNAILS = {'0': 'posters', '1': 'banners', '2': 'squares'}
 
-__perfil__= int(config.get_setting('perfil',"novedades"))
+__perfil__= config.get_setting('perfil',"novedades")
 
 # Fijar perfil de color
 perfil = [['0xFF0B7B92', '0xFF89FDFB', '0xFFACD5D4'],
@@ -144,11 +144,11 @@ def get_list_canales():
         channel_parameters = channeltools.get_channel_parameters(channel_id)
 
         # No incluir si es un canal inactivo
-        if channel_parameters["active"] != "true":
+        if channel_parameters["active"] != True:
             continue
 
         # No incluir si es un canal para adultos, y el modo adulto está desactivado
-        if channel_parameters["adult"] == "true" and config.get_setting("adult_mode") == "0":
+        if channel_parameters["adult"] == True and config.get_setting("adult_mode") == 0:
             continue
 
         # No incluir si el canal es en un idioma filtrado
@@ -269,9 +269,9 @@ def get_newest(channel_id, categoria):
         if not puede:
             return
 
-        logger.info("pelisalacarta.channels.novedades running channel "+modulo.__name__+" "+modulo.__file__)
+        logger.info("running channel "+modulo.__name__+" "+modulo.__file__)
         list_result = modulo.newest(categoria)
-        logger.info("pelisalacarta.channels.novedades.get_newest canal= %s %d resultados" %(channel_id, len(list_result)))
+        logger.info("canal= %s %d resultados" %(channel_id, len(list_result)))
 
         for item in list_result:
             #logger.info("pelisalacarta.channels.novedades.get_newest   item="+item.tostring())
@@ -279,7 +279,7 @@ def get_newest(channel_id, categoria):
             list_newest.append(item)
 
     except:
-        logger.error("No se pueden recuperar novedades de: "+ channel_id)
+        logger.error("No se pueden recuperar novedades de: " + channel_id)
         import traceback
         logger.error(traceback.format_exc())
 
@@ -467,11 +467,11 @@ def settingCanal(item):
         channel_parameters = channeltools.get_channel_parameters(channel_id)
 
         # No incluir si es un canal inactivo
-        if channel_parameters["active"] != "true":
+        if channel_parameters["active"] != True:
             continue
 
         # No incluir si es un canal para adultos, y el modo adulto está desactivado
-        if channel_parameters["adult"] == "true" and config.get_setting("adult_mode") == "0":
+        if channel_parameters["adult"] == True and config.get_setting("adult_mode") == 0:
             continue
 
         # No incluir si el canal es en un idioma filtrado
