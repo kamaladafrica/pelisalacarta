@@ -47,7 +47,7 @@ from core import scrapertools
 from core import filetools
 
 
-def play(url, xlistitem={}, is_view=None, subtitle=""):
+def play(url, xlistitem={}, is_view=None, subtitle="", item=None):
 
     allocate = True
     try:
@@ -388,6 +388,12 @@ def play(url, xlistitem={}, is_view=None, subtitle=""):
                         set_next_continuous_pieces = continuous_pieces + num_pieces_to_resume
                     next_continuous_pieces = str(continuous_pieces - current_piece) + "/" + str(set_next_continuous_pieces - current_piece)
                     _pieces_info = {'current': current_piece, 'continuous': next_continuous_pieces , 'continuous2': _pieces_info['continuous2'], 'have': h.status().num_pieces, 'len': len(piece_set)}
+
+                    # si es un archivo de la biblioteca enviar a marcar como visto
+                    if item.strm_path:
+                        from platformcode import xbmc_library
+                        xbmc_library.mark_auto_as_watched(item)
+
 
                 # -- Cerrar el diálogo de progreso --------------
                 if player.resumed:
