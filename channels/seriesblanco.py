@@ -53,8 +53,7 @@ def mainlist(item):
                          url=HOST , thumbnail=thumb_series))
     itemlist.append(Item(channel=item.channel, title="Buscar...", action="search", url=HOST, thumbnail=thumb_buscar))
 
-    if filtertools.context:
-        itemlist = filtertools.show_option(itemlist, item.channel, list_idiomas, CALIDADES)
+    itemlist = filtertools.show_option(itemlist, item.channel, list_idiomas, CALIDADES)
 
     return itemlist
 
@@ -88,7 +87,7 @@ def extractSeriesFromData(item, data):
         logger.debug("Show found: {name} -> {url} ({img})".format(name = name, url = url, img = img))
         itemlist.append(item.clone(title=name, url=urlparse.urljoin(HOST, url),
                                    action="episodios" if not episodePattern.search(url) else "findvideos", show=name, thumbnail=img,
-                                   list_idiomas=list_idiomas, list_calidad=CALIDADES, context=filtertools.context))
+                                   context=filtertools.context(item, list_idiomas, CALIDADES)))
 
     morePages = re.search('pagina=([0-9]+)">>>', data)
     if morePages:
@@ -428,14 +427,13 @@ def episodios(item):
     episodes = re.findall("<tr.*?href=['\"](?P<url>[^'\"]+).+?>(?P<title>.+?)</a>.*?<td>(?P<flags>.*?)</td>", data, re.MULTILINE | re.DOTALL)
     for url, title, flags in episodes:
         idiomas = " ".join(["[{0}]".format(IDIOMAS.get(language, "OVOS")) for language in re.findall("banderas/([^\.]+)", flags, re.MULTILINE)])
+        filter_lang = idiomas.replace("[", "").replace("]", "").split(" ")
         displayTitle = "{show} - {title} {languages}".format(show = item.show, title = title, languages = idiomas)
         logger.debug("Episode found {0}: {1}".format(displayTitle, urlparse.urljoin(HOST, url)))
         itemlist.append(item.clone(title=displayTitle, url=urlparse.urljoin(HOST, url),
-                                   action="findvideos", plot=plot, fanart=fanart, language=idiomas,
-                                   list_idiomas=list_idiomas, list_calidad=CALIDADES, context=filtertools.context))
+                                   action="findvideos", plot=plot, fanart=fanart, language=filter_lang))
 
-    if len(itemlist) > 0 and filtertools.context:
-        itemlist = filtertools.get_links(itemlist, item.channel)
+    itemlist = filtertools.get_links(itemlist, item, list_idiomas, CALIDADES)
 
     if config.get_library_support() and len(itemlist) > 0:
         itemlist.append(item.clone(title="Añadir esta serie a la biblioteca", action="add_serie_to_library", extra="episodios"))
@@ -460,19 +458,21 @@ def parseVideos(item, typeStr, data):
         for vMatch in vPattIter:
             vFields = vMatch.groupdict()
             quality = vFields.get("quality")
+
+            # FIX para veces que añaden el idioma en los comentarios
+            quality = re.sub(r"sub-inglés-?", "", quality, flags=re.IGNORECASE)
             if not quality:
                 quality = "SD"
+            # FIX para los guiones en la calidad y no tener que añadir otra opción en la lista de calidades
+            if quality.startswith("MicroHD"):
+                quality = re.sub(r"microhd", "Micro-HD-", quality, flags=re.IGNORECASE)
 
             title = "{0} en {1} [{2}] [{3}] ({4}: {5})"\
                 .format(typeStr, vFields.get("server"), IDIOMAS.get(vFields.get("language"), "OVOS"), quality,
                         vFields.get("uploader"), vFields.get("date"))
             itemlist.append(item.clone(title=title, fulltitle=item.title, url=urlparse.urljoin(HOST, vFields.get("link")),
                                        action="play", language=IDIOMAS.get(vFields.get("language"), "OVOS"),
-                                       quality=quality, list_idiomas=list_idiomas, list_calidad=CALIDADES,
-                                       context=filtertools.context))
-
-        if len(itemlist) > 0 and filtertools.context:
-            itemlist = filtertools.get_links(itemlist, item.channel)
+                                       quality=quality))
 
         if len(itemlist) > 0:
             return itemlist
@@ -506,6 +506,8 @@ def findvideos(item):
 
     if filtro_enlaces != 1:
         list_links.extend(parseVideos(item, "Descargar", online[1]))
+
+    list_links = filtertools.get_links(list_links, item, list_idiomas, CALIDADES)
 
     return list_links
 
