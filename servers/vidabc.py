@@ -39,7 +39,6 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
             rtmp = get_match(smil_data, 'base="([^"]+)"')
             playpaths = find_multiple_matches(smil_data, 'src="([^"]+)" height="(\d+)"')
 
-
             for playpath, inf in playpaths:
                 h = get_match(playpath, 'h=([a-z0-9]+)')
                 video_urls.append(["RTMP [%s] %s" % (id_server, inf), "%s playpath=%s" % (rtmp, playpath)])
@@ -48,7 +47,6 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
         logger.info("video_url: %s - %s" % (video_url[0], video_url[1]))
 
     return video_urls
-
 
 def find_videos(text):
     encontrados = set()
