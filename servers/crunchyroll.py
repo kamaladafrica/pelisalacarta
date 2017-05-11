@@ -7,16 +7,15 @@
 
 import base64
 import re
-import zlib
 import struct
-
+import zlib
 from hashlib import sha1
 
 from core import config
 from core import filetools
+from core import httptools
 from core import logger
 from core import scrapertools
-from core import httptools
 
 GLOBAL_HEADER = {'User-Agent': 'Mozilla/5.0', 'Accept-Language': '*'}
 proxy = "http://anonymouse.org/cgi-bin/anon-www.cgi/"
@@ -26,7 +25,7 @@ def test_video_exists( page_url ):
     logger.info("(page_url='%s')" % page_url)
 
     premium = config.get_setting("crunchyrollpremium")
-    if premium == "true":
+    if premium == True:
         return login(page_url)
     data = httptools.downloadpage(page_url, headers=GLOBAL_HEADER, replace_headers=True).data
     if "Este es un clip de muestra" in data and premium == "false":

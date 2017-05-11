@@ -14,6 +14,11 @@
     
     <version>3</version>
     <changes>
+		<change>
+			<date>15/03/2017</date>
+			<autor>SeiTaN</autor>
+			<description>limpieza código</description>
+		</change>
         <change>
           <date>31/12/2016</date>
           <autor>Neno1978</autor>

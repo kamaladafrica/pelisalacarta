@@ -1,22 +1,22 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para verseriesynovelas
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 import re
 
 from core import config
+from core import httptools
 from core import logger
 from core import scrapertools
 from core import servertools
 from core.item import Item
-from core import httptools
 
 
 # Configuracion del canal
 __modo_grafico__ = config.get_setting('modo_grafico', 'verseriesynovelas')
-__perfil__ = int(config.get_setting('perfil', 'verseriesynovelas'))
+__perfil__ = config.get_setting('perfil', 'verseriesynovelas')
 
 # Fijar perfil de color            
 perfil = [['0xFFFFE6CC', '0xFFFFCE9C', '0xFF994D00'],
@@ -43,17 +43,17 @@ def login(check_login=True):
         post = "log=%s&pwd=%s&redirect_to=http://www.verseriesynovelas.tv/wp-admin/&action=login" % (user, password)
         data = httptools.downloadpage("http://www.verseriesynovelas.tv/iniciar-sesion", post=post).data
         if "La contraseña que has introducido" in data:
-            logger.info("pelisalacarta.channels.verseriesynovelas Error en el login")
+            logger.error("Error en el login")
             return False, "Contraseña errónea. Comprueba tus credenciales"
         elif "Nombre de usuario no válido" in data:
-            logger.info("pelisalacarta.channels.verseriesynovelas Error en el login")
+            logger.error("Error en el login")
             return False, "Nombre de usuario no válido. Comprueba tus credenciales"            
         else:
-            logger.info("pelisalacarta.channels.verseriesynovelas Login correcto")
+            logger.info("Login correcto")
             return True, ""
     except:
         import traceback
-        logger.info(traceback.format_exc())
+        logger.error(traceback.format_exc())
         return False, "Error durante el login. Comprueba tus credenciales"
 
 

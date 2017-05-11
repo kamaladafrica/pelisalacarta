@@ -1,26 +1,22 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para newpct
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 
 import re
 import sys
 import urllib
 import urlparse
 
-from core import config
 from core import logger
 from core import scrapertools
 from core.item import Item
 
 
-DEBUG = config.get_setting("debug")
-
-
 def mainlist(item):
-    logger.info("[newpct.py] mainlist")
+    logger.info()
 
     itemlist = []
     itemlist.append( Item(channel=item.channel, action="submenu" , title="Películas"))
@@ -32,7 +28,7 @@ def mainlist(item):
     return itemlist
 
 def search(item,texto):
-    logger.info("[newpct.py] search")
+    logger.info()
     texto = texto.replace(" ","+")
     
     item.url = "http://www.newpct.com/buscar-descargas/%s" % (texto)
@@ -42,11 +38,11 @@ def search(item,texto):
     except:
         import sys
         for line in sys.exc_info():
-            logger.error( "%s" % line )
+            logger.error("%s" % line)
         return []
 
 def buscador(item):
-    logger.info("[newpct.py] buscador")
+    logger.info()
     itemlist = []
     
     # Descarga la página
@@ -80,7 +76,7 @@ def buscador(item):
     return itemlist
 
 def submenu(item):
-    logger.info("[newpct.py] submenu")
+    logger.info()
     itemlist=[]
     
     if item.title == "Películas":
@@ -100,7 +96,7 @@ def submenu(item):
     return itemlist
 
 def listado(item):
-    logger.info("[newpct.py] listado")
+    logger.info()
     itemlist = []   
     data = scrapertools.cache_page(item.url)
     
@@ -146,7 +142,7 @@ def listado(item):
         plot = scrapertools.htmlclean(scrapedplot).strip()
         plot = unicode( plot, "iso-8859-1" , errors="replace" ).encode("utf-8")
 
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+        logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
         if item.category == "serie":
             itemlist.append( Item(channel=item.channel, action="episodios" , title=title , url=url, thumbnail=thumbnail, plot=plot))
         else:
@@ -258,7 +254,7 @@ def listado(item):
 
 	
 def series(item):
-    logger.info("[newpct.py] series")
+    logger.info()
     itemlist=[]
     #Lista menú Series de la A-Z
     data = scrapertools.cache_page(item.url)
@@ -274,7 +270,7 @@ def series(item):
     return itemlist
 	
 def listaseries(item):
-    logger.info("[newpct.py] listaseries")
+    logger.info()
     itemlist=[]
 
     data = scrapertools.downloadpageGzip(item.url)
@@ -285,7 +281,7 @@ def listaseries(item):
     return itemlist
 
 def episodios(item):
-    logger.info("[newpct.py] episodios")
+    logger.info()
     itemlist=[]
 	
     data = scrapertools.cache_page(item.url)
@@ -301,7 +297,7 @@ def episodios(item):
 	
 
 def findvideos(item):
-    logger.info("[newpct.py] findvideos")
+    logger.info()
     itemlist=[]
 
     data = scrapertools.cache_page(item.url)

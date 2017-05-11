@@ -1,25 +1,21 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para cine-adicto.com by Bandavi
 # Actualización Carles Carmona 15/08/2011
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 import re
 import urlparse
 
-from core import config
 from core import logger
 from core import scrapertools
 from core import servertools
 from core.item import Item
 
 
-DEBUG = config.get_setting("debug")
-
-
 def mainlist(item):
-    logger.info("[teledocumentales.py] mainlist")
+    logger.info()
 
     itemlist = []
     itemlist.append( Item(channel=item.channel, action="ultimo"        , title="Últimos Documentales"    , url="http://www.teledocumentales.com/", viewmode="movie_with_plot"))
@@ -28,7 +24,7 @@ def mainlist(item):
     return itemlist
 
 def ultimo(item):
-    logger.info("[telecodocumentales.py] Ultimos")
+    logger.info()
     itemlist = []
                   
     data = scrapertools.cachePage(item.url)
@@ -57,7 +53,7 @@ def ultimo(item):
     return itemlist
 
 def ListaCat(item):
-    logger.info("[telecodocumentales.py] Ultimos")
+    logger.info()
 
     url = item.url
                   
@@ -93,7 +89,7 @@ def ListaCat(item):
 
 
 def play(item):
-    logger.info("[telecodocumentales.py] play")
+    logger.info()
     
     data = scrapertools.cachePage(item.url)
     

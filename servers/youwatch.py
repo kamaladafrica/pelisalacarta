@@ -7,9 +7,9 @@
 
 import re
 
+from core import httptools
 from core import logger
 from core import scrapertools
-from core import httptools
 
 
 def test_video_exists(page_url):

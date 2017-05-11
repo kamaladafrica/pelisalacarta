@@ -151,8 +151,7 @@ def mainlist(item):
     itemlist.append(Item(channel=item.channel, action="search", title="Buscar...",
                          url=urlparse.urljoin(CHANNEL_HOST, "Buscar?s=")))
 
-    if renumbertools.context:
-        itemlist = renumbertools.show_option(item.channel, itemlist)
+    itemlist = renumbertools.show_option(item.channel, itemlist)
 
     return itemlist
 
@@ -207,25 +206,29 @@ def search(item, texto):
 
     html = get_url_contents(item.url)
 
-    series = []
+    try:
+        # Se encontro un solo resultado y se redicciono a la página de la serie
+        if html.find('<title>Ver') >= 0:
+            series = [__extract_info_from_serie(html)]
+        # Se obtuvo una lista de resultados
+        else:
+            series = __find_series(html)
 
-    # Se encontro un solo resultado y se redicciono a la página de la serie
-    if html.find('<title>Ver') >= 0:
-        series = [__extract_info_from_serie(html)]
-    # Se obtuvo una lista de resultados
-    else:
-        series = __find_series(html)
+        items = []
+        for serie in series:
+            title, url, thumbnail, plot = serie
 
-    items = []
-    for serie in series:
-        title, url, thumbnail, plot = serie
+            logger.debug("title=[{0}], url=[{1}], thumbnail=[{2}]".format(
+                title, url, thumbnail))
 
-        logger.debug("title=[{0}], url=[{1}], thumbnail=[{2}]".format(
-            title, url, thumbnail))
-
-        items.append(Item(channel=item.channel, action="episodios", title=title,
-                          url=url, thumbnail=thumbnail, plot=plot,
-                          show=title, viewmode="movies_with_plot", context=renumbertools.context))
+            items.append(Item(channel=item.channel, action="episodios", title=title,
+                              url=url, thumbnail=thumbnail, plot=plot,
+                              show=title, viewmode="movies_with_plot", context=renumbertools.context))
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error("%s" % line)
+        return []
 
     return items
 

@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 # ------------------------------------------------------------
 # pelisalacarta 4
 # Copyright 2015 tvalacarta@gmail.com
@@ -22,91 +22,26 @@
 # You should have received a copy of the GNU General Public License
 # along with pelisalacarta 4.  If not, see <http://www.gnu.org/licenses/>.
 # --------------------------------------------------------------------------------
-# Scraper tools for reading and processing web elements
+# Scraper tools v2 for reading and processing web elements
 # --------------------------------------------------------------------------------
 
 import re
 import time
-
+import urlparse
+from core.entities import html5
 import logger
-from core import httptools
-
-
-def cache_page(url,post=None,headers=None,modo_cache=None, timeout=None):
-    return cachePage(url,post,headers,modo_cache,timeout=timeout)
-
-
-def cachePage(url,post=None,headers=None,modoCache=None, timeout=None):
-    data = downloadpage(url,post=post,headers=headers, timeout=timeout)
-    return data
-
-
-def downloadpage(url,post=None,headers=None, follow_redirects=True, timeout=None, header_to_get=None):
-    response = httptools.downloadpage(url, post=post, headers=headers, follow_redirects = follow_redirects, timeout=timeout)
-    
-    if header_to_get:
-      return response.headers.get(header_to_get)
-    else:
-      return response.data
-
-
-def downloadpageWithResult(url,post=None,headers=None,follow_redirects=True, timeout=None, header_to_get=None):
-    response = httptools.downloadpage(url, post=post, headers=headers, follow_redirects = follow_redirects, timeout=timeout)
-    
-    if header_to_get:
-      return response.headers.get(header_to_get)
-    else:
-      return response.data, response.code
-
-
-def downloadpageWithoutCookies(url):
-    response = httptools.downloadpage(url, cookies=False)
-    return response.data
-
-
-def downloadpageGzip(url):
-    response = httptools.downloadpage(url, add_referer=True)
-    return response.data
-
-
-def getLocationHeaderFromResponse(url):
-    response = httptools.downloadpage(url, only_headers=True)
-    return response.headers.get("location")
-
-
-def get_header_from_response(url,header_to_get="",post=None,headers=None):
-    header_to_get = header_to_get.lower()
-    response = httptools.downloadpage(url, post=post, headers=headers, only_headers=True)
-    return response.headers.get(header_to_get)
-
-
-def get_headers_from_response(url,post=None,headers=None):
-    response = httptools.downloadpage(url, post=post, headers=headers, only_headers=True)
-    return response.headers.items()
-    
-
-def read_body_and_headers(url, post=None, headers=None, follow_redirects=False, timeout=None):
-    response = httptools.downloadpage(url, post=post, headers=headers, follow_redirects=follow_redirects, timeout=timeout)
-    return response.data, response.headers
-
-
-def anti_cloudflare(url, host="", headers=None, post=None, location=False):
-    #anti_cloudfare ya integrado en httptools por defecto
-    response = httptools.downloadpage(url, post=post, headers=headers)
-    return response.data
-
-
 
 
 def printMatches(matches):
     i = 0
     for match in matches:
-        logger.info("%d %s" % (i, match))
+        logger.info("pelisalacarta.core.scrapertools %d %s" % (i , match))
         i = i + 1
 
+
 def get_match(data,patron,index=0):
-    matches = re.findall( patron , data , flags=re.DOTALL )
-    return matches[index]
+    return find_single_match(data,patron,index=0)
+
 
 def find_single_match(data,patron,index=0):
     try:
@@ -115,96 +50,37 @@ def find_single_match(data,patron,index=0):
     except:
         return ""
 
+
 # Parse string and extracts multiple matches using regular expressions
 def find_multiple_matches(text,pattern):
     return re.findall(pattern,text,re.DOTALL)
 
-def entityunescape(cadena):
-    return unescape(cadena)
 
-def unescape(text):
-    """Removes HTML or XML character references
-       and entities from a text string.
-       keep &amp;, &gt;, &lt; in the source code.
-    from Fredrik Lundh
-    http://effbot.org/zone/re-sub.htm#unescape-html
-    """
-    def fixup(m):
-        text = m.group(0)
-        if text[:2] == "&#":
-            # character reference
-            try:
-                if text[:3] == "&#x":
-                    return unichr(int(text[3:-1], 16)).encode("utf-8")
-                else:
-                    return unichr(int(text[2:-1])).encode("utf-8")
-
-            except ValueError:
-                logger.error("error de valor")
-                pass
-        else:
-            # named entity
-            try:
-                '''
-                if text[1:-1] == "amp":
-                    text = "&amp;amp;"
-                elif text[1:-1] == "gt":
-                    text = "&amp;gt;"
-                elif text[1:-1] == "lt":
-                    text = "&amp;lt;"
-                else:
-                    print text[1:-1]
-                    text = unichr(htmlentitydefs.name2codepoint[text[1:-1]]).encode("utf-8")
-                '''
-                import htmlentitydefs
-                text = unichr(htmlentitydefs.name2codepoint[text[1:-1]]).encode("utf-8")
-            except KeyError:
-                logger.error("keyerror")
-                pass
-            except:
-                pass
-        return text # leave as is
-    return re.sub("&#?\w+;", fixup, text)
-
-    # Convierte los codigos html "&ntilde;" y lo reemplaza por "ñ" caracter unicode utf-8
-def decodeHtmlentities(string):
-    string = entitiesfix(string)
-    entity_re = re.compile("&(#?)(\d{1,5}|\w{1,8});")
-
+# Convierte los codigos html "&ntilde;" y lo reemplaza por "ñ" caracter unicode utf-8
+def decodeHtmlentities(data):
+    entity_re = re.compile("&(#?)(\d{1,5}|\w{1,8})(;?)")
     def substitute_entity(match):
-        from htmlentitydefs import name2codepoint as n2cp
-        ent = match.group(2)
-        if match.group(1) == "#":
-            return unichr(int(ent)).encode('utf-8')
-        else:
-            cp = n2cp.get(ent)
+        ent = match.group(2) + match.group(3)
+        res = ""
+        while not ent in html5 and not ent.endswith(";") and match.group(1) != "#":
+            # Excepción para cuando '&' se usa como argumento en la urls contenidas en los datos
+            try:
+                res = ent[-1] + res
+                ent = ent[:-1]
+            except:
+                break
 
+        if match.group(1) == "#":
+            ent = unichr(int(ent.replace(";","")))
+            return ent.encode('utf-8')
+        else:
+            cp = html5.get(ent)
             if cp:
-                return unichr(cp).encode('utf-8')
+                return cp.decode("unicode-escape").encode('utf-8') + res
             else:
                 return match.group()
 
-    return entity_re.subn(substitute_entity, string)[0]
-
-def entitiesfix(string):
-    # Las entidades comienzan siempre con el símbolo & , y terminan con un punto y coma ( ; ).
-    string = string.replace("&aacute","&aacute;")
-    string = string.replace("&eacute","&eacute;")
-    string = string.replace("&iacute","&iacute;")
-    string = string.replace("&oacute","&oacute;")
-    string = string.replace("&uacute","&uacute;")
-    string = string.replace("&Aacute","&Aacute;")
-    string = string.replace("&Eacute","&Eacute;")
-    string = string.replace("&Iacute","&Iacute;")
-    string = string.replace("&Oacute","&Oacute;")
-    string = string.replace("&Uacute","&Uacute;")
-    string = string.replace("&uuml"  ,"&uuml;")
-    string = string.replace("&Uuml"  ,"&Uuml;")
-    string = string.replace("&ntilde","&ntilde;")
-    string = string.replace("&#191"  ,"&#191;")
-    string = string.replace("&#161"  ,"&#161;")
-    string = string.replace(";;"     ,";")
-    return string
+    return entity_re.subn(substitute_entity, data)[0]
 
 
 def htmlclean(cadena):
@@ -307,7 +183,7 @@ def htmlclean(cadena):
     cadena = re.compile("<link[^>]*>",re.DOTALL).sub("",cadena)
 
     cadena = cadena.replace("\t","")
-    cadena = entityunescape(cadena)
+    #cadena = entityunescape(cadena)
     return cadena
 
 
@@ -368,8 +244,10 @@ def slugify(title):
 
     return title
 
+
 def remove_htmltags(string):
     return re.sub('<[^<]+?>', '', string)
+
 
 def remove_show_from_title(title,show):
     #print slugify(title)+" == "+slugify(show)
@@ -393,28 +271,10 @@ def remove_show_from_title(title,show):
 
     return title
 
-def getRandom(str):
-    return get_md5(str)
-
-def unseo(cadena):
-    if cadena.upper().startswith("VER GRATIS LA PELICULA "):
-        cadena = cadena[23:]
-    elif cadena.upper().startswith("VER GRATIS PELICULA "):
-        cadena = cadena[20:]
-    elif cadena.upper().startswith("VER ONLINE LA PELICULA "):
-        cadena = cadena[23:]
-    elif cadena.upper().startswith("VER GRATIS "):
-        cadena = cadena[11:]
-    elif cadena.upper().startswith("VER ONLINE "):
-        cadena = cadena[11:]
-    elif cadena.upper().startswith("DESCARGA DIRECTA "):
-        cadena = cadena[17:]
-    return cadena
 
 #scrapertools.get_filename_from_url(media_url)[-4:]
 def get_filename_from_url(url):
 
-    import urlparse
     parsed_url = urlparse.urlparse(url)
     try:
         filename = parsed_url.path
@@ -430,9 +290,9 @@ def get_filename_from_url(url):
 
     return filename
 
+
 def get_domain_from_url(url):
 
-    import urlparse
     parsed_url = urlparse.urlparse(url)
     try:
         filename = parsed_url.netloc
@@ -444,6 +304,7 @@ def get_domain_from_url(url):
             filename = ""
 
     return filename
+
 
 def get_season_and_episode(title):
     """
@@ -480,6 +341,7 @@ def get_season_and_episode(title):
 
     return filename
 
+
 def get_sha1(cadena):
     try:
         import hashlib
@@ -490,6 +352,7 @@ def get_sha1(cadena):
         devuelve = binascii.hexlify(sha.new(cadena).digest())
 
     return devuelve
+
 
 def get_md5(cadena):
     try:

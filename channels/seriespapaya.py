@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para seriespapaya
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 
 from core import config
 from core import logger
@@ -38,9 +38,7 @@ def mainlist(item):
     itemlist.append(Item(action = "novedades", title = "Capítulos de estreno", channel = item.channel, thumbnail = thumb_series))
     itemlist.append(Item(action = "search", title = "Buscar", channel = item.channel, thumbnail = thumb_buscar))
 
-
-    if filtertools.context:
-        itemlist = filtertools.show_option(itemlist, item.channel, list_idiomas, CALIDADES)
+    itemlist = filtertools.show_option(itemlist, item.channel, list_idiomas, CALIDADES)
 
     return itemlist
 
@@ -82,7 +80,7 @@ def series_por_letra_y_grupo(item):
                              show      = name,
                              url       = urlparse.urljoin(HOST, url),
                              thumbnail = urlparse.urljoin(HOST, img),
-                             list_idiomas=list_idiomas, list_calidad=CALIDADES, context=filtertools.context
+                             context=filtertools.context(item, list_idiomas, CALIDADES)
                              ))
 
     if len(series) == 8:
@@ -133,16 +131,16 @@ def episodios(item):
 
     itemlist = []
     for url, title, langs in episodes:
+        logger.debug("langs %s" % langs)
         languages = " ".join(["[{0}]".format(IDIOMAS.get(lang, lang)) for lang in re.findall('images/s-([^\.]+)', langs)])
+        filter_lang = languages.replace("[", "").replace("]", "").split(" ")
         itemlist.append(item.clone(action      = "findvideos",
                                    title       = "{0} {1} {2}".format(item.title, title, languages),
                                    url         = urlparse.urljoin(HOST, url),
-                                   language    = languages,
-                                   list_idiomas=list_idiomas, list_calidad=CALIDADES, context=filtertools.context
+                                   language    = filter_lang
                             ))
 
-    if len(itemlist) > 0 and filtertools.context:
-        itemlist = filtertools.get_links(itemlist, item.channel)
+    itemlist = filtertools.get_links(itemlist, item.channel, list_idiomas, CALIDADES)
 
     # Opción "Añadir esta serie a la biblioteca de XBMC"
     if config.get_library_support() and len(itemlist) > 0:
@@ -162,7 +160,7 @@ def search(item, texto):
                        show        = show["titulo"],
                        url         = urlparse.urljoin(HOST, show["urla"]),
                        thumbnail   = urlparse.urljoin(HOST, show["img"]),
-                       list_idiomas=list_idiomas, list_calidad=CALIDADES, context=filtertools.context
+                       context=filtertools.context(item, list_idiomas, CALIDADES)
                 ) for show in tvShows ]
 
 
@@ -192,11 +190,9 @@ def findvideos(item):
                      url       = urlparse.urljoin(HOST, url),
                      language  = IDIOMAS.get(lang, lang),
                      quality   = quality,
-                     list_idiomas=list_idiomas, list_calidad=CALIDADES, context=filtertools.context
                 ) for lang, date, server, url, linkType, quality, uploader in links ]
 
-    if len(itemlist) > 0 and filtertools.context:
-        itemlist = filtertools.get_links(itemlist, item.channel)
+    itemlist = filtertools.get_links(itemlist, item.channel, list_idiomas, CALIDADES)
 
     return itemlist
 

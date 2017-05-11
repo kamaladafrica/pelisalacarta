@@ -31,7 +31,7 @@ import os
 import xbmc
 from core import config
 
-loggeractive = (config.get_setting("debug") == "true")
+loggeractive = (config.get_setting("debug") == True)
 
 
 def log_enable(active):

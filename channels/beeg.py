@@ -1,60 +1,59 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para beeg.com
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 
 import re
 import sys
 import urllib
+
+from core import jsontools as json
 from core import logger
-from core import config
 from core import scrapertools
 from core.item import Item
-from core import jsontools as json
-
-DEBUG = config.get_setting("debug")
 
 url_api = ""
 beeg_salt = ""
 
+
 def get_api_url():
-  global url_api
-  global beeg_salt
-  data = scrapertools.downloadpage("http://beeg.com")
-  version = re.compile('<script src="//static.beeg.com/cpl/([\d]+).js"').findall(data)[0]
-  js_url  = "http:" + re.compile('<script src="(//static.beeg.com/cpl/[\d]+.js)"').findall(data)[0]
-  url_api = "https://api2.beeg.com/api/v6/"+ version
-  data = scrapertools.downloadpage(js_url)
-  beeg_salt = re.compile('beeg_salt="([^"]+)"').findall(data)[0]
+    global url_api
+    global beeg_salt
+    data = scrapertools.downloadpage("http://beeg.com")
+    version = re.compile('<script src="//static.beeg.com/cpl/([\d]+).js"').findall(data)[0]
+    js_url = "http:" + re.compile('<script src="(//static.beeg.com/cpl/[\d]+.js)"').findall(data)[0]
+    url_api = "https://api2.beeg.com/api/v6/" + version
+    data = scrapertools.downloadpage(js_url)
+    beeg_salt = re.compile('beeg_salt="([^"]+)"').findall(data)[0]
 
   
 def decode(key):
-  a = beeg_salt
-  e = unicode(urllib.unquote(key), "utf8")
-  t = len(a)
-  o =""
-  for n in range(len(e)):
-    r= ord(e[n:n+1])
-    i =  n % t
-    s = ord(a[i:i+1]) % 21
-    o += chr(r-s)
-    
-  n = []
-  for x in range(len(o),0,-3):
-    if x >=3:
-      n.append(o[(x -3):x])
-    else:
-      n.append(o[0:x])
-    
-  return "".join(n)
+    a = beeg_salt
+    e = unicode(urllib.unquote(key), "utf8")
+    t = len(a)
+    o = ""
+    for n in range(len(e)):
+        r = ord(e[n:n + 1])
+        i = n % t
+        s = ord(a[i:i + 1]) % 21
+        o += chr(r - s)
+
+    n = []
+    for x in range(len(o), 0, -3):
+        if x >= 3:
+            n.append(o[(x - 3):x])
+        else:
+            n.append(o[0:x])
+
+    return "".join(n)
 
 get_api_url()
 
 
 def mainlist(item):
-    logger.info("[beeg.py] mainlist")
+    logger.info()
     get_api_url()
     itemlist = []
     itemlist.append( Item(channel=item.channel, action="videos"            , title="Útimos videos"       , url=url_api + "/index/main/0/pc", viewmode="movie"))
@@ -63,7 +62,7 @@ def mainlist(item):
     return itemlist
 
 def videos(item):
-    logger.info("[beeg.py] videos")
+    logger.info()
     itemlist = []
     data = scrapertools.cache_page(item.url)
     JSONData = json.load_json(data)
@@ -86,7 +85,7 @@ def videos(item):
     return itemlist
 
 def listcategorias(item):
-    logger.info("[beeg.py] listcategorias")
+    logger.info()
     itemlist = []
     data = scrapertools.cache_page(item.url)
     JSONData = json.load_json(data)
@@ -101,7 +100,7 @@ def listcategorias(item):
     return itemlist
   
 def search(item,texto):
-    logger.info("[beeg.py] search")
+    logger.info()
 
     texto = texto.replace(" ","+")
     item.url = item.url % (texto)
@@ -111,11 +110,11 @@ def search(item,texto):
     except:
         import sys
         for line in sys.exc_info():
-            logger.error( "%s" % line )
+            logger.error("%s" % line)
         return []
         
 def play(item):
-    logger.info("[beeg.py] findvideos")
+    logger.info()
     itemlist = []
     data = scrapertools.downloadpage(item.url)
 

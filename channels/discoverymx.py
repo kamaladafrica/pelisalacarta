@@ -1,24 +1,20 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para discoverymx
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 import re
 import urlparse
 
-from core import config
 from core import logger
 from core import scrapertools
 from core import servertools
 from core.item import Item
 
 
-DEBUG = config.get_setting("debug")
-
-
 def mainlist(item):
-    logger.info("[discoverymx.py] mainlist")
+    logger.info()
     itemlist=[]
     
     itemlist.append( Item(channel=item.channel, title="Documentales - Novedades"  , action="listvideos" , url="http://discoverymx.blogspot.com/"))
@@ -29,7 +25,7 @@ def mainlist(item):
     return itemlist
 
 def DocuSeries(item):
-    logger.info("[discoverymx.py] DocuSeries")
+    logger.info()
     itemlist=[]
     
     # Descarga la página
@@ -45,13 +41,13 @@ def DocuSeries(item):
         scrapedtitle = match[1]
         scrapedthumbnail = ""
         scrapedplot = ""
-        if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
+        logger.debug("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
         itemlist.append( Item(channel=item.channel, action="listvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
 
     return itemlist
 
 def DocuTag(item):
-    logger.info("[discoverymx.py] DocuSeries")
+    logger.info()
     itemlist=[]
 
     # Descarga la página
@@ -65,13 +61,13 @@ def DocuTag(item):
         scrapedtitle = match[1] + " " + match[2]
         scrapedthumbnail = ""
         scrapedplot = ""
-        if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
+        logger.debug("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
         itemlist.append( Item(channel=item.channel, action="listvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
 
     return itemlist
 
 def DocuARCHIVO(item):
-    logger.info("[discoverymx.py] DocuSeries")
+    logger.info()
     itemlist=[]
 
     # Descarga la página
@@ -86,13 +82,13 @@ def DocuARCHIVO(item):
         scrapedtitle = match[1] + " " + match[2]
         scrapedthumbnail = ""
         scrapedplot = ""
-        if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
+        logger.debug("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
         itemlist.append( Item(channel=item.channel, action="listvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
 
     return itemlist
     
 def listvideos(item):
-    logger.info("[discoverymx.py] listvideos")
+    logger.info()
     itemlist=[]
 
     scrapedthumbnail = ""
@@ -126,7 +122,7 @@ def listvideos(item):
 
         scrapedplot = re.sub("<[^>]+>"," ",scrapedplot)
         scrapedplot = scrapertools.unescape(scrapedplot)
-        if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
+        logger.debug("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
 
         # Añade al listado de XBMC
         itemlist.append( Item(channel=item.channel, action="findvideos", title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , folder=True) )
@@ -146,7 +142,7 @@ def listvideos(item):
     return itemlist
 
 def findvideos(item):
-    logger.info("[discoverymx.py] findvideos")
+    logger.info()
     itemlist=[]
     
     # Descarga la página

@@ -16,19 +16,16 @@
 
 	<changes>
 		<change>
-			<date>02/05/2017</date>
+			<date>06/04/2017</date>
 			<autor>SeiTaN</autor>
-			<changes>cambio dominio</changes>
+			<description>Mejoras en filtertools</description>
 		</change>
 		<change>
 			<date>27/01/2017</date>
-			<autor>SeiTaN</autor>
-			<changes>Fix añadir serie desde la búsqueda.</changes>
+			<autor>Palatosino</autor>
+			<description>Fix añadir serie desde la búsqueda..</description>
 		</change>
 	</changes>
-
-
-
 
 	<categories>
 		<category>serie</category>
@@ -43,4 +40,19 @@
 		<enabled>true</enabled>
 		<visible>true</visible>
 	</settings>
+
+	<settings>
+		<id>filter_languages</id>
+		<type>list</type>
+		<label>Mostrar enlaces en idioma...</label>
+		<default>0</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+		<lvalues>No filtrar</lvalues>
+		<lvalues>Español</lvalues>
+		<lvalues>Latino</lvalues>
+		<lvalues>VO</lvalues>
+		<lvalues>VOS</lvalues>
+	</settings>
+
 </channel>

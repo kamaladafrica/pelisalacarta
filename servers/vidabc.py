@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Conector para vidabc
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 
 from core.scrapertools import logger, get_match, find_multiple_matches
 from core.httptools import downloadpage
@@ -11,8 +11,9 @@ from core.httptools import downloadpage
 host = "http://vidabc.com"
 id_server = "vidabc"
 
+
 def get_video_url(page_url, premium=False, user="", password="", video_password=""):
-    logger.info("[%s.py] get_video_url(page_url='%s')" % (id_server, page_url))
+    logger.info("(page_url='%s')" % page_url)
 
     data = downloadpage(page_url).data
 
@@ -35,17 +36,19 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
         if media_url.endswith(".smil"):
             smil_data = downloadpage(media_url).data
 
-            rtmp = get_match(smil_data , 'base="([^"]+)"')
-            playpaths = find_multiple_matches(smil_data , 'src="([^"]+)" height="(\d+)"')
+            rtmp = get_match(smil_data, 'base="([^"]+)"')
+            playpaths = find_multiple_matches(smil_data, 'src="([^"]+)" height="(\d+)"')
+
 
             for playpath, inf in playpaths:
                 h = get_match(playpath, 'h=([a-z0-9]+)')
                 video_urls.append(["RTMP [%s] %s" % (id_server, inf), "%s playpath=%s" % (rtmp, playpath)])
 
     for video_url in video_urls:
-        logger.info("[%s.py] video_url: %s - %s" % (id_server, video_url[0], video_url[1]))
+        logger.info("video_url: %s - %s" % (video_url[0], video_url[1]))
 
     return video_urls
+
 
 def find_videos(text):
     encontrados = set()

@@ -1,23 +1,24 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para peliculasaudiolatino
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 
-import re, sys, urlparse
+import re
+import sys
+import urlparse
 
-from core import config
+from core import httptools
 from core import logger
 from core import scrapertools
-from core import httptools
 from core import servertools
 from core.item import Item
 
 HOST = 'http://peliculasaudiolatino.com'
 
 def mainlist(item):
-    logger.info("channels.peliculasaudiolatino mainlist")
+    logger.info()
 
     itemlist = []
     itemlist.append( Item(channel=item.channel, title="Recién agregadas", action="peliculas", url=HOST+"/ultimas-agregadas.html", viewmode="movie"))
@@ -26,11 +27,11 @@ def mainlist(item):
     itemlist.append( Item(channel=item.channel, title="Listado por géneros" , action="generos", url=HOST))
     itemlist.append( Item(channel=item.channel, title="Listado por años" , action="anyos", url=HOST))    
     itemlist.append( Item(channel=item.channel, title="Buscar..." , action="search") )
-	
+
     return itemlist
 
 def peliculas(item):
-    logger.info("channels.peliculasaudiolatino peliculas")
+    logger.info()
 
     # Descarga la página
     data = httptools.downloadpage(item.url).data
@@ -58,7 +59,7 @@ def peliculas(item):
     return itemlist
 
 def generos(item):
-    logger.info("channels.peliculasaudiolatino generos")
+    logger.info()
     itemlist = []
 
     # Descarga la página
@@ -80,7 +81,7 @@ def generos(item):
     return itemlist
     
 def anyos(item):
-    logger.info("channels.peliculasaudiolatino anyos")
+    logger.info()
     itemlist = []
 
     # Descarga la página
@@ -100,7 +101,7 @@ def anyos(item):
     return itemlist
 
 def search(item,texto):
-    logger.info("channels.peliculasaudiolatino search")
+    logger.info()
     itemlist = []
 
     texto = texto.replace(" ","+")
@@ -118,11 +119,11 @@ def search(item,texto):
     except:
         import sys
         for line in sys.exc_info():
-            logger.error( "%s" % line )
+            logger.error("%s" % line)
         return []
 
 def findvideos(item):
-    logger.info("channels.peliculasaudiolatino videos")
+    logger.info()
     # Descarga la página
 
     data = httptools.downloadpage(item.url).data
@@ -146,7 +147,7 @@ def findvideos(item):
     return itemlist
 
 def play(item):
-    logger.info("channels.peliculasaudiolatino play")
+    logger.info()
     itemlist=[]
 
     data = httptools.downloadpage(item.url).data

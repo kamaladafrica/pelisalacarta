@@ -1,25 +1,21 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para peliculasmx
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 
 import re
 import sys
 import urlparse
 
-from core import config
 from core import logger
 from core import scrapertools
 from core.item import Item
 
 
-DEBUG = config.get_setting("debug")
-    
-
 def mainlist(item):
-    logger.info("pelisalacarta.channels.peliculasmx mainlist")
+    logger.info()
 
     itemlist = []
     itemlist.append( Item(channel=item.channel, title="Últimas añadidas", action="peliculas" , url="http://www.peliculasmx.net/"))
@@ -28,7 +24,7 @@ def mainlist(item):
     return itemlist
 
 def generos(item):
-    logger.info("pelisalacarta.channels.peliculasmx generos")
+    logger.info()
     itemlist = []
 
     # Descarga la página
@@ -41,7 +37,6 @@ def generos(item):
     patron += '<span>([^<]+)'
 
     matches = re.compile(patron,re.DOTALL).findall(data)
-    if (DEBUG): scrapertools.printMatches(matches)
     logger.debug(matches)
     for match in matches:
         scrapedurl = urlparse.urljoin("",match[0])
@@ -54,7 +49,7 @@ def generos(item):
 
 
 def peliculas(item):
-    logger.info("pelisalacarta.channels.peliculasmx peliculas")
+    logger.info()
     extra = item.extra
     itemlist = []
     
@@ -70,7 +65,6 @@ def peliculas(item):
 
     matches = re.compile(patron,re.DOTALL).findall(data)
 
-    if (DEBUG): scrapertools.printMatches(matches)
     for match in matches:
         scrapedurl = match[0] #urlparse.urljoin("",match[0])
         scrapedtitle = match[2] + ' ['+ match[3] +']'
@@ -91,7 +85,7 @@ def peliculas(item):
     return itemlist
 
 def search(item,texto):
-    logger.info("pelisalacarta.channels.peliculasmx search")
+    logger.info()
     itemlist = []
 
     texto = texto.replace(" ","+")
@@ -107,5 +101,5 @@ def search(item,texto):
     except:
         import sys
         for line in sys.exc_info():
-            logger.error( "%s" % line )
+            logger.error("%s" % line)
         return []

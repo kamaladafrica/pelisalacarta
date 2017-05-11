@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para seriecanal
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 import re
 import sys
 import urllib
@@ -13,11 +13,9 @@ from core import config
 from core import logger
 from core import scrapertools
 from core import servertools
-from core.item import Item
-
 
 __modo_grafico__ = config.get_setting('modo_grafico', "seriecanal")
-__perfil__ = int(config.get_setting('perfil', "descargasmix"))
+__perfil__ = config.get_setting('perfil', "descargasmix")
 
 # Fijar perfil de color            
 perfil = [['0xFFFFE6CC', '0xFFFFCE9C', '0xFF994D00'],
@@ -25,12 +23,11 @@ perfil = [['0xFFFFE6CC', '0xFFFFCE9C', '0xFF994D00'],
           ['0xFF58D3F7', '0xFF2E9AFE', '0xFF2E64FE']]
 color1, color2, color3 = perfil[__perfil__]
 
-DEBUG = config.get_setting("debug")
 URL_BASE = "http://www.seriecanal.com/"
 
 
 def login():
-    logger.info("pelisalacarta.channels.seriecanal login")
+    logger.info()
     data = scrapertools.downloadpage(URL_BASE)
     if "Cerrar Sesion" in data:
         return True, ""
@@ -50,7 +47,7 @@ def login():
     
     
 def mainlist(item):
-    logger.info("pelisalacarta.channels.seriecanal mainlist")
+    logger.info()
     itemlist = []
     item.text_color = color1
     
@@ -76,7 +73,7 @@ def configuracion(item):
 
     
 def search(item, texto):
-    logger.info("pelisalacarta.channels.seriecanal search")
+    logger.info()
     item.url = "http://www.seriecanal.com/index.php?page=portada&do=category&method=post&category_id=0&order=" \
                "C_Create&view=thumb&pgs=1&p2=1"
     try:
@@ -92,7 +89,7 @@ def search(item, texto):
 
 
 def genero(item):
-    logger.info("pelisalacarta.channels.seriecanal genero")
+    logger.info()
     itemlist = []
     data = scrapertools.downloadpage(URL_BASE)
     data = scrapertools.find_single_match(data, '<ul class="tag-cloud">(.*?)</ul>')
@@ -107,7 +104,7 @@ def genero(item):
 
 
 def alfabetico(item):
-    logger.info("pelisalacarta.channels.seriecanal alfabetico")
+    logger.info()
     itemlist = []
     data = scrapertools.downloadpage(URL_BASE)
     data = scrapertools.find_single_match(data, '<ul class="pagination pagination-sm" style="margin:5px 0;">(.*?)</ul>')
@@ -120,7 +117,7 @@ def alfabetico(item):
 
 
 def series(item):
-    logger.info("pelisalacarta.channels.seriecanal series")
+    logger.info()
     itemlist = []
     item.infoLabels = {}
     item.text_color = color2
@@ -148,7 +145,7 @@ def series(item):
             new_item.infoLabels['season'] = temporada
             new_item.contentType = "season"
 
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+scrapedthumbnail+"]")
+        logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+scrapedthumbnail+"]")
         itemlist.append(new_item.clone(action="findvideos", title=title, fulltitle=scrapedtitle, url=url,
                                    thumbnail=scrapedthumbnail, plot=scrapedplot, contentTitle=scrapedtitle,
                                    context=["buscar_trailer"], show=scrapedtitle))
@@ -169,7 +166,7 @@ def series(item):
 
 
 def findvideos(item):
-    logger.info("pelisalacarta.channels.seriecanal findvideos")
+    logger.info()
     itemlist = []
     item.text_color = color3
 
@@ -189,7 +186,7 @@ def findvideos(item):
         scrapedtitle = scrapertools.htmlclean(scrapedtitle)
 
         new_item.infoLabels['episode'] = scrapertools.find_single_match(scrapedtitle, "Episodio (\d+)")
-        if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"]")
+        logger.debug("title=["+scrapedtitle+"], url=["+scrapedurl+"]")
         itemlist.append(new_item.clone(action="play", title=scrapedtitle, url=scrapedurl, server="torrent",
                                    contentType="episode"))
 
@@ -243,7 +240,7 @@ def findvideos(item):
 
 
 def play(item):
-    logger.info("pelisalacarta.channels.seriecanal play")
+    logger.info()
     itemlist = []
 
     if item.extra == "torrent":

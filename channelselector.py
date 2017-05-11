@@ -73,7 +73,7 @@ def getmainlist(preferred_thumb=""):
                          context=[{"title": "Configurar descargas", "channel": "configuracion", "config": "descargas",
                                    "action": "channel_config"}]))
 
-    thumb_configuracion = "thumb_configuracion_"+config.get_setting("plugin_updates_available")+".png"
+    thumb_configuracion = "thumb_configuracion_%s.png" % config.get_setting("plugin_updates_available")
 
     itemlist.append(Item(title=config.get_localized_string(30100), channel="configuracion", action="mainlist",
                          thumbnail=get_thumb(preferred_thumb, thumb_configuracion),
@@ -98,7 +98,8 @@ def getchanneltypes(preferred_thumb=""):
                        'anime': config.get_localized_string(30124), 'documentary': config.get_localized_string(30125),
                        'vos': config.get_localized_string(30136), 'adult': config.get_localized_string(30126),
                        'latino': config.get_localized_string(30127)}
-    if config.get_setting("adult_mode") != "0":
+
+    if config.get_setting("adult_mode") != 0:
         channel_types.append("adult")
 
     channel_language = config.get_setting("channel_language")
@@ -129,10 +130,10 @@ def filterchannels(category, preferred_thumb=""):
     channelslist = []
 
     # Si category = "allchannelstatus" es que estamos activando/desactivando canales
-    appenddisabledchannels = "false"
+    appenddisabledchannels = False
     if category == "allchannelstatus":
         category = "all"
-        appenddisabledchannels = "true"
+        appenddisabledchannels = True
 
     # Lee la lista de canales
     channel_path = os.path.join(config.get_runtime_path(), "channels", '*.xml')
@@ -152,6 +153,11 @@ def filterchannels(category, preferred_thumb=""):
 
         try:
             channel_parameters = channeltools.get_channel_parameters(channel[:-4])
+
+            # si el canal no es compatible, no se muestra
+            if not channel_parameters["compatible"]:
+                continue
+
             # Si no es un canal lo saltamos
             if not channel_parameters["channel"]:
                 continue
@@ -162,17 +168,31 @@ def filterchannels(category, preferred_thumb=""):
                 channel_parameters["thumbnail"] = channel_parameters["bannermenu"]
 
             # Se salta el canal si no está activo y no estamos activando/desactivando los canales
-            if config.get_setting("enabled", channel_parameters["channel"]):
-                channel_status = config.get_setting("enabled", channel_parameters["channel"])
-            else:
+            channel_status = config.get_setting("enabled", channel_parameters["channel"])
+
+            if channel_status is None:
+                # si channel_status no existe es que NO HAY valor en _data.json
                 channel_status = channel_parameters["active"]
 
-            if channel_status != "true":
-                if appenddisabledchannels != "true":
+            # fix temporal para solucionar que enabled aparezca como "true/false"(str) y sea true/false(bool)
+            # TODO borrar este fix en la versión > 4.2.1, ya que no sería necesario
+            else:
+                if isinstance(channel_status, basestring):
+                    if channel_status == "true":
+                        channel_status = True
+                    else:
+                        channel_status = False
+                    config.set_setting("enabled", channel_status, channel_parameters["channel"])
+
+            if channel_status != True:
+                # si obtenemos el listado de canales desde "activar/desactivar canales", y el canal está desactivado
+                # lo mostramos, si estamos listando todos los canales desde el listado general y está desactivado,
+                # no se muestra
+                if appenddisabledchannels != True:
                     continue
 
             # Se salta el canal para adultos si el modo adultos está desactivado
-            if channel_parameters["adult"] == "true" and config.get_setting("adult_mode") == "0":
+            if channel_parameters["adult"] == True and config.get_setting("adult_mode") == 0:
                 continue
 
             # Se salta el canal si está en un idioma filtrado
@@ -205,23 +225,23 @@ def filterchannels(category, preferred_thumb=""):
     channelslist.sort(key=lambda item: item.title.lower().strip())
 
     if category == "all":
-        if config.get_setting("personalchannel5") == "true":
+        if config.get_setting("personalchannel5") == True:
             channelslist.insert(0, Item(title=config.get_setting("personalchannelname5"), action="mainlist",
                                         channel="personal5", thumbnail=config.get_setting("personalchannellogo5"),
                                         type="generic", viewmode="list"))
-        if config.get_setting("personalchannel4") == "true":
+        if config.get_setting("personalchannel4") == True:
             channelslist.insert(0, Item(title=config.get_setting("personalchannelname4"), action="mainlist",
                                         channel="personal4", thumbnail=config.get_setting("personalchannellogo4"),
                                         type="generic", viewmode="list"))
-        if config.get_setting("personalchannel3") == "true":
+        if config.get_setting("personalchannel3") == True:
             channelslist.insert(0, Item(title=config.get_setting("personalchannelname3"), action="mainlist",
                                         channel="personal3", thumbnail=config.get_setting("personalchannellogo3"),
                                         type="generic", viewmode="list"))
-        if config.get_setting("personalchannel2") == "true":
+        if config.get_setting("personalchannel2") == True:
             channelslist.insert(0, Item(title=config.get_setting("personalchannelname2"), action="mainlist",
                                         channel="personal2", thumbnail=config.get_setting("personalchannellogo2"),
                                         type="generic", viewmode="list"))
-        if config.get_setting("personalchannel") == "true":
+        if config.get_setting("personalchannel") == True:
             channelslist.insert(0, Item(title=config.get_setting("personalchannelname"), action="mainlist",
                                         channel="personal", thumbnail=config.get_setting("personalchannellogo"),
                                         type="generic", viewmode="list"))
@@ -244,12 +264,12 @@ def get_thumbnail_path(preferred_thumb=""):
     if preferred_thumb == "":
         thumbnail_type = config.get_setting("thumbnail_type")
         if thumbnail_type == "":
-            thumbnail_type = "2"
-        if thumbnail_type == "0":
+            thumbnail_type = 2
+        if thumbnail_type == 0:
             web_path = "http://media.tvalacarta.info/pelisalacarta/posters/"
-        elif thumbnail_type == "1":
+        elif thumbnail_type == 1:
             web_path = "http://media.tvalacarta.info/pelisalacarta/banners/"
-        elif thumbnail_type == "2":
+        elif thumbnail_type == 2:
             web_path = "http://media.tvalacarta.info/pelisalacarta/squares/"
     else:
         web_path = "http://media.tvalacarta.info/pelisalacarta/" + preferred_thumb + "/"

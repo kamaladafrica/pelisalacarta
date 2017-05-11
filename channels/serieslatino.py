@@ -3,16 +3,15 @@
 # Canal (cinefoxtv) por Hernan_Ar_c
 # ------------------------------------------------------------
 
-import urlparse,urllib2,urllib,re
-import os, sys
+import re
 
-from core import logger
 from core import config
-from core import scrapertools
-from core.item import Item
-from core import servertools
 from core import httptools
+from core import logger
+from core import scrapertools
+from core import servertools
 from core import tmdb
+from core.item import Item
 
 host = 'http://www.serieslatino.tv/'
 
@@ -86,7 +85,6 @@ def lista (item):
     if itemlist !=[]:
         actual_page_url = item.url
         next_page = scrapertools.find_single_match(data,'<div class=pag_b><a href=(.*?) >Siguiente<\/a><\/div>')
-        import inspect
         if next_page !='':
            itemlist.append(Item(channel = item.channel, action = "lista", title = 'Siguiente >>>', url = item.url+next_page, thumbnail='https://s32.postimg.org/4zppxf5j9/siguiente.png'))
     return itemlist

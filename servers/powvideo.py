@@ -7,9 +7,9 @@
 
 import re
 
+from core import httptools
 from core import logger
 from core import scrapertools
-from core import httptools
 from lib import jsunpack
 
 headers = [['User-Agent', 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0']]
@@ -32,7 +32,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
 
     url = page_url.replace(host, "http://powvideo.xyz/iframe-") + "-954x562.html"
 
-    referer = {'Referer': url.replace("iframe","preview")}
+    referer = {'Referer': url.replace("iframe", "preview")}
     data = httptools.downloadpage(url, headers=referer).data
 
     jj_encode = scrapertools.find_single_match(data, "(\w+=~\[\];.*?\)\(\)\)\(\);)")

@@ -90,11 +90,11 @@ def settingCanal(item):
         channel_parameters = channeltools.get_channel_parameters(channel_name)
 
         # No incluir si es un canal inactivo
-        if channel_parameters["active"] != "true":
+        if channel_parameters["active"] != True:
             continue
 
         # No incluir si es un canal para adultos, y el modo adulto está desactivado
-        if channel_parameters["adult"] == "true" and config.get_setting("adult_mode") == "0":
+        if channel_parameters["adult"] == True and config.get_setting("adult_mode") == 0:
             continue
 
         # No incluir si el canal es en un idioma filtrado
@@ -102,16 +102,12 @@ def settingCanal(item):
             continue
 
         # No incluir si en la configuracion del canal no existe "include_in_global_search"
-        include = channel_parameters["include_in_global_search"]
-        if include not in ["", "true"]:
+        include_in_global_search = channel_parameters["include_in_global_search"]
+        if include_in_global_search == False:
             continue
         else:
             # Se busca en la configuración del canal el valor guardado
             include_in_global_search = config.get_setting("include_in_global_search", channel_name)
-
-        # Si no hay valor en la configuración del canal se coloca como True ya que así estaba por defecto
-        if include_in_global_search == "":
-            include_in_global_search = True
 
         control = {'id': channel_name,
                    'type': "bool",
@@ -285,7 +281,7 @@ def do_search(item, categories=[]):
             channel_parameters = channeltools.get_channel_parameters(basename_without_extension)
 
             # No busca si es un canal inactivo
-            if channel_parameters["active"] != "true":
+            if channel_parameters["active"] != True:
                 logger.info("%s no incluido" % basename_without_extension)
                 continue
 
@@ -296,7 +292,7 @@ def do_search(item, categories=[]):
                     continue
 
             # No busca si es un canal para adultos, y el modo adulto está desactivado
-            if channel_parameters["adult"] == "true" and config.get_setting("adult_mode") == "0":
+            if channel_parameters["adult"] == True and config.get_setting("adult_mode") == 0:
                 logger.info("%s no incluido" % basename_without_extension)
                 continue
 
@@ -307,14 +303,11 @@ def do_search(item, categories=[]):
 
             # No busca si es un canal excluido de la busqueda global
             include_in_global_search = channel_parameters["include_in_global_search"]
-            if include_in_global_search in ["", "true"]:
+            if include_in_global_search == True:
                 # Buscar en la configuracion del canal
-                include_in_global_search = str(config.get_setting("include_in_global_search", basename_without_extension))
-                # Si no hay valor en la configuración del canal se incluye ya que así estaba por defecto
-                '''if include_in_global_search == "":
-                    include_in_global_search = "true"'''
+                include_in_global_search = config.get_setting("include_in_global_search", basename_without_extension)
 
-            if include_in_global_search.lower() != "true":
+            if include_in_global_search != True:
                 logger.info("%s no incluido" % basename_without_extension)
                 continue
 
@@ -340,10 +333,10 @@ def do_search(item, categories=[]):
             progreso.update(percentage / 2, "Iniciada busqueda de '%s' en %s..." % (tecleado, channel_parameters["title"]))
 
         except:
-            continue
             logger.error("No se puede buscar en: %s" % channel_parameters["title"])
             import traceback
             logger.error(traceback.format_exc())
+            continue
 
     # Modo Multi Thread
     # Usando isAlive() no es necesario try-except,

@@ -583,7 +583,7 @@ def findvideos(item):
         if servername== "waaw": servername = "netutv"
         if servername == "uploaded" or servername == "ul": servername = "uploadedto"
         mostrar_server = True
-        if config.get_setting("hidepremium") == "true":
+        if config.get_setting("hidepremium") == True:
             mostrar_server = servertools.is_server_enabled(servername)
         if mostrar_server:
             option = "Ver"

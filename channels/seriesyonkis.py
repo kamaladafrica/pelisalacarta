@@ -1,11 +1,11 @@
 ﻿# -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para seriesyonkis
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 # Por Truenon y Jesus, modificada por Boludiko
 # v11
-#------------------------------------------------------------
+# ------------------------------------------------------------
 import re
 import urllib
 import urllib2
@@ -18,11 +18,8 @@ from core import servertools
 from core.item import Item
 
 
-DEBUG = config.get_setting("debug")
-
-
 def mainlist(item):
-    logger.info("[seriesyonkis.py] mainlist")
+    logger.info()
 
     itemlist = []
     #itemlist.append( Item(channel=item.channel, action="lastepisodes"      , title="Ultimos capítulos" , url="http://www.seriesyonkis.sx/ultimos-capitulos",fanart="http://pelisalacarta.mimediacenter.info/fanart/seriesyonkis.jpg"))
@@ -33,7 +30,7 @@ def mainlist(item):
     return itemlist
 
 def search(item,texto, categoria="*"):
-    logger.info("[seriesyonkis.py] search")
+    logger.info()
     itemlist = []
 
     if categoria not in ("*", "S"): return itemlist ## <--
@@ -50,7 +47,7 @@ def search(item,texto, categoria="*"):
     except:
         import sys
         for line in sys.exc_info():
-            logger.error( "%s" % line )
+            logger.error("%s" % line)
         return []
     
 def getsearchresults(item, data, action):
@@ -67,14 +64,14 @@ def getsearchresults(item, data, action):
             scrapedurl = urlparse.urljoin(item.url,result[0])
             scrapedthumbnail = result[2]
             scrapedplot = result[3]
-            if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
+            logger.debug("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
 
             itemlist.append( Item(channel=item.channel, action=action , title=scrapedtitle , fulltitle=scrapedtitle, url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot, show=scrapedtitle))
         
     return itemlist
 
 def lastepisodes(item):
-    logger.info("[seriesyonkis.py] lastepisodes")
+    logger.info()
 
     data = scrapertools.cache_page(item.url)
 
@@ -95,13 +92,13 @@ def lastepisodes(item):
             scrapedplot = ""
     
             # Depuracion
-            if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")            
+            logger.debug("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
             itemlist.append( Item(channel=item.channel, action="findvideos" , title=scrapedtitle , fulltitle=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot, show=scrapedtitle,fanart="http://pelisalacarta.mimediacenter.info/fanart/seriesyonkis.jpg"))
 
     return itemlist  
 
 def mostviewed(item):
-    logger.info("[seriesyonkis.py] mostviewed")
+    logger.info()
     data = scrapertools.cachePage(item.url)
 
     #<div id="tabs-1"> <h1>Más vistas ayer</h1> 
@@ -125,13 +122,13 @@ def mostviewed(item):
         scrapedplot = ""
 
         # Depuracion
-        if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")            
+        logger.debug("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
         itemlist.append( Item(channel=item.channel, action="episodios" , title=scrapedtitle, fulltitle=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, plot=scrapedplot, show=scrapedtitle,fanart="http://pelisalacarta.mimediacenter.info/fanart/seriesyonkis.jpg"))
 
     return itemlist
 
 def series(item):
-    logger.info("[seriesyonkis.py] series")
+    logger.info()
     itemlist = []
 
     data = scrapertools.cachePage(item.url)
@@ -205,7 +202,7 @@ def detalle_programa(item,data=""):
     return item
 
 def episodios(item):
-    logger.info("[seriesyonkis.py] episodios")
+    logger.info()
 
     # Descarga la pagina
     data = scrapertools.cache_page(item.url)
@@ -262,7 +259,7 @@ def addChapters(item):
     return itemlist
 
 def findvideos(item):
-    logger.info("[seriesyonkis.py] findvideos")
+    logger.info()
     itemlist = []
 
     try:
@@ -275,7 +272,6 @@ def findvideos(item):
         
         # Procesa línea por línea
         matches = re.compile('<tr>.*?</tr>', re.S).findall(data)
-        if DEBUG: scrapertools.printMatches(matches)
 
         for match in matches:
             logger.info(match)
@@ -302,12 +298,12 @@ def findvideos(item):
     except:
         import sys
         for line in sys.exc_info():
-            logger.error( "%s" % line )
+            logger.error("%s" % line)
 
     return itemlist
 
 def play(item):
-    logger.info("[seriesyonkis.py] play")
+    logger.info()
     itemlist = []
     data = scrapertools.cache_page(item.url)
     videos = servertools.findvideos(data)  
@@ -371,7 +367,7 @@ def sendcaptcha(url,challenge,text):
 
 # Pone todas las series del listado alfabético juntas, para no tener que ir entrando una por una
 def completo(item):
-    logger.info("[seriesyonkis.py] completo()")
+    logger.info()
     itemlist = []
 
     # Carga el menú "Alfabético" de series
@@ -412,7 +408,7 @@ def completo(item):
     return itemlist
 
 def listalfabetico(item):
-    logger.info("[seriesyonkis.py] listalfabetico")
+    logger.info()
     
     itemlist = []
     

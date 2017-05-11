@@ -1,29 +1,26 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para quierodibujosanimados
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 
 import re
 import urlparse
 
-from core import config
 from core import logger
 from core import scrapertools
 from core.item import Item
 
-DEBUG = config.get_setting("debug")
-
 
 def mainlist(item):
-    logger.info("pelisalacarta.channels.quierodibujosanimados mainlist")
+    logger.info()
 
     #itemlist.append( Item(channel=item.channel , action="novedades"  , title="Novedades" , url="http://www.quierodibujosanimados.com/"))
     return series( Item(channel=item.channel , action="series"     , title="Series"    , url="http://www.quierodibujosanimados.com/"))
 
 def series(item):
-    logger.info("pelisalacarta.channels.quierodibujosanimados series")
+    logger.info()
     itemlist = []
     
     data = scrapertools.cache_page(item.url)
@@ -38,7 +35,7 @@ def series(item):
         url = urlparse.urljoin(item.url,scrapedurl)
         thumbnail = ""
         plot = ""
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+        logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
         itemlist.append( Item(channel=item.channel, action="episodios" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart="http://pelisalacarta.mimediacenter.info/fanart/quierodibujosanimados.jpg"))        
 
@@ -49,7 +46,7 @@ def series(item):
     return itemlist
 
 def episodios(item):
-    logger.info("pelisalacarta.channels.quierodibujosanimados episodios")
+    logger.info()
 
     '''
     <li>
@@ -101,7 +98,7 @@ def episodios(item):
         url = urlparse.urljoin(item.url,scrapedurl)
         thumbnail = urlparse.urljoin(item.url,scrapedthumbnail)
         plot = ""
-        if (DEBUG): logger.info("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
+        logger.debug("title=["+title+"], url=["+url+"], thumbnail=["+thumbnail+"]")
 
         itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart="http://pelisalacarta.mimediacenter.info/fanart/quierodibujosanimados.jpg"))
 

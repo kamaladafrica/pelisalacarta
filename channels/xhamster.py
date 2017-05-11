@@ -1,23 +1,20 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para xhamster
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 # Por boludiko
-#------------------------------------------------------------
+# ------------------------------------------------------------
 import re
 import sys
 
-from core import config
 from core import logger
 from core import scrapertools
 from core.item import Item
 
-DEBUG = config.get_setting("debug")
-
 
 def mainlist(item):
-    logger.info("pelisalacarta.channels.xhamster mainlist")
+    logger.info()
     itemlist = []
     itemlist.append( Item(channel=item.channel, action="videos"      , title="Útimos vídeos" , url="http://es.xhamster.com/", viewmode="movie"))
     itemlist.append( Item(channel=item.channel, action="categorias"    , title="Categorías"))
@@ -28,7 +25,7 @@ def mainlist(item):
 # REALMENTE PASA LA DIRECCION DE BUSQUEDA
 
 def search(item,texto):
-    logger.info("pelisalacarta.channels.xhamster search")
+    logger.info()
     tecleado = texto.replace( " ", "+" )
     item.url = item.url % tecleado
     item.extra = "buscar"
@@ -38,12 +35,12 @@ def search(item,texto):
     except:
         import sys
         for line in sys.exc_info():
-            logger.error( "%s" % line )
+            logger.error("%s" % line)
         return []
 # SECCION ENCARGADA DE BUSCAR
 
 def videos(item):
-    logger.info("pelisalacarta.channels.xhamster videos")
+    logger.info()
     data = scrapertools.cache_page(item.url)
     itemlist = []
 
@@ -53,14 +50,14 @@ def videos(item):
     patron = '<div class="video"><a href="([^"]+)" class="hRotator">'+"<img src='([^']+)' class='thumb'"+' alt="([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedthumbnail,scrapedtitle in matches:
-        if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")            
+        logger.debug("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
         itemlist.append( Item(channel=item.channel, action="detail" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, folder=True))
 		
 		#Patron #2
     patron = '<a href="([^"]+)"  data-click="[^"]+" class="hRotator"><img src=\'([^\']+)\' class=\'thumb\' alt="([^"]+)"/>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedthumbnail,scrapedtitle in matches:
-        if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")            
+        logger.debug("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
         itemlist.append( Item(channel=item.channel, action="detail" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, folder=True))
 
 
@@ -75,7 +72,7 @@ def videos(item):
 # SECCION ENCARGADA DE VOLCAR EL LISTADO DE CATEGORIAS CON EL LINK CORRESPONDIENTE A CADA PAGINA
     
 def categorias(item):
-    logger.info("pelisalacarta.channels.xhamster categorias")
+    logger.info()
     itemlist = []
 
     itemlist.append( Item(channel=item.channel, action="lista" , title="Heterosexual", url="http://es.xhamster.com/channels.php"))
@@ -84,7 +81,7 @@ def categorias(item):
     return itemlist
 
 def votados(item):
-    logger.info("pelisalacarta.channels.xhamster categorias")
+    logger.info()
     itemlist = []
 
     itemlist.append( Item(channel=item.channel, action="videos" , title="Día", url="http://es.xhamster.com/rankings/daily-top-videos.html", viewmode="movie"))
@@ -94,7 +91,7 @@ def votados(item):
     return itemlist
 
 def lista(item):
-    logger.info("pelisalacarta.channels.xhamster lista")
+    logger.info()
     itemlist = []
     data = scrapertools.downloadpageGzip(item.url)
     #data = data.replace("\n","")
@@ -120,7 +117,7 @@ def lista(item):
 
 # OBTIENE LOS ENLACES SEGUN LOS PATRONES DEL VIDEO Y LOS UNE CON EL SERVIDOR
 def detail(item):
-    logger.info("pelisalacarta.channels.xhamster play")
+    logger.info()
     itemlist = []
 
     data = scrapertools.cachePage(item.url)

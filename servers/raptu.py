@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Conector para raptu
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 
 import re
 
@@ -34,7 +34,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
         video_urls.append(["%s %s [raptu]" % (extension, calidad), video_url])
 
     try:
-        video_urls.sort(key=lambda it:int(it[0].split("p ", 1)[0].rsplit(" ")[1]))
+        video_urls.sort(key=lambda it: int(it[0].split("p ", 1)[0].rsplit(" ")[1]))
     except:
         pass
     for video_url in video_urls:
@@ -64,5 +64,5 @@ def find_videos(data):
             encontrados.add(url)
         else:
             logger.info("  url duplicada=" + url)
-           
+
     return devuelve

@@ -13,18 +13,18 @@ from lib import jsunpack
 
 
 def test_video_exists(page_url):
-    logger.info("pelisalacarta.servers.turbovideos test_video_exists(page_url='%s')" % page_url)
+    logger.info("(page_url='%s')" % page_url)
     return True, ""
 
 
 def get_video_url(page_url, premium=False, user="", password="", video_password=""):
-    logger.info("pelisalacarta.servers.turbovideos url=" + page_url)
+    logger.info("url=" + page_url)
 
     if "embed" not in page_url:
         page_url = page_url.replace("http://turbovideos.net/", "http://turbovideos.net/embed-") + ".html"
 
     data = scrapertools.cache_page(page_url)
-    logger.info("pelisalacarta.servers.turbovideos data=" + data)
+    logger.info("data=" + data)
 
     data = scrapertools.find_single_match(data,
                                           "<script type='text/javascript'>(eval\(function\(p,a,c,k,e,d.*?)</script>")
@@ -52,7 +52,7 @@ def find_videos(data):
     devuelve = []
 
     patronvideos = 'turbovideos.net/embed-([a-z0-9A-Z]+)'
-    logger.info("pelisalacarta.servers.turbovideos find_videos #" + patronvideos + "#")
+    logger.info("#" + patronvideos + "#")
     matches = re.compile(patronvideos, re.DOTALL).findall(data)
 
     for match in matches:

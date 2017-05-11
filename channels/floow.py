@@ -3,17 +3,18 @@
 # Canal (cinefoxtv) por Hernan_Ar_c
 # ------------------------------------------------------------
 
-import urlparse,urllib2,urllib,re
-import os, sys, time
+import re
+import sys
+import urllib
 
-from core import logger
 from core import config
-from core import scrapertools
-from core.item import Item
-from core import servertools
 from core import httptools
-from core import tmdb
 from core import jsontools
+from core import logger
+from core import scrapertools
+from core import servertools
+from core import tmdb
+from core.item import Item
 
 host = 'http://floow.tv'
 token = ''
@@ -98,7 +99,7 @@ def menuseries(item):
 
 
 def lista (item):
-    logger.info ()
+    logger.info()
     itemlist =[]
     
     token_url = "http://floow.tv/apibase/token"
@@ -263,7 +264,7 @@ def episodiosxtemp(item):
 
 def findvideos(item):
     servers ={'pixshare':'directo','bitshare HD':'openload'}
-    logger.info ()
+    logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r'"|\n|\r|\t|&nbsp;|<br>|\s{2,}|', "", str(data))

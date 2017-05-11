@@ -167,7 +167,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
     """
     def start(self, list_controls=None, dict_values=None, title="Opciones", callback=None, item=None,
               custom_button=None, channelpath=None):
-        logger.info("[xbmc_config_menu] start")
+        logger.info()
 
         # Ruta para las imagenes de la ventana
         self.mediapath = os.path.join(config.get_runtime_path(), 'resources', 'skins', 'Default', 'media')

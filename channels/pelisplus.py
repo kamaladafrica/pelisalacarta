@@ -3,17 +3,15 @@
 # Canal (pelisplus) por Hernan_Ar_c
 # ------------------------------------------------------------
 
-import urlparse,urllib2,urllib,re
-import os, sys
+import re
+import sys
 
-from core import logger
-from core import tmdb
 from core import config
-from core import scrapertools
 from core import httptools
+from core import logger
+from core import scrapertools
+from core import tmdb
 from core.item import Item
-from core import servertools
-
 
 host ="http://www.pelisplus.tv/"
 
@@ -138,7 +136,6 @@ def lista(item):
        if itemlist !=[]:
            next_page = str(int(actual)+1)
            next_page_url = host+item.extra+'pag-'+next_page
-           import inspect
            itemlist.append(Item(channel = item.channel, action = "lista", title = 'Siguiente >>>', url = next_page_url, thumbnail='https://s32.postimg.org/4zppxf5j9/siguiente.png',extra=item.extra))
     return itemlist
     
@@ -259,7 +256,7 @@ def generos(item):
     
 
 def findvideos(item):
-    logger.info ()
+    logger.info()
     itemlist=[]
     duplicados=[]
     datas=httptools.downloadpage(item.url).data

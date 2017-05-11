@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para zentorrents
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
-import re
+# ------------------------------------------------------------
+
 import os
-import sys
+import re
+import unicodedata
 import urllib
 import urlparse
-import string
-from core import config
-from core import logger
-from core import scrapertools
-from core import httptools
-from core.item import Item
+
 import xbmc
 import xbmcgui
-import unicodedata
+from core import config
+from core import httptools
+from core import logger
+from core import scrapertools
+from core.item import Item
 from core.scrapertools import decodeHtmlentities as dhe
 
 ACTION_SHOW_FULLSCREEN = 36
@@ -31,14 +31,14 @@ ACTION_MOVE_UP = 3
 OPTION_PANEL = 6
 OPTIONS_OK = 5
 
-DEBUG = config.get_setting("debug")
 host = "http://www.zentorrents.com/"
 
 api_key="2e2160006592024ba87ccdf78c28f49f"
 api_fankey ="dffe90fba4d02c199ae7a9e71330c987"
 
+
 def mainlist(item):
-    logger.info("pelisalacarta.zentorrents mainlist")
+    logger.info()
     
     itemlist = []
     itemlist.append( Item(channel=item.channel, title="Películas"      , action="peliculas", url="http://www.zentorrents.com/peliculas" ,thumbnail="http://www.navymwr.org/assets/movies/images/img-popcorn.png", fanart="http://s18.postimg.org/u9wyvm809/zen_peliculas.jpg"))
@@ -51,9 +51,8 @@ def mainlist(item):
     return itemlist
 
 
-
 def search(item, texto):
-    logger.info("pelisalacarta.zentorrent search")
+    logger.info()
     
     texto = texto.replace(" ", "+")
     item.url = "http://www.zentorrents.com//buscar?searchword=%s&ordering=&searchphrase=all&limit=\d+" % (texto)
@@ -71,7 +70,7 @@ def search(item, texto):
 
 
 def buscador(item):
-    logger.info("pelisalacarta.zentorrents buscador")
+    logger.info()
     itemlist = []
     # Descarga la página
     data = httptools.downloadpage(item.url).data
@@ -111,7 +110,7 @@ def buscador(item):
 
 
 def peliculas(item):
-    logger.info("pelisalacarta.zentorrents peliculas")
+    logger.info()
     itemlist = []
 
     # Descarga la página
@@ -177,8 +176,9 @@ def peliculas(item):
     
     return itemlist
 
+
 def fanart(item):
-    logger.info("pelisalacarta.zentorrent fanart")
+    logger.info()
     itemlist = []
     url = item.url
     data = httptools.downloadpage(url).data
@@ -722,8 +722,9 @@ def fanart(item):
 
     return itemlist
 
+
 def findvideos(item):
-    logger.info("pelisalacarta.zentorrents findvideos")
+    logger.info()
     
     if not "serie" in item.url:
         thumbnail= item.category
@@ -909,6 +910,7 @@ def findvideos(item):
     
     return itemlist
 
+
 def play(item):
     
     data = httptools.downloadpage(item.url).data
@@ -930,9 +932,8 @@ def play(item):
     return itemlist
 
 
-
 def info(item):
-    logger.info("pelisalacarta.zentorrents info")
+    logger.info()
     itemlist = []
     url=item.url
     id = item.extra
@@ -1099,7 +1100,7 @@ def info(item):
 
 
 def info_capitulos(item):
-    logger.info("pelisalacarta.zentorrent info_capitulos")
+    logger.info()
     
     url= "https://api.themoviedb.org/3/tv/"+item.show.split("|")[5]+"/season/"+item.extra.split("|")[2]+"/episode/"+item.extra.split("|")[3]+"?api_key="+api_key+"&language=es"
 
@@ -1260,8 +1261,7 @@ class TextBox2( xbmcgui.WindowDialog ):
         def onAction(self, action):
             if action == ACTION_PREVIOUS_MENU or action.getId() == ACTION_GESTURE_SWIPE_LEFT or action == 110 or action == 92:
                self.close()
-def test():
-    return True
+
 
 def browser(url):
     import mechanize
@@ -1294,6 +1294,7 @@ def browser(url):
         response = r.read()
     
     return response
+
 
 def tokenize(text, match=re.compile("([idel])|(\d+):|(-?\d+)").match):
     i = 0
@@ -1331,6 +1332,7 @@ def decode_item(next, token):
         raise ValueError
     return data
 
+
 def decode(text):
     try:
         src = tokenize(text)
@@ -1345,9 +1347,10 @@ def decode(text):
     
 
     return data
+
+
 def convert_size(size):
    import math
-   from os.path import getsize
    if (size == 0):
        return '0B'
    size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
