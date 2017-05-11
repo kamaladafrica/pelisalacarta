@@ -77,12 +77,11 @@ def dialog_progress(heading, line1, line2=" ", line3=" "):
 
 def dialog_progress_bg(heading, message=""):
     try:
-      dialog = xbmcgui.DialogProgressBG()
-      dialog.create(heading, message)
-      return dialog
+        dialog = xbmcgui.DialogProgressBG()
+        dialog.create(heading, message)
+        return dialog
     except:
-      return dialog_progress(heading, message)
-      
+        return dialog_progress(heading, message)
 
 
 def dialog_input(default="", heading="", hidden=False):
@@ -120,7 +119,7 @@ def render_items(itemlist, parent_item):
     # Si el itemlist no es un list salimos
     if not type(itemlist) == list:
         if config.get_platform() == "boxee":
-          xbmcplugin.endOfDirectory(handle=int(sys.argv[1]), succeeded=True)
+            xbmcplugin.endOfDirectory(handle=int(sys.argv[1]), succeeded=True)
         return
 
     # Si no hay ningun item, mostramos un aviso
@@ -129,7 +128,7 @@ def render_items(itemlist, parent_item):
 
     # Recorremos el itemlist
     for item in itemlist:
-        #logger.debug(item)
+        # logger.debug(item)
         # Si el item no contiene categoria, le ponemos la del item padre
         if item.category == "":
             item.category = parent_item.category
@@ -137,7 +136,6 @@ def render_items(itemlist, parent_item):
         # Si el item no contiene fanart, le ponemos el del item padre
         if item.fanart == "":
             item.fanart = parent_item.fanart
-
 
         # Formatear titulo
         if item.text_color:
@@ -147,7 +145,7 @@ def render_items(itemlist, parent_item):
         if item.text_italic:
             item.title = '[I]%s[/I]' % item.title
 
-        #Añade headers a las imagenes si estan en un servidor con cloudflare    
+        # Añade headers a las imagenes si estan en un servidor con cloudflare
         from core import httptools
         item.thumbnail = httptools.get_url_headers(item.thumbnail)
         item.fanart = httptools.get_url_headers(item.fanart)
@@ -163,10 +161,9 @@ def render_items(itemlist, parent_item):
 
         # Ponemos el fanart
         if item.fanart:
-          listitem.setProperty('fanart_image', item.fanart)
+            listitem.setProperty('fanart_image', item.fanart)
         else:
-          listitem.setProperty('fanart_image', os.path.join(config.get_runtime_path(), "fanart.jpg"))                  
-                             
+            listitem.setProperty('fanart_image', os.path.join(config.get_runtime_path(), "fanart.jpg"))
 
         # TODO: ¿Se puede eliminar esta linea? yo no he visto que haga ningun efecto.
         xbmcplugin.setPluginFanart(int(sys.argv[1]), os.path.join(config.get_runtime_path(), "fanart.jpg"))
@@ -183,22 +180,21 @@ def render_items(itemlist, parent_item):
                                         listitem=listitem, isFolder=item.folder)
         else:
             listitem.addContextMenuItems(context_commands, replaceItems=True)
-            
-            if not item.totalItems: item.totalItems = 0
+
+            if not item.totalItems:
+                item.totalItems = 0
             xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url='%s?%s' % (sys.argv[0], item.tourl()),
                                         listitem=listitem, isFolder=item.folder,
                                         totalItems=item.totalItems)
 
-
     # Fijar los tipos de vistas...
-    if config.get_setting("forceview") == "true":
+    if config.get_setting("forceview") == True:
         # ...forzamos segun el viewcontent
         xbmcplugin.setContent(int(sys.argv[1]), parent_item.viewcontent)
-        #logger.debug(parent_item)
+        # logger.debug(parent_item)
     elif parent_item.channel not in ["channelselector", ""]:
         # ... o segun el canal
         xbmcplugin.setContent(int(sys.argv[1]), "movies")
-
 
     # Fijamos el "breadcrumb"
     xbmcplugin.setPluginCategory(handle=int(sys.argv[1]), category=parent_item.category.capitalize())
@@ -210,7 +206,7 @@ def render_items(itemlist, parent_item):
     xbmcplugin.endOfDirectory(handle=int(sys.argv[1]), succeeded=True)
 
     # Fijar la vista
-    if config.get_setting("forceview") == "true":
+    if config.get_setting("forceview") == True:
         viewmode_id = get_viewmode_id(parent_item)
         xbmc.executebuiltin("Container.SetViewMode(%s)" % viewmode_id)
 
@@ -219,22 +215,21 @@ def get_viewmode_id(parent_item):
     # viewmode_json habria q guardarlo en un archivo y crear un metodo para q el user fije sus preferencias en:
     # user_files, user_movies, user_tvshows, user_season y user_episodes.
     viewmode_json = {'skin.confluence': {'default_files': 50,
-                                    'default_movies': 515,
-                                    'default_tvshows': 508,
-                                    'default_seasons': 503,
-                                    'default_episodes': 504,
-                                    'view_list': 50,
-                                    'view_thumbnails': 500,
-                                    'view_movie_with_plot': 503},
+                                         'default_movies': 515,
+                                         'default_tvshows': 508,
+                                         'default_seasons': 503,
+                                         'default_episodes': 504,
+                                         'view_list': 50,
+                                         'view_thumbnails': 500,
+                                         'view_movie_with_plot': 503},
                      'skin.estuary': {'default_files': 50,
-                                     'default_movies': 54,
-                                     'default_tvshows': 502,
-                                     'default_seasons': 500,
-                                     'default_episodes': 53,
-                                     'view_list': 50,
-                                     'view_thumbnails': 500,
-                                     'view_movie_with_plot': 54}}
-
+                                      'default_movies': 54,
+                                      'default_tvshows': 502,
+                                      'default_seasons': 500,
+                                      'default_episodes': 53,
+                                      'view_list': 50,
+                                      'view_thumbnails': 500,
+                                      'view_movie_with_plot': 54}}
 
     # Si el parent_item tenia fijado un viewmode usamos esa vista...
     if parent_item.viewmode == 'movie':
@@ -242,21 +237,21 @@ def get_viewmode_id(parent_item):
         parent_item.viewmode = 'thumbnails'
 
     if parent_item.viewmode in ["list", "movie_with_plot", "thumbnails"]:
-        viewName = "view_" + parent_item.viewmode
+        view_name = "view_" + parent_item.viewmode
 
         '''elif isinstance(parent_item.viewmode, int):
             # only for debug
             viewName = parent_item.viewmode'''
 
-    #...sino ponemos la vista por defecto en funcion del viewcontent
+    # ...sino ponemos la vista por defecto en funcion del viewcontent
     else:
-        viewName = "default_" + parent_item.viewcontent
+        view_name = "default_" + parent_item.viewcontent
 
-    skinName = xbmc.getSkinDir()
-    if skinName not in viewmode_json:
-        skinName = 'skin.confluence'
-    view_skin = viewmode_json[skinName]
-    return view_skin.get(viewName, 50)
+    skin_name = xbmc.getSkinDir()
+    if skin_name not in viewmode_json:
+        skin_name = 'skin.confluence'
+    view_skin = viewmode_json[skin_name]
+    return view_skin.get(view_name, 50)
 
 
 def set_infolabels(listitem, item, player=False):
@@ -273,16 +268,16 @@ def set_infolabels(listitem, item, player=False):
         if 'mediatype' not in item.infoLabels:
             item.infoLabels['mediatype'] = item.contentType
         listitem.setInfo("video", item.infoLabels)
-      
+
     if player and not item.contentTitle:
         if item.fulltitle:
             listitem.setInfo("video", {"Title": item.fulltitle})
         else:
             listitem.setInfo("video", {"Title": item.title})
-          
+
     elif not player:
         listitem.setInfo("video", {"Title": item.title})
-        
+
     # Añadido para Kodi Krypton (v17)
     if config.get_platform(True)['num_version'] >= 17.0:
         listitem.setArt({"poster": item.thumbnail})
@@ -366,7 +361,7 @@ def set_context_commands(item, parent_item):
 
         # ExtendedInfo: Si esta instalado el addon y se cumplen una serie de condiciones
         if xbmc.getCondVisibility('System.HasAddon(script.extendedinfo)') \
-                and config.get_setting("extended_info") == "true":
+                and config.get_setting("extended_info") == True:
             if item.contentType == "episode" and item.contentEpisodeNumber and item.contentSeason \
                     and (item.infoLabels['tmdb_id'] or item.contentSerieName):
                 param = "tvshow_id =%s, tvshow=%s, season=%s, episode=%s" \
@@ -398,10 +393,10 @@ def set_context_commands(item, parent_item):
                                          "XBMC.RunScript(script.extendedinfo,info=extendedinfo,%s)" % param))
 
         # InfoPlus
-        if config.get_setting("infoplus") == "true":
+        if config.get_setting("infoplus") == True:
             if item.infoLabels['tmdb_id'] or item.infoLabels['imdb_id'] or item.infoLabels['tvdb_id'] or \
                                       (item.contentTitle and item.infoLabels["year"]) or item.contentSerieName:
-                context_commands.append(("InfoPlus","XBMC.RunPlugin(%s?%s)" % (sys.argv[0], item.clone(
+                context_commands.append(("InfoPlus", "XBMC.RunPlugin(%s?%s)" % (sys.argv[0], item.clone(
                                             channel="infoplus", action="start", from_channel=item.channel).tourl())))
 
         # Ir al Menu Principal (channel.mainlist)
@@ -411,8 +406,9 @@ def set_context_commands(item, parent_item):
                                      (sys.argv[0], Item(channel=item.channel, action="mainlist").tourl())))
 
         # Añadir a Favoritos
-        if num_version_xbmc < 17.0 and ((item.channel not in ["favoritos", "biblioteca", "ayuda", ""] or
-                                    item.action in ["update_biblio"]) and not parent_item.channel == "favoritos"):
+        if num_version_xbmc < 17.0 and \
+                ((item.channel not in ["favoritos", "biblioteca", "ayuda", ""] or item.action in ["update_biblio"]) and
+                 not parent_item.channel == "favoritos"):
             context_commands.append((config.get_localized_string(30155), "XBMC.RunPlugin(%s?%s)" %
                                      (sys.argv[0], item.clone(channel="favoritos", action="addFavourite",
                                                               from_channel=item.channel,
@@ -480,7 +476,7 @@ def is_playing():
 
 
 def play_video(item, strm=False):
-    logger.info("pelisalacarta.platformcode.platformtools play_video")
+    logger.info()
     # logger.debug(item.tostring('\n'))
 
     if item.channel == 'descargas':
@@ -491,7 +487,7 @@ def play_video(item, strm=False):
         return
 
     default_action = config.get_setting("default_action")
-    logger.info("default_action=" + default_action)
+    logger.info("default_action=%s" % default_action)
 
     # Abre el diálogo de selección para ver las opciones disponibles
     opciones, video_urls, seleccion, salir = get_dialogo_opciones(item, default_action, strm)
@@ -528,11 +524,6 @@ def play_video(item, strm=False):
 
     # se lanza el reproductor
     set_player(item, xlistitem, mediaurl, view, strm)
-
-    # si es un archivo de la biblioteca enviar a marcar como visto
-    if strm or item.strm_path:
-        from platformcode import xbmc_library
-        xbmc_library.mark_auto_as_watched(item)
 
 
 def stop_video():
@@ -708,8 +699,8 @@ def handle_wait(time_to_wait, title, text):
 
 
 def get_dialogo_opciones(item, default_action, strm):
-    logger.info("platformtools get_dialogo_opciones")
-    #logger.debug(item.tostring('\n'))
+    logger.info()
+    # logger.debug(item.tostring('\n'))
     from core import servertools
 
     opciones = []
@@ -724,15 +715,15 @@ def get_dialogo_opciones(item, default_action, strm):
         item.server = "directo"
 
     # Si no es el modo normal, no muestra el diálogo porque cuelga XBMC
-    muestra_dialogo = (config.get_setting("player_mode") == "0" and not strm)
+    muestra_dialogo = (config.get_setting("player_mode") == 0 and not strm)
 
     # Extrae las URL de los vídeos, y si no puedes verlo te dice el motivo
-    #Permitir varias calidades para server "directo"
+    # Permitir varias calidades para server "directo"
     if item.video_urls:
-      video_urls, puedes, motivo = item.video_urls, True, ""
+        video_urls, puedes, motivo = item.video_urls, True, ""
     else:
-      video_urls, puedes, motivo = servertools.resolve_video_urls_for_playing(
-          item.server, item.url, item.password, muestra_dialogo)
+        video_urls, puedes, motivo = servertools.resolve_video_urls_for_playing(
+            item.server, item.url, item.password, muestra_dialogo)
 
     seleccion = 0
     # Si puedes ver el vídeo, presenta las opciones
@@ -758,7 +749,7 @@ def get_dialogo_opciones(item, default_action, strm):
                 # "Añadir a Biblioteca"
                 opciones.append(config.get_localized_string(30161))
 
-            if config.get_setting("jdownloader_enabled") == "true":
+            if config.get_setting("jdownloader_enabled") == True:
                 # "Enviar a JDownloader"
                 opciones.append(config.get_localized_string(30158))
 
@@ -793,7 +784,7 @@ def get_dialogo_opciones(item, default_action, strm):
 
 
 def set_opcion(item, seleccion, opciones, video_urls):
-    logger.info("platformtools set_opcion")
+    logger.info()
     # logger.debug(item.tostring('\n'))
     salir = False
     # No ha elegido nada, lo más probable porque haya dado al ESC
@@ -820,7 +811,7 @@ def set_opcion(item, seleccion, opciones, video_urls):
     elif opciones[seleccion] == config.get_localized_string(30153):
         from channels import descargas
         if item.contentType == "list" or item.contentType == "tvshow":
-          item.contentType = "video"
+            item.contentType = "video"
         item.play_menu = True
         descargas.save_download(item)
         salir = True
@@ -854,7 +845,7 @@ def set_opcion(item, seleccion, opciones, video_urls):
 
     # "Buscar Trailer":
     elif opciones[seleccion] == config.get_localized_string(30162):
-        config.set_setting("subtitulo", "false")
+        config.set_setting("subtitulo", False)
         xbmc.executebuiltin("XBMC.RunPlugin(%s?%s)" %
                             (sys.argv[0], item.clone(channel="trailertools", action="buscartrailer",
                                                      contextual=True).tourl()))
@@ -864,7 +855,7 @@ def set_opcion(item, seleccion, opciones, video_urls):
 
 
 def get_video_seleccionado(item, seleccion, video_urls):
-    logger.info("platformtools get_video_seleccionado")
+    logger.info()
     mediaurl = ""
     view = False
     wait_time = 0
@@ -885,7 +876,7 @@ def get_video_seleccionado(item, seleccion, video_urls):
         view = True
 
     # Si no hay mediaurl es porque el vídeo no está :)
-    logger.info("pelisalacarta.platformcode.platformstools mediaurl=" + mediaurl)
+    logger.info("mediaurl=" + mediaurl)
     if mediaurl == "":
         if item.server == "unknown":
             alert_unsopported_server()
@@ -902,7 +893,7 @@ def get_video_seleccionado(item, seleccion, video_urls):
 
 
 def set_player(item, xlistitem, mediaurl, view, strm):
-    logger.info("platformtools set_player")
+    logger.info()
     logger.debug("item:\n" + item.tostring('\n'))
 
     # Movido del conector "torrent" aqui
@@ -918,15 +909,15 @@ def set_player(item, xlistitem, mediaurl, view, strm):
             xbmc.Player().setSubtitles(item.subtitle)
 
     else:
-        logger.info("player_mode=" + config.get_setting("player_mode"))
+        logger.info("player_mode=%s" % config.get_setting("player_mode"))
         logger.info("mediaurl=" + mediaurl)
-        if config.get_setting("player_mode") == "3" or "megacrypter.com" in mediaurl:
+        if config.get_setting("player_mode") == 3 or "megacrypter.com" in mediaurl:
             import download_and_play
             download_and_play.download_and_play(mediaurl, "download_and_play.tmp", config.get_setting("downloadpath"))
             return
 
-        elif config.get_setting("player_mode") == "0" or \
-                (config.get_setting("player_mode") == "3" and mediaurl.startswith("rtmp")):
+        elif config.get_setting("player_mode") == 0 or \
+                (config.get_setting("player_mode") == 3 and mediaurl.startswith("rtmp")):
             # Añadimos el listitem a una lista de reproducción (playlist)
             playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
             playlist.clear()
@@ -934,19 +925,19 @@ def set_player(item, xlistitem, mediaurl, view, strm):
 
             # Reproduce
             playersettings = config.get_setting('player_type')
-            logger.info("pelisalacarta.platformcode.platformstools playersettings=" + playersettings)
+            logger.info("playersettings=%s" % playersettings)
 
             if config.get_system_platform() == "xbox":
                 player_type = xbmc.PLAYER_CORE_AUTO
-                if playersettings == "0":
+                if playersettings == 0:
                     player_type = xbmc.PLAYER_CORE_AUTO
-                    logger.info("pelisalacarta.platformcode.platformstools PLAYER_CORE_AUTO")
-                elif playersettings == "1":
+                    logger.debug("PLAYER_CORE_AUTO")
+                elif playersettings == 1:
                     player_type = xbmc.PLAYER_CORE_MPLAYER
-                    logger.info("pelisalacarta.platformcode.platformstools PLAYER_CORE_MPLAYER")
-                elif playersettings == "2":
+                    logger.debug("PLAYER_CORE_MPLAYER")
+                elif playersettings == 2:
                     player_type = xbmc.PLAYER_CORE_DVDPLAYER
-                    logger.info("pelisalacarta.platformcode.platformstools PLAYER_CORE_DVDPLAYER")
+                    logger.debug("PLAYER_CORE_DVDPLAYER")
 
                 xbmc_player = xbmc.Player(player_type)
             else:
@@ -954,12 +945,12 @@ def set_player(item, xlistitem, mediaurl, view, strm):
 
             xbmc_player.play(playlist, xlistitem)
 
-        elif config.get_setting("player_mode") == "1":
+        elif config.get_setting("player_mode") == 1:
             logger.info("mediaurl :" + mediaurl)
             logger.info("Tras setResolvedUrl")
             xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, xbmcgui.ListItem(path=mediaurl))
 
-        elif config.get_setting("player_mode") == "2":
+        elif config.get_setting("player_mode") == 2:
             xbmc.executebuiltin("PlayMedia(" + mediaurl + ")")
 
     # TODO MIRAR DE QUITAR VIEW
@@ -968,9 +959,14 @@ def set_player(item, xlistitem, mediaurl, view, strm):
         xbmc.sleep(2000)
         xbmc.Player().setSubtitles(item.subtitle)
 
+    # si es un archivo de la biblioteca enviar a marcar como visto
+    if strm or item.strm_path:
+        from platformcode import xbmc_library
+        xbmc_library.mark_auto_as_watched(item)
+
 
 def play_torrent(item, xlistitem, mediaurl):
-    logger.info("platformtools play_torrent")
+    logger.info()
     # Opciones disponibles para Reproducir torrents
     torrent_options = list()
     torrent_options.append(["Cliente interno (necesario libtorrent)"])
@@ -1003,24 +999,24 @@ def play_torrent(item, xlistitem, mediaurl):
 
     if seleccion == 1:
         from platformcode import mct
-        mct.play(mediaurl, xlistitem, subtitle=item.subtitle)
+        mct.play(mediaurl, xlistitem, subtitle=item.subtitle, item=item)
 
     # Reproductor propio (libtorrent)
     if seleccion == 0:
         import time
         played = False
-        debug =  (config.get_setting("debug") == "true")
-        
+        debug = (config.get_setting("debug") == True)
+
         # Importamos el cliente
         from btserver import Client
 
-        clientTmpPath = config.get_setting("downloadpath")
-        if not clientTmpPath:
-            clientTmpPath = config.get_data_path()
+        client_tmp_path = config.get_setting("downloadpath")
+        if not client_tmp_path:
+            client_tmp_path = config.get_data_path()
 
         # Iniciamos el cliente:
         c = Client(url=mediaurl, is_playing_fnc=xbmc.Player().isPlaying, wait_time=None, timeout=10,
-                   temp_path=os.path.join(clientTmpPath, "pelisalacarta-torrent"), print_status=debug)
+                   temp_path=os.path.join(client_tmp_path, "pelisalacarta-torrent"), print_status=debug)
 
         # Mostramos el progreso
         progreso = dialog_progress("Pelisalacarta - Torrent", "Iniciando...")
@@ -1031,48 +1027,46 @@ def play_torrent(item, xlistitem, mediaurl):
                 # Obtenemos el estado del torrent
                 s = c.status
                 if debug:
-                  # Montamos las tres lineas con la info del torrent
-                  txt = '%.2f%% de %.1fMB %s | %.1f kB/s' % \
-                        (s.progress_file, s.file_size, s.str_state, s._download_rate)
-                  txt2 = 'S: %d(%d) P: %d(%d) | DHT:%s (%d) | Trakers: %d' % \
-                         (s.num_seeds, s.num_complete, s.num_peers, s.num_incomplete, s.dht_state, s.dht_nodes,
-                          s.trackers)
-                  txt3 = 'Origen Peers TRK: %d DHT: %d PEX: %d LSD %d ' % \
-                         (s.trk_peers, s.dht_peers, s.pex_peers, s.lsd_peers)
+                    # Montamos las tres lineas con la info del torrent
+                    txt = '%.2f%% de %.1fMB %s | %.1f kB/s' % \
+                          (s.progress_file, s.file_size, s.str_state, s._download_rate)
+                    txt2 = 'S: %d(%d) P: %d(%d) | DHT:%s (%d) | Trakers: %d' % \
+                           (s.num_seeds, s.num_complete, s.num_peers, s.num_incomplete, s.dht_state, s.dht_nodes,
+                            s.trackers)
+                    txt3 = 'Origen Peers TRK: %d DHT: %d PEX: %d LSD %d ' % \
+                           (s.trk_peers, s.dht_peers, s.pex_peers, s.lsd_peers)
                 else:
-                  txt = '%.2f%% de %.1fMB %s | %.1f kB/s' % \
-                        (s.progress_file, s.file_size, s.str_state, s._download_rate)
-                  txt2 = 'S: %d(%d) P: %d(%d)' % (s.num_seeds, s.num_complete, s.num_peers, s.num_incomplete)
-                  try:
-                    txt3 = 'Deteniendo automaticamente en: %ss' % (int(s.timeout))   
-                  except:
-                    txt3 = ''
+                    txt = '%.2f%% de %.1fMB %s | %.1f kB/s' % \
+                          (s.progress_file, s.file_size, s.str_state, s._download_rate)
+                    txt2 = 'S: %d(%d) P: %d(%d)' % (s.num_seeds, s.num_complete, s.num_peers, s.num_incomplete)
+                    try:
+                        txt3 = 'Deteniendo automaticamente en: %ss' % (int(s.timeout))
+                    except:
+                        txt3 = ''
 
                 progreso.update(s.buffer, txt, txt2, txt3)
                 time.sleep(0.5)
-                
-                if progreso.iscanceled():
-                  progreso.close()
-                  if s.buffer == 100:
-                    if dialog_yesno("Pelisalacarta - Torrent", "¿Deseas iniciar la reproduccion?"):
-                      played = False
-                      progreso = dialog_progress("Pelisalacarta - Torrent", "")
-                      progreso.update(s.buffer, txt, txt2, txt3)
-                    else:
-                      progreso = dialog_progress("Pelisalacarta - Torrent", "")
-                      break
-                      
-                  else:
-                    if dialog_yesno("Pelisalacarta - Torrent", "¿Deseas cancelar el proceso?"):
-                      progreso = dialog_progress("Pelisalacarta - Torrent", "")
-                      break
-                      
-                    else:
-                      progreso = dialog_progress("Pelisalacarta - Torrent", "")
-                      progreso.update(s.buffer, txt, txt2, txt3)
 
-                   
-   
+                if progreso.iscanceled():
+                    progreso.close()
+                    if s.buffer == 100:
+                        if dialog_yesno("Pelisalacarta - Torrent", "¿Deseas iniciar la reproduccion?"):
+                            played = False
+                            progreso = dialog_progress("Pelisalacarta - Torrent", "")
+                            progreso.update(s.buffer, txt, txt2, txt3)
+                        else:
+                            progreso = dialog_progress("Pelisalacarta - Torrent", "")
+                            break
+
+                    else:
+                        if dialog_yesno("Pelisalacarta - Torrent", "¿Deseas cancelar el proceso?"):
+                            progreso = dialog_progress("Pelisalacarta - Torrent", "")
+                            break
+
+                        else:
+                            progreso = dialog_progress("Pelisalacarta - Torrent", "")
+                            progreso.update(s.buffer, txt, txt2, txt3)
+
                 # Si el buffer se ha llenado y la reproduccion no ha sido iniciada, se inicia
                 if s.buffer == 100 and not played:
                     # Cerramos el progreso
@@ -1091,6 +1085,11 @@ def play_torrent(item, xlistitem, mediaurl):
                     # Marcamos como reproducido para que no se vuelva a iniciar
                     played = True
 
+                    # si es un archivo de la biblioteca enviar a marcar como visto
+                    if item.strm_path:
+                        from platformcode import xbmc_library
+                        xbmc_library.mark_auto_as_watched(item)
+
                     # Y esperamos a que el reproductor se cierre
                     while xbmc.Player().isPlaying():
                         time.sleep(1)
@@ -1101,7 +1100,7 @@ def play_torrent(item, xlistitem, mediaurl):
 
             except:
                 import traceback
-                logger.info(traceback.format_exc())
+                logger.error(traceback.format_exc())
                 break
 
         progreso.update(100, "Terminando y eliminando datos", " ", " ")

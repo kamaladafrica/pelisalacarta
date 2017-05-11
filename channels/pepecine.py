@@ -1,24 +1,22 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para Pepecine
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 
-import ast
 import re
 import sys
 import urlparse
 
 from core import config
+from core import httptools
 from core import jsontools
 from core import logger
 from core import scrapertools
-from core import httptools
 from core import servertools
 from core import tmdb
 from core.item import Item, InfoLabels
-
 
 __url_base__ = "http://pepecine.net"
 __chanel__ = "pepecine"
@@ -109,7 +107,7 @@ def search(item,texto):
     except:
         import sys
         for line in sys.exc_info():
-            logger.error( "%s" % line )
+            logger.error("%s" % line)
         return []
 
 def newest(categoria):
@@ -420,13 +418,13 @@ def find_videos(url, lista_servers):
                 break
            
         except ImportError:
-            logger.info("No existe conector para #"+serverid+"#")
+            logger.error("No existe conector para #"+serverid+"#")
             #import traceback
             #logger.info(traceback.format_exc())
         except:
             logger.error("Error en el conector #"+serverid+"#")
             import traceback
-            logger.info(traceback.format_exc())
+            logger.error(traceback.format_exc())
     
     return ret
 

@@ -3,23 +3,17 @@
 # Canal (pelisplus) por Hernan_Ar_c
 # ------------------------------------------------------------
 
-import urlparse, urllib2, urllib, re
-import os, sys
+import re
+import sys
 
-from core import logger
-from core import tmdb
-from core import scrapertools
+from core import config
 from core import httptools
 from core import logger
 from core import scrapertools
 from core import tmdb
 from core.item import Item
-from core import config
-from core import servertools
-from channels import autoplay
-from channels import filtertools
 
-host = "http://www.pelisplus.tv/"
+host ="http://www.pelisplus.tv/"
 
 headers = [['User-Agent', 'Mozilla/50.0 (Windows NT 10.0; WOW64; rv:45.0) Gecko/20100101 Firefox/45.0'],
            ['Referer', host]]
@@ -264,19 +258,12 @@ def lista(item):
                                                        '<span>Sinopsis:<\/span>.([^<]+)<span '
                                                        'class="text-detail-hide"><\/span>.<\/p>')
 
-            # Paginacion
-    if item.title != 'Buscar' and actual != '':
-        if itemlist != []:
-            next_page = str(int(actual) + 1)
-            next_page_url = host + item.extra + 'pag-' + next_page
-            itemlist.append(
-                    Item(channel=item.channel,
-                         action="lista",
-                         title='Siguiente >>>',
-                         url=next_page_url,
-                         thumbnail='https://s32.postimg.org/4zppxf5j9/siguiente.png',
-                         extra=item.extra
-                         ))
+#Paginacion
+    if item.title != 'Buscar' and actual !='':
+       if itemlist !=[]:
+           next_page = str(int(actual)+1)
+           next_page_url = host+item.extra+'pag-'+next_page
+           itemlist.append(Item(channel = item.channel, action = "lista", title = 'Siguiente >>>', url = next_page_url, thumbnail='https://s32.postimg.org/4zppxf5j9/siguiente.png',extra=item.extra))
     return itemlist
 
 
@@ -441,7 +428,7 @@ def generos(item):
 
 
 def findvideos(item):
-    logger.info ()
+    logger.info()
     itemlist=[]
     duplicados=[]
     datas=httptools.downloadpage(item.url).data

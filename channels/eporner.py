@@ -1,17 +1,15 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para Allpeliculas
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 import re
 import urlparse
-from core import config
-from core import logger
+
 from core import httptools
-from core import scrapertools
-from core.item import Item
 from core import jsontools
+from core import logger
 
 
 def mainlist(item):

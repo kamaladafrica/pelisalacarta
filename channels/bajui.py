@@ -1,25 +1,21 @@
 ﻿# -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para bajui
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 import re
 import sys
 import urlparse
 
-from core import config
 from core import logger
 from core import scrapertools
 from core import servertools
 from core.item import Item
 
 
-DEBUG = config.get_setting("debug")
-
-
 def mainlist(item):
-    logger.info("[bajui.py] getmainlist")
+    logger.info()
     itemlist = []
     itemlist.append( Item(channel=item.channel, title="Películas"                , action="menupeliculas", url="http://www.bajui.com/descargas/categoria/2/peliculas",fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg"))
     itemlist.append( Item(channel=item.channel, title="Series"                   , action="menuseries",fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg"))
@@ -28,7 +24,7 @@ def mainlist(item):
     return itemlist
 
 def menupeliculas(item):
-    logger.info("[bajui.py] menupeliculas")
+    logger.info()
     itemlist = []
     itemlist.append( Item(channel=item.channel, title="Películas - Novedades"        , action="peliculas"   , url=item.url,fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg", viewmode="movie_with_plot"))
     itemlist.append( Item(channel=item.channel, title="Películas - A-Z"              , action="peliculas"   , url=item.url+"/orden:nombre",fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg", viewmode="movie_with_plot"))
@@ -46,7 +42,7 @@ def menupeliculas(item):
     return itemlist
 
 def menuseries(item):
-    logger.info("[bajui.py] menuseries")
+    logger.info()
     itemlist = []
     itemlist.append( Item(channel=item.channel, title="Series - Novedades"           , action="peliculas"        , url="http://www.bajui.com/descargas/categoria/3/series",fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg", viewmode="movie_with_plot"))
     itemlist.append( Item(channel=item.channel, title="Series - A-Z"                 , action="peliculas"        , url="http://www.bajui.com/descargas/categoria/3/series/orden:nombre",fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg", viewmode="movie_with_plot"))
@@ -55,7 +51,7 @@ def menuseries(item):
     return itemlist
 
 def menudocumentales(item):
-    logger.info("[bajui.py] menudocumentales")
+    logger.info()
     itemlist = []
     itemlist.append( Item(channel=item.channel, title="Documentales - Novedades"         , action="peliculas"     , url="http://www.bajui.com/descargas/categoria/7/docus-y-tv",fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg", viewmode="movie_with_plot"))
     itemlist.append( Item(channel=item.channel, title="Documentales - A-Z"               , action="peliculas"     , url="http://www.bajui.com/descargas/categoria/7/docus-y-tv/orden:nombre",fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg", viewmode="movie_with_plot"))
@@ -64,7 +60,7 @@ def menudocumentales(item):
 
 # Al llamarse "search" la función, el launcher pide un texto a buscar y lo añade como parámetro
 def search(item,texto,categoria=""):
-    logger.info("[bajui.py] "+item.url+" search "+texto)
+    logger.info(item.url+" search "+texto)
     itemlist = []
     url = item.url
     texto = texto.replace(" ","+")
@@ -78,11 +74,11 @@ def search(item,texto,categoria=""):
     except:
         import sys
         for line in sys.exc_info():
-            logger.error( "%s" % line )
+            logger.error("%s" % line)
         return []
 
 def peliculas(item,paginacion=True):
-    logger.info("[bajui.py] peliculas")
+    logger.info()
     url = item.url
 
     # Descarga la página
@@ -95,7 +91,6 @@ def peliculas(item,paginacion=True):
     patron += '</div>.*?<a href="([^"]+)"[^<]+'
     patron += '<img src="([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
-    if DEBUG: scrapertools.printMatches(matches)
     itemlist = []
     
     for title,plot,url,thumbnail in matches:
@@ -103,7 +98,7 @@ def peliculas(item,paginacion=True):
         scrapedplot = clean_plot(plot)
         scrapedurl = urlparse.urljoin(item.url,url)
         scrapedthumbnail = urlparse.urljoin("http://www.bajui.com/",thumbnail.replace("_m.jpg","_g.jpg"))
-        if DEBUG: logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
+        logger.debug("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
 
         # Añade al listado de XBMC
         itemlist.append( Item(channel=item.channel, action="enlaces", title=scrapedtitle , fulltitle=title , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot , extra=scrapedtitle , context="4|5", fanart="http://pelisalacarta.mimediacenter.info/fanart/bajui.jpg", viewmode="movie_with_plot") )
@@ -162,7 +157,7 @@ def clean_plot(scrapedplot):
     return scrapedplot
 
 def enlaces(item):
-    logger.info("[bajui.py] enlaces")
+    logger.info()
     itemlist = []
 
     data = scrapertools.cache_page(item.url)
@@ -200,7 +195,7 @@ def enlaces(item):
 
     matches = re.compile(patron,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
-    logger.info("matches="+repr(matches))
+    logger.debug("matches="+repr(matches))
     
     for thumbnail,usuario,fecha,id,id2,servidores in matches:
         #<img src="/images/servidores/bitshare.png" title="bitshare.com" border="0" alt="bitshare.com" /><img src="/images/servidores/freakshare.net.jpg" title="freakshare.com" border="0" alt="freakshare.com" /><img src="/images/servidores/rapidgator.png" title="rapidgator.net" border="0" alt="rapidgator.net" /><img src="/images/servidores/turbobit.png" title="turbobit.net" border="0" alt="turbobit.net" /><img src="/images/servidores/muchshare.png" title="muchshare.net" border="0" alt="muchshare.net" /><img src="/images/servidores/letitbit.png" title="letitbit.net" border="0" alt="letitbit.net" /><img src="/images/servidores/shareflare.png" title="shareflare.net" border="0" alt="shareflare.net" /><img src="/images/servidores/otros.gif" title="Otros servidores" border="0" alt="Otros" />
@@ -222,7 +217,7 @@ def enlaces(item):
     return itemlist
         
 def findvideos(item):
-    logger.info("[bajui.py] findvideos")
+    logger.info()
     
     data = scrapertools.cache_page(item.url)
     itemlist = servertools.find_video_items(data=data)

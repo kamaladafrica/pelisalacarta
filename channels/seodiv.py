@@ -3,15 +3,14 @@
 # Canal (seodiv) por Hernan_Ar_c
 # ------------------------------------------------------------
 
-import urlparse, urllib2, urllib, re
-import os, sys
+import re
 
-from core import logger
 from core import config
+from core import httptools
+from core import logger
+from core import servertools
 from core import scrapertools
 from core.item import Item
-from core import servertools
-from core import httptools
 
 IDIOMAS = {'latino':'Latino'}
 list_languages = IDIOMAS.values()
@@ -105,7 +104,9 @@ def episodios(item):
 
 
 def episodiosxtemp(item):
+    
     logger.info()
+
     itemlist = []
     data = httptools.downloadpage(item.url).data
     tempo = item.title

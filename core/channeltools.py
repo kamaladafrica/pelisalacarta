@@ -35,12 +35,21 @@ import scrapertools
 DEFAULT_UPDATE_URL = "https://raw.githubusercontent.com/tvalacarta/pelisalacarta/develop/python/main-classic/channels/"
 
 
+def str_to_bool(s):
+    if s == 'true':
+        return True
+    elif s == 'false' or s == '':
+        return False
+    else:
+        raise ValueError("Cannot covert '%s' to a bool" % s)
+
+
 def is_adult(channel_name):
     logger.info("channel_name="+channel_name)
 
     channel_parameters = get_channel_parameters(channel_name)
 
-    return channel_parameters["adult"] == "true"
+    return channel_parameters["adult"]
 
 
 def get_channel_parameters(channel_name):
@@ -57,14 +66,14 @@ def get_channel_parameters(channel_name):
         channel_parameters = dict()
         channel_parameters["title"] = scrapertools.find_single_match(data, "<name>([^<]*)</name>")
         channel_parameters["channel"] = scrapertools.find_single_match(data, "<id>([^<]*)</id>")
-        channel_parameters["active"] = scrapertools.find_single_match(data, "<active>([^<]*)</active>")
-        channel_parameters["adult"] = scrapertools.find_single_match(data, "<adult>([^<]*)</adult>")
+        channel_parameters["active"] = str_to_bool(scrapertools.find_single_match(data, "<active>([^<]*)</active>"))
+        channel_parameters["adult"] = str_to_bool(scrapertools.find_single_match(data, "<adult>([^<]*)</adult>"))
         channel_parameters["language"] = scrapertools.find_single_match(data, "<language>([^<]*)</language>")
+
         # Imagenes: se admiten url y archivos locales dentro de "resources/images"
         channel_parameters["thumbnail"] = scrapertools.find_single_match(data, "<thumbnail>([^<]*)</thumbnail>")
         channel_parameters["bannermenu"] = scrapertools.find_single_match(data, "<bannermenu>([^<]*)</bannermenu>")
         channel_parameters["fanart"] = scrapertools.find_single_match(data, "<fanart>([^<]*)</fanart>")
-        channel_parameters["update_url"] = scrapertools.find_single_match(data, "<update_url>([^<]*)</update_url>")
 
         if channel_parameters["thumbnail"] and "://" not in channel_parameters["thumbnail"]:
             channel_parameters["thumbnail"] = os.path.join(config.get_runtime_path(), "resources", "images", "squares",
@@ -76,11 +85,17 @@ def get_channel_parameters(channel_name):
             channel_parameters["fanart"] = os.path.join(config.get_runtime_path(), "resources", "images", "fanart",
                                                         channel_parameters["fanart"])
 
+        channel_parameters["update_url"] = scrapertools.find_single_match(data, "<update_url>([^<]*)</update_url>")
         if channel_parameters["update_url"] == "":
             channel_parameters["update_url"] = DEFAULT_UPDATE_URL
 
-        channel_parameters["include_in_global_search"] = scrapertools.find_single_match(
+        include_in_global_search = scrapertools.find_single_match(
             data, "<include_in_global_search>([^<]*)</include_in_global_search>")
+
+        if include_in_global_search in ["", "true"]:
+            channel_parameters["include_in_global_search"] = True
+        else:
+            channel_parameters["include_in_global_search"] = False
 
         category_list = []
         matches = scrapertools.find_multiple_matches(data, "<category>([^<]*)</category>")
@@ -100,13 +115,27 @@ def get_channel_parameters(channel_name):
                 channel_parameters["has_settings"] = True
                 break
 
+        python_condition = scrapertools.find_single_match(data, "<python>([^<]*)</python>")
+        if python_condition:
+            import sys
+
+            def versiontuple(v):
+                return tuple(map(int, (v.split("."))))
+
+            if sys.version_info < versiontuple(python_condition):
+                channel_parameters["compatible"] = False
+            else:
+                channel_parameters["compatible"] = True
+        else:
+            channel_parameters["compatible"] = True
+
         logger.info(channel_name+" -> "+repr(channel_parameters))
 
     else:
         logger.info(channel_name+".xml NOT found")
 
         channel_parameters = dict()
-        channel_parameters["adult"] = "false"
+        channel_parameters["adult"] = False
         channel_parameters["update_url"] = DEFAULT_UPDATE_URL
 
     return channel_parameters
@@ -198,14 +227,15 @@ def get_channel_setting(name, channel):
             if isinstance(dict_file, dict) and 'settings' in dict_file:
                 dict_settings = dict_file['settings']
         except EnvironmentError:
-            logger.info("ERROR al leer el archivo: %s" % file_settings)
+            logger.error("ERROR al leer el archivo: %s" % file_settings)
 
-    if len(dict_settings) == 0 or name not in dict_settings:
+    if not dict_settings or name not in dict_settings:
         # Obtenemos controles del archivo ../channels/channel.xml
         try:
             list_controls, default_settings = get_channel_controls_settings(channel)
         except:
             default_settings = {}
+
         if name in default_settings:  # Si el parametro existe en el channel.xml creamos el channel_data.json
             default_settings.update(dict_settings)
             dict_settings = default_settings
@@ -215,13 +245,10 @@ def get_channel_setting(name, channel):
             try:
                 open(file_settings, "wb").write(json_data)
             except EnvironmentError:
-                logger.info("ERROR al salvar el archivo: %s" % file_settings)
+                logger.error("ERROR al salvar el archivo: %s" % file_settings)
 
-    # Devolvemos el valor del parametro local 'name' si existe
-    if name in dict_settings:
-        return dict_settings[name]
-    else:
-        return None
+    # Devolvemos el valor del parametro local 'name' si existe, si no se devuelve None
+    return dict_settings.get(name, None)
 
 
 def set_channel_setting(name, value, channel):
@@ -261,7 +288,7 @@ def set_channel_setting(name, value, channel):
             dict_file = jsontools.load_json(open(file_settings, "r").read())
             dict_settings = dict_file.get('settings', {})
         except EnvironmentError:
-            logger.info("ERROR al leer el archivo: %s" % file_settings)
+            logger.error("ERROR al leer el archivo: %s" % file_settings)
 
     dict_settings[name] = value
 
@@ -276,7 +303,7 @@ def set_channel_setting(name, value, channel):
         json_data = jsontools.dump_json(dict_file)
         open(file_settings, "w").write(json_data)
     except EnvironmentError:
-        logger.info("ERROR al salvar el archivo: %s" % file_settings)
+        logger.error("ERROR al salvar el archivo: %s" % file_settings)
         return None
 
     return value
@@ -301,8 +328,8 @@ def get_channel_remote_url(channel_name):
     remote_channel_url = channel_parameters["update_url"]+channel_name+".py"
     remote_version_url = channel_parameters["update_url"]+channel_name+".xml" 
 
-    logger.info("pelisalacarta.core.channeltools get_channel_remote_url remote_channel_url="+remote_channel_url)
-    logger.info("pelisalacarta.core.channeltools get_channel_remote_url remote_version_url="+remote_version_url)
+    logger.info("remote_channel_url="+remote_channel_url)
+    logger.info("remote_version_url="+remote_version_url)
     
     return remote_channel_url, remote_version_url
 
@@ -318,8 +345,8 @@ def get_channel_local_path(channel_name):
         local_version_path = os.path.join(config.get_runtime_path(), channel_name + ".xml")
         local_compiled_path = os.path.join(config.get_runtime_path(), channel_name + ".pyo")
 
-    logger.info("pelisalacarta.core.channeltools get_channel_local_path local_channel_path=" + local_channel_path)
-    logger.info("pelisalacarta.core.channeltools get_channel_local_path local_version_path=" + local_version_path)
-    logger.info("pelisalacarta.core.channeltools get_channel_local_path local_compiled_path=" + local_compiled_path)
+    logger.info("local_channel_path=" + local_channel_path)
+    logger.info("local_version_path=" + local_version_path)
+    logger.info("local_compiled_path=" + local_compiled_path)
 
     return local_channel_path, local_version_path, local_compiled_path

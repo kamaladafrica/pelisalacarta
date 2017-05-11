@@ -3,19 +3,16 @@
 # Canal (mundoflv) por Hernan_Ar_c
 # ------------------------------------------------------------
 
-import urlparse, urllib2, urllib, re
-import os, sys
+import re
+import urlparse
 
 from core import config
 from core import httptools
 from core import logger
 from core import scrapertools
 from core import servertools
-from core import httptools
-from core.item import Item
 from core import tmdb
-from channels import autoplay
-from channels import filtertools
+from core.item import Item
 
 host = "http://mundoflv.com"
 thumbmx = 'http://flags.fmcdn.net/data/flags/normal/mx.png'
@@ -132,8 +129,13 @@ def todas(item):
 
     tmdb.set_infoLabels_itemlist(itemlist, seekTmdb=True)
     itemlist = fail_tmdb(itemlist)
-    # Paginacion
-    next_page_url = scrapertools.find_single_match(data, '<link rel="next" href="([^"]+)" />')
+    #Paginacion
+    patron  = '<link rel="next" href="([^"]+)" />'
+    next_page_url = scrapertools.find_single_match(data,'<link rel="next" href="([^"]+)" />')
+    
+    if next_page_url!="":
+        itemlist.append(Item(channel = item.channel, action = "todas", title = ">> Página siguiente", url = next_page_url, thumbnail='https://s32.postimg.org/4zppxf5j9/siguiente.png'))
+    
 
     if next_page_url != "":
         itemlist.append(Item(channel=item.channel,
@@ -547,19 +549,12 @@ def busqueda(item):
     tmdb.set_infoLabels_itemlist(itemlist, seekTmdb=True)
     itemlist = fail_tmdb(itemlist)
 
-    # Paginacion
-    next_page_url = scrapertools.find_single_match(data,
-                                                   "<a rel='nofollow' class=previouspostslink' href='(["
-                                                   "^']+)'>Siguiente &rsaquo;</a>")
-    if next_page_url != "":
-        item.url = next_page_url
-        itemlist.append(
-                Item(channel=item.channel,
-                     action="busqueda",
-                     title=">> Página siguiente",
-                     url=next_page_url,
-                     thumbnail='https://s32.postimg.org/4zppxf5j9/siguiente.png'
-                     ))
+   #Paginacion
+    patron  = "<a rel='nofollow' class=previouspostslink' href='([^']+)'>Siguiente &rsaquo;</a>"
+    next_page_url = scrapertools.find_single_match(data,"<a rel='nofollow' class=previouspostslink' href='([^']+)'>Siguiente &rsaquo;</a>")
+    if next_page_url!="":
+        item.url=next_page_url
+        itemlist.append(Item(channel = item.channel,action = "busqueda",title = ">> Página siguiente", url = next_page_url, thumbnail='https://s32.postimg.org/4zppxf5j9/siguiente.png'))
     return itemlist
 
 

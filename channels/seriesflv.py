@@ -488,7 +488,7 @@ def findvideos(item):
 
 
 def play(item):
-    logger.info("pelisalacarta.channels.seriesflv play url="+item.url)
+    logger.info("url="+item.url)
 
     data = httptools.downloadpage(item.url, add_referer=True).data
 

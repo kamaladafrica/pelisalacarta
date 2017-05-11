@@ -12,7 +12,7 @@ from core import scrapertools
 
 
 def test_video_exists(page_url):
-    logger.info("[streamcloud.py] test_video_exists(page_url='%s')" % page_url)
+    logger.info("(page_url='%s')" % page_url)
 
     data = scrapertools.cache_page(url=page_url)
     if "File was deleted" in data:
@@ -24,7 +24,7 @@ def test_video_exists(page_url):
 
 
 def get_video_url(page_url, premium=False, user="", password="", video_password=""):
-    logger.info("pelisalacarta.servers.streaminto url=" + page_url)
+    logger.info("url=" + page_url)
 
     data = re.sub(r'\n|\t|\s+', '', scrapertools.cache_page(page_url))
 
@@ -37,15 +37,17 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
         media_url = scrapertools.get_match(js_data, """.setup\({file:"([^"]+)",image""")
 
     if media_url.endswith("v.mp4"):
-        media_url_mp42flv = re.sub(r'/v.mp4$','/v.flv',media_url)
-        video_urls.append([scrapertools.get_filename_from_url(media_url_mp42flv)[-4:] + " [streaminto]", media_url_mp42flv])
+        media_url_mp42flv = re.sub(r'/v.mp4$', '/v.flv', media_url)
+        video_urls.append(
+            [scrapertools.get_filename_from_url(media_url_mp42flv)[-4:] + " [streaminto]", media_url_mp42flv])
     if media_url.endswith("v.flv"):
-        media_url_flv2mp4 = re.sub(r'/v.flv$','/v.mp4',media_url)
-        video_urls.append([scrapertools.get_filename_from_url(media_url_flv2mp4)[-4:] + " [streaminto]", media_url_flv2mp4])        
+        media_url_flv2mp4 = re.sub(r'/v.flv$', '/v.mp4', media_url)
+        video_urls.append(
+            [scrapertools.get_filename_from_url(media_url_flv2mp4)[-4:] + " [streaminto]", media_url_flv2mp4])
     video_urls.append([scrapertools.get_filename_from_url(media_url)[-4:] + " [streaminto]", media_url])
 
     for video_url in video_urls:
-        logger.info("pelisalacarta.servers.streaminto %s - %s" % (video_url[0], video_url[1]))
+        logger.info("%s - %s" % (video_url[0], video_url[1]))
 
     return video_urls
 
@@ -70,7 +72,7 @@ def find_videos(data):
 
     # http://streamin.to/z3nnqbspjyne
     patronvideos = 'streamin.to/([a-z0-9A-Z]+)'
-    logger.info("pelisalacarta.servers.streaminto find_videos #" + patronvideos + "#")
+    logger.info(" #" + patronvideos + "#")
     matches = re.compile(patronvideos, re.DOTALL).findall(data)
 
     for match in matches:
@@ -85,7 +87,7 @@ def find_videos(data):
 
     # http://streamin.to/embed-z3nnqbspjyne.html
     patronvideos = 'streamin.to/embed-([a-z0-9A-Z]+)'
-    logger.info("pelisalacarta.servers.streaminto find_videos #" + patronvideos + "#")
+    logger.info(" #" + patronvideos + "#")
     matches = re.compile(patronvideos, re.DOTALL).findall(data)
 
     for match in matches:
@@ -102,22 +104,28 @@ def find_videos(data):
 
 
 def unPack(packed):
-
     pattern = "}\('(.*)', *(\d+), *(\d+), *'(.*)'\.split\('([^']+)'\)"
-    d = [ d for d in re.search(pattern, packed, re.DOTALL).groups() ]
+    d = [d for d in re.search(pattern, packed, re.DOTALL).groups()]
 
-    p = d[0]; a = int(d[1]); c = int(d[2]); k = d[3].split(d[4])
+    p = d[0];
+    a = int(d[1]);
+    c = int(d[2]);
+    k = d[3].split(d[4])
 
-    if a <= 62: toString = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    else: toString = """ !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~"""
+    if a <= 62:
+        toString = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    else:
+        toString = """ !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~"""
 
     def e(c):
         return toString[c] if c < a else toString[c // a] + toString[c % a]
 
     while c > 0:
-        c-= 1
-        if k[c]: x = e(c)
-        else: x = k[c]
+        c -= 1
+        if k[c]:
+            x = e(c)
+        else:
+            x = k[c]
         y = k[c]
         p = re.sub(r"(\b%s\b)" % x, y, p)
 

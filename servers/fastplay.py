@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Conector para fastplay
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 
 import re
 
@@ -31,7 +31,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     calidad = scrapertools.find_single_match(data, 'height\s*:\s*"([^"]+)"')
     for video_url in videos:
         extension = scrapertools.get_filename_from_url(video_url)[-4:]
-        video_urls.append(["%s %s [fastplay]" % (extension, calidad+"p"), video_url])
+        video_urls.append(["%s %s [fastplay]" % (extension, calidad + "p"), video_url])
 
     for video_url in video_urls:
         logger.info(" %s - %s" % (video_url[0], video_url[1]))
@@ -59,5 +59,5 @@ def find_videos(data):
             encontrados.add(url)
         else:
             logger.info("  url duplicada=" + url)
-           
+
     return devuelve

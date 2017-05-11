@@ -1,23 +1,20 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para pornoactricesx
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 import re
 import sys
 import urlparse
 
-from core import config
 from core import logger
 from core import scrapertools
 from core.item import Item
 
-DEBUG = config.get_setting("debug")
-
 
 def mainlist(item):
-    logger.info("[pornoactricesx.py] mainlist")
+    logger.info()
     itemlist = []
     itemlist.append( Item(channel=item.channel, action="videos"          , title="Útimos videos"     , url="http://www.pornoactricesx.com/"))
     itemlist.append( Item(channel=item.channel, action="listactrices"    , title="Listado Actrices"  , url="http://www.pornoactricesx.com/todas-las-actrices"))
@@ -26,7 +23,7 @@ def mainlist(item):
     return itemlist
 
 def search(item,texto):
-    logger.info("[pornoactricesx.py] search")
+    logger.info()
     texto = texto.replace( " ", "+" )
     item.url = item.url + texto
     try:
@@ -35,10 +32,10 @@ def search(item,texto):
     except:
         import sys
         for line in sys.exc_info():
-            logger.error( "%s" % line )
+            logger.error("%s" % line)
         return []
 def videos(item):
-    logger.info("[pornoactricesx.py] videos")
+    logger.info()
     itemlist = []
     mas= True
     data = ""
@@ -57,7 +54,7 @@ def videos(item):
           scrapedthumbnail = thumbnail
           scrapedplot = ""
           # Depuracion
-          if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")            
+          logger.debug("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
           itemlist.append( Item(channel=item.channel, action='play', title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot) )
           
       #Patron 2 para busquedas
@@ -72,7 +69,7 @@ def videos(item):
           scrapedthumbnail = thumbnail
           scrapedplot = ""
           # Depuracion
-          if (DEBUG): logger.info("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")            
+          logger.debug("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
           itemlist.append( Item(channel=item.channel, action='play', title=scrapedtitle , url=scrapedurl , thumbnail=scrapedthumbnail , plot=scrapedplot) )
       patron = '<a title="Ir a la página siguiente" href="([^<]+)">siguiente ›</a>'
       matches = re.compile(patron,re.DOTALL).findall(data)
@@ -92,7 +89,7 @@ def videos(item):
     return itemlist
 
 def play(item):
-    logger.info("[pornoactricesx.py] findvideos")
+    logger.info()
     itemlist=[]
     # Descarga la página
     data = scrapertools.cachePage(item.url)
@@ -110,7 +107,7 @@ def play(item):
     return itemlist
 
 def listactrices(item):
-    logger.info("[pornoactricesx.py] listcategorias")
+    logger.info()
     itemlist = []
     data = scrapertools.cachePage(item.url)
     data = scrapertools.unescape(data)

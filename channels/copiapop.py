@@ -10,14 +10,12 @@ import threading
 
 from core import config
 from core import filetools
+from core import httptools
 from core import logger
-from core import jsontools as json
 from core import scrapertools
 from core.item import Item
-from core import httptools
 
-
-__perfil__ = int(config.get_setting('perfil', "copiapop"))
+__perfil__ = config.get_setting('perfil', "copiapop")
 
 # Fijar perfil de color            
 perfil = [['0xFFFFE6CC', '0xFFFFCE9C', '0xFF994D00', '0xFFFE2E2E', '0xFF088A08'],
@@ -60,11 +58,11 @@ def login(pagina):
             logger.info("Login correcto")
             return True, ""
         else:
-            logger.info("Error en el login")
+            logger.error("Error en el login")
             return False, "Nombre de usuario no válido. Comprueba tus credenciales"
     except:
         import traceback
-        logger.info(traceback.format_exc())
+        logger.error(traceback.format_exc())
         return False, "Error durante el login. Comprueba tus credenciales"
 
 
@@ -113,7 +111,7 @@ def search(item, texto):
         import sys, traceback
         for line in sys.exc_info():
             logger.error("%s" % line)
-        logger.info(traceback.format_exc())
+        logger.error(traceback.format_exc())
         return []
 
 

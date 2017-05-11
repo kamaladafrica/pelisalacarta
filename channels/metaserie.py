@@ -3,16 +3,16 @@
 # Canal (MetaSerie) por Hernan_Ar_c
 # ------------------------------------------------------------
 
-import urlparse,urllib2,urllib,re
-import os, sys
+import re
+import sys
+import urlparse
 
-from core import logger
 from core import config
-from core import scrapertools
-from core.item import Item
-from core import servertools
 from core import httptools
-
+from core import logger
+from core import scrapertools
+from core import servertools
+from core.item import Item
 
 
 def mainlist(item):
@@ -49,7 +49,6 @@ def todas(item):
     patron  = '<li><a class="next page-numbers local-link" href="([^"]+)">&raquo;.*?li>'
     next_page_url = scrapertools.find_single_match(data,'<li><a class="next page-numbers local-link" href="([^"]+)">&raquo;.*?li>')
     if next_page_url!="":
-        import inspect
         itemlist.append(
             Item(
                 channel = item.channel,
@@ -142,7 +141,7 @@ def search(item,texto):
              except:
                 import sys
                 for line in sys.exc_info():
-                    logger.error( "%s" % line )
+                    logger.error("%s" % line)
              return []
 
    

@@ -25,11 +25,13 @@
 # Cloudflare decoder
 # --------------------------------------------------------------------------------
 
-import urlparse
 import re
 import time
-from core import logger
 import urllib
+import urlparse
+
+from core import logger
+
 
 class Cloudflare:
     def __init__(self, response):

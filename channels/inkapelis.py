@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para Inkapelis
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 import re
 
 from core import config
@@ -16,7 +16,7 @@ from core.item import Item
 
 
 __modo_grafico__ = config.get_setting("modo_grafico", "inkapelis")
-__perfil__ = int(config.get_setting("perfil", "inkapelis"))
+__perfil__ = config.get_setting("perfil", "inkapelis")
 
 # Fijar perfil de color
 perfil = [['0xFFFFE6CC', '0xFFFFCE9C', '0xFF994D00', '0xFFFE2E2E'],

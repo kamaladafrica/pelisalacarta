@@ -3,17 +3,16 @@
 # Canal (verpeliculasnuevas) por Hernan_Ar_c
 # ------------------------------------------------------------
 
-import urlparse,urllib2,urllib,re
-import os, sys
+import re
+import sys
 
-from core import logger
 from core import config
+from core import httptools
+from core import logger
 from core import scrapertools
-from core.item import Item
 from core import servertools
 from core import tmdb
-from core import httptools
-
+from core.item import Item
 
 host = 'http://verpeliculasnuevas.com'
 
@@ -185,7 +184,6 @@ def lista (item):
     if itemlist !=[]:
         actual_page_url = item.url
         next_page = scrapertools.find_single_match(data,"class=previouspostslink' href='([^']+)'>Siguiente &rsaquo;<\/a>")
-        import inspect
         if next_page !='':
            itemlist.append(Item(channel = item.channel, action = "lista", title = 'Siguiente >>>', url = next_page, thumbnail='https://s32.postimg.org/4zppxf5j9/siguiente.png',extra=item.extra))
     

@@ -1,17 +1,16 @@
 ﻿# -*- coding: utf-8 -*-
 #------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
-# Canal para yaske
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 #------------------------------------------------------------
-import re, urllib, urlparse
+import re
 
+from core import channeltools
 from core import config
-from core import logger
 from core import httptools
+from core import logger
 from core import scrapertools
 from core import servertools
-from core import channeltools
 from core import tmdb
 from core.item import Item
 

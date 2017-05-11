@@ -1,27 +1,24 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para Torrentlocura
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
-import string
+# ------------------------------------------------------------
 import os
 import re
 import sys
 import urllib
+
+import xbmc
+import xbmcgui
 from core import config
+from core import httptools
 from core import logger
 from core import scrapertools
 from core import servertools
-from core import httptools
-from platformcode import platformtools
-from core.item import Item
-import xbmc
-import xbmcgui
 from core import tmdb
+from core.item import Item
 from core.scrapertools import decodeHtmlentities as dhe
-import unicodedata
-
 
 ACTION_SHOW_FULLSCREEN = 36
 ACTION_GESTURE_SWIPE_LEFT = 511
@@ -33,9 +30,6 @@ ACTION_MOVE_DOWN = 4
 ACTION_MOVE_UP = 3
 OPTION_PANEL = 6
 OPTIONS_OK = 5
-
-
-DEBUG = config.get_setting("debug")
 
 #Para la busqueda en bing evitando baneos
 
@@ -76,7 +70,7 @@ api_fankey ="dffe90fba4d02c199ae7a9e71330c987"
 
 
 def mainlist(item):
-    logger.info("pelisalacarta.torrentlocura mainlist")
+    logger.info()
     itemlist=[]
     itemlist.append( item.clone(title="[COLOR crimson][B]Películas[/B][/COLOR]", action="scraper",url="http://torrentlocura.com/peliculas/",thumbnail="http://imgur.com/RfZjMBi.png", fanart="http://imgur.com/V7QZLAL.jpg",contentType= "movie"))
     itemlist.append( itemlist[-1].clone(title="[COLOR crimson][B]   Películas HD[/B][/COLOR]", action="scraper",url="http://torrentlocura.com/peliculas-hd/",thumbnail="http://imgur.com/RfZjMBi.png", fanart="http://imgur.com/V7QZLAL.jpg",contentType= "movie"))
@@ -91,7 +85,7 @@ def mainlist(item):
     return itemlist
 
 def search(item,texto):
-    logger.info("pelisalacarta.torrentlocura search")
+    logger.info()
     texto = texto.replace(" ","+")
     item.url = "http://torrentlocura.com/buscar"
     item.extra = urllib.urlencode({'q':texto})
@@ -102,7 +96,7 @@ def search(item,texto):
     except:
         import sys
         for line in sys.exc_info():
-            logger.error( "%s" % line )
+            logger.error("%s" % line)
         return []
 
 def buscador(item):
@@ -143,7 +137,7 @@ def buscador(item):
     return itemlist
 
 def scraper(item):
-    logger.info("pelisalacarta.torrentlocura scraper")
+    logger.info()
     itemlist = []
     # Descarga la página
     data = httptools.downloadpage(item.url).data
@@ -179,7 +173,7 @@ def scraper(item):
 
 
 def fanart(item):
-    logger.info("pelisalacarta.torrentlocura fanart")
+    logger.info()
     itemlist = []
     year=item.extra.split("|")[2]
     if item.contentType!="movie":
@@ -455,7 +449,7 @@ def fanart(item):
     return itemlist
 
 def findvideos(item):
-    logger.info("pelisalacarta.torrentlocurat findvideos")
+    logger.info()
     itemlist = []
     fanart=""
     data = httptools.downloadpage(item.url).data
@@ -546,7 +540,7 @@ def findvideos(item):
     return itemlist
 
 def findvideos_enlaces(item):
-    logger.info("pelisalacarta.torrentlocurat findvideos")
+    logger.info()
     itemlist = []
     check_epi2=""
     data = httptools.downloadpage(item.url).data
@@ -667,7 +661,7 @@ def dd_y_o(item):
            itemlist.append(Item(channel=item.channel ,url=video.url, server=video.server,title="[COLOR floralwhite][B]"+server_name+"[/B][/COLOR]",thumbnail=thumb, fanart=item.extra.split("|")[2],action="play", folder=False) )
     return itemlist
 def capitulos(item):
-    logger.info("pelisalacarta.pasateatorrent capitulos")
+    logger.info()
     itemlist = []
     url=item.url
     Join_extras="|".join(item.extra.split("|")[0:11])
@@ -679,7 +673,7 @@ def capitulos(item):
         itemlist.append( Item(channel=item.channel, action="info_capitulos" , title="[COLOR indianred]Info Cap."+str(i)+"[/COLOR]" , url=item.url, thumbnail=item.thumbnail, fanart=item.fanart, extra =extra, folder=False ))
     return itemlist
 def info(item):
-    logger.info("pelisalacarta.torrentlocura info")
+    logger.info()
     itemlist = []
     url=item.url
     rating_tmdba_tvdb=item.extra.split("|")[0]
@@ -776,7 +770,7 @@ def info(item):
     infoplus.start(item_info, peliculas)
 
 def info_capitulos(item,images={}):
-    logger.info("pelisalacarta.torrentlocura info_capitulos")
+    logger.info()
     url= "https://api.themoviedb.org/3/tv/"+item.extra.split("|")[3]+"/season/"+item.extra.split("|")[10]+"/episode/"+item.extra.split("|")[11]+"?api_key="+api_key+"&language=es"
     if "/0" in url:
         url = url.replace("/0","/")
@@ -938,7 +932,6 @@ def decode(text):
     return data
 def convert_size(size):
    import math
-   from os.path import getsize
    if (size == 0):
        return '0B'
    size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")

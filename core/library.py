@@ -47,7 +47,7 @@ if not FOLDER_MOVIES or not FOLDER_TVSHOWS or not LIBRARY_PATH \
         or not filetools.exists(MOVIES_PATH) or not filetools.exists(TVSHOWS_PATH):
     config.verify_directories_created()
 
-addon_name = "plugin://plugin.video.pelisalacarta/"
+addon_name = "plugin://plugin.video.%s/" % config.PLUGIN_NAME
 
 
 def read_nfo(path_nfo, item=None):
@@ -308,7 +308,7 @@ def save_library_tvshow(item, episodelist):
 
     # FILTERTOOLS
     # si el canal tiene filtro de idiomas, añadimos el canal y el show
-    if episodelist and "list_idiomas" in episodelist[0]:
+    if episodelist and "list_language" in episodelist[0]:
         # si ya hemos añadido un canal previamente con filtro, añadimos o actualizamos el canal y show
         if "library_filter_show" in item_tvshow:
             item_tvshow.library_filter_show[item.channel] = item.show
@@ -334,7 +334,7 @@ def save_library_tvshow(item, episodelist):
           (insertados, sobreescritos, fallidos, time.time() - start_time)
     logger.debug(msg)'''
 
-    return insertados, sobreescritos, fallidos
+    return insertados, sobreescritos, fallidos, path
 
 
 def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True):
@@ -423,7 +423,7 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
             item_strm.contentTitle = season_episode
 
             # FILTERTOOLS
-            if item_strm.list_idiomas:
+            if item_strm.list_language:
                 # si tvshow.nfo tiene filtro se le pasa al item_strm que se va a generar
                 if "library_filter_show" in serie:
                     item_strm.library_filter_show = serie.library_filter_show
@@ -603,8 +603,7 @@ def add_serie_to_library(item, channel=None):
         # Obtiene el listado de episodios
         itemlist = getattr(channel, item.action)(item)
 
-
-    insertados, sobreescritos, fallidos = save_library_tvshow(item, itemlist)
+    insertados, sobreescritos, fallidos, path = save_library_tvshow(item, itemlist)
 
     if not insertados and not sobreescritos and not fallidos:
         platformtools.dialog_ok("Biblioteca", "ERROR, la serie NO se ha añadido a la biblioteca",
@@ -622,7 +621,7 @@ def add_serie_to_library(item, channel=None):
 
     else:
         platformtools.dialog_ok("Biblioteca", "La serie se ha añadido a la biblioteca")
-        logger.info("[launcher.py] Se han añadido %s episodios de la serie %s a la biblioteca" %
+        logger.info("Se han añadido %s episodios de la serie %s a la biblioteca" %
                     (insertados, item.show))
         if config.is_xbmc():
             if config.get_setting("sync_trakt_new_tvshow", "biblioteca"):
@@ -632,5 +631,7 @@ def add_serie_to_library(item, channel=None):
                     # Comprobar que no se esta buscando contenido en la biblioteca de Kodi
                     while xbmc.getCondVisibility('Library.IsScanningVideo()'):
                         xbmc.sleep(1000)
-                # Se lanza la sincronizacion
-                xbmc_library.sync_trakt()
+                # Se lanza la sincronizacion para la biblioteca de Kodi
+                xbmc_library.sync_trakt_kodi()
+                # Se lanza la sincronización para la biblioteca de pelisalacarta
+                xbmc_library.sync_trakt_pelisalacarta(path)

@@ -75,15 +75,15 @@ def run():
             import channelselector
 
             # Check for updates only on first screen
-            if config.get_setting("check_for_plugin_updates") == "true":
+            if config.get_setting("check_for_plugin_updates") == True:
                 logger.info("Check for plugin updates enabled")
                 from core import updater
 
                 try:
-                    config.set_setting("plugin_updates_available","0")
+                    config.set_setting("plugin_updates_available", 0)
                     new_published_version_tag , number_of_updates = updater.get_available_updates()
 
-                    config.set_setting("plugin_updates_available",str(number_of_updates))
+                    config.set_setting("plugin_updates_available", number_of_updates)
                     itemlist = channelselector.getmainlist()
 
                     if new_published_version_tag!="":
@@ -97,16 +97,16 @@ def run():
                                                 action="update", thumbnail=channelselector.get_thumb("squares","thumb_actualizar.png")))
                 except:
                     import traceback
-                    logger.info(traceback.format_exc())
+                    logger.error(traceback.format_exc())
                     platformtools.dialog_ok("No se puede conectar", "No ha sido posible comprobar",
                                             "si hay actualizaciones")
-                    logger.info("Fallo al verificar la actualización")
-                    config.set_setting("plugin_updates_available","0")
+                    logger.error("Fallo al verificar la actualización")
+                    config.set_setting("plugin_updates_available", 0)
                     itemlist = channelselector.getmainlist()
 
             else:
                 logger.info("Check for plugin updates disabled")
-                config.set_setting("plugin_updates_available","0")
+                config.set_setting("plugin_updates_available", 0)
                 itemlist = channelselector.getmainlist()
 
             platformtools.render_items(itemlist, item)
@@ -116,7 +116,7 @@ def run():
 
             from core import updater
             updater.update(item)
-            config.set_setting("plugin_updates_available","0")
+            config.set_setting("plugin_updates_available", 0)
             if config.get_system_platform() != "xbox":
                 import xbmc
                 xbmc.executebuiltin("Container.Refresh")
@@ -167,7 +167,7 @@ def run():
             # Actualiza el canal individual
             if (item.action == "mainlist" and
                     item.channel != "channelselector" and
-                    config.get_setting("check_for_channel_updates") == "true"):
+                    config.get_setting("check_for_channel_updates") == True):
                 from core import updater
                 updater.update_channel(item.channel)
 
@@ -235,7 +235,7 @@ def run():
                     from core import servertools
                     itemlist = servertools.find_video_items(item)
 
-                if config.get_setting('filter_servers') == 'true':
+                if config.get_setting('filter_servers') == True:
                     itemlist = filtered_servers(itemlist)
 
                 if config.get_setting("max_links", "biblioteca") != 0:
@@ -299,14 +299,13 @@ def run():
 
         # Grab inner and third party errors
         if hasattr(e, 'reason'):
-            logger.info("Razon del error, codigo: %s | Razon: %s" %
-                        (str(e.reason[0]), str(e.reason[1])))
+            logger.error("Razon del error, codigo: %s | Razon: %s" % (str(e.reason[0]), str(e.reason[1])))
             texto = config.get_localized_string(30050)  # "No se puede conectar con el sitio web"
             platformtools.dialog_ok("pelisalacarta", texto)
 
         # Grab server response errors
         elif hasattr(e, 'code'):
-            logger.info("Codigo de error HTTP : %d" % e.code)
+            logger.error("Codigo de error HTTP : %d" % e.code)
             # "El sitio web no funciona correctamente (error http %d)"
             platformtools.dialog_ok("pelisalacarta", config.get_localized_string(30051) % e.code)
 
@@ -471,8 +470,7 @@ def reorder_itemlist(itemlist):
     new_list.extend(mod_list)
     new_list.extend(not_mod_list)
 
-    logger.info("Titulos modificados:%i | No modificados:%i" %
-                (modified, not_modified))
+    logger.info("Titulos modificados:%i | No modificados:%i" % (modified, not_modified))
 
     if len(new_list) == 0:
         new_list = itemlist
@@ -484,8 +482,6 @@ def reorder_itemlist(itemlist):
 def limit_itemlist(itemlist):
     logger.info()
     # logger.debug("Inlet itemlist size: %i" % len(itemlist))
-
-    new_list = []
 
     try:
         opt = config.get_setting("max_links", "biblioteca")
@@ -546,7 +542,7 @@ def play_from_library(item):
         p_dialog.update(50, '')
 
         # Se filtran los enlaces segun la lista blanca y negra
-        if config.get_setting('filter_servers') == 'true':
+        if config.get_setting('filter_servers') == True:
             itemlist = filtered_servers(itemlist)
 
         # Se limita la cantidad de enlaces a mostrar

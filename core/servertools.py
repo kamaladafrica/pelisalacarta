@@ -23,7 +23,7 @@
 # along with pelisalacarta 4.  If not, see <http://www.gnu.org/licenses/>.
 # --------------------------------------------------------------------------------
 # Server management
-#------------------------------------------------------------
+# ------------------------------------------------------------
 
 import os
 
@@ -34,7 +34,7 @@ from core import scrapertools
 
 # Funciónn genérica para encontrar ídeos en una página
 def find_video_items(item=None, data=None, channel=""):
-    logger.info("pelisalacarta.core.servertools find_video_items")
+    logger.info()
 
     # Descarga la página
     if data is None:
@@ -64,55 +64,55 @@ def find_video_items(item=None, data=None, channel=""):
     return itemlist
 
 def guess_server_thumbnail(title):
-    logger.info("pelisalacarta.core.servertools guess_server_thumbnail title="+title)
+    logger.info("title="+title)
 
     lowcase_title = title.lower()
 
     if "netu" in lowcase_title:
-        logger.info("pelisalacarta.core.servertools guess_server_thumbnail caso especial netutv")
+        logger.info("caso especial netutv")
         return "http://media.tvalacarta.info/servers/server_netutv.png"
 
     if "ul.to" in lowcase_title:
-        logger.info("pelisalacarta.core.servertools guess_server_thumbnail caso especial ul.to")
+        logger.info("caso especial ul.to")
         return "http://media.tvalacarta.info/servers/server_uploadedto.png"
 
     if "waaw" in lowcase_title:
-        logger.info("pelisalacarta.core.servertools guess_server_thumbnail caso especial waaw")
+        logger.info("caso especial waaw")
         return "http://media.tvalacarta.info/servers/server_waaw.png"
 
     if "streamin" in lowcase_title:
-        logger.info("pelisalacarta.core.servertools guess_server_thumbnail caso especial streamin")
+        logger.info("caso especial streamin")
         return "http://media.tvalacarta.info/servers/server_streaminto.png"
 
     servers = get_servers_list()
     for serverid in servers:
         if serverid in lowcase_title:
-            logger.info("pelisalacarta.core.servertools guess_server_thumbnail encontrado "+serverid)
+            logger.info("encontrado "+serverid)
             return "http://media.tvalacarta.info/servers/server_"+serverid+".png"
 
     return ""
 
+
 def findvideosbyserver(data, serverid):
-    logger.info("pelisalacarta.core.servertools findvideosbyserver")
-    encontrados = set()
+    logger.info()
     devuelve = []
     try:
         exec "from servers import "+serverid
         exec "devuelve.extend("+serverid+".find_videos(data))"
     except ImportError:
-        logger.info("No existe conector para #"+serverid+"#")
+        logger.error("No existe conector para #"+serverid+"#")
         #import traceback
         #logger.info(traceback.format_exc())
     except:
-        logger.info("Error en el conector #"+serverid+"#")
+        logger.error("Error en el conector #"+serverid+"#")
         import traceback
-        logger.info(traceback.format_exc())
+        logger.error(traceback.format_exc())
 
     return devuelve
 
+
 def findvideos(data, skip=False):
-    logger.info("pelisalacarta.core.servertools findvideos") # en #"+data+"#")
-    encontrados = set()
+    logger.info()
     devuelve = []
 
     # Ejecuta el findvideos en cada servidor
@@ -128,13 +128,13 @@ def findvideos(data, skip=False):
             if result and skip: return result
             devuelve.extend(result)
         except ImportError:
-            logger.info("No existe conector para #"+serverid+"#")
+            logger.error("No existe conector para #"+serverid+"#")
             #import traceback
             #logger.info(traceback.format_exc())
         except:
-            logger.info("Error en el conector #"+serverid+"#")
+            logger.error("Error en el conector #"+serverid+"#")
             import traceback
-            logger.info(traceback.format_exc())
+            logger.error(traceback.format_exc())
 
     return devuelve
 
@@ -165,7 +165,7 @@ def get_server_from_url(url):
     return devuelve
 
 def resolve_video_urls_for_playing(server,url,video_password="",muestra_dialogo=False):
-    logger.info("pelisalacarta.core.servertools resolve_video_urls_for_playing, server="+server+", url="+url)
+    logger.info("server="+server+", url="+url)
     video_urls = []
     torrent = False
 
@@ -173,7 +173,7 @@ def resolve_video_urls_for_playing(server,url,video_password="",muestra_dialogo=
 
     # Si el vídeo es "directo", no hay que buscar más
     if server=="directo" or server=="local":
-        logger.info("pelisalacarta.core.servertools server=directo, la url es la buena")
+        logger.info("server=directo, la url es la buena")
 
         try:
             import urlparse
@@ -194,14 +194,15 @@ def resolve_video_urls_for_playing(server,url,video_password="",muestra_dialogo=
             # Muestra un diágo de progreso
             if muestra_dialogo:
                 from platformcode import platformtools
-                progreso = platformtools.dialog_progress( "pelisalacarta" , "Conectando con "+server)
+                progreso = platformtools.dialog_progress( "pelisalacarta", "Conectando con "+server)
             server_parameters = get_server_parameters(server)
 
             #Cuenta las opciones disponibles, para calcular el porcentaje
             opciones = []
-            if server_parameters["free"] == "true":
+            if server_parameters["free"] == True:
               opciones.append("free")
-            opciones.extend([premium for premium in server_parameters["premium"] if config.get_setting(premium+"premium")=="true"])
+
+            opciones.extend([premium for premium in server_parameters["premium"] if config.get_setting(premium+"premium")==True])
             logger.info("pelisalacarta.core.servertools opciones disponibles para " + server + ": " + str(len(opciones)) + " "+str(opciones))
 
             # Sustituye el código por otro "Plex compatible"
@@ -209,27 +210,27 @@ def resolve_video_urls_for_playing(server,url,video_password="",muestra_dialogo=
             servers_module = __import__("servers."+server)
             server_connector = getattr(servers_module,server)
 
-            logger.info("pelisalacarta.core.servertools servidor de "+server+" importado")
+            logger.info("servidor de "+server+" importado")
 
             # Si tiene una función para ver si el vídeo existe, lo comprueba ahora
             if hasattr(server_connector, 'test_video_exists'):
-                logger.info("pelisalacarta.core.servertools invocando a "+server+".test_video_exists")
+                logger.info("invocando a "+server+".test_video_exists")
                 puedes,motivo = server_connector.test_video_exists( page_url=url )
 
                 # Si la funcion dice que no existe, fin
                 if not puedes:
-                    logger.info("pelisalacarta.core.servertools test_video_exists dice que el video no existe")
+                    logger.info("test_video_exists dice que el video no existe")
                     if muestra_dialogo: progreso.close()
                     return video_urls,puedes,motivo
                 else:
-                    logger.info("pelisalacarta.core.servertools test_video_exists dice que el video SI existe")
+                    logger.info("test_video_exists dice que el video SI existe")
 
             # Obtiene enlaces free
-            if server_parameters["free"]=="true":
+            if server_parameters["free"]==True:
                 if muestra_dialogo:
-                  progreso.update((100 / len(opciones)) * opciones.index("free")  , "Conectando con "+server)
+                    progreso.update((100 / len(opciones)) * opciones.index("free")  , "Conectando con "+server)
 
-                logger.info("pelisalacarta.core.servertools invocando a "+server+".get_video_url")
+                logger.info("invocando a "+server+".get_video_url")
                 video_urls = server_connector.get_video_url( page_url=url , video_password=video_password )
 
                 # Si no se encuentran vídeos en modo free, es porque el vídeo no existe
@@ -240,7 +241,7 @@ def resolve_video_urls_for_playing(server,url,video_password="",muestra_dialogo=
             # Obtiene enlaces para las diferentes opciones premium
             error_message = []
             for premium in server_parameters["premium"]:
-              if config.get_setting(premium+"premium")=="true":
+              if config.get_setting(premium+"premium")==True:
                 if muestra_dialogo:
                   progreso.update((100 / len(opciones)) * opciones.index(premium)  , "Conectando con "+premium)
                 if premium == server: #Cuenta Premium propia
@@ -289,7 +290,7 @@ def resolve_video_urls_for_playing(server,url,video_password="",muestra_dialogo=
         except:
             if muestra_dialogo: progreso.close()
             import traceback
-            logger.info(traceback.format_exc())
+            logger.error(traceback.format_exc())
             return video_urls,False,"Se ha producido un error en<br/>el conector con "+server
 
     return video_urls,True,""
@@ -297,13 +298,13 @@ def resolve_video_urls_for_playing(server,url,video_password="",muestra_dialogo=
 def is_server_enabled(server):
     try:
         server_parameters = get_server_parameters(server)
-        if server_parameters["active"] == "true":
-            if not config.get_setting("hidepremium")=="true":
+        if server_parameters["active"] == True:
+            if not config.get_setting("hidepremium")==True:
                 return True
             else:
-                if server_parameters["free"] == "true":
+                if server_parameters["free"] == True:
                     return True
-                if [premium for premium in server_parameters["premium"] if config.get_setting(premium+"premium")=="true"]:
+                if [premium for premium in server_parameters["premium"] if config.get_setting(premium+"premium")==True]:
                     return True
                 else:
                     return False
@@ -311,7 +312,7 @@ def is_server_enabled(server):
             return False
     except:
         import traceback
-        logger.info(traceback.format_exc())
+        logger.error(traceback.format_exc())
         return False
 
 def get_server_parameters(server):
@@ -326,13 +327,13 @@ def get_server_parameters(server):
       if type(JSONFile["premium"]) == str and not JSONFile["premium"] == "": JSONFile["premium"]=[JSONFile["premium"]]
       return JSONFile
     except:
-      logger.info("Error al cargar el servidor: " + server)
+      logger.error("Error al cargar el servidor: " + server)
       import traceback
-      logger.info(traceback.format_exc())
+      logger.error(traceback.format_exc())
       return {}
 
 def get_servers_list():
-  logger.info("pelisalacarta.core.servertools get_servers_list")
+  logger.info()
   ServersPath = os.path.join(config.get_runtime_path(),"servers")
   ServerList={}
   for server in os.listdir(ServersPath):
@@ -343,37 +344,43 @@ def get_servers_list():
 
   return ServerList
 
-def xml2dict(file = None, xmldata = None):
-  import re, sys, os
-  parse = globals().get(sys._getframe().f_code.co_name)
 
-  if xmldata == None and file == None:  raise Exception("No hay nada que convertir!")
-  if xmldata == None:
-    if not os.path.exists(file): raise Exception("El archivo no existe!")
-    xmldata = open(file, "rb").read()
+def xml2dict(file=None, xmldata=None):
+    import re, sys, os
+    parse = globals().get(sys._getframe().f_code.co_name)
 
-  matches = re.compile("<(?P<tag>[^>]+)>[\n]*[\s]*[\t]*(?P<value>.*?)[\n]*[\s]*[\t]*<\/(?P=tag)\s*>",re.DOTALL).findall(xmldata)
+    if xmldata == None and file == None:  raise Exception("No hay nada que convertir!")
+    if xmldata == None:
+        if not os.path.exists(file): raise Exception("El archivo no existe!")
+        xmldata = open(file, "rb").read()
 
-  return_dict = {}
-  for tag, value in matches:
-    #Si tiene elementos
-    if "<" and "</" in value:
-      if tag in return_dict:
-        if type(return_dict[tag])== list:
-          return_dict[tag].append(parse(xmldata=value))
+    matches = re.compile("<(?P<tag>[^>]+)>[\n]*[\s]*[\t]*(?P<value>.*?)[\n]*[\s]*[\t]*<\/(?P=tag)\s*>",
+                         re.DOTALL).findall(xmldata)
+
+    return_dict = {}
+    for tag, value in matches:
+        # Si tiene elementos
+        if "<" and "</" in value:
+            if tag in return_dict:
+                if type(return_dict[tag]) == list:
+                    return_dict[tag].append(parse(xmldata=value))
+                else:
+                    return_dict[tag] = [return_dict[tag]]
+                    return_dict[tag].append(parse(xmldata=value))
+            else:
+                return_dict[tag] = parse(xmldata=value)
         else:
-          return_dict[tag] = [return_dict[tag]]
-          return_dict[tag].append(parse(xmldata=value))
-      else:
-          return_dict[tag] = parse(xmldata=value)
-
-    else:
-      if tag in return_dict:
-        if type(return_dict[tag])== list:
-          return_dict[tag].append(value)
-        else:
-          return_dict[tag] = [return_dict[tag]]
-          return_dict[tag].append(value)
-      else:
-        return_dict[tag] = value
-  return return_dict
+            if tag in return_dict:
+                if type(return_dict[tag]) == list:
+                    return_dict[tag].append(value)
+                else:
+                    return_dict[tag] = [return_dict[tag]]
+                    return_dict[tag].append(value)
+            else:
+                if value in ["true", "false"]:
+                    if value == "true":
+                        value = True
+                    else:
+                        value = False
+                return_dict[tag] = value
+    return return_dict

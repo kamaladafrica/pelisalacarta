@@ -37,8 +37,7 @@ def mainlist(item):
     itemlist.append(Item(channel=item.channel, action="search_section", title="    Estado", url=HOST + "browse",
                          extra="status"))
 
-    if renumbertools.context:
-        itemlist = renumbertools.show_option(item.channel, itemlist)
+    itemlist = renumbertools.show_option(item.channel, itemlist)
 
     return itemlist
 
@@ -51,27 +50,34 @@ def search(item, texto):
     post = "value=%s" % texto
     data = httptools.downloadpage(item.url, post=post).data
 
-    dict_data = jsontools.load_json(data)
+    try:
+        dict_data = jsontools.load_json(data)
 
-    for e in dict_data:
-        if e["id"] != e["last_id"]:
-            _id = e["last_id"]
-        else:
-            _id = e["id"]
+        for e in dict_data:
+            if e["id"] != e["last_id"]:
+                _id = e["last_id"]
+            else:
+                _id = e["id"]
 
-        url = "%sanime/%s/%s" % (HOST, _id, e["slug"])
-        title = e["title"]
-        thumbnail = "%suploads/animes/covers/%s.jpg" % (HOST, e["id"])
-        new_item = item.clone(action="episodios", title=title, url=url, thumbnail=thumbnail)
+            url = "%sanime/%s/%s" % (HOST, _id, e["slug"])
+            title = e["title"]
+            thumbnail = "%suploads/animes/covers/%s.jpg" % (HOST, e["id"])
+            new_item = item.clone(action="episodios", title=title, url=url, thumbnail=thumbnail)
 
-        if e["type"] != "movie":
-            new_item.show = title
-            new_item.context = renumbertools.context
-        else:
-            new_item.contentType = "movie"
-            new_item.contentTitle = title
+            if e["type"] != "movie":
+                new_item.show = title
+                new_item.context = renumbertools.context
+            else:
+                new_item.contentType = "movie"
+                new_item.contentTitle = title
 
-        itemlist.append(new_item)
+            itemlist.append(new_item)
+
+    except:
+        import sys
+        for line in sys.exc_info():
+            logger.error("%s" % line)
+        return []
 
     return itemlist
 

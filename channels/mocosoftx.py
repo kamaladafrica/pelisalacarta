@@ -1,9 +1,9 @@
 ﻿# -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para mocosoftx
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 import re
 import urllib
 import urlparse
@@ -11,11 +11,9 @@ import urlparse
 from core import config
 from core import logger
 from core import scrapertools
+from core import servertools
 from core.item import Item
 from platformcode import platformtools
-from core import servertools
-
-DEBUG = config.get_setting("debug")
 
 MAIN_HEADERS = []
 MAIN_HEADERS.append( ["Host","mocosoftx.com"] )
@@ -72,7 +70,7 @@ def login():
     return True
 
 def mainlist(item):
-    logger.info("pelisalacarta.channels.mocosoftx mainlist")
+    logger.info()
     itemlist = []
 
     if config.get_setting("mocosoftxuser","mocosoftx")=="":
@@ -91,7 +89,7 @@ def settingCanal(item):
     return platformtools.show_channel_settings()
 
 def foro(item):
-    logger.info("pelisalacarta.channels.mocosoftx foro")
+    logger.info()
     itemlist = []
 
     # Descarga la página
@@ -148,12 +146,12 @@ def foro(item):
     return itemlist
 
 def findvideos(item):
-    logger.info("pelisalacarta.channels.mocosoftx findvideos")
+    logger.info()
     itemlist=[]
 
     # Busca el thumbnail y el argumento
     data = scrapertools.cache_page(item.url)
-    logger.info("pelisalacarta.channels.mocosoftx data="+data)
+    logger.info("data="+data)
 
     try:
         thumbnail = scrapertools.get_match(data,'<div class="post">.*?<img src="([^"]+)"')

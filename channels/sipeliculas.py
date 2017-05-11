@@ -1,22 +1,21 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # Canal SiPeliculas.com by EpNiebla
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
-import urlparse,urllib2,urllib,re
-import os, sys
+# ------------------------------------------------------------
+import re
+import urlparse
 
-from core import config
-from core import logger
 from core import httptools
+from core import logger
 from core import scrapertools
-from core.item import Item
 from core import servertools
+from core.item import Item
 
 host = 'http://www.sipeliculas.com'
 
 def mainlist(item):
-    logger.info("pelisalacarta.channels.sipeliculas mainlist")
+    logger.info()
 
     itemlist = []
     itemlist.append( item.clone (title = "Novedades",    action = "lista",  url = host + "/cartelera/"))
@@ -28,17 +27,17 @@ def mainlist(item):
     itemlist.append( item.clone (title = "Buscar", action = "search", url = host+"/ver/"))
 
     return itemlist
-	
+
 def alfabetica(item):
-  logger.info("pelisalacarta.channels.sipeliculas alfabeticass")
+  logger.info()
   itemlist = []
   for letra in "1abcdefghijklmnopqrstuvwxyz":
     itemlist.append(item.clone(title=letra.upper(), url=item.url+letra, action ="lista"))
 
   return itemlist
-	
+
 def menuseccion(item):
-    logger.info("pelisalacarta.channels.sipeliculas menuseccion")
+    logger.info()
     itemlist = []
     seccion = item.extra
     data = httptools.downloadpage(item.url).data
@@ -56,14 +55,14 @@ def menuseccion(item):
     return itemlist
 
 
-def lista (item):
-    logger.info ('peliculasalacarta.channel.sipeliculas lista')
+def lista(item):
+    logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
     #data = re.sub(r'"|\n|\r|\t|&nbsp;|<br>', "", data)
 	
     listado = scrapertools.find_single_match(data,'<div id="sipeliculas" class="borde"><div class="izquierda">(.*?)<div class="derecha"><h2')
-    logger.info ('peliculasalacarta.channel.verpeliculasnuevas vergas'+listado)
+    logger.info('vergas'+listado)
     patron = '<li class="[^"]+"><a class="[^"]+" href="([^"]+)" title="Ver Película([^"]+)"><i></i><img.*?src="([^"]+)" alt="[^"]+"/>(.*?)</li>'
     matches = re.compile(patron,re.DOTALL).findall(listado)
     for scrapedurl, scrapedtitle, scrapedthumbnail, dataplot in matches:
@@ -79,7 +78,7 @@ def lista (item):
     return itemlist
 
 def search(item,texto):
-    logger.info("peliculasalacarta.channel.sipeliculas search")
+    logger.info()
     texto = texto.replace(" ","-")
     item.url = item.url+texto
     if texto!='':
@@ -88,7 +87,7 @@ def search(item,texto):
         return []    
 
 def findvideos(item):
-    logger.info ("pelisalacarta.channels.sipeliculas findvideos")
+    logger.info()
     itemlist=[]
     data = httptools.downloadpage(item.url).data
     #data = re.sub(r"'|\n|\r|\t|&nbsp;|<br>", "", data)
@@ -112,7 +111,7 @@ def findvideos(item):
     return itemlist
 
 def play(item):
-    logger.info("pelisalacarta.channels.sipeliculas play")
+    logger.info()
     itemlist=[]
 
     video = httptools.downloadpage(host+'/ajax.public.php','acc=ver_opc&f='+item.extra).data
