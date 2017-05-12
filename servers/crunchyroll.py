@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
-#------------------------------------------------------------
+# ------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Conector para crunchyroll
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-#------------------------------------------------------------
+# ------------------------------------------------------------
 
 import base64
 import re
 import struct
 import zlib
+
 from hashlib import sha1
 
 from core import config
@@ -21,11 +22,11 @@ GLOBAL_HEADER = {'User-Agent': 'Mozilla/5.0', 'Accept-Language': '*'}
 proxy = "http://anonymouse.org/cgi-bin/anon-www.cgi/"
 
 
-def test_video_exists( page_url ):
+def test_video_exists(page_url):
     logger.info("(page_url='%s')" % page_url)
 
     premium = config.get_setting("crunchyrollpremium")
-    if premium == True:
+    if premium:
         return login(page_url)
     data = httptools.downloadpage(page_url, headers=GLOBAL_HEADER, replace_headers=True).data
     if "Este es un clip de muestra" in data and premium == "false":
@@ -39,7 +40,7 @@ def test_video_exists( page_url ):
 
 
 def get_video_url(page_url, premium = False, user="", password="", video_password=""):
-    logger.info("url="+page_url)
+    logger.info("url=" + page_url)
 
     video_urls = []
     
@@ -60,11 +61,15 @@ def get_video_url(page_url, premium = False, user="", password="", video_passwor
     media_url = scrapertools.find_single_match(data, '<file>(.*?)</file>').replace("&amp;", "&")
     if not media_url:
         return video_urls
+    elif not media_url.startswith("http"):
+        rtmp = scrapertools.find_single_match(data, '<host>(.*?)</host>').replace("&amp;", "&")
+        media_url = rtmp + " playpath=%s" % media_url
+        filename = "RTMP"
+    else:
+        filename = scrapertools.get_filename_from_url(media_url)[-4:]
     quality = scrapertools.find_single_match(data, '<height>(.*?)</height>')
-    filename = scrapertools.get_filename_from_url(media_url)[-4:]
     
     try:
-        from Crypto.Cipher import AES
         idiomas = ['Español \(España\)', 'Español\]', 'English', 'Italiano', 'Français', 'Português', 'Deutsch']
         index_sub = int(config.get_setting("crunchyrollsub"))
         idioma_sub = idiomas[index_sub]
@@ -84,13 +89,13 @@ def get_video_url(page_url, premium = False, user="", password="", video_passwor
         file_sub = decrypt_subs(iv, data_sub, id_sub)
     except:
         import traceback
-        logger.info(traceback.format_exc())
+        logger.error(traceback.format_exc())
         file_sub = ""
 
     video_urls.append(["%s  %sp [crunchyroll]" % (filename, quality), media_url, 0, file_sub])
 
     for video_url in video_urls:
-        logger.info("%s - %s" % (video_url[0],video_url[1]))
+        logger.info("%s - %s" % (video_url[0], video_url[1]))
 
     return video_urls
 
@@ -100,19 +105,19 @@ def find_videos(data):
     encontrados = set()
     devuelve = []
 
-    patronvideos  = "(crunchyroll.com\/[^/]+\/.*-\d+).*$"
-    logger.info("#"+patronvideos+"#")
-    matches = re.compile(patronvideos,re.DOTALL).findall(data)
+    patronvideos = "(crunchyroll.com\/[^/]+\/.*-\d+).*$"
+    logger.info("#" + patronvideos + "#")
+    matches = re.compile(patronvideos, re.DOTALL).findall(data)
 
     for match in matches:
         titulo = "[crunchyroll]"
         url = "http://www." + match
         if url not in encontrados:
-            logger.info("  url="+url)
-            devuelve.append( [ titulo , url , 'crunchyroll' ] )
+            logger.info("  url=" + url)
+            devuelve.append([titulo, url, 'crunchyroll'])
             encontrados.add(url)
         else:
-            logger.info("  url duplicada="+url)
+            logger.info("  url duplicada=" + url)
 
     return devuelve
 
@@ -144,7 +149,7 @@ def login(page_url):
 
 
 def decrypt_subs(iv, data, id):
-    from Crypto.Cipher import AES
+    import jscrypto
     data = base64.b64decode(data.encode('utf-8'))
     iv = base64.b64decode(iv.encode('utf-8'))
     id = int(id)
@@ -176,7 +181,7 @@ def decrypt_subs(iv, data, id):
     key = obfuscate_key(id)
     key = struct.pack('B' * len(key), *key)
 
-    decryptor = AES.new(key, AES.MODE_CBC, iv)
+    decryptor = jscrypto.new(key, 2, iv)
     decrypted_data = decryptor.decrypt(data)
     data = zlib.decompress(decrypted_data)
     
