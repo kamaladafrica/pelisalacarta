@@ -232,14 +232,18 @@ def parse_videos(item, type_str, data):
             quality = v_fields.get("quality")
 
             # FIX para veces que añaden el idioma en los comentarios
-            quality = re.sub(r"sub-inglés-?", "", quality, flags=re.IGNORECASE)
+            regex = re.compile('sub-inglés-?', re.I)
+            quality = regex.sub("", quality)
+            # quality = re.sub(r"sub-inglés-?", "", quality, flags=re.IGNORECASE)
 
             if not quality:
                 quality = "SD"
 
             # FIX para los guiones en la calidad y no tener que añadir otra opción en la lista de calidades
             if quality.startswith("MicroHD"):
-                quality = re.sub(r"microhd", "Micro-HD-", quality, flags=re.IGNORECASE)
+                regex = re.compile('microhd', re.I)
+                quality = regex.sub("Micro-HD-", quality)
+                # quality = re.sub(r"microhd", "Micro-HD-", quality, flags=re.IGNORECASE)
 
             title = "%s en %s [%s] [%s] (%s: %s)" % (type_str, v_fields.get("server"),
                                                      IDIOMAS.get(v_fields.get("language"), "OVOS"), quality,
