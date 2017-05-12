@@ -78,9 +78,13 @@ def lista(item):
     if item.extra == 'recomendadas':
         patron = '<a href=(.*?)><div class=imgss><img src=(.*?) alt=(.*?)(?:–.*?|\(.*?|) width=120.*?icon-grade.*?' \
                  'ttps>.*?ytps>(.*?)<\/span>'
+    elif item.extra == 'generos':
+        patron = '<div class=movie>.*?<img src=(.*?) alt=(.*?) \/>'
+        patron += '<a href=(.*?)>.*?<h2>.*?</h2>.*?(?:<span class=year>(.*?)</span>)?</div>'
     else:
         patron = '<div class=movie>.*?img src=(.*?) alt=(.*?)(?:–.*?|\(.*?|) width=.*?<a href=(.*?)>.*?<\/h2>.*?' \
                  '(?:year.)(.*?)<\/span>'
+
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     if item.next_page != 'b':
@@ -131,7 +135,7 @@ def seccion(item):
     data = httptools.downloadpage(item.url).data
 
     if item.extra == 'generos':
-      data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
+      data = re.sub(r'"|\n|\r|\t|&nbsp;|<br>|\s{2,}', "", data)
     accion ='lista'
     if item.extra == 'masvistas':
         patron = '<b>\d*<\/b>\s*<a href="(.*?)">(.*?<\/a>\s*<span>.*?<\/span>\s*<i>.*?<\/i><\/li>)'
@@ -139,7 +143,7 @@ def seccion(item):
     elif item.extra == 'poraño':
         patron = '<li><a class="ito" HREF="(.*?)">(.*?)<\/a><\/li>'
     else:
-        patron ='<li class="cat-item cat-item-.*?"><a href="(.*?)">(.*?)<\/i><\/li>'
+        patron ='<li class=cat-item cat-item-.*?><a href=(.*?)>(.*?)<\/i>'
 
     matches = re.compile(patron,re.DOTALL).findall(data)
 
@@ -168,7 +172,7 @@ def seccion(item):
           fanart = thumbnail
 
         if url not in duplicado:
-          itemlist.append( Item(channel=item.channel, action=accion , title=title , url=url, thumbnail=thumbnail,
+          itemlist.append(item.clone(channel=item.channel, action=accion , title=title , url=url, thumbnail=thumbnail,
                                 plot=plot, fanart=fanart, contentTitle=contentTitle, infoLabels={'year':year}))
           duplicado.append(url)
     tmdb.set_infoLabels_itemlist(itemlist, seekTmdb = True)
