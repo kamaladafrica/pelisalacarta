@@ -15,7 +15,7 @@ from core import tmdb
 from core.item import Item
 
 host = 'http://doomtv.net/'
-headers = [['User-Agent', 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:45.0) Gecko/20100101 Firefox/45.0'],
+headers = [['User-Agent', 'Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.96 Safari/537.36'],
           ['Referer', host]]
 
 tgenero = {"Comedia":"https://s32.postimg.org/q7g2qs90l/comedia.png",
@@ -164,8 +164,6 @@ def seccion(item):
         elif item.extra == 'generos':
           title = re.sub(r'<\/a> <i>\d+','',scrapedtitle)
           cantidad = re.findall(r'.*?<\/a> <i>(\d+)',scrapedtitle)
-          logger.debug('scrapedtitle: '+scrapedtitle)
-          logger.debug('cantidad: '+str(cantidad))
           th_title = title
           title = title+' ('+cantidad[0]+')'
           thumbnail = tgenero[th_title]
@@ -197,14 +195,13 @@ def get_url(item):
     url= 'http:/'+url.replace('//','/')
     data = httptools.downloadpage(url, headers= headers, cookies=False).data
     packed = scrapertools.find_single_match(data, "<script type='text\/javascript'>(eval.*?)\s*jwplayer\(\)")
-
     if packed:
       unpacked=unpack(packed)
       num_patron = 0
       patron = "{'label':(.*?),.*?'file':'(.*?)'}"
       matches = re.compile(patron,re.DOTALL).findall(unpacked)
       if not matches:
-       patron = "{file:'(.*?redirector.*?),label:'(.*?)'}"
+       patron = "{file:'(.*?redirector.*?)',type.*?,label:'(.*?)'}"
        matches = re.compile(patron,re.DOTALL).findall(unpacked)
     
       for dato_a, dato_b in matches:
