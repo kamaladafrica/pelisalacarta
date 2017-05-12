@@ -6,10 +6,10 @@
 	<active>true</active>
 	<adult>false</adult>
 
-	<version>4</version>
+	<version>5</version>
 	<changes>
 		<change>
-			<date>12/04/2017</date>
+			<date>12/05/2017</date>
 			<autor>Cmos</autor>
 			<description>Corregidos enlaces directos</description>
 		</change>
