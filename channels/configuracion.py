@@ -48,7 +48,7 @@ def mainlist(item):
     elif config.get_setting("plugin_updates_available") == 1:
         nuevas = " (1 nueva)"
     else:
-        nuevas = " (" + config.get_setting("plugin_updates_available") + " nuevas)"
+        nuevas = " (%s nuevas)" % config.get_setting("plugin_updates_available")
 
     thumb_configuracion = "thumb_configuracion_%s.png" % config.get_setting("plugin_updates_available")
 
