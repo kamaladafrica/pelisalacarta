@@ -181,6 +181,7 @@ def search_cb(item, values=""):
 # y lo pasará en el parámetro "tecleado"
 def search(item, tecleado):
     logger.info()
+    itemlist = []
     tecleado = tecleado.replace("+", " ")
     item.category = tecleado
 
@@ -189,28 +190,40 @@ def search(item, tecleado):
 
     if item.extra == "categorias":
         item.extra = tecleado
-        return searchbycat(item)
+        itemlist = searchbycat(item)
+    else:
+        item.extra = tecleado
+        itemlist = do_search(item, [])
 
-    item.extra = tecleado
-    return do_search(item, [])
+    return itemlist
 
 
-def channel_result(item):
-    extra = item.extra.split("{}")[0]
-    channel = item.extra.split("{}")[1]
-    tecleado = item.extra.split("{}")[2]
-    exec "from channels import " + channel + " as module"
-    item.channel = channel
-    item.extra = extra
-    # print item.url
+def show_result(item):
+    logger.debug(item)
+    if item.adult and config.get_setting("adult_request_password"):
+        # Solicitar contraseña
+        tecleado = platformtools.dialog_input("", "Contraseña para canales de adultos", True)
+        if tecleado is None or tecleado != config.get_setting("adult_pin"):
+            return []
+
+    item.channel = item.from_channel
+    item.action = item.from_action
+    tecleado = item.tecleado
+
     try:
-        itemlist = module.search(item, tecleado)
+        channel = __import__('channels.%s' % item.channel, fromlist=["channels.%s" % item.channel])
     except:
         import traceback
         logger.error(traceback.format_exc())
-        itemlist = []
-
-    return itemlist
+        return []
+    logger.debug(item)
+    if tecleado:
+        # Mostrar resultados: agrupados por canales
+        return channel.search(item, tecleado)
+    else:
+        # Mostrar resultados: todos juntos
+        from platformcode import launcher
+        launcher.run(item)
 
 
 def channel_search(search_results, channel_parameters, tecleado):
@@ -229,7 +242,9 @@ def channel_search(search_results, channel_parameters, tecleado):
                 if not channel_parameters["title"] in search_results:
                     search_results[channel_parameters["title"]] = []
 
-                search_results[channel_parameters["title"]].append({"item": item, "itemlist": result})
+                search_results[channel_parameters["title"]].append({"item": item,
+                                                                    "itemlist": result,
+                                                                    "adult": channel_parameters["adult"]})
 
     except:
         logger.error("No se puede buscar en: %s" % channel_parameters["title"])
@@ -240,7 +255,7 @@ def channel_search(search_results, channel_parameters, tecleado):
 # Esta es la función que realmente realiza la búsqueda
 def do_search(item, categories=[]):
     multithread = config.get_setting("multithread", "buscador")
-    result_mode = config.get_setting("result_mode", "buscador")
+    result_mode = "result_mode_%s" % config.get_setting("result_mode", "buscador")
     logger.info()
 
     tecleado = item.extra
@@ -369,7 +384,7 @@ def do_search(item, categories=[]):
         for search in search_results[channel]:
             total += len(search["itemlist"])
             title = channel
-            if result_mode == 0:
+            if result_mode == "result_mode_0":
                 if len(search_results[channel]) > 1:
                     title += " [" + search["item"].title.strip() + "]"
                 title += " (" + str(len(search["itemlist"])) + ")"
@@ -377,15 +392,19 @@ def do_search(item, categories=[]):
                 title = re.sub("\[COLOR [^\]]+\]", "", title)
                 title = re.sub("\[/COLOR]", "", title)
 
-                extra = search["item"].extra + "{}" + search["item"].channel + "{}" + tecleado
-                itemlist.append(Item(title=title, channel="buscador", action="channel_result", url=search["item"].url,
-                                     extra=extra, folder=True))
+                #extra = search["item"].extra + "{}" + search["item"].channel + "{}" + tecleado
+                itemlist.append(Item(title=title, channel="buscador", action="show_result", url=search["item"].url,
+                                     extra=search["item"].extra, folder=True, adult=search["adult"],from_action="search",
+                                     from_channel=search["item"].channel, tecleado=tecleado))
             else:
                 title = ">> Resultados del canal %s:" % title
                 itemlist.append(Item(title=title, channel="buscador", action="",
                                      folder=False, text_color="yellow"))
-                itemlist.extend(search["itemlist"])
-                # itemlist.append(Item(title="", channel="buscador", action="", folder=False))
+                #itemlist.extend(search["itemlist"])
+                for i in search["itemlist"]:
+                    if i.action:
+                        itemlist.append(i.clone(from_action=i.action, from_channel=i.channel, channel="buscador",
+                                        action="show_result", adult=search["adult"]))
 
     title = "Buscando: '%s' | Encontrado: %d vídeos | Tiempo: %2.f segundos" % (tecleado, total, time.time()-start_time)
     itemlist.insert(0, Item(title=title, text_color='yellow'))

@@ -126,7 +126,7 @@ def open_settings():
         # Hemos accedido a la seccion de Canales para adultos
         from platformcode import platformtools
         if not 'adult_password' in settings_pre:
-            adult_password = set_setting('adult_password', '1111')
+            adult_password = set_setting('adult_password', 'adult')
         else:
             adult_password = settings_pre['adult_password']
 
@@ -135,11 +135,19 @@ def open_settings():
 
             # Cambio de contraseña
             if settings_post['adult_aux_new_password1']:
-                if settings_post['adult_aux_new_password1'] == settings_post['adult_aux_new_password2']:
-                    adult_password = set_setting('adult_password', settings_post['adult_aux_new_password1'])
+                try:
+                    n = int(settings_post['adult_aux_new_password1'])
+                except ValueError:
+                    if settings_post['adult_aux_new_password1'] == settings_post['adult_aux_new_password2']:
+                        adult_password = set_setting('adult_password', settings_post['adult_aux_new_password1'])
+                    else:
+                        platformtools.dialog_ok("Canales para adultos", "Los campos 'Nueva contraseña' y 'Confirmar nueva contraseña' no coinciden.",
+                                                "Entre de nuevo en 'Preferencias' para cambiar la contraseña")
                 else:
-                    platformtools.dialog_ok("Canales para adultos", "Los campos 'Nueva contraseña' y 'Confirmar nueva contraseña' no coinciden.",
+                    platformtools.dialog_ok("Canales para adultos",
+                                            "La contraseña no puede contener solo numeros.",
                                             "Entre de nuevo en 'Preferencias' para cambiar la contraseña")
+
 
             # Fijar adult_pin
             adult_pin = ""

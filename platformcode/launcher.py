@@ -50,16 +50,17 @@ def start():
     config.verify_directories_created()
 
 
-def run():
+def run(item=None):
     logger.info()
 
-    # Extract item from sys.argv
-    if sys.argv[2]:
-        item = Item().fromurl(sys.argv[2])
+    if not item:
+        # Extract item from sys.argv
+        if sys.argv[2]:
+            item = Item().fromurl(sys.argv[2])
 
-    # If no item, this is mainlist
-    else:
-        item = Item(channel="channelselector", action="getmainlist", viewmode="movie")
+        # If no item, this is mainlist
+        else:
+            item = Item(channel="channelselector", action="getmainlist", viewmode="movie")
 
     logger.info(item.tostring())
 
@@ -147,22 +148,11 @@ def run():
             if item.action == "mainlist":
 
                 # Parental control
-                can_open_channel = False
-
                 # If it is an adult channel, and user has configured pin, asks for it
                 if channeltools.is_adult(item.channel) and config.get_setting("adult_pin") != "":
-
                     tecleado = platformtools.dialog_input("", "Contraseña para canales de adultos", True)
-                    if tecleado is not None:
-                        if tecleado == config.get_setting("adult_pin"):
-                            can_open_channel = True
-
-                # All the other cases can open the channel
-                else:
-                    can_open_channel = True
-
-                if not can_open_channel:
-                    return
+                    if tecleado is None or tecleado != config.get_setting("adult_pin"):
+                        return
 
             # Actualiza el canal individual
             if (item.action == "mainlist" and
