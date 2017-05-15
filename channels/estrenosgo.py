@@ -66,7 +66,8 @@ def listado(item):
         if year:
             title = re.sub(patron, "", title)
         patron = '\s?-?\s?(line)?\s?-\s?$'
-        title = re.sub(patron, "", title,flags=re.IGNORECASE)
+        regex = re.compile(patron,  re.I)
+        title = regex.sub("", title)
 
         # Obtenemos la imagen b por q es mayor
         thumbnail = HOST + thumbnail[:-5] + 'b' + thumbnail[-4:]
@@ -144,7 +145,9 @@ def findvideos(item):
     url = "http://estrenosli.org/ver-online-" + item.url
 
     data = httptools.downloadpage(url).data
-    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
+    #data = re.compile(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
+    regex = re.compile(r"\n|\r|\t|\s{2}|&nbsp;", re.I)
+    data = regex.sub("", data)
 
     patron = '<div class="content"><a href="([^"]+).*?'
     patron += '<div class="content_mini"><span class="([^"]+)'
