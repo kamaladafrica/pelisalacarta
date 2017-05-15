@@ -11,6 +11,7 @@ from core import config
 from core import httptools
 from core import logger
 from core import scrapertools
+from core import servertools
 from core import tmdb
 from core.item import Item
 
@@ -78,7 +79,7 @@ def lista(item):
     if item.extra == 'recomendadas':
         patron = '<a href=(.*?)><div class=imgss><img src=(.*?) alt=(.*?)(?:–.*?|\(.*?|) width=120.*?icon-grade.*?' \
                  'ttps>.*?ytps>(.*?)<\/span>'
-    elif item.extra == 'generos':
+    elif item.extra == 'generos' or item.extra == 'poraño':
         patron = '<div class=movie>.*?<img src=(.*?) alt=(.*?) \/>'
         patron += '<a href=(.*?)>.*?<h2>.*?</h2>.*?(?:<span class=year>(.*?)</span>)?</div>'
     else:
@@ -190,35 +191,46 @@ def get_url(item):
     duplicado =[]
     patrones =["{'label':(.*?),.*?'file':'(.*?)'}","{file:'(.*?redirector.*?),label:'(.*?)'}"]
     data = httptools.downloadpage(item.url, headers=headers, cookies=False).data
-    
-    url = scrapertools.find_single_match(data,'class="player-content"><iframe src="(.*?)"')
-    url= 'http:/'+url.replace('//','/')
-    data = httptools.downloadpage(url, headers= headers, cookies=False).data
-    packed = scrapertools.find_single_match(data, "<script type='text\/javascript'>(eval.*?)\s*jwplayer\(\)")
-    if packed:
-      unpacked=unpack(packed)
-      num_patron = 0
-      patron = "{'label':(.*?),.*?'file':'(.*?)'}"
-      matches = re.compile(patron,re.DOTALL).findall(unpacked)
-      if not matches:
-       patron = "{file:'(.*?redirector.*?)',type.*?,label:'(.*?)'}"
-       matches = re.compile(patron,re.DOTALL).findall(unpacked)
-    
-      for dato_a, dato_b in matches:
-        if 'http' in dato_a:
-          url = dato_a
-          calidad = dato_b
-        else:
-          url = dato_b
-          calidad = dato_a
-        title = item.contentTitle+' ('+calidad+')'
-        if url not in duplicado:
-          itemlist.append( Item(channel=item.channel, action='play' , title=title , url=url, thumbnail=item.thumbnail,
-                                plot=item.plot, fanart=item.fanart, contentTitle = item.contentTitle,
-                                calidad = calidad))
-          duplicado.append(url)
+    patron = 'class="player-content"><iframe src="(.*?)"'
+    matches = re.compile(patron, re.DOTALL).findall(data)
 
-      return itemlist
+    for option in matches:
+        if 'allplayer' in option:
+            url= 'http:/'+option.replace('//','/')
+            data = httptools.downloadpage(url, headers= headers, cookies=False).data
+            packed = scrapertools.find_single_match(data, "<script type='text\/javascript'>(eval.*?)\s*jwplayer\(\)")
+            if packed:
+              unpacked=unpack(packed)
+              num_patron = 0
+              patron = "{'label':(.*?),.*?'file':'(.*?)'}"
+              matches = re.compile(patron,re.DOTALL).findall(unpacked)
+              if not matches:
+               patron = "{file:'(.*?redirector.*?)',type.*?,label:'(.*?)'}"
+               matches = re.compile(patron,re.DOTALL).findall(unpacked)
+
+              for dato_a, dato_b in matches:
+                if 'http' in dato_a:
+                  url = dato_a
+                  calidad = dato_b
+                else:
+                  url = dato_b
+                  calidad = dato_a
+                title = item.contentTitle+' ('+calidad+')'
+                if url not in duplicado:
+                  itemlist.append( Item(channel=item.channel, action='play' , title=title , url=url, thumbnail=item.thumbnail,
+                                        plot=item.plot, fanart=item.fanart, contentTitle = item.contentTitle,
+                                        calidad = calidad))
+                  duplicado.append(url)
+        else:
+            itemlist.extend(servertools.find_video_items(data=option))
+
+        for videoitem in itemlist:
+
+            if 'Enlace' in videoitem.title:
+                videoitem.channel = item.channel
+                videoitem.title = item.contentTitle+' ('+videoitem.server+')'
+                thumbnail = 'http://media.tvalacarta.info/servers/server_%s.png'%videoitem.server
+    return itemlist
 
 
 def getinfo(page_url):
