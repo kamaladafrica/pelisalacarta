@@ -199,16 +199,15 @@ def search(item, tecleado):
 
 
 def show_result(item):
-    logger.debug(item)
     if item.adult and config.get_setting("adult_request_password"):
         # Solicitar contraseña
         tecleado = platformtools.dialog_input("", "Contraseña para canales de adultos", True)
         if tecleado is None or tecleado != config.get_setting("adult_pin"):
             return []
 
-    item.channel = item.from_channel
-    item.action = item.from_action
-    tecleado = item.tecleado
+    item.channel = item.__dict__.pop('from_channel')
+    item.action = item.__dict__.pop('from_action')
+    tecleado = item.__dict__.pop('tecleado')
 
     try:
         channel = __import__('channels.%s' % item.channel, fromlist=["channels.%s" % item.channel])
@@ -216,7 +215,7 @@ def show_result(item):
         import traceback
         logger.error(traceback.format_exc())
         return []
-    logger.debug(item)
+
     if tecleado:
         # Mostrar resultados: agrupados por canales
         return channel.search(item, tecleado)
