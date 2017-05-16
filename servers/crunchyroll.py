@@ -29,7 +29,7 @@ def test_video_exists(page_url):
     if premium:
         return login(page_url)
     data = httptools.downloadpage(page_url, headers=GLOBAL_HEADER, replace_headers=True).data
-    if "Este es un clip de muestra" in data and premium == "false":
+    if "Este es un clip de muestra" in data:
         disp = scrapertools.find_single_match(data, '<a href="/freetrial".*?</span>.*?<span>\s*(.*?)</span>')
         disp = disp.strip()
         if disp:
@@ -53,10 +53,9 @@ def get_video_url(page_url, premium = False, user="", password="", video_passwor
           "&video_format=0&video_quality=0&auto_play=0&aff=af-12299-plwa" % media_id
     post = "current_page=%s" % page_url
     data = httptools.downloadpage(url, post, headers=GLOBAL_HEADER, replace_headers=True).data
-    
 
-    if "<msg>Media not available</msg>" in data:
-        data = httptools.downloadpage(proxy+url, post, headers=GLOBAL_HEADER, replace_headers=True).data
+    if "<msg>Media not available</msg>" in data or "flash_block.png" in data:
+        data = httptools.downloadpage(proxy+url, post, headers=GLOBAL_HEADER, replace_headers=True, cookies=False).data
 
     media_url = scrapertools.find_single_match(data, '<file>(.*?)</file>').replace("&amp;", "&")
     if not media_url:
