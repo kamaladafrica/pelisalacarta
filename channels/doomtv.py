@@ -75,13 +75,12 @@ def lista(item):
 
     data = httptools.downloadpage(item.url).data
     data = re.sub(r'"|\n|\r|\t|&nbsp;|<br>|\s{2,}', "", data)
-
     if item.extra == 'recomendadas':
         patron = '<a href=(.*?)><div class=imgss><img src=(.*?) alt=(.*?)(?:–.*?|\(.*?|) width=120.*?icon-grade.*?' \
                  'ttps>.*?ytps>(.*?)<\/span>'
-    elif item.extra == 'generos' or item.extra == 'poraño':
-        patron = '<div class=movie>.*?<img src=(.*?) alt=(.*?) \/>'
-        patron += '<a href=(.*?)>.*?<h2>.*?</h2>.*?(?:<span class=year>(.*?)</span>)?</div>'
+    elif item.extra in ['generos','poraño', 'buscar']:
+        patron = '<div class=movie>.*?<img src=(.*?) alt=(.*?)(?:\s|\/)><a href=(.*?)>.*?'
+        patron += '<h2>.*?<\/h2>.*?(?:<span class=year>(.*?)<\/span>)?.*?<\/div>'
     else:
         patron = '<div class=movie>.*?img src=(.*?) alt=(.*?)(?:–.*?|\(.*?|) width=.*?<a href=(.*?)>.*?<\/h2>.*?' \
                  '(?:year.)(.*?)<\/span>'
@@ -257,6 +256,7 @@ def findvideos(item):
 def search(item,texto):
     logger.info()
     texto = texto.replace(" ","+")
+    item.extra='buscar'
     item.url = item.url+texto
     if texto!='':
        return lista(item)
