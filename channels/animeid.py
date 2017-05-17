@@ -122,13 +122,12 @@ def novedades_episodios(item):
         scrapedplot = plot
         logger.debug("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
 
-        episodio = scrapertools.get_match(scrapedtitle,'\s+#(\d+)$')
+        episodio = scrapertools.get_match(scrapedtitle,'\s+#(.*?)$')
         contentTitle = scrapedtitle.replace('#'+ episodio, '')
 
         itemlist.append( Item(channel=item.channel, action="findvideos" , title=scrapedtitle , url=scrapedurl,
                               thumbnail=scrapedthumbnail, plot=scrapedplot,
-                              hasContentDetails=True, contentSeason=1, contentTitle=contentTitle,
-                              contentEpisodeNumber=int(episodio)))
+                              hasContentDetails=True, contentSeason=1, contentTitle=contentTitle))
 
     return itemlist
 
@@ -299,13 +298,13 @@ def findvideos(item):
         videoitem.title = "["+videoitem.server+"]"
         
     if url_anterior:
-        title_anterior = url_anterior.replace("/ver/", '').replace('-', ' ').replace('.html', '')
+        title_anterior = url_anterior.strip("/v/").replace('-', ' ').replace('.html', '')
         itemlist.append(Item(channel=item.channel, action="findvideos", title="Anterior: " + title_anterior,
                         url=CHANNEL_HOST + url_anterior, thumbnail=item.thumbnail, plot=item.plot, show=item.show,
                         fanart=item.thumbnail, folder=True))
 
     if url_siguiente:
-        title_siguiente = url_siguiente.replace("/ver/", '').replace('-', ' ').replace('.html', '')
+        title_siguiente = url_siguiente.strip("/v/").replace('-', ' ').replace('.html', '')
         itemlist.append(Item(channel=item.channel, action="findvideos", title="Siguiente: " + title_siguiente,
                         url=CHANNEL_HOST + url_siguiente, thumbnail=item.thumbnail, plot=item.plot, show=item.show,
                         fanart=item.thumbnail, folder=True))
