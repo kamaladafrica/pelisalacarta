@@ -3,11 +3,16 @@
 	<id>verseriesynovelas</id>
 	<name>Ver Series y Novelas</name>
 	<language>es</language>
-	<active>true</active>
+	<active>false</active>
 	<adult>false</adult>
 
-	<version>7</version>
+	<version>8</version>
 	<changes>
+		<change>
+			<date>17/05/2017</date>
+			<autor>Cmos</autor>
+			<description>Canal desactivado por cambio de dominio, a la espera de si lo arreglan</description>
+		</change>
 		<change>
 			<date>15/03/2017</date>
 			<autor>SeiTaN</autor>
