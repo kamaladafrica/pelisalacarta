@@ -145,8 +145,8 @@ def findvideos(item):
     url = "http://estrenosli.org/ver-online-" + item.url
 
     data = httptools.downloadpage(url).data
-    data = re.compile(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
-    
+    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
+
     patron = '<div class="content"><a href="([^"]+).*?'
     patron += '<div class="content_mini"><span class="([^"]+)'
     matches = re.compile(patron, re.DOTALL).findall(data)
