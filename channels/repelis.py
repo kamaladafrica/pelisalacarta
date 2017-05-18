@@ -258,7 +258,7 @@ def findvideos(item):
    scrapertools.printMatches(matchesx)
 
    for bloq in matchesx:
-       patron='<tr>.*?<td><a rel="nofollow" href="(.*?)".*?<td><img src.*?">(.*?)</td>.*?<td>(.*?)</td>.*?<td>(.*?)</td>.*?</tr> <tr>'
+       patron='href="(.*?)".*?0 0">(.*?)<\/.*?<td>(.*?)<\/.*?<td>(.*?)<'
 
        matches = re.compile(patron,re.DOTALL).findall(bloq)
        #scrapertools.printMatches(matches)
