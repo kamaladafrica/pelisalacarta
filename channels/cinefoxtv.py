@@ -59,7 +59,9 @@ def mainlist(item):
 
     itemlist.append( itemlist[-1].clone (title="Mas Vistas", action="lista", thumbnail='https://s32.postimg.org/466gt3ipx/vistas.png', fanart='https://s32.postimg.org/466gt3ipx/vistas.png',url = host+'top-peliculas-online/1.html'))
 
-    itemlist.append( itemlist[-1].clone (title="Buscar", action="search", thumbnail='https://s31.postimg.org/qose4p13f/Buscar.png', fanart='https://s31.postimg.org/qose4p13f/Buscar.png',url = host+'tag/'))
+    itemlist.append( itemlist[-1].clone (title="Buscar", action="search",
+                                         thumbnail='https://s31.postimg.org/qose4p13f/Buscar.png',
+                                         fanart='https://s31.postimg.org/qose4p13f/Buscar.png',url = host+'search/'))
 
     return itemlist
 
@@ -73,10 +75,8 @@ def lista (item):
 
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|&nbsp;|<br>", "", data)
-    if item.title == 'Todas':
-      data = scrapertools.find_single_match(data,'<h3>Ver Últimas Peliculas Completa Online Gratis Agregadas.*?clearall')
     data = scrapertools.decodeHtmlentities(data)
-    patron = '"box_image_b"><a href="([^"]+)" title=".*?><img src="([^"]+)" alt="(.*?)(\d{4}).*?"'
+    patron = '"box_image_b.*?"><a href="([^"]+)" title=".*?><img src="([^"]+)" alt="(.*?)(\d{4}).*?"'
     matches = re.compile(patron,re.DOTALL).findall(data)
 
     if item.next_page != 'b':
@@ -169,7 +169,7 @@ def findvideos(item):
 def search(item,texto):
     logger.info()
     texto = texto.replace(" ","-")
-    item.url = item.url+texto+'/'
+    item.url = item.url+texto
     if texto!='':
        return lista(item)
 
