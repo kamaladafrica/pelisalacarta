@@ -546,7 +546,7 @@ def config_item(item):
                                         caption=title, custom_button=custom_button)
 
 
-def delete(item):
+def delete(item, dict_values):
     logger.info()
 
     if item:
