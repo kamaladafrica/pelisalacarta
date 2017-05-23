@@ -104,7 +104,7 @@ def download_and_play(url,file_name,download_path):
 
 class CustomPlayer(xbmc.Player):
     def __init__( self, *args, **kwargs ):
-        logger.info("")
+        logger.info()
         self.actualtime=0
         self.totaltime=0
         self.stopped=False
