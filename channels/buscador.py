@@ -32,7 +32,8 @@ def mainlist(item):
                          title="Buscar por categorias (busqueda avanzada)", extra="categorias",
                          context=context,
                          thumbnail=get_thumbnail_path("thumb_buscar.png")))
-    itemlist.append(Item(channel=item.channel, action="opciones", title="Opciones"))
+    itemlist.append(Item(channel=item.channel, action="opciones", title="Opciones",
+                         thumbnail=get_thumbnail_path("thumb_buscar.png")))
 
     saved_searches_list = get_saved_searches()
     context2 = context[:]
@@ -227,6 +228,7 @@ def search(item, tecleado):
 
 
 def show_result(item):
+    tecleado = None
     if item.adult and config.get_setting("adult_request_password"):
         # Solicitar contraseña
         tecleado = platformtools.dialog_input("", "Contraseña para canales de adultos", True)
@@ -235,7 +237,8 @@ def show_result(item):
 
     item.channel = item.__dict__.pop('from_channel')
     item.action = item.__dict__.pop('from_action')
-    tecleado = item.__dict__.pop('tecleado')
+    if item.__dict__.has_key('tecleado'):
+        tecleado = item.__dict__.pop('tecleado')
 
     try:
         channel = __import__('channels.%s' % item.channel, fromlist=["channels.%s" % item.channel])
@@ -244,13 +247,18 @@ def show_result(item):
         logger.error(traceback.format_exc())
         return []
 
+
     if tecleado:
         # Mostrar resultados: agrupados por canales
         return channel.search(item, tecleado)
     else:
         # Mostrar resultados: todos juntos
-        from platformcode import launcher
-        launcher.run(item)
+        try:
+            from platformcode import launcher
+            launcher.run(item)
+        except ImportError:
+            return getattr(channel, item.action)(item)
+
 
 
 def channel_search(search_results, channel_parameters, tecleado):
