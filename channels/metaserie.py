@@ -19,9 +19,9 @@ def mainlist(item):
     logger.info()
 
     itemlist = []
-    itemlist.append( Item(channel=item.channel, title="Series", action="todas", url="http://metaserie.com/series-agregadas", thumbnail='https://s32.postimg.org/544rx8n51/series.png', fanart='https://s32.postimg.org/544rx8n51/series.png'))
-    itemlist.append( Item(channel=item.channel, title="Anime", action="todas", url="http://metaserie.com/animes-agregados",thumbnail='https://s31.postimg.org/lppob54d7/anime.png', fanart='https://s31.postimg.org/lppob54d7/anime.png'))
-    itemlist.append( Item(channel=item.channel, title="Buscar", action="search", url="http://www.metaserie.com/?s=", thumbnail='https://s31.postimg.org/qose4p13f/Buscar.png', fanart='https://s31.postimg.org/qose4p13f/Buscar.png'))
+    itemlist.append( Item(channel=item.channel, title="Series", action="todas", url="http://metaserie.com/series-agregadas", thumbnail='https://s27.postimg.org/iahczwgrn/series.png', fanart='https://s27.postimg.org/iahczwgrn/series.png'))
+    itemlist.append( Item(channel=item.channel, title="Anime", action="todas", url="http://metaserie.com/animes-agregados",thumbnail='https://s2.postimg.org/s38borokp/anime.png', fanart='https://s2.postimg.org/s38borokp/anime.png'))
+    itemlist.append( Item(channel=item.channel, title="Buscar", action="search", url="http://www.metaserie.com/?s=", thumbnail='https://s30.postimg.org/pei7txpa9/buscar.png', fanart='https://s30.postimg.org/pei7txpa9/buscar.png'))
     return itemlist
 
 def todas(item):
@@ -54,7 +54,7 @@ def todas(item):
                 channel = item.channel,
                 action = "todas",
                 title = ">> Página siguiente",
-                url = next_page_url, thumbnail='https://s32.postimg.org/4zppxf5j9/siguiente.png'
+                url = next_page_url, thumbnail='https://s16.postimg.org/9okdu7hhx/siguiente.png'
             )
         )
     return itemlist
@@ -165,9 +165,9 @@ def findvideos(item):
         itemlist.append( Item(channel=item.channel, action="play" , title=title, fulltitle=item.contentSerieName, url=url, thumbnail=thumbnail, extra=extra, folder= True))
     if item.extra1 != 'capitulos':
         if anterior !='':
-            itemlist.append( Item(channel=item.channel, action="findvideos" , title='Capitulo Anterior' , url=anterior, thumbnail='https://s31.postimg.org/k5kpwyrgb/anterior.png', folder =True ))
+            itemlist.append( Item(channel=item.channel, action="findvideos" , title='Capitulo Anterior' , url=anterior, thumbnail='https://s1.postimg.org/dbq8gvldb/anterior.png', folder =True ))
         if siguiente !='':
-            itemlist.append( Item(channel=item.channel, action="findvideos" , title='Capitulo Siguiente' , url=siguiente, thumbnail='https://s32.postimg.org/4zppxf5j9/siguiente.png', folder =True ))
+            itemlist.append( Item(channel=item.channel, action="findvideos" , title='Capitulo Siguiente' , url=siguiente, thumbnail='https://s16.postimg.org/9okdu7hhx/siguiente.png', folder =True ))
     return itemlist
 
 def play(item):

@@ -19,49 +19,49 @@ host = 'http://doomtv.net/'
 headers = [['User-Agent', 'Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.96 Safari/537.36'],
           ['Referer', host]]
 
-tgenero = {"Comedia":"https://s32.postimg.org/q7g2qs90l/comedia.png",
-               "Suspenso":"https://s31.postimg.org/kb629gscb/suspenso.png",
-               "Drama":"https://s32.postimg.org/e6z83sqzp/drama.png",
-               "Acción":"https://s32.postimg.org/4hp7gwh9x/accion.png",
-               "Aventura":"https://s32.postimg.org/whwh56is5/aventura.png",
-               "Romance":"https://s31.postimg.org/y7vai8dln/romance.png",
-               "Animación":"https://s32.postimg.org/rbo1kypj9/animacion.png",
-               "Ciencia Ficción":"https://s32.postimg.org/6hp3tsxsl/ciencia_ficcion.png",
-               "Terror":"https://s32.postimg.org/ca25xg0ed/terror.png",
-               "Documentales":"https://s32.postimg.org/7opmvc5ut/documental.png",
-               "Musical":"https://s31.postimg.org/7i32lca7f/musical.png",
-               "Fantasía":"https://s32.postimg.org/pklrf01id/fantasia.png",
-               "Bélico Guerra":"https://s32.postimg.org/kjbko3xhx/belica.png",
-               "Misterio":"https://s4.postimg.org/kd48bcxe5/misterio.png",
-               "Crimen":"https://s14.postimg.org/5lez1j1gx/crimen.png",
-               "Biográfia":"https://s23.postimg.org/u49p87o3f/biografia.png",
-               "Familia":"https://s28.postimg.org/4wwzkt2f1/familiar.png",
-               "Familiar":"https://s28.postimg.org/4wwzkt2f1/familiar.png",
-               "Intriga":"https://s32.postimg.org/xc2ovcqfp/intriga.png",
-               "Thriller":"https://s31.postimg.org/4d7bl25y3/thriller.png",
-               "Guerra":"https://s29.postimg.org/vqgjmozzr/guerra.png",
-               "Estrenos":"https://s12.postimg.org/4zj0rbun1/estrenos.png",
-               "Peleas":"https://s14.postimg.org/53qrbqy5d/peleas.png",
-               "Policiales":"https://s15.postimg.org/ctz76qrwb/policial.png",
-               "Uncategorized":"https://s16.postimg.org/fssbi4nlh/otros.png",
-               "LGBT":"https://s16.postimg.org/fssbi4nlh/otros.png"}
+tgenero = {"Comedia":"https://s7.postimg.org/ne9g9zgwb/comedia.png",
+               "Suspenso":"https://s13.postimg.org/wmw6vl1cn/suspenso.png",
+               "Drama":"https://s16.postimg.org/94sia332d/drama.png",
+               "Acción":"https://s3.postimg.org/y6o9puflv/accion.png",
+               "Aventura":"https://s10.postimg.org/6su40czih/aventura.png",
+               "Romance":"https://s15.postimg.org/fb5j8cl63/romance.png",
+               "Animación":"https://s13.postimg.org/5on877l87/animacion.png",
+               "Ciencia Ficción":"https://s9.postimg.org/diu70s7j3/cienciaficcion.png",
+               "Terror":"https://s7.postimg.org/yi0gij3gb/terror.png",
+               "Documentales":"https://s16.postimg.org/7xjj4bmol/documental.png",
+               "Musical":"https://s29.postimg.org/bbxmdh9c7/musical.png",
+               "Fantasía":"https://s13.postimg.org/65ylohgvb/fantasia.png",
+               "Bélico Guerra":"https://s23.postimg.org/71itp9hcr/belica.png",
+               "Misterio":"https://s1.postimg.org/w7fdgf2vj/misterio.png",
+               "Crimen":"https://s4.postimg.org/6z27zhirx/crimen.png",
+               "Biográfia":"https://s15.postimg.org/5lrpbx323/biografia.png",
+               "Familia":"https://s7.postimg.org/6s7vdhqrf/familiar.png",
+               "Familiar":"https://s7.postimg.org/6s7vdhqrf/familiar.png",
+               "Intriga":"https://s27.postimg.org/v9og43u2b/intriga.png",
+               "Thriller":"https://s22.postimg.org/5y9g0jsu9/thriller.png",
+               "Guerra":"https://s4.postimg.org/n1h2jp2jh/guerra.png",
+               "Estrenos":"https://s21.postimg.org/fy69wzm93/estrenos.png",
+               "Peleas":"https://s14.postimg.org/we1oyg05t/peleas.png",
+               "Policiales":"https://s21.postimg.org/n9e0ci31z/policial.png",
+               "Uncategorized":"https://s30.postimg.org/uj5tslenl/otros.png",
+               "LGBT":"https://s30.postimg.org/uj5tslenl/otros.png"}
 
 def mainlist(item):
     logger.info()
 
     itemlist = []
     
-    itemlist.append( item.clone (title="Todas", action="lista",thumbnail='https://s12.postimg.org/iygbg8ip9/todas.png', fanart='https://s12.postimg.org/iygbg8ip9/todas.png', url = host))
+    itemlist.append( item.clone (title="Todas", action="lista",thumbnail='https://s18.postimg.org/fwvaeo6qh/todas.png', fanart='https://s18.postimg.org/fwvaeo6qh/todas.png', url = host))
 
-    itemlist.append( item.clone (title="Generos", action="seccion", thumbnail='https://s31.postimg.org/szbr0gmkb/generos.png', fanart='https://s31.postimg.org/szbr0gmkb/generos.png',url = host, extra ='generos'))
+    itemlist.append( item.clone (title="Generos", action="seccion", thumbnail='https://s3.postimg.org/5s9jg2wtf/generos.png', fanart='https://s3.postimg.org/5s9jg2wtf/generos.png',url = host, extra ='generos'))
 
-    itemlist.append( item.clone (title="Mas vistas", action="seccion", thumbnail='https://s32.postimg.org/466gt3ipx/vistas.png', fanart='https://s32.postimg.org/466gt3ipx/vistas.png',url = host, extra ='masvistas'))
+    itemlist.append( item.clone (title="Mas vistas", action="seccion", thumbnail='https://s9.postimg.org/wmhzu9d7z/vistas.png', fanart='https://s9.postimg.org/wmhzu9d7z/vistas.png',url = host, extra ='masvistas'))
 
-    itemlist.append( item.clone (title="Recomendadas", action="lista",thumbnail='https://s31.postimg.org/4bsjyc4iz/recomendadas.png', fanart='https://s31.postimg.org/4bsjyc4iz/recomendadas.png', url = host, extra = 'recomendadas'))
+    itemlist.append( item.clone (title="Recomendadas", action="lista",thumbnail='https://s12.postimg.org/s881laywd/recomendadas.png', fanart='https://s12.postimg.org/s881laywd/recomendadas.png', url = host, extra = 'recomendadas'))
 
-    itemlist.append( item.clone (title="Por año", action="seccion", thumbnail='https://s31.postimg.org/iyl5fvzqz/pora_o.png', fanart='https://s31.postimg.org/iyl5fvzqz/pora_o.png',url = host, extra ='poraño'))
+    itemlist.append( item.clone (title="Por año", action="seccion", thumbnail='https://s8.postimg.org/7eoedwfg5/pora_o.png', fanart='https://s8.postimg.org/7eoedwfg5/pora_o.png',url = host, extra ='poraño'))
 
-    itemlist.append( item.clone (title="Buscar", action="search", url='http://doomtv.net/?s=', thumbnail='https://s31.postimg.org/qose4p13f/Buscar.png', fanart='https://s31.postimg.org/qose4p13f/Buscar.png'))
+    itemlist.append( item.clone (title="Buscar", action="search", url='http://doomtv.net/?s=', thumbnail='https://s30.postimg.org/pei7txpa9/buscar.png', fanart='https://s30.postimg.org/pei7txpa9/buscar.png'))
 
     return itemlist
 
@@ -122,7 +122,7 @@ def lista(item):
     #Paginacion
     if next_page_url !='':
       itemlist.append(Item(channel = item.channel, action = "lista", title = 'Siguiente >>>', url = next_page_url,
-                           thumbnail='https://s32.postimg.org/4zppxf5j9/siguiente.png',extra=item.extra,
+                           thumbnail='https://s16.postimg.org/9okdu7hhx/siguiente.png',extra=item.extra,
                            next_page = next_page))
     return itemlist
 

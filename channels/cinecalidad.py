@@ -48,21 +48,21 @@ def submenu(item):
     logger.info("pelisalacarta.channels.cinecalidad submenu")
     itemlist = []
     itemlist.append(Item(channel=item.channel, title=idioma.capitalize(), action="peliculas", url=host,
-                         thumbnail='https://s31.postimg.org/4g4lytrqj/peliculas.png',
-                         fanart='https://s31.postimg.org/4g4lytrqj/peliculas.png'))
+                         thumbnail='https://s8.postimg.org/6wqwy2c2t/peliculas.png',
+                         fanart='https://s8.postimg.org/6wqwy2c2t/peliculas.png'))
     itemlist.append(Item(channel=item.channel, title="Destacadas", action="peliculas",
                          url=host + "/genero-" + idioma + "/" + idioma2 + "/",
-                         thumbnail='https://s32.postimg.org/wzyinepsl/destacadas.png',
-                         fanart='https://s32.postimg.org/wzyinepsl/destacadas.png'))
+                         thumbnail='https://s30.postimg.org/humqxklsx/destacadas.png',
+                         fanart='https://s30.postimg.org/humqxklsx/destacadas.png'))
     itemlist.append(Item(channel=item.channel, title="Generos", action="generos", url=host + "/genero-" + idioma,
-                         thumbnail='https://s31.postimg.org/szbr0gmkb/generos.png',
-                         fanart='https://s31.postimg.org/szbr0gmkb/generos.png'))
+                         thumbnail='https://s3.postimg.org/5s9jg2wtf/generos.png',
+                         fanart='https://s3.postimg.org/5s9jg2wtf/generos.png'))
     itemlist.append(Item(channel=item.channel, title="Por Año", action="anyos", url=host + "/" + idioma + "-por-ano",
-                         thumbnail='https://s31.postimg.org/iyl5fvzqz/pora_o.png',
-                         fanart='https://s31.postimg.org/iyl5fvzqz/pora_o.png'))
+                         thumbnail='https://s8.postimg.org/7eoedwfg5/pora_o.png',
+                         fanart='https://s8.postimg.org/7eoedwfg5/pora_o.png'))
     itemlist.append(Item(channel=item.channel, title="Buscar", action="search",
-                         thumbnail='https://s31.postimg.org/qose4p13f/Buscar.png', url=host + '/apiseries/seriebyword/',
-                         fanart='https://s31.postimg.org/qose4p13f/Buscar.png', host=item.host))
+                         thumbnail='https://s30.postimg.org/pei7txpa9/buscar.png', url=host + '/apiseries/seriebyword/',
+                         fanart='https://s30.postimg.org/pei7txpa9/buscar.png', host=item.host))
 
     return itemlist
 
@@ -87,21 +87,21 @@ def anyos(item):
 
 
 def generos(item):
-    tgenero = {"Comedia": "https://s32.postimg.org/q7g2qs90l/comedia.png",
-               "Suspenso": "https://s31.postimg.org/kb629gscb/suspenso.png",
-               "Drama": "https://s32.postimg.org/e6z83sqzp/drama.png",
-               "Acción": "https://s32.postimg.org/4hp7gwh9x/accion.png",
-               "Aventura": "https://s32.postimg.org/whwh56is5/aventura.png",
-               "Romance": "https://s31.postimg.org/y7vai8dln/romance.png",
-               "Fantas\xc3\xada": "https://s32.postimg.org/pklrf01id/fantasia.png",
-               "Infantil": "https://s32.postimg.org/i53zwwgsl/infantil.png",
-               "Ciencia ficción": "https://s32.postimg.org/6hp3tsxsl/ciencia_ficcion.png",
-               "Terror": "https://s32.postimg.org/ca25xg0ed/terror.png",
-               "Com\xc3\xa9dia": "https://s32.postimg.org/q7g2qs90l/comedia.png",
-               "Suspense": "https://s31.postimg.org/kb629gscb/suspenso.png",
-               "A\xc3\xa7\xc3\xa3o": "https://s32.postimg.org/4hp7gwh9x/accion.png",
-               "Fantasia": "https://s32.postimg.org/pklrf01id/fantasia.png",
-               "Fic\xc3\xa7\xc3\xa3o cient\xc3\xadfica": "https://s32.postimg.org/6hp3tsxsl/ciencia_ficcion.png"}
+    tgenero = {"Comedia": "https://s7.postimg.org/ne9g9zgwb/comedia.png",
+               "Suspenso": "https://s13.postimg.org/wmw6vl1cn/suspenso.png",
+               "Drama": "https://s16.postimg.org/94sia332d/drama.png",
+               "Acción": "https://s3.postimg.org/y6o9puflv/accion.png",
+               "Aventura": "https://s10.postimg.org/6su40czih/aventura.png",
+               "Romance": "https://s15.postimg.org/fb5j8cl63/romance.png",
+               "Fantas\xc3\xada": "https://s13.postimg.org/65ylohgvb/fantasia.png",
+               "Infantil": "https://s23.postimg.org/g5rmazozv/infantil.png",
+               "Ciencia ficción": "https://s9.postimg.org/diu70s7j3/cienciaficcion.png",
+               "Terror": "https://s7.postimg.org/yi0gij3gb/terror.png",
+               "Com\xc3\xa9dia": "https://s7.postimg.org/ne9g9zgwb/comedia.png",
+               "Suspense": "https://s13.postimg.org/wmw6vl1cn/suspenso.png",
+               "A\xc3\xa7\xc3\xa3o": "https://s3.postimg.org/y6o9puflv/accion.png",
+               "Fantasia": "https://s13.postimg.org/65ylohgvb/fantasia.png",
+               "Fic\xc3\xa7\xc3\xa3o cient\xc3\xadfica": "https://s9.postimg.org/diu70s7j3/cienciaficcion.png"}
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data

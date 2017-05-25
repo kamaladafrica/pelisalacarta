@@ -12,9 +12,19 @@
 	<bannermenu>https://s16.postimg.org/p9xz2vlo5/pelisplus_banner.png</bannermenu>
 	
 	<update_url></update_url>
-	<version>5</version>
-	<date>02/05/2017</date>
-	<changes>fix findvideos</changes>
+	<version>6</version>
+	<changes>
+		<change>
+				<date>25/05/2017</date>
+				<autor>Hernan_ar_c</autor>
+				<description>cambios esteticos</description>
+	   	</change>
+		<change>
+			<date>02/05/2017</date>
+			<autor>Hernan_ar_c</autor>
+			<description>fix findvideos</description>
+		</change>>
+	</changes>
 
 	<categories>
 		<category>latino</category>

@@ -34,17 +34,17 @@ def mainlist(item):
 
     itemlist = []
     
-    itemlist.append( Item(channel=item.channel, title="Series", action="todas", url=host, thumbnail='https://s32.postimg.org/544rx8n51/series.png', fanart='https://s32.postimg.org/544rx8n51/series.png'))
+    itemlist.append( Item(channel=item.channel, title="Series", action="todas", url=host, thumbnail='https://s27.postimg.org/iahczwgrn/series.png', fanart='https://s27.postimg.org/iahczwgrn/series.png'))
     
-    itemlist.append( Item(channel=item.channel, title="Alfabetico", action="letras", url=host, thumbnail='https://s31.postimg.org/c3bm9cnl7/a_z.png', fanart='https://s31.postimg.org/c3bm9cnl7/a_z.png'))
+    itemlist.append( Item(channel=item.channel, title="Alfabetico", action="letras", url=host, thumbnail='https://s17.postimg.org/fwi1y99en/a-z.png', fanart='https://s17.postimg.org/fwi1y99en/a-z.png'))
     
-    itemlist.append( Item(channel=item.channel, title="Mas vistas", action="masvistas", url=host, thumbnail='https://s32.postimg.org/466gt3ipx/vistas.png', fanart='https://s32.postimg.org/466gt3ipx/vistas.png'))
+    itemlist.append( Item(channel=item.channel, title="Mas vistas", action="masvistas", url=host, thumbnail='https://s9.postimg.org/wmhzu9d7z/vistas.png', fanart='https://s9.postimg.org/wmhzu9d7z/vistas.png'))
     
-    itemlist.append( Item(channel=item.channel, title="Recomendadas", action="recomendadas", url=host, thumbnail='https://s31.postimg.org/4bsjyc4iz/recomendadas.png', fanart='https://s31.postimg.org/4bsjyc4iz/recomendadas.png'))
+    itemlist.append( Item(channel=item.channel, title="Recomendadas", action="recomendadas", url=host, thumbnail='https://s12.postimg.org/s881laywd/recomendadas.png', fanart='https://s12.postimg.org/s881laywd/recomendadas.png'))
     
-    itemlist.append( Item(channel=item.channel, title="Ultimas Agregadas", action="ultimas", url=host, thumbnail='https://s31.postimg.org/3ua9kwg23/ultimas.png', fanart='https://s31.postimg.org/3ua9kwg23/ultimas.png'))
+    itemlist.append( Item(channel=item.channel, title="Ultimas Agregadas", action="ultimas", url=host, thumbnail='https://s22.postimg.org/cb7nmhwv5/ultimas.png', fanart='https://s22.postimg.org/cb7nmhwv5/ultimas.png'))
 
-    itemlist.append( Item(channel=item.channel, title="Buscar", action="search", url='http://mundoflv.com/?s=', thumbnail='https://s31.postimg.org/qose4p13f/Buscar.png', fanart='https://s31.postimg.org/qose4p13f/Buscar.png'))
+    itemlist.append( Item(channel=item.channel, title="Buscar", action="search", url='http://mundoflv.com/?s=', thumbnail='https://s30.postimg.org/pei7txpa9/buscar.png', fanart='https://s30.postimg.org/pei7txpa9/buscar.png'))
 
     return itemlist
 
@@ -84,7 +84,7 @@ def todas(item):
     next_page_url = scrapertools.find_single_match(data,'<link rel="next" href="([^"]+)" />')
     
     if next_page_url!="":
-        itemlist.append(Item(channel = item.channel, action = "todas", title = ">> Página siguiente", url = next_page_url, thumbnail='https://s32.postimg.org/4zppxf5j9/siguiente.png'))
+        itemlist.append(Item(channel = item.channel, action = "todas", title = ">> Página siguiente", url = next_page_url, thumbnail='https://s16.postimg.org/9okdu7hhx/siguiente.png'))
     
 
     return itemlist
@@ -305,7 +305,7 @@ def busqueda(item):
     next_page_url = scrapertools.find_single_match(data,"<a rel='nofollow' class=previouspostslink' href='([^']+)'>Siguiente &rsaquo;</a>")
     if next_page_url!="":
         item.url=next_page_url
-        itemlist.append(Item(channel = item.channel,action = "busqueda",title = ">> Página siguiente", url = next_page_url, thumbnail='https://s32.postimg.org/4zppxf5j9/siguiente.png'))
+        itemlist.append(Item(channel = item.channel,action = "busqueda",title = ">> Página siguiente", url = next_page_url, thumbnail='https://s16.postimg.org/9okdu7hhx/siguiente.png'))
     return itemlist
 
 def search(item,texto):
