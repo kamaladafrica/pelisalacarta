@@ -72,8 +72,6 @@ def mainlist(item):
                                fanart='https://s30.postimg.org/pei7txpa9/buscar.png'
                                ))
 
-    itemlist.append(item.clone(title='my text', action='my_text'))
-    
     return itemlist
 
 def get_source(url):
@@ -197,12 +195,3 @@ def findvideos(item):
             itemlist.append(item.clone(action='play', title=title, url=url, quality=quality))
 
     return itemlist
-
-def my_text(string):
-    logger.info()
-    headers=dict()
-    headers['Host']='http://www5.es.flamingtext.com'
-    url ='http://www5.es.flamingtext.com/net-fu/dynamic.cgi?script=water-logo&text=%s&fontsize=150'%string
-    data=get_source(url)
-    logger.debug(data)
-        
