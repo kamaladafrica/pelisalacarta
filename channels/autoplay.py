@@ -53,8 +53,8 @@ def show_option (channel, itemlist):
                     'servidores y calidades preferidas. '
     itemlist.append(
             Item(channel=__channel__, title="[COLOR yellow]Configurar AutoPlay[/COLOR]", action="autoplay_config",
-                 thumbnail='https://s7.postimg.org/ff7ssxed7/autoplay.png',
-                 fanart='https://s7.postimg.org/ff7ssxed7/autoplay.png', plot=plot_autoplay, from_channel=channel))
+                 thumbnail='https://s7.postimg.org/65ooga04b/Auto_Play.png',
+                 fanart='https://s7.postimg.org/65ooga04b/Auto_Play.png', plot=plot_autoplay, from_channel=channel))
     return itemlist
 
 
