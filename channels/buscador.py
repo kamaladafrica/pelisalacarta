@@ -118,14 +118,40 @@ def settingCanal(item):
 
         list_controls.append(control)
 
+
+    if config.get_setting("custom_button_value", item.channel):
+        custom_button_label = "Ninguno"
+    else:
+        custom_button_label = "Todos"
+
     return platformtools.show_channel_settings(list_controls=list_controls,
                                                caption="Canales incluidos en la búsqueda global",
-                                               callback="save_settings", item=item, custom_button={'visible': False})
+                                               callback="save_settings", item=item,
+                                               custom_button={'visible': True,
+                                                              'function':"cb_custom_button",
+                                                              'close': False,
+                                                              'label':custom_button_label})
 
 
 def save_settings(item, dict_values):
-    for v in dict_values:
+    progreso = platformtools.dialog_progress("Guardando configuración...", "Espere un momento por favor.")
+    n = len(dict_values)
+    for i, v in enumerate(dict_values):
         config.set_setting("include_in_global_search", dict_values[v], v)
+
+
+def cb_custom_button(item, dict_values):
+    value = config.get_setting("custom_button_value", item.channel)
+    if value == "":
+        value = False
+
+    for v in dict_values.keys():
+        dict_values[v] = not value
+
+    if config.set_setting("custom_button_value", not value, item.channel) == True:
+        return {"label": "Ninguno"}
+    else:
+        return {"label": "Todos"}
 
 
 def searchbycat(item):

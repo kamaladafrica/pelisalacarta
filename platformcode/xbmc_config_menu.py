@@ -694,6 +694,8 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
         # Valores por defecto
         if id == 10006:
             if self.custom_button is not None:
+                if self.custom_button["close"]:
+                    self.close()
                 if '.' in self.callback:
                     package, self.callback = self.callback.rsplit('.', 1)
                 else:
@@ -703,10 +705,21 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                 except ImportError:
                     logger.error('Imposible importar %s' % package)
                 else:
-                    self.return_value = getattr(cb_channel, self.custom_button['function'])(self.item)
-                    if self.custom_button["close"]:
-                        self.close()
+                    self.return_value = getattr(cb_channel, self.custom_button['function'])(self.item, self.values)
+                    if not self.custom_button["close"]:
+                        if isinstance(self.return_value, dict) and self.return_value.has_key("label"):
+                            self.getControl(10006).setLabel(self.return_value['label'])
 
+                        for c in self.list_controls:
+                            if c["type"] == "text":
+                                c["control"].setText(self.values[c["id"]])
+                            if c["type"] == "bool":
+                                c["control"].setSelected(self.values[c["id"]])
+                            if c["type"] == "list":
+                                c["label"].setLabel(c["lvalues"][self.values[c["id"]]])
+
+                        self.evaluate_conditions()
+                        self.dispose_controls(self.index, force=True)
 
             else:
                 for c in self.list_controls:
@@ -731,23 +744,6 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
 
         # Boton Aceptar
         if id == 10004:
-            '''if not self.callback:
-                for v in self.values:
-                    config.set_setting(v, self.values[v], self.channel)
-                self.close()
-            else:
-                self.close()
-                if '.' in self.callback:
-                    package, self.callback = self.callback.rsplit('.',1)
-                else:
-                    package = 'channels.%s' % self.channel
-                cb_channel = None
-                try:
-                    cb_channel = __import__(package, None, None, [package])
-                except ImportError:
-                    logger.error('Imposible importar %s' % package)
-
-                self.return_value = getattr(cb_channel, self.callback)(self.item, self.values)'''
             self.close()
             if self.callback and '.' in self.callback:
                 package, self.callback = self.callback.rsplit('.', 1)
@@ -771,7 +767,6 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                     # ... si tampoco existe 'cb_validate_config'...
                     for v in self.values:
                         config.set_setting(v, self.values[v], self.channel)
-
 
 
         # Controles de ajustes, si se cambia el valor de un ajuste, cambiamos el valor guardado en el diccionario de
