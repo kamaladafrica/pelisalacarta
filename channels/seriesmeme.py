@@ -145,7 +145,6 @@ def episodios(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
-    logger.info("episa"+data)
     patron_caps = '<li><strong><a href="([^"]+)">([^"]+)<\/a>'
     matches = scrapertools.find_multiple_matches(data, patron_caps)
 
