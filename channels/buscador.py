@@ -19,6 +19,7 @@ from platformcode import platformtools
 
 def mainlist(item):
     logger.info()
+    item.channel = "buscador"
 
     itemlist = list()
     context = [{"title": "Elegir canales incluidos",
@@ -31,7 +32,7 @@ def mainlist(item):
                          title="Buscar por categorias (busqueda avanzada)", extra="categorias",
                          context=context,
                          thumbnail=get_thumbnail_path("thumb_buscar.png")))
-    # itemlist.append(Item(channel=item.channel, action="opciones", title="Opciones"))
+    itemlist.append(Item(channel=item.channel, action="opciones", title="Opciones"))
 
     saved_searches_list = get_saved_searches()
     context2 = context[:]
@@ -103,6 +104,7 @@ def settingCanal(item):
 
         # No incluir si en la configuracion del canal no existe "include_in_global_search"
         include_in_global_search = channel_parameters["include_in_global_search"]
+
         if include_in_global_search == False:
             continue
         else:
