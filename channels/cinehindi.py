@@ -24,6 +24,7 @@ def mainlist(item):
 
     itemlist.append(Item(channel=item.channel, action="genero", title="Generos", url=host))
     itemlist.append(Item(channel=item.channel, action="lista", title="Novedades", url=host))
+    itemlist.append(Item(channel=item.channel, action="proximas", title="Próximas Películas", url=urlparse.urljoin(host, "proximamente")))
     itemlist.append(Item(channel=item.channel, title="Buscar", action="search", url=urlparse.urljoin(host, "?s=")))
     return itemlist
 
@@ -37,16 +38,48 @@ def genero(item):
     patron ='class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-.*?"><a href="(.*?)">(.*?)<\/a><\/li>'
     matches = scrapertools.find_multiple_matches(data_generos, patron)
     for scrapedurl, scrapedtitle in matches:
-        itemlist.append(item.clone(action='lista', title=scrapedtitle, url=scrapedurl))
+        if scrapedtitle!='Próximas Películas':
+            itemlist.append(item.clone(action='lista', title=scrapedtitle, url=scrapedurl))
     return itemlist
 
 def search(item, texto):
     logger.info()
     texto = texto.replace(" ","+")
     item.url = item.url+texto
-    #logger.info("item="+item.url)
     if texto!='':
        return lista(item)
+
+def proximas(item):
+    logger.info()
+
+    itemlist = []
+
+    data = httptools.downloadpage(item.url).data
+    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data) # Eliminamos tabuladores, dobles espacios saltos de linea, etc...
+    patron = 'class="item">.*?' # Todos los items de peliculas (en esta web) empiezan con esto
+    patron += '<a href="([^"]+).*?' # scrapedurl
+    patron += '<img src="([^"]+).*?' # scrapedthumbnail
+    patron += 'alt="([^"]+).*?' # scrapedtitle
+    patron += '<span class="player">.+?<span class="year">([^"]+)<\/span>' # scrapedyear
+    matches = scrapertools.find_multiple_matches(data, patron)
+    for scrapedurl, scrapedthumbnail, scrapedtitle, scrapedyear in matches:
+        if "ver" in scrapedurl:
+            scrapedtitle=scrapedtitle+" ["+scrapedyear+"]"
+        else:
+            scrapedtitle=scrapedtitle+" ["+scrapedyear+"]"+'(Proximamente)'
+        itemlist.append(item.clone(title=scrapedtitle, url=scrapedurl, action="findvideos", extra=scrapedtitle,
+                               show=scrapedtitle, thumbnail=scrapedthumbnail, contentType="movie", context=["buscar_trailer"]))
+    #Paginacion
+    patron_pag='<a rel=.+?nofollow.+? class=.+?page larger.+? href=.+?(.+?)proximamente.+?>([^"]+)<\/a>'
+    pagina = scrapertools.find_multiple_matches(data,patron_pag)
+    #logger.info("holay   "+str(pagina))
+    for next_page_url,i in pagina:
+        if int(i)==2:
+            item.url=next_page_url+'proximamente/page/'+str(i)+'/'
+            logger.info("dormireya :"+str(item.url))
+            itemlist.append(Item(channel = item.channel,action = "proximas",title = ">> Página siguiente", url = item.url, thumbnail='https://s32.postimg.org/4zppxf5j9/siguiente.png'))
+
+    return itemlist
 
 def lista(item):
     logger.info()
@@ -62,9 +95,7 @@ def lista(item):
     patron += '<span class="ttx">([^<]+).*?' # scrapedplot
     patron += '<div class="fixyear">(.*?)</span></div></div>' # scrapedfixyear
 
-
     matches = scrapertools.find_multiple_matches(data, patron)
-
     for scrapedurl, scrapedthumbnail, scrapedtitle, scrapedplot, scrapedfixyear in matches:
         patron = '<span class="year">([^<]+)'  # scrapedyear
         scrapedyear = scrapertools.find_single_match(scrapedfixyear, patron)
@@ -77,7 +108,7 @@ def lista(item):
             scrapedtitle += ' [%s]'%(scrapedquality)
 
         itemlist.append(item.clone(title=scrapedtitle, url=scrapedurl, plot=scrapedplot, action="findvideos", extra=scrapedtitle,
-                                   show=scrapedtitle, thumbnail=scrapedthumbnail, contentType="movie", context=["buscar_trailer"]))
+                               show=scrapedtitle, thumbnail=scrapedthumbnail, contentType="movie", context=["buscar_trailer"]))
 
     #Paginacion
     patron_genero='<h1>([^"]+)<\/h1>'
@@ -91,7 +122,6 @@ def lista(item):
 
     if next_page_url!="":
         item.url=next_page_url
-        import inspect
         itemlist.append(Item(channel = item.channel,action = "lista",title = ">> Página siguiente", url = next_page_url, thumbnail='https://s32.postimg.org/4zppxf5j9/siguiente.png'))
     return itemlist
 
