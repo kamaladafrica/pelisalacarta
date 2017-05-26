@@ -146,7 +146,7 @@ def episodios(item):
     patron_caps = '<li><strong><a href="([^"]+)">([^"]+)<\/a>'
     matches = scrapertools.find_multiple_matches(data, patron_caps)
 
-    show = scrapertools.find_single_match(data,'<pre><strong>.+?: (.+?)<\/strong>')
+    show = scrapertools.find_single_match(data,'h3><strong>.+?de (.+?)<\/strong>')
 
     for link, cap in matches:
         title = cap
