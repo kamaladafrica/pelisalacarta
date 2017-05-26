@@ -112,7 +112,7 @@ def lista_gen(item):
         itemlist.append(Item(channel=item.channel, title=title, url=scrapedurl, thumbnail=scrapedthumbnail, action="episodios"))
 
     #Paginacion
-    patron_pag='<a class="nextpostslink" .+ href="([^"]+)">'
+    patron_pag='<a class="nextpostslink" rel="next" href="([^"]+)">'
     next_page_url = scrapertools.find_single_match(data,patron_pag)
 
     if next_page_url!="" and i!=1:
