@@ -72,7 +72,6 @@ def proximas(item):
     #Paginacion
     patron_pag='<a rel=.+?nofollow.+? class=.+?page larger.+? href=.+?(.+?)proximamente.+?>([^"]+)<\/a>'
     pagina = scrapertools.find_multiple_matches(data,patron_pag)
-    #logger.info("holay   "+str(pagina))
     for next_page_url,i in pagina:
         if int(i)==2:
             item.url=next_page_url+'proximamente/page/'+str(i)+'/'
@@ -138,7 +137,6 @@ def findvideos(item):
     show = scrapertools.find_single_match(data,patron_show)
     for videoitem in itemlist:
         videoitem.channel=item.channel
-    #itemlist.append(Item(channel=item.channel, title="Añadir película a la biblioteca", url=item.url, action="add_pelicula_to_library", extra="", show=show))
     if config.get_library_support() and len(itemlist) > 0 :
         itemlist.append(Item(channel=item.channel, title='[COLOR yellow]Añadir esta pelicula a la biblioteca[/COLOR]', url=item.url,
                              action="add_pelicula_to_library", extra="findvideos", contentTitle = show))
