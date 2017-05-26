@@ -75,7 +75,6 @@ def proximas(item):
     for next_page_url,i in pagina:
         if int(i)==2:
             item.url=next_page_url+'proximamente/page/'+str(i)+'/'
-            logger.info("dormireya :"+str(item.url))
             itemlist.append(Item(channel = item.channel,action = "proximas",title = ">> Página siguiente", url = item.url, thumbnail='https://s32.postimg.org/4zppxf5j9/siguiente.png'))
 
     return itemlist
