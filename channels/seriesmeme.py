@@ -25,8 +25,7 @@ def mainlist(item):
     itemlist.append(Item(channel=item.channel, action="lista", title="Series", url=urlparse.urljoin(host, "/lista")))
     itemlist.append(Item(channel=item.channel, action="categorias", title="Categorias", url=host))
     itemlist.append(Item(channel=item.channel, action="alfabetico", title="Listado Alfabetico", url=host))
-    itemlist.append(Item(channel=item.channel, action="top", title="Top Series", url=host))
-    #itemlist.append(Item(channel=item.channel, title="Buscar", action="search", url=urlparse.urljoin(host, "?s=")))	
+    itemlist.append(Item(channel=item.channel, action="top", title="Top Series", url=host))	
     return itemlist
 """
 def search(item, texto):
@@ -50,7 +49,7 @@ def categorias(item):
     for link, name in matches:
         title=name
         url=link
-        itemlist.append(item.clone(title=title, url=url, plot=title, action="lista_gen", show=title))
+        itemlist.append(item.clone(title=title, url=url, plot=title, action="lista_gen"))
     return itemlist
 
 def alfabetico(item):
@@ -70,7 +69,7 @@ def alfabetico(item):
     for link, name in matches:
         title=name
         url=link
-        itemlist.append(item.clone(title=title, url=url, plot=title, action="lista_gen", show=title))
+        itemlist.append(item.clone(title=title, url=url, plot=title, action="lista_gen"))
     return itemlist
 
 def top(item):
@@ -87,7 +86,7 @@ def top(item):
     for link, name in matches:
         title=name
         url=link
-        itemlist.append(item.clone(title=title, url=url, plot=title, action="lista_gen", show=title))
+        itemlist.append(item.clone(title=title, url=url, plot=title, action="lista_gen"))
     return itemlist
 
 def lista_gen(item):
@@ -110,7 +109,7 @@ def lista_gen(item):
         if 'HD' in scrapedlang:
             scrapedlang = scrapedlang.replace('HD','')
         title=scrapedtitle+" [ "+scrapedlang+"]"
-        itemlist.append(Item(channel=item.channel, title=title, url=scrapedurl, thumbnail=scrapedthumbnail, action="episodios", show=scrapedtitle))
+        itemlist.append(Item(channel=item.channel, title=title, url=scrapedurl, thumbnail=scrapedthumbnail, action="episodios"))
 
     #Paginacion
     patron_pag='<a class="nextpostslink" .+ href="([^"]+)">'
@@ -118,7 +117,6 @@ def lista_gen(item):
 
     if next_page_url!="" and i!=1:
         item.url=next_page_url
-        import inspect
         itemlist.append(Item(channel = item.channel,action = "lista_gen",title = ">> Página siguiente", url = next_page_url, thumbnail='https://s32.postimg.org/4zppxf5j9/siguiente.png'))
 
     return itemlist
@@ -136,7 +134,7 @@ def lista(item):
     for link, name in matches:
         title=name
         url=link
-        itemlist.append(item.clone(title=title, url=url, plot=title, action="episodios", show=title))
+        itemlist.append(item.clone(title=title, url=url, plot=title, action="episodios"))
     return itemlist
 
 def episodios(item):
