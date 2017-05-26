@@ -25,7 +25,6 @@ def mainlist(item):
     itemlist.append(Item(channel=item.channel, action="genero", title="Generos", url=host))
     itemlist.append(Item(channel=item.channel, action="lista", title="Novedades", url=host))
     itemlist.append(Item(channel=item.channel, title="Buscar", action="search", url=urlparse.urljoin(host, "?s=")))
-    #itemlist.append(Item(channel=item.channel, title="Buscar Main", action="lista", url=urlparse.urljoin(host, "?s=main+prem")))	
     return itemlist
 
 def genero(item):
