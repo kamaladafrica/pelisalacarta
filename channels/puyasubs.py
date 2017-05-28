@@ -34,25 +34,25 @@ def mainlist(item):
     itemlist = list()
 
     itemlist.append(Item(channel=item.channel, action="listado", title="Novedades Anime", thumbnail=item.thumbnail,
-                         url="http://puya.se/?cat=4", text_color=color1))
+                         url="http://puya.si/?cat=4", text_color=color1))
     itemlist.append(Item(channel=item.channel, action="listado", title="Novedades Doramas", thumbnail=item.thumbnail,
-                         url="http://puya.se/?cat=142", text_color=color1))
+                         url="http://puya.si/?cat=142", text_color=color1))
     itemlist.append(Item(channel=item.channel, action="", title="Descargas", text_color=color2))
     itemlist.append(Item(channel=item.channel, action="descargas", title="   Descargas Animes y Doramas en proceso",
-                         thumbnail=item.thumbnail, url="http://puya.se/?page_id=25501", text_color=color1))
+                         thumbnail=item.thumbnail, url="http://puya.si/?page_id=25501", text_color=color1))
     itemlist.append(Item(channel=item.channel, action="descargas", title="   Descargas Animes Finalizados",
-                         thumbnail=item.thumbnail, url="http://puya.se/?page_id=15388", text_color=color1))
+                         thumbnail=item.thumbnail, url="http://puya.si/?page_id=15388", text_color=color1))
     itemlist.append(Item(channel=item.channel, action="letra", title="   Descargas Animes Finalizados por Letra",
-                         thumbnail=item.thumbnail, url="http://puya.se/?page_id=15388", text_color=color1))
+                         thumbnail=item.thumbnail, url="http://puya.si/?page_id=15388", text_color=color1))
     itemlist.append(Item(channel=item.channel, action="descargas", title="   Descargas Doramas Finalizados",
-                         thumbnail=item.thumbnail, url="http://puya.se/?page_id=25507", text_color=color1))
+                         thumbnail=item.thumbnail, url="http://puya.si/?page_id=25507", text_color=color1))
     itemlist.append(Item(channel=item.channel, action="descargas", title="   Descargas Películas y Ovas",
-                         thumbnail=item.thumbnail, url="http://puya.se/?page_id=25503", text_color=color1))
+                         thumbnail=item.thumbnail, url="http://puya.si/?page_id=25503", text_color=color1))
     itemlist.append(Item(channel=item.channel, action="torrents", title="Lista de Torrents", thumbnail=item.thumbnail,
                          url="https://www.frozen-layer.com/buscar/descargas", text_color=color1))
 
     itemlist.append(Item(channel=item.channel, action="search", title="Buscar anime/dorama/película",
-                         thumbnail=item.thumbnail, url="http://puya.se/?s=", text_color=color3))
+                         thumbnail=item.thumbnail, url="http://puya.si/?s=", text_color=color3))
 
     itemlist.append(item.clone(title="Configurar canal", action="configuracion", text_color=color5, folder=False))
     return itemlist
@@ -125,7 +125,7 @@ def descargas(item):
         item.pagina = 0
 
     data = httptools.downloadpage(item.url).data
-    patron = '<li><a href="(http://puya.se/\?page_id=\d+|http://safelinking.net/[0-9A-z]+)">(.*?)</a>'
+    patron = '<li><a href="(http://puya.si/\?page_id=\d+|http://safelinking.net/[0-9A-z]+)">(.*?)</a>'
     if item.letra:
         bloque = scrapertools.find_single_match(data, '<li>(?:<strong>|)'+item.letra+'(?:</strong>|)</li>(.*?)</ol>')
         matches = scrapertools.find_multiple_matches(bloque, patron)
@@ -369,7 +369,7 @@ def newest(categoria):
     logger.info()
     item = Item()
     try:
-        item.url = "http://puya.se/?cat=4"
+        item.url = "http://puya.si/?cat=4"
         item.extra = "novedades"
         itemlist = listado(item)
 
