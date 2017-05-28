@@ -257,7 +257,6 @@ def findvideos(item):
     itemlist = []
     dic_langs = {'esp': 'Español', 'english': 'Ingles', 'japo': 'Japones', 'argentina': 'Latino', 'ntfof':''}
     dic_servers = {'ntfof': 'Servidor Desconocido', 'stramango': 'streamango', 'flasht': 'flashx'}
-    list_showlinks = [('Online:', 'Online:</h1>(.*?)Descarga:</h1>'), ('Download:', 'Descarga:</h1>(.*?)</section>')]
 
     data1 = downloadpage(item.url)
     patron = 'onclick="redir\(([^\)]+).*?'
@@ -265,13 +264,20 @@ def findvideos(item):
     patron += '<span[^>]+>([^<]+).*?'
     patron += '<img(.*?)onerror'
 
+    if "Descarga:</h1>" in data1:
+        list_showlinks = [('Online:', 'Online:</h1>(.*?)Descarga:</h1>'),
+                          ('Download:', 'Descarga:</h1>(.*?)</section>')]
+    else:
+        list_showlinks = [('Online:', 'Online:</h1>(.*?)</section>')]
+
     for t in list_showlinks:
         data = scrapertools.find_single_match(data1, t[1])
+        logger.debug(data)
         if data:
             itemlist.append(Item(title=t[0], text_color = color3, text_blod= True,
                                  folder=False, thumbnail = thumbnail_host ))
 
-            for redir, server, quality, langs in scrapertools.find_multiple_matches(data, patron):
+            for redir, server, quality, langs in scrapertools.find_multiple_matches(data, patron): #, server, quality, langs
                 redir = redir.split(",")
                 url = redir[0][1:-1]
                 id = redir[1][1:-1]
