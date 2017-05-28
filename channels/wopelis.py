@@ -272,7 +272,7 @@ def findvideos(item):
 
     for t in list_showlinks:
         data = scrapertools.find_single_match(data1, t[1])
-        logger.debug(data)
+        
         if data:
             itemlist.append(Item(title=t[0], text_color = color3, text_blod= True,
                                  folder=False, thumbnail = thumbnail_host ))
