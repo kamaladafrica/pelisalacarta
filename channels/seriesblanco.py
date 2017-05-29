@@ -171,7 +171,6 @@ def search(item, texto):
         post = "query=%s" % texto
         data = httptools.downloadpage(item.url, post=post).data
         data = re.sub(r"\n|\r|\t|\s{2}", "", data)
-        logger.debug("kaka %s " % data)
         shows = re.findall("<a href=['\"](?P<url>/serie[^'\"]+)['\"].*?<img src=['\"](?P<img>[^'\"]+)['\"]"
                            ".*?<b>(?P<title>.*?)</b>", data)
 
