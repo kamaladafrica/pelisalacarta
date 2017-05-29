@@ -27,12 +27,18 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
 
     data = httptools.downloadpage(page_url).data
     video_urls = []
-    videos = scrapertools.find_multiple_matches(data, 'file\s*:\s*"([^"]+)"')
-    calidad = scrapertools.find_single_match(data, 'height\s*:\s*"([^"]+)"')
-    for video_url in videos:
+    videos = scrapertools.find_multiple_matches(data, 'file\s*:\s*"([^"]+)",label:"(.*?)"')
+    ##Detección de subtítulos
+    subtitulo = scrapertools.find_single_match(data, 'tracks: \[{file: "(.*?)"')
+    if subtitulo is None:
+        subtitulo = ""
+    for video_url, video_calidad in videos:
         extension = scrapertools.get_filename_from_url(video_url)[-4:]
-        video_urls.append(["%s %s [fastplay]" % (extension, calidad + "p"), video_url])
-
+        video_urls.append(["%s %s [fastplay]" % (extension, video_calidad), video_url, 0, subtitulo])
+    try:
+        video_urls.sort(key=lambda it: int(it[0].split("p ", 1)[0].rsplit(" ")[1]))
+    except:
+        pass
     for video_url in video_urls:
         logger.info(" %s - %s" % (video_url[0], video_url[1]))
 
@@ -46,13 +52,14 @@ def find_videos(data):
 
     # https://fastplay.cc/flash-ZapZwMMA
     # https://fastplay.cc/ZupZwMMA
-    patronvideos = 'fastplay.(?:cc|sx)/(?:flash-|)([A-z0-9]+)'
+    # http://fastplay.cc/embed-crl2r7h9du9v.html
+    patronvideos = 'fastplay.(?:cc|sx)/(?:flash-|embed-)([A-z0-9]+)'
     logger.info("#" + patronvideos + "#")
     matches = re.compile(patronvideos, re.DOTALL).findall(data)
-
     for match in matches:
         titulo = "[fastplay]"
-        url = "http://fastplay.cc/flash-%s.html" % match
+        match=match.replace("flash","embed")
+        url = "http://fastplay.cc/embed-%s.html" % match
         if url not in encontrados:
             logger.info("  url=" + url)
             devuelve.append([titulo, url, 'fastplay'])
