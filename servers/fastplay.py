@@ -30,8 +30,6 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     videos = scrapertools.find_multiple_matches(data, 'file\s*:\s*"([^"]+)",label:"(.*?)"')
     ##Detección de subtítulos
     subtitulo = scrapertools.find_single_match(data, 'tracks: \[{file: "(.*?)"')
-    if subtitulo is None:
-        subtitulo = ""
     for video_url, video_calidad in videos:
         extension = scrapertools.get_filename_from_url(video_url)[-4:]
         video_urls.append(["%s %s [fastplay]" % (extension, video_calidad), video_url, 0, subtitulo])
@@ -53,12 +51,11 @@ def find_videos(data):
     # https://fastplay.cc/flash-ZapZwMMA
     # https://fastplay.cc/ZupZwMMA
     # http://fastplay.cc/embed-crl2r7h9du9v.html
-    patronvideos = 'fastplay.(?:cc|sx)/(?:flash-|embed-)([A-z0-9]+)'
+    patronvideos = 'fastplay.(?:cc|sx)/(?:flash-|embed-|)([A-z0-9]+)'
     logger.info("#" + patronvideos + "#")
     matches = re.compile(patronvideos, re.DOTALL).findall(data)
     for match in matches:
         titulo = "[fastplay]"
-        match=match.replace("flash","embed")
         url = "http://fastplay.cc/embed-%s.html" % match
         if url not in encontrados:
             logger.info("  url=" + url)
