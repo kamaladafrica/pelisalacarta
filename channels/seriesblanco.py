@@ -52,7 +52,8 @@ def mainlist(item):
                          url=urlparse.urljoin(HOST, "fichas_creadas/"), thumbnail=thumb_series))
     itemlist.append(Item(channel=item.channel, title="Series por género", action="generos",
                          url=HOST, thumbnail=thumb_series))
-    itemlist.append(Item(channel=item.channel, title="Buscar...", action="search", url=HOST, thumbnail=thumb_buscar))
+    itemlist.append(Item(channel=item.channel, title="Buscar...", action="search", url=HOST+"finder.php",
+                         thumbnail=thumb_buscar))
 
     itemlist = filtertools.show_option(itemlist, item.channel, list_idiomas, CALIDADES)
 
@@ -80,9 +81,8 @@ def home_section(item):
 def extract_series_from_data(item, data):
     itemlist = []
     episode_pattern = re.compile('/capitulo-([0-9]+)/')
-    shows = re.findall(
-        "<a.+?href=['\"](?P<url>[^'\"]+)[^<]*<img[^>]*src=['\"](?P<img>http[^'\"]+).*?(?:alt|title)=['\"](?P<name>[^'\"]+)",
-        data)
+    shows = re.findall("<a.+?href=['\"](?P<url>/serie[^'\"]+)[^<]*<img[^>]*src=['\"](?P<img>http[^'\"]+).*?"
+                       "(?:alt|title)=['\"](?P<name>[^'\"]+)", data)
     for url, img, name in shows:
         try:
             name.decode('utf-8')
@@ -165,18 +165,27 @@ def search(item, texto):
     logger.info("%s" % texto)
     texto = texto.replace(" ", "+")
 
-    if texto == "":
-        return []
+    itemlist = []
 
     try:
-        item.url = urlparse.urljoin(HOST, "/search.php?q1=%s&q2=%s" % (texto, texto.lower()))
-        return series(item)
+        post = "query=%s" % texto
+        data = httptools.downloadpage(item.url, post=post).data
+        data = re.sub(r"\n|\r|\t|\s{2}", "", data)
+        logger.debug("kaka %s " % data)
+        shows = re.findall("<a href=['\"](?P<url>/serie[^'\"]+)['\"].*?<img src=['\"](?P<img>[^'\"]+)['\"]"
+                           ".*?<b>(?P<title>.*?)</b>", data)
+
+        for url, img, title in shows:
+            itemlist.append(item.clone(title=title, url=urlparse.urljoin(HOST, url), action="episodios", show=title,
+                                       thumbnail=img, context=filtertools.context(item, list_idiomas, CALIDADES)))
+
     # Se captura la excepción, para no interrumpir al buscador global si un canal falla
     except:
         import sys
         for line in sys.exc_info():
             logger.error("%s" % line)
-        return []
+
+    return itemlist
 
 
 def episodios(item):
