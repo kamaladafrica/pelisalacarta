@@ -27,11 +27,16 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
 
     data = httptools.downloadpage(page_url).data
     video_urls = []
+    #Detección de subtítulos
+    subtitulo = ""
     videos = scrapertools.find_multiple_matches(data, '"file"\s*:\s*"([^"]+)","label"\s*:\s*"([^"]+)"')
     for video_url, calidad in videos:
         video_url = video_url.replace("\\", "")
         extension = scrapertools.get_filename_from_url(video_url)[-4:]
-        video_urls.append(["%s %s [raptu]" % (extension, calidad), video_url])
+        if ".srt" in extension:
+            subtitulo = "https://www.raptu.com"+video_url
+        else:
+            video_urls.append(["%s %s [raptu]" % (extension, calidad), video_url, 0, subtitulo])
 
     try:
         video_urls.sort(key=lambda it: int(it[0].split("p ", 1)[0].rsplit(" ")[1]))
