@@ -322,13 +322,12 @@ def findvideos(item):
     itemlist = []
     duplicados=[]
     data = get_source(item.url)
-    logger.debug('data: %s'%data)
     src = data
     patron = 'id=(?:div|player)(\d+)>.*?<iframe src=.*? data-lazy-src=(.*?) marginheight'
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     for option, videoitem in matches:
-        lang= scrapertools.find_single_match(src,'<a href=#(?:div|player)%s.*?>(.*?)<\/a>'%option)
+        lang= scrapertools.find_single_match(src,'<a href=#(?:div|player)%s.*?>.*?(Doblado|Subtitulado)<\/a>'%option)
         data = get_source(videoitem)
         if 'play' in videoitem:
             url = scrapertools.find_single_match(data,'<span>Ver Online<.*?<li><a href=(.*?)><span class=icon>')
@@ -339,11 +338,10 @@ def findvideos(item):
 
 
     for video_url in url_list:
-        language = re.sub(r'HTML5|\s','',video_url[1])
+        language = video_url[1]
         if 'jw.miradetodo' in video_url[0]:
             data = get_source('http:'+video_url[0])
-
-            patron = 'type:.*?,.*?label:.*?(.*?),.*?file:.*?(.*?)\}'
+            patron = 'label:.*?(.*?),.*?file:.*?(.*?)&app.*?\}'
             matches = re.compile(patron, re.DOTALL).findall(data)
 
             for quality, scrapedurl in matches:
@@ -351,6 +349,7 @@ def findvideos(item):
                 title = item.contentTitle +' (%s) %s'%(quality, language)
                 server = 'directo'
                 url = scrapedurl
+                url = url.replace('\/', '/')
                 subtitle = scrapertools.find_single_match(data,"tracks: \[\{file: '.*?linksub=(.*?)',label")
                 if url not in duplicados:
                     itemlist.append(item.clone(title=title,
@@ -367,6 +366,7 @@ def findvideos(item):
 
         for videoitem in itemlist:
             if videoitem.server != 'directo':
+
                 quality = item.quality
                 title = item.contentTitle +' (%s)'%language
                 if item.quality != '':
@@ -375,7 +375,7 @@ def findvideos(item):
                 videoitem.channel = item.channel
                 videoitem.thumbnail = 'http://media.tvalacarta.info/servers/server_%s.png' % videoitem.server
                 videoitem.quality = item.quality
-                language = language
+
 
     if item.infoLabels['mediatype']=='movie':
         if config.get_library_support() and len(itemlist) > 0 and item.extra != 'findvideos':
