@@ -162,13 +162,20 @@ def recomendadas(item):
     for scrapedurl,scrapedtitle in matches:
         url = urlparse.urljoin(item.url,scrapedurl)
         data = httptools.downloadpage(scrapedurl).data
-        thumbnail= scrapertools.get_match(data,'<meta property="og:image" content="([^"]+)" />')
+        thumbnail= scrapertools.get_match(data,'<meta property="og:image" content="([^"]+)".*?>')
         realplot = scrapertools.find_single_match(data, '\/><\/a>([^*]+)<p><\/p>.*')
         plot = scrapertools.remove_htmltags(realplot)
         title = scrapedtitle.replace('online','')
         title = title = scrapertools.decodeHtmlentities(title) 
         fanart = item.fanart
-        itemlist.append( Item(channel=item.channel, action="idioma" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart,contentSerieName=title))
+        itemlist.append(item.clone(action="idioma",
+                                   title=title ,
+                                   url=url,
+                                   thumbnail=thumbnail,
+                                   plot=plot,
+                                   fanart=fanart,
+                                   contentSerieName=title
+                                   ))
 
     return itemlist
 
@@ -184,14 +191,21 @@ def ultimas(item):
     for scrapedurl,scrapedtitle in matches:
         url = urlparse.urljoin(item.url,scrapedurl)
         data = httptools.downloadpage(scrapedurl).data
-        thumbnail= scrapertools.get_match(data,'<meta property="og:image" content="([^"]+)" />')
+        thumbnail= scrapertools.get_match(data,'<meta property="og:image" content="([^"]+)".*?>')
         realplot = scrapertools.find_single_match(data, '\/><\/a>([^*]+)<p><\/p>.*')
         plot = scrapertools.remove_htmltags(realplot)
         plot = ""
         title = scrapedtitle.replace('online','')
         title = scrapertools.decodeHtmlentities(title)
         fanart = item.fanart
-        itemlist.append( Item(channel=item.channel, action="idioma" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart,contentSerieName=title))
+        itemlist.append(item.clone(action="idioma" ,
+                                   title=title,
+                                   url=url,
+                                   thumbnail=thumbnail,
+                                   plot=plot,
+                                   fanart=fanart,
+                                   contentSerieName=title
+                                   ))
 
     return itemlist
 
