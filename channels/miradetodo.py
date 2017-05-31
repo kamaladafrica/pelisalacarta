@@ -368,7 +368,7 @@ def findvideos(item):
             if videoitem.server != 'directo':
 
                 quality = item.quality
-                title = item.contentTitle +' (%s)'%language
+                title = item.contentTitle +' (%s) %s'%(videoitem.server,language)
                 if item.quality != '':
                      title = item.contentTitle + ' (%s) %s' %(quality, language)
                 videoitem.title = title
