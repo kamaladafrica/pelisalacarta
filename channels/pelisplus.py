@@ -27,11 +27,35 @@ def mainlist(item):
 
     itemlist = []
     
-    itemlist.append( Item(channel=item.channel, title="Peliculas", action="menupeliculas",thumbnail='https://s8.postimg.org/6wqwy2c2t/peliculas.png', fanart='https://s8.postimg.org/6wqwy2c2t/peliculas.png', extra='peliculas/'))
+    itemlist.append(item.clone(title="Peliculas",
+                               action="menupeliculas",
+                               thumbnail='https://s8.postimg.org/6wqwy2c2t/peliculas.png',
+                               fanart='https://s8.postimg.org/6wqwy2c2t/peliculas.png',
+                               extra='peliculas/'
+                               ))
     
-    itemlist.append( Item(channel=item.channel, title="Series", action="menuseries",thumbnail='https://s27.postimg.org/iahczwgrn/series.png', fanart='https://s27.postimg.org/iahczwgrn/series.png', extra='peliculas/'))
+    itemlist.append(item.clone(title="Series",
+                               action="menuseries",
+                               thumbnail='https://s27.postimg.org/iahczwgrn/series.png',
+                               fanart='https://s27.postimg.org/iahczwgrn/series.png',
+                               extra='peliculas/'
+                               ))
     
-    itemlist.append( Item(channel=item.channel, title="Documentales", action="lista", url=host+'documentales/pag-1', thumbnail='https://s16.postimg.org/7xjj4bmol/documental.png', fanart='https://s16.postimg.org/7xjj4bmol/documental.png', extra='documentales/'))
+    itemlist.append(item.clone(title="Documentales",
+                               action="lista",
+                               url=host+'documentales/pag-1',
+                               thumbnail='https://s16.postimg.org/7xjj4bmol/documental.png',
+                               fanart='https://s16.postimg.org/7xjj4bmol/documental.png',
+                               extra='documentales/'
+                               ))
+
+    itemlist.append(item.clone(title="Buscar",
+                               action="search",
+                               url=host + 'busqueda/?s=',
+                               thumbnail='https://s30.postimg.org/pei7txpa9/buscar.png',
+                               fanart='https://s30.postimg.org/pei7txpa9/buscar.png',
+                               extra=''
+                               ))
 
     return itemlist
 
@@ -40,13 +64,37 @@ def menupeliculas(item):
     logger.info()
     itemlist = []
     
-    itemlist.append( Item(channel=item.channel, title="Ultimas", action="lista", url=host+'estrenos/pag-1', thumbnail='https://s22.postimg.org/cb7nmhwv5/ultimas.png', fanart='https://s22.postimg.org/cb7nmhwv5/ultimas.png', extra='estrenos/'))
+    itemlist.append(item.clone(title="Ultimas",
+                               action="lista",
+                               url=host+'estrenos/pag-1',
+                               thumbnail='https://s22.postimg.org/cb7nmhwv5/ultimas.png',
+                               fanart='https://s22.postimg.org/cb7nmhwv5/ultimas.png',
+                               extra='estrenos/'
+                               ))
     
-    itemlist.append( Item(channel=item.channel, title="Todas", action="lista", url=host+'peliculas/pag-1', thumbnail='https://s18.postimg.org/fwvaeo6qh/todas.png', fanart='https://s18.postimg.org/fwvaeo6qh/todas.png', extra='peliculas/'))
+    itemlist.append(item.clone(title="Todas",
+                               action="lista",
+                               url=host+'peliculas/pag-1',
+                               thumbnail='https://s18.postimg.org/fwvaeo6qh/todas.png',
+                               fanart='https://s18.postimg.org/fwvaeo6qh/todas.png',
+                               extra='peliculas/'
+                               ))
     
-    itemlist.append( Item(channel=item.channel, title="Generos", action="generos", url=host+'peliculas/pag-1', thumbnail='https://s3.postimg.org/5s9jg2wtf/generos.png', fanart='https://s3.postimg.org/5s9jg2wtf/generos.png', extra='documentales/'))
+    itemlist.append(item.clone(title="Generos",
+                               action="generos",
+                               url=host+'peliculas/pag-1',
+                               thumbnail='https://s3.postimg.org/5s9jg2wtf/generos.png',
+                               fanart='https://s3.postimg.org/5s9jg2wtf/generos.png',
+                               extra='documentales/'
+                               ))
     
-    itemlist.append( Item(channel=item.channel, title="Buscar", action="search", url=host+'busqueda/?s=', thumbnail='https://s30.postimg.org/pei7txpa9/buscar.png', fanart='https://s30.postimg.org/pei7txpa9/buscar.png', extra='peliculas/'))
+    itemlist.append(item.clone(title="Buscar",
+                               action="search",
+                               url=host+'busqueda/?s=',
+                               thumbnail='https://s30.postimg.org/pei7txpa9/buscar.png',
+                               fanart='https://s30.postimg.org/pei7txpa9/buscar.png',
+                               extra='peliculas/'
+                               ))
     
     return itemlist
 
@@ -55,28 +103,61 @@ def menuseries(item):
     logger.info()
     itemlist = []
     
-    itemlist.append( Item(channel=item.channel, title="Todas", action="lista", url=host+"series/pag-1",thumbnail='https://s18.postimg.org/fwvaeo6qh/todas.png', fanart='https://s18.postimg.org/fwvaeo6qh/todas.png', extra='series/'))
+    itemlist.append(item.clone(title="Todas",
+                               action="lista",
+                               url=host+"series/pag-1",
+                               thumbnail='https://s18.postimg.org/fwvaeo6qh/todas.png',
+                               fanart='https://s18.postimg.org/fwvaeo6qh/todas.png',
+                               extra='series/'
+                               ))
         
-    itemlist.append( Item(channel=item.channel, title="Generos", action="generos", url=host+'series/pag-1', thumbnail='https://s3.postimg.org/5s9jg2wtf/generos.png', fanart='https://s3.postimg.org/5s9jg2wtf/generos.png', extra='series/'))
+    itemlist.append(item.clone(title="Generos",
+                               action="generos",
+                               url=host+'series/pag-1',
+                               thumbnail='https://s3.postimg.org/5s9jg2wtf/generos.png',
+                               fanart='https://s3.postimg.org/5s9jg2wtf/generos.png',
+                               extra='series/'
+                               ))
 
-    itemlist.append( Item(channel=item.channel, title="Buscar", action="search", url=host+'busqueda/?s=', thumbnail='https://s30.postimg.org/pei7txpa9/buscar.png', fanart='https://s30.postimg.org/pei7txpa9/buscar.png', extra='series/'))
+    itemlist.append(item.clone(title="Buscar",
+                               action="search",
+                               url=host+'busqueda/?s=',
+                               thumbnail='https://s30.postimg.org/pei7txpa9/buscar.png',
+                               fanart='https://s30.postimg.org/pei7txpa9/buscar.png',
+                               extra='series/'
+                               ))
     
     return itemlist
     
 def search(item,texto):
     logger.info()
-    texto = texto.replace(" ","+")
-    item.url = item.url+texto
-    try:
-        if texto != '':
-            return lista(item)
-        else:
+
+    if item.extra == '':
+        return search_all(item,texto)
+    elif item.extra in ['series/', 'peliculas/']:
+        texto = texto.replace(" ","+")
+        item.url = item.url+texto
+        try:
+            if texto != '':
+                return lista(item)
+            else:
+                return []
+        except:
+            import sys
+            for line in sys.exc_info():
+                logger.error("%s" % line)
             return []
-    except:
-        import sys
-        for line in sys.exc_info():
-            logger.error("%s" % line)
-        return []
+
+def search_all(item, texto):
+    logger.info()
+    itemlist =[]
+    for tipo in ['series/', 'peliculas/']:
+        item.title='Buscar'
+        if item.extra !='':
+            item.url = host + 'busqueda/?s='
+        item.extra=tipo
+        itemlist += search(item, texto)
+    return itemlist
 
 
 def lista(item):
@@ -156,7 +237,7 @@ def temporadas(item):
         plot = scrapertools.find_single_match(data,'<span>Sinopsis:<\/span>.([^<]+).<span class="text-detail-hide"><\/span>')
         fanart = scrapertools.find_single_match(data,'<img src="([^"]+)"/>.*?</a>')
         contentSeasonNumber = scrapedtitle.strip(' \r\n')
-        itemlist.append( Item(channel=item.channel, action="episodios" , title=title, fulltitle=item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart, extra=scrapedtitle.rstrip('\n'), contentSerieName =item.contentSerieName, contentSeasonNumber = contentSeasonNumber, infoLabels={'season':contentSeasonNumber}))
+        itemlist.append(item.clone(action="episodios" , title=title, fulltitle=item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart, extra=scrapedtitle.rstrip('\n'), contentSerieName =item.contentSerieName, contentSeasonNumber = contentSeasonNumber, infoLabels={'season':contentSeasonNumber}))
     
     if item.extra == 'temporadas':
         for tempitem in itemlist:
@@ -164,7 +245,7 @@ def temporadas(item):
     else:
     	tmdb.set_infoLabels_itemlist(itemlist, seekTmdb = True)
     if config.get_library_support() and len(itemlist) > 0:
-        itemlist.append(Item(channel=item.channel, title='[COLOR yellow]Añadir esta serie a la biblioteca[/COLOR]', url=item.url,
+        itemlist.append(item.clone(title='[COLOR yellow]Añadir esta serie a la biblioteca[/COLOR]', url=item.url,
                              action="add_serie_to_library", extra="temporadas", contentSerieName=item.contentSerieName, contentSeasonNumber=contentSeasonNumber))
     if item.extra == 'temporadas':
         return templist
@@ -194,7 +275,7 @@ def episodios(item):
            thumbnail = scrapertools.find_single_match(data,'<img src="([^"]+)" alt="" class="picture-movie">')
            plot = ''
            fanart = ''
-           itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart, extra=scrapedtitle, contentSeasonNumber = item.contentSeasonNumber, infoLabels = infoLabels))
+           itemlist.append(item.clone(action="findvideos" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, plot=plot, fanart = fanart, extra=scrapedtitle, contentSeasonNumber = item.contentSeasonNumber, infoLabels = infoLabels))
     if item.extra != 'temporadas':
     	tmdb.set_infoLabels_itemlist(itemlist, seekTmdb = True)
     	itemlist = fail_tmdb(itemlist)
@@ -251,7 +332,7 @@ def generos(item):
            thumbnail =''
            fanart= ''
         extra = scrapedurl.replace('http://www.pelisplus.tv/','')
-        itemlist.append( Item(channel=item.channel, action="lista" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, fanart = fanart, extra=extra))
+        itemlist.append(item.clone(action="lista" , title=title , fulltitle=item.title, url=url, thumbnail=thumbnail, fanart = fanart, extra=extra))
     return itemlist
     
 
@@ -285,7 +366,7 @@ def findvideos(item):
                    thumbnail = item.thumbnail
                    fanart=item.fanart
                    if url not in duplicados:
-                    itemlist.append( Item(channel=item.channel, action="play" , title=title , url=url, thumbnail=thumbnail,fanart =fanart, extra='directo'))
+                    itemlist.append(item.clone(action="play" , title=title , url=url, thumbnail=thumbnail,fanart =fanart, extra='directo'))
                     duplicados.append(url)
 
     url = scrapedurl
@@ -317,7 +398,7 @@ def findvideos(item):
 
     if 'serie' not in item.url:
        if config.get_library_support() and len(itemlist) > 0 and item.extra !='findvideos':
-          itemlist.append(Item(channel=item.channel, title='[COLOR yellow]Añadir esta pelicula a la biblioteca[/COLOR]', url=item.url,
+          itemlist.append(item.clone(title='[COLOR yellow]Añadir esta pelicula a la biblioteca[/COLOR]', url=item.url,
                              action="add_pelicula_to_library", extra="findvideos", contentTitle = item.contentTitle))
           
     return itemlist
@@ -348,6 +429,9 @@ def newest(categoria):
       return []
 
   return itemlist
+
+
+
 
 
 
