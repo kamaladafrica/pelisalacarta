@@ -526,6 +526,9 @@ def play_video(item, strm=False):
     set_player(item, xlistitem, mediaurl, view, strm)
 
 
+def stop_video():
+    xbmc.Player().stop()
+
 def get_seleccion(default_action, opciones, seleccion, video_urls):
     # preguntar
     if default_action == "0":

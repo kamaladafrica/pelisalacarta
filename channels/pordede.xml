@@ -12,8 +12,13 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/pordede.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>14</version>
+	<version>15</version>
 	<changes>
+		<change>
+			<date>14/05/2017</date>
+			<autor>Cmos</autor>
+			<description>Eliminada la necesidad de captcha para el login</description>
+		</change>
 		<change>
 			<date>09/05/2017</date>
 			<autor>Cmos</autor>
