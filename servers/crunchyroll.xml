@@ -1,13 +1,25 @@
 <?xml version="1.0" ?>
 <server>
 	<active>true</active>
-	<changes>Versión inicial</changes>
-	<date>11/01/2017</date>
-	<free>true</free>
 	<id>crunchyroll</id>
 	<name>crunchyroll</name>
+
+	<version>2</version>
+	<changes>
+		<change>
+			<date>12/05/2017</date>
+			<autor>Cmos</autor>
+			<description>Se añade libreria jscrypto para que funcione en cualquier sistema y deteccion enlaces rtmpe</description>
+		</change>
+		<change>
+			<date>11/01/2017</date>
+			<autor>Cmos</autor>
+			<description>Versión inicial</description>
+		</change>
+	</changes>
+
+	<free>true</free>
 	<premium></premium>
 	<thumbnail>http://i.imgur.com/SglkLAb.png?1</thumbnail>
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/servers/</update_url>
-	<version>1</version>
 </server>

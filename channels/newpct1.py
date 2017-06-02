@@ -123,6 +123,7 @@ def listado(item):
         if "1.com/series" in url: 
             action = "completo"
             extra="serie"
+            context = "tvshow"
             
             title=scrapertools.find_single_match(title,'([^-]+)')
             title= title.replace("Ver online","",1).replace("Descarga Serie HD","",1).replace("Ver en linea","",1).strip() 
@@ -145,26 +146,26 @@ def listado(item):
                 
             url += '&idioma=&ordenar=Nombre&inon=Descendente'  
             '''
+            show = title
         else:    
             title= title.replace("Descargar","",1).strip()
             if title.endswith("gratis"): title= title[:-7]
+            show = ""
+            context = "movie"
         
-        show = title
-        if item.extra!="buscar-list":
-            title = title + ' ' + calidad
-
-        context = ""
         context_title = scrapertools.find_single_match(url, "http://www.newpct1.com/(.*?)/(.*?)/")
         if context_title:
             try:
-                context = context_title[0].replace("pelicula","movie").replace("descargar","movie").replace("series","tvshow")
                 context_title = context_title[1].replace("-"," ")
                 if re.search( '\d{4}', context_title[-4:]):
                     context_title = context_title[:-4]
                 elif re.search( '\(\d{4}\)', context_title[-6:]):
                     context_title = context_title[:-6]
             except:
-                context_title = show
+                context_title = title
+
+        if item.extra!="buscar-list":
+            title = title + ' ' + calidad
             
         itemlist.append( Item(channel=item.channel, action=action, title=title, url=url, thumbnail=thumbnail, extra=extra, show=show,
                               contentTitle=context_title, contentType=context, context=["buscar_trailer"]) )

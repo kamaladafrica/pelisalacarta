@@ -253,7 +253,8 @@ def play(item):
         import base64
         from lib import jsunpack
 
-        if not item.url.startswith("http:") and not item.url.startswith("https:"):
+        item.url = item.url.replace("https:", "http:")
+        if not item.url.startswith("http:"):
             item.url = "http:" + item.url
 
         data = httptools.downloadpage(item.url, add_referer=True).data
