@@ -16,6 +16,11 @@
 
 	<changes>
 		<change>
+			<date>15/05/16</date>
+			<autor>super_berny</autor>
+			<description>Compatibilidad con python anteriores a la 2.7</description>
+		</change>
+		<change>
 			<date>03/05/16</date>
 			<autor>super_berny</autor>
 			<description>Modificado por cambios en la web</description>
