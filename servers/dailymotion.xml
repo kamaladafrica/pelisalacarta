@@ -1,20 +1,26 @@
 <?xml version="1.0" ?>
 <server>
 	<active>true</active>
-	<version>2</version>
 	<changes>
 		<change>
-			<date>07/04/2017</date>
 			<autor>Cmos</autor>
+			<date>07/04/2017</date>
 			<description>Corregido para adaptarlo al uso de httptools ya que fallaba</description>
 		</change>
 		<change>
-			<date>25/03/2016</date>
 			<autor></autor>
+			<date>25/03/2016</date>
 			<description>Versión incial</description>
 		</change>
 	</changes>
-	<changes>Versión incial</changes>
+	<find_videos>
+		<ignore_urls>
+		</ignore_urls>
+		<patterns>
+			<pattern>dailymotion.com/(?:video/|swf/(?:video/|)|)(?:embed/video/|)([A-z0-9]+)</pattern>
+			<url>http://www.dailymotion.com/embed/video/\1</url>
+		</patterns>
+	</find_videos>
 	<free>true</free>
 	<id>dailymotion</id>
 	<name>dailymotion</name>
@@ -22,6 +28,23 @@
 		<value>realdebrid</value>
 		<value>alldebrid</value>
 	</premium>
+	<settings>
+		<default>false</default>
+		<enabled>true</enabled>
+		<id>black_list</id>
+		<label>Incluir en lista negra</label>
+		<type>bool</type>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<default>false</default>
+		<enabled>true</enabled>
+		<id>white_list</id>
+		<label>Incluir en lista de favoritos</label>
+		<type>bool</type>
+		<visible>false</visible>
+	</settings>
 	<thumbnail>http://media.tvalacarta.info/servers/server_dailymotion.png</thumbnail>
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/servers/</update_url>
+	<version>3</version>
 </server>

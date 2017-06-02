@@ -1,14 +1,47 @@
 <?xml version="1.0" ?>
 <server>
 	<active>true</active>
-	<changes>Reparado por cambios</changes>
-	<date>11/01/2017</date>
+	<changes>
+		<change>
+			<autor></autor>
+			<date>11/01/2017</date>
+			<description>Reparado por cambios</description>
+		</change>
+	</changes>
+	<find_videos>
+		<ignore_urls>
+		</ignore_urls>
+		<patterns>
+			<pattern>/video_ext.php\?oid=([^&]+)(?:&||)id=([^&]+)(?:&||)hash=([a-z0-9]+)</pattern>
+			<url>http://vk.com/video_ext.php?oid=\1=\2=\3</url>
+		</patterns>
+		<patterns>
+			<pattern>(vk\.[a-z]+\/video[0-9]+_[0-9]+)</pattern>
+			<url>http://\1</url>
+		</patterns>
+	</find_videos>
 	<free>true</free>
 	<id>vk</id>
 	<name>vk</name>
 	<premium>
 	</premium>
+	<settings>
+		<default>false</default>
+		<enabled>true</enabled>
+		<id>black_list</id>
+		<label>Incluir en lista negra</label>
+		<type>bool</type>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<default>false</default>
+		<enabled>true</enabled>
+		<id>white_list</id>
+		<label>Incluir en lista de favoritos</label>
+		<type>bool</type>
+		<visible>false</visible>
+	</settings>
 	<thumbnail>http://media.tvalacarta.info/servers/server_vk.png</thumbnail>
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/servers/</update_url>
-	<version>2</version>
+	<version>3</version>
 </server>

@@ -25,7 +25,7 @@ proxy = "http://anonymouse.org/cgi-bin/anon-www.cgi/"
 def test_video_exists(page_url):
     logger.info("(page_url='%s')" % page_url)
 
-    premium = config.get_setting("crunchyrollpremium")
+    premium = config.get_setting("premium",server="crunchyroll")
     if premium:
         return login(page_url)
     data = httptools.downloadpage(page_url, headers=GLOBAL_HEADER, replace_headers=True).data
@@ -70,7 +70,7 @@ def get_video_url(page_url, premium = False, user="", password="", video_passwor
     
     try:
         idiomas = ['Español \(España\)', 'Español\]', 'English', 'Italiano', 'Français', 'Português', 'Deutsch']
-        index_sub = int(config.get_setting("crunchyrollsub"))
+        index_sub = int(config.get_setting("sub",server="crunchyroll"))
         idioma_sub = idiomas[index_sub]
         link_sub = scrapertools.find_single_match(data, "link='([^']+)' title='\[%s" % idioma_sub)
         if not link_sub and index_sub == 0:
@@ -123,8 +123,8 @@ def find_videos(data):
 
 def login(page_url):
     login_page = "https://www.crunchyroll.com/login"
-    user = config.get_setting("crunchyrolluser")
-    password = config.get_setting("crunchyrollpassword")
+    user = config.get_setting("user",server="crunchyroll")
+    password = config.get_setting("password",server="crunchyroll")
     data = httptools.downloadpage(login_page, headers=GLOBAL_HEADER, replace_headers=True).data
 
     if not "<title>Redirecting" in data:

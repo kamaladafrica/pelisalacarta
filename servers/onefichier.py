@@ -20,9 +20,9 @@ def test_video_exists(page_url):
 def get_video_url(page_url, premium=False, user="", password="", video_password=""):
     logger.info("(page_url='%s')" % page_url)
 
-    if config.get_setting("onefichierpremium") == True:
-        user = config.get_setting("onefichieruser")
-        password = config.get_setting("onefichierpassword")
+    if config.get_setting("premium", server="onefichier") == True:
+        user = config.get_setting("user", server="onefichier")
+        password = config.get_setting("password", server="onefichier")
 
         url = "https://1fichier.com/login.pl"
         logger.info("url=" + url)
