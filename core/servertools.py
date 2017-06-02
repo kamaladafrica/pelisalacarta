@@ -760,6 +760,7 @@ def save_server_stats(stats, type="find_videos"):
     open(stats_file, "wb").write(jsontools.dump_json(server_stats))
     
     #Enviamos al servidor
+    return
     if time.time() - server_stats["created"] > 86400: #86400: #1 Dia
         from core import httptools
         if httptools.downloadpage("url servidor", headers= {'Content-Type': 'application/json'}, post=jsontools.dump_json(server_stats)).sucess:
