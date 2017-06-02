@@ -151,7 +151,7 @@ def episodios(item):
     for link, cap in matches:
         title = cap
         url=link
-        itemlist.append(Item(channel=item.channel, action="findvideos", title=title, url=url, plot=scrapedplot, show=show))
+        itemlist.append(Item(channel=item.channel, action="findvideos", title=title, url=url, thumbnail=item.thumbnail, plot=scrapedplot, show=show))
 
     if config.get_library_support() and len(itemlist) > 0:
 
