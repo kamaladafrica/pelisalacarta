@@ -264,47 +264,25 @@ def findvideos(item):
              '"([^"]+)".*?online-link="([^"]+)"'
     matches = scrapertools.find_multiple_matches(data, patron)
     for calidad, servidor_num, language, url in matches:
-        try:
-            server = SERVERS[servidor_num]
-            if server == "tusfiles" and "stormo.tv" in url:
-                server = "stormo"
-            if server != "tusfiles":
-                servers_module = __import__("servers."+server)
-        except:
-            server = servertools.get_server_from_url(url)
 
-        if server != "directo":
-            if server == "vimeo":
-                url += "|" + item.url
-            elif server == "tusfiles":
-                url = "http://tusfiles.org/?%s" % url
-                server = "directo"
-            idioma = IDIOMAS.get(idiomas_videos.get(language))
-            titulo = server.capitalize()+"  ["+idioma+"] ["+calidad_videos.get(calidad)+"]"
-            itemlist.append(item.clone(action="play", title=titulo, url=url, extra=idioma, server=server))
+        if servidor_num == '94':
+            url = "http://tusfiles.org/?%s" % url
+                
+        idioma = IDIOMAS.get(idiomas_videos.get(language))
+        titulo = "%s  ["+idioma+"] ["+calidad_videos.get(calidad)+"]"
+        itemlist.append(item.clone(action="play", title=titulo, url=url, extra=idioma))
 
     #Enlace Descarga
     patron = '<span class="movie-downloadlink-list" id_movies_types="([^"]+)" id_movies_servers="([^"]+)".*?id_lang=' \
              '"([^"]+)".*?online-link="([^"]+)"'
     matches = scrapertools.find_multiple_matches(data, patron)
     for calidad, servidor_num, language, url in matches:
-        mostrar_server = True
-        try:
-            server = SERVERS[servidor_num]
-            servers_module = __import__("servers."+server)
-        except:
-            server = servertools.get_server_from_url(url)
+ 
+        idioma = IDIOMAS.get(idiomas_videos.get(language))
+        titulo = "[%s]  ["+idioma+"] ["+calidad_videos.get(calidad)+"]"
+        itemlist.append(item.clone(action="play", title=titulo, url=url, extra=idioma))
 
-        if server != "directo":
-            if server == "vimeo":
-                url += "|" + item.url
-            if config.get_setting("hidepremium") == True:
-                mostrar_server = servertools.is_server_enabled(server)
-            if mostrar_server:
-                idioma = IDIOMAS.get(idiomas_videos.get(language))
-                titulo = "["+server.capitalize()+"]  ["+idioma+"] ["+calidad_videos.get(calidad)+"]"
-                itemlist.append(item.clone(action="play", title=titulo, url=url, extra=idioma, server=server))
-
+    itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize())
     itemlist.sort(key=lambda item: (item.extra, item.server))
     if itemlist:
         if not "trailer" in item.infoLabels:
@@ -407,25 +385,14 @@ def findvideostv(item):
              % (str(item.infoLabels['episode']), str(item.infoLabels['season']))
     matches = scrapertools.find_multiple_matches(data, patron)
     for quality, servidor_num, language, url in matches:
-        try:
-            server = SERVERS[servidor_num]
-            if server == "tusfiles" and "stormo.tv" in url:
-                server = "stormo"
-            if server != "tusfiles":
-                servers_module = __import__("servers."+server)
-        except:
-            server = servertools.get_server_from_url(url)
+    
+        if servidor_num == '94':
+            url = "http://tusfiles.org/?%s" % url
+            
+        idioma = IDIOMAS.get(idiomas_videos.get(language))
+        titulo = "%s ["+idioma+"] ("+calidad_videos.get(quality)+")"
 
-        if server != "directo":
-            if server == "vimeo":
-                url += "|" + item.url
-            elif server == "tusfiles":
-                url = "http://tusfiles.org/?%s" % url
-                server = "directo"
-            idioma = IDIOMAS.get(idiomas_videos.get(language))
-            titulo = server.capitalize()+" ["+idioma+"] ("+calidad_videos.get(quality)+")"
-
-            itemlist.append(item.clone(action="play", title=titulo, url=url, contentType="episode", server=server))
+        itemlist.append(item.clone(action="play", title=titulo, url=url, contentType="episode", server=server))
 
     #Enlace Descarga
     patron = '<span class="movie-downloadlink-list" id_movies_types="([^"]+)" id_movies_servers="([^"]+)".*?episode="%s' \
@@ -434,51 +401,18 @@ def findvideostv(item):
     #patron = '<span class="movie-downloadlink-list" id_movies_types="([^"]+)" id_movies_servers="([^"]+)".*?episode="'+str(item.infoLabels['episode']) +'" season="'+str(item.infoLabels['season']) + '" id_lang="([^"]+)".*?online-link="([^"]+)"'
     matches = scrapertools.find_multiple_matches(data, patron)
     for quality, servidor_num, episode, language, url in matches:
-        mostrar_server = True
-        try:
-            server = SERVERS[servidor_num]
-            servers_module = __import__("servers."+server)
-        except:
-            server = servertools.get_server_from_url(url)
 
-        if server != "directo":
-            if server == "vimeo":
-                url += "|" + item.url
-            if config.get_setting("hidepremium") == True:
-                mostrar_server = servertools.is_server_enabled(server)
-            if mostrar_server:
-                idioma = IDIOMAS.get(idiomas_videos.get(language))
-                titulo = server.capitalize()+" ["+idioma+"] ("+calidad_videos.get(quality)+")"
-                itemlist.append(item.clone(action="play", title=titulo, url=url, contentType="episode", server=server))
-
+        idioma = IDIOMAS.get(idiomas_videos.get(language))
+        titulo = "%s ["+idioma+"] ("+calidad_videos.get(quality)+")"
+        itemlist.append(item.clone(action="play", title=titulo, url=url, contentType="episode", server=server))
+    
+    itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize())
     itemlist.sort(key=lambda item: (int(item.infoLabels['episode']), item.title))
     try:
         from core import tmdb
         tmdb.set_infoLabels(itemlist, __modo_grafico__)
     except:
         pass
-
-    return itemlist
-
-
-def play(item):
-    logger.info()
-    itemlist = []
-    if item.server == "directo" and "tusfiles" in item.url:
-        data = httptools.downloadpage(item.url).data.replace("\\", "")
-        matches = scrapertools.find_multiple_matches(data, '"label"\s*:\s*(.*?),"type"\s*:\s*"([^"]+)","file"\s*:\s*"([^"]+)"')
-        for calidad, tipo, video_url in matches:
-            tipo = tipo.replace("video/", "")
-            video_url += "|Referer=%s" % item.url
-            itemlist.append([".%s %sp [directo]" % (tipo, calidad), video_url])
-        try:
-            itemlist.sort(key=lambda it:int(it[0].split("p ", 1)[0].rsplit(" ")[1]))
-        except:
-            pass
-    else:
-        devuelve = servertools.findvideosbyserver(item.url, item.server)
-        if devuelve:
-            itemlist.append(item.clone(url=devuelve[0][1]))
 
     return itemlist
 
