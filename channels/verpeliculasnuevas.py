@@ -232,16 +232,8 @@ def findvideos(item):
     	calidad = tcalidad[scrapedcalidad.lower()]
     	url = scrapedurl
     	itemlist.append( Item(channel=item.channel, action='play' , idioma=idioma, calidad=calidad, url=url))
-
-    for videoitem in itemlist:
-        videoitem.infoLabels=item.infoLabels
-        videoitem.channel = item.channel
-        videoitem.folder = False
-        videoitem.thumbnail = servertools.guess_server_thumbnail(videoitem.url)
-        videoitem.fulltitle = item.title
-        videoitem.server = servertools.get_server_from_url(videoitem.url)
-        videoitem.title = item.contentTitle+' | '+videoitem.calidad+' | '+videoitem.idioma+' ('+videoitem.server+')'
-
+    
+    itemlist = servertools.get_servers_itemlist(itemlist, lambda i: item.contentTitle+' | '+i.calidad+' | '+i.idioma+' ('+i.server+')')
        
 
     if config.get_library_support() and len(itemlist) > 0 and item.extra !='findvideos' :
