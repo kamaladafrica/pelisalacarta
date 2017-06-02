@@ -315,39 +315,23 @@ def bloque_enlaces(data, filtro_idioma, dict_idiomas, type, item):
     for match in matches:
         scrapedurl = match[0]
         language = match[2].strip()
-        if not match[1]:
-            server = servertools.get_server_from_url(scrapedurl)
-            title = "   Mirror en " + server + " (" + language + ")"
-        else:
-            server = match[1].lower()
-            if server == "uploaded":
-                server = "uploadedto"
-            elif server == "streamin":
-                server = "streaminto"
-            elif server == "netu":
-                server = "netutv"
-            mostrar_server = True
-            if config.get_setting("hidepremium"):
-                mostrar_server = servertools.is_server_enabled(server)
-            if mostrar_server:
-                try:
-                    servers_module = __import__("servers." + server)
-                except:
-                    pass
-            title = "   Mirror en " + server + " (" + language + ") (Calidad " + match[3].strip() + ")"
+        title = "   Mirror en %s (" + language + ")"
+        if len(match) == 4:
+            title += " (Calidad " + match[3].strip() + ")"
 
         if filtro_idioma == 3 or item.filtro:
-            lista_enlaces.append(item.clone(title=title, action="play", server=server, text_color=color2,
+            lista_enlaces.append(item.clone(title=title, action="play", text_color=color2,
                                             url=scrapedurl, idioma=language, extra=item.url))
         else:
             idioma = dict_idiomas[language]
             if idioma == filtro_idioma:
                 lista_enlaces.append(item.clone(title=title, text_color=color2, action="play",  url=scrapedurl,
-                                                server=server, extra=item.url))
+                                                extra=item.url))
             else:
                 if language not in filtrados:
                     filtrados.append(language)
-
+    
+    lista_enlaces = servertools.get_servers_itemlist(lista_enlaces, lambda i: i.title % i.server)
     if filtro_idioma != 3:
         if len(filtrados) > 0:
             title = "Mostrar enlaces filtrados en %s" % ", ".join(filtrados)
@@ -374,8 +358,5 @@ def play(item):
             for v in video_urls:
                 itemlist.append([v[0], v[1]])
     else:
-        enlace = servertools.findvideosbyserver(item.url, item.server)
-        url = enlace[0][1]
-        itemlist.append(item.clone(url=url))
-
+        return [item]
     return itemlist
