@@ -49,7 +49,7 @@ def categorias(item):
     for link, name in matches:
         title=name
         url=link
-        itemlist.append(item.clone(title=title, url=url, plot=title, action="lista_gen"))
+        itemlist.append(item.clone(title=title, url=url, action="lista_gen"))
     return itemlist
 
 def alfabetico(item):
@@ -69,7 +69,7 @@ def alfabetico(item):
     for link, name in matches:
         title=name
         url=link
-        itemlist.append(item.clone(title=title, url=url, plot=title, action="lista_gen"))
+        itemlist.append(item.clone(title=title, url=url, action="lista_gen"))
     return itemlist
 
 def top(item):
@@ -86,7 +86,7 @@ def top(item):
     for link, name in matches:
         title=name
         url=link
-        itemlist.append(item.clone(title=title, url=url, plot=title, action="lista_gen"))
+        itemlist.append(item.clone(title=title, url=url, action="lista_gen"))
     return itemlist
 
 def lista_gen(item):
@@ -147,11 +147,11 @@ def episodios(item):
     matches = scrapertools.find_multiple_matches(data, patron_caps)
 
     show = scrapertools.find_single_match(data,'h3><strong>.+?de (.+?)<\/strong>')
-
+    scrapedplot = scrapertools.find_single_match(data,'<strong>Sinopsis<\/strong><strong>([^"]+)<\/strong><\/pre>')
     for link, cap in matches:
         title = cap
         url=link
-        itemlist.append(Item(channel=item.channel, action="findvideos", title=title, url=url, show=show))
+        itemlist.append(Item(channel=item.channel, action="findvideos", title=title, url=url, plot=scrapedplot, show=show))
 
     if config.get_library_support() and len(itemlist) > 0:
 
