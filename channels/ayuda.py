@@ -122,8 +122,8 @@ def mainlist(item):
         from core import channeltools
         title = "Activar cuenta real-debrid (No activada)"
         action = "realdebrid"
-        token_auth = channeltools.get_channel_setting("realdebrid_token", "realdebrid")
-        if config.get_setting("realdebridpremium") == False:
+        token_auth = config.get_setting("token", server="realdebrid")
+        if not config.get_setting("premium", server="realdebrid"):
             title = "Activar cuenta real-debrid (Marca la casilla en la ventana de configuración de pelisalacarta para continuar)"
             action = ""
         elif token_auth:
@@ -627,10 +627,10 @@ def authentication(item):
         token = data["access_token"]
         refresh = data["refresh_token"]
 
-        channeltools.set_channel_setting("realdebrid_id", debrid_id, "realdebrid")
-        channeltools.set_channel_setting("realdebrid_secret", secret, "realdebrid")
-        channeltools.set_channel_setting("realdebrid_token", token, "realdebrid")
-        channeltools.set_channel_setting("realdebrid_refresh", refresh, "realdebrid")
+        config.set_setting("id", debrid_id, server="realdebrid")
+        config.set_setting("secret", secret, server="realdebrid")
+        config.set_setting("token", token, server="realdebrid")
+        config.set_setting("refresh", refresh, server="realdebrid")
 
     except:
         import traceback
