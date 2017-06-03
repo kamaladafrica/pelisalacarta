@@ -69,9 +69,9 @@ def videos(item):
     
     
     for Video in JSONData["videos"]:
-      thumbnail = "http://img.beeg.com/236x177/" + Video["id"].encode("utf8") +  ".jpg"
-      url = url_api + "/video/" + Video["id"].encode("utf8")
-      title = Video["title"].encode("utf8")
+      thumbnail = "http://img.beeg.com/236x177/" + Video["id"] +  ".jpg"
+      url = url_api + "/video/" + Video["id"]
+      title = Video["title"]
       itemlist.append( Item(channel=item.channel, action="play" , title=title , url=url, thumbnail=thumbnail, plot="", show="", folder=True))
       
     #Paginador
@@ -92,8 +92,8 @@ def listcategorias(item):
     
     
     for Tag in JSONData["tags"]["popular"]:
-      url = url_api + "/index/tag/0/pc?tag=" + Tag.encode("utf8")
-      title = Tag.encode("utf8")
+      url = url_api + "/index/tag/0/pc?tag=" + Tag
+      title = Tag
       title = title[:1].upper() + title[1:]
       itemlist.append( Item(channel=item.channel, action="videos" , title=title , url=url, folder=True, viewmode="movie"))
 
@@ -124,14 +124,14 @@ def play(item):
       if videourl: 
         videourl= videourl[0]
         if not JSONData[videourl] == None:
-          url = JSONData[videourl].encode("utf8")
+          url = JSONData[videourl]
           url = url.replace("{DATA_MARKERS}","data=pc.ES")
           viedokey = re.compile("key=(.*?)%2Cend=",re.DOTALL).findall(url)[0]
           
           url = url.replace(viedokey,decode(viedokey))
           if not url.startswith("https:"): url = "https:" + url
-          title = videourl.encode("utf8")
-          itemlist.append( Item(channel=item.channel, action="play" , fulltitle=item.title, title=title , url=url, thumbnail=item.thumbnail, server="directo", folder=False))
-      
-    itemlist.sort(key=lambda item: item.fulltitle.lower(), reverse=True)
+          title = videourl
+          itemlist.append(["%s %s [directo]" % (title, url[-4:]), url])   
+          
+    itemlist.sort(key=lambda item: item[0])
     return itemlist
