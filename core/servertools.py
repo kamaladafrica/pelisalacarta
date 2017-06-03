@@ -66,7 +66,7 @@ def find_video_items(item=None, data=None):
     #Pasa los campos thumbnail y title a contentThumbnail y contentTitle
     else:
         if not item.contentThumbnail:
-            item.contentThumbnail = item.thumnail
+            item.contentThumbnail = item.thumbnail
         if not item.contentTitle:
             item.contentTitle = item.title
 
