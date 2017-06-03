@@ -373,3 +373,37 @@ def verify_directories_created():
 
         elif get_setting("library_ask_set_content") == "active":
             xbmc_library.set_content(default)
+
+    try:
+        from core import scrapertools
+        # Buscamos el archivo addon.xml del skin activo
+        skindir = filetools.join(xbmc.translatePath("special://home"), 'addons', xbmc.getSkinDir(),
+                                 'addon.xml')
+        # Extraemos el nombre de la carpeta de resolución por defecto
+        folder = ""
+        data = filetools.read(skindir)
+        res = scrapertools.find_multiple_matches(data, '(<res .*?>)')
+        for r in res:
+            if 'default="true"' in r:
+                folder = scrapertools.find_single_match(r, 'folder="([^"]+)"')
+                break
+
+        # Comprobamos si existe en pelisalacarta y sino es así, la creamos
+        default = filetools.join(get_runtime_path(), 'resources', 'skins', 'Default')
+        if folder and not filetools.exists(filetools.join(default, folder)):
+            filetools.mkdir(filetools.join(default, folder))
+
+        # Copiamos el archivo a dicha carpeta desde la de 720p si éste no existe o si el tamaño es diferente
+        if folder and folder != '720p':
+            for root, folders, files in filetools.walk(filetools.join(default, '720p')):
+                for f in files:
+                    if not filetools.exists(filetools.join(default, folder, f)) or \
+                          (filetools.getsize(filetools.join(default, folder, f)) != 
+                           filetools.getsize(filetools.join(default, '720p', f))):
+                        filetools.copy(filetools.join(default, '720p', f),
+                                       filetools.join(default, folder, f),
+                                       True)
+    except:
+        import traceback
+        logger.error("Al comprobar o crear la carpeta de resolución")
+        logger.error(traceback.format_exc())
