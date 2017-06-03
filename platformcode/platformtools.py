@@ -513,7 +513,10 @@ def play_video(item, strm=False):
         return
 
     # se obtiene la información del video.
-    xlistitem = xbmcgui.ListItem(path=mediaurl, thumbnailImage=item.thumbnail)
+    if not item.contentThumbnail:
+        xlistitem = xbmcgui.ListItem(path=mediaurl, thumbnailImage=item.thumbnail)
+    else:
+         xlistitem = xbmcgui.ListItem(path=mediaurl, thumbnailImage=item.contentThumbnail)
     set_infolabels(xlistitem, item, True)
 
     # si se trata de un vídeo en formato mpd, se configura el listitem para reproducirlo
