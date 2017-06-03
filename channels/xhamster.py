@@ -51,14 +51,14 @@ def videos(item):
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedthumbnail,scrapedtitle in matches:
         logger.debug("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=item.channel, action="detail" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, folder=True))
+        itemlist.append( Item(channel=item.channel, action="play" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, folder=True))
 		
 		#Patron #2
     patron = '<a href="([^"]+)"  data-click="[^"]+" class="hRotator"><img src=\'([^\']+)\' class=\'thumb\' alt="([^"]+)"/>'
     matches = re.compile(patron,re.DOTALL).findall(data)
     for scrapedurl,scrapedthumbnail,scrapedtitle in matches:
         logger.debug("title=["+scrapedtitle+"], url=["+scrapedurl+"], thumbnail=["+scrapedthumbnail+"]")
-        itemlist.append( Item(channel=item.channel, action="detail" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, folder=True))
+        itemlist.append( Item(channel=item.channel, action="play" , title=scrapedtitle , url=scrapedurl, thumbnail=scrapedthumbnail, folder=True))
 
 
     #Paginador
@@ -116,33 +116,18 @@ def lista(item):
     return sorted_itemlist
 
 # OBTIENE LOS ENLACES SEGUN LOS PATRONES DEL VIDEO Y LOS UNE CON EL SERVIDOR
-def detail(item):
+def play(item):
     logger.info()
     itemlist = []
 
     data = scrapertools.cachePage(item.url)
     logger.debug(data)
 
-    patron = 'sources: {"240p":"([^"]+)"'
+    patron = '"([0-9]+p)":"([^"]+)"'
     matches = re.compile(patron,re.DOTALL).findall(data)
-    for url in matches:
+    for res, url in matches:
         url = url.replace("\\", "")
         logger.debug("url="+url)
-        itemlist.append( Item(channel=item.channel, action="play" , title=item.title + " 240p", fulltitle=item.fulltitle , url=url, thumbnail=item.thumbnail, server="directo", folder=False))
-		
-    patron = 'sources:.*?"480p":"([^"]+)"'
-    matches = re.compile(patron,re.DOTALL).findall(data)
-    if len(matches)>0:
-		for url in matches:
-			url = url.replace("\\", "")
-			logger.debug("url="+url)
-			itemlist.append( Item(channel=item.channel, action="play" , title=item.title + " 480p", fulltitle=item.fulltitle , url=url, thumbnail=item.thumbnail, server="directo", folder=False))
-
-    patron = 'sources:.*?"720p":"([^"]+)"'
-    matches = re.compile(patron,re.DOTALL).findall(data)
-    if len(matches)>0:
-		for url in matches:
-			url = url.replace("\\", "")
-			logger.debug("url="+url)
-			itemlist.append( Item(channel=item.channel, action="play" , title=item.title + " 720p", fulltitle=item.fulltitle , url=url, thumbnail=item.thumbnail, server="directo", folder=False))
+        itemlist.append(["%s %s [directo]" % (res, scrapertools.get_filename_from_url(url)[-4:]), url])  
+        
     return itemlist
