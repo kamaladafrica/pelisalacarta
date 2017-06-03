@@ -265,8 +265,12 @@ def findvideos(item):
     matches = scrapertools.find_multiple_matches(data, patron)
     for calidad, servidor_num, language, url in matches:
 
-        if servidor_num == '94':
+        if servidor_num == '94' and not 'stormo.tv' in url:
             url = "http://tusfiles.org/?%s" % url
+            
+        if 'vimeo' in url:
+            url += "|" + item.url
+                
                 
         idioma = IDIOMAS.get(idiomas_videos.get(language))
         titulo = "%s  ["+idioma+"] ["+calidad_videos.get(calidad)+"]"
@@ -386,9 +390,12 @@ def findvideostv(item):
     matches = scrapertools.find_multiple_matches(data, patron)
     for quality, servidor_num, language, url in matches:
     
-        if servidor_num == '94':
+        if servidor_num == '94' and not 'stormo.tv' in url:
             url = "http://tusfiles.org/?%s" % url
             
+        if 'vimeo' in url:
+                url += "|" + item.url
+                
         idioma = IDIOMAS.get(idiomas_videos.get(language))
         titulo = "%s ["+idioma+"] ("+calidad_videos.get(quality)+")"
 
