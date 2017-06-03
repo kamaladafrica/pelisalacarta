@@ -182,6 +182,9 @@ def findvideos(data, skip=False):
 
 def findvideosbyserver(data, serverid):
     serverid = get_server_name(serverid)
+    if not serverid:
+        return []
+        
     server_parameters = get_server_parameters(serverid)
     devuelve = []
     
@@ -261,6 +264,7 @@ def resolve_video_urls_for_playing(server, url, video_password="", muestra_dialo
     video_urls = []
     video_exists = True
     error_messages = []
+    opciones = []
     
     # Si el vídeo es "directo" o "local", no hay que buscar más
     if server=="directo" or server=="local":
@@ -269,20 +273,24 @@ def resolve_video_urls_for_playing(server, url, video_password="", muestra_dialo
 
     # Averigua la URL del vídeo
     else:
-        server_parameters = get_server_parameters(server)
-        
-        # Muestra un diágo de progreso
-        if muestra_dialogo:
-            progreso = platformtools.dialog_progress("pelisalacarta", "Conectando con %s" % server_parameters["name"])
+        if server:
+            server_parameters = get_server_parameters(server)
+        else:
+            server_parameters = {}
 
-        #Cuenta las opciones disponibles, para calcular el porcentaje
-        opciones = []
-        orden = [["free"] + [server] + [premium for premium in server_parameters["premium"] if not premium == server],
-                 [server] + [premium for premium in server_parameters["premium"] if not premium == server] + ["free"],
-                 [premium for premium in server_parameters["premium"] if not premium == server] + [server] + ["free"]
-                ]
-        
         if server_parameters:
+            # Muestra un diágo de progreso
+            if muestra_dialogo:
+                progreso = platformtools.dialog_progress("pelisalacarta", "Conectando con %s" % server_parameters["name"])
+
+            #Cuenta las opciones disponibles, para calcular el porcentaje
+            
+            orden = [["free"] + [server] + [premium for premium in server_parameters["premium"] if not premium == server],
+                     [server] + [premium for premium in server_parameters["premium"] if not premium == server] + ["free"],
+                     [premium for premium in server_parameters["premium"] if not premium == server] + [server] + ["free"]
+                    ]
+        
+        
             if server_parameters["free"] == "true": opciones.append("free")
             opciones.extend([premium for premium in server_parameters["premium"] if config.get_setting("premium",server=premium)])
             
@@ -294,6 +302,7 @@ def resolve_video_urls_for_playing(server, url, video_password="", muestra_dialo
         else:
             logger.error("No existe conector para el servidor %s" % server)
             error_messages.append("No existe conector para el servidor %s" % server)
+            muestra_dialogo = False
 
         #Importa el server
         try:
@@ -470,7 +479,9 @@ def get_server_parameters(server):
     """
     global dict_servers_parameters
     server = server.split('.')[0]
-    
+    if not server:
+        return {}
+        
     if not server in dict_servers_parameters:
         try:
             #Servers
