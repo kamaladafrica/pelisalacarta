@@ -1,15 +1,44 @@
 <?xml version="1.0" ?>
 <server>
 	<active>true</active>
-	<changes>Versión incial</changes>
-	<date>25/03/2016</date>
+	<changes>
+		<change>
+			<autor></autor>
+			<date>25/03/2016</date>
+			<description>Versión incial</description>
+		</change>
+	</changes>
+	<find_videos>
+		<ignore_urls>
+		</ignore_urls>
+		<patterns>
+			<pattern>rutube.ru\/(?:video\/([\da-zA-Z]{32})|play\/embed\/([\d]+))</pattern>
+			<url>http://rutube.ru/api/play/options/\1/?format=json</url>
+		</patterns>
+	</find_videos>
 	<free>true</free>
 	<id>rutube</id>
 	<name>rutube</name>
 	<premium>
 		<value>realdebrid</value>
 	</premium>
+	<settings>
+		<default>false</default>
+		<enabled>true</enabled>
+		<id>black_list</id>
+		<label>Incluir en lista negra</label>
+		<type>bool</type>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<default>false</default>
+		<enabled>true</enabled>
+		<id>white_list</id>
+		<label>Incluir en lista de favoritos</label>
+		<type>bool</type>
+		<visible>false</visible>
+	</settings>
 	<thumbnail>http://media.tvalacarta.info/servers/server_rutube.png</thumbnail>
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/servers/</update_url>
-	<version>1</version>
+	<version>2</version>
 </server>

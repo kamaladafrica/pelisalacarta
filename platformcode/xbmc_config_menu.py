@@ -30,6 +30,7 @@ import os
 
 import xbmcgui
 from core import channeltools
+from core import servertools
 from core import config
 from core import logger
 
@@ -201,7 +202,15 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
 
                 # La llamada se hace desde un canal
                 self.list_controls, default_values = channeltools.get_channel_controls_settings(self.channel)
+                self.kwargs = {"channel": self.channel}
+                
+            # Si la ruta del canal esta en la carpeta "servers", obtenemos los controles y valores mediante servertools
+            elif os.path.join(config.get_runtime_path(), "servers") in channelpath:
 
+                # La llamada se hace desde un canal
+                self.list_controls, default_values = servertools.get_server_controls_settings(self.channel)
+                self.kwargs = {"server": self.channel}
+                
             # En caso contrario salimos
             else:
                 return None
@@ -566,9 +575,9 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
 
             # Decidimos si usar el valor por defecto o el valor guardado
             if c["type"] in ["bool", "text", "list"]:
-                if id not in self.values:
+                if c["id"] not in self.values:
                     if not self.callback:
-                        self.values[c["id"]] = config.get_setting(c["id"], self.channel)
+                        self.values[c["id"]] = config.get_setting(c["id"], **self.kwargs)
                     else:
                         self.values[c["id"]] = c["default"]
 
@@ -733,7 +742,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
         if id == 10004:
             '''if not self.callback:
                 for v in self.values:
-                    config.set_setting(v, self.values[v], self.channel)
+                    config.set_setting(v, self.values[v], **self.kwargs)
                 self.close()
             else:
                 self.close()

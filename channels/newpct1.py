@@ -428,10 +428,7 @@ def findvideos(item):
     for logo, servidor, idioma, calidad, enlace, titulo in enlaces_ver:
         servidor = servidor.replace("streamin","streaminto")
         titulo = titulo+" ["+servidor+"]"
-        mostrar_server= True
-        if config.get_setting("hidepremium")=="true":
-            mostrar_server= servertools.is_server_enabled (servidor)
-        if mostrar_server:
+        if servertools.is_server_enabled(servidor):
             try:
                 servers_module = __import__("servers."+servidor)
                 server_module = getattr(servers_module,servidor)
@@ -449,10 +446,7 @@ def findvideos(item):
         for enlace in partes:
             parte_titulo = titulo+" (%s/%s)" % (p,len(partes)) + " ["+servidor+"]"
             p+= 1
-            mostrar_server= True
-            if config.get_setting("hidepremium")=="true":
-                mostrar_server= servertools.is_server_enabled (servidor)
-            if mostrar_server:
+            if servertools.is_server_enabled(servidor):
                 try:
                     servers_module = __import__("servers."+servidor)
                     server_module = getattr(servers_module,servidor)

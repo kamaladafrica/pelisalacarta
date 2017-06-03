@@ -1,34 +1,58 @@
 <?xml version="1.0" ?>
 <server>
 	<active>true</active>
-	<version>5</version>
 	<changes>
 		<change>
-			<date>09/05/17</date>
 			<autor>Cmos</autor>
+			<date>09/05/17</date>
 			<description>Arreglado con el cambio de user agent</description>
 		</change>
 		<change>
-			<date>24/04/17</date>
 			<autor>Intel1</autor>
+			<date>24/04/17</date>
 			<description>Detectado mensaje:video se está procesando</description>
 		</change>
 		<change>
-			<date>23/03/17</date>
 			<autor>Cmos</autor>
+			<date>23/03/17</date>
 			<description>Arreglado con el cambio de user agent</description>
 		</change>
 		<change>
-			<date>07/11/16</date>
 			<autor>Cmos</autor>
+			<date>07/11/16</date>
 			<description>Modificado orden de los videos</description>
 		</change>
 	</changes>
-
+	<find_videos>
+		<ignore_urls>
+		</ignore_urls>
+		<patterns>
+			<pattern>gamovideo.com/(?:embed-)?([a-z0-9]+)</pattern>
+			<url>http://gamovideo.com/embed-\1.html</url>
+		</patterns>
+	</find_videos>
 	<free>true</free>
 	<id>gamovideo</id>
 	<name>gamovideo</name>
-	<premium></premium>
+	<premium>
+	</premium>
+	<settings>
+		<default>false</default>
+		<enabled>true</enabled>
+		<id>black_list</id>
+		<label>Incluir en lista negra</label>
+		<type>bool</type>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<default>false</default>
+		<enabled>true</enabled>
+		<id>white_list</id>
+		<label>Incluir en lista de favoritos</label>
+		<type>bool</type>
+		<visible>false</visible>
+	</settings>
 	<thumbnail>http://media.tvalacarta.info/servers/server_gamovideo.png</thumbnail>
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/servers/</update_url>
+	<version>6</version>
 </server>

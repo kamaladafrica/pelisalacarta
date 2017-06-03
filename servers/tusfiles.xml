@@ -4,7 +4,7 @@
 	<changes>
 		<change>
 			<autor></autor>
-			<date>25/03/2016</date>
+			<date>16/03/2017</date>
 			<description>Versión incial</description>
 		</change>
 	</changes>
@@ -12,20 +12,14 @@
 		<ignore_urls>
 		</ignore_urls>
 		<patterns>
-			<pattern>(gigasize.com/get/[a-z0-9]+)</pattern>
-			<url>http://www.\1</url>
-		</patterns>
-		<patterns>
-			<pattern>gigasize.com/get.php\?d\=([a-z0-9]+)</pattern>
-			<url>http://www.gigasize.com/get/\1</url>
+			<pattern>http://tusfiles.org/\?([A-z0-9]+)</pattern>
+			<url>http://tusfiles.org/?\1/</url>
 		</patterns>
 	</find_videos>
-	<free>false</free>
-	<id>gigasize</id>
-	<name>gigasize</name>
+	<free>true</free>
+	<id>tusfiles</id>
+	<name>tusfiles</name>
 	<premium>
-		<value>realdebrid</value>
-		<value>alldebrid</value>
 	</premium>
 	<settings>
 		<default>false</default>
@@ -43,7 +37,7 @@
 		<type>bool</type>
 		<visible>false</visible>
 	</settings>
-	<thumbnail>http://media.tvalacarta.info/servers/server_gigasize.png</thumbnail>
+	<thumbnail>http://media.tvalacarta.info/servers/server_tusfiles.png</thumbnail>
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/servers/</update_url>
 	<version>2</version>
 </server>

@@ -1,14 +1,47 @@
 <?xml version="1.0" ?>
 <server>
 	<active>true</active>
-	<changes>Versión incial</changes>
-	<date>25/03/2016</date>
+	<changes>
+		<change>
+			<autor></autor>
+			<date>25/03/2016</date>
+			<description>Versión incial</description>
+		</change>
+	</changes>
+	<find_videos>
+		<ignore_urls>
+		</ignore_urls>
+		<patterns>
+			<pattern>http://www.facebook.com/v/([\d]+)</pattern>
+			<url>http://www.facebook.com/video/external_video.php?v=\1</url>
+		</patterns>
+		<patterns>
+			<pattern>(http://video.ak.facebook.com/.*?\.mp4)</pattern>
+			<url>\1</url>
+		</patterns>
+	</find_videos>
 	<free>true</free>
 	<id>facebook</id>
 	<name>facebook</name>
 	<premium>
 	</premium>
+	<settings>
+		<default>false</default>
+		<enabled>true</enabled>
+		<id>black_list</id>
+		<label>Incluir en lista negra</label>
+		<type>bool</type>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<default>false</default>
+		<enabled>true</enabled>
+		<id>white_list</id>
+		<label>Incluir en lista de favoritos</label>
+		<type>bool</type>
+		<visible>false</visible>
+	</settings>
 	<thumbnail>http://media.tvalacarta.info/servers/server_facebook.png</thumbnail>
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/servers/</update_url>
-	<version>1</version>
+	<version>2</version>
 </server>

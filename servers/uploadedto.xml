@@ -1,17 +1,77 @@
 <?xml version="1.0" ?>
 <server>
 	<active>true</active>
-	<changes>Versión incial</changes>
-	<date>25/03/2016</date>
+	<changes>
+		<change>
+			<autor></autor>
+			<date>25/03/2016</date>
+			<description>Versión incial</description>
+		</change>
+	</changes>
+	<find_videos>
+		<ignore_urls>
+		</ignore_urls>
+		<patterns>
+			<pattern>(?:ul|uploaded).(?:net|to)/(?:file/|f/)?([a-zA-Z0-9]+)</pattern>
+			<url>http://uploaded.net/file/\1</url>
+		</patterns>
+		<patterns>
+			<pattern>(?:ul|uploaded).(?:net|to)/folder/([a-zA-Z0-9]+)</pattern>
+			<url>http://uploaded.net/folder/\1</url>
+		</patterns>
+	</find_videos>
 	<free>false</free>
-	<id>uploadedto</id>
+	<id>
+		<value>uploadedto</value>
+		<value>ul.to</value>
+		<value>uploaded</value>
+	</id>
 	<name>uploadedto</name>
 	<premium>
 		<value>uploadedto</value>
 		<value>realdebrid</value>
 		<value>alldebrid</value>
 	</premium>
+	<settings>
+		<default>false</default>
+		<enabled>true</enabled>
+		<id>black_list</id>
+		<label>Incluir en lista negra</label>
+		<type>bool</type>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<default>false</default>
+		<enabled>true</enabled>
+		<id>white_list</id>
+		<label>Incluir en lista de favoritos</label>
+		<type>bool</type>
+		<visible>false</visible>
+	</settings>
+	<settings>
+		<default>false</default>
+		<enabled>true</enabled>
+		<id>premium</id>
+		<label>Activar cuenta premium</label>
+		<type>bool</type>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<enabled>eq(-1,true)</enabled>
+		<id>user</id>
+		<label>@30014</label>
+		<type>text</type>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<enabled>eq(-2,true)+!eq(-1,'')</enabled>
+		<hidden>true</hidden>
+		<id>password</id>
+		<label>@30015</label>
+		<type>text</type>
+		<visible>true</visible>
+	</settings>
 	<thumbnail>http://media.tvalacarta.info/servers/server_uploadedto.png</thumbnail>
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/servers/</update_url>
-	<version>1</version>
+	<version>2</version>
 </server>

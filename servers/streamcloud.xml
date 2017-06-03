@@ -3,8 +3,8 @@
 	<active>true</active>
 	<changes>
 		<change>
-			<date>09/03/2017</date>
 			<autor>Intel1</autor>
+			<date>09/03/2017</date>
 			<description>No detectaba "archivo no encontrado"</description>
 		</change>
 		<change>
@@ -12,13 +12,49 @@
 			<description>Version inicial</description>
 		</change>
 	</changes>
-
+	<find_videos>
+		<ignore_urls>
+			<value>http://streamcloud.eu/stylesheets</value>
+			<value>http://streamcloud.eu/control</value>
+			<value>http://streamcloud.eu/xupload</value>
+			<value>http://streamcloud.eu/js</value>
+			<value>http://streamcloud.eu/favicon</value>
+			<value>http://streamcloud.eu/reward</value>
+			<value>http://streamcloud.eu/login</value>
+			<value>http://streamcloud.eu/deliver</value>
+			<value>http://streamcloud.eu/faq</value>
+			<value>http://streamcloud.eu/tos</value>
+			<value>http://streamcloud.eu/checkfiles</value>
+			<value>http://streamcloud.eu/contact</value>
+			<value>http://streamcloud.eu/serve</value>
+		</ignore_urls>
+		<patterns>
+			<pattern>(streamcloud.eu/[a-z0-9]+)</pattern>
+			<url>http://\1</url>
+		</patterns>
+	</find_videos>
 	<free>true</free>
 	<id>streamcloud</id>
 	<name>streamcloud</name>
 	<premium>
 	</premium>
+	<settings>
+		<default>false</default>
+		<enabled>true</enabled>
+		<id>black_list</id>
+		<label>Incluir en lista negra</label>
+		<type>bool</type>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<default>false</default>
+		<enabled>true</enabled>
+		<id>white_list</id>
+		<label>Incluir en lista de favoritos</label>
+		<type>bool</type>
+		<visible>false</visible>
+	</settings>
 	<thumbnail>http://media.tvalacarta.info/servers/server_streamcloud.png</thumbnail>
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/servers/</update_url>
-	<version>2</version>
+	<version>3</version>
 </server>
