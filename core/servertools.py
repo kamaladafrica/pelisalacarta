@@ -78,7 +78,7 @@ def find_video_items(item=None, data=None):
     return itemlist
 
 
-def get_servers_itemlist(itemlist, fnc=None):
+def get_servers_itemlist(itemlist, fnc=None, sort=False):
     """
     Obtiene el servidor para cada uno de los items, en funcion de su url.
      - Asigna el servidor, la url modificada, el thumbnail (si el item no contiene contentThumbnail se asigna el del thumbnail)
@@ -102,7 +102,7 @@ def get_servers_itemlist(itemlist, fnc=None):
         for pattern in server_parameters.get("find_videos", {}).get("patterns", []):
             logger.info(pattern["pattern"])
             #Recorre los resultados
-            for match in re.compile(pattern["pattern"], re.DOTALL).finditer("\n".join([item.url for item in itemlist if not item.server])):
+            for match in re.compile(pattern["pattern"], re.DOTALL).finditer("\n".join([item.url.split('|')[0] for item in itemlist if not item.server])):
                 url= pattern["url"]
                 for x in range(len(match.groups())):
                     url = url.replace("\\%s" % (x+1), match.groups()[x])
@@ -114,7 +114,10 @@ def get_servers_itemlist(itemlist, fnc=None):
                             item.contentThumbnail = item.thumbnail
                         item.thumbnail = server_parameters.get("thumbnail", "")
                         item.server = serverid
-                        item.url = url
+                        if '|' in item.url:
+                            item.url = url + '|' + item.url.split('|')[1]
+                        else:
+                            item.url = url
                         
     save_server_stats(server_stats, "find_videos")
     
@@ -131,9 +134,10 @@ def get_servers_itemlist(itemlist, fnc=None):
 
     # Filtrar si es necesario
     itemlist = filter_servers(itemlist)
-
+    
     # Ordenar segun favoriteslist si es necesario
-    itemlist = sort_servers(itemlist)
+    if sort:
+        itemlist = sort_servers(itemlist)
     
     return itemlist
 
