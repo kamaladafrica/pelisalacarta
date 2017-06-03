@@ -212,6 +212,9 @@ def findvideos(item):
         data_url = httptools.downloadpage(host+'wp-admin/admin-ajax.php', post, headers=headers).data
         url = jsontools.load_json(data_url).get("url")
         
+        if 'openload' in url:
+            url = url + '|' + item.url
+            
         title = "%s - %s" % ('%s', title)
         itemlist.append(item.clone(action="play", url=url, title=title, text_color=color3))
     
