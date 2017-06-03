@@ -12,8 +12,13 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/mundoflv.png</bannermenu>
 	
 	<update_url></update_url>
-	<version>11</version>
+	<version>12</version>
 	<changes>
+			<change>
+				<date>03/05/2017</date>
+				<autor>Hernan_ar_c</autor>
+				<description>Reparado por mala subida</description>
+	   	</change>
 		<change>
 				<date>25/05/2017</date>
 				<autor>Hernan_ar_c</autor>
