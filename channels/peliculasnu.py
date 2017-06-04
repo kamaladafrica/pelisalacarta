@@ -211,18 +211,15 @@ def findvideos(item):
         headers = {'X-Requested-With': 'XMLHttpRequest', 'Referer': item.url}
         data_url = httptools.downloadpage(host+'wp-admin/admin-ajax.php', post, headers=headers).data
         url = jsontools.load_json(data_url).get("url")
-        if "online.desmix" in url or "metiscs" in url:
-            server = "directo"
-        elif "openload" in url:
-            server = "openload"
-            url += "|Referer=" + item.url
-        else:
-            server = servertools.get_server_from_url(url)
-            if server == "directo":
-                continue
-        title = "%s - %s" % (unicode(server, "utf8").capitalize().encode("utf8"), title)
-        itemlist.append(item.clone(action="play", url=url, title=title, server=server, text_color=color3))
-
+        
+        if 'openload' in url:
+            url = url + '|' + item.url
+            
+        title = "%s - %s" % ('%s', title)
+        itemlist.append(item.clone(action="play", url=url, title=title, text_color=color3))
+    
+    itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server.capitalize())
+    
     if item.extra != "findvideos" and config.get_library_support():
         itemlist.append(item.clone(title="Añadir película a la biblioteca", action="add_pelicula_to_library",
                                    extra="findvideos", text_color="green"))
@@ -273,8 +270,6 @@ def play(item):
             title = ".%s %s [directo]" % (extension, calidad)
             itemlist.insert(0, [title, url, 0, subtitle])
     else:
-        enlaces = servertools.findvideosbyserver(item.url, item.server)[0]
-        if len(enlaces) > 0:
-            itemlist.append(item.clone(action="play", server=enlaces[2], url=enlaces[1]))
+        return [item]
     
     return itemlist

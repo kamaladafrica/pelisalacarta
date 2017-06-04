@@ -12,8 +12,13 @@
 	<bannermenu>https://s16.postimg.org/p9xz2vlo5/pelisplus_banner.png</bannermenu>
 	
 	<update_url></update_url>
-	<version>6</version>
+	<version>7</version>
 	<changes>
+		<change>
+			<date>03/06/2017</date>
+			<autor>Hernan_ar_c</autor>
+			<description>Reparado por falla del canal</description>
+		</change>
 		<change>
 				<date>25/05/2017</date>
 				<autor>Hernan_ar_c</autor>

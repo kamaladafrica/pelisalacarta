@@ -91,7 +91,6 @@ def lista(item):
         post= {'tipo': 'episodios', '_token':'rAqVX74O9HVHFFigST3M9lMa5VL7seIO7fT8PBkl'}
         post = urllib.urlencode(post)
     data = get_source(item.url)
-    logger.debug('data: %s'%data)
     patron = 'class=anime><div class=cover style=background-image: url(.*?)>.*?<a href=(.*?)><h2>(.*?)<\/h2><\/a><\/div>'
     matches = re.compile(patron, re.DOTALL).findall(data)
     
@@ -161,7 +160,6 @@ def episodios(item):
     itemlist =[]
         
     data= get_source(item.url)
-    logger.debug('data: %s'%data)
     patron = '<li id=epi-.*? class=list-group-item ><a href=(.*?) class=badge.*?width=25 title=(.*?)> <\/span>(.*?)<\/li>'
     matches = re.compile(patron, re.DOTALL).findall(data)
     
@@ -177,14 +175,12 @@ def findvideos(item):
     itemlist=[]
     
     data= get_source(item.url)
-    logger.debug('data: %s'%data)
     patron ='<iframe.*?src=(.*?) frameborder=0'
     matches = re.compile(patron, re.DOTALL).findall(data)
     
     for video_url in matches:
         data=get_source(video_url)
         data = data.replace("'",'')
-        logger.debug('data findvideos2: %s'%data)
         patron ='file:(.*?),label:(.*?),type'
         matches = re.compile(patron, re.DOTALL).findall(data)
         
