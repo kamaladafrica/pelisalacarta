@@ -228,7 +228,7 @@ def get_channel_setting(name, channel):
                 dict_settings = dict_file['settings']
         except EnvironmentError:
             logger.error("ERROR al leer el archivo: %s" % file_settings)
-
+    
     if not dict_settings or name not in dict_settings:
         # Obtenemos controles del archivo ../channels/channel.xml
         try:
@@ -312,13 +312,10 @@ def set_channel_setting(name, value, channel):
 def get_channel_module(channel_name, package="channels"):
     # Sustituye al que hay en servertools.py ...
     # ...pero añade la posibilidad de incluir un paquete diferente de "channels"
-    if not package.endswith('.'):
-        package += '.'
-    logger.info("Importando " + package + channel_name)
-    channels_module = __import__(package + channel_name)
-    channel_module = getattr(channels_module, channel_name)
-    logger.info("Importado " + package + channel_name)
-
+    if not "." in channel_name:
+      channel_module = __import__('%s.%s' % (package,channel_name), None, None, ['%s.%s' % (package,channel_name)])
+    else:
+      channel_module = __import__(channel_name, None, None, [channel_name])
     return channel_module
 
 

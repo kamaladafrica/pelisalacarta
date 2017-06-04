@@ -141,6 +141,8 @@ def save_settings(item, dict_values):
     n = len(dict_values)
     for i, v in enumerate(dict_values):
         config.set_setting("include_in_global_search", dict_values[v], v)
+    
+    progreso.close()
 
 
 def cb_custom_button(item, dict_values):

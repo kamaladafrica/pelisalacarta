@@ -38,7 +38,7 @@ from core import logger
 from core.item import Item
 import threading
 from platformcode import platformtools
-from platformcode import xbmc_library
+
 
 
 def convert_old_to_v4():

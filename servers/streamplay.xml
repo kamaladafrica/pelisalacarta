@@ -32,8 +32,8 @@
 		<ignore_urls>
 		</ignore_urls>
 		<patterns>
-			<pattern>streamplay.to/(?:embed-|)([a-z0-9]+)(?:.html|)</pattern>
-			<url>http://streamplay.to/embed-\1.html</url>
+			<pattern>streamplay.to/(?:embed-|player-|)([a-z0-9]+)(?:.html|)</pattern>
+			<url>http://streamplay.to/player-\1.html</url>
 		</patterns>
 	</find_videos>
 	<free>true</free>
