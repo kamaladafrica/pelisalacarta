@@ -13,7 +13,7 @@
 		</ignore_urls>
 		<patterns>
 			<pattern>(turbobit.net/[0-9a-z]+)</pattern>
-			<url>http://\1.html"</url>
+			<url>http://\1.html</url>
 		</patterns>
 	</find_videos>
 	<free>false</free>

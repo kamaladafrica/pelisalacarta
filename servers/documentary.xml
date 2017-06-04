@@ -13,7 +13,7 @@
 		</ignore_urls>
 		<patterns>
 			<pattern>http://documentary.es/(\d+[a-z0-9\-]+)</pattern>
-			<url>http://documentary.es/\1?embed"</url>
+			<url>http://documentary.es/\1?embed</url>
 		</patterns>
 	</find_videos>
 	<free>true</free>

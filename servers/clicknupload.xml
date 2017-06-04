@@ -12,8 +12,8 @@
 		<ignore_urls>
 		</ignore_urls>
 		<patterns>
-			<pattern>clicknupload.(?:me|com)/([a-z0-9]+)</pattern>
-			<url>http://clicknupload.me/\1</url>
+			<pattern>clicknupload.(?:me|com|org)/([a-z0-9]+)</pattern>
+			<url>https://clicknupload.org/\1</url>
 		</patterns>
 	</find_videos>
 	<free>true</free>

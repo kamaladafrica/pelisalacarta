@@ -40,15 +40,14 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     data = httptools.downloadpage(page_url).data
     match = re.search('(.+)/v/(\w+)/file.html', page_url)
     domain = match.group(1)
-    file_id = match.group(2)
-    filename = re.search('\](.+)\[\/url\]', data).group(1)
 
-    # Extract magic number
-    a = int(scrapertools.find_single_match(data, 'var a\s*=\s*(\d+);'))
-    b = int(scrapertools.find_single_match(data, 'var b\s*=\s*(\d+);'))
-    magic_number = int(a / 3) + a % b
+    patron = 'getElementById\(\'dlbutton\'\).href\s*=\s*(.*?);'
+    media_url = scrapertools.find_single_match(data, patron)
+    numbers = scrapertools.find_single_match(media_url, '\((.*?)\)')
+    url = media_url.replace(numbers, "'%s'" % eval(numbers))
+    url = eval(url)
 
-    mediaurl = '%s/d/%s/%s/%s' % (domain, file_id, magic_number, filename)
+    mediaurl = '%s%s' % (domain, url)
     extension = "." + mediaurl.split('.')[-1]
     video_urls.append([extension + " [zippyshare]", mediaurl])
 

@@ -29,8 +29,8 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
 
     data = httptools.downloadpage(page_url).data
 
-    mpri_Key = scrapertools.find_single_match(data, "mpri_Key='([^']+)'")
-    data_vt = httptools.downloadpage("http://thevideo.me/jwv/%s" % mpri_Key).data
+    mpri_Key = scrapertools.find_single_match(data, "lets_play_a_game='([^']+)'")
+    data_vt = httptools.downloadpage("https://thevideo.me/vsign/player/%s" % mpri_Key).data
     vt = scrapertools.find_single_match(data_vt, 'function\|([^\|]+)\|')
     if "fallback" in vt:
         vt = scrapertools.find_single_match(data_vt, 'jwConfig\|([^\|]+)\|')

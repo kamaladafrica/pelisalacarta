@@ -13,7 +13,7 @@
 		</ignore_urls>
 		<patterns>
 			<pattern>kingvid.tv/(?:embed-|)([A-z0-9]+)</pattern>
-			<url>http://kingvid.tv/embed-\1.html"</url>
+			<url>http://kingvid.tv/embed-\1.html</url>
 		</patterns>
 	</find_videos>
 	<free>true</free>
