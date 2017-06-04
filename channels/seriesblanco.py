@@ -171,8 +171,8 @@ def search(item, texto):
         post = "query=%s" % texto
         data = httptools.downloadpage(item.url, post=post).data
         data = re.sub(r"\n|\r|\t|\s{2}", "", data)
-        shows = re.findall("<a href=['\"](?P<url>/serie[^'\"]+)['\"].*?<img src=['\"](?P<img>[^'\"]+)['\"]"
-                           ".*?<b>(?P<title>.*?)</b>", data)
+        shows = re.findall("<a href=['\"](?P<url>/serie[^'\"]+)['\"].*?<img src=['\"](?P<img>[^'\"]+)['\"].*?"
+                           "id=['\"]q2[1\"] name=['\"]q2['\"] value=['\"](?P<title>.*?)['\"]", data)
 
         for url, img, title in shows:
             itemlist.append(item.clone(title=title, url=urlparse.urljoin(HOST, url), action="episodios", show=title,
