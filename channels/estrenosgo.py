@@ -66,7 +66,8 @@ def listado(item):
         if year:
             title = re.sub(patron, "", title)
         patron = '\s?-?\s?(line)?\s?-\s?$'
-        title = re.sub(patron, "", title,flags=re.IGNORECASE)
+        regex = re.compile(patron,  re.I)
+        title = regex.sub("", title)
 
         # Obtenemos la imagen b por q es mayor
         thumbnail = HOST + thumbnail[:-5] + 'b' + thumbnail[-4:]

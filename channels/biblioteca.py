@@ -377,6 +377,7 @@ def findvideos(item):
             # Ejecutamos find_videos, del canal o común
             if hasattr(channel, 'findvideos'):
                 list_servers = getattr(channel, 'findvideos')(item_json)
+                list_servers = servertools.filter_servers(list_servers)
             else:
                 from core import servertools
                 list_servers = servertools.find_video_items(item_json)

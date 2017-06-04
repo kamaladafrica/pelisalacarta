@@ -12,9 +12,9 @@
    <bannermenu>https://s32.postimg.org/kihkdpx1x/banner_cinecalidad.png</bannermenu>
 
    <update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-   <version>5</version>
-   <date>08/05/2017</date>
-   <changes>Agregados servidores directo y openload</changes>
+   <version>6</version>
+   <date>16/05/2017</date>
+   <changes>reparados enlaces directos</changes>
 
    <categories>
       <category>latino</category>

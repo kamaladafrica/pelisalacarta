@@ -22,7 +22,7 @@ thumbaudio = {'latino':'http://flags.fmcdn.net/data/flags/normal/mx.png', 'caste
 
 tcalidad = {'hq':'[COLOR limegreen]HQ[/COLOR]','hd':'[COLOR limegreen]HD[/COLOR]','hd-1080':'[COLOR limegreen]HD-1080[/COLOR]', 'dvd':'[COLOR limegreen]DVD[/COLOR]','cam':'[COLOR red]CAM[/COLOR]', }
 
-thumbcalidad = {'hd-1080':'https://s24.postimg.org/vto15vajp/hd1080.png','dvd':'https://s31.postimg.org/6sksfqarf/dvd.png','cam':'https://s29.postimg.org/c7em44e9j/cam.png','hq':'https://s27.postimg.org/bs0jlpdsz/image.png','hd':'https://s30.postimg.org/6vxtqu9sx/image.png'}
+thumbcalidad = {'hd-1080':'https://s21.postimg.org/4h1s0t1wn/hd1080.png','dvd':'https://s1.postimg.org/m89hus1tb/dvd.png','cam':'https://s11.postimg.org/ad4o5wpz7/cam.png','hq':'https://s23.postimg.org/j76ldf8qz/image.png','hd':'https://s27.postimg.org/m2dhhkrur/image.png'}
 
 thumbletras = {'0-9':'https://s32.postimg.org/drojt686d/image.png',
     '1':'https://s32.postimg.org/drojt686d/image.png',
@@ -54,21 +54,21 @@ thumbletras = {'0-9':'https://s32.postimg.org/drojt686d/image.png',
     'y':'https://s32.postimg.org/um7j3zg85/image.png',
     'z':'https://s32.postimg.org/jb4vfm9d1/image.png'}
 
-tgenero = {    "comedia":"https://s32.postimg.org/q7g2qs90l/comedia.png",
-               "suspenso":"https://s31.postimg.org/kb629gscb/suspenso.png",
-               "drama":"https://s32.postimg.org/e6z83sqzp/drama.png",
-               "accion":"https://s32.postimg.org/4hp7gwh9x/accion.png",
-               "aventura":"https://s32.postimg.org/whwh56is5/aventura.png",
-               "romance":"https://s31.postimg.org/y7vai8dln/romance.png",
-               "thriller":"https://s31.postimg.org/4d7bl25y3/thriller.png",
-               "ciencia-ficcion":"https://s32.postimg.org/6hp3tsxsl/ciencia_ficcion.png",
-               "terror":"https://s32.postimg.org/ca25xg0ed/terror.png",
-               "documental":"https://s32.postimg.org/7opmvc5ut/documental.png",
-               "musical":"https://s31.postimg.org/7i32lca7f/musical.png",
-               "fantastico":"https://s32.postimg.org/b6xwbui6d/fantastico.png",
-               "deporte":"https://s31.postimg.org/pdc8etc0r/deporte.png",
-               "infantil":"https://s32.postimg.org/i53zwwgsl/infantil.png",
-               "animacion":"https://s32.postimg.org/rbo1kypj9/animacion.png"}
+tgenero = {    "comedia":"https://s7.postimg.org/ne9g9zgwb/comedia.png",
+               "suspenso":"https://s13.postimg.org/wmw6vl1cn/suspenso.png",
+               "drama":"https://s16.postimg.org/94sia332d/drama.png",
+               "accion":"https://s3.postimg.org/y6o9puflv/accion.png",
+               "aventura":"https://s10.postimg.org/6su40czih/aventura.png",
+               "romance":"https://s15.postimg.org/fb5j8cl63/romance.png",
+               "thriller":"https://s22.postimg.org/5y9g0jsu9/thriller.png",
+               "ciencia-ficcion":"https://s9.postimg.org/diu70s7j3/cienciaficcion.png",
+               "terror":"https://s7.postimg.org/yi0gij3gb/terror.png",
+               "documental":"https://s16.postimg.org/7xjj4bmol/documental.png",
+               "musical":"https://s29.postimg.org/bbxmdh9c7/musical.png",
+               "fantastico":"https://s10.postimg.org/pbkbs6j55/fantastico.png",
+               "deporte":"https://s13.postimg.org/xuxf5h06v/deporte.png",
+               "infantil":"https://s23.postimg.org/g5rmazozv/infantil.png",
+               "animacion":"https://s13.postimg.org/5on877l87/animacion.png"}
 
 patrones =['','<span class="clms">Sinopsis:<\/span>([^<]+)<div class="info_movie">']
 
@@ -77,19 +77,19 @@ def mainlist(item):
 
     itemlist = []
     
-    itemlist.append( item.clone (title="Todas", action="lista",thumbnail='https://s12.postimg.org/iygbg8ip9/todas.png', fanart='https://s12.postimg.org/iygbg8ip9/todas.png', extra='peliculas/', url = host))
+    itemlist.append( item.clone (title="Todas", action="lista",thumbnail='https://s18.postimg.org/fwvaeo6qh/todas.png', fanart='https://s18.postimg.org/fwvaeo6qh/todas.png', extra='peliculas/', url = host))
     
-    itemlist.append( itemlist[-1].clone (title="Generos", action="menuseccion", thumbnail='https://s31.postimg.org/szbr0gmkb/generos.png', fanart='https://s31.postimg.org/szbr0gmkb/generos.png',url = host, extra='/genero'))
+    itemlist.append( itemlist[-1].clone (title="Generos", action="menuseccion", thumbnail='https://s3.postimg.org/5s9jg2wtf/generos.png', fanart='https://s3.postimg.org/5s9jg2wtf/generos.png',url = host, extra='/genero'))
 
-    itemlist.append( itemlist[-1].clone (title="Alfabetico", action="menuseccion", thumbnail='https://s31.postimg.org/c3bm9cnl7/a_z.png', fanart='https://s31.postimg.org/c3bm9cnl7/a_z.png',url = host, extra='/tag'))
+    itemlist.append( itemlist[-1].clone (title="Alfabetico", action="menuseccion", thumbnail='https://s17.postimg.org/fwi1y99en/a-z.png', fanart='https://s17.postimg.org/fwi1y99en/a-z.png',url = host, extra='/tag'))
 
-    itemlist.append( itemlist[-1].clone (title="Audio", action="menuseccion",thumbnail='https://s24.postimg.org/qmvqz4uxx/audio.png', fanart='https://s24.postimg.org/qmvqz4uxx/audio.png', url = host, extra= '/audio'))
+    itemlist.append( itemlist[-1].clone (title="Audio", action="menuseccion",thumbnail='https://s27.postimg.org/avs17iuw3/audio.png', fanart='https://s27.postimg.org/avs17iuw3/audio.png', url = host, extra= '/audio'))
         
-    itemlist.append( itemlist[-1].clone (title="Calidad", action="menuseccion",thumbnail='https://s23.postimg.org/ui42030wb/calidad.png', fanart='https://s23.postimg.org/ui42030wb/calidad.png', extra='/calidad'))
+    itemlist.append( itemlist[-1].clone (title="Calidad", action="menuseccion",thumbnail='https://s13.postimg.org/6nzv8nlkn/calidad.png', fanart='https://s13.postimg.org/6nzv8nlkn/calidad.png', extra='/calidad'))
 
-    itemlist.append( itemlist[-1].clone (title="Año", action="menuseccion", thumbnail='https://s31.postimg.org/iyl5fvzqz/pora_o.png', fanart='https://s31.postimg.org/iyl5fvzqz/pora_o.png',url = host, extra='/fecha-estreno'))
+    itemlist.append( itemlist[-1].clone (title="Año", action="menuseccion", thumbnail='https://s8.postimg.org/7eoedwfg5/pora_o.png', fanart='https://s8.postimg.org/7eoedwfg5/pora_o.png',url = host, extra='/fecha-estreno'))
 
-    itemlist.append( itemlist[-1].clone (title="Buscar", action="search", url=host+'?s=', thumbnail='https://s31.postimg.org/qose4p13f/Buscar.png', fanart='https://s31.postimg.org/qose4p13f/Buscar.png'))
+    itemlist.append( itemlist[-1].clone (title="Buscar", action="search", url=host+'?s=', thumbnail='https://s30.postimg.org/pei7txpa9/buscar.png', fanart='https://s30.postimg.org/pei7txpa9/buscar.png'))
 
     #itemlist.append( itemlist[-1].clone (title="newest", action="newest", url=host))
     
@@ -185,7 +185,7 @@ def lista (item):
         actual_page_url = item.url
         next_page = scrapertools.find_single_match(data,"class=previouspostslink' href='([^']+)'>Siguiente &rsaquo;<\/a>")
         if next_page !='':
-           itemlist.append(Item(channel = item.channel, action = "lista", title = 'Siguiente >>>', url = next_page, thumbnail='https://s32.postimg.org/4zppxf5j9/siguiente.png',extra=item.extra))
+           itemlist.append(Item(channel = item.channel, action = "lista", title = 'Siguiente >>>', url = next_page, thumbnail='https://s16.postimg.org/9okdu7hhx/siguiente.png',extra=item.extra))
     
     return itemlist
 
@@ -232,16 +232,8 @@ def findvideos(item):
     	calidad = tcalidad[scrapedcalidad.lower()]
     	url = scrapedurl
     	itemlist.append( Item(channel=item.channel, action='play' , idioma=idioma, calidad=calidad, url=url))
-
-    for videoitem in itemlist:
-        videoitem.infoLabels=item.infoLabels
-        videoitem.channel = item.channel
-        videoitem.folder = False
-        videoitem.thumbnail = servertools.guess_server_thumbnail(videoitem.url)
-        videoitem.fulltitle = item.title
-        videoitem.server = servertools.get_server_from_url(videoitem.url)
-        videoitem.title = item.contentTitle+' | '+videoitem.calidad+' | '+videoitem.idioma+' ('+videoitem.server+')'
-
+    
+    itemlist = servertools.get_servers_itemlist(itemlist, lambda i: item.contentTitle+' | '+i.calidad+' | '+i.idioma+' ('+i.server+')')
        
 
     if config.get_library_support() and len(itemlist) > 0 and item.extra !='findvideos' :

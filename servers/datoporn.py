@@ -33,12 +33,12 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     if not media_urls:
         match = scrapertools.find_single_match(data, "<script type='text/javascript'>(.*?)</script>")
         data = jsunpack.unpack(match)
-        media_urls = scrapertools.find_multiple_matches(data, '\[\{file\:"([^"]+)"')
+        media_urls = scrapertools.find_multiple_matches(data, 'file\:"([^"]+\.mp4)",label:"([^"]+)"')
 
     # Extrae la URL
     calidades = []
     video_urls = []
-    for media_url in sorted(media_urls, key= lambda x:int(x[1][-3:])):
+    for media_url in sorted(media_urls, key=lambda x:int(x[1][-3:])):
         calidades.append(int(media_url[1][-3:]))
         try:
             title = ".%s %sp [datoporn]" % (media_url[0].rsplit('.',1)[1], media_url[1][-3:])
@@ -77,3 +77,4 @@ def find_videos(data):
             logger.info("  url duplicada=" + url)
 
     return devuelve
+

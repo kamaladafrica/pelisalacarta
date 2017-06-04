@@ -1,29 +1,53 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml version="1.0" ?>
 <server>
 	<active>true</active>
-	<version>3</version>
 	<changes>
-        <change>
-            <date>09/05/2017</date>
-            <autor>Cmos</autor>
-            <description>Ampliado regex para detección de enlaces</description>
-        </change>
-        <change>
-            <date>29/04/2017</date>
-            <autor>Cmos</autor>
-            <description>Corregido, usa proxy en caso de error con https</description>
-        </change>
-        <change>
-            <date>25/03/2016</date>
-            <autor>divadr</autor>
-            <description>Versión inicial</description>
-        </change>
+		<change>
+			<autor>Cmos</autor>
+			<date>09/05/2017</date>
+			<description>Ampliado regex para detección de enlaces</description>
+		</change>
+		<change>
+			<autor>Cmos</autor>
+			<date>29/04/2017</date>
+			<description>Corregido, usa proxy en caso de error con https</description>
+		</change>
+		<change>
+			<autor>divadr</autor>
+			<date>25/03/2016</date>
+			<description>Versión inicial</description>
+		</change>
 	</changes>
-
+	<find_videos>
+		<ignore_urls>
+		</ignore_urls>
+		<patterns>
+			<pattern>rapidvideo.org/([A-Za-z0-9]+)/</pattern>
+			<url>http://www.rapidvideo.org/\1</url>
+		</patterns>
+	</find_videos>
 	<free>true</free>
 	<id>rapidvideo</id>
 	<name>rapidvideo</name>
-	<premium></premium>
+	<premium>
+	</premium>
+	<settings>
+		<default>false</default>
+		<enabled>true</enabled>
+		<id>black_list</id>
+		<label>Incluir en lista negra</label>
+		<type>bool</type>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<default>false</default>
+		<enabled>true</enabled>
+		<id>white_list</id>
+		<label>Incluir en lista de favoritos</label>
+		<type>bool</type>
+		<visible>false</visible>
+	</settings>
 	<thumbnail>http://media.tvalacarta.info/servers/server_rapidvideo.png</thumbnail>
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/servers/</update_url>
+	<version>5</version>
 </server>

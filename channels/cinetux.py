@@ -20,7 +20,7 @@ CHANNEL_HOST = "http://www.cinetux.net/"
 
 # Configuracion del canal
 __modo_grafico__ = config.get_setting('modo_grafico', 'cinetux')
-__perfil__ = int(config.get_setting('perfil', 'cinetux'))
+__perfil__ = config.get_setting('perfil', 'cinetux')
 
 # Fijar perfil de color            
 perfil = [['0xFFFFE6CC', '0xFFFFCE9C', '0xFF994D00'],
@@ -168,7 +168,7 @@ def peliculas(item):
         pass
 
     # Extrae el paginador
-    next_page_link = scrapertools.find_single_match(data, '<a href="([^"]+)"\s+><span [^>]+>&raquo;</span>')
+    next_page_link = scrapertools.find_single_match(data, '<a href="([^"]+)"\s*><span [^>]+>&raquo;</span>')
     if next_page_link:
         itemlist.append(item.clone(action="peliculas", title=">> Página siguiente", url=next_page_link,
                                    text_color=color3))
@@ -315,39 +315,23 @@ def bloque_enlaces(data, filtro_idioma, dict_idiomas, type, item):
     for match in matches:
         scrapedurl = match[0]
         language = match[2].strip()
-        if not match[1]:
-            server = servertools.get_server_from_url(scrapedurl)
-            title = "   Mirror en " + server + " (" + language + ")"
-        else:
-            server = match[1].lower()
-            if server == "uploaded":
-                server = "uploadedto"
-            elif server == "streamin":
-                server = "streaminto"
-            elif server == "netu":
-                server = "netutv"
-            mostrar_server = True
-            if config.get_setting("hidepremium") == True:
-                mostrar_server = servertools.is_server_enabled(server)
-            if mostrar_server:
-                try:
-                    servers_module = __import__("servers." + server)
-                except:
-                    pass
-            title = "   Mirror en " + server + " (" + language + ") (Calidad " + match[3].strip() + ")"
+        title = "   Mirror en %s (" + language + ")"
+        if len(match) == 4:
+            title += " (Calidad " + match[3].strip() + ")"
 
         if filtro_idioma == 3 or item.filtro:
-            lista_enlaces.append(item.clone(title=title, action="play", server=server, text_color=color2,
+            lista_enlaces.append(item.clone(title=title, action="play", text_color=color2,
                                             url=scrapedurl, idioma=language, extra=item.url))
         else:
             idioma = dict_idiomas[language]
             if idioma == filtro_idioma:
                 lista_enlaces.append(item.clone(title=title, text_color=color2, action="play",  url=scrapedurl,
-                                                server=server, extra=item.url))
+                                                extra=item.url))
             else:
                 if language not in filtrados:
                     filtrados.append(language)
-
+    
+    lista_enlaces = servertools.get_servers_itemlist(lista_enlaces, lambda i: i.title % i.server)
     if filtro_idioma != 3:
         if len(filtrados) > 0:
             title = "Mostrar enlaces filtrados en %s" % ", ".join(filtrados)
@@ -362,13 +346,17 @@ def play(item):
     itemlist = []
     if "api.cinetux" in item.url:
         data = httptools.downloadpage(item.url, headers={'Referer': item.extra}).data.replace("\\", "")
-        matches = scrapertools.find_multiple_matches(data,
-                  "{file\s*:\s*'([^\"]+)\"[\}]*'\s*,\s*label:\s*'([^']+)'\s*,\s*type:\s*'[^/]+/([^']+)'")
-        for url, quality, ext in matches:
-            itemlist.insert(0, [".%s %s [directo]" % (ext, quality), url])
-    else:
-        enlace = servertools.findvideosbyserver(item.url, item.server)
-        url = enlace[0][1]
-        itemlist.append(item.clone(url=url))
+        bloque = scrapertools.find_single_match(data, 'sources:\s*(\[.*?\])')
+        if bloque:
+            bloque = eval(bloque)
+            video_urls = []
+            for b in bloque:
+                ext = b["type"].replace("video/", "")
+                video_urls.append([".%s %sp [directo]" % (ext, b["label"]), b["file"], b["label"]])
 
+            video_urls.sort(key=lambda vdu: vdu[2])
+            for v in video_urls:
+                itemlist.append([v[0], v[1]])
+    else:
+        return [item]
     return itemlist

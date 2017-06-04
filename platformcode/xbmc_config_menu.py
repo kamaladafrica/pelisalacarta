@@ -30,6 +30,7 @@ import os
 
 import xbmcgui
 from core import channeltools
+from core import servertools
 from core import config
 from core import logger
 
@@ -201,7 +202,15 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
 
                 # La llamada se hace desde un canal
                 self.list_controls, default_values = channeltools.get_channel_controls_settings(self.channel)
+                self.kwargs = {"channel": self.channel}
+                
+            # Si la ruta del canal esta en la carpeta "servers", obtenemos los controles y valores mediante servertools
+            elif os.path.join(config.get_runtime_path(), "servers") in channelpath:
 
+                # La llamada se hace desde un canal
+                self.list_controls, default_values = servertools.get_server_controls_settings(self.channel)
+                self.kwargs = {"server": self.channel}
+                
             # En caso contrario salimos
             else:
                 return None
@@ -566,9 +575,9 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
 
             # Decidimos si usar el valor por defecto o el valor guardado
             if c["type"] in ["bool", "text", "list"]:
-                if id not in self.values:
+                if c["id"] not in self.values:
                     if not self.callback:
-                        self.values[c["id"]] = config.get_setting(c["id"], self.channel)
+                        self.values[c["id"]] = config.get_setting(c["id"], **self.kwargs)
                     else:
                         self.values[c["id"]] = c["default"]
 
@@ -696,10 +705,12 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             if self.custom_button is not None:
                 if self.custom_button["close"]:
                     self.close()
-                if '.' in self.callback:
-                    package, self.callback = self.callback.rsplit('.', 1)
+        
+                if 'server' in self.kwargs:
+                    package = 'servers.%s' % self.channel
                 else:
                     package = 'channels.%s' % self.channel
+                    
                 try:
                     cb_channel = __import__(package, None, None, [package])
                 except ImportError:
@@ -748,7 +759,10 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             if self.callback and '.' in self.callback:
                 package, self.callback = self.callback.rsplit('.', 1)
             else:
-                package = 'channels.%s' % self.channel
+                if 'server' in self.kwargs:
+                    package = 'servers.%s' % self.channel
+                else:
+                    package = 'channels.%s' % self.channel
 
             cb_channel = None
             try:
@@ -766,7 +780,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
                 except AttributeError:
                     # ... si tampoco existe 'cb_validate_config'...
                     for v in self.values:
-                        config.set_setting(v, self.values[v], self.channel)
+                        config.set_setting(v, self.values[v], **self.kwargs)
 
 
         # Controles de ajustes, si se cambia el valor de un ajuste, cambiamos el valor guardado en el diccionario de

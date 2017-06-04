@@ -230,25 +230,25 @@ def findvideos(item):
             subtitulos = scrapertools.find_single_match(tr,
                             '<img src="http://www.yaske.[a-z]+/theme/01/data/images/flags/[^"]+"[^>]+>([^<]*)<')
 
-            thumbnail = servertools.guess_server_thumbnail(server) # TODO: esto tarda un mundo, a ver si lo cambiamos
-            if not thumbnail:
-                thumbnail = thumbnail_host
+
 
             if title == 'play':
-                title = "    Ver en %s" % server
+                title = "    Ver en %s" 
             elif title == 'download':
-                title = "    Descargar de %s" % server
+                title = "    Descargar de %s" 
             else:
-                title = "    %s en %s" % (title, server)
+                title = "    %s en %s" % (title, "%s")
 
             sublist = langdict.get(idioma, list())
-            sublist.append(item.clone(action="play", title=title, url=url, server=server,
-                                    thumbnail=thumbnail, folder=False, text_color=color1))
+            sublist.append(item.clone(action="play", title=title, url=url, 
+                                    folder=False, text_color=color1))
             langdict[idioma] = sublist
 
         except:
             import traceback
             logger.error("Excepcion: "+traceback.format_exc())
+
+    itemlist = servertools.get_servers_itemlist(sublist, lambda i: i.title % i.server)
 
     # Añadir servidores encontrados, agrupandolos por idioma
     lang_trans = {"es_es": "Español:", "la_la": "Latino:", "en_es": "Subtitulado:", "en_en": "Ingles:"}
@@ -283,28 +283,6 @@ def findvideos(item):
     return itemlist
 
 
-def play(item):
-    logger.info("item.url="+item.url)
-    itemlist=[]
-
-    data = urllib.unquote(item.url)
-    newdata = scrapertools.find_single_match(data,'olo.gg/s/[a-zA-Z0-9]+.s.(.*?)$')
-    if newdata:
-        data = urllib.unquote(newdata)
-
-    logger.info("item.url=" + data)
-    # Buscamos video por servidor ...
-    devuelve = servertools.findvideosbyserver(data, item.server)
-    if not devuelve:
-        # ...sino lo encontramos buscamos en todos los servidores disponibles
-        devuelve = servertools.findvideos(data)
-
-    if devuelve:
-        #logger.debug(devuelve)
-        itemlist.append(Item(channel=item.channel, title=item.contentTitle, action="play", server=devuelve[0][2],
-                             url=devuelve[0][1], thumbnail=item.thumbnail, folder=False))
-
-    return itemlist
 
 
 # TODO: Esto es temporal hasta q se modifique scrapertools

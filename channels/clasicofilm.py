@@ -17,7 +17,7 @@ from core import httptools
 host = "http://www.clasicofilm.com/"
 # Configuracion del canal
 __modo_grafico__ = config.get_setting('modo_grafico', 'clasicofilm')
-__perfil__ = int(config.get_setting('perfil', 'clasicofilm'))
+__perfil__ = config.get_setting('perfil', 'clasicofilm')
 
 # Fijar perfil de color            
 perfil = [['0xFFFFE6CC', '0xFFFFCE9C', '0xFF994D00'],
@@ -219,7 +219,11 @@ def findvideos(item):
     if item.infoLabels["tmdb_id"]:
         tmdb.set_infoLabels_item(item, __modo_grafico__)
 
-    itemlist = servertools.find_video_items(item)
+    data = httptools.downloadpage(item.url).data
+    iframe = scrapertools.find_single_match(data, '<iframe src="([^"]+)"')
+    if "goo.gl/" in iframe:
+        data += httptools.downloadpage(iframe, follow_redirects=False, only_headers=True).headers.get("location", "")
+    itemlist = servertools.find_video_items(item, data)
     
     library_path = config.get_library_path()
     if config.get_library_support():
@@ -244,7 +248,6 @@ def findvideos(item):
             except:
                 import traceback
                 logger.error(traceback.format_exc())
-                pass
         
         itemlist.append(item.clone(action="add_pelicula_to_library", title=title))
 

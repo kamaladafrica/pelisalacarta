@@ -48,7 +48,7 @@ def mainlist(item):
     elif config.get_setting("plugin_updates_available") == 1:
         nuevas = " (1 nueva)"
     else:
-        nuevas = " (" + config.get_setting("plugin_updates_available") + " nuevas)"
+        nuevas = " (%s nuevas)" % config.get_setting("plugin_updates_available")
 
     thumb_configuracion = "thumb_configuracion_%s.png" % config.get_setting("plugin_updates_available")
 
@@ -61,6 +61,10 @@ def mainlist(item):
 
     itemlist.append(Item(channel=CHANNELNAME, title="Ajustes especiales", action="", folder=False,
                          thumbnail=get_thumbnail_path("thumb_configuracion_0.png")))
+    itemlist.append(Item(channel=CHANNELNAME, title="   Ajustes de Canales", action="menu_channels",
+                         folder=True, thumbnail=get_thumbnail_path("thumb_canales.png")))
+    itemlist.append(Item(channel=CHANNELNAME, title="   Ajustes de Servidores", action="menu_servers",
+                         folder=True, thumbnail=get_thumbnail_path("thumb_canales.png")))
     itemlist.append(Item(channel="novedades", title="   Ajustes de la sección 'Novedades'", action="menu_opciones",
                          folder=True, thumbnail=get_thumbnail_path("thumb_novedades.png")))
     itemlist.append(Item(channel="buscador", title="   Ajustes del buscador global", action="opciones", folder=True,
@@ -72,18 +76,27 @@ def mainlist(item):
         itemlist.append(Item(channel="biblioteca", title="   Ajustes de la biblioteca",
                              action="channel_config", folder=True,
                              thumbnail=get_thumbnail_path("thumb_biblioteca.png")))
-        itemlist.append(Item(channel="biblioteca", action="update_biblio", folder=False,
-                             thumbnail=get_thumbnail_path("thumb_biblioteca.png"),
-                             title="   Buscar nuevos episodios y actualizar biblioteca"))
 
     itemlist.append(Item(channel=CHANNELNAME, title="   Añadir o Actualizar canal/conector desde una URL",
                          action="menu_addchannels"))
     itemlist.append(Item(channel=CHANNELNAME, action="", title="", folder=False,
                          thumbnail=get_thumbnail_path("thumb_configuracion_0.png")))
+    itemlist.append(Item(channel=CHANNELNAME, title="Otras herramientas", action="submenu_tools",
+                         folder=True, thumbnail=get_thumbnail_path("thumb_configuracion_0.png")))
+    
+
+    return itemlist
+
+
+
+def menu_channels(item):
+    logger.info()
+    itemlist = list()
 
     itemlist.append(Item(channel=CHANNELNAME, title="Activar/desactivar canales",
                          action="conf_tools", folder=False, extra="channels_onoff",
                          thumbnail=get_thumbnail_path("thumb_configuracion_0.png")))
+
     itemlist.append(Item(channel=CHANNELNAME, title="Ajustes por canales",
                          action="", folder=False,
                          thumbnail=get_thumbnail_path("thumb_configuracion_0.png")))
@@ -91,6 +104,7 @@ def mainlist(item):
     # Inicio - Canales configurables
     import channelselector
     from core import channeltools
+
     channel_list = channelselector.filterchannels("all")
 
     for channel in channel_list:
@@ -104,8 +118,14 @@ def mainlist(item):
 
     itemlist.append(Item(channel=CHANNELNAME, action="", title="", folder=False,
                          thumbnail=get_thumbnail_path("thumb_configuracion_0.png")))
-    itemlist.append(Item(channel=CHANNELNAME, title="Otras herramientas", action="submenu_tools",
-                         folder=True, thumbnail=get_thumbnail_path("thumb_configuracion_0.png")))
+
+    itemlist.append(Item(channel=CHANNELNAME, title="Herramientas de canales", action="",
+                         folder=False, thumbnail=get_thumbnail_path("thumb_canales.png")))
+    itemlist.append(Item(channel=CHANNELNAME, title="   Comprobar archivos *_data.json",
+                         action="conf_tools", folder=True, extra="lib_check_datajson",
+                         thumbnail=get_thumbnail_path("thumb_canales.png")))
+
+    
 
     return itemlist
 
@@ -114,7 +134,134 @@ def channel_config(item):
     return platformtools.show_channel_settings(channelpath=filetools.join(config.get_runtime_path(), "channels",
                                                                           item.config))
 
+def menu_servers(item):
+    logger.info()
+    itemlist = list()
 
+    itemlist.append(Item(channel=CHANNELNAME, title="Sevidores bloqueados",
+                         action="servers_blacklist", folder=False,
+                         thumbnail=get_thumbnail_path("thumb_configuracion_0.png")))
+                         
+    itemlist.append(Item(channel=CHANNELNAME, title="Servidores favoritos",
+                         action="servers_whitelist", folder=False,
+                         thumbnail=get_thumbnail_path("thumb_configuracion_0.png")))
+    
+    itemlist.append(Item(channel=CHANNELNAME, title="Ajustes de debriders:",
+                         action="", folder=False,
+                         thumbnail=get_thumbnail_path("thumb_configuracion_0.png")))
+
+    
+    # Inicio - Servidores configurables
+    from core import servertools
+
+    server_list = servertools.get_debriders_list().keys()
+    for server in server_list:
+        server_parameters = servertools.get_server_parameters(server)
+        if server_parameters["has_settings"]:
+            itemlist.append(Item(channel=CHANNELNAME, title="   Configuración del servidor '%s'" % server_parameters["name"],
+                                 action="server_config", config=server, folder=False,
+                                 thumbnail=""))
+                                 
+    itemlist.append(Item(channel=CHANNELNAME, title="Ajustes de servidores",
+                         action="", folder=False,
+                         thumbnail=get_thumbnail_path("thumb_configuracion_0.png")))
+
+    server_list = servertools.get_servers_list().keys()
+
+    for server in server_list:
+        server_parameters = servertools.get_server_parameters(server)
+        logger.info(server_parameters)
+        if server_parameters["has_settings"] and filter(lambda x: x["id"] not in ["black_list", "white_list"], server_parameters["settings"]):
+            itemlist.append(Item(channel=CHANNELNAME, title="   Configuración del servidor '%s'" % server_parameters["name"],
+                                 action="server_config", config=server, folder=False,
+                                 thumbnail=""))
+                                 
+    # Fin - Servidores configurables
+
+    return itemlist
+    
+                                                                          
+def server_config(item):
+    return platformtools.show_channel_settings(channelpath=filetools.join(config.get_runtime_path(), "servers",
+                                                                          item.config))
+def servers_blacklist(item):
+    from core import servertools
+    server_list = servertools.get_servers_list().keys()
+    list_controls = []
+    dict_values = {}
+    for server in sorted(server_list):
+        server_parameters = servertools.get_server_parameters(server)
+        controls, defaults = servertools.get_server_controls_settings(server)
+        dict_values[server] = config.get_setting("black_list",server=server)
+        
+        control = {'id': server,
+                   'type': "bool",
+                   'label': server_parameters["name"],
+                   'default': defaults.get("black_list", False),
+                   'enabled': True,
+                   'visible': True}
+        list_controls.append(control)
+
+
+    return platformtools.show_channel_settings(list_controls=list_controls, dict_values=dict_values,
+                                               caption="Servidores bloqueados",
+                                               callback="cb_servers_blacklist")
+
+def cb_servers_blacklist(item, dict_values):
+    for k,v in dict_values.items():
+        config.set_setting("black_list", v,server=k)
+        
+def servers_whitelist(item):
+    from core import servertools
+    server_list = servertools.get_servers_list().keys()
+    list_controls = []
+    dict_values = {}
+    server_names = [['Ninguno', None]]
+    
+    for server in sorted(server_list):
+        if config.get_setting("black_list",server=server):
+            continue
+        
+        server_parameters = servertools.get_server_parameters(server)
+        server_names.append([server_parameters['name'], server])
+        
+        if config.get_setting("white_list",server=server):
+            dict_values[config.get_setting("white_list",server=server)] = len(server_names) -1
+        
+    
+    for x in range(1,6):
+        control = {'id': x,
+                   'type': "list",
+                   'label': "Servidor #%s" %(x),
+                   'lvalues': [s[0] for s in server_names],
+                   'default': 0,
+                   'enabled': True,
+                   'visible': True}
+        list_controls.append(control)
+
+
+    return platformtools.show_channel_settings(list_controls=list_controls, dict_values=dict_values, item=[s[1] for s in server_names],
+                                               caption="Servidores favoritos",
+                                               callback="cb_servers_whitelist")
+
+def cb_servers_whitelist(server_names, dict_values):
+    for index, server in enumerate(server_names):
+        if index == 0: #Ninguno
+            continue
+            
+        #Els servidor está seleccionado
+        if index in dict_values.values():
+            #Buscamos la posicion
+            for pos, value in dict_values.items():
+                if index == value:
+                    config.set_setting("white_list", pos, server=server)
+                    break
+        
+        #El Servidor no está seleccionado
+        else:
+            config.set_setting("white_list", False, server=server)
+        
+        
 def get_all_versions(item):
     logger.info()
 
@@ -385,11 +532,16 @@ def submenu_tools(item):
                          thumbnail=get_thumbnail_path("thumb_canales.png")))
 
     if config.get_library_support():
+        itemlist.append(Item(channel=CHANNELNAME, action="", title="", folder=False,
+                             thumbnail=get_thumbnail_path("thumb_configuracion_0.png")))
         itemlist.append(Item(channel=CHANNELNAME, title="Herramientas de biblioteca", action="",
                              folder=False, thumbnail=get_thumbnail_path("thumb_biblioteca.png")))
         itemlist.append(Item(channel=CHANNELNAME, action="overwrite_tools", folder=False,
                              thumbnail=get_thumbnail_path("thumb_biblioteca.png"),
                              title="   Sobreescribir toda la biblioteca (strm, nfo y json)"))
+        itemlist.append(Item(channel="biblioteca", action="update_biblio", folder=False,
+                             thumbnail=get_thumbnail_path("thumb_biblioteca.png"),
+                             title="   Buscar nuevos episodios y actualizar biblioteca"))
 
     return itemlist
 

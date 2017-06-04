@@ -16,22 +16,22 @@ from core import tmdb
 
 host = 'http://www.ultrapeliculashd.com'
 
-tgenero = {"ACCIÓN":"https://s32.postimg.org/4hp7gwh9x/accion.png,",
-           "ANIMACIÓN": "https://s32.postimg.org/rbo1kypj9/animacion.png",
-           "AVENTURA": "https://s32.postimg.org/whwh56is5/aventura.png",
-           "CIENCIA FICCIÓN": "https://s32.postimg.org/6hp3tsxsl/ciencia_ficcion.png",
-           "COMEDIA":"https://s32.postimg.org/q7g2qs90l/comedia.png",
-           "CRIMEN": "https://s14.postimg.org/5lez1j1gx/crimen.png",
-           "DRAMA": "https://s32.postimg.org/e6z83sqzp/drama.png",
-           "ESTRENOS": "https://s12.postimg.org/4zj0rbun1/estrenos.png",
-           "FAMILIA": "https://s28.postimg.org/4wwzkt2f1/familiar.png",
-           "FANTASÍA": "https://s32.postimg.org/pklrf01id/fantasia.png",
-           "GUERRA": "https://s29.postimg.org/vqgjmozzr/guerra.png",
-           "INFANTIL": "https://s32.postimg.org/i53zwwgsl/infantil.png",
-           "MISTERIO": "https://s4.postimg.org/kd48bcxe5/misterio.png",
-           "ROMANCE": "https://s31.postimg.org/y7vai8dln/romance.png",
-           "SUSPENSO":"https://s31.postimg.org/kb629gscb/suspenso.png",
-           "TERROR":"https://s32.postimg.org/ca25xg0ed/terror.png"
+tgenero = {"ACCIÓN":"https://s3.postimg.org/y6o9puflv/accion.png,",
+           "ANIMACIÓN": "https://s13.postimg.org/5on877l87/animacion.png",
+           "AVENTURA": "https://s10.postimg.org/6su40czih/aventura.png",
+           "CIENCIA FICCIÓN": "https://s9.postimg.org/diu70s7j3/cienciaficcion.png",
+           "COMEDIA":"https://s7.postimg.org/ne9g9zgwb/comedia.png",
+           "CRIMEN": "https://s4.postimg.org/6z27zhirx/crimen.png",
+           "DRAMA": "https://s16.postimg.org/94sia332d/drama.png",
+           "ESTRENOS": "https://s21.postimg.org/fy69wzm93/estrenos.png",
+           "FAMILIA": "https://s7.postimg.org/6s7vdhqrf/familiar.png",
+           "FANTASÍA": "https://s13.postimg.org/65ylohgvb/fantasia.png",
+           "GUERRA": "https://s4.postimg.org/n1h2jp2jh/guerra.png",
+           "INFANTIL": "https://s23.postimg.org/g5rmazozv/infantil.png",
+           "MISTERIO": "https://s1.postimg.org/w7fdgf2vj/misterio.png",
+           "ROMANCE": "https://s15.postimg.org/fb5j8cl63/romance.png",
+           "SUSPENSO":"https://s13.postimg.org/wmw6vl1cn/suspenso.png",
+           "TERROR":"https://s7.postimg.org/yi0gij3gb/terror.png"
            }
 
 thumbletras = {'#': 'https://s32.postimg.org/drojt686d/image.png',
@@ -64,7 +64,7 @@ thumbletras = {'#': 'https://s32.postimg.org/drojt686d/image.png',
                }
 
 
-tcalidad = {'1080P':'https://s24.postimg.org/vto15vajp/hd1080.png','720P':'https://s28.postimg.org/wllbt2kgd/hd720.png',"HD":"https://s30.postimg.org/6vxtqu9sx/image.png"}
+tcalidad = {'1080P':'https://s21.postimg.org/4h1s0t1wn/hd1080.png','720P':'https://s12.postimg.org/lthu7v4q5/hd720.png',"HD":"https://s27.postimg.org/m2dhhkrur/image.png"}
 
 def mainlist(item):
     logger.info()
@@ -73,31 +73,31 @@ def mainlist(item):
     
     itemlist.append( item.clone (title="Todas",
                                  action="lista",
-                                 thumbnail='https://s12.postimg.org/iygbg8ip9/todas.png',
-                                 fanart='https://s12.postimg.org/iygbg8ip9/todas.png',
+                                 thumbnail='https://s18.postimg.org/fwvaeo6qh/todas.png',
+                                 fanart='https://s18.postimg.org/fwvaeo6qh/todas.png',
                                  url = host+'/movies/'
                                  ))
 
     itemlist.append( item.clone (title="Generos",
                                  action="generos",
                                  url=host,
-                                 thumbnail='https://s31.postimg.org/szbr0gmkb/generos.png',
-                                 fanart='https://s31.postimg.org/szbr0gmkb/generos.png'
+                                 thumbnail='https://s3.postimg.org/5s9jg2wtf/generos.png',
+                                 fanart='https://s3.postimg.org/5s9jg2wtf/generos.png'
                                  ))
     
     itemlist.append( item.clone (title="Alfabetico",
                                  action="seccion",
                                  url=host,
-                                 thumbnail='https://s31.postimg.org/c3bm9cnl7/a_z.png',
-                                 fanart='https://s31.postimg.org/c3bm9cnl7/a_z.png',
+                                 thumbnail='https://s17.postimg.org/fwi1y99en/a-z.png',
+                                 fanart='https://s17.postimg.org/fwi1y99en/a-z.png',
                                  extra = 'alfabetico'
                                  ))
 
     itemlist.append( item.clone (title="Buscar",
                                  action="search",
                                  url=host+'/?s=',
-                                 thumbnail='https://s31.postimg.org/qose4p13f/Buscar.png',
-                                 fanart='https://s31.postimg.org/qose4p13f/Buscar.png'
+                                 thumbnail='https://s30.postimg.org/pei7txpa9/buscar.png',
+                                 fanart='https://s30.postimg.org/pei7txpa9/buscar.png'
                                  ))
     
 
@@ -134,7 +134,7 @@ def lista (item):
         next_page = scrapertools.find_single_match(data,'<div class=pag_b><a href=(.*?) >Siguiente<\/a>')
         import inspect
         if next_page !='':
-           itemlist.append(Item(channel = item.channel, action = "lista", title = 'Siguiente >>>', url = next_page, thumbnail='https://s32.postimg.org/4zppxf5j9/siguiente.png'))
+           itemlist.append(Item(channel = item.channel, action = "lista", title = 'Siguiente >>>', url = next_page, thumbnail='https://s16.postimg.org/9okdu7hhx/siguiente.png'))
     return itemlist
 
 def generos(item):

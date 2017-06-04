@@ -7,8 +7,13 @@
 	<adult>false</adult>
 	<language>es</language>
 
-	<version>7</version>
+	<version>8</version>
 	<changes>
+		<change>
+			<date>12/05/2017</date>
+			<autor>Cmos</autor>
+			<description>Arreglada paginación y enlaces directos</description>
+		</change>
 		<change>
 			<date>16/02/2017</date>
 			<autor>Cmos</autor>

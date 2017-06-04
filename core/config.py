@@ -169,7 +169,7 @@ def open_settings():
         set_setting('adult_aux_new_password2', '')
 
 
-def get_setting(name, channel=""):
+def get_setting(name, channel="", server=""):
     """
     Retorna el valor de configuracion del parametro solicitado.
 
@@ -196,6 +196,14 @@ def get_setting(name, channel=""):
         # logger.info("config.get_setting reading channel setting '"+name+"' from channel xml")
         from core import channeltools
         value = channeltools.get_channel_setting(name, channel)
+        # logger.info("config.get_setting -> '"+repr(value)+"'")
+
+        return value
+
+    elif server:
+        # logger.info("config.get_setting reading server setting '"+name+"' from server xml")
+        from core import servertools
+        value = servertools.get_server_setting(name, server)
         # logger.info("config.get_setting -> '"+repr(value)+"'")
 
         return value
@@ -228,7 +236,7 @@ def get_setting(name, channel=""):
         return value
 
 
-def set_setting(name, value, channel=""):
+def set_setting(name, value, channel="", server=""):
     """
     Fija el valor de configuracion del parametro indicado.
 
@@ -255,6 +263,9 @@ def set_setting(name, value, channel=""):
     if channel:
         from core import channeltools
         return channeltools.set_channel_setting(name, value, channel)
+    elif server:
+        from core import servertools
+        return servertools.set_server_setting(name, value, server)
     else:
         try:
             settings_types = get_settings_types()
@@ -413,5 +424,36 @@ def verify_directories_created():
         elif get_setting("library_ask_set_content") == "active":
             xbmc_library.set_content(default)
 
+    try:
+        from core import scrapertools
+        # Buscamos el archivo addon.xml del skin activo
+        skindir = filetools.join(xbmc.translatePath("special://home"), 'addons', xbmc.getSkinDir(),
+                                 'addon.xml')
+        # Extraemos el nombre de la carpeta de resolución por defecto
+        folder = ""
+        data = filetools.read(skindir)
+        res = scrapertools.find_multiple_matches(data, '(<res .*?>)')
+        for r in res:
+            if 'default="true"' in r:
+                folder = scrapertools.find_single_match(r, 'folder="([^"]+)"')
+                break
 
+        # Comprobamos si existe en pelisalacarta y sino es así, la creamos
+        default = filetools.join(get_runtime_path(), 'resources', 'skins', 'Default')
+        if folder and not filetools.exists(filetools.join(default, folder)):
+            filetools.mkdir(filetools.join(default, folder))
 
+        # Copiamos el archivo a dicha carpeta desde la de 720p si éste no existe o si el tamaño es diferente
+        if folder and folder != '720p':
+            for root, folders, files in filetools.walk(filetools.join(default, '720p')):
+                for f in files:
+                    if not filetools.exists(filetools.join(default, folder, f)) or \
+                          (filetools.getsize(filetools.join(default, folder, f)) != 
+                           filetools.getsize(filetools.join(default, '720p', f))):
+                        filetools.copy(filetools.join(default, '720p', f),
+                                       filetools.join(default, folder, f),
+                                       True)
+    except:
+        import traceback
+        logger.error("Al comprobar o crear la carpeta de resolución")
+        logger.error(traceback.format_exc())

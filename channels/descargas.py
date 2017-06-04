@@ -568,12 +568,6 @@ def download_from_best_server(item, ask = False):
     play_items = filter(lambda x: x.action == "play", play_items)
 
     progreso.update(100, "Obteniendo lista de servidores disponibles.", "Servidores disponibles: %s" % len(play_items), "Identificando servidores...")
-    
-    for i in play_items:
-      if not i.server:
-        i.server = servertools.get_server_from_url(i.url)
-        if progreso.iscanceled():
-          return {"downloadStatus": STATUS_CODES.canceled}
         
     play_items.sort(key=sort_method)
     

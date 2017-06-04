@@ -345,10 +345,8 @@ def bloque_enlaces(data, filtro_idioma, dict_idiomas, tipo, item):
             server = "streaminto"
         if server == "waaw":
             server = "netutv"
-        mostrar_server = True
-        if config.get_setting("hidepremium")==True:
-            mostrar_server = servertools.is_server_enabled(server)
-        if mostrar_server:
+
+        if servertools.is_server_enabled(server):
             try:
                 servers_module = __import__("servers." + server)
                 title = "   Mirror en " + server + " (" + language + ") (Calidad " + calidad.strip() + ")"
