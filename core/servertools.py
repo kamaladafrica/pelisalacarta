@@ -530,8 +530,7 @@ def get_server_parameters(server):
             logger.error(mensaje + traceback.format_exc())
             return {}
     
-    import copy
-    return copy.deepcopy(dict_servers_parameters[server])
+    return dict_servers_parameters[server]
 
 
 def get_server_controls_settings(server_name):
