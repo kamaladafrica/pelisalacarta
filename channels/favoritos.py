@@ -61,15 +61,20 @@ def mainlist(item):
             item.thumbnail = thumb
             item.isFavourite = True
 
-            item.context = [{"title": config.get_localized_string(30154),  # "Quitar de favoritos"
-                             "action": "delFavourite",
-                             "channel": "favoritos",
-                             "from_title": item.title},
-                            {"title": "Renombrar",
-                             "action": "renameFavourite",
-                             "channel": "favoritos",
-                             "from_title": item.title}
-                            ]
+            if type(item.context) == str:
+                item.context = item.context.split("|")
+            elif type(item.context) != list:
+                item.context = []
+
+            item.context.extend([{"title": config.get_localized_string(30154),  # "Quitar de favoritos"
+                                  "action": "delFavourite",
+                                  "channel": "favoritos",
+                                  "from_title": item.title},
+                                 {"title": "Renombrar",
+                                  "action": "renameFavourite",
+                                  "channel": "favoritos",
+                                  "from_title": item.title}
+                               ])
             # logger.debug(item.tostring('\n'))
             itemlist.append(item)
 

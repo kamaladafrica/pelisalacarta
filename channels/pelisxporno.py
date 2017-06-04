@@ -15,7 +15,7 @@ def mainlist(item):
 
     itemlist = []
     itemlist.append(item.clone(action="lista", title="Novedades", url="http://www.pelisxporno.com/?order=date"))
-    itemlist.append(item.clone(action="categorias", title="Categorías", url="http://www.pelisxporno.com"))
+    itemlist.append(item.clone(action="categorias", title="Categorías", url="http://www.pelisxporno.com/categorias/"))
     itemlist.append(item.clone(action="search", title="Buscar", url="http://www.pelisxporno.com/?s=%s"))
 
     return itemlist
@@ -35,21 +35,21 @@ def lista(item):
     data = httptools.downloadpage(item.url).data
 
     # Extrae las entradas (carpetas)
-    patron = '<div class="thumb">.*?<a href="([^"]+)" title="([^"]+)">.*?<img src="([^"]+)".*?' \
-             '<div class="duration".*?>([^<]+)<'
+    patron = '<div class="Picture">.*?href="([^"]+)".*?<img src="([^"]+)".*?' \
+             '<span class="fa-clock.*?>([^<]+)<.*?<h2 class="Title">.*?>([^<]+)</a>' \
+             '.*?<p>(.*?)</p>'
     matches = scrapertools.find_multiple_matches(data, patron)
-    for scrapedurl, scrapedtitle, scrapedthumbnail, duration in matches:
+    for scrapedurl, scrapedthumbnail, duration, scrapedtitle, plot in matches:
         if duration:
             scrapedtitle += "  (%s)" % duration
 
-        itemlist.append(item.clone(action="findvideos", title=scrapedtitle, url=scrapedurl, thumbnail=scrapedthumbnail))
+        itemlist.append(item.clone(action="findvideos", title=scrapedtitle, url=scrapedurl, thumbnail=scrapedthumbnail,
+                                   infoLabels={'plot': plot}))
 
     #Extrae la marca de siguiente página
-    next_page = scrapertools.find_single_match(data, '<a class="page larger" href="([^"]+)">([^"]+)</a>')
+    next_page = scrapertools.find_single_match(data, '<a class="nextpostslink" rel="next" href="([^"]+)"')
     if next_page:
-      scrapedurl = next_page[0]
-      page = next_page[1]
-      itemlist.append(item.clone(action="lista", title=">> Página Siguiente (%s)" % page, url=scrapedurl))
+      itemlist.append(item.clone(action="lista", title=">> Página Siguiente", url=next_page))
 
     return itemlist
 
@@ -62,9 +62,12 @@ def categorias(item):
     data = httptools.downloadpage(item.url).data
 
     # Extrae las entradas (carpetas)
-    bloque_cat = scrapertools.find_single_match(data, '<li id="categories-2"(.*?)</ul>')
-    matches = scrapertools.find_multiple_matches(bloque_cat, '<a href="([^"]+)" >(.*?)</a>')
-    for scrapedurl, scrapedtitle in matches:
-        itemlist.append(item.clone(action="lista", title=scrapedtitle, url=scrapedurl))
+    patron = '<figure class="Picture">.*?<a href="([^"]+)".*?src="([^"]+)".*?<a.*?>(.*?)</a>' \
+             '.*?<span class="fa-film Clr3B">(\d+)'
+    matches = scrapertools.find_multiple_matches(data, patron)
+    for scrapedurl, scrapedthumbnail, scrapedtitle, cantidad in matches:
+        if cantidad:
+            scrapedtitle += " (%s vídeos)" % cantidad
+        itemlist.append(item.clone(action="lista", title=scrapedtitle, url=scrapedurl, thumbnail=scrapedthumbnail))
 
     return itemlist

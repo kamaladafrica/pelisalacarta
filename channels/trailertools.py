@@ -409,7 +409,7 @@ def search_links_filmaff(item):
                 code = scrapertools.find_single_match(trailer_url, 'v=([A-z0-9\-_]+)')
                 thumbnail = "https://img.youtube.com/vi/%s/0.jpg" % code
             else:
-                server = servertools.get_server_from_url(trailer_url)
+                server = ""
                 thumbnail = item.thumbnail
             scrapedtitle = unicode(scrapedtitle, encoding="utf-8", errors="ignore")
             scrapedtitle = scrapertools.htmlclean(scrapedtitle)
@@ -418,7 +418,8 @@ def search_links_filmaff(item):
                 scrapedtitle = "[COLOR white]%s[/COLOR]" % scrapedtitle
             itemlist.append(item.clone(title=scrapedtitle, url=trailer_url, server=server, action="play",
                                        thumbnail=thumbnail, text_color="white"))
-
+    
+    itemlist = servertools.get_servers_itemlist(itemlist)
     if keyboard:
         if item.contextual:
             title = "[COLOR green]%s[/COLOR]"

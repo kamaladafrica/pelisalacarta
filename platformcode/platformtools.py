@@ -513,7 +513,10 @@ def play_video(item, strm=False):
         return
 
     # se obtiene la información del video.
-    xlistitem = xbmcgui.ListItem(path=mediaurl, thumbnailImage=item.thumbnail)
+    if not item.contentThumbnail:
+        xlistitem = xbmcgui.ListItem(path=mediaurl, thumbnailImage=item.thumbnail)
+    else:
+         xlistitem = xbmcgui.ListItem(path=mediaurl, thumbnailImage=item.contentThumbnail)
     set_infolabels(xlistitem, item, True)
 
     # si se trata de un vídeo en formato mpd, se configura el listitem para reproducirlo
@@ -526,19 +529,22 @@ def play_video(item, strm=False):
     set_player(item, xlistitem, mediaurl, view, strm)
 
 
+def stop_video():
+    xbmc.Player().stop()
+
 def get_seleccion(default_action, opciones, seleccion, video_urls):
     # preguntar
-    if default_action == "0":
+    if default_action == 0:
         # "Elige una opción"
         seleccion = dialog_select(config.get_localized_string(30163), opciones)
     # Ver en calidad baja
-    elif default_action == "1":
+    elif default_action == 1:
         seleccion = 0
     # Ver en alta calidad
-    elif default_action == "2":
+    elif default_action == 2:
         seleccion = len(video_urls) - 1
     # jdownloader
-    elif default_action == "3":
+    elif default_action == 3:
         seleccion = seleccion
     else:
         seleccion = 0

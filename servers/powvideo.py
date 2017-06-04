@@ -12,7 +12,7 @@ from core import logger
 from core import scrapertools
 from lib import jsunpack
 
-headers = [['User-Agent', 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0']]
+headers = [['User-Agent', 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:53.0) Gecko/20100101 Firefox/53.0']]
 host = "http://powvideo.net/"
 
 
@@ -24,6 +24,7 @@ def test_video_exists(page_url):
         return False, "[powvideo] El archivo no existe o  ha sido borrado"
     if "el archivo ha sido borrado por no respetar" in data.lower():
         return False, "[powvideo] El archivo no existe o ha sido borrado por no respetar los Terminos de uso"
+
     return True, ""
 
 
@@ -32,59 +33,46 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
 
     url = page_url.replace(host, "http://powvideo.xyz/iframe-") + "-954x562.html"
 
-    referer = {'Referer': url.replace("iframe", "preview")}
-    data = httptools.downloadpage(url, headers=referer).data
+    data = httptools.downloadpage(page_url).data
+    id = scrapertools.find_single_match(data, 'name="id" value="([^"]+)"')
+    fname = scrapertools.find_single_match(data, 'name="fname" value="([^"]+)"')
+    hash = scrapertools.find_single_match(data, 'name="hash" value="([^"]+)"')
+    post = "op=download1&usr_login=&referer=&fname=%s&id=%s&hash=%s&imhuman=Proceed+to+video" % (fname, id, hash)
 
-    jj_encode = scrapertools.find_single_match(data, "(\w+=~\[\];.*?\)\(\)\)\(\);)")
-    jj_decode = None
-    jj_patron = None
-    reverse = False
-    splice = False
-    if jj_encode:
-        jj_decode = jjdecode(jj_encode)
-    if jj_decode:
-        jj_patron = scrapertools.find_single_match(jj_decode, "/([^/]+)/")
-        if "(" not in jj_patron: jj_patron = "(" + jj_patron
-        if ")" not in jj_patron: jj_patron += ")"
+    data = httptools.downloadpage(page_url, post, headers={'Referer': page_url, "X-Requested-With": "XMLHttpRequest"}).data
 
-        jhex_decode = jhexdecode(jj_decode)
-        if "reverse" in jhex_decode: reverse = True
-        if "splice" in jhex_decode: splice = True
+    matches = None
+    i = 0
+    while not matches:
+        matches = scrapertools.find_single_match(data, "<script type=[\"']text/javascript[\"']>(eval.*?)</script>")
+        data = httptools.downloadpage(page_url, post, headers={'Referer': page_url, "X-Requested-With": "XMLHttpRequest"}).data
+        i += 1
+        if i > 5:
+            break
 
-    matches = scrapertools.find_single_match(data, "<script type=[\"']text/javascript[\"']>(eval.*?)</script>")
     data = jsunpack.unpack(matches).replace("\\", "")
 
     data = scrapertools.find_single_match(data.replace('"', "'"), "sources\s*=[^\[]*\[([^\]]+)\]")
     matches = scrapertools.find_multiple_matches(data, "[src|file]:'([^']+)'")
     video_urls = []
     for video_url in matches:
-        _hash = scrapertools.find_single_match(video_url, '\w{40,}')
-        if splice:
-            splice = eval(scrapertools.find_single_match(jhex_decode, "splice\((\d[^,]*),\d\);"))
-            if reverse:
-                h = list(_hash)
-                h.pop(-splice - 1)
-                _hash = "".join(h)
-            else:
-                h = list(_hash)
-                h.pop(splice)
-                _hash = "".join(h)
+        _hash = scrapertools.find_single_match(video_url, '[A-z0-9\_\-]{40,}')
+        hash = decrypt(_hash)
+        video_url = video_url.replace(_hash, hash)
 
-        if reverse:
-            video_url = re.sub(r'\w{40,}', _hash[::-1], video_url)
         filename = scrapertools.get_filename_from_url(video_url)[-4:]
         if video_url.startswith("rtmp"):
             rtmp, playpath = video_url.split("vod/", 1)
-            video_url = "%s playpath=%s swfUrl=%splayer6/jwplayer.flash.swf pageUrl=%s" % \
-                        (rtmp + "vod/", playpath, host, page_url)
+            video_url = "%svod/ playpath=%s swfUrl=%splayer6/jwplayer.flash.swf pageUrl=%s" % \
+                        (rtmp, playpath, host, page_url)
             filename = "RTMP"
         elif video_url.endswith(".m3u8"):
             video_url += "|User-Agent=" + headers[0][1]
         elif video_url.endswith("/v.mp4"):
-            video_url_flv = re.sub(r'/v.mp4$', '/v.flv', video_url)
-            video_urls.append([".flv" + " [powvideo]", re.sub(r'%s' % jj_patron, r'\1', video_url_flv)])
+            video_url_flv = re.sub(r'/v.mp4\|', '/v.flv|', video_url)
+            video_urls.append(["flv [powvideo]", video_url_flv])
 
-        video_urls.append([filename + " [powvideo]", re.sub(r'%s' % jj_patron, r'\1', video_url)])
+        video_urls.append([filename + " [powvideo]", video_url])
 
     video_urls.sort(key=lambda x: x[0], reverse=True)
     for video_url in video_urls:
@@ -93,7 +81,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     return video_urls
 
 
-# Encuentra videos del servidor en el texto pasado
+# Encuentra vídeos del servidor en el texto pasado
 def find_videos(data):
     encontrados = set()
     devuelve = []
@@ -119,58 +107,104 @@ def find_videos(data):
     return devuelve
 
 
-def jjdecode(t):
-    x = '0123456789abcdef'
-    j = scrapertools.get_match(t, '^([^=]+)=')
-    t = t.replace(j + '.', 'j.')
+def decrypt(h):
+    import base64
 
-    t = re.sub(r'^.*?"\\""\+(.*?)\+"\\"".*?$', r'\1', t.replace('\\\\', '\\')) + '+""'
-    t = re.sub('(\(!\[\]\+""\)\[j\._\$_\])', '"l"', t)
-    t = re.sub(r'j\._\$\+', '"o"+', t)
-    t = re.sub(r'j\.__\+', '"t"+', t)
-    t = re.sub(r'j\._\+', '"u"+', t)
+    if len(h) % 4:
+        h += "="*(4-len(h) % 4)
+    sig = []
+    h = base64.b64decode(h.replace("-", "+").replace("_", "/"))
+    for c in range(len(h)):
+        sig += [ord(h[c])]
 
-    p = scrapertools.find_multiple_matches(t, '(j\.[^\+]+\+)')
-    for c in p:
-        t = t.replace(c, c.replace('_', '0').replace('$', '1'))
+    k = "powvideoembeds"
+    sec = []
+    for c in range(len(k)):
+        sec += [ord(k[c])]
 
-    p = scrapertools.find_multiple_matches(t, 'j\.(\d{4})')
-    for c in p:
-        t = re.sub(r'j\.%s' % c, '"' + x[int(c, 2)] + '"', t)
+    dig = range(256)
+    g = 0
+    v = 128
+    for b in range(len(sec)):
+        a = (v + (sec[b] & 15)) % 256
+        c = dig[(g)]
+        dig[g] = dig[a]
+        dig[a] = c
+        g += 1
 
-    p = scrapertools.find_multiple_matches(t, '\\"\+j\.(001)\+j\.(\d{3})\+j\.(\d{3})\+')
-    for c in p:
-        t = re.sub(r'\\"\+j\.%s\+j\.%s\+j\.%s\+' % (c[0], c[1], c[2]), chr(int("".join(c), 2)) + '"+', t)
+        a = (v + (sec[b] >> 4 & 15)) % 256
+        c = dig[g]
+        dig[g] = dig[a]
+        dig[a] = c
+        g += 1
 
-    p = scrapertools.find_multiple_matches(t, '\\"\+j\.(\d{3})\+j\.(\d{3})\+')
-    for c in p:
-        t = re.sub(r'\\"\+j\.%s\+j\.%s\+' % (c[0], c[1]), chr(int("".join(c), 2)) + '"+', t)
+    k = 0
+    q = 1
+    p = 0
+    n = 0
+    for b in range(512):
+        k = (k + q) % 256
+        n = (p + dig[(n + dig[k]) % 256]) % 256
+        p = (k + p + dig[n]) % 256
+        c = dig[k]
+        dig[k] = dig[n]
+        dig[n] = c
 
-    p = scrapertools.find_multiple_matches(t, 'j\.(\d{3})')
-    for c in p:
-        t = re.sub(r'j\.%s' % c, '"' + str(int(c, 2)) + '"', t)
+    q = 3
+    for a in range(v):
+        b = 255 - a
+        if dig[a] > dig[b]:
+            c = dig[a]
+            dig[a] = dig[b]
+            dig[b] = c
 
-    r = re.sub(r'"\+"|\\\\', '', t[1:-1])
+    k = 0
+    for b in range(512):
+        k = (k + q) % 256
+        n = (p + dig[(n + dig[k]) % 256]) % 256
+        p = (k + p + dig[n]) % 256
+        c = dig[k]
+        dig[k] = dig[n]
+        dig[n] = c
 
-    return r
+    q = 5
+    for a in range(v):
+        b = 255 - a
+        if dig[a] > dig[b]:
+            c = dig[a]
+            dig[a] = dig[b]
+            dig[b] = c
 
+    k = 0
+    for b in range(512):
+        k = (k + q) % 256
+        n = (p + dig[(n + dig[k]) % 256]) % 256
+        p = (k + p + dig[n]) % 256
+        c = dig[k]
+        dig[k] = dig[n]
+        dig[n] = c
 
-def jhexdecode(t):
-    r = re.sub(r'_\d+x\w+x(\d+)', 'var_' + r'\1', t)
-    r = re.sub(r'_\d+x\w+', 'var_0', r)
+    q = 7
+    k = 0
+    u = 0
+    d = []
+    for b in range(len(dig)):
+        k = (k + q) % 256
+        n = (p + dig[(n + dig[k]) % 256]) % 256
+        p = (k + p + dig[n]) % 256
+        c = dig[k]
+        dig[k] = dig[n]
+        dig[n] = c
+        u = dig[(n + dig[(k + dig[(u + p) % 256]) % 256]) % 256]
+        d += [u]
 
-    def to_hx(c):
-        h = int("%s" % c.groups(0), 16)
-        if 19 < h < 160:
-            return chr(h)
-        else:
-            return ""
+    c = []
+    for f in range(len(d)):
+        try: c += [(256 + (sig[f] - d[f])) % 256]
+        except: break
 
-    r = re.sub(r'(?:\\|)x(\w{2})', to_hx, r).replace('var ', '')
+    h = ""
+    for s in c:
+      h += chr(s)
 
-    f = eval(scrapertools.find_single_match(r, '\s*var_0\s*=\s*([^;]+);'))
-    for i, v in enumerate(f):
-        r = r.replace('[var_0[%s]]' % i, "." + f[i])
-        if v == "": r = r.replace('var_0[%s]' % i, '""')
-
-    return r
+    return h

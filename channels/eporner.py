@@ -75,14 +75,13 @@ def categorias(item):
   
   data = httptools.downloadpage(item.url).data
   
-  patron  = '<div class="categoriesbox" id="[^"]+"><a href="([^"]+)" title="([^"]+) Porn Videos">'
-  patron += '<img src="([^"]+)" alt="[^"]+"><h2>[^<]+</h2></a></div>'
+  patron  = '<div class="categoriesbox" id="[^"]+"> <div class="ctbinner"> <a href="([^"]+)" title="[^"]+"> <img src="([^"]+)" alt="[^"]+"> <h2>([^"]+)</h2> </a> </div> </div>'
   
   matches = re.compile(patron, re.DOTALL).findall(data)
-  for url, title, thumbnail in matches:
+  for url, thumbnail, title in matches:
     itemlist.append(item.clone(title=title, url=urlparse.urljoin(item.url,url), action ="videos", thumbnail = thumbnail))
   
-  return itemlist
+  return sorted(itemlist, key = lambda i: i.title)
 
 
 def videos(item):

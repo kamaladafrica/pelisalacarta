@@ -770,16 +770,17 @@ def add_sources(path):
             nodo_sources.appendChild(nodo_type)
         xmldoc.appendChild(nodo_sources)
 
-
     # Buscamos el nodo video
     nodo_video = xmldoc.childNodes[0].getElementsByTagName("video")[0]
 
     # Buscamos el path dentro de los nodos_path incluidos en el nodo_video
     nodos_paths = nodo_video.getElementsByTagName("path")
     list_path = [p.firstChild.data for p in nodos_paths]
+    logger.debug(list_path)
     if path in list_path:
         logger.debug("La ruta %s ya esta en sources.xml" % path)
         return
+    logger.debug("La ruta %s NO esta en sources.xml" % path)
 
     # Si llegamos aqui es por q el path no esta en sources.xml, asi q lo incluimos
     nodo_source = xmldoc.createElement("source")

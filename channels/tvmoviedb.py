@@ -5,8 +5,9 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 # ------------------------------------------------------------
 
-import base64 as bdec
+from base64 import b64decode as bdec
 import re
+import urllib
 
 from core import config
 from core import filetools
@@ -304,8 +305,7 @@ def mal(item):
         itemlist.append(item.clone(title="Buscar Series/Películas/Ovas", url="https://myanimelist.net/anime.php?q=", action="search_"))
     itemlist.append(item.clone(title="Filtro Personalizado", action="filtro_mal", text_color=color4))
 
-    if login:
-        itemlist.append(item.clone(title="Mis listas", action="cuenta_mal", text_color=color3))
+    itemlist.append(item.clone(title="Mis listas", action="cuenta_mal", text_color=color3))
     
     return itemlist
 
@@ -526,9 +526,9 @@ def detalles(item):
 
     try:
         if item.contentType == "movie" and item.infoLabels["year"] < 2014:
-            post_url = "http://theost.com/search/custom/?key=%s&year=%s&country=0&genre=0" % (item.infoLabels['originaltitle'].replace(" ", "+"), item.infoLabels["year"])
-            url = "https://proxy-nl.hideproxy.me/includes/process.php?action=update"
-            post = "u=%s&proxy_formdata_server=nl&allowCookies=1&encodeURL=1&encodePage=0&stripObjects=0&stripJS=0&go=" % post_url
+            post_url = "https://theost.com/search/custom/?key=%s&year=%s&country=0&genre=0" % (item.infoLabels['originaltitle'].replace(" ", "+"), item.infoLabels["year"])
+            url = "https://nl.hideproxy.me/includes/process.php?action=update"
+            post = "u=%s&proxy_formdata_server=nl&allowCookies=1&encodeURL=1&encodePage=0&stripObjects=0&stripJS=0&go=" % urllib.quote(post_url)
             while True:
                 response = httptools.downloadpage(url, post, follow_redirects=False)
                 if response.headers.get("location"):
@@ -538,9 +538,9 @@ def detalles(item):
                     data_music = response.data
                     break
 
-            url_album = scrapertools.find_single_match(data_music, 'album on request.*?href="([^"]+)"')
+            url_album = scrapertools.find_single_match(data_music, 'album(?:|s) on request.*?href="([^"]+)"')
             if url_album:
-                url_album = "https://proxy-nl.hideproxy.me" + url_album
+                url_album = "https://nl.hideproxy.me" + url_album
                 itemlist.append(item.clone(action="musica_movie", title="Escuchar BSO - Lista de canciones", url=url_album,
                                            text_color=color5))
     except:
@@ -1476,9 +1476,9 @@ def detalles_fa(item):
                                    url=url_img, extra="menu"))
     try:
         if item.contentType == "movie" and item.infoLabels["year"] < 2014:
-            post_url = "http://theost.com/search/custom/?key=%s&year=%s&country=0&genre=0" % (item.infoLabels['originaltitle'].replace(" ", "+"), item.infoLabels["year"])
-            url = "https://proxy-nl.hideproxy.me/includes/process.php?action=update"
-            post = "u=%s&proxy_formdata_server=nl&allowCookies=1&encodeURL=1&encodePage=0&stripObjects=0&stripJS=0&go=" % post_url
+            post_url = "https://theost.com/search/custom/?key=%s&year=%s&country=0&genre=0" % (item.infoLabels['originaltitle'].replace(" ", "+"), item.infoLabels["year"])
+            url = "https://nl.hideproxy.me/includes/process.php?action=update"
+            post = "u=%s&proxy_formdata_server=nl&allowCookies=1&encodeURL=1&encodePage=0&stripObjects=0&stripJS=0&go=" % urllib.quote(post_url)
             while True:
                 response = httptools.downloadpage(url, post, follow_redirects=False)
                 if response.headers.get("location"):
@@ -1488,9 +1488,9 @@ def detalles_fa(item):
                     data_music = response.data
                     break
 
-            url_album = scrapertools.find_single_match(data_music, 'album on request.*?href="([^"]+)"')
+            url_album = scrapertools.find_single_match(data_music, 'album(?:s|) on request.*?href="([^"]+)"')
             if url_album:
-                url_album = "https://proxy-nl.hideproxy.me" + url_album
+                url_album = "https://nl.hideproxy.me" + url_album
                 itemlist.append(item.clone(action="musica_movie", title="Escuchar BSO - Lista de canciones", url=url_album,
                                            text_color=color5))
     except:
@@ -2342,14 +2342,14 @@ def top_mal(item):
     data = re.sub(r"\n|\r|\t|&nbsp;", "", data)
     data = re.sub(r"\s{2}", " ", data)
 
-    patron = '<td class="title al va-t word-break">.*?href="([^"]+)".*?(?:data-src|src)="([^"]+)".*?' \
+    patron = '<td class="title al va-t word-break">.*?href="([^"]+)".*?src="(.*?).jpg.*?' \
              '<div class="di-ib clearfix">.*?href.*?>([^<]+)<.*?<div class="information di-ib mt4">' \
              '(.*?)<br>.*?(\d{4}|-).*?<span class="text.*?>(.*?)</span>'
     matches = scrapertools.find_multiple_matches(data, patron)
     for url, thumb, title, info, year, rating in matches:
         new_item = item.clone(action="detalles_mal", url=url)
         info = info.strip()
-        new_item.thumbnail = thumb.replace("r/50x70/", "")
+        new_item.thumbnail = thumb.replace("r/50x70/", "") + "l.jpg"
         year = year.replace("-", "")
         if year:
             new_item.infoLabels["year"] = year
@@ -2384,14 +2384,9 @@ def top_mal(item):
 def detalles_mal(item):
     itemlist = []
 
-    if item.login:
-        data = httptools.downloadpage(item.url).data
-    else:
-        ck = ["SESSION", bdec.b64decode(mal_ck), "HLOGSESS"]
-        headers = [['Cookie', 'MAL%sID=f0090ec7576039497d1c22f84f63152d; MAL%sID=%s; is_logged_in=1; search_sort_anime=score;' \
-                    'search_view=tile' % (ck[2], ck[0], ck[1])]]
-        import requests
-        data = requests.get(item.url, headers=dict(headers)).content
+    cookie_session = get_cookie_value()
+    header_mal = {'Cookie': '%s search_sort_anime=score; search_view=tile; is_logged_in=1' % cookie_session}
+    data = httptools.downloadpage(item.url, headers=header_mal, cookies=False).data
     data = re.sub(r"\n|\r|\t|&nbsp;", "", data)
     data = re.sub(r"\s{2}", " ", data)
 
@@ -2482,7 +2477,7 @@ def detalles_mal(item):
     if item.infoLabels['thumbnail']:
         item.thumbnail = item.infoLabels['thumbnail']
     if not item.thumbnail:
-        item.thumbnail = scrapertools.find_single_match(data, '/pics">.*?<img src="([^"]+)"')
+        item.thumbnail = scrapertools.find_single_match(data, '/pics">.*?<img src="([^"]+)"').replace(".jpg", "l.jpg")
 
     itemlist.append(item.clone(action="busqueda", title="Buscar en pelisalacarta: %s" % title_mal, contentTitle=title_mal,
                                extra=item.extra.replace("tv", "anime")))
@@ -2518,8 +2513,8 @@ def detalles_mal(item):
                                extra="menu"))
 
     try:
-        import urllib
-        post = "busqueda=%s&button=Search" % urllib.quote(title_mal)
+        title_search = re.sub(r'[^0-9A-z]+', ' ', title_mal)
+        post = "busqueda=%s&button=Search" % urllib.quote(title_search)
         data_music = httptools.downloadpage("http://www.freeanimemusic.org/song_search.php", post).data
         if not "NO MATCHES IN YOUR SEARCH" in data_music:
             itemlist.append(item.clone(action="musica_anime", title="Escuchar BSO - Lista de canciones", text_color=color5, post=post))
@@ -2627,7 +2622,7 @@ def videos_mal(item):
             if "icon-pay" in info:
                 new_item.title += "  [COLOR %s](Crunchyroll Premium)[/COLOR]" % color6
             if "icon-banned-youtube" in thumb:
-                new_item.title += "  [COLOR %s][Sin subs en español][/COLOR]" % color4
+                new_item.title += "  [COLOR %s][Sin subs en castellano][/COLOR]" % color4
             itemlist.append(new_item)
         
         next_page = scrapertools.find_single_match(data, '<a href="([^"]+)" class="link-blue-box">More')
@@ -2663,7 +2658,7 @@ def reco_mal(item):
                               contentTitle=title)
         new_item.infoLabels["plot"] = scrapertools.htmlclean(plot)
         new_item.url = "https://myanimelist.net%s" % url
-        new_item.thumbnail = thumb.replace("r/50x70/", "")
+        new_item.thumbnail = thumb.replace("r/50x70/", "").replace(".jpg", "l.jpg")
         itemlist.append(new_item)
 
     return itemlist
@@ -2708,24 +2703,21 @@ def indices_mal(item):
 def season_mal(item):
     # Scraper para temporadas de anime
     itemlist = []
-    if item.login:
-        data = httptools.downloadpage(item.url).data
-    else:
-        ck = ["SESSION", bdec.b64decode(mal_ck), "HLOGSESS"]
-        headers = [['Cookie', 'MAL%sID=f0090ec7576039497d1c22f84f63152d; MAL%sID=%s; is_logged_in=1; search_sort_anime=score;' \
-                    'search_view=tile' % (ck[2], ck[0], ck[1])]]
-        import requests
-        data = requests.get(item.url, headers=dict(headers)).content
+
+    cookie_session = get_cookie_value()
+    header_mal = {'Cookie': '%s search_sort_anime=score; search_view=tile; is_logged_in=1' % cookie_session}
+    data = httptools.downloadpage(item.url, headers=header_mal, cookies=False).data
     data = re.sub(r"\n|\r|\t|&nbsp;", "", data)
     data = re.sub(r"\s{2}", " ", data)
+
     if item.info:
         patron = '<div class="anime-header">([^<]+)</div>(.*?)</div>\s*</div></div></div>'
         bloques = scrapertools.find_multiple_matches(data, patron)
         for head_title, bloque in bloques:
             head_title = head_title.replace("(New)", "(Nuevos)").replace("(Continuing)", "(Continuación)")
             patron = '<a href="([^"]+)" class="link-title">(.*?)</a>.*?<span>(\? ep|\d+ ep).*?' \
-                     '<div class="genres-inner js-genre-inner">(.*?)</div>.*?<div class="image".*?url\(([^\)]+).*?' \
-                     '<span class="preline">(.*?)</span>.*?<div class="info">\s*(.*?)\s*-.*?(\d{4}).*?' \
+                     '<div class="genres-inner js-genre-inner">(.*?)</div>.*?<div class="image".*?src="(.*?).jpg' \
+                     '.*?<span class="preline">(.*?)</span>.*?<div class="info">\s*(.*?)\s*-.*?(\d{4}).*?' \
                      'title="Score">\s*(N/A|\d\.\d+)'
             matches = scrapertools.find_multiple_matches(bloque, patron)
             if matches:
@@ -2754,13 +2746,14 @@ def season_mal(item):
                 else:
                     extra = "tv"
                     contentType = "tvshow"
+                thumb = thumb.replace("r/167x242/", "") + "l.jpg"
                 itemlist.append(Item(channel=item.channel, action="detalles_mal", url=url, title=title,
                                      thumbnail=thumb, infoLabels=infoLabels, extra=extra, tipo=tipo,
                                      contentTitle=scrapedtitle, contentType=contentType, text_color=color1,
                                      fanart=default_fan))
     else:
         patron = '<a href="([^"]+)" class="link-title">(.*?)</a>.*?<span>(\? ep|\d+ ep).*?' \
-                 '<div class="genres-inner js-genre-inner">(.*?)</div>.*?<div class="image".*?url\(([^\)]+).*?' \
+                 '<div class="genres-inner js-genre-inner">(.*?)</div>.*?<div class="image".*?src="(.*?).jpg.*?' \
                  '<span class="preline">(.*?)</span>.*?<div class="info">\s*(.*?)\s*-.*?(\d{4}).*?' \
                  'title="Score">\s*(N/A|\d\.\d+)'
         matches = scrapertools.find_multiple_matches(data, patron)
@@ -2788,6 +2781,7 @@ def season_mal(item):
             else:
                 extra = "tv"
                 contentType = "tvshow"
+            thumb = thumb.replace("r/167x242/", "") + "l.jpg"
             itemlist.append(Item(channel=item.channel, action="detalles_mal", url=url, title=title,
                                  thumbnail=thumb, infoLabels=infoLabels, extra=extra, tipo=tipo,
                                  contentTitle=scrapedtitle, contentType=contentType, text_color=color1,
@@ -2912,14 +2906,9 @@ def busqueda_mal(item):
     # Scraper para búsquedas en myanimelist
     itemlist = []
 
-    if item.login:
-        data = httptools.downloadpage(item.url).data
-    else:
-        ck = ["SESSION", bdec.b64decode(mal_ck), "HLOGSESS"]
-        headers = [['Cookie', 'MAL%sID=f0090ec7576039497d1c22f84f63152d; MAL%sID=%s; is_logged_in=1; search_sort_anime=score;' \
-                    'search_view=tile' % (ck[2], ck[0], ck[1])]]
-        import requests
-        data = requests.get(item.url, headers=dict(headers)).content
+    cookie_session = get_cookie_value()
+    header_mal = {'Cookie': '%s search_sort_anime=score; search_view=tile; is_logged_in=1' % cookie_session}
+    data = httptools.downloadpage(item.url, headers=header_mal, cookies=False).data
     data = re.sub(r"\n|\r|\t|&nbsp;", "", data)
     data = re.sub(r"\s{2}", " ", data)
 
@@ -2936,7 +2925,7 @@ def busqueda_mal(item):
         rating = rating.strip()
         epis = epis.strip()
         infolabels["plot"] = scrapertools.htmlclean(plot.strip())
-        thumb = thumb.replace("r/50x70/", "")
+        thumb = thumb.replace("r/50x70/", "").replace(".jpg", "l.jpg")
         show = titulo
         contentitle = titulo
         title = titulo
@@ -3149,23 +3138,34 @@ def musica_anime(item):
     return itemlist
 
 
-def login_mal():
+def login_mal(from_list=False):
     logger.info()
 
     try:
         user = config.get_setting("usuariomal", "tvmoviedb")
         password = config.get_setting("passmal", "tvmoviedb")
+        generic = False
+        if not user or not password:
+            if not from_list:
+                user = bdec("Y3VlbnRhdHZtb3ZpZWRi")
+                password = bdec("dFlTakE3ekYzbng1")
+                generic = True
+            else:
+                return False, "Usuario y/o contraseña de Myanimelist en blanco", user
         data = httptools.downloadpage("https://myanimelist.net/login.php?from=%2F").data
-        if re.search(r'(?i)'+user, data):
+        if re.search(r'(?i)'+user, data) and not generic:
             return True, "", user
         token = scrapertools.find_single_match(data, "name='csrf_token' content='([^']+)'")
+        response = httptools.downloadpage("https://myanimelist.net/logout.php", post="csrf_token=%s" % token)
         post = "user_name=%s&password=%s&cookie=1&sublogin=Login&submit=1&csrf_token=%s" % (user, password, token)
-        data = httptools.downloadpage("https://myanimelist.net/login.php?from=%2F", post=post).data
+        response = httptools.downloadpage("https://myanimelist.net/login.php?from=%2F", post=post)
         
-        if not re.search(r'(?i)'+user, data):
+        if not re.search(r'(?i)'+user, response.data):
             logger.error("Error en el login")
             return False, "Error en el usuario y/o contraseña. Comprueba tus credenciales", user
         else:
+            if generic:
+                return False, "Usuario y/o contraseña de Myanimelist en blanco", user
             logger.info("Login correcto")
             return True, "", user
     except:
@@ -3177,9 +3177,9 @@ def login_mal():
 def cuenta_mal(item):
     # Menú de cuenta myanimelist
     itemlist = []
-    login, message, user = login_mal()
+    login, message, user = login_mal(True)
     if not login:
-        itemlist.append(item.clone(action="", title=message, text_color=color4))
+        itemlist.append(item.clone(action="configuracion", title=message, text_color=color4))
     else:
         itemlist.append(item.clone(action="items_mal", title="Viendo actualmente", text_color=color5, accion="lista_mal",
                                    url="https://myanimelist.net/animelist/%s?status=1" % user, login=True))
@@ -3217,7 +3217,7 @@ def items_mal(item):
         title += " %s [COLOR %s][%s/%s][/COLOR] (%s)" % (d["anime_title"], color6, d["num_watched_episodes"], d["anime_num_episodes"], d["anime_media_type_string"])
         title = title.replace("\\", "")
         contentTitle = d["anime_title"].replace("\\", "")
-        thumbnail = d["anime_image_path"].replace("\\", "").replace("r/96x136/", "")
+        thumbnail = d["anime_image_path"].replace("\\", "").replace("r/96x136/", "").replace(".jpg", "l.jpg")
         url = "https://myanimelist.net" + d["anime_url"].replace("\\", "")
         if d["score"] != 0:
             title += " [COLOR %s]Punt:%s[/COLOR]" % (color4, d["score"])
@@ -3310,8 +3310,10 @@ def play(item):
     if not item.server:
         data = httptools.downloadpage(item.url).data
         if "Sorry, this video is not available to be embedded" in data:
-            return itemlist
-        crunchy = scrapertools.find_single_match(data, '<iframe src="([^"]+)"')
+            id_video = scrapertools.find_single_match(data, '<div class="video-embed.*?-(\d+)\&amp;aff')
+            crunchy = "https://www.crunchyroll.com/affiliate_iframeplayer?aff=af-12299-plwa&media_id=%s&video_format=106&video_quality=60&auto_play=0" % id_video
+        else:
+            crunchy = scrapertools.find_single_match(data, '<iframe src="([^"]+)"')
         itemlist.append(item.clone(server="crunchyroll", url=crunchy))
     else:
         if item.server == "directo" and item.song:
@@ -3327,3 +3329,15 @@ def play(item):
             itemlist.append(item)
     
     return itemlist
+
+
+def get_cookie_value():
+    cookies = filetools.join(config.get_data_path(), 'cookies.dat')
+    cookiedata = filetools.read(cookies)
+    malsess = scrapertools.find_single_match(cookiedata, "myanimelist.*?MALHLOGSESSID\s+([A-z0-9\+\=]+)")
+    cookievalue = "MALHLOGSESSID=" + malsess
+    mal_id = scrapertools.find_single_match(cookiedata, "myanimelist.*?MALSESSIONID\s+([A-z0-9\+\=\-]+)")
+    if mal_id:
+        cookievalue += "; MALSESSIONID=%s;" % mal_id
+
+    return cookievalue

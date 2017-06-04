@@ -12,9 +12,14 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/peliculasaudiolatino.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>9</version>
+	<version>10</version>
 
 	<changes>
+		<change>
+			<date>01/06/2017</date>
+			<autor>Intel1</autor>
+			<description>Reparado patron en play() para algunos servers</description>
+		</change>
 		<change>
 			<date>15/03/2017</date>
 			<autor>SeiTaN</autor>

@@ -24,23 +24,23 @@ def mainlist(item):
 
     itemlist = []
     
-    itemlist.append( Item(channel=item.channel, title="Peliculas", action="todas", url=host, thumbnail='https://s31.postimg.org/4g4lytrqj/peliculas.png', fanart='https://s31.postimg.org/4g4lytrqj/peliculas.png'))
+    itemlist.append( Item(channel=item.channel, title="Peliculas", action="todas", url=host, thumbnail='https://s8.postimg.org/6wqwy2c2t/peliculas.png', fanart='https://s8.postimg.org/6wqwy2c2t/peliculas.png'))
     
-    itemlist.append( Item(channel=item.channel, title="Generos", action="generos", url=host,thumbnail='https://s31.postimg.org/szbr0gmkb/generos.png', fanart='https://s31.postimg.org/szbr0gmkb/generos.png'))
+    itemlist.append( Item(channel=item.channel, title="Generos", action="generos", url=host,thumbnail='https://s3.postimg.org/5s9jg2wtf/generos.png', fanart='https://s3.postimg.org/5s9jg2wtf/generos.png'))
     
-    itemlist.append( Item(channel=item.channel, title="Alfabetico", action="letras", url=host, thumbnail='https://s31.postimg.org/c3bm9cnl7/a_z.png', fanart='https://s31.postimg.org/c3bm9cnl7/a_z.png', extra='letras'))
+    itemlist.append( Item(channel=item.channel, title="Alfabetico", action="letras", url=host, thumbnail='https://s17.postimg.org/fwi1y99en/a-z.png', fanart='https://s17.postimg.org/fwi1y99en/a-z.png', extra='letras'))
     
-    itemlist.append( Item(channel=item.channel, title="Ultimas Agregadas", action="ultimas", url=host, thumbnail='https://s31.postimg.org/3ua9kwg23/ultimas.png', fanart='https://s31.postimg.org/3ua9kwg23/ultimas.png'))
+    itemlist.append( Item(channel=item.channel, title="Ultimas Agregadas", action="ultimas", url=host, thumbnail='https://s22.postimg.org/cb7nmhwv5/ultimas.png', fanart='https://s22.postimg.org/cb7nmhwv5/ultimas.png'))
     
-    itemlist.append( Item(channel=item.channel, title="Mas Vistas", action="todas", url=host+'pelicula/peliculas-mas-vistas', thumbnail='https://s32.postimg.org/466gt3ipx/vistas.png', fanart='https://s32.postimg.org/466gt3ipx/vistas.png'))
+    itemlist.append( Item(channel=item.channel, title="Mas Vistas", action="todas", url=host+'pelicula/peliculas-mas-vistas', thumbnail='https://s9.postimg.org/wmhzu9d7z/vistas.png', fanart='https://s9.postimg.org/wmhzu9d7z/vistas.png'))
     
-    itemlist.append( Item(channel=item.channel, title="Mas Votadas", action="todas", url=host+'pelicula/peliculas-mas-votadas', thumbnail='https://s31.postimg.org/9ooh78xej/votadas.png', fanart='https://s31.postimg.org/9ooh78xej/votadas.png'))
+    itemlist.append( Item(channel=item.channel, title="Mas Votadas", action="todas", url=host+'pelicula/peliculas-mas-votadas', thumbnail='https://s7.postimg.org/9kg1nthzf/votadas.png', fanart='https://s7.postimg.org/9kg1nthzf/votadas.png'))
     
-    itemlist.append( Item(channel=item.channel, title="Estrenos DVD", action="todas", url=host+'pelicula/ultimas-peliculas/estrenos-dvd', thumbnail='https://s31.postimg.org/6sksfqarf/dvd.png', fanart='https://s31.postimg.org/6sksfqarf/dvd.png'))
+    itemlist.append( Item(channel=item.channel, title="Estrenos DVD", action="todas", url=host+'pelicula/ultimas-peliculas/estrenos-dvd', thumbnail='https://s1.postimg.org/m89hus1tb/dvd.png', fanart='https://s1.postimg.org/m89hus1tb/dvd.png'))
     
-    itemlist.append( Item(channel=item.channel, title="Actualizadas", action="todas", url=host+'pelicula/ultimas-peliculas/ultimas/actualizadas', thumbnail='https://s31.postimg.org/tucv1wmgr/actualizadas.png', fanart='https://s31.postimg.org/tucv1wmgr/actualizadas.png'))
+    itemlist.append( Item(channel=item.channel, title="Actualizadas", action="todas", url=host+'pelicula/ultimas-peliculas/ultimas/actualizadas', thumbnail='https://s16.postimg.org/57evw0wo5/actualizadas.png', fanart='https://s16.postimg.org/57evw0wo5/actualizadas.png'))
     
-    itemlist.append( Item(channel=item.channel, title="Buscar", action="search", url=host+'/buscar/?q=', thumbnail='https://s31.postimg.org/qose4p13f/Buscar.png', fanart='https://s31.postimg.org/qose4p13f/Buscar.png'))
+    itemlist.append( Item(channel=item.channel, title="Buscar", action="search", url=host+'/buscar/?q=', thumbnail='https://s30.postimg.org/pei7txpa9/buscar.png', fanart='https://s30.postimg.org/pei7txpa9/buscar.png'))
     
     return itemlist
 
@@ -99,32 +99,32 @@ def todas(item):
 
 def generos(item):
     
-    tgenero = {"comedia":"https://s32.postimg.org/q7g2qs90l/comedia.png",
-               "suspenso":"https://s31.postimg.org/kb629gscb/suspenso.png",
-               "drama":"https://s32.postimg.org/e6z83sqzp/drama.png",
-               "accion":"https://s32.postimg.org/4hp7gwh9x/accion.png",
-               "aventura":"https://s32.postimg.org/whwh56is5/aventura.png",
-               "romance":"https://s31.postimg.org/y7vai8dln/romance.png",
-               "animacion e infantil":"https://s32.postimg.org/rbo1kypj9/animacion.png",
-               "ciencia ficcion":"https://s32.postimg.org/6hp3tsxsl/ciencia_ficcion.png",
-               "terror":"https://s32.postimg.org/ca25xg0ed/terror.png",
-               "anime":'https://s31.postimg.org/lppob54d7/anime.png',
-               "documentales":"https://s32.postimg.org/7opmvc5ut/documental.png",
-               "intriga":"https://s32.postimg.org/xc2ovcqfp/intriga.png",
-               "musical":"https://s31.postimg.org/7i32lca7f/musical.png",
-               "western":"https://s31.postimg.org/nsksyt3hn/western.png",
-               "fantasia":"https://s32.postimg.org/pklrf01id/fantasia.png",
-               "asiaticas":"https://s32.postimg.org/ijqp3mt85/asiatica.png",
-               "bélico (guerra)":"https://s32.postimg.org/kjbko3xhx/belica.png",
-               "deporte":"https://s31.postimg.org/pdc8etc0r/deporte.png",
-               "adolescente":"https://s31.postimg.org/xkz086q0r/adolescente.png",
-               "artes marciales":"https://s32.postimg.org/5e80taodh/artes_marciales.png",
-               "cine negro":"https://s32.postimg.org/b0882kt7p/cine_negro.png",
-               "eroticas +18":"https://s31.postimg.org/6kcxutv3v/erotica.png",
-               "hindu":"https://s31.postimg.org/495qn1i63/hindu.png",
-               "religiosas":"https://s31.postimg.org/5tgjedlwb/religiosa.png",
-               "vampiros":"https://s32.postimg.org/wt6f483j9/vampiros.png",
-               "zombies":"https://s32.postimg.org/atd2jfw6t/zombies.png"}
+    tgenero = {"comedia":"https://s7.postimg.org/ne9g9zgwb/comedia.png",
+               "suspenso":"https://s13.postimg.org/wmw6vl1cn/suspenso.png",
+               "drama":"https://s16.postimg.org/94sia332d/drama.png",
+               "accion":"https://s3.postimg.org/y6o9puflv/accion.png",
+               "aventura":"https://s10.postimg.org/6su40czih/aventura.png",
+               "romance":"https://s15.postimg.org/fb5j8cl63/romance.png",
+               "animacion e infantil":"https://s13.postimg.org/5on877l87/animacion.png",
+               "ciencia ficcion":"https://s9.postimg.org/diu70s7j3/cienciaficcion.png",
+               "terror":"https://s7.postimg.org/yi0gij3gb/terror.png",
+               "anime":'https://s2.postimg.org/s38borokp/anime.png',
+               "documentales":"https://s16.postimg.org/7xjj4bmol/documental.png",
+               "intriga":"https://s27.postimg.org/v9og43u2b/intriga.png",
+               "musical":"https://s29.postimg.org/bbxmdh9c7/musical.png",
+               "western":"https://s23.postimg.org/lzyfbjzhn/western.png",
+               "fantasia":"https://s13.postimg.org/65ylohgvb/fantasia.png",
+               "asiaticas":"https://s4.postimg.org/oo8txm8od/asiatica.png",
+               "bélico (guerra)":"https://s23.postimg.org/71itp9hcr/belica.png",
+               "deporte":"https://s13.postimg.org/xuxf5h06v/deporte.png",
+               "adolescente":"https://s27.postimg.org/713imu3j7/adolescente.png",
+               "artes marciales":"https://s24.postimg.org/w1aw45j5h/artesmarciales.png",
+               "cine negro":"https://s27.postimg.org/absaoxx83/cinenegro.png",
+               "eroticas +18":"https://s15.postimg.org/exz7kysjf/erotica.png",
+               "hindu":"https://s28.postimg.org/ljn3fxf8d/hindu.png",
+               "religiosas":"https://s7.postimg.org/llo852fwr/religiosa.png",
+               "vampiros":"https://s22.postimg.org/3x69mu1fl/vampiros.png",
+               "zombies":"https://s28.postimg.org/dnn5haqml/zombies.png"}
 
     logger.info()
     itemlist = []
@@ -163,7 +163,7 @@ def ultimas(item):
         thumbnail = scrapedthumbnail
         plot = ''
         title = scrapedtitle
-        fanart = 'https://s31.postimg.org/3ua9kwg23/ultimas.png'
+        fanart = 'https://s22.postimg.org/cb7nmhwv5/ultimas.png'
         itemlist.append( Item(channel=item.channel, action="findvideos" , title=title , url=url, thumbnail=thumbnail, plot=plot, fanart=fanart))
 
     return itemlist
