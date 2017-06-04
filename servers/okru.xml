@@ -23,7 +23,7 @@
 		</ignore_urls>
 		<patterns>
 			<pattern>//(?:www.)?ok.../(?:videoembed|video)/(\d+)</pattern>
-			<url>http://ok.ru/dk?cmd=videoPlayerMetadata=\1</url>
+			<url>http://ok.ru/videoembed/\1</url>
 		</patterns>
 	</find_videos>
 	<free>true</free>
