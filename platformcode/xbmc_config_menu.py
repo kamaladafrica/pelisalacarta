@@ -193,6 +193,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
         if not channelpath:
             channelpath = inspect.currentframe().f_back.f_back.f_code.co_filename
         self.channel = os.path.basename(channelpath).replace(".py", "")
+        self.ch_type = os.path.basename(os.path.dirname(channelpath))
 
         # Si no tenemos list_controls, hay que sacarlos del xml del canal
         if not self.list_controls:
@@ -705,12 +706,12 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             if self.custom_button is not None:
                 if self.custom_button["close"]:
                     self.close()
-        
-                if 'server' in self.kwargs:
-                    package = 'servers.%s' % self.channel
-                else:
-                    package = 'channels.%s' % self.channel
                     
+                if '.' in self.callback:
+                    package, self.callback = self.callback.rsplit('.', 1)
+                else:
+                    package = '%s.%s' % (self.ch_type, self.channel)
+
                 try:
                     cb_channel = __import__(package, None, None, [package])
                 except ImportError:
@@ -759,10 +760,7 @@ class SettingsWindow(xbmcgui.WindowXMLDialog):
             if self.callback and '.' in self.callback:
                 package, self.callback = self.callback.rsplit('.', 1)
             else:
-                if 'server' in self.kwargs:
-                    package = 'servers.%s' % self.channel
-                else:
-                    package = 'channels.%s' % self.channel
+                package = '%s.%s' % (self.ch_type, self.channel)
 
             cb_channel = None
             try:
