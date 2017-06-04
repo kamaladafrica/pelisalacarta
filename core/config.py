@@ -113,8 +113,10 @@ def get_all_settings_addon():
 
     ret = {}
     matches = scrapertools.find_multiple_matches(data, '<setting id="([^"]*)" value="([^"]*)')
+    settings_types = get_settings_types()
+
     for id, value in matches:
-        ret[id] = value
+        ret[id] = get_setting(id)
 
     return ret
 
@@ -132,6 +134,7 @@ def open_settings():
             adult_password = set_setting('adult_password', '0000')
         else:
             adult_password = settings_pre['adult_password']
+
 
         if settings_post['adult_aux_intro_password'] == adult_password:
             # La contraseña de acceso es correcta
@@ -154,6 +157,7 @@ def open_settings():
         else:
             platformtools.dialog_ok("Canales para adultos", "La contraseña no es correcta.",
                                     "Los cambios realizados en esta sección no se guardaran.")
+
             # Deshacer cambios
             set_setting("adult_mode", settings_pre.get("adult_mode","0"))
             set_setting("adult_request_password", settings_pre.get("adult_request_password", "true"))
@@ -267,6 +271,7 @@ def set_setting(name, value, channel=""):
             else:
                 if isinstance(value,basestring):
                     new_value = "(%s, %s)" % (type(value).__name__, repr(value))
+
                 else:
                     new_value = "(%s, %s)" % (type(value).__name__, value)
 
