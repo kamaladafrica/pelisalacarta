@@ -13,13 +13,13 @@ from core import logger
 from core import scrapertools
 
 token = ""
-exception = False
+excption = False
 
 
 def test_video_exists(page_url):
     logger.info("(page_url='%s')" % page_url)
 
-    data = scrapertools.cache_page(page_url)
+    data = get_data(page_url.replace(".org", ".me"))
     if "File Not Found" in data: return False, "[Clicknupload] El archivo no existe o ha sido borrado"
 
     return True, ""
@@ -28,7 +28,7 @@ def test_video_exists(page_url):
 def get_video_url(page_url, premium=False, user="", password="", video_password=""):
     logger.info("url=" + page_url)
 
-    data = get_data(page_url)
+    data = get_data(page_url.replace(".org", ".me"))
 
     post = ""
     block = scrapertools.find_single_match(data, '(?i)<Form method="POST"(.*?)</Form>')
@@ -76,20 +76,20 @@ def find_videos(data):
 
 def get_data(url_orig, req_post=""):
     try:
-        if not exception:
+        if not excption:
             response = httptools.downloadpage(url_orig, req_post)
             if not response.data or "urlopen error [Errno 1]" in str(response.code):
-                global exception
-                exception = True
+                global excption
+                excption = True
                 raise Exception
             return response.data
         else:
             raise Exception
     except:
         import urllib
-        post = {"address":url_orig}
+        post = {"address": url_orig.replace(".me", ".org")}
         if req_post:
-            post["options"] = [{"man":"--data","attribute": req_post}]
+            post["options"] = [{"man": "--data", "attribute": req_post}]
         else:
             post["options"] = []
         from core import jsontools
