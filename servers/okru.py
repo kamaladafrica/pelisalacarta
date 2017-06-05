@@ -31,7 +31,6 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
 
     data = httptools.downloadpage(page_url).data
     data = scrapertools.decodeHtmlentities(data).replace('\\', '')
-    logger.info(data)
     # URL del vídeo
     for type, url in re.findall(r'\{"name":"([^"]+)","url":"([^"]+)"', data, re.DOTALL):
         url = url.replace("%3B", ";").replace("u0026", "&")
