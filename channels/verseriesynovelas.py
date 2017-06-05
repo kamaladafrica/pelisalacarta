@@ -367,26 +367,23 @@ def findvideos(item):
                  '.*?<td data-th="Enlace"><a href="(http://www.verseriesynovelas.tv/link/enlaces.php.*?)"'
         matches = scrapertools.find_multiple_matches(match, patron)
         for quality, server, url in matches:
-            if server == "streamin":
-                server = "streaminto"
-            if server== "waaw":
-                server = "netutv"
-            if server == "ul":
-                server = "uploadedto"
-            try:
-                servers_module = __import__("servers."+server)
-                title = "Ver vídeo en "+server+"  ["+quality+"]"
-                if "Español.png" in match:
-                    title += " [CAST]"
-                if "VOS.png" in match:
-                    title += " [VOSE]"
-                if "Latino.png" in match:
-                    title += " [LAT]"
-                if "VO.png" in match:
-                    title += " [V.O]"
-                itemlist.append(item.clone(action="play", title=title, url=url, server=server))
-            except:
-                pass
+            video_data = httptools.downloadpage(url).data
+            url_redirect = scrapertools.find_single_match(video_data, 'href="(http://www.verseriesynovelas.tv/link/enlace.php\?u=[^"]+)"')
+            location = httptools.downloadpage(url_redirect, follow_redirects=False, only_headers=True).headers["location"]
+            
+            title = "Ver vídeo en %s  ["+quality+"]"
+            if "Español.png" in match:
+                title += " [CAST]"
+            if "VOS.png" in match:
+                title += " [VOSE]"
+            if "Latino.png" in match:
+                title += " [LAT]"
+            if "VO.png" in match:
+                title += " [V.O]"
+            itemlist.append(item.clone(action="play", title=url, url=location))
+    
+    itemlist = servertools.get_servers_itemlist(itemlist, lambda i: i.title % i.server)
+
 
     if not itemlist: 
         itemlist.append(item.clone(action="", title="No se ha encontrado ningún enlace"))
@@ -399,33 +396,3 @@ def findvideos(item):
     return itemlist
 
 
-def play(item):
-    logger.info()
-    itemlist = []
-    
-    location = ""
-    i = 0
-    while not location:
-        try:
-            data = httptools.downloadpage(item.url).data
-            url_redirect = scrapertools.find_single_match(data, 'href="(http://www.verseriesynovelas.tv/link/enlace.php\?u=[^"]+)"')
-            if not url_redirect:
-                import StringIO
-                compressedstream = StringIO.StringIO(data)
-                import gzip
-                gzipper = gzip.GzipFile(fileobj=compressedstream)
-                data = gzipper.read()
-                gzipper.close()
-                url_redirect = scrapertools.find_single_match(data, 'href="(http://www.verseriesynovelas.tv/link/enlace.php\?u=[^"]+)"')
-            location = httptools.downloadpage(url_redirect, follow_redirects=False).headers["location"]
-        except:
-            pass
-        i += 1
-        if i == 6:
-            return itemlist
-
-    enlaces = servertools.findvideosbyserver(location, item.server)
-    if len(enlaces) > 0:
-        itemlist.append(item.clone(action="play", server=enlaces[0][2], url=enlaces[0][1]))
-
-    return itemlist

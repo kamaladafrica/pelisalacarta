@@ -13,9 +13,14 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/buscador.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-	<version>4</version>
+	<version>5</version>
 
 	<changes>
+		<change>
+			<date>25/05/17</date>
+			<autor>super_berny</autor>
+			<description>añadido control parental</description>
+		</change>
 		<change>
 			<date>15/03/2017</date>
 			<autor>SeiTaN</autor>

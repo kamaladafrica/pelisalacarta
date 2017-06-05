@@ -30,6 +30,8 @@ import re
 
 import xbmc
 import xbmcaddon
+import xbmcgui
+
 
 
 
@@ -37,6 +39,7 @@ PLUGIN_NAME = "pelisalacarta"
 
 __settings__ = xbmcaddon.Addon(id="plugin.video." + PLUGIN_NAME)
 __language__ = __settings__.getLocalizedString
+
 
 
 def get_platform(full_version=False):
@@ -110,8 +113,10 @@ def get_all_settings_addon():
 
     ret = {}
     matches = scrapertools.find_multiple_matches(data, '<setting id="([^"]*)" value="([^"]*)')
+    settings_types = get_settings_types()
+
     for id, value in matches:
-        ret[id] = value
+        ret[id] = get_setting(id)
 
     return ret
 
@@ -126,9 +131,10 @@ def open_settings():
         # Hemos accedido a la seccion de Canales para adultos
         from platformcode import platformtools
         if not 'adult_password' in settings_pre:
-            adult_password = set_setting('adult_password', '1111')
+            adult_password = set_setting('adult_password', '0000')
         else:
             adult_password = settings_pre['adult_password']
+
 
         if settings_post['adult_aux_intro_password'] == adult_password:
             # La contraseña de acceso es correcta
@@ -141,6 +147,7 @@ def open_settings():
                     platformtools.dialog_ok("Canales para adultos", "Los campos 'Nueva contraseña' y 'Confirmar nueva contraseña' no coinciden.",
                                             "Entre de nuevo en 'Preferencias' para cambiar la contraseña")
 
+
             # Fijar adult_pin
             adult_pin = ""
             if settings_post["adult_request_password"] == "true":
@@ -150,6 +157,7 @@ def open_settings():
         else:
             platformtools.dialog_ok("Canales para adultos", "La contraseña no es correcta.",
                                     "Los cambios realizados en esta sección no se guardaran.")
+
             # Deshacer cambios
             set_setting("adult_mode", settings_pre.get("adult_mode","0"))
             set_setting("adult_request_password", settings_pre.get("adult_request_password", "true"))
@@ -159,13 +167,6 @@ def open_settings():
         set_setting('adult_aux_intro_password', '')
         set_setting('adult_aux_new_password1', '')
         set_setting('adult_aux_new_password2', '')
-                
-            
-                    
-
-
-
-
 
 
 def get_setting(name, channel="", server=""):
@@ -211,23 +212,28 @@ def get_setting(name, channel="", server=""):
     else:
         # logger.info("config.get_setting reading main setting '"+name+"'")
         value = __settings__.getSetting(name)
+
         # Translate Path if start with "special://"
         if value.startswith("special://") and "librarypath" not in name:
             value = xbmc.translatePath(value)
 
-        # logger.info("config.get_setting -> '"+value+"'")
         # hack para devolver el tipo correspondiente
-        if value == "true":
-            return True
-        elif value == "false":
-            return False
-        else:
-            try:
-                value = int(value)
-            except ValueError:
-                pass
+        settings_types = get_settings_types()
 
-            return value
+        if settings_types.get(name) in ['enum', 'number']:
+            value = int(value)
+
+        elif settings_types.get(name) == 'bool':
+            value = value == 'true'
+
+        elif not settings_types.has_key(name):
+            try:
+                t = eval (value)
+                value = t[0](t[1])
+            except:
+                value = None
+
+        return value
 
 
 def set_setting(name, value, channel="", server=""):
@@ -262,19 +268,52 @@ def set_setting(name, value, channel="", server=""):
         return servertools.set_server_setting(name, value, server)
     else:
         try:
-            if isinstance(value, bool):
-                if value:
-                    value = "true"
-                else:
-                    value = "false"
-            elif isinstance(value, (int, long)):
-                value = str(value)
+            settings_types = get_settings_types()
 
-            __settings__.setSetting(name, value)
+            if settings_types.get(name) == 'bool':
+                if value:
+                    new_value = "true"
+                else:
+                    new_value = "false"
+
+            elif settings_types.get(name):
+                new_value = str(value)
+
+            else:
+                if isinstance(value,basestring):
+                    new_value = "(%s, %s)" % (type(value).__name__, repr(value))
+
+                else:
+                    new_value = "(%s, %s)" % (type(value).__name__, value)
+
+            __settings__.setSetting(name, new_value)
+
         except:
             return None
 
         return value
+
+
+def get_settings_types():
+    """
+    Devuelve un diccionario con los parametros (key) de la configuracion global y sus tipos (value)
+
+    :return: dict 
+    """
+    WIN10000 = xbmcgui.Window(10000)
+    settings_types = WIN10000.getProperty(PLUGIN_NAME + "_settings_types")
+
+    if not settings_types:
+        infile = open(os.path.join(get_runtime_path(), "resources", "settings.xml"))
+        data = infile.read()
+        infile.close()
+
+        matches = re.findall('<setting id="([^"]*)" type="([^"]*)', data)
+        settings_types = "{%s}" % ",".join("'%s': '%s'" % tup for tup in matches)
+
+        WIN10000.setProperty(PLUGIN_NAME + "_settings_types", settings_types)
+
+    return eval(settings_types)
 
 
 def get_localized_string(code):
