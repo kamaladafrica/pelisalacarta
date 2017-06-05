@@ -35,6 +35,7 @@ from core import scraper
 from core import scrapertools
 from core import servertools
 from core.downloader import Downloader
+from core import library
 from core.item import Item
 from platformcode import platformtools
 
@@ -43,6 +44,7 @@ STATUS_CODES = type("StatusCode",(), {"stoped" : 0, "canceled" : 1 , "completed"
 DOWNLOAD_LIST_PATH = config.get_setting("downloadlistpath")
 DOWNLOAD_PATH = config.get_setting("downloadpath")
 STATS_FILE = os.path.join(config.get_data_path(), "servers.json")
+
 TITLE_FILE = "[COLOR %s][%i%%][/COLOR] %s"
 TITLE_TVSHOW = "[COLOR %s][%i%%][/COLOR] %s [%s]"
 
@@ -105,34 +107,42 @@ def mainlist(item):
     # Si hay alguno completado
     if 2 in estados:
         itemlist.insert(0, Item(channel=item.channel, action="clean_ready", title="Eliminar descargas completadas",
-                                contentType = item.contentType, contentChannel=item.contentChannel, contentSerieName = item.contentSerieName))
+                                contentType = item.contentType, contentChannel=item.contentChannel, contentSerieName = item.contentSerieName, text_color = "sandybrown"))
 
     # Si hay alguno con error
     if 3 in estados:
         itemlist.insert(0, Item(channel=item.channel, action="restart_error", title="Reiniciar descargas con error",
-                                contentType = item.contentType, contentChannel=item.contentChannel, contentSerieName = item.contentSerieName))
+                                contentType = item.contentType, contentChannel=item.contentChannel, contentSerieName = item.contentSerieName, text_color = "orange"))
 
     # Si hay alguno pendiente
     if 1 in estados or 0 in estados:
         itemlist.insert(0, Item(channel=item.channel, action="download_all", title="Descargar todo",
-                                contentType = item.contentType, contentChannel=item.contentChannel, contentSerieName = item.contentSerieName))
+                                contentType = item.contentType, contentChannel=item.contentChannel, contentSerieName = item.contentSerieName, text_color = "green"))
 
     if len(itemlist):
         itemlist.insert(0, Item(channel=item.channel, action="clean_all", title="Eliminar todo",
-                                contentType = item.contentType, contentChannel=item.contentChannel, contentSerieName = item.contentSerieName))
+                                contentType = item.contentType, contentChannel=item.contentChannel, contentSerieName = item.contentSerieName, text_color = "red"))
 
     if not item.contentType == "tvshow" and config.get_setting("browser", "descargas") == True:
-        itemlist.insert(0, Item(channel=item.channel, action="browser", title="Ver archivos descargados", url = DOWNLOAD_PATH))
+        itemlist.insert(0, Item(channel=item.channel, action="browser", title="Ver archivos descargados", url = DOWNLOAD_PATH, text_color = "yellow"))
+        
+    if not item.contentType == "tvshow":
+        itemlist.insert(0, Item(channel=item.channel, action="settings", title="Configuración descargas...", text_color = "blue"))
     
     return itemlist
 
+def settings(item):
+    ret = platformtools.show_channel_settings()
+    platformtools.itemlist_refresh()
+    return ret
 
 def browser(item):
     logger.info()
     itemlist = []
     
     for file in filetools.listdir(item.url):
-      if filetools.isdir(filetools.join(item.url, file)) and not file == "list":
+      if file == "list": continue
+      if filetools.isdir(filetools.join(item.url, file)):
         itemlist.append(Item(channel=item.channel, title=file, action=item.action, url= filetools.join(item.url, file)))
       else:
         itemlist.append(Item(channel=item.channel, title=file, action="play", url= filetools.join(item.url, file)))
@@ -197,20 +207,24 @@ def download_all(item):
 
 def menu(item):
     logger.info()
-
+    if item.downloadServer:
+        servidor = item.downloadServer.get("server", "Auto")
+    else:
+        servidor = "Auto"
     # Opciones disponibles para el menu
-    op = ["Descargar", "Eliminar de la lista", "Reiniciar descarga", "Descargar desde..."]
+    op = ["Descargar", "Eliminar de la lista", "Reiniciar descarga y eliminar datos", "Modificar servidor: %s" %(servidor.capitalize())]
 
     opciones = []
 
     # Opciones para el menu
     if item.downloadStatus == 0:  # Sin descargar
         opciones.append(op[0])  # Descargar
-        opciones.append(op[3])  # Descargar desde...
+        if not item.server: opciones.append(op[3])  # Elegir Servidor
         opciones.append(op[1])  # Eliminar de la lista
 
     if item.downloadStatus == 1:  # descarga parcial
         opciones.append(op[0])  # Descargar
+        if not item.server: opciones.append(op[3])  # Elegir Servidor
         opciones.append(op[2])  # Reiniciar descarga
         opciones.append(op[1])  # Eliminar de la lista
 
@@ -237,58 +251,50 @@ def menu(item):
     if opciones[seleccion] == op[0]:
         start_download(item)
     
-    # Opcion inicaiar descarga desde...
+    # Elegir Servidor
     if opciones[seleccion] == op[3]:
-        start_download(item, ask=True)
+        select_server(item)
 
     # Reiniciar descarga
     if opciones[seleccion] == op[2]:
         if filetools.isfile(os.path.join(config.get_setting("downloadpath"), item.downloadFilename)):
             filetools.remove(os.path.join(config.get_setting("downloadpath"), item.downloadFilename))
             
-        update_json(item.path, {"downloadStatus" : STATUS_CODES.stoped, "downloadComplete" :  0 , "downloadProgress" : 0})
+        update_json(item.path, {"downloadStatus" : STATUS_CODES.stoped, "downloadComplete" :  0 , "downloadProgress" : 0, "downloadServer": {}})
 
     platformtools.itemlist_refresh()
 
 
 def move_to_libray(item):
-    if not config.get_setting("library_move", "descargas") == True: 
-      return
-      
-    try:
-      from core import library
-    except:
-      return
-      
-    # Copiamos el archivo a la biblioteca
-    origen = filetools.join(config.get_setting("downloadpath"), item.downloadFilename)
-    destino = filetools.join(config.get_library_path(), *filetools.split(item.downloadFilename))
-    
-    if not filetools.isdir(filetools.dirname(destino)):
-      filetools.mkdir(filetools.dirname(destino))
-    
-    if filetools.isfile(destino) and filetools.isfile(origen) :
-      filetools.remove(destino)
 
-    if filetools.isfile(origen):
-      filetools.move(origen, destino)
-      if len(filetools.listdir(filetools.dirname(origen))) == 0: 
-        filetools.rmdir(filetools.dirname(origen))
+    download_path = filetools.join(config.get_setting("downloadpath"), item.downloadFilename)
+    library_path = filetools.join(config.get_library_path(), *filetools.split(item.downloadFilename))
+    final_path = download_path
       
-    else:
-      logger.error("No se ha encontrado el archivo: %s" % origen)
+    if config.get_setting("library_add", "descargas") == True and config.get_setting("library_move", "descargas") == True:   
+      if not filetools.isdir(filetools.dirname(library_path)):
+        filetools.mkdir(filetools.dirname(library_path))
     
-    if filetools.isfile(destino):
-      if item.contentType == "movie" and item.infoLabels["tmdb_id"]:
-        library_item = Item(title="Descargado: %s" % item.downloadFilename, channel= "descargas", action="findvideos", infoLabels=item.infoLabels, url=item.downloadFilename)
-        
-        library.save_library_movie(library_item)
-        
-      elif item.contentType == "episode" and item.infoLabels["tmdb_id"]:
-        library_item = Item(title="Descargado: %s" % item.downloadFilename, channel= "descargas", action="findvideos", infoLabels=item.infoLabels, url=item.downloadFilename)
-        
-        tvshow = Item(channel= "descargas", contentType="tvshow", infoLabels = {"tmdb_id": item.infoLabels["tmdb_id"]})
-        library.save_library_tvshow(tvshow, [library_item])
+      if filetools.isfile(library_path) and filetools.isfile(download_path) :
+        filetools.remove(library_path)
+
+      if filetools.isfile(download_path):
+        if filetools.move(download_path, library_path):
+          final_path = library_path
+          
+        if len(filetools.listdir(filetools.dirname(download_path))) == 0: 
+          filetools.rmdir(filetools.dirname(download_path))
+          
+    if config.get_setting("library_add", "descargas") == True: 
+      if filetools.isfile(final_path):
+        if item.contentType == "movie" and item.infoLabels["tmdb_id"]:
+          library_item = Item(title="Descargado: %s" % item.downloadFilename, channel= "descargas", action="findvideos", infoLabels=item.infoLabels, url=final_path)
+          library.save_library_movie(library_item)
+          
+        elif item.contentType == "episode" and item.infoLabels["tmdb_id"]:
+          library_item = Item(title="Descargado: %s" % item.downloadFilename, channel= "descargas", action="findvideos", infoLabels=item.infoLabels, url=final_path)
+          tvshow = Item(channel= "descargas", contentType="tvshow", infoLabels = {"tmdb_id": item.infoLabels["tmdb_id"]})
+          library.save_library_tvshow(tvshow, [library_item])
 
 
 
@@ -396,7 +402,19 @@ def sort_method(item):
     @return:  puntuacion otenida
     @rtype: int
     """
-    order_list_idiomas = ["ES", "LAT", "SUB", "ENG", "VOSE"]
+    lang_orders = {}
+    lang_orders[0] = ["ES", "LAT", "SUB", "ENG", "VOSE"]
+    lang_orders[1] = ["ES", "SUB", "LAT", "ENG", "VOSE"]
+    lang_orders[2] = ["ENG", "SUB", "VOSE", "ESP", "LAT"]
+    lang_orders[3] = ["VOSE", "ENG", "SUB", "ESP", "LAT"]
+    
+    quality_orders = {}
+    quality_orders[0] = ["BLURAY", "FULLHD", "HD", "480P", "360P", "240P"]
+    quality_orders[1] = ["FULLHD", "HD", "480P", "360P", "240P", "BLURAY"]
+    quality_orders[2] = ["HD", "480P", "360P", "240P", "FULLHD", "BLURAY"]
+    quality_orders[3] = ["480P", "360P", "240P", "BLURAY", "FULLHD", "HD"]
+
+    order_list_idiomas = lang_orders[int(config.get_setting("language","descargas"))]
     match_list_idimas  = {"ES"   : ["CAST", "ESP", "Castellano", "Español", "Audio Español"],
                           "LAT"  : ["LAT", "Latino"],
                           "SUB"  : ["Subtitulo Español", "Subtitulado", "SUB"],
@@ -404,6 +422,7 @@ def sort_method(item):
                           "VOSE" : ["VOSE"]}
                          
     order_list_calidad = ["BLURAY", "FULLHD", "HD", "480P", "360P", "240P"]
+    order_list_calidad = quality_orders[int(config.get_setting("quality","descargas"))]
     match_list_calidad = {"BLURAY"   : ["BR", "BLURAY"],
                           "FULLHD"  : ["FULLHD", "FULL HD", "1080", "HD1080", "HD 1080"],
                           "HD"  : ["HD", "HD REAL", "HD 720", "720", "HDTV"],
@@ -411,10 +430,13 @@ def sort_method(item):
                           "360P"  : ["360P"],
                           "240P" : ["240P"]}
 
-
-    return get_match_list(item.title,match_list_idimas, order_list_idiomas, ignorecase=True, only_ascii=True).index, \
-           get_match_list(item.title,match_list_calidad, order_list_calidad, ignorecase=True, only_ascii=True).index, \
-           get_server_position(item.server)
+    value = (get_match_list(item.title,match_list_idimas, order_list_idiomas, ignorecase=True, only_ascii=True).index, \
+           get_match_list(item.title,match_list_calidad, order_list_calidad, ignorecase=True, only_ascii=True).index)
+     
+    if config.get_setting("server_speed","descargas"):
+        value += tuple([get_server_position(item.server)])
+        
+    return value
         
 
 def download_from_url(url, item):
@@ -431,42 +453,28 @@ def download_from_url(url, item):
     if not filetools.exists(download_path):
         filetools.mkdir(download_path)
 
-    # Mostramos el progreso
-    progreso = platformtools.dialog_progress("Descargas", "Iniciando descarga...")
 
     # Lanzamos la descarga
-    d = Downloader(url, download_path, file_name)
-    d.start()
-
-    # Monitorizamos la descarga hasta que se termine o se cancele
-    while d.state == d.states.downloading and not progreso.iscanceled():
-        time.sleep(0.1)
-        line1 = "%s" % (d.filename)
-        line2 = "%.2f%% - %.2f %s de %.2f %s a %.2f %s/s (%d/%d)" % (
-        d.progress, d.downloaded[1], d.downloaded[2], d.size[1], d.size[2], d.speed[1], d.speed[2], d.connections[0],
-        d.connections[1])
-        line3 = "Tiempo restante: %s" % (d.remaining_time)
-        progreso.update(int(d.progress), line1, line2, line3)
+    d = Downloader(url, download_path, file_name, max_connections = 1+ int(config.get_setting("max_connections", "descargas")),
+                                                  block_size = 2**(17 + int(config.get_setting("block_size", "descargas"))),
+                                                  part_size = 2**(20 + int(config.get_setting("part_size", "descargas"))),
+                                                  max_buffer = 2 * int(config.get_setting("max_buffer", "descargas")))
+    d.start_dialog("Descargas")
 
     # Descarga detenida. Obtenemos el estado:
-    # Se ha producido un error en la descarga
+    # Se ha producido un error en la descarga   
     if d.state == d.states.error:
         logger.info("Error al intentar descargar %s" % (url))
-        d.stop()
-        progreso.close()
         status = STATUS_CODES.error
 
-    # Aun está descargando (se ha hecho click en cancelar)
-    elif d.state == d.states.downloading:
+    # La descarga se ha detenifdo
+    elif d.state == d.states.stopped:
         logger.info("Descarga detenida")
-        d.stop()
-        progreso.close()
         status = STATUS_CODES.canceled
 
     # La descarga ha finalizado
     elif d.state == d.states.completed:
         logger.info("Descargado correctamente")
-        progreso.close()
         status = STATUS_CODES.completed
 
         if item.downloadSize and item.downloadSize != d.size[0]:
@@ -474,10 +482,7 @@ def download_from_url(url, item):
 
     
     save_server_statistics(item.server, d.speed[0], d.state != d.states.error)
-    
-    if progreso.iscanceled():
-      status = STATUS_CODES.canceled
-      
+       
     dir = os.path.dirname(item.downloadFilename)
     file = filetools.join(dir, d.filename)
     
@@ -489,6 +494,7 @@ def download_from_url(url, item):
 
 
 def download_from_server(item):
+    logger.info(item.tostring())
     unsupported_servers = ["torrent"]
     
     progreso = platformtools.dialog_progress("Descargas", "Probando con: %s" % item.server)        
@@ -512,9 +518,9 @@ def download_from_server(item):
           else:
               logger.info("No hay nada que reproducir")
               return {"downloadStatus": STATUS_CODES.error}
-    
-    logger.info("contentAction: %s | contentChannel: %s | server: %s | url: %s" % (item.contentAction, item.contentChannel, item.server, item.url))
     progreso.close()
+    logger.info("contentAction: %s | contentChannel: %s | server: %s | url: %s" % (item.contentAction, item.contentChannel, item.server, item.url))
+    
     
     if not item.server or not item.url or not item.contentAction == "play" or item.server in unsupported_servers:
       logger.error("El Item no contiene los parametros necesarios.")
@@ -551,61 +557,81 @@ def download_from_server(item):
         return result
 
 
-def download_from_best_server(item, ask = False):
+def download_from_best_server(item):
     logger.info("contentAction: %s | contentChannel: %s | url: %s" % (item.contentAction, item.contentChannel, item.url))
+    
     result =  {"downloadStatus": STATUS_CODES.error}
 
     progreso = platformtools.dialog_progress("Descargas", "Obteniendo lista de servidores disponibles...")
-
     channel = __import__('channels.%s' % item.contentChannel, None, None, ["channels.%s" % item.contentChannel])
     
-    progreso.update(50, "Obteniendo lista de servidores disponibles.", "Conectando con %s..." % item.contentChannel)
+    progreso.update(50, "Obteniendo lista de servidores disponibles:", "Conectando con %s..." % item.contentChannel)
+    
     if hasattr(channel, item.contentAction):
         play_items = getattr(channel, item.contentAction)(item.clone(action = item.contentAction, channel = item.contentChannel))
     else:
         play_items = servertools.find_video_items(item.clone(action = item.contentAction, channel = item.contentChannel))
    
-    play_items = filter(lambda x: x.action == "play", play_items)
+    play_items = filter(lambda x: x.action == "play" and not "trailer" in x.title.lower(), play_items)
 
-    progreso.update(100, "Obteniendo lista de servidores disponibles.", "Servidores disponibles: %s" % len(play_items), "Identificando servidores...")
+    progreso.update(100, "Obteniendo lista de servidores disponibles", "Servidores disponibles: %s" % len(play_items), "Identificando servidores...")
         
-    play_items.sort(key=sort_method)
     
+    if config.get_setting("server_reorder", "descargas") == 1:
+        play_items.sort(key=sort_method)
+          
     if progreso.iscanceled():
         return {"downloadStatus": STATUS_CODES.canceled}
 
     progreso.close()
     
-    if not ask:
     # Recorremos el listado de servers, hasta encontrar uno que funcione
-      for play_item in play_items:
-          play_item = item.clone(**play_item.__dict__)
-          play_item.contentAction = play_item.action
-          play_item.infoLabels = item.infoLabels
+    for play_item in play_items:
+      play_item = item.clone(**play_item.__dict__)
+      play_item.contentAction = play_item.action
+      play_item.infoLabels = item.infoLabels
 
-          result = download_from_server(play_item)
-          
-          if progreso.iscanceled():
-            result["downloadStatus"] = STATUS_CODES.canceled
-
-          # Tanto si se cancela la descarga como si se completa dejamos de probar mas opciones
-          if result["downloadStatus"] in [STATUS_CODES.canceled, STATUS_CODES.completed]:
-              break
-    else:
-      seleccion = platformtools.dialog_select("Selecciona el servidor", [s.title for s in play_items])
-      if seleccion > -1:
-        play_item = item.clone(**play_items[seleccion].__dict__)
-        play_item.contentAction = play_item.action
-        play_item.infoLabels = item.infoLabels
-        result = download_from_server(play_item)  
-      else:
+      result = download_from_server(play_item)
+      
+      if progreso.iscanceled():
         result["downloadStatus"] = STATUS_CODES.canceled
 
-          
+      # Tanto si se cancela la descarga como si se completa dejamos de probar mas opciones
+      if result["downloadStatus"] in [STATUS_CODES.canceled, STATUS_CODES.completed]:
+          result["downloadServer"] = {"url":play_item.url, "server": play_item.server}
+          break
+  
     return result
 
+def select_server(item):
+    logger.info("contentAction: %s | contentChannel: %s | url: %s" % (item.contentAction, item.contentChannel, item.url))
 
-def start_download(item, ask = False):
+    progreso = platformtools.dialog_progress("Descargas", "Obteniendo lista de servidores disponibles...")
+    channel = __import__('channels.%s' % item.contentChannel, None, None, ["channels.%s" % item.contentChannel])
+    progreso.update(50, "Obteniendo lista de servidores disponibles:", "Conectando con %s..." % item.contentChannel)
+    
+    if hasattr(channel, item.contentAction):
+        play_items = getattr(channel, item.contentAction)(item.clone(action = item.contentAction, channel = item.contentChannel))
+    else:
+        play_items = servertools.find_video_items(item.clone(action = item.contentAction, channel = item.contentChannel))
+   
+    play_items = filter(lambda x: x.action == "play" and not "trailer" in x.title.lower(), play_items)
+    
+    progreso.update(100, "Obteniendo lista de servidores disponibles", "Servidores disponibles: %s" % len(play_items), "Identificando servidores...")
+    
+    for x, i in enumerate(play_items):
+      if not i.server and hasattr(channel, "play"):
+        play_items[x] = getattr(channel,"play")(i)
+        
+    seleccion = platformtools.dialog_select("Selecciona el servidor", ["Auto"] + [s.title for s in play_items])
+    if seleccion > 1:
+        update_json(item.path, {"downloadServer": {"url": play_items[seleccion -1].url, "server": play_items[seleccion -1].server}})
+    elif seleccion == 0:
+        update_json(item.path, {"downloadServer": {}})
+    
+    platformtools.itemlist_refresh()
+    
+def start_download(item):
     logger.info("contentAction: %s | contentChannel: %s | url: %s" % (item.contentAction, item.contentChannel, item.url))
 
     # Ya tenemnos server, solo falta descargar
@@ -613,10 +639,14 @@ def start_download(item, ask = False):
         ret = download_from_server(item)
         update_json(item.path, ret)
         return ret["downloadStatus"]
-
+    
+    elif item.downloadServer and item.downloadServer.get("server"):
+        ret = download_from_server(item.clone(server = item.downloadServer.get("server"), url = item.downloadServer.get("url"), contentAction = "play"))
+        update_json(item.path, ret)
+        return ret["downloadStatus"]
     # No tenemos server, necesitamos buscar el mejor
     else:
-        ret = download_from_best_server(item, ask)
+        ret = download_from_best_server(item)
         update_json(item.path, ret)
         return ret["downloadStatus"]
 
