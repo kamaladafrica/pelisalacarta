@@ -24,7 +24,7 @@
 		<ignore_urls>
 		</ignore_urls>
 		<patterns>
-			<pattern>vidabc.com/([a-z0-9]+)</pattern>
+			<pattern>vidabc.com/(?:embed-|)([a-z0-9]+)</pattern>
 			<url>http://vidabc.com/embed-\1.html</url>
 		</patterns>
 	</find_videos>
