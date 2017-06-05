@@ -9,7 +9,7 @@
         <setting id="forceview" type="bool" label="30043" default="false"/>
         <setting id="debug" type="bool" label="30003" default="false"/>
         <setting label="Uso de servidores" type="lsep"/>
-        <setting id="resolve_priority" type="enum" label="Método prioritario" lvalues="Free primero|Premium primero|Debriders primero" default="0"/>
+        <setting id="resolve_priority" type="enum" label="Método prioritario" values="Free primero|Premium primero|Debriders primero" default="0"/>
         <setting id="resolve_stop" type="bool" label="Dejar de buscar cuando encuentre una opción" default="true"/>
         <setting id="hidepremium" type="bool" label="Ocultar servidores de pago sin cuenta" default="false"/>
         <setting id="server_stats" type="bool" label="Enviar estadisticas sobre el uso de servidores" default="true"/>
