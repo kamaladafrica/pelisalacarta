@@ -537,7 +537,9 @@ def get_server_controls_settings(server_name):
     dict_settings = {}
 
     list_controls = get_server_parameters(server_name).get('settings',[])
-
+    import copy
+    list_controls = copy.deepcopy(list_controls)
+    
     # Conversion de str a bool, etc...
     for c in list_controls:
         if 'id' not in c or 'type' not in c or 'default' not in c:
