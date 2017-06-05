@@ -17,12 +17,8 @@
 		<ignore_urls>
 		</ignore_urls>
 		<patterns>
-			<pattern>auroravid.to/video/([a-z0-9]{13})</pattern>
-			<url>http://www.auroravid.to/video/\1</url>
-		</patterns>
-		<patterns>
-			<pattern>http://embed.auroravid.to/embed.php.*?v=([a-z0-9]{13})</pattern>
-			<url>http://www.auroravid.to/video/\1</url>
+			<pattern>(?:embed.|)auroravid.to/(?:video/|embed/\?v=)([A-z0-9]{13})</pattern>
+			<url>http://www.auroravid.to/embed/?v=\1</url>
 		</patterns>
 	</find_videos>
 	<free>true</free>

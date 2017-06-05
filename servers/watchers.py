@@ -37,6 +37,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
         ext = scrapertools.get_filename_from_url(media_url)[-4:]
         if calidad:
             ext += " " + calidad + "p"
+        media_url += "|Referer=%s" % page_url
         video_urls.append([ext + ' [watchers]', media_url])
 
     return video_urls

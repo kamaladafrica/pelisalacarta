@@ -14,9 +14,15 @@ from core import scrapertools
 
 def test_video_exists(page_url):
     logger.info("(page_url='%s')" % page_url)
-    data = httptools.downloadpage(page_url).data
+    try:
+        response = httptools.downloadpage(page_url)
+    except:
+        pass
 
-    if "Object not found" in data:
+    if not response.data or "urlopen error [Errno 1]" in str(response.code):
+        return False, "[Raptu] Este conector solo funciona a partir de Kodi 17"
+
+    if "Object not found" in response.data:
         return False, "[Raptu] El archivo no existe o ha sido borrado"
 
     return True, ""

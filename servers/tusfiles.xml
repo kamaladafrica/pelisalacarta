@@ -15,6 +15,11 @@
 			<pattern>http://tusfiles.org/\?([A-z0-9]+)</pattern>
 			<url>http://tusfiles.org/?\1/</url>
 		</patterns>
+		<patterns>
+			<pattern>tusfiles.net/(?:embed-|)([A-z0-9]+)</pattern>
+			<url>http://tusfiles.net/\1</url>
+		</patterns>
+		
 	</find_videos>
 	<free>true</free>
 	<id>tusfiles</id>
