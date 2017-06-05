@@ -21,7 +21,13 @@ def test_video_exists(page_url):
         pass
 
     if not response.data or "urlopen error [Errno 1]" in str(response.code):
-        return False, "[Rapidvideo] Este conector solo funciona a partir de Kodi 17"
+        from core import config
+        if config.is_xbmc():
+            return False, "[Rapidvideo] Este conector solo funciona a partir de Kodi 17"
+        elif config.get_platform() == "plex":
+            return False, "[Rapidvideo] Este conector no funciona con tu versión de Plex, intenta actualizarla"
+        elif config.get_platform() == "mediaserver":
+            return False, "[Rapidvideo] Este conector requiere actualizar python a la versión 2.7.9 o superior"
     
     if "Object not found" in response.data:
         return False, "[Rapidvideo] El archivo no existe o ha sido borrado"
