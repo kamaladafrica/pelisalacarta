@@ -545,12 +545,26 @@ def get_server_controls_settings(server_name):
         if 'id' not in c or 'type' not in c or 'default' not in c:
             # Si algun control de la lista  no tiene id, type o default lo ignoramos
             continue
-        
-        c['enabled'] = [True, False][c.get('enabled', '').lower() == "false"]
-        c['visible'] = [True, False][c.get('visible', '').lower() == "false"]
-        
+
+        if 'enabled' not in c or c['enabled'] is None:
+            c['enabled'] = True
+        else:
+            if c['enabled'].lower() == "true":
+                c['enabled'] = True
+            elif c['enabled'].lower() == "false":
+                c['enabled'] = False
+
+        if 'visible' not in c or c['visible'] is None:
+            c['visible'] = True
+
+        else:
+            if c['visible'].lower() == "true":
+                c['visible'] = True
+            elif c['visible'].lower() == "false":
+                c['visible'] = False
+
         if c['type'] == 'bool':
-            c['default'] = [True, False][c.get('default', '').lower() == "false"]
+            c['default'] = (c['default'].lower() == "true")
 
         if unicode(c['default']).isnumeric():
             c['default'] = int(c['default'])

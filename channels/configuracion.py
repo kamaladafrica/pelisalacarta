@@ -254,7 +254,7 @@ def cb_servers_whitelist(server_names, dict_values):
             #Buscamos la posicion
             for pos, value in dict_values.items():
                 if index == value:
-                    config.set_setting("white_list", pos, server=server)
+                    config.set_setting("white_list", int(pos), server=server)
                     break
         
         #El Servidor no está seleccionado

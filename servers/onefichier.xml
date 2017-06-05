@@ -53,6 +53,7 @@
 		<visible>true</visible>
 	</settings>
 	<settings>
+		<default></default>
 		<enabled>eq(-1,true)</enabled>
 		<id>user</id>
 		<label>@30014</label>
@@ -60,6 +61,7 @@
 		<visible>true</visible>
 	</settings>
 	<settings>
+		<default></default>
 		<enabled>eq(-2,true)+!eq(-1,'')</enabled>
 		<hidden>true</hidden>
 		<id>password</id>
