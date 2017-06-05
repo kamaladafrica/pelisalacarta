@@ -119,12 +119,12 @@ class Downloader:
 
         
     #Funciones
-    def start_dialog(self):
+    def start_dialog(self, title="Descargando..."):
         from platformcode import platformtools
-        progreso = platformtools.dialog_progress("Descargas", "Iniciando descarga...")
-      
+        progreso = platformtools.dialog_progress(title, "Iniciando descarga...")
+        self.start()
         while self.state == self.states.downloading and not progreso.iscanceled():
-            time.sleep(0.5)
+            time.sleep(0.1)
             line1 = "%s" % (self.filename)
             line2 = "%.2f%% - %.2f %s de %.2f %s a %.2f %s/s (%d/%d)" % (
             self.progress, self.downloaded[1], self.downloaded[2], self.size[1], self.size[2], 
@@ -132,21 +132,28 @@ class Downloader:
             line3 = "Tiempo restante: %s" % (self.remaining_time)
           
             progreso.update(int(self.progress), line1, line2, line3)
-
-        self.stop()
+        if self.state == self.states.downloading:
+            self.stop()
         progreso.close()
 
 
     def start(self):
         if self._state == self.states.error: return 
-
+        conns = []
+        for x in range(self._max_connections):
+            try:
+                conns.append(self.__open_connection__("0",""))
+            except:
+                self._max_connections = x
+                self._threads = [Thread(target= self.__start_part__, name="Downloader %s/%s" % (x+1, self._max_connections)) for x in range(self._max_connections)]
+                break
+        del conns               
         self._start_time = time.time() -1
         self._state = self.states.downloading
-
-        for t in self._threads: t.start()
-
         self._speed_thread.start()
         self._save_thread.start()
+        
+        for t in self._threads: t.start()
 
 
     def stop(self, erase=False):
@@ -157,13 +164,14 @@ class Downloader:
               if t.isAlive(): t.join()
               
             if self._save_thread .isAlive(): self._save_thread .join()
-
-            #Guardamos la info al final del archivo
-            self.file.seek(0,2)
-            offset = self.file.tell()
-            self.file.write(str(self._download_info))
-            self.file.write("%0.16d" % offset)
-        
+            
+            if self._seekable:
+                #Guardamos la info al final del archivo
+                self.file.seek(0,2)
+                offset = self.file.tell()
+                self.file.write(str(self._download_info))
+                self.file.write("%0.16d" % offset)
+            
         self.file.close()
       
         if erase: os.remove(filetools.join(self._path, self._filename))
@@ -194,18 +202,25 @@ class Downloader:
    
               
     #Funciones internas
-    def __init__(self, url, path, filename=None, headers=[], resume = True, max_connections = 10):
+    def __init__(self, url, path, filename=None, headers=[], resume = True, max_connections = 10, block_size=2**17, part_size = 2**24, max_buffer = 10):
         #Parametros
         self._resume = resume
         self._path = path  
         self._filename = filename
         self._max_connections = max_connections
+        self._block_size = block_size
+        self._part_size = part_size
+        self._max_buffer = max_buffer
 
+        try: 
+            import xbmc
+            self.tmp_path = xbmc.translatePath("special://temp/")
+        except:
+            self.tmp_path = os.getenv("TEMP") or os.getenv("TMP") or os.getenv("TMPDIR")
       
       
         self.states = type('states', (), {"stopped":0, "connecting": 1, "downloading": 2, "completed": 3, "error": 4, "saving": 5})
-        self._block_size = 1024*100
-        self._part_size = 2**21
+        
         self._state = self.states.stopped
         self._download_lock = Lock()
         self._headers = {"User-Agent":"Kodi/15.2 (Windows NT 10.0; WOW64) App_Bitness/32 Version/15.2-Git:20151019-02e7013"}
@@ -262,6 +277,14 @@ class Downloader:
 
 
     def __get_download_headers__(self):
+        if self.url.startswith("https"):
+            try:
+                conn = urllib2.urlopen(urllib2.Request(self.url.replace("https", "http"), headers=self._headers))
+                conn.fp._sock.close()
+                self.url = self.url.replace("https", "http")
+            except:
+                pass
+                
         for x in range(3):
             try:
                 if not sys.hexversion > 0x0204FFFF:
@@ -342,12 +365,14 @@ class Downloader:
                 raise Exception()
             self.file.seek(offset)
             self.file.truncate()
-            self._start_downloaded = sum([c["end"] - c["start"] for c in self._download_info["parts"] if c["status"] == self.states.completed])
+            
             if not self._seekable:
                 for part in self._download_info["parts"]:
                   if part["start"]>= 2**31 and part["status"] == self.states.completed:
                     part["status"] == self.states.stopped
+                    part["current"] == part["start"]
             
+            self._start_downloaded = sum([c["current"] - c["start"] for c in self._download_info["parts"]])
             self.pending_parts = set([x for x, a in enumerate(self._download_info["parts"]) if not a["status"] == self.states.completed])
             self.completed_parts = set([x for x, a in enumerate(self._download_info["parts"]) if a["status"] == self.states.completed])
             self.save_parts = set()
@@ -400,20 +425,26 @@ class Downloader:
                 continue
                 
             elif not self.save_parts:    
-              continue
+                continue
             
             save_id = min(self.save_parts)
+            
             if not self._seekable and self._download_info["parts"][save_id]["start"] >= 2**31 and not self.__check_consecutive__(save_id):
-              continue
+                continue
 
             if self._seekable or self._download_info["parts"][save_id]["start"] < 2**31:
                 self.file.seek(self._download_info["parts"][save_id]["start"])
                 
             try:
-              self.file.write(self._buffer.pop(save_id))
-              self.save_parts.remove(save_id)
-              self.completed_parts.add(save_id)
-              self._download_info["parts"][save_id]["status"] = self.states.completed
+                #file = open(os.path.join(self.tmp_path, self._filename + ".part%s" % save_id), "rb")
+                #self.file.write(file.read())
+                #file.close()
+                #os.remove(os.path.join(self.tmp_path, self._filename + ".part%s" % save_id))
+                for a in self._buffer.pop(save_id):
+                    self.file.write(a)
+                self.save_parts.remove(save_id)
+                self.completed_parts.add(save_id)
+                self._download_info["parts"][save_id]["status"] = self.states.completed
             except:
               import traceback
               logger.error(traceback.format_exc())
@@ -422,74 +453,113 @@ class Downloader:
         if self.save_parts:
           for s in self.save_parts:
             self._download_info["parts"][s]["status"] = self.states.stopped
+            self._download_info["parts"][s]["current"] = self._download_info["parts"][s]["start"]
             
         logger.info("Thread detenido: %s" % threading.current_thread().name)
+    
+    
+    def __get_part_id__(self):
+        self._download_lock.acquire()
+        if len(self.pending_parts):
+            id = min(self.pending_parts)
+            self.pending_parts.remove(id)
+            self.download_parts.add(id)
+            self._download_lock.release()
+            return id
+        else:
+            self._download_lock.release()
+            return None
+    
+    def __set_part_connecting__(self, id):
+        logger.info("ID: %s Estableciendo conexión" % id)
+        self._download_info["parts"][id]["status"]  = self.states.connecting
+    
+    def __set_part__error__(self, id):
+        logger.info("ID: %s Error al descargar" % id)
+        self._download_info["parts"][id]["status"]  = self.states.error
+        self.pending_parts.add(id)
+        self.download_parts.remove(id)
+        
+    def __set_part__downloading__(self, id):
+        logger.info("ID: %s Descargando datos..." % id)
+        self._download_info["parts"][id]["status"]  = self.states.downloading
+    
+    def __set_part_completed__(self, id):
+        logger.info("ID: %s ¡Descarga finalizada!" % id)
+        self._download_info["parts"][id]["status"] = self.states.saving
+        self.download_parts.remove(id)
+        self.save_parts.add(id)
+        while self._state == self.states.downloading and len(self._buffer) > self._max_connections + self._max_buffer:
+            time.sleep(0.1)
 
-
+    def __set_part_stopped__(self, id):
+        if self._download_info["parts"][id]["status"] == self.states.downloading:
+            self._download_info["parts"][id]["status"] = self.states.stopped
+            self.download_parts.remove(id)
+            self.pending_parts.add(id)
+            
+            
+    def __open_part_file__(self,id): 
+        file = open(os.path.join(self.tmp_path, self._filename + ".part%s" % id), "a+")
+        file = open(os.path.join(self.tmp_path, self._filename + ".part%s" % id), "r+b")
+        file.seek(self._download_info["parts"][id]["current"] - self._download_info["parts"][id]["start"])
+        return file
+        
     def __start_part__(self):
         logger.info("Thread Iniciado: %s" % threading.current_thread().name)
-        
         while self._state == self.states.downloading:
-            self._download_lock.acquire()
+            id = self.__get_part_id__()
+            if id is None: break
 
-            if len(self.pending_parts):
-                id = min(self.pending_parts)
-                self.pending_parts.remove(id)
-                self.download_parts.add(id)
-                self._download_lock.release()
-            else:
-                self._download_lock.release()
-                break
-          
-          
-            logger.info("Descargando parte: %s" % id)
-            self._download_info["parts"][id]["status"]  = self.states.connecting
+            self.__set_part_connecting__(id)
 
             try:
-                connection = self.__open_connection__(self._download_info["parts"][id]["start"], self._download_info["parts"][id]["end"])
+                connection = self.__open_connection__(self._download_info["parts"][id]["current"], self._download_info["parts"][id]["end"])
             except:
-                self._download_info["parts"][id]["status"]  = self.states.error
-                self.pending_parts.add(id)
-                self.download_parts.remove(id)
+                self.__set_part__error__(id)
                 time.sleep(5)
                 continue
-            else:
-                self._download_info["parts"][id]["status"]  = self.states.downloading       
             
-            if self._download_info["parts"][id]["start"] <> int(connection.info().get("content-range","bytes 0-").split(" ")[1].split("-")[0]):
-                self._download_info["parts"][id]["status"] = self.states.error
-                self.pending_parts.add(id)
-                self.download_parts.remove(id)
-                time.sleep(5)
-                continue
-          
-            self._buffer[id] = ""   
-       
+            self.__set_part__downloading__(id)     
+            #file = self.__open_part_file__(id)
+            
+            if not id in self._buffer: 
+                self._buffer[id] = []
+            speed = []
+            
             while self._state == self.states.downloading:
                   try:
+                        start = time.time()
                         buffer = connection.read(self._block_size)
+                        speed.append(len(buffer) / ((time.time() - start) or 0.001))                        
                   except:
+                        logger.info("ID: %s Error al descargar los datos" % id)
                         self._download_info["parts"][id]["status"] = self.states.error
                         self.pending_parts.add(id)
                         self.download_parts.remove(id)
                         break
                   else:
                         if len(buffer) and self._download_info["parts"][id]["current"] < self._download_info["parts"][id]["end"]:
-                            self._buffer[id] += buffer
+                            #file.write(buffer)
+                            self._buffer[id].append(buffer)
                             self._download_info["parts"][id]["current"] +=len(buffer)
+                            if len(speed) > 10:
+                                velocidad_minima = sum(speed) / len(speed) / 3
+                                velocidad  = speed[-1]
+                                vm = self.__change_units__(velocidad_minima)
+                                v = self.__change_units__(velocidad)
+                                
+                                if  velocidad_minima > speed[-1] and velocidad_minima > speed[-2] and self._download_info["parts"][id]["current"] < self._download_info["parts"][id]["end"]:
+                                    connection.fp._sock.close()
+                                    logger.info("ID: %s ¡Reiniciando conexión! | Velocidad minima: %.2f %s/s | Velocidad: %.2f %s/s" % \
+                                             (id, vm[1], vm[2], v[1], v[2]))
+                                    #file.close()
+                                    break
                         else:
+                            self.__set_part_completed__(id)
                             connection.fp._sock.close()
-                            self._download_info["parts"][id]["status"] = self.states.saving
-                            self.download_parts.remove(id)
-                            self.save_parts.add(id)
-                            while len(self._buffer) > 10:
-                              time.sleep(0.1)
+                            #file.close()
                             break
             
-
-            if self._download_info["parts"][id]["status"] == self.states.downloading:
-              self._download_info["parts"][id]["status"] = self.states.stopped
-              self.download_parts.remove(id)
-              self.pending_parts.add(id)
-              
+            self.__set_part_stopped__(id)
         logger.info("Thread detenido: %s" % threading.current_thread().name)
