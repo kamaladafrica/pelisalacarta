@@ -182,12 +182,12 @@ def listado(item):
     data = scrapertools.find_multiple_matches(data, '<ul class="ListAnimes[^>]+>(.*?)</ul>')
     data = "".join(data)
 
-    matches = re.compile('<img src="([^"]+)".+?<span class=.+?>(.*?)</span>.+?<a href="([^"]+)">(.*?)</a>.+?'
-                         'class="Desc ScrlV"><p>(.*?)</p>', re.DOTALL).findall(data)
+    matches = re.compile('<a href="([^"]+)">.+?<img src="([^"]+)".+?<span class=.+?>(.*?)</span>.+?<h3.*?>(.*?)</h3>'
+                         '.*?</p><p>(.*?)</p>', re.DOTALL).findall(data)
 
     itemlist = []
 
-    for thumbnail, _type, url, title, plot in matches:
+    for url, thumbnail, _type, title, plot in matches:
 
         url = urlparse.urljoin(HOST, url)
         thumbnail = urlparse.urljoin(HOST, thumbnail)
