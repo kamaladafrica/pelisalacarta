@@ -17,7 +17,7 @@
 		<ignore_urls>
 		</ignore_urls>
 		<patterns>
-			<pattern>(crunchyroll.com/[^/]+/[^-]*-\d+).*$</pattern>
+			<pattern>(crunchyroll.com/[^/]+/[^-].*-\d+).*$</pattern>
 			<url>http://www.\1</url>
 		</patterns>
 	</find_videos>
