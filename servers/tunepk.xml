@@ -13,7 +13,7 @@
 		</ignore_urls>
 		<patterns>
 			<pattern>tune.pk/player/embed_player.php\?vid\=(\d+)</pattern>
-			<url>http://embed.tune.pk/play/\1?autoplay=no"</url>
+			<url>http://embed.tune.pk/play/\1?autoplay=no</url>
 		</patterns>
 	</find_videos>
 	<free>true</free>

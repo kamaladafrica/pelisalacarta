@@ -37,10 +37,9 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
 
     video_urls = []
     for media_url in media_urls:
-        if ".m3u8" in media_url:
-            media_url += "|Referer=http://static.vidzi.tv/nplayer/jwplayer.flash.swf"
+        ext = scrapertools.get_filename_from_url(media_url)[-4:]
         if not media_url.endswith("vtt"):
-            video_urls.append([scrapertools.get_filename_from_url(media_url)[-4:] + " [vidzi]", media_url])
+            video_urls.append(["%s [vidzi]" % ext, media_url])
 
     return video_urls
 

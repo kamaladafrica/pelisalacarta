@@ -12,7 +12,7 @@
 		<ignore_urls>
 		</ignore_urls>
 		<patterns>
-			<pattern>"(http://(?:www.)?tu.tv[^"]+)"</pattern>
+			<pattern>(http://(?:www.)?tu.tv[^"]+)</pattern>
 			<url>\1</url>
 		</patterns>
 		<patterns>

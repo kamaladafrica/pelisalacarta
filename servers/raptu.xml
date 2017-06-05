@@ -18,7 +18,7 @@
 		</ignore_urls>
 		<patterns>
 			<pattern>raptu.com/(?:\?v=|embed/|e/)([A-z0-9]+)</pattern>
-			<url>http://raptu.com/embed/\1</url>
+			<url>https://raptu.com/embed/\1</url>
 		</patterns>
 	</find_videos>
 	<free>true</free>

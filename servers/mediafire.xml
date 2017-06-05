@@ -12,23 +12,7 @@
 		<ignore_urls>
 		</ignore_urls>
 		<patterns>
-			<pattern>mediafire.com/download.php\?([a-z0-9]+)</pattern>
-			<url>http://www.mediafire.com/?\1</url>
-		</patterns>
-		<patterns>
-			<pattern>mediafire.com/download/([a-z0-9]+)</pattern>
-			<url>http://www.mediafire.com/?\1</url>
-		</patterns>
-		<patterns>
-			<pattern>http://www.mediafire.com/\?([a-z0-9]+)</pattern>
-			<url>http://www.mediafire.com/?\1</url>
-		</patterns>
-		<patterns>
-			<pattern>http://www.mediafire.com/file/([a-z0-9]+)</pattern>
-			<url>http://www.mediafire.com/?\1</url>
-		</patterns>
-		<patterns>
-			<pattern>mediafire.com\%2F\%3F([a-z0-9]+)</pattern>
+			<pattern>mediafire.com(?:/download.php\?|/download/|/file/|/\?|\%2F\%3F)([a-z0-9]+)</pattern>
 			<url>http://www.mediafire.com/?\1</url>
 		</patterns>
 	</find_videos>
