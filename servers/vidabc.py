@@ -15,7 +15,7 @@ def test_video_exists(page_url):
     logger.info("(page_url='%s')" % page_url)
     data = downloadpage(page_url).data
     if "Video is processing now" in data:
-        return False, "[Fastplay] El archivo se está procesando"
+        return False, "[vidabc] El archivo se está procesando"
     return True, ""
 
 def get_video_url(page_url, premium=False, user="", password="", video_password=""):
