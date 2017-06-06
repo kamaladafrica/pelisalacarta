@@ -90,7 +90,7 @@ def mainlist(channel):
 
         idx += 1
         name = tvshow
-        title = "Configurar [COLOR {0}][{1}][/COLOR]".format(tag_color, name)
+        title = "Configurar [COLOR %s][%s][/COLOR]" % (tag_color, name)
 
         itemlist.append(Item(channel=__channel__, action="config_item", title=title, show=name, from_channel=channel))
 
@@ -109,7 +109,7 @@ def config_item(item):
     :param item: item
     :type item: Item
     """
-    logger.info("item {0}".format(item.tostring("\n")))
+    logger.info("item %s" % item.tostring("\n"))
 
     dict_series = filetools.get_node_from_data_json(item.from_channel, TAG_TVSHOW_RENUMERATE)
     data = dict_series.get(item.show, {})
@@ -160,7 +160,7 @@ def numbered_for_tratk(channel, show, season, episode):
             del dict_series[key]
 
     if show in dict_series:
-        logger.debug("ha encontrado algo: {0}".format(dict_series[show]))
+        logger.debug("ha encontrado algo: %s" % dict_series[show])
 
         if len(dict_series[show]['season_episode']) > 1:
             for row in dict_series[show]['season_episode']:
@@ -174,15 +174,15 @@ def numbered_for_tratk(channel, show, season, episode):
             new_season = dict_series[show]['season_episode'][0][0]
             new_episode += dict_series[show]['season_episode'][0][1]
 
-    logger.debug("{0}:{1}".format(new_season, new_episode))
+    logger.debug("%s:%s" % (new_season, new_episode))
     return new_season, new_episode
 
 
 def borrar(channel, show):
     logger.info()
     heading = "¿Está seguro que desea eliminar renumeración?"
-    line1 = "Pulse 'Si' para eliminar la renumeración de [COLOR blue]{0}[/COLOR], pulse 'No' o cierre la ventana " \
-            "para no hacer nada.".format(show.strip())
+    line1 = "Pulse 'Si' para eliminar la renumeración de [COLOR blue]%s[/COLOR], pulse 'No' o cierre la ventana " \
+            "para no hacer nada." % show.strip()
 
     if platformtools.dialog_yesno(heading, line1) == 1:
         dict_series = filetools.get_node_from_data_json(channel, TAG_TVSHOW_RENUMERATE)
@@ -202,7 +202,7 @@ def borrar(channel, show):
 
 def add_season(data=None):
 
-    logger.debug("data {0}".format(data))
+    logger.debug("data %s" % data)
     heading = "Introduzca el número de la temporada"
     # default = 2
     # se reordena la lista
@@ -247,7 +247,7 @@ def write_data(channel, show, data):
     dict_series = filetools.get_node_from_data_json(channel, TAG_TVSHOW_RENUMERATE)
     tvshow = show.strip()
     list_season_episode = dict_series.get(tvshow, {}).get(TAG_SEASON_EPISODE, [])
-    logger.debug("data {0}".format(list_season_episode))
+    logger.debug("data %s" % list_season_episode)
 
     if data:
         # cambiamos el orden para que se vea en orden descendente y usarse bien en el _data.json
