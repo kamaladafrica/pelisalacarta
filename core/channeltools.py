@@ -115,6 +115,7 @@ def get_channel_parameters(channel_name):
                 channel_parameters["has_settings"] = True
                 break
 
+        # Inicio - condiciones para mostrar canal compatible
         python_condition = scrapertools.find_single_match(data, "<python>([^<]*)</python>")
         if python_condition:
             import sys
@@ -123,11 +124,29 @@ def get_channel_parameters(channel_name):
                 return tuple(map(int, (v.split("."))))
 
             if sys.version_info < versiontuple(python_condition):
-                channel_parameters["compatible"] = False
+                python_compatible = False
             else:
-                channel_parameters["compatible"] = True
+                python_compatible = True
         else:
-            channel_parameters["compatible"] = True
+            python_compatible = True
+
+        addon_version_condition = scrapertools.find_single_match(data, "<addon_version>([^<]*)</addon_version>")
+        if addon_version_condition:
+            import versiontools
+            addon_version = int(addon_version_condition.replace(".", "").zfill(
+                len(versiontools.get_current_plugin_version())))
+            if versiontools.get_current_plugin_version() < addon_version:
+                addon_version_compatible = False
+            else:
+                addon_version_compatible = True
+        else:
+            addon_version_compatible = True
+
+        channel_parameters["compatible"] = True
+
+        if not python_compatible or not addon_version_compatible:
+            channel_parameters["compatible"] = False
+        # Fin - condiciones para mostrar canal compatible
 
         logger.info(channel_name+" -> "+repr(channel_parameters))
 
@@ -139,6 +158,7 @@ def get_channel_parameters(channel_name):
         channel_parameters["update_url"] = DEFAULT_UPDATE_URL
 
     return channel_parameters
+
 
 
 def get_channel_json(channel_name):
