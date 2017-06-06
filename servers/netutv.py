@@ -22,7 +22,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
         id_video = scrapertools.find_single_match(data, "vid\s*=\s*'([^']+)'")
     else:
         id_video = page_url.rsplit("=", 1)[1]
-    page_url_hqq = "http://hqq.tv/player/embed_player.php?vid=%s&autoplay=no" % id_video
+    page_url_hqq = "http://hqq.watch/player/embed_player.php?vid=%s&autoplay=no" % id_video
     data_page_url_hqq = httptools.downloadpage(page_url_hqq, add_referer=True).data
 
     js_wise = scrapertools.find_single_match(data_page_url_hqq,
@@ -31,9 +31,10 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     at = scrapertools.find_single_match(data_unwise, 'var at\s*=\s*"([^"]+)"')
     http_referer = scrapertools.find_single_match(data_unwise, 'var http_referer\s*=\s*"([^"]+)"')
 
-    url = "http://hqq.tv/sec/player/embed_player.php?iss=&vid=%s&at=%s&autoplayed=yes&referer=on" \
+    url = "http://hqq.watch/sec/player/embed_player.php?iss=&vid=%s&at=%s&autoplayed=yes&referer=on" \
           "&http_referer=%s&pass=&embed_from=&need_captcha=0&hash_from=" % (id_video, at, http_referer)
     data_player = httptools.downloadpage(url, add_referer=True).data
+
     data_unescape = scrapertools.find_multiple_matches(data_player, 'document.write\(unescape\("([^"]+)"')
     data = ""
     for d in data_unescape:
@@ -64,7 +65,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
 
     params = urllib.urlencode(params)
     head = {'X-Requested-With': 'XMLHttpRequest', 'Referer': url}
-    data = httptools.downloadpage("http://hqq.tv/player/get_md5.php?" + params, headers=head).data
+    data = httptools.downloadpage("http://hqq.watch/player/get_md5.php?" + params, headers=head).data
 
     media_urls = []
     url_data = jsontools.load_json(data)
@@ -99,7 +100,8 @@ def find_videos(data):
         'hqq.tv/([^=]+)=([a-zA-Z0-9]+)',
         'netu.tv/([^=]+)=([a-zA-Z0-9]+)',
         'waaw.tv/([^=]+)=([a-zA-Z0-9]+)',
-        'netu.php\?(nt=)([a-zA-Z0-9]+)'
+        'netu.php\?(nt=)([a-zA-Z0-9]+)',
+        'hqq.watch/([^=]+)=([a-zA-Z0-9]+)',
     ]
 
     url = "http://netu.tv/watch_video.php?v=%s"

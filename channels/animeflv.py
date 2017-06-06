@@ -149,11 +149,11 @@ def novedades_anime(item):
     data = re.sub(r"\n|\r|\t|\s{2}|-\s", "", data)
     data = scrapertools.find_single_match(data, '<ul class="ListAnimes[^>]+>(.*?)</ul>')
 
-    matches = re.compile('<img src="([^"]+)".+?<span class=.+?>(.*?)</span>.+?<p>(.*?)</p>.+?'
-                         '<a href="([^"]+)">(.*?)</a>', re.DOTALL).findall(data)
+    matches = re.compile('href="([^"]+)".+?<img src="([^"]+)".+?<span class=.+?>(.*?)</span>.+?<h3.+?>(.*?)</h3>.+?'
+                         '(?:</p><p>(.*?)</p>.+?)?</article></li>', re.DOTALL).findall(data)
     itemlist = []
 
-    for thumbnail, _type, plot, url, title in matches:
+    for url, thumbnail, _type, title, plot in matches:
 
         url = urlparse.urljoin(HOST, url)
         thumbnail = urlparse.urljoin(HOST, thumbnail)
@@ -182,12 +182,12 @@ def listado(item):
     data = scrapertools.find_multiple_matches(data, '<ul class="ListAnimes[^>]+>(.*?)</ul>')
     data = "".join(data)
 
-    matches = re.compile('<img src="([^"]+)".+?<span class=.+?>(.*?)</span>.+?<a href="([^"]+)">(.*?)</a>.+?'
-                         'class="Desc ScrlV"><p>(.*?)</p>', re.DOTALL).findall(data)
+    matches = re.compile('<a href="([^"]+)">.+?<img src="([^"]+)".+?<span class=.+?>(.*?)</span>.+?<h3.*?>(.*?)</h3>'
+                         '.*?</p><p>(.*?)</p>', re.DOTALL).findall(data)
 
     itemlist = []
 
-    for thumbnail, _type, url, title, plot in matches:
+    for url, thumbnail, _type, title, plot in matches:
 
         url = urlparse.urljoin(HOST, url)
         thumbnail = urlparse.urljoin(HOST, thumbnail)
@@ -223,13 +223,14 @@ def episodios(item):
     if item.plot == "":
         item.plot = scrapertools.find_single_match(data, 'Description[^>]+><p>(.*?)</p>')
 
-    data = scrapertools.find_single_match(data, '<div class="Sect Episodes">(.*?)</div>')
-    matches = re.compile('<a href="([^"]+)"[^>]+>(.+?)<', re.DOTALL).findall(data)
+    data = scrapertools.find_single_match(data, '<ul class="ListCaps">(.*?)</ul>')
+    matches = re.compile('href="([^"]+)"><figure><img class="[^"]+" data-original="([^"]+)".+?</h3>'
+                         '<p>(.*?)</p>', re.DOTALL).findall(data)
 
-    for url, title in matches:
+    for url, thumb, title in matches:
         title = title.strip()
         url = urlparse.urljoin(item.url, url)
-        thumbnail = item.thumbnail
+        # thumbnail = item.thumbnail
 
         try:
             episode = int(scrapertools.find_single_match(title, "^.+?\s(\d+)$"))
@@ -241,8 +242,8 @@ def episodios(item):
 
         title = "%s: %sx%s" % (item.title, season, str(episode).zfill(2))
 
-        itemlist.append(item.clone(action="findvideos", title=title, url=url, thumbnail=thumbnail, fulltitle=title,
-                                   fanart=thumbnail, contentType="episode"))
+        itemlist.append(item.clone(action="findvideos", title=title, url=url, thumbnail=thumb, fulltitle=title,
+                                   fanart=item.thumbnail, contentType="episode"))
 
     return itemlist
 

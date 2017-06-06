@@ -27,11 +27,16 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
 
     data = httptools.downloadpage(page_url).data
     video_urls = []
+    #Detección de subtítulos
+    subtitulo = ""
     videos = scrapertools.find_multiple_matches(data, '"file"\s*:\s*"([^"]+)","label"\s*:\s*"([^"]+)"')
     for video_url, calidad in videos:
         video_url = video_url.replace("\\", "")
         extension = scrapertools.get_filename_from_url(video_url)[-4:]
-        video_urls.append(["%s %s [raptu]" % (extension, calidad), video_url])
+        if ".srt" in extension:
+            subtitulo = "https://www.raptu.com"+video_url
+        else:
+            video_urls.append(["%s %s [raptu]" % (extension, calidad), video_url, 0, subtitulo])
 
     try:
         video_urls.sort(key=lambda it: int(it[0].split("p ", 1)[0].rsplit(" ")[1]))
@@ -50,13 +55,14 @@ def find_videos(data):
 
     # https://www.raptu.com/?v=ZapZwMMA
     # https://www.raptu.com/embed/ZupZwMML
-    patronvideos = 'raptu.com/(?:\?v=|embed/)([A-z0-9]+)'
+    # https://www.raptu.com/e/FF8L2P8V26
+    patronvideos = 'raptu.com/(?:\?v=|embed/|e/)([A-z0-9]+)'
     logger.info("#" + patronvideos + "#")
     matches = re.compile(patronvideos, re.DOTALL).findall(data)
 
     for match in matches:
         titulo = "[raptu]"
-        url = "http://raptu.com/embed/%s" % match
+        url = "https://raptu.com/embed/%s" % match
         if url not in encontrados:
             logger.info("  url=" + url)
             devuelve.append([titulo, url, 'raptu'])

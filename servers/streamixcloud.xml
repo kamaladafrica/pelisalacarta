@@ -1,0 +1,43 @@
+<?xml version="1.0" ?>
+<server>
+	<active>true</active>
+	<changes>
+		<change>
+			<autor>Cmos</autor>
+			<date>16/05/2017</date>
+			<description>Primera versión</description>
+		</change>
+	</changes>
+	<find_videos>
+		<ignore_urls>
+		</ignore_urls>
+		<patterns>
+			<pattern>streamix.cloud/(?:embed-|)([A-z0-9]+)</pattern>
+			<url>http://streamix.cloud/embed-\1.html</url>
+		</patterns>
+	</find_videos>
+	<free>true</free>
+	<id>streamixcloud</id>
+	<name>streamixcloud</name>
+	<premium>
+	</premium>
+	<settings>
+		<default>false</default>
+		<enabled>true</enabled>
+		<id>black_list</id>
+		<label>Incluir en lista negra</label>
+		<type>bool</type>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<default>false</default>
+		<enabled>true</enabled>
+		<id>white_list</id>
+		<label>Incluir en lista de favoritos</label>
+		<type>bool</type>
+		<visible>false</visible>
+	</settings>
+	<thumbnail>http://i.imgur.com/NuD85Py.png?1</thumbnail>
+	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/servers/</update_url>
+	<version>2</version>
+</server>

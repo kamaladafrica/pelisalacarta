@@ -288,10 +288,7 @@ def epienlaces(item):
         if scrapedserver == "magnet":
             itemlist.insert(0, item.clone(action="play", title=titulo, server="torrent", url=scrapedurl, extra=item.url))
         else:
-            mostrar_server = True
-            if config.get_setting("hidepremium") == True:
-                mostrar_server = servertools.is_server_enabled(scrapedserver)
-            if mostrar_server:
+            if servertools.is_server_enabled(scrapedserver):
                 try:
                     servers_module = __import__("servers." + scrapedserver)
                     lista_enlaces.append(item.clone(action="play", title=titulo, server=scrapedserver, url=scrapedurl,
@@ -424,10 +421,7 @@ def findvideos(item):
                 itemlist.append(item.clone(action="play", server="torrent", title=title, url=scrapedurl,
                                            text_color="green"))
                 continue
-            mostrar_server = True
-            if config.get_setting("hidepremium") == True:
-                mostrar_server = servertools.is_server_enabled(scrapedserver)
-            if mostrar_server:
+            if servertools.is_server_enabled(scrapedserver):
                 try:
                     servers_module = __import__("servers." + scrapedserver)
                     # Saca numero de enlaces

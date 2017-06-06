@@ -35,6 +35,7 @@ from core import config
 from core import library
 from core import logger
 from core import scrapertools
+from core import servertools
 from core.item import Item
 from platformcode import platformtools
 
@@ -50,16 +51,17 @@ def start():
     config.verify_directories_created()
 
 
-def run():
+def run(item=None):
     logger.info()
 
-    # Extract item from sys.argv
-    if sys.argv[2]:
-        item = Item().fromurl(sys.argv[2])
+    if not item:
+        # Extract item from sys.argv
+        if sys.argv[2]:
+            item = Item().fromurl(sys.argv[2])
 
-    # If no item, this is mainlist
-    else:
-        item = Item(channel="channelselector", action="getmainlist", viewmode="movie")
+        # If no item, this is mainlist
+        else:
+            item = Item(channel="channelselector", action="getmainlist", viewmode="movie")
 
     logger.info(item.tostring())
 
@@ -147,22 +149,11 @@ def run():
             if item.action == "mainlist":
 
                 # Parental control
-                can_open_channel = False
-
                 # If it is an adult channel, and user has configured pin, asks for it
                 if channeltools.is_adult(item.channel) and config.get_setting("adult_pin") != "":
-
                     tecleado = platformtools.dialog_input("", "Contraseña para canales de adultos", True)
-                    if tecleado is not None:
-                        if tecleado == config.get_setting("adult_pin"):
-                            can_open_channel = True
-
-                # All the other cases can open the channel
-                else:
-                    can_open_channel = True
-
-                if not can_open_channel:
-                    return
+                    if tecleado is None or tecleado != config.get_setting("adult_pin"):
+                        return
 
             # Actualiza el canal individual
             if (item.action == "mainlist" and
@@ -227,16 +218,13 @@ def run():
                 # First checks if channel has a "findvideos" function
                 if hasattr(channel, 'findvideos'):
                     itemlist = getattr(channel, item.action)(item)
+                    itemlist = servertools.filter_servers(itemlist)
 
                 # If not, uses the generic findvideos function
                 else:
                     logger.info("No channel 'findvideos' method, "
                                 "executing core method")
-                    from core import servertools
                     itemlist = servertools.find_video_items(item)
-
-                if config.get_setting('filter_servers') == True:
-                    itemlist = filtered_servers(itemlist)
 
                 if config.get_setting("max_links", "biblioteca") != 0:
                     itemlist = limit_itemlist(itemlist)
@@ -339,101 +327,6 @@ def run():
                 log_message)
 
 
-def set_server_list():
-    logger.info()
-
-    server_white_list = []
-    server_black_list = []
-
-    if len(config.get_setting('whitelist')) > 0:
-        server_white_list_key = config.get_setting('whitelist').replace(', ', ',').replace(' ,', ',')
-        server_white_list = re.split(',', server_white_list_key)
-
-    if len(config.get_setting('blacklist')) > 0:
-        server_black_list_key = config.get_setting('blacklist').replace(', ', ',').replace(' ,', ',')
-        server_black_list = re.split(',', server_black_list_key)
-
-    logger.info("WhiteList %s" % server_white_list)
-    logger.info("BlackList %s" % server_black_list)
-
-    return server_white_list, server_black_list
-
-
-def filtered_servers(itemlist):
-    logger.info()
-    # logger.debug("Inlet itemlist size: %i" % len(itemlist))
-
-    new_list = []
-    white_counter = 0
-    black_counter = 0
-
-    server_white_list, server_black_list = set_server_list()
-
-    white_list_order = config.get_setting("white_list_order", "biblioteca")
-
-    if len(server_white_list) > 0:
-        logger.info("WhiteList")
-        if white_list_order:
-            for server in server_white_list:
-                logger.info("Servidor: " + server)
-                for item in itemlist:
-                    if server in unicode(item.title, "utf8").lower().encode("utf8"):
-                        logger.info("Coincidencia: " + item.title)
-                        new_list.append(item)
-                        white_counter += 1
-
-        else:
-            for item in itemlist:
-                logger.info("item.title: " + item.title)
-                if any(server in unicode(item.title, "utf8").lower().encode("utf8")
-                       for server in server_white_list):
-                    # logger.info("found")
-                    new_list.append(item)
-                    white_counter += 1
-                # else:
-                #     logger.info("not found")
-
-    if len(server_black_list) > 0:
-        logger.info("BlackList")
-
-        # Si existe 'new_list' se añade lo restante y se filtra
-        if len(new_list) != 0:
-            # Se añade al final de 'new_list' lo que no tuviera de 'itemlist'
-            if len(new_list) != len(itemlist):
-                for item_1 in itemlist:
-                    coincidencia = False
-                    for item_2 in new_list:
-                        if item_2.title == item_1.title:
-                            coincidencia = True
-                            break
-                    if not coincidencia:
-                        new_list.append(item_1)
-
-            itemlist = new_list
-            new_list = []
-
-        for item in itemlist:
-            logger.info("item.title: " + item.title)
-            if any(server in unicode(item.title, "utf8").lower().encode("utf8")
-                   for server in server_black_list):
-                # logger.info("found")
-                black_counter += 1
-
-            # Se pasa a 'new_list' si el servidor no estaba en la lista negra.
-            else:
-                new_list.append(item)
-
-    logger.info("WhiteList server %s has #%d rows" %
-                (server_white_list, white_counter))
-    logger.info("BlackList server %s has #%d rows" %
-                (server_black_list, black_counter))
-    logger.info("Rest has #%d rows" % (len(new_list) - white_counter))
-
-    if len(new_list) == 0:
-        new_list = itemlist
-
-    # logger.debug("Outlet itemlist size: %i" % len(new_list))
-    return new_list
 
 
 def reorder_itemlist(itemlist):
@@ -541,9 +434,9 @@ def play_from_library(item):
 
         p_dialog.update(50, '')
 
-        # Se filtran los enlaces segun la lista blanca y negra
-        if config.get_setting('filter_servers') == True:
-            itemlist = filtered_servers(itemlist)
+        '''# Se filtran los enlaces segun la lista negra
+        if config.get_setting('filter_servers', "servers"):
+            itemlist = servertools.filter_servers(itemlist)'''
 
         # Se limita la cantidad de enlaces a mostrar
         if config.get_setting("max_links", "biblioteca") != 0:

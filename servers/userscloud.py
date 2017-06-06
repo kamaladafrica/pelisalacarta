@@ -35,7 +35,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
         post = "op=download2&id=%s&rand=%s&referer=%s&method_free=&method_premium=" % (id_, rand, page_url)
         data = httptools.downloadpage(page_url, post).data
 
-        media_url = scrapertools.find_single_match(data, '<a href="([^"]+)" class="btn btn-success"')
+        media_url = scrapertools.find_single_match(data, '<div id="dl_link".*?<a href="([^"]+)"')
 
     ext = scrapertools.get_filename_from_url(media_url)[-4:]
     video_urls.append(["%s [userscloud]" % ext, media_url])
@@ -60,7 +60,7 @@ def find_videos(data):
 
     for match in matches:
         titulo = "[userscloud]"
-        url = "https://userscloud.com/%s" % match
+        url = "http://userscloud.com/%s" % match
         if url not in encontrados:
             logger.info("  url=" + url)
             devuelve.append([titulo, url, 'userscloud'])

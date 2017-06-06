@@ -153,7 +153,7 @@ def play(item):
     data = httptools.downloadpage(item.url).data
     data = scrapertools.find_single_match(data,'src="('+HOST+'/show/[^"]+)"')
     data = httptools.downloadpage(data,headers=[['User-Agent', 'Mozilla/5.0'],['Accept-Encoding', 'gzip, deflate'],['Referer', HOST],['Connection', 'keep-alive']]).data
-    videoUrl=scrapertools.find_single_match(data,'<IFRAME SRC="([^"]+)"')
+    videoUrl=scrapertools.find_single_match(data,'(?i)<IFRAME.*?SRC="([^"]+)"')
     goo = scrapertools.find_single_match(videoUrl,'://([^/]+)/')
     if(goo == 'goo.gl'):
         videoUrl=httptools.downloadpage(videoUrl, follow_redirects=False, only_headers=True).headers["location"]

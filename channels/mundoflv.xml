@@ -12,9 +12,32 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/mundoflv.png</bannermenu>
 	
 	<update_url></update_url>
-	<version>10</version>
-	<date>04/05/2017</date>
-	<changes>Fix enlances</changes>
+	<version>12</version>
+	<changes>
+			<change>
+				<date>03/06/2017</date>
+				<autor>Hernan_ar_c</autor>
+				<description>Reparado por mala subida</description>
+	   	</change>
+		<change>
+				<date>25/05/2017</date>
+				<autor>Hernan_ar_c</autor>
+				<description>cambios esteticos</description>
+	   	</change>
+	</changes>
+
+	<changes>
+		<change>
+			<date>15/03/2017</date>
+			<autor>SeiTaN</autor>
+			<description>limpieza código</description>
+		</change>
+		<change>
+			<date>28/01/2017</date>
+			<autor>Hernan_Ar_c</autor>
+			<description>Release.</description>
+		</change>
+	</changes>
 
 	<categories>
 		<category>latino</category>
@@ -29,4 +52,20 @@
 		<enabled>false</enabled>
 		<visible>false</visible>
 	</settings>
+
+	<settings>
+		<id>filter_languages</id>
+		<type>list</type>
+		<label>Mostrar enlaces en idioma...</label>
+		<default>0</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+		<lvalues>No filtrar</lvalues>
+		<lvalues>Latino</lvalues>
+		<lvalues>Español</lvalues>
+		<lvalues>VOS</lvalues>
+		<lvalues>VOSE</lvalues>
+		<lvalues>VO</lvalues>
+	</settings>
+	
 </channel>

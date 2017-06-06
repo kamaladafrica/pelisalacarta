@@ -38,7 +38,7 @@ from core import logger
 from core.item import Item
 import threading
 from platformcode import platformtools
-from platformcode import xbmc_library
+
 
 
 def convert_old_to_v4():
@@ -412,12 +412,12 @@ if __name__ == "__main__":
     import xbmc
 
     # modo adulto:
-    # Conversion de 'false' y 'true' al sitema actual 0: Nunca, 1:Siempre, 2:Solo hasta que se reinicie Kodi
+    # Conversion de False y True al sitema actual 0: Nunca, 1:Siempre, 2:Solo hasta que se reinicie Kodi
     # y si es == 2 lo desactivamos.
-    if config.get_setting("adult_mode") == 'false' or config.get_setting("adult_mode") == '2':
-        config.set_setting("adult_mode", '0')
-    elif config.get_setting("adult_mode") == 'true':
-        config.set_setting("adult_mode", '1')
+    if config.get_setting("adult_mode") == False or config.get_setting("adult_mode") == 2:
+        config.set_setting("adult_mode", 0)
+    elif config.get_setting("adult_mode") == True:
+        config.set_setting("adult_mode", 1)
 
 
     updatelibrary_wait = [0, 10000, 20000, 30000, 60000]

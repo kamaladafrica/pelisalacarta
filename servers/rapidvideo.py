@@ -14,11 +14,11 @@ from core import scrapertools
 
 
 def get_video_url(page_url, premium=False, user="", password="", video_password=""):
-    logger.info("url="+page_url)
+    logger.info("url=" + page_url)
     video_urls = []
 
     data = get_data(page_url)
-    urls = scrapertools.find_multiple_matches(data, '"file":"([^"]+)".*?"res":"([^"]+)"')
+    urls = scrapertools.find_multiple_matches(data, '"file":"([^"]+)","label":"[^"]*","res":"([^"]+)"')
     for mediaurl, res in urls:
         ext = scrapertools.get_filename_from_url(mediaurl)[-4:]
         video_urls.append(['%s %sp [rapidvideo]' % (ext, res), mediaurl.replace("\\", "")])

@@ -1,13 +1,49 @@
 <?xml version="1.0" ?>
 <server>
 	<active>true</active>
-	<changes>Versión incial</changes>
-	<date>24/12/2016</date>
+	<changes>
+		<change>
+			<autor></autor>
+			<autor>Intel1</autor>
+			<date>10/05/17</date>
+			<description>Reparado por robalo, yo solo lo subí al github</description>
+		</change>
+		<change>
+			<autor>Cmos</autor>
+			<date>24/12/2016</date>
+			<description>Versión incial</description>
+		</change>
+	</changes>
+	<find_videos>
+		<ignore_urls>
+		</ignore_urls>
+		<patterns>
+			<pattern>vidabc.com/([a-z0-9]+)</pattern>
+			<url>http://vidabc.com/embed-\1.html</url>
+		</patterns>
+	</find_videos>
 	<free>true</free>
 	<id>vidabc</id>
 	<name>vidabc</name>
-	<premium></premium>
+	<premium>
+	</premium>
+	<settings>
+		<default>false</default>
+		<enabled>true</enabled>
+		<id>black_list</id>
+		<label>Incluir en lista negra</label>
+		<type>bool</type>
+		<visible>true</visible>
+	</settings>
+	<settings>
+		<default>false</default>
+		<enabled>true</enabled>
+		<id>white_list</id>
+		<label>Incluir en lista de favoritos</label>
+		<type>bool</type>
+		<visible>false</visible>
+	</settings>
 	<thumbnail>http://media.tvalacarta.info/servers/server_vidabc.png</thumbnail>
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/servers/</update_url>
-	<version>1</version>
+	<version>3</version>
 </server>

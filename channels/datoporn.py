@@ -5,25 +5,23 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 # -----------------------------------------------------------
 
-from core import logger
 from core import httptools
+from core import logger
 from core import scrapertools
-
-host = "http://datoporn.com"
 
 
 def mainlist(item):
     logger.info()
     itemlist = []
 
-    itemlist.append(item.clone(action="categorias", title="Categorías", url=host))
+    itemlist.append(item.clone(action="categorias", title="Categorías", url="http://dato.porn/categories_all"))
     itemlist.append(item.clone(title="Buscar...", action="search"))
     return itemlist
 
 
 def search(item, texto):
     logger.info()
-    item.url = "http://datoporn.com/?k=%s&op=search" % texto.replace(" ", "+")
+    item.url = "http://dato.porn/?k=%s&op=search" % texto.replace(" ", "+")
     return lista(item)
 
 
@@ -48,7 +46,7 @@ def lista(item):
   
   # Extrae la marca de siguiente página
     next_page = scrapertools.find_single_match(data, "<a href='([^']+)'>Next")
-    if next_page:
+    if next_page and itemlist:
         itemlist.append(item.clone(action="lista", title=">> Página Siguiente", url=next_page))
  
     return itemlist

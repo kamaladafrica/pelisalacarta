@@ -25,21 +25,14 @@ def login():
     data = httptools.downloadpage(url_origen).data
     if config.get_setting("pordedeuser", "pordede") in data:
         return True
-    
-    key = scrapertools.find_single_match(data, 'data-sitekey="([^"]+)"')
-    sess_check = scrapertools.find_single_match(data, ' SESS\s*=\s*"([^"]+)"')
 
-    result = platformtools.show_recaptcha(key, url_origen)
-    if result:
-        post = "LoginForm[username]="+config.get_setting("pordedeuser", "pordede")+"&LoginForm[password]="+config.get_setting("pordedepassword", "pordede")
-        post += "&LoginForm[verifyCode]=&g-recaptcha-response=%s&popup=1&sesscheck=%s" % (result, sess_check)
-
-        headers = {"Referer": url_origen, "X-Requested-With": "XMLHttpRequest"}
-        data = httptools.downloadpage("http://www.pordede.com/site/login", post, headers=headers, replace_headers=True).data
-        if "Login correcto, entrando" in data:
-            return True
-
-    return False
+    url = "http://www.pordede.com/api/login/auth?response_type=code&client_id=appclient&redirect_uri=http%3A%2F%2Fwww.pordede.com%2Fapi%2Flogin%2Freturn&state=none"
+    post = "username=%s&password=%s&authorized=autorizar" % (config.get_setting("pordedeuser", "pordede"), config.get_setting("pordedepassword", "pordede"))
+    data = httptools.downloadpage(url, post).data
+    if '"ok":true' in data:
+        return True
+    else:
+        return False
 
 
 def mainlist(item):
