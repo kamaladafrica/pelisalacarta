@@ -31,20 +31,12 @@
 			<url>http://netu.tv/watch_video.php?v=\2</url>
 		</patterns>
 		<patterns>
-			<pattern>hqq.tv/([^=]+)=([a-zA-Z0-9]+)</pattern>
-			<url>http://netu.tv/watch_video.php?v=\2</url>
+			<pattern>(?:hqq|waaw|netu)(?:\.tv\/|\.watch\/|\.php\?).*(?:v=|vid=)([A-z0-9]+)</pattern>
+			<url>http://netu.tv/watch_video.php?v=\1</url>
 		</patterns>
 		<patterns>
-			<pattern>netu.tv/([^=]+)=([a-zA-Z0-9]+)</pattern>
-			<url>http://netu.tv/watch_video.php?v=\2</url>
-		</patterns>
-		<patterns>
-			<pattern>waaw.tv/([^=]+)=([a-zA-Z0-9]+)</pattern>
-			<url>http://netu.tv/watch_video.php?v=\2</url>
-		</patterns>
-		<patterns>
-			<pattern>netu.php\?(nt=)([a-zA-Z0-9]+)</pattern>
-			<url>http://netu.tv/watch_video.php?v=\2</url>
+			<pattern>(?:hqq|waaw|netu)(?:\.tv\/|\.watch\/|\.php\?).*hash=([A-z0-9]+)</pattern>
+			<url>http://hqq.tv/player/hash.php?hash=\1</url>
 		</patterns>
 	</find_videos>
 	<free>true</free>

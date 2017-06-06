@@ -13,11 +13,33 @@ from core import logger
 from core import scrapertools
 
 
+def test_video_exists(page_url):
+    logger.info("(page_url='%s')" % page_url)
+    try:
+        response = httptools.downloadpage(page_url)
+    except:
+        pass
+
+    if not response.data or "urlopen error [Errno 1]" in str(response.code):
+        from core import config
+        if config.is_xbmc():
+            return False, "[Rapidvideo] Este conector solo funciona a partir de Kodi 17"
+        elif config.get_platform() == "plex":
+            return False, "[Rapidvideo] Este conector no funciona con tu versión de Plex, intenta actualizarla"
+        elif config.get_platform() == "mediaserver":
+            return False, "[Rapidvideo] Este conector requiere actualizar python a la versión 2.7.9 o superior"
+    
+    if "Object not found" in response.data:
+        return False, "[Rapidvideo] El archivo no existe o ha sido borrado"
+    
+    return True, ""
+
+
 def get_video_url(page_url, premium=False, user="", password="", video_password=""):
     logger.info("url=" + page_url)
     video_urls = []
 
-    data = get_data(page_url)
+    data = httptools.downloadpage(page_url).data
     urls = scrapertools.find_multiple_matches(data, '"file":"([^"]+)","label":"[^"]*","res":"([^"]+)"')
     for mediaurl, res in urls:
         ext = scrapertools.get_filename_from_url(mediaurl)[-4:]
@@ -48,26 +70,3 @@ def find_videos(text):
 
 
     return devuelve
-
-
-def get_data(url_orig):
-    try:
-        response = httptools.downloadpage(url_orig)
-        if not response.data or "urlopen error [Errno 1]" in str(response.code):
-            raise Exception
-    except:
-        import random
-        server_random = ['nl', 'de', 'us']
-        server = server_random[random.randint(0, 2)]
-        url = "https://%s.hideproxy.me/includes/process.php?action=update" % server
-        post = "u=%s&proxy_formdata_server=%s&allowCookies=1&encodeURL=0&encodePage=0&stripObjects=0&stripJS=0&go=" \
-               % (urllib.quote(url_orig), server)
-        while True:
-            response = httptools.downloadpage(url, post, follow_redirects=False)
-            if response.headers.get("location"):
-                url = response.headers["location"]
-                post = ""
-            else:
-                break
-
-    return response.data
