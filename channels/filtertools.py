@@ -205,7 +205,7 @@ def context(item, list_language=None, list_quality=None, exist=False):
         added = False
         if type(_context) == list:
             for x in _context:
-                if x:
+                if x and type(x) == dict:
                     if x["channel"] == "filtertools":
                         added = True
                         break
@@ -229,8 +229,8 @@ def show_option(itemlist, channel, list_language, list_quality):
     # TODO eliminar referencia en futura versión
     upgrade_version(channel, list_quality)
     if access():
-        itemlist.append(Item(channel=__channel__, title="[COLOR {0}]Configurar filtro para series...[/COLOR]".
-                             format(COLOR.get("parent_item", "auto")), action="load", list_language=list_language,
+        itemlist.append(Item(channel=__channel__, title="[COLOR %s]Configurar filtro para series...[/COLOR]" %
+                             COLOR.get("parent_item", "auto"), action="load", list_language=list_language,
                              list_quality=list_quality, from_channel=channel))
 
     return itemlist
@@ -279,10 +279,10 @@ def check_conditions(_filter, list_item, item, list_language, list_quality, qual
             # logger.debug("{0} | context: {1}".format(item.title, item.context))
             # logger.debug(" -Enlace añadido")
 
-        logger.debug(" idioma valido?: {0}, item.language: {1}, filter.language: {2}"
-                     .format(is_language_valid, item.language, _filter.language))
-        logger.debug(" calidad valida?: {0}, item.quality: {1}, filter.quality_allowed: {2}"
-                     .format(is_quality_valid, quality, _filter.quality_allowed))
+        logger.debug(" idioma valido?: %s, item.language: %s, filter.language: %s" %
+                     (is_language_valid, item.language, _filter.language))
+        logger.debug(" calidad valida?: %s, item.quality: %s, filter.quality_allowed: %s"
+                     % (is_quality_valid, quality, _filter.quality_allowed))
 
     return list_item, quality_count, language_count
 
@@ -305,13 +305,18 @@ def get_link(list_item, item, list_language, list_quality=None, global_filter_la
     @rtype: list[Item]
     """
     logger.info()
-    logger.debug("total de items : {0}".format(len(list_item)))
+
+    # si los campos obligatorios son None salimos
+    if list_item is None or item is None:
+        return []
+
+    logger.debug("total de items : %s" % len(list_item))
 
     global filter_global
 
     if not filter_global:
         filter_global = Filter(item, global_filter_lang_id).result
-    logger.debug("filter: '{0}' datos: '{1}'".format(item.show, filter_global))
+    logger.debug("filter: '%s' datos: '%s'" % (item.show, filter_global))
 
     if filter_global and filter_global.active:
         list_item, quality_count, language_count = \
@@ -342,18 +347,22 @@ def get_links(list_item, item, list_language, list_quality=None, global_filter_l
     """
     logger.info()
 
+    # si los campos obligatorios son None salimos
+    if list_item is None or item is None:
+        return []
+
     # si list_item está vacío volvemos, no se añade validación de plataforma para que Plex pueda hacer filtro global
     if len(list_item) == 0:
         return list_item
 
-    logger.debug("total de items : {0}".format(len(list_item)))
+    logger.debug("total de items : %s" % len(list_item))
 
     new_itemlist = []
     quality_count = 0
     language_count = 0
 
     _filter = Filter(item, global_filter_lang_id).result
-    logger.debug("filter: '{0}' datos: '{1}'".format(item.show, _filter))
+    logger.debug("filter: '%s' datos: '%s'" % (item.show, _filter))
 
     if _filter and _filter.active:
 
@@ -361,9 +370,9 @@ def get_links(list_item, item, list_language, list_quality=None, global_filter_l
             new_itemlist, quality_count, language_count = check_conditions(_filter, new_itemlist, item, list_language,
                                                                            list_quality, quality_count, language_count)
 
-        logger.info("ITEMS FILTRADOS: {0}/{1}, idioma [{2}]: {3}, calidad_permitida {4}: {5}"
-                    .format(len(new_itemlist), len(list_item), _filter.language, language_count,
-                            _filter.quality_allowed, quality_count))
+        logger.info("ITEMS FILTRADOS: %s/%s, idioma [%s]: %s, calidad_permitida %s: %s"
+                    % (len(new_itemlist), len(list_item), _filter.language, language_count, _filter.quality_allowed,
+                       quality_count))
 
         if len(new_itemlist) == 0:
             list_item_all = []
@@ -374,15 +383,15 @@ def get_links(list_item, item, list_language, list_quality=None, global_filter_l
                          "channel": "filtertools", "to_channel": "seriesdanko"}]
 
             if _filter.quality_allowed:
-                msg_quality_allowed = " y calidad {0}".format(_filter.quality_allowed)
+                msg_quality_allowed = " y calidad %s" % _filter.quality_allowed
             else:
                 msg_quality_allowed = ""
 
             new_itemlist.append(Item(channel=__channel__, action="no_filter", list_item_all=list_item_all,
                                      show=item.show,
-                                     title="[COLOR {0}]No hay elementos con idioma '{1}'{2}, pulsa para mostrar "
+                                     title="[COLOR %s]No hay elementos con idioma '%s'%s, pulsa para mostrar "
                                            "sin filtro[/COLOR]"
-                                     .format(COLOR.get("error", "auto"), _filter.language, msg_quality_allowed),
+                                           % (COLOR.get("error", "auto"), _filter.language, msg_quality_allowed),
                                      context=_context))
 
     else:
@@ -450,7 +459,7 @@ def mainlist(channel, list_language, list_quality):
         activo = " (desactivado)"
         if dict_series[tvshow][TAG_ACTIVE]:
             activo = ""
-        title = "Configurar [COLOR {0}][{1}][/COLOR]{2}".format(tag_color, name, activo)
+        title = "Configurar [COLOR %s][%s][/COLOR]%s" % (tag_color, name, activo)
 
         itemlist.append(Item(channel=__channel__, action="config_item", title=title, show=name,
                              list_language=list_language, list_quality=list_quality, from_channel=channel))
@@ -470,7 +479,7 @@ def config_item(item):
     @type item: Item
     """
     logger.info()
-    logger.info("item {0}".format(item.tostring()))
+    logger.info("item %s" % item.tostring())
 
     # OBTENEMOS LOS DATOS DEL JSON
     dict_series = filetools.get_node_from_data_json(item.from_channel, TAG_TVSHOW_FILTER)
@@ -540,7 +549,7 @@ def config_item(item):
         # concatenamos list_controls con list_controls_calidad
         list_controls.extend(list_controls_calidad)
 
-    title = "Filtrado de enlaces para: [COLOR {0}]{1}[/COLOR]".format(COLOR.get("selected", "auto"), item.show)
+    title = "Filtrado de enlaces para: [COLOR %s]%s[/COLOR]" % (COLOR.get("selected", "auto"), item.show)
 
     platformtools.show_channel_settings(list_controls=list_controls, callback='save', item=item,
                                         caption=title, custom_button=custom_button)
@@ -554,8 +563,8 @@ def delete(item, dict_values):
         tvshow = item.show.strip().lower()
 
         heading = "¿Está seguro que desea eliminar el filtro?"
-        line1 = "Pulse 'Si' para eliminar el filtro de [COLOR {0}]{1}[/COLOR], pulse 'No' o cierre la ventana para " \
-                "no hacer nada.".format(COLOR.get("selected", "auto"), item.show.strip())
+        line1 = "Pulse 'Si' para eliminar el filtro de [COLOR %s]%s[/COLOR], pulse 'No' o cierre la ventana para " \
+                "no hacer nada." % (COLOR.get("selected", "auto"), item.show.strip())
 
         if platformtools.dialog_yesno(heading, line1) == 1:
             lang_selected = dict_series.get(tvshow, {}).get(TAG_LANGUAGE, "")
@@ -571,7 +580,7 @@ def delete(item, dict_values):
                 message = "Error al guardar en disco"
                 sound = True
 
-            heading = "{0} [{1}]".format(item.show.strip(), lang_selected)
+            heading = "%s [%s]" % (item.show.strip(), lang_selected)
             platformtools.dialog_notification(heading, message, sound=sound)
 
             if item.action in ["findvideos", "play"]:
@@ -590,7 +599,7 @@ def save(item, dict_data_saved):
     logger.info()
 
     if item and dict_data_saved:
-        logger.debug('item: {0}\ndatos: {1}'.format(item.tostring(), dict_data_saved))
+        logger.debug('item: %s\ndatos: %s' % (item.tostring(), dict_data_saved))
 
         if item.from_channel == "biblioteca":
             item.from_channel = item.contentChannel
@@ -619,7 +628,7 @@ def save(item, dict_data_saved):
             message = "Error al guardar en disco"
             sound = True
 
-        heading = "{0} [{1}]".format(item.show.strip(), lang_selected)
+        heading = "%s [%s]" % (item.show.strip(), lang_selected)
         platformtools.dialog_notification(heading, message, sound=sound)
 
         if item.from_action in ["findvideos", "play"]:
@@ -651,7 +660,7 @@ def save_from_context(item):
         message = "Error al guardar en disco"
         sound = True
 
-    heading = "{0} [{1}]".format(item.show.strip(), item.language)
+    heading = "%s [%s]" % (item.show.strip(), item.language)
     platformtools.dialog_notification(heading, message, sound=sound)
 
     if item.from_action in ["findvideos", "play"]:
@@ -687,7 +696,7 @@ def delete_from_context(item):
         message = "Error al guardar en disco"
         sound = True
 
-    heading = "{0} [{1}]".format(item.show.strip(), lang_selected)
+    heading = "%s [%s]" % (item.show.strip(), lang_selected)
     platformtools.dialog_notification(heading, message, sound=sound)
 
     if item.from_action in ["findvideos", "play", "no_filter"]:  # 'no_filter' es el mismo caso que L#601
