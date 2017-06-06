@@ -10,7 +10,7 @@ import re
 from core import httptools
 from core import logger
 from core import scrapertools
-
+from lib  import jsunpack
 
 def test_video_exists(page_url):
     logger.info("(page_url='%s')" % page_url)
@@ -26,6 +26,8 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     logger.info("(page_url='%s')" % page_url)
 
     data = httptools.downloadpage(page_url).data
+    if "p,a,c,k,e,d" in data:
+        data = jsunpack.unpack(data).replace("\\", "")
     video_urls = []
     videos = scrapertools.find_multiple_matches(data, 'file\s*:\s*"([^"]+)",label:"(.*?)"')
     ##Detección de subtítulos

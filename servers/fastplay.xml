@@ -4,6 +4,11 @@
 	<changes>
 		<change>
 			<autor>Intel1</autor>
+			<date>05/06/2017</date>
+			<description>Enlaces a videos encriptados</description>
+		</change>
+		<change>
+			<autor>Intel1</autor>
 			<date>29/05/2017</date>
 			<description>Detección de subtítulos y reparado detección de resolución de videos</description>
 		</change>
@@ -44,5 +49,5 @@
 	</settings>
 	<thumbnail>http://i.imgur.com/vHDcd6Y.png?1</thumbnail>
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/servers/</update_url>
-	<version>3</version>
+	<version>4</version>
 </server>
