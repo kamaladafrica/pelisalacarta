@@ -134,8 +134,8 @@ def get_channel_parameters(channel_name):
         addon_version_condition = scrapertools.find_single_match(data, "<addon_version>([^<]*)</addon_version>")
         if addon_version_condition:
             import versiontools
-            addon_version = int(addon_version_condition.replace(".", "").ljust(len(
-                versiontools.get_current_plugin_version()), '0'))
+            addon_version = int(addon_version_condition.replace(".", "").ljust(len(str(
+                versiontools.get_current_plugin_version())), '0'))
             if versiontools.get_current_plugin_version() < addon_version:
                 addon_version_compatible = False
             else:
