@@ -7,25 +7,38 @@ import re
 import urlparse
 
 from channels import filtertools
+from channelselector import get_thumb
 from core import config
 from core import logger
 from core import scrapertools
 from core import servertools
 from core.item import Item
 from core import httptools
+from channels import renumbertools
+from core import tmdb
 
 host = "https://seriesmeme.com/"
 
 def mainlist(item):
     logger.info()
 
+    thumb_series = get_thumb("squares", "thumb_canales_series.png")
+
+    thumb_series_az = get_thumb("squares", "thumb_canales_series_az.png")
+
     itemlist = list()
 
-    itemlist.append(Item(channel=item.channel, action="lista_gen", title="Novedades", url=host))
-    itemlist.append(Item(channel=item.channel, action="lista", title="Series", url=urlparse.urljoin(host, "/lista")))
-    itemlist.append(Item(channel=item.channel, action="categorias", title="Categorias", url=host))
-    itemlist.append(Item(channel=item.channel, action="alfabetico", title="Listado Alfabetico", url=host))
-    itemlist.append(Item(channel=item.channel, action="top", title="Top Series", url=host))	
+    itemlist.append(Item(channel=item.channel, action="lista_gen", title="Novedades", url=host,
+thumbnail=thumb_series))
+    itemlist.append(Item(channel=item.channel, action="lista", title="Series", url=urlparse.urljoin(host, "/lista"),
+thumbnail=thumb_series))
+    itemlist.append(Item(channel=item.channel, action="categorias", title="Categorias", url=host,
+thumbnail=thumb_series))
+    itemlist.append(Item(channel=item.channel, action="alfabetico", title="Listado Alfabetico", url=host,
+thumbnail=thumb_series_az))
+    itemlist.append(Item(channel=item.channel, action="top", title="Top Series", url=host,
+thumbnail=thumb_series))
+    itemlist = renumbertools.show_option(item.channel, itemlist)
     return itemlist
 """
 def search(item, texto):
@@ -37,7 +50,7 @@ def search(item, texto):
 """
 def categorias(item):
     logger.info()
-
+    dict_gender = {"acción": "accion","animes": "animacion", "aventuras": "aventura", "dibujos": "animacion", "ciencia ficción": "ciencia%20ficcion", "intriga": "misterio","suspenso": "suspense","thriller":"suspense","fantástico": "fantasia"}
     itemlist = []
 
     data = httptools.downloadpage(item.url).data
@@ -47,9 +60,12 @@ def categorias(item):
     patron = '<li id="menu-item-.+?" class=".+?"><a href="([^"]+)">([^"]+)<\/a><\/li>'
     matches = scrapertools.find_multiple_matches(categorias, patron)
     for link, name in matches:
-        title=name
+        if 'Género' in name:
+            title=name.replace('Género ','')
         url=link
-        itemlist.append(item.clone(title=title, url=url, action="lista_gen"))
+        thumbnail = "https://raw.githubusercontent.com/master-1970/resources/master/images/genres/4/azul/%s.png"
+        thumbnail = thumbnail % dict_gender.get(title.lower(),title.lower())
+        itemlist.append(item.clone(title=title, url=url, plot=title, action="lista_gen", show=title, thumbnail=thumbnail))
     return itemlist
 
 def alfabetico(item):
@@ -69,7 +85,7 @@ def alfabetico(item):
     for link, name in matches:
         title=name
         url=link
-        itemlist.append(item.clone(title=title, url=url, action="lista_gen"))
+        itemlist.append(item.clone(title=title, url=url, plot=title, action="lista_gen", show=title))
     return itemlist
 
 def top(item):
@@ -86,7 +102,8 @@ def top(item):
     for link, name in matches:
         title=name
         url=link
-        itemlist.append(item.clone(title=title, url=url, action="lista_gen"))
+        itemlist.append(item.clone(title=title, url=url, plot=title, action="lista_gen", show=title))
+    tmdb.set_infoLabels(itemlist)
     return itemlist
 
 def lista_gen(item):
@@ -109,8 +126,8 @@ def lista_gen(item):
         if 'HD' in scrapedlang:
             scrapedlang = scrapedlang.replace('HD','')
         title=scrapedtitle+" [ "+scrapedlang+"]"
-        itemlist.append(Item(channel=item.channel, title=title, url=scrapedurl, thumbnail=scrapedthumbnail, action="episodios"))
-
+        itemlist.append(Item(channel=item.channel, title=title, url=scrapedurl, thumbnail=scrapedthumbnail, action="episodios", show=scrapedtitle, context=renumbertools.context))
+    tmdb.set_infoLabels(itemlist)
     #Paginacion
     patron_pag='<a class="nextpostslink" rel="next" href="([^"]+)">'
     next_page_url = scrapertools.find_single_match(data,patron_pag)
@@ -143,13 +160,23 @@ def episodios(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", data)
-    patron_caps = '<li><strong><a href="([^"]+)">([^"]+)<\/a>'
+    patron_caps = '<li><strong><a href="([^"]+)">(.+?)&#8211;(.+?)<\/a>'
     matches = scrapertools.find_multiple_matches(data, patron_caps)
-
-    show = scrapertools.find_single_match(data,'h3><strong>.+?de (.+?)<\/strong>')
+    show = scrapertools.find_single_match(data,'<h3><strong>.+?de (.+?)<\/strong>')
     scrapedplot = scrapertools.find_single_match(data,'<strong>Sinopsis<\/strong><strong>([^"]+)<\/strong><\/pre>')
-    for link, cap in matches:
-        title = cap
+    logger.info("epibla   "+data)
+    for link, cap,name in matches:
+        if 'x' in cap:
+            title = cap+" - "+name
+        else:
+            season = 1
+            episode = int(cap)
+            season, episode = renumbertools.numbered_for_tratk(
+                item.channel, item.show, season, episode)
+            date=name
+            title = "{0}x{1:02d} {2} ({3})".format(
+                season, episode, "Episodio " + str(episode), date)
+        #title = cap+" - "+name
         url=link
         itemlist.append(Item(channel=item.channel, action="findvideos", title=title, url=url, thumbnail=item.thumbnail, plot=scrapedplot, show=show))
 
