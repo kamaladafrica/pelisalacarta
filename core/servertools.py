@@ -696,7 +696,7 @@ def sort_servers(servers_list):
     u objetos Item. En cuyo caso es necesario q tengan un atributo item.server del tipo str.
     :return: Lista del mismo tipo de objetos que servers_list ordenada en funcion de los servidores favoritos.
     """
-    if servers_list:
+    if servers_list and config.get_setting('sort_servers'):
         if isinstance(servers_list[0],Item):
             servers_list = sorted(servers_list, key = lambda x: config.get_setting("white_list",server=x.server) or 100)
         else:
@@ -713,7 +713,7 @@ def filter_servers(servers_list):
     :return: Lista del mismo tipo de objetos que servers_list filtrada en funcion de la Lista Negra.
     """
     servers_list_filter = []
-    if servers_list:
+    if servers_list and config.get_setting('filter_servers'):
         if isinstance(servers_list[0],Item):
             servers_list_filter = filter(lambda x: not config.get_setting("black_list",server=x.server), servers_list)
         else:
