@@ -69,6 +69,7 @@ def get_channel_parameters(channel_name):
         channel_parameters["active"] = str_to_bool(scrapertools.find_single_match(data, "<active>([^<]*)</active>"))
         channel_parameters["adult"] = str_to_bool(scrapertools.find_single_match(data, "<adult>([^<]*)</adult>"))
         channel_parameters["language"] = scrapertools.find_single_match(data, "<language>([^<]*)</language>")
+        channel_parameters["version"] = scrapertools.find_single_match(data, "<version>([^<]*)</version>")
 
         # Imagenes: se admiten url y archivos locales dentro de "resources/images"
         channel_parameters["thumbnail"] = scrapertools.find_single_match(data, "<thumbnail>([^<]*)</thumbnail>")
