@@ -614,7 +614,6 @@ def play(item):
         media_urls = raptu.get_video_url(url)
         if len(media_urls) > 0:
             for desc, url, numero, subtitle in media_urls:
-                url = url.replace("\\", "")
                 itemlist.append([desc, url, numero, subtitle])
 
     else:
