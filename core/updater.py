@@ -159,7 +159,7 @@ def update_channel(channel_name):
         logger.info("remote_data="+data)
         remote_version = int( scrapertools.find_single_match(data,'<version>([^<]+)</version>') )
         addon_condition = int(scrapertools.find_single_match(data, "<addon_version>([^<]*)</addon_version>")
-                              .replace(".", "").ljust(len(versiontools.get_current_plugin_version()), '0'))
+                              .replace(".", "").ljust(len(str(versiontools.get_current_plugin_version())), '0'))
     except:
         remote_version = 0
         addon_condition = 0
