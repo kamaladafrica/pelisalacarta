@@ -223,6 +223,7 @@ def servers_blacklist(item):
 
 
 def cb_servers_blacklist(item, dict_values):
+    f = False
     for k,v in dict_values.items():
         if k == 'filter_servers':
             config.set_setting('filter_servers', v)
@@ -230,7 +231,10 @@ def cb_servers_blacklist(item, dict_values):
             config.set_setting("black_list", v,server=k)
             if v: # Si el servidor esta en la lista negra no puede estar en la de favoritos
                 config.set_setting("white_list", 100, server=k)
+                f = True
 
+    if not f: # Si no hay ningun servidor en la lista, desactivarla
+        config.set_setting('filter_servers', False)
 
 def servers_whitelist(item):
     #from core import servertools
@@ -293,6 +297,9 @@ def cb_servers_whitelist(server_names, dict_values):
             config.set_setting("white_list", dict_name[server_parameters['name']], server=server)
         else:
             config.set_setting("white_list", 100, server=server)
+
+    if not dict_name: #Si no hay ningun servidor en lalista desactivarla
+        config.set_setting("sort_servers", False)
 
 
 def get_all_versions(item):
