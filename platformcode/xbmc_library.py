@@ -811,11 +811,7 @@ def add_sources(path):
     nodo_video.appendChild(nodo_source)
 
     # Guardamos los cambios
-    '''data = xmldoc.toprettyxml()
-    data = '\n'.join([x for x in data.splitlines() if x.strip()])
-    filetools.write(SOURCES_PATH,data)'''
-    fichero = open(SOURCES_PATH, 'w')
-    xmldoc.writexml(fichero)
+    filetools.write(SOURCES_PATH, xmldoc.toprettyxml().encode("utf-8"))
 
 
 def ask_set_content():
