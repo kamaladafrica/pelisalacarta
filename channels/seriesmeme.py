@@ -65,7 +65,7 @@ def categorias(item):
         url=link
         thumbnail = "https://raw.githubusercontent.com/master-1970/resources/master/images/genres/4/azul/%s.png"
         thumbnail = thumbnail % dict_gender.get(title.lower(),title.lower())
-        itemlist.append(item.clone(title=title, url=url, plot=title, action="lista_gen", show=title, thumbnail=thumbnail))
+        itemlist.append(item.clone(title=title, url=url, plot=title, action="lista_gen", thumbnail=thumbnail))
     return itemlist
 
 def alfabetico(item):
@@ -85,7 +85,7 @@ def alfabetico(item):
     for link, name in matches:
         title=name
         url=link
-        itemlist.append(item.clone(title=title, url=url, plot=title, action="lista_gen", show=title))
+        itemlist.append(item.clone(title=title, url=url, plot=title, action="lista_gen"))
     return itemlist
 
 def top(item):
