@@ -153,7 +153,6 @@ def menu_servers(item):
 
     
     # Inicio - Servidores configurables
-    #from core import servertools
 
     server_list = servertools.get_debriders_list().keys()
     for server in server_list:
@@ -188,21 +187,17 @@ def server_config(item):
 
 
 def servers_blacklist(item):
-    #from core import servertools
     server_list = servertools.get_servers_list()
-
-    if config.get_setting('filter_servers'):
-        default = True
-    else:
-        default = False
+    dict_values = {}
 
     list_controls = [{'id': 'filter_servers',
                       'type': "bool",
                       'label': "@30068",
-                      'default': default,
+                      'default': False,
                       'enabled': True,
                       'visible': True}]
-    dict_values = {}
+    dict_values['filter_servers'] = config.get_setting('filter_servers')
+
     for i, server in enumerate(sorted(server_list.keys())):
         server_parameters = server_list[server]
         controls, defaults = servertools.get_server_controls_settings(server)
@@ -237,21 +232,17 @@ def cb_servers_blacklist(item, dict_values):
         config.set_setting('filter_servers', False)
 
 def servers_whitelist(item):
-    #from core import servertools
     server_list = servertools.get_servers_list()
-
-    if config.get_setting('sort_servers'):
-        default = True
-    else:
-        default = False
+    dict_values = {}
 
     list_controls = [{'id': 'sort_servers',
                       'type': "bool",
                       'label': "Ordenar servidores",
-                      'default': default,
+                      'default': False,
                       'enabled': True,
                       'visible': True}]
-    dict_values = {}
+    dict_values['sort_servers'] = config.get_setting('sort_servers')
+
     server_names = ['Ninguno']
 
     for server in sorted(server_list.keys()):
@@ -284,7 +275,6 @@ def servers_whitelist(item):
 
 
 def cb_servers_whitelist(server_names, dict_values):
-    #from core import servertools
     dict_name = {}
     for i, v in dict_values.items():
         if i == "sort_servers":
