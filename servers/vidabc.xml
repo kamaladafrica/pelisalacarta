@@ -3,13 +3,13 @@
 	<active>true</active>
 	<changes>
 		<change>
-			<autor></autor>
+			<autor/>
 			<autor>Intel1</autor>
 			<date>05/06/17</date>
 			<description>Detectado que el archivo se está procesando</description>
 		</change>
 		<change>
-			<autor></autor>
+			<autor/>
 			<autor>Intel1</autor>
 			<date>10/05/17</date>
 			<description>Reparado por robalo, yo solo lo subí al github</description>
@@ -42,12 +42,18 @@
 		<visible>true</visible>
 	</settings>
 	<settings>
-		<default>false</default>
+		<default>100</default>
 		<enabled>true</enabled>
 		<id>favorites_servers_list</id>
 		<label>Incluir en lista de favoritos</label>
-		<type>bool</type>
+		<type>list</type>
 		<visible>false</visible>
+		<lvalues>No</lvalues>
+		<lvalues>1</lvalues>
+		<lvalues>2</lvalues>
+		<lvalues>3</lvalues>
+		<lvalues>4</lvalues>
+		<lvalues>5</lvalues>
 	</settings>
 	<thumbnail>http://media.tvalacarta.info/servers/server_vidabc.png</thumbnail>
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/servers/</update_url>

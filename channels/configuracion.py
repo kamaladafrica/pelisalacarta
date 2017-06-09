@@ -260,7 +260,7 @@ def servers_favorites(item):
 
         orden = config.get_setting("favorites_servers_list", server=server)
 
-        if orden and orden < 100:
+        if orden > 0 and orden < 100:
             dict_values[orden] = len(server_names) - 1
 
 

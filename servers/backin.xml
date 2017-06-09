@@ -3,7 +3,7 @@
 	<active>true</active>
 	<changes>
 		<change>
-			<autor></autor>
+			<autor/>
 			<date>25/03/2016</date>
 			<description>Versión incial</description>
 		</change>
@@ -30,12 +30,18 @@
 		<visible>true</visible>
 	</settings>
 	<settings>
-		<default>false</default>
+		<default>100</default>
 		<enabled>true</enabled>
 		<id>favorites_servers_list</id>
 		<label>Incluir en lista de favoritos</label>
-		<type>bool</type>
+		<type>list</type>
 		<visible>false</visible>
+		<lvalues>No</lvalues>
+		<lvalues>1</lvalues>
+		<lvalues>2</lvalues>
+		<lvalues>3</lvalues>
+		<lvalues>4</lvalues>
+		<lvalues>5</lvalues>
 	</settings>
 	<thumbnail>http://media.tvalacarta.info/servers/server_backin.png</thumbnail>
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/servers/</update_url>
