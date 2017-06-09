@@ -144,7 +144,7 @@ def menu_servers(item):
                          thumbnail=get_thumbnail_path("thumb_configuracion_0.png")))
                          
     itemlist.append(Item(channel=CHANNELNAME, title="Servidores favoritos",
-                         action="servers_whitelist", folder=False,
+                         action="servers_favorites", folder=False,
                          thumbnail=get_thumbnail_path("thumb_configuracion_0.png")))
     
     itemlist.append(Item(channel=CHANNELNAME, title="Ajustes de debriders:",
@@ -219,29 +219,36 @@ def servers_blacklist(item):
 
 def cb_servers_blacklist(item, dict_values):
     f = False
+    progreso = platformtools.dialog_progress("Guardando configuración...", "Espere un momento por favor.")
+    n = len(dict_values)
+    i = 1
     for k,v in dict_values.items():
         if k == 'filter_servers':
             config.set_setting('filter_servers', v)
         else:
             config.set_setting("black_list", v,server=k)
             if v: # Si el servidor esta en la lista negra no puede estar en la de favoritos
-                config.set_setting("white_list", 100, server=k)
+                config.set_setting("favorites_servers_list", 100, server=k)
                 f = True
+        progreso.update((i * 100) / n, "Guardando configuración...")
+        i += 1
 
     if not f: # Si no hay ningun servidor en la lista, desactivarla
         config.set_setting('filter_servers', False)
 
-def servers_whitelist(item):
+    progreso.close()
+
+def servers_favorites(item):
     server_list = servertools.get_servers_list()
     dict_values = {}
 
-    list_controls = [{'id': 'sort_servers',
+    list_controls = [{'id': 'favorites_servers',
                       'type': "bool",
                       'label': "Ordenar servidores",
                       'default': False,
                       'enabled': True,
                       'visible': True}]
-    dict_values['sort_servers'] = config.get_setting('sort_servers')
+    dict_values['favorites_servers'] = config.get_setting('favorites_servers')
 
     server_names = ['Ninguno']
 
@@ -251,7 +258,7 @@ def servers_whitelist(item):
 
         server_names.append(server_list[server]['name'])
 
-        orden = config.get_setting("white_list", server=server)
+        orden = config.get_setting("favorites_servers_list", server=server)
 
         if orden and orden < 100:
             dict_values[orden] = len(server_names) - 1
@@ -271,25 +278,34 @@ def servers_whitelist(item):
     return platformtools.show_channel_settings(list_controls=list_controls, dict_values=dict_values,
                                            item=server_names,
                                            caption="Servidores favoritos",
-                                           callback="cb_servers_whitelist")
+                                           callback="cb_servers_favorites")
 
 
-def cb_servers_whitelist(server_names, dict_values):
+def cb_servers_favorites(server_names, dict_values):
     dict_name = {}
+    progreso = platformtools.dialog_progress("Guardando configuración...", "Espere un momento por favor.")
+
     for i, v in dict_values.items():
-        if i == "sort_servers":
-            config.set_setting("sort_servers", v)
+        if i == "favorites_servers":
+            config.set_setting("favorites_servers", v)
         elif int(v) > 0:
             dict_name[server_names[v]] = int(i)
 
-    for server, server_parameters in servertools.get_servers_list().items():
+    servers_list = servertools.get_servers_list().items()
+    n = len(servers_list)
+    i = 1
+    for server, server_parameters in servers_list:
         if server_parameters['name'] in dict_name.keys():
-            config.set_setting("white_list", dict_name[server_parameters['name']], server=server)
+            config.set_setting("favorites_servers_list", dict_name[server_parameters['name']], server=server)
         else:
-            config.set_setting("white_list", 100, server=server)
+            config.set_setting("favorites_servers_list", 100, server=server)
+        progreso.update((i * 100) / n, "Guardando configuración...")
+        i += 1
 
     if not dict_name: #Si no hay ningun servidor en lalista desactivarla
-        config.set_setting("sort_servers", False)
+        config.set_setting("favorites_servers", False)
+
+    progreso.close()
 
 
 def get_all_versions(item):

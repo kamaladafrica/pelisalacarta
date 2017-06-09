@@ -700,11 +700,11 @@ def sort_servers(servers_list):
     u objetos Item. En cuyo caso es necesario q tengan un atributo item.server del tipo str.
     :return: Lista del mismo tipo de objetos que servers_list ordenada en funcion de los servidores favoritos.
     """
-    if servers_list and config.get_setting('sort_servers'):
+    if servers_list and config.get_setting('favorites_servers'):
         if isinstance(servers_list[0],Item):
-            servers_list = sorted(servers_list, key = lambda x: config.get_setting("white_list",server=x.server) or 100)
+            servers_list = sorted(servers_list, key = lambda x: config.get_setting("favorites_servers_list",server=x.server) or 100)
         else:
-            servers_list = sorted(servers_list, key = lambda x: config.get_setting("white_list",server=x) or 100)
+            servers_list = sorted(servers_list, key = lambda x: config.get_setting("favorites_servers_list",server=x) or 100)
     return servers_list
 
     

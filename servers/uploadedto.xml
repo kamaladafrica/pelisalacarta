@@ -43,7 +43,7 @@
 	<settings>
 		<default>false</default>
 		<enabled>true</enabled>
-		<id>white_list</id>
+		<id>favorites_servers_list</id>
 		<label>Incluir en lista de favoritos</label>
 		<type>bool</type>
 		<visible>false</visible>
