@@ -228,7 +228,7 @@ def start (itemlist, item):
                         if hasattr(videoitem, 'language') and videoitem.language != "":
                             lang = " '%s' " % videoitem.language
 
-                        platformtools.dialog_notification("AutoPlay iniciado en:", "%s%s%s" % (
+                        platformtools.dialog_notification("AutoPlay", "%s%s%s" % (
                         videoitem.server.upper(), lang, indice[3].upper()), sound=False)
 
                         # Intenta reproducir los enlaces
@@ -387,7 +387,10 @@ def autoplay_config (item):
 
     list_language = get_languages(item.from_channel)
     channel_config = filetools.get_node_from_data_json(item.from_channel, 'settings')
-    status_language = channel_config.get("filter_languages", 0)
+    if active:
+        status_language = channel_config.get("filter_languages", 0)
+    else:
+        status_language = 0
 
     set_language = {"id": "language",
                     "label": "Idioma para AutoPlay (Obligatorio)",
@@ -550,4 +553,3 @@ def check_status (channel):
     settings_node = channel_node.get('settings', {})
     result = settings_node.get('active', False)
     return result
-
