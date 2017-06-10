@@ -92,6 +92,8 @@ def get_servers_itemlist(itemlist, fnc=None, sort=False):
     @type itemlist: list
     @param fnc: función para ejecutar con cada item (para asignar el titulo)
     @type fnc: function
+    @param sort: indica si el listado resultante se ha de ordenar en funcion de la lista de servidores favoritos
+    @type sort: bool
     """
     server_stats = {}
     #Recorre los servidores
@@ -140,6 +142,7 @@ def get_servers_itemlist(itemlist, fnc=None, sort=False):
         itemlist = sort_servers(itemlist)
     
     return itemlist
+
 
 def findvideos(data, skip=False):
     """
@@ -691,29 +694,30 @@ def get_debriders_list():
 
 def sort_servers(servers_list):
     """
-    Si existe un listado de servidores favoritos en la configuracion lo utiliza para ordenar la lista servers_list
+    Si esta activada la opcion "Ordenar servidores" en la configuracion de servidores y existe un listado de servidores 
+    favoritos en la configuracion lo utiliza para ordenar la lista servers_list
     :param servers_list: Listado de servidores para ordenar. Los elementos de la lista servers_list pueden ser strings
     u objetos Item. En cuyo caso es necesario q tengan un atributo item.server del tipo str.
     :return: Lista del mismo tipo de objetos que servers_list ordenada en funcion de los servidores favoritos.
     """
-    if servers_list:
+    if servers_list and config.get_setting('favorites_servers'):
         if isinstance(servers_list[0],Item):
-            servers_list = sorted(servers_list, key = lambda x: config.get_setting("white_list",server=x.server) or 100)
+            servers_list = sorted(servers_list, key = lambda x: config.get_setting("favorites_servers_list",server=x.server) or 100)
         else:
-            servers_list = sorted(servers_list, key = lambda x: config.get_setting("white_list",server=x) or 100)
+            servers_list = sorted(servers_list, key = lambda x: config.get_setting("favorites_servers_list",server=x) or 100)
     return servers_list
 
     
 def filter_servers(servers_list):
     """
-    Si esta activada la opcion "Filtrar servidores (Lista Negra)" en la configuracion, elimina de la lista de entrada los
-    servidores incluidos en la Lista Negra.
+    Si esta activada la opcion "Filtrar por servidores" en la configuracion de servidores, elimina de la lista 
+    de entrada los servidores incluidos en la Lista Negra.
     :param servers_list: Listado de servidores para filtrar. Los elementos de la lista servers_list pueden ser strings
     u objetos Item. En cuyo caso es necesario q tengan un atributo item.server del tipo str.
     :return: Lista del mismo tipo de objetos que servers_list filtrada en funcion de la Lista Negra.
     """
     servers_list_filter = []
-    if servers_list:
+    if servers_list and config.get_setting('filter_servers'):
         if isinstance(servers_list[0],Item):
             servers_list_filter = filter(lambda x: not config.get_setting("black_list",server=x.server), servers_list)
         else:
