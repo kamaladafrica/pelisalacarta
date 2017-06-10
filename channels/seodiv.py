@@ -35,8 +35,8 @@ def todas(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r'"|\n|\r|\t|&nbsp;|<br>|\s{2,}', "", data)
-    patron = '<div class=shortf><div><div class=shortf-img><a href=(.*?)><img src=(.*?) alt=.*?quality>(' \
-             '.*?)<.*?series transition>(.*?) <\/span>'
+    patron = '<div class=shortf><div><div class=shortf-img><a href=(.*?)><img src=(.*?) alt=.*?quality>(.*?)<.*?Ver ' \
+             'Serie><span>(.*?)<\/span>'
 
     matches = re.compile(patron, re.DOTALL).findall(data)
     for scrapedurl, scrapedthumbnail, scrapedcalidad, scrapedtitle in matches:
@@ -46,11 +46,20 @@ def todas(item):
         thumbnail = scrapedthumbnail
         fanart = 'https://s32.postimg.org/gh8lhbkb9/seodiv.png'
 
-        itemlist.append(Item(channel=item.channel, action="temporadas", title=title, url=url, thumbnail=thumbnail,
-                             fanart=fanart, contentSerieName=title, extra='', language=item.language,
-                             quality='default'))
+        itemlist.append(
+                Item(channel=item.channel,
+                     action="temporadas",
+                     title=title, url=url,
+                     thumbnail=thumbnail,
+                     fanart=fanart,
+                     contentSerieName=title,
+                     extra='',
+                     language=item.language,
+                     quality='default'
+                     ))
 
     return itemlist
+
 
 
 def temporadas(item):
