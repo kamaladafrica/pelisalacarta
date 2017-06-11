@@ -42,12 +42,6 @@
 		<lvalues>3</lvalues>
 		<lvalues>4</lvalues>
 		<lvalues>5</lvalues>
-		<lvalues>No</lvalues>
-		<lvalues>1</lvalues>
-		<lvalues>2</lvalues>
-		<lvalues>3</lvalues>
-		<lvalues>4</lvalues>
-		<lvalues>5</lvalues>
 	</settings>
 	<thumbnail>http://media.tvalacarta.info/servers/server_adnstream.png</thumbnail>
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/servers/</update_url>
