@@ -724,11 +724,12 @@ def filter_servers(servers_list):
             servers_list_filter = filter(lambda x: not config.get_setting("black_list",server=x), servers_list)
             
         # Si no hay enlaces despues de filtrarlos
-        if not servers_list_filter and platformtools.dialog_yesno("Filtrar servidores (Lista Negra)",
+        if servers_list_filter or not platformtools.dialog_yesno("Filtrar servidores (Lista Negra)",
                                                                   "Todos los enlaces disponibles pertenecen a servidores incluidos en su Lista Negra.",
                                                                   "¿Desea mostrar estos enlaces?"):
-            return servers_list
-    return servers_list_filter
+            servers_list = servers_list_filter
+
+    return servers_list
 
 
 def xml2dict(file = None, xmldata = None):
