@@ -88,6 +88,7 @@ def start (itemlist, item):
             autoplay_list = []
             favorite_servers = []
             favorite_quality = []
+
             # Agrega servidores que no estaban listados
             for item in itemlist:
                 channel_servers = check_value(item.channel, item.server, 'servers')
@@ -111,7 +112,8 @@ def start (itemlist, item):
                 favorite_priority = settings_node.get("priority", 0)
             else:
                 # Si no está activa la personalización, la prioridad se fija en calidad
-                favorite_priority = 2
+                # TODO ¿por q? lo logico seria no ordenar nada y reproducir segun la lista itemlist
+                favorite_priority = -1
 
             # Obtiene las listas servidores, calidades disponibles desde el nodo del json de AutoPlay
 
@@ -180,7 +182,7 @@ def start (itemlist, item):
                     # en el xml y no debería ser así, debería obtener cualquiera es decir la siguiente linea
                     # comentada...
                     # if is_quality_valid:
-                    if is_quality_valid and item.server in server_list:
+                    if is_quality_valid and item.server in server_list: #TODO pero ¿no estan todos los servers en la lista?
                         autoplay_list.append(
                                 [server_list.index(item.server), item, quality_list.index(item.quality), item.quality,
                                  item.server])
@@ -336,6 +338,7 @@ def prepare_autoplay_settings (channel, list_servers, list_quality):
 
 
 def check_value (channel, value, value_type):
+    # TODO mejor si value fuese una lista y se añaden todos a la vez
     ''' comprueba la existencia de un valor en la lista de servidores o calidades
         si no eixtirera los agrerga a la lista en el json
 
