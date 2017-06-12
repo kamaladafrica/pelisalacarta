@@ -230,7 +230,7 @@ def cb_servers_blacklist(item, dict_values):
             if v: # Si el servidor esta en la lista negra no puede estar en la de favoritos
                 config.set_setting("favorites_servers_list", 100, server=k)
                 f = True
-        progreso.update((i * 100) / n, "Guardando configuración...")
+                progreso.update((i * 100) / n, "Guardando configuración...%s" % k)
         i += 1
 
     if not f: # Si no hay ningun servidor en la lista, desactivarla
@@ -299,7 +299,7 @@ def cb_servers_favorites(server_names, dict_values):
             config.set_setting("favorites_servers_list", dict_name[server_parameters['name']], server=server)
         else:
             config.set_setting("favorites_servers_list", 100, server=server)
-        progreso.update((i * 100) / n, "Guardando configuración...")
+        progreso.update((i * 100) / n, "Guardando configuración...%s" % server_parameters['name'])
         i += 1
 
     if not dict_name: #Si no hay ningun servidor en lalista desactivarla
