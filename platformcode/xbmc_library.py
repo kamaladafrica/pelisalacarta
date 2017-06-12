@@ -86,7 +86,7 @@ def mark_auto_as_watched(item):
 
 def sync_trakt_pelisalacarta(path_folder):
     """
-       Actualiza los valores de episodios vistos si  
+       Actualiza los valores de episodios vistos si
     """
     logger.info()
     # si existe el addon hacemos la busqueda
@@ -811,11 +811,7 @@ def add_sources(path):
     nodo_video.appendChild(nodo_source)
 
     # Guardamos los cambios
-    '''data = xmldoc.toprettyxml()
-    data = '\n'.join([x for x in data.splitlines() if x.strip()])
-    filetools.write(SOURCES_PATH,data)'''
-    fichero = open(SOURCES_PATH, 'w')
-    xmldoc.writexml(fichero)
+    filetools.write(SOURCES_PATH, '\n'.join([x for x in xmldoc.toprettyxml().encode("utf-8").splitlines() if x.strip()]))
 
 
 def ask_set_content():
@@ -833,5 +829,3 @@ def ask_set_content():
             config.verify_directories_created()
 
         config.set_setting("library_ask_set_content", False)
-
-

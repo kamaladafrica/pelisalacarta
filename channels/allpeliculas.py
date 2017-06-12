@@ -136,7 +136,7 @@ def indices(item):
     itemlist.append(item.clone(title="Alfabético", action="subindice"))
     itemlist.append(item.clone(title="Por idioma", action="subindice"))
     itemlist.append(item.clone(title="Por valoración", action="lista",
-                               url="http://allpeliculas.co/Movies/fullView/1/0/rating:imdb|date:1900-2016|"
+                               url="http://allpeliculas.co/Movies/fullView/1/0/rating:imdb|date:1900-3000|"
                                    "alphabet:all|?ajax=1&withoutFilter=1"))
     itemlist.append(item.clone(title="Por año", action="subindice"))
     itemlist.append(item.clone(title="Por calidad", action="subindice"))
@@ -205,7 +205,7 @@ def subindice(item):
     logger.info()
     itemlist = []
     
-    url_base = "http://allpeliculas.co/Movies/fullView/1/0/date:1900-2016|alphabet:all|?ajax=1&withoutFilter=1"
+    url_base = "http://allpeliculas.co/Movies/fullView/1/0/date:1900-3000|alphabet:all|?ajax=1&withoutFilter=1"
     indice_genero, indice_alfa, indice_idioma, indice_year, indice_calidad = dict_indices()
     if "Géneros" in item.title:
         for key, value in indice_genero.items():
@@ -220,14 +220,14 @@ def subindice(item):
 
     elif "Por idioma" in item.title:
         for key, value in indice_idioma.items():
-            url = url_base.replace("2016|", "2016|language:"+key)
+            url = url_base.replace("3000|", "3000|language:"+key)
             itemlist.append(item.clone(action="lista", title=value, url=url))
             itemlist.sort(key=lambda item: item.title)
 
     elif "Por año" in item.title:
         for i in range(len(indice_year)):
             year = indice_year[i]
-            url = url_base.replace("1900-2016", year+"-"+year)
+            url = url_base.replace("1900-3000", year+"-"+year)
             itemlist.append(item.clone(action="lista", title=year, url=url))
 
     elif "Por calidad" in item.title:

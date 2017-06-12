@@ -189,4 +189,6 @@ class Client(object):
 
     def dec_attr(self, attr, key):
       attr = self.aes_cbc_decrypt(attr, self.a32_to_str(key)).rstrip('\0')
+      if not attr.endswith("}"):
+        attr = attr.rsplit("}", 1)[0] + "}"
       return json.loads(attr[4:]) if attr[:6] == 'MEGA{"' else False

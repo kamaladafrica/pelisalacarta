@@ -1,24 +1,24 @@
 ﻿<?xml version="0.1" encoding="utf-8" standalone="yes"?>
 <channel>
-	<id>seriesmeme</id>
-	<name>SeriesMeme</name>
+	<id>cartoonlatino</id>
+	<name>Cartoon-Latino</name>
 
 	<active>true</active>
 	<adult>false</adult>
 	<language>es</language>
 
 	<fanart></fanart>
-	<thumbnail>http://i.imgur.com/d5hLmwD.png</thumbnail>
-	<bannermenu>http://i.imgur.com/Gic8L60.png</bannermenu>
+	<thumbnail>http://i.imgur.com/wk6fRDZ.png</thumbnail>
+	<bannermenu>http://i.imgur.com/115c59F.png</bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
 	<version>2</version>
 	
     <changes>
 		<change>
-			<date>18/05/2017</date>
+			<date>07/06/2017</date>
 			<autor>DanielyD</autor>
-			<description>Mejora estética agregado modulo tmdb</description>
+			<description>Primera version del canal</description>
 		</change>
 	</changes>
 	

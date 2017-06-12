@@ -158,8 +158,11 @@ def update_channel(channel_name):
         data = scrapertools.cachePage( remote_version_url )
         logger.info("remote_data="+data)
         remote_version = int( scrapertools.find_single_match(data,'<version>([^<]+)</version>') )
+        addon_condition = int(scrapertools.find_single_match(data, "<addon_version>([^<]*)</addon_version>")
+                              .replace(".", "").ljust(len(str(versiontools.get_current_plugin_version())), '0'))
     except:
         remote_version = 0
+        addon_condition = 0
 
     logger.info("remote_version=%d" % remote_version)
 
@@ -177,7 +180,7 @@ def update_channel(channel_name):
     logger.info("local_version=%d" % local_version)
 
     # Comprueba si ha cambiado
-    updated = remote_version > local_version
+    updated = (remote_version > local_version) and (versiontools.get_current_plugin_version() >= addon_condition)
 
     if updated:
         logger.info("downloading...")
