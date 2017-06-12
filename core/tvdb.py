@@ -41,7 +41,12 @@ from platformcode import platformtools
 
 HOST = "https://api.thetvdb.com"
 HOST_IMAGE = "http://thetvdb.com/banners/"
-TOKEN = config.get_setting("tvdb_token")
+
+# comprobación tras el cambio de tipos en config.get_setting
+if config.get_setting("tvdb_token") is not None:
+    TOKEN = config.get_setting("tvdb_token")
+else:
+    TOKEN = ""
 
 DEFAULT_LANG = "es"
 DEFAULT_HEADERS = {
@@ -428,6 +433,7 @@ class Tvdb:
 
         else:
             dict_html = jsontools.load_json(html)
+            # logger.debug("dict_html %s" % dict_html)
 
             if "token" in dict_html:
                 token = dict_html["token"]

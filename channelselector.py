@@ -215,7 +215,7 @@ def filterchannels(category, preferred_thumb=""):
                                      action="mainlist", thumbnail=channel_parameters["thumbnail"],
                                      fanart=channel_parameters["fanart"], category=channel_parameters["title"],
                                      language=channel_parameters["language"], viewmode="list",
-                                     context=context))
+                                     version=channel_parameters["version"], context=context))
 
         except:
             logger.error("Se ha producido un error al leer los datos del canal " + channel)
