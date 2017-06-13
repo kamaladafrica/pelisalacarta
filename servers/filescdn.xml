@@ -1,7 +1,13 @@
 <?xml version="1.0" ?>
 <server>
 	<active>true</active>
+	<version>3</version>
 	<changes>
+		<change>
+			<autor>Intel1<autor/>
+			<date>13/06/2017</date>
+			<description>Actualizado patrón del get_video()</description>
+		</change>
 		<change>
 			<autor/>
 			<date>15/02/2017</date>
@@ -45,5 +51,4 @@
 	</settings>
 	<thumbnail>https://s31.postimg.org/ijne6piij/filescdn.png</thumbnail>
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/servers/</update_url>
-	<version>2</version>
 </server>
