@@ -28,6 +28,7 @@
 import os
 import threading
 import urllib2
+import time
 
 import xbmc
 from core import config
@@ -44,7 +45,8 @@ def mark_auto_as_watched(item):
 
         condicion = config.get_setting("watched_setting", "biblioteca")
 
-        xbmc.sleep(5000)
+        while not platformtools.is_playing():
+            time.sleep(1)
 
         sync_with_trakt = False
 
@@ -61,18 +63,21 @@ def mark_auto_as_watched(item):
                 mark_time = totaltime * 0.5
             elif condicion == 3:  # '80%'
                 mark_time = totaltime * 0.8
+            elif condicion == 4: # '0 seg'
+                mark_time = -1
 
-            # logger.debug(str(tiempo_actual))
-            # logger.debug(str(mark_time))
+            logger.debug(str(tiempo_actual))
+            logger.debug(str(mark_time))
 
             if tiempo_actual > mark_time:
+                logger.debug("marcado")
                 item.playcount = 1
                 sync_with_trakt = True
                 from channels import biblioteca
                 biblioteca.mark_content_as_watched(item)
                 break
 
-            xbmc.sleep(30000)
+            time.sleep(30)
 
         # Sincronizacion silenciosa con Trakt
         if sync_with_trakt:

@@ -186,6 +186,7 @@
 		<lvalues>30%</lvalues>
 		<lvalues>50%</lvalues>
 		<lvalues>80%</lvalues>
+		<lvalues>0 seg</lvalues>
 	</settings>
 	<settings>
 		<id>sync_trakt</id>
