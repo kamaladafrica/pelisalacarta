@@ -94,7 +94,7 @@ def decrypt(h):
     for c in range(len(h)):
         sig += [ord(h[c])]
 
-    k = "streamplayembedz"
+    k = "streamplayembedc"
     sec = []
     for c in range(len(k)):
         sec += [ord(k[c])]
