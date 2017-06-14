@@ -45,8 +45,10 @@ def mark_auto_as_watched(item):
 
         condicion = config.get_setting("watched_setting", "biblioteca")
 
-        while not platformtools.is_playing():
+        time_limit = time.time() + 30
+        while not platformtools.is_playing() and time.time() < time_limit:
             time.sleep(1)
+
 
         sync_with_trakt = False
 
@@ -66,8 +68,8 @@ def mark_auto_as_watched(item):
             elif condicion == 4: # '0 seg'
                 mark_time = -1
 
-            logger.debug(str(tiempo_actual))
-            logger.debug(str(mark_time))
+            #logger.debug(str(tiempo_actual))
+            #logger.debug(str(mark_time))
 
             if tiempo_actual > mark_time:
                 logger.debug("marcado")
@@ -83,6 +85,8 @@ def mark_auto_as_watched(item):
         if sync_with_trakt:
             if config.get_setting("sync_trakt_watched", "biblioteca"):
                 sync_trakt_kodi()
+
+        #logger.debug("Fin del hilo")
 
     # Si esta configurado para marcar como visto
     if config.get_setting("mark_as_watched", "biblioteca"):
