@@ -12,9 +12,14 @@
 	<bannermenu>https://s31.postimg.org/u6yddil8r/metaserie_banner.png</bannermenu>
 	
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-    <version>5</version>
+    <version>6</version>
 
 	<changes>
+		<change>
+			<date>06/06/2017</date>
+			<autor>Hernan_ar_c</autor>
+			<description>Compatibilidad con AutoPlay</description>
+   		</change>
 		<change>
 			<date>25/05/2017</date>
 			<autor>Hernan_ar_c</autor>
@@ -31,12 +36,11 @@
 			<description>Release.</description>
 		</change>
 	</changes>
-
 	<categories>
 		<category>latino</category>
 		<category>serie</category>
 	</categories>
-
+	
 	<settings>
 		<id>include_in_global_search</id>
 		<type>bool</type>
@@ -45,4 +49,19 @@
 		<enabled>false</enabled>
 		<visible>false</visible>
 	</settings>
+
+	<settings>
+		<id>filter_languages</id>
+		<type>list</type>
+		<label>Mostrar enlaces en idioma...</label>
+		<default>0</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+		<lvalues>No filtrar</lvalues>
+		<lvalues>Latino</lvalues>
+		<lvalues>Español</lvalues>
+		<lvalues>VOS</lvalues>
+	</settings>
+
+	
 </channel>

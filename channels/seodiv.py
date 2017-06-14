@@ -3,6 +3,10 @@
 # Canal (seodiv) por Hernan_Ar_c
 # ------------------------------------------------------------
 
+import urlparse, urllib2, urllib, re
+import os, sys
+
+from core import logger
 import re
 
 from core import config
@@ -11,9 +15,20 @@ from core import logger
 from core import servertools
 from core import scrapertools
 from core.item import Item
+from core import servertools
+from core import httptools
+from channels import autoplay
+from channels import filtertools
 
-IDIOMAS = {'latino':'Latino'}
-list_languages = IDIOMAS.values()
+IDIOMAS = {'latino': 'Latino'}
+list_language = IDIOMAS.values()
+list_servers =['openload',
+               'okru',
+               'myvideo',
+               'sendvid'
+               ]
+list_quality = ['default']
+
 
 host = 'http://www.seodiv.com'
 
@@ -21,12 +36,19 @@ host = 'http://www.seodiv.com'
 def mainlist(item):
     logger.info()
 
+    autoplay.prepare_autoplay_settings(item.channel, list_servers, list_quality)
     itemlist = []
 
-    itemlist.append(Item(channel=item.channel, title="Todos", action="todas", url=host,
-                         thumbnail='https://s27.postimg.org/iahczwgrn/series.png',
-                         fanart='https://s27.postimg.org/iahczwgrn/series.png'))
-
+    itemlist.append(
+            Item(channel=item.channel,
+                 title="Todos",
+                 action="todas",
+                 url=host,
+                 thumbnail='https://s27.postimg.org/iahczwgrn/series.png',
+                 fanart='https://s27.postimg.org/iahczwgrn/series.png',
+                 language='latino'
+                 ))
+    autoplay.show_option(item.channel, itemlist)
     return itemlist
 
 
@@ -55,11 +77,11 @@ def todas(item):
                      contentSerieName=title,
                      extra='',
                      language=item.language,
-                     quality='default'
+                     quality='default',
+                     context=autoplay.context
                      ))
 
     return itemlist
-
 
 
 def temporadas(item):
@@ -92,7 +114,8 @@ def temporadas(item):
                          temp=str(temp),
                          contentSerieName=item.contentSerieName,
                          language=item.language,
-                         quality=item.quality
+                         quality=item.quality,
+                         context=item.context
                          ))
             temp = temp + 1
 
@@ -175,6 +198,7 @@ def episodiosxtemp(item):
                          language=item.language,
                          quality=item.quality,
                          contentSerieName=item.contentSerieName,
+                         context=item.context
                          ))
 
         if item.title not in scrapedurl and scrapedtipo == 'Capitulo' and item.temp\
@@ -190,7 +214,8 @@ def episodiosxtemp(item):
                          url=url,
                          thumbnail=item.thumbnail,
                          plot=plot,
-                         contentSerieName=item.contentSerieName
+                         contentSerieName=item.contentSerieName,
+                         context=item.context
                          ))
 
         if 'temporada' not in item.title and item.title not in scrapedurl and scrapedtipo == 'Pelicula':
@@ -204,7 +229,8 @@ def episodiosxtemp(item):
                          thumbnail=item.thumbnail,
                          plot=plot,
                          language=item.language,
-                         contentSerieName=item.contentSerieName
+                         contentSerieName=item.contentSerieName,
+                         context=item.context
                          ))
 
     return itemlist
@@ -222,6 +248,16 @@ def findvideos(item):
                                                                   'class="f-info-text">(.*?)<\/span>')
         videoitem.title = item.contentSerieName + ' (' + videoitem.server + ') (' + videoitem.language + ')'
         videoitem.quality = 'default'
+        videoitem.context = item.context
         itemlist.append(videoitem)
+
+    # Requerido para FilterTools
+
+    if len(itemlist) > 0 and filtertools.context:
+        itemlist = filtertools.get_links(itemlist, item, list_language)
+
+    # Requerido para AutoPlay
+
+    autoplay.start(itemlist, item)
 
     return itemlist
