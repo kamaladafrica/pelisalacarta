@@ -3,6 +3,10 @@
 	<id>metaserie</id>
 	<name>MetaSerie (Latino)</name>
 
+	<compatible>
+		<addon_version>4.3</addon_version>
+	</compatible>
+
 	<active>true</active>
 	<adult>false</adult>
 	<language>es</language>
