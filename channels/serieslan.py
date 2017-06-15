@@ -77,23 +77,8 @@ def episodios(item):
         i=i+1
         season = 1
         episode = int(cap)
-        #if "/" in name:
-        #    episode=episode*2-1
-        #    epi=episode
-        #else:
-        #    if epi!=0:
-        #        epi=epi+1
-        #        episode=epi
         season, episode = renumbertools.numbered_for_tratk(
             item.channel, item.show, season, episode)
-        #if season==2:
-        #    episode=episode-9
-        #    if episode>=4:
-        #        episode=episode-1
-        #    if episode>14:
-        #        episode=episode-2
-        #if season==3:
-        #    episode=episode-1
         date=name
         title = "{0}x{1:02d} {2} ({3})".format(
             season, episode, "Episodio " + str(episode), date)
