@@ -534,8 +534,8 @@ def mark_season_as_watched(item):
     # logger.debug("item:\n" + item.tostring('\n'))
 
     # Obtener el diccionario de episodios marcados
-    tvshow_nfo_file = filetools.join(item.path, 'tvshow.nfo')
-    head_nfo, it = library.read_nfo(tvshow_nfo_file)
+    tvshow_path = filetools.join(item.path, 'tvshow.nfo')
+    head_nfo, it = library.read_nfo(tvshow_path)
     if not hasattr(it, 'library_playcounts'):
         it.library_playcounts = {}
 
@@ -568,7 +568,7 @@ def mark_season_as_watched(item):
             it = check_tvshow_playcount(it, item.contentSeason)
 
         # Guardamos los cambios en tvshow.nfo
-        filetools.write(tvshow_nfo_file, head_nfo + it.tojson())
+        filetools.write(tvshow_path, head_nfo + it.tojson())
         item.infoLabels['playcount'] = item.playcount
 
         if config.is_xbmc():
