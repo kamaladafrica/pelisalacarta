@@ -354,7 +354,7 @@ def prepare_autoplay_settings (channel, list_servers, list_quality):
 
 def check_value (channel, values, value_type):
     ''' comprueba la existencia de un valor en la lista de servidores o calidades
-        si no eixtirera los agrerga a la lista en el json
+        si no existirera los agrerga a la lista en el json
 
     :param channel: str
     :param values: list (una de servidores o calidades)
