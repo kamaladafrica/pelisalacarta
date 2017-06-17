@@ -30,18 +30,16 @@ import os
 import config
 import jsontools
 import logger
-import scrapertools
+
 
 DEFAULT_UPDATE_URL = "https://raw.githubusercontent.com/tvalacarta/pelisalacarta/develop/python/main-classic/channels/"
-
+dict_channels_parameters = dict()
 
 def str_to_bool(s):
     if s == 'true':
         return True
-    elif s == 'false' or s == '':
-        return False
     else:
-        raise ValueError("Cannot covert '%s' to a bool" % s)
+        return False
 
 
 def is_adult(channel_name):
@@ -51,122 +49,112 @@ def is_adult(channel_name):
 
     return channel_parameters["adult"]
 
-
 def get_channel_parameters(channel_name):
-    # logger.info("pelisalacarta.core.channeltools get_channel_parameters channel_name="+channel_name)
-    channel_xml = os.path.join(config.get_runtime_path(), 'channels', channel_name+".xml")
+    global dict_channels_parameters
 
-    if os.path.exists(channel_xml):
-        # logger.info("channel_name+".xml found")
+    if channel_name not in dict_channels_parameters:
+        try:
+            channel_parameters = get_channel_json(channel_name)
+            #logger.debug(channel_parameters)
+            if channel_parameters:
+                # cambios de nombres y valores por defecto
+                channel_parameters["title"] = channel_parameters.pop("name")
+                channel_parameters["channel"] = channel_parameters.pop("id")
+                if not channel_parameters.get("update_url"):
+                    channel_parameters["update_url"] = DEFAULT_UPDATE_URL
 
-        infile = open(channel_xml, "rb")
-        data = infile.read()
-        infile.close()
+                if not channel_parameters.get("language"):
+                    channel_parameters["language"] = "all"
 
-        channel_parameters = dict()
-        channel_parameters["title"] = scrapertools.find_single_match(data, "<name>([^<]*)</name>")
-        channel_parameters["channel"] = scrapertools.find_single_match(data, "<id>([^<]*)</id>")
-        channel_parameters["active"] = str_to_bool(scrapertools.find_single_match(data, "<active>([^<]*)</active>"))
-        channel_parameters["adult"] = str_to_bool(scrapertools.find_single_match(data, "<adult>([^<]*)</adult>"))
-        channel_parameters["language"] = scrapertools.find_single_match(data, "<language>([^<]*)</language>")
-        channel_parameters["version"] = scrapertools.find_single_match(data, "<version>([^<]*)</version>")
+                if not channel_parameters.get("categories"):
+                    channel_parameters["categories"] = list()
+                else:
+                    channel_parameters["categories"] = channel_parameters["categories"].get("category",list())
+                if not isinstance(channel_parameters["categories"],list):
+                    channel_parameters["categories"] = [channel_parameters["categories"]]
 
-        # Imagenes: se admiten url y archivos locales dentro de "resources/images"
-        channel_parameters["thumbnail"] = scrapertools.find_single_match(data, "<thumbnail>([^<]*)</thumbnail>")
-        channel_parameters["bannermenu"] = scrapertools.find_single_match(data, "<bannermenu>([^<]*)</bannermenu>")
-        channel_parameters["fanart"] = scrapertools.find_single_match(data, "<fanart>([^<]*)</fanart>")
 
-        if channel_parameters["thumbnail"] and "://" not in channel_parameters["thumbnail"]:
-            channel_parameters["thumbnail"] = os.path.join(config.get_runtime_path(), "resources", "images", "squares",
-                                                           channel_parameters["thumbnail"])
-        if channel_parameters["bannermenu"] and "://" not in channel_parameters["bannermenu"]:
-            channel_parameters["bannermenu"] = os.path.join(config.get_runtime_path(), "resources", "images",
-                                                            "bannermenu", channel_parameters["bannermenu"])
-        if channel_parameters["fanart"] and "://" not in channel_parameters["fanart"]:
-            channel_parameters["fanart"] = os.path.join(config.get_runtime_path(), "resources", "images", "fanart",
-                                                        channel_parameters["fanart"])
+                # Imagenes: se admiten url y archivos locales dentro de "resources/images"
+                if channel_parameters.get("thumbnail") and "://" not in channel_parameters["thumbnail"]:
+                    channel_parameters["thumbnail"] = os.path.join(config.get_runtime_path(), "resources", "images", "squares",
+                                                                   channel_parameters["thumbnail"])
+                if channel_parameters.get("bannermenu") and "://" not in channel_parameters["bannermenu"]:
+                    channel_parameters["bannermenu"] = os.path.join(config.get_runtime_path(), "resources", "images",
+                                                                    "bannermenu", channel_parameters["bannermenu"])
+                if channel_parameters.get("fanart") and "://" not in channel_parameters["fanart"]:
+                    channel_parameters["fanart"] = os.path.join(config.get_runtime_path(), "resources", "images", "fanart",
+                                                                channel_parameters["fanart"])
 
-        channel_parameters["update_url"] = scrapertools.find_single_match(data, "<update_url>([^<]*)</update_url>")
-        if channel_parameters["update_url"] == "":
+
+                # Convertir str a bool
+                channel_parameters["include_in_global_search"] = str_to_bool(channel_parameters.get("include_in_global_search"))
+                channel_parameters["adult"] = str_to_bool(channel_parameters.get("adult"))
+                channel_parameters["active"] = str_to_bool(channel_parameters.get("active"))
+
+
+                # Obtenemos si el canal tiene opciones de configuración
+                channel_parameters["has_settings"] = False
+                if 'settings' in channel_parameters:
+                    if not isinstance(channel_parameters['settings'],list):
+                        channel_parameters['settings']=[channel_parameters['settings']]
+                    for s in channel_parameters['settings']:
+                        if 'id' in s:
+                            if s['id'] == "include_in_global_search":
+                                channel_parameters["include_in_global_search"] = True
+                            elif not s['id'].startswith("include_in_"):
+                                channel_parameters["has_settings"] = True
+                        elif 'include_in_global_search' in s:
+                            channel_parameters["include_in_global_search"] = True
+
+                    del channel_parameters['settings']
+
+
+                # Compatibilidad
+                if 'compatible' in channel_parameters:
+                    # compatible python?
+                    python_compatible = True
+                    if 'python' in channel_parameters["compatible"]:
+                        import sys
+                        python_condition = channel_parameters["compatible"]['python']
+                        if sys.version_info < tuple(map(int, (python_condition.split(".")))):
+                            python_compatible = False
+
+                    # compatible addon_versio?
+                    addon_version_compatible = True
+                    if 'addon_version' in channel_parameters["compatible"]:
+                        import versiontools
+                        addon_version_condition = channel_parameters["compatible"]['addon_version']
+                        addon_version = int(addon_version_condition.replace(".", "").ljust(len(str(
+                            versiontools.get_current_plugin_version())), '0'))
+                        if versiontools.get_current_plugin_version() < addon_version:
+                            addon_version_compatible = False
+
+                    channel_parameters["compatible"] = python_compatible and addon_version_compatible
+                else:
+                    channel_parameters["compatible"] = True
+
+                dict_channels_parameters[channel_name] = channel_parameters
+
+        except:
+            logger.error(channel_name + ".xml error")
+            channel_parameters = dict()
+            channel_parameters["adult"] = False
+            channel_parameters['active'] = False
+            channel_parameters["compatible"] = True
+            channel_parameters["language"] = ""
             channel_parameters["update_url"] = DEFAULT_UPDATE_URL
+            return channel_parameters
 
-        include_in_global_search = scrapertools.find_single_match(
-            data, "<include_in_global_search>([^<]*)</include_in_global_search>")
 
-        if include_in_global_search in ["", "true"]:
-            channel_parameters["include_in_global_search"] = True
-        else:
-            channel_parameters["include_in_global_search"] = False
-
-        category_list = []
-        matches = scrapertools.find_multiple_matches(data, "<category>([^<]*)</category>")
-        for match in matches:
-            category_list.append(match)
-
-        channel_parameters["categories"] = category_list
-
-        # Obtenemos si el canal tiene opciones de configuración
-        channel_parameters["has_settings"] = False
-        # esta regex devuelve 2 valores por elemento <settings>, el contenido del propio nodo y un \t, por lo que hay
-        # posteriormente coger solo el valor del indice 0.
-        matches = scrapertools.find_multiple_matches(data, "<settings>((.|\n)*?)<\/settings>")
-        for match in matches:
-            _id = scrapertools.find_single_match(match[0], "<id>([^<]*)</id>")
-            if _id and "include_in_" not in _id:
-                channel_parameters["has_settings"] = True
-                break
-
-        # Inicio - condiciones para mostrar canal compatible
-        python_condition = scrapertools.find_single_match(data, "<python>([^<]*)</python>")
-        if python_condition:
-            import sys
-
-            def versiontuple(v):
-                return tuple(map(int, (v.split("."))))
-
-            if sys.version_info < versiontuple(python_condition):
-                python_compatible = False
-            else:
-                python_compatible = True
-        else:
-            python_compatible = True
-
-        addon_version_condition = scrapertools.find_single_match(data, "<addon_version>([^<]*)</addon_version>")
-        if addon_version_condition:
-            import versiontools
-            addon_version = int(addon_version_condition.replace(".", "").ljust(len(str(
-                versiontools.get_current_plugin_version())), '0'))
-            if versiontools.get_current_plugin_version() < addon_version:
-                addon_version_compatible = False
-            else:
-                addon_version_compatible = True
-        else:
-            addon_version_compatible = True
-
-        channel_parameters["compatible"] = True
-
-        if not python_compatible or not addon_version_compatible:
-            channel_parameters["compatible"] = False
-        # Fin - condiciones para mostrar canal compatible
-
-        logger.info(channel_name+" -> "+repr(channel_parameters))
-
-    else:
-        logger.info(channel_name+".xml NOT found")
-
-        channel_parameters = dict()
-        channel_parameters["adult"] = False
-        channel_parameters["update_url"] = DEFAULT_UPDATE_URL
-
-    return channel_parameters
+    return dict_channels_parameters[channel_name]
 
 
 
 def get_channel_json(channel_name):
-    # logger.info("channel_name="+channel_name)
+    #logger.info("channel_name="+channel_name)
     channel_xml = os.path.join(config.get_runtime_path(), 'channels', channel_name + ".xml")
     channel_json = jsontools.xmlTojson(channel_xml)
-    return channel_json['channel']
+    return channel_json.get('channel')
 
 
 def get_channel_controls_settings(channel_name):
@@ -333,7 +321,7 @@ def set_channel_setting(name, value, channel):
 def get_channel_module(channel_name, package="channels"):
     # Sustituye al que hay en servertools.py ...
     # ...pero añade la posibilidad de incluir un paquete diferente de "channels"
-    if not "." in channel_name:
+    if "." not in channel_name:
       channel_module = __import__('%s.%s' % (package,channel_name), None, None, ['%s.%s' % (package,channel_name)])
     else:
       channel_module = __import__(channel_name, None, None, [channel_name])
