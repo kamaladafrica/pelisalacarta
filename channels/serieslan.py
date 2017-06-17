@@ -53,6 +53,8 @@ def lista(item):
         title=name
         url=host+link
         scrapedthumbnail=host+img
+        if "Coraje" in title:
+            title="Courage the Cowardly Dog"
         itemlist.append(item.clone(title=title, url=url, action="episodios", thumbnail=scrapedthumbnail, show=title, context=renumbertools.context))
 
     itemlist.append(Item(channel = item.channel,title="Página Siguiente >>", url = item.url, action="lista", page= item.page +1))
@@ -65,30 +67,49 @@ def episodios(item):
 
     itemlist = []
     data = httptools.downloadpage(item.url).data
-    patron_caps = '<li><span>Capitulo ([^"]+)\:<\/span><a href="([^"]+)">([^"]+)<\/a>'
+    logger.debug("datito %s " % data)
+
+    # obtener el numero total de episodios
+    total_episode = 0
+
+    patron_caps = '<li><span>Capitulo ([^"]+)\:<\/span><[^"]+"(.+?)">([^"]+)<[^"]+<\/li>'
     matches = scrapertools.find_multiple_matches(data, patron_caps)
-    data_info=scrapertools.find_single_match(data, '<div class="info">.+?<\/div><\/div>')
-    patron_info='<img src="([^"]+)">.+?<\/span>([^"]+)<\/p><p><span>I.+?Reseña: <\/span>(.+?)<\/p><\/div>'
-    scrapedthumbnail,show,scrapedplot = scrapertools.find_single_match(data,patron_info)
-    scrapedthumbnail=host+scrapedthumbnail
-    i=0
-    epi=0
-    for cap, link,name in matches:
-        i=i+1
-        season = 1
-        episode = int(cap)
-        season, episode = renumbertools.numbered_for_tratk(
-            item.channel, item.show, season, episode)
-        date=name
-        title = "{0}x{1:02d} {2} ({3})".format(
-            season, episode, "Episodio " + str(episode), date)
-        url=host+"/"+link
-        itemlist.append(Item(channel=item.channel, action="findvideos", title=title, url=url, show=show,plot=scrapedplot,thumbnail=scrapedthumbnail))
+    # data_info = scrapertools.find_single_match(data, '<div class="info">.+?<\/div><\/div>')
+    patron_info = '<img src="([^"]+)">.+?<\/span>([^"]+)<\/p><p><span>I.+?Reseña: <\/span>(.+?)<\/p><\/div>'
+    scrapedthumbnail, show, scrapedplot = scrapertools.find_single_match(data, patron_info)
+    scrapedthumbnail = host + scrapedthumbnail
+
+    for cap, link, name in matches:
+
+        title = ""
+        pat="as/sd"
+        # varios episodios en un enlace
+        if len(name.split(pat)) > 1:
+            i=0
+            for pos in name.split(pat):
+                i=i+1
+                total_episode += 1
+                season, episode = renumbertools.numbered_for_tratk(item.channel, item.show, 1, total_episode)
+                if len(name.split(pat))==i:
+                    title += "{0}x{1:02d} ".format(season, episode)
+                else:
+                    title += "{0}x{1:02d}_".format(season, episode)
+        else:
+            total_episode += 1
+            season, episode = renumbertools.numbered_for_tratk(item.channel, item.show, 1, total_episode)
+
+            title += "{0}x{1:02d} ".format(season, episode)
+
+        url = host + "/" + link
+        if "disponible" in link:
+            title += "No Disponible aún"
+        else:
+            title += name
+            itemlist.append(Item(channel=item.channel, action="findvideos", title=title, url=url, show=show, plot=scrapedplot,
+                 thumbnail=scrapedthumbnail))
 
     if config.get_library_support() and len(itemlist) > 0:
-
         itemlist.append(Item(channel=item.channel, title="Añadir esta serie a la biblioteca de Kodi", url=item.url,
-
                              action="add_serie_to_library", extra="episodios", show=show))
 
     return itemlist
@@ -128,7 +149,6 @@ def findvideos(item):
         return res
 
     data = httptools.downloadpage(item.url).data 
-    logger.info("sassvxcv"+data)
     pattern = '<div id="video" idv="([^"]*)" ide="([^"]*)" ids="[^"]*" class="video">'
     idv, ide = scrapertools.find_single_match(data, pattern)
     thumbnail= scrapertools.find_single_match(data, '<div id="tab-1" class="tab-content current">.+?<img src="([^"]*)">')
@@ -137,35 +157,27 @@ def findvideos(item):
     data = httptools.downloadpage(urlApiGetKey % idv, headers={'Referer':item.url}).data
     video_url = urlServer % (txc(ide, base64.decodestring(data)))
     server="openload"
-    itemlist.append(Item(channel=item.channel, action="play", title="Enlace encontrado en "+server, plot=show,show=show, url=video_url, thumbnail=thumbnail,server=server, folder=False))
+    if " SUB" in item.title:
+        lang="VOS"
+    elif " Sub" in item:
+        lang="VOS"
+    else:
+        lang="Latino"
+    title="Enlace encontrado en "+server+" ["+lang+"]"
+    itemlist.append(Item(channel=item.channel, action="play", title=title, show=show, url=video_url, plot=item.plot,thumbnail=thumbnail,server=server, folder=False))
 
     return itemlist
 
 def play(item):
     logger.info()
-
     itemlist = []
-
-
     # Buscamos video por servidor ...
-
     devuelve = servertools.findvideosbyserver(item.url, item.server)
-
     if not devuelve:
-
         # ...sino lo encontramos buscamos en todos los servidores disponibles
-
         devuelve = servertools.findvideos(item.url, skip=True)
-
-
     if devuelve:
-
         # logger.debug(devuelve)
         itemlist.append(Item(channel=item.channel, title=item.contentTitle, action="play", server=devuelve[0][2],
-
                              url=devuelve[0][1],thumbnail=item.thumbnail, folder=False))
-
-
     return itemlist
-
-
