@@ -27,6 +27,7 @@
 
 from core import config
 from core import filetools
+from core import jsontools
 from core import logger
 from core.item import Item
 from platformcode import platformtools
@@ -67,7 +68,7 @@ class Filter:
 
     def __get_data(self, item, global_filter_lang_id):
 
-        dict_filtered_shows = filetools.get_node_from_data_json(item.channel, TAG_TVSHOW_FILTER)
+        dict_filtered_shows = jsontools.get_node_from_data_json(item.channel, TAG_TVSHOW_FILTER)
         tvshow = item.show.lower().strip()
 
         global_filter_language = config.get_setting(global_filter_lang_id, item.channel)
@@ -106,7 +107,7 @@ def upgrade_version(channel, list_quality):
 
     if channel in ['seriesblanco', 'seriesdanko', 'seriespapaya']:
         if not config.get_setting("var_temp_filtertools_v2_%s" % channel):
-            dict_series = filetools.get_node_from_data_json(channel, TAG_TVSHOW_FILTER)
+            dict_series = jsontools.get_node_from_data_json(channel, TAG_TVSHOW_FILTER)
 
             if dict_series:
                 # Informamos al usuario
@@ -135,8 +136,8 @@ def upgrade_version(channel, list_quality):
                         # añadimos el nuevo nodo con los datos correctos
                         dict_series[serie][TAG_QUALITY_ALLOWED] = quality_allowed
 
-                    fname, json_data = filetools.update_json_data(dict_series, channel, TAG_TVSHOW_FILTER)
-                    result = filetools.write(fname, json_data)
+                    result, json_data = jsontools.update_json_data(dict_series, channel, TAG_TVSHOW_FILTER)
+
 
                 except:
                     logger.error("Se ha producido un error al convertir los filtros")
@@ -438,7 +439,7 @@ def mainlist(channel, list_language, list_quality):
     """
     logger.info()
     itemlist = []
-    dict_series = filetools.get_node_from_data_json(channel, TAG_TVSHOW_FILTER)
+    dict_series = jsontools.get_node_from_data_json(channel, TAG_TVSHOW_FILTER)
 
     idx = 0
     for tvshow in sorted(dict_series):
@@ -482,7 +483,7 @@ def config_item(item):
     logger.info("item %s" % item.tostring())
 
     # OBTENEMOS LOS DATOS DEL JSON
-    dict_series = filetools.get_node_from_data_json(item.from_channel, TAG_TVSHOW_FILTER)
+    dict_series = jsontools.get_node_from_data_json(item.from_channel, TAG_TVSHOW_FILTER)
 
     tvshow = item.show.lower().strip()
 
@@ -559,7 +560,7 @@ def delete(item, dict_values):
     logger.info()
 
     if item:
-        dict_series = filetools.get_node_from_data_json(item.from_channel, TAG_TVSHOW_FILTER)
+        dict_series = jsontools.get_node_from_data_json(item.from_channel, TAG_TVSHOW_FILTER)
         tvshow = item.show.strip().lower()
 
         heading = "¿Está seguro que desea eliminar el filtro?"
@@ -570,8 +571,7 @@ def delete(item, dict_values):
             lang_selected = dict_series.get(tvshow, {}).get(TAG_LANGUAGE, "")
             dict_series.pop(tvshow, None)
 
-            fname, json_data = filetools.update_json_data(dict_series, item.from_channel, TAG_TVSHOW_FILTER)
-            result = filetools.write(fname, json_data)
+            result, json_data = jsontools.update_json_data(dict_series, item.from_channel, TAG_TVSHOW_FILTER)
 
             sound = False
             if result:
@@ -603,7 +603,7 @@ def save(item, dict_data_saved):
 
         if item.from_channel == "biblioteca":
             item.from_channel = item.contentChannel
-        dict_series = filetools.get_node_from_data_json(item.from_channel, TAG_TVSHOW_FILTER)
+        dict_series = jsontools.get_node_from_data_json(item.from_channel, TAG_TVSHOW_FILTER)
         tvshow = item.show.strip().lower()
 
         logger.info("Se actualiza los datos")
@@ -618,8 +618,7 @@ def save(item, dict_data_saved):
                        TAG_LANGUAGE: lang_selected, TAG_QUALITY_ALLOWED: list_quality}
         dict_series[tvshow] = dict_filter
 
-        fname, json_data = filetools.update_json_data(dict_series, item.from_channel, TAG_TVSHOW_FILTER)
-        result = filetools.write(fname, json_data)
+        result, json_data = jsontools.update_json_data(dict_series, item.from_channel, TAG_TVSHOW_FILTER)
 
         sound = False
         if result:
@@ -644,14 +643,13 @@ def save_from_context(item):
     """
     logger.info()
 
-    dict_series = filetools.get_node_from_data_json(item.from_channel, TAG_TVSHOW_FILTER)
+    dict_series = jsontools.get_node_from_data_json(item.from_channel, TAG_TVSHOW_FILTER)
     tvshow = item.show.strip().lower()
 
     dict_filter = {TAG_NAME: item.show, TAG_ACTIVE: True, TAG_LANGUAGE: item.language, TAG_QUALITY_ALLOWED: []}
     dict_series[tvshow] = dict_filter
 
-    fname, json_data = filetools.update_json_data(dict_series, item.from_channel, TAG_TVSHOW_FILTER)
-    result = filetools.write(fname, json_data)
+    result, json_data = jsontools.update_json_data(dict_series, item.from_channel, TAG_TVSHOW_FILTER)
 
     sound = False
     if result:
@@ -680,14 +678,13 @@ def delete_from_context(item):
     if item.to_channel != "":
         item.from_channel = item.to_channel
 
-    dict_series = filetools.get_node_from_data_json(item.from_channel, TAG_TVSHOW_FILTER)
+    dict_series = jsontools.get_node_from_data_json(item.from_channel, TAG_TVSHOW_FILTER)
     tvshow = item.show.strip().lower()
 
     lang_selected = dict_series.get(tvshow, {}).get(TAG_LANGUAGE, "")
     dict_series.pop(tvshow, None)
 
-    fname, json_data = filetools.update_json_data(dict_series, item.from_channel, TAG_TVSHOW_FILTER)
-    result = filetools.write(fname, json_data)
+    result, json_data = jsontools.update_json_data(dict_series, item.from_channel, TAG_TVSHOW_FILTER)
 
     sound = False
     if result:

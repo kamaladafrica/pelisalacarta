@@ -489,10 +489,10 @@ def get_server_parameters(server):
         try:
             #Servers
             if os.path.isfile(os.path.join(config.get_runtime_path(),"servers", server + ".xml")):
-                JSONFile =  xml2dict(os.path.join(config.get_runtime_path(),"servers", server + ".xml"))["server"]
+                JSONFile =  jsontools.xml2dict(os.path.join(config.get_runtime_path(),"servers", server + ".xml"))["server"]
             #Debriders
             elif os.path.isfile(os.path.join(config.get_runtime_path(),"servers", "debriders", server + ".xml")):
-                JSONFile =  xml2dict(os.path.join(config.get_runtime_path(),"servers", "debriders", server + ".xml"))["server"]
+                JSONFile =  jsontools.xml2dict(os.path.join(config.get_runtime_path(),"servers", "debriders", server + ".xml"))["server"]
             
             
             for k in ['premium', 'id']:
@@ -731,7 +731,7 @@ def filter_servers(servers_list):
 
     return servers_list
 
-
+'''
 def xml2dict(file = None, xmldata = None):
       import re, sys, os
       parse = globals().get(sys._getframe().f_code.co_name)
@@ -766,7 +766,7 @@ def xml2dict(file = None, xmldata = None):
           else:
             return_dict[tag] = value
       return return_dict
-
+'''
     
 def save_server_stats(stats, type="find_videos"):
     if not config.get_setting("server_stats"):

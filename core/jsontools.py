@@ -25,8 +25,11 @@
 # json_tools - JSON load and parse functions with library detection
 # --------------------------------------------------------------------------------
 
+import re
+import sys
 import traceback
 import logger
+
 
 try:
     import json
@@ -90,99 +93,174 @@ def to_utf8(dct):
         return dct
 
 
-def xmlTojson(path_xml):
+def xmlTojson(file = None, xmldata = None):
     """
-    Lee un fichero xml y retorna un diccionario json
+    Lee un fichero o texto XML y retorna un diccionario json
 
     Parametros:
-    path_xml (str) -- Ruta completa al archivo XML que se desea leer.
+    file (str) -- Ruta completa al archivo XML que se desea convertir en JSON.
+    xmldata (str) -- Texto XML que se desea convertir en JSON.
 
     Retorna:
-    Si el argumento path_xml no señala a un archivo XML valido retorna un diccionario vacio.
-    En caso cortrario retorna un diccionario construido a partir de los campos del archivo XML.
+    Un diccionario construido a partir de los campos del XML.
 
     """
+    from core import filetools
+    parse = globals().get(sys._getframe().f_code.co_name)
 
-    import os
-    ret = {}
+    if xmldata == None and file == None:  raise Exception("No hay nada que convertir!")
+    if xmldata == None:
+        if not filetools.exists(file): raise Exception("El archivo no existe!")
+        xmldata = open(file, "rb").read()
+
+    matches = re.compile("<(?P<tag>[^>]+)>[\n]*[\s]*[\t]*(?P<value>.*?)[\n]*[\s]*[\t]*<\/(?P=tag)\s*>",
+                         re.DOTALL).findall(xmldata)
+
+    return_dict = {}
+    for tag, value in matches:
+        # Si tiene elementos
+        if "<" and "</" in value:
+            if tag in return_dict:
+                if type(return_dict[tag]) == list:
+                    return_dict[tag].append(parse(xmldata=value))
+                else:
+                    return_dict[tag] = [return_dict[tag]]
+                    return_dict[tag].append(parse(xmldata=value))
+            else:
+                return_dict[tag] = parse(xmldata=value)
+
+        else:
+            if tag in return_dict:
+                if type(return_dict[tag]) == list:
+                    return_dict[tag].append(value)
+                else:
+                    return_dict[tag] = [return_dict[tag]]
+                    return_dict[tag].append(value)
+            else:
+                return_dict[tag] = value
+    return return_dict
+
+
+def get_node_from_data_json(name_file, node, path=None):
+    """
+    Obtiene el nodo de un fichero JSON
+
+    @param name_file: Puede ser el nombre de un canal o server (sin incluir extension)
+     o bien el nombre de un archivo json (con extension)
+    @type name_file: str
+    @param node: nombre del nodo a obtener
+    @type node: str
+    @param path: Ruta base del archivo json. Por defecto la ruta de settings_channels.
+    @return: dict con el nodo a devolver
+    @rtype: dict
+    """
+    logger.info()
+    from core import config
+    from core import filetools
+
+    dict_node = {}
+
+    if not name_file.endswith(".json"):
+        name_file += "_data.json"
+
+    if not path:
+        path = filetools.join(config.get_data_path(), "settings_channels")
+
+    fname = filetools.join(path , name_file)
+
+
+    if filetools.isfile(fname):
+        data = filetools.read(fname)
+        dict_data = load_json(data)
+
+        check_json_file(data, fname, dict_data)
+
+        if node in dict_data:
+            dict_node = dict_data[node]
+
+    logger.debug("dict_node: %s" % dict_node)
+
+    return dict_node
+
+
+def check_json_file(data, fname, dict_data):
+    """
+    Comprueba que si dict_data(conversion del fichero JSON a dict) no es un diccionario, se genere un fichero con
+    data de nombre fname.bk.
+
+    @param data: contenido del fichero fname
+    @type data: str
+    @param fname: nombre del fichero leido
+    @type fname: str
+    @param dict_data: nombre del diccionario
+    @type dict_data: dict
+    """
+    logger.info()
+
+    if not dict_data:
+        logger.error("Error al cargar el json del fichero %s" % fname)
+
+        if data != "":
+            # se crea un nuevo fichero
+            from core import filetools
+            title = filetools.write("%s.bk" % fname, data)
+            if title != "":
+                logger.error("Ha habido un error al guardar el fichero: %s.bk" % fname)
+            else:
+                logger.debug("Se ha guardado una copia con el nombre: %s.bk" % fname)
+        else:
+            logger.debug("Está vacío el fichero: %s" % fname)
+
+
+def update_json_data(dict_node, name_file, node, path=None):
+    """
+    actualiza el json_data de un fichero con el diccionario pasado
+
+    @param dict_node: diccionario con el nodo
+    @type dict_node: dict
+    @param name_file: Puede ser el nombre de un canal o server (sin incluir extension)
+     o bien el nombre de un archivo json (con extension)
+    @type name_file: str
+    @param node: nodo a actualizar
+    @param path: Ruta base del archivo json. Por defecto la ruta de settings_channels.
+    @return result: Devuelve True si se ha escrito correctamente o False si ha dado un error
+    @rtype: bool
+    @return json_data
+    @rtype: dict
+    """
+    logger.info()
+
+    from core import config
+    from core import filetools
+    json_data = {}
+    result = False
+
+    if not name_file.endswith(".json"):
+        name_file += "_data.json"
+
+    if not path:
+        path = filetools.join(config.get_data_path(), "settings_channels")
+
+    fname = filetools.join(path, name_file)
+
     try:
-        if os.path.exists(path_xml):
-            infile = open(path_xml, "rb")
-            data = infile.read()
-            infile.close()
-            ret = Xml2Json(data).result
+        data = filetools.read(fname)
+        dict_data = load_json(data)
+        # es un dict
+        if dict_data:
+            if node in dict_data:
+                logger.debug("   existe el key %s" % node)
+                dict_data[node] = dict_node
+            else:
+                logger.debug("   NO existe el key %s" % node)
+                new_dict = {node: dict_node}
+                dict_data.update(new_dict)
+        else:
+            logger.debug("   NO es un dict")
+            dict_data = {node: dict_node}
+        json_data = dump_json(dict_data)
+        result = filetools.write(fname, json_data)
     except:
-        import traceback
-        logger.info("pelisalacarta.core.jsontools xmlTojson ERROR al leer el fichero y/o crear el json de " + path_xml)
-        logger.info("pelisalacarta.core.jsontools " + traceback.format_exc())
+        logger.error("No se ha podido actualizar %s" % fname)
 
-    return ret
-
-
-class Xml2Json:
-    # http://code.activestate.com/recipes/577494-convert-xml-into-json-python-dicts-and-lists-struc/
-    # >>> Xml2Json('<doc><tag><subtag>data</subtag><t>data1</t><t>data2</t></tag></doc>').result
-    # {u'doc': {u'tag': {u'subtag': u'data', u't': [u'data1', u'data2']}}}
-    LIST_TAGS = ['COMMANDS']
-
-    def __init__(self, data=None):
-        # print "################## INIT"
-        from xml.parsers.expat import ParserCreate
-        self._parser = ParserCreate()
-        self._parser.StartElementHandler = self.start
-        self._parser.EndElementHandler = self.end
-        self._parser.CharacterDataHandler = self.data
-        self.result = None
-        if data:
-            self.feed(data)
-            self.close()
-
-    def feed(self, data):
-        # print "################## FEED"
-        self._stack = []
-        self._data = ''
-        self._parser.Parse(data, 0)
-
-    def close(self):
-        self._parser.Parse("", 1)
-        del self._parser
-        # print "################## CLOSE"
-        self.result = to_utf8(self.result)
-
-    def start(self, tag, attrs):
-        assert attrs == {}
-        assert self._data.strip() == ''
-        # print "START", repr(tag)
-        self._stack.append([tag])
-        self._data = ''
-
-    def end(self, tag):
-        # print "END", repr(tag)
-        last_tag = self._stack.pop()
-        assert last_tag[0] == tag
-        if len(last_tag) == 1:  # leaf
-            data = self._data
-        else:
-            if tag not in Xml2Json.LIST_TAGS:
-                # build a dict, repeating pairs get pushed into lists
-                data = {}
-                for k, v in last_tag[1:]:
-                    if k not in data:
-                        data[k] = v
-                    else:
-                        el = data[k]
-                        if type(el) is not list:
-                            data[k] = [el, v]
-                        else:
-                            el.append(v)
-            else:  # force into a list
-                data = [{k: v} for k, v in last_tag[1:]]
-        if self._stack:
-            self._stack[-1].append((tag, data))
-        else:
-            self.result = {tag: data}
-        self._data = ''
-
-    def data(self, data):
-        # print "################## DATA"
-        self._data = data
+    return result, json_data

@@ -601,6 +601,7 @@ def remove_tags(title):
         return title
 
 
+'''
 def get_node_from_data_json(name_file, node):
     """
     Obtiene el nodo de un fichero _data.json
@@ -695,3 +696,4 @@ def update_json_data(dict_node, filename, node):
         dict_data = {node: dict_node}
     json_data = jsontools.dump_json(dict_data)
     return fname, json_data
+'''
