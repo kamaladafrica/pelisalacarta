@@ -371,7 +371,7 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
     news_in_playcounts = {}
 
     # Listamos todos los ficheros de la serie, asi evitamos tener que comprobar si existe uno por uno
-    raiz, carpetas_series, ficheros = filetools.walk(path).next()
+    ficheros = os.listdir(path)
     ficheros = [filetools.join(path, f) for f in ficheros]
 
     # Silent es para no mostrar progreso (para library_service)
@@ -403,7 +403,6 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
     for i, e in enumerate(scraper.sort_episode_list(new_episodelist)):
         if not silent:
             p_dialog.update(int(math.ceil((i + 1) * t)), 'Añadiendo episodio...', e.title)
-
 
         season_episode = "%sx%s" % (e.contentSeason, str(e.contentEpisodeNumber).zfill(2))
         strm_path = filetools.join(path, "%s.strm" % season_episode)
