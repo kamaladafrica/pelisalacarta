@@ -53,8 +53,6 @@ def lista(item):
         title=name
         url=host+link
         scrapedthumbnail=host+img
-        if "Coraje" in title:
-            title="Courage the Cowardly Dog"
         itemlist.append(item.clone(title=title, url=url, action="episodios", thumbnail=scrapedthumbnail, show=title, context=renumbertools.context))
 
     itemlist.append(Item(channel = item.channel,title="Página Siguiente >>", url = item.url, action="lista", page= item.page +1))
@@ -67,8 +65,6 @@ def episodios(item):
 
     itemlist = []
     data = httptools.downloadpage(item.url).data
-    logger.debug("datito %s " % data)
-
     # obtener el numero total de episodios
     total_episode = 0
 
