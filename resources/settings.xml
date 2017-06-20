@@ -130,7 +130,7 @@
         <setting id="folder_tvshows" type="text" label="Nombre de carpeta para 'Series'" default="SERIES"/>
         <setting id="folder_movies" type="text" label="Nombre de carpeta para 'Peliculas'" default="CINE"/>
         <setting id="library_set_content" type="bool" label="Autoconfigurar biblioteca de XBMC/Kodi para contenido de pelisalacarta" default="false"/>
-        <setting id="library_ask_set_content" type="bool" label="" default="true" visible="false"/>
+        <setting id="library_ask_set_content" type="number" label="" default="1" visible="false"/>
     </category>
 
     <category label="Otros"><!--30503 -->
