@@ -3,6 +3,11 @@
 	<active>true</active>
 	<changes>
 		<change>
+			<autor>Intel1</autor>
+			<date>22/06/2017</date>
+			<description>Actualizado a httptools</description>
+		</change>
+		<change>
 			<autor></autor>
 			<date>25/03/2016</date>
 			<description>Versión incial</description>
@@ -60,5 +65,5 @@
 	</settings>
 	<thumbnail>http://media.tvalacarta.info/servers/server_streaminto.png</thumbnail>
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/servers/</update_url>
-	<version>2</version>
+	<version>3</version>
 </server>
