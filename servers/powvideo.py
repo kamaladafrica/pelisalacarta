@@ -51,7 +51,8 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     data = httptools.downloadpage(page_url, post, headers=_cookie).data
 
     key = "".join(eval(scrapertools.find_single_match(data, '_[^=]+=(\[[^\]]+\]);'))[7:9])
-    key = key if not key.startswith("embed") else key[6:]+key[:6]
+    if key.startswith("embed"):
+        key = key[6:]+key[:6]
     matches = scrapertools.find_single_match(data, "<script type=[\"']text/javascript[\"']>(eval.*?)</script>")
     data = jsunpack.unpack(matches).replace("\\", "")
 
