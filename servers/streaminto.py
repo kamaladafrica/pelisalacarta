@@ -7,6 +7,7 @@
 
 import re
 
+from core import httptools
 from core import logger
 from core import scrapertools
 
@@ -14,7 +15,7 @@ from core import scrapertools
 def test_video_exists(page_url):
     logger.info("(page_url='%s')" % page_url)
 
-    data = scrapertools.cache_page(url=page_url)
+    data = httptools.downloadpage(url=page_url).data
     if "File was deleted" in data:
         return False, "El archivo no existe<br/>en streaminto o ha sido borrado."
     elif "Video is processing now" in data:
@@ -26,7 +27,7 @@ def test_video_exists(page_url):
 def get_video_url(page_url, premium=False, user="", password="", video_password=""):
     logger.info("url=" + page_url)
 
-    data = re.sub(r'\n|\t|\s+', '', scrapertools.cache_page(page_url))
+    data = re.sub(r'\n|\t|\s+', '', httptools.downloadpage(page_url).data)
 
     video_urls = []
     try:
