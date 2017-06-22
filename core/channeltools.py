@@ -35,19 +35,12 @@ import logger
 DEFAULT_UPDATE_URL = "https://raw.githubusercontent.com/tvalacarta/pelisalacarta/develop/python/main-classic/channels/"
 dict_channels_parameters = dict()
 
-def str_to_bool(s):
-    if s == 'true':
-        return True
-    else:
-        return False
-
 
 def is_adult(channel_name):
     logger.info("channel_name="+channel_name)
-
     channel_parameters = get_channel_parameters(channel_name)
-
     return channel_parameters["adult"]
+
 
 def get_channel_parameters(channel_name):
     global dict_channels_parameters
@@ -76,8 +69,8 @@ def get_channel_parameters(channel_name):
 
                 # Imagenes: se admiten url y archivos locales dentro de "resources/images"
                 if channel_parameters.get("thumbnail") and "://" not in channel_parameters["thumbnail"]:
-                    channel_parameters["thumbnail"] = os.path.join(config.get_runtime_path(), "resources", "images", "squares",
-                                                                   channel_parameters["thumbnail"])
+                    channel_parameters["thumbnail"] = os.path.join(config.get_runtime_path(), "resources", "images",
+                                                                   "squares", channel_parameters["thumbnail"])
                 if channel_parameters.get("bannermenu") and "://" not in channel_parameters["bannermenu"]:
                     channel_parameters["bannermenu"] = os.path.join(config.get_runtime_path(), "resources", "images",
                                                                     "bannermenu", channel_parameters["bannermenu"])
@@ -87,9 +80,9 @@ def get_channel_parameters(channel_name):
 
 
                 # Convertir str a bool
-                channel_parameters["include_in_global_search"] = str_to_bool(channel_parameters.get("include_in_global_search"))
-                channel_parameters["adult"] = str_to_bool(channel_parameters.get("adult"))
-                channel_parameters["active"] = str_to_bool(channel_parameters.get("active"))
+                channel_parameters["include_in_global_search"] = channel_parameters.get("include_in_global_search") == 'true'
+                channel_parameters["adult"] = channel_parameters.get("adult") == 'true'
+                channel_parameters["active"] = channel_parameters.get("active") == 'true'
 
 
                 # Obtenemos si el canal tiene opciones de configuración
@@ -147,7 +140,6 @@ def get_channel_parameters(channel_name):
 
 
     return dict_channels_parameters[channel_name]
-
 
 
 def get_channel_json(channel_name):
