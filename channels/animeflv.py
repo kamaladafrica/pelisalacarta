@@ -223,27 +223,48 @@ def episodios(item):
     if item.plot == "":
         item.plot = scrapertools.find_single_match(data, 'Description[^>]+><p>(.*?)</p>')
 
-    data = scrapertools.find_single_match(data, '<ul class="ListCaps">(.*?)</ul>')
     matches = re.compile('href="([^"]+)"><figure><img class="[^"]+" data-original="([^"]+)".+?</h3>'
                          '<p>(.*?)</p>', re.DOTALL).findall(data)
 
-    for url, thumb, title in matches:
-        title = title.strip()
-        url = urlparse.urljoin(item.url, url)
-        # thumbnail = item.thumbnail
+    if matches:
+        for url, thumb, title in matches:
+            title = title.strip()
+            url = urlparse.urljoin(item.url, url)
+            # thumbnail = item.thumbnail
 
-        try:
-            episode = int(scrapertools.find_single_match(title, "^.+?\s(\d+)$"))
-        except ValueError:
-            season = 1
-            episode = 1
-        else:
-            season, episode = renumbertools.numbered_for_tratk(item.channel, item.show, 1, episode)
+            try:
+                episode = int(scrapertools.find_single_match(title, "^.+?\s(\d+)$"))
+            except ValueError:
+                season = 1
+                episode = 1
+            else:
+                season, episode = renumbertools.numbered_for_tratk(item.channel, item.show, 1, episode)
 
-        title = "%s: %sx%s" % (item.title, season, str(episode).zfill(2))
+            title = "%s: %sx%s" % (item.title, season, str(episode).zfill(2))
 
-        itemlist.append(item.clone(action="findvideos", title=title, url=url, thumbnail=thumb, fulltitle=title,
-                                   fanart=item.thumbnail, contentType="episode"))
+            itemlist.append(item.clone(action="findvideos", title=title, url=url, thumbnail=thumb, fulltitle=title,
+                                       fanart=item.thumbnail, contentType="episode"))
+    else:
+        # no hay thumbnail
+        matches = re.compile('<a href="(/ver/[^"]+)"[^>]+>(.*?)<', re.DOTALL).findall(data)
+
+        for url, title in matches:
+            title = title.strip()
+            url = urlparse.urljoin(item.url, url)
+            thumb = item.thumbnail
+
+            try:
+                episode = int(scrapertools.find_single_match(title, "^.+?\s(\d+)$"))
+            except ValueError:
+                season = 1
+                episode = 1
+            else:
+                season, episode = renumbertools.numbered_for_tratk(item.channel, item.show, 1, episode)
+
+            title = "%s: %sx%s" % (item.title, season, str(episode).zfill(2))
+
+            itemlist.append(item.clone(action="findvideos", title=title, url=url, thumbnail=thumb, fulltitle=title,
+                                       fanart=item.thumbnail, contentType="episode"))
 
     return itemlist
 
