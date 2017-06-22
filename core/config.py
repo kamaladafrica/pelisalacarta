@@ -421,7 +421,7 @@ def verify_directories_created():
             if filetools.mkdir(content_path) and get_setting("library_set_content")== True:
                 xbmc_library.set_content(default)
 
-        elif get_setting("library_ask_set_content") == "active":
+        elif get_setting("library_ask_set_content") == 2:
             xbmc_library.set_content(default)
 
     try:
