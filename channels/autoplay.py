@@ -89,9 +89,22 @@ def start (itemlist, item):
             favorite_servers = []
             favorite_quality = []
             # Agrega servidores que no estaban listados
+            server_values = []
+            quality_values = []
             for item in itemlist:
-                channel_servers = check_value(item.channel, item.server, 'servers')
-                channel_quality = check_value(item.channel, item.quality, 'quality')
+                if item.server not in server_values:
+                    server_values.append(item.server)
+                if item.quality not in quality_values:
+                    quality_values.append(item.quality)
+
+            channel_servers = check_value(item.channel, server_values, 'servers')
+            channel_quality = check_value(item.channel, quality_values, 'quality')
+
+            # Actualiza el nodo del canal desde el json de AutoPlay en caso de cambios
+            if channel_servers or channel_quality:
+                autoplay_node = filetools.get_node_from_data_json('autoplay', 'AUTOPLAY')
+                channel_node = autoplay_node.get(item.channel, {})
+                settings_node = channel_node.get('settings', {})
 
             # Guarda la accion del usuario
             user_config_setting = config.get_setting("default_action")
@@ -118,7 +131,7 @@ def start (itemlist, item):
             server_list = channel_node.get('servers', [])
             quality_list = channel_node.get('quality', [])
 
-            #logger.debug('server_list: %s' % server_list)
+            logger.debug('server_list: %s' % server_list)
             #logger.debug('quality_list: %s' % quality_list)
 
             # Se guardan los textos de cada servidor y calidad en listas p.e. favorite_servers = ['openload',
@@ -180,7 +193,7 @@ def start (itemlist, item):
                     # en el xml y no debería ser así, debería obtener cualquiera es decir la siguiente linea
                     # comentada...
                     # if is_quality_valid:
-                    if is_quality_valid and item.server in server_list:
+                    if is_quality_valid: #and item.server in server_list:
                         autoplay_list.append(
                                 [server_list.index(item.server), item, quality_list.index(item.quality), item.quality,
                                  item.server])
@@ -266,9 +279,13 @@ def start (itemlist, item):
 
             else:
                 platformtools.dialog_notification('AutoPlay No Fue Posible', 'No Hubo Coincidencias')
+            if channel_servers or channel_quality:
+                platformtools.dialog_notification("AutoPlay", "Nueva Calidad/Servidor disponible en la "
+                                                  "configuracion", sound=False)
 
             # devuelve la lista de enlaces para la eleccion manual
             config.set_setting("default_action", user_config_setting)
+
         return itemlist
 
 
@@ -335,27 +352,34 @@ def prepare_autoplay_settings (channel, list_servers, list_quality):
     return
 
 
-def check_value (channel, value, value_type):
+def check_value (channel, values, value_type):
     ''' comprueba la existencia de un valor en la lista de servidores o calidades
-        si no eixtirera los agrerga a la lista en el json
+        si no existiera los agrega a la lista en el json
 
     :param channel: str
-    :param value: str (un servidor o calidad)
+    :param values: list (una de servidores o calidades)
     :param value_type: str (server o quality)
     :return: list
     '''
     logger.info()
+    change = False
+    new_values =[]
     fname = 'autoplay'
 
     autoplay_node = filetools.get_node_from_data_json(fname, 'AUTOPLAY')
     value_list = autoplay_node.get(channel, {}).get(value_type, [])
+    if len(value_list) == 0 or values != []:
+        for value in values:
+            if value not in value_list:
+                new_values.append(value)
+                change = True
+        value_list += new_values
 
-    if len(value_list) == 0 or (value != '' and value not in value_list):
-        value_list.append(value)
+
         fname, json_data = filetools.update_json_data(autoplay_node, fname, 'AUTOPLAY')
         result = filetools.write(fname, json_data)
 
-    return value_list
+    return change
 
 
 def autoplay_config (item):

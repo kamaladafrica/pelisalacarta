@@ -3,7 +3,11 @@
 	<id>mundoflv</id>
 	<name>MundoFlv</name>
 
-	<active>true</active>
+	<compatible>
+		<addon_version>4.3</addon_version>
+	</compatible>
+
+    <active>true</active>
 	<adult>false</adult>
 	<language>es</language>
 
@@ -11,10 +15,16 @@
 	<thumbnail>https://s32.postimg.org/h1ewz9hhx/mundoflv.png</thumbnail>
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/mundoflv.png</bannermenu>
 	
-	<update_url></update_url>
-	<version>12</version>
+	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
+	<version>13</version>
+
 	<changes>
-			<change>
+		<change>
+				<date>06/06/2017</date>
+				<autor>Hernan_ar_c</autor>
+				<description>Compatibilidad con AutoPlay</description>
+	   	</change>
+		<change>
 				<date>03/06/2017</date>
 				<autor>Hernan_ar_c</autor>
 				<description>Reparado por mala subida</description>
@@ -24,9 +34,6 @@
 				<autor>Hernan_ar_c</autor>
 				<description>cambios esteticos</description>
 	   	</change>
-	</changes>
-
-	<changes>
 		<change>
 			<date>15/03/2017</date>
 			<autor>SeiTaN</autor>
