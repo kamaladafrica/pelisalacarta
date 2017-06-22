@@ -27,15 +27,15 @@
 
 import errno
 import math
+import os
 
 from core import config
 from core import filetools
 from core import logger
-from core import scrapertools
 from core import scraper
+from core import scrapertools
 from core.item import Item
 from platformcode import platformtools
-
 
 FOLDER_MOVIES = config.get_setting("folder_movies")
 FOLDER_TVSHOWS = config.get_setting("folder_tvshows")
@@ -149,13 +149,14 @@ def save_library_movie(item):
 
     base_name = unicode(filetools.validate_path(base_name.replace('/', '-')), "utf8").lower().encode("utf8")
 
-    for raiz, subcarpetas, ficheros in filetools.walk(MOVIES_PATH):
-        for c in subcarpetas:
-            code = scrapertools.find_single_match(c, '\[(.*?)\]')
-            if code and code in item.infoLabels['code']:
-                path = filetools.join(raiz, c)
-                _id = code
-                break
+    subcarpetas = os.listdir(MOVIES_PATH)
+
+    for c in subcarpetas:
+        code = scrapertools.find_single_match(c, '\[(.*?)\]')
+        if code and code in item.infoLabels['code']:
+            path = c
+            _id = code
+            break
 
     if not path:
         # Crear carpeta
@@ -269,13 +270,14 @@ def save_library_tvshow(item, episodelist):
 
     base_name = unicode(filetools.validate_path(base_name.replace('/', '-')), "utf8").lower().encode("utf8")
 
-    for raiz, subcarpetas, ficheros in filetools.walk(TVSHOWS_PATH):
-        for c in subcarpetas:
-            code = scrapertools.find_single_match(c, '\[(.*?)\]')
-            if code and code in item.infoLabels['code']:
-                path = filetools.join(raiz, c)
-                _id = code
-                break
+    subcarpetas = os.listdir(TVSHOWS_PATH)
+
+    for c in subcarpetas:
+        code = scrapertools.find_single_match(c, '\[(.*?)\]')
+        if code and code in item.infoLabels['code']:
+            path = c
+            _id = code
+            break
 
     if not path:
         path = filetools.join(TVSHOWS_PATH, ("%s [%s]" % (base_name, _id)).strip())
@@ -285,7 +287,6 @@ def save_library_tvshow(item, episodelist):
         except OSError, exception:
             if exception.errno != errno.EEXIST:
                 raise
-
 
     tvshow_path = filetools.join(path, "tvshow.nfo")
     if not filetools.exists(tvshow_path):
@@ -370,7 +371,7 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
     news_in_playcounts = {}
 
     # Listamos todos los ficheros de la serie, asi evitamos tener que comprobar si existe uno por uno
-    raiz, carpetas_series, ficheros = filetools.walk(path).next()
+    ficheros = os.listdir(path)
     ficheros = [filetools.join(path, f) for f in ficheros]
 
     # Silent es para no mostrar progreso (para library_service)
@@ -402,7 +403,6 @@ def save_library_episodes(path, episodelist, serie, silent=False, overwrite=True
     for i, e in enumerate(scraper.sort_episode_list(new_episodelist)):
         if not silent:
             p_dialog.update(int(math.ceil((i + 1) * t)), 'Añadiendo episodio...', e.title)
-
 
         season_episode = "%sx%s" % (e.contentSeason, str(e.contentEpisodeNumber).zfill(2))
         strm_path = filetools.join(path, "%s.strm" % season_episode)

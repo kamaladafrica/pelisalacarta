@@ -3,6 +3,10 @@
    <id>cinecalidad</id>
    <name>CineCalidad</name>
 
+   <compatible>
+		<addon_version>4.3</addon_version>
+   </compatible>
+
    <active>true</active>
    <adult>false</adult>
    <language>es</language>
@@ -12,9 +16,24 @@
    <bannermenu>https://s32.postimg.org/kihkdpx1x/banner_cinecalidad.png</bannermenu>
 
    <update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
-   <version>6</version>
-   <date>16/05/2017</date>
-   <changes>reparados enlaces directos</changes>
+   <version>8</version>
+    <changes>
+      <change>
+         <date>06/06/2017</date>
+         <autor>Hernan_ar_c</autor>
+         <description>Compatibilidad con AutoPlay</description>
+      </change>
+      <change>
+         <date>15/03/2017</date>
+         <autor>SeiTaN</autor>
+         <description>limpieza c&#243;digo</description>
+      </change>
+      <change>
+         <date>18/06/2016</date>
+         <autor>Hernan_Ar_c</autor>
+         <description>First release.</description>
+      </change>
+   </changes>
 
    <categories>
       <category>latino</category>
@@ -22,8 +41,27 @@
    </categories>
 
    <settings>
-      <include_in_global_search>true</include_in_global_search>
+      <id>include_in_global_search</id>
+      <type>bool</type>
+      <label>Incluir en busqueda global</label>
+      <default>false</default>
+      <enabled>false</enabled>
+      <visible>false</visible>
    </settings>
+
+   <settings>
+      <id>filter_languages</id>
+      <type>list</type>
+      <label>Mostrar enlaces en idioma...</label>
+      <default>0</default>
+      <enabled>true</enabled>
+      <visible>true</visible>
+      <lvalues>No filtrar</lvalues>
+      <lvalues>Latino</lvalues>
+      <lvalues>Español</lvalues>
+      <lvalues>Portuges</lvalues>
+   </settings>
+   
    <settings>
 		<id>include_in_newest_peliculas</id>
 		<type>bool</type>

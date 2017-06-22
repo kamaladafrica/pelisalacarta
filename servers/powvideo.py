@@ -33,23 +33,26 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
 
     url = page_url.replace(host, "http://powvideo.xyz/iframe-") + "-954x562.html"
 
-    data = httptools.downloadpage(page_url).data
+    data = httptools.downloadpage(page_url,cookies=False)
+    cookie = data.headers['set-cookie']
+    data = data.data
+
+    file_id, aff = scrapertools.find_single_match(data, "'file_id', '(\d+)',[^']+'aff', '(\d+)',")
+    _cookie = {"Cookie": cookie.replace("path=/; HttpOnly", "file_id="+file_id + "; aff=" + aff)}
+
     id = scrapertools.find_single_match(data, 'name="id" value="([^"]+)"')
     fname = scrapertools.find_single_match(data, 'name="fname" value="([^"]+)"')
     hash = scrapertools.find_single_match(data, 'name="hash" value="([^"]+)"')
-    post = "op=download1&usr_login=&referer=&fname=%s&id=%s&hash=%s&imhuman=Proceed+to+video" % (fname, id, hash)
 
-    data = httptools.downloadpage(page_url, post, headers={'Referer': page_url, "X-Requested-With": "XMLHttpRequest"}).data
+    post = "op=download1&usr_login=&referer=&fname=%s&id=%s&hash=%s" % (fname, id, hash)
 
-    matches = None
-    i = 0
-    while not matches:
-        matches = scrapertools.find_single_match(data, "<script type=[\"']text/javascript[\"']>(eval.*?)</script>")
-        data = httptools.downloadpage(page_url, post, headers={'Referer': page_url, "X-Requested-With": "XMLHttpRequest"}).data
-        i += 1
-        if i > 5:
-            break
+    import time
+    time.sleep(7)
+    data = httptools.downloadpage(page_url, post, headers=_cookie).data
 
+    key = "".join(eval(scrapertools.find_single_match(data, '_[^=]+=(\[[^\]]+\]);'))[7:9])
+
+    matches = scrapertools.find_single_match(data, "<script type=[\"']text/javascript[\"']>(eval.*?)</script>")
     data = jsunpack.unpack(matches).replace("\\", "")
 
     data = scrapertools.find_single_match(data.replace('"', "'"), "sources\s*=[^\[]*\[([^\]]+)\]")
@@ -57,7 +60,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     video_urls = []
     for video_url in matches:
         _hash = scrapertools.find_single_match(video_url, '[A-z0-9\_\-]{40,}')
-        hash = decrypt(_hash)
+        hash = decrypt(_hash, key)
         video_url = video_url.replace(_hash, hash)
 
         filename = scrapertools.get_filename_from_url(video_url)[-4:]
@@ -69,7 +72,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
         elif video_url.endswith(".m3u8"):
             video_url += "|User-Agent=" + headers[0][1]
         elif video_url.endswith("/v.mp4"):
-            video_url_flv = re.sub(r'/v.mp4\|', '/v.flv|', video_url)
+            video_url_flv = re.sub(r'/v.mp4', '/v.flv', video_url)
             video_urls.append(["flv [powvideo]", video_url_flv])
 
         video_urls.append([filename + " [powvideo]", video_url])
@@ -107,7 +110,7 @@ def find_videos(data):
     return devuelve
 
 
-def decrypt(h):
+def decrypt(h, k):
     import base64
 
     if len(h) % 4:
@@ -117,7 +120,6 @@ def decrypt(h):
     for c in range(len(h)):
         sig += [ord(h[c])]
 
-    k = "powvideoembedz"
     sec = []
     for c in range(len(k)):
         sec += [ord(k[c])]

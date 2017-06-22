@@ -27,7 +27,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     logger.info("url=" + page_url)
 
     video_urls = []
-    data = httptools.downloadpage(page_url)
+    data = httptools.downloadpage(page_url).data
     media_url = scrapertools.find_single_match(data, '<source src="([^"]+)"')
     if not media_url:
         id_ = page_url.rsplit("/", 1)[1]
