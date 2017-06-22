@@ -1,29 +1,31 @@
 ﻿<?xml version="0.1" encoding="utf-8" standalone="yes"?>
 <channel>
-	<id>peliculashindu</id>
-	<name>PeliculasHindu</name>
+	<id>xdvideos</id>
+	<name>XDVideos</name>
 
 	<active>true</active>
 	<adult>false</adult>
 	<language>es</language>
+        <include_in_global_search>disabled</include_in_global_search>
 
 	<fanart></fanart>
-	<thumbnail>http://i.imgur.com/8wBFVoF.png</thumbnail>
-	<bannermenu>http://i.imgur.com/jduq9sc.png</bannermenu>
+	<thumbnail>http://i.imgur.com/vKcZxXS.png</thumbnail>
+	<bannermenu></bannermenu>
 
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
 	<version>1</version>
 	
     <changes>
 		<change>
-			<date>25/05/2017</date>
+			<date>18/05/2017</date>
 			<autor>danielr460</autor>
-			<description>Primera version</description>
+			<description>Primera Version</description>
 		</change>
 	</changes>
 	
 	<categories>
-		<category>movie</category>
+		<category>serie</category>
+		<category>latino</category>
 	</categories>
 
 </channel>

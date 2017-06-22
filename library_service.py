@@ -29,6 +29,7 @@ import datetime
 import imp
 import math
 import re
+import threading
 
 from core import config
 from core import filetools
@@ -36,9 +37,7 @@ from core import jsontools
 from core import library
 from core import logger
 from core.item import Item
-import threading
 from platformcode import platformtools
-
 
 
 def convert_old_to_v4():
@@ -182,8 +181,8 @@ def convert_old_to_v4():
 
     # Por ultimo limpia la libreria, por que las rutas anteriores ya no existen
     if config.is_xbmc():
-      from platformcode import xbmc_library
-      xbmc_library.clean()
+        from platformcode import xbmc_library
+        xbmc_library.clean()
 
     return True
 
@@ -221,13 +220,13 @@ def update(path, p_dialog, i, t, serie, overwrite):
                                                                                         overwrite=overwrite)
                 insertados_total += insertados
 
-            except Exception as ex:
+            except Exception, ex:
                 logger.error("Error al guardar los capitulos de la serie")
                 template = "An exception of type %s occured. Arguments:\n%r"
                 message = template % (type(ex).__name__, ex.args)
                 logger.error(message)
 
-        except Exception as ex:
+        except Exception, ex:
             logger.error("Error al obtener los episodios de: %s" % serie.show)
             template = "An exception of type %s occured. Arguments:\n%r"
             message = template % (type(ex).__name__, ex.args)
@@ -250,10 +249,9 @@ def check_for_update(overwrite=True):
             heading = 'Actualizando biblioteca....'
             p_dialog = platformtools.dialog_progress_bg('pelisalacarta', heading)
             p_dialog.update(0, '')
-            show_list = []
 
-            for path, folders, files in filetools.walk(library.TVSHOWS_PATH):
-                show_list.extend([filetools.join(path, f) for f in files if f == "tvshow.nfo"])
+            import glob
+            show_list = glob.glob(filetools.join(library.TVSHOWS_PATH, u'/*/tvshow.nfo'))
 
             if show_list:
                 t = float(100) / len(show_list)
@@ -326,8 +324,8 @@ def check_for_update(overwrite=True):
                     if config.get_setting("search_new_content", "biblioteca") == 0:
                         # Actualizamos la biblioteca de Kodi: Buscar contenido en la carpeta de la serie
                         if config.is_xbmc():
-                          from platformcode import xbmc_library
-                          xbmc_library.update(folder=filetools.basename(path))
+                            from platformcode import xbmc_library
+                            xbmc_library.update(folder=filetools.basename(path))
                     else:
                         update_when_finished = True
 
@@ -342,7 +340,7 @@ def check_for_update(overwrite=True):
         else:
             logger.info("No actualiza la biblioteca, está desactivado en la configuración de pelisalacarta")
 
-    except Exception as ex:
+    except Exception, ex:
         logger.error("Se ha producido un error al actualizar las series")
         template = "An exception of type %s occured. Arguments:\n%r"
         message = template % (type(ex).__name__, ex.args)
@@ -351,22 +349,24 @@ def check_for_update(overwrite=True):
         if p_dialog:
             p_dialog.close()
 
-def start(thread = True):
+
+def start(thread=True):
     if thread:
-      t = threading.Thread(target=start, args=[False])
-      t.setDaemon(True)
-      t.start()
+        t = threading.Thread(target=start, args=[False])
+        t.setDaemon(True)
+        t.start()
     else:
         import time
-        
+
         updatelibrary_wait = [0, 10000, 20000, 30000, 60000]
         wait = updatelibrary_wait[int(config.get_setting("updatelibrary_wait", "biblioteca"))]
         if wait > 0:
             time.sleep(wait)
-            
+
         # Comprobar version de la bilbioteca y actualizar si es necesario
         if config.get_setting("library_version") != 'v4':
-            platformtools.dialog_ok(config.PLUGIN_NAME.capitalize(), "Se va a actualizar la biblioteca al nuevo formato",
+            platformtools.dialog_ok(config.PLUGIN_NAME.capitalize(),
+                                    "Se va a actualizar la biblioteca al nuevo formato",
                                     "Seleccione el nombre correcto de cada serie o película, si no está seguro pulse 'Cancelar'.")
 
             if not convert_old_to_v4():
@@ -384,6 +384,7 @@ def start(thread = True):
         while True:
             monitor_update()
             time.sleep(3600)  # cada hora
+
 
 def monitor_update():
     update_setting = config.get_setting("updatelibrary", "biblioteca")
@@ -419,7 +420,6 @@ if __name__ == "__main__":
     elif config.get_setting("adult_mode") == True:
         config.set_setting("adult_mode", 1)
 
-
     updatelibrary_wait = [0, 10000, 20000, 30000, 60000]
     wait = updatelibrary_wait[int(config.get_setting("updatelibrary_wait", "biblioteca"))]
     if wait > 0:
@@ -440,7 +440,6 @@ if __name__ == "__main__":
     else:
         if not config.get_setting("updatelibrary", "biblioteca") == 2:
             check_for_update(overwrite=False)
-
 
     # Se ejecuta ciclicamente
     if config.get_platform(True)['num_version'] >= 14:

@@ -22,7 +22,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     logger.info("url=" + page_url)
     video_urls = []
     data = httptools.downloadpage(page_url).data
-    url = scrapertools.find_single_match(data, 'link:\s*"(https:\/\/.*?filescdn\.com.*?mp4)"')
+    url = scrapertools.find_single_match(data, '(?i)link:\s*"(https://.*?filescdn\.com.*?mp4)"')
     url = url.replace(':443', '')
     video_urls.append(['filescdn', url])
 

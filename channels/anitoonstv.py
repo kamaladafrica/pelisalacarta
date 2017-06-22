@@ -140,6 +140,10 @@ def findvideos(item):
     for server,quality,url in itemla:
         if "Calidad Alta" in quality:
             quality = quality.replace("Calidad Alta","HQ")
+            server=server.lower()
+            server=server.strip()
+            if "ok" in server:
+                server='okru'
         itemlist.append(item.clone(url=url,  action="play", server=server, contentQuality=quality,thumbnail=scrapedthumbnail,plot=scrapedplot,title="Enlace encontrado en %s: [%s ]" % (server.capitalize(),quality)))
     return itemlist
 
