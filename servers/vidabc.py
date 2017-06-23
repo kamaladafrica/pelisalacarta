@@ -16,6 +16,8 @@ def test_video_exists(page_url):
     data = downloadpage(page_url).data
     if "Video is processing now" in data:
         return False, "[vidabc] El archivo se está procesando"
+    if "File was deleted" in data:
+        return False, "[vidabc] El archivo ha sido borrado"
     return True, ""
 
 def get_video_url(page_url, premium=False, user="", password="", video_password=""):
