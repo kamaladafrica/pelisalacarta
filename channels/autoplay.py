@@ -332,7 +332,6 @@ def prepare_autoplay_settings (channel, list_servers, list_quality): #TODO habri
                                          "active": False,
                                          "custom_servers": False,
                                          "custom_quality": False,
-                                         "language": 0,
                                          "priority": 0,
                                          "server_1": 0,
                                          "server_2": 0,
@@ -371,7 +370,7 @@ def check_value (channel, itemlist):
     if not channel_node:
         # Si el canal no existe lo añadimos con la configuracion por defecto TODO repasar configuracion
         channel_node = autoplay_node[channel] = {"settings": {"active": True, "custom": False, "custom_servers": False,
-                                                                "custom_quality": False, "language": 0, "priority": 0,
+                                                                "custom_quality": False, "priority": 0,
                                                                 "server_1": 0, "server_2": 0, "server_3": 0,
                                                                 "quality_1": 0, "quality_2": 0, "quality_3": 0}}
         change = True
@@ -425,7 +424,7 @@ def autoplay_config(item):
     dict_values['active'] = settings_node.get('active', False) #TODO la manera correcta de fijar los valores del cuadro es asi, el atributo default fija el valor q tendra la primera vez y si se pulsa el boton 'Por defecto'
 
 
-    #channel_config = filetools.get_node_from_data_json(item.from_channel, 'settings') TODO Esto no es correcto!!!
+    # Idioma
     status_language = config.get_setting("filter_languages", item.from_channel) # TODO esto si
     if not status_language:
         status_language = 0
@@ -549,6 +548,7 @@ def save(item, dict_data_saved): #TODO estaban invertidos!!!
         autoplay_node = filetools.get_node_from_data_json('autoplay', 'AUTOPLAY')
 
     channel_node = autoplay_node.get(item.from_channel)
+    config.set_setting("filter_languages", dict_data_saved.pop("language"), item.from_channel)
     channel_node['settings'] = dict_data_saved
 
     # TODO esto habra q cambiarlo cuando se muevan las funciones json a jsontools

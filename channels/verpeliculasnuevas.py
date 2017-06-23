@@ -3,21 +3,22 @@
 # Canal (verpeliculasnuevas) por Hernan_Ar_c
 # ------------------------------------------------------------
 
-import re
+import urlparse, urllib2, urllib, re
+import os, sys
 
-from channels import autoplay
-from channels import filtertools
 from core import config
 from core import httptools
+from core.item import Item
 from core import logger
 from core import scrapertools
 from core import servertools
 from core import tmdb
-from core.item import Item
+from channels import autoplay
+from channels import filtertools
 
 host = 'http://verpeliculasnuevas.com'
 
-IDIOMAS = {'latino': 'Latino', 'castellano': 'Español', 'sub': 'VOS'}
+IDIOMAS = {'latino':'Latino', 'castellano':'Español', 'sub':'VOS'}
 list_language = IDIOMAS.values()
 
 taudio = {'latino': '[COLOR limegreen]LATINO[/COLOR]',
@@ -32,6 +33,7 @@ thumbaudio = {'latino': 'http://flags.fmcdn.net/data/flags/normal/mx.png',
               'sub': 'https://s32.postimg.org/nzstk8z11/sub.png'
               }
 
+
 list_quality = ['HQ',
                 'HD',
                 'HD-1080',
@@ -39,18 +41,19 @@ list_quality = ['HQ',
                 'CAM'
                 ]
 list_servers = [
-    'openload',
-    'powvideo',
-    'streamplay',
-    'streaminto',
-    'netu',
-    'vidabc',
-    'thevideos',
-    'yourupload',
-    'thevideome',
-    'directo',
-    'netutv'
-]
+                'openload',
+		        'powvideo',
+		        'streamplay',
+		        'streaminto',
+		        'netu',
+		        'vidabc',
+		        'thevideos',
+		        'yourupload',
+		        'thevideome',
+		        'directo',
+                'netutv'
+                ]
+
 
 tcalidad = {'hq': '[COLOR limegreen]HQ[/COLOR]',
             'hd': '[COLOR limegreen]HD[/COLOR]',
@@ -109,64 +112,64 @@ def mainlist(item):
     itemlist = []
 
     itemlist.append(
-        item.clone(title="Todas",
-                   action="lista",
-                   thumbnail='https://s18.postimg.org/fwvaeo6qh/todas.png',
-                   fanart='https://s18.postimg.org/fwvaeo6qh/todas.png',
-                   extra='peliculas/',
-                   url=host
-                   ))
+            item.clone(title="Todas",
+                       action="lista",
+                       thumbnail='https://s18.postimg.org/fwvaeo6qh/todas.png',
+                       fanart='https://s18.postimg.org/fwvaeo6qh/todas.png',
+                       extra='peliculas/',
+                       url=host
+                       ))
 
     itemlist.append(
-        itemlist[-1].clone(title="Generos",
-                           action="menuseccion",
-                           thumbnail='https://s3.postimg.org/5s9jg2wtf/generos.png',
-                           fanart='https://s3.postimg.org/5s9jg2wtf/generos.png',
-                           url=host,
-                           extra='/genero'
-                           ))
+            itemlist[-1].clone(title="Generos",
+                               action="menuseccion",
+                               thumbnail='https://s3.postimg.org/5s9jg2wtf/generos.png',
+                               fanart='https://s3.postimg.org/5s9jg2wtf/generos.png',
+                               url=host,
+                               extra='/genero'
+                               ))
 
     itemlist.append(
-        itemlist[-1].clone(title="Alfabetico",
-                           action="menuseccion",
-                           thumbnail='https://s17.postimg.org/fwi1y99en/a-z.png',
-                           fanart='https://s17.postimg.org/fwi1y99en/a-z.png',
-                           url=host, extra='/tag'
-                           ))
+            itemlist[-1].clone(title="Alfabetico",
+                               action="menuseccion",
+                               thumbnail='https://s17.postimg.org/fwi1y99en/a-z.png',
+                               fanart='https://s17.postimg.org/fwi1y99en/a-z.png',
+                               url=host, extra='/tag'
+                               ))
 
     itemlist.append(
-        itemlist[-1].clone(title="Audio",
-                           action="menuseccion",
-                           thumbnail='https://s27.postimg.org/avs17iuw3/audio.png',
-                           fanart='https://s27.postimg.org/avs17iuw3/audio.png',
-                           url=host,
-                           extra='/audio'
-                           ))
+            itemlist[-1].clone(title="Audio",
+                               action="menuseccion",
+                               thumbnail='https://s27.postimg.org/avs17iuw3/audio.png',
+                               fanart='https://s27.postimg.org/avs17iuw3/audio.png',
+                               url=host,
+                               extra='/audio'
+                               ))
 
     itemlist.append(
-        itemlist[-1].clone(title="Calidad",
-                           action="menuseccion",
-                           thumbnail='https://s13.postimg.org/6nzv8nlkn/calidad.png',
-                           fanart='https://s13.postimg.org/6nzv8nlkn/calidad.png',
-                           extra='/calidad'
-                           ))
+            itemlist[-1].clone(title="Calidad",
+                               action="menuseccion",
+                               thumbnail='https://s13.postimg.org/6nzv8nlkn/calidad.png',
+                               fanart='https://s13.postimg.org/6nzv8nlkn/calidad.png',
+                               extra='/calidad'
+                               ))
 
     itemlist.append(
-        itemlist[-1].clone(title="Año",
-                           action="menuseccion",
-                           thumbnail='https://s8.postimg.org/7eoedwfg5/pora_o.png',
-                           fanart='https://s8.postimg.org/7eoedwfg5/pora_o.png',
-                           url=host,
-                           extra='/fecha-estreno'
-                           ))
+            itemlist[-1].clone(title="Año",
+                               action="menuseccion",
+                               thumbnail='https://s8.postimg.org/7eoedwfg5/pora_o.png',
+                               fanart='https://s8.postimg.org/7eoedwfg5/pora_o.png',
+                               url=host,
+                               extra='/fecha-estreno'
+                               ))
 
     itemlist.append(
-        itemlist[-1].clone(title="Buscar",
-                           action="search",
-                           url=host + '?s=',
-                           thumbnail='https://s30.postimg.org/pei7txpa9/buscar.png',
-                           fanart='https://s30.postimg.org/pei7txpa9/buscar.png'
-                           ))
+            itemlist[-1].clone(title="Buscar",
+                               action="search",
+                               url=host + '?s=',
+                               thumbnail='https://s30.postimg.org/pei7txpa9/buscar.png',
+                               fanart='https://s30.postimg.org/pei7txpa9/buscar.png'
+                               ))
 
     autoplay.show_option(item.channel, itemlist)
 
@@ -216,12 +219,12 @@ def menuseccion(item):
                 thumbnail = ''
 
         itemlist.append(
-            Item(channel=item.channel,
-                 action='lista',
-                 title=title,
-                 url=url,
-                 thumbnail=thumbnail
-                 ))
+                Item(channel=item.channel,
+                     action='lista',
+                     title=title,
+                     url=url,
+                     thumbnail=thumbnail
+                     ))
 
     return itemlist
 
@@ -270,25 +273,29 @@ def lista(item):
                  contentTitle=scrapedtitle,
                  extra=item.extra,
                  infoLabels={'year': year},
-                 show=scrapedtitle,
-                 list_language=list_language
+                 show = scrapedtitle,
+                 list_language=list_language,
+                 context = autoplay.context
                  ))
 
     # #Paginacion
     tmdb.set_infoLabels_itemlist(itemlist, seekTmdb=True)
     itemlist = fail_tmdb(itemlist)
-    if itemlist:
+    if itemlist != []:
+        actual_page_url = item.url
         next_page = scrapertools.find_single_match(data,
                                                    "class=previouspostslink' href='([^']+)'>Siguiente &rsaquo;<\/a>")
+        import inspect
         if next_page != '':
             itemlist.append(
-                Item(channel=item.channel,
-                     action="lista",
-                     title='Siguiente >>>',
-                     url=next_page,
-                     thumbnail='https://s16.postimg.org/9okdu7hhx/siguiente.png',
-                     extra=item.extra
-                     ))
+                    Item(channel=item.channel,
+                         action="lista",
+                         title='Siguiente >>>',
+                         url=next_page,
+                         thumbnail='https://s16.postimg.org/9okdu7hhx/siguiente.png',
+                         extra=item.extra
+                         ))
+
 
     return itemlist
 
@@ -339,16 +346,16 @@ def findvideos(item):
         calidad = tcalidad[scrapedcalidad.lower()]
         url = scrapedurl
         itemlist.append(
-            item.clone(action='play',
-                       idioma=idioma,
-                       calidad=calidad,
-                       url=url,
-                       language=IDIOMAS[scrapedidioma.lower()],
-                       quality=scrapedcalidad
-                       ))
+            item.clone(action ='play',
+                       idioma = idioma,
+                       calidad = calidad,
+                       url = url,
+                       language = IDIOMAS[scrapedidioma.lower()],
+                       quality = scrapedcalidad
+                 ))
 
-    itemlist = servertools.get_servers_itemlist(itemlist,
-                    lambda i: item.contentTitle + ' | ' + i.calidad + ' | ' + i.idioma + ' (' + i.server + ')', True)
+    itemlist = servertools.get_servers_itemlist(itemlist, lambda
+        i: item.contentTitle + ' | ' + i.calidad + ' | ' + i.idioma + ' (' + i.server + ')', True)
 
     # Requerido para FilterTools
 
