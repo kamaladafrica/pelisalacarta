@@ -150,7 +150,7 @@ def open_settings():
 
             # Fijar adult_pin
             adult_pin = ""
-            if settings_post["adult_request_password"] == "true":
+            if settings_post["adult_request_password"] == True:
                 adult_pin = adult_password
             set_setting("adult_pin", adult_pin)
 
@@ -221,7 +221,14 @@ def get_setting(name, channel="", server=""):
         settings_types = get_settings_types()
 
         if settings_types.get(name) in ['enum', 'number']:
-            value = int(value)
+            try:
+                value = int(value)
+            except:
+                if value.lower() == "true":
+                    # Fix temporal versiones <= 4.3
+                    value = 1
+                else:
+                    value = 0
 
         elif settings_types.get(name) == 'bool':
             value = value == 'true'
