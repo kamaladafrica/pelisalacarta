@@ -20,7 +20,7 @@ host = 'http://www.serieslatino.tv/'
 IDIOMAS = {'Latino': 'Latino', 'Sub Español': 'VOS'}
 list_language = IDIOMAS.values()
 list_quality =[]
-list_servers =['yourupload', 'openload', 'sendvid', '']
+list_servers =['yourupload', 'openload', 'sendvid']
 
 vars = {
     'ef5ca18f089cf01316bbc967fa10f72950790c39ef5ca18f089cf01316bbc967fa10f72950790c39': 'http://www.estadepelis.com/',
@@ -312,12 +312,11 @@ def play(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url, add_referer=True).data
+    if 'your' in item.url:
+        item.url = 'http://www.yourupload.com/embed/'+scrapertools.find_single_match(data,'src=".*?code=(.*?)"')
+        itemlist.append(item)
+    else:
 
-    itemlist = servertools.find_video_items(data=data)
-
-    if config.get_library_support() and len(itemlist) > 0:
-        itemlist.append(
-            Item(channel=item.channel, title='[COLOR yellow]Añadir esta pelicula a la biblioteca[/COLOR]', url=item.url,
-                 action="add_pelicula_to_library", extra="findvideos", contentTitle=item.contentTitle))
+        itemlist = servertools.find_video_items(data=data)
 
     return itemlist

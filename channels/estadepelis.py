@@ -434,8 +434,12 @@ def play(item):
     logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url, add_referer=True).data
+    if 'your' in item.url:
+        item.url = 'http://www.yourupload.com/embed/'+scrapertools.find_single_match(data,'src=".*?code=(.*?)"')
+        itemlist.append(item)
+    else:
 
-    itemlist = servertools.find_video_items(data=data)
+        itemlist = servertools.find_video_items(data=data)
 
     if config.get_library_support() and len(itemlist) > 0:
         itemlist.append(Item(channel=item.channel,
