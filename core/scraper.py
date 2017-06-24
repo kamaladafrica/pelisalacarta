@@ -44,7 +44,7 @@ def find_and_set_infoLabels(item):
     """
     global scraper
     scraper = None
-    #logger.debug("item:\n" + item.tostring('\n'))
+    # logger.debug("item:\n" + item.tostring('\n'))
 
     list_opciones_cuadro = ["Introducir otro nombre", "Completar información"]
     # Si se añaden más scrapers hay q declararlos aqui-> "modulo_scraper": "Texto_en_cuadro"
@@ -72,6 +72,9 @@ def find_and_set_infoLabels(item):
         scraper = __import__('core.%s' % scraper_actual, fromlist=["core.%s" % scraper_actual])
     except ImportError:
         exec "import core." + scraper_actual + " as scraper"
+    except:
+        import traceback
+        logger.error(traceback.format_exc())
 
     while scraper:
         # Llamamos a la funcion find_and_set_infoLabels del scraper seleccionado

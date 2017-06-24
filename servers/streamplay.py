@@ -31,6 +31,9 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     referer = re.sub(r"embed-|player-", "", page_url)[:-5]
     data = httptools.downloadpage(page_url, headers={'Referer': referer}).data
 
+    key = "".join(eval(scrapertools.find_single_match(data, '_[^=]+=(\[[^\]]+\]);'))[7:9])
+    if key.startswith("embed"):
+        key = key[6:]+key[:6]
     matches = scrapertools.find_single_match(data, "<script type=[\"']text/javascript[\"']>(eval.*?)</script>")
     data = jsunpack.unpack(matches).replace("\\", "")
 
@@ -39,7 +42,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     video_urls = []
     for video_url in matches:
         _hash = scrapertools.find_single_match(video_url, '[A-z0-9\_\-]{40,}')
-        hash = decrypt(_hash)
+        hash = decrypt(_hash, key)
         video_url = video_url.replace(_hash, hash)
 
         filename = scrapertools.get_filename_from_url(video_url)[-4:]
@@ -49,7 +52,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
                         (rtmp, playpath, host, page_url)
             filename = "RTMP"
         elif video_url.endswith("/v.mp4"):
-            video_url_flv = re.sub(r'/v.mp4\|', '/v.flv|', video_url)
+            video_url_flv = re.sub(r'/v.mp4', '/v.flv', video_url)
             video_urls.append(["flv [streamplay]", video_url_flv])
 
         video_urls.append([filename + " [streamplay]", video_url])
@@ -84,7 +87,7 @@ def find_videos(data):
     return devuelve
 
 
-def decrypt(h):
+def decrypt(h, k):
     import base64
 
     if len(h) % 4:
@@ -94,7 +97,6 @@ def decrypt(h):
     for c in range(len(h)):
         sig += [ord(h[c])]
 
-    k = "streamplayembeds"
     sec = []
     for c in range(len(k)):
         sec += [ord(k[c])]

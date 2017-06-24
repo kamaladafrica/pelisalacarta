@@ -16,6 +16,7 @@
 
 	<compatible>
 		<python>2.7.9</python>
+		<addon_version>4.2.1</addon_version>
 	</compatible>
 	
     <changes>

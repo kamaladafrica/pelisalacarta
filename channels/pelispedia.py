@@ -605,6 +605,17 @@ def play(item):
         media_urls = openload.get_video_url(url)
         itemlist.append(media_urls[0])
 
+    # raptu
+    elif item.url.startswith("https://load.pelispedia.co/embed/raptu.com"):
+        url = item.url.replace("/embed/", "/stream/")
+        data = httptools.downloadpage(url).data
+        url = scrapertools.find_single_match(data, '<meta property="og:url" content="([^"]+)"')
+        from servers import raptu
+        media_urls = raptu.get_video_url(url)
+        if len(media_urls) > 0:
+            for desc, url, numero, subtitle in media_urls:
+                itemlist.append([desc, url, numero, subtitle])
+
     else:
         itemlist = servertools.find_video_items(data=item.url)
         for videoitem in itemlist:

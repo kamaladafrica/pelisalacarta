@@ -31,10 +31,13 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     video_urls = []
     videos = scrapertools.find_multiple_matches(data, 'file\s*:\s*"([^"]+)",label:"(.*?)"')
     ##Detección de subtítulos
-    subtitulo = scrapertools.find_single_match(data, 'tracks: \[{file: "(.*?)"')
+    subtitulo = scrapertools.find_single_match(data, 'tracks:\s*\[{file:"(.*?)"')
+    if "http" not in subtitulo:
+        subtitulo = "http://fastplay.cc" + subtitulo
     for video_url, video_calidad in videos:
         extension = scrapertools.get_filename_from_url(video_url)[-4:]
-        video_urls.append(["%s %s [fastplay]" % (extension, video_calidad), video_url, 0, subtitulo])
+        if ".vtt" not in extension:
+            video_urls.append(["%s %s [fastplay]" % (extension, video_calidad), video_url, 0, subtitulo])
     try:
         video_urls.sort(key=lambda it: int(it[0].split("p ", 1)[0].rsplit(" ")[1]))
     except:

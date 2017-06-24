@@ -126,7 +126,7 @@ def start (itemlist, item):
             server_list = channel_node.get('servers', [])
             quality_list = channel_node.get('quality', [])
 
-            #logger.debug('server_list: %s' % server_list)
+            logger.debug('server_list: %s' % server_list)
             #logger.debug('quality_list: %s' % quality_list)
 
 

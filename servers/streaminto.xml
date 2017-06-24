@@ -3,7 +3,12 @@
 	<active>true</active>
 	<changes>
 		<change>
-			<autor/>
+			<autor>Intel1</autor>
+			<date>22/06/2017</date>
+			<description>Actualizado a httptools</description>
+		</change>
+		<change>
+			<autor></autor>
 			<date>25/03/2016</date>
 			<description>Versión incial</description>
 		</change>
@@ -49,16 +54,16 @@
 		<enabled>true</enabled>
 		<id>favorites_servers_list</id>
 		<label>Incluir en lista de favoritos</label>
-		<type>list</type>
-		<visible>false</visible>
 		<lvalues>No</lvalues>
 		<lvalues>1</lvalues>
 		<lvalues>2</lvalues>
 		<lvalues>3</lvalues>
 		<lvalues>4</lvalues>
 		<lvalues>5</lvalues>
+		<type>list</type>
+		<visible>false</visible>
 	</settings>
 	<thumbnail>http://media.tvalacarta.info/servers/server_streaminto.png</thumbnail>
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/servers/</update_url>
-	<version>2</version>
+	<version>3</version>
 </server>

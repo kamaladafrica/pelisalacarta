@@ -97,7 +97,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
                     value5 = index1 * 2 + 127 
                     for h in range(4):
                         valorfinal = (value4 >> 8 * h) & (value5)
-                        valorfinal = chr(valorfinal)
+                        valorfinal = chr(valorfinal - 1)
                         if valorfinal != "%":
                             text_decode += valorfinal
                     j += 1

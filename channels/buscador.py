@@ -140,8 +140,9 @@ def save_settings(item, dict_values):
     progreso = platformtools.dialog_progress("Guardando configuración...", "Espere un momento por favor.")
     n = len(dict_values)
     for i, v in enumerate(dict_values):
+        progreso.update((i * 100) / n, "Guardando configuración...")
         config.set_setting("include_in_global_search", dict_values[v], v)
-    
+
     progreso.close()
 
 

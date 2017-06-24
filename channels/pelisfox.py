@@ -78,11 +78,8 @@ def lista(item):
 
     itemlist = []
     data = httptools.downloadpage(item.url).data
-    #logger.debug(data)
     data = re.sub(r'"|\n|\r|\t|&nbsp;|<br>|\s{2,}', "", data)
 
-    logger.debug(data)
-    # return
     if item.seccion != 'actor':
         patron = '<li class=item-serie.*?><a href=(.*?) title=(.*?)><img src=(.*?) alt=><span '
         patron += 'class=s-title><strong>.*?<\/strong><p>(.*?)<\/p><\/span><\/a><\/li>'
@@ -116,16 +113,19 @@ def lista(item):
     # Paginacion
 
     if itemlist != []:
-        next_page = scrapertools.find_single_match(data, '<li><a class= item href=(.*?)&limit=.*?>Siguiente <')
-        next_page_url = host+next_page
-        import inspect
-        if next_page != '':
-            itemlist.append(Item(channel=item.channel,
-                                 action="lista",
-                                 title='Siguiente >>>',
-                                 url=next_page_url,
-                                 thumbnail='https://s16.postimg.org/9okdu7hhx/siguiente.png'
-                                 ))
+        actual_page= scrapertools.find_single_match(data,'<a class=active item href=.*?>(.*?)<\/a>')
+        if actual_page:
+            next_page_num= int(actual_page)+1
+            next_page = scrapertools.find_single_match(data, '<li><a class= item href=(.*?)\?page=.*?&limit=.*?>Siguiente')
+            next_page_url = host+next_page+'?page=%s'%next_page_num
+            import inspect
+            if next_page != '':
+                itemlist.append(Item(channel=item.channel,
+                                     action="lista",
+                                     title='Siguiente >>>',
+                                     url=next_page_url,
+                                     thumbnail='https://s16.postimg.org/9okdu7hhx/siguiente.png'
+                                     ))
     return itemlist
 
 
@@ -134,7 +134,6 @@ def seccion(item):
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r'"|\n|\r|\t|&nbsp;|<br>|\s{2,}', "", data)
-    logger.debug(data)
     if item.seccion == 'generos':
         patron = '<a href=(\/peliculas\/[\D].*?\/) title=Películas de .*?>(.*?)<\/a>'
     elif item.seccion == 'anios':
@@ -198,11 +197,9 @@ def busqueda(item):
     itemlist =[]
     data = httptools.downloadpage(item.url).data
     dict_data = jsontools.load_json(data)
-    logger.debug('dict_data: %s'%dict_data)
     resultados = dict_data['result'][0]['options']
 
     for resultado in resultados:
-        logger.debug('resultado: %s' % resultado['_source'])
         if 'title' in resultado['_source']:
             title = resultado['_source']['title']
             thumbnail = 'http://s3.amazonaws.com/pelisfox'+'/'+resultado['_source']['cover']
@@ -237,7 +234,6 @@ def findvideos(item):
     templist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r'"|\n|\r|\t|&nbsp;|<br>|\s{2,}', "", data)
-    logger.debug('item: %s'%item)
     patron = '<li data-quality=(.*?) data-lang=(.*?)><a href=(.*?) title=.*?'
     matches = matches = re.compile(patron, re.DOTALL).findall(data)
     for quality, lang, scrapedurl in matches:
@@ -252,14 +248,12 @@ def findvideos(item):
 
         data = httptools.downloadpage(videoitem.url).data
         data = re.sub(r'"|\n|\r|\t|&nbsp;|<br>|\s{2,}', "", data)
-        logger.debug(data)
         id = scrapertools.find_single_match(data,'var _SOURCE =.*?source:(.*?),')
         if videoitem.language == 'SUB':
             sub = scrapertools.find_single_match(data, 'var _SOURCE =.*?srt:(.*?),')
             sub = sub.replace('\\', '')
         else:
             sub = ''
-        logger.debug('subtitle: %s'%sub)
         new_url='http://iplay.one/api/embed?id=%s&token=8908d9f846&%s'%(id, sub)
 
         data = httptools.downloadpage(new_url).data
