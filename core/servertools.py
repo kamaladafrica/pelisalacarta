@@ -490,10 +490,11 @@ def get_server_parameters(server):
         try:
             #Servers
             if os.path.isfile(os.path.join(config.get_runtime_path(),"servers", server + ".xml")):
-                JSONFile =  jsontools.xml2dict(os.path.join(config.get_runtime_path(),"servers", server + ".xml"))["server"]
+                JSONFile = jsontools.xmlTojson(os.path.join(config.get_runtime_path(), "servers", server + ".xml"))[
+                    "server"]
             #Debriders
             elif os.path.isfile(os.path.join(config.get_runtime_path(),"servers", "debriders", server + ".xml")):
-                JSONFile =  jsontools.xml2dict(os.path.join(config.get_runtime_path(),"servers", "debriders", server + ".xml"))["server"]
+                JSONFile =  jsontools.xmlTojson(os.path.join(config.get_runtime_path(),"servers", "debriders", server + ".xml"))["server"]
             
             
             for k in ['premium', 'id']:
@@ -552,23 +553,9 @@ def get_server_controls_settings(server_name):
 
         if 'enabled' not in c or c['enabled'] is None:
             c['enabled'] = True
-        else:
-            if c['enabled'].lower() == "true":
-                c['enabled'] = True
-            elif c['enabled'].lower() == "false":
-                c['enabled'] = False
 
         if 'visible' not in c or c['visible'] is None:
             c['visible'] = True
-
-        else:
-            if c['visible'].lower() == "true":
-                c['visible'] = True
-            elif c['visible'].lower() == "false":
-                c['visible'] = False
-
-        if c['type'] == 'bool':
-            c['default'] = (c['default'].lower() == "true")
 
         if unicode(c['default']).isnumeric():
             c['default'] = int(c['default'])
