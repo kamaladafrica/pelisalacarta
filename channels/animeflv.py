@@ -220,6 +220,9 @@ def episodios(item):
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|-\s", "", data)
 
+    # fix para renumbertools
+    item.show = scrapertools.find_single_match(data, '<h1 class="Title">(.*?)</h1>')
+
     if item.plot == "":
         item.plot = scrapertools.find_single_match(data, 'Description[^>]+><p>(.*?)</p>')
 
