@@ -27,9 +27,6 @@
 	</categories>
 
 	<settings>
-		<include_in_global_search>disabled</include_in_global_search>
-	</settings>
-	<settings>
 		<id>crunchyrolluser</id>
 		<type>text</type>
 		<color>0xFF25AA48</color>

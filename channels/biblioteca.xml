@@ -32,8 +32,6 @@
 		</change>
 	</changes>
 
-	<include_in_global_search>disabled</include_in_global_search>
-
 	<settings>
 		<id>updatelibrary</id>
 		<type>list</type>

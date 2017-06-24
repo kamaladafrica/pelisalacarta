@@ -6,8 +6,7 @@
 	<active>true</active>
 	<adult>false</adult>
 	<language>es</language>
-	<include_in_global_search>disabled</include_in_global_search>
-	
+
 	<fanart></fanart>
 	<thumbnail>http://media.tvalacarta.info/pelisalacarta/squares/ecarteleratrailers.png</thumbnail>
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/ecarteleratrailers.png</bannermenu>
