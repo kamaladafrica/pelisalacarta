@@ -33,9 +33,7 @@ def context ():
     if config.is_xbmc():
         _context = [{"title": "Configurar AutoPlay",
                      "action": "autoplay_config",
-                     "channel": "autoplay"
-                     }
-                    ]
+                     "channel": "autoplay"}]
     return _context
 
 
@@ -98,11 +96,11 @@ def start (itemlist, item):
             favorite_servers = []
             favorite_quality = []
 
-            # Guarda la accion del usuario
+            # Guarda el valor actual de "Accion al seleccionar vídeo:" en preferencias
             user_config_setting = config.get_setting("default_action")
-
-            # Habilita la accion reproducir en calidad alta si el servidor devuelve más de una calidad p.e. gdrive
-            config.set_setting("default_action", "2")
+            # Habilita la accion "Ver en calidad alta" (si el servidor devuelve más de una calidad p.e. gdrive)
+            if user_config_setting != 2:
+                config.set_setting("default_action", 2)
 
             # Informa que AutoPlay esta activo
             platformtools.dialog_notification('AutoPlay Activo', '', sound=False)
@@ -212,7 +210,6 @@ def start (itemlist, item):
 
             logger.debug('autoplay_list: ' + str(autoplay_list))
 
-            # TODO desde aqui hasta el final de la funcion no he podido mirarlo aun
             # Si hay elementos en la lista de autoplay se intenta reproducir cada elemento, hasta encontrar uno
             # funcional o fallen todos
             if autoplay_list:
@@ -223,11 +220,12 @@ def start (itemlist, item):
                 # Si se esta reproduciendo algo detiene la reproduccion
                 if platformtools.is_playing():
                     platformtools.stop_video()
-                for indice in autoplay_list:
-                    if not platformtools.is_playing() and not played:
-                        videoitem = indice['videoitem']
 
-                        if not videoitem.server in max_intentos_servers:
+                for autoplay_elem in autoplay_list:
+                    if not platformtools.is_playing() and not played:
+                        videoitem = autoplay_elem['videoitem']
+
+                        if videoitem.server not in max_intentos_servers:
                             max_intentos_servers[videoitem.server] = max_intentos
 
                         # Si se han alcanzado el numero maximo de intentos de este servidor saltamos al siguiente
@@ -282,20 +280,22 @@ def start (itemlist, item):
                 platformtools.dialog_notification("AutoPlay", "Nueva Calidad/Servidor disponible en la "
                                                   "configuracion", sound=False)
 
-            # devuelve la lista de enlaces para la eleccion manual
-            config.set_setting("default_action", user_config_setting)
+            # Restaura si es necesario el valor previo de "Accion al seleccionar vídeo:" en preferencias
+            if user_config_setting != 2:
+                config.set_setting("default_action", user_config_setting)
 
+        # devuelve la lista de enlaces para la eleccion manual
         return itemlist
 
 
-def prepare_autoplay_settings (channel, list_servers, list_quality): #TODO habria q repasar esto
+def prepare_autoplay_settings (channel, list_servers, list_quality):
     '''
     Prepara el json para que el canal puede utilizar AutoPlay
     :param channel: str
     :param list_servers: list (lista de servidores validos para el canal)
     :param list_quality: list (lista de calidades validas para el canal)
     :return:
-    '''
+    
     logger.info()
 
     fname = 'autoplay'
@@ -346,6 +346,79 @@ def prepare_autoplay_settings (channel, list_servers, list_quality): #TODO habri
         result = filetools.write(fname, json_data)
 
     return
+    '''
+
+    # TODO eliminar esta funcion y adaptar los canales
+    return init(channel, list_servers, list_quality)
+
+
+def init(channel, list_servers, list_quality):
+    '''
+    Comprueba la existencia de canal en el archivo de configuracion de Autoplay y si no existe lo añade. 
+    Es necesario llamar a esta funcion al entrar a cualquier canal que incluya la funcion Autoplay.
+    
+    :param channel: (str) id del canal
+    :param list_servers: (list) lista inicial de servidores validos para el canal. No es necesario incluirlos todos, 
+        ya que la lista de servidores validos se ira actualizando dinamicamente.
+    :param list_quality: (list) lista inicial de calidades validas para el canal. No es necesario incluirlas todas, 
+        ya que la lista de calidades validas se ira actualizando dinamicamente.
+    :return: (bool) True si la inicializacion ha sido correcta.
+    '''
+    logger.info()
+    change = False
+    result = True
+
+    autoplay_path = os.path.join(config.get_data_path(), "settings_channels", 'autoplay_data.json')
+    if filetools.exists(autoplay_path):
+        autoplay_node = filetools.get_node_from_data_json('autoplay', "AUTOPLAY")
+    else:
+        change = True
+        autoplay_node = {"AUTOPLAY": {}}
+
+    if not channel in autoplay_node:
+        change = True
+
+        # Se comprueba que no haya calidades ni servidores duplicados
+        list_servers = list(set(list_servers))
+        list_quality = list(set(list_quality))
+
+        # Creamos el nodo del canal y lo añadimos
+        channel_node = {"servers": list_servers,
+                        "quality": list_quality,
+                        "settings": {
+                            "active": False,
+                            "custom_servers": False,
+                            "custom_quality": False,
+                            "priority": 0}}
+        for n in range(1,4):
+            s = c = 0
+            if len(list_servers) >= n:
+                s = n - 1
+            if len(list_quality) >= n:
+                c = n - 1
+
+            channel_node["settings"]["server_%s" % n] = s
+            channel_node["settings"]["quality_%s" % n] = c
+
+        autoplay_node[channel] = channel_node
+
+    if change: # TODO esto habra q cambiarlo cuando se muevan las funciones json a jsontools
+        fname, json_data = filetools.update_json_data(autoplay_node, 'autoplay', 'AUTOPLAY')
+        result = filetools.write(fname, json_data)
+
+        if result:
+            heading = "AutoPlay iniciado"
+            msj = "Entre en 'Configurar Autoplay' para activarlo."
+            icon = 0
+        else:
+            heading = "Error al iniciar AutoPlay"
+            msj = "Consulte su log para obtener mas información."
+            icon = 1
+
+        platformtools.dialog_notification(heading, msj, icon, sound=False)
+
+
+    return result
 
 
 def check_value (channel, itemlist):
@@ -365,15 +438,7 @@ def check_value (channel, itemlist):
         # Obtiene el nodo AUTOPLAY desde el json
         autoplay_node = filetools.get_node_from_data_json('autoplay', 'AUTOPLAY')
 
-
     channel_node = autoplay_node.get(channel)
-    if not channel_node:
-        # Si el canal no existe lo añadimos con la configuracion por defecto TODO repasar configuracion
-        channel_node = autoplay_node[channel] = {"settings": {"active": True, "custom": False, "custom_servers": False,
-                                                                "custom_quality": False, "priority": 0,
-                                                                "server_1": 0, "server_2": 0, "server_3": 0,
-                                                                "quality_1": 0, "quality_2": 0, "quality_3": 0}}
-        change = True
 
     server_list = channel_node.get('servers')
     if not server_list:
@@ -425,7 +490,7 @@ def autoplay_config(item):
 
 
     # Idioma
-    status_language = config.get_setting("filter_languages", item.from_channel) # TODO esto si
+    status_language = config.get_setting("filter_languages", item.from_channel)
     if not status_language:
         status_language = 0
 
@@ -440,15 +505,6 @@ def autoplay_config(item):
                                          "_________________________________________________________________________________________",
                  "type": "label", "enabled": True, "visible": True}
     list_controls.append(separador)
-
-    '''
-    custom_status = settings_config.get('custom', False)
-    # logger.debug('custom_status: ' + str(custom_status))
-    custom_settings = {"id": "custom", "label": "   Personalizar Preferidos (Opcional)", "color": "0xff66ffcc",
-                       "type": "bool", "default": custom_status, "enabled": "eq(-3,true)", "visible": True}
-    list_controls.append(custom_settings)
-    '''
-
 
 
     # Seccion servidores Preferidos
@@ -575,37 +631,3 @@ def get_languages(channel):
 
     return list_language
 
-'''
-# Metodos auxiliares for debug
-def make_server_list (itemlist):
-    """
-
-    :param itemlist: list (lista de elementos que contenga el nombre del servidor)
-    :return: log con una lista de servidores
-    """
-    logger.info()
-    server_list = []
-    new_serverlist = []
-
-    for item in itemlist:
-        data = httptools.downloadpage(item.url).data
-        new_serverlist.extend(servertools.find_video_items(data=data))
-
-    for item in new_serverlist:
-        if item.server not in server_list:
-            server_list.append(item.server)
-    logger.debug('server_list: ' + str(server_list))
-
-def check_status (channel):
-
-    logger.info()
-
-    fname = 'autoplay'
-    # Obtenemos el estado de AutoPlay desde el json
-    autoplay_node = filetools.get_node_from_data_json(fname, 'AUTOPLAY')
-    channel_node = autoplay_node.get(channel, {})
-    settings_node = channel_node.get('settings', {})
-    result = settings_node.get('active', False)
-    return result
-
-'''
