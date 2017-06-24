@@ -93,7 +93,7 @@ def to_utf8(dct):
         return dct
 
 
-def xmlTojson(file = None, xmldata = None):
+def xmlTojson(file=None, xmldata=None):
     """
     Lee un fichero o texto XML y retorna un diccionario json
 
@@ -108,9 +108,11 @@ def xmlTojson(file = None, xmldata = None):
     from core import filetools
     parse = globals().get(sys._getframe().f_code.co_name)
 
-    if xmldata == None and file == None:  raise Exception("No hay nada que convertir!")
-    if xmldata == None:
-        if not filetools.exists(file): raise Exception("El archivo no existe!")
+    if xmldata is None and file is None:
+        raise Exception("No hay nada que convertir!")
+    elif xmldata is None:
+        if not filetools.exists(file):
+            raise Exception("El archivo no existe!")
         xmldata = open(file, "rb").read()
 
     matches = re.compile("<(?P<tag>[^>]+)>[\n]*[\s]*[\t]*(?P<value>.*?)[\n]*[\s]*[\t]*<\/(?P=tag)\s*>",
@@ -137,7 +139,14 @@ def xmlTojson(file = None, xmldata = None):
                     return_dict[tag] = [return_dict[tag]]
                     return_dict[tag].append(value)
             else:
+                if value in ["true", "false"]:
+                    if value == "true":
+                        value = True
+                    else:
+                        value = False
+
                 return_dict[tag] = value
+
     return return_dict
 
 

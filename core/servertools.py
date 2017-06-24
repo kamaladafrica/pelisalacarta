@@ -294,7 +294,8 @@ def resolve_video_urls_for_playing(server, url, video_password="", muestra_dialo
                     ]
         
         
-            if server_parameters["free"] == "true": opciones.append("free")
+            if server_parameters["free"] == True:
+                opciones.append("free")
             opciones.extend([premium for premium in server_parameters["premium"] if config.get_setting("premium",server=premium)])
             
             priority = int(config.get_setting("resolve_priority"))
@@ -388,7 +389,7 @@ def resolve_video_urls_for_playing(server, url, video_password="", muestra_dialo
                         logger.error(traceback.format_exc())
                 
                 #Si ya tenemos URLS, dejamos de buscar
-                if video_urls and config.get_setting("resolve_stop") == "true":
+                if video_urls and config.get_setting("resolve_stop") == True:
                     break
                 
             #Cerramos el progreso
@@ -460,12 +461,12 @@ def is_server_enabled(server):
         return False
         
     server_parameters = get_server_parameters(server)
-    if server_parameters["active"] == "true":
+    if server_parameters["active"] == True:
         if not config.get_setting("hidepremium"):
             return True
-        elif server_parameters["free"] == "true":
+        elif server_parameters["free"] == True:
             return True
-        elif [premium for premium in server_parameters["premium"] if config.get_setting("premium",server=premium)]:
+        elif [premium for premium in server_parameters["premium"] if config.get_setting("premium", server=premium)]:
             return True
 
     return False
@@ -668,7 +669,7 @@ def get_servers_list():
     for server in os.listdir(os.path.join(config.get_runtime_path(),"servers")):
         if server.endswith(".xml") and not server == "version.xml":
             server_parameters = get_server_parameters(server)
-            if server_parameters["active"] == "true":
+            if server_parameters["active"] == True:
                 server_list[server.split(".")[0]] = server_parameters
     
     return server_list
@@ -686,7 +687,7 @@ def get_debriders_list():
     for server in os.listdir(os.path.join(config.get_runtime_path(),"servers", "debriders")):
         if server.endswith(".xml"):
             server_parameters = get_server_parameters(server)
-            if server_parameters["active"] == "true":
+            if server_parameters["active"] == True:
                 logger.info(server_parameters)
                 server_list[server.split(".")[0]] = server_parameters
     return server_list
