@@ -56,7 +56,7 @@ tgenero = {"acción": "https://s3.postimg.org/y6o9puflv/accion.png",
 def mainlist(item):
     logger.info()
 
-    autoplay.prepare_autoplay_settings(item.channel, list_servers, list_quality)
+    autoplay.init(item.channel, list_servers, list_quality)
     itemlist = []
 
     itemlist.append(item.clone(title="Series", action="lista", thumbnail='https://s27.postimg.org/iahczwgrn/series.png',

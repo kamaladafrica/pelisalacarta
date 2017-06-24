@@ -3,6 +3,10 @@
 	<id>serieslatino</id>
 	<name>SeriesLatino</name>
 
+	<compatible>
+		<addon_version>4.2</addon_version>
+   </compatible>
+
 	<active>true</active>
 	<adult>false</adult>
 	<language>es</language>
@@ -15,6 +19,11 @@
     <version>4</version>
 
 	<changes>
+        <change>
+         <date>24/06/2017</date>
+         <autor>Hernan_ar_c</autor>
+         <description>Cambios para autoplay</description>
+      </change>
         <change>
 				<date>22/06/2017</date>
 				<autor>Hernan_ar_c</autor>
