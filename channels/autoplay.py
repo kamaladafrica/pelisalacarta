@@ -393,7 +393,8 @@ def autoplay_config(item):
     global autoplay_node
     dict_values = {}
     list_controls = []
-
+    channel_parameters = channeltools.get_channel_parameters(item.from_channel)
+    channel_name = channel_parameters['title']
 
     if not autoplay_node:
         # Obtiene el nodo AUTOPLAY desde el json
@@ -507,7 +508,7 @@ def autoplay_config(item):
 
     # Abrir cuadro de dialogo
     platformtools.show_channel_settings(list_controls=list_controls, dict_values=dict_values, callback='save',
-                                        item=item, caption='AutoPlay')
+                                        item=item, caption='%s - AutoPlay'%channel_name)
 
 
 def save(item, dict_data_saved):
