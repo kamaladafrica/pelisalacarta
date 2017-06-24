@@ -271,6 +271,8 @@ def findvideos(item):
         if 'vimeo' in url:
             url += "|" + item.url
                 
+        if "filescdn" in url and url.endswith("htm"):
+            url += "l"
                 
         idioma = IDIOMAS.get(idiomas_videos.get(language))
         titulo = "%s  ["+idioma+"] ["+calidad_videos.get(calidad)+"]"
@@ -395,6 +397,9 @@ def findvideostv(item):
             
         if 'vimeo' in url:
                 url += "|" + item.url
+                
+        if "filescdn" in url and url.endswith("htm"):
+            url += "l"
                 
         idioma = IDIOMAS.get(idiomas_videos.get(language))
         titulo = "%s ["+idioma+"] ("+calidad_videos.get(quality)+")"
