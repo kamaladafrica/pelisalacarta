@@ -168,7 +168,7 @@ def menu_servers(item):
 
     server_list = servertools.get_servers_list().keys()
 
-    for server in server_list:
+    for server in sorted(server_list):
         server_parameters = servertools.get_server_parameters(server)
         logger.info(server_parameters)
         if server_parameters["has_settings"] and filter(lambda x: x["id"] not in ["black_list", "white_list"], server_parameters["settings"]):
