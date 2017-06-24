@@ -36,7 +36,7 @@ host = 'http://www.seodiv.com'
 def mainlist(item):
     logger.info()
 
-    autoplay.prepare_autoplay_settings(item.channel, list_servers, list_quality)
+    autoplay.init(item.channel, list_servers, list_quality)
     itemlist = []
 
     itemlist.append(

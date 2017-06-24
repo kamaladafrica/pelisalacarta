@@ -87,9 +87,6 @@ def start (itemlist, item):
         # Obtiene los ajustes des autoplay para este canal
         settings_node = channel_node.get('settings', {})
 
-        #logger.debug('channel_node: %s' % channel_node)
-        #logger.debug('settings_node: %s' % settings_node)
-
         if settings_node['active']:
             url_list_valid = []
             autoplay_list = []
@@ -125,9 +122,6 @@ def start (itemlist, item):
             # Obtiene las listas servidores, calidades disponibles desde el nodo del json de AutoPlay
             server_list = channel_node.get('servers', [])
             quality_list = channel_node.get('quality', [])
-
-            logger.debug('server_list: %s' % server_list)
-            #logger.debug('quality_list: %s' % quality_list)
 
 
             # Se guardan los textos de cada servidor y calidad en listas p.e. favorite_servers = ['openload',
@@ -193,8 +187,6 @@ def start (itemlist, item):
                 autoplay_list.append(autoplay_elem)
 
 
-            logger.debug('autoplay_list: ' + str(autoplay_list))
-
             # Ordenamos segun la prioridad
             if priority == 0: # Servidores y calidades
                 autoplay_list.sort(key=lambda orden: (orden['indice_server'],orden['indice_quality']))
@@ -207,8 +199,6 @@ def start (itemlist, item):
 
             elif priority == 3:  # Solo calidades
                 autoplay_list.sort(key=lambda orden: orden['indice_quality'])
-
-            logger.debug('autoplay_list: ' + str(autoplay_list))
 
             # Si hay elementos en la lista de autoplay se intenta reproducir cada elemento, hasta encontrar uno
             # funcional o fallen todos
@@ -232,7 +222,6 @@ def start (itemlist, item):
                         if max_intentos_servers[videoitem.server] == 0:
                             continue
 
-                        #logger.debug('item.language: ' + videoitem.language)
                         lang = " "
                         if hasattr(videoitem, 'language') and videoitem.language != "":
                             lang = " '%s' " % videoitem.language
@@ -253,7 +242,6 @@ def start (itemlist, item):
                                     videoitem = resolved_item[0]
 
                         # si no directamente reproduce
-                        #logger.debug('videoitem: ' + str(videoitem))
                         platformtools.play_video(videoitem)
 
                         try:
@@ -286,71 +274,6 @@ def start (itemlist, item):
 
         # devuelve la lista de enlaces para la eleccion manual
         return itemlist
-
-
-def prepare_autoplay_settings (channel, list_servers, list_quality):
-    '''
-    Prepara el json para que el canal puede utilizar AutoPlay
-    :param channel: str
-    :param list_servers: list (lista de servidores validos para el canal)
-    :param list_quality: list (lista de calidades validas para el canal)
-    :return:
-    
-    logger.info()
-
-    fname = 'autoplay'
-    autoplay_path = os.path.join(config.get_data_path(), "settings_channels")
-
-    # Si no existe el json lo crea
-    if not filetools.exists(autoplay_path):
-        autoplay_node = {"AUTOPLAY": {}}
-        filetools.write(autoplay_path + fname, jsontools.dump_json(autoplay_node))
-
-    # Si la lista de calidades esta vacia se define una unica calidad default
-    if len(list_quality) == 0:
-        list_quality.append('default')
-
-    # Se comprueba que no haya calidades ni servidores duplicados
-    valid_quality = set(list_quality)
-    valid_servers = set(list_servers)
-
-    # Se define la lista de prioridades
-    list_language = get_languages(channel) #TODO esto no se usa?
-
-    # Se obtiene el nodo autoplay desde el json
-    autoplay_node = filetools.get_node_from_data_json(fname, "AUTOPLAY")
-
-    # Se Obtiene el nodo del canal desde el json
-    channel_node = autoplay_node.get(channel, {})
-
-    # Si el nodo esta vacio lo crea
-    if len(channel_node) == 0:
-        channel_settings = {
-                            "servers": list(valid_servers),
-                            "quality": list(valid_quality),
-                            "settings": {
-                                         "active": False,
-                                         "custom_servers": False,
-                                         "custom_quality": False,
-                                         "priority": 0,
-                                         "server_1": 0,
-                                         "server_2": 0,
-                                         "server_3": 0,
-                                         "quality_1": 0,
-                                         "quality_2": 0,
-                                         "quality_3": 0
-                                        }
-                            }
-        autoplay_node[channel] = channel_settings
-        fname, json_data = filetools.update_json_data(autoplay_node, fname, 'AUTOPLAY')
-        result = filetools.write(fname, json_data)
-
-    return
-    '''
-
-    # TODO eliminar esta funcion y adaptar los canales
-    return init(channel, list_servers, list_quality)
-
 
 def init(channel, list_servers, list_quality):
     '''
@@ -407,8 +330,8 @@ def init(channel, list_servers, list_quality):
         result = filetools.write(fname, json_data)
 
         if result:
-            heading = "AutoPlay iniciado"
-            msj = "Entre en 'Configurar Autoplay' para activarlo."
+            heading = "AutoPlay Disponible"
+            msj = "Seleccione '<Configurar AutoPlay>' para activarlo."
             icon = 0
         else:
             heading = "Error al iniciar AutoPlay"
@@ -486,7 +409,7 @@ def autoplay_config(item):
                        "color": "0xffffff99", "type": "bool", "default": False, "enabled": allow_option,
                        "visible": allow_option}
     list_controls.append(active_settings)
-    dict_values['active'] = settings_node.get('active', False) #TODO la manera correcta de fijar los valores del cuadro es asi, el atributo default fija el valor q tendra la primera vez y si se pulsa el boton 'Por defecto'
+    dict_values['active'] = settings_node.get('active', False)
 
 
     # Idioma
@@ -494,7 +417,7 @@ def autoplay_config(item):
     if not status_language:
         status_language = 0
 
-    set_language = {"id": "language", "label": "Idioma para AutoPlay (Obligatorio)", "color": "0xffffff99",
+    set_language = {"id": "language", "label": "Idioma para AutoPlay (Opcional)", "color": "0xffffff99",
                     "type": "list", "default": 0, "enabled": "eq(-1,true)", "visible": True,
                     "lvalues": get_languages(item.from_channel)}
 
@@ -584,11 +507,10 @@ def autoplay_config(item):
 
     # Abrir cuadro de dialogo
     platformtools.show_channel_settings(list_controls=list_controls, dict_values=dict_values, callback='save',
-                                        item=item, caption='AutoPlay') # TODO añadir el nombre del canal en el caption
-    #TODO Prueba lo q hace el boton 'Por defecto' y dime si quieres mantenerlo o eliminarlo
+                                        item=item, caption='AutoPlay')
 
 
-def save(item, dict_data_saved): #TODO estaban invertidos!!!
+def save(item, dict_data_saved):
     '''
     Guarda los datos de la ventana de configuracion
     
@@ -625,7 +547,6 @@ def get_languages(channel):
     list_language =['No filtrar']
     list_controls, dict_settings = channeltools.get_channel_controls_settings(channel)
     for control in list_controls:
-        #logger.debug('control: %s' % control)
         if control["id"] == 'filter_languages':
             list_language = control["lvalues"]
 

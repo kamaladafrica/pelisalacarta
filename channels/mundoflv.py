@@ -58,7 +58,7 @@ headers = [['User-Agent', 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:45.0) Gecko/2
 def mainlist(item):
     logger.info()
 
-    autoplay.prepare_autoplay_settings(item.channel, list_servers, list_quality)
+    autoplay.init(item.channel, list_servers, list_quality)
     itemlist = []
 
     itemlist.append(Item(channel=item.channel,
