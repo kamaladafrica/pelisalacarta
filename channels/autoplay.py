@@ -182,8 +182,8 @@ def start (itemlist, item):
                 # Si el item llega hasta aqui lo añadimos al listado de urls validas y a autoplay_list
                 url_list_valid.append(item.url)
                 autoplay_elem['videoitem'] = item
-                autoplay_elem['server'] = item.server # TODO only for debug
-                autoplay_elem['quality'] = item.quality # TODO only for debug
+                #autoplay_elem['server'] = item.server
+                #autoplay_elem['quality'] = item.quality
                 autoplay_list.append(autoplay_elem)
 
 

@@ -356,7 +356,7 @@ def findvideos(item):
                  ))
 
     itemlist = servertools.get_servers_itemlist(itemlist, lambda
-        i: item.contentTitle + ' | ' + i.calidad + ' | ' + i.idioma + ' (' + i.server + ')')
+        i: item.contentTitle + ' | ' + i.calidad + ' | ' + i.idioma + ' (' + i.server + ')', True)
 
     # Requerido para FilterTools
 
