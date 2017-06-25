@@ -387,7 +387,7 @@ def findvideos(item):
                 list_servers = servertools.find_video_items(item_json)
         except Exception, ex:
             logger.error("Ha fallado la funcion findvideos para el canal %s" % nom_canal)
-            template = "An exception of type %s occured. Arguments:\n{1!r}"
+            template = "An exception of type %s occured. Arguments:\n%s"
             message = template % (type(ex).__name__, ex.args)
             logger.error(message)
 
