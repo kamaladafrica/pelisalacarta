@@ -33,13 +33,10 @@ import xbmcaddon
 import xbmcgui
 
 
-
-
 PLUGIN_NAME = "pelisalacarta"
 
 __settings__ = xbmcaddon.Addon(id="plugin.video." + PLUGIN_NAME)
 __language__ = __settings__.getLocalizedString
-
 
 
 def get_platform(full_version=False):
@@ -55,7 +52,7 @@ def get_platform(full_version=False):
             'video_db': (str) nombre del archivo que contiene la base de datos de videos
             'plaform': (str) esta compuesto por "kodi-" o "xbmc-" mas el nombre de la version segun corresponda.
         Si el parametro full_version es False (por defecto) se retorna el valor de la clave 'plaform' del diccionario anterior.
-        """
+    """
 
     ret = {}
     codename = {"10": "dharma", "11": "eden", "12": "frodo",
@@ -69,7 +66,7 @@ def get_platform(full_version=False):
     num_version = re.match("\d+\.\d+", num_version).group(0)
     ret['name_version'] = codename.get(num_version.split('.')[0], num_version)
     ret['video_db'] = code_db.get(num_version.split('.')[0], "")
-    ret['num_version'] = float (num_version)
+    ret['num_version'] = float(num_version)
     if ret['num_version'] < 14:
         ret['platform'] = "xbmc-" + ret['name_version']
     else:
@@ -107,16 +104,15 @@ def get_all_settings_addon():
     # Lee el archivo settings.xml y retorna un diccionario con {id: value}
     import scrapertools
 
-    infile = open(os.path.join(get_data_path(),"settings.xml"), "r")
+    infile = open(os.path.join(get_data_path(), "settings.xml"), "r")
     data = infile.read()
     infile.close()
 
     ret = {}
     matches = scrapertools.find_multiple_matches(data, '<setting id="([^"]*)" value="([^"]*)')
-    settings_types = get_settings_types()
 
-    for id, value in matches:
-        ret[id] = get_setting(id)
+    for _id, value in matches:
+        ret[_id] = get_setting(_id)
 
     return ret
 
@@ -130,11 +126,10 @@ def open_settings():
     if settings_post.get('adult_aux_intro_password', None):
         # Hemos accedido a la seccion de Canales para adultos
         from platformcode import platformtools
-        if not 'adult_password' in settings_pre:
+        if 'adult_password' not in settings_pre:
             adult_password = set_setting('adult_password', '0000')
         else:
             adult_password = settings_pre['adult_password']
-
 
         if settings_post['adult_aux_intro_password'] == adult_password:
             # La contraseña de acceso es correcta
@@ -147,10 +142,9 @@ def open_settings():
                     platformtools.dialog_ok("Canales para adultos", "Los campos 'Nueva contraseña' y 'Confirmar nueva contraseña' no coinciden.",
                                             "Entre de nuevo en 'Preferencias' para cambiar la contraseña")
 
-
             # Fijar adult_pin
             adult_pin = ""
-            if settings_post["adult_request_password"] == "true":
+            if settings_post["adult_request_password"] == True:
                 adult_pin = adult_password
             set_setting("adult_pin", adult_pin)
 
@@ -159,9 +153,8 @@ def open_settings():
                                     "Los cambios realizados en esta sección no se guardaran.")
 
             # Deshacer cambios
-            set_setting("adult_mode", settings_pre.get("adult_mode","0"))
-            set_setting("adult_request_password", settings_pre.get("adult_request_password", "true"))
-
+            set_setting("adult_mode", settings_pre.get("adult_mode", 0))
+            set_setting("adult_request_password", settings_pre.get("adult_request_password", True))
 
         # Borramos settings auxiliares
         set_setting('adult_aux_intro_password', '')
@@ -221,16 +214,27 @@ def get_setting(name, channel="", server=""):
         settings_types = get_settings_types()
 
         if settings_types.get(name) in ['enum', 'number']:
-            value = int(value)
+            try:
+                value = int(value)
+            except Exception, ex:
+                from core import logger
+                logger.error("Error al convertir '%s' de tipo 'enum','number' \n%s" % (value, ex))
+                if value.lower() == "true":
+                    # Fix temporal versiones <= 4.3
+                    value = 1
+                else:
+                    value = 0
 
         elif settings_types.get(name) == 'bool':
             value = value == 'true'
 
-        elif not settings_types.has_key(name):
+        elif name not in settings_types:
             try:
-                t = eval (value)
+                t = eval(value)
                 value = t[0](t[1])
-            except:
+            except Exception, ex:
+                from core import logger
+                logger.error("Error al convertir '%s' se pasa como tipo 'None'\n%s" % (value, ex))
                 value = None
 
         return value
@@ -280,7 +284,7 @@ def set_setting(name, value, channel="", server=""):
                 new_value = str(value)
 
             else:
-                if isinstance(value,basestring):
+                if isinstance(value, basestring):
                     new_value = "(%s, %s)" % (type(value).__name__, repr(value))
 
                 else:
@@ -288,7 +292,9 @@ def set_setting(name, value, channel="", server=""):
 
             __settings__.setSetting(name, new_value)
 
-        except:
+        except Exception, ex:
+            from core import logger
+            logger.error("Error al convertir '%s' no se guarda el valor \n%s" % (value, ex))
             return None
 
         return value
@@ -350,7 +356,7 @@ def get_runtime_path():
 def get_data_path():
     dev = xbmc.translatePath(__settings__.getAddonInfo('Profile'))
 
-    #Crea el directorio si no existe
+    # Crea el directorio si no existe
     if not os.path.exists(dev):
         os.makedirs(dev)
 
@@ -394,8 +400,7 @@ def verify_directories_created():
             saved_path = "special://profile/addon_data/plugin.video." + PLUGIN_NAME + "/" + default
             set_setting(path, saved_path)
 
-
-        if get_setting("library_set_content")== True and path in ["librarypath","downloadpath"]:
+        if get_setting("library_set_content") == True and path in ["librarypath", "downloadpath"]:
             # logger.debug("library_set_content %s" % get_setting("library_set_content"))
             xbmc_library.add_sources(saved_path)
 
@@ -403,7 +408,6 @@ def verify_directories_created():
         if not filetools.exists(saved_path):
             logger.debug("Creating %s: %s" % (path, saved_path))
             filetools.mkdir(saved_path)
-
 
     config_paths = [["folder_movies", "CINE"],
                     ["folder_tvshows", "SERIES"]]
@@ -418,7 +422,7 @@ def verify_directories_created():
         content_path = filetools.join(get_library_path(), saved_path)
         if not filetools.exists(content_path):
             logger.debug("Creating %s: %s" % (path, content_path))
-            if filetools.mkdir(content_path) and get_setting("library_set_content")== True:
+            if filetools.mkdir(content_path) and get_setting("library_set_content") == True:
                 xbmc_library.set_content(default)
 
         elif get_setting("library_ask_set_content") == 2:

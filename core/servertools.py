@@ -294,7 +294,8 @@ def resolve_video_urls_for_playing(server, url, video_password="", muestra_dialo
                     ]
         
         
-            if server_parameters["free"] == "true": opciones.append("free")
+            if server_parameters["free"] == True:
+                opciones.append("free")
             opciones.extend([premium for premium in server_parameters["premium"] if config.get_setting("premium",server=premium)])
             
             priority = int(config.get_setting("resolve_priority"))
@@ -388,7 +389,7 @@ def resolve_video_urls_for_playing(server, url, video_password="", muestra_dialo
                         logger.error(traceback.format_exc())
                 
                 #Si ya tenemos URLS, dejamos de buscar
-                if video_urls and config.get_setting("resolve_stop") == "true":
+                if video_urls and config.get_setting("resolve_stop") == True:
                     break
                 
             #Cerramos el progreso
@@ -460,12 +461,12 @@ def is_server_enabled(server):
         return False
         
     server_parameters = get_server_parameters(server)
-    if server_parameters["active"] == "true":
+    if server_parameters["active"] == True:
         if not config.get_setting("hidepremium"):
             return True
-        elif server_parameters["free"] == "true":
+        elif server_parameters["free"] == True:
             return True
-        elif [premium for premium in server_parameters["premium"] if config.get_setting("premium",server=premium)]:
+        elif [premium for premium in server_parameters["premium"] if config.get_setting("premium", server=premium)]:
             return True
 
     return False
@@ -489,10 +490,11 @@ def get_server_parameters(server):
         try:
             #Servers
             if os.path.isfile(os.path.join(config.get_runtime_path(),"servers", server + ".xml")):
-                JSONFile =  xml2dict(os.path.join(config.get_runtime_path(),"servers", server + ".xml"))["server"]
+                JSONFile = jsontools.xmlTojson(os.path.join(config.get_runtime_path(), "servers", server + ".xml"))[
+                    "server"]
             #Debriders
             elif os.path.isfile(os.path.join(config.get_runtime_path(),"servers", "debriders", server + ".xml")):
-                JSONFile =  xml2dict(os.path.join(config.get_runtime_path(),"servers", "debriders", server + ".xml"))["server"]
+                JSONFile =  jsontools.xmlTojson(os.path.join(config.get_runtime_path(),"servers", "debriders", server + ".xml"))["server"]
             
             
             for k in ['premium', 'id']:
@@ -551,23 +553,9 @@ def get_server_controls_settings(server_name):
 
         if 'enabled' not in c or c['enabled'] is None:
             c['enabled'] = True
-        else:
-            if c['enabled'].lower() == "true":
-                c['enabled'] = True
-            elif c['enabled'].lower() == "false":
-                c['enabled'] = False
 
         if 'visible' not in c or c['visible'] is None:
             c['visible'] = True
-
-        else:
-            if c['visible'].lower() == "true":
-                c['visible'] = True
-            elif c['visible'].lower() == "false":
-                c['visible'] = False
-
-        if c['type'] == 'bool':
-            c['default'] = (c['default'].lower() == "true")
 
         if unicode(c['default']).isnumeric():
             c['default'] = int(c['default'])
@@ -668,7 +656,7 @@ def get_servers_list():
     for server in os.listdir(os.path.join(config.get_runtime_path(),"servers")):
         if server.endswith(".xml") and not server == "version.xml":
             server_parameters = get_server_parameters(server)
-            if server_parameters["active"] == "true":
+            if server_parameters["active"] == True:
                 server_list[server.split(".")[0]] = server_parameters
     
     return server_list
@@ -686,7 +674,7 @@ def get_debriders_list():
     for server in os.listdir(os.path.join(config.get_runtime_path(),"servers", "debriders")):
         if server.endswith(".xml"):
             server_parameters = get_server_parameters(server)
-            if server_parameters["active"] == "true":
+            if server_parameters["active"] == True:
                 logger.info(server_parameters)
                 server_list[server.split(".")[0]] = server_parameters
     return server_list
@@ -731,7 +719,7 @@ def filter_servers(servers_list):
 
     return servers_list
 
-
+'''
 def xml2dict(file = None, xmldata = None):
       import re, sys, os
       parse = globals().get(sys._getframe().f_code.co_name)
@@ -766,7 +754,7 @@ def xml2dict(file = None, xmldata = None):
           else:
             return_dict[tag] = value
       return return_dict
-
+'''
     
 def save_server_stats(stats, type="find_videos"):
     if not config.get_setting("server_stats"):

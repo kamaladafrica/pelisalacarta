@@ -24,7 +24,6 @@
 		<category>adult</category>
 	</categories>
 
-	<include_in_global_search>disabled</include_in_global_search>
 	<settings>
 		<id>menu_info</id>
 		<type>bool</type>
