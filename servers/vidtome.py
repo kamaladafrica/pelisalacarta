@@ -12,7 +12,6 @@ from core import httptools
 from core import logger
 from core import scrapertools
 
-
 def test_video_exists(page_url):
     logger.info("(page_url='%s')" % page_url)
 
