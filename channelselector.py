@@ -167,12 +167,17 @@ def filterchannels(category, preferred_thumb=""):
             if preferred_thumb == "bannermenu" and "bannermenu" in channel_parameters:
                 channel_parameters["thumbnail"] = channel_parameters["bannermenu"]
 
+            # si en el xml el canal está desactivado no se muestra el canal en la lista
+            if not channel_parameters["active"]:
+                continue
+
             # Se salta el canal si no está activo y no estamos activando/desactivando los canales
             channel_status = config.get_setting("enabled", channel_parameters["channel"])
 
             if channel_status is None:
-                # si channel_status no existe es que NO HAY valor en _data.json
-                channel_status = channel_parameters["active"]
+                # si channel_status no existe es que NO HAY valor en _data.json.
+                # como hemos llegado hasta aquí (el canal está activo en xml), se devuelve True
+                channel_status = True
 
             # fix temporal para solucionar que enabled aparezca como "true/false"(str) y sea true/false(bool)
             # TODO borrar este fix en la versión > 4.2.1, ya que no sería necesario
