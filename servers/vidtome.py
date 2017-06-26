@@ -6,7 +6,6 @@
 # ------------------------------------------------------------
 
 import re
-import time
 
 from core import httptools
 from core import logger
@@ -27,15 +26,6 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     logger.info("url=" + page_url)
 
     data = httptools.downloadpage(page_url).data
-    post = ""
-    block = scrapertools.find_single_match(data, '(?i)<Form method="POST"(.*?)</Form>')
-    segundos = int(scrapertools.find_single_match(block,'cxc">(.*?)<'))
-    matches = scrapertools.find_multiple_matches(block, 'input.*?name="([^"]+)".*?value="([^"]*)"')
-    for inputname, inputvalue in matches:
-        post += inputname + "=" + inputvalue + "&"
-    time.sleep(segundos)
-    data = httptools.downloadpage(page_url, post).data
-
     # Extrae la URL
     # {file:"http://188.240.220.186/drjhpzy4lqqwws4phv3twywfxej5nwmi4nhxlriivuopt2pul3o4bkge5hxa/video.mp4",label:"240p"}
     video_urls = []
