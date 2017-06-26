@@ -15,7 +15,7 @@
         <setting id="server_stats" type="bool" label="Enviar estadisticas sobre el uso de servidores" default="true"/>
         <setting type="sep"/>
         <setting label="Canales para adultos" type="lsep"/>
-        <setting id="adult_aux_intro_password" type="text" label="Contraseña:" option="hidden"  default=""/>
+        <setting id="adult_aux_intro_password" type="text" label="Contraseña (por defecto 0000):" option="hidden"  default=""/>
         <setting id="adult_mode" type="enum" values="Nunca|Siempre|Solo hasta que se reinicie Kodi" label="30002" enable="!eq(-1,)" default="0"/>
         <setting id="adult_request_password" type="bool" label="Solicitar contraseña para abrir canales de adultos"  enable="!eq(-1,0)+!eq(-2,)" default="true"/>
         <setting id="adult_aux_new_password1" type="text" label="Nueva contraseña:" option="hidden" enable="!eq(-3,)" default=""/>
