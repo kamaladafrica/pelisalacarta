@@ -39,9 +39,6 @@
 	</categories>
 
 	<settings>
-		<include_in_global_search>disabled</include_in_global_search>
-	</settings>
-	<settings>
 		<id>tmdb</id>
 		<type>list</type>
 		<label>Idioma de búsqueda en TMDB</label>

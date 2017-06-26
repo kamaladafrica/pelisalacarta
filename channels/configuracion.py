@@ -168,7 +168,7 @@ def menu_servers(item):
 
     server_list = servertools.get_servers_list().keys()
 
-    for server in server_list:
+    for server in sorted(server_list):
         server_parameters = servertools.get_server_parameters(server)
         logger.info(server_parameters)
         if server_parameters["has_settings"] and filter(lambda x: x["id"] not in ["black_list", "white_list"], server_parameters["settings"]):
@@ -260,7 +260,7 @@ def servers_favorites(item):
 
         orden = config.get_setting("favorites_servers_list", server=server)
 
-        if orden > 0 and orden < 100:
+        if orden > 0:
             dict_values[orden] = len(server_names) - 1
 
 
@@ -299,7 +299,7 @@ def cb_servers_favorites(server_names, dict_values):
             config.set_setting("favorites_servers_list", dict_name[server_parameters['name']], server=server)
         else:
             config.set_setting("favorites_servers_list", 100, server=server)
-        progreso.update((i * 100) / n, "Guardando configuración...%s" % server_parameters['name'])
+        progreso.update((i * 0) / n, "Guardando configuración...%s" % server_parameters['name'])
         i += 1
 
     if not dict_name: #Si no hay ningun servidor en lalista desactivarla

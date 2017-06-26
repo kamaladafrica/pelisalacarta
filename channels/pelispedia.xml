@@ -59,9 +59,6 @@
 	</categories>
 
 	<settings>
-		<include_in_global_search>disabled</include_in_global_search>
-	</settings>
-	<settings>
 		<id>modo_grafico</id>
 		<type>bool</type>
 		<label>Buscar información extra</label>
