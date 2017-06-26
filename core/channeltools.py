@@ -53,16 +53,14 @@ def get_channel_parameters(channel_name):
                 # cambios de nombres y valores por defecto
                 channel_parameters["title"] = channel_parameters.pop("name")
                 channel_parameters["channel"] = channel_parameters.pop("id")
-                if not channel_parameters.get("update_url"):
-                    channel_parameters["update_url"] = DEFAULT_UPDATE_URL
 
-                if not channel_parameters.get("language"):
-                    channel_parameters["language"] = "all"
-
-                if not channel_parameters.get("categories"):
-                    channel_parameters["categories"] = list()
-                else:
-                    channel_parameters["categories"] = channel_parameters["categories"].get("category", list())
+                # si no existe el tag (error al crear el xml) se declaran y no de fallos en las funciones que lo llaman
+                channel_parameters["update_url"] = channel_parameters.get("update_url", DEFAULT_UPDATE_URL)
+                channel_parameters["language"] = channel_parameters.get("language", "all")
+                channel_parameters["adult"] = channel_parameters.get("adult", False)
+                channel_parameters["active"] = channel_parameters.get("active", False)
+                channel_parameters["include_in_global_search"] = channel_parameters.get("include_in_global_search", False)
+                channel_parameters["categories"] = channel_parameters.get("categories", dict()).get("category", list())
                 if not isinstance(channel_parameters["categories"], list):
                     channel_parameters["categories"] = [channel_parameters["categories"]]
 
@@ -77,11 +75,6 @@ def get_channel_parameters(channel_name):
                     channel_parameters["fanart"] = os.path.join(config.get_runtime_path(), "resources", "images",
                                                                 "fanart", channel_parameters["fanart"])
 
-                # si no existe el tag (error al crear el xml) se declaran y no de fallos en las funciones que lo llaman
-                channel_parameters['include_in_global_search'] = channel_parameters.get('include_in_global_search', False)
-                channel_parameters['adult'] = channel_parameters.get('adult', False)
-                channel_parameters['active'] = channel_parameters.get('active', False)
-
                 # Obtenemos si el canal tiene opciones de configuración
                 channel_parameters["has_settings"] = False
                 if 'settings' in channel_parameters:
@@ -94,9 +87,9 @@ def get_channel_parameters(channel_name):
                                 channel_parameters["include_in_global_search"] = s.get('default', False)
                             elif not s['id'].startswith("include_in_"):
                                 channel_parameters["has_settings"] = True
-                            else:
-                                if s['id'].startswith("include_in_"):
-                                    channel_parameters[s['id']] = s.get('default', False)
+                            # else:
+                            #     if s['id'].startswith("include_in_"):
+                            #         channel_parameters[s['id']] = s.get('default', False)
 
                     del channel_parameters['settings']
 
