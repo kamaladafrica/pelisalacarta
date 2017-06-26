@@ -5,7 +5,7 @@
 		<change>
 			<autor>Intel1</autor>
 			<date>26/06/2017</date>
-			<description>Conector corregido</description>
+			<description>Patrón actualizado</description>
 		</change>
 		<change>
 			<autor>Cmos</autor>
@@ -22,8 +22,8 @@
 		<ignore_urls>
 		</ignore_urls>
 		<patterns>
-			<pattern>vidto.me/(?:embed-|)([a-z0-9A-Z]+)</pattern>
-			<url>http://vidto.me/\1.html</url>
+			<pattern>vidto.me/(?:embed-|)([A-z0-9]+)</pattern>
+			<url>http://vidto.me/embed-\1.html</url>
 		</patterns>
 	</find_videos>
 	<free>true</free>
