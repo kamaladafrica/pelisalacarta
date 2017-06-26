@@ -719,43 +719,7 @@ def filter_servers(servers_list):
 
     return servers_list
 
-'''
-def xml2dict(file = None, xmldata = None):
-      import re, sys, os
-      parse = globals().get(sys._getframe().f_code.co_name)
 
-      if xmldata == None and file == None:  raise Exception("No hay nada que convertir!")
-      if xmldata == None:
-        if not os.path.exists(file): raise Exception("El archivo no existe!")
-        xmldata = open(file, "rb").read()
-
-      matches = re.compile("<(?P<tag>[^>]+)>[\n]*[\s]*[\t]*(?P<value>.*?)[\n]*[\s]*[\t]*<\/(?P=tag)\s*>",re.DOTALL).findall(xmldata)
-
-      return_dict = {}
-      for tag, value in matches:
-        #Si tiene elementos
-        if "<" and "</" in value:
-          if tag in return_dict:
-            if type(return_dict[tag])== list:
-              return_dict[tag].append(parse(xmldata=value))
-            else:
-              return_dict[tag] = [return_dict[tag]]
-              return_dict[tag].append(parse(xmldata=value))
-          else:
-              return_dict[tag] = parse(xmldata=value)
-
-        else:
-          if tag in return_dict:
-            if type(return_dict[tag])== list:
-              return_dict[tag].append(value)
-            else:
-              return_dict[tag] = [return_dict[tag]]
-              return_dict[tag].append(value)
-          else:
-            return_dict[tag] = value
-      return return_dict
-'''
-    
 def save_server_stats(stats, type="find_videos"):
     if not config.get_setting("server_stats"):
         return
