@@ -325,7 +325,7 @@ def init(channel, list_servers, list_quality):
 
         autoplay_node[channel] = channel_node
 
-    if change: # TODO esto habra q cambiarlo cuando se muevan las funciones json a jsontools
+    if change:
         result, json_data = jsontools.update_json_data(autoplay_node, 'autoplay', 'AUTOPLAY')
 
         if result:
@@ -529,8 +529,9 @@ def save(item, dict_data_saved):
     config.set_setting("filter_languages", dict_data_saved.pop("language"), item.from_channel)
     channel_node['settings'] = dict_data_saved
 
-    # TODO esto habra q cambiarlo cuando se muevan las funciones json a jsontools
     result, json_data = jsontools.update_json_data(autoplay_node, 'autoplay', 'AUTOPLAY')
+
+    return result
 
 
 
