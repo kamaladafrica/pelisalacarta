@@ -380,8 +380,8 @@ def check_value (channel, itemlist):
             change = True
 
 
-    if change: # TODO esto habra q cambiarlo cuando se muevan las funciones json a jsontools
-        result, json_data = jsontools.update_json_data(autoplay_node, 'autoplay', 'AUTOPLAY')
+    if change:
+        change, json_data = jsontools.update_json_data(autoplay_node, 'autoplay', 'AUTOPLAY')
 
     return change
 
