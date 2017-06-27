@@ -77,7 +77,7 @@ def start (itemlist, item):
     else:
         if not autoplay_node:
             # Obtiene el nodo AUTOPLAY desde el json
-            autoplay_node = filetools.get_node_from_data_json('autoplay', 'AUTOPLAY')
+            autoplay_node = jsontools.get_node_from_data_json('autoplay', 'AUTOPLAY')
 
         # Agrega servidores y calidades que no estaban listados a autoplay_node
         new_options = check_value(item.channel, itemlist)
@@ -293,7 +293,7 @@ def init(channel, list_servers, list_quality):
 
     autoplay_path = os.path.join(config.get_data_path(), "settings_channels", 'autoplay_data.json')
     if filetools.exists(autoplay_path):
-        autoplay_node = filetools.get_node_from_data_json('autoplay', "AUTOPLAY")
+        autoplay_node = jsontools.get_node_from_data_json('autoplay', "AUTOPLAY")
     else:
         change = True
         autoplay_node = {"AUTOPLAY": {}}
@@ -326,7 +326,7 @@ def init(channel, list_servers, list_quality):
         autoplay_node[channel] = channel_node
 
     if change: # TODO esto habra q cambiarlo cuando se muevan las funciones json a jsontools
-        fname, json_data = filetools.update_json_data(autoplay_node, 'autoplay', 'AUTOPLAY')
+        fname, json_data = jsontools.update_json_data(autoplay_node, 'autoplay', 'AUTOPLAY')
         result = filetools.write(fname, json_data)
 
         if result:
@@ -359,7 +359,7 @@ def check_value (channel, itemlist):
 
     if not autoplay_node:
         # Obtiene el nodo AUTOPLAY desde el json
-        autoplay_node = filetools.get_node_from_data_json('autoplay', 'AUTOPLAY')
+        autoplay_node = jsontools.get_node_from_data_json('autoplay', 'AUTOPLAY')
 
     channel_node = autoplay_node.get(channel)
 
@@ -382,7 +382,7 @@ def check_value (channel, itemlist):
 
 
     if change: # TODO esto habra q cambiarlo cuando se muevan las funciones json a jsontools
-        fname, json_data = filetools.update_json_data(autoplay_node, 'autoplay', 'AUTOPLAY')
+        fname, json_data = jsontools.update_json_data(autoplay_node, 'autoplay', 'AUTOPLAY')
         change = filetools.write(fname, json_data)
 
     return change
@@ -398,7 +398,7 @@ def autoplay_config(item):
 
     if not autoplay_node:
         # Obtiene el nodo AUTOPLAY desde el json
-        autoplay_node = filetools.get_node_from_data_json('autoplay', 'AUTOPLAY')
+        autoplay_node = jsontools.get_node_from_data_json('autoplay', 'AUTOPLAY')
 
     channel_node = autoplay_node.get(item.from_channel, {})
     settings_node = channel_node.get('settings', {})
@@ -524,14 +524,14 @@ def save(item, dict_data_saved):
 
     if not autoplay_node:
         # Obtiene el nodo AUTOPLAY desde el json
-        autoplay_node = filetools.get_node_from_data_json('autoplay', 'AUTOPLAY')
+        autoplay_node = jsontools.get_node_from_data_json('autoplay', 'AUTOPLAY')
 
     channel_node = autoplay_node.get(item.from_channel)
     config.set_setting("filter_languages", dict_data_saved.pop("language"), item.from_channel)
     channel_node['settings'] = dict_data_saved
 
     # TODO esto habra q cambiarlo cuando se muevan las funciones json a jsontools
-    fname, json_data = filetools.update_json_data(autoplay_node, 'autoplay', 'AUTOPLAY')
+    fname, json_data = jsontools.update_json_data(autoplay_node, 'autoplay', 'AUTOPLAY')
     ret = filetools.write(fname, json_data)
 
     return ret
