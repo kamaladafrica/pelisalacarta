@@ -33,6 +33,7 @@ def mainlist(item):
     thumbnail = "https://raw.githubusercontent.com/master-1970/resources/master/images/genres/4/verdes/%s.png"
 
     itemlist.append(item.clone(title="Novedades", action="peliculas", text_blod= True, viewcontent='movies',
+                                url = HOST + "/ultimas-y-actualizadas",
                                 thumbnail= thumbnail % 'novedades', viewmode = "movie_with_plot"))
     itemlist.append(item.clone(title="Estrenos", action="peliculas", text_blod=True,
                                 url= HOST + "/genero/premieres", thumbnail=thumbnail % 'estrenos'))
@@ -113,45 +114,55 @@ def peliculas(item):
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
 
-    patron  = '<li class="item-movies.*?'
-    patron += '<a class="image-block" href="([^"]+)" title="([^"]+)">'
-    patron += '<img src="([^"]+).*?'
-    patron += '<div class="moSinopsis">.*?</b>([^<]+).*?'
-    patron += '<div class="moYear">.*?</b>([^<]+).*?'
-    patron += '<ul class="bottombox">.*?<li>(<img.*?)</li>.*?</ul>'
-    patron += '<div class="quality">([^<]+)</div>'
+    patron =  '<article class.*?'
+    patron += '<a href="([^"]+)">.*?'
+    patron += '<img src="([^"]+)".*?'
+    patron += '<aside class="item-control down">(.*?)</aside>.*?'
+    patron += '<small class="pull-right text-muted">([^<]+)</small>.*?'
+    patron += '<h2 class.*?>([^<]+)</h2>'
+
  
     matches = re.compile(patron,re.DOTALL).findall(data)
 
     # Paginacion
     if item.next_page != 'b':
-        if len(matches) > 20:
+        if len(matches) > 30:
             url_next_page = item.url
-        matches = matches [:20]
+        matches = matches [:30]
         next_page = 'b'
     else:
-        matches = matches[20:]
+        matches = matches[30:]
         next_page = 'a'
-        patron_next_page = "<a href='([^']+)'>\&raquo\;</a>"
+        patron_next_page = 'Anteriores</a> <a href="([^"]+)".*?Siguiente'
         matches_next_page = re.compile(patron_next_page, re.DOTALL).findall(data)
         if len(matches_next_page) > 0:
-            url_next_page = urlparse.urljoin(item.url, matches_next_page[0])
+            url_next_page = matches_next_page[0]
 
 
-    for scrapedurl, scrapedtitle, scrapedthumbnail, scrapedplot, year, idiomas, calidad in matches:
-        patronidiomas = "<img src='[^']+' title='([^']+)'"
+    for scrapedurl, scrapedthumbnail, idiomas, year, scrapedtitle in matches:
+        patronidiomas = "<img src='([^']+)'"
         matchesidiomas = re.compile(patronidiomas,re.DOTALL).findall(idiomas)
+        logger.debug(matchesidiomas)
+        idiomas_disponibles = []
+        for idioma in matchesidiomas:
+            if idioma.endswith("la_la.png"):
+                idiomas_disponibles.append("LAT")
+            elif idioma.endswith("en_en.png"):
+                idiomas_disponibles.append("VO")
+            elif idioma.endswith("en_es.png"):
+                idiomas_disponibles.append("VOSE")
+            elif idioma.endswith("es_es.png"):
+                idiomas_disponibles.append("ESP")
 
-        idiomas_disponibles = ""
-        if matchesidiomas:
-            idiomas_disponibles = "[" + "/".join(matchesidiomas).strip() + "]"
+        if idiomas_disponibles:
+            idiomas_disponibles = "[" + "/".join(idiomas_disponibles) + "]"
 
         contentTitle = decodeHtmlentities(scrapedtitle.strip())
-        title = "%s %s [%s]" %(contentTitle, idiomas_disponibles, calidad)
-        plot = decodeHtmlentities(scrapedplot)
+        title = "%s %s" %(contentTitle, idiomas_disponibles)
 
-        itemlist.append(Item(channel=item.channel, action="findvideos", title=title, url=scrapedurl, contentQuality=calidad,
-                                thumbnail=scrapedthumbnail, plot=plot, contentTitle=contentTitle,
+
+        itemlist.append(Item(channel=item.channel, action="findvideos", title=title, url=scrapedurl,
+                                thumbnail=scrapedthumbnail, contentTitle=contentTitle,
                                 infoLabels={"year":year}, text_color = color1))
 
     # Obtenemos los datos basicos de todas las peliculas mediante multihilos
