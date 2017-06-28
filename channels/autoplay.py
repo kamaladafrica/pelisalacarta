@@ -6,14 +6,11 @@
 # ------------------------------------------------------------
 
 from core import channeltools
-from core import filetools
 from core import config
 from core import logger
 from core.item import Item
 from platformcode import platformtools
 from core import jsontools
-from core import servertools
-from core import httptools
 import os
 
 __channel__ = "autoplay"
@@ -292,7 +289,7 @@ def init(channel, list_servers, list_quality):
     result = True
 
     autoplay_path = os.path.join(config.get_data_path(), "settings_channels", 'autoplay_data.json')
-    if filetools.exists(autoplay_path):
+    if os.path.exists(autoplay_path):
         autoplay_node = jsontools.get_node_from_data_json('autoplay', "AUTOPLAY")
     else:
         change = True
