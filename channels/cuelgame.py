@@ -1,19 +1,20 @@
 # -*- coding: utf-8 -*-
-# ------------------------------------------------------------
+#------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-# ------------------------------------------------------------
+#------------------------------------------------------------
 import re
 import sys
-import unicodedata
 import urlparse
 
-import xbmc
-import xbmcgui
+from core import config
 from core import logger
 from core import scrapertools,httptools
 from core.item import Item
+import xbmc
+import xbmcgui
 from core.scrapertools import decodeHtmlentities as dhe
+import unicodedata
 
 ACTION_SHOW_FULLSCREEN = 36
 ACTION_GESTURE_SWIPE_LEFT = 511
@@ -26,11 +27,13 @@ ACTION_MOVE_UP = 3
 OPTION_PANEL = 6
 OPTIONS_OK = 5
 
+DEBUG = config.get_setting("debug")
+
 api_key="2e2160006592024ba87ccdf78c28f49f"
 api_fankey ="dffe90fba4d02c199ae7a9e71330c987"
 
 def mainlist(item):
-    logger.info()
+    logger.info("pelisalacarta.cuelgame mainlist")
 
     itemlist = []
     itemlist.append( Item(channel=item.channel, title="[COLOR forestgreen]Cine[/COLOR]" , action="scraper", url="http://cuelgame.net/?category=4" ,thumbnail="http://img5a.flixcart.com/image/poster/q/t/d/vintage-camera-collage-sr148-medium-400x400-imadkbnrnbpggqyz.jpeg", fanart="http://imgur.com/7frGoPL.jpg"))
@@ -46,7 +49,7 @@ def mainlist(item):
     return itemlist
 
 def search(item,texto):
-    logger.info()
+    logger.info("pelisalacarta.cuelgame search")
     texto = texto.replace(" ","+")
     item.url = "http://cuelgame.net/search.php?q=%s" % (texto)
     
@@ -56,14 +59,14 @@ def search(item,texto):
     except:
         import sys
         for line in sys.exc_info():
-            logger.error("%s" % line)
+            logger.error( "%s" % line )
         return []
 
 
 
 
 def scraper(item):
-    logger.info()
+    logger.info("pelisalacarta.cuelgame finvideos")
     itemlist = []
     check_search= item.url
     # Descarga la página
@@ -148,14 +151,14 @@ def scraper(item):
 
     return itemlist
 def fanart(item):
-    logger.info()
+    logger.info("pelisalacarta.cuelgame fanart")
     itemlist = []
     
     check_sp = item.extra.split("|")[4]
     title_fan = item.extra.split("|")[0]
     fulltitle= item.title
-    fulltitle= re.sub(r"720p|1080i","",fulltitle)
-    title_fan=re.sub(r"H264.*|Mitos Griegos|HDTV.*|\d\d\d\d","",title_fan).strip()
+    fulltitle= re.sub(r"720p|1080.*","",fulltitle)
+    title_fan=re.sub(r"H264.*|Netflix.*|Mitos Griegos|HDTV.*|\d\d\d\d","",title_fan).strip()
     item.title = title_fan.upper()
     item.title = "[COLOR springgreen][B]"+item.title+"[/B][/COLOR]"
     title= title_fan.replace(' ','%20')
@@ -238,7 +241,7 @@ def fanart(item):
         url="http://api.themoviedb.org/3/search/movie?api_key="+api_key+"&query=" + title +"&year="+year+ "&language=es&include_adult=false"
         data = httptools.downloadpage(url).data
         data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-        patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),"popularity"'
+        patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),'
         matches = re.compile(patron,re.DOTALL).findall(data)
         
         
@@ -250,7 +253,7 @@ def fanart(item):
                 
                 data = httptools.downloadpage(url).data
                 data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-                patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),"popularity"'
+                patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),'
                 matches = re.compile(patron,re.DOTALL).findall(data)
                 if len(matches)==0:
                     extra=item.thumbnail+"|"+""+"|"+""+"|"+"Sin puntuación"+"|"+rating_filma+"|"+critica
@@ -269,7 +272,7 @@ def fanart(item):
             fan = re.sub(r'\\|"','',fan)
             
             try:
-                rating = scrapertools.find_single_match(data,'"vote_average":(.*?)}')
+                rating = scrapertools.find_single_match(data,'"vote_average":(.*?),')
             except:
                 rating = "Sin puntuación"
             
@@ -457,7 +460,7 @@ def fanart(item):
         url_tmdb="http://api.themoviedb.org/3/search/tv?api_key="+api_key+"&query=" + title +"&language=es&include_adult=false&first_air_date_year="+year
         data_tmdb = httptools.downloadpage(url_tmdb).data
         data_tmdb = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data_tmdb)
-        patron = '"page":1.*?,"id":(.*?),"backdrop_path":(.*?),"vote_average"'
+        patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),'
         matches = re.compile(patron,re.DOTALL).findall(data_tmdb)
 
         ###Busqueda en bing el id de imdb de la serie
@@ -465,7 +468,7 @@ def fanart(item):
          url_tmdb="http://api.themoviedb.org/3/search/tv?api_key="+api_key+"&query=" + title +"&language=es"
          data_tmdb = httptools.downloadpage(url_tmdb).data
          data_tmdb = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data_tmdb)
-         patron = '"page":1.*?,"id":(.*?),"backdrop_path":(.*?),"vote_average"'
+         patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),'
          matches = re.compile(patron,re.DOTALL).findall(data_tmdb)
          if len(matches)==0:
           urlbing_imdb = "http://www.bing.com/search?q=%s+%s+tv+series+site:imdb.com" % (title.replace(' ', '+'),  year)
@@ -546,7 +549,7 @@ def fanart(item):
          
             id_scraper =id_tmdb+"|"+"serie"+"|"+rating_filma+"|"+critica+"|"+rating+"|"+status #+"|"+emision
             
-            posterdb = scrapertools.find_single_match(data_tmdb,'"poster_path":(.*?)","popularity"')
+            posterdb = scrapertools.find_single_match(data_tmdb,'"poster_path":(.*?)",')
 
             if "null" in posterdb:
                 posterdb = item.thumbnail
@@ -740,7 +743,7 @@ def fanart(item):
     return itemlist
 
 def findvideos(item):
-    logger.info()
+    logger.info("pelisalacarta.cuelgame findvideos")
     itemlist = []
     temp = item.fulltitle.split("|")[0]
     epi = item.fulltitle.split("|")[1]
@@ -764,7 +767,7 @@ def findvideos(item):
     return itemlist
 
 def info(item):
-    logger.info()
+    logger.info("pelisalacarta.cuelgame info")
     itemlist = []
     url=item.url
     id = item.extra
@@ -929,7 +932,7 @@ def info(item):
     from channels import infoplus
     infoplus.start(item_info, peliculas)
 def info_capitulos(item):
-    logger.info()
+    logger.info("pelisalacarta.cuelgame info_capitulos")
     
     url= "https://api.themoviedb.org/3/tv/"+item.show.split("|")[5]+"/season/"+item.extra.split("|")[2]+"/episode/"+item.extra.split("|")[3]+"?api_key="+api_key+"&language=es"
 

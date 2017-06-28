@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
-# ------------------------------------------------------------
+#------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para peliculasdk
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-# ------------------------------------------------------------
+#------------------------------------------------------------
 import re
 import sys
+import urllib
 
 from core import config
 from core import logger
@@ -13,7 +14,6 @@ from core import scrapertools
 from core import servertools
 from core.item import Item
 from core.scrapertools import decodeHtmlentities as dhe
-
 try:
     import xbmc
     import xbmcgui
@@ -31,6 +31,7 @@ ACTION_MOVE_UP = 3
 OPTION_PANEL = 6
 OPTIONS_OK = 5
 
+DEBUG = config.get_setting("debug")
 host = "http://www.peliculasdk.com/"
 
 
@@ -51,7 +52,7 @@ def bbcode_kodi2html(text):
     return text
 
 def mainlist(item):
-    logger.info()
+    logger.info("pelisalacarta.peliculasdk mainlist")
     itemlist = []
     title ="Estrenos"
     title = title.replace(title,bbcode_kodi2html("[COLOR orange]"+title+"[/COLOR]"))
@@ -73,7 +74,7 @@ def mainlist(item):
     return itemlist
 
 def search(item,texto):
-    logger.info()
+    logger.info("pelisalacarta.peliculasdk search")
     texto = texto.replace(" ","+")
     
     item.url = "http://www.peliculasdk.com/index.php?s=%s&x=0&y=0" % (texto)
@@ -84,11 +85,11 @@ def search(item,texto):
     except:
         import sys
         for line in sys.exc_info():
-            logger.error("%s" % line)
+            logger.error( "%s" % line )
         return []
 
 def buscador(item):
-    logger.info()
+    logger.info("pelisalacarta.peliculasdk buscador")
     itemlist = []
     
     # Descarga la página
@@ -141,7 +142,7 @@ def buscador(item):
 
 
 def peliculas(item):
-    logger.info()
+    logger.info("pelisalacarta.peliculasdk peliculas")
     itemlist = []
     
     # Descarga la página
@@ -193,7 +194,7 @@ def peliculas(item):
     return itemlist
 
 def fanart(item):
-    logger.info()
+    logger.info("pelisalacarta.peliculasdk fanart")
     itemlist = []
     url = item.url
     data = scrapertools.cachePage(url)
@@ -278,7 +279,7 @@ def fanart(item):
         url="http://api.themoviedb.org/3/search/movie?api_key=2e2160006592024ba87ccdf78c28f49f&query=" + title +"&year="+year+ "&language=es&include_adult=false"
         data = scrapertools.cachePage(url)
         data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-        patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),"popularity"'
+        patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),'
         matches = re.compile(patron,re.DOTALL).findall(data)
         
         
@@ -290,7 +291,7 @@ def fanart(item):
                 
                 data = scrapertools.cachePage(url)
                 data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-                patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),"popularity"'
+                patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),'
                 matches = re.compile(patron,re.DOTALL).findall(data)
                 if len(matches)==0:
                     extra=item.thumbnail+"|"+""+"|"+""+"|"+"Sin puntuación"+"|"+rating_filma+"|"+critica
@@ -309,7 +310,7 @@ def fanart(item):
             fan = re.sub(r'\\|"','',fan)
             
             try:
-                rating = scrapertools.find_single_match(data,'"vote_average":(.*?)}')
+                rating = scrapertools.find_single_match(data,'"vote_average":(.*?),')
             except:
                 rating = "Sin puntuación"
             
@@ -445,7 +446,7 @@ def fanart(item):
 
 
 def findvideos(item):
-    logger.info()
+    logger.info("pelisalacarta.peliculasdk findvideos")
     
     itemlist = []
     data = scrapertools.cache_page(item.url)
@@ -513,7 +514,7 @@ def findvideos(item):
             servertitle = servertitle.replace("embed.","")
             servertitle = servertitle.replace("player.","")
             servertitle = servertitle.replace("api.video.","")
-            servertitle = servertitle.replace("hqq.tv","netu.tv")
+            servertitle = re.sub(r"hqq.tv|hqq.watch","netu.tv",servertitle)
             servertitle = servertitle.replace("anonymouse.org","netu.tv")
             title = bbcode_kodi2html("[COLOR orange]Ver en --[/COLOR]") + servertitle +" "+ idioma +" "+ calidad
             itemlist.append( Item(channel=item.channel, title =title , url=video_url, action="play", thumbnail=item.category, plot=scrapedplot, fanart=item.show ) )
@@ -531,7 +532,7 @@ def findvideos(item):
 
 
 def play(item):
-    logger.info()
+    logger.info("pelisalacarta.peliculasdk play")
     
     itemlist = servertools.find_video_items(data=item.url)
     data = scrapertools.cache_page(item.url)
@@ -555,7 +556,7 @@ def play(item):
 
 
 def info(item):
-    logger.info()
+    logger.info("pelisalacarta.peliculasdk info")
     itemlist = []
     url=item.url
     id = item.extra
@@ -688,12 +689,12 @@ def info(item):
       
       url_tpi="http://api.themoviedb.org/3/tv/"+item.show.split("|")[5]+"/recommendations?api_key=2e2160006592024ba87ccdf78c28f49f&language=es"
       data_tpi=scrapertools.cachePage(url_tpi)
-      tpi=scrapertools.find_multiple_matches(data_tpi,'id":(.*?),.*?"original_name":"(.*?)",.*?"poster_path":(.*?),"popularity"')
+      tpi=scrapertools.find_multiple_matches(data_tpi,'id":(.*?),.*?"original_name":"(.*?)",.*?"poster_path":(.*?),')
 
     else:
       url_tpi="http://api.themoviedb.org/3/movie/"+item.extra.split("|")[1]+"/recommendations?api_key=2e2160006592024ba87ccdf78c28f49f&language=es"
       data_tpi=scrapertools.cachePage(url_tpi)
-      tpi=scrapertools.find_multiple_matches(data_tpi,'id":(.*?),.*?"original_title":"(.*?)",.*?"poster_path":(.*?),"popularity"')
+      tpi=scrapertools.find_multiple_matches(data_tpi,'id":(.*?),.*?"original_title":"(.*?)",.*?"poster_path":(.*?),')
 
             
     for idp,peli,thumb in tpi:

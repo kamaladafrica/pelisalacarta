@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
-# ------------------------------------------------------------
+#------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para zentorrents
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-# ------------------------------------------------------------
-
-import os
+#------------------------------------------------------------
 import re
-import unicodedata
+import os
+import sys
 import urllib
 import urlparse
-
-import xbmc
-import xbmcgui
+import string
 from core import config
-from core import httptools
 from core import logger
 from core import scrapertools
+from core import httptools
 from core.item import Item
+import xbmc
+import xbmcgui
+import unicodedata
 from core.scrapertools import decodeHtmlentities as dhe
 
 ACTION_SHOW_FULLSCREEN = 36
@@ -31,14 +31,14 @@ ACTION_MOVE_UP = 3
 OPTION_PANEL = 6
 OPTIONS_OK = 5
 
+DEBUG = config.get_setting("debug")
 host = "http://www.zentorrents.com/"
 
 api_key="2e2160006592024ba87ccdf78c28f49f"
 api_fankey ="dffe90fba4d02c199ae7a9e71330c987"
 
-
 def mainlist(item):
-    logger.info()
+    logger.info("pelisalacarta.zentorrents mainlist")
     
     itemlist = []
     itemlist.append( Item(channel=item.channel, title="Películas"      , action="peliculas", url="http://www.zentorrents.com/peliculas" ,thumbnail="http://www.navymwr.org/assets/movies/images/img-popcorn.png", fanart="http://s18.postimg.org/u9wyvm809/zen_peliculas.jpg"))
@@ -51,8 +51,9 @@ def mainlist(item):
     return itemlist
 
 
+
 def search(item, texto):
-    logger.info()
+    logger.info("pelisalacarta.zentorrent search")
     
     texto = texto.replace(" ", "+")
     item.url = "http://www.zentorrents.com//buscar?searchword=%s&ordering=&searchphrase=all&limit=\d+" % (texto)
@@ -70,7 +71,7 @@ def search(item, texto):
 
 
 def buscador(item):
-    logger.info()
+    logger.info("pelisalacarta.zentorrents buscador")
     itemlist = []
     # Descarga la página
     data = httptools.downloadpage(item.url).data
@@ -110,7 +111,7 @@ def buscador(item):
 
 
 def peliculas(item):
-    logger.info()
+    logger.info("pelisalacarta.zentorrents peliculas")
     itemlist = []
 
     # Descarga la página
@@ -176,9 +177,8 @@ def peliculas(item):
     
     return itemlist
 
-
 def fanart(item):
-    logger.info()
+    logger.info("pelisalacarta.zentorrent fanart")
     itemlist = []
     url = item.url
     data = httptools.downloadpage(url).data
@@ -258,7 +258,7 @@ def fanart(item):
         url="http://api.themoviedb.org/3/search/movie?api_key="+api_key+"&query=" + title +"&year="+year+ "&language=es&include_adult=false"
         data = httptools.downloadpage(url).data
         data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-        patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),"popularity"'
+        patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),'
         matches = re.compile(patron,re.DOTALL).findall(data)
         
         
@@ -269,7 +269,7 @@ def fanart(item):
                 
                 data = httptools.downloadpage(url).data
                 data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-                patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),"popularity"'
+                patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),'
                 matches = re.compile(patron,re.DOTALL).findall(data)
                 if len(matches)==0:
                     extra=item.thumbnail+"|"+""+"|"+""+"|"+"Sin puntuación"+"|"+rating_filma+"|"+critica
@@ -288,7 +288,7 @@ def fanart(item):
             fan = re.sub(r'\\|"','',fan)
             
             try:
-                rating = scrapertools.find_single_match(data,'"vote_average":(.*?)}')
+                rating = scrapertools.find_single_match(data,'"vote_average":(.*?),')
             except:
                 rating = "Sin puntuación"
             
@@ -303,8 +303,8 @@ def fanart(item):
                 fanart = item.fanart
             else:
                 fanart="https://image.tmdb.org/t/p/original" + fan
-            item.extra= fanart
-            
+            logger.info("perrazooo")
+            logger.info(fanart)
             url ="http://api.themoviedb.org/3/movie/"+id+"/images?api_key="+api_key
             data = httptools.downloadpage(url).data
             data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
@@ -347,7 +347,7 @@ def fanart(item):
                 show =fanart_2+"|"+fanart_3+"|"+sinopsis
                 category = posterdb
                         
-                itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=posterdb, fanart=item.extra, extra=extra, show=show, category= category, folder=True) )
+                itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=posterdb, fanart=fanart, extra=extra, show=show, category= category, folder=True) )
             for logo in matches:
                 if '"hdmovieclearart"' in data:
                     clear=scrapertools.get_match(data,'"hdmovieclearart":.*?"url": "([^"]+)"')
@@ -359,7 +359,7 @@ def fanart(item):
                             category= disc
                         else:
                             category= clear
-                        itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=item.extra, extra=extra,show=show,  category= category,folder=True) )
+                        itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=fanart, extra=extra,show=show,  category= category,folder=True) )
                     else:
                         extra= clear
                         show=fanart_2+"|"+fanart_3+"|"+sinopsis
@@ -367,7 +367,7 @@ def fanart(item):
                             category= disc
                         else:
                             category= clear
-                        itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=item.extra, extra=extra,show=show,  category= category, folder=True) )
+                        itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=fanart, extra=extra,show=show,  category= category, folder=True) )
                                                                                                 
                 if '"moviebackground"' in data:
                                                                                                     
@@ -387,7 +387,7 @@ def fanart(item):
                         else:
                             category= logo
                                 
-                        itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=item.extra, extra=extra,show=show,  category= category, folder=True) )
+                        itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=fanart, extra=extra,show=show,  category= category, folder=True) )
                                                                                                                                                                     
                                                                                                                                                                     
                                                                                                                                                                     
@@ -399,8 +399,8 @@ def fanart(item):
                         category= disc
                     else:
                         category= item.extra
-                    itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=item.extra, extra=extra,show=show ,  category= category, folder=True) )
-       
+                    itemlist.append( Item(channel=item.channel, title = item.title , action="findvideos", url=item.url, server="torrent", thumbnail=logo, fanart=fanart, extra=extra,show=show ,  category= category, folder=True) )
+                     
     else:
         
         #filmafinity
@@ -466,14 +466,14 @@ def fanart(item):
         url_tmdb="http://api.themoviedb.org/3/search/tv?api_key="+api_key+"&query=" + title +"&language=es&include_adult=false&first_air_date_year="+year
         data_tmdb = httptools.downloadpage(url_tmdb).data
         data_tmdb = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data_tmdb)
-        patron = '"page":1.*?,"id":(.*?),"backdrop_path":(.*?),"vote_average"'
+        patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),'
         matches = re.compile(patron,re.DOTALL).findall(data_tmdb)
         ###Busqueda en bing el id de imdb de la serie
         if len(matches)==0:
          url_tmdb="http://api.themoviedb.org/3/search/tv?api_key="+api_key+"&query=" + title +"&language=es"
          data_tmdb = httptools.downloadpage(url_tmdb).data
          data_tmdb = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data_tmdb)
-         patron = '"page":1.*?,"id":(.*?),"backdrop_path":(.*?),"vote_average"'
+         patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),'
          matches = re.compile(patron,re.DOTALL).findall(data_tmdb)
          if len(matches)==0:
           urlbing_imdb = "http://www.bing.com/search?q=%s+%s+tv+series+site:imdb.com" % (title.replace(' ', '+'),  year)
@@ -493,7 +493,7 @@ def fanart(item):
          
           urlremotetbdb = "https://api.themoviedb.org/3/find/"+imdb_id+"?api_key="+api_key+"&external_source=imdb_id&language=es"
           data_tmdb=  httptools.downloadpage(urlremotetbdb).data
-          matches= scrapertools.find_multiple_matches(data_tmdb,'"tv_results":.*?"id":(.*?),.*?"poster_path":(.*?),"popularity"')
+          matches= scrapertools.find_multiple_matches(data_tmdb,'"tv_results":.*?"id":(.*?),.*?"poster_path":(.*?),')
          
           if len(matches)==0:
              id_tmdb=""
@@ -722,9 +722,8 @@ def fanart(item):
 
     return itemlist
 
-
 def findvideos(item):
-    logger.info()
+    logger.info("pelisalacarta.zentorrents findvideos")
     
     if not "serie" in item.url:
         thumbnail= item.category
@@ -735,11 +734,9 @@ def findvideos(item):
     # Descarga la página
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|&amp;|amp;","",data)
-    
-    patron = '<h1>(.*?)</h1>.*?'
-    patron += 'src="([^"]+)".*?'
-    patron += '</p><p><a href="([^"]+)"'
-    
+    logger.info("yayoooo")
+    logger.info(data)
+    patron = '<h1>(.*?)</h1>.*?src="([^"]+)".*?<div class="zentorrents_download"><p><a href="([^"]+)"'
     
     matches = re.compile(patron,re.DOTALL).findall(data)
     scrapertools.printMatches(matches)
@@ -910,7 +907,6 @@ def findvideos(item):
     
     return itemlist
 
-
 def play(item):
     
     data = httptools.downloadpage(item.url).data
@@ -932,8 +928,9 @@ def play(item):
     return itemlist
 
 
+
 def info(item):
-    logger.info()
+    logger.info("pelisalacarta.zentorrents info")
     itemlist = []
     url=item.url
     id = item.extra
@@ -1100,7 +1097,7 @@ def info(item):
 
 
 def info_capitulos(item):
-    logger.info()
+    logger.info("pelisalacarta.zentorrent info_capitulos")
     
     url= "https://api.themoviedb.org/3/tv/"+item.show.split("|")[5]+"/season/"+item.extra.split("|")[2]+"/episode/"+item.extra.split("|")[3]+"?api_key="+api_key+"&language=es"
 
@@ -1261,7 +1258,8 @@ class TextBox2( xbmcgui.WindowDialog ):
         def onAction(self, action):
             if action == ACTION_PREVIOUS_MENU or action.getId() == ACTION_GESTURE_SWIPE_LEFT or action == 110 or action == 92:
                self.close()
-
+def test():
+    return True
 
 def browser(url):
     import mechanize
@@ -1294,7 +1292,6 @@ def browser(url):
         response = r.read()
     
     return response
-
 
 def tokenize(text, match=re.compile("([idel])|(\d+):|(-?\d+)").match):
     i = 0
@@ -1332,7 +1329,6 @@ def decode_item(next, token):
         raise ValueError
     return data
 
-
 def decode(text):
     try:
         src = tokenize(text)
@@ -1347,10 +1343,9 @@ def decode(text):
     
 
     return data
-
-
 def convert_size(size):
    import math
+   from os.path import getsize
    if (size == 0):
        return '0B'
    size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")

@@ -420,5 +420,5 @@ def get_year(url):
     data =httptools.downloadpage(url).data
     year = scrapertools.find_single_match(data,'<p><strong>Año:</strong>(.*?)</p>')
     if year=="":
-      year="1111"
+      year=" "
     return year

@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
-# ------------------------------------------------------------
+#------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para txibitsoft
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-# ------------------------------------------------------------
+#------------------------------------------------------------
 
-import os
 import re
 import sys
-import unicodedata
 import urllib
-
-import xbmc
+import os
 import xbmcgui
+import xbmc
 from core import config
 from core import logger
 from core import scrapertools
 from core import httptools
 from core.item import Item
+import unicodedata
 from core.scrapertools import decodeHtmlentities as dhe
+
 
 ACTION_SHOW_FULLSCREEN = 36
 ACTION_GESTURE_SWIPE_LEFT = 511
@@ -36,9 +36,12 @@ api_fankey ="dffe90fba4d02c199ae7a9e71330c987"
 
 host = "http://www.txibitsoft.com/"
 
+DEBUG = config.get_setting("debug")
+
+
 
 def mainlist(item):
-    logger.info()
+    logger.info("pelisalacarta.txibitsoft mainlist")
     
     itemlist = []
     
@@ -60,7 +63,7 @@ def mainlist(item):
     return itemlist
 
 def search(item,texto):
-    logger.info()
+    logger.info("pelisalacarta.txibitsoft search")
     texto = texto.replace(" ","+")
     
     item.url = "http://www.txibitsoft.com/torrents.php?procesar=1&texto=%s" % (texto)
@@ -71,11 +74,11 @@ def search(item,texto):
     except:
         import sys
         for line in sys.exc_info():
-            logger.error("%s" % line)
+            logger.error( "%s" % line )
         return []
 
 def buscador(item):
-    logger.info()
+    logger.info("pelisalacarta.txibitsoft buscador")
     itemlist = []
 
     # Descarga la página
@@ -124,7 +127,7 @@ def buscador(item):
     return itemlist
 
 def peliculas(item):
-    logger.info()
+    logger.info("pelisalacarta.txibitsoft peliculas")
     itemlist = []
     
     # Descar<div id="catalogheader">ga la página
@@ -185,7 +188,7 @@ def peliculas(item):
     return itemlist
 
 def fanart(item):
-    logger.info()
+    logger.info("pelisalacarta.txibitsoft fanart")
     itemlist = []
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
@@ -283,7 +286,7 @@ def fanart(item):
         url="http://api.themoviedb.org/3/search/movie?api_key="+api_key+"&query=" + title +"&year="+year+ "&language=es&include_adult=false"
         data = httptools.downloadpage(url).data
         data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-        patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),"popularity"'
+        patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),'
         matches = re.compile(patron,re.DOTALL).findall(data)
         
         
@@ -295,7 +298,7 @@ def fanart(item):
                 
                 data = httptools.downloadpage(url).data
                 data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-                patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),"popularity"'
+                patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),'
                 matches = re.compile(patron,re.DOTALL).findall(data)
                 if len(matches)==0:
                     extra=item.thumbnail+"|"+""+"|"+""+"|"+"Sin puntuación"+"|"+rating_filma+"|"+critica
@@ -314,7 +317,7 @@ def fanart(item):
             fan = re.sub(r'\\|"','',fan)
             
             try:
-                rating = scrapertools.find_single_match(data,'"vote_average":(.*?)}')
+                rating = scrapertools.find_single_match(data,'"vote_average":(.*?),')
             except:
                 rating = "Sin puntuación"
             
@@ -491,7 +494,7 @@ def fanart(item):
     
         data_tmdb = scrapertools.cachePage(url_tmdb)
         data_tmdb = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data_tmdb)
-        patron = '"page":1.*?,"id":(.*?),"backdrop_path":(.*?),"vote_average"'
+        patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),'
         matches = re.compile(patron,re.DOTALL).findall(data_tmdb)
         
         ###Busqueda en bing el id de imdb de la serie
@@ -499,7 +502,7 @@ def fanart(item):
          url_tmdb="http://api.themoviedb.org/3/search/tv?api_key="+api_key+"&query=" + title +"&language=es"
          data_tmdb = scrapertools.cachePage(url_tmdb)
          data_tmdb = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data_tmdb)
-         patron = '"page":1.*?,"id":(.*?),"backdrop_path":(.*?),"vote_average"'
+         patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),'
          matches = re.compile(patron,re.DOTALL).findall(data_tmdb)
          if len(matches)==0:
           urlbing_imdb = "http://www.bing.com/search?q=%s+%s+tv+series+site:imdb.com" % (title.replace(' ', '+'),  year)
@@ -749,7 +752,7 @@ def fanart(item):
     return itemlist
 
 def findvideos(item):
-    logger.info()
+    logger.info("pelisalacarta.txibitsoft findvideos")
     itemlist = []
     
     if not "serie" in item.url:
@@ -967,7 +970,7 @@ def findvideos(item):
       
     return itemlist
 def info(item):
-    logger.info()
+    logger.info("pelisalacarta.zentorrents info")
     itemlist = []
     url=item.url
     id = item.extra
@@ -1135,7 +1138,7 @@ def info(item):
 
 
 def info_capitulos(item):
-    logger.info()
+    logger.info("pelisalacarta.bricocine trailer")
     
     url= "https://api.themoviedb.org/3/tv/"+item.show.split("|")[5]+"/season/"+item.extra.split("|")[2]+"/episode/"+item.extra.split("|")[3]+"?api_key="+api_key+"&language=es"
 
@@ -1386,6 +1389,7 @@ def decode(text):
     return data
 def convert_size(size):
    import math
+   from os.path import getsize
    if (size == 0):
        return '0B'
    size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")

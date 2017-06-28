@@ -92,7 +92,7 @@ api_fankey ="dffe90fba4d02c199ae7a9e71330c987"
 
 
 def mainlist(item):
-    logger.info()
+    logger.info("pelisalacarta.pasateatorrent mainlist")
     check_bg = item.action
     if str(check_bg) == "":
         check_bg="bglobal"
@@ -112,7 +112,7 @@ def mainlist(item):
 
 
 def search(item,texto):
-    logger.info()
+    logger.info("pelisalacarta.peliculasdk search")
     texto = texto.replace(" ","+")
     check_bg = item.action
     if item.extra:
@@ -150,7 +150,7 @@ def search(item,texto):
 
 
 def peliculas(item):
-    logger.info()
+    logger.info("pelisalacarta.descargaportorrent peliculas")
     itemlist = []
     global krypton
     check_url=""
@@ -327,7 +327,7 @@ def peliculas(item):
 
 
 def fanart(item):
-    logger.info()
+    logger.info("pelisalacarta.pasateatorrent fanart")
     itemlist = []
     url = item.url
     data = get_page(url)
@@ -416,7 +416,7 @@ def fanart(item):
         url="http://api.themoviedb.org/3/search/movie?api_key="+api_key+"&query=" + title +"&year="+year+ "&language=es&include_adult=false"
         data = httptools.downloadpage(url).data
         data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-        patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),"popularity"'
+        patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),'
         matches = re.compile(patron,re.DOTALL).findall(data)
         
         
@@ -428,7 +428,7 @@ def fanart(item):
                 
                 data = httptools.downloadpage(url).data
                 data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-                patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),"popularity"'
+                patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),'
                 matches = re.compile(patron,re.DOTALL).findall(data)
                 if len(matches)==0:
                     extra=item.thumbnail+"|"+""+"|"+""+"|"+"Sin puntuacón"+"|"+rating_filma+"|"+critica
@@ -447,7 +447,7 @@ def fanart(item):
             fan = re.sub(r'\\|"','',fan)
             
             try:
-                rating = scrapertools.find_single_match(data,'"vote_average":(.*?)}')
+                rating = scrapertools.find_single_match(data,'"vote_average":(.*?),')
             except:
                 rating = "Sin puntuación"
             
@@ -628,14 +628,14 @@ def fanart(item):
         url_tmdb="http://api.themoviedb.org/3/search/tv?api_key="+api_key+"&query=" + title +"&language=es&include_adult=false&first_air_date_year="+year
         data_tmdb = scrapertools.cachePage(url_tmdb)
         data_tmdb = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data_tmdb)
-        patron = '"page":1.*?,"id":(.*?),"backdrop_path":(.*?),"vote_average"'
+        patron = '"page":1.*?,"id":(.*?)".*?"backdrop_path":(.*?),'
         matches = re.compile(patron,re.DOTALL).findall(data_tmdb)
         ###Busqueda en bing el id de imdb de la serie
         if len(matches)==0:
          url_tmdb="http://api.themoviedb.org/3/search/tv?api_key="+api_key+"&query=" + title +"&language=es"
          data_tmdb = scrapertools.cachePage(url_tmdb)
          data_tmdb = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data_tmdb)
-         patron = '"page":1.*?,"id":(.*?),"backdrop_path":(.*?),"vote_average"'
+         patron = '"page":1.*?,"id":(.*?),"backdrop_path":(.*?),'
          matches = re.compile(patron,re.DOTALL).findall(data_tmdb)
          if len(matches)==0:
           urlbing_imdb = "http://www.bing.com/search?q=%s+%s+tv+series+site:imdb.com" % (title.replace(' ', '+'),  year)
@@ -655,7 +655,7 @@ def fanart(item):
          
           urlremotetbdb = "https://api.themoviedb.org/3/find/"+imdb_id+"?api_key="+api_key+"&external_source=imdb_id&language=es"
           data_tmdb= scrapertools.cachePage(urlremotetbdb)
-          matches= scrapertools.find_multiple_matches(data_tmdb,'"tv_results":.*?"id":(.*?),.*?"poster_path":(.*?),"popularity"')
+          matches= scrapertools.find_multiple_matches(data_tmdb,'"tv_results":.*?"id":(.*?),.*?"poster_path":(.*?),')
          
           if len(matches)==0:
             id_tmdb=""
@@ -712,7 +712,7 @@ def fanart(item):
                 rating = "Sin puntuación"
          
             id_scraper =id_tmdb+"|"+"serie"+"|"+rating_filma+"|"+critica+"|"+rating+"|"+status #+"|"+emision
-            posterdb = scrapertools.find_single_match(data_tmdb,'"poster_path":(.*?)","popularity"')
+            posterdb = scrapertools.find_single_match(data_tmdb,'"poster_path":(.*?)",')
 
             if "null" in posterdb:
                 posterdb = item.thumbnail
@@ -883,7 +883,7 @@ def fanart(item):
 
     return itemlist
 def ver_capitulo(item):
-    logger.info()
+    logger.info("pelisalacarta.pasateatorrent ver_capitulo")
     itemlist = []
     data = get_page(item.url)
     data = re.sub(r"&#.*?;","x",data)
@@ -1015,7 +1015,7 @@ def ver_capitulo(item):
 
 
 def findvideos(item):
-    logger.info()
+    logger.info("pelisalacarta.pasateatorrent findvideos")
     check_iepi2=" "
     itemlist = []
     data = get_page(item.url)
@@ -1262,7 +1262,7 @@ def findvideos(item):
     return itemlist
 
 def capitulos(item):
-    logger.info()
+    logger.info("pelisalacarta.pasateatorrent capitulos")
     itemlist = []
     url=item.url
     capis =  item.extra.split("|")[3]
@@ -1274,7 +1274,7 @@ def capitulos(item):
     return itemlist
 
 def info(item):
-    logger.info()
+    logger.info("pelisalacarta.pasateatorrent info")
     itemlist = []
     url=item.url
     id = item.extra
@@ -1415,12 +1415,12 @@ def info(item):
       
       url_tpi="http://api.themoviedb.org/3/tv/"+item.show.split("|")[5]+"/recommendations?api_key="+api_key+"&language=es"
       data_tpi=scrapertools.cachePage(url_tpi)
-      tpi=scrapertools.find_multiple_matches(data_tpi,'id":(.*?),.*?"original_name":"(.*?)",.*?"poster_path":(.*?),"popularity"')
+      tpi=scrapertools.find_multiple_matches(data_tpi,'id":(.*?),.*?"original_name":"(.*?)",.*?"poster_path":(.*?),')
 
     else:
       url_tpi="http://api.themoviedb.org/3/movie/"+item.extra.split("|")[1]+"/recommendations?api_key="+api_key+"&language=es"
       data_tpi=scrapertools.cachePage(url_tpi)
-      tpi=scrapertools.find_multiple_matches(data_tpi,'id":(.*?),.*?"original_title":"(.*?)",.*?"poster_path":(.*?),"popularity"')
+      tpi=scrapertools.find_multiple_matches(data_tpi,'id":(.*?),.*?"original_title":"(.*?)",.*?"poster_path":(.*?),')
 
             
     for idp,peli,thumb in tpi:
@@ -1441,7 +1441,7 @@ def info(item):
     infoplus.start(item_info, peliculas)
 
 def info_capitulos(item):
-    logger.info()
+    logger.info("pelisalacarta.pasateatorrent info_capitulos")
     url= "https://api.themoviedb.org/3/tv/"+item.show.split("|")[5]+"/season/"+item.extra.split("|")[2]+"/episode/"+item.extra.split("|")[3]+"?api_key="+api_key+"&language=es"
 
     if "/0" in url:
@@ -1698,7 +1698,7 @@ def convert_size(size):
 
 
 def busqueda(item):
-    logger.info()
+    logger.info("pelisalacarta.channels.pasateatorrent search")
     cat = [item.extra.split("|")[0].replace("tv", "serie"), 'torrent']
     new_item = Item()
     new_item.extra = item.extra.split("|")[1].replace("+", " ")

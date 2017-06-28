@@ -75,7 +75,7 @@ api_fankey ="dffe90fba4d02c199ae7a9e71330c987"
 
 
 def mainlist(item):
-    logger.info()
+    logger.info("pelisalacarta.miltorrents mainlist")
     check_bg = item.action
     
     if str(check_bg) == "":
@@ -99,7 +99,7 @@ def mainlist(item):
 
 
 def search(item,texto):
-    logger.info()
+    logger.info("pelisalacarta.miltorrent search")
     texto = texto.replace(" ","+")
     if item.extra:
      if item.extra.split("|")[0]== "series":
@@ -134,7 +134,7 @@ def search(item,texto):
               logger.error( "%s" % line )
               return []
 def peliculas(item):
-    logger.info()
+    logger.info("pelisalacarta.miltorrents peliculas")
     itemlist = []
     
     # Descarga la página
@@ -238,7 +238,7 @@ def peliculas(item):
 
 
 def fanart(item):
-    logger.info()
+    logger.info("pelisalacarta.moviesultimate fanart")
     itemlist = []
     
     data = httptools.downloadpage(item.url).data
@@ -330,7 +330,7 @@ def fanart(item):
         url="http://api.themoviedb.org/3/search/movie?api_key="+api_key+"&query=" + title +"&year="+year+ "&language=es&include_adult=false"
         data = httptools.downloadpage(url).data
         data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-        patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),"popularity"'
+        patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),'
         matches = re.compile(patron,re.DOTALL).findall(data)
         
         
@@ -342,7 +342,7 @@ def fanart(item):
                 
                 data = httptools.downloadpage(url).data
                 data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-                patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),"popularity"'
+                patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),'
                 matches = re.compile(patron,re.DOTALL).findall(data)
                 if len(matches)==0:
                     extra=item.thumbnail+"|"+""+"|"+""+"|"+"Sin información"+"|"+rating_filma+"|"+critica
@@ -361,9 +361,13 @@ def fanart(item):
             fan = re.sub(r'\\|"','',fan)
             
             try:
-                rating = scrapertools.find_single_match(data,'"vote_average":(.*?)}')
+                rating = scrapertools.find_single_match(data,'"vote_average":(.*?),')
             except:
                 rating = "Sin puntuación"
+            logger.info("quelio")
+            logger.info(rating)
+            logger.info("quelio2")
+            logger.info(data)
             
             id_scraper =id+"|"+"peli"+"|"+rating+"|"+rating_filma+"|"+critica
             try:
@@ -534,7 +538,7 @@ def fanart(item):
         url_tmdb="http://api.themoviedb.org/3/search/tv?api_key="+api_key+"&query=" + title +"&language=es&include_adult=false&first_air_date_year="+year
         data_tmdb = scrapertools.cachePage(url_tmdb)
         data_tmdb = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data_tmdb)
-        patron = '"page":1.*?,"id":(.*?),"backdrop_path":(.*?),"vote_average"'
+        patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),'
         matches = re.compile(patron,re.DOTALL).findall(data_tmdb)
 
         ###Busqueda en bing el id de imdb de la serie
@@ -542,7 +546,7 @@ def fanart(item):
          url_tmdb="http://api.themoviedb.org/3/search/tv?api_key="+api_key+"&query=" + title +"&language=es"
          data_tmdb = scrapertools.cachePage(url_tmdb)
          data_tmdb = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data_tmdb)
-         patron = '"page":1.*?,"id":(.*?),"backdrop_path":(.*?),"vote_average"'
+         patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),'
          matches = re.compile(patron,re.DOTALL).findall(data_tmdb)
          if len(matches)==0:
           urlbing_imdb = "http://www.bing.com/search?q=%s+%s+tv+series+site:imdb.com" % (title.replace(' ', '+'),  year)
@@ -562,7 +566,7 @@ def fanart(item):
          
           urlremotetbdb = "https://api.themoviedb.org/3/find/"+imdb_id+"?api_key="+api_key+"&external_source=imdb_id&language=es"
           data_tmdb= scrapertools.cachePage(urlremotetbdb)
-          matches= scrapertools.find_multiple_matches(data_tmdb,'"tv_results":.*?"id":(.*?),.*?"poster_path":(.*?),"popularity"')
+          matches= scrapertools.find_multiple_matches(data_tmdb,'"tv_results":.*?"id":(.*?),.*?"poster_path":(.*?),')
          
           if len(matches)==0:
              id_tmdb=""
@@ -620,7 +624,7 @@ def fanart(item):
          
             id_scraper =id_tmdb+"|"+"serie"+"|"+rating_filma+"|"+critica+"|"+rating+"|"+status #+"|"+emision
             
-            posterdb = scrapertools.find_single_match(data_tmdb,'"poster_path":(.*?)","popularity"')
+            posterdb = scrapertools.find_single_match(data_tmdb,'"poster_path":(.*?)",')
 
             if "null" in posterdb:
                 posterdb = item.thumbnail
@@ -792,7 +796,7 @@ def fanart(item):
 
     return itemlist
 def capitulos(item):
-    logger.info()
+    logger.info("pelisalacarta.miltorrent ver_capitulo")
     
     
     itemlist = []
@@ -815,7 +819,7 @@ def capitulos(item):
 
 
 def findvideos(item):
-    logger.info()
+    logger.info("pelisalacarta.miltorrent findvideos")
     
     itemlist = []
     data = httptools.downloadpage(item.url).data
@@ -855,19 +859,23 @@ def findvideos(item):
             patron= '<a href=.*?(http.*?)\'\).*?<i>(.*?)<\/i>'
             matches=re.compile(patron,re.DOTALL).findall(bloque_enlaces)
             for url,calidad in matches:
-               
+                logger.info("romualdo")
+                logger.info(url)
                 try:
                  if not url.endswith(".torrent") and not "elitetorrent" in url:
-                    if url.endswith("fx") and url.startswith("http://estrenosli.org"):
+                    if url.endswith("fx") :
                        url= httptools.downloadpage(url,follow_redirects=False)
                        url=url.headers.get("location")
-                       
+                       logger.info("putaurl")
+                       logger.info(url)
                        if url.endswith(".fx"):
                           url= httptools.downloadpage(url,follow_redirects=False)
                           url=url.headers.get("location")
                           
                     
                        url=" http://estrenosli.org"+url
+                       logger.info("pacopepe")
+                       logger.info(url)
                     else:
                      if not url.endswith(".mkv"):
                          url= httptools.downloadpage(url,follow_redirects=False)
@@ -878,7 +886,7 @@ def findvideos(item):
                  if not os.path.exists(torrents_path):
                     os.mkdir(torrents_path)
                  try:
-                  urllib.URLopener.version = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36 SE 2.X MetaSr 1.0'   
+                  urllib.URLopener.version = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36 SE 2.X MetaSr 1.0'	   
                   urllib.urlretrieve (url, torrents_path+"/temp.torrent")
                   pepe = open( torrents_path+"/temp.torrent", "rb").read()
                  except:
@@ -951,7 +959,7 @@ def findvideos(item):
              
              try:
               if not url.endswith(".torrent") and not "elitetorrent" in url:
-                if url.endswith("fx") and url.startswith("http://estrenosli.org"):
+                if url.endswith("fx") :
                     url= httptools.downloadpage(url,follow_redirects=False)
                     url=url.headers.get("location")
                     
@@ -1055,7 +1063,7 @@ def findvideos(item):
 
 
 def info(item):
-    logger.info()
+    logger.info("pelisalacarta.miltorrent info")
     itemlist = []
     url=item.url
     id = item.extra
@@ -1195,12 +1203,12 @@ def info(item):
       
       url_tpi="http://api.themoviedb.org/3/tv/"+item.show.split("|")[5]+"/recommendations?api_key="+api_key+"&language=es"
       data_tpi=scrapertools.cachePage(url_tpi)
-      tpi=scrapertools.find_multiple_matches(data_tpi,'id":(.*?),.*?"original_name":"(.*?)",.*?"poster_path":(.*?),"popularity"')
+      tpi=scrapertools.find_multiple_matches(data_tpi,'id":(.*?),.*?"original_name":"(.*?)",.*?"poster_path":(.*?),')
 
     else:
       url_tpi="http://api.themoviedb.org/3/movie/"+item.extra.split("|")[1]+"/recommendations?api_key="+api_key+"&language=es"
       data_tpi=scrapertools.cachePage(url_tpi)
-      tpi=scrapertools.find_multiple_matches(data_tpi,'id":(.*?),.*?"original_title":"(.*?)",.*?"poster_path":(.*?),"popularity"')
+      tpi=scrapertools.find_multiple_matches(data_tpi,'id":(.*?),.*?"original_title":"(.*?)",.*?"poster_path":(.*?),')
 
             
     for idp,peli,thumb in tpi:
@@ -1221,7 +1229,7 @@ def info(item):
     infoplus.start(item_info, peliculas)
 
 def info_capitulos(item):
-    logger.info()
+    logger.info("pelisalacarta.miltorrent info_capitulos")
     
     
     url= "https://api.themoviedb.org/3/tv/"+item.show.split("|")[5]+"/season/"+item.extra.split("|")[2]+"/episode/"+item.extra.split("|")[3]+"?api_key="+api_key+"&language=es"
@@ -1472,7 +1480,7 @@ def convert_size(size):
 
 
 def busqueda(item):
-    logger.info()
+    logger.info("pelisalacarta.channels.buscador search")
     cat = [item.extra.split("|")[0].replace("tv", "serie"), 'torrent']
     new_item = Item()
     new_item.extra = item.extra.split("|")[1].replace("+", " ")
