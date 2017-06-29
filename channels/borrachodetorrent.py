@@ -89,7 +89,7 @@ api_fankey ="dffe90fba4d02c199ae7a9e71330c987"
 
 
 def mainlist(item):
-    
+    logger.info()
     itemlist=[]
     itemlist.append( item.clone(title="[COLOR floralwhite][B]Películas[/B][/COLOR]", action="scraper",url="https://www.borrachodetorrent.com/peliculas-torrent/",thumbnail="http://imgur.com/tBvoGIk.png", fanart="http://imgur.com/AqUvMW3.jpg",contentType= "movie"))
     itemlist.append( item.clone(title="[COLOR floralwhite][B]      Estrenos[/B][/COLOR]", action="scraper",url="https://www.borrachodetorrent.com/peliculas-estrenos-torrent/",thumbnail="http://imgur.com/tBvoGIk.png", fanart="http://imgur.com/AqUvMW3.jpg",contentType= "movie"))
@@ -101,6 +101,7 @@ def mainlist(item):
     return itemlist
 
 def search(item,texto):
+    logger.info()
     texto = texto.replace(" ","+")
     item.url = "https://www.borrachodetorrent.com/?s="+texto
     item.extra="search"
@@ -113,6 +114,8 @@ def search(item,texto):
         return []
 
 def buscador(item):
+    
+    logger.info()
     itemlist=[]
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data) 
@@ -163,7 +166,7 @@ def buscador(item):
     return itemlist
 
 def scraper(item):
-    
+    logger.info()
     itemlist=[]
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
@@ -236,7 +239,7 @@ def scraper(item):
 
 
 def findtemporadas(item):
-    
+    logger.info()
     itemlist = []
     if item.extra=="search":
       th = Thread(target=get_art(item))
@@ -300,7 +303,7 @@ def findtemporadas(item):
         
     return itemlist
 def epis(item):
-     
+    logger.info() 
     itemlist = []
     if item.extra=="serie_add":
        item.url=item.datalibrary
@@ -320,7 +323,7 @@ def epis(item):
             item.title = item.title + "[CR]\""+ title +"\""
     return itemlist
 def findvideos(item):
-    
+    logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
     if not item.infoLabels['episode']:
@@ -398,7 +401,7 @@ def findvideos(item):
            itemlist.append( Item(channel=item.channel, title = "[COLOR steelblue][B] info[/B][/COLOR]", url=url,  action="info_capitulos", fanart=item.extra.split("|")[0],thumbnail= item.thumb_art,thumb_info=item.thumb_info,extra=item.extra, show= item.show,InfoLabels= item.infoLabels,folder=False) )
     return itemlist
 def dd_y_o(item):
-    
+    logger.info()
     itemlist = []
     if item.contentType=="movie":
        enlaces = item.extra.split("|")[0]
@@ -422,7 +425,7 @@ def dd_y_o(item):
 
 
 def info_capitulos(item,images={}):
-    
+    logger.info()
     try:
         url="http://thetvdb.com/api/1D62F2F90030C444/series/"+str(item.InfoLabels['tvdb_id'])+"/default/"+str(item.InfoLabels['season'])+"/"+str(item.InfoLabels['episode'])+"/es.xml"
         if "/0" in url:
@@ -723,7 +726,7 @@ def filmaffinity(item,infoLabels):
 
 
 def get_art(item):
-
+    logger.info()
     id =item.infoLabels['tmdb_id']
     check_fanart=item.infoLabels['fanart']
     if item.contentType!="movie":
