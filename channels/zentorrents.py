@@ -31,14 +31,13 @@ ACTION_MOVE_UP = 3
 OPTION_PANEL = 6
 OPTIONS_OK = 5
 
-DEBUG = config.get_setting("debug")
 host = "http://www.zentorrents.com/"
 
 api_key="2e2160006592024ba87ccdf78c28f49f"
 api_fankey ="dffe90fba4d02c199ae7a9e71330c987"
 
 def mainlist(item):
-    logger.info("pelisalacarta.zentorrents mainlist")
+    logger.info()
     
     itemlist = []
     itemlist.append( Item(channel=item.channel, title="Películas"      , action="peliculas", url="http://www.zentorrents.com/peliculas" ,thumbnail="http://www.navymwr.org/assets/movies/images/img-popcorn.png", fanart="http://s18.postimg.org/u9wyvm809/zen_peliculas.jpg"))
@@ -53,7 +52,7 @@ def mainlist(item):
 
 
 def search(item, texto):
-    logger.info("pelisalacarta.zentorrent search")
+    logger.info()
     
     texto = texto.replace(" ", "+")
     item.url = "http://www.zentorrents.com//buscar?searchword=%s&ordering=&searchphrase=all&limit=\d+" % (texto)
@@ -111,7 +110,7 @@ def buscador(item):
 
 
 def peliculas(item):
-    logger.info("pelisalacarta.zentorrents peliculas")
+    logger.info()
     itemlist = []
 
     # Descarga la página
@@ -140,9 +139,6 @@ def peliculas(item):
         itemlist.append( Item(channel=item.channel, title=scrapedtitulo, url=scrapedurl, action="fanart", thumbnail=scrapedthumbnail, fulltitle=scrapedtitulo,extra=title_fan, fanart="http://s6.postimg.org/4j8vdzy6p/zenwallbasic.jpg", folder=True) )
     # 1080,720 y seies
 
-    # Descarga la página
-    data = httptools.downloadpage(item.url).data
-    data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|</p>|<p>|&amp;|amp;","",data)
     
     #<div class="blogitem "><a title="En Un Patio De Paris [DVD Rip]" href="/peliculas/17937-en-un-patio-de-paris-dvd-rip"><div class="thumbnail_wrapper"><img alt="En Un Patio De Paris [DVD Rip]" src="http://www.zentorrents.com/images/articles/17/17937t.jpg" onload="imgLoaded(this)" /></div></a><div class="info"><div class="title"><a title="En Un Patio De Paris [DVD Rip]" href="/peliculas/17937-en-un-patio-de-paris-dvd-rip" class="contentpagetitleblog">En Un Patio De Paris [DVD Rip]</a></div><div class="createdate">21/01/2015</div><div class="text">[DVD Rip][AC3 5.1 EspaÃ±ol Castellano][2014] Antoine es un m&uacute;sico de 40 a&ntilde;os que de pronto decide abandonar su carrera.</div></div><div class="clr"></div></div>
     
@@ -178,7 +174,7 @@ def peliculas(item):
     return itemlist
 
 def fanart(item):
-    logger.info("pelisalacarta.zentorrent fanart")
+    logger.info()
     itemlist = []
     url = item.url
     data = httptools.downloadpage(url).data
@@ -303,8 +299,7 @@ def fanart(item):
                 fanart = item.fanart
             else:
                 fanart="https://image.tmdb.org/t/p/original" + fan
-            logger.info("perrazooo")
-            logger.info(fanart)
+            
             url ="http://api.themoviedb.org/3/movie/"+id+"/images?api_key="+api_key
             data = httptools.downloadpage(url).data
             data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
@@ -723,7 +718,7 @@ def fanart(item):
     return itemlist
 
 def findvideos(item):
-    logger.info("pelisalacarta.zentorrents findvideos")
+    logger.info()
     
     if not "serie" in item.url:
         thumbnail= item.category
@@ -734,8 +729,7 @@ def findvideos(item):
     # Descarga la página
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;|&amp;|amp;","",data)
-    logger.info("yayoooo")
-    logger.info(data)
+    
     patron = '<h1>(.*?)</h1>.*?src="([^"]+)".*?<div class="zentorrents_download"><p><a href="([^"]+)"'
     
     matches = re.compile(patron,re.DOTALL).findall(data)
@@ -908,7 +902,7 @@ def findvideos(item):
     return itemlist
 
 def play(item):
-    
+    logger.info()
     data = httptools.downloadpage(item.url).data
     logger.info("data="+data)
     itemlist = []
@@ -930,7 +924,7 @@ def play(item):
 
 
 def info(item):
-    logger.info("pelisalacarta.zentorrents info")
+    logger.info()
     itemlist = []
     url=item.url
     id = item.extra
@@ -1097,7 +1091,7 @@ def info(item):
 
 
 def info_capitulos(item):
-    logger.info("pelisalacarta.zentorrent info_capitulos")
+    logger.info()
     
     url= "https://api.themoviedb.org/3/tv/"+item.show.split("|")[5]+"/season/"+item.extra.split("|")[2]+"/episode/"+item.extra.split("|")[3]+"?api_key="+api_key+"&language=es"
 
