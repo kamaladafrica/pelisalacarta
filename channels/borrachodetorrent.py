@@ -49,7 +49,6 @@ OPTIONS_OK = 5
 
 __modo_grafico__ = config.get_setting('modo_grafico', "borrachodetorrent")
 
-DEBUG = config.get_setting("debug")
 
 #Para la busqueda en bing evitando baneos
 
@@ -91,7 +90,6 @@ api_fankey ="dffe90fba4d02c199ae7a9e71330c987"
 
 def mainlist(item):
     
-    logger.info("pelisalacarta.borrachodetorrent mainlist")
     itemlist=[]
     itemlist.append( item.clone(title="[COLOR floralwhite][B]Películas[/B][/COLOR]", action="scraper",url="https://www.borrachodetorrent.com/peliculas-torrent/",thumbnail="http://imgur.com/tBvoGIk.png", fanart="http://imgur.com/AqUvMW3.jpg",contentType= "movie"))
     itemlist.append( item.clone(title="[COLOR floralwhite][B]      Estrenos[/B][/COLOR]", action="scraper",url="https://www.borrachodetorrent.com/peliculas-estrenos-torrent/",thumbnail="http://imgur.com/tBvoGIk.png", fanart="http://imgur.com/AqUvMW3.jpg",contentType= "movie"))
@@ -103,7 +101,6 @@ def mainlist(item):
     return itemlist
 
 def search(item,texto):
-    logger.info("pelisalacarta.borrachodetorrent search")
     texto = texto.replace(" ","+")
     item.url = "https://www.borrachodetorrent.com/?s="+texto
     item.extra="search"
@@ -119,18 +116,15 @@ def buscador(item):
     itemlist=[]
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data) 
-    logger.info("jacintooo")
-    logger.info(data)
+    
     patron=scrapertools.find_multiple_matches(data,'<a id="busca_a" class="busca_a" href="([^"]+)">.*?<img src="([^"]+)".*?<span class="tt">([^"]+)</span>(.*?)<span class="calidad2">([^"]+)</span>')
-    logger.info("manoloeldelbombo")
-    logger.info(str(patron))
+    
     for url,thumb,title,check_year,calidad in patron :
         
         if "SERIE" in calidad or "&#" in title:
             if "&#" in title:
                item.extra=""
-            logger.info("marianico")
-            logger.info(title)
+            
             checkmt="tvshow"
             
         else:
@@ -169,12 +163,11 @@ def buscador(item):
     return itemlist
 
 def scraper(item):
-    logger.info("pelisalacarta.borrachodetorrent scraper")
+    
     itemlist=[]
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-    logger.info("pacoooo")
-    logger.info(data)
+    
     if item.contentType=="movie":
        patron =scrapertools.find_multiple_matches(data, '<a id="busca_a" class="busca_a" href="([^"]+)">.*?<img src="([^"]+)".*?<span class="tt">([^"]+)</span>(.*?)<span class="calidad2">([^"]+)</span>')
 
@@ -183,8 +176,7 @@ def scraper(item):
            year=scrapertools.find_single_match(check_year,'<span class="year_SKA">([^"]+)</span>')
            if year=="":
                year="  "
-           logger.info("carajote")
-           logger.info(year)
+           
              
            titulo = "[COLOR teal]"+title+"[/COLOR]"+ "  " + "[COLOR floralwhite]"+calidad+"[/COLOR]" 
            title= re.sub(r"!|¡","",title)
@@ -244,7 +236,7 @@ def scraper(item):
 
 
 def findtemporadas(item):
-    logger.info("pelisalacarta.borrachodetorrent findtempordas")
+    
     itemlist = []
     if item.extra=="search":
       th = Thread(target=get_art(item))
@@ -308,7 +300,7 @@ def findtemporadas(item):
         
     return itemlist
 def epis(item):
-    logger.info("pelisalacarta.borrachodetorrent epis") 
+     
     itemlist = []
     if item.extra=="serie_add":
        item.url=item.datalibrary
@@ -328,7 +320,7 @@ def epis(item):
             item.title = item.title + "[CR]\""+ title +"\""
     return itemlist
 def findvideos(item):
-    logger.info("pelisalacarta.torrentlocurat findvideos")
+    
     itemlist = []
     data = httptools.downloadpage(item.url).data
     if not item.infoLabels['episode']:
@@ -406,7 +398,7 @@ def findvideos(item):
            itemlist.append( Item(channel=item.channel, title = "[COLOR steelblue][B] info[/B][/COLOR]", url=url,  action="info_capitulos", fanart=item.extra.split("|")[0],thumbnail= item.thumb_art,thumb_info=item.thumb_info,extra=item.extra, show= item.show,InfoLabels= item.infoLabels,folder=False) )
     return itemlist
 def dd_y_o(item):
-    logger.info("pelisalacarta.borrachodetorrent dd_y_o")
+    
     itemlist = []
     if item.contentType=="movie":
        enlaces = item.extra.split("|")[0]
@@ -430,7 +422,6 @@ def dd_y_o(item):
 
 
 def info_capitulos(item,images={}):
-    logger.info("pelisalacarta.torrentlocura info_capitulos")
     
     try:
         url="http://thetvdb.com/api/1D62F2F90030C444/series/"+str(item.InfoLabels['tvdb_id'])+"/default/"+str(item.InfoLabels['season'])+"/"+str(item.InfoLabels['episode'])+"/es.xml"
@@ -732,7 +723,7 @@ def filmaffinity(item,infoLabels):
 
 
 def get_art(item):
-    logger.info("pelisalacarta.borrachodetorrent get_art")
+
     id =item.infoLabels['tmdb_id']
     check_fanart=item.infoLabels['fanart']
     if item.contentType!="movie":
