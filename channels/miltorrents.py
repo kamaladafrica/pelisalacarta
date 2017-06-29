@@ -34,8 +34,6 @@ OPTION_PANEL = 6
 OPTIONS_OK = 5
 
 
-DEBUG = config.get_setting("debug")
-
 #Para la busqueda en bing evitando baneos
 
 def browser(url):
@@ -75,7 +73,6 @@ api_fankey ="dffe90fba4d02c199ae7a9e71330c987"
 
 
 def mainlist(item):
-    logger.info("pelisalacarta.miltorrents mainlist")
     check_bg = item.action
     
     if str(check_bg) == "":
@@ -99,7 +96,7 @@ def mainlist(item):
 
 
 def search(item,texto):
-    logger.info("pelisalacarta.miltorrent search")
+   
     texto = texto.replace(" ","+")
     if item.extra:
      if item.extra.split("|")[0]== "series":
@@ -134,7 +131,7 @@ def search(item,texto):
               logger.error( "%s" % line )
               return []
 def peliculas(item):
-    logger.info("pelisalacarta.miltorrents peliculas")
+  
     itemlist = []
     
     # Descarga la página
@@ -238,7 +235,7 @@ def peliculas(item):
 
 
 def fanart(item):
-    logger.info("pelisalacarta.moviesultimate fanart")
+   
     itemlist = []
     
     data = httptools.downloadpage(item.url).data
@@ -364,10 +361,7 @@ def fanart(item):
                 rating = scrapertools.find_single_match(data,'"vote_average":(.*?),')
             except:
                 rating = "Sin puntuación"
-            logger.info("quelio")
-            logger.info(rating)
-            logger.info("quelio2")
-            logger.info(data)
+            
             
             id_scraper =id+"|"+"peli"+"|"+rating+"|"+rating_filma+"|"+critica
             try:
@@ -796,8 +790,6 @@ def fanart(item):
 
     return itemlist
 def capitulos(item):
-    logger.info("pelisalacarta.miltorrent ver_capitulo")
-    
     
     itemlist = []
     data = item.extra
@@ -819,7 +811,6 @@ def capitulos(item):
 
 
 def findvideos(item):
-    logger.info("pelisalacarta.miltorrent findvideos")
     
     itemlist = []
     data = httptools.downloadpage(item.url).data
@@ -859,23 +850,20 @@ def findvideos(item):
             patron= '<a href=.*?(http.*?)\'\).*?<i>(.*?)<\/i>'
             matches=re.compile(patron,re.DOTALL).findall(bloque_enlaces)
             for url,calidad in matches:
-                logger.info("romualdo")
-                logger.info(url)
+                
                 try:
                  if not url.endswith(".torrent") and not "elitetorrent" in url:
                     if url.endswith("fx") :
                        url= httptools.downloadpage(url,follow_redirects=False)
                        url=url.headers.get("location")
-                       logger.info("putaurl")
-                       logger.info(url)
+                       
                        if url.endswith(".fx"):
                           url= httptools.downloadpage(url,follow_redirects=False)
                           url=url.headers.get("location")
                           
                     
                        url=" http://estrenosli.org"+url
-                       logger.info("pacopepe")
-                       logger.info(url)
+                       
                     else:
                      if not url.endswith(".mkv"):
                          url= httptools.downloadpage(url,follow_redirects=False)
@@ -1063,7 +1051,7 @@ def findvideos(item):
 
 
 def info(item):
-    logger.info("pelisalacarta.miltorrent info")
+    
     itemlist = []
     url=item.url
     id = item.extra
@@ -1229,8 +1217,6 @@ def info(item):
     infoplus.start(item_info, peliculas)
 
 def info_capitulos(item):
-    logger.info("pelisalacarta.miltorrent info_capitulos")
-    
     
     url= "https://api.themoviedb.org/3/tv/"+item.show.split("|")[5]+"/season/"+item.extra.split("|")[2]+"/episode/"+item.extra.split("|")[3]+"?api_key="+api_key+"&language=es"
 
@@ -1480,7 +1466,7 @@ def convert_size(size):
 
 
 def busqueda(item):
-    logger.info("pelisalacarta.channels.buscador search")
+    
     cat = [item.extra.split("|")[0].replace("tv", "serie"), 'torrent']
     new_item = Item()
     new_item.extra = item.extra.split("|")[1].replace("+", " ")
