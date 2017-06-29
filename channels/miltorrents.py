@@ -73,6 +73,7 @@ api_fankey ="dffe90fba4d02c199ae7a9e71330c987"
 
 
 def mainlist(item):
+    logger.info()
     check_bg = item.action
     
     if str(check_bg) == "":
@@ -96,7 +97,7 @@ def mainlist(item):
 
 
 def search(item,texto):
-   
+    logger.info()
     texto = texto.replace(" ","+")
     if item.extra:
      if item.extra.split("|")[0]== "series":
@@ -131,7 +132,7 @@ def search(item,texto):
               logger.error( "%s" % line )
               return []
 def peliculas(item):
-  
+    logger.info()
     itemlist = []
     
     # Descarga la página
@@ -235,7 +236,7 @@ def peliculas(item):
 
 
 def fanart(item):
-   
+    logger.info()
     itemlist = []
     
     data = httptools.downloadpage(item.url).data
@@ -790,7 +791,7 @@ def fanart(item):
 
     return itemlist
 def capitulos(item):
-    
+    logger.info()
     itemlist = []
     data = item.extra
     thumbnail =scrapertools.get_match(data,'background-image:url\(\'([^"]+)\'')
@@ -811,7 +812,7 @@ def capitulos(item):
 
 
 def findvideos(item):
-    
+    logger.info()
     itemlist = []
     data = httptools.downloadpage(item.url).data
     if not "serie" in item.url:
@@ -1051,7 +1052,7 @@ def findvideos(item):
 
 
 def info(item):
-    
+    logger.info()
     itemlist = []
     url=item.url
     id = item.extra
@@ -1217,7 +1218,7 @@ def info(item):
     infoplus.start(item_info, peliculas)
 
 def info_capitulos(item):
-    
+    logger.info()
     url= "https://api.themoviedb.org/3/tv/"+item.show.split("|")[5]+"/season/"+item.extra.split("|")[2]+"/episode/"+item.extra.split("|")[3]+"?api_key="+api_key+"&language=es"
 
     if "/0" in url:
@@ -1466,7 +1467,7 @@ def convert_size(size):
 
 
 def busqueda(item):
-    
+    logger.info()
     cat = [item.extra.split("|")[0].replace("tv", "serie"), 'torrent']
     new_item = Item()
     new_item.extra = item.extra.split("|")[1].replace("+", " ")
