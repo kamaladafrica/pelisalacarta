@@ -32,7 +32,7 @@ OPTIONS_OK = 5
 api_key="2e2160006592024ba87ccdf78c28f49f"
 api_fankey ="dffe90fba4d02c199ae7a9e71330c987"
 
-DEBUG = config.get_setting("debug")
+
 def browser(url):
     import mechanize
     
@@ -68,7 +68,7 @@ def browser(url):
 
 
 def mainlist(item):
-    logger.info("pelisalacarta.bricocine mainlist")
+    logger.info()
 
     itemlist = []
     import xbmc
@@ -84,7 +84,7 @@ def mainlist(item):
 
 
 def search(item,texto):
-    logger.info("pelisalacarta.verseriesonlinetv search")
+    logger.info()
     texto = texto.replace(" ","+")
     item.url = "http://www.verseriesonline.tv/series?s=" + texto
    
@@ -99,7 +99,7 @@ def search(item,texto):
 
 
 def scraper(item):
-    logger.info("pelisalacarta.verseriesonlinetv scraper")
+    logger.info()
     itemlist = []
     ###Borra customkeys
     
@@ -148,7 +148,7 @@ def scraper(item):
 
 def fanart(item):
     #Vamos a sacar todos los fanarts y arts posibles
-    logger.info("pelisalacarta.verseriesonlinetv fanart")
+    logger.info()
     itemlist = []
     url = item.url
     data = dhe(httptools.downloadpage(item.url).data)
@@ -501,7 +501,7 @@ def fanart(item):
 
     return itemlist
 def temporadas(item):
-    logger.info("pelisalacarta.verseriesonlinetv temporadas")
+    logger.info()
     
     itemlist = []
     
@@ -549,7 +549,7 @@ def temporadas(item):
     return itemlist
 
 def capitulos(item):
-    logger.info("pelisalacarta.verseriesonlinetv capitulos")
+    logger.info()
     
     itemlist = []
     
@@ -573,7 +573,7 @@ def capitulos(item):
 
     return itemlist
 def findvideos(item):
-    logger.info("pelisalacarta.verseriesonlinetv findvideos")
+    logger.info()
     itemlist = []
     
     data = httptools.downloadpage(item.url).data
@@ -603,7 +603,7 @@ def findvideos(item):
     
     return itemlist
 def play(item):
-    logger.info("pelisalacarta.verseriesonlinetv play")
+    logger.info()
     import xbmc
     xbmc.executebuiltin('Action(reloadkeymaps)')
 
@@ -623,7 +623,7 @@ def play(item):
 
 
 def info(item):
-    logger.info("pelisalacarta.pasateatorrent info")
+    logger.info()
     itemlist = []
     url=item.url
     id = item.extra
