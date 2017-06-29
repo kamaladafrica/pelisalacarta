@@ -39,7 +39,6 @@ OPTIONS_OK = 5
 
 __modo_grafico__ = config.get_setting('modo_grafico', "divxtotal")
 
-DEBUG = config.get_setting("debug")
 
 #Para la busqueda en bing evitando baneos
 
@@ -81,7 +80,6 @@ api_fankey ="dffe90fba4d02c199ae7a9e71330c987"
 
 def mainlist(item):
     
-    logger.info("pelisalacarta.divxtotal mainlist")
     itemlist=[]
     itemlist.append( item.clone(title="[COLOR orange][B]Películas[/B][/COLOR]", action="scraper",url="http://www.divxtotal.com/peliculas/",thumbnail="http://imgur.com/A4zN3OP.png", fanart="http://imgur.com/fdntKsy.jpg",contentType= "movie"))
     itemlist.append( item.clone(title="[COLOR orange][B]        Películas HD[/B][/COLOR]", action="scraper",url="http://www.divxtotal.com/peliculas-hd/",thumbnail="http://imgur.com/A4zN3OP.png", fanart="http://imgur.com/fdntKsy.jpg",contentType= "movie"))
@@ -91,7 +89,7 @@ def mainlist(item):
     return itemlist
 
 def search(item,texto):
-    logger.info("pelisalacarta.divxtotal search")
+    
     texto = texto.replace(" ","+")
     item.url = "http://www.divxtotal.com/?s="+texto
     item.extra="search"
@@ -104,17 +102,15 @@ def search(item,texto):
         return []
 
 def buscador(item):
-    logger.info("pelisalacarta.divxtotal buscador")
+
     itemlist=[]
     data = httptools.downloadpage(item.url,headers=header, cookies=False).data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-    logger.info("mecagoooo")
-    logger.info(data) 
+    
     patron=scrapertools.find_multiple_matches(data,'<tr><td class="text-left"><a href="([^"]+)" title="([^"]+)">.*?-left">(.*?)</td>')
     
     for url,title,check in patron :
-        logger.info("pacooo")        
-        logger.info(check)
+        
         if "N/A" in check:
             checkmt="tvshow"
             
@@ -157,12 +153,11 @@ def buscador(item):
     return itemlist
 
 def scraper(item):
-    logger.info("pelisalacarta.divxtotal scraper")
+    
     itemlist=[]
     data = httptools.downloadpage(item.url,headers=header, cookies=False).data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-    logger.info("mecagoooo")
-    logger.info(data)
+    
     
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
     
@@ -223,7 +218,7 @@ def scraper(item):
 
 
 def findtemporadas(item):
-    logger.info("pelisalacarta.divxtotal findtempordas")
+    
     itemlist = []
     
     if item.extra=="search":
@@ -291,11 +286,11 @@ def findtemporadas(item):
     return itemlist
 
 def epis(item):
-    logger.info("pelisalacarta.divxtotal epis")
+    
     itemlist = []
     if item.extra=="serie_add":
        item.url=item.datalibrary
-    logger.info(item.url)   
+      
     patron= scrapertools.find_multiple_matches(item.url,'<td><img src=".*?images/(.*?)\.png.*?<a href="([^"]+)" title="">.*?(\d+x\d+).*?td>')
     for idioma,url,epi in patron:
         episodio= scrapertools.find_single_match(epi,'\d+x(\d+)')
@@ -309,7 +304,7 @@ def epis(item):
            item.title = item.title + " -- \""+ title +"\""
     return itemlist
 def findvideos(item):
-    logger.info("pelisalacarta.divxtotal findvideos")
+    
     itemlist = []
     data = httptools.downloadpage(item.url).data
      
@@ -370,7 +365,7 @@ def findvideos(item):
 
 
 def info_capitulos(item,images={}):
-    logger.info("pelisalacarta.divxtotal info_capitulos")
+    
     try:
         url="http://thetvdb.com/api/1D62F2F90030C444/series/"+str(item.InfoLabels['tvdb_id'])+"/default/"+str(item.InfoLabels['season'])+"/"+str(item.InfoLabels['episode'])+"/es.xml"
         if "/0" in url:
@@ -555,8 +550,7 @@ def fanartv(item, id_tvdb,id, images={}):
     if item.contentType == "movie":
         url = "http://webservice.fanart.tv/v3/movies/%s?api_key=cab16e262d72fea6a6843d679aa10300" \
                   % id
-        logger.info("jodeee")
-        logger.info(url)          
+                 
     else:
         url = "http://webservice.fanart.tv/v3/tv/%s?api_key=cab16e262d72fea6a6843d679aa10300" % id_tvdb
     try:
@@ -674,7 +668,7 @@ def filmaffinity(item,infoLabels):
 
 
 def get_art(item):
-    logger.info("pelisalacarta.divxtotal get_art")
+    
     id =item.infoLabels['tmdb_id']
     check_fanart=item.infoLabels['fanart']
     if item.contentType!="movie":
