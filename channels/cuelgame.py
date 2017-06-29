@@ -27,13 +27,12 @@ ACTION_MOVE_UP = 3
 OPTION_PANEL = 6
 OPTIONS_OK = 5
 
-DEBUG = config.get_setting("debug")
+D
 
 api_key="2e2160006592024ba87ccdf78c28f49f"
 api_fankey ="dffe90fba4d02c199ae7a9e71330c987"
 
 def mainlist(item):
-    logger.info("pelisalacarta.cuelgame mainlist")
 
     itemlist = []
     itemlist.append( Item(channel=item.channel, title="[COLOR forestgreen]Cine[/COLOR]" , action="scraper", url="http://cuelgame.net/?category=4" ,thumbnail="http://img5a.flixcart.com/image/poster/q/t/d/vintage-camera-collage-sr148-medium-400x400-imadkbnrnbpggqyz.jpeg", fanart="http://imgur.com/7frGoPL.jpg"))
@@ -49,7 +48,6 @@ def mainlist(item):
     return itemlist
 
 def search(item,texto):
-    logger.info("pelisalacarta.cuelgame search")
     texto = texto.replace(" ","+")
     item.url = "http://cuelgame.net/search.php?q=%s" % (texto)
     
@@ -66,7 +64,7 @@ def search(item,texto):
 
 
 def scraper(item):
-    logger.info("pelisalacarta.cuelgame finvideos")
+    
     itemlist = []
     check_search= item.url
     # Descarga la página
@@ -151,7 +149,7 @@ def scraper(item):
 
     return itemlist
 def fanart(item):
-    logger.info("pelisalacarta.cuelgame fanart")
+    l
     itemlist = []
     
     check_sp = item.extra.split("|")[4]
@@ -743,7 +741,7 @@ def fanart(item):
     return itemlist
 
 def findvideos(item):
-    logger.info("pelisalacarta.cuelgame findvideos")
+    
     itemlist = []
     temp = item.fulltitle.split("|")[0]
     epi = item.fulltitle.split("|")[1]
@@ -767,7 +765,7 @@ def findvideos(item):
     return itemlist
 
 def info(item):
-    logger.info("pelisalacarta.cuelgame info")
+    
     itemlist = []
     url=item.url
     id = item.extra
@@ -932,7 +930,6 @@ def info(item):
     from channels import infoplus
     infoplus.start(item_info, peliculas)
 def info_capitulos(item):
-    logger.info("pelisalacarta.cuelgame info_capitulos")
     
     url= "https://api.themoviedb.org/3/tv/"+item.show.split("|")[5]+"/season/"+item.extra.split("|")[2]+"/episode/"+item.extra.split("|")[3]+"?api_key="+api_key+"&language=es"
 
