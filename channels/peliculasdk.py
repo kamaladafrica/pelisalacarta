@@ -31,7 +31,7 @@ ACTION_MOVE_UP = 3
 OPTION_PANEL = 6
 OPTIONS_OK = 5
 
-DEBUG = config.get_setting("debug")
+
 host = "http://www.peliculasdk.com/"
 
 
@@ -52,7 +52,7 @@ def bbcode_kodi2html(text):
     return text
 
 def mainlist(item):
-    logger.info("pelisalacarta.peliculasdk mainlist")
+    logger.info()
     itemlist = []
     title ="Estrenos"
     title = title.replace(title,bbcode_kodi2html("[COLOR orange]"+title+"[/COLOR]"))
@@ -74,7 +74,7 @@ def mainlist(item):
     return itemlist
 
 def search(item,texto):
-    logger.info("pelisalacarta.peliculasdk search")
+    logger.info()
     texto = texto.replace(" ","+")
     
     item.url = "http://www.peliculasdk.com/index.php?s=%s&x=0&y=0" % (texto)
@@ -89,7 +89,7 @@ def search(item,texto):
         return []
 
 def buscador(item):
-    logger.info("pelisalacarta.peliculasdk buscador")
+    logger.info()
     itemlist = []
     
     # Descarga la página
@@ -142,7 +142,7 @@ def buscador(item):
 
 
 def peliculas(item):
-    logger.info("pelisalacarta.peliculasdk peliculas")
+    logger.info()
     itemlist = []
     
     # Descarga la página
@@ -194,7 +194,7 @@ def peliculas(item):
     return itemlist
 
 def fanart(item):
-    logger.info("pelisalacarta.peliculasdk fanart")
+    logger.info()
     itemlist = []
     url = item.url
     data = scrapertools.cachePage(url)
@@ -446,7 +446,7 @@ def fanart(item):
 
 
 def findvideos(item):
-    logger.info("pelisalacarta.peliculasdk findvideos")
+    logger.info()
     
     itemlist = []
     data = scrapertools.cache_page(item.url)
@@ -532,7 +532,7 @@ def findvideos(item):
 
 
 def play(item):
-    logger.info("pelisalacarta.peliculasdk play")
+    logger.info()
     
     itemlist = servertools.find_video_items(data=item.url)
     data = scrapertools.cache_page(item.url)
@@ -556,7 +556,7 @@ def play(item):
 
 
 def info(item):
-    logger.info("pelisalacarta.peliculasdk info")
+    logger.info()
     itemlist = []
     url=item.url
     id = item.extra
