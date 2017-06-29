@@ -37,21 +37,31 @@ def context ():
 context = context()
 
 
-def show_option (channel, itemlist):
+def show_option (channel, itemlist, text_color='yellow', thumbnail=None):
     '''
     Agrega la opcion Configurar AutoPlay en la lista recibida
 
     :param channel: str
     :param itemlist: list (lista donde se desea integrar la opcion de configurar AutoPlay)
+    :param text_color: str (color para el texto de la opcion Configurar Autoplay)
+    :param thumbnail: str (direccion donde se encuentra el thumbnail para la opcion Configurar Autoplay)
     :return:
     '''
     logger.info()
+    if thumbnail == None:
+        thumbnail = 'https://s7.postimg.org/65ooga04b/Auto_Play.png'
     plot_autoplay = 'AutoPlay permite auto reproducir los enlaces directamente, basándose en la configuracion de tus ' \
                     'servidores y calidades preferidas. '
     itemlist.append(
-            Item(channel=__channel__, title="Configurar AutoPlay", action="autoplay_config", text_color='yellow',
-                 thumbnail='https://s7.postimg.org/65ooga04b/Auto_Play.png',
-                 fanart='https://s7.postimg.org/65ooga04b/Auto_Play.png', plot=plot_autoplay, from_channel=channel))
+            Item(channel=__channel__,
+                 title="Configurar AutoPlay",
+                 action="autoplay_config",
+                 text_color=text_color,
+                 thumbnail= thumbnail,
+                 fanart='https://s7.postimg.org/65ooga04b/Auto_Play.png',
+                 plot=plot_autoplay,
+                 from_channel=channel
+                 ))
     return itemlist
 
 
