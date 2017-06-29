@@ -35,8 +35,6 @@ OPTION_PANEL = 6
 OPTIONS_OK = 5
 
 
-DEBUG = config.get_setting("debug")
-
 #Para la busqueda en bing evitando baneos
 
 def browser(url):
@@ -76,7 +74,7 @@ api_fankey ="dffe90fba4d02c199ae7a9e71330c987"
 
 
 def mainlist(item):
-    logger.info("pelisalacarta.torrentlocura mainlist")
+    logger.info()
     itemlist=[]
     itemlist.append( item.clone(title="[COLOR crimson][B]Películas[/B][/COLOR]", action="scraper",url="http://torrentlocura.com/peliculas/",thumbnail="http://imgur.com/RfZjMBi.png", fanart="http://imgur.com/V7QZLAL.jpg",contentType= "movie"))
     itemlist.append( itemlist[-1].clone(title="[COLOR crimson][B]   Películas HD[/B][/COLOR]", action="scraper",url="http://torrentlocura.com/peliculas-hd/",thumbnail="http://imgur.com/RfZjMBi.png", fanart="http://imgur.com/V7QZLAL.jpg",contentType= "movie"))
@@ -91,7 +89,7 @@ def mainlist(item):
     return itemlist
 
 def search(item,texto):
-    logger.info("pelisalacarta.torrentlocura search")
+    logger.info()
     texto = texto.replace(" ","+")
     item.url = "http://torrentlocura.com/buscar"
     item.extra = urllib.urlencode({'q':texto})
@@ -106,6 +104,7 @@ def search(item,texto):
         return []
 
 def buscador(item):
+    logger.info()
     itemlist=[]
     data = httptools.downloadpage(item.url,post=item.extra,).data
     data =unicode(data,"latin1").encode("utf8")
@@ -143,7 +142,7 @@ def buscador(item):
     return itemlist
 
 def scraper(item):
-    logger.info("pelisalacarta.torrentlocura scraper")
+    logger.info()
     itemlist = []
     # Descarga la página
     data = httptools.downloadpage(item.url).data
@@ -179,7 +178,7 @@ def scraper(item):
 
 
 def fanart(item):
-    logger.info("pelisalacarta.torrentlocura fanart")
+    logger.info()
     itemlist = []
     year=item.extra.split("|")[2]
     if item.contentType!="movie":
@@ -458,7 +457,7 @@ def fanart(item):
     return itemlist
 
 def findvideos(item):
-    logger.info("pelisalacarta.torrentlocurat findvideos")
+    logger.info()
     itemlist = []
     fanart=""
     data = httptools.downloadpage(item.url).data
@@ -549,7 +548,7 @@ def findvideos(item):
     return itemlist
 
 def findvideos_enlaces(item):
-    logger.info("pelisalacarta.torrentlocurat findvideos")
+    logger.info()
     itemlist = []
     check_epi2=""
     data = httptools.downloadpage(item.url).data
@@ -658,6 +657,7 @@ def findvideos_enlaces(item):
        itemlist.append( Item(channel=item.channel, title = "[COLOR floralwhite][B]Descarga directa y online[/B][/COLOR]"  , url=item.url,  action="dd_y_o", thumbnail="http://imgur.com/as7Ie6p.png", fanart=item.extra.split("|")[1],contentType=item.contentType, extra=extra, folder=True) )
     return itemlist
 def dd_y_o(item):
+    logger.info()
     itemlist = []
     if item.contentType=="movie":
        data=item.extra.split("|")[9]
@@ -670,7 +670,7 @@ def dd_y_o(item):
            itemlist.append(Item(channel=item.channel ,url=video.url, server=video.server,title="[COLOR floralwhite][B]"+server_name+"[/B][/COLOR]",thumbnail=thumb, fanart=item.extra.split("|")[2],action="play", folder=False) )
     return itemlist
 def capitulos(item):
-    logger.info("pelisalacarta.pasateatorrent capitulos")
+    logger.info()
     itemlist = []
     url=item.url
     Join_extras="|".join(item.extra.split("|")[0:11])
@@ -682,7 +682,7 @@ def capitulos(item):
         itemlist.append( Item(channel=item.channel, action="info_capitulos" , title="[COLOR indianred]Info Cap."+str(i)+"[/COLOR]" , url=item.url, thumbnail=item.thumbnail, fanart=item.fanart, extra =extra, folder=False ))
     return itemlist
 def info(item):
-    logger.info("pelisalacarta.torrentlocura info")
+    logger.info()
     itemlist = []
     url=item.url
     rating_tmdba_tvdb=item.extra.split("|")[0]
@@ -779,7 +779,7 @@ def info(item):
     infoplus.start(item_info, peliculas)
 
 def info_capitulos(item,images={}):
-    logger.info("pelisalacarta.torrentlocura info_capitulos")
+    logger.info()
     url= "https://api.themoviedb.org/3/tv/"+item.extra.split("|")[3]+"/season/"+item.extra.split("|")[10]+"/episode/"+item.extra.split("|")[11]+"?api_key="+api_key+"&language=es"
     if "/0" in url:
         url = url.replace("/0","/")
