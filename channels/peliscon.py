@@ -38,7 +38,7 @@ OPTIONS_OK = 5
 
 __modo_grafico__ = config.get_setting('modo_grafico', "peliscon")
 
-DEBUG = config.get_setting("debug")
+
 
 #Para la busqueda en bing evitando baneos
 
@@ -80,7 +80,7 @@ api_fankey ="dffe90fba4d02c199ae7a9e71330c987"
 
 def mainlist(item):
     
-    logger.info("pelisalacarta.peliscon mainlist")
+    logger.info()
     itemlist=[]
     itemlist.append( item.clone(title="[COLOR aqua][B]Películas[/B][/COLOR]", action="scraper",url="http://peliscon.com/peliculas/",thumbnail="http://imgur.com/FrcWTS8.png", fanart="http://imgur.com/MGQyetQ.jpg",contentType= "movie"))
     itemlist.append( itemlist[-1].clone(title="[COLOR aqua][B]Series[/B][/COLOR]", action="scraper",url="http://peliscon.com/series/",thumbnail="http://imgur.com/FrcWTS8.png",fanart="http://imgur.com/i41eduI.jpg",contentType="tvshow"))
@@ -89,7 +89,7 @@ def mainlist(item):
     return itemlist
 
 def search(item,texto):
-    logger.info("pelisalacarta.peliscon search")
+    logger.info()
     texto = texto.replace(" ","+")
     item.url = "https://peliscon.com/?s="+texto
     item.extra="search"
@@ -102,17 +102,15 @@ def search(item,texto):
         return []
 
 def buscador(item):
-    logger.info("pelisalacarta.peliscon buscador")
+    logger.info()
     itemlist=[]
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data) 
-    logger.info("pepeee")
-    logger.info(data)
+    
     patron=scrapertools.find_multiple_matches(data,'<div class="result-item">.*?href="([^"]+)".*?alt="([^"]+)".*?<span class=".*?">([^"]+)</span>.*?<span class="year">([^"]+)</span>')
     
     for url,title,genere,year in patron :
-        logger.info("pacooo")        
-        logger.info(genere)
+        
         if "Serie" in genere:
             checkmt="tvshow"
             genere="[COLOR aqua][B]"+genere+"[/B][/COLOR]"
@@ -152,7 +150,7 @@ def buscador(item):
     return itemlist
 
 def scraper(item):
-    logger.info("pelisalacarta.divxtotal scraper")
+    logger.info()
     itemlist=[]
     data = httptools.downloadpage(item.url).data
     
@@ -160,8 +158,7 @@ def scraper(item):
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
     
     if item.contentType=="movie":
-       logger.info("pepeee")
-       logger.info(data)
+       
        patron =scrapertools.find_multiple_matches(data, '<div class="poster"><a href="([^"]+)"><img src="([^"]+)" alt="([^"]+)".*?/flags/(.*?).png.*?<span>(.*?)</span>')
        
        for url,thumb,title,idioma,year in patron:
@@ -175,8 +172,6 @@ def scraper(item):
              
           
     else:     
-       logger.info("betiii")
-       logger.info(data)
        
        patron =scrapertools.find_multiple_matches(data, '<div class="poster"><a href="([^"]+)"><img src="([^"]+)" alt="([^"]+)".*?<span>(.*?)</span>')
        
@@ -218,20 +213,15 @@ def scraper(item):
     return itemlist
 def ul_cap(item):
     itemlist=[]
-    logger.info("pelisalacarta.divxtotal findtempordas")
+    logger.info()
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-    logger.info("betiii")
-    logger.info(data)
+    
     patron =scrapertools.find_multiple_matches(data, '<div class="poster">.*?<img src="([^"]+)" alt="([^"]+):.*?href="([^"]+)"><span class="b">(\d+x\d+)<\/span>')
        
     for thumb,title,url,cap in patron:
         temp= re.sub(r"x\d+","",cap)
         epi= re.sub(r"\d+x","",cap)
-        logger.info("carambiluli")
-        logger.info(epi)
-        logger.info(temp)
-        logger.info(title)
         titulo = title.strip() + "--" + "[COLOR red][B]"+cap+"[/B][/COLOR]"
         title= re.sub(r"\d+x.*","",title)
         #filtro_thumb = thumb.replace("https://image.tmdb.org/t/p/w300", "")
@@ -277,13 +267,10 @@ def ul_cap(item):
     return itemlist
 
 def findtemporadas(item):
-    logger.info("pelisalacarta.divxtotal findtempordas")
+    logger.info()
     itemlist = []
-    logger.info("carajoteee2")
-    logger.info(item.infoLabels)
-    logger.info(item.InfoLabels)
-    if not item.temp:
-     logger.info("mierda")   
+    
+    if not item.temp:   
      th = Thread(target=get_art(item))
      th.setDaemon(True)
      th.start()
@@ -293,8 +280,7 @@ def findtemporadas(item):
       check_temp ="yes"
     data = httptools.downloadpage(item.url).data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
-    logger.info("tempiii")
-    logger.info(data)
+    
     if len( item.extra.split("|")):
         if len( item.extra.split("|"))>=4: 
            fanart = item.extra.split("|")[2]
@@ -333,8 +319,7 @@ def findtemporadas(item):
         
         item.infoLabels=item.InfoLabels
         item.infoLabels['season']=temporada
-        logger.info("carroooo")
-        logger.info(item.infoLabels)
+        
         itemlist.append(item.clone( action="epis" , title="[COLOR cornflowerblue][B]Temporada [/B][/COLOR]"+"[COLOR darkturquoise][B]"+temporada+"[/B][/COLOR]" , url=bloque_epis,contentType=item.contentType,contentTitle=item.contentTitle,show=item.show,extra=item.extra,fanart_extra=fanart_extra,fanart_info=fanart_info,datalibrary=data ,check_temp=check_temp,folder=True ))
     tmdb.set_infoLabels_itemlist(itemlist, __modo_grafico__)
     for item in itemlist:
@@ -342,9 +327,7 @@ def findtemporadas(item):
         item.extra=extra
         if item.temp:
            item.thumbnail= item.infoLabels['temporada_poster']
-           logger.info("carambiruli")
-           logger.info(item.infoLabels['temporada_poster'])
-           logger.info(item.infoLabels['thumbnail'])
+           
     if config.get_library_support() and itemlist:
         if len(bloque_episodios)==1:
            extra = "epis"
@@ -360,15 +343,12 @@ def findtemporadas(item):
     return itemlist
 
 def epis(item):
-    logger.info("pelisalacarta.divxtotal epis") 
+    logger.info() 
     itemlist = []
-    logger.info("carajoteee3")
-    logger.info(item.infoLabels)
-    logger.info(item.InfoLabels)
+   
     if item.extra=="serie_add":
        item.url=item.datalibrary
-    logger.info("tempiii")
-    logger.info(item.url)   
+       
     patron= scrapertools.find_multiple_matches(item.url,'<div class="imagen"><a href="([^"]+)".*?"numerando">(.*?)<')
     for url,epi in patron:
         episodio= scrapertools.find_single_match(epi,'\d+ - (\d+)')
@@ -384,19 +364,13 @@ def epis(item):
            item.title = item.title + " -- \""+ title +"\""
     return itemlist
 def findvideos(item):
-    logger.info("pelisalacarta.peliscon findvideos")
+    logger.info()
     itemlist = []
     if item.temp:
         url_epis = item.url 
-    logger.info("mamonaaaa")
-    logger.info(item.action)
-    logger.info(item.InfoLabels)
+    
     data = httptools.downloadpage(item.url).data
-    logger.info("engaaa")
-    logger.info(data)
-    logger.info("perra")
-    logger.info(item.infoLabels)
-    logger.info(item.InfoLabels)
+    
     if not item.infoLabels['episode'] or item.temp:
       th = Thread(target=get_art(item))
       th.setDaemon(True)
@@ -421,8 +395,7 @@ def findvideos(item):
            fanart= item.fanart_extra
        except:
            fanart=item.extra.split("|")[0]
-       logger.info("calooooooo")
-       logger.info(item.url)
+       
        url_data= scrapertools.find_multiple_matches(data,'<div id="option-(.*?)".*?src="([^"]+)"')
        for option, url in url_data:
            server,idioma = scrapertools.find_single_match(data,'href="#option-'+option+'">.*?</b>(.*?)<span class="dt_flag">.*?flags/(.*?).png')
@@ -462,8 +435,7 @@ def findvideos(item):
            
            itemlist.append( Item(channel=item.channel, title = "[COLOR steelblue][B]       info[/B][/COLOR]",  action="info_capitulos", fanart=fanart,thumbnail= item.thumb_art,thumb_info=item.thumb_info,extra=item.extra, show= item.show,InfoLabels= item.infoLabels, folder=False) )
        if item.temp and not item.check_temp:
-          logger.info("mamonaaaa2")
-          logger.info(item.url) 
+           
           url_epis= re.sub(r"-\dx.*","",url_epis)
           url_epis= url_epis.replace("episodios","series")
           itemlist.append( Item(channel=item.channel,title = "[COLOR salmon][B]Todos los episodios[/B][/COLOR]", url=url_epis,  action="findtemporadas",server="torrent", fanart=item.extra.split("|")[1],thumbnail= item.infoLabels['thumbnail'],extra=item.extra+"|"+item.thumbnail,contentType=item.contentType,contentTitle=item.contentTitle, InfoLabels=item.infoLabels,thumb_art=item.thumb_art,thumb_info=item.thumbnail,fulltitle=item.fulltitle,library=item.library,temp=item.temp, folder=True) ) 
@@ -471,8 +443,7 @@ def findvideos(item):
        
       
     else:   
-     logger.info("sudooooo")
-     logger.info(data)
+     
      url_data= scrapertools.find_multiple_matches(data,'<div id="option-(.*?)".*?src="([^"]+)"')
      for option, url in url_data:
          server,idioma = scrapertools.find_single_match(data,'href="#option-'+option+'">.*?</b>(.*?)<span class="dt_flag">.*?flags/(.*?).png')
@@ -497,11 +468,9 @@ def play(item):
         itemlist.append( Item(channel=item.channel, title = "[COLOR saddlebrown][B]"+video.server+"[/B][/COLOR]", url=video.url,server=video.server,  action="play", fanart=item.fanart,thumbnail= item.thumbnail,extra=item.extra,InfoLabels=item.infoLabels, folder=False) )
     return itemlist
 def info_capitulos(item,images={}):
-    logger.info("pelisalacarta.divxtotal info_capitulos")
+    logger.info()
     itemlist=[]
     
-    logger.info("jodienda")
-    logger.info(item.infoLabels)
     try:
         url="http://thetvdb.com/api/1D62F2F90030C444/series/"+str(item.InfoLabels['tvdb_id'])+"/default/"+str(item.InfoLabels['season'])+"/"+str(item.InfoLabels['episode'])+"/es.xml"
         if "/0" in url:
@@ -509,9 +478,7 @@ def info_capitulos(item,images={}):
         from core import jsontools
         data = httptools.downloadpage(url).data
         tmdb.set_infoLabels_itemlist(itemlist, __modo_grafico__)
-        logger.info("jodienda")
-        logger.info(item.InfoLabels)
-        logger.info(item.infoLabels)
+        
         if "<filename>episodes" in data:
             image = scrapertools.find_single_match(data,'<Data>.*?<filename>(.*?)</filename>')
             image = "http://thetvdb.com/banners/" + image
@@ -649,7 +616,7 @@ def fanartv(item, id_tvdb,id, images={}):
 
 
 def get_art(item):
-    logger.info("pelisalacarta.divxtotal get_art")
+    logger.info()
     id =item.infoLabels['tmdb_id']
     check_fanart=item.infoLabels['fanart']
     if item.contentType!="movie":
@@ -864,8 +831,7 @@ def get_art(item):
           else:
              item.thumbnail =item.thumbnail
       else:
-           logger.info("manueee")
-           logger.info(images_fanarttv)
+           
            if images_fanarttv.get("hdtvlogo"):
              item.thumbnail=images_fanarttv.get("hdtvlogo")[0].get("url") 
            elif images_fanarttv.get("clearlogo"):
