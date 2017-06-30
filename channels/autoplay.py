@@ -61,7 +61,7 @@ def show_option (channel, itemlist, text_color='yellow', thumbnail=None, fanart=
                  action="autoplay_config",
                  text_color=text_color,
                  thumbnail= thumbnail,
-                 fanart='https://s7.postimg.org/65ooga04b/Auto_Play.png',
+                 fanart= fanart,
                  plot=plot_autoplay,
                  from_channel=channel
                  ))
@@ -145,11 +145,19 @@ def start (itemlist, item):
             # Se filtran los enlaces de itemlist y que se correspondan con los valores de autoplay
             for item in itemlist:
                 autoplay_elem = dict()
+
+                # Comprobamos q se trata de un item de video
+                if 'server' not in item:
+                    continue
+
                 # Agrega la opcion configurar AutoPlay al menu contextual
-                item.context.append({"title": "Configurar AutoPlay",
-                                     "action": "autoplay_config",
-                                     "channel": "autoplay",
-                                     "from_channel": item.channel})
+                if 'context' not in item:
+                    item.context = list()
+                if not filter(lambda x: x['action'] == 'autoplay_config', context):
+                    item.context.append({"title": "Configurar AutoPlay",
+                                         "action": "autoplay_config",
+                                         "channel": "autoplay",
+                                         "from_channel": item.channel})
 
                 # Si no tiene calidad definida le asigna calidad 'default'
                 if item.quality == '':
