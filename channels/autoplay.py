@@ -37,7 +37,7 @@ def context ():
 context = context()
 
 
-def show_option (channel, itemlist, text_color='yellow', thumbnail=None):
+def show_option (channel, itemlist, text_color='yellow', thumbnail=None, fanart=None):
     '''
     Agrega la opcion Configurar AutoPlay en la lista recibida
 
@@ -50,6 +50,9 @@ def show_option (channel, itemlist, text_color='yellow', thumbnail=None):
     logger.info()
     if thumbnail == None:
         thumbnail = 'https://s7.postimg.org/65ooga04b/Auto_Play.png'
+    if fanart == None:
+        fanart = 'https://s7.postimg.org/65ooga04b/Auto_Play.png'
+
     plot_autoplay = 'AutoPlay permite auto reproducir los enlaces directamente, basándose en la configuracion de tus ' \
                     'servidores y calidades preferidas. '
     itemlist.append(
@@ -298,53 +301,57 @@ def init(channel, list_servers, list_quality):
     change = False
     result = True
 
-    autoplay_path = os.path.join(config.get_data_path(), "settings_channels", 'autoplay_data.json')
-    if os.path.exists(autoplay_path):
-        autoplay_node = jsontools.get_node_from_data_json('autoplay', "AUTOPLAY")
+    if not config.is_xbmc():
+        platformtools.dialog_notification('AutoPlay ERROR', 'Sólo disponible para XBMC/Kodi')
+        result = False
     else:
-        change = True
-        autoplay_node = {"AUTOPLAY": {}}
-
-    if not channel in autoplay_node:
-        change = True
-
-        # Se comprueba que no haya calidades ni servidores duplicados
-        list_servers = list(set(list_servers))
-        list_quality = list(set(list_quality))
-
-        # Creamos el nodo del canal y lo añadimos
-        channel_node = {"servers": list_servers,
-                        "quality": list_quality,
-                        "settings": {
-                            "active": False,
-                            "custom_servers": False,
-                            "custom_quality": False,
-                            "priority": 0}}
-        for n in range(1,4):
-            s = c = 0
-            if len(list_servers) >= n:
-                s = n - 1
-            if len(list_quality) >= n:
-                c = n - 1
-
-            channel_node["settings"]["server_%s" % n] = s
-            channel_node["settings"]["quality_%s" % n] = c
-
-        autoplay_node[channel] = channel_node
-
-    if change:
-        result, json_data = jsontools.update_json_data(autoplay_node, 'autoplay', 'AUTOPLAY')
-
-        if result:
-            heading = "AutoPlay Disponible"
-            msj = "Seleccione '<Configurar AutoPlay>' para activarlo."
-            icon = 0
+        autoplay_path = os.path.join(config.get_data_path(), "settings_channels", 'autoplay_data.json')
+        if os.path.exists(autoplay_path):
+            autoplay_node = jsontools.get_node_from_data_json('autoplay', "AUTOPLAY")
         else:
-            heading = "Error al iniciar AutoPlay"
-            msj = "Consulte su log para obtener mas información."
-            icon = 1
+            change = True
+            autoplay_node = {"AUTOPLAY": {}}
 
-        platformtools.dialog_notification(heading, msj, icon, sound=False)
+        if channel not in autoplay_node:
+            change = True
+
+            # Se comprueba que no haya calidades ni servidores duplicados
+            list_servers = list(set(list_servers))
+            list_quality = list(set(list_quality))
+
+            # Creamos el nodo del canal y lo añadimos
+            channel_node = {"servers": list_servers,
+                            "quality": list_quality,
+                            "settings": {
+                                "active": False,
+                                "custom_servers": False,
+                                "custom_quality": False,
+                                "priority": 0}}
+            for n in range(1,4):
+                s = c = 0
+                if len(list_servers) >= n:
+                    s = n - 1
+                if len(list_quality) >= n:
+                    c = n - 1
+
+                channel_node["settings"]["server_%s" % n] = s
+                channel_node["settings"]["quality_%s" % n] = c
+
+            autoplay_node[channel] = channel_node
+
+        if change:
+            result, json_data = jsontools.update_json_data(autoplay_node, 'autoplay', 'AUTOPLAY')
+
+            if result:
+                heading = "AutoPlay Disponible"
+                msj = "Seleccione '<Configurar AutoPlay>' para activarlo."
+                icon = 0
+            else:
+                heading = "Error al iniciar AutoPlay"
+                msj = "Consulte su log para obtener mas información."
+                icon = 1
+
+            platformtools.dialog_notification(heading, msj, icon, sound=False)
 
 
     return result
@@ -556,4 +563,35 @@ def get_languages(channel):
             list_language = control["lvalues"]
 
     return list_language
+
+
+def is_active():
+    '''
+    Devuelve un booleano q indica si esta activo o no autoplay en el canal desde el que se llama
+
+    :return: True si esta activo autoplay para el canal desde el que se llama, False en caso contrario.
+    '''
+    logger.info()
+    global autoplay_node
+
+    if not config.is_xbmc():
+        return False
+
+    if not autoplay_node:
+        # Obtiene el nodo AUTOPLAY desde el json
+        autoplay_node = jsontools.get_node_from_data_json('autoplay', 'AUTOPLAY')
+
+        # Obtine el canal desde el q se hace la llamada
+        import inspect
+        module = inspect.getmodule(inspect.currentframe().f_back)
+        canal = module.__name__.split('.')[1]
+        logger.debug(canal)
+
+        # Obtiene el nodo del canal desde autoplay_node
+        channel_node = autoplay_node.get(canal, {})
+        # Obtiene los ajustes des autoplay para este canal
+        settings_node = channel_node.get('settings', {})
+
+        return settings_node.get('active', False)
+
 
