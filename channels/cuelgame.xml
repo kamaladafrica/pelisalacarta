@@ -6,7 +6,7 @@
 	<adult>false</adult>
 	<language>es</language>
 
-    <version>3</version>
+    <version>4</version>
     <changes>
          
             <change>
@@ -19,7 +19,11 @@
 			        <autor>Neno1978</autor>
                     <description>Migración a Httptools</description>
             </change>
-            
+            <change>
+                    <date>28/06/2017</date>
+                    <autor>Neno1978</autor>
+                    <description>Correciones código.Algunas mejoras</description>
+            </change>
     </changes>
 
 
