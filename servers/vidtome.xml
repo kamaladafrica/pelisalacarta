@@ -3,6 +3,11 @@
 	<active>true</active>
 	<changes>
 		<change>
+			<autor>Intel1</autor>
+			<date>26/06/2017</date>
+			<description>Patrón actualizado</description>
+		</change>
+		<change>
 			<autor>Cmos</autor>
 			<date>21/03/2017</date>
 			<description>Conector corregido</description>
@@ -17,12 +22,8 @@
 		<ignore_urls>
 		</ignore_urls>
 		<patterns>
-			<pattern>vidto.me/([a-z0-9A-Z]+)</pattern>
-			<url>http://vidto.me/\1.html</url>
-		</patterns>
-		<patterns>
-			<pattern>vidto.me/embed-([a-z0-9A-Z]+)</pattern>
-			<url>http://vidto.me/\1.html</url>
+			<pattern>vidto.me/(?:embed-|)([A-z0-9]+)</pattern>
+			<url>http://vidto.me/embed-\1.html</url>
 		</patterns>
 	</find_videos>
 	<free>true</free>
@@ -54,5 +55,5 @@
 	</settings>
 	<thumbnail>http://media.tvalacarta.info/servers/server_vidtome.png</thumbnail>
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/servers/</update_url>
-	<version>3</version>
+	<version>4</version>
 </server>

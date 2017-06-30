@@ -31,7 +31,9 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     referer = re.sub(r"embed-|player-", "", page_url)[:-5]
     data = httptools.downloadpage(page_url, headers={'Referer': referer}).data
 
-    key = "".join(eval(scrapertools.find_single_match(data, '_[^=]+=(\[[^\]]+\]);'))[7:9])
+    for list in scrapertools.find_multiple_matches(data, '_[^=]+=(\[[^\]]+\]);'):
+        key = "".join(eval(list)[7:9])
+        if key: break
     if key.startswith("embed"):
         key = key[6:]+key[:6]
     matches = scrapertools.find_single_match(data, "<script type=[\"']text/javascript[\"']>(eval.*?)</script>")

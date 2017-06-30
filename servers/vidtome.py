@@ -11,7 +11,6 @@ from core import httptools
 from core import logger
 from core import scrapertools
 
-
 def test_video_exists(page_url):
     logger.info("(page_url='%s')" % page_url)
 
@@ -27,7 +26,6 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     logger.info("url=" + page_url)
 
     data = httptools.downloadpage(page_url).data
-
     # Extrae la URL
     # {file:"http://188.240.220.186/drjhpzy4lqqwws4phv3twywfxej5nwmi4nhxlriivuopt2pul3o4bkge5hxa/video.mp4",label:"240p"}
     video_urls = []
