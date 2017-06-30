@@ -76,7 +76,7 @@ def start (itemlist, item):
     else:
 
         # Obtiene el nodo del canal desde el json de AutoPlay
-        autoplay_node = filetools.get_node_from_data_json('autoplay', 'AUTOPLAY')
+        autoplay_node = jsontools.get_node_from_data_json('autoplay', 'AUTOPLAY')
         channel_node = autoplay_node.get(item.channel, {})
         settings_node = channel_node.get('settings', {})
 
@@ -321,7 +321,7 @@ def prepare_autoplay_settings (channel, list_servers, list_quality):
     list_language = get_languages(channel)
 
     # Se obtiene el nodo autoplay desde el json
-    autoplay_node = filetools.get_node_from_data_json(fname, "AUTOPLAY")
+    autoplay_node = jsontools.get_node_from_data_json(fname, "AUTOPLAY")
 
     # Se Obtiene el nodo del canal desde el json
     channel_node = autoplay_node.get(channel, {})
@@ -346,8 +346,8 @@ def prepare_autoplay_settings (channel, list_servers, list_quality):
                                         }
                             }
         autoplay_node[channel] = channel_settings
-        fname, json_data = filetools.update_json_data(autoplay_node, fname, 'AUTOPLAY')
-        result = filetools.write(fname, json_data)
+        result, json_data = jsontools.update_json_data(autoplay_node, fname, 'AUTOPLAY')
+
 
     return
 
@@ -366,7 +366,7 @@ def check_value (channel, values, value_type):
     new_values =[]
     fname = 'autoplay'
 
-    autoplay_node = filetools.get_node_from_data_json(fname, 'AUTOPLAY')
+    autoplay_node = jsontools.get_node_from_data_json(fname, 'AUTOPLAY')
     value_list = autoplay_node.get(channel, {}).get(value_type, [])
     if len(value_list) == 0 or values != []:
         for value in values:
@@ -376,8 +376,8 @@ def check_value (channel, values, value_type):
         value_list += new_values
 
 
-        fname, json_data = filetools.update_json_data(autoplay_node, fname, 'AUTOPLAY')
-        result = filetools.write(fname, json_data)
+        result, json_data = jsontools.update_json_data(autoplay_node, fname, 'AUTOPLAY')
+
 
     return change
 
@@ -388,7 +388,7 @@ def autoplay_config (item):
 
     fname = 'autoplay'
     # Obtenemos los datos de json
-    autoplay_node = filetools.get_node_from_data_json(fname, 'AUTOPLAY')
+    autoplay_node = jsontools.get_node_from_data_json(fname, 'AUTOPLAY')
     channel_node = autoplay_node.get(item.from_channel, {})
     settings_config = channel_node.get('settings', {})
 
@@ -410,7 +410,7 @@ def autoplay_config (item):
 
 
     list_language = get_languages(item.from_channel)
-    channel_config = filetools.get_node_from_data_json(item.from_channel, 'settings')
+    channel_config = jsontools.get_node_from_data_json(item.from_channel, 'settings')
     if active:
         status_language = channel_config.get("filter_languages", 0)
     else:
@@ -508,8 +508,8 @@ def save (dict_data_saved, item):
     channel = dict_data_saved.from_channel
     fname = 'autoplay'
 
-    autoplay_node = filetools.get_node_from_data_json(fname, 'AUTOPLAY')
-    channel_config = filetools.get_node_from_data_json(channel, 'settings')
+    autoplay_node = jsontools.get_node_from_data_json(fname, 'AUTOPLAY')
+    channel_config = jsontools.get_node_from_data_json(channel, 'settings')
     channel_node = autoplay_node.get(channel, {})
     settings_node = channel_node.get('settings', {})
 
@@ -519,12 +519,12 @@ def save (dict_data_saved, item):
     channel_node['settings'] = new_channel_settings
     #logger.debug("settings_node['custom']: " + str(settings_node['custom']))
     channel_node['settings'] = new_channel_settings
-    fname, json_data = filetools.update_json_data(autoplay_node, fname, 'AUTOPLAY')
-    result = filetools.write(fname, json_data)
+    result, json_data = jsontools.update_json_data(autoplay_node, fname, 'AUTOPLAY')
+
 
     channel_config['filter_languages'] = new_channel_settings['language']
-    fname, json_data = filetools.update_json_data(channel_config, channel, 'settings')
-    result = filetools.write(fname, json_data)
+    result, json_data = jsontools.update_json_data(channel_config, channel, 'settings')
+
 
 
 # Metodo auxiliar genera las listas de servidores y calidades an base al un itemlist y patron(calidad) recibido
@@ -572,7 +572,7 @@ def check_status (channel):
 
     fname = 'autoplay'
     # Obtenemos el estado de AutoPlay desde el json
-    autoplay_node = filetools.get_node_from_data_json(fname, 'AUTOPLAY')
+    autoplay_node = jsontools.get_node_from_data_json(fname, 'AUTOPLAY')
     channel_node = autoplay_node.get(channel, {})
     settings_node = channel_node.get('settings', {})
     result = settings_node.get('active', False)

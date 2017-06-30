@@ -7,7 +7,7 @@
 	<adult>false</adult>
 	<language>es</language>
 
-    <version>17</version>
+    <version>18</version>
     <changes>
          
             <change>
@@ -25,6 +25,11 @@
 			        <autor>Neno1978</autor>
                     <description>Correción cambios web</description>
             </change> 
+            <change>
+                    <date>28/06/2017</date>
+                    <autor>Neno1978</autor>
+                    <description>Corrección código y algunas mejoras</description>
+            </change>
             
     </changes>
 

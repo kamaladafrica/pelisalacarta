@@ -12,13 +12,18 @@
 	<bannermenu></bannermenu>
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
     
-    <version>1</version>
+    <version>2</version>
     <changes>
         <change>
           <date>26/04/2016</date>
           <autor>Neno1978</autor>
           <description>Release</description>
-		</change>
+        </change>  
+        <change>
+          <date>28/06/2017</date>
+          <autor>Neno1978</autor>
+          <description>Corrección código y algunas mejoras</description>
+        </change>  
     </changes>
     
 	<categories>

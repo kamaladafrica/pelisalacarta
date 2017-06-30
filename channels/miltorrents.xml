@@ -7,7 +7,7 @@
 	<language>es</language>
     
     
-    <version>2</version>
+    <version>3</version>
     <changes>
          
             <change>
@@ -20,7 +20,11 @@
 			        <autor>Neno1978</autor>
                     <description>Migración a Httptools y algunos arreglos</description>
             </change>
-            
+            <change>
+                    <date>28/06/2017</date>
+                    <autor>Neno1978</autor>
+                    <description>Correciones código y algunas mejoras</description>
+            </change>
     </changes>        
     
     <fanart></fanart>

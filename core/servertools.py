@@ -294,7 +294,8 @@ def resolve_video_urls_for_playing(server, url, video_password="", muestra_dialo
                     ]
         
         
-            if server_parameters["free"] == "true": opciones.append("free")
+            if server_parameters["free"] == True:
+                opciones.append("free")
             opciones.extend([premium for premium in server_parameters["premium"] if config.get_setting("premium",server=premium)])
             
             priority = int(config.get_setting("resolve_priority"))
@@ -388,7 +389,7 @@ def resolve_video_urls_for_playing(server, url, video_password="", muestra_dialo
                         logger.error(traceback.format_exc())
                 
                 #Si ya tenemos URLS, dejamos de buscar
-                if video_urls and config.get_setting("resolve_stop") == "true":
+                if video_urls and config.get_setting("resolve_stop") == True:
                     break
                 
             #Cerramos el progreso
@@ -460,12 +461,12 @@ def is_server_enabled(server):
         return False
         
     server_parameters = get_server_parameters(server)
-    if server_parameters["active"] == "true":
+    if server_parameters["active"] == True:
         if not config.get_setting("hidepremium"):
             return True
-        elif server_parameters["free"] == "true":
+        elif server_parameters["free"] == True:
             return True
-        elif [premium for premium in server_parameters["premium"] if config.get_setting("premium",server=premium)]:
+        elif [premium for premium in server_parameters["premium"] if config.get_setting("premium", server=premium)]:
             return True
 
     return False
@@ -489,10 +490,11 @@ def get_server_parameters(server):
         try:
             #Servers
             if os.path.isfile(os.path.join(config.get_runtime_path(),"servers", server + ".xml")):
-                JSONFile =  xml2dict(os.path.join(config.get_runtime_path(),"servers", server + ".xml"))["server"]
+                JSONFile = jsontools.xmlTojson(os.path.join(config.get_runtime_path(), "servers", server + ".xml"))[
+                    "server"]
             #Debriders
             elif os.path.isfile(os.path.join(config.get_runtime_path(),"servers", "debriders", server + ".xml")):
-                JSONFile =  xml2dict(os.path.join(config.get_runtime_path(),"servers", "debriders", server + ".xml"))["server"]
+                JSONFile =  jsontools.xmlTojson(os.path.join(config.get_runtime_path(),"servers", "debriders", server + ".xml"))["server"]
             
             
             for k in ['premium', 'id']:
@@ -551,23 +553,9 @@ def get_server_controls_settings(server_name):
 
         if 'enabled' not in c or c['enabled'] is None:
             c['enabled'] = True
-        else:
-            if c['enabled'].lower() == "true":
-                c['enabled'] = True
-            elif c['enabled'].lower() == "false":
-                c['enabled'] = False
 
         if 'visible' not in c or c['visible'] is None:
             c['visible'] = True
-
-        else:
-            if c['visible'].lower() == "true":
-                c['visible'] = True
-            elif c['visible'].lower() == "false":
-                c['visible'] = False
-
-        if c['type'] == 'bool':
-            c['default'] = (c['default'].lower() == "true")
 
         if unicode(c['default']).isnumeric():
             c['default'] = int(c['default'])
@@ -577,8 +565,29 @@ def get_server_controls_settings(server_name):
     return list_controls, dict_settings
 
 
-def get_server_setting(name, server):
+def get_server_setting(name, server, default=None):
+    """
+        Retorna el valor de configuracion del parametro solicitado.
 
+        Devuelve el valor del parametro 'name' en la configuracion propia del servidor 'server'.
+
+        Busca en la ruta \addon_data\plugin.video.pelisalacarta\settings_servers el archivo server_data.json y lee 
+        el valor del parametro 'name'. Si el archivo server_data.json no existe busca en la carpeta servers el archivo 
+        server.xml y crea un archivo server_data.json antes de retornar el valor solicitado. Si el parametro 'name' 
+        tampoco existe en el el archivo server.xml se devuelve el parametro default.
+
+
+        @param name: nombre del parametro
+        @type name: str
+        @param server: nombre del servidor
+        @type server: str
+        @param default: valor devuelto en caso de que no exista el parametro name
+        @type default: cualquiera
+
+        @return: El valor del parametro 'name'
+        @rtype: El tipo del valor del parametro 
+
+        """
     # Creamos la carpeta si no existe
     if not os.path.exists(os.path.join(config.get_data_path(), "settings_servers")):
         os.mkdir(os.path.join(config.get_data_path(), "settings_servers"))
@@ -595,7 +604,7 @@ def get_server_setting(name, server):
         except EnvironmentError:
             logger.info("ERROR al leer el archivo: %s" % file_settings)
 
-    if len(dict_settings) == 0 or name not in dict_settings:
+    if not dict_settings or name not in dict_settings:
         # Obtenemos controles del archivo ../channels/channel.xml
         try:
             list_controls, default_settings = get_server_controls_settings(server)
@@ -612,11 +621,8 @@ def get_server_setting(name, server):
             except EnvironmentError:
                 logger.info("ERROR al salvar el archivo: %s" % file_settings)
 
-    # Devolvemos el valor del parametro local 'name' si existe
-    if name in dict_settings:
-        return dict_settings[name]
-    else:
-        return None
+    # Devolvemos el valor del parametro local 'name' si existe, si no se devuelve default
+    return dict_settings.get(name, default)
 
 
 def set_server_setting(name, value, server):
@@ -668,7 +674,7 @@ def get_servers_list():
     for server in os.listdir(os.path.join(config.get_runtime_path(),"servers")):
         if server.endswith(".xml") and not server == "version.xml":
             server_parameters = get_server_parameters(server)
-            if server_parameters["active"] == "true":
+            if server_parameters["active"] == True:
                 server_list[server.split(".")[0]] = server_parameters
     
     return server_list
@@ -686,7 +692,7 @@ def get_debriders_list():
     for server in os.listdir(os.path.join(config.get_runtime_path(),"servers", "debriders")):
         if server.endswith(".xml"):
             server_parameters = get_server_parameters(server)
-            if server_parameters["active"] == "true":
+            if server_parameters["active"] == True:
                 logger.info(server_parameters)
                 server_list[server.split(".")[0]] = server_parameters
     return server_list
@@ -732,42 +738,6 @@ def filter_servers(servers_list):
     return servers_list
 
 
-def xml2dict(file = None, xmldata = None):
-      import re, sys, os
-      parse = globals().get(sys._getframe().f_code.co_name)
-
-      if xmldata == None and file == None:  raise Exception("No hay nada que convertir!")
-      if xmldata == None:
-        if not os.path.exists(file): raise Exception("El archivo no existe!")
-        xmldata = open(file, "rb").read()
-
-      matches = re.compile("<(?P<tag>[^>]+)>[\n]*[\s]*[\t]*(?P<value>.*?)[\n]*[\s]*[\t]*<\/(?P=tag)\s*>",re.DOTALL).findall(xmldata)
-
-      return_dict = {}
-      for tag, value in matches:
-        #Si tiene elementos
-        if "<" and "</" in value:
-          if tag in return_dict:
-            if type(return_dict[tag])== list:
-              return_dict[tag].append(parse(xmldata=value))
-            else:
-              return_dict[tag] = [return_dict[tag]]
-              return_dict[tag].append(parse(xmldata=value))
-          else:
-              return_dict[tag] = parse(xmldata=value)
-
-        else:
-          if tag in return_dict:
-            if type(return_dict[tag])== list:
-              return_dict[tag].append(value)
-            else:
-              return_dict[tag] = [return_dict[tag]]
-              return_dict[tag].append(value)
-          else:
-            return_dict[tag] = value
-      return return_dict
-
-    
 def save_server_stats(stats, type="find_videos"):
     if not config.get_setting("server_stats"):
         return
