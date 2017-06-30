@@ -162,49 +162,55 @@ def open_settings():
         set_setting('adult_aux_new_password2', '')
 
 
-def get_setting(name, channel="", server=""):
+def get_setting(name, channel="", server="", default=None):
     """
     Retorna el valor de configuracion del parametro solicitado.
 
-    Devuelve el valor del parametro 'name' en la configuracion global o en la configuracion propia del canal 'channel'.
+    Devuelve el valor del parametro 'name' en la configuracion global, en la configuracion propia del canal 'channel' 
+    o en la del servidor 'server'.
 
-    Si se especifica el nombre del canal busca en la ruta \addon_data\plugin.video.pelisalacarta\settings_channels el
-    archivo channel_data.json y lee el valor del parametro 'name'. Si el archivo channel_data.json no existe busca en la
-     carpeta channels el archivo channel.xml y crea un archivo channel_data.json antes de retornar el valor solicitado.
-    Si el parametro 'name' no existe en channel_data.json lo busca en la configuracion global y si ahi tampoco existe
-    devuelve un str vacio.
+    Los parametros channel y server no deben usarse simultaneamente. Si se especifica el nombre del canal se devolvera 
+    el resultado de llamar a channeltools.get_channel_setting(name, channel, default). Si se especifica el nombre del 
+    servidor se devolvera el resultado de llamar a servertools.get_channel_setting(name, server, default). Si no se
+    especifica ninguno de los anteriores se devolvera el valor del parametro en la configuracion global si existe o 
+    el valor default en caso contrario.
 
-    Parametros:
-    name -- nombre del parametro
-    channel [opcional] -- nombre del canal
+    @param name: nombre del parametro
+    @type name: str
+    @param channel: nombre del canal
+    @type channel: str
+    @param server: nombre del servidor
+    @type server: str
+    @param default: valor devuelto en caso de que no exista el parametro name
+    @type default: cualquiera
 
-    Retorna:
-    value -- El valor del parametro 'name'
+    @return: El valor del parametro 'name'
+    @rtype: El tipo del valor del parametro 
 
     """
 
     # Specific channel setting
     if channel:
-
         # logger.info("config.get_setting reading channel setting '"+name+"' from channel xml")
         from core import channeltools
-        value = channeltools.get_channel_setting(name, channel)
+        value = channeltools.get_channel_setting(name, channel, default)
         # logger.info("config.get_setting -> '"+repr(value)+"'")
-
         return value
 
+    # Specific server setting
     elif server:
         # logger.info("config.get_setting reading server setting '"+name+"' from server xml")
         from core import servertools
-        value = servertools.get_server_setting(name, server)
+        value = servertools.get_server_setting(name, server, default)
         # logger.info("config.get_setting -> '"+repr(value)+"'")
-
         return value
 
     # Global setting
     else:
         # logger.info("config.get_setting reading main setting '"+name+"'")
         value = __settings__.getSetting(name)
+        if not value:
+            return default
 
         # Translate Path if start with "special://"
         if value.startswith("special://") and "librarypath" not in name:

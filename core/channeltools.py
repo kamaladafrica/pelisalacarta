@@ -85,11 +85,9 @@ def get_channel_parameters(channel_name):
                         if 'id' in s:
                             if s['id'] == "include_in_global_search":
                                 channel_parameters["include_in_global_search"] = s.get('default', False)
-                            elif not s['id'].startswith("include_in_"):
+                            elif not s['id'].startswith("include_in_") and \
+                                    (s.get('enabled', False) or s.get('visible', False)):
                                 channel_parameters["has_settings"] = True
-                            # else:
-                            #     if s['id'].startswith("include_in_"):
-                            #         channel_parameters[s['id']] = s.get('default', False)
 
                     del channel_parameters['settings']
 
@@ -177,24 +175,27 @@ def get_channel_controls_settings(channel_name):
     return list_controls, dict_settings
 
 
-def get_channel_setting(name, channel):
+def get_channel_setting(name, channel, default=None):
     """
     Retorna el valor de configuracion del parametro solicitado.
 
     Devuelve el valor del parametro 'name' en la configuracion propia del canal 'channel'.
 
-    Si se especifica el nombre del canal busca en la ruta \addon_data\plugin.video.pelisalacarta\settings_channels el
-    archivo channel_data.json y lee el valor del parametro 'name'. Si el archivo channel_data.json no existe busca en la
-    carpeta channels el archivo channel.xml y crea un archivo channel_data.json antes de retornar el valor solicitado.
+    Busca en la ruta \addon_data\plugin.video.pelisalacarta\settings_channels el archivo channel_data.json y lee 
+    el valor del parametro 'name'. Si el archivo channel_data.json no existe busca en la carpeta channels el archivo 
+    channel.xml y crea un archivo channel_data.json antes de retornar el valor solicitado. Si el parametro 'name' 
+    tampoco existe en el el archivo channel.xml se devuelve el parametro default.
 
 
     @param name: nombre del parametro
     @type name: str
     @param channel: nombre del canal
     @type channel: str
+    @param default: valor devuelto en caso de que no exista el parametro name
+    @type default: cualquiera
 
     @return: El valor del parametro 'name'
-    @rtype: str
+    @rtype: El tipo del valor del parametro 
 
     """
     # Creamos la carpeta si no existe
@@ -231,8 +232,8 @@ def get_channel_setting(name, channel):
             except EnvironmentError:
                 logger.error("ERROR al salvar el archivo: %s" % file_settings)
 
-    # Devolvemos el valor del parametro local 'name' si existe, si no se devuelve None
-    return dict_settings.get(name, None)
+    # Devolvemos el valor del parametro local 'name' si existe, si no se devuelve default
+    return dict_settings.get(name, default)
 
 
 def set_channel_setting(name, value, channel):

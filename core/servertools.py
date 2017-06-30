@@ -565,8 +565,29 @@ def get_server_controls_settings(server_name):
     return list_controls, dict_settings
 
 
-def get_server_setting(name, server):
+def get_server_setting(name, server, default=None):
+    """
+        Retorna el valor de configuracion del parametro solicitado.
 
+        Devuelve el valor del parametro 'name' en la configuracion propia del servidor 'server'.
+
+        Busca en la ruta \addon_data\plugin.video.pelisalacarta\settings_servers el archivo server_data.json y lee 
+        el valor del parametro 'name'. Si el archivo server_data.json no existe busca en la carpeta servers el archivo 
+        server.xml y crea un archivo server_data.json antes de retornar el valor solicitado. Si el parametro 'name' 
+        tampoco existe en el el archivo server.xml se devuelve el parametro default.
+
+
+        @param name: nombre del parametro
+        @type name: str
+        @param server: nombre del servidor
+        @type server: str
+        @param default: valor devuelto en caso de que no exista el parametro name
+        @type default: cualquiera
+
+        @return: El valor del parametro 'name'
+        @rtype: El tipo del valor del parametro 
+
+        """
     # Creamos la carpeta si no existe
     if not os.path.exists(os.path.join(config.get_data_path(), "settings_servers")):
         os.mkdir(os.path.join(config.get_data_path(), "settings_servers"))
@@ -583,7 +604,7 @@ def get_server_setting(name, server):
         except EnvironmentError:
             logger.info("ERROR al leer el archivo: %s" % file_settings)
 
-    if len(dict_settings) == 0 or name not in dict_settings:
+    if not dict_settings or name not in dict_settings:
         # Obtenemos controles del archivo ../channels/channel.xml
         try:
             list_controls, default_settings = get_server_controls_settings(server)
@@ -600,11 +621,8 @@ def get_server_setting(name, server):
             except EnvironmentError:
                 logger.info("ERROR al salvar el archivo: %s" % file_settings)
 
-    # Devolvemos el valor del parametro local 'name' si existe
-    if name in dict_settings:
-        return dict_settings[name]
-    else:
-        return None
+    # Devolvemos el valor del parametro local 'name' si existe, si no se devuelve default
+    return dict_settings.get(name, default)
 
 
 def set_server_setting(name, value, server):
