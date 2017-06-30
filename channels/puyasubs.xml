@@ -35,9 +35,6 @@
 		<category>anime</category>
 	</categories>
 	<settings>
-		<include_in_global_search>false</include_in_global_search>
-	</settings>
-	<settings>
 		<id>perfil</id>
 		<type>list</type>
 		<label>Perfil de color</label>

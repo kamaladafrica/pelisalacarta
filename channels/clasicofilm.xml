@@ -41,7 +41,6 @@
 		<category>movie</category>
 	</categories>
 
-	<include_in_global_search>disabled</include_in_global_search>
 	<settings>
 		<id>include_in_newest_peliculas</id>
 		<type>bool</type>

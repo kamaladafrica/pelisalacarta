@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
-# ------------------------------------------------------------
+#------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-# ------------------------------------------------------------
+#------------------------------------------------------------
 import os
 import re
 import sys
+import urllib
 import urllib2
 
-import xbmc
 import xbmcgui
+import xbmc
 from core import config
 from core import logger
 from core import scrapertools,httptools
@@ -70,9 +71,12 @@ def mainlist(item):
     logger.info()
 
     itemlist = []
-
+    import xbmc
+    
+    
     itemlist.append( Item(channel=item.channel, title="[COLOR chartreuse][B]Series[/B][/COLOR]"         , action="scraper", url="http://www.verseriesonline.tv/series", thumbnail="http://s6.postimg.org/6hpa9tzgx/verseriesthumb.png", fanart="http://s6.postimg.org/71zpys3bl/verseriesfan2.jpg"))
-
+    import xbmc
+    
     itemlist.append( Item(channel=item.channel, title="[COLOR chartreuse][B]Buscar[/B][/COLOR]"         , action="search", url="", thumbnail="http://s6.postimg.org/5gp1kpihd/verseriesbuscthumb.png", fanart="http://s6.postimg.org/7vgx54yq9/verseriesbuscfan.jpg", extra = "search"))
     
 
@@ -231,7 +235,7 @@ def fanart(item):
     url_tmdb="http://api.themoviedb.org/3/search/tv?api_key="+api_key+"&query=" + title +"&language=es&include_adult=false&first_air_date_year="+year
     data_tmdb = httptools.downloadpage(url_tmdb).data
     data_tmdb = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data_tmdb)
-    patron = '"page":1.*?,"id":(.*?),"backdrop_path":(.*?),"vote_average"'
+    patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),'
     matches = re.compile(patron,re.DOTALL).findall(data_tmdb)
 
     ###Busqueda en bing el id de imdb de la serie
@@ -239,7 +243,7 @@ def fanart(item):
          url_tmdb="http://api.themoviedb.org/3/search/tv?api_key="+api_key+"&query=" + title +"&language=es"
          data_tmdb =httptools.downloadpage(url_tmdb).data
          data_tmdb = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data_tmdb)
-         patron = '"page":1.*?,"id":(.*?),"backdrop_path":(.*?),"vote_average"'
+         patron = '"page":1.*?,"id":(.*?),.*?"backdrop_path":(.*?),'
          matches = re.compile(patron,re.DOTALL).findall(data_tmdb)
          if len(matches)==0:
           urlbing_imdb = "http://www.bing.com/search?q=%s+%s+tv+series+site:imdb.com" % (title.replace(' ', '+'),  year)
@@ -259,7 +263,7 @@ def fanart(item):
          
           urlremotetbdb = "https://api.themoviedb.org/3/find/"+imdb_id+"?api_key="+api_key+"&external_source=imdb_id&language=es"
           data_tmdb= httptools.downloadpage(urlremotetbdb).data
-          matches= scrapertools.find_multiple_matches(data_tmdb,'"tv_results":.*?"id":(.*?),.*?"poster_path":(.*?),"popularity"')
+          matches= scrapertools.find_multiple_matches(data_tmdb,'"tv_results":.*?"id":(.*?),.*?"poster_path":(.*?),')
          
           if len(matches)==0:
              id_tmdb=""
@@ -317,7 +321,7 @@ def fanart(item):
                 rating = "Sin puntuación"
          
             id_scraper =id_tmdb+"|"+"serie"+"|"+rating_filma+"|"+critica+"|"+rating+"|"+status #+"|"+emision
-            posterdb = scrapertools.find_single_match(data_tmdb,'"poster_path":(.*?)","popularity"')
+            posterdb = scrapertools.find_single_match(data_tmdb,'"poster_path":(.*?)",')
 
             if "null" in posterdb:
                 posterdb = item.thumbnail
@@ -794,7 +798,7 @@ def info(item):
 
 
 def info_capitulos(item):
-    logger.info()
+    logger.info("pelisalacarta.pasateatorrent trailer")
     
     url= "https://api.themoviedb.org/3/tv/"+item.show.split("|")[5]+"/season/"+item.extra.split("|")[2]+"/episode/"+item.extra.split("|")[3]+"?api_key="+api_key+"&language=es"
 

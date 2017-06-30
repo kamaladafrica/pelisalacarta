@@ -1,24 +1,27 @@
 # -*- coding: utf-8 -*-
-# ------------------------------------------------------------
+#------------------------------------------------------------
 # pelisalacarta - XBMC Plugin
 # Canal para Torrentlocura
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
-# ------------------------------------------------------------
+#------------------------------------------------------------
+import string
 import os
 import re
 import sys
 import urllib
-
-import xbmc
-import xbmcgui
 from core import config
-from core import httptools
 from core import logger
 from core import scrapertools
 from core import servertools
-from core import tmdb
+from core import httptools
+from platformcode import platformtools
 from core.item import Item
+import xbmc
+import xbmcgui
+from core import tmdb
 from core.scrapertools import decodeHtmlentities as dhe
+import unicodedata
+
 
 ACTION_SHOW_FULLSCREEN = 36
 ACTION_GESTURE_SWIPE_LEFT = 511
@@ -30,6 +33,7 @@ ACTION_MOVE_DOWN = 4
 ACTION_MOVE_UP = 3
 OPTION_PANEL = 6
 OPTIONS_OK = 5
+
 
 #Para la busqueda en bing evitando baneos
 
@@ -65,7 +69,7 @@ def browser(url):
     
     return response
 
-api_key="2e2160006592024ba87ccdf78c28f49f"
+api_key="2e2160006592024ba87ccdf78c28f49f" 
 api_fankey ="dffe90fba4d02c199ae7a9e71330c987"
 
 
@@ -96,10 +100,11 @@ def search(item,texto):
     except:
         import sys
         for line in sys.exc_info():
-            logger.error("%s" % line)
+            logger.error( "%s" % line )
         return []
 
 def buscador(item):
+    logger.info()
     itemlist=[]
     data = httptools.downloadpage(item.url,post=item.extra,).data
     data =unicode(data,"latin1").encode("utf8")
@@ -214,6 +219,9 @@ def fanart(item):
                 year=scrapertools.find_single_match(data,'<meta name="description"[^<]+A&ntilde;o[^<]+\d\d\d\d')
                 if year=="":
                    year=scrapertools.find_single_match(data,'<h1><strong>.*?(\d\d\d\d).*?<')
+                   if year == "":
+                      year=" "
+ 
 
     infoLabels = {'title': title, 'sinopsis': sinopsis, 'year': year}
     critica, rating_filma, year_f,sinopsis_f = filmaffinity(item,infoLabels)
@@ -649,6 +657,7 @@ def findvideos_enlaces(item):
        itemlist.append( Item(channel=item.channel, title = "[COLOR floralwhite][B]Descarga directa y online[/B][/COLOR]"  , url=item.url,  action="dd_y_o", thumbnail="http://imgur.com/as7Ie6p.png", fanart=item.extra.split("|")[1],contentType=item.contentType, extra=extra, folder=True) )
     return itemlist
 def dd_y_o(item):
+    logger.info()
     itemlist = []
     if item.contentType=="movie":
        data=item.extra.split("|")[9]
@@ -932,6 +941,7 @@ def decode(text):
     return data
 def convert_size(size):
    import math
+   from os.path import getsize
    if (size == 0):
        return '0B'
    size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")

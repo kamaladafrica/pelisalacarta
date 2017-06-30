@@ -29,7 +29,7 @@ import os
 
 import xbmcgui
 from core import config
-from core import filetools
+from core import jsontools
 from core import logger
 from core.item import Item
 from platformcode import platformtools
@@ -80,7 +80,7 @@ def mainlist(channel):
     """
     logger.info()
     itemlist = []
-    dict_series = filetools.get_node_from_data_json(channel, TAG_TVSHOW_RENUMERATE)
+    dict_series = jsontools.get_node_from_data_json(channel, TAG_TVSHOW_RENUMERATE)
 
     idx = 0
     for tvshow in sorted(dict_series):
@@ -111,7 +111,7 @@ def config_item(item):
     """
     logger.info("item %s" % item.tostring("\n"))
 
-    dict_series = filetools.get_node_from_data_json(item.from_channel, TAG_TVSHOW_RENUMERATE)
+    dict_series = jsontools.get_node_from_data_json(item.from_channel, TAG_TVSHOW_RENUMERATE)
     data = dict_series.get(item.show, {})
 
     if data:
@@ -150,7 +150,7 @@ def numbered_for_tratk(channel, show, season, episode):
 
     new_season = season
     new_episode = episode
-    dict_series = filetools.get_node_from_data_json(channel, TAG_TVSHOW_RENUMERATE)
+    dict_series = jsontools.get_node_from_data_json(channel, TAG_TVSHOW_RENUMERATE)
 
     # ponemos en minusculas el key, ya que previamente hemos hecho lo mismo con show.
     for key in dict_series.keys():
@@ -185,11 +185,10 @@ def borrar(channel, show):
             "para no hacer nada." % show.strip()
 
     if platformtools.dialog_yesno(heading, line1) == 1:
-        dict_series = filetools.get_node_from_data_json(channel, TAG_TVSHOW_RENUMERATE)
+        dict_series = jsontools.get_node_from_data_json(channel, TAG_TVSHOW_RENUMERATE)
         dict_series.pop(show, None)
 
-        fname, json_data = filetools.update_json_data(dict_series, channel, TAG_TVSHOW_RENUMERATE)
-        result = filetools.write(fname, json_data)
+        result, json_data = jsontools.update_json_data(dict_series, channel, TAG_TVSHOW_RENUMERATE)
 
         if result:
             message = "FILTRO ELIMINADO"
@@ -244,7 +243,7 @@ def add_season(data=None):
 
 def write_data(channel, show, data):
     # OBTENEMOS LOS DATOS DEL JSON
-    dict_series = filetools.get_node_from_data_json(channel, TAG_TVSHOW_RENUMERATE)
+    dict_series = jsontools.get_node_from_data_json(channel, TAG_TVSHOW_RENUMERATE)
     tvshow = show.strip()
     list_season_episode = dict_series.get(tvshow, {}).get(TAG_SEASON_EPISODE, [])
     logger.debug("data %s" % list_season_episode)
@@ -259,8 +258,7 @@ def write_data(channel, show, data):
         # hemos borrado todos los elementos, por lo que se borra la serie del fichero
         dict_series.pop(tvshow, None)
 
-    fname, json_data = filetools.update_json_data(dict_series, channel, TAG_TVSHOW_RENUMERATE)
-    result = filetools.write(fname, json_data)
+    result, json_data = jsontools.update_json_data(dict_series, channel, TAG_TVSHOW_RENUMERATE)
 
     if result:
         if data:

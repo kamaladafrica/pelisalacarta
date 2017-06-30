@@ -39,9 +39,6 @@
 	</categories>
 
 	<settings>
-		<include_in_global_search>disabled</include_in_global_search>
-	</settings>
-	<settings>
 		<id>include_in_newest_peliculas</id>
 		<type>bool</type>
 		<label>Incluir en Novedades - Películas</label>

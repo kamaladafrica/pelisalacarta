@@ -32,7 +32,4 @@
 		<category>VOS</category>
 	</categories>
 
-	<settings>
-		<include_in_global_search>false</include_in_global_search>
-	</settings>
 </channel>

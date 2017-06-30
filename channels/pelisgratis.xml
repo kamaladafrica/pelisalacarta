@@ -26,9 +26,14 @@
       <category>movie</category>
    </categories>
 
-   <settings>
-      <include_in_global_search>true</include_in_global_search>
-   </settings>
+	<settings>
+		<id>include_in_global_search</id>
+		<type>bool</type>
+		<label>Incluir en busqueda global</label>
+		<default>true</default>
+		<enabled>true</enabled>
+		<visible>true</visible>
+	</settings>
    <settings>
 		<id>include_in_newest_peliculas</id>
 		<type>bool</type>

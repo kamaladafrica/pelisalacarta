@@ -30,8 +30,6 @@
 		<category>serie</category>
 	</categories>
 
-	<include_in_global_search>disabled</include_in_global_search>
-
 	<settings>
 		<id>copiapopuser</id>
 		<type>text</type>

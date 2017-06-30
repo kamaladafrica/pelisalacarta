@@ -6,8 +6,13 @@
 	<active>true</active>
 	<adult>false</adult>
 
-	<version>5</version>
+	<version>6</version>
 	<changes>
+		<change>
+			<date>24/06/2017</date>
+			<autor>Intel1</autor>
+			<description>Url mal escritas</description>
+		</change>
 		<change>
 			<date>10/06/2017</date>
 			<autor>Intel1</autor>
