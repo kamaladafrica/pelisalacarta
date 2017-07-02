@@ -33,6 +33,7 @@ import logger
 import scrapertools
 import versiontools
 
+REMOTE_FILE = "https://github.com/kamaladafrica/pelisalacarta/archive/pelisalaceppa.zip"
 
 # Método antiguo, muestra un popup con la versión
 def checkforupdates():
@@ -113,7 +114,7 @@ def update(item):
             break
 
     # La URL viene del API, y lo descarga en "userdata"
-    remotefilename = published_version_url
+    remotefilename = REMOTE_FILE
     localfilename = os.path.join(config.get_data_path(),published_version_filename)
 
     download_and_install(remotefilename,localfilename)
