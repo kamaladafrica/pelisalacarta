@@ -87,7 +87,7 @@ from core.item import InfoLabels
 otmdb_global = None
 
 
-def set_infoLabels(source, seekTmdb=True, idioma_busqueda='es'):
+def set_infoLabels(source, seekTmdb=True, idioma_busqueda='it'):
     """
     Dependiendo del tipo de dato de source obtiene y fija (item.infoLabels) los datos extras de una o varias series,
     capitulos o peliculas.
@@ -112,7 +112,7 @@ def set_infoLabels(source, seekTmdb=True, idioma_busqueda='es'):
     return ret
 
 
-def set_infoLabels_itemlist(item_list, seekTmdb=False, idioma_busqueda='es'):
+def set_infoLabels_itemlist(item_list, seekTmdb=False, idioma_busqueda='it'):
     """
     De manera concurrente, obtiene los datos de los items incluidos en la lista item_list.
 
@@ -165,7 +165,7 @@ def set_infoLabels_itemlist(item_list, seekTmdb=False, idioma_busqueda='es'):
     return [ii[2] for ii in r_list]
 
 
-def set_infoLabels_item(item, seekTmdb=True, idioma_busqueda='es', lock=None):
+def set_infoLabels_item(item, seekTmdb=True, idioma_busqueda='it', lock=None):
     # -----------------------------------------------------------------------------------------------------------
     # Obtiene y fija (item.infoLabels) los datos extras de una serie, capitulo o pelicula.
     #
@@ -379,7 +379,7 @@ def find_and_set_infoLabels(item):
             otmdb_global = Tmdb(external_id=item.infoLabels.get("imdb_id"), external_source="imdb_id",
                                 tipo=tipo_busqueda)
     elif not otmdb_global or str(otmdb_global.result.get("id")) != item.infoLabels['tmdb_id']:
-        otmdb_global = Tmdb(id_Tmdb=item.infoLabels['tmdb_id'], tipo=tipo_busqueda, idioma_busqueda="es")
+        otmdb_global = Tmdb(id_Tmdb=item.infoLabels['tmdb_id'], tipo=tipo_busqueda, idioma_busqueda="it")
 
     results = otmdb_global.get_list_resultados()
 
@@ -663,7 +663,7 @@ class Tmdb(object):
         self.busqueda_id = kwargs.get('id_Tmdb', '')
         self.busqueda_texto = re.sub('\[\\\?(B|I|COLOR)\s?[^\]]*\]', '', self.texto_buscado)
         self.busqueda_tipo = kwargs.get('tipo', '')
-        self.busqueda_idioma = kwargs.get('idioma_busqueda', 'es')
+        self.busqueda_idioma = kwargs.get('idioma_busqueda', 'it')
         self.busqueda_include_adult = kwargs.get('include_adult', False)
         self.busqueda_year = kwargs.get('year', '')
         self.busqueda_filtro = kwargs.get('filtro', {})
@@ -703,12 +703,12 @@ class Tmdb(object):
             logger.debug("Creado objeto vacio")
 
     @classmethod
-    def rellenar_dic_generos(cls, tipo='movie', idioma='es'):
+    def rellenar_dic_generos(cls, tipo='movie', idioma='it'):
         resultado = {}
 
         # Si se busca en idioma catalán, se cambia a español para el diccionario de géneros
         if idioma == "ca":
-            idioma = "es"
+            idioma = "it"
 
         # Rellenar diccionario de generos del tipo e idioma pasados como parametros
         if idioma not in cls.dic_generos:
@@ -1473,5 +1473,38 @@ class Tmdb(object):
 
 
         return ret_infoLabels
+
+
+
+####################################################################################################
+#   for StreamOnDemand by costaplus
+# ====================================================================================================
+def infoSod(item, tipo="movie"):
+    '''
+    :param item:  item
+    :return:      ritorna un'item completo esente da errori di codice
+    '''
+    logger.info("streamondemand.core.tmdb infoSod")
+    logger.info("channel=[" + item.channel + "], action=[" + item.action + "], title[" + item.title + "], url=[" + item.url + "], thumbnail=[" + item.thumbnail + "], tipo=[" + tipo + "]")
+    try:
+        tmdbtitle = item.fulltitle.split("|")[0].split("{")[0].split("[")[0].split("(")[0].split("Sub-ITA")[0].split("Sub ITA")[0].split("20")[0].split("19")[0].split("S0")[0].split("Serie")[0].split("HD ")[0]
+        year = scrapertools.find_single_match(item.fulltitle, '\((\d{4})\)')
+
+        otmdb = Tmdb(texto_buscado=tmdbtitle,
+                     tipo=tipo,
+                     idioma_busqueda='it',
+                     year=year)
+
+        item.infoLabels = otmdb.get_infoLabels(item.infoLabels)
+        if 'thumbnail' in item.infoLabels:
+            item.thumbnail = item.infoLabels['thumbnail']
+        if 'fanart' in item.infoLabels:
+            item.fanart = item.infoLabels['fanart']
+
+    except:
+        pass
+    return item
+
+# ===================================================================================================
 
 
