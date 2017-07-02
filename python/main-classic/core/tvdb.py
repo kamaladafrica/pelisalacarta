@@ -48,7 +48,7 @@ if config.get_setting("tvdb_token") is not None:
 else:
     TOKEN = ""
 
-DEFAULT_LANG = "es"
+DEFAULT_LANG = "it"
 DEFAULT_HEADERS = {
         'Content-Type': 'application/json',
         'Accept': 'application/json, application/vnd.thetvdb.v2.1.1',
