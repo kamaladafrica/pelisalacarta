@@ -33,7 +33,7 @@ import xbmcaddon
 import xbmcgui
 
 
-PLUGIN_NAME = "pelisalacarta"
+PLUGIN_NAME = "pelisalaceppa"
 
 __settings__ = xbmcaddon.Addon(id="plugin.video." + PLUGIN_NAME)
 __language__ = __settings__.getLocalizedString

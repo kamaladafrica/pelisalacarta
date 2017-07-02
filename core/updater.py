@@ -114,7 +114,7 @@ def update(item):
             break
 
     # La URL viene del API, y lo descarga en "userdata"
-    remotefilename = REMOTE_FILE
+    remotefilename = published_version_url
     localfilename = os.path.join(config.get_data_path(),published_version_filename)
 
     download_and_install(remotefilename,localfilename)
