@@ -72,7 +72,7 @@ def find_video_items(item=None, data=None):
 
     # Busca los enlaces a los videos
     for label, url, server, thumbnail in findvideos(data):
-        title = "Enlace encontrado en %s" % label
+        title = " [%s]" % label
         itemlist.append(item.clone(title=title, action="play", url=url, thumbnail=thumbnail, server=server, folder=False))
 
     return itemlist
