@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<channel>
+	<id>update_version</id>
+	<name>Update_version</name>
+
+	<active>false</active>
+	<adult>false</adult>
+	<language>it</language>
+	<include_in_global_search>disabled</include_in_global_search>
+	
+	<fanart></fanart>
+	<thumbnail></thumbnail>
+	<bannermenu></bannermenu>
+	
+	<update_url>https://raw.githubusercontent.com/streamondemand/plugin.video.streamondemand/master/channels/</update_url>
+	<version>1</version>
+	<date>13/05/2017</date>
+	<changes>update</changes>
+
+	<categories>
+		<category></category>
+	</categories>
+
+
+		
+
+</channel>
