@@ -59,7 +59,6 @@ def get_channel_parameters(channel_name):
                 channel_parameters["language"] = channel_parameters.get("language", "all")
                 channel_parameters["adult"] = channel_parameters.get("adult", False)
                 channel_parameters["active"] = channel_parameters.get("active", False)
-                channel_parameters["include_in_global_search"] = channel_parameters.get("include_in_global_search", False)
                 channel_parameters["categories"] = channel_parameters.get("categories", dict()).get("category", list())
                 if not isinstance(channel_parameters["categories"], list):
                     channel_parameters["categories"] = [channel_parameters["categories"]]
