@@ -104,13 +104,11 @@ def settingCanal(item):
             continue
 
         # No incluir si en la configuracion del canal no existe "include_in_global_search"
-        include_in_global_search = channel_parameters["include_in_global_search"]
-
-        if include_in_global_search == False:
+        if "include_in_global_search" not in channel_parameters:
             continue
-        else:
-            # Se busca en la configuración del canal el valor guardado
-            include_in_global_search = config.get_setting("include_in_global_search", channel_name)
+            
+        # Se busca en la configuración del canal el valor guardado
+        include_in_global_search = config.get_setting("include_in_global_search", channel_name)
 
         control = {'id': channel_name,
                    'type': "bool",
