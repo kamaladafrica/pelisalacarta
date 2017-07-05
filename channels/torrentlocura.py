@@ -496,7 +496,7 @@ def findvideos(item):
        thumbnail=item.thumbnail
      if check_temp:
       itemlist.append( Item(channel=item.channel, title ="[COLOR red][B]Temporada "+check_temp+"[/B][/COLOR]" , url="",  action="", thumbnail=thumbnail, fanart=fanart , folder=False) )
-     temp_bloque = scrapertools.find_multiple_matches(bloque_enlaces,'href="([^"]+).*?" title=".*?Temporada (\d+) Capitulo (\d+).*?Serie <strong style="color:red;background:none;">(.*?)<\/strong>.*?Calidad <span style="color:red;background:none;">(\[.*?\])<\/span>.*?<span>.*?<span>(.*?)<\/span>.*?Descargar')
+     temp_bloque = scrapertools.find_multiple_matches(bloque_enlaces,'href="([^"]+).*?" title=".*?Temporada (\d+) Capitulo (\d+).*?Serie <strong style="color:red.*?:none">(.*?)<\/strong>.*?Calidad <span style="color:redbackground:none">(\[.*?\])<\/span>.*?<span>.*?<span>(.*?)<\/span>')
      if temp_bloque!="":
       for url,temp,capi,check_capi,calidad,peso in temp_bloque :
         if "Capitulos" in check_capi:
@@ -643,9 +643,14 @@ def findvideos_enlaces(item):
                   title_info = "[COLOR indianred]"+title_info+"[/COLOR]"
                   itemlist.append( Item(channel=item.channel, action="capitulos" , title=title_info , url=item.url, thumbnail=item.extra.split("|")[6], fanart=item.extra.split("|")[1], extra =extra, folder=True ))
        else:
+           
           title_info ="    Info"
           title_info = "[COLOR indianred]"+title_info+"[/COLOR]"
-          itemlist.append( Item(channel=item.channel, action="info_capitulos" , title=title_info , url=item.url, thumbnail=item.extra.split("|")[6], fanart=item.extra.split("|")[1], extra=item.extra, folder=False ))
+          if not ".png" in item.extra.split("|")[6]: 
+             thumbnail= item.thumbnail
+          else:
+             thumbnail= item.extra.split("|")[6]
+          itemlist.append( Item(channel=item.channel, action="info_capitulos" , title=title_info , url=item.url, thumbnail=thumbnail, fanart=item.extra.split("|")[1], extra=item.extra, folder=False ))
        if check_epi2=="ok":
           extra = item.extra+"|"+epi2
           title_info ="    Info Cap."+epi2
