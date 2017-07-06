@@ -45,6 +45,15 @@
     </settings>
 
     <settings>
+        <id>include_in_global_search</id>
+        <type>bool</type>
+        <label>Incluir en busqueda global</label>
+        <default>true</default>
+        <enabled>true</enabled>
+        <visible>true</visible>
+    </settings>
+
+    <settings>
         <id>filter_languages</id>
         <type>list</type>
         <label>Mostrar enlaces en idioma...</label>
