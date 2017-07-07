@@ -34,7 +34,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     packer = scrapertools.find_single_match(data,
                                             "<script type='text/javascript'>(eval.function.p,a,c,k,e,d..*?)</script>")
     if packer != "":
-        data = jsunpacker.unpack(packer)
+        data = jsunpack.unpack(packer)
     data = re.sub(r'\n|\t|\s+', '', data)
 
     host = scrapertools.find_single_match(data, '\[\{image:"(http://[^/]+/)')
