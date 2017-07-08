@@ -16,7 +16,6 @@ from core import scrapertools
 from core import servertools
 from core.item import Item
 from core import channeltools
-from core import tmdb
 
 __channel__ = "xtheatre"
 
@@ -52,23 +51,23 @@ def mainlist(item):
     itemlist = []
     # thumbnail = 'https://raw.githubusercontent.com/Inter95/tvguia/master/thumbnails/adults/%s.png'
 
-    itemlist.append(Item(channel=__channel__, title="Últimas", url=host + '?filtre=date&cat=0',
+    itemlist.append(Item(channel=__channel__, title="Últimas", url=urlparse.urljoin(host, '?filtre=date&cat=0'),
                          action="peliculas", viewmode="movie_with_plot", viewcontent='movies',
-                         thumbnail = thumbnail % '1'))
+                         text_color=color1, thumbnail = thumbnail % '1'))
 
-    itemlist.append(Item(channel=__channel__, title="Más Vistas", url=host + '?display=extract&filtre=views',
+    itemlist.append(Item(channel=__channel__, title="Más Vistas", url=urlparse.urljoin(host, '?display=extract&filtre=views'),
                          action="peliculas", viewmode="movie_with_plot", viewcontent='movies',
-                         thumbnail = thumbnail % '2'))
+                         text_color=color1, thumbnail = thumbnail % '2'))
 
-    itemlist.append(Item(channel=__channel__, title="Mejor Valoradas", url=host + '?display=extract&filtre=rate',
-                         action="peliculas", viewmode="movie_with_plot", viewcontent='movies',
+    itemlist.append(Item(channel=__channel__, title="Mejor Valoradas", url=urlparse.urljoin(host, '?display=extract&filtre=rate'),
+                         action="peliculas", viewmode="movie_with_plot", viewcontent='movies', text_color=color1,
                          thumbnail = thumbnail % '3'))
 
-    itemlist.append(Item(channel=__channel__, title="Categorías", action="categorias",
-                         url=host + 'categories/', viewmode="movie_with_plot", viewcontent='movies',
+    itemlist.append(Item(channel=__channel__, title="Categorías", action="categorias", text_color=color1,
+                         url=urlparse.urljoin(host, 'categories/'), viewmode="movie_with_plot", viewcontent='movies',
                          thumbnail = thumbnail % '4'))
 
-    itemlist.append(Item(channel=__channel__, title="Buscador", action="search", url=host, thumbnail = thumbnail % '5'))
+    itemlist.append(Item(channel=__channel__, text_color=color2, url=host, title="Buscador", action="search", thumbnail=thumbnail % '5'))
 
     return itemlist
 
@@ -90,19 +89,16 @@ def peliculas(item):
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     for scrapedthumbnail, scrapedtitle, scrapedurl in matches:
-        title = "%s" % (scrapedtitle)
-
-        itemlist.append(item.clone(channel=item.channel, action="findvideos", title=title,
-                                   url=scrapedurl, thumbnail=scrapedthumbnail, plot='',
-                                   viewmode="movie_with_plot", folder=True))
+        itemlist.append(item.clone(channel=__channel__, action="findvideos", title=scrapedtitle,
+                                   url=scrapedurl, thumbnail=scrapedthumbnail, contentTitle=scrapedtitle,
+                                   viewmode="movie_with_plot", folder=True, text_color=color1))
     # Extrae el paginador
-    paginacion = scrapertools.find_single_match(data, '<a href="([^"]+)">Next &rsaquo;</a></li><li>')
-    # paginacion = paginacion.replace('#038;', '')
+    paginacion = scrapertools.find_single_match(data, "<span class=\"current\">\d+</span></li><li><a href='([^']+)'")
     paginacion = urlparse.urljoin(item.url, paginacion)
 
     if paginacion:
-        itemlist.append(Item(channel=item.channel, action="peliculas",
-                             thumbnail=thumbnail % 'rarrow',
+        itemlist.append(Item(channel=__channel__, action="peliculas",
+                             thumbnail=thumbnail % 'rarrow', text_color=color2,
                              title="\xc2\xbb Siguiente \xc2\xbb", url=paginacion))
 
     for item in itemlist:
@@ -133,9 +129,9 @@ def categorias(item):
         title = "%s (%s)" % (scrapedtitle, vids.title())
         thumbnail = scrapedthumbnail
         url = scrapedurl
-        itemlist.append(Item(channel=item.channel, action="peliculas", fanart=scrapedthumbnail,
-                             title=title, url=url, thumbnail=thumbnail, plot='',
-                             viewmode="movie_with_plot", folder=True))
+        itemlist.append(item.clone(channel=__channel__, action="peliculas", fanart=scrapedthumbnail,
+                                   title=title, url=url, thumbnail=thumbnail, contentTitle=scrapedtitle,
+                                   viewmode="movie_with_plot", folder=True, text_color=color1))
 
     return itemlist
 
@@ -176,15 +172,15 @@ def sub_search(item):
 
     for scrapedthumbnail, scrapedtitle, scrapedurl in matches:
         title = "%s" % (scrapedtitle)
-        itemlist.append(item.clone(title=title, url=scrapedurl,
+        itemlist.append(item.clone(title=title, url=scrapedurl, text_color=color2,
                                    action="findvideos", thumbnail=scrapedthumbnail))
 
     paginacion = scrapertools.find_single_match(
-        data, "<a href='([^']+)' class=\"inactive\">\d+</a>")
+        data, "<span class=\"current\">\d+</span></li><li><a href='([^']+)'")
 
     if paginacion:
-        itemlist.append(Item(channel=item.channel, action="sub_search",
-                             title="\xc2\xbb Siguiente \xc2\xbb", url=paginacion))
+        itemlist.append(Item(channel=__channel__, action="sub_search", thumbnail=thumbnail % 'rarrow',
+                             title="\xc2\xbb Siguiente \xc2\xbb", url=paginacion, text_color=color2))
 
     return itemlist
 
@@ -208,13 +204,7 @@ def findvideos(item):
 
     for videoitem in itemlist:
         videoitem.infoLabels = item.infoLabels
-        videoitem.channel = item.channel
+        videoitem.channel = __channel__
         videoitem.title = "%s [COLOR yellow](%s)[/COLOR]" % (item.title, videoitem.server)
-
-    # if config.get_library_support() and len(itemlist) > 0:
-    #     itemlist.append(Item(channel=item.channel, title='[COLOR yellow]Añadir esta pelicula a la biblioteca[/COLOR]',
-    #                          url=item.url, action="add_pelicula_to_library",
-    #                          thumbnail='https://s19.postimg.org/l5z8iy1zn/biblioteca.png',
-    #                          extra="findvideos", contentTitle=item.contentTitle))
 
     return itemlist
