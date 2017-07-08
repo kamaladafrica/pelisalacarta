@@ -3,6 +3,11 @@
 	<active>true</active>
 	<changes>
 		<change>
+			<autor>Intel1</autor>
+			<date>08/07/2017</date>
+			<description>Patrón actualizado</description>
+		</change>
+		<change>
 			<autor>Cmos</autor>
 			<date>28/05/2017</date>
 			<description>Reparado por cambio de dominio</description>
@@ -31,7 +36,7 @@
 			<url>http://netu.tv/watch_video.php?v=\2</url>
 		</patterns>
 		<patterns>
-			<pattern>(?:hqq|waaw|netu)(?:\.tv\/|\.watch\/|\.php\?).*(?:v=|vid=)([A-z0-9]+)</pattern>
+			<pattern>(?:hqq|waaw|netu)(?:\.tv\/|\.watch\/|\.php\?).*?(?:v=|vid=)([A-z0-9]+)</pattern>
 			<url>http://netu.tv/watch_video.php?v=\1</url>
 		</patterns>
 		<patterns>
@@ -73,5 +78,5 @@
 	</settings>
 	<thumbnail>http://media.tvalacarta.info/servers/server_netutv.png</thumbnail>
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/servers/</update_url>
-	<version>6</version>
+	<version>7</version>
 </server>
