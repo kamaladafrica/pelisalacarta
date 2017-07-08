@@ -89,7 +89,7 @@ def peliculas(item):
     for scrapedurl, scrapedthumbnail, scrapedtitle, scarpedtime in matches:
             title = "[%s] - %s" % (scarpedtime, scrapedtitle)
 
-            itemlist.append(item.clone(channel=item.channel, action="findvideos", title=title,
+            itemlist.append(item.clone(channel=item.channel, action="play", title=title,
                                        url=scrapedurl, thumbnail=scrapedthumbnail, plot="",
                                        viewmode="movie_with_plot", folder=True))
 
@@ -160,7 +160,7 @@ def sub_search(item):
 
     for scrapedurl, scrapedthumbnail, scrapedtitle, scarpedtime in matches:
         title = "[%s] - %s" % (scarpedtime, scrapedtitle)
-        itemlist.append(item.clone(title=title, url=scrapedurl, action="findvideos", thumbnail=scrapedthumbnail))
+        itemlist.append(item.clone(title=title, url=scrapedurl, action="play", thumbnail=scrapedthumbnail))
 
     paginacion = scrapertools.find_single_match(data, '<a class=" btn btn--size--l btn--next" href="([^"]+)"')
     paginacion = urlparse.urljoin(item.url, paginacion)
@@ -205,27 +205,11 @@ def pornstars(item):
     return itemlist
 
 
-def findvideos(item):
-
-    itemlist = []
-    data = httptools.downloadpage(item.url).data
-    data = re.sub(r"\n|\r|\t|amp;|\s{2}|&nbsp;", "", data)
-    patron = "label': '','file': '([^']+)','type': \"hls\",'default': true"
-    matches = scrapertools.find_multiple_matches(data, patron)
-
-    for url in matches:
-        title = item.title
-        thumbnail = item.thumbnail
-
-        itemlist.append(item.clone(action="play", title=title, url=url, server='directo', thumbnail=thumbnail))
-
-    for videoitem in itemlist:
-        videoitem.channel = item.channel
-
-    # if config.get_library_support() and len(itemlist) > 0:
-    #     itemlist.append(Item(channel=item.channel, title='[COLOR yellow]Añadir esta pelicula a la biblioteca[/COLOR]',
-    #                          url=item.url, action="add_pelicula_to_library", thumbnail='https://s19.postimg.org/l5z8iy1zn/biblioteca.png',
-    #                          extra="findvideos", contentTitle=item.contentTitle))
-
+def play(item):
+    logger.info()
+    itemlist=[]
+    data = scrapertools.downloadpage(item.url)
+    url= scrapertools.get_match(data,"label': '','file': '([^']+)','type': \"hls\",'default': true" )
+    itemlist.append( Item(channel=item.channel, action="play", server="directo", title=item.title , url=url , thumbnail=item.thumbnail , plot=item.plot , folder=False) )
 
     return itemlist
