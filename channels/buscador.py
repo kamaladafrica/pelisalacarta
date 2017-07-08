@@ -327,6 +327,7 @@ def do_search(item, categories=[]):
 
             basename = os.path.basename(infile)
             basename_without_extension = basename[:-4]
+            if basename_without_extension == "version": continue
             logger.info("%s..." % basename_without_extension)
 
             channel_parameters = channeltools.get_channel_parameters(basename_without_extension)
@@ -352,13 +353,12 @@ def do_search(item, categories=[]):
                 logger.info("%s no incluido" % basename_without_extension)
                 continue
 
-            # No busca si es un canal excluido de la busqueda global
-            include_in_global_search = channel_parameters["include_in_global_search"]
-            if include_in_global_search == True:
+            include_in_global_search = False
+            if "include_in_global_search" in channel_parameters and channel_parameters["include_in_global_search"]:
                 # Buscar en la configuracion del canal
-                include_in_global_search = config.get_setting("include_in_global_search", basename_without_extension)
+                 include_in_global_search = config.get_setting("include_in_global_search", basename_without_extension)
 
-            if include_in_global_search != True:
+            if not include_in_global_search:
                 logger.info("%s no incluido" % basename_without_extension)
                 continue
 
