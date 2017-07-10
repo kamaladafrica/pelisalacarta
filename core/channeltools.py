@@ -59,6 +59,7 @@ def get_channel_parameters(channel_name):
                 channel_parameters["language"] = channel_parameters.get("language", "all")
                 channel_parameters["adult"] = channel_parameters.get("adult", False)
                 channel_parameters["active"] = channel_parameters.get("active", False)
+                channel_parameters["include_in_global_search"] = channel_parameters.get("include_in_global_search", False)
                 channel_parameters["categories"] = channel_parameters.get("categories", dict()).get("category", list())
                 if not isinstance(channel_parameters["categories"], list):
                     channel_parameters["categories"] = [channel_parameters["categories"]]
@@ -83,7 +84,7 @@ def get_channel_parameters(channel_name):
                     for s in channel_parameters['settings']:
                         if 'id' in s:
                             if s['id'] == "include_in_global_search":
-                                channel_parameters["include_in_global_search"] = s.get('default', False)
+                                channel_parameters["include_in_global_search"] = True
                             elif not s['id'].startswith("include_in_") and \
                                     (s.get('enabled', False) or s.get('visible', False)):
                                 channel_parameters["has_settings"] = True
