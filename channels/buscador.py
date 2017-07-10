@@ -104,11 +104,13 @@ def settingCanal(item):
             continue
 
         # No incluir si en la configuracion del canal no existe "include_in_global_search"
-        if "include_in_global_search" not in channel_parameters:
+        include_in_global_search = channel_parameters["include_in_global_search"]
+
+        if include_in_global_search == False:
             continue
-            
-        # Se busca en la configuración del canal el valor guardado
-        include_in_global_search = config.get_setting("include_in_global_search", channel_name)
+        else:
+            # Se busca en la configuración del canal el valor guardado
+            include_in_global_search = config.get_setting("include_in_global_search", channel_name)
 
         control = {'id': channel_name,
                    'type': "bool",
@@ -353,12 +355,13 @@ def do_search(item, categories=[]):
                 logger.info("%s no incluido" % basename_without_extension)
                 continue
 
-            include_in_global_search = False
-            if "include_in_global_search" in channel_parameters and channel_parameters["include_in_global_search"]:
+            # No busca si es un canal excluido de la busqueda global
+            include_in_global_search = channel_parameters["include_in_global_search"]
+            if include_in_global_search == True:
                 # Buscar en la configuracion del canal
-                 include_in_global_search = config.get_setting("include_in_global_search", basename_without_extension)
+                include_in_global_search = config.get_setting("include_in_global_search", basename_without_extension)
 
-            if not include_in_global_search:
+            if include_in_global_search != True:
                 logger.info("%s no incluido" % basename_without_extension)
                 continue
 
