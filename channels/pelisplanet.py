@@ -165,14 +165,20 @@ def peliculas(item):
     matches = re.compile(patron, re.DOTALL).findall(data)
 
     for scrapedurl, calidad, year, scrapedtitle, scrapedthumbnail in matches:
-        contentTitle = scrapedtitle.partition(' /')[0]
-        contentTitle = contentTitle.partition(':')[0]
+        datas = httptools.downloadpage(scrapedurl).data
+        datas = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", datas)
+        logger.info(datas)
+        if '/ ' in scrapedtitle:
+            scrapedtitle = scrapedtitle.partition('/ ')[2]
+        contentTitle = scrapertools.find_single_match(datas, '<em class="pull-left">Titulo original: </em>([^<]+)</p>')
         contentTitle = scrapertools.decodeHtmlentities(contentTitle.strip())
+        rating = scrapertools.find_single_match(datas, 'alt="Puntaje MPA IMDb" /></a><span>([^<]+)</span>')
+        director = scrapertools.find_single_match(datas, '<div class="list-cast-info tableCell"><a href="[^"]+" rel="tag">([^<]+)</a></div>')
         title = "%s [COLOR yellow][%s][/COLOR]" % (contentTitle, calidad.upper())
 
         itemlist.append(Item(channel=item.channel, action="findvideos", title=title, plot='',
                              url=scrapedurl, contentQuality=calidad, thumbnail=scrapedthumbnail,
-                             contentTitle=contentTitle, infoLabels={"year": year},
+                             contentTitle=contentTitle, infoLabels={"year": year, 'rating': rating, 'director': director},
                              text_color=color3))
 
     tmdb.set_infoLabels(itemlist, seekTmdb=True)
@@ -230,20 +236,19 @@ def findvideos(item):
     for scrapedurl, servidores, in matches:
         if 'pelispp.com' or 'ultrapelis' in scrapedurl:
             data = httptools.downloadpage(scrapedurl, headers=headers).data
-            quote = scrapertools.find_single_match(data, 'sources.*?file.*?http')
-            if quote in quote:
-                patronr = 'file:.*?"([^"]+)",label:"([^"]+)"'
-                matchesr = re.compile(patronr, re.DOTALL).findall(data)
-                for scrapedurl, label in matchesr:
-                    url = scrapedurl
-                    language = 'latino'
-                    quality = label.decode('cp1252').encode('utf8')
-                    title = item.contentTitle + ' (' + str(label) + ')'
-                    thumbnail = item.thumbnail
-                    fanart = item.fanart
-                    itemlist.append(item.clone(action="play", title=title, url=url, server='directo',
-                                               thumbnail=thumbnail, fanart=fanart, extra='directo',
-                                               quality=quality, language=language,))
+            patronr = 'file":"([^"]+)","type":"[^"]+","label":"([^"]+)"'
+            matchesr = re.compile(patronr, re.DOTALL).findall(data)
+            for scrapedurl, label in matchesr:
+                scrapedurl = scrapedurl.replace('\\', '')
+                url = scrapedurl
+                language = 'latino'
+                quality = label.decode('cp1252').encode('utf8')
+                title = item.contentTitle + ' (' + str(label) + ')'
+                thumbnail = item.thumbnail
+                fanart = item.fanart
+                itemlist.append(item.clone(action="play", title=title, url=url, server='directo',
+                                           thumbnail=thumbnail, fanart=fanart, extra='directo',
+                                           quality=quality, language=language,))
 
         quality = ''
         quality = scrapertools.find_single_match(
@@ -262,9 +267,6 @@ def findvideos(item):
         videoitem.channel = item.channel
         videoitem.action = 'play'
         videoitem.fulltitle = item.title
-
-        if videoitem.extra != 'directo' and 'youtube' not in videoitem.url:
-            videoitem.title = item.contentTitle + ' (' + videoitem.server + ')'
 
     n = 0
     for videoitem in itemlist:
