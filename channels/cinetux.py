@@ -5,6 +5,7 @@
 # http://blog.tvalacarta.info/plugin-xbmc/pelisalacarta/
 # ------------------------------------------------------------
 
+import urllib
 import urlparse
 
 from core import config
@@ -40,7 +41,7 @@ def mainlist(item):
     item.fanart = fanart
 
     itemlist.append(item.clone(title="Películas", text_color=color2, action="", text_blod=True))
-    itemlist.append(item.clone(action="peliculas", title="      Novedades", url=CHANNEL_HOST,
+    itemlist.append(item.clone(action="peliculas", title="      Novedades", url=CHANNEL_HOST + "pelicula",
                                thumbnail="https://raw.githubusercontent.com/master-1970/resources/master/images/genres"
                                          "/0/Directors%20Chair.png",
                                text_color=color1))
@@ -138,22 +139,22 @@ def peliculas(item):
 
     # Descarga la página
     data = httptools.downloadpage(item.url).data
-
-    # Extrae las entradas (carpetas)
-    patron = '<div class="item">.*?<div class="audio">\s*([^<]*)<.*?href="([^"]+)".*?src="([^"]+)"' \
-             '.*?<h3 class="name"><a.*?>([^<]+)</a>'
+    patron  = '(?s)class="(?:result-item|item movies)">.*?href="([^"]+)">'
+    patron +='\s*<img src="([^"]+)'
+    patron +='.*?alt="([^"]+)'
+    patron +='(.*?)'
+    patron +='(?:<span>|<span class="year">)([^<]+)'
     matches = scrapertools.find_multiple_matches(data, patron)
-    for calidad, scrapedurl, scrapedthumbnail, scrapedtitle in matches:
+    for scrapedurl, scrapedthumbnail, scrapedtitle, calidad, scrapedyear in matches:
+        calidad = scrapertools.find_single_match(calidad, '.*?quality">([^<]+)')
         try:
-            fulltitle, year = scrapedtitle.rsplit("(", 1)
-            year = scrapertools.get_match(year, '(\d{4})')
+            fulltitle = scrapedtitle
+            year = scrapedyear
             if "/" in fulltitle:
                 fulltitle = fulltitle.split(" /", 1)[0]
-                scrapedtitle = "%s (%s)" % (fulltitle, year)
+            scrapedtitle = "%s (%s)" % (fulltitle, year)
         except:
             fulltitle = scrapedtitle
-            year = ""
-
         if calidad:
             scrapedtitle += "  [%s]" % calidad
         new_item = item.clone(action="findvideos", title=scrapedtitle, fulltitle=fulltitle,
@@ -163,12 +164,13 @@ def peliculas(item):
             new_item.infoLabels['year'] = int(year)
         itemlist.append(new_item)
     try:
-        tmdb.set_infoLabels(itemlist, __modo_grafico__)
+        #tmdb.set_infoLabels(itemlist, __modo_grafico__)
+        a = 1
     except:
         pass
 
     # Extrae el paginador
-    next_page_link = scrapertools.find_single_match(data, '<a href="([^"]+)"\s*><span [^>]+>&raquo;</span>')
+    next_page_link = scrapertools.find_single_match(data, '<link rel="next" href="([^"]+)')
     if next_page_link:
         itemlist.append(item.clone(action="peliculas", title=">> Página siguiente", url=next_page_link,
                                    text_color=color3))
@@ -208,15 +210,15 @@ def generos(item):
 
     # Descarga la página
     data = httptools.downloadpage(item.url).data
-    bloque = scrapertools.find_single_match(data, '<div class="sub_title">Géneros</div>(.*?)</ul>')
-
+    bloque = scrapertools.find_single_match(data, '(?s)dos_columnas">(.*?)</ul>')
     # Extrae las entradas
-    patron = '<li><a href="([^"]+)">(.*?)</li>'
+    patron = '<li><a href="/([^"]+)">(.*?)</li>'
     matches = scrapertools.find_multiple_matches(bloque, patron)
     for scrapedurl, scrapedtitle in matches:
+        scrapedurl = CHANNEL_HOST + scrapedurl
         scrapedtitle = scrapertools.htmlclean(scrapedtitle).strip()
         scrapedtitle = unicode(scrapedtitle, "utf8").capitalize().encode("utf8")
-        if scrapedtitle == "Erotico" and config.get_setting("adult_mode") == '0':
+        if scrapedtitle == "Erotico" and config.get_setting("adult_mode") == 0:
             continue
 
         itemlist.append(item.clone(action="peliculas", title=scrapedtitle, url=scrapedurl))
@@ -249,7 +251,7 @@ def findvideos(item):
 
     # Busca el argumento
     data = httptools.downloadpage(item.url).data
-    year = scrapertools.find_single_match(data, '<h1><span>.*?rel="tag">([^<]+)</a>')
+    year = scrapertools.find_single_match(item.title, "\(([0-9]+)")
 
     if year and item.extra != "library":
         item.infoLabels['year'] = int(year)        
@@ -297,31 +299,36 @@ def findvideos(item):
 def bloque_enlaces(data, filtro_idioma, dict_idiomas, type, item):
     logger.info()
     lista_enlaces = []
-
+    data = data.replace("\n","")
     matches = []
     if type == "online":
-        patron = '<a href="#([^"]+)" data-toggle="tab">([^<]+)</a>'
+        patron = 'play-box-iframe.*?src.*?>([^<]+)<.*?<.*?src="([^"]+)'
         bloques = scrapertools.find_multiple_matches(data, patron)
-        for id, language in bloques:
-            patron = 'id="' + id + '">.*?<iframe src="([^"]+)"'
-            url = scrapertools.find_single_match(data, patron)
-            matches.append([url, "", language])
-
-    bloque2 = scrapertools.find_single_match(data, '<div class="table-link" id="%s">(.*?)</table>' % type)
-    patron = 'tr>[^<]+<td>.*?href="([^"]+)".*?src.*?title="([^"]+)"' \
-             '.*?src.*?title="([^"]+)".*?src.*?title="(.*?)"'
+        for language, url in bloques:
+            if "goo.gl" in url:
+                url = httptools.downloadpage(url, follow_redirects=False, only_headers=True).headers.get("location","")
+            server = servertools.get_server_from_url(url)
+            matches.append([url, server, "", language, "online"])
+    bloque2 = scrapertools.find_single_match(data, '(?s)box_links.*?dt_social_single')
+    patron  = '(?s)optn" href="([^"]+)'
+    patron += '.*?title="([^"]+)'
+    patron += '.*?src.*?src="[^>]+"/>([^<]+)'
+    patron += '.*?src[^>]+>([^<]+)'
+    patron += '.*?</span>([^<]+)'
     matches.extend(scrapertools.find_multiple_matches(bloque2, patron))
     filtrados = []
     for match in matches:
+        if type.upper() not in match[4].upper():
+            continue
         scrapedurl = match[0]
-        language = match[2].strip()
-        title = "   Mirror en %s (" + language + ")"
-        if len(match) == 4:
-            title += " (Calidad " + match[3].strip() + ")"
+        language = match[3]
+        title = "   Mirror en " + match[1].split(".")[0] + " (" + language + ")"
+        if len(match[2].strip()) > 0:
+            title += " (Calidad " + match[2].strip() + ")"
 
         if filtro_idioma == 3 or item.filtro:
             lista_enlaces.append(item.clone(title=title, action="play", text_color=color2,
-                                            url=scrapedurl, idioma=language, extra=item.url))
+                                            url=scrapedurl, server=match[1], idioma=language, extra=item.url))
         else:
             idioma = dict_idiomas[language]
             if idioma == filtro_idioma:
@@ -330,33 +337,58 @@ def bloque_enlaces(data, filtro_idioma, dict_idiomas, type, item):
             else:
                 if language not in filtrados:
                     filtrados.append(language)
-    
-    lista_enlaces = servertools.get_servers_itemlist(lista_enlaces, lambda i: i.title % i.server)
     if filtro_idioma != 3:
         if len(filtrados) > 0:
             title = "Mostrar enlaces filtrados en %s" % ", ".join(filtrados)
             lista_enlaces.append(item.clone(title=title, action="findvideos", url=item.url, text_color=color3,
                                             filtro=True))
-
     return lista_enlaces
 
 
 def play(item):
     logger.info()
     itemlist = []
+    video_urls = []
+    urls = []
     if "api.cinetux" in item.url:
         data = httptools.downloadpage(item.url, headers={'Referer': item.extra}).data.replace("\\", "")
-        bloque = scrapertools.find_single_match(data, 'sources:\s*(\[.*?\])')
-        if bloque:
-            bloque = eval(bloque)
-            video_urls = []
-            for b in bloque:
-                ext = b["type"].replace("video/", "")
-                video_urls.append([".%s %sp [directo]" % (ext, b["label"]), b["file"], b["label"]])
+        id = scrapertools.find_single_match(data, 'img src="[^#]+#(.*?)"')
 
-            video_urls.sort(key=lambda vdu: vdu[2])
-            for v in video_urls:
-                itemlist.append([v[0], v[1]])
+        doc_url = "http://docs.google.com/get_video_info?docid=" + id
+        response = httptools.downloadpage(doc_url, cookies=False)
+        cookies = ""
+        cookie = response.headers["set-cookie"].split("HttpOnly, ")
+        for c in cookie:
+            cookies += c.split(";", 1)[0] + "; "
+
+        data = response.data.decode('unicode-escape')
+        data = urllib.unquote_plus(urllib.unquote_plus(data))
+        headers_string = "|Cookie=" + cookies
+
+        url_streams = scrapertools.find_single_match(data, 'url_encoded_fmt_stream_map=(.*)')
+        streams = scrapertools.find_multiple_matches(url_streams,
+                                                 'itag=(\d+)&url=(.*?)(?:;.*?quality=.*?(?:,|&)|&quality=.*?(?:,|&))')
+
+        itags = {'18':'360p', '22':'720p', '34':'360p', '35':'480p', '37':'1080p', '43':'360p', '59':'480p'}
+        for itag, video_url in streams:
+            if not video_url in urls:
+                video_url += headers_string
+                video_urls.append([video_url, itags[itag]])
+                urls.append(video_url)
+        
+        video_urls.sort(key=lambda video_urls: int(video_urls[1].replace("p", "")))
+        for v in video_urls:
+            itemlist.append([v[1], v[0]])
+    elif "links" in item.url:
+        data = httptools.downloadpage(item.url).data
+        scrapedurl = scrapertools.find_single_match(data, '<a href="(http[^"]+)')
+        if scrapedurl == "":
+            scrapedurl = scrapertools.find_single_match(data, '<frame src="(http[^"]+)')
+        if "goo.gl" in scrapedurl:
+            scrapedurl = httptools.downloadpage(scrapedurl, follow_redirects=False, only_headers=True).headers.get("location", "")
+        item.url = scrapedurl
+        item.server = servertools.get_server_from_url(scrapedurl)
+        return [item]
     else:
         return [item]
     return itemlist
