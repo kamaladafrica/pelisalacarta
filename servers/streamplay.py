@@ -33,7 +33,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
 
     for list in scrapertools.find_multiple_matches(data, '_[^=]+=(\[[^\]]+\]);'):
         key = "".join(eval(list)[7:9])
-        if key and len(key) > 13: break
+        if "embed" in key and ("powvideo" in key or "streamplay" in key): break
     if key.startswith("embed"):
         key = key[6:]+key[:6]
     matches = scrapertools.find_single_match(data, "<script type=[\"']text/javascript[\"']>(eval.*?)</script>")
