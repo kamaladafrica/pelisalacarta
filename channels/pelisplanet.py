@@ -174,7 +174,7 @@ def peliculas(item):
         contentTitle = scrapertools.decodeHtmlentities(contentTitle.strip())
         rating = scrapertools.find_single_match(datas, 'alt="Puntaje MPA IMDb" /></a><span>([^<]+)</span>')
         director = scrapertools.find_single_match(datas, '<div class="list-cast-info tableCell"><a href="[^"]+" rel="tag">([^<]+)</a></div>')
-        title = "%s [COLOR yellow][%s][/COLOR]" % (contentTitle, calidad.upper())
+        title = "%s [COLOR yellow][%s][/COLOR]" % (scrapedtitle.strip(), calidad.upper())
 
         itemlist.append(Item(channel=item.channel, action="findvideos", title=title, plot='',
                              url=scrapedurl, contentQuality=calidad, thumbnail=scrapedthumbnail,
