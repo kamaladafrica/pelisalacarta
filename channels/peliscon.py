@@ -142,7 +142,7 @@ def buscador(item):
     except:
            pass
     ## Paginación
-    next=scrapertools.find_single_match(data,'<div class=\'resppages\'><a href="([^"]+)"')
+    next=scrapertools.find_single_match(data,"<span class=\"current\">\d+<\/span><a href='([^']+)'")
     if len(next)>0:
         url =next
        
@@ -185,7 +185,7 @@ def scraper(item):
     
            
     ## Paginación
-    next=scrapertools.find_single_match(data,'<div class=\'resppages\'><a href="([^"]+)"')
+    next=scrapertools.find_single_match(data,"<span class=\"current\">\d+<\/span><a href='([^']+)'")
     if len(next)>0:
         url =next
         
@@ -236,7 +236,7 @@ def ul_cap(item):
     
            
     ## Paginación
-    next=scrapertools.find_single_match(data,'<div class=\'resppages\'><a href="([^"]+)"')
+    next=scrapertools.find_single_match(data,"<span class=\"current\">\d+<\/span><a href='([^']+)'")
     if len(next)>0:
         url =next
         
@@ -326,7 +326,10 @@ def findtemporadas(item):
         item.fanart=fanart
         item.extra=extra
         if item.temp:
-           item.thumbnail= item.infoLabels['temporada_poster']
+           if item.infoLabels['temporada_poster']: 
+            item.thumbnail= item.infoLabels['temporada_poster']
+           else:
+            item.thumbnail=item.infoLabels['thumbnail']
            
     if config.get_library_support() and itemlist:
         if len(bloque_episodios)==1:
@@ -360,7 +363,10 @@ def epis(item):
        tmdb.set_infoLabels_itemlist(itemlist, __modo_grafico__) 
        for item in itemlist:
            item.fanart=item.extra
-           if item.infoLabels['title']:title = "[COLOR royalblue]"+item.infoLabels['title']+"[/COLOR]" 
+           if item.infoLabels['title']:
+              title = "[COLOR royalblue]"+item.infoLabels['title']+"[/COLOR]" 
+           else:
+              title="[COLOR royalblue]Capítulo "+str(item.infoLabels['episode'])+"[/COLOR]"
            item.title = item.title + " -- \""+ title +"\""
     return itemlist
 def findvideos(item):
@@ -407,8 +413,9 @@ def findvideos(item):
                capitulo= re.sub(r".*--.*","",capitulo)
                title = "[COLOR darkcyan][B]Ver capítulo [/B][/COLOR]"+"[COLOR red][B]"+capitulo+"[/B][/COLOR]"
                new_item = item.clone ( title = title , url=url, action="play", fanart=fanart,thumbnail= item.thumbnail,server_v=server,idioma=idioma,extra=item.extra,fulltitle=item.fulltitle, folder=False) 
-               new_item.infoLabels['episode']=item.epi
-               new_item.infoLabels['season']=item.temp
+               if not item.check_temp:
+                new_item.infoLabels['episode']=item.epi
+                new_item.infoLabels['season']=item.temp
                itemlist.append(new_item)
            else:
                title = "[COLOR darkcyan][B]Ver capítulo [/B][/COLOR]"+"[COLOR red][B]"+capitulo+"[/B][/COLOR]"+"  "+"[COLOR darkred]"+server+" ( "+idioma+" )"+"[/COLOR]"
@@ -417,7 +424,12 @@ def findvideos(item):
        if item.temp:     
         tmdb.set_infoLabels_itemlist(itemlist, __modo_grafico__) 
         for item in itemlist:
-            if item.infoLabels['title']:title_inf = "[COLOR royalblue]"+item.infoLabels['title']+"[/COLOR]" 
+            if item.infoLabels['title'] :
+               logger.info("yes") 
+               title_inf = "[COLOR royalblue]"+item.infoLabels['title']+"[/COLOR]" 
+            else:
+               logger.info("no")  
+               title_inf ="[COLOR royalblue]Capítulo "+str(item.infoLabels['episode'])+"[/COLOR]"
             item.title = item.title + " -- \""+ title_inf +"\""+"  "+"[COLOR darkred]"+item.server_v+" ( "+item.idioma+" )"+"[/COLOR]"
        if item.infoLabels['episode'] and item.library or item.temp and item.library :
            thumbnail = scrapertools.find_single_match(item.extra,'http://assets.fanart.tv/.*jpg')
@@ -780,7 +792,7 @@ def get_art(item):
               else:
                item.fanart= imagenes[1]
               if imagenes[1] != check_fanart and imagenes[1] != item.fanart and imagenes[2] != check_fanart:
-               item.extra= imagenes[1]+"|"+imagenes[2]+"|"+imagenes[3]+"|"+imagenes[4]
+               item.extra= imagenes[1]+"|"+imagenes[2]+"|"+imagenes[3]
               else: 
                if imagenes[1] != check_fanart and imagenes[1] != item.fanart:
                   item.extra= imagenes[1]+"|"+imagenes[3]+"|"+imagenes[2]
@@ -843,10 +855,11 @@ def get_art(item):
               item.thumb_art=images_fanarttv.get("tvbanner")[0].get("url")
            else:
              item.thumb_art=item.thumbnail
-               
+     else:   
+         item.thumb_art= item.thumbnail         
     else:
         item.extra=item.extra+"|"+item.thumbnail
-
+        item.thumb_art= item.thumbnail
 def get_year(url):
     data=httptools.downloadpage(url).data
     data = re.sub(r"\n|\r|\t|\s{2}|&nbsp;","",data)
