@@ -149,7 +149,7 @@ def newest(categoria):
 
 
 def peliculas(item):
-    logger.info("pelisalacarta.channels.pelisplanet peliculas")
+    logger.info()
     itemlist = []
 
     data = httptools.downloadpage(item.url).data
@@ -167,7 +167,7 @@ def peliculas(item):
     for scrapedurl, calidad, year, scrapedtitle, scrapedthumbnail in matches:
         datas = httptools.downloadpage(scrapedurl).data
         datas = re.sub(r"\n|\r|\t|\s{2}|&nbsp;", "", datas)
-        logger.info(datas)
+        #logger.info(datas)
         if '/ ' in scrapedtitle:
             scrapedtitle = scrapedtitle.partition('/ ')[2]
         contentTitle = scrapertools.find_single_match(datas, '<em class="pull-left">Titulo original: </em>([^<]+)</p>')
@@ -201,7 +201,7 @@ def peliculas(item):
 
 
 def generos(item):
-    logger.info("pelisalacarta.channels.pelisplanet generos")
+    logger.info()
     itemlist = []
 
     data = scrapertools.cache_page(item.url)
@@ -222,7 +222,7 @@ def generos(item):
 
 
 def findvideos(item):
-    logger.info("pelisalacarta.channels.pelisplanet findvideos")
+    logger.info()
     itemlist = []
 
     datas = httptools.downloadpage(item.url).data
@@ -236,11 +236,10 @@ def findvideos(item):
     for scrapedurl, servidores, in matches:
         if 'pelispp.com' or 'ultrapelis' in scrapedurl:
             data = httptools.downloadpage(scrapedurl, headers=headers).data
-            patronr = 'file":"([^"]+)","type":"[^"]+","label":"([^"]+)"'
+            patronr = 'file: "([^"]+)",label:"([^"]+)",type: "[^"]+"'
             matchesr = re.compile(patronr, re.DOTALL).findall(data)
             for scrapedurl, label in matchesr:
-                scrapedurl = scrapedurl.replace('\\', '')
-                url = scrapedurl
+                url = scrapedurl.replace('\\', '')
                 language = 'latino'
                 quality = label.decode('cp1252').encode('utf8')
                 title = item.contentTitle + ' (' + str(label) + ')'
@@ -250,7 +249,6 @@ def findvideos(item):
                                            thumbnail=thumbnail, fanart=fanart, extra='directo',
                                            quality=quality, language=language,))
 
-        quality = ''
         quality = scrapertools.find_single_match(
             datas, '<p class="hidden-xs hidden-sm">.*?class="magnet-download">([^<]+)p</a>')
         title = "[COLOR green]%s[/COLOR] [COLOR yellow][%s][/COLOR] [COLOR yellow][%s][/COLOR]" % (
