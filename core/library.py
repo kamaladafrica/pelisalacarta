@@ -275,7 +275,7 @@ def save_library_tvshow(item, episodelist):
     for c in subcarpetas:
         code = scrapertools.find_single_match(c, '\[(.*?)\]')
         if code and code in item.infoLabels['code']:
-            path = c
+            path = filetools.join(TVSHOWS_PATH, c)
             _id = code
             break
 

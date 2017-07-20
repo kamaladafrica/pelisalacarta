@@ -10,6 +10,11 @@
 	<version>8</version>
 	<changes>
 		<change>
+			<date>14/07/2017</date>
+			<autor>Intel1</autor>
+			<description>Actualizado por cambio de estructura en la página</description>
+		</change>
+		<change>
 			<date>12/05/2017</date>
 			<autor>Cmos</autor>
 			<description>Arreglada paginación y enlaces directos</description>

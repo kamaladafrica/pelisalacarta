@@ -329,6 +329,7 @@ def do_search(item, categories=[]):
 
             basename = os.path.basename(infile)
             basename_without_extension = basename[:-4]
+            if basename_without_extension == "version": continue
             logger.info("%s..." % basename_without_extension)
 
             channel_parameters = channeltools.get_channel_parameters(basename_without_extension)

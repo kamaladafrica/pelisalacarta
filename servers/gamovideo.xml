@@ -3,6 +3,11 @@
 	<active>true</active>
 	<changes>
 		<change>
+			<autor>Intel1</autor>
+			<date>07/07/17</date>
+			<description>Actualizado get_url_video</description>
+		</change>
+		<change>
 			<autor>Cmos</autor>
 			<date>09/05/17</date>
 			<description>Arreglado con el cambio de user agent</description>
@@ -27,7 +32,7 @@
 		<ignore_urls>
 		</ignore_urls>
 		<patterns>
-			<pattern>gamovideo.com/(?:embed-)?([a-z0-9]+)</pattern>
+			<pattern>gamovideo.com/(?:embed-|)([a-z0-9]+)</pattern>
 			<url>http://gamovideo.com/embed-\1.html</url>
 		</patterns>
 	</find_videos>
@@ -60,5 +65,5 @@
 	</settings>
 	<thumbnail>http://media.tvalacarta.info/servers/server_gamovideo.png</thumbnail>
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/servers/</update_url>
-	<version>6</version>
+	<version>7</version>
 </server>

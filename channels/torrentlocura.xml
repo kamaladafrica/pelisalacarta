@@ -12,7 +12,7 @@
 	<bannermenu>http://media.tvalacarta.info/pelisalacarta/bannermenu/torrentlocura.png</bannermenu>
 	<update_url>https://raw.githubusercontent.com/tvalacarta/pelisalacarta/master/python/main-classic/channels/</update_url>
     
-    <version>4</version>
+    <version>5</version>
     <changes>
         <change>
           <date>31/12/2016</date>
@@ -33,6 +33,11 @@
             <date>28/06/2017</date>
             <autor>Neno1978</autor>
             <description>Corrección código y algunas mejoras</description>
+        </change>
+        <change>
+            <date>05/07/2017</date>
+            <autor>Neno1978</autor>
+            <description>Corrección por cambios web.Fix obtención thumbnail info/series</description>
         </change>
     </changes>
     

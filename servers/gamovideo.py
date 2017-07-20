@@ -34,11 +34,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
     packer = scrapertools.find_single_match(data,
                                             "<script type='text/javascript'>(eval.function.p,a,c,k,e,d..*?)</script>")
     if packer != "":
-        unpacker = jsunpack.unpack(data)
-    else:
-        unpacker = ""
-    if unpacker != "": data = unpacker
-
+        data = jsunpack.unpack(packer)
     data = re.sub(r'\n|\t|\s+', '', data)
 
     host = scrapertools.find_single_match(data, '\[\{image:"(http://[^/]+/)')
@@ -47,7 +43,7 @@ def get_video_url(page_url, premium=False, user="", password="", video_password=
         mediaurl = host + mediaurl
 
     rtmp_url = scrapertools.find_single_match(data, 'file:"(rtmp[^"]+)"')
-    playpath = scrapertools.find_single_match(rtmp_url, 'vod\?h=[\w]+/(.*$)')
+    playpath = scrapertools.find_single_match(rtmp_url, 'mp4:.*$')
     rtmp_url = rtmp_url.split(playpath)[
                    0] + " playpath=" + playpath + " swfUrl=http://gamovideo.com/player61/jwplayer.flash.swf"
 
